@@ -12,6 +12,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "--- [AQP-GAS-00 · 01 · AQPGAS module] ---")
 (env-enable-repl-natives true)
+;;==== AQP-GAS-00 - deploy AQPGAS module · 01 · env-sigs (caps) ==== ==============================
+(print "--- [AQP-GAS-00 - deploy AQPGAS module · 01 · env-sigs (caps)] ---")
 (env-sigs
     [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}]
 )

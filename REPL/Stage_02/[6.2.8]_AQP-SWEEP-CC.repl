@@ -1,3 +1,16 @@
+;;
+;; REPL/Stage_02/[6.2.8]_AQP-SWEEP-CC.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_02/[6.2.8]_AQP-SWEEP-CC.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 ;; ============================================================================
 ;; REPL/Stage_02/[6.2.8]_AQP-SWEEP-CC.repl — sweep CC-batch (defun+gate) equivalence.
 ;;
@@ -26,8 +39,12 @@
 (begin-tx "TX-SWEEP-CC01 - CC_SweepBegin: freeze + swept-revoke + open cursor (recompute DEFERRED)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-SWEEP-CC01 - CC_SweepBegin: freeze + swept-revoke + open cursor (recompute DEFERRED) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-SWEEP-CC01 - CC_SweepBegin: freeze + swept-revoke + open cursor (recompute DEFERRED) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Lumy", "caps": [] }])
 (print "--- [TX-SWEEP-CC01 · 01 · CC_SweepBegin opens the paginated sweep] ---")
+;;==== TX-SWEEP-CC01 - CC_SweepBegin: freeze + swept-revoke + open cursor (recompute DEFERRED) · 02 · let / invocation ==== 
+(print "--- [TX-SWEEP-CC01 - CC_SweepBegin: freeze + swept-revoke + open cursor (recompute DEFERRED) · 02 · let / invocation] ---")
 (let
     (
         (lumy:string KST.LUMY)
@@ -130,8 +147,12 @@
 (begin-tx "TX-SWEEP-CC02 - CCp_SweepRecomputeChunk: page recompute to exhaustion, unfreeze, close cursor")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-SWEEP-CC02 - CCp_SweepRecomputeChunk: page recompute to exhaustion, unfreeze, close cursor · 01 · env-sigs (caps) ==== 
+(print "--- [TX-SWEEP-CC02 - CCp_SweepRecomputeChunk: page recompute to exhaustion, unfreeze, close cursor · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Lumy", "caps": [] }])
 (print "--- [TX-SWEEP-CC02 · 01 · CCp_SweepRecomputeChunk finalizes (chunk=10 >= total=1)] ---")
+;;==== TX-SWEEP-CC02 - CCp_SweepRecomputeChunk: page recompute to exhaustion, unfreeze, close cursor · 02 · let / invocation ==== 
+(print "--- [TX-SWEEP-CC02 - CCp_SweepRecomputeChunk: page recompute to exhaustion, unfreeze, close cursor · 02 · let / invocation] ---")
 (let
     (
         (lumy:string KST.LUMY)

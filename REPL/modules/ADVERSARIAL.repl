@@ -1,3 +1,16 @@
+;;
+;; REPL/modules/ADVERSARIAL.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/modules/ADVERSARIAL.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 ;; REPL/modules/ADVERSARIAL.repl — guards that no happy-path fixture can reach.
 ;;
 ;; Run: cd REPL && pact modules/ADVERSARIAL.repl
@@ -27,7 +40,11 @@
 ;;state is "already origin-minted", which no other suite produces because every other mint in the
 ;;corpus passes origin=false. Both directions are asserted below, because a guard that always
 ;;fired would satisfy the rejection alone and still be broken.
+;;==== ADV-01 — DPTF|C>MINT: the origin mint is once-only · 01 · env-sigs (caps) ==== =============
+(print "--- [ADV-01 — DPTF|C>MINT: the origin mint is once-only · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== ADV-01 — DPTF|C>MINT: the origin mint is once-only · 02 · let / invocation ==== ============
+(print "--- [ADV-01 — DPTF|C>MINT: the origin mint is once-only · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -87,7 +104,11 @@
 ;;SIGS: the last assertion goes through Talos, and DPTF|S>CONTROL acquires CAP_Owner BEFORE
 ;;UEV_CanUpgradeON -- without the owner signature it fails on the keyset and never reaches the
 ;;guard under test. (It did, on the first run.) The direct UEV_ probes above need no signature.
+;;==== ADV-02 — DPTF property guards that read a flag with no argument to vary · 01 · env-sigs (caps) ==== 
+(print "--- [ADV-02 — DPTF property guards that read a flag with no argument to vary · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== ADV-02 — DPTF property guards that read a flag with no argument to vary · 02 · let / invocation ==== 
+(print "--- [ADV-02 — DPTF property guards that read a flag with no argument to vary · 02 · let / invocation] ---")
 (let
     (
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)

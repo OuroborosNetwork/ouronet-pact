@@ -16,6 +16,8 @@
 (namespace "ouronet-ns")
 ;;==== TX-00 [C0] - Chain Data Time SetUp Definition · 01 · env-chain-data ==== ===================
 (print "--- [TX-00 [C0] - Chain Data Time SetUp Definition · 01 · env-chain-data] ---")
+;;==== TX-00 [C0] - Chain Data Time SetUp Definition · 01 · env-chain-data ==== ===================
+(print "--- [TX-00 [C0] - Chain Data Time SetUp Definition · 01 · env-chain-data] ---")
 (env-chain-data
     {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
      "block-time": TV.TIME00}
@@ -50,12 +52,16 @@
 
 ;;==== TX-01 [4.1] - DPDC INIT [01]: Define IMC Policies · 01 · env-sigs (caps) ==== ==============
 (print "--- [TX-01 [4.1] - DPDC INIT [01]: Define IMC Policies · 01 · env-sigs (caps)] ---")
+;;==== TX-01 [4.1] - DPDC INIT [01]: Define IMC Policies · 01 · env-sigs (caps) ==== ==============
+(print "--- [TX-01 [4.1] - DPDC INIT [01]: Define IMC Policies · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== TX-01 [4.1] - DPDC INIT [01]: Define IMC Policies · 02 · let / invocation ==== =============
+(print "--- [TX-01 [4.1] - DPDC INIT [01]: Define IMC Policies · 02 · let / invocation] ---")
 ;;==== TX-01 [4.1] - DPDC INIT [01]: Define IMC Policies · 02 · let / invocation ==== =============
 (print "--- [TX-01 [4.1] - DPDC INIT [01]: Define IMC Policies · 02 · let / invocation] ---")
 (let
@@ -156,6 +162,8 @@
 
 ;;==== TX-02 [4.2] - Issue Ouronet Custodians Collection · 01 · let / invocation ==== =============
 (print "--- [TX-02 [4.2] - Issue Ouronet Custodians Collection · 01 · let / invocation] ---")
+;;==== TX-02 [4.2] - Issue Ouronet Custodians Collection · 01 · let / invocation ==== =============
+(print "--- [TX-02 [4.2] - Issue Ouronet Custodians Collection · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -232,6 +240,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
+;;==== TX-02 [4.2] - Issue Ouronet Custodians Collection · 01 · let / invocation ==== =============
+(print "--- [TX-02 [4.2] - Issue Ouronet Custodians Collection · 01 · let / invocation] ---")
 ;;==== TX-02 [4.2] - Issue Ouronet Custodians Collection · 01 · let / invocation ==== =============
 (print "--- [TX-02 [4.2] - Issue Ouronet Custodians Collection · 01 · let / invocation] ---")
 (let
@@ -465,6 +475,8 @@
 
 ;;==== TX-03 [4.3] - Issue Shareholders Collection · 01 · let / invocation ==== ===================
 (print "--- [TX-03 [4.3] - Issue Shareholders Collection · 01 · let / invocation] ---")
+;;==== TX-03 [4.3] - Issue Shareholders Collection · 01 · let / invocation ==== ===================
+(print "--- [TX-03 [4.3] - Issue Shareholders Collection · 01 · let / invocation] ---")
 (let
     (
         (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
@@ -578,6 +590,8 @@
 
 ;;==== TX-02 [4.2] - Issue Coding Division Collection · 01 · let / invocation ==== ================
 (print "--- [TX-02 [4.2] - Issue Coding Division Collection · 01 · let / invocation] ---")
+;;==== TX-02 [4.2] - Issue Coding Division Collection · 01 · let / invocation ==== ================
+(print "--- [TX-02 [4.2] - Issue Coding Division Collection · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -657,6 +671,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
+;;==== TX-04 [4.4] - Issue Coding Division Collection · 01 · let / invocation ==== ================
+(print "--- [TX-04 [4.4] - Issue Coding Division Collection · 01 · let / invocation] ---")
 ;;==== TX-04 [4.4] - Issue Coding Division Collection · 01 · let / invocation ==== ================
 (print "--- [TX-04 [4.4] - Issue Coding Division Collection · 01 · let / invocation] ---")
 (let
@@ -863,6 +879,8 @@
 
 ;;==== TX-02 [4.2] - Issue Wonder Coach Collection · 01 · let / invocation ==== ===================
 (print "--- [TX-02 [4.2] - Issue Wonder Coach Collection · 01 · let / invocation] ---")
+;;==== TX-02 [4.2] - Issue Wonder Coach Collection · 01 · let / invocation ==== ===================
+(print "--- [TX-02 [4.2] - Issue Wonder Coach Collection · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -940,6 +958,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
+;;==== TX-06 [4.6] - Issue Wonder Coach Collection · 01 · let / invocation ==== ===================
+(print "--- [TX-06 [4.6] - Issue Wonder Coach Collection · 01 · let / invocation] ---")
 ;;==== TX-06 [4.6] - Issue Wonder Coach Collection · 01 · let / invocation ==== ===================
 (print "--- [TX-06 [4.6] - Issue Wonder Coach Collection · 01 · let / invocation] ---")
 (let
@@ -1281,6 +1301,8 @@
 
 ;;==== TX-07 [4.7] - Issue Nosferatu Collection · 01 · let / invocation ==== ======================
 (print "--- [TX-07 [4.7] - Issue Nosferatu Collection · 01 · let / invocation] ---")
+;;==== TX-07 [4.7] - Issue Nosferatu Collection · 01 · let / invocation ==== ======================
+(print "--- [TX-07 [4.7] - Issue Nosferatu Collection · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -1362,6 +1384,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
+;;==== TX-08 [4.8] - Issue Bloodshed Collection and Bunny · 01 · let / invocation ==== ============
+(print "--- [TX-08 [4.8] - Issue Bloodshed Collection and Bunny · 01 · let / invocation] ---")
 ;;==== TX-08 [4.8] - Issue Bloodshed Collection and Bunny · 01 · let / invocation ==== ============
 (print "--- [TX-08 [4.8] - Issue Bloodshed Collection and Bunny · 01 · let / invocation] ---")
 (let
@@ -1450,6 +1474,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
+;;==== TX-08 [4.8] - Issue Bloodshed Collection and Bunny · 01 · let / invocation ==== ============
+(print "--- [TX-08 [4.8] - Issue Bloodshed Collection and Bunny · 01 · let / invocation] ---")
 ;;==== TX-08 [4.8] - Issue Bloodshed Collection and Bunny · 01 · let / invocation ==== ============
 (print "--- [TX-08 [4.8] - Issue Bloodshed Collection and Bunny · 01 · let / invocation] ---")
 (let

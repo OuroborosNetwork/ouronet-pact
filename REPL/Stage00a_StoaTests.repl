@@ -34,6 +34,8 @@
 ;; `ouronet-ns` user guard is `ns-operate-keyset` (same as `stoa-ns`; phase 01).
 ;;==== TX-01 - Keysets · 01 · env-sigs (caps) ==== ================================================
 (print "--- [TX-01 - Keysets · 01 · env-sigs (caps)] ---")
+;;==== TX-01 - Keysets · 01 · env-sigs (caps) ==== ================================================
+(print "--- [TX-01 - Keysets · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
 
@@ -115,6 +117,8 @@
     ;; `stoa-foundation` uses genesis `stoa-foundation-keyset`; UR|DEBIT still enforces the account guard (test-cap alone is not enough).
 ;;==== TX-01 - Transfers UR Stoa · 01 · env-sigs (caps) ==== ======================================
 (print "--- [TX-01 - Transfers UR Stoa · 01 · env-sigs (caps)] ---")
+;;==== TX-01 - Transfers UR Stoa · 01 · env-sigs (caps) ==== ======================================
+(print "--- [TX-01 - Transfers UR Stoa · 01 · env-sigs (caps)] ---")
     (env-sigs
       [{"key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74", "caps": []}])
     (test-capability (coin.UR|TRANSFER "stoa-foundation" "ancient-hodler-urstoa-nonprincipal" 250.0))
@@ -170,6 +174,8 @@
             "KEY_STOA_07_Kiss" : { "keys" : [SKC.CS07_PBKY]}
         }
     )
+;;==== TX-01 - Transfers Stoa · 01 · env-sigs (caps) ==== =========================================
+(print "--- [TX-01 - Transfers Stoa · 01 · env-sigs (caps)] ---")
 ;;==== TX-01 - Transfers Stoa · 01 · env-sigs (caps) ==== =========================================
 (print "--- [TX-01 - Transfers Stoa · 01 · env-sigs (caps)] ---")
     (env-sigs
@@ -230,6 +236,8 @@
 
 ;;==== TX-03 - Rotate · 01 · env-sigs (caps) ==== =================================================
 (print "--- [TX-03 - Rotate · 01 · env-sigs (caps)] ---")
+;;==== TX-03 - Rotate · 01 · env-sigs (caps) ==== =================================================
+(print "--- [TX-03 - Rotate · 01 · env-sigs (caps)] ---")
     (env-sigs
         [
             {
@@ -266,6 +274,8 @@
 
 ;;==== TX-01 - Coinbase Test · 01 · env-sigs (caps) ==== ==========================================
 (print "--- [TX-01 - Coinbase Test · 01 · env-sigs (caps)] ---")
+;;==== TX-01 - Coinbase Test · 01 · env-sigs (caps) ==== ==========================================
+(print "--- [TX-01 - Coinbase Test · 01 · env-sigs (caps)] ---")
     (env-sigs
         [
             ;{ "key": "PK_AncientHodler", "caps": [] }
@@ -293,6 +303,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
+;;==== TX-03 - URStoa Tests 1 · 01 · env-sigs (caps) ==== =========================================
+(print "--- [TX-03 - URStoa Tests 1 · 01 · env-sigs (caps)] ---")
 ;;==== TX-03 - URStoa Tests 1 · 01 · env-sigs (caps) ==== =========================================
 (print "--- [TX-03 - URStoa Tests 1 · 01 · env-sigs (caps)] ---")
     (env-sigs
@@ -330,6 +342,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
+;;==== TX-03 - URStoa Tests 2 · 01 · env-sigs (caps) ==== =========================================
+(print "--- [TX-03 - URStoa Tests 2 · 01 · env-sigs (caps)] ---")
 ;;==== TX-03 - URStoa Tests 2 · 01 · env-sigs (caps) ==== =========================================
 (print "--- [TX-03 - URStoa Tests 2 · 01 · env-sigs (caps)] ---")
     (env-sigs
@@ -370,6 +384,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
+;;==== TX-03 - URStoa Tests 3 · 01 · env-sigs (caps) ==== =========================================
+(print "--- [TX-03 - URStoa Tests 3 · 01 · env-sigs (caps)] ---")
 ;;==== TX-03 - URStoa Tests 3 · 01 · env-sigs (caps) ==== =========================================
 (print "--- [TX-03 - URStoa Tests 3 · 01 · env-sigs (caps)] ---")
     (env-sigs
@@ -420,6 +436,8 @@
 
 ;;==== TX-04 - URStoa Tests 4 · 01 · env-sigs (caps) ==== =========================================
 (print "--- [TX-04 - URStoa Tests 4 · 01 · env-sigs (caps)] ---")
+;;==== TX-04 - URStoa Tests 4 · 01 · env-sigs (caps) ==== =========================================
+(print "--- [TX-04 - URStoa Tests 4 · 01 · env-sigs (caps)] ---")
     (env-sigs
       [{"key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74", "caps": []}])
     (test-capability (coin.TRANSFER "stoa-foundation" coin.URV|KONTO 1234.0))
@@ -449,6 +467,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
     ;;Collect only works one at a time
+;;==== TX-05 - URStoa Tests 5.1 · 01 · env-sigs (caps) ==== =======================================
+(print "--- [TX-05 - URStoa Tests 5.1 · 01 · env-sigs (caps)] ---")
 ;;==== TX-05 - URStoa Tests 5.1 · 01 · env-sigs (caps) ==== =======================================
 (print "--- [TX-05 - URStoa Tests 5.1 · 01 · env-sigs (caps)] ---")
     (env-sigs
@@ -489,6 +509,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
     ;;Collect works multiple at a time
+;;==== TX-05 - URStoa Tests 5 · 01 · env-sigs (caps) ==== =========================================
+(print "--- [TX-05 - URStoa Tests 5 · 01 · env-sigs (caps)] ---")
 ;;==== TX-05 - URStoa Tests 5 · 01 · env-sigs (caps) ==== =========================================
 (print "--- [TX-05 - URStoa Tests 5 · 01 · env-sigs (caps)] ---")
     (env-sigs
@@ -536,6 +558,8 @@
 
 ;;==== TX-06 - URStoa Tests 6 · 01 · env-sigs (caps) ==== =========================================
 (print "--- [TX-06 - URStoa Tests 6 · 01 · env-sigs (caps)] ---")
+;;==== TX-06 - URStoa Tests 6 · 01 · env-sigs (caps) ==== =========================================
+(print "--- [TX-06 - URStoa Tests 6 · 01 · env-sigs (caps)] ---")
     (env-sigs
         [
             { "key": "50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b", "caps": 
@@ -573,6 +597,8 @@
 
 ;;==== TX-04 - URStoa Tests 4 · 01 · env-sigs (caps) ==== =========================================
 (print "--- [TX-04 - URStoa Tests 4 · 01 · env-sigs (caps)] ---")
+;;==== TX-04 - URStoa Tests 4 · 01 · env-sigs (caps) ==== =========================================
+(print "--- [TX-04 - URStoa Tests 4 · 01 · env-sigs (caps)] ---")
     (env-sigs
       [{"key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74", "caps": []}])
     (test-capability (coin.TRANSFER "stoa-foundation" coin.URV|KONTO 67.0))
@@ -597,6 +623,8 @@
 (namespace "ouronet-ns")
 ;;==== TX-00 [C0] - Chain Data Time SetUp Definition · 01 · env-chain-data ==== ===================
 (print "--- [TX-00 [C0] - Chain Data Time SetUp Definition · 01 · env-chain-data] ---")
+;;==== TX-00 [C0] - Chain Data Time SetUp Definition · 01 · env-chain-data ==== ===================
+(print "--- [TX-00 [C0] - Chain Data Time SetUp Definition · 01 · env-chain-data] ---")
 (env-chain-data
     {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
      "block-time": (time "2028-02-17T00:00:00Z")}
@@ -617,6 +645,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
+;;==== TX-01 - Supply Tests · 01 · env-sigs (caps) ==== ===========================================
+(print "--- [TX-01 - Supply Tests · 01 · env-sigs (caps)] ---")
 ;;==== TX-01 - Supply Tests · 01 · env-sigs (caps) ==== ===========================================
 (print "--- [TX-01 - Supply Tests · 01 · env-sigs (caps)] ---")
     (env-sigs [])

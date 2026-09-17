@@ -13,6 +13,8 @@
 (print "=== TX-AQP-R01 — ANHD 20% + LUMY 80% deb on TheCodingDivision ===============")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-R01 - Two-user 20/80 stake on Coding Division pool · 01 · let / invocation ==== =====
+(print "--- [TX-AQP-R01 - Two-user 20/80 stake on Coding Division pool · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -55,6 +57,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-AQP-R02 - Inject 100 Wstoa + ANHD collect ~20")
@@ -62,6 +68,8 @@
 (print "=== TX-AQP-R02 — inject 100 Wstoa; ANHD collects ~20 (20% share) ============")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-R02 - Inject 100 Wstoa + ANHD collect ~20 · 01 · let / invocation ==== ==============
+(print "--- [TX-AQP-R02 - Inject 100 Wstoa + ANHD collect ~20 · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -142,6 +150,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-AQP-R03 - Inject 200 more + LUMY collect ~160 of remaining")
@@ -149,6 +161,8 @@
 (print "=== TX-AQP-R03 — second inject 200; LUMY collects ~80% of 280 pool ==========")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-R03 - Inject 200 more + LUMY collect ~160 of remaining · 01 · let / invocation ==== =
+(print "--- [TX-AQP-R03 - Inject 200 more + LUMY collect ~160 of remaining · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -205,6 +219,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-AQP-R04 - Auryn inject on Snakes treasury after E|DH company stakes")
@@ -212,6 +230,8 @@
 (print "=== TX-AQP-R04 — DHCompany E|DH stakes + Snakes Auryn inject/collect =========")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-R04 - Auryn inject on Snakes treasury after E|DH company stakes · 01 · let / invocation ==== 
+(print "--- [TX-AQP-R04 - Auryn inject on Snakes treasury after E|DH company stakes · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)

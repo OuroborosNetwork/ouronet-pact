@@ -1,4 +1,17 @@
 ;;
+;; REPL/RedTeam/[RT-J2]_Conservation-Collectables.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/RedTeam/[RT-J2]_Conservation-Collectables.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
+;;
 ;; REPL/RedTeam/[RT-J2]_Conservation-Collectables.repl — FAMILY J, Stage 2: collectables.
 ;;
 ;; "Does the money add up?" — third and last asset family.
@@ -41,6 +54,8 @@
 ;;
 (begin-tx "RT-J-003 - do the collectable ledgers add up")
 (env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+;;==== RT-J-003 - do the collectable ledgers add up · 01 · namespace ==== =========================
+(print "--- [RT-J-003 - do the collectable ledgers add up · 01 · namespace] ---")
 (namespace "ouronet-ns")
 ;;==== RT-J-003 · 01 · DPSF conserves; DPNF does something else entirely ====
 (print "--- [RT-J-003 · 01 · DPSF conserves; DPNF does something else entirely] ---")

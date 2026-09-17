@@ -17,6 +17,8 @@
 (namespace "ouronet-ns")
 ;;==== INIT TX 000 - Chain Data Time SetUp Definition · 01 · env-chain-data ==== ==================
 (print "--- [INIT TX 000 - Chain Data Time SetUp Definition · 01 · env-chain-data] ---")
+;;==== INIT TX 000 - Chain Data Time SetUp Definition · 01 · env-chain-data ==== ==================
+(print "--- [INIT TX 000 - Chain Data Time SetUp Definition · 01 · env-chain-data] ---")
 (env-chain-data
     {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
      "block-time": TV.TIME00}
@@ -33,12 +35,16 @@
 (namespace "ouronet-ns")
 ;;==== DPTF Tx 001 Cumulator Tests · 01 · env-sigs (caps) ==== ====================================
 (print "--- [DPTF Tx 001 Cumulator Tests · 01 · env-sigs (caps)] ---")
+;;==== DPTF Tx 001 Cumulator Tests · 01 · env-sigs (caps) ==== ====================================
+(print "--- [DPTF Tx 001 Cumulator Tests · 01 · env-sigs (caps)] ---")
 (env-sigs
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== DPTF Tx 001 Cumulator Tests · 02 · let / invocation ==== ===================================
+(print "--- [DPTF Tx 001 Cumulator Tests · 02 · let / invocation] ---")
 ;;==== DPTF Tx 001 Cumulator Tests · 02 · let / invocation ==== ===================================
 (print "--- [DPTF Tx 001 Cumulator Tests · 02 · let / invocation] ---")
 (let
@@ -103,6 +109,8 @@
 (print "")
 ;;==== DPTF Tx 001 Cumulator Tests · 03 · gas echo ==== ===========================================
 (print "--- [DPTF Tx 001 Cumulator Tests · 03 · gas echo] ---")
+;;==== DPTF Tx 001 Cumulator Tests · 03 · gas echo ==== ===========================================
+(print "--- [DPTF Tx 001 Cumulator Tests · 03 · gas echo] ---")
 (format "<<<<<<<STEP 001 Cumulator Tests costs {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -122,11 +130,15 @@
 (namespace "ouronet-ns")
 ;;==== LOL Tests · 01 · env-sigs (caps) ==== ======================================================
 (print "--- [LOL Tests · 01 · env-sigs (caps)] ---")
+;;==== LOL Tests · 01 · env-sigs (caps) ==== ======================================================
+(print "--- [LOL Tests · 01 · env-sigs (caps)] ---")
 (env-sigs
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
+;;==== LOL Tests · 02 · let / invocation ==== =====================================================
+(print "--- [LOL Tests · 02 · let / invocation] ---")
 ;;==== LOL Tests · 02 · let / invocation ==== =====================================================
 (print "--- [LOL Tests · 02 · let / invocation] ---")
 (let
@@ -229,6 +241,8 @@
 (print "")
 ;;==== LOL Tests · 03 · gas echo ==== =============================================================
 (print "--- [LOL Tests · 03 · gas echo] ---")
+;;==== LOL Tests · 03 · gas echo ==== =============================================================
+(print "--- [LOL Tests · 03 · gas echo] ---")
 (format "<<<<<<<LOL Tests costs {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -244,6 +258,8 @@
 (namespace "ouronet-ns")
 ;;==== TX-IGC-001 · 01 · IG|WEIGHTS + IG|DETER reader asserts ==== ================================
 (print "--- [TX-IGC-001 · 01 · IG|WEIGHTS + IG|DETER reader asserts] ---")
+;;==== TX-IGC-001 Central pricing constants · 01 · let / invocation ==== ==========================
+(print "--- [TX-IGC-001 Central pricing constants · 01 · let / invocation] ---")
 (let
     (
         (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
@@ -306,6 +322,8 @@
 (print "")
 ;;==== TX-IGC-001 · 03 · account-creation STOA switch (P2) ==== ===================================
 (print "--- [TX-IGC-001 · 03 · account-creation STOA switch] ---")
+;;==== TX-IGC-001 Central pricing constants · 02 · env-sigs (caps) ==== ===========================
+(print "--- [TX-IGC-001 Central pricing constants · 02 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
 (let
     (

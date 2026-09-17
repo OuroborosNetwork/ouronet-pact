@@ -18,9 +18,13 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-DA-001 · 01 · env-sigs (admin keyset) ====
 (print "--- [TX-DA-001 · 01 · env-sigs] ---")
+;;==== TX-DA-001 - DALOS admin toggles idempotent set-to-current (coverage) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-DA-001 - DALOS admin toggles idempotent set-to-current (coverage) · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
 ;;==== TX-DA-001 · 02 · read current global config, set each to itself ====
 (print "--- [TX-DA-001 · 02 · idempotent admin toggles] ---")
+;;==== TX-DA-001 - DALOS admin toggles idempotent set-to-current (coverage) · 02 · let / invocation ==== 
+(print "--- [TX-DA-001 - DALOS admin toggles idempotent set-to-current (coverage) · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -85,7 +89,11 @@
     { "P_ADD_TEST_KS"  : { "keys": ["PK_Emma"], "pred": "keys-all" }
     , "P_ADD_TEST_KS2" : { "keys": ["PK_Lumy"], "pred": "keys-all" } }
 )
+;;==== TX-DA-002 - P|A_Add: the named-policy lane, and where it is inert · 01 · env-sigs (caps) ==== 
+(print "--- [TX-DA-002 - P|A_Add: the named-policy lane, and where it is inert · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-DA-002 - P|A_Add: the named-policy lane, and where it is inert · 02 · let / invocation ==== 
+(print "--- [TX-DA-002 - P|A_Add: the named-policy lane, and where it is inert · 02 · let / invocation] ---")
 (let
     (
         (ref-P|TS01-A:module{OuronetPolicyV2} TS01-A)
@@ -143,7 +151,11 @@
 (env-data
     { "P_ADD_TEST_KS": { "keys": ["PK_Emma"], "pred": "keys-all" } }
 )
+;;==== TX-DA-002b - P|A_Add rejects a non-admin · 01 · env-sigs (caps) ==== =======================
+(print "--- [TX-DA-002b - P|A_Add rejects a non-admin · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
+;;==== TX-DA-002b - P|A_Add rejects a non-admin · 02 · let / invocation ==== ======================
+(print "--- [TX-DA-002b - P|A_Add rejects a non-admin · 02 · let / invocation] ---")
 (let
     (
         (ref-P|TS01-A:module{OuronetPolicyV2} TS01-A)
@@ -186,7 +198,11 @@
 ;; and that the IGNIS actually collected equals what the URCi_ cost reader predicts. That
 ;; preview-vs-exec equality is the invariant a desync breaks -- the same class of defect as the
 ;; SWPI|URCi_Issue under-charge (#76), which sat undetected because no test compared the two.
+;;==== TX-DA-003 - the account rotations, billed through Talos · 01 · env-sigs (caps) ==== ========
+(print "--- [TX-DA-003 - the account rotations, billed through Talos · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+;;==== TX-DA-003 - the account rotations, billed through Talos · 02 · let / invocation ==== =======
+(print "--- [TX-DA-003 - the account rotations, billed through Talos · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -480,7 +496,11 @@
 ;;fix is a MOVE rather than a deletion. Here Talos exists, so the assertions can run against the
 ;;entrypoints their own names always claimed -- and they now cross the billing leg on the way,
 ;;which the core-direct form never did.
+;;==== TX-DA-004 - the GUARD-TYPE protocol, enforced on the Talos rotation path · 01 · env-sigs (caps) ==== 
+(print "--- [TX-DA-004 - the GUARD-TYPE protocol, enforced on the Talos rotation path · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_BM", "caps": [] }])
+;;==== TX-DA-004 - the GUARD-TYPE protocol, enforced on the Talos rotation path · 02 · let / invocation ==== 
+(print "--- [TX-DA-004 - the GUARD-TYPE protocol, enforced on the Talos rotation path · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)

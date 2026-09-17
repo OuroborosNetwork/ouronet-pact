@@ -20,6 +20,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-BULK-01 · 01 · env-sigs (caps) ==== ======================================================
 (print "--- [TX-BULK-01 · 01 · env-sigs (caps)] ---")
+;;==== TX-BULK-01 - Keysets + recipient setup · 01 · env-sigs (caps) ==== =========================
+(print "--- [TX-BULK-01 - Keysets + recipient setup · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
 
@@ -71,6 +73,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-BULK-02 · 01 · env-sigs + bulk transfer ==== =============================================
 (print "--- [TX-BULK-02 · 01 · env-sigs + bulk transfer] ---")
+;;==== TX-BULK-02 - Happy path C_BulkTransfer · 01 · let / invocation ==== ========================
+(print "--- [TX-BULK-02 - Happy path C_BulkTransfer · 01 · let / invocation] ---")
 (let
     (
         (sender:string "stoa-foundation")
@@ -126,6 +130,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-BULK-03 · 01 · anew + transmit ==== =====================================================
 (print "--- [TX-BULK-03 · 01 · anew + transmit] ---")
+;;==== TX-BULK-03 - Happy path C_BulkTransferAnew + C_BulkTransmit · 01 · let / invocation ==== ===
+(print "--- [TX-BULK-03 - Happy path C_BulkTransferAnew + C_BulkTransmit · 01 · let / invocation] ---")
 (let
     (
         (sender:string "stoa-foundation")
@@ -199,6 +205,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-BULK-04 · 01 · cap failures ==== ========================================================
 (print "--- [TX-BULK-04 · 01 · cap failures] ---")
+;;==== TX-BULK-04 - Capability failures · 01 · let / invocation ==== ==============================
+(print "--- [TX-BULK-04 - Capability failures · 01 · let / invocation] ---")
 (let
     (
         (sender:string "stoa-foundation")
@@ -245,6 +253,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-BULK-05 · 01 · validation failures ==== ==================================================
 (print "--- [TX-BULK-05 · 01 · validation failures] ---")
+;;==== TX-BULK-05 - Validation failures · 01 · env-sigs (caps) ==== ===============================
+(print "--- [TX-BULK-05 - Validation failures · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74", "caps": []}])
 (test-capability (coin.TRANSFER_BULK "stoa-foundation" 10.0))
@@ -300,6 +310,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-BULK-07 · 01 · transmit anew ==== =======================================================
 (print "--- [TX-BULK-07 · 01 · transmit anew] ---")
+;;==== TX-BULK-07 - Happy path C_BulkTransmitAnew · 01 · let / invocation ==== ====================
+(print "--- [TX-BULK-07 - Happy path C_BulkTransmitAnew · 01 · let / invocation] ---")
 (let
     (
         (sender:string "stoa-foundation")
@@ -344,6 +356,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-BULK-08 · 01 · hybrid transmit ==== =====================================================
 (print "--- [TX-BULK-08 · 01 · hybrid transmit] ---")
+;;==== TX-BULK-08 - Happy path C_HybridBulkTransmit · 01 · let / invocation ==== ==================
+(print "--- [TX-BULK-08 - Happy path C_HybridBulkTransmit · 01 · let / invocation] ---")
 (let
     (
         (sender:string "stoa-foundation")
@@ -394,6 +408,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-BULK-09 · 01 · hybrid validation failures ==== ===========================================
 (print "--- [TX-BULK-09 · 01 · hybrid validation failures] ---")
+;;==== TX-BULK-09 - C_HybridBulkTransmit validation failures · 01 · env-sigs (caps) ==== ==========
+(print "--- [TX-BULK-09 - C_HybridBulkTransmit validation failures · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74", "caps": []}])
 (print (expect-failure
@@ -472,6 +488,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-BULK-10 · 01 · insufficient balance ==== =================================================
 (print "--- [TX-BULK-10 · 01 · insufficient balance] ---")
+;;==== TX-BULK-10 - C_HybridBulkTransmit insufficient balance · 01 · let / invocation ==== ========
+(print "--- [TX-BULK-10 - C_HybridBulkTransmit insufficient balance · 01 · let / invocation] ---")
 (let
     (
         (sender:string "stoa-foundation")

@@ -17,6 +17,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-MF-001 · 01 · bindings + env-sigs (3x smart STOA) ====
 (print "--- [TX-MF-001 · 01 · bindings + env-sigs] ---")
+;;==== TX-MF-001 - issue MultipletFamily OURO->Auryn->Elite-Auryn · 01 · let / invocation ==== ====
+(print "--- [TX-MF-001 - issue MultipletFamily OURO->Auryn->Elite-Auryn · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)

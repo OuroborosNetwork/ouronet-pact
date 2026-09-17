@@ -1,3 +1,16 @@
+;;
+;; REPL/modules/LIQUID.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/modules/LIQUID.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 ;; REPL/modules/LIQUID.repl — STANDALONE LIQUID / LQD tester (STOA wrapping + admin migration).
 ;;
 ;; New in P2. Two entrypoints here appeared in NO live invocation anywhere in the suite:
@@ -18,6 +31,8 @@
 (print "--- [LQD-01 · 01 · wrap] ---")
 ;; The LIQUID smart account "c:ZNfuj3iZI83n7MUSKGuoXoSxFg1cyMxCzB3szUHVvrI" is where native STOA
 ;; is escrowed while its wrapped twin circulates. The wrapper signs a coin.TRANSFER into it.
+;;==== LQD-01 — C_WrapStoa mints wrapped STOA against native STOA · 01 · env-sigs (caps) ==== =====
+(print "--- [LQD-01 — C_WrapStoa mints wrapped STOA against native STOA · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -28,6 +43,8 @@
         }
     ]
 )
+;;==== LQD-01 — C_WrapStoa mints wrapped STOA against native STOA · 02 · let / invocation ==== ====
+(print "--- [LQD-01 — C_WrapStoa mints wrapped STOA against native STOA · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -92,6 +109,8 @@
 ;; off-chain and is invisible in the entrypoint signature. The guard itself is satisfied inside
 ;; the module (LIQUID|C>UNWRAP composes LIQUID|NATIVE-AUTOMATIC, which is what the escrow's
 ;; capability guard wants); it is only the MANAGED-cap install that must come from outside.
+;;==== LQD-02 — C_UnwrapStoa is the exact inverse (never exercised before) · 01 · env-sigs (caps) ==== 
+(print "--- [LQD-02 — C_UnwrapStoa is the exact inverse (never exercised before) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -101,6 +120,8 @@
         }
     ]
 )
+;;==== LQD-02 — C_UnwrapStoa is the exact inverse (never exercised before) · 02 · let / invocation ==== 
+(print "--- [LQD-02 — C_UnwrapStoa is the exact inverse (never exercised before) · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -202,7 +223,11 @@
 ;;general hazard with message-construction bugs, and the reason this assertion now pins the exact
 ;;sentence rather than just "it was refused".
 (env-data { "LQD_PRE_KS": { "keys": ["PK_AncientHodler"], "pred": "keys-all" } })
+;;==== LQD-03pre — the pause really is a precondition, not decoration · 01 · env-sigs (caps) ==== =
+(print "--- [LQD-03pre — the pause really is a precondition, not decoration · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== LQD-03pre — the pause really is a precondition, not decoration · 02 · let / invocation ==== 
+(print "--- [LQD-03pre — the pause really is a precondition, not decoration · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -258,7 +283,11 @@
     ;;insert. GOV|MIGRATE also requires the target to be EMPTY, which a fresh principal is.
     { "LQD_MIGRATE_KS": { "keys": ["PK_Emma"], "pred": "keys-all" } }
 )
+;;==== LQD-03 — LIQUID|A_MigrateLiquidFunds sweeps the escrow (never exercised before) · 01 · env-sigs (caps) ==== 
+(print "--- [LQD-03 — LIQUID|A_MigrateLiquidFunds sweeps the escrow (never exercised before) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== LQD-03 — LIQUID|A_MigrateLiquidFunds sweeps the escrow (never exercised before) · 02 · let / invocation ==== 
+(print "--- [LQD-03 — LIQUID|A_MigrateLiquidFunds sweeps the escrow (never exercised before) · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -332,6 +361,8 @@
 ;;
 (begin-tx "LQD-G1 — UEV_IzLiquidStakingLive: its three deep guards, all four states")
 (env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+;;==== LQD-G1 — UEV_IzLiquidStakingLive: its three deep guards, all four states · 01 · namespace ==== 
+(print "--- [LQD-G1 — UEV_IzLiquidStakingLive: its three deep guards, all four states · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [LQD-G1 · 01 · the liveness guard on a CONFIGURED chain] ---")
 ;;CORRECTION TO AN EARLIER FINDING, and the reason this test exists.
@@ -357,6 +388,8 @@
 ;;Everything below runs in ONE transaction that ends in `rollback-tx`, never `commit-tx`. LQD-G2
 ;;is the proof that nothing leaked.
 (env-module-admin DPTF)
+;;==== LQD-G1 — UEV_IzLiquidStakingLive: its three deep guards, all four states · 02 · let / invocation ==== 
+(print "--- [LQD-G1 — UEV_IzLiquidStakingLive: its three deep guards, all four states · 02 · let / invocation] ---")
 (let
     (
         (w:string (DALOS.UR_WrappedStoaID))

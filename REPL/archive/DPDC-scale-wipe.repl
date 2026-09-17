@@ -31,9 +31,13 @@
 (namespace "ouronet-ns")
 ;;==== TX-DSCALE-001 · 01 · env-sigs ==== =========================================================
 (print "--- [TX-DSCALE-001 · 01 · env-sigs] ---")
+;;==== TX-DSCALE-001 Mint 40 NFT nonces to a frozen account · 01 · env-sigs (caps) ==== ===========
+(print "--- [TX-DSCALE-001 Mint 40 NFT nonces to a frozen account · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
 ;;==== TX-DSCALE-001 · 02 · create / fund / freeze ==== ===========================================
 (print "--- [TX-DSCALE-001 · 02 · create / fund / freeze] ---")
+;;==== TX-DSCALE-001 Mint 40 NFT nonces to a frozen account · 02 · let / invocation ==== ==========
+(print "--- [TX-DSCALE-001 Mint 40 NFT nonces to a frozen account · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
@@ -77,6 +81,8 @@
 (namespace "ouronet-ns")
 ;;==== TX-DSCALE-002 · 01 · env-sigs ==== =========================================================
 (print "--- [TX-DSCALE-002 · 01 · env-sigs] ---")
+;;==== TX-DSCALE-002 Measure slice gas at widths 8 / 16 / 24 · 01 · env-sigs (caps) ==== ==========
+(print "--- [TX-DSCALE-002 Measure slice gas at widths 8 / 16 / 24 · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
 ;;==== TX-DSCALE-002 · 02 · widths 8 / 16 / 24 + derived ceiling ==== =============================
 (print "--- [TX-DSCALE-002 · 02 · widths 8 / 16 / 24 + derived ceiling] ---")
@@ -127,6 +133,7 @@
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")

@@ -17,6 +17,8 @@
 (namespace "ouronet-ns")
 ;;==== TX-NF-001 · 01 · env-sigs (STOA fee caps) ====
 (print "--- [TX-NF-001 · 01 · env-sigs] ---")
+;;==== TX-NF-001 - Issue fresh NFT (owner ANHD, creator EMMA) + create 8 nonces · 01 · let / invocation ==== 
+(print "--- [TX-NF-001 - Issue fresh NFT (owner ANHD, creator EMMA) + create 8 nonces · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -97,9 +99,13 @@
 (namespace "ouronet-ns")
 ;;==== TX-NF-002 · 01 · env-sigs (caps) ====
 (print "--- [TX-NF-002 · 01 · env-sigs] ---")
+;;==== TX-NF-002 - DPNF role toggles / pause / role moves (owner + creator EMMA) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-NF-002 - DPNF role toggles / pause / role moves (owner + creator EMMA) · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
 ;;==== TX-NF-002 · 02 · toggles + moves ====
 (print "--- [TX-NF-002 · 02 · toggles + moves] ---")
+;;==== TX-NF-002 - DPNF role toggles / pause / role moves (owner + creator EMMA) · 02 · let / invocation ==== 
+(print "--- [TX-NF-002 - DPNF role toggles / pause / role moves (owner + creator EMMA) · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -149,9 +155,13 @@
 (namespace "ouronet-ns")
 ;;==== TX-NF-003 · 01 · env-sigs (caps) ====
 (print "--- [TX-NF-003 · 01 · env-sigs] ---")
+;;==== TX-NF-003 - DPNF native-nonce updates (nos=true = native) · 01 · env-sigs (caps) ==== ======
+(print "--- [TX-NF-003 - DPNF native-nonce updates (nos=true = native) · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
 ;;==== TX-NF-003 · 02 · updates ====
 (print "--- [TX-NF-003 · 02 · updates] ---")
+;;==== TX-NF-003 - DPNF native-nonce updates (nos=true = native) · 02 · let / invocation ==== =====
+(print "--- [TX-NF-003 - DPNF native-nonce updates (nos=true = native) · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
@@ -186,9 +196,13 @@
 (namespace "ouronet-ns")
 ;;==== TX-NF-004 · 01 · env-sigs (caps) ====
 (print "--- [TX-NF-004 · 01 · env-sigs] ---")
+;;==== TX-NF-004 - DPNF burn / respawn / bulk-transfer · 01 · env-sigs (caps) ==== ================
+(print "--- [TX-NF-004 - DPNF burn / respawn / bulk-transfer · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
 ;;==== TX-NF-004 · 02 · burn / respawn / transfer ====
 (print "--- [TX-NF-004 · 02 · burn / respawn / transfer] ---")
+;;==== TX-NF-004 - DPNF burn / respawn / bulk-transfer · 02 · let / invocation ==== ===============
+(print "--- [TX-NF-004 - DPNF burn / respawn / bulk-transfer · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -210,15 +224,23 @@
 )
 (print "===^^^===")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;;================================================================================
 (begin-tx "TX-NF-005 - DPNF set-class definitions + admin (composite/hybrid/rename/toggle/fragment)")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 ;;==== TX-NF-005 · 01 · env-sigs (caps) ====
 (print "--- [TX-NF-005 · 01 · env-sigs] ---")
+;;==== TX-NF-005 - DPNF set-class definitions + admin (composite/hybrid/rename/toggle/fragment) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-NF-005 - DPNF set-class definitions + admin (composite/hybrid/rename/toggle/fragment) · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
 ;;==== TX-NF-005 · 02 · define + admin ====
 (print "--- [TX-NF-005 · 02 · define + admin] ---")
+;;==== TX-NF-005 - DPNF set-class definitions + admin (composite/hybrid/rename/toggle/fragment) · 02 · let / invocation ==== 
+(print "--- [TX-NF-005 - DPNF set-class definitions + admin (composite/hybrid/rename/toggle/fragment) · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
@@ -263,9 +285,13 @@
 (namespace "ouronet-ns")
 ;;==== TX-NF-006 · 01 · env-sigs (caps) ====
 (print "--- [TX-NF-006 · 01 · env-sigs] ---")
+;;==== TX-NF-006 - DPNF set-nonce updaters (set-class 1, nos=true native) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-NF-006 - DPNF set-nonce updaters (set-class 1, nos=true native) · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
 ;;==== TX-NF-006 · 02 · set-nonce updates ====
 (print "--- [TX-NF-006 · 02 · set-nonce updates] ---")
+;;==== TX-NF-006 - DPNF set-nonce updaters (set-class 1, nos=true native) · 02 · let / invocation ==== 
+(print "--- [TX-NF-006 - DPNF set-nonce updaters (set-class 1, nos=true native) · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
@@ -296,12 +322,18 @@
 )
 (print "===^^^===")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;;================================================================================
 (begin-tx "TX-NF-007 - DPNF premium branding upgrade (STOA fee)")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 ;;==== TX-NF-007 · 01 · env-sigs (STOA fee caps) ====
 (print "--- [TX-NF-007 · 01 · env-sigs] ---")
+;;==== TX-NF-007 - DPNF premium branding upgrade (STOA fee) · 01 · env-sigs (caps) ==== ===========
+(print "--- [TX-NF-007 - DPNF premium branding upgrade (STOA fee) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -322,6 +354,8 @@
 )
 ;;==== TX-NF-007 · 02 · branding ====
 (print "--- [TX-NF-007 · 02 · branding] ---")
+;;==== TX-NF-007 - DPNF premium branding upgrade (STOA fee) · 02 · let / invocation ==== ==========
+(print "--- [TX-NF-007 - DPNF premium branding upgrade (STOA fee) · 02 · let / invocation] ---")
 (let
     (
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
@@ -367,6 +401,10 @@
 )
 (print "===^^^===")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;;================================================================================
 (begin-tx "TX-NF-008 - DPNF burn + respawn (EMMA holds 5,6; burn-role on EMMA)")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
@@ -374,9 +412,13 @@
 ;;==== TX-NF-008 · 01 · env-sigs (caps) ====
 (print "--- [TX-NF-008 · 01 · env-sigs] ---")
 ;; burning EMMA's nonce needs EMMA's account-ownership sig (self-burn via burn role)
+;;==== TX-NF-008 - DPNF burn + respawn (EMMA holds 5,6; burn-role on EMMA) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-NF-008 - DPNF burn + respawn (EMMA holds 5,6; burn-role on EMMA) · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] } ])
 ;;==== TX-NF-008 · 02 · burn / respawn ====
 (print "--- [TX-NF-008 · 02 · burn / respawn] ---")
+;;==== TX-NF-008 - DPNF burn + respawn (EMMA holds 5,6; burn-role on EMMA) · 02 · let / invocation ==== 
+(print "--- [TX-NF-008 - DPNF burn + respawn (EMMA holds 5,6; burn-role on EMMA) · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -399,15 +441,23 @@
 )
 (print "===^^^===")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;;================================================================================
 (begin-tx "TX-NF-009 - DPNF wipes (fund + freeze EMMA/LUMY; owner-forced wipe)")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 ;;==== TX-NF-009 · 01 · env-sigs (caps) ====
 (print "--- [TX-NF-009 · 01 · env-sigs] ---")
+;;==== TX-NF-009 - DPNF wipes (fund + freeze EMMA/LUMY; owner-forced wipe) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-NF-009 - DPNF wipes (fund + freeze EMMA/LUMY; owner-forced wipe) · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
 ;;==== TX-NF-009 · 02 · fund/freeze/wipe ====
 (print "--- [TX-NF-009 · 02 · fund/freeze/wipe] ---")
+;;==== TX-NF-009 - DPNF wipes (fund + freeze EMMA/LUMY; owner-forced wipe) · 02 · let / invocation ==== 
+(print "--- [TX-NF-009 - DPNF wipes (fund + freeze EMMA/LUMY; owner-forced wipe) · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -443,15 +493,23 @@
 )
 (print "===^^^===")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;;================================================================================
 (begin-tx "TX-NF-010 - DPNF fragments (enable -> make -> merge -> repurpose)")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 ;;==== TX-NF-010 · 01 · env-sigs (caps) ====
 (print "--- [TX-NF-010 · 01 · env-sigs] ---")
+;;==== TX-NF-010 - DPNF fragments (enable -> make -> merge -> repurpose) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-NF-010 - DPNF fragments (enable -> make -> merge -> repurpose) · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
 ;;==== TX-NF-010 · 02 · fragment flow ====
 (print "--- [TX-NF-010 · 02 · fragment flow] ---")
+;;==== TX-NF-010 - DPNF fragments (enable -> make -> merge -> repurpose) · 02 · let / invocation ==== 
+(print "--- [TX-NF-010 - DPNF fragments (enable -> make -> merge -> repurpose) · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)

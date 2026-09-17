@@ -18,7 +18,11 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;; ANHD is the OWNER of these entities — owner gate passes, so the ONLY thing that rejects is P|UEV_IMC.
+;;==== TX-AQP-NEG-IMC1 - VCT/FVT/MTX core calls bypassing Talos must fail P|UEV_IMC · 01 · env-sigs (caps) ==== 
+(print "--- [TX-AQP-NEG-IMC1 - VCT/FVT/MTX core calls bypassing Talos must fail P|UEV_IMC · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-AQP-NEG-IMC1 - VCT/FVT/MTX core calls bypassing Talos must fail P|UEV_IMC · 02 · let / invocation ==== 
+(print "--- [TX-AQP-NEG-IMC1 - VCT/FVT/MTX core calls bypassing Talos must fail P|UEV_IMC · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -71,7 +75,11 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;; ANHD owns these entities — owner gate passes, so P|UEV_IMC is the isolated rejection cause.
+;;==== TX-AQP-NEG-IMC2 - ANK/SCORE/POOL core calls bypassing Talos must fail P|UEV_IMC · 01 · env-sigs (caps) ==== 
+(print "--- [TX-AQP-NEG-IMC2 - ANK/SCORE/POOL core calls bypassing Talos must fail P|UEV_IMC · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-AQP-NEG-IMC2 - ANK/SCORE/POOL core calls bypassing Talos must fail P|UEV_IMC · 02 · let / invocation ==== 
+(print "--- [TX-AQP-NEG-IMC2 - ANK/SCORE/POOL core calls bypassing Talos must fail P|UEV_IMC · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -119,7 +127,11 @@
 (print "=== TX-AQP-NEG-STATE — CC_StakeTrueFungible into a disabled pool rejected =====")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-NEG-STATE - stake into a stake-DISABLED pool must fail · 01 · env-sigs (caps) ==== ==
+(print "--- [TX-AQP-NEG-STATE - stake into a stake-DISABLED pool must fail · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-AQP-NEG-STATE - stake into a stake-DISABLED pool must fail · 02 · let / invocation ==== =
+(print "--- [TX-AQP-NEG-STATE - stake into a stake-DISABLED pool must fail · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -159,7 +171,11 @@
 (begin-tx "TX-AQP-NEG-STATE-cleanup - re-enable ResumeVacPool (leave as found)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-NEG-STATE-cleanup - re-enable ResumeVacPool (leave as found) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-AQP-NEG-STATE-cleanup - re-enable ResumeVacPool (leave as found) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-AQP-NEG-STATE-cleanup - re-enable ResumeVacPool (leave as found) · 02 · let / invocation ==== 
+(print "--- [TX-AQP-NEG-STATE-cleanup - re-enable ResumeVacPool (leave as found) · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -183,7 +199,11 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;; EMMA signs — NOT the TfStakePool owner (ANHD). All three are pool-owner-gated (CAP_PoolOwner defun).
+;;==== TX-AQP-NEG-OWNER - non-owner pool-config ops must fail (owner gate) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-AQP-NEG-OWNER - non-owner pool-config ops must fail (owner gate) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
+;;==== TX-AQP-NEG-OWNER - non-owner pool-config ops must fail (owner gate) · 02 · let / invocation ==== 
+(print "--- [TX-AQP-NEG-OWNER - non-owner pool-config ops must fail (owner gate) · 02 · let / invocation] ---")
 (let
     (
         (foreign:string KST.EMMA)
@@ -248,7 +268,11 @@
 ;;The preconditions are now ASSERTED rather than asserted-in-a-comment: each refusal is preceded by
 ;;an `expect` pinning the flag it needs, so if a future suite latches one of these flags early the
 ;;precondition goes red instead of the refusal quietly becoming vacuous again.
+;;==== TX-AQP-NEG-OWNER2 - non-owner ANK/SCORE/FVT owner-gated ops must fail · 01 · env-sigs (caps) ==== 
+(print "--- [TX-AQP-NEG-OWNER2 - non-owner ANK/SCORE/FVT owner-gated ops must fail · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
+;;==== TX-AQP-NEG-OWNER2 - non-owner ANK/SCORE/FVT owner-gated ops must fail · 02 · let / invocation ==== 
+(print "--- [TX-AQP-NEG-OWNER2 - non-owner ANK/SCORE/FVT owner-gated ops must fail · 02 · let / invocation] ---")
 (let
     (
         (foreign:string KST.EMMA)
@@ -405,7 +429,11 @@
 ;; each opening with P|UEV_IMC. A direct REPL call is not a registered IMC principal, so it must fail P|UEV_IMC
 ;; — proving the inter-module surface rejects rogue direct callers, not just the client C_/CC_ surface.
 ;; Signed as OWNER ANHD so the owner half of each XE cap would pass and P|UEV_IMC is the isolated cause.
+;;==== TX-AQP-NEG-XE - direct XE forward-entrypoint calls must fail P|UEV_IMC · 01 · env-sigs (caps) ==== 
+(print "--- [TX-AQP-NEG-XE - direct XE forward-entrypoint calls must fail P|UEV_IMC · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-AQP-NEG-XE - direct XE forward-entrypoint calls must fail P|UEV_IMC · 02 · let / invocation ==== 
+(print "--- [TX-AQP-NEG-XE - direct XE forward-entrypoint calls must fail P|UEV_IMC · 02 · let / invocation] ---")
 (let
     (
         (account:string KST.ANHD)
@@ -454,7 +482,11 @@
 ;; precision-conform, so the ONLY condition that can reject v=-1.0 is the L7 #19 non-negativity guard —
 ;; non-vacuous by construction (the same call with v=1.0 would pass). Complements the SF negative-def test
 ;; ([6.2.2] TX-SCORE-11) so both surviving #19 def-score guards (SF nonce + NF set-class) are proven.
+;;==== TX-AQP-NEG-INPUT - negative NF set-class definition score rejected (L7 #19) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-AQP-NEG-INPUT - negative NF set-class definition score rejected (L7 #19) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-AQP-NEG-INPUT - negative NF set-class definition score rejected (L7 #19) · 02 · let / invocation ==== 
+(print "--- [TX-AQP-NEG-INPUT - negative NF set-class definition score rejected (L7 #19) · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -474,12 +506,18 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=== END TX-AQP-NEG-INPUT =====================================================")
 (print "")
 ;;
 (begin-tx "TX-AQP-NEG-SCRCTL - SCORE control-flag guards on their own arguments")
 (print "")
 (print "=== TX-AQP-NEG-SCRCTL — score rotate/control argument guards =================")
+;;==== TX-AQP-NEG-SCRCTL - SCORE control-flag guards on their own arguments · 01 · namespace ==== =
+(print "--- [TX-AQP-NEG-SCRCTL - SCORE control-flag guards on their own arguments · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;; SCR|C>ROTATE-OWNERSHIP-SCORE enforces (and can-change-owner (!= new-owner owner-now)) BEFORE
@@ -487,6 +525,8 @@
 ;; guard rejects the call before ownership is ever consulted. Reading the CURRENT owner and handing
 ;; it straight back is the one input that isolates that half: can-change-owner is true on this
 ;; score (asserted below), so a failure here can only be the distinctness clause.
+;;==== TX-AQP-NEG-SCRCTL - SCORE control-flag guards on their own arguments · 02 · let / invocation ==== 
+(print "--- [TX-AQP-NEG-SCRCTL - SCORE control-flag guards on their own arguments · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)

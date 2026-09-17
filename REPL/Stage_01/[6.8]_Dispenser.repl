@@ -17,6 +17,8 @@
 (namespace "ouronet-ns")
 ;;==== INIT TX 000 - Chain Data Time SetUp Definition · 01 · env-chain-data ==== ==================
 (print "--- [INIT TX 000 - Chain Data Time SetUp Definition · 01 · env-chain-data] ---")
+;;==== INIT TX 000 - Chain Data Time SetUp Definition · 01 · env-chain-data ==== ==================
+(print "--- [INIT TX 000 - Chain Data Time SetUp Definition · 01 · env-chain-data] ---")
 (env-chain-data
     {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
      "block-time": TV.TIME00}
@@ -36,6 +38,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== Manual Ouro Price Update · 01 · env-sigs (caps) ==== =======================================
 (print "--- [Manual Ouro Price Update · 01 · env-sigs (caps)] ---")
+;;==== Manual Ouro Price Update · 01 · env-sigs (caps) ==== =======================================
+(print "--- [Manual Ouro Price Update · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
@@ -46,6 +50,8 @@
     ]
 )
 (namespace "ouronet-ns")
+;;==== Manual Ouro Price Update · 02 · let / invocation ==== ======================================
+(print "--- [Manual Ouro Price Update · 02 · let / invocation] ---")
 ;;==== Manual Ouro Price Update · 02 · let / invocation ==== ======================================
 (print "--- [Manual Ouro Price Update · 02 · let / invocation] ---")
 (let
@@ -104,6 +110,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== Koson Minter FullTilt Testing · 01 · env-sigs (caps) ==== ==================================
 (print "--- [Koson Minter FullTilt Testing · 01 · env-sigs (caps)] ---")
+;;==== Koson Minter FullTilt Testing · 01 · env-sigs (caps) ==== ==================================
+(print "--- [Koson Minter FullTilt Testing · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
@@ -114,6 +122,8 @@
     ]
 )
 (namespace "ouronet-ns")
+;;==== Koson Minter FullTilt Testing · 02 · let / invocation ==== =================================
+(print "--- [Koson Minter FullTilt Testing · 02 · let / invocation] ---")
 ;;==== Koson Minter FullTilt Testing · 02 · let / invocation ==== =================================
 (print "--- [Koson Minter FullTilt Testing · 02 · let / invocation] ---")
 (let
@@ -144,6 +154,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== Koson Minter 1of3 Testing · 01 · env-sigs (caps) ==== ======================================
 (print "--- [Koson Minter 1of3 Testing · 01 · env-sigs (caps)] ---")
+;;==== Koson Minter 1of3 Testing · 01 · env-sigs (caps) ==== ======================================
+(print "--- [Koson Minter 1of3 Testing · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
@@ -154,6 +166,8 @@
     ]
 )
 (namespace "ouronet-ns")
+;;==== Koson Minter 1of3 Testing · 02 · let / invocation ==== =====================================
+(print "--- [Koson Minter 1of3 Testing · 02 · let / invocation] ---")
 ;;==== Koson Minter 1of3 Testing · 02 · let / invocation ==== =====================================
 (print "--- [Koson Minter 1of3 Testing · 02 · let / invocation] ---")
 (let
@@ -181,6 +195,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== Koson Minter 2of3 Testing · 01 · env-sigs (caps) ==== ======================================
 (print "--- [Koson Minter 2of3 Testing · 01 · env-sigs (caps)] ---")
+;;==== Koson Minter 2of3 Testing · 01 · env-sigs (caps) ==== ======================================
+(print "--- [Koson Minter 2of3 Testing · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
@@ -191,6 +207,8 @@
     ]
 )
 (namespace "ouronet-ns")
+;;==== Koson Minter 2of3 Testing · 02 · let / invocation ==== =====================================
+(print "--- [Koson Minter 2of3 Testing · 02 · let / invocation] ---")
 ;;==== Koson Minter 2of3 Testing · 02 · let / invocation ==== =====================================
 (print "--- [Koson Minter 2of3 Testing · 02 · let / invocation] ---")
 (let
@@ -218,6 +236,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== Koson Minter 3of3 Testing · 01 · env-sigs (caps) ==== ======================================
 (print "--- [Koson Minter 3of3 Testing · 01 · env-sigs (caps)] ---")
+;;==== Koson Minter 3of3 Testing · 01 · env-sigs (caps) ==== ======================================
+(print "--- [Koson Minter 3of3 Testing · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
@@ -228,6 +248,8 @@
     ]
 )
 (namespace "ouronet-ns")
+;;==== Koson Minter 3of3 Testing · 02 · let / invocation ==== =====================================
+(print "--- [Koson Minter 3of3 Testing · 02 · let / invocation] ---")
 ;;==== Koson Minter 3of3 Testing · 02 · let / invocation ==== =====================================
 (print "--- [Koson Minter 3of3 Testing · 02 · let / invocation] ---")
 (let
@@ -286,12 +308,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== Dispenser - Ouro transfer to Emma · 01 · env-sigs (caps) ==== ==============================
 (print "--- [Dispenser - Ouro transfer to Emma · 01 · env-sigs (caps)] ---")
+;;==== Dispenser - Ouro transfer to Emma · 01 · env-sigs (caps) ==== ==============================
+(print "--- [Dispenser - Ouro transfer to Emma · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 (namespace "ouronet-ns")
+;;==== Dispenser - Ouro transfer to Emma · 02 · let / invocation ==== =============================
+(print "--- [Dispenser - Ouro transfer to Emma · 02 · let / invocation] ---")
 ;;==== Dispenser - Ouro transfer to Emma · 02 · let / invocation ==== =============================
 (print "--- [Dispenser - Ouro transfer to Emma · 02 · let / invocation] ---")
 (let
@@ -312,6 +338,8 @@
 (print "")
 ;;==== Dispenser - Ouro transfer to Emma · 03 · gas echo ==== =====================================
 (print "--- [Dispenser - Ouro transfer to Emma · 03 · gas echo] ---")
+;;==== Dispenser - Ouro transfer to Emma · 03 · gas echo ==== =====================================
+(print "--- [Dispenser - Ouro transfer to Emma · 03 · gas echo] ---")
 (format "<<<<<<<TransferV3 for Ouro costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -325,12 +353,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== Dispenser - AURYN transfer to Emma · 01 · env-sigs (caps) ==== =============================
 (print "--- [Dispenser - AURYN transfer to Emma · 01 · env-sigs (caps)] ---")
+;;==== Dispenser - AURYN transfer to Emma · 01 · env-sigs (caps) ==== =============================
+(print "--- [Dispenser - AURYN transfer to Emma · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 (namespace "ouronet-ns")
+;;==== Dispenser - AURYN transfer to Emma · 02 · let / invocation ==== ============================
+(print "--- [Dispenser - AURYN transfer to Emma · 02 · let / invocation] ---")
 ;;==== Dispenser - AURYN transfer to Emma · 02 · let / invocation ==== ============================
 (print "--- [Dispenser - AURYN transfer to Emma · 02 · let / invocation] ---")
 (let
@@ -351,6 +383,8 @@
 (print "")
 ;;==== Dispenser - AURYN transfer to Emma · 03 · gas echo ==== ====================================
 (print "--- [Dispenser - AURYN transfer to Emma · 03 · gas echo] ---")
+;;==== Dispenser - AURYN transfer to Emma · 03 · gas echo ==== ====================================
+(print "--- [Dispenser - AURYN transfer to Emma · 03 · gas echo] ---")
 (format "<<<<<<<TransferV3 for AURYN costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -364,12 +398,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== Dispenser - ELITEAURYN transfer to Emma · 01 · env-sigs (caps) ==== ========================
 (print "--- [Dispenser - ELITEAURYN transfer to Emma · 01 · env-sigs (caps)] ---")
+;;==== Dispenser - ELITEAURYN transfer to Emma · 01 · env-sigs (caps) ==== ========================
+(print "--- [Dispenser - ELITEAURYN transfer to Emma · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 (namespace "ouronet-ns")
+;;==== Dispenser - ELITEAURYN transfer to Emma · 02 · let / invocation ==== =======================
+(print "--- [Dispenser - ELITEAURYN transfer to Emma · 02 · let / invocation] ---")
 ;;==== Dispenser - ELITEAURYN transfer to Emma · 02 · let / invocation ==== =======================
 (print "--- [Dispenser - ELITEAURYN transfer to Emma · 02 · let / invocation] ---")
 (let
@@ -390,6 +428,8 @@
 (print "")
 ;;==== Dispenser - ELITEAURYN transfer to Emma · 03 · gas echo ==== ===============================
 (print "--- [Dispenser - ELITEAURYN transfer to Emma · 03 · gas echo] ---")
+;;==== Dispenser - ELITEAURYN transfer to Emma · 03 · gas echo ==== ===============================
+(print "--- [Dispenser - ELITEAURYN transfer to Emma · 03 · gas echo] ---")
 (format "<<<<<<<TransferV3 for ELITEAURYN costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -407,12 +447,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TransmuteV2 · 01 · env-sigs (caps) ==== ====================================================
 (print "--- [TransmuteV2 · 01 · env-sigs (caps)] ---")
+;;==== TransmuteV2 · 01 · env-sigs (caps) ==== ====================================================
+(print "--- [TransmuteV2 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 (namespace "ouronet-ns")
+;;==== TransmuteV2 · 02 · let / invocation ==== ===================================================
+(print "--- [TransmuteV2 · 02 · let / invocation] ---")
 ;;==== TransmuteV2 · 02 · let / invocation ==== ===================================================
 (print "--- [TransmuteV2 · 02 · let / invocation] ---")
 (let
@@ -431,6 +475,8 @@
 (print "")
 ;;==== TransmuteV2 · 03 · gas echo ==== ===========================================================
 (print "--- [TransmuteV2 · 03 · gas echo] ---")
+;;==== TransmuteV2 · 03 · gas echo ==== ===========================================================
+(print "--- [TransmuteV2 · 03 · gas echo] ---")
 (format "<<<<<<<TransmuteV2 with OURO costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -444,12 +490,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TransmuteV2 · 01 · env-sigs (caps) ==== ====================================================
 (print "--- [TransmuteV2 · 01 · env-sigs (caps)] ---")
+;;==== TransmuteV2 · 01 · env-sigs (caps) ==== ====================================================
+(print "--- [TransmuteV2 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 (namespace "ouronet-ns")
+;;==== TransmuteV2 · 02 · let / invocation ==== ===================================================
+(print "--- [TransmuteV2 · 02 · let / invocation] ---")
 ;;==== TransmuteV2 · 02 · let / invocation ==== ===================================================
 (print "--- [TransmuteV2 · 02 · let / invocation] ---")
 (let
@@ -466,6 +516,8 @@
 
 (print "")
 (print "")
+;;==== TransmuteV2 · 03 · gas echo ==== ===========================================================
+(print "--- [TransmuteV2 · 03 · gas echo] ---")
 ;;==== TransmuteV2 · 03 · gas echo ==== ===========================================================
 (print "--- [TransmuteV2 · 03 · gas echo] ---")
 (format "<<<<<<<TransmuteV2 with EA costs {} GAS>>>>>>>" [(env-gas)])

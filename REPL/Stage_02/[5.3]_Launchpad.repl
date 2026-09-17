@@ -16,6 +16,8 @@
 (namespace "ouronet-ns")
 ;;==== TX-00 [C0] - Chain Data Time SetUp Definition · 01 · env-chain-data ==== ===================
 (print "--- [TX-00 [C0] - Chain Data Time SetUp Definition · 01 · env-chain-data] ---")
+;;==== TX-00 [C0] - Chain Data Time SetUp Definition · 01 · env-chain-data ==== ===================
+(print "--- [TX-00 [C0] - Chain Data Time SetUp Definition · 01 · env-chain-data] ---")
 (env-chain-data
     {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
      "block-time": TV.TIME00}
@@ -42,6 +44,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-01 - Initialise Launchpad Properties Table · 01 · env-sigs (caps) ==== ==================
 (print "--- [TX-01 - Initialise Launchpad Properties Table · 01 · env-sigs (caps)] ---")
+;;==== TX-01 - Initialise Launchpad Properties Table · 01 · env-sigs (caps) ==== ==================
+(print "--- [TX-01 - Initialise Launchpad Properties Table · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -53,6 +57,8 @@
 
 
 
+;;==== TX-01 - Initialise Launchpad Properties Table · 02 · let / invocation ==== =================
+(print "--- [TX-01 - Initialise Launchpad Properties Table · 02 · let / invocation] ---")
 ;;==== TX-01 - Initialise Launchpad Properties Table · 02 · let / invocation ==== =================
 (print "--- [TX-01 - Initialise Launchpad Properties Table · 02 · let / invocation] ---")
 (let
@@ -121,6 +127,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-01 - Initialise Movie Booster aka Spark · 01 · env-sigs (caps) ==== =====================
 (print "--- [TX-01 - Initialise Movie Booster aka Spark · 01 · env-sigs (caps)] ---")
+;;==== TX-01 - Initialise Movie Booster aka Spark · 01 · env-sigs (caps) ==== =====================
+(print "--- [TX-01 - Initialise Movie Booster aka Spark · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -128,6 +136,8 @@
     ]
 )
 
+;;==== TX-01 - Initialise Movie Booster aka Spark · 02 · let / invocation ==== ====================
+(print "--- [TX-01 - Initialise Movie Booster aka Spark · 02 · let / invocation] ---")
 ;;==== TX-01 - Initialise Movie Booster aka Spark · 02 · let / invocation ==== ====================
 (print "--- [TX-01 - Initialise Movie Booster aka Spark · 02 · let / invocation] ---")
     (let
@@ -206,6 +216,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-01 - Initialise Movie Booster aka Spark · 01 · env-sigs (caps) ==== =====================
 (print "--- [TX-01 - Initialise Movie Booster aka Spark · 01 · env-sigs (caps)] ---")
+;;==== TX-01 - Initialise Movie Booster aka Spark · 01 · env-sigs (caps) ==== =====================
+(print "--- [TX-01 - Initialise Movie Booster aka Spark · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -213,6 +225,8 @@
     ]
 )
 
+;;==== TX-01 - Initialise Movie Booster aka Spark · 02 · let / invocation ==== ====================
+(print "--- [TX-01 - Initialise Movie Booster aka Spark · 02 · let / invocation] ---")
 ;;==== TX-01 - Initialise Movie Booster aka Spark · 02 · let / invocation ==== ====================
 (print "--- [TX-01 - Initialise Movie Booster aka Spark · 02 · let / invocation] ---")
     (let
@@ -280,12 +294,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-01 - Initialise Movie Booster aka Spark · 01 · env-sigs (caps) ==== =====================
 (print "--- [TX-01 - Initialise Movie Booster aka Spark · 01 · env-sigs (caps)] ---")
+;;==== TX-01 - Initialise Movie Booster aka Spark · 01 · env-sigs (caps) ==== =====================
+(print "--- [TX-01 - Initialise Movie Booster aka Spark · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
         { "key": "PK_LPAD", "caps": [] }
     ]
 )
+;;==== TX-01 - Initialise Movie Booster aka Spark · 02 · let / invocation ==== ====================
+(print "--- [TX-01 - Initialise Movie Booster aka Spark · 02 · let / invocation] ---")
 ;;==== TX-01 - Initialise Movie Booster aka Spark · 02 · let / invocation ==== ====================
 (print "--- [TX-01 - Initialise Movie Booster aka Spark · 02 · let / invocation] ---")
 (let
@@ -365,7 +383,11 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "=== TX-2H — #2H: the DEMIPAD|C>RETRIEVAL-GATE now enforces the retrieval lock ===")
+;;==== TX-2H - #2H retrieval-gate: admin locks retrieval · 01 · env-sigs (caps) ==== ==============
+(print "--- [TX-2H - #2H retrieval-gate: admin locks retrieval · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-2H - #2H retrieval-gate: admin locks retrieval · 02 · let / invocation ==== =============
+(print "--- [TX-2H - #2H retrieval-gate: admin locks retrieval · 02 · let / invocation] ---")
 (let
     (
         (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
@@ -387,6 +409,8 @@
 (print "--- [TX-2H-b · gate decisions] ---")
 ;; (1) BLOCK — a NON-admin (Emma) cannot pass the retrieval gate while retrieval=false.
 ;;     Pre-fix this gate did not exist, so the retrieve cap passed on ownership alone (the bug).
+;;==== TX-2H-b - #2H gate decisions: block non-admin, admin override, allow on enable · 01 · env-sigs (caps) ==== 
+(print "--- [TX-2H-b - #2H gate decisions: block non-admin, admin override, allow on enable · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (print (format "<<TX-2H-b>> non-admin gate while LOCKED => {}"
     [(expect-failure
@@ -394,26 +418,49 @@
         "retrieval is LOCKED"
         (test-capability (DEMIPAD.DEMIPAD|C>RETRIEVAL-GATE "SPARK-98c486052a51")))]))
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "TX-2H-c - admin override while locked")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;; (2) ADMIN OVERRIDE (Option A) — the admin passes the gate even while retrieval=false.
+;;==== TX-2H-c - admin override while locked · 01 · env-sigs (caps) ==== ==========================
+(print "--- [TX-2H-c - admin override while locked · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (test-capability (DEMIPAD.DEMIPAD|C>RETRIEVAL-GATE "SPARK-98c486052a51"))
 (print "<<TX-2H-c>> PASS: admin passed the RETRIEVAL-GATE even while retrieval=false (Option A override)")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "TX-2H-d - unlock, then non-admin passes")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;; admin re-enables retrieval
+;;==== TX-2H-d - unlock, then non-admin passes · 01 · env-sigs (caps) ==== ========================
+(print "--- [TX-2H-d - unlock, then non-admin passes · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-2H-d - unlock, then non-admin passes · 02 · let / invocation ==== =======================
+(print "--- [TX-2H-d - unlock, then non-admin passes · 02 · let / invocation] ---")
 (let ((ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD))
     (ref-TS02-DPAD::A_ToggleRetrieval "SPARK-98c486052a51" true))
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "TX-2H-e - non-admin passes once enabled")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;; (3) ALLOW — with retrieval=true, a non-admin owner passes the gate.
+;;==== TX-2H-e - non-admin passes once enabled · 01 · env-sigs (caps) ==== ========================
+(print "--- [TX-2H-e - non-admin passes once enabled · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (test-capability (DEMIPAD.DEMIPAD|C>RETRIEVAL-GATE "SPARK-98c486052a51"))
 (print "<<TX-2H-e>> PASS: non-admin passed the RETRIEVAL-GATE once retrieval was re-enabled")
@@ -427,12 +474,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-01 - Initialise Shareholders · 01 · env-sigs (caps) ==== ================================
 (print "--- [TX-01 - Initialise Shareholders · 01 · env-sigs (caps)] ---")
+;;==== TX-01 - Initialise Shareholders · 01 · env-sigs (caps) ==== ================================
+(print "--- [TX-01 - Initialise Shareholders · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
         { "key": "PK_LPAD", "caps": [] }
     ]
 )
+;;==== TX-01 - Initialise Shareholders · 02 · let / invocation ==== ===============================
+(print "--- [TX-01 - Initialise Shareholders · 02 · let / invocation] ---")
 ;;==== TX-01 - Initialise Shareholders · 02 · let / invocation ==== ===============================
 (print "--- [TX-01 - Initialise Shareholders · 02 · let / invocation] ---")
 (let
@@ -480,12 +531,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-01 - Initialise Custodians · 01 · env-sigs (caps) ==== ==================================
 (print "--- [TX-01 - Initialise Custodians · 01 · env-sigs (caps)] ---")
+;;==== TX-01 - Initialise Custodians · 01 · env-sigs (caps) ==== ==================================
+(print "--- [TX-01 - Initialise Custodians · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
         { "key": "PK_LPAD", "caps": [] }
     ]
 )
+;;==== TX-01 - Initialise Custodians · 02 · let / invocation ==== =================================
+(print "--- [TX-01 - Initialise Custodians · 02 · let / invocation] ---")
 ;;==== TX-01 - Initialise Custodians · 02 · let / invocation ==== =================================
 (print "--- [TX-01 - Initialise Custodians · 02 · let / invocation] ---")
 (let
@@ -532,7 +587,11 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "=== TX-3H/4H — Custodians acquire now guarded: #3H supply cap enforced + #4H reader fixed ===")
+;;==== TX-3H4H - Custodians #3H (supply cap enforced) + #4H (availability reader resolves) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-3H4H - Custodians #3H (supply cap enforced) + #4H (availability reader resolves) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+;;==== TX-3H4H - Custodians #3H (supply cap enforced) + #4H (availability reader resolves) · 02 · let / invocation ==== 
+(print "--- [TX-3H4H - Custodians #3H (supply cap enforced) + #4H (availability reader resolves) · 02 · let / invocation] ---")
 (let
     (
         (buyer:string KST.EMMA)
@@ -564,6 +623,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "=== TX-7M — #7M: NF/SF transmit now opens the matching fungibility cap (was hardcoded SEMI) ===")
+;;==== TX-7M - #7M collectable transmit routes to the cap matching the asset kind (SF vs NF) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-7M - #7M collectable transmit routes to the cap matching the asset kind (SF vs NF) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 ;; The fix makes X_TransmitCollectables open the NON cap for son=false (NF) and the SEMI cap for son=true
 ;; (SF). The cap that discriminates is UEV_AssetFungibility: SEMI enforces [false true], NON enforces
@@ -572,6 +633,8 @@
 ;; blocked (the pre-fix type-mismatched transfer), while the SF path (son=true → SEMI cap) still works.
 ;; The NF direction is the exact mirror: a [false false] asset passes the NON cap and fails the SEMI cap,
 ;; which is why the pre-fix hardcoded-SEMI path made real NF assets un-fuelable (dead feature).
+;;==== TX-7M - #7M collectable transmit routes to the cap matching the asset kind (SF vs NF) · 02 · let / invocation ==== 
+(print "--- [TX-7M - #7M collectable transmit routes to the cap matching the asset kind (SF vs NF) · 02 · let / invocation] ---")
 (let
     (
         (sf-id:string "DHOC-98c486052a51")   ;; custodians, registered Semi-Fungible [false true]
@@ -602,6 +665,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "=== TX-8M — #8M: direct-injection hard-blocked at the deposit cap regardless of UR_DirectInjection ===")
+;;==== TX-8M - #8M direct-injection is hard-blocked (no phantom funds) even with the admin flag ON · 01 · env-sigs (caps) ==== 
+(print "--- [TX-8M - #8M direct-injection is hard-blocked (no phantom funds) even with the admin flag ON · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 ;; #8M: direct-injection was a flag-gated, unbuilt feature. The OLD deposit cap only rejected it
 ;;      while UR_DirectInjection was OFF; flipping the admin flag ON let direct-injection=true pass
@@ -614,6 +679,8 @@
 ;;      PROOF (mirrors #7M's UEV_AssetFungibility style — the C_ entry is P|UEV_IMC-gated so we assert
 ;;      the composed check directly): turn the admin flag ON, then show UEV_DirectInjection STILL
 ;;      rejects a direct-injection request, and passes a normal (non-direct) deposit.
+;;==== TX-8M - #8M direct-injection is hard-blocked (no phantom funds) even with the admin flag ON · 02 · let / invocation ==== 
+(print "--- [TX-8M - #8M direct-injection is hard-blocked (no phantom funds) even with the admin flag ON · 02 · let / invocation] ---")
 (let
     (
         (pkey:string DEMIPAD.PP)
@@ -651,6 +718,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "=== TX-9M — #9M: UC_NonceQuintessence made pure; CUSTODIANS|ACQUIRE still enforces the nonce ===")
+;;==== TX-9M - #9M UC_NonceQuintessence is pure (no hidden enforce); nonce validation stays on the cap · 01 · env-sigs (caps) ==== 
+(print "--- [TX-9M - #9M UC_NonceQuintessence is pure (no hidden enforce); nonce validation stays on the cap · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
 ;; #9M: UC_NonceQuintessence was prefixed UC_ (pure compute, no enforce) but called
 ;;      UEV_ConditionalAcquisitionNonce (an enforce) through a validation:bool arg — a contract violation
@@ -658,6 +727,8 @@
 ;;      enforce). Nonce validity was ALREADY enforced on the mutation path by the CUSTODIANS|ACQUIRE cap
 ;;      (UEV_AcquisitionNonce), so no enforcement is lost. The now-dead UEV_ConditionalAcquisitionNonce
 ;;      was removed.
+;;==== TX-9M - #9M UC_NonceQuintessence is pure (no hidden enforce); nonce validation stays on the cap · 02 · let / invocation ==== 
+(print "--- [TX-9M - #9M UC_NonceQuintessence is pure (no hidden enforce); nonce validation stays on the cap · 02 · let / invocation] ---")
 (let
     (
         (buyer:string KST.EMMA)
@@ -689,12 +760,16 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "=== TX-10M — #10M: UR_NonceSaleAvailability made a pure read; CUSTODIANS|ACQUIRE enforces the nonce ===")
+;;==== TX-10M - #10M UR_NonceSaleAvailability is a pure read; nonce enforce relocated to the cap · 01 · env-sigs (caps) ==== 
+(print "--- [TX-10M - #10M UR_NonceSaleAvailability is a pure read; nonce enforce relocated to the cap · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
 ;; #10M: Custodians UR_NonceSaleAvailability was a UR_ (table-read prefix, must not enforce) but ran
 ;;       (UEV_AcquisitionNonce nonce) before its DPDC supply read — where the Snakes twin does not. The
 ;;       enforce was RELOCATED (not removed) into the CUSTODIANS|ACQUIRE cap, so the UR is now a pure read
 ;;       and nonce validation + the exact "Invalid Custodian Acquisition Nonce" error stay on the mutation
 ;;       path (identical behavior). Interlocks with #9M: this is the same enforce the cap relies on.
+;;==== TX-10M - #10M UR_NonceSaleAvailability is a pure read; nonce enforce relocated to the cap · 02 · let / invocation ==== 
+(print "--- [TX-10M - #10M UR_NonceSaleAvailability is a pure read; nonce enforce relocated to the cap · 02 · let / invocation] ---")
 (let
     (
         (buyer:string KST.EMMA)
@@ -727,6 +802,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-01 - Initialise Stoa Pay · 01 · env-sigs (caps) ==== ==================================
 (print "--- [TX-01 - Initialise Stoa Pay · 01 · env-sigs (caps)] ---")
+;;==== TX-01 - Initialise Stoa Pay · 01 · env-sigs (caps) ==== ====================================
+(print "--- [TX-01 - Initialise Stoa Pay · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -735,6 +812,8 @@
 )
 
 ;;==== TX-01 - Initialise Stoa Pay · 02 · let / invocation ==== =================================
+(print "--- [TX-01 - Initialise Stoa Pay · 02 · let / invocation] ---")
+;;==== TX-01 - Initialise Stoa Pay · 02 · let / invocation ==== ===================================
 (print "--- [TX-01 - Initialise Stoa Pay · 02 · let / invocation] ---")
     (let
         (
@@ -816,7 +895,11 @@
 ;;       split, 250M end supply). COMPANY + VENTURE1 already exist from genesis; the remaining live
 ;;       recipients VENTURE2/3/4 are registered here (admin A_DeployStandardAccount, arbitrary key guard)
 ;;       so the buy-side C_MultiBulkTransfer in [6.1]'s C_BuyStoicPay can credit all five. Zero divergence.
+;;==== TX-11M - #11M deploy the 5 live StoicPay team accounts (COMPANY + VENTURE1..4) for the buy-side split · 01 · env-sigs (caps) ==== 
+(print "--- [TX-11M - #11M deploy the 5 live StoicPay team accounts (COMPANY + VENTURE1..4) for the buy-side split · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-11M - #11M deploy the 5 live StoicPay team accounts (COMPANY + VENTURE1..4) for the buy-side split · 02 · let / invocation ==== 
+(print "--- [TX-11M - #11M deploy the 5 live StoicPay team accounts (COMPANY + VENTURE1..4) for the buy-side split · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
@@ -848,12 +931,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-01 - Initialise Movie Booster aka Spark · 01 · env-sigs (caps) ==== =====================
 (print "--- [TX-01 - Initialise Movie Booster aka Spark · 01 · env-sigs (caps)] ---")
+;;==== TX-01 - Initialise Movie Booster aka Spark · 01 · env-sigs (caps) ==== =====================
+(print "--- [TX-01 - Initialise Movie Booster aka Spark · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
         { "key": "PK_LPAD", "caps": [] }
     ]
 )
+;;==== TX-01 - Initialise Movie Booster aka Spark · 02 · let / invocation ==== ====================
+(print "--- [TX-01 - Initialise Movie Booster aka Spark · 02 · let / invocation] ---")
 ;;==== TX-01 - Initialise Movie Booster aka Spark · 02 · let / invocation ==== ====================
 (print "--- [TX-01 - Initialise Movie Booster aka Spark · 02 · let / invocation] ---")
 (let
@@ -973,6 +1060,8 @@
 ;; required. PK_Emma unscoped satisfies the OURONET account guard (CAP_EnforceAccountOwnership
 ;; inside LIQUID|C>X_WRAPPER); the raw STOA pubkey, scoped, installs the managed coin.TRANSFER
 ;; capabilities. Signing only one of them fails in a place that does not mention the other.
+;;==== TX-DEP-01 - DEMIPAD|C_Deposit: the royalty split, measured · 01 · env-sigs (caps) ==== =====
+(print "--- [TX-DEP-01 - DEMIPAD|C_Deposit: the royalty split, measured · 01 · env-sigs (caps)] ---")
 (env-sigs
     [ { "key": "PK_AncientHodler", "caps": [] }
     , { "key": "PK_Emma", "caps": [] }
@@ -1101,6 +1190,8 @@
 (print "")
 ;;==== TX-DEP-01 · 03 · gas echo ==== ==============================================================
 (print "--- [TX-DEP-01 · 03 · gas echo] ---")
+;;==== TX-DEP-01 - DEMIPAD|C_Deposit: the royalty split, measured · 03 · gas echo ==== ============
+(print "--- [TX-DEP-01 - DEMIPAD|C_Deposit: the royalty split, measured · 03 · gas echo] ---")
 (format "<<<<<<<TX-DEP-01 DEMIPAD|C_Deposit ==> {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "===^^^===")
@@ -1118,7 +1209,11 @@
 ;; The other half of the deposit: what TX-DEP-01 credited to the seller ledger, C_Withdraw
 ;; pays out. Three guards on DEMIPAD|C>WITHDRAW, probed before the happy path so each one is
 ;; isolated against a ledger that is known to be NON-empty.
+;;==== TX-DEP-02 - DEMIPAD|C_Withdraw: the seller takes the remainder · 01 · env-sigs (caps) ==== =
+(print "--- [TX-DEP-02 - DEMIPAD|C_Withdraw: the seller takes the remainder · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-DEP-02 - DEMIPAD|C_Withdraw: the seller takes the remainder · 02 · let / invocation ==== 
+(print "--- [TX-DEP-02 - DEMIPAD|C_Withdraw: the seller takes the remainder · 02 · let / invocation] ---")
 (let
     (
         (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
@@ -1300,6 +1395,8 @@
 (print "")
 ;;==== TX-DEP-02 · 03 · gas echo ==== ==============================================================
 (print "--- [TX-DEP-02 · 03 · gas echo] ---")
+;;==== TX-DEP-02 - DEMIPAD|C_Withdraw: the seller takes the remainder · 03 · gas echo ==== ========
+(print "--- [TX-DEP-02 - DEMIPAD|C_Withdraw: the seller takes the remainder · 03 · gas echo] ---")
 (format "<<<<<<<TX-DEP-02 DEMIPAD|C_Withdraw ==> {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "===^^^===")
@@ -1323,7 +1420,11 @@
 ;; credits 1000x negative fragment nonces" -- so native nonce N becomes fragment nonce -N at
 ;; 1000x the count. ANHD holds DHOC nonce 1, and [6.1]_DPDC already enabled fragmentation on
 ;; it, so C_MakeFragments is the only step needed.
+;;==== TX-ACQ-01 - fuel the pad: fragment a DHOC nonce and transmit it for sale · 01 · env-sigs (caps) ==== 
+(print "--- [TX-ACQ-01 - fuel the pad: fragment a DHOC nonce and transmit it for sale · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-ACQ-01 - fuel the pad: fragment a DHOC nonce and transmit it for sale · 02 · let / invocation ==== 
+(print "--- [TX-ACQ-01 - fuel the pad: fragment a DHOC nonce and transmit it for sale · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -1387,6 +1488,8 @@
 (print "--- [TX-ACQ-02 · 01 · quote the sale the way a client must] ---")
 ;; URC_Acquire is the documented client entry: it returns the coin.TRANSFER capability
 ;; DESCRIPTIONS the UI must sign. Quote first, then sign exactly those, then submit.
+;;==== TX-ACQ-02 - CUSTODIANS|C_Acquire: the first citizen sale ever executed · 01 · let / invocation ==== 
+(print "--- [TX-ACQ-02 - CUSTODIANS|C_Acquire: the first citizen sale ever executed · 01 · let / invocation] ---")
 (let
     (
         (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
@@ -1431,6 +1534,8 @@
 )
 ;;==== TX-ACQ-02 · 02 · FINDING probe, isolated in a rolled-back tx ==== ===========================
 (print "--- [TX-ACQ-02 · 02 · FINDING probe, isolated in a rolled-back tx] ---")
+;;==== TX-ACQ-02 - CUSTODIANS|C_Acquire: the first citizen sale ever executed · 02 · env-sigs (caps) ==== 
+(print "--- [TX-ACQ-02 - CUSTODIANS|C_Acquire: the first citizen sale ever executed · 02 · env-sigs (caps)] ---")
 (env-sigs
     [ { "key": "PK_AncientHodler", "caps": [] }
     , { "key": "PK_Emma", "caps": [] }
@@ -1623,6 +1728,8 @@
 (print "")
 ;;==== TX-ACQ-02b · 03 · gas echo ==== =============================================================
 (print "--- [TX-ACQ-02b · 03 · gas echo] ---")
+;;==== TX-ACQ-02 - CUSTODIANS|C_Acquire: the first citizen sale ever executed · 03 · gas echo ==== 
+(print "--- [TX-ACQ-02 - CUSTODIANS|C_Acquire: the first citizen sale ever executed · 03 · gas echo] ---")
 (format "<<<<<<<TX-ACQ-02 CUSTODIANS|C_Acquire ==> {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "===^^^===")
@@ -1651,7 +1758,11 @@
 ;; invalid nonce IS rejected -- by the SUPPLY message, not a nonce message. Asserted below,
 ;; because the two failure modes being indistinguishable is exactly the kind of thing a
 ;; caller debugging a bad nonce would waste time on.
+;;==== TX-ACQ-03 - SNAKES|C_Acquire: the Shareholders sale · 01 · env-sigs (caps) ==== ============
+(print "--- [TX-ACQ-03 - SNAKES|C_Acquire: the Shareholders sale · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-ACQ-03 - SNAKES|C_Acquire: the Shareholders sale · 02 · let / invocation ==== ===========
+(print "--- [TX-ACQ-03 - SNAKES|C_Acquire: the Shareholders sale · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -1699,6 +1810,8 @@
 (env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
 ;;==== TX-ACQ-03b · 01 · quote ==== ================================================================
 (print "--- [TX-ACQ-03b · 01 · quote] ---")
+;;==== TX-ACQ-03b - SNAKES|C_Acquire: buy two shares · 01 · let / invocation ==== =================
+(print "--- [TX-ACQ-03b - SNAKES|C_Acquire: buy two shares · 01 · let / invocation] ---")
 (let
     (
         (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
@@ -1728,6 +1841,8 @@
 (print "--- [TX-ACQ-03b · 02 · sign the quoted caps and buy] ---")
 ;;$20 = 200 wSTOA. Royalty 15% = 30 (env 10, coding 20), remainder 170, non-environment 190.
 ;;Environment legs 10/20/30/40 of 10.0 = 1.0/2.0/3.0/4.0. Exact grants, as in TX-DEP-01.
+;;==== TX-ACQ-03b - SNAKES|C_Acquire: buy two shares · 02 · env-sigs (caps) ==== ==================
+(print "--- [TX-ACQ-03b - SNAKES|C_Acquire: buy two shares · 02 · env-sigs (caps)] ---")
 (env-sigs
     [ { "key": "PK_AncientHodler", "caps": [] }
     , { "key": "PK_Emma", "caps": [] }
@@ -1833,6 +1948,8 @@
 (print "")
 ;;==== TX-ACQ-03b · 04 · gas echo ==== =============================================================
 (print "--- [TX-ACQ-03b · 04 · gas echo] ---")
+;;==== TX-ACQ-03b - SNAKES|C_Acquire: buy two shares · 03 · gas echo ==== =========================
+(print "--- [TX-ACQ-03b - SNAKES|C_Acquire: buy two shares · 03 · gas echo] ---")
 (format "<<<<<<<TX-ACQ-03b SNAKES|C_Acquire ==> {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "===^^^===")
@@ -1850,6 +1967,8 @@
 ;;SPARK|C_RedemAllSparks and SPARK|C_RedemFewSparks appeared in NO live invocation anywhere in
 ;;the suite; SPARK|C_BuySparks appeared only in launchpad-groundtruth.repl, a gas driver the gate
 ;;does not run. All three execute here, in a file the gate does run.
+;;==== TX-SPK-01 - SPARK|C_BuySparks, then the two redemption ops nothing had ever called · 01 · let / invocation ==== 
+(print "--- [TX-SPK-01 - SPARK|C_BuySparks, then the two redemption ops nothing had ever called · 01 · let / invocation] ---")
 (let
     (
         (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
@@ -1934,7 +2053,11 @@
 ;;DPTF transfer between them, and DPTF refuses a self-transfer. Paying yourself to redeem your own
 ;;Sparks therefore cannot work -- the same sender==receiver trap that blocks a collection creator
 ;;from patroning their own sale (TX-ACQ-02).
+;;==== TX-SPK-02 - SPARK|C_RedemFewSparks: liquid Sparks become FROZEN Sparks + wSTOA · 01 · env-sigs (caps) ==== 
+(print "--- [TX-SPK-02 - SPARK|C_RedemFewSparks: liquid Sparks become FROZEN Sparks + wSTOA · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-SPK-02 - SPARK|C_RedemFewSparks: liquid Sparks become FROZEN Sparks + wSTOA · 02 · let / invocation ==== 
+(print "--- [TX-SPK-02 - SPARK|C_RedemFewSparks: liquid Sparks become FROZEN Sparks + wSTOA · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -2030,7 +2153,11 @@
 ;;C_RedemAllSparks differs from C_RedemFewSparks in exactly one respect: it reads the holder's
 ;;CURRENT balance and redeems that. So the test that distinguishes them is "the balance ends at
 ;;zero whatever it was", not "it ran".
+;;==== TX-SPK-03 - SPARK|C_RedemAllSparks empties the liquid balance exactly · 01 · env-sigs (caps) ==== 
+(print "--- [TX-SPK-03 - SPARK|C_RedemAllSparks empties the liquid balance exactly · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+;;==== TX-SPK-03 - SPARK|C_RedemAllSparks empties the liquid balance exactly · 02 · let / invocation ==== 
+(print "--- [TX-SPK-03 - SPARK|C_RedemAllSparks empties the liquid balance exactly · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)

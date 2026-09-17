@@ -1,3 +1,16 @@
+;;
+;; REPL/modules/DPDC.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/modules/DPDC.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 ;; REPL/modules/DPDC.repl — STANDALONE DPDC (collectable core) tester.
 ;;
 ;; P2 rebuild. The previous version loaded Stage_02/[6.1]_DPDC.repl, which carries no
@@ -20,8 +33,12 @@
 ;;
 (begin-tx "DPDC-01 — the son discriminator separates two collections that share the core")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== DPDC-01 — the son discriminator separates two collections that share the core · 01 · namespace ==== 
+(print "--- [DPDC-01 — the son discriminator separates two collections that share the core · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [DPDC-01 · 01 · son discrimination] ---")
+;;==== DPDC-01 — the son discriminator separates two collections that share the core · 02 · let / invocation ==== 
+(print "--- [DPDC-01 — the son discriminator separates two collections that share the core · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -50,8 +67,12 @@
 ;;
 (begin-tx "DPDC-02 — supply semantics differ by kind: NFT nonce = 1, SFT nonce = quantity")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== DPDC-02 — supply semantics differ by kind: NFT nonce = 1, SFT nonce = quantity · 01 · namespace ==== 
+(print "--- [DPDC-02 — supply semantics differ by kind: NFT nonce = 1, SFT nonce = quantity · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [DPDC-02 · 01 · per-kind supply] ---")
+;;==== DPDC-02 — supply semantics differ by kind: NFT nonce = 1, SFT nonce = quantity · 02 · let / invocation ==== 
+(print "--- [DPDC-02 — supply semantics differ by kind: NFT nonce = 1, SFT nonce = quantity · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -86,7 +107,11 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [DPDC-03 · 01 · cross-kind multi transfer] ---")
+;;==== DPDC-03 — DPDC|C_MultiTransfer moves nonces across BOTH kinds in one call · 01 · env-sigs (caps) ==== 
+(print "--- [DPDC-03 — DPDC|C_MultiTransfer moves nonces across BOTH kinds in one call · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== DPDC-03 — DPDC|C_MultiTransfer moves nonces across BOTH kinds in one call · 02 · let / invocation ==== 
+(print "--- [DPDC-03 — DPDC|C_MultiTransfer moves nonces across BOTH kinds in one call · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -130,8 +155,12 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [DPDC-04 · 01 · bulk transfer] ---")
+;;==== DPDC-04 — C_BulkTransfer: one sender, many receivers, in one call · 01 · env-sigs (caps) ==== 
+(print "--- [DPDC-04 — C_BulkTransfer: one sender, many receivers, in one call · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 ;;Previously invoked by NOTHING in any asserting test (ledger G1 gap).
+;;==== DPDC-04 — C_BulkTransfer: one sender, many receivers, in one call · 02 · let / invocation ==== 
+(print "--- [DPDC-04 — C_BulkTransfer: one sender, many receivers, in one call · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -174,9 +203,13 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [DPDC-05 · 01 · pending branding] ---")
+;;==== DPDC-05 — C_UpdatePendingBranding writes PENDING, leaving live branding alone · 01 · env-sigs (caps) ==== 
+(print "--- [DPDC-05 — C_UpdatePendingBranding writes PENDING, leaving live branding alone · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 ;;Both DPNF| and DPSF| C_UpdatePendingBranding were invoked by NOTHING (ledger G1 gap).
 ;;The point of the op is the PENDING/LIVE split, so that is what gets asserted.
+;;==== DPDC-05 — C_UpdatePendingBranding writes PENDING, leaving live branding alone · 02 · let / invocation ==== 
+(print "--- [DPDC-05 — C_UpdatePendingBranding writes PENDING, leaving live branding alone · 02 · let / invocation] ---")
 (let
     (
         (ref-BRD:module{BrandingV2} BRD)
@@ -214,10 +247,14 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [DPDC-06 · 01 · SFT whole-object nonce write] ---")
+;;==== DPDC-06 — DPSF|C_UpdateNonce: the SFT whole-object writer · 01 · env-sigs (caps) ==== ======
+(print "--- [DPDC-06 — DPSF|C_UpdateNonce: the SFT whole-object writer · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 ;;Previously invoked by NOTHING (ledger G1 gap). Tested here rather than in a separate SFT
 ;;tester because it operates on the SAME shared collectable core and the SAME mock fixture --
 ;;the DPNF counterpart is asserted in modules/DPNF.repl (DPNF-04).
+;;==== DPDC-06 — DPSF|C_UpdateNonce: the SFT whole-object writer · 02 · let / invocation ==== =====
+(print "--- [DPDC-06 — DPSF|C_UpdateNonce: the SFT whole-object writer · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -286,7 +323,11 @@
 ;;
 ;;Clean and Dirty have IDENTICAL signatures and differ only in that strictness. Handed the same
 ;;list containing one non-viable nonce they must diverge, and that divergence is the test.
+;;==== DPDC-07 — the four bulk wipes: Clean is strict, Dirty filters · 01 · env-sigs (caps) ==== ==
+(print "--- [DPDC-07 — the four bulk wipes: Clean is strict, Dirty filters · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== DPDC-07 — the four bulk wipes: Clean is strict, Dirty filters · 02 · let / invocation ==== =
+(print "--- [DPDC-07 — the four bulk wipes: Clean is strict, Dirty filters · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -326,6 +367,8 @@
 (env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [DPDC-07b · 01 · Clean is strict] ---")
+;;==== DPDC-07b — WipeClean rejects a list containing a nonce the holder does not have · 01 · env-sigs (caps) ==== 
+(print "--- [DPDC-07b — WipeClean rejects a list containing a nonce the holder does not have · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 ;;Nonce 3 exists but this holder has none of it, so it is NOT VIABLE for her. Clean must refuse
 ;;the WHOLE call rather than wipe the one good nonce -- all-or-nothing.
@@ -334,6 +377,8 @@
 ;;builds its amounts from UR_AccountNoncesSupplies, which returns the -1 "holds none" sentinel
 ;;for nonce 3, and the refusal happens downstream when the debit rejects an amount of -1. So the
 ;;strictness is REAL but emergent, and the message names the amount rather than the concept.
+;;==== DPDC-07b — WipeClean rejects a list containing a nonce the holder does not have · 02 · let / invocation ==== 
+(print "--- [DPDC-07b — WipeClean rejects a list containing a nonce the holder does not have · 02 · let / invocation] ---")
 (let
     (
         (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
@@ -421,11 +466,15 @@
 (env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [DPDC-08 · 01 · Pure and Heavy agree on the set] ---")
+;;==== DPDC-08 — WipePure takes a dirty read; WipeHeavy finds the same set itself · 01 · env-sigs (caps) ==== 
+(print "--- [DPDC-08 — WipePure takes a dirty read; WipeHeavy finds the same set itself · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 ;;Pure and Heavy are the same wipe reached two ways: Heavy runs the expensive select/keys scan
 ;;on-chain, Pure takes the SAME set pre-read off-chain via URHC_WipePure. That equivalence is
 ;;the contract -- a client that dirty-reads and submits Pure must get exactly what Heavy would
 ;;have done -- so it is asserted directly rather than testing each in isolation.
+;;==== DPDC-08 — WipePure takes a dirty read; WipeHeavy finds the same set itself · 02 · let / invocation ==== 
+(print "--- [DPDC-08 — WipePure takes a dirty read; WipeHeavy finds the same set itself · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -508,6 +557,8 @@
 ;;
 (begin-tx "DPDC-09 — UEV_Nonce: guard was shadowed by its own reader — NOW FIXED")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== DPDC-09 — UEV_Nonce: guard was shadowed by its own reader — NOW FIXED · 01 · namespace ==== 
+(print "--- [DPDC-09 — UEV_Nonce: guard was shadowed by its own reader — NOW FIXED · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [DPDC-09 · 01 · the nonce validator] ---")
 ;;Flagged by REPL/tools/_shadowed.py, which looks for a guard whose VALIDATED ARGUMENT is also part of
@@ -529,6 +580,8 @@
 ;;
 ;;These assertions are therefore now the regression pin for the FIX, not for the finding: if the
 ;;guard is ever pushed back below the read, both flip back to "No value found in table".
+;;==== DPDC-09 — UEV_Nonce: guard was shadowed by its own reader — NOW FIXED · 02 · let / invocation ==== 
+(print "--- [DPDC-09 — UEV_Nonce: guard was shadowed by its own reader — NOW FIXED · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -559,11 +612,15 @@
 ;;
 (begin-tx "DPDC-G2 — argument-domain guards: pause state, description, royalty precision, holding")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== DPDC-G2 — argument-domain guards: pause state, description, royalty precision, holding · 01 · namespace ==== 
+(print "--- [DPDC-G2 — argument-domain guards: pause state, description, royalty precision, holding · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [DPDC-G2 · 01 · four guards that need no fixture state] ---")
 ;;P3.3. Four guards whose rejecting input is an ARGUMENT rather than a state, so they need no
 ;;fixture beyond a collection that already exists. Sorted by shape rather than by module: this is
 ;;the cheapest class and it is worth exhausting before building anything.
+;;==== DPDC-G2 — argument-domain guards: pause state, description, royalty precision, holding · 02 · let / invocation ==== 
+(print "--- [DPDC-G2 — argument-domain guards: pause state, description, royalty precision, holding · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -618,6 +675,8 @@
 ;;
 (begin-tx "DPDC-G2b - the state=false arm of UEV_PauseState, on a genuinely paused collection")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== DPDC-G2b - the state=false arm of UEV_PauseState, on a genuinely paused collection · 01 · namespace ==== 
+(print "--- [DPDC-G2b - the state=false arm of UEV_PauseState, on a genuinely paused collection · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [DPDC-G2b · 01 · UEV_PauseState, the other arm] ---")
 ;;DPDC-G2 above recorded that the `state=false` arm "needs a paused one and is not reachable here",
@@ -631,6 +690,8 @@
 ;;client path that pauses MOCKN at all. The field write reproduces the STATE a paused collection is
 ;;in without pretending a route to it exists. What is being pinned is the guard's reading of that
 ;;state, which is exactly what the guard is for.
+;;==== DPDC-G2b - the state=false arm of UEV_PauseState, on a genuinely paused collection · 02 · let / invocation ==== 
+(print "--- [DPDC-G2b - the state=false arm of UEV_PauseState, on a genuinely paused collection · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -689,6 +750,8 @@
 ;;refusal cannot distinguish "the OR works" from "the OR is broken and refuses everyone"; a single
 ;;acceptance cannot distinguish "either branch passes" from "only the first one is consulted". The
 ;;signature is switched between calls rather than the subject, so the token is held constant.
+;;==== DPDC-G2d - CAP_OwnerOrCreator: owner OK, creator OK, third party refused · 01 · let / invocation ==== 
+(print "--- [DPDC-G2d - CAP_OwnerOrCreator: owner OK, creator OK, third party refused · 01 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -757,6 +820,8 @@
 ;;
 (begin-tx "DPDC-G3 — property guards that DPDC can only reach with a purpose-issued collection")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== DPDC-G3 — property guards that DPDC can only reach with a purpose-issued collection · 01 · namespace ==== 
+(print "--- [DPDC-G3 — property guards that DPDC can only reach with a purpose-issued collection · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [DPDC-G3 · 01 · can-pause / can-add-special-role / can-wipe] ---")
 ;;P3.3. Three guards of the shape (let ((x:bool (UR_CanX id son))) (enforce x "...")) -- no
@@ -766,6 +831,8 @@
 ;;operation on a collection. Its property flags are fixed AT ISSUANCE and never change, so a
 ;;reversible window on MOCKS is impossible -- there is nothing to flip. ADVC is issued with these
 ;;three flags off for exactly this, and MOCKS supplies the accepting side.
+;;==== DPDC-G3 — property guards that DPDC can only reach with a purpose-issued collection · 02 · let / invocation ==== 
+(print "--- [DPDC-G3 — property guards that DPDC can only reach with a purpose-issued collection · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -802,6 +869,8 @@
 ;;
 (begin-tx "DPDC-G4 — the DPDC-C input-shape family: nonce SIGN carries meaning here")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== DPDC-G4 — the DPDC-C input-shape family: nonce SIGN carries meaning here · 01 · namespace ==== 
+(print "--- [DPDC-G4 — the DPDC-C input-shape family: nonce SIGN carries meaning here · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [DPDC-G4 · 01 · nonce sign, hybrid split, amount floor] ---")
 ;;DPDC encodes a nonce's KIND in its sign: positive nonces are native collectables, negative
@@ -813,6 +882,8 @@
 ;;(fragments-or-native), so a single-cell test would pass against a validator that ignored that
 ;;argument entirely and always demanded one sign. All four cells are asserted -- each sign
 ;;accepted under its own flag and refused under the other.
+;;==== DPDC-G4 — the DPDC-C input-shape family: nonce SIGN carries meaning here · 02 · let / invocation ==== 
+(print "--- [DPDC-G4 — the DPDC-C input-shape family: nonce SIGN carries meaning here · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
@@ -879,6 +950,8 @@
 ;;These are defcaps, reached with `test-capability`: it acquires the capability directly and runs
 ;;its body, and each of these enforces sits above any table read, so dummy ids reach them. Each
 ;;case takes its own transaction, since a granted capability is cached for the rest of the tx.
+;;==== DPDC-G5a — DPNF crediting: an NFT is quantity ONE, and the caps say so twice · 01 · env-sigs (caps) ==== 
+(print "--- [DPDC-G5a — DPNF crediting: an NFT is quantity ONE, and the caps say so twice · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (map print
     [
@@ -897,6 +970,8 @@
 (print "--- [DPDC-G5b · 01 · NFT credit amount, batch] ---")
 ;;The batch check is written as (= amounts (make-list (length amounts) 1)) — an equality against
 ;;an all-ones list — so it rejects a batch where ANY element is not 1, not merely the first.
+;;==== DPDC-G5b — ...and the BATCH form enforces it element-wise · 01 · env-sigs (caps) ==== ======
+(print "--- [DPDC-G5b — ...and the BATCH form enforces it element-wise · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (map print
     [
@@ -913,6 +988,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [DPDC-G5c · 01 · credit pairing] ---")
+;;==== DPDC-G5c — CX>MULTI-CREDIT: nonces and amounts must pair up · 01 · env-sigs (caps) ==== ====
+(print "--- [DPDC-G5c — CX>MULTI-CREDIT: nonces and amounts must pair up · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (map print
     [
@@ -932,6 +1009,8 @@
 ;;The debit twin. Worth pinning separately rather than trusting the credit test: they are
 ;;different caps with different messages, and a mispairing on the DEBIT side removes the wrong
 ;;quantity from a holder rather than merely failing to add it.
+;;==== DPDC-G5d — CX>MULTI-DEBIT: the same rule on the way out · 01 · env-sigs (caps) ==== ========
+(print "--- [DPDC-G5d — CX>MULTI-DEBIT: the same rule on the way out · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (map print
     [
@@ -948,6 +1027,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [DPDC-G5e · 01 · class-zero removal pairing] ---")
+;;==== DPDC-G5e — DPDC-MNG class-zero removal: same pairing rule, third module · 01 · env-sigs (caps) ==== 
+(print "--- [DPDC-G5e — DPDC-MNG class-zero removal: same pairing rule, third module · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (map print
     [
@@ -962,6 +1043,8 @@
 ;;
 (begin-tx "DPDC-G6 — collection existence, SFT holdings, fragmentation, and the four NFT roles")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== DPDC-G6 — collection existence, SFT holdings, fragmentation, and the four NFT roles · 01 · namespace ==== 
+(print "--- [DPDC-G6 — collection existence, SFT holdings, fragmentation, and the four NFT roles · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [DPDC-G6 · 01 · nine directly-callable DPDC-family validators] ---")
 ;;P3.3. All nine are plain UEV_ functions -- no capability, no Talos shell -- driven straight
@@ -973,6 +1056,8 @@
 ;;Each of the four is driven separately for that reason -- and because they really are four
 ;;independent role fields (recreate / update / royalties / uri) read by four different
 ;;UR_CA|R-* readers, so a reader who assumed one test covered the family would be wrong.
+;;==== DPDC-G6 — collection existence, SFT holdings, fragmentation, and the four NFT roles · 02 · let / invocation ==== 
+(print "--- [DPDC-G6 — collection existence, SFT holdings, fragmentation, and the four NFT roles · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -1041,6 +1126,8 @@
 ;;
 (begin-tx "DPDC-G7 — the collectable-transfer amount rules")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== DPDC-G7 — the collectable-transfer amount rules · 01 · namespace ==== ======================
+(print "--- [DPDC-G7 — the collectable-transfer amount rules · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [DPDC-G7 · 01 · UEV_AmountsForTransfer, both guards] ---")
 ;;P3.3. Both enforces in one plain callable UEV_, driven against the MOCKN / MOCKS fixtures.
@@ -1055,6 +1142,8 @@
 ;;satisfied equally well by a guard that demanded amount = 1 everywhere — which would break every
 ;;semi-fungible transfer in the system. The SFT case passes amount 2 through the same function and
 ;;asserts it is accepted.
+;;==== DPDC-G7 — the collectable-transfer amount rules · 02 · let / invocation ==== ===============
+(print "--- [DPDC-G7 — the collectable-transfer amount rules · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
@@ -1089,6 +1178,8 @@
 (begin-tx "DPDC-G8 -- the SFT creation argument guards")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== DPDC-G8 -- the SFT creation argument guards · 01 · env-sigs (caps) ==== ====================
+(print "--- [DPDC-G8 -- the SFT creation argument guards · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [DPDC-G8 . 01 . amount domain and list parity] ---")
 ;;Two UNPINNED guards in DPDC-C|C>REGISTER-NONCES, both reached through DPSF|C_Create.
@@ -1102,6 +1193,8 @@
 ;;  * via DPSF|C_Create (the SFT path) the caller supplies `amount` directly and the two lists
 ;;    independently -- so both guards become reachable. That is what is pinned here.
 ;;A guard's reachability is a property of the call sites, not of the guard.
+;;==== DPDC-G8 -- the SFT creation argument guards · 02 · let / invocation ==== ===================
+(print "--- [DPDC-G8 -- the SFT creation argument guards · 02 · let / invocation] ---")
 (let ((sf:string "MOCKS-98c486052a51")
       (nd:object{DpdcUdcV2.DPDC|NonceData} (DPDC-UDC.UDC_NonceData 0.0 0.0 "n" "d"
           (DPDC-UDC.UDC_NoMetaData)
@@ -1130,6 +1223,8 @@
 (begin-tx "DPDC-G8b -- ...and a well-formed create still works")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== DPDC-G8b -- ...and a well-formed create still works · 01 · env-sigs (caps) ==== ============
+(print "--- [DPDC-G8b -- ...and a well-formed create still works · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [DPDC-G8b . 01 . the contrast] ---")
 ;;Without this, the two rejections above would pass just as well against a create path that was
@@ -1156,6 +1251,8 @@
 (begin-tx "DPDC-G9 — the multi-nonce cap's own length guard, in front of the parity guard")
 (env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== DPDC-G9 — the multi-nonce cap's own length guard, in front of the parity guard · 01 · env-sigs (caps) ==== 
+(print "--- [DPDC-G9 — the multi-nonce cap's own length guard, in front of the parity guard · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [DPDC-G9 · 01 · one amount, two nonce-datas] ---")
 ;;DPDC-G8 pinned two of DPDC-C|C>REGISTER-NONCES's guards. This is the one in the cap ABOVE it:
@@ -1170,6 +1267,8 @@
 ;;
 ;;Both are pinned because the two messages are what tell an integrator which mistake they made, and
 ;;the boundary between them is not obvious from either one.
+;;==== DPDC-G9 — the multi-nonce cap's own length guard, in front of the parity guard · 02 · let / invocation ==== 
+(print "--- [DPDC-G9 — the multi-nonce cap's own length guard, in front of the parity guard · 02 · let / invocation] ---")
 (let ((sf:string "MOCKS-98c486052a51")
       (nd:object{DpdcUdcV2.DPDC|NonceData} (DPDC-UDC.UDC_NonceData 0.0 0.0 "n" "d"
           (DPDC-UDC.UDC_NoMetaData)
@@ -1197,6 +1296,8 @@
 (begin-tx "DPDC-G10 — AQP-BOOT's step-shape guards, and the half of each that is MUTE")
 (env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== DPDC-G10 — AQP-BOOT's step-shape guards, and the half of each that is MUTE · 01 · env-sigs (caps) ==== 
+(print "--- [DPDC-G10 — AQP-BOOT's step-shape guards, and the half of each that is MUTE · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [DPDC-G10 · 01 · the six step-shape messages] ---")
 ;;SIX unpinned guards in 2_CITIZEN/5_VaultsMinter/04_AQP-BOOT.pact, all of them input-shape checks on
@@ -1208,6 +1309,8 @@
 ;;The messages are unusually good: each one spells out the exact list the operator was supposed to
 ;;pass. That is the point of pinning them -- they are operator documentation delivered at the moment
 ;;of the mistake, and they are only worth having if they actually arrive.
+;;==== DPDC-G10 — AQP-BOOT's step-shape guards, and the half of each that is MUTE · 02 · let / invocation ==== 
+(print "--- [DPDC-G10 — AQP-BOOT's step-shape guards, and the half of each that is MUTE · 02 · let / invocation] ---")
 (let
     (
         (p:string KST.ANHD)
@@ -1290,6 +1393,8 @@
 (begin-tx "DPDC-G11 — add-quantity's input domain, and a regression guard on a past hoist fix")
 (env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== DPDC-G11 — add-quantity's input domain, and a regression guard on a past hoist fix · 01 · env-sigs (caps) ==== 
+(print "--- [DPDC-G11 — add-quantity's input domain, and a regression guard on a past hoist fix · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [DPDC-G11 · 01 · nonce and amount domain] ---")
 ;;DPDC-MNG|C>ADD-QUANTITY carries two enforces that share ONE message, and both sit in front of the
@@ -1305,6 +1410,8 @@
 ;;must BOTH answer with the written message. Put the enforce back inside the let and the nonce-0 case
 ;;starts failing with a row-not-found error instead. This is the same class as the AQP-BOOT steps in
 ;;DPDC-G10 -- except here the fix is already applied, which is why it is worth protecting.
+;;==== DPDC-G11 — add-quantity's input domain, and a regression guard on a past hoist fix · 02 · let / invocation ==== 
+(print "--- [DPDC-G11 — add-quantity's input domain, and a regression guard on a past hoist fix · 02 · let / invocation] ---")
 (let
     (
         (sf:string "MOCKS-98c486052a51")
@@ -1379,10 +1486,14 @@
 (begin-tx "DPDC-G13 — four argument-domain guards across the DPDC family")
 (env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== DPDC-G13 — four argument-domain guards across the DPDC family · 01 · env-sigs (caps) ==== ==
+(print "--- [DPDC-G13 — four argument-domain guards across the DPDC family · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [DPDC-G13 · 01 · four refusals, no fixture between them] ---")
 ;;Four unpinned guards in four different DPDC modules, all of them argument-domain, none needing any
 ;;state this file does not already have. They had simply never been called with a rejecting input.
+;;==== DPDC-G13 — four argument-domain guards across the DPDC family · 02 · let / invocation ==== =
+(print "--- [DPDC-G13 — four argument-domain guards across the DPDC family · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -1437,6 +1548,8 @@
 (begin-tx "DPDC-G14 — FIXED: the bulk-transfer shape guard now answers in all three directions")
 (env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== DPDC-G14 — FIXED: the bulk-transfer shape guard now answers in all three directions · 01 · env-sigs (caps) ==== 
+(print "--- [DPDC-G14 — FIXED: the bulk-transfer shape guard now answers in all three directions · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [DPDC-G14 · 01 · which mismatches reach the message, and which do not] ---")
 ;;`DPDC-T|C>BULK-TRANSFER` folds three shape conditions under one message:
@@ -1477,6 +1590,8 @@
 ;;itself, which is genuinely empty for an empty list -- and the second hazard still faulted. That
 ;;rewrite was kept anyway (it removes a latent trap and is identical for l>0), but hoisting the core
 ;;is what makes ALL downstream enumerates operate on lists already proven to agree.
+;;==== DPDC-G14 — FIXED: the bulk-transfer shape guard now answers in all three directions · 02 · let / invocation ==== 
+(print "--- [DPDC-G14 — FIXED: the bulk-transfer shape guard now answers in all three directions · 02 · let / invocation] ---")
 (let
     (
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
@@ -1518,6 +1633,8 @@
 (begin-tx "DPDC-G15 — the citizen minter's position-count parity check")
 (env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== DPDC-G15 — the citizen minter's position-count parity check · 01 · env-sigs (caps) ==== ====
+(print "--- [DPDC-G15 — the citizen minter's position-count parity check · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [DPDC-G15 · 01 · metadata rows must match the positions being spawned] ---")
 ;;`KBN::C_Spawn` (2_CITIZEN/4_BunniesMinter) batches an NFT mint: it takes a count of positions and one
@@ -1591,6 +1708,8 @@
 ;;
 (begin-tx "DPDC-G16 - UC_CleanseAggregatedRoyalties drops zero-royalty creators")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== DPDC-G16 - UC_CleanseAggregatedRoyalties drops zero-royalty creators · 01 · namespace ==== =
+(print "--- [DPDC-G16 - UC_CleanseAggregatedRoyalties drops zero-royalty creators · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [DPDC-G16 · 01 · why 'Cannot debit|credit 0.0 or negative IGNIS amounts' cannot fire] ---")
 ;;`07_DPDC-T.pact:347` is annotated `;;UNREACHABLE via its only caller`. This block is what stops
@@ -1607,6 +1726,8 @@
 ;;and does not depend on any collection existing -- which is what makes it worth asserting rather
 ;;than leaving as a comment. If the filter is ever weakened to, say, `>=`, these go red and the
 ;;guard becomes live and unpinned.
+;;==== DPDC-G16 - UC_CleanseAggregatedRoyalties drops zero-royalty creators · 02 · let / invocation ==== 
+(print "--- [DPDC-G16 - UC_CleanseAggregatedRoyalties drops zero-royalty creators · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
@@ -1655,6 +1776,8 @@
 (begin-tx "DPDC-G17 - IGNIS|C>DEBIT: you cannot debit more IGNIS than the account holds")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== DPDC-G17 - IGNIS|C>DEBIT: you cannot debit more IGNIS than the account holds · 01 · env-sigs (caps) ==== 
+(print "--- [DPDC-G17 - IGNIS|C>DEBIT: you cannot debit more IGNIS than the account holds · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [DPDC-G17 · 01 · the royalty debit's balance bound] ---")
 ;;`07_DPDC-T.pact:378`. DPDC-T carries its OWN IGNIS debit capability for creator royalties, separate
@@ -1668,6 +1791,8 @@
 ;;royalty first, i.e. building state to reach a bound that is a pure comparison. The bound itself is
 ;;the FIRST statement in the cap, before existence, type and ownership checks, so acquiring the cap
 ;;directly reaches it with nothing else able to answer -- the same technique CONF-07 uses on the twin.
+;;==== DPDC-G17 - IGNIS|C>DEBIT: you cannot debit more IGNIS than the account holds · 02 · let / invocation ==== 
+(print "--- [DPDC-G17 - IGNIS|C>DEBIT: you cannot debit more IGNIS than the account holds · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -1699,6 +1824,8 @@
 ;;
 (begin-tx "DPDC-G18 - XIv_CreditOrDebitDPDC: debiting a nonce with zero supply")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== DPDC-G18 - XIv_CreditOrDebitDPDC: debiting a nonce with zero supply · 01 · namespace ==== ==
+(print "--- [DPDC-G18 - XIv_CreditOrDebitDPDC: debiting a nonce with zero supply · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [DPDC-G18 · 01 · a debit against a nonce that holds nothing] ---")
 ;;`03_DPDC-C.pact:1073`. The helper reads the account's stored supply for the nonce and, when it is
@@ -1716,6 +1843,8 @@
 ;;through to `XE_W|Supply`, which is `P|UEV_IMC`-gated and rejects an external caller. So the
 ;;accepting side is asserted indirectly -- a CREDIT (cod=true) gets past this enforce and dies at the
 ;;write instead, with a different message.
+;;==== DPDC-G18 - XIv_CreditOrDebitDPDC: debiting a nonce with zero supply · 02 · let / invocation ==== 
+(print "--- [DPDC-G18 - XIv_CreditOrDebitDPDC: debiting a nonce with zero supply · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
@@ -1743,6 +1872,8 @@
 ;;
 (begin-tx "DPDC-G19 - XIv_MappedCreditOrDebitDPDC: nonces and amounts must be the same length")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== DPDC-G19 - XIv_MappedCreditOrDebitDPDC: nonces and amounts must be the same length · 01 · namespace ==== 
+(print "--- [DPDC-G19 - XIv_MappedCreditOrDebitDPDC: nonces and amounts must be the same length · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [DPDC-G19 · 01 · mismatched nonce/amount list lengths] ---")
 ;;`03_DPDC-C.pact:1088`. The helper zips <nonces> against <amounts> by index, so unequal lengths
@@ -1757,6 +1888,8 @@
 ;;be executed: `XIv_MappedCreditOrDebitDPDC` is a public unprotected defun -- only the WRITE beneath
 ;;it is policy-gated -- so the enforce is reachable with nothing in front of it. The distinction is
 ;;the whole reason one is pinned and the other annotated.
+;;==== DPDC-G19 - XIv_MappedCreditOrDebitDPDC: nonces and amounts must be the same length · 02 · let / invocation ==== 
+(print "--- [DPDC-G19 - XIv_MappedCreditOrDebitDPDC: nonces and amounts must be the same length · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)

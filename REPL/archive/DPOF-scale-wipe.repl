@@ -32,9 +32,13 @@
 (namespace "ouronet-ns")
 ;;==== TX-WSCALE-001 · 01 · env-sigs ==== =========================================================
 (print "--- [TX-WSCALE-001 · 01 · env-sigs] ---")
+;;==== TX-WSCALE-001 Fund + freeze a wide account · 01 · env-sigs (caps) ==== =====================
+(print "--- [TX-WSCALE-001 Fund + freeze a wide account · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
 ;;==== TX-WSCALE-001 · 02 · fund 60 segmented nonces + freeze ==== ================================
 (print "--- [TX-WSCALE-001 · 02 · fund 60 segmented nonces + freeze] ---")
+;;==== TX-WSCALE-001 Fund + freeze a wide account · 02 · let / invocation ==== ====================
+(print "--- [TX-WSCALE-001 Fund + freeze a wide account · 02 · let / invocation] ---")
 (let
     (
         (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
@@ -77,6 +81,8 @@
 (namespace "ouronet-ns")
 ;;==== TX-WSCALE-002 · 01 · env-sigs ==== =========================================================
 (print "--- [TX-WSCALE-002 · 01 · env-sigs] ---")
+;;==== TX-WSCALE-002 Measure slice gas at widths 10 / 20 / 30 · 01 · env-sigs (caps) ==== =========
+(print "--- [TX-WSCALE-002 Measure slice gas at widths 10 / 20 / 30 · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
 ;;==== TX-WSCALE-002 · 02 · widths 10 / 20 / 30 + derived ceiling ==== ============================
 (print "--- [TX-WSCALE-002 · 02 · widths 10 / 20 / 30 + derived ceiling] ---")
@@ -131,6 +137,7 @@
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")

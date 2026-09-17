@@ -1,4 +1,17 @@
 ;;
+;; REPL/Stage_02/[6.2.4]_AQP-FVT-OF.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_02/[6.2.4]_AQP-FVT-OF.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
+;;
 ;; REPL/Stage_02/[6.2.4]_AQP-FVT-OF.repl — OrtoFungible stake + vacate bulk smoke (TX-FVT-04..07)
 ;; Loaded by REPL/Stage_02/OF-stake-smoke.repl. TX-FVT-07 exercises DPOF::C_BulkTransfer via vacate batch.
 ;; Requires Stage 01 [6.5]_DPOF.repl (MVST-98c486052a51 on chain) + Stage 02 AQP deploy + AQP-BOOT Step 0 (TFT+DPOF IMC).
@@ -13,6 +26,8 @@
 (print "=== TX-FVT-04 — OrtoFungible score + class-2 pool bootstrap ================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-FVT-04 - OF score + class-2 pool bootstrap · 01 · let / invocation ==== =================
+(print "--- [TX-FVT-04 - OF score + class-2 pool bootstrap · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -101,6 +116,8 @@
 (print "=== TX-FVT-05 — CC_StakeOrtoFungible (phases 1–5 recipe) =====================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-FVT-05 - CC_StakeOrtoFungible end-to-end · 01 · let / invocation ==== ===================
+(print "--- [TX-FVT-05 - CC_StakeOrtoFungible end-to-end · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -195,6 +212,8 @@
 (print "=== TX-FVT-06 — CC_UnstakeOrtoFungible (ico1..ico5 recipe) ====================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-FVT-06 - CC_UnstakeOrtoFungible round-trip · 01 · let / invocation ==== =================
+(print "--- [TX-FVT-06 - CC_UnstakeOrtoFungible round-trip · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -274,7 +293,11 @@
 (print "=== TX-FVT-06b — M5 foreign-beneficiary OF stake/unstake (no stranding) ======")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-FVT-06b - M5 non-self OF round-trip (owner ANHD, foreign beneficiary EMMA) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-FVT-06b - M5 non-self OF round-trip (owner ANHD, foreign beneficiary EMMA) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-FVT-06b - M5 non-self OF round-trip (owner ANHD, foreign beneficiary EMMA) · 02 · let / invocation ==== 
+(print "--- [TX-FVT-06b - M5 non-self OF round-trip (owner ANHD, foreign beneficiary EMMA) · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -399,6 +422,8 @@
 (print "=== TX-FVT-07 — CCp_BatchVacateOrtoFungible (single batch drains → auto-finalize) ===")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-FVT-07 - CCp_BatchVacateOrtoFungible (UI-sliced batch vacate) · 01 · let / invocation ==== 
+(print "--- [TX-FVT-07 - CCp_BatchVacateOrtoFungible (UI-sliced batch vacate) · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -487,6 +512,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=== END TX-FVT-07 ==========================================================")
 (print "")
 ;;
@@ -495,6 +524,8 @@
 (print "=== TX-FVT-08 — CC_FullVacate (agnostic; pool-id only; on-chain scan) =======")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-FVT-08 - CC_FullVacate (agnostic one-tx vacate, class-2 OF) · 01 · let / invocation ==== 
+(print "--- [TX-FVT-08 - CC_FullVacate (agnostic one-tx vacate, class-2 OF) · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -588,9 +619,13 @@
 (print "=== TX-FVT-OF-NNS — #FP1: OF whole-nonce stake +1 / unstake -1 on pool nns ============")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-FVT-OF-NNS - #FP1 OF whole-nonce in/out nns edge · 01 · env-sigs (caps) ==== ============
+(print "--- [TX-FVT-OF-NNS - #FP1 OF whole-nonce in/out nns edge · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 ;; OF moves the WHOLE nonce, so each stake/unstake is a full 0<->occupied transition: stake +1, unstake -1.
 ;; Delta-based against whatever nns OfStakePool holds post-vacate.
+;;==== TX-FVT-OF-NNS - #FP1 OF whole-nonce in/out nns edge · 02 · let / invocation ==== ===========
+(print "--- [TX-FVT-OF-NNS - #FP1 OF whole-nonce in/out nns edge · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -653,6 +688,8 @@
 ;; ANHD's MVST nonce into it, then FAST-DRAIN: the nonce returns, nns/unn go back to pre-stake (settled on the
 ;; last-drain), the OF score is NOT decremented (v1 vacate would zero it), and the pool stays FROZEN (drain never
 ;; finalizes). SKIP if the owner holds no MVST nonce.
+;;==== TX-FVT-OF-DRAIN - vacate-v2 OF fast-drain: nonce back + score UNTOUCHED + not finalized · 01 · let / invocation ==== 
+(print "--- [TX-FVT-OF-DRAIN - vacate-v2 OF fast-drain: nonce back + score UNTOUCHED + not finalized · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)

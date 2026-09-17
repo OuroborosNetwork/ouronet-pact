@@ -1,4 +1,17 @@
 ;;
+;; REPL/RedTeam/[RT-G]_HostileCitizen.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/RedTeam/[RT-G]_HostileCitizen.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
+;;
 ;; REPL/RedTeam/[RT-G]_HostileCitizen.repl — FAMILY G: the hostile citizen module.
 ;;
 ;; This is the family the architecture invites. `2_CITIZEN/` is documented as "extension modules
@@ -31,6 +44,8 @@
 ;;-- exactly as the equivalent namespaces are on a live chain. So the real adversary deploys beside
 ;;the system rather than inside it, and calls ACROSS. That is the position modelled here, and it
 ;;requires no privilege at all.
+;;==== RT-G-001a - deploy a hostile module into the OPEN user namespace · 01 · namespace ==== =====
+(print "--- [RT-G-001a - deploy a hostile module into the OPEN user namespace · 01 · namespace] ---")
 (namespace "user")
 (module HOSTILE GOV
   @doc "A deliberately malicious citizen module. It does not exploit anything clever: it simply \
@@ -81,7 +96,11 @@
 ;;`IGNIS::C_TransferDalosFuel`, and it is safe by DELEGATION rather than by a gate: its body is a
 ;;`coin::transfer`, and Stoa's coin requires the SENDER's own managed TRANSFER capability. That is
 ;;attacked separately at <<RT-G-002>> rather than taken on trust.
+;;==== RT-G-001b - the adversary attacks the sovereign core · 01 · env-sigs (caps) ==== ===========
+(print "--- [RT-G-001b - the adversary attacks the sovereign core · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] } { "key": "PK_AncientHodler", "caps": [] }])
+;;==== RT-G-001b - the adversary attacks the sovereign core · 02 · let / invocation ==== ==========
+(print "--- [RT-G-001b - the adversary attacks the sovereign core · 02 · let / invocation] ---")
 (let
     (
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
@@ -160,7 +179,11 @@
 ;;That is the property worth publishing: the sovereign smart accounts are not protected by secrecy
 ;;or by a signature that could leak, but by a guard that is unsatisfiable from outside the module.
 ;;An attacker holding EVERY private key in the system still cannot move the gas station's funds.
+;;==== RT-G-002 - drain the gas station through the one ungated entrypoint · 01 · env-sigs (caps) ==== 
+(print "--- [RT-G-002 - drain the gas station through the one ungated entrypoint · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
+;;==== RT-G-002 - drain the gas station through the one ungated entrypoint · 02 · let / invocation ==== 
+(print "--- [RT-G-002 - drain the gas station through the one ungated entrypoint · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)

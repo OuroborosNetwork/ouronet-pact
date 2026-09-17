@@ -1,3 +1,16 @@
+;;
+;; REPL/modules/VST.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/modules/VST.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 ;; REPL/modules/VST.repl — STANDALONE VST (vesting/freezing/sleeping) tester.
 ;;
 ;; P2 rebuild. The previous version asserted NOTHING about VST -- it printed exactly the deploy
@@ -18,8 +31,12 @@
 ;;
 (begin-tx "VST-01 — a plain DPTF has no special links yet")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== VST-01 — a plain DPTF has no special links yet · 01 · namespace ==== =======================
+(print "--- [VST-01 — a plain DPTF has no special links yet · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [VST-01 · 01 · no links on a fresh token] ---")
+;;==== VST-01 — a plain DPTF has no special links yet · 02 · let / invocation ==== ================
+(print "--- [VST-01 — a plain DPTF has no special links yet · 02 · let / invocation] ---")
 (let
     (
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
@@ -44,6 +61,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [VST-02 · 01 · create the frozen link] ---")
+;;==== VST-02 — C_CreateFrozenLink mints the linked special ortofungible · 01 · let / invocation ==== 
+(print "--- [VST-02 — C_CreateFrozenLink mints the linked special ortofungible · 01 · let / invocation] ---")
 (let
     (
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
@@ -171,7 +190,11 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [VST-03 · 01 · freeze] ---")
+;;==== VST-03 — C_Freeze moves balance into the linked FROZEN DPTF · 01 · env-sigs (caps) ==== ====
+(print "--- [VST-03 — C_Freeze moves balance into the linked FROZEN DPTF · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== VST-03 — C_Freeze moves balance into the linked FROZEN DPTF · 02 · let / invocation ==== ===
+(print "--- [VST-03 — C_Freeze moves balance into the linked FROZEN DPTF · 02 · let / invocation] ---")
 (let
     (
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
@@ -214,6 +237,8 @@
 (begin-tx "VST-G8 - ATS refuses a Special or LP token as RT or RBT")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== VST-G8 - ATS refuses a Special or LP token as RT or RBT · 01 · env-sigs (caps) ==== ========
+(print "--- [VST-G8 - ATS refuses a Special or LP token as RT or RBT · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [VST-G8 · 01 · the Special/LP token rule, reached from the VST side] ---")
 ;;THIS GUARD LIVES IN 08_ATS.pact, NOT IN VST. It is pinned here because this is the only gated
@@ -230,6 +255,8 @@
 ;;assumed: `(UR_Konto "F|MOCKA-…")` is NOT `KST.ANHD`. Reassigning `owner-konto` for the duration
 ;;reproduces the ownership a normal RT candidate would have, which is the precondition the rule is
 ;;written to be evaluated AFTER; it does not weaken the rule under test.
+;;==== VST-G8 - ATS refuses a Special or LP token as RT or RBT · 02 · let / invocation ==== =======
+(print "--- [VST-G8 - ATS refuses a Special or LP token as RT or RBT · 02 · let / invocation] ---")
 (let
     (
         (ref-ATS:module{AutostakeV3} ATS)
@@ -295,6 +322,8 @@
 ;;by prefix, but its FROZEN slot is empty (asserted below), so the immutability check passes and the
 ;;prefix rule is the first thing that can refuse it. The two guards read different fields -- one the
 ;;link slot, one the id prefix -- and only a cross-kind input separates them.
+;;==== VST-G9 - DPTF|C>UPDATE-SPECIAL: the main DPTF cannot be Special · 01 · let / invocation ==== 
+(print "--- [VST-G9 - DPTF|C>UPDATE-SPECIAL: the main DPTF cannot be Special · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -387,6 +416,8 @@
 (print "--- [VST-04 · 01 · hibernating link] ---")
 ;;The hibernating link issues an ORTOFUNGIBLE (unlike the Frozen link, which is a DPTF): a
 ;;hibernation is time-locked, so each one needs its own nonce carrying its unlock time.
+;;==== VST-04 — hibernation: link, hibernate, and the nonce-bearing form · 01 · let / invocation ==== 
+(print "--- [VST-04 — hibernation: link, hibernate, and the nonce-bearing form · 01 · let / invocation] ---")
 (let
     (
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
@@ -463,9 +494,13 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [VST-05 · 01 · hibernate + repurpose] ---")
+;;==== VST-05 — C_Hibernate creates a time-locked nonce; C_RepurposeHibernating moves it · 01 · env-sigs (caps) ==== 
+(print "--- [VST-05 — C_Hibernate creates a time-locked nonce; C_RepurposeHibernating moves it · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 ;;C_RepurposeHibernating and C_ToggleTransferRoleHibernatingDPOF were invoked by NOTHING in any
 ;;asserting test (ledger G1 gap).
+;;==== VST-05 — C_Hibernate creates a time-locked nonce; C_RepurposeHibernating moves it · 02 · let / invocation ==== 
+(print "--- [VST-05 — C_Hibernate creates a time-locked nonce; C_RepurposeHibernating moves it · 02 · let / invocation] ---")
 (let
     (
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
@@ -528,6 +563,8 @@
 ;;VST|C_RepurposeSlumber was invoked by NOTHING in any asserting test (ledger G1 gap).
 ;;Reaching it needs the full chain: link -> sleep (twice, to have something to merge) ->
 ;;slumber (merge) -> repurpose.
+;;==== VST-06 — sleeping link + Sleep + Slumber + RepurposeSlumber · 01 · let / invocation ==== ===
+(print "--- [VST-06 — sleeping link + Sleep + Slumber + RepurposeSlumber · 01 · let / invocation] ---")
 (let
     (
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
@@ -575,7 +612,11 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [VST-07 · 01 · sleep, slumber, repurpose] ---")
+;;==== VST-07 — Slumber merges sleeping nonces; RepurposeSlumber re-issues them · 01 · env-sigs (caps) ==== 
+(print "--- [VST-07 — Slumber merges sleeping nonces; RepurposeSlumber re-issues them · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== VST-07 — Slumber merges sleeping nonces; RepurposeSlumber re-issues them · 02 · let / invocation ==== 
+(print "--- [VST-07 — Slumber merges sleeping nonces; RepurposeSlumber re-issues them · 02 · let / invocation] ---")
 (let
     (
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
@@ -643,6 +684,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [VST-08 · 01 · repurpose-slumber on the hibernating token] ---")
+;;==== VST-08 — SLUMBER is the HIBERNATION merge, not the sleeping one · 01 · env-sigs (caps) ==== 
+(print "--- [VST-08 — SLUMBER is the HIBERNATION merge, not the sleeping one · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 ;;THE NAMES DO NOT SAY THIS, and getting it backwards costs a confusing crash rather than a
 ;;clean rejection:
@@ -651,6 +694,8 @@
 ;;Applied to the wrong kind, VST|X>REPURPOSE-ORTO-FUNGIBLE resolves the parent through
 ;;UR_Hibernation on a sleeping token, gets the "|" sentinel back, and dies inside DPTF::UR_Konto
 ;;with "No value found in table ... for key: |" -- a table miss that names nothing useful.
+;;==== VST-08 — SLUMBER is the HIBERNATION merge, not the sleeping one · 02 · let / invocation ==== 
+(print "--- [VST-08 — SLUMBER is the HIBERNATION merge, not the sleeping one · 02 · let / invocation] ---")
 (let
     (
         (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
@@ -709,7 +754,11 @@
 ;;      C_Slumber -> XIv_MergeNonces(... vzh-tag 3)   tag 3 = Hibernating
 ;;and the tag decides TWO things: which link resolves the underlying DPTF, and which METADATA
 ;;SHAPE the surviving nonce is minted with.
+;;==== VST-09 — VST|C_Merge, and the guard that SHOULD separate it from C_Slumber · 01 · env-sigs (caps) ==== 
+(print "--- [VST-09 — VST|C_Merge, and the guard that SHOULD separate it from C_Slumber · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== VST-09 — VST|C_Merge, and the guard that SHOULD separate it from C_Slumber · 02 · let / invocation ==== 
+(print "--- [VST-09 — VST|C_Merge, and the guard that SHOULD separate it from C_Slumber · 02 · let / invocation] ---")
 (let
     (
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
@@ -801,7 +850,11 @@
 ;;
 ;;OURO carries vesting/reservation/sleeping/hibernation links from [4.0]_Sovereign-Executor, so
 ;;this block uses OURO rather than rebuilding four link types on MOCKA.
+;;==== VST-10 — the four RECOVERY repurposes, and the two release ops · 01 · env-sigs (caps) ==== =
+(print "--- [VST-10 — the four RECOVERY repurposes, and the two release ops · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== VST-10 — the four RECOVERY repurposes, and the two release ops · 02 · let / invocation ==== 
+(print "--- [VST-10 — the four RECOVERY repurposes, and the two release ops · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -910,7 +963,11 @@
 (print "--- [VST-11 · 01 · sleep to a third party, recover it] ---")
 ;;MOCKA, not OURO: OURO carries vesting and reservation links from [4.0]_Sovereign-Executor but
 ;;NOT a sleeping one, and C_Sleep's capability enforces the link exists. VST-06 created MOCKA's.
+;;==== VST-11 — C_RepurposeSleeping, then the two MATURITY releases · 01 · env-sigs (caps) ==== ===
+(print "--- [VST-11 — C_RepurposeSleeping, then the two MATURITY releases · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== VST-11 — C_RepurposeSleeping, then the two MATURITY releases · 02 · let / invocation ==== ==
+(print "--- [VST-11 — C_RepurposeSleeping, then the two MATURITY releases · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -1104,7 +1161,11 @@
 ;;These two exist because a FROZEN or RESERVED DPTF is deliberately non-transferable by default:
 ;;that is the point of freezing and reserving. The toggle is the narrow exception, and the
 ;;property worth asserting is that granting on one special link does NOT leak to the other.
+;;==== VST-12 — the two SPECIAL-DPTF transfer-role toggles · 01 · env-sigs (caps) ==== ============
+(print "--- [VST-12 — the two SPECIAL-DPTF transfer-role toggles · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== VST-12 — the two SPECIAL-DPTF transfer-role toggles · 02 · let / invocation ==== ===========
+(print "--- [VST-12 — the two SPECIAL-DPTF transfer-role toggles · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -1177,6 +1238,8 @@
 ;;NOTE ON ATTRIBUTION: DPOF|C>UPDATE-SPECIAL carries the IDENTICAL message, so this test is
 ;;written as a module-qualified call — (VST.VST|X>REPURPOSE-ORTO-FUNGIBLE …) — which is what lets
 ;;the coverage tool credit VST rather than crediting both modules from one assertion.
+;;==== VST-G1 — VST|X>REPURPOSE-ORTO-FUNGIBLE: the vesting/sleeping/hibernation tag · 01 · env-sigs (caps) ==== 
+(print "--- [VST-G1 — VST|X>REPURPOSE-ORTO-FUNGIBLE: the vesting/sleeping/hibernation tag · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (map print
     [
@@ -1203,7 +1266,11 @@
 ;;
 ;;The assertions are module-qualified — (DPTF.DPTF|C>UPDATE-SPECIAL …) — so coverage credits DPTF
 ;;even though the block lives in the VST suite.
+;;==== VST-G2 — DPTF|C>UPDATE-SPECIAL: the special-link rules, using VST's own linked tokens · 01 · env-sigs (caps) ==== 
+(print "--- [VST-G2 — DPTF|C>UPDATE-SPECIAL: the special-link rules, using VST's own linked tokens · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== VST-G2 — DPTF|C>UPDATE-SPECIAL: the special-link rules, using VST's own linked tokens · 02 · let / invocation ==== 
+(print "--- [VST-G2 — DPTF|C>UPDATE-SPECIAL: the special-link rules, using VST's own linked tokens · 02 · let / invocation] ---")
 (let
     (
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
@@ -1275,7 +1342,11 @@
 ;;All three are driven, because the SLEEPING list is deliberately shorter than the other two and
 ;;a single test would not show that. An edit that "tidied" the three lists into one shared
 ;;constant would silently forbid sleeping links on LP tokens, and only this block would notice.
+;;==== VST-G3 — DPOF|C>UPDATE-SPECIAL: all three link kinds refuse a SPECIAL main token · 01 · env-sigs (caps) ==== 
+(print "--- [VST-G3 — DPOF|C>UPDATE-SPECIAL: all three link kinds refuse a SPECIAL main token · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== VST-G3 — DPOF|C>UPDATE-SPECIAL: all three link kinds refuse a SPECIAL main token · 02 · let / invocation ==== 
+(print "--- [VST-G3 — DPOF|C>UPDATE-SPECIAL: all three link kinds refuse a SPECIAL main token · 02 · let / invocation] ---")
 (let
     (
         (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
@@ -1342,6 +1413,8 @@
 ;;reaches the authority error -- which would make this test pass for entirely the wrong reason.
 ;;Funding her first means the rejection below really is the ownership gate. Note the message: it
 ;;demands the OWNER's keyset (PK_AncientHodler), not EMMA's -- that is the gate speaking.
+;;==== VST-G4 -- the ownership claim on every Create*Link, asserted rather than assumed · 01 · let / invocation ==== 
+(print "--- [VST-G4 -- the ownership claim on every Create*Link, asserted rather than assumed · 01 · let / invocation] ---")
 (let ((split-stoa:[decimal] (DALOS.URC_SplitSTOAPrices KST.EMMA (DALOS.UR_UsagePrice "dpmf")))
       (ek:string "ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48"))
   (env-sigs
@@ -1364,6 +1437,8 @@
 ;;
 (begin-tx "VST-G4b -- reservation link")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== VST-G4b -- reservation link · 01 · namespace ==== ==========================================
+(print "--- [VST-G4b -- reservation link · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [VST-G4b . 01 . reservation] ---")
 ;;The reservation doc draws an explicit contrast -- reserved TOKENS may later be generated by
@@ -1383,6 +1458,8 @@
 ;;
 (begin-tx "VST-G4c -- vesting link")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== VST-G4c -- vesting link · 01 · namespace ==== ==============================================
+(print "--- [VST-G4c -- vesting link · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [VST-G4c . 01 . vesting] ---")
 (map print
@@ -1399,6 +1476,8 @@
 (begin-tx "VST-G5 -- the IMMUTABLE claim: a link cannot be created twice")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== VST-G5 -- the IMMUTABLE claim: a link cannot be created twice · 01 · env-sigs (caps) ==== ==
+(print "--- [VST-G5 -- the IMMUTABLE claim: a link cannot be created twice · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [VST-G5 . 01 . re-creating an existing sleeping link] ---")
 ;;FOUND BY `python3 tools/_docclaims.py` (IMMUTABLE tier -- added after noticing that "immutable" matched
@@ -1431,6 +1510,8 @@
 (begin-tx "VST-G5b -- and the hibernating link likewise")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== VST-G5b -- and the hibernating link likewise · 01 · env-sigs (caps) ==== ===================
+(print "--- [VST-G5b -- and the hibernating link likewise · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [VST-G5b . 01 . re-creating an existing hibernating link] ---")
 ;;Both link types carry the same @doc sentence, so both are asserted. A guard added to one and not
@@ -1467,6 +1548,8 @@
 ;;without touching a single table -- no module admin, nothing to roll back but the clock itself. When
 ;;a guard compares against `(at "block-time" (chain-data))`, reach for this before reaching for state
 ;;surgery; it is cheaper and it cannot leak.
+;;==== VST-G6 — UEV_StillHasSleeping: dormancy is read off the CLOCK, not off a flag · 01 · let / invocation ==== 
+(print "--- [VST-G6 — UEV_StillHasSleeping: dormancy is read off the CLOCK, not off a flag · 01 · let / invocation] ---")
 (let
     (
         (z:string "Z|MOCKA-98c486052a51")
@@ -1522,11 +1605,15 @@
 (begin-tx "VST-G7 — the hibernation bound, two clock guards, and a nonce that cannot be unsleeped")
 (env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== VST-G7 — the hibernation bound, two clock guards, and a nonce that cannot be unsleeped · 01 · env-sigs (caps) ==== 
+(print "--- [VST-G7 — the hibernation bound, two clock guards, and a nonce that cannot be unsleeped · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }, { "key": "PK_Emma", "caps": [] }])
 (print "--- [VST-G7 · 01 · hibernation must last between a day and a century] ---")
 ;;`VST|C>HIBERNATE` bounds its duration: `(and (>= dayz 1) (<= dayz 36500))`. Pure argument-domain, and
 ;;both ends are driven, because a guard written `(>= dayz 1)` alone would pass a zero test and fail
 ;;nothing else -- one case cannot tell a range from a floor.
+;;==== VST-G7 — the hibernation bound, two clock guards, and a nonce that cannot be unsleeped · 02 · let / invocation ==== 
+(print "--- [VST-G7 — the hibernation bound, two clock guards, and a nonce that cannot be unsleeped · 02 · let / invocation] ---")
 (let
     (
         (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
@@ -1665,6 +1752,8 @@
 (begin-tx "VST-G10 - the merge clients refuse the wrong DPOF kind")
 (env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== VST-G10 - the merge clients refuse the wrong DPOF kind · 01 · env-sigs (caps) ==== =========
+(print "--- [VST-G10 - the merge clients refuse the wrong DPOF kind · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [VST-G10 · 01 · Merge wants Z|, Slumber wants H|] ---")
 ;;`11_VST.pact:471` and `:477`, both ADDED 2026-09-12 as the fix for the un-unsleepable nonce
@@ -1675,6 +1764,8 @@
 ;;BOTH DIRECTIONS OF BOTH GUARDS, which for a pair of mirrored rules is the minimum that means
 ;;anything: each client must ACCEPT its own kind and REFUSE the other's. Two refusals alone would be
 ;;satisfied by a pair of clients that refuse everything.
+;;==== VST-G10 - the merge clients refuse the wrong DPOF kind · 02 · let / invocation ==== ========
+(print "--- [VST-G10 - the merge clients refuse the wrong DPOF kind · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)

@@ -1,3 +1,16 @@
+;;
+;; REPL/modules/SWP.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/modules/SWP.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 ;; REPL/modules/SWP.repl — STANDALONE SWP tester (liquidity pools).
 ;; Fresh boot: Stage 00 + Stage 1 deploy core + [6.2]_DPTF (SWP pairs need its BUSD/token
 ;; fixtures) + the SWP suite. Run: cd REPL && pact modules/SWP.repl
@@ -20,12 +33,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [SWPX-01a · 01 · the first token must be a PRINCIPAL] ---")
+;;==== SWPX-01a — SWP|C_IssueStandardPool, defpact step 0|2 · 01 · env-sigs (caps) ==== ===========
+(print "--- [SWPX-01a — SWP|C_IssueStandardPool, defpact step 0|2 · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 ;; SWPI::UEV_Issue applies an extra rule to W and P pools (the two with amp = -1.0) that stable
 ;; pools do not carry: the FIRST pool token must be a Principal. A stable pool may lead with any
 ;; token that is one hop from a principal; a weighted or standard pool may not. Rejecting first
 ;; proves the rule exists before the happy path relies on satisfying it. Step 0 of the defpact is
 ;; validation only -- no writes -- so catching this abort inline leaves nothing behind (Rule 9).
+;;==== SWPX-01a — SWP|C_IssueStandardPool, defpact step 0|2 · 02 · let / invocation ==== ==========
+(print "--- [SWPX-01a — SWP|C_IssueStandardPool, defpact step 0|2 · 02 · let / invocation] ---")
 (let
     (
         (ref-SWP:module{SwapperV4} SWP)
@@ -102,6 +119,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [SWPX-01b · 01 · paying step] ---")
+;;==== SWPX-01b — standard pool, defpact step 1|2 (ignis + STOA) · 01 · let / invocation ==== =====
+(print "--- [SWPX-01b — standard pool, defpact step 1|2 (ignis + STOA) · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -143,9 +162,13 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [SWPX-01c · 01 · finalising step] ---")
+;;==== SWPX-01c — standard pool, defpact step 2|2 + assertions · 01 · env-sigs (caps) ==== ========
+(print "--- [SWPX-01c — standard pool, defpact step 2|2 + assertions · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (continue-pact 2 false "2n12TVKIdyigszwESxXUSOkAtK48XfsKcVoUGxWYSSE")
 (print "--- [SWPX-01c · 02 · the pool that was built] ---")
+;;==== SWPX-01c — standard pool, defpact step 2|2 + assertions · 02 · let / invocation ==== =======
+(print "--- [SWPX-01c — standard pool, defpact step 2|2 + assertions · 02 · let / invocation] ---")
 (let
     (
         (ref-SWP:module{SwapperV4} SWP)
@@ -200,11 +223,15 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [SWPX-02a · 01 · weight validation, then the real issue] ---")
+;;==== SWPX-02a — SWP|C_IssueWeightedPool, defpact step 0|2 · 01 · env-sigs (caps) ==== ===========
+(print "--- [SWPX-02a — SWP|C_IssueWeightedPool, defpact step 0|2 · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 ;; The weight rules are an enforce-one: weights either sum to EXACTLY 1.0 (weighted) or are all
 ;; 1.0 (standard/stable). Anything between is refused, and each weight must be at least 0.1.
 ;; Both rejections are validation-only (defpact step 0 writes nothing), so probing them inline
 ;; leaves no residue -- Rule 9.
+;;==== SWPX-02a — SWP|C_IssueWeightedPool, defpact step 0|2 · 02 · let / invocation ==== ==========
+(print "--- [SWPX-02a — SWP|C_IssueWeightedPool, defpact step 0|2 · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-CP:module{TalosStageOne_ClientPactsV4} TS01-CP)
@@ -250,6 +277,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [SWPX-02b · 01 · paying step] ---")
+;;==== SWPX-02b — weighted pool, defpact step 1|2 (ignis + STOA) · 01 · let / invocation ==== =====
+(print "--- [SWPX-02b — weighted pool, defpact step 1|2 (ignis + STOA) · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -287,9 +316,13 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [SWPX-02c · 01 · finalising step] ---")
+;;==== SWPX-02c — weighted pool, defpact step 2|2 + assertions · 01 · env-sigs (caps) ==== ========
+(print "--- [SWPX-02c — weighted pool, defpact step 2|2 + assertions · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (continue-pact 2 false "2n12TVKIdyigszwESxXUSOkAtK48XfsKcVoUGxWYSSE")
 (print "--- [SWPX-02c · 02 · the weighted pool, and how it differs] ---")
+;;==== SWPX-02c — weighted pool, defpact step 2|2 + assertions · 02 · let / invocation ==== =======
+(print "--- [SWPX-02c — weighted pool, defpact step 2|2 + assertions · 02 · let / invocation] ---")
 (let
     (
         (ref-SWP:module{SwapperV4} SWP)
@@ -333,6 +366,8 @@
 (begin-tx "SWPX-02d - SWP|S>WEIGHTS: modifying weights on a live weighted pool")
 (env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== SWPX-02d - SWP|S>WEIGHTS: modifying weights on a live weighted pool · 01 · env-sigs (caps) ==== 
+(print "--- [SWPX-02d - SWP|S>WEIGHTS: modifying weights on a live weighted pool · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [SWPX-02d · 01 · all weights must add to exactly 1.0] ---")
 ;;`15_SWP.pact:516`. SWPX-02a above records why this could not be pinned there: the ISSUE path
@@ -349,6 +384,8 @@
 ;;>= 0.1 and respects fee precision, so the per-weight lambda ABOVE passes and the sum rule is the
 ;;first thing that can refuse. Dropping a weight to 0.05 would have been the obvious way to make an
 ;;invalid list and would have pinned the wrong guard.
+;;==== SWPX-02d - SWP|S>WEIGHTS: modifying weights on a live weighted pool · 02 · let / invocation ==== 
+(print "--- [SWPX-02d - SWP|S>WEIGHTS: modifying weights on a live weighted pool · 02 · let / invocation] ---")
 (let
     (
         (ref-SWP:module{SwapperV4} SWP)
@@ -422,6 +459,8 @@
 ;; Both appear in no live invocation anywhere in the suite. SWP|C_ChangeOwnership in particular
 ;; was counted as covered by the ledger purely on the strength of a COMMENTED-OUT line, which is
 ;; what motivated stripping comments before measuring (Rule 10).
+;;==== SWPX-03 — SWP|C_ChangeOwnership and SWP|C_UpgradeBranding · 01 · let / invocation ==== =====
+(print "--- [SWPX-03 — SWP|C_ChangeOwnership and SWP|C_UpgradeBranding · 01 · let / invocation] ---")
 (let
     (
         (unused:bool true)
@@ -538,12 +577,16 @@
 ;;
 (begin-tx "SWP-G1 — UEV_SwapData: five ways to describe a swap wrongly")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP-G1 — UEV_SwapData: five ways to describe a swap wrongly · 01 · namespace ==== ==========
+(print "--- [SWP-G1 — UEV_SwapData: five ways to describe a swap wrongly · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [SWP-G1 · 01 · swap-input validation] ---")
 ;;P3.3. UEV_SwapData guards the shape of a swap request against the pool it names, and it has
 ;;FIVE distinct rejections that a single "bad input" test would collapse into one. Every trip
 ;;below is the SAME valid request with exactly one property broken, taken against pool2 -- a
 ;;real 3-token stable pool the [6.3] suite built and swapped through.
+;;==== SWP-G1 — UEV_SwapData: five ways to describe a swap wrongly · 02 · let / invocation ==== ===
+(print "--- [SWP-G1 — UEV_SwapData: five ways to describe a swap wrongly · 02 · let / invocation] ---")
 (let
     (
         (ref-SWPI:module{SwapperIssueV4} SWPI)
@@ -640,6 +683,8 @@
 ;;
 (begin-tx "SWP-G2 — pool identity, membership and fee-shape validators")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP-G2 — pool identity, membership and fee-shape validators · 01 · namespace ==== ==========
+(print "--- [SWP-G2 — pool identity, membership and fee-shape validators · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [SWP-G2 · 01 · identity, membership, fee shape] ---")
 ;;P3.3 continued. Four unprotected SWP validators, each tripped on the ONE property it owns.
@@ -649,6 +694,8 @@
 ;;anchored here on the SWP-only prefix. _enforce_coverage.py --ambiguous exists to catch exactly
 ;;that mistake, and it was made once already (a rotate-ownership test credited both AQP-SCORE and
 ;;AQP-FVT because it matched only the shared tail).
+;;==== SWP-G2 — pool identity, membership and fee-shape validators · 02 · let / invocation ==== ===
+(print "--- [SWP-G2 — pool identity, membership and fee-shape validators · 02 · let / invocation] ---")
 (let
     (
         (ref-SWP:module{SwapperV4} SWP)
@@ -698,6 +745,8 @@
 ;;
 (begin-tx "SWP-G3 — state guards that take their expected answer as an argument")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP-G3 — state guards that take their expected answer as an argument · 01 · namespace ==== =
+(print "--- [SWP-G3 — state guards that take their expected answer as an argument · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [SWP-G3 · 01 · asymetric / frozen-LP / sleeping-LP] ---")
 ;;P3.3. Three guards of the shape (enforce (= <live value> <state argument>) ...). Each takes the
@@ -713,6 +762,8 @@
 ;;silently drops the extra argument, so the caller was told the flag must be "<>". Verified by
 ;;rendering it before changing anything. The placeholder is corrected, and these assertions pin
 ;;the corrected text.
+;;==== SWP-G3 — state guards that take their expected answer as an argument · 02 · let / invocation ==== 
+(print "--- [SWP-G3 — state guards that take their expected answer as an argument · 02 · let / invocation] ---")
 (let
     (
         (ref-SWP:module{SwapperV4} SWP)
@@ -750,6 +801,8 @@
 ;;
 (begin-tx "SWP-G4 — the slippage constructor's two input rules")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP-G4 — the slippage constructor's two input rules · 01 · namespace ==== ==================
+(print "--- [SWP-G4 — the slippage constructor's two input rules · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [SWP-G4 · 01 · slippage precision and bounds] ---")
 ;;P3.3. UDC_SlippageObject validates the slippage argument twice, and the two rules are
@@ -767,6 +820,8 @@
 ;;can separate them and _enforce_coverage.py will credit both sites for these assertions. Only
 ;;UDC_SlippageObject is actually proven here; the Smart-Swap constructor needs a live multi-hop
 ;;route (URC_HopperActive) and remains unpinned in fact if not in the count.
+;;==== SWP-G4 — the slippage constructor's two input rules · 02 · let / invocation ==== ===========
+(print "--- [SWP-G4 — the slippage constructor's two input rules · 02 · let / invocation] ---")
 (let
     (
         (ref-SWPU:module{SwapperUsageV3} SWPU)
@@ -815,6 +870,8 @@
 ;;
 (begin-tx "SWP-G5 — SWPLC liquidity admission: a disabled mode and an over-large withdrawal")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP-G5 — SWPLC liquidity admission: a disabled mode and an over-large withdrawal · 01 · namespace ==== 
+(print "--- [SWP-G5 — SWPLC liquidity admission: a disabled mode and an over-large withdrawal · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [SWP-G5 · 01 · dormant mode / remove bound] ---")
 ;;P3.3, first sweep of SWPLC. Two guards whose rejecting input needs no new fixture:
@@ -830,6 +887,8 @@
 ;;is always one past the limit, whatever the pool currently holds, and the accepted case at
 ;;exactly the supply pins the bound as INCLUSIVE. A hardcoded "huge number" would prove the guard
 ;;rejects something, but not WHERE it draws the line.
+;;==== SWP-G5 — SWPLC liquidity admission: a disabled mode and an over-large withdrawal · 02 · let / invocation ==== 
+(print "--- [SWP-G5 — SWPLC liquidity admission: a disabled mode and an over-large withdrawal · 02 · let / invocation] ---")
 (let
     (
         (ref-SWP:module{SwapperV4} SWP)
@@ -866,6 +925,8 @@
 ;;
 (begin-tx "SWP-G6 — SWPI pure-compute validators: the `v` band, where a bad ARGUMENT is the whole test")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP-G6 — SWPI pure-compute validators: the `v` band, where a bad ARGUMENT is the whole test · 01 · namespace ==== 
+(print "--- [SWP-G6 — SWPI pure-compute validators: the `v` band, where a bad ARGUMENT is the whole test · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [SWP-G6 · 01 · the UCv_/URCv_ band on SWPI] ---")
 ;;P3.3, first sweep of SWPI. Every guard here sits on a UCv_ or URCv_ function -- the `v` role
@@ -883,6 +944,8 @@
 ;;on wording alone, and a divergence between parse and table -- exactly the bug this pair exists
 ;;to make impossible -- would go unnoticed. Both are exercised, and both are asserted to agree
 ;;on the HAPPY path first, which is what actually proves parse == table here.
+;;==== SWP-G6 — SWPI pure-compute validators: the `v` band, where a bad ARGUMENT is the whole test · 02 · let / invocation ==== 
+(print "--- [SWP-G6 — SWPI pure-compute validators: the `v` band, where a bad ARGUMENT is the whole test · 02 · let / invocation] ---")
 (let
     (
         (ref-SWPI:module{SwapperIssueV4} SWPI)
@@ -946,6 +1009,8 @@
 ;;
 (begin-tx "SWP-G7 — SWPL liquidity-shape validators, and the mixed-sign list that used to pass")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP-G7 — SWPL liquidity-shape validators, and the mixed-sign list that used to pass · 01 · namespace ==== 
+(print "--- [SWP-G7 — SWPL liquidity-shape validators, and the mixed-sign list that used to pass · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [SWP-G7 · 01 · the SWPL URCv_ band] ---")
 ;;URCv_AreAmountsBalanced carries a history worth pinning. Its @doc records that the check used
@@ -956,6 +1021,8 @@
 ;;is untested: an all-zero list trips the sum, and a mixed-sign list whose sum is still POSITIVE
 ;;is the only shape that reaches the per-element rule. That mixed-sign case is precisely the
 ;;regression the fix was written for, so it is now a standing test rather than a comment.
+;;==== SWP-G7 — SWPL liquidity-shape validators, and the mixed-sign list that used to pass · 02 · let / invocation ==== 
+(print "--- [SWP-G7 — SWPL liquidity-shape validators, and the mixed-sign list that used to pass · 02 · let / invocation] ---")
 (let
     (
         (ref-SWPL:module{SwapperLiquidityV2} SWPL)
@@ -1009,6 +1076,8 @@
 ;;
 (begin-tx "SWP-G8 — UEV_FeeSplit and the STOA precision floor")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP-G8 — UEV_FeeSplit and the STOA precision floor · 01 · namespace ==== ===================
+(print "--- [SWP-G8 — UEV_FeeSplit and the STOA precision floor · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [SWP-G8 · 01 · fee-split range, STOA precision] ---")
 ;;UEV_FeeSplit validates a {target, value} pair: the target must be a real Ouronet account, and
@@ -1020,6 +1089,8 @@
 ;;LIQUID's UEV_Amount is here for the same reason UTIL-12 keeps its pairs together: it is a
 ;;precision floor at STOA's 12 decimals, and the only input that says anything is the one that
 ;;sits exactly on the boundary.
+;;==== SWP-G8 — UEV_FeeSplit and the STOA precision floor · 02 · let / invocation ==== ============
+(print "--- [SWP-G8 — UEV_FeeSplit and the STOA precision floor · 02 · let / invocation] ---")
 (let
     (
         (ref-SWP:module{SwapperV4} SWP)
@@ -1074,6 +1145,8 @@
 ;;ONE TRANSACTION IS SAFE HERE, unlike the DALOS gas-station block: a granted capability is cached
 ;;per (capability, ARGUMENTS), and every call below differs in its arguments, so each re-runs the
 ;;body. Identical arguments would return the cached grant and silently pass.
+;;==== SWP-G9 — SWPU smart-swap admission: four ways a route is refused before any token moves · 01 · env-sigs (caps) ==== 
+(print "--- [SWP-G9 — SWPU smart-swap admission: four ways a route is refused before any token moves · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (map print
     [
@@ -1108,7 +1181,11 @@
 ;;membership inside the per-index map. Those are two distinct guards with two distinct messages,
 ;;and it would be easy to assume one covers the other -- so both are driven, each with the other
 ;;side held valid.
+;;==== SWP-G10 — SWPU|X>SWAP: single-pool admission, membership on both sides of the trade · 01 · env-sigs (caps) ==== 
+(print "--- [SWP-G10 — SWPU|X>SWAP: single-pool admission, membership on both sides of the trade · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
+;;==== SWP-G10 — SWPU|X>SWAP: single-pool admission, membership on both sides of the trade · 02 · let / invocation ==== 
+(print "--- [SWP-G10 — SWPU|X>SWAP: single-pool admission, membership on both sides of the trade · 02 · let / invocation] ---")
 (let
     (
         (pool:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
@@ -1158,7 +1235,11 @@
 ;;NOTE: the toggle is called WITHOUT a (try …) wrapper. It writes to SWP|Pairs, and Pact forbids
 ;;database writes inside `try` -- the attempt fails with "Operation disallowed in read-only or
 ;;sys-only mode", and that error is itself uncatchable.
+;;==== SWP-G11a — turn a pool's swap capability OFF (the fixture the inactive guards need) · 01 · env-sigs (caps) ==== 
+(print "--- [SWP-G11a — turn a pool's swap capability OFF (the fixture the inactive guards need) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== SWP-G11a — turn a pool's swap capability OFF (the fixture the inactive guards need) · 02 · let / invocation ==== 
+(print "--- [SWP-G11a — turn a pool's swap capability OFF (the fixture the inactive guards need) · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
@@ -1189,7 +1270,11 @@
 ;;The single-pool guard and the smart-swap PATH guard are separate checks with separate messages:
 ;;the first refuses a swap AT a dead pool, the second refuses a multi-hop route that merely passes
 ;;THROUGH one. A router that only checked the endpoints would still send funds down a dead hop.
+;;==== SWP-G11b — with swapping off, both inactive-pool guards fire · 01 · env-sigs (caps) ==== ===
+(print "--- [SWP-G11b — with swapping off, both inactive-pool guards fire · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
+;;==== SWP-G11b — with swapping off, both inactive-pool guards fire · 02 · let / invocation ==== ==
+(print "--- [SWP-G11b — with swapping off, both inactive-pool guards fire · 02 · let / invocation] ---")
 (let
     (
         (pool:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
@@ -1270,7 +1355,11 @@
 ;;Turning swapping back ON runs the worth floor: a pool may only be restarted if it is worth more
 ;;than UR_InactiveLimit. This pool is well above it, so the restart succeeds -- and asserting the
 ;;margin FIRST is what makes that a statement about the guard rather than a hope.
+;;==== SWP-G11c — restore: swapping back ON, and the worth floor that gates the restart · 01 · env-sigs (caps) ==== 
+(print "--- [SWP-G11c — restore: swapping back ON, and the worth floor that gates the restart · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== SWP-G11c — restore: swapping back ON, and the worth floor that gates the restart · 02 · let / invocation ==== 
+(print "--- [SWP-G11c — restore: swapping back ON, and the worth floor that gates the restart · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
@@ -1310,7 +1399,11 @@
 ;;OURO is a major principal in this suite, and both refusals are driven against it with DIFFERENT
 ;;operations (remove, rotate) because they are separate guards with separate messages — a reader
 ;;could easily assume one covers the other.
+;;==== SWP-G12 — the PRINCIPAL register: what may be removed, rotated, or named primordial · 01 · env-sigs (caps) ==== 
+(print "--- [SWP-G12 — the PRINCIPAL register: what may be removed, rotated, or named primordial · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== SWP-G12 — the PRINCIPAL register: what may be removed, rotated, or named primordial · 02 · let / invocation ==== 
+(print "--- [SWP-G12 — the PRINCIPAL register: what may be removed, rotated, or named primordial · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
@@ -1357,7 +1450,11 @@
 ;;this suite's standard pool is stable. Offering it weights is refused on pool TYPE, not on the
 ;;weights themselves — the vector passed sums to exactly 1.0 so the weight-sum guard cannot be what
 ;;answers.
+;;==== SWP-G13 — the idempotent-flag family, and an operation offered to the wrong pool TYPE · 01 · env-sigs (caps) ==== 
+(print "--- [SWP-G13 — the idempotent-flag family, and an operation offered to the wrong pool TYPE · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== SWP-G13 — the idempotent-flag family, and an operation offered to the wrong pool TYPE · 02 · let / invocation ==== 
+(print "--- [SWP-G13 — the idempotent-flag family, and an operation offered to the wrong pool TYPE · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
@@ -1392,6 +1489,8 @@
 ;;
 (begin-tx "SWP-G14 — liquidity input shape, LP compatibility, and the issue token count")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP-G14 — liquidity input shape, LP compatibility, and the issue token count · 01 · namespace ==== 
+(print "--- [SWP-G14 — liquidity input shape, LP compatibility, and the issue token count · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [SWP-G14 · 01 · SWPLC / SWPL / SWPI validators, called directly] ---")
 ;;P3.3. Plain callable UEV_ functions across three SWP-family modules, driven against this
@@ -1482,6 +1581,8 @@
 ;;The two split TYPES are the whole lever: LiquiditySplitType is {iz-balanced, iz-asymmetric}, so
 ;;one object asserts "this deposit is proportional" and the other "this deposit is lopsided", and
 ;;the guards below branch on exactly that.
+;;==== SWP-G15 — the liquidity-KIND gates, driven with a constructed LiquidityData · 01 · env-sigs (caps) ==== 
+(print "--- [SWP-G15 — the liquidity-KIND gates, driven with a constructed LiquidityData · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
@@ -1539,6 +1640,8 @@
 ;;
 ;;Toggled off, asserted, and toggled back — with the restoration asserted, because everything after
 ;;this block in the file (and in any suite that loads it) runs under that switch.
+;;==== SWP-G16 — asymmetric additions are refused while the global switch is off · 01 · env-sigs (caps) ==== 
+(print "--- [SWP-G16 — asymmetric additions are refused while the global switch is off · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
@@ -1596,6 +1699,8 @@
 ;;The bundle is built as an object literal because SWPU publishes no UDC for it — unlike the SWPL
 ;;LiquidityData case. Its three sub-objects (SwapRoute / CachedPathOrMiss / TokenPathPair) are only
 ;;read for their nodes/edges here, so the boost and stoa paths are supplied empty.
+;;==== SWP-G17 — explicit swap routes, and the pool-supply floor · 01 · env-sigs (caps) ==== ======
+(print "--- [SWP-G17 — explicit swap routes, and the pool-supply floor · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
@@ -1641,6 +1746,8 @@
 ;;
 (begin-tx "SWP-G18 — the asymmetric-deviation ceiling")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP-G18 — the asymmetric-deviation ceiling · 01 · namespace ==== ===========================
+(print "--- [SWP-G18 — the asymmetric-deviation ceiling · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [SWP-G18 · 01 · UEV_Liquidity deviation bound] ---")
 ;;P3.3. A plain callable UEV_ taking a LiquidityData object — built with SWPL's own constructors, as
@@ -1701,6 +1808,8 @@
 ;;
 (begin-tx "SWP-G19 — a pair cannot be re-created in either token order")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP-G19 — a pair cannot be re-created in either token order · 01 · namespace ==== ==========
+(print "--- [SWP-G19 — a pair cannot be re-created in either token order · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [SWP-G19 · 01 · UEV_CheckTwo, both orderings] ---")
 ;;P3.3. UEV_CheckTwo exists because the pool id is ORDER-SENSITIVE: UC_PoolID [A B] and [B A] are
@@ -1763,6 +1872,8 @@
 ;;one thing. Note in particular the last two: a two-token pool with a ONE-entry weight vector
 ;;trips ARITY, while a two-token pool with weights summing to 0.6 gets past arity and trips the
 ;;VALUE rule. Those are separate guards with separate messages and one input cannot prove both.
+;;==== SWP-G14 — SWPI UEV_Issue: the pool-shape rules, each reached past the one before it · 01 · env-sigs (caps) ==== 
+(print "--- [SWP-G14 — SWPI UEV_Issue: the pool-shape rules, each reached past the one before it · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
@@ -1801,6 +1912,8 @@
 (begin-tx "SWP-G20 -- the LP-fee bound, at both edges")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== SWP-G20 -- the LP-fee bound, at both edges · 01 · env-sigs (caps) ==== =====================
+(print "--- [SWP-G20 -- the LP-fee bound, at both edges · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [SWP-G20 . 01 . above the cap and below the floor] ---")
 ;;FOUND BY `python3 tools/_docclaims.py` (BOUND tier). SWP|C_UpdateFee's @doc states a numeric limit --
@@ -1827,6 +1940,8 @@
 (begin-tx "SWP-G20b -- zero is below the floor")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== SWP-G20b -- zero is below the floor · 01 · env-sigs (caps) ==== ============================
+(print "--- [SWP-G20b -- zero is below the floor · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [SWP-G20b . 01 . the floor] ---")
 ;;0.0 is the interesting low value rather than a negative: a zero LP-fee is the one a caller might
@@ -1847,6 +1962,8 @@
 (begin-tx "SWP-G20c -- the cap value ITSELF is accepted, and the fee is restored after")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== SWP-G20c -- the cap value ITSELF is accepted, and the fee is restored after · 01 · env-sigs (caps) ==== 
+(print "--- [SWP-G20c -- the cap value ITSELF is accepted, and the fee is restored after · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [SWP-G20c . 01 . inclusive upper bound, then restore] ---")
 ;;320.0 EXACTLY must be accepted -- that is what makes the bound inclusive, and it is the assertion
@@ -1882,6 +1999,8 @@
 (begin-tx "SWP-G21 -- FIXED: an enforce message that could never be shown")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== SWP-G21 -- FIXED: an enforce message that could never be shown · 01 · env-sigs (caps) ==== =
+(print "--- [SWP-G21 -- FIXED: an enforce message that could never be shown · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [SWP-G21 . 01 . the repaired enforce message] ---")
 ;;FOUND while pinning UEV_CanChangeOwnerON, then FIXED (owner-authorised 2026-09-12:
@@ -1903,6 +2022,8 @@
 ;;matters. A malformed message is therefore unreachable by any test that does not deliberately
 ;;drive its own enforce to failure -- which is exactly what this test does. The first assertion
 ;;establishes the rejection comes from the tier comparison genuinely failing, not an earlier guard.
+;;==== SWP-G21 -- FIXED: an enforce message that could never be shown · 02 · let / invocation ==== 
+(print "--- [SWP-G21 -- FIXED: an enforce message that could never be shown · 02 · let / invocation] ---")
 (let ((sp:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51"))
     (map print
         [
@@ -1926,6 +2047,8 @@
 (begin-tx "SWP-G21b -- the can-change-owner flag: toggled, guarded, restored")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== SWP-G21b -- the can-change-owner flag: toggled, guarded, restored · 01 · env-sigs (caps) ==== 
+(print "--- [SWP-G21b -- the can-change-owner flag: toggled, guarded, restored · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [SWP-G21b . 01 . the flag and its same-value guard] ---")
 ;;The flag is a REVERSIBLE toggle, not a one-way lock -- worth pinning because the two shapes look
@@ -1990,6 +2113,8 @@
 (begin-tx "SWP-G21c -- the flag guard through the REAL client path, with the tier check cleared")
 (env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== SWP-G21c -- the flag guard through the REAL client path, with the tier check cleared · 01 · env-sigs (caps) ==== 
+(print "--- [SWP-G21c -- the flag guard through the REAL client path, with the tier check cleared · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [SWP-G21c . 01 . guard ordering inside SWP|S>RT_OWN] ---")
 ;;SWP-G21b pins UEV_CanChangeOwnerON by calling it directly. That is a real pin, but on its own it
@@ -2067,6 +2192,8 @@
 ;;leaking would change what later assertions mean -- an account's elite tier feeds fee maths, DEB and
 ;;dispo across the whole suite, so a stray "7.5" would show up as arithmetic drift somewhere far from
 ;;here.
+;;==== SWP-G21c -- the flag guard through the REAL client path, with the tier check cleared · 02 · let / invocation ==== 
+(print "--- [SWP-G21c -- the flag guard through the REAL client path, with the tier check cleared · 02 · let / invocation] ---")
 (let ((sp:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51"))
     (map print
         [
@@ -2135,10 +2262,14 @@
 ;;
 (begin-tx "SWP-G22b -- and the guard rejects it")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP-G22b -- and the guard rejects it · 01 · namespace ==== =================================
+(print "--- [SWP-G22b -- and the guard rejects it · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [SWP-G22b . 01 . the previously unreachable rejection] ---")
 ;;The pin itself. A real, issued sleeping-LP id now exists on this chain, so the eager read of
 ;;<parent> succeeds and the enforce is finally reached.
+;;==== SWP-G22b -- and the guard rejects it · 02 · let / invocation ==== ==========================
+(print "--- [SWP-G22b -- and the guard rejects it · 02 · let / invocation] ---")
 (let ((zlp:string (concat ["Z|" (SWP.UR_TokenLP "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")])))
     (map print
         [
@@ -2155,6 +2286,8 @@
 (begin-tx "SWP-G23 -- the amplifier is a STABLE-pool-only parameter")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== SWP-G23 -- the amplifier is a STABLE-pool-only parameter · 01 · env-sigs (caps) ==== =======
+(print "--- [SWP-G23 -- the amplifier is a STABLE-pool-only parameter · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_AOZ", "caps": [] }])
 (print "--- [SWP-G23 . 01 . amplifier on a product pool vs a stable pool] ---")
 ;;SWP|S>UPDATE-AMPLIFIER's "Amplifier can only be updated for Stable Pools" was UNPINNED. It needs
@@ -2220,6 +2353,8 @@
 ;;to each rejecting value and back without touching a table: no module admin needed here, just the
 ;;admin signer the operation already requires. The transaction still ends in rollback-tx, with SWP-G25
 ;;as the leakage check, because the upgrade at the end mints premium time and spends STOA.
+;;==== SWP-G24 — BRD's branding-flag hierarchy, reached through the SWP upgrade client · 01 · env-sigs (caps) ==== 
+(print "--- [SWP-G24 — BRD's branding-flag hierarchy, reached through the SWP upgrade client · 01 · env-sigs (caps)] ---")
 (env-sigs
     [ { "key": "PK_AncientHodler", "caps": [] }
       ;;the upgrade is priced in STOA and settled as coin transfers, so the managed caps have to be in
@@ -2238,6 +2373,8 @@
                          "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000.0)
           (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
                          "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000.0) ] } ])
+;;==== SWP-G24 — BRD's branding-flag hierarchy, reached through the SWP upgrade client · 02 · let / invocation ==== 
+(print "--- [SWP-G24 — BRD's branding-flag hierarchy, reached through the SWP upgrade client · 02 · let / invocation] ---")
 (let ((sp:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51"))
     (map print
         [
@@ -2445,6 +2582,8 @@
 (begin-tx "SWP-G26 — removing a token that was never a principal")
 (env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== SWP-G26 — removing a token that was never a principal · 01 · env-sigs (caps) ==== ==========
+(print "--- [SWP-G26 — removing a token that was never a principal · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [SWP-G26 · 01 · the remove branch's membership check] ---")
 ;;`SWP|C>PRINCIPAL` has two branches, and the remove side opens with `(contains principal current)`.
@@ -2452,6 +2591,8 @@
 ;;The first attempt passed a token this chain does not have and got "DPTF ID MOCKA-… does not exist",
 ;;which is a different guard: "not a principal" and "not a token" are distinct failures and only the
 ;;first is what this pins.
+;;==== SWP-G26 — removing a token that was never a principal · 02 · let / invocation ==== =========
+(print "--- [SWP-G26 — removing a token that was never a principal · 02 · let / invocation] ---")
 (let
     (
         (ref-SWP:module{SwapperV4} SWP)
@@ -2486,6 +2627,8 @@
 (begin-tx "SWPX-10a - MTX add-liquidity defpact, step 0|2")
 (env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== SWPX-10a - MTX add-liquidity defpact, step 0|2 · 01 · env-sigs (caps) ==== =================
+(print "--- [SWPX-10a - MTX add-liquidity defpact, step 0|2 · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [SWPX-10a · 01 · begin the pact] ---")
 ;;`20_MTX-SWP.pact:524` -- and the SAME message at :671 (frozen) and :803 (sleeping), so the three
@@ -2501,6 +2644,8 @@
 ;;fees, token supplies, **weights**, LP capacity and the special-fee targets -- so `C_ModifyWeights`
 ;;(pinned by SWPX-02d above) moves it through the front door. That makes this the exact production
 ;;scenario: the owner reweights while a provider's add is mid-flight.
+;;==== SWPX-10a - MTX add-liquidity defpact, step 0|2 · 02 · let / invocation ==== ================
+(print "--- [SWPX-10a - MTX add-liquidity defpact, step 0|2 · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-CP:module{TalosStageOne_ClientPactsV4} TS01-CP)
@@ -2518,8 +2663,12 @@
 (begin-tx "SWPX-10b - move the pool underneath the open pact, then continue")
 (env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== SWPX-10b - move the pool underneath the open pact, then continue · 01 · env-sigs (caps) ==== 
+(print "--- [SWPX-10b - move the pool underneath the open pact, then continue · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [SWPX-10b · 01 · the pool moves, and step 1 refuses] ---")
+;;==== SWPX-10b - move the pool underneath the open pact, then continue · 02 · let / invocation ==== 
+(print "--- [SWPX-10b - move the pool underneath the open pact, then continue · 02 · let / invocation] ---")
 (let
     (
         (ref-SWP:module{SwapperV4} SWP)
@@ -2616,6 +2765,8 @@
 (begin-tx "SWPX-12 - SPW|S>UPDATE_SPECIAL-FEE-TARGETS: how many targets a tier buys")
 (env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== SWPX-12 - SPW|S>UPDATE_SPECIAL-FEE-TARGETS: how many targets a tier buys · 01 · env-sigs (caps) ==== 
+(print "--- [SWPX-12 - SPW|S>UPDATE_SPECIAL-FEE-TARGETS: how many targets a tier buys · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [SWPX-12 · 01 · the target-count bound, both ends] ---")
 ;;`15_SWP.pact:613`. The number of special fee targets a pool may carry is bounded by its OWNER'S
@@ -2626,6 +2777,8 @@
 ;;THE MAX IS COMPUTED FROM THE LIVE TIER, not typed. ANHD is tier 7 here, which buys 7 -- so the
 ;;over-bound case needs EIGHT targets, and hardcoding a smaller number would pass and prove nothing.
 ;;Reading the tier and asserting the derived max first is what makes the count below meaningful.
+;;==== SWPX-12 - SPW|S>UPDATE_SPECIAL-FEE-TARGETS: how many targets a tier buys · 02 · let / invocation ==== 
+(print "--- [SWPX-12 - SPW|S>UPDATE_SPECIAL-FEE-TARGETS: how many targets a tier buys · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -2701,6 +2854,8 @@
 (begin-tx "SWPX-13 - SPWU|C>TOGGLE-SWAP: the pool-worth floor")
 (env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== SWPX-13 - SPWU|C>TOGGLE-SWAP: the pool-worth floor · 01 · env-sigs (caps) ==== =============
+(print "--- [SWPX-13 - SPWU|C>TOGGLE-SWAP: the pool-worth floor · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [SWPX-13 · 01 · the worth floor for enabling swap] ---")
 ;;`19_SWPU.pact:367`. A pool whose total value is at or below the INACTIVE LIMIT may not have swap
@@ -2714,6 +2869,8 @@
 ;;cheaper one: `inactive-limit` is a single governance-set field and raising it is exactly the
 ;;operational lever this rule exists to serve, whereas rewriting a pool's supplies would fabricate a
 ;;balance sheet that no sequence of withdrawals produced.
+;;==== SWPX-13 - SPWU|C>TOGGLE-SWAP: the pool-worth floor · 02 · let / invocation ==== ============
+(print "--- [SWPX-13 - SPWU|C>TOGGLE-SWAP: the pool-worth floor · 02 · let / invocation] ---")
 (let
     (
         (ref-SWP:module{SwapperV4} SWP)
@@ -2809,6 +2966,8 @@
 ;;NOTE ON THE LADDER: a bump of exactly +1 is only expected for a SINGLE ordered pair. Issuing a real
 ;;pool calls XI_UpdatePair for every ordered pair, so an n-token pool bumps by n*(n-1) -- which is
 ;;why this drives the primitive directly instead of issuing a pool and asserting (+ v 1).
+;;==== SWP-D1 — the topology-version counter, which no REPL has ever read · 01 · env-sigs (caps) ==== 
+(print "--- [SWP-D1 — the topology-version counter, which no REPL has ever read · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (acquire-module-admin ouronet-ns.SWPT)
 (with-capability (SWPT.SECURE)
@@ -2906,6 +3065,8 @@
 ;;
 (begin-tx "SWP-D3 — the remaining SWP doc claims: two IMC gates, one crash residual, one identity")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP-D3 — the remaining SWP doc claims: two IMC gates, one crash residual, one identity · 01 · namespace ==== 
+(print "--- [SWP-D3 — the remaining SWP doc claims: two IMC gates, one crash residual, one identity · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [SWP-D3 · 01 · four claims whose docs are mostly changelog] ---")
 ;;DOC-CLAIM VERIFICATION (`_docclaims.py` G5), four functions grouped because they share a shape:
@@ -2925,6 +3086,8 @@
 ;;                                         "no ownership check" of its own.
 ;;  `16_SWPI.pact` URC_SingleSSTOAWorthWSTOA — #65fL extraction. Testable residue: URC_WorthWSTOA's
 ;;                                         SSTOA branch must now BE this function, not a copy of it.
+;;==== SWP-D3 — the remaining SWP doc claims: two IMC gates, one crash residual, one identity · 02 · let / invocation ==== 
+(print "--- [SWP-D3 — the remaining SWP doc claims: two IMC gates, one crash residual, one identity · 02 · let / invocation] ---")
 (let
     (
         (ref-U|SWP:module{UtilitySwpV2} U|SWP)
@@ -3009,7 +3172,11 @@
 ;;
 ;;This cap is `@event`, so `test-capability` cannot acquire it (it routes to the install path); the
 ;;Talos admin wrapper is the only driver, which is what SWP-G12 already notes.
+;;==== SWP-D4 — SWP|C>ROTATE-PRINCIPAL: the two claims its own tests never made · 01 · env-sigs (caps) ==== 
+(print "--- [SWP-D4 — SWP|C>ROTATE-PRINCIPAL: the two claims its own tests never made · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== SWP-D4 — SWP|C>ROTATE-PRINCIPAL: the two claims its own tests never made · 02 · let / invocation ==== 
+(print "--- [SWP-D4 — SWP|C>ROTATE-PRINCIPAL: the two claims its own tests never made · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
@@ -3088,6 +3255,8 @@
 ;;  2] building the cap list with `(map (lambda (t) (coin.TRANSFER ...)) targets)` does not install
 ;;     them either. Capability values have to be written out literally here.
 ;;The sender is the Stoa account of this pool's owner; the four receivers are the STOA fee targets.
+;;==== SWP-I1 — INFO_SWP|ToggleFeeLock quotes the STOA the unlock actually charges · 01 · env-sigs (caps) ==== 
+(print "--- [SWP-I1 — INFO_SWP|ToggleFeeLock quotes the STOA the unlock actually charges · 01 · env-sigs (caps)] ---")
 (env-sigs
   [ { "key": "PK_AncientHodler", "caps": [] }
     { "key": "PK_Emma", "caps": [] }
@@ -3097,6 +3266,8 @@
         (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
         (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
         (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+;;==== SWP-I1 — INFO_SWP|ToggleFeeLock quotes the STOA the unlock actually charges · 02 · let / invocation ==== 
+(print "--- [SWP-I1 — INFO_SWP|ToggleFeeLock quotes the STOA the unlock actually charges · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
@@ -5252,6 +5423,8 @@
 (env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [SWPX-14b · 01 · 10 native STOA in, IGNIS out, nothing skimmed] ---")
+;;==== SWPX-14b - firestart, and measure what it actually costs · 01 · let / invocation ==== ======
+(print "--- [SWPX-14b - firestart, and measure what it actually costs · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -5321,6 +5494,8 @@
 (begin-tx "SWP-G27 — OURO's price must come from the WEIGHTED pool math, not a flat ratio")
 (print "")
 (print "=== SWP-G27 — URC_OuroPrimordialPrice weight-awareness ======================")
+;;==== SWP-G27 — OURO's price must come from the WEIGHTED pool math, not a flat ratio · 01 · namespace ==== 
+(print "--- [SWP-G27 — OURO's price must come from the WEIGHTED pool math, not a flat ratio · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
 ;;#73C-TWIN REGRESSION GUARD (2026-09-17). `URC_OuroPrimordialPrice` used to compute its own flat
@@ -5339,6 +5514,8 @@
 ;;weight-aware pricer returns for OURO. A literal would pin today's reserves and go red on any
 ;;ordinary trade; the invariant only goes red if someone re-derives the price by hand again, which
 ;;is precisely the regression that happened.
+;;==== SWP-G27 — OURO's price must come from the WEIGHTED pool math, not a flat ratio · 02 · let / invocation ==== 
+(print "--- [SWP-G27 — OURO's price must come from the WEIGHTED pool math, not a flat ratio · 02 · let / invocation] ---")
 (let
     (
         (ref-SWPI:module{SwapperIssueV4} SWPI)

@@ -41,6 +41,8 @@
 (begin-tx "GT-BOOT - Step4 core scores")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== GT-BOOT - Step4 core scores · 01 · let / invocation ==== ===================================
+(print "--- [GT-BOOT - Step4 core scores · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD) (owner-konto:string KST.ANHD)
@@ -58,9 +60,16 @@
     (AQP-BOOT.C_Step4_CreateCoreScores patron owner-konto))
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "GT-BOOT - Step5 subsidiary scores")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== GT-BOOT - Step5 subsidiary scores · 01 · let / invocation ==== =============================
+(print "--- [GT-BOOT - Step5 subsidiary scores · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD) (owner-konto:string KST.ANHD)
@@ -89,6 +98,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 90000000)(env-gas 0)
 (env-chain-data { "block-time": (time "2027-12-01T00:00:00Z") })
+;;==== GT-01 - fragment + distribute silver custodian frags · 01 · env-sigs (caps) ==== ===========
+(print "--- [GT-01 - fragment + distribute silver custodian frags · 01 · env-sigs (caps)] ---")
 (env-sigs
   [ { "key": "PK_AncientHodler", "caps": [] }
     { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
@@ -98,6 +109,8 @@
         (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
         (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
 (print "--- [GT-01 - 01 - fragment + distribute] ---")
+;;==== GT-01 - fragment + distribute silver custodian frags · 02 · let / invocation ==== ==========
+(print "--- [GT-01 - fragment + distribute silver custodian frags · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD) (emma:string KST.EMMA) (lumy:string KST.LUMY)
@@ -123,6 +136,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 90000000)(env-gas 0)
 (env-chain-data { "block-time": (time "2027-12-01T00:00:00Z") })
+;;==== GT-02 - model + triplet + MULTIPLET vault + pool · 01 · env-sigs (caps) ==== ===============
+(print "--- [GT-02 - model + triplet + MULTIPLET vault + pool · 01 · env-sigs (caps)] ---")
 (env-sigs
   [ { "key": "PK_AncientHodler", "caps": [] }
     { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
@@ -132,6 +147,8 @@
         (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
         (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
 (print "--- [GT-02 - 01 - model + triplet + MULTIPLET vault + pool] ---")
+;;==== GT-02 - model + triplet + MULTIPLET vault + pool · 02 · let / invocation ==== ==============
+(print "--- [GT-02 - model + triplet + MULTIPLET vault + pool · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD)
@@ -185,6 +202,8 @@
 (begin-tx "GT-02b - COMBINE-TRIPLET-SCORE-MODEL requires three SINGLE sub-models")
 (env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== GT-02b - COMBINE-TRIPLET-SCORE-MODEL requires three SINGLE sub-models · 01 · env-sigs (caps) ==== 
+(print "--- [GT-02b - COMBINE-TRIPLET-SCORE-MODEL requires three SINGLE sub-models · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [GT-02b - 01 - the three sub-models must all be single] ---")
 ;;`02_SCORE.pact:1326`. GT-02 has just built the exact pair of fixtures this needs and nothing else
@@ -199,6 +218,8 @@
 ;;positions separately, and a copy-paste slip in any one of them (a repeated `bronze-model-id`, say)
 ;;would leave a slot unchecked and still pass a single-slot test. Three assertions is the cheapest
 ;;way to make that class of typo visible.
+;;==== GT-02b - COMBINE-TRIPLET-SCORE-MODEL requires three SINGLE sub-models · 02 · let / invocation ==== 
+(print "--- [GT-02b - COMBINE-TRIPLET-SCORE-MODEL requires three SINGLE sub-models · 02 · let / invocation] ---")
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -267,6 +288,8 @@
 (begin-tx "GT-02d - FVT control requires can-upgrade, which control itself can revoke")
 (env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== GT-02d - FVT control requires can-upgrade, which control itself can revoke · 01 · env-sigs (caps) ==== 
+(print "--- [GT-02d - FVT control requires can-upgrade, which control itself can revoke · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [GT-02d - 01 - FVT|C>CONTROL-FVT requires can-upgrade true] ---")
 ;;`05_FVT.pact:772`, and it is the EXACT TWIN of `02_SCORE.pact:744`, pinned by
@@ -278,6 +301,8 @@
 ;;so one test cannot cover both -- and more to the point, "the score guard works" is not evidence
 ;;about the vault guard. A duplicated rule is exactly where a copy-paste slip survives review: the
 ;;code reads right in both places and only one of them was ever exercised.
+;;==== GT-02d - FVT control requires can-upgrade, which control itself can revoke · 02 · let / invocation ==== 
+(print "--- [GT-02d - FVT control requires can-upgrade, which control itself can revoke · 02 · let / invocation] ---")
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -336,6 +361,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 120000000)(env-gas 0)
 (env-chain-data { "block-time": (time "2027-12-01T00:01:00Z") })
+;;==== GT-03 - open agency (operator 1000, fee 100 per-mille) · 01 · env-sigs (caps) ==== =========
+(print "--- [GT-03 - open agency (operator 1000, fee 100 per-mille) · 01 · env-sigs (caps)] ---")
 (env-sigs
   [ { "key": "PK_AncientHodler", "caps": [] }
     { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
@@ -345,6 +372,8 @@
         (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
         (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
 (print "--- [GT-03 - 01 - open agency] ---")
+;;==== GT-03 - open agency (operator 1000, fee 100 per-mille) · 02 · let / invocation ==== ========
+(print "--- [GT-03 - open agency (operator 1000, fee 100 per-mille) · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD)
@@ -396,6 +425,8 @@
 (env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
 (env-chain-data { "block-time": (time "2027-12-01T02:00:00Z") })
 (env-data { "dsa-oracle": { "keys": ["gt-oracle-key"], "pred": "keys-all" } })
+;;==== GT-04 - delegators stake + oracle authorize + write · 01 · env-sigs (caps) ==== ============
+(print "--- [GT-04 - delegators stake + oracle authorize + write · 01 · env-sigs (caps)] ---")
 (env-sigs
   [ { "key": "PK_AncientHodler", "caps": [] }
     { "key": "PK_Emma", "caps": [] }
@@ -408,6 +439,8 @@
         (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
         (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
 (print "--- [GT-04 - 01 - delegators stake + oracle] ---")
+;;==== GT-04 - delegators stake + oracle authorize + write · 02 · let / invocation ==== ===========
+(print "--- [GT-04 - delegators stake + oracle authorize + write · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD) (emma:string KST.EMMA) (lumy:string KST.LUMY)
@@ -445,6 +478,8 @@
 (begin-tx "GT-04b - AQP|C>SYNC-COLLECTABLE-ANCHORS needs collectable stake to repair")
 (env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== GT-04b - AQP|C>SYNC-COLLECTABLE-ANCHORS needs collectable stake to repair · 01 · env-sigs (caps) ==== 
+(print "--- [GT-04b - AQP|C>SYNC-COLLECTABLE-ANCHORS needs collectable stake to repair · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [GT-04b - 01 - the collectable sync guard, both directions] ---")
 ;;`03_AQP.pact:832`, the collectable twin of `03_AQP:820` (pinned by
@@ -458,6 +493,8 @@
 ;;ANCHORS` in `04_TS02-C3.pact:540` composes `P|TS` and nothing else, so the core cap's own enforce
 ;;is the first thing that can refuse. Two caps of nearly the same name, and only one carries the
 ;;rule; had the outer one duplicated it, this assertion would have pinned the wrong module.
+;;==== GT-04b - AQP|C>SYNC-COLLECTABLE-ANCHORS needs collectable stake to repair · 02 · let / invocation ==== 
+(print "--- [GT-04b - AQP|C>SYNC-COLLECTABLE-ANCHORS needs collectable stake to repair · 02 · let / invocation] ---")
 (let
     (
         ;;BYTA, not ANHD. The first draft used the patron as the unstaked contrast and the precondition
@@ -517,6 +554,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
 (env-chain-data { "block-time": (time "2027-12-01T03:00:00Z") })
+;;==== GT-05 - hetero split all-OURO + inject + collect (fee 10%) · 01 · env-sigs (caps) ==== =====
+(print "--- [GT-05 - hetero split all-OURO + inject + collect (fee 10%) · 01 · env-sigs (caps)] ---")
 (env-sigs
   [ { "key": "PK_AncientHodler", "caps": [] }
     { "key": "PK_Emma", "caps": [] }
@@ -528,6 +567,8 @@
         (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
         (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
 (print "--- [GT-05 - 01 - set hetero split + inject + collect] ---")
+;;==== GT-05 - hetero split all-OURO + inject + collect (fee 10%) · 02 · let / invocation ==== ====
+(print "--- [GT-05 - hetero split all-OURO + inject + collect (fee 10%) · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD) (emma:string KST.EMMA) (lumy:string KST.LUMY)
@@ -579,6 +620,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
 (env-chain-data { "block-time": (time "2027-12-01T04:00:00Z") })
+;;==== GT-06 - reprice matrix to all-Auryn + inject + collect · 01 · env-sigs (caps) ==== =========
+(print "--- [GT-06 - reprice matrix to all-Auryn + inject + collect · 01 · env-sigs (caps)] ---")
 (env-sigs
   [ { "key": "PK_AncientHodler", "caps": [] }
     { "key": "PK_Emma", "caps": [] }
@@ -590,6 +633,8 @@
         (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
         (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
 (print "--- [GT-06 - 01 - reprice matrix to Auryn + inject + collect] ---")
+;;==== GT-06 - reprice matrix to all-Auryn + inject + collect · 02 · let / invocation ==== ========
+(print "--- [GT-06 - reprice matrix to all-Auryn + inject + collect · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD) (emma:string KST.EMMA) (lumy:string KST.LUMY)
@@ -649,6 +694,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
 (env-chain-data { "block-time": (time "2027-12-01T05:00:00Z") })
+;;==== GT-07 - fee -> 20% (O(1) reprice) + inject + collect (all-OURO) · 01 · env-sigs (caps) ==== 
+(print "--- [GT-07 - fee -> 20% (O(1) reprice) + inject + collect (all-OURO) · 01 · env-sigs (caps)] ---")
 (env-sigs
   [ { "key": "PK_AncientHodler", "caps": [] }
     { "key": "PK_Emma", "caps": [] }
@@ -660,6 +707,8 @@
         (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
         (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
 (print "--- [GT-07 - 01 - fee reprice + inject + collect] ---")
+;;==== GT-07 - fee -> 20% (O(1) reprice) + inject + collect (all-OURO) · 02 · let / invocation ==== 
+(print "--- [GT-07 - fee -> 20% (O(1) reprice) + inject + collect (all-OURO) · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD) (emma:string KST.EMMA) (lumy:string KST.LUMY)
@@ -705,8 +754,12 @@
 (begin-tx "GT-08 - global GOV oracle switches (Talos)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 30000000)(env-gas 0)
+;;==== GT-08 - global GOV oracle switches (Talos) · 01 · env-sigs (caps) ==== =====================
+(print "--- [GT-08 - global GOV oracle switches (Talos) · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
 (print "--- [GT-08 - 01 - global oracle switches] ---")
+;;==== GT-08 - global GOV oracle switches (Talos) · 02 · let / invocation ==== ====================
+(print "--- [GT-08 - global GOV oracle switches (Talos) · 02 · let / invocation] ---")
 (let
     (
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
@@ -734,6 +787,8 @@
 (env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
 (env-chain-data { "block-time": (time "2027-12-01T06:00:00Z") })
 (env-data { "dsa-oracle": { "keys": ["gt-oracle-key"], "pred": "keys-all" } })
+;;==== GT-09 - the DSA refusals: wrong owner, bad oracle values, non-member, short gate · 01 · env-sigs (caps) ==== 
+(print "--- [GT-09 - the DSA refusals: wrong owner, bad oracle values, non-member, short gate · 01 · env-sigs (caps)] ---")
 (env-sigs
   [ { "key": "PK_AncientHodler", "caps": [] }
     { "key": "PK_Emma", "caps": [] }
@@ -1004,6 +1059,8 @@
 (begin-tx "GT-12 - multiplet reward-link and quality-split admission")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+;;==== GT-12 - multiplet reward-link and quality-split admission · 01 · env-sigs (caps) ==== ======
+(print "--- [GT-12 - multiplet reward-link and quality-split admission · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [GT-12 - 01 - the reward-link and quality-split contexts] ---")
 ;;Two `UEV_` admission checks in 04_RPS.pact. Both are unprotected and directly callable, so they need
@@ -1139,6 +1196,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
 ;;issuing a score is STOA-priced; the managed caps must be in scope or the call dies in coin.TRANSFER
+;;==== GT-14 - FVT AddScoreEntity context: farm rule and membership mode · 01 · env-sigs (caps) ==== 
+(print "--- [GT-14 - FVT AddScoreEntity context: farm rule and membership mode · 01 · env-sigs (caps)] ---")
 (env-sigs
   [ { "key": "PK_AncientHodler", "caps": [] }
     { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
@@ -1270,6 +1329,8 @@
 (begin-tx "GT-16 - class-0 triplet: issue rule, membership mode, farm weight")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+;;==== GT-16 - class-0 triplet: issue rule, membership mode, farm weight · 01 · env-sigs (caps) ==== 
+(print "--- [GT-16 - class-0 triplet: issue rule, membership mode, farm weight · 01 · env-sigs (caps)] ---")
 (env-sigs
   [ { "key": "PK_AncientHodler", "caps": [] }
     { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
@@ -1443,6 +1504,10 @@
     ""
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;;NOT PINNED YET — the TRIPLET twins of the two guards GT-14 just closed.
@@ -1477,6 +1542,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
 (env-chain-data { "block-time": (time "2027-12-01T05:00:00Z") })
+;;==== GT-DOC1 - the fee reprices FUTURE injects ONLY, never a pending one · 01 · env-sigs (caps) ==== 
+(print "--- [GT-DOC1 - the fee reprices FUTURE injects ONLY, never a pending one · 01 · env-sigs (caps)] ---")
 (env-sigs
   [ { "key": "PK_AncientHodler", "caps": [] }
     { "key": "PK_Emma", "caps": [] }
@@ -1502,6 +1569,8 @@
 ;;THE ORDER IS THE TEST: inject at 20%, change the fee to 40% WITHOUT injecting, then collect. The
 ;;payouts must still be the 20% figures. If the fee were read at collect time -- or baked into the
 ;;stored weights by the setter -- the operator would take 2000 and the delegators 1200 each.
+;;==== GT-DOC1 - the fee reprices FUTURE injects ONLY, never a pending one · 02 · let / invocation ==== 
+(print "--- [GT-DOC1 - the fee reprices FUTURE injects ONLY, never a pending one · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD) (emma:string KST.EMMA) (lumy:string KST.LUMY)
@@ -1577,9 +1646,14 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
-
+(print "")
 (begin-tx "GT-DOC2 - the triplet readers and the royalty-FUEL preview, which need this fixture")
+;;==== GT-DOC2 - the triplet readers and the royalty-FUEL preview, which need this fixture · 01 · namespace ==== 
+(print "--- [GT-DOC2 - the triplet readers and the royalty-FUEL preview, which need this fixture · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
 (print "--- [GT-DOC2 - 01 - the triplet bundle, and a cost preview that needs a swap pair] ---")
@@ -1590,6 +1664,8 @@
 ;;      tour combines GtAgency Bronze/Silver/Gold into one.
 ;;  `URCi_FuelRoyaltyCustody`             -- reads `SWP|Pairs`. The AQP harness has NO swap pairs at
 ;;      all (`URC_Swpairs` is empty there), so it can only abort; here there are real ones.
+;;==== GT-DOC2 - the triplet readers and the royalty-FUEL preview, which need this fixture · 02 · let / invocation ==== 
+(print "--- [GT-DOC2 - the triplet readers and the royalty-FUEL preview, which need this fixture · 02 · let / invocation] ---")
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)

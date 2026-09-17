@@ -1,3 +1,16 @@
+;;
+;; REPL/modules/ADMIN.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/modules/ADMIN.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 ;; REPL/modules/ADMIN.repl — STANDALONE DPTF/DALOS/SWP admin-ops tester.
 ;; Fresh boot + [6.2]_DPTF + [6.3]_SWP fixtures (admin ops target their tokens + SWP pairs) + Admin
 ;; suite. NOTE rotates the canonical ANHD guard (fine standalone). Run: cd REPL && pact modules/ADMIN.repl
@@ -12,6 +25,8 @@
 (begin-tx "ADMIN-G9 -- the branding-administrator claim on BRD|A_Live")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== ADMIN-G9 -- the branding-administrator claim on BRD|A_Live · 01 · env-sigs (caps) ==== =====
+(print "--- [ADMIN-G9 -- the branding-administrator claim on BRD|A_Live · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (print "--- [ADMIN-G9 . 01 . a non-admin cannot promote pending branding to live] ---")
 ;;FOUND BY `python3 tools/_docclaims.py`. TS01-A's BRD|A_Live says "Can only be done by Branding

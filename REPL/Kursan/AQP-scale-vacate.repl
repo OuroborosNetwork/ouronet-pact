@@ -19,21 +19,45 @@
 (begin-tx "SCALE-VAC-BOOT - KBN citizen")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== SCALE-VAC-BOOT - KBN citizen · 01 · env-sigs (caps) ==== ===================================
+(print "--- [SCALE-VAC-BOOT - KBN citizen · 01 · env-sigs (caps)] ---")
 (env-sigs [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== SCALE-VAC-BOOT - KBN citizen · 02 · load module ==== =======================================
+(print "--- [SCALE-VAC-BOOT - KBN citizen · 02 · load module] ---")
 (load "../../2_CITIZEN/4_BunniesMinter/02_KBunnies.pact")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "SCALE-VAC-BOOT - AQP-BOOT")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== SCALE-VAC-BOOT - AQP-BOOT · 01 · env-sigs (caps) ==== ======================================
+(print "--- [SCALE-VAC-BOOT - AQP-BOOT · 01 · env-sigs (caps)] ---")
 (env-sigs [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== SCALE-VAC-BOOT - AQP-BOOT · 02 · load module ==== ==========================================
+(print "--- [SCALE-VAC-BOOT - AQP-BOOT · 02 · load module] ---")
 (load "../../2_CITIZEN/5_VaultsMinter/04_AQP-BOOT.pact")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "SCALE-VAC-BOOT - Step0")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== SCALE-VAC-BOOT - Step0 · 01 · env-sigs (caps) ==== =========================================
+(print "--- [SCALE-VAC-BOOT - Step0 · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print (format "<(Step0)> => \"{}\"" [(AQP-BOOT.C_Step0_WireImcAndGovernor KST.ANHD)]))
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; VCTGAS module + synth accounts 001..999
 (load "../Stage_02/[6.2.6]_AQP-VCT-GAS-BASE.repl")
 (print "")
@@ -46,6 +70,8 @@
 (env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
 ;; gas-station STOA fuel: PK_AncientHodler for the Ouronet ops + ANHD's stoa key with
 ;; coin.TRANSFER caps to the 4 gas-station accounts (generous ceilings to cover 50 stakes).
+;;==== SCALE-VAC-01 - TF pool + 50 synth stakers · 01 · env-sigs (caps) ==== ======================
+(print "--- [SCALE-VAC-01 - TF pool + 50 synth stakers · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -61,6 +87,8 @@
     ]
 )
 (print "--- [SCALE-VAC-01 · stand up pool + stake 50 users] ---")
+;;==== SCALE-VAC-01 - TF pool + 50 synth stakers · 02 · let / invocation ==== =====================
+(print "--- [SCALE-VAC-01 - TF pool + 50 synth stakers · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -117,6 +145,8 @@
 (begin-tx "SCALE-VAC-SYNC - AQP|C>SYNC-TF-ANCHORS needs stake to repair")
 (env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== SCALE-VAC-SYNC - AQP|C>SYNC-TF-ANCHORS needs stake to repair · 01 · env-sigs (caps) ==== ===
+(print "--- [SCALE-VAC-SYNC - AQP|C>SYNC-TF-ANCHORS needs stake to repair · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [SCALE-VAC-SYNC · the sync guard, staked vs unstaked beneficiary] ---")
 ;;`03_AQP.pact:820`. Anchor repair is pool-AGNOSTIC: it walks a beneficiary's stake across every
@@ -130,6 +160,8 @@
 ;;
 ;;Rolled back: the ADMITTED branch rewrites anchors, and the drain rounds below assert exact leg
 ;;counts and gas. SCALE-VAC-SYNCb is the leakage check.
+;;==== SCALE-VAC-SYNC - AQP|C>SYNC-TF-ANCHORS needs stake to repair · 02 · let / invocation ==== ==
+(print "--- [SCALE-VAC-SYNC - AQP|C>SYNC-TF-ANCHORS needs stake to repair · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -187,6 +219,10 @@
              (AQP-POOL.UR_AQP|PoolVacateInProgress (ref-U|DALOS::UDC_Makeid "ScaleVacPool"))]))
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;; ============================================================================
@@ -197,6 +233,8 @@
 (begin-tx "SCALE-VAC-R1 - drain synth 1-15")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+;;==== SCALE-VAC-R1 - drain synth 1-15 · 01 · env-sigs (caps) ==== ================================
+(print "--- [SCALE-VAC-R1 - drain synth 1-15 · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -212,6 +250,8 @@
     ]
 )
 (print "--- [SCALE-VAC-R1 · drain synth 1-15] ---")
+;;==== SCALE-VAC-R1 - drain synth 1-15 · 02 · let / invocation ==== ===============================
+(print "--- [SCALE-VAC-R1 - drain synth 1-15 · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -267,10 +307,16 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 (begin-tx "SCALE-VAC-R2 - drain synth 16-30")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+;;==== SCALE-VAC-R2 - drain synth 16-30 · 01 · env-sigs (caps) ==== ===============================
+(print "--- [SCALE-VAC-R2 - drain synth 16-30 · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -286,6 +332,8 @@
     ]
 )
 (print "--- [SCALE-VAC-R2 · drain synth 16-30] ---")
+;;==== SCALE-VAC-R2 - drain synth 16-30 · 02 · let / invocation ==== ==============================
+(print "--- [SCALE-VAC-R2 - drain synth 16-30 · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -317,10 +365,16 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 (begin-tx "SCALE-VAC-R3 - drain synth 31-45")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+;;==== SCALE-VAC-R3 - drain synth 31-45 · 01 · env-sigs (caps) ==== ===============================
+(print "--- [SCALE-VAC-R3 - drain synth 31-45 · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -336,6 +390,8 @@
     ]
 )
 (print "--- [SCALE-VAC-R3 · drain synth 31-45] ---")
+;;==== SCALE-VAC-R3 - drain synth 31-45 · 02 · let / invocation ==== ==============================
+(print "--- [SCALE-VAC-R3 - drain synth 31-45 · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -367,10 +423,16 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 (begin-tx "SCALE-VAC-R4 - drain synth 46-50")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+;;==== SCALE-VAC-R4 - drain synth 46-50 · 01 · env-sigs (caps) ==== ===============================
+(print "--- [SCALE-VAC-R4 - drain synth 46-50 · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -386,6 +448,8 @@
     ]
 )
 (print "--- [SCALE-VAC-R4 · drain synth 46-50] ---")
+;;==== SCALE-VAC-R4 - drain synth 46-50 · 02 · let / invocation ==== ==============================
+(print "--- [SCALE-VAC-R4 - drain synth 46-50 · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -417,12 +481,18 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;; SCALE-VAC-FINALIZE — close the vacate (bump generation + bulk-zero aggregates).
 (begin-tx "SCALE-VAC-FINALIZE - C_FinalizeVacate on the fully-drained pool")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+;;==== SCALE-VAC-FINALIZE - C_FinalizeVacate on the fully-drained pool · 01 · env-sigs (caps) ==== 
+(print "--- [SCALE-VAC-FINALIZE - C_FinalizeVacate on the fully-drained pool · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -438,6 +508,8 @@
     ]
 )
 (print "--- [SCALE-VAC-FINALIZE · C_FinalizeVacate] ---")
+;;==== SCALE-VAC-FINALIZE - C_FinalizeVacate on the fully-drained pool · 02 · let / invocation ==== 
+(print "--- [SCALE-VAC-FINALIZE - C_FinalizeVacate on the fully-drained pool · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)

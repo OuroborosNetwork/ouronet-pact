@@ -16,6 +16,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-TR-001 · 01 · env-sigs + coin caps (3x smart STOA for score issuance) ====
 (print "--- [TX-TR-001 · 01 · env-sigs + coin caps] ---")
+;;==== TX-TR-001 - issue 3 class-1 TF scores, bundle into a triplet · 01 · env-sigs (caps) ==== ===
+(print "--- [TX-TR-001 - issue 3 class-1 TF scores, bundle into a triplet · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -36,6 +38,8 @@
 )
 ;;==== TX-TR-001 · 02 · issue bronze/silver/gold TF scores + bundle triplet ====
 (print "--- [TX-TR-001 · 02 · issue 3 scores + IssueTriplet] ---")
+;;==== TX-TR-001 - issue 3 class-1 TF scores, bundle into a triplet · 02 · let / invocation ==== ==
+(print "--- [TX-TR-001 - issue 3 class-1 TF scores, bundle into a triplet · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)

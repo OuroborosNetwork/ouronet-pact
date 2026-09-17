@@ -1,3 +1,16 @@
+;;
+;; REPL/modules/STAGE-Z.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/modules/STAGE-Z.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 ;; REPL/modules/STAGE-Z.repl — STANDALONE tester for the Stage-Z read layer (DPL-UR + EXPLORER).
 ;;
 ;; These two modules had ZERO reached functions (7 of 7 and 71 of 72 never touched by any test),
@@ -30,6 +43,8 @@
 ;;
 (begin-tx "STAGEZ-01 — DPL-UR display formatters, pinned character for character")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== STAGEZ-01 — DPL-UR display formatters, pinned character for character · 01 · namespace ==== 
+(print "--- [STAGEZ-01 — DPL-UR display formatters, pinned character for character · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [STAGEZ-01 · 01 · number and account formatting] ---")
 ;;Every assertion below is an EXACT string. That is deliberate: these values are rendered directly
@@ -64,6 +79,8 @@
 ;;
 (begin-tx "STAGEZ-02 — the chain-agnostic readers, and the one that is not")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== STAGEZ-02 — the chain-agnostic readers, and the one that is not · 01 · namespace ==== ======
+(print "--- [STAGEZ-02 — the chain-agnostic readers, and the one that is not · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [STAGEZ-02 · 01 · readers that work on any chain] ---")
 ;;URC_PrimordialIDs derives every id from DALOS rather than hardcoding, so it works on any chain.
@@ -124,6 +141,8 @@
 (begin-tx "STAGEZ-03 -- the TESTING VARIANT, and which blocker is which")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== STAGEZ-03 -- the TESTING VARIANT, and which blocker is which · 01 · env-sigs (caps) ==== ===
+(print "--- [STAGEZ-03 -- the TESTING VARIANT, and which blocker is which · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
 ;;==== STAGEZ-03 . 01 . deploy the generated testing variant ====
@@ -131,6 +150,8 @@
 ;;_generated/02_EXPLORER-TESTING.pact is GENERATED from canonical by _stagez_variant.py and differs
 ;;from it in exactly two string constants (the ATS pair ids) plus the module name. `--check` fails
 ;;the gate if canonical moves and the variant is not regenerated, so this cannot silently rot.
+;;==== STAGEZ-03 -- the TESTING VARIANT, and which blocker is which · 02 · load module ==== =======
+(print "--- [STAGEZ-03 -- the TESTING VARIANT, and which blocker is which · 02 · load module] ---")
 (load "../_generated/02_EXPLORER-TESTING.pact")
 (commit-tx)
 
@@ -138,6 +159,8 @@
 ;;
 (begin-tx "STAGEZ-04 -- URC_0001_LandingPage has TWO blockers, not one")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== STAGEZ-04 -- URC_0001_LandingPage has TWO blockers, not one · 01 · namespace ==== ==========
+(print "--- [STAGEZ-04 -- URC_0001_LandingPage has TWO blockers, not one · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [STAGEZ-04 . 01 . isolating blocker 1 from blocker 2] ---")
 ;;This pair of assertions is the whole point of the variant. It SEPARATES two independent reasons
@@ -182,6 +205,8 @@
 ;;
 (begin-tx "STAGEZ-05 -- blocker 2 is a real defect: the legal form of the same read works")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== STAGEZ-05 -- blocker 2 is a real defect: the legal form of the same read works · 01 · namespace ==== 
+(print "--- [STAGEZ-05 -- blocker 2 is a real defect: the legal form of the same read works · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [STAGEZ-05 . 01 . cross-module scan vs in-module scan] ---")
 ;;The two forms, side by side, so the rule is pinned independently of EXPLORER: a cross-module scan
@@ -211,6 +236,8 @@
 ;;
 (begin-tx "STAGEZ-06 -- the same defect in DPL-UR, with no id problem anywhere near it")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== STAGEZ-06 -- the same defect in DPL-UR, with no id problem anywhere near it · 01 · namespace ==== 
+(print "--- [STAGEZ-06 -- the same defect in DPL-UR, with no id problem anywhere near it · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [STAGEZ-06 . 01 . four more UI entry points, dead for the same reason] ---")
 ;;STAGEZ-04/05 could be read as "an EXPLORER quirk tangled up with the mainnet ids". These four are
@@ -236,6 +263,8 @@
 ;;|| NEXT >
 ;;
 (begin-tx "STAGEZ-06b -- ortofungible header")
+;;==== STAGEZ-06b -- ortofungible header · 01 · namespace ==== ====================================
+(print "--- [STAGEZ-06b -- ortofungible header · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [STAGEZ-06b . 01 . ortofungible header] ---")
 (map print
@@ -250,6 +279,8 @@
 ;;|| NEXT >
 ;;
 (begin-tx "STAGEZ-06c -- collectables header")
+;;==== STAGEZ-06c -- collectables header · 01 · namespace ==== ====================================
+(print "--- [STAGEZ-06c -- collectables header · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [STAGEZ-06c . 01 . collectables header] ---")
 (map print
@@ -264,6 +295,8 @@
 ;;|| NEXT >
 ;;
 (begin-tx "STAGEZ-06d -- elite rich list")
+;;==== STAGEZ-06d -- elite rich list · 01 · namespace ==== ========================================
+(print "--- [STAGEZ-06d -- elite rich list · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [STAGEZ-06d . 01 . elite rich list] ---")
 ;;NOTE: the file previously recorded this one as "a heavy account scan that aborts here", implying a
@@ -282,6 +315,8 @@
 ;;
 (begin-tx "STAGEZ-07 -- the readers that DO work, pinned on their invariants")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== STAGEZ-07 -- the readers that DO work, pinned on their invariants · 01 · namespace ==== ====
+(print "--- [STAGEZ-07 -- the readers that DO work, pinned on their invariants · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [STAGEZ-07 . 01 . constants and branch words] ---")
 ;;Most of DPL-UR's 63 unreached functions are not blocked by anything -- no ids, no admin gate, no
@@ -310,6 +345,8 @@
 ;;
 (begin-tx "STAGEZ-08 -- the STOA collection split, pinned on CONSERVATION")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== STAGEZ-08 -- the STOA collection split, pinned on CONSERVATION · 01 · namespace ==== =======
+(print "--- [STAGEZ-08 -- the STOA collection split, pinned on CONSERVATION · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [STAGEZ-08 . 01 . four receivers, and no dust] ---")
 ;;URC_SplitStoaPriceForReceivers divides a STOA payment 10/20/30/40 between four protocol accounts.
@@ -350,6 +387,8 @@
 ;;
 (begin-tx "STAGEZ-09 -- recovery amount for an account with nothing to recover")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== STAGEZ-09 -- recovery amount for an account with nothing to recover · 01 · namespace ==== ==
+(print "--- [STAGEZ-09 -- recovery amount for an account with nothing to recover · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [STAGEZ-09 . 01 . the zero case, asserted as zero] ---")
 ;;A recovery reader that returns a non-zero amount to someone with no recoverable position is the
@@ -366,6 +405,8 @@
 ;;
 (begin-tx "STAGEZ-10 -- the duplicated binding block in URC_PrimordialPrices is EQUIVALENT")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== STAGEZ-10 -- the duplicated binding block in URC_PrimordialPrices is EQUIVALENT · 01 · namespace ==== 
+(print "--- [STAGEZ-10 -- the duplicated binding block in URC_PrimordialPrices is EQUIVALENT · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [STAGEZ-10 . 01 . positional ids vs named ids] ---")
 ;;URC_PrimordialPrices binds ouro/auryn/elite-auryn/wstoa/sstoa TWICE in one `let`: first
@@ -402,6 +443,8 @@
 ;;
 (begin-tx "STAGEZ-11 -- a mapper must equal map of its single, and empty must stay empty")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== STAGEZ-11 -- a mapper must equal map of its single, and empty must stay empty · 01 · namespace ==== 
+(print "--- [STAGEZ-11 -- a mapper must equal map of its single, and empty must stay empty · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [STAGEZ-11 . 01 . mapper/single agreement] ---")
 ;;DPL-UR ships several <X>Mapper / <X>Single pairs. The mapper is meant to be the single applied
@@ -429,6 +472,8 @@
 ;;
 (begin-tx "STAGEZ-12 -- reader self-consistency: counts, balances, quoted prices")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== STAGEZ-12 -- reader self-consistency: counts, balances, quoted prices · 01 · namespace ==== 
+(print "--- [STAGEZ-12 -- reader self-consistency: counts, balances, quoted prices · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [STAGEZ-12 . 01 . internal agreement within one returned object] ---")
 ;;Each of these asserts that an object AGREES WITH ITSELF. That is worth more than pinning literals
@@ -463,6 +508,8 @@
 ;;
 (begin-tx "STAGEZ-13 -- the button flags follow TWO different conventions")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== STAGEZ-13 -- the button flags follow TWO different conventions · 01 · namespace ==== =======
+(print "--- [STAGEZ-13 -- the button flags follow TWO different conventions · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [STAGEZ-13 . 01 . can-X vs where-X, and where they disagree] ---")
 ;;URC_0017_TruefungibleButton returns four can-X booleans each paired with a where-X target list.
@@ -502,6 +549,8 @@
 ;;
 (begin-tx "STAGEZ-14 -- every Stage-Z module's governance resolves to the SOVEREIGN's")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== STAGEZ-14 -- every Stage-Z module's governance resolves to the SOVEREIGN's · 01 · namespace ==== 
+(print "--- [STAGEZ-14 -- every Stage-Z module's governance resolves to the SOVEREIGN's · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [STAGEZ-14 . 01 . citizen governance delegates to DALOS] ---")
 ;;All three Stage-Z modules are CITIZEN modules that define their own GOV cap, each gated on a
@@ -531,6 +580,8 @@
 ;;
 (begin-tx "STAGEZ-15 -- the empty case across the whole selector/mapper family")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== STAGEZ-15 -- the empty case across the whole selector/mapper family · 01 · namespace ==== ==
+(print "--- [STAGEZ-15 -- the empty case across the whole selector/mapper family · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [STAGEZ-15 . 01 . empty in, empty out] ---")
 ;;Five more list readers, all asserted on the EMPTY input. That is deliberate and not filler: the
@@ -559,6 +610,8 @@
 ;;
 (begin-tx "STAGEZ-16 -- the set reader returns real definitions, not an empty shell")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== STAGEZ-16 -- the set reader returns real definitions, not an empty shell · 01 · namespace ==== 
+(print "--- [STAGEZ-16 -- the set reader returns real definitions, not an empty shell · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [STAGEZ-16 . 01 . a populated read, so the empties above mean something] ---")
 ;;Every assertion in STAGEZ-15 passes trivially if a reader returns [] for EVERYTHING. This is the
@@ -578,6 +631,8 @@
 ;;
 (begin-tx "STAGEZ-17 -- what a whole-table scan actually costs")
 (env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+;;==== STAGEZ-17 -- what a whole-table scan actually costs · 01 · namespace ==== ==================
+(print "--- [STAGEZ-17 -- what a whole-table scan actually costs · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [STAGEZ-17 . 01 . point read] ---")
 ;;STAGEZ-04/05/06 pin that the cross-module scans are local-only. This pins the constraint that
@@ -592,6 +647,8 @@
 ;;Thresholds, not exact figures: exact numbers are Pact-version-specific and would turn a real
 ;;signal into version churn. What must stay true is the ORDER OF MAGNITUDE -- a scan costs orders
 ;;more than a point read, so a reader doing several of them cannot fit in a transaction.
+;;==== STAGEZ-17 -- what a whole-table scan actually costs · 02 · let / invocation ==== ===========
+(print "--- [STAGEZ-17 -- what a whole-table scan actually costs · 02 · let / invocation] ---")
 (let ((g0:integer (env-gas)))
     (DALOS.UR_AccountNonce KST.ANHD)
     (let ((point:integer (- (env-gas) g0)))
@@ -610,8 +667,12 @@
 ;;
 (begin-tx "STAGEZ-17b -- and the scan, for comparison")
 (env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+;;==== STAGEZ-17b -- and the scan, for comparison · 01 · namespace ==== ===========================
+(print "--- [STAGEZ-17b -- and the scan, for comparison · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [STAGEZ-17b . 01 . whole-table scan] ---")
+;;==== STAGEZ-17b -- and the scan, for comparison · 02 · let / invocation ==== ====================
+(print "--- [STAGEZ-17b -- and the scan, for comparison · 02 · let / invocation] ---")
 (let ((g0:integer (env-gas)))
     (DALOS.URH_AccountCounter)
     (let ((scan:integer (- (env-gas) g0)))
@@ -635,6 +696,8 @@
 ;;
 (begin-tx "STAGEZ-18 -- the LP-entry readers, now that pools exist")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== STAGEZ-18 -- the LP-entry readers, now that pools exist · 01 · namespace ==== ==============
+(print "--- [STAGEZ-18 -- the LP-entry readers, now that pools exist · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [STAGEZ-18 . 01 . native vs frozen vs sleeping LP entries] ---")
 ;;Two UNPINNED guards (`python3 REPL/tools/_cheapseam.py`), both unreachable until this file had swpairs:
@@ -645,6 +708,8 @@
 ;;only via VST|C_CreateSleepingLink. A freshly issued pool has neither, so both guards fire -- and
 ;;the NATIVE path through the same function still works, which is what shows the guards are about
 ;;the missing counterpart rather than the reader being broken.
+;;==== STAGEZ-18 -- the LP-entry readers, now that pools exist · 02 · let / invocation ==== =======
+(print "--- [STAGEZ-18 -- the LP-entry readers, now that pools exist · 02 · let / invocation] ---")
 (let ((sp:string (at 0 (SWP.URC_ActiveSwpairs))))
     (map print
         [
@@ -669,6 +734,8 @@
 ;;
 (begin-tx "STAGEZ-19 -- swpair readers that were unreachable without pools")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== STAGEZ-19 -- swpair readers that were unreachable without pools · 01 · namespace ==== ======
+(print "--- [STAGEZ-19 -- swpair readers that were unreachable without pools · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [STAGEZ-19 . 01 . the pool-dependent readers] ---")
 ;;These were in the "never reached" column purely because the chain had no pools. Asserted on
@@ -703,6 +770,8 @@
 (begin-tx "STAGEZ-20 -- drain a pool to empty (LAST block: this is destructive)")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== STAGEZ-20 -- drain a pool to empty (LAST block: this is destructive) · 01 · env-sigs (caps) ==== 
+(print "--- [STAGEZ-20 -- drain a pool to empty (LAST block: this is destructive) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AOZ", "caps": [] }])
 (print "--- [STAGEZ-20 . 01 . full liquidity removal] ---")
 ;;SWPLC::UEV_AddLiquidity's "Liquidity Addition on an empty Pool must have a Balanced Part present!"
@@ -740,11 +809,15 @@
 ;;
 (begin-tx "STAGEZ-20b -- an empty pool refuses an unbalanced first deposit")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== STAGEZ-20b -- an empty pool refuses an unbalanced first deposit · 01 · namespace ==== ======
+(print "--- [STAGEZ-20b -- an empty pool refuses an unbalanced first deposit · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [STAGEZ-20b . 01 . the empty-pool balance rule] ---")
 ;;With no LP outstanding there is no ratio to price an unbalanced deposit against -- the first
 ;;deposit back into an empty pool defines the ratio, so it must carry a balanced part. Both sides
 ;;are asserted: an UNbalanced deposit is refused and a balanced one clears this guard.
+;;==== STAGEZ-20b -- an empty pool refuses an unbalanced first deposit · 02 · let / invocation ==== 
+(print "--- [STAGEZ-20b -- an empty pool refuses an unbalanced first deposit · 02 · let / invocation] ---")
 (let ((sp:string (at 0 (SWP.URC_ActiveSwpairs))))
     (map print
         [
@@ -780,6 +853,8 @@
 (begin-tx "STAGEZ-21 -- the dispenser's stoicism-minting parity check")
 (env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== STAGEZ-21 -- the dispenser's stoicism-minting parity check · 01 · env-sigs (caps) ==== =====
+(print "--- [STAGEZ-21 -- the dispenser's stoicism-minting parity check · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [STAGEZ-21 . 01 . amounts and targets must agree in length] ---")
 ;;`DSP|STOICISM-MINTER` takes two parallel lists -- amounts and the accounts to mint them to -- and

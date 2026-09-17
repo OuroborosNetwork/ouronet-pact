@@ -17,6 +17,8 @@
 (namespace "ouronet-ns")
 ;;==== INIT TX 000 - Chain Data Time SetUp Definition · 01 · env-chain-data ==== ==================
 (print "--- [INIT TX 000 - Chain Data Time SetUp Definition · 01 · env-chain-data] ---")
+;;==== INIT TX 000 - Chain Data Time SetUp Definition · 01 · env-chain-data ==== ==================
+(print "--- [INIT TX 000 - Chain Data Time SetUp Definition · 01 · env-chain-data] ---")
 (env-chain-data
     {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
      "block-time": TV.TIME00}
@@ -39,6 +41,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX001 - Accounts Display · 01 · env-sigs (caps) ==== =======================================
 (print "--- [TX001 - Accounts Display · 01 · env-sigs (caps)] ---")
+;;==== TX001 - Accounts Display · 01 · env-sigs (caps) ==== =======================================
+(print "--- [TX001 - Accounts Display · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -46,6 +50,8 @@
     ]
 )
 (print "=============================================BEGIN DPTF TESTS==========================================")
+;;==== TX001 - Accounts Display · 02 · let / invocation ==== ======================================
+(print "--- [TX001 - Accounts Display · 02 · let / invocation] ---")
 ;;==== TX001 - Accounts Display · 02 · let / invocation ==== ======================================
 (print "--- [TX001 - Accounts Display · 02 · let / invocation] ---")
 (let
@@ -75,6 +81,8 @@
 (print "")
 ;;==== TX001 - Accounts Display · 03 · gas echo ==== ==============================================
 (print "--- [TX001 - Accounts Display · 03 · gas echo] ---")
+;;==== TX001 - Accounts Display · 03 · gas echo ==== ==============================================
+(print "--- [TX001 - Accounts Display · 03 · gas echo] ---")
 (format "<<<<<<<TX001 - Accounts Display costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -89,6 +97,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX 002 -- Toggle Tests · 01 · env-sigs (caps) ==== =========================================
 (print "--- [TX 002 -- Toggle Tests · 01 · env-sigs (caps)] ---")
+;;==== TX 002 -- Toggle Tests · 01 · env-sigs (caps) ==== =========================================
+(print "--- [TX 002 -- Toggle Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -97,6 +107,8 @@
     ]
 )
 (print "=============================================BEGIN DPTF TESTS==========================================")
+;;==== TX 002 -- Toggle Tests · 02 · let / invocation ==== ========================================
+(print "--- [TX 002 -- Toggle Tests · 02 · let / invocation] ---")
 ;;==== TX 002 -- Toggle Tests · 02 · let / invocation ==== ========================================
 (print "--- [TX 002 -- Toggle Tests · 02 · let / invocation] ---")
 (let
@@ -182,6 +194,8 @@
 (print "")
 ;;==== TX 002 -- Toggle Tests · 03 · gas echo ==== ================================================
 (print "--- [TX 002 -- Toggle Tests · 03 · gas echo] ---")
+;;==== TX 002 -- Toggle Tests · 03 · gas echo ==== ================================================
+(print "--- [TX 002 -- Toggle Tests · 03 · gas echo] ---")
 (format "<<<<<<<TX 002 -- Toggle Tests costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -196,6 +210,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX001 - Accounts Display · 01 · env-sigs (caps) ==== =======================================
 (print "--- [TX001 - Accounts Display · 01 · env-sigs (caps)] ---")
+;;==== TX001 - Accounts Display · 01 · env-sigs (caps) ==== =======================================
+(print "--- [TX001 - Accounts Display · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -203,6 +219,8 @@
     ]
 )
 (print "=============================================BEGIN DPTF TESTS==========================================")
+;;==== TX001 - Accounts Display · 02 · let / invocation ==== ======================================
+(print "--- [TX001 - Accounts Display · 02 · let / invocation] ---")
 ;;==== TX001 - Accounts Display · 02 · let / invocation ==== ======================================
 (print "--- [TX001 - Accounts Display · 02 · let / invocation] ---")
 (let
@@ -258,6 +276,8 @@
 (print "")
 ;;==== TX001 - Accounts Display · 03 · gas echo ==== ==============================================
 (print "--- [TX001 - Accounts Display · 03 · gas echo] ---")
+;;==== TX001 - Accounts Display · 03 · gas echo ==== ==============================================
+(print "--- [TX001 - Accounts Display · 03 · gas echo] ---")
 (format "<<<<<<<TX001 - Accounts Display costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -272,6 +292,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX 003 -- Nonce Tests · 01 · env-sigs (caps) ==== ==========================================
 (print "--- [TX 003 -- Nonce Tests · 01 · env-sigs (caps)] ---")
+;;==== TX 003 -- Nonce Tests · 01 · env-sigs (caps) ==== ==========================================
+(print "--- [TX 003 -- Nonce Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -280,6 +302,8 @@
     ]
 )
 (print "=============================================BEGIN DPTF TESTS==========================================")
+;;==== TX 003 -- Nonce Tests · 02 · let / invocation ==== =========================================
+(print "--- [TX 003 -- Nonce Tests · 02 · let / invocation] ---")
 ;;==== TX 003 -- Nonce Tests · 02 · let / invocation ==== =========================================
 (print "--- [TX 003 -- Nonce Tests · 02 · let / invocation] ---")
 (let
@@ -401,6 +425,8 @@
 (print "")
 ;;==== TX 003 -- Nonce Tests · 03 · gas echo ==== =================================================
 (print "--- [TX 003 -- Nonce Tests · 03 · gas echo] ---")
+;;==== TX 003 -- Nonce Tests · 03 · gas echo ==== =================================================
+(print "--- [TX 003 -- Nonce Tests · 03 · gas echo] ---")
 (format "<<<<<<<TX 003 -- Nonce Tests costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -415,6 +441,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX 005 -- NFT Tests · 01 · env-sigs (caps) ==== ============================================
 (print "--- [TX 005 -- NFT Tests · 01 · env-sigs (caps)] ---")
+;;==== TX 005 -- NFT Tests · 01 · env-sigs (caps) ==== ============================================
+(print "--- [TX 005 -- NFT Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -423,6 +451,8 @@
     ]
 )
 (print "=============================================BEGIN DPTF TESTS==========================================")
+;;==== TX 005 -- NFT Tests · 02 · let / invocation ==== ===========================================
+(print "--- [TX 005 -- NFT Tests · 02 · let / invocation] ---")
 ;;==== TX 005 -- NFT Tests · 02 · let / invocation ==== ===========================================
 (print "--- [TX 005 -- NFT Tests · 02 · let / invocation] ---")
 (let
@@ -480,6 +510,8 @@
 (print "")
 ;;==== TX 005 -- NFT Tests · 03 · gas echo ==== ===================================================
 (print "--- [TX 005 -- NFT Tests · 03 · gas echo] ---")
+;;==== TX 005 -- NFT Tests · 03 · gas echo ==== ===================================================
+(print "--- [TX 005 -- NFT Tests · 03 · gas echo] ---")
 (format "<<<<<<<TX 005 -- NFT Tests costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -494,6 +526,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX 005b -- Wipe Tests · 01 · env-sigs (caps) ==== ==========================================
 (print "--- [TX 005b -- Wipe Tests · 01 · env-sigs (caps)] ---")
+;;==== TX 005b -- Wipe Tests · 01 · env-sigs (caps) ==== ==========================================
+(print "--- [TX 005b -- Wipe Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -502,6 +536,8 @@
     ]
 )
 (print "=============================================BEGIN DPTF TESTS==========================================")
+;;==== TX 005b -- Wipe Tests · 02 · let / invocation ==== =========================================
+(print "--- [TX 005b -- Wipe Tests · 02 · let / invocation] ---")
 ;;==== TX 005b -- Wipe Tests · 02 · let / invocation ==== =========================================
 (print "--- [TX 005b -- Wipe Tests · 02 · let / invocation] ---")
 (let
@@ -544,6 +580,8 @@
 (print "")
 ;;==== TX 005b -- Wipe Tests · 03 · gas echo ==== =================================================
 (print "--- [TX 005b -- Wipe Tests · 03 · gas echo] ---")
+;;==== TX 005b -- Wipe Tests · 03 · gas echo ==== =================================================
+(print "--- [TX 005b -- Wipe Tests · 03 · gas echo] ---")
 (format "<<<<<<<TX 005b -- Wipe Tests costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -558,6 +596,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX001 - Accounts Display · 01 · env-sigs (caps) ==== =======================================
 (print "--- [TX001 - Accounts Display · 01 · env-sigs (caps)] ---")
+;;==== TX001 - Accounts Display · 01 · env-sigs (caps) ==== =======================================
+(print "--- [TX001 - Accounts Display · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -565,6 +605,8 @@
     ]
 )
 (print "=============================================BEGIN DPTF TESTS==========================================")
+;;==== TX001 - Accounts Display · 02 · let / invocation ==== ======================================
+(print "--- [TX001 - Accounts Display · 02 · let / invocation] ---")
 ;;==== TX001 - Accounts Display · 02 · let / invocation ==== ======================================
 (print "--- [TX001 - Accounts Display · 02 · let / invocation] ---")
 (let
@@ -620,6 +662,8 @@
 (print "")
 ;;==== TX001 - Accounts Display · 03 · gas echo ==== ==============================================
 (print "--- [TX001 - Accounts Display · 03 · gas echo] ---")
+;;==== TX001 - Accounts Display · 03 · gas echo ==== ==============================================
+(print "--- [TX001 - Accounts Display · 03 · gas echo] ---")
 (format "<<<<<<<TX001 - Accounts Display costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -635,6 +679,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX 007 -- SFT Transfer Tests · 01 · env-sigs (caps) ==== ===================================
 (print "--- [TX 007 -- SFT Transfer Tests · 01 · env-sigs (caps)] ---")
+;;==== TX 007 -- SFT Transfer Tests · 01 · env-sigs (caps) ==== ===================================
+(print "--- [TX 007 -- SFT Transfer Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -643,6 +689,8 @@
     ]
 )
 (print "=============================================BEGIN DPTF TESTS==========================================")
+;;==== TX 007 -- SFT Transfer Tests · 02 · let / invocation ==== ==================================
+(print "--- [TX 007 -- SFT Transfer Tests · 02 · let / invocation] ---")
 ;;==== TX 007 -- SFT Transfer Tests · 02 · let / invocation ==== ==================================
 (print "--- [TX 007 -- SFT Transfer Tests · 02 · let / invocation] ---")
 (let
@@ -675,6 +723,8 @@
 (print "")
 ;;==== TX 007 -- SFT Transfer Tests · 03 · gas echo ==== ==========================================
 (print "--- [TX 007 -- SFT Transfer Tests · 03 · gas echo] ---")
+;;==== TX 007 -- SFT Transfer Tests · 03 · gas echo ==== ==========================================
+(print "--- [TX 007 -- SFT Transfer Tests · 03 · gas echo] ---")
 (format "<<<<<<<TX 007a -- SFT Transfer Tests costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -693,6 +743,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX 007b -- SFT Transfer Tests · 01 · env-sigs (caps) ==== ==================================
 (print "--- [TX 007b -- SFT Transfer Tests · 01 · env-sigs (caps)] ---")
+;;==== TX 007b -- SFT Transfer Tests · 01 · env-sigs (caps) ==== ==================================
+(print "--- [TX 007b -- SFT Transfer Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -701,6 +753,8 @@
     ]
 )
 (print "=============================================BEGIN DPTF TESTS==========================================")
+;;==== TX 007b -- SFT Transfer Tests · 02 · let / invocation ==== =================================
+(print "--- [TX 007b -- SFT Transfer Tests · 02 · let / invocation] ---")
 ;;==== TX 007b -- SFT Transfer Tests · 02 · let / invocation ==== =================================
 (print "--- [TX 007b -- SFT Transfer Tests · 02 · let / invocation] ---")
 (let
@@ -760,6 +814,8 @@
 (print "")
 ;;==== TX 007b -- SFT Transfer Tests · 03 · gas echo ==== =========================================
 (print "--- [TX 007b -- SFT Transfer Tests · 03 · gas echo] ---")
+;;==== TX 007b -- SFT Transfer Tests · 03 · gas echo ==== =========================================
+(print "--- [TX 007b -- SFT Transfer Tests · 03 · gas echo] ---")
 (format "<<<<<<<TX 007b -- SFT Transfer Tests costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -774,6 +830,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX 008 -- SFT Fragment Tests · 01 · env-sigs (caps) ==== ===================================
 (print "--- [TX 008 -- SFT Fragment Tests · 01 · env-sigs (caps)] ---")
+;;==== TX 008 -- SFT Fragment Tests · 01 · env-sigs (caps) ==== ===================================
+(print "--- [TX 008 -- SFT Fragment Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -781,6 +839,8 @@
     ]
 )
 (print "=============================================BEGIN DPTF TESTS==========================================")
+;;==== TX 008 -- SFT Fragment Tests · 02 · let / invocation ==== ==================================
+(print "--- [TX 008 -- SFT Fragment Tests · 02 · let / invocation] ---")
 ;;==== TX 008 -- SFT Fragment Tests · 02 · let / invocation ==== ==================================
 (print "--- [TX 008 -- SFT Fragment Tests · 02 · let / invocation] ---")
 (let
@@ -811,6 +871,8 @@
 (print "")
 ;;==== TX 008 -- SFT Fragment Tests · 03 · gas echo ==== ==========================================
 (print "--- [TX 008 -- SFT Fragment Tests · 03 · gas echo] ---")
+;;==== TX 008 -- SFT Fragment Tests · 03 · gas echo ==== ==========================================
+(print "--- [TX 008 -- SFT Fragment Tests · 03 · gas echo] ---")
 (format "<<<<<<<TX 008 -- SUPPLY TESTS {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -825,12 +887,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX 011 -- Make CD Set · 01 · env-sigs (caps) ==== ==========================================
 (print "--- [TX 011 -- Make CD Set · 01 · env-sigs (caps)] ---")
+;;==== TX 011 -- Make CD Set · 01 · env-sigs (caps) ==== ==========================================
+(print "--- [TX 011 -- Make CD Set · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
         { "key": "PK_Emma", "caps": [] }
     ]
 )
+;;==== TX 011 -- Make CD Set · 02 · let / invocation ==== =========================================
+(print "--- [TX 011 -- Make CD Set · 02 · let / invocation] ---")
 ;;==== TX 011 -- Make CD Set · 02 · let / invocation ==== =========================================
 (print "--- [TX 011 -- Make CD Set · 02 · let / invocation] ---")
 (let
@@ -929,12 +995,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX 014 -- Equity Collection Tests · 01 · env-sigs (caps) ==== ==============================
 (print "--- [TX 014 -- Equity Collection Tests · 01 · env-sigs (caps)] ---")
+;;==== TX 014 -- Equity Collection Tests · 01 · env-sigs (caps) ==== ==============================
+(print "--- [TX 014 -- Equity Collection Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
         { "key": "PK_Emma", "caps": [] }
     ]
 )
+;;==== TX 014 -- Equity Collection Tests · 02 · let / invocation ==== =============================
+(print "--- [TX 014 -- Equity Collection Tests · 02 · let / invocation] ---")
 ;;==== TX 014 -- Equity Collection Tests · 02 · let / invocation ==== =============================
 (print "--- [TX 014 -- Equity Collection Tests · 02 · let / invocation] ---")
 (let

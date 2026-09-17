@@ -17,6 +17,8 @@
 (namespace "ouronet-ns")
 ;;==== INIT TX 000 - Chain Data Time SetUp Definition · 01 · env-chain-data ==== ==================
 (print "--- [INIT TX 000 - Chain Data Time SetUp Definition · 01 · env-chain-data] ---")
+;;==== INIT TX 000 - Chain Data Time SetUp Definition · 01 · env-chain-data ==== ==================
+(print "--- [INIT TX 000 - Chain Data Time SetUp Definition · 01 · env-chain-data] ---")
 (env-chain-data
     {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
      "block-time": TV.TIME00}
@@ -36,12 +38,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== Init STEP 001 - Show Tests · 01 · env-sigs (caps) ==== =====================================
 (print "--- [Init STEP 001 - Show Tests · 01 · env-sigs (caps)] ---")
+;;==== Init STEP 001 - Show Tests · 01 · env-sigs (caps) ==== =====================================
+(print "--- [Init STEP 001 - Show Tests · 01 · env-sigs (caps)] ---")
 (env-sigs
     [   
         { "key": "PK_AOZ", "caps": [] }
     ]
 )
 (namespace "ouronet-ns")
+;;==== Init STEP 001 - Show Tests · 02 · let / invocation ==== ====================================
+(print "--- [Init STEP 001 - Show Tests · 02 · let / invocation] ---")
 ;;==== Init STEP 001 - Show Tests · 02 · let / invocation ==== ====================================
 (print "--- [Init STEP 001 - Show Tests · 02 · let / invocation] ---")
 (let 
@@ -103,6 +109,8 @@
 (print "")
 ;;==== Init STEP 001 - Show Tests · 03 · gas echo ==== ============================================
 (print "--- [Init STEP 001 - Show Tests · 03 · gas echo] ---")
+;;==== Init STEP 001 - Show Tests · 03 · gas echo ==== ============================================
+(print "--- [Init STEP 001 - Show Tests · 03 · gas echo] ---")
 (format "<<<<<<<STEP 001 Show Tests {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -117,12 +125,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== Init STEP 001 · 01 · env-sigs (caps) ==== ==================================================
 (print "--- [Init STEP 001 · 01 · env-sigs (caps)] ---")
+;;==== Init STEP 001 · 01 · env-sigs (caps) ==== ==================================================
+(print "--- [Init STEP 001 · 01 · env-sigs (caps)] ---")
 (env-sigs
     [   
         { "key": "PK_AOZ", "caps": [] }
     ]
 )
 (namespace "ouronet-ns")
+;;==== Init STEP 001 · 02 · let / invocation ==== =================================================
+(print "--- [Init STEP 001 · 02 · let / invocation] ---")
 ;;==== Init STEP 001 · 02 · let / invocation ==== =================================================
 (print "--- [Init STEP 001 · 02 · let / invocation] ---")
 (let 
@@ -160,6 +172,8 @@
 (print "")
 ;;==== Init STEP 001 · 03 · gas echo ==== =========================================================
 (print "--- [Init STEP 001 · 03 · gas echo] ---")
+;;==== Init STEP 001 · 03 · gas echo ==== =========================================================
+(print "--- [Init STEP 001 · 03 · gas echo] ---")
 (format "<<<<<<<STEP 002 Coil Fuel Tests {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -174,12 +188,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== Init STEP 003 - Show Tests · 01 · env-sigs (caps) ==== =====================================
 (print "--- [Init STEP 003 - Show Tests · 01 · env-sigs (caps)] ---")
+;;==== Init STEP 003 - Show Tests · 01 · env-sigs (caps) ==== =====================================
+(print "--- [Init STEP 003 - Show Tests · 01 · env-sigs (caps)] ---")
 (env-sigs
     [   
         { "key": "PK_AOZ", "caps": [] }
     ]
 )
 (namespace "ouronet-ns")
+;;==== Init STEP 003 - Show Tests · 02 · let / invocation ==== ====================================
+(print "--- [Init STEP 003 - Show Tests · 02 · let / invocation] ---")
 ;;==== Init STEP 003 - Show Tests · 02 · let / invocation ==== ====================================
 (print "--- [Init STEP 003 - Show Tests · 02 · let / invocation] ---")
 (let 
@@ -234,12 +252,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== Hot RBT and Redeem Test 1|5 · 01 · env-sigs (caps) ==== ====================================
 (print "--- [Hot RBT and Redeem Test 1|5 · 01 · env-sigs (caps)] ---")
+;;==== Hot RBT and Redeem Test 1|5 · 01 · env-sigs (caps) ==== ====================================
+(print "--- [Hot RBT and Redeem Test 1|5 · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AOZ", "caps": [] }
     ]
 )
 (namespace "ouronet-ns")
+;;==== Hot RBT and Redeem Test 1|5 · 02 · let / invocation ==== ===================================
+(print "--- [Hot RBT and Redeem Test 1|5 · 02 · let / invocation] ---")
 ;;==== Hot RBT and Redeem Test 1|5 · 02 · let / invocation ==== ===================================
 (print "--- [Hot RBT and Redeem Test 1|5 · 02 · let / invocation] ---")
 (let
@@ -301,6 +323,8 @@
 (print "")
 ;;==== Hot RBT and Redeem Test 1|5 · 03 · gas echo ==== ===========================================
 (print "--- [Hot RBT and Redeem Test 1|5 · 03 · gas echo] ---")
+;;==== Hot RBT and Redeem Test 1|5 · 03 · gas echo ==== ===========================================
+(print "--- [Hot RBT and Redeem Test 1|5 · 03 · gas echo] ---")
 (format "<<<<<<<Hot RBT and Redeem Test 1|5 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -314,6 +338,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== Hot RBT and Redeem Test 2|5 · 01 · env-sigs (caps) ==== ====================================
 (print "--- [Hot RBT and Redeem Test 2|5 · 01 · env-sigs (caps)] ---")
+;;==== Hot RBT and Redeem Test 2|5 · 01 · env-sigs (caps) ==== ====================================
+(print "--- [Hot RBT and Redeem Test 2|5 · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AOZ", "caps": [] }
@@ -323,6 +349,8 @@
 (print "BEFORE BLOCK===================================")
 ;;==== Hot RBT and Redeem Test 2|5 · 02 · let / invocation ==== ===================================
 (print "--- [Hot RBT and Redeem Test 2|5 · 02 · let / invocation — mints Hot-RBT nonce 1] ---")
+;;==== Hot RBT and Redeem Test 2|5 · 02 · let / invocation ==== ===================================
+(print "--- [Hot RBT and Redeem Test 2|5 · 02 · let / invocation] ---")
 (let
     (
         (aoz:string KST.AOZT)
@@ -353,6 +381,8 @@
 (print "")
 ;;==== Hot RBT and Redeem Test 2|5 · 03 · gas echo ==== ===========================================
 (print "--- [Hot RBT and Redeem Test 2|5 · 03 · gas echo] ---")
+;;==== Hot RBT and Redeem Test 2|5 · 03 · gas echo ==== ===========================================
+(print "--- [Hot RBT and Redeem Test 2|5 · 03 · gas echo] ---")
 (format "<<<<<<<Hot RBT and Redeem Test 2|5 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -366,6 +396,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== Hot RBT and Redeem Test 3|5 · 01 · env-sigs (caps) ==== ====================================
 (print "--- [Hot RBT and Redeem Test 3|5 · 01 · env-sigs (caps)] ---")
+;;==== Hot RBT and Redeem Test 3|5 · 01 · env-sigs (caps) ==== ====================================
+(print "--- [Hot RBT and Redeem Test 3|5 · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AOZ", "caps": [] }
@@ -374,6 +406,8 @@
 (namespace "ouronet-ns")
 ;;==== Hot RBT and Redeem Test 3|5 · 02 · let / invocation — mints Hot-RBT nonce 2 ==== ============
 (print "--- [Hot RBT and Redeem Test 3|5 · 02 · let / invocation — mints Hot-RBT nonce 2] ---")
+;;==== Hot RBT and Redeem Test 3|5 · 02 · let / invocation ==== ===================================
+(print "--- [Hot RBT and Redeem Test 3|5 · 02 · let / invocation] ---")
 (let
     (
         (aoz:string KST.AOZT)
@@ -414,6 +448,8 @@
 (print "")
 ;;==== Hot RBT and Redeem Test 3|5 · 03 · gas echo ==== ===========================================
 (print "--- [Hot RBT and Redeem Test 3|5 · 03 · gas echo] ---")
+;;==== Hot RBT and Redeem Test 3|5 · 03 · gas echo ==== ===========================================
+(print "--- [Hot RBT and Redeem Test 3|5 · 03 · gas echo] ---")
 (format "<<<<<<<Hot RBT and Redeem Test 3|5 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -425,6 +461,8 @@
 (print "")
 (begin-tx "Hot RBT and Redeem Test 4|5")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== Hot RBT and Redeem Test 4|5 · 01 · env-sigs (caps) ==== ====================================
+(print "--- [Hot RBT and Redeem Test 4|5 · 01 · env-sigs (caps)] ---")
 ;;==== Hot RBT and Redeem Test 4|5 · 01 · env-sigs (caps) ==== ====================================
 (print "--- [Hot RBT and Redeem Test 4|5 · 01 · env-sigs (caps)] ---")
 (env-sigs
@@ -440,6 +478,8 @@
 ;; not coerce). Fixed in ROUND-02-FIXES.md Fix #2 (`have-fee-rts:bool (!= are-fee-rts 0.0)`).
 ;; This tx redeems nonce 1 only ~6h after minting (well inside the 1-day decay window, h-promile
 ;; 10%), so a real, nonzero fee must be withheld — exercises the TRUE branch of the fix.
+;;==== Hot RBT and Redeem Test 4|5 · 02 · let / invocation ==== ===================================
+(print "--- [Hot RBT and Redeem Test 4|5 · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
@@ -496,6 +536,8 @@
 (print "")
 ;;==== Hot RBT and Redeem Test 4|5 · 03 · gas echo ==== ===========================================
 (print "--- [Hot RBT and Redeem Test 4|5 · 03 · gas echo] ---")
+;;==== Hot RBT and Redeem Test 4|5 · 03 · gas echo ==== ===========================================
+(print "--- [Hot RBT and Redeem Test 4|5 · 03 · gas echo] ---")
 (format "<<<<<<<Hot RBT and Redeem Test 4|5 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -507,6 +549,8 @@
 (print "")
 (begin-tx "Hot RBT and Redeem Test 5|5")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== Hot RBT and Redeem Test 5|5 · 01 · env-sigs (caps) ==== ====================================
+(print "--- [Hot RBT and Redeem Test 5|5 · 01 · env-sigs (caps)] ---")
 ;;==== Hot RBT and Redeem Test 5|5 · 01 · env-sigs (caps) ==== ====================================
 (print "--- [Hot RBT and Redeem Test 5|5 · 01 · env-sigs (caps)] ---")
 (env-sigs
@@ -521,6 +565,8 @@
 ;; (`elapsed-time >= total-time`), so `earned-rbt = nonce-supply` exactly and `are-fee-rts = 0.0` —
 ;; the EXACT edge case that first exposed the bug (Pact's `if` rejects `0.0` same as any nonzero
 ;; decimal; no silent coercion). Exercises the FALSE branch of the fix: full value paid, no fee.
+;;==== Hot RBT and Redeem Test 5|5 · 02 · let / invocation ==== ===================================
+(print "--- [Hot RBT and Redeem Test 5|5 · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
@@ -607,6 +653,8 @@
 (print "")
 ;;==== Hot RBT and Redeem Test 5|5 · 03 · gas echo ==== ===========================================
 (print "--- [Hot RBT and Redeem Test 5|5 · 03 · gas echo] ---")
+;;==== Hot RBT and Redeem Test 5|5 · 03 · gas echo ==== ===========================================
+(print "--- [Hot RBT and Redeem Test 5|5 · 03 · gas echo] ---")
 (format "<<<<<<<Hot RBT and Redeem Test 5|5 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -622,12 +670,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== Cold Recovery and Cull Test 1|5 · 01 · env-sigs (caps) ==== ================================
 (print "--- [Cold Recovery and Cull Test 1|5 · 01 · env-sigs (caps)] ---")
+;;==== Cold Recovery and Cull Test 1|5 · 01 · env-sigs (caps) ==== ================================
+(print "--- [Cold Recovery and Cull Test 1|5 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
     ]
 )
 (namespace "ouronet-ns")
+;;==== Cold Recovery and Cull Test 1|5 · 02 · let / invocation ==== ===============================
+(print "--- [Cold Recovery and Cull Test 1|5 · 02 · let / invocation] ---")
 ;;==== Cold Recovery and Cull Test 1|5 · 02 · let / invocation ==== ===============================
 (print "--- [Cold Recovery and Cull Test 1|5 · 02 · let / invocation] ---")
 (let
@@ -689,6 +741,8 @@
 (print "")
 ;;==== Cold Recovery and Cull Test 1|5 · 03 · gas echo ==== =======================================
 (print "--- [Cold Recovery and Cull Test 1|5 · 03 · gas echo] ---")
+;;==== Cold Recovery and Cull Test 1|5 · 03 · gas echo ==== =======================================
+(print "--- [Cold Recovery and Cull Test 1|5 · 03 · gas echo] ---")
 (format "<<<<<<<Cold Recovery and Cull Test 1|5 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -702,6 +756,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== Cold Recovery and Cull Test 2|5 · 01 · env-sigs (caps) ==== ================================
 (print "--- [Cold Recovery and Cull Test 2|5 · 01 · env-sigs (caps)] ---")
+;;==== Cold Recovery and Cull Test 2|5 · 01 · env-sigs (caps) ==== ================================
+(print "--- [Cold Recovery and Cull Test 2|5 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
@@ -710,6 +766,8 @@
     ]
 )
 (namespace "ouronet-ns")
+;;==== Cold Recovery and Cull Test 2|5 · 02 · let / invocation ==== ===============================
+(print "--- [Cold Recovery and Cull Test 2|5 · 02 · let / invocation] ---")
 ;;==== Cold Recovery and Cull Test 2|5 · 02 · let / invocation ==== ===============================
 (print "--- [Cold Recovery and Cull Test 2|5 · 02 · let / invocation] ---")
 (let
@@ -788,6 +846,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== Cold Recovery and Cull Test 3|5 · 01 · env-sigs (caps) ==== ================================
 (print "--- [Cold Recovery and Cull Test 3|5 · 01 · env-sigs (caps)] ---")
+;;==== Cold Recovery and Cull Test 3|5 · 01 · env-sigs (caps) ==== ================================
+(print "--- [Cold Recovery and Cull Test 3|5 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
@@ -796,6 +856,8 @@
     ]
 )
 (namespace "ouronet-ns")
+;;==== Cold Recovery and Cull Test 3|5 · 02 · let / invocation ==== ===============================
+(print "--- [Cold Recovery and Cull Test 3|5 · 02 · let / invocation] ---")
 ;;==== Cold Recovery and Cull Test 3|5 · 02 · let / invocation ==== ===============================
 (print "--- [Cold Recovery and Cull Test 3|5 · 02 · let / invocation] ---")
 (let
@@ -871,6 +933,8 @@
 (print "")
 ;;==== Cold Recovery and Cull Test 3|5 · 03 · gas echo ==== =======================================
 (print "--- [Cold Recovery and Cull Test 3|5 · 03 · gas echo] ---")
+;;==== Cold Recovery and Cull Test 3|5 · 03 · gas echo ==== =======================================
+(print "--- [Cold Recovery and Cull Test 3|5 · 03 · gas echo] ---")
 (format "<<<<<<<Cold Recovery and Cull Test 3|5 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -884,6 +948,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== Cold Recovery and Cull Test 4|5 · 01 · env-sigs (caps) ==== ================================
 (print "--- [Cold Recovery and Cull Test 4|5 · 01 · env-sigs (caps)] ---")
+;;==== Cold Recovery and Cull Test 4|5 · 01 · env-sigs (caps) ==== ================================
+(print "--- [Cold Recovery and Cull Test 4|5 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
@@ -892,6 +958,8 @@
     ]
 )
 (namespace "ouronet-ns")
+;;==== Cold Recovery and Cull Test 4|5 · 02 · let / invocation ==== ===============================
+(print "--- [Cold Recovery and Cull Test 4|5 · 02 · let / invocation] ---")
 ;;==== Cold Recovery and Cull Test 4|5 · 02 · let / invocation ==== ===============================
 (print "--- [Cold Recovery and Cull Test 4|5 · 02 · let / invocation] ---")
 (let
@@ -974,6 +1042,8 @@
 (print "")
 ;;==== Cold Recovery and Cull Test 4|5 · 03 · gas echo ==== =======================================
 (print "--- [Cold Recovery and Cull Test 4|5 · 03 · gas echo] ---")
+;;==== Cold Recovery and Cull Test 4|5 · 03 · gas echo ==== =======================================
+(print "--- [Cold Recovery and Cull Test 4|5 · 03 · gas echo] ---")
 (format "<<<<<<<Cold Recovery and Cull Test 4|4 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -991,6 +1061,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== Syphon Tests 1|3 · 01 · env-sigs (caps) ==== ===============================================
 (print "--- [Syphon Tests 1|3 · 01 · env-sigs (caps)] ---")
+;;==== Syphon Tests 1|3 · 01 · env-sigs (caps) ==== ===============================================
+(print "--- [Syphon Tests 1|3 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
@@ -999,6 +1071,8 @@
     ]
 )
 (namespace "ouronet-ns")
+;;==== Syphon Tests 1|3 · 02 · let / invocation ==== ==============================================
+(print "--- [Syphon Tests 1|3 · 02 · let / invocation] ---")
 ;;==== Syphon Tests 1|3 · 02 · let / invocation ==== ==============================================
 (print "--- [Syphon Tests 1|3 · 02 · let / invocation] ---")
 (let
@@ -1065,6 +1139,8 @@
 (print "")
 ;;==== Syphon Tests 1|3 · 03 · gas echo ==== ======================================================
 (print "--- [Syphon Tests 1|3 · 03 · gas echo] ---")
+;;==== Syphon Tests 1|3 · 03 · gas echo ==== ======================================================
+(print "--- [Syphon Tests 1|3 · 03 · gas echo] ---")
 (format "<<<<<<<Syphone Tests 1|3 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -1078,6 +1154,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== Syphon Tests 2|3 · 01 · env-sigs (caps) ==== ===============================================
 (print "--- [Syphon Tests 2|3 · 01 · env-sigs (caps)] ---")
+;;==== Syphon Tests 2|3 · 01 · env-sigs (caps) ==== ===============================================
+(print "--- [Syphon Tests 2|3 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
@@ -1086,6 +1164,8 @@
     ]
 )
 (namespace "ouronet-ns")
+;;==== Syphon Tests 2|3 · 02 · let / invocation ==== ==============================================
+(print "--- [Syphon Tests 2|3 · 02 · let / invocation] ---")
 ;;==== Syphon Tests 2|3 · 02 · let / invocation ==== ==============================================
 (print "--- [Syphon Tests 2|3 · 02 · let / invocation] ---")
 (let
@@ -1152,6 +1232,8 @@
 (print "")
 ;;==== Syphon Tests 2|3 · 03 · gas echo ==== ======================================================
 (print "--- [Syphon Tests 2|3 · 03 · gas echo] ---")
+;;==== Syphon Tests 2|3 · 03 · gas echo ==== ======================================================
+(print "--- [Syphon Tests 2|3 · 03 · gas echo] ---")
 (format "<<<<<<<Syphon Tests 2|3 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -1169,6 +1251,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== Parameter Unlock with STOA Fee Collection · 01 · env-sigs (caps) ==== =======================
 (print "--- [Parameter Unlock with STOA Fee Collection · 01 · env-sigs (caps)] ---")
+;;==== Parameter Unlock with STOA Fee Collection · 01 · env-sigs (caps) ==== ======================
+(print "--- [Parameter Unlock with STOA Fee Collection · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
@@ -1178,6 +1262,8 @@
 )
 (namespace "ouronet-ns")
 ;;==== Parameter Unlock with STOA Fee Collection · 02 · let / invocation ==== ======================
+(print "--- [Parameter Unlock with STOA Fee Collection · 02 · let / invocation] ---")
+;;==== Parameter Unlock with STOA Fee Collection · 02 · let / invocation ==== =====================
 (print "--- [Parameter Unlock with STOA Fee Collection · 02 · let / invocation] ---")
 (let
     (
@@ -1275,6 +1361,8 @@
 (print "")
 ;;==== Parameter Unlock with STOA Fee Collection · 03 · gas echo ==== ==============================
 (print "--- [Parameter Unlock with STOA Fee Collection · 03 · gas echo] ---")
+;;==== Parameter Unlock with STOA Fee Collection · 03 · gas echo ==== =============================
+(print "--- [Parameter Unlock with STOA Fee Collection · 03 · gas echo] ---")
 (format "<<<<<<<Parameter Unlock with STOA Fee Collection costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -1288,6 +1376,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== Parameter Unlock with STOA Fee Collection · 01 · env-sigs (caps) ==== =======================
 (print "--- [Parameter Unlock with STOA Fee Collection · 01 · env-sigs (caps)] ---")
+;;==== Parameter Unlock with STOA Fee Collection · 01 · env-sigs (caps) ==== ======================
+(print "--- [Parameter Unlock with STOA Fee Collection · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
@@ -1297,6 +1387,8 @@
 )
 (namespace "ouronet-ns")
 ;;==== Parameter Unlock with STOA Fee Collection · 02 · let / invocation ==== ======================
+(print "--- [Parameter Unlock with STOA Fee Collection · 02 · let / invocation] ---")
+;;==== Parameter Unlock with STOA Fee Collection · 02 · let / invocation ==== =====================
 (print "--- [Parameter Unlock with STOA Fee Collection · 02 · let / invocation] ---")
     (let
         (
@@ -1314,6 +1406,8 @@
 (print "")
 ;;==== Parameter Unlock with STOA Fee Collection · 03 · gas echo ==== ==============================
 (print "--- [Parameter Unlock with STOA Fee Collection · 03 · gas echo] ---")
+;;==== Parameter Unlock with STOA Fee Collection · 03 · gas echo ==== =============================
+(print "--- [Parameter Unlock with STOA Fee Collection · 03 · gas echo] ---")
 (format "<<<<<<<Parameter Unlock with STOA Fee Collection costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -1327,6 +1421,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== Secondary Remove 1|5 · 01 · env-sigs (caps) ==== ===========================================
 (print "--- [Secondary Remove 1|5 · 01 · env-sigs (caps)] ---")
+;;==== Secondary Remove 1|5 · 01 · env-sigs (caps) ==== ===========================================
+(print "--- [Secondary Remove 1|5 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
@@ -1335,6 +1431,8 @@
     ]
 )
 (namespace "ouronet-ns")
+;;==== Secondary Remove 1|5 · 02 · let / invocation ==== ==========================================
+(print "--- [Secondary Remove 1|5 · 02 · let / invocation] ---")
 ;;==== Secondary Remove 1|5 · 02 · let / invocation ==== ==========================================
 (print "--- [Secondary Remove 1|5 · 02 · let / invocation] ---")
 (let
@@ -1394,6 +1492,8 @@
 (print "")
 ;;==== Secondary Remove 1|5 · 03 · gas echo ==== ==================================================
 (print "--- [Secondary Remove 1|5 · 03 · gas echo] ---")
+;;==== Secondary Remove 1|5 · 03 · gas echo ==== ==================================================
+(print "--- [Secondary Remove 1|5 · 03 · gas echo] ---")
 (format "<<<<<<<Secondary Remove 1|5 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -1407,6 +1507,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== Secondary Remove 2|5 · 01 · env-sigs (caps) ==== ===========================================
 (print "--- [Secondary Remove 2|5 · 01 · env-sigs (caps)] ---")
+;;==== Secondary Remove 2|5 · 01 · env-sigs (caps) ==== ===========================================
+(print "--- [Secondary Remove 2|5 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
@@ -1415,6 +1517,8 @@
     ]
 )
 (namespace "ouronet-ns")
+;;==== Secondary Remove 2|5 · 02 · let / invocation ==== ==========================================
+(print "--- [Secondary Remove 2|5 · 02 · let / invocation] ---")
 ;;==== Secondary Remove 2|5 · 02 · let / invocation ==== ==========================================
 (print "--- [Secondary Remove 2|5 · 02 · let / invocation] ---")
 (let
@@ -1475,6 +1579,8 @@
 (print "")
 ;;==== Secondary Remove 2|5 · 03 · gas echo ==== ==================================================
 (print "--- [Secondary Remove 2|5 · 03 · gas echo] ---")
+;;==== Secondary Remove 2|5 · 03 · gas echo ==== ==================================================
+(print "--- [Secondary Remove 2|5 · 03 · gas echo] ---")
 (format "<<<<<<<Secondary Remove 2|5 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -1488,6 +1594,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== Secondary Remove 3|5 · 01 · env-sigs (caps) ==== ===========================================
 (print "--- [Secondary Remove 3|5 · 01 · env-sigs (caps)] ---")
+;;==== Secondary Remove 3|5 · 01 · env-sigs (caps) ==== ===========================================
+(print "--- [Secondary Remove 3|5 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
@@ -1496,6 +1604,8 @@
     ]
 )
 (namespace "ouronet-ns")
+;;==== Secondary Remove 3|5 · 02 · let / invocation ==== ==========================================
+(print "--- [Secondary Remove 3|5 · 02 · let / invocation] ---")
 ;;==== Secondary Remove 3|5 · 02 · let / invocation ==== ==========================================
 (print "--- [Secondary Remove 3|5 · 02 · let / invocation] ---")
 (let
@@ -1537,6 +1647,8 @@
 (print "")
 ;;==== Secondary Remove 3|5 · 03 · gas echo ==== ==================================================
 (print "--- [Secondary Remove 3|5 · 03 · gas echo] ---")
+;;==== Secondary Remove 3|5 · 03 · gas echo ==== ==================================================
+(print "--- [Secondary Remove 3|5 · 03 · gas echo] ---")
 (format "<<<<<<<Secondary Remove 3|5 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -1550,6 +1662,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== Secondary Remove 4|5 · 01 · env-sigs (caps) ==== ===========================================
 (print "--- [Secondary Remove 4|5 · 01 · env-sigs (caps)] ---")
+;;==== Secondary Remove 4|5 · 01 · env-sigs (caps) ==== ===========================================
+(print "--- [Secondary Remove 4|5 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
@@ -1558,6 +1672,8 @@
     ]
 )
 (namespace "ouronet-ns")
+;;==== Secondary Remove 4|5 · 02 · let / invocation ==== ==========================================
+(print "--- [Secondary Remove 4|5 · 02 · let / invocation] ---")
 ;;==== Secondary Remove 4|5 · 02 · let / invocation ==== ==========================================
 (print "--- [Secondary Remove 4|5 · 02 · let / invocation] ---")
 (let
@@ -1630,6 +1746,8 @@
 (print "")
 ;;==== Secondary Remove 4|5 · 03 · gas echo ==== ==================================================
 (print "--- [Secondary Remove 4|5 · 03 · gas echo] ---")
+;;==== Secondary Remove 4|5 · 03 · gas echo ==== ==================================================
+(print "--- [Secondary Remove 4|5 · 03 · gas echo] ---")
 (format "<<<<<<<Secondary Remove 4|5 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -1643,6 +1761,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== Secondary Remove 5|5 · 01 · env-sigs (caps) ==== ===========================================
 (print "--- [Secondary Remove 5|5 · 01 · env-sigs (caps)] ---")
+;;==== Secondary Remove 5|5 · 01 · env-sigs (caps) ==== ===========================================
+(print "--- [Secondary Remove 5|5 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
@@ -1651,6 +1771,8 @@
     ]
 )
 (namespace "ouronet-ns")
+;;==== Secondary Remove 5|5 · 02 · let / invocation ==== ==========================================
+(print "--- [Secondary Remove 5|5 · 02 · let / invocation] ---")
 ;;==== Secondary Remove 5|5 · 02 · let / invocation ==== ==========================================
 (print "--- [Secondary Remove 5|5 · 02 · let / invocation] ---")
 (let
@@ -1716,6 +1838,8 @@
 (print "")
 ;;==== Secondary Remove 5|5 · 03 · gas echo ==== ==================================================
 (print "--- [Secondary Remove 5|5 · 03 · gas echo] ---")
+;;==== Secondary Remove 5|5 · 03 · gas echo ==== ==================================================
+(print "--- [Secondary Remove 5|5 · 03 · gas echo] ---")
 (format "<<<<<<<Secondary Remove 5|5 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -1733,6 +1857,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== Add Secondary AGAIN with Hybrid Cull Test 1|3 · 01 · env-sigs (caps) ==== ==================
 (print "--- [Add Secondary AGAIN with Hybrid Cull Test 1|3 · 01 · env-sigs (caps)] ---")
+;;==== Add Secondary AGAIN with Hybrid Cull Test 1|3 · 01 · env-sigs (caps) ==== ==================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 1|3 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
@@ -1741,6 +1867,8 @@
     ]
 )
 (namespace "ouronet-ns")
+;;==== Add Secondary AGAIN with Hybrid Cull Test 1|3 · 02 · let / invocation ==== =================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 1|3 · 02 · let / invocation] ---")
 ;;==== Add Secondary AGAIN with Hybrid Cull Test 1|3 · 02 · let / invocation ==== =================
 (print "--- [Add Secondary AGAIN with Hybrid Cull Test 1|3 · 02 · let / invocation] ---")
 (let
@@ -1796,6 +1924,8 @@
 (print "")
 ;;==== Add Secondary AGAIN with Hybrid Cull Test 1|3 · 03 · gas echo ==== =========================
 (print "--- [Add Secondary AGAIN with Hybrid Cull Test 1|3 · 03 · gas echo] ---")
+;;==== Add Secondary AGAIN with Hybrid Cull Test 1|3 · 03 · gas echo ==== =========================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 1|3 · 03 · gas echo] ---")
 (format "<<<<<<<Add Secondary AGAIN with Hybrid Cull Test 1|2 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -1809,6 +1939,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== Add Secondary AGAIN with Hybrid Cull Test 2|3 · 01 · env-sigs (caps) ==== ==================
 (print "--- [Add Secondary AGAIN with Hybrid Cull Test 2|3 · 01 · env-sigs (caps)] ---")
+;;==== Add Secondary AGAIN with Hybrid Cull Test 2|3 · 01 · env-sigs (caps) ==== ==================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 2|3 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
@@ -1817,6 +1949,8 @@
     ]
 )
 (namespace "ouronet-ns")
+;;==== Add Secondary AGAIN with Hybrid Cull Test 2|3 · 02 · let / invocation ==== =================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 2|3 · 02 · let / invocation] ---")
 ;;==== Add Secondary AGAIN with Hybrid Cull Test 2|3 · 02 · let / invocation ==== =================
 (print "--- [Add Secondary AGAIN with Hybrid Cull Test 2|3 · 02 · let / invocation] ---")
 (let
@@ -1891,6 +2025,8 @@
 (print "")
 ;;==== Add Secondary AGAIN with Hybrid Cull Test 2|3 · 03 · gas echo ==== =========================
 (print "--- [Add Secondary AGAIN with Hybrid Cull Test 2|3 · 03 · gas echo] ---")
+;;==== Add Secondary AGAIN with Hybrid Cull Test 2|3 · 03 · gas echo ==== =========================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 2|3 · 03 · gas echo] ---")
 (format "<<<<<<<Add Secondary AGAIN with Hybrid Cull Test 2|3 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -1904,6 +2040,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 01 · env-sigs (caps) ==== ==================
 (print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 01 · env-sigs (caps)] ---")
+;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 01 · env-sigs (caps) ==== ==================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
@@ -1913,6 +2051,8 @@
     ]
 )
 (namespace "ouronet-ns")
+;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 02 · let / invocation ==== =================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 02 · let / invocation] ---")
 ;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 02 · let / invocation ==== =================
 (print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 02 · let / invocation] ---")
 (let
@@ -2015,6 +2155,8 @@
 (print "")
 ;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 03 · gas echo ==== =========================
 (print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 03 · gas echo] ---")
+;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 03 · gas echo ==== =========================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 03 · gas echo] ---")
 (format "<<<<<<<Add Secondary AGAIN with Hybrid Cull Test 3|3 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -2028,12 +2170,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 01 · env-sigs (caps) ==== ==================
 (print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 01 · env-sigs (caps)] ---")
+;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 01 · env-sigs (caps) ==== ==================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_Lumy", "caps": [] }
     ]
 )
 (namespace "ouronet-ns")
+;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 02 · let / invocation ==== =================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 02 · let / invocation] ---")
 ;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 02 · let / invocation ==== =================
 (print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 02 · let / invocation] ---")
 (let
@@ -2055,6 +2201,8 @@
 (print "")
 ;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 03 · gas echo ==== =========================
 (print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 03 · gas echo] ---")
+;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 03 · gas echo ==== =========================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 03 · gas echo] ---")
 (format "<<<<<<<Brumate Self Test {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -2069,6 +2217,8 @@
 (namespace "ouronet-ns")
 ;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 01 · env-sigs (caps) ==== ==================
 (print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 01 · env-sigs (caps)] ---")
+;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 01 · env-sigs (caps) ==== ==================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
@@ -2080,6 +2230,8 @@
     {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
     "block-time": (time "2024-11-22T00:00:00Z")}
 )
+;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 02 · let / invocation ==== =================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 02 · let / invocation] ---")
 ;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 02 · let / invocation ==== =================
 (print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 02 · let / invocation] ---")
 (let
@@ -2262,6 +2414,8 @@
 (print "")
 ;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 03 · gas echo ==== =========================
 (print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 03 · gas echo] ---")
+;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 03 · gas echo ==== =========================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 03 · gas echo] ---")
 (format "<<<<<<<Add Secondary AGAIN with Hybrid Cull Test 3|3 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -2276,6 +2430,8 @@
 (namespace "ouronet-ns")
 ;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 01 · env-sigs (caps) ==== ==================
 (print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 01 · env-sigs (caps)] ---")
+;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 01 · env-sigs (caps) ==== ==================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
@@ -2287,6 +2443,8 @@
     {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
     "block-time": (time "2024-11-22T00:00:00Z")}
 )
+;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 02 · let / invocation ==== =================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 02 · let / invocation] ---")
 ;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 02 · let / invocation ==== =================
 (print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 02 · let / invocation] ---")
 (let
@@ -2391,6 +2549,8 @@
 (print "")
 ;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 03 · gas echo ==== =========================
 (print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 03 · gas echo] ---")
+;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 03 · gas echo ==== =========================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 03 · gas echo] ---")
 (format "<<<<<<<Add Secondary AGAIN with Hybrid Cull Test 3|3 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -2405,6 +2565,8 @@
 (namespace "ouronet-ns")
 ;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 01 · env-sigs (caps) ==== ==================
 (print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 01 · env-sigs (caps)] ---")
+;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 01 · env-sigs (caps) ==== ==================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
@@ -2416,6 +2578,8 @@
     {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
     "block-time": (time "2024-11-22T00:00:00Z")}
 )
+;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 02 · let / invocation ==== =================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 02 · let / invocation] ---")
 ;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 02 · let / invocation ==== =================
 (print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 02 · let / invocation] ---")
 (let
@@ -2520,6 +2684,8 @@
 (print "")
 ;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 03 · gas echo ==== =========================
 (print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 03 · gas echo] ---")
+;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 03 · gas echo ==== =========================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 03 · gas echo] ---")
 (format "<<<<<<<Add Secondary AGAIN with Hybrid Cull Test 3|3 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -2536,6 +2702,8 @@
 (namespace "ouronet-ns")
 ;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 01 · env-sigs (caps) ==== ==================
 (print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 01 · env-sigs (caps)] ---")
+;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 01 · env-sigs (caps) ==== ==================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
@@ -2543,6 +2711,8 @@
         { "key": "PK_Emma", "caps": [] }
     ]
 )
+;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 02 · let / invocation ==== =================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 02 · let / invocation] ---")
 ;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 02 · let / invocation ==== =================
 (print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 02 · let / invocation] ---")
 (let
@@ -2571,6 +2741,8 @@
 (print "")
 ;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 03 · gas echo ==== =========================
 (print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 03 · gas echo] ---")
+;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 03 · gas echo ==== =========================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 03 · gas echo] ---")
 (format "<<<<<<<251th Cold Recovery costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -2586,12 +2758,16 @@
 (namespace "ouronet-ns")
 ;;==== Cull A LOT · 01 · env-sigs (caps) ==== =====================================================
 (print "--- [Cull A LOT · 01 · env-sigs (caps)] ---")
+;;==== Cull A LOT · 01 · env-sigs (caps) ==== =====================================================
+(print "--- [Cull A LOT · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
         { "key": "PK_Emma", "caps": [] }
     ]
 )
+;;==== Cull A LOT · 02 · let / invocation ==== ====================================================
+(print "--- [Cull A LOT · 02 · let / invocation] ---")
 ;;==== Cull A LOT · 02 · let / invocation ==== ====================================================
 (print "--- [Cull A LOT · 02 · let / invocation] ---")
 (let
@@ -2607,6 +2783,8 @@
 
 (print "")
 (print "")
+;;==== Cull A LOT · 03 · gas echo ==== ============================================================
+(print "--- [Cull A LOT · 03 · gas echo] ---")
 ;;==== Cull A LOT · 03 · gas echo ==== ============================================================
 (print "--- [Cull A LOT · 03 · gas echo] ---")
 (format "<<<<<<<Cull costs {} GAS>>>>>>>" [(env-gas)])
@@ -2629,6 +2807,8 @@
 (namespace "ouronet-ns")
 ;;==== ToggleUpgrade Proof 1|2 · 01 · env-sigs (caps) ==== ========================================
 (print "--- [ToggleUpgrade Proof 1|2 · 01 · env-sigs (caps)] ---")
+;;==== ToggleUpgrade Proof 1|2 · 01 · env-sigs (caps) ==== ========================================
+(print "--- [ToggleUpgrade Proof 1|2 · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AOZ", "caps": [] }
@@ -2640,6 +2820,8 @@
 ;; (audit fix, 08_ATS.pact ATS|C>TOGGLE-UPGRADE / XI_ToggleUpgrade) gates ATS|C_Control via
 ;; UEV_CanUpgradeON — flipping it off must make C_Control fail with the "properties cannot be
 ;; upgraded" enforce, and flipping it back on (Proof 2|2) must let C_Control succeed again.
+;;==== ToggleUpgrade Proof 1|2 · 02 · let / invocation ==== =======================================
+(print "--- [ToggleUpgrade Proof 1|2 · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
@@ -2663,6 +2845,8 @@
 (print "")
 ;;==== ToggleUpgrade Proof 1|2 · 03 · gas echo ==== ================================================
 (print "--- [ToggleUpgrade Proof 1|2 · 03 · gas echo] ---")
+;;==== ToggleUpgrade Proof 1|2 · 03 · gas echo ==== ===============================================
+(print "--- [ToggleUpgrade Proof 1|2 · 03 · gas echo] ---")
 (format "<<<<<<<ToggleUpgrade Proof 1|2 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -2677,6 +2861,8 @@
 (namespace "ouronet-ns")
 ;;==== ToggleUpgrade Proof 2|2 · 01 · env-sigs (caps) ==== ========================================
 (print "--- [ToggleUpgrade Proof 2|2 · 01 · env-sigs (caps)] ---")
+;;==== ToggleUpgrade Proof 2|2 · 01 · env-sigs (caps) ==== ========================================
+(print "--- [ToggleUpgrade Proof 2|2 · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AOZ", "caps": [] }
@@ -2684,6 +2870,8 @@
 )
 ;;==== ToggleUpgrade Proof 2|2 · 02 · let / invocation ==== =======================================
 (print "--- [ToggleUpgrade Proof 2|2 · 02 · let / invocation — switch back ON, C_Control succeeds] ---")
+;;==== ToggleUpgrade Proof 2|2 · 02 · let / invocation ==== =======================================
+(print "--- [ToggleUpgrade Proof 2|2 · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
@@ -2704,6 +2892,8 @@
 (print "")
 ;;==== ToggleUpgrade Proof 2|2 · 03 · gas echo ==== ================================================
 (print "--- [ToggleUpgrade Proof 2|2 · 03 · gas echo] ---")
+;;==== ToggleUpgrade Proof 2|2 · 03 · gas echo ==== ===============================================
+(print "--- [ToggleUpgrade Proof 2|2 · 03 · gas echo] ---")
 (format "<<<<<<<ToggleUpgrade Proof 2|2 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -2718,6 +2908,8 @@
 (namespace "ouronet-ns")
 ;;==== SetHibernationFees Proof · 01 · env-sigs (caps) ==== =======================================
 (print "--- [SetHibernationFees Proof · 01 · env-sigs (caps)] ---")
+;;==== SetHibernationFees Proof · 01 · env-sigs (caps) ==== =======================================
+(print "--- [SetHibernationFees Proof · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AOZ", "caps": [] }
@@ -2729,6 +2921,8 @@
 ;; input (stray `(= () 0.0)` 7th predicate, always false). Proves the full ATS|C_SetHibernationFees
 ;; capability chain (ATS|S>SET-HIBERNATION-FEES -> ref-U|ATS::UEV_HibernationFees) now accepts a
 ;; valid (peak, decay) pair and persists it.
+;;==== SetHibernationFees Proof · 02 · let / invocation ==== ======================================
+(print "--- [SetHibernationFees Proof · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
@@ -2752,6 +2946,8 @@
 (print "")
 ;;==== SetHibernationFees Proof · 03 · gas echo ==== ===============================================
 (print "--- [SetHibernationFees Proof · 03 · gas echo] ---")
+;;==== SetHibernationFees Proof · 03 · gas echo ==== ==============================================
+(print "--- [SetHibernationFees Proof · 03 · gas echo] ---")
 (format "<<<<<<<SetHibernationFees Proof {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -2774,6 +2970,8 @@
 (namespace "ouronet-ns")
 ;;==== Fresh Test Pool Setup 1|3 · 01 · env-sigs (caps) ==== ======================================
 (print "--- [Fresh Test Pool Setup 1|3 · 01 · env-sigs (caps)] ---")
+;;==== Fresh Test Pool Setup 1|3 - Issue Hot-RBT Candidate Token · 01 · let / invocation ==== =====
+(print "--- [Fresh Test Pool Setup 1|3 - Issue Hot-RBT Candidate Token · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -2835,6 +3033,8 @@
 (print "")
 ;;==== Fresh Test Pool Setup 1|3 · 03 · gas echo ==== ==============================================
 (print "--- [Fresh Test Pool Setup 1|3 · 03 · gas echo] ---")
+;;==== Fresh Test Pool Setup 1|3 - Issue Hot-RBT Candidate Token · 03 · gas echo ==== =============
+(print "--- [Fresh Test Pool Setup 1|3 - Issue Hot-RBT Candidate Token · 03 · gas echo] ---")
 (format "<<<<<<<Fresh Test Pool Setup 1|3 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -2854,6 +3054,8 @@
 ;; token's GLOBAL DPTF supply, which is already nonzero from ps's activity throughout this file, so
 ;; URC_Index would never read back the -1.0 "never fueled" sentinel A_KickStart requires. A fresh,
 ;; zero-supply DPTF token keeps TestKickPair's RBT-supply genuinely at 0.0 until KickStart mints it.
+;;==== Fresh Test Pool Setup 2|3 - Issue Cold-RBT Candidate Token · 01 · let / invocation ==== ====
+(print "--- [Fresh Test Pool Setup 2|3 - Issue Cold-RBT Candidate Token · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -2914,6 +3116,8 @@
 (print "")
 ;;==== Fresh Test Pool Setup 2|3 · 03 · gas echo ==== ==============================================
 (print "--- [Fresh Test Pool Setup 2|3 · 03 · gas echo] ---")
+;;==== Fresh Test Pool Setup 2|3 - Issue Cold-RBT Candidate Token · 03 · gas echo ==== ============
+(print "--- [Fresh Test Pool Setup 2|3 - Issue Cold-RBT Candidate Token · 03 · gas echo] ---")
 (format "<<<<<<<Fresh Test Pool Setup 2|3 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -2929,6 +3133,8 @@
 (namespace "ouronet-ns")
 ;;==== Fresh Test Pool Setup 3|3 · 01 · env-sigs (caps) ==== ======================================
 (print "--- [Fresh Test Pool Setup 3|3 · 01 · env-sigs (caps)] ---")
+;;==== Fresh Test Pool Setup 3|3 - Issue ATS Pair · 01 · let / invocation ==== ====================
+(print "--- [Fresh Test Pool Setup 3|3 - Issue ATS Pair · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -2993,6 +3199,8 @@
 (print "")
 ;;==== Fresh Test Pool Setup 3|3 · 03 · gas echo ==== ==============================================
 (print "--- [Fresh Test Pool Setup 3|3 · 03 · gas echo] ---")
+;;==== Fresh Test Pool Setup 3|3 - Issue ATS Pair · 03 · gas echo ==== ============================
+(print "--- [Fresh Test Pool Setup 3|3 - Issue ATS Pair · 03 · gas echo] ---")
 (format "<<<<<<<Fresh Test Pool Setup 3|3 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -3008,12 +3216,16 @@
 (namespace "ouronet-ns")
 ;;==== AddHotRBT Proof · 01 · env-sigs (caps) ==== =================================================
 (print "--- [AddHotRBT Proof · 01 · env-sigs (caps)] ---")
+;;==== AddHotRBT Proof · 01 · env-sigs (caps) ==== ================================================
+(print "--- [AddHotRBT Proof · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AOZ", "caps": [] }
     ]
 )
 ;;==== AddHotRBT Proof · 02 · let / invocation ==== ================================================
+(print "--- [AddHotRBT Proof · 02 · let / invocation] ---")
+;;==== AddHotRBT Proof · 02 · let / invocation ==== ===============================================
 (print "--- [AddHotRBT Proof · 02 · let / invocation] ---")
 (let
     (
@@ -3040,6 +3252,8 @@
 (print "")
 ;;==== AddHotRBT Proof · 03 · gas echo ==== =========================================================
 (print "--- [AddHotRBT Proof · 03 · gas echo] ---")
+;;==== AddHotRBT Proof · 03 · gas echo ==== =======================================================
+(print "--- [AddHotRBT Proof · 03 · gas echo] ---")
 (format "<<<<<<<AddHotRBT Proof {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -3064,6 +3278,8 @@
 ;; admin path has no upper ceiling (unlike the owner-facing ATS|C_KickStart's 100.0 cap), only the
 ;; shared >= 0.1 floor. TestKickPair was issued fresh and never fueled/coiled, so its index is
 ;; still the -1.0 "un-kickstarted" sentinel — exactly the precondition ATSU|C>X_KICKSTART requires.
+;;==== A_KickStart Proof · 01 · env-sigs (caps) ==== ==============================================
+(print "--- [A_KickStart Proof · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AOZ", "caps": [] }
@@ -3071,6 +3287,8 @@
     ]
 )
 ;;==== A_KickStart Proof · 02 · let / invocation ==== ==============================================
+(print "--- [A_KickStart Proof · 02 · let / invocation] ---")
+;;==== A_KickStart Proof · 02 · let / invocation ==== =============================================
 (print "--- [A_KickStart Proof · 02 · let / invocation] ---")
 (let
     (
@@ -3096,6 +3314,8 @@
 (print "")
 ;;==== A_KickStart Proof · 03 · gas echo ==== ========================================================
 (print "--- [A_KickStart Proof · 03 · gas echo] ---")
+;;==== A_KickStart Proof · 03 · gas echo ==== =====================================================
+(print "--- [A_KickStart Proof · 03 · gas echo] ---")
 (format "<<<<<<<A_KickStart Proof {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -3110,6 +3330,8 @@
 (namespace "ouronet-ns")
 ;;==== AA_RemoveSecondary Proof 1|2 · 01 · env-sigs (caps) ==== ====================================
 (print "--- [AA_RemoveSecondary Proof 1|2 · 01 · env-sigs (caps)] ---")
+;;==== AA_RemoveSecondary Proof 1|2 - AddSecondary and Fuel · 01 · env-sigs (caps) ==== ===========
+(print "--- [AA_RemoveSecondary Proof 1|2 - AddSecondary and Fuel · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AOZ", "caps": [] }
@@ -3122,6 +3344,8 @@
 ;; (amount > 0.0) enforce. A freshly-AddSecondary'd RT starts at a zero RUR sum, so it must be
 ;; Fueled (which needs TestKickPair's now-positive index from the KickStart above) before it can be
 ;; administratively removed below.
+;;==== AA_RemoveSecondary Proof 1|2 - AddSecondary and Fuel · 02 · let / invocation ==== ==========
+(print "--- [AA_RemoveSecondary Proof 1|2 - AddSecondary and Fuel · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
@@ -3148,6 +3372,8 @@
 (print "")
 ;;==== AA_RemoveSecondary Proof 1|2 · 03 · gas echo ==== =============================================
 (print "--- [AA_RemoveSecondary Proof 1|2 · 03 · gas echo] ---")
+;;==== AA_RemoveSecondary Proof 1|2 - AddSecondary and Fuel · 03 · gas echo ==== ==================
+(print "--- [AA_RemoveSecondary Proof 1|2 - AddSecondary and Fuel · 03 · gas echo] ---")
 (format "<<<<<<<AA_RemoveSecondary Proof 1|2 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -3163,6 +3389,8 @@
 ;;==== AA_RemoveSecondary Proof 2|2 · 01 · env-sigs (caps) ==== ====================================
 (print "--- [AA_RemoveSecondary Proof 2|2 · 01 · env-sigs (caps)] ---")
 ;; Same admin-gate regression as A_KickStart above (P|A_Define fix).
+;;==== AA_RemoveSecondary Proof 2|2 - Administrative Remove · 01 · env-sigs (caps) ==== ===========
+(print "--- [AA_RemoveSecondary Proof 2|2 - Administrative Remove · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AOZ", "caps": [] }
@@ -3171,6 +3399,8 @@
 )
 ;;==== AA_RemoveSecondary Proof 2|2 · 02 · let / invocation ==== ===================================
 (print "--- [AA_RemoveSecondary Proof 2|2 · 02 · let / invocation] ---")
+;;==== AA_RemoveSecondary Proof 2|2 - Administrative Remove · 02 · let / invocation ==== ==========
+(print "--- [AA_RemoveSecondary Proof 2|2 - Administrative Remove · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
@@ -3191,6 +3421,8 @@
 (print "")
 ;;==== AA_RemoveSecondary Proof 2|2 · 03 · gas echo ==== =============================================
 (print "--- [AA_RemoveSecondary Proof 2|2 · 03 · gas echo] ---")
+;;==== AA_RemoveSecondary Proof 2|2 - Administrative Remove · 03 · gas echo ==== ==================
+(print "--- [AA_RemoveSecondary Proof 2|2 - Administrative Remove · 03 · gas echo] ---")
 (format "<<<<<<<AA_RemoveSecondary Proof 2|2 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -3203,6 +3435,8 @@
 (begin-tx "SetHotRecoveryFee and HotRecovery Proof")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== SetHotRecoveryFee and HotRecovery Proof · 01 · env-sigs (caps) ==== ========================
+(print "--- [SetHotRecoveryFee and HotRecovery Proof · 01 · env-sigs (caps)] ---")
 ;;==== SetHotRecoveryFee and HotRecovery Proof · 01 · env-sigs (caps) ==== ========================
 (print "--- [SetHotRecoveryFee and HotRecovery Proof · 01 · env-sigs (caps)] ---")
 (env-sigs
@@ -3218,6 +3452,8 @@
 ;; since the "Hybrid Cull" sections earlier in this file, so it's toggled off, reconfigured, and
 ;; toggled back on here — leaving ps's ambient state exactly as the rest of the file left it.
 ;; #31L confirmation: the Talos wrapper is the SINGULAR ATS|C_SetHotRecoveryFee (not "...Fees").
+;;==== SetHotRecoveryFee and HotRecovery Proof · 02 · let / invocation ==== =======================
+(print "--- [SetHotRecoveryFee and HotRecovery Proof · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
@@ -3253,6 +3489,8 @@
 (print "")
 ;;==== SetHotRecoveryFee and HotRecovery Proof · 03 · gas echo ==== ================================
 (print "--- [SetHotRecoveryFee and HotRecovery Proof · 03 · gas echo] ---")
+;;==== SetHotRecoveryFee and HotRecovery Proof · 03 · gas echo ==== ===============================
+(print "--- [SetHotRecoveryFee and HotRecovery Proof · 03 · gas echo] ---")
 (format "<<<<<<<SetHotRecoveryFee and HotRecovery Proof {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -3267,6 +3505,8 @@
 (namespace "ouronet-ns")
 ;;==== HOT-RBT Branding Proof 1|2 · 01 · env-sigs (caps) ==== =====================================
 (print "--- [HOT-RBT Branding Proof 1|2 · 01 · env-sigs (caps)] ---")
+;;==== HOT-RBT Branding Proof 1|2 - UpdatePendingBranding · 01 · env-sigs (caps) ==== =============
+(print "--- [HOT-RBT Branding Proof 1|2 - UpdatePendingBranding · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AOZ", "caps": [] }
@@ -3277,6 +3517,8 @@
 ;; #5C / C5 regression context: ATS|C>HOT-RBT-UPDATE-BRD / ATS|C>HOT-RBT-UPGRADE-BRD resolve the
 ;; owning ats-pair from the hot-rbt token (ref-DPOF::UR_RewardBearingToken) and enforce CAP_Owner on
 ;; THAT pair before composing ATS|GOV — proven here via a real owner-signed call succeeding.
+;;==== HOT-RBT Branding Proof 1|2 - UpdatePendingBranding · 02 · let / invocation ==== ============
+(print "--- [HOT-RBT Branding Proof 1|2 - UpdatePendingBranding · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
@@ -3305,6 +3547,8 @@
 (print "")
 ;;==== HOT-RBT Branding Proof 1|2 · 03 · gas echo ==== ===============================================
 (print "--- [HOT-RBT Branding Proof 1|2 · 03 · gas echo] ---")
+;;==== HOT-RBT Branding Proof 1|2 - UpdatePendingBranding · 03 · gas echo ==== ====================
+(print "--- [HOT-RBT Branding Proof 1|2 - UpdatePendingBranding · 03 · gas echo] ---")
 (format "<<<<<<<HOT-RBT Branding Proof 1|2 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -3323,6 +3567,8 @@
 ;; HOT-RBT|C_UpgradeBranding -> DPOF::C_UpgradeBranding -> IGNIS::STOA|C_CollectWT -> real coin.TRANSFER
 ;; (price key "blue", same URC_SplitSTOAPrices 4-way split / 4-target pattern as every other raw-STOA
 ;; payment in this file), followed by TS01-A::XB_DynamicFuelSTOA.
+;;==== HOT-RBT Branding Proof 2|2 - UpgradeBranding · 01 · let / invocation ==== ==================
+(print "--- [HOT-RBT Branding Proof 2|2 - UpgradeBranding · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -3389,6 +3635,8 @@
 (print "")
 ;;==== HOT-RBT Branding Proof 2|2 · 03 · gas echo ==== ===============================================
 (print "--- [HOT-RBT Branding Proof 2|2 · 03 · gas echo] ---")
+;;==== HOT-RBT Branding Proof 2|2 - UpgradeBranding · 03 · gas echo ==== ==========================
+(print "--- [HOT-RBT Branding Proof 2|2 - UpgradeBranding · 03 · gas echo] ---")
 (format "<<<<<<<HOT-RBT Branding Proof 2|2 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -3404,6 +3652,8 @@
 (namespace "ouronet-ns")
 ;;==== HOT-RBT Repurpose Proof · 01 · env-sigs (caps) ==== =========================================
 (print "--- [HOT-RBT Repurpose Proof · 01 · env-sigs (caps)] ---")
+;;==== HOT-RBT Repurpose Proof · 01 · env-sigs (caps) ==== ========================================
+(print "--- [HOT-RBT Repurpose Proof · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AOZ", "caps": [] }
@@ -3417,6 +3667,8 @@
 ;; in the SetHotRecoveryFee/HotRecovery proof above, still unredeemed) and reassigns an
 ;; equivalent-value replacement — a freshly-minted nonce carrying the SAME original mint-time
 ;; metadata — to emma. nonces-used was 3 going in, so the replacement is nonce 4.
+;;==== HOT-RBT Repurpose Proof · 02 · let / invocation ==== =======================================
+(print "--- [HOT-RBT Repurpose Proof · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
@@ -3448,6 +3700,8 @@
 (print "")
 ;;==== HOT-RBT Repurpose Proof · 03 · gas echo ==== =================================================
 (print "--- [HOT-RBT Repurpose Proof · 03 · gas echo] ---")
+;;==== HOT-RBT Repurpose Proof · 03 · gas echo ==== ===============================================
+(print "--- [HOT-RBT Repurpose Proof · 03 · gas echo] ---")
 (format "<<<<<<<HOT-RBT Repurpose Proof {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -3462,6 +3716,8 @@
 (namespace "ouronet-ns")
 ;;==== Reverse (Recover) Proof · 01 · env-sigs (caps) ==== =========================================
 (print "--- [Reverse (Recover) Proof · 01 · env-sigs (caps)] ---")
+;;==== Reverse (Recover) Proof · 01 · env-sigs (caps) ==== ========================================
+(print "--- [Reverse (Recover) Proof · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AOZ", "caps": [] }
@@ -3474,6 +3730,8 @@
 ;; matching amount of the pair's cold-RBT (PDKOSON) straight to the recoverer. Mints a fresh nonce
 ;; (nonce 5 — nonces-used was 4 after the Repurpose proof's own internal mint) specifically for this,
 ;; separate from nonce 4 (now emma's, from Repurpose) and the already-redeemed nonces 1/2.
+;;==== Reverse (Recover) Proof · 02 · let / invocation ==== =======================================
+(print "--- [Reverse (Recover) Proof · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
@@ -3511,6 +3769,8 @@
 (print "")
 ;;==== Reverse (Recover) Proof · 03 · gas echo ==== =================================================
 (print "--- [Reverse (Recover) Proof · 03 · gas echo] ---")
+;;==== Reverse (Recover) Proof · 03 · gas echo ==== ===============================================
+(print "--- [Reverse (Recover) Proof · 03 · gas echo] ---")
 (format "<<<<<<<Reverse (Recover) Proof {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -3525,6 +3785,8 @@
 (namespace "ouronet-ns")
 ;;==== WithdrawRoyalties Proof · 01 · env-sigs (caps) ==== =========================================
 (print "--- [WithdrawRoyalties Proof · 01 · env-sigs (caps)] ---")
+;;==== WithdrawRoyalties Proof · 01 · env-sigs (caps) ==== ========================================
+(print "--- [WithdrawRoyalties Proof · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AOZ", "caps": [] }
@@ -3536,6 +3798,8 @@
 ;; royalty rate is set and a Coil is performed first (URCx_RBT-Amount charges royalty-fee out of
 ;; every Coil deposit once ATS|C_UpdateRoyalty has set a nonzero royalty-promile) to actually accrue
 ;; something to withdraw.
+;;==== WithdrawRoyalties Proof · 02 · let / invocation ==== =======================================
+(print "--- [WithdrawRoyalties Proof · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
@@ -3573,6 +3837,8 @@
 (print "")
 ;;==== WithdrawRoyalties Proof · 03 · gas echo ==== =================================================
 (print "--- [WithdrawRoyalties Proof · 03 · gas echo] ---")
+;;==== WithdrawRoyalties Proof · 03 · gas echo ==== ===============================================
+(print "--- [WithdrawRoyalties Proof · 03 · gas echo] ---")
 (format "<<<<<<<WithdrawRoyalties Proof {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -3586,6 +3852,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 ;;==== DirectRecovery Proof · 01 · env-sigs (caps) ==== =============================================
+(print "--- [DirectRecovery Proof · 01 · env-sigs (caps)] ---")
+;;==== DirectRecovery Proof · 01 · env-sigs (caps) ==== ===========================================
 (print "--- [DirectRecovery Proof · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
@@ -3601,6 +3869,8 @@
 ;; (via the pool's current index, URCv_RTSplitAmounts — NOT a flat 1:1, since ps's index has moved
 ;; well off its 1.0 genesis value from all the Coil/Cull/fee activity earlier in this file), split
 ;; proportionally across ps's reward-token list.
+;;==== DirectRecovery Proof · 02 · let / invocation ==== ==========================================
+(print "--- [DirectRecovery Proof · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
@@ -3652,6 +3922,8 @@
 (print "")
 ;;==== DirectRecovery Proof · 03 · gas echo ==== =====================================================
 (print "--- [DirectRecovery Proof · 03 · gas echo] ---")
+;;==== DirectRecovery Proof · 03 · gas echo ==== ==================================================
+(print "--- [DirectRecovery Proof · 03 · gas echo] ---")
 (format "<<<<<<<DirectRecovery Proof {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -3666,6 +3938,8 @@
 (namespace "ouronet-ns")
 ;;==== Royalty Ceiling Proof · 01 · env-sigs (caps) ==== ===========================================
 (print "--- [Royalty Ceiling Proof · 01 · env-sigs (caps)] ---")
+;;==== Royalty Ceiling Proof · 01 · env-sigs (caps) ==== ==========================================
+(print "--- [Royalty Ceiling Proof · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AOZ", "caps": [] }
@@ -3677,6 +3951,8 @@
 ;; U|DALOS::UEV_Fee check (which still permits up to 999.0). -1.0 and 0.0 both remain valid "off"
 ;; sentinels (always <= 500.0, unaffected by the new ceiling); only the [1.0, 999.0] active range
 ;; narrows to [1.0, 500.0].
+;;==== Royalty Ceiling Proof · 02 · let / invocation ==== =========================================
+(print "--- [Royalty Ceiling Proof · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
@@ -3722,6 +3998,8 @@
 (print "")
 (print "")
 ;;==== Royalty Ceiling Proof · 03 · gas echo ==== ===================================================
+(print "--- [Royalty Ceiling Proof · 03 · gas echo] ---")
+;;==== Royalty Ceiling Proof · 03 · gas echo ==== =================================================
 (print "--- [Royalty Ceiling Proof · 03 · gas echo] ---")
 (format "<<<<<<<Royalty Ceiling Proof {} GAS>>>>>>>" [(env-gas)])
 (print "")

@@ -1,3 +1,16 @@
+;;
+;; REPL/Stage_02/[6.2.9]_AQP-STAKE-GAS-LADDER.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_02/[6.2.9]_AQP-STAKE-GAS-LADDER.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 (print "")
 (print "--- [AQP-GAS-STAKE · matrix 1-7 scores × TF/OF/SF/NF · split setup/measure] ---")
 (print "")
@@ -36,6 +49,11 @@
     (AQPGAS.XI_AddTrueFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
 (env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-TF-1sc-measure")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -72,7 +90,12 @@
             [n-scores stake-gas unstake-gas (/ stake-gas n-scores) (/ unstake-gas n-scores)]))
     )
 )
-(env-sigs [])(commit-tx)(print "")
+(env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-TF-2sc-setup")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 25000000)(env-gas 0)
 (let
@@ -108,6 +131,11 @@
     (AQPGAS.XI_AddTrueFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
 (env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-TF-2sc-measure")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -144,7 +172,12 @@
             [n-scores stake-gas unstake-gas (/ stake-gas n-scores) (/ unstake-gas n-scores)]))
     )
 )
-(env-sigs [])(commit-tx)(print "")
+(env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-TF-3sc-setup")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 25000000)(env-gas 0)
 (let
@@ -180,6 +213,11 @@
     (AQPGAS.XI_AddTrueFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
 (env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-TF-3sc-measure")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -216,7 +254,12 @@
             [n-scores stake-gas unstake-gas (/ stake-gas n-scores) (/ unstake-gas n-scores)]))
     )
 )
-(env-sigs [])(commit-tx)(print "")
+(env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-TF-4sc-setup")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 25000000)(env-gas 0)
 (let
@@ -252,6 +295,11 @@
     (AQPGAS.XI_AddTrueFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
 (env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-TF-4sc-measure")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -288,7 +336,12 @@
             [n-scores stake-gas unstake-gas (/ stake-gas n-scores) (/ unstake-gas n-scores)]))
     )
 )
-(env-sigs [])(commit-tx)(print "")
+(env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-TF-5sc-setup")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 25000000)(env-gas 0)
 (let
@@ -324,6 +377,11 @@
     (AQPGAS.XI_AddTrueFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
 (env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-TF-5sc-measure")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -360,7 +418,12 @@
             [n-scores stake-gas unstake-gas (/ stake-gas n-scores) (/ unstake-gas n-scores)]))
     )
 )
-(env-sigs [])(commit-tx)(print "")
+(env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-TF-6sc-setup")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 25000000)(env-gas 0)
 (let
@@ -396,6 +459,11 @@
     (AQPGAS.XI_AddTrueFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
 (env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-TF-6sc-measure")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -432,7 +500,12 @@
             [n-scores stake-gas unstake-gas (/ stake-gas n-scores) (/ unstake-gas n-scores)]))
     )
 )
-(env-sigs [])(commit-tx)(print "")
+(env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-TF-7sc-setup")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 25000000)(env-gas 0)
 (let
@@ -468,6 +541,11 @@
     (AQPGAS.XI_AddTrueFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
 (env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-TF-7sc-measure")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -504,7 +582,12 @@
             [n-scores stake-gas unstake-gas (/ stake-gas n-scores) (/ unstake-gas n-scores)]))
     )
 )
-(env-sigs [])(commit-tx)(print "")
+(env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-OF-1sc-setup")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 25000000)(env-gas 0)
 (let
@@ -542,6 +625,11 @@
     (AQPGAS.XI_AddOrtoFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
 (env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-OF-1sc-measure")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -583,7 +671,12 @@
         )
     )
 )
-(env-sigs [])(commit-tx)(print "")
+(env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-OF-2sc-setup")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 25000000)(env-gas 0)
 (let
@@ -621,6 +714,11 @@
     (AQPGAS.XI_AddOrtoFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
 (env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-OF-2sc-measure")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -662,7 +760,12 @@
         )
     )
 )
-(env-sigs [])(commit-tx)(print "")
+(env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-OF-3sc-setup")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 25000000)(env-gas 0)
 (let
@@ -700,6 +803,11 @@
     (AQPGAS.XI_AddOrtoFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
 (env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-OF-3sc-measure")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -741,7 +849,12 @@
         )
     )
 )
-(env-sigs [])(commit-tx)(print "")
+(env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-OF-4sc-setup")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 25000000)(env-gas 0)
 (let
@@ -779,6 +892,11 @@
     (AQPGAS.XI_AddOrtoFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
 (env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-OF-4sc-measure")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -820,7 +938,12 @@
         )
     )
 )
-(env-sigs [])(commit-tx)(print "")
+(env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-OF-5sc-setup")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 25000000)(env-gas 0)
 (let
@@ -858,6 +981,11 @@
     (AQPGAS.XI_AddOrtoFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
 (env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-OF-5sc-measure")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -899,7 +1027,12 @@
         )
     )
 )
-(env-sigs [])(commit-tx)(print "")
+(env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-OF-6sc-setup")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 25000000)(env-gas 0)
 (let
@@ -937,6 +1070,11 @@
     (AQPGAS.XI_AddOrtoFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
 (env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-OF-6sc-measure")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -978,7 +1116,12 @@
         )
     )
 )
-(env-sigs [])(commit-tx)(print "")
+(env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-OF-7sc-setup")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 25000000)(env-gas 0)
 (let
@@ -1016,6 +1159,11 @@
     (AQPGAS.XI_AddOrtoFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
 (env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-OF-7sc-measure")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -1057,7 +1205,12 @@
         )
     )
 )
-(env-sigs [])(commit-tx)(print "")
+(env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-SF-1sc-setup")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 25000000)(env-gas 0)
 (let
@@ -1094,6 +1247,11 @@
     (AQPGAS.XI_AddSemiFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
 (env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-SF-1sc-measure")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -1131,7 +1289,12 @@
             [n-scores stake-gas unstake-gas (/ stake-gas n-scores) (/ unstake-gas n-scores)]))
     )
 )
-(env-sigs [])(commit-tx)(print "")
+(env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-SF-2sc-setup")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 25000000)(env-gas 0)
 (let
@@ -1168,6 +1331,11 @@
     (AQPGAS.XI_AddSemiFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
 (env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-SF-2sc-measure")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -1205,7 +1373,12 @@
             [n-scores stake-gas unstake-gas (/ stake-gas n-scores) (/ unstake-gas n-scores)]))
     )
 )
-(env-sigs [])(commit-tx)(print "")
+(env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-SF-3sc-setup")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 25000000)(env-gas 0)
 (let
@@ -1242,6 +1415,11 @@
     (AQPGAS.XI_AddSemiFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
 (env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-SF-3sc-measure")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -1279,7 +1457,12 @@
             [n-scores stake-gas unstake-gas (/ stake-gas n-scores) (/ unstake-gas n-scores)]))
     )
 )
-(env-sigs [])(commit-tx)(print "")
+(env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-SF-4sc-setup")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 25000000)(env-gas 0)
 (let
@@ -1316,6 +1499,11 @@
     (AQPGAS.XI_AddSemiFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
 (env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-SF-4sc-measure")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -1353,7 +1541,12 @@
             [n-scores stake-gas unstake-gas (/ stake-gas n-scores) (/ unstake-gas n-scores)]))
     )
 )
-(env-sigs [])(commit-tx)(print "")
+(env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-SF-5sc-setup")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 25000000)(env-gas 0)
 (let
@@ -1390,6 +1583,11 @@
     (AQPGAS.XI_AddSemiFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
 (env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-SF-5sc-measure")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -1427,7 +1625,12 @@
             [n-scores stake-gas unstake-gas (/ stake-gas n-scores) (/ unstake-gas n-scores)]))
     )
 )
-(env-sigs [])(commit-tx)(print "")
+(env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-SF-6sc-setup")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 25000000)(env-gas 0)
 (let
@@ -1464,6 +1667,11 @@
     (AQPGAS.XI_AddSemiFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
 (env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-SF-6sc-measure")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -1501,7 +1709,12 @@
             [n-scores stake-gas unstake-gas (/ stake-gas n-scores) (/ unstake-gas n-scores)]))
     )
 )
-(env-sigs [])(commit-tx)(print "")
+(env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-SF-7sc-setup")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 25000000)(env-gas 0)
 (let
@@ -1538,6 +1751,11 @@
     (AQPGAS.XI_AddSemiFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
 (env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-SF-7sc-measure")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -1575,7 +1793,12 @@
             [n-scores stake-gas unstake-gas (/ stake-gas n-scores) (/ unstake-gas n-scores)]))
     )
 )
-(env-sigs [])(commit-tx)(print "")
+(env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-NF-1sc-setup")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 25000000)(env-gas 0)
 (let
@@ -1614,6 +1837,11 @@
     (AQPGAS.XI_AddNonFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
 (env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-NF-1sc-measure")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -1658,7 +1886,12 @@
         )
     )
 )
-(env-sigs [])(commit-tx)(print "")
+(env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-NF-2sc-setup")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 25000000)(env-gas 0)
 (let
@@ -1697,6 +1930,11 @@
     (AQPGAS.XI_AddNonFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
 (env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-NF-2sc-measure")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -1741,7 +1979,12 @@
         )
     )
 )
-(env-sigs [])(commit-tx)(print "")
+(env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-NF-3sc-setup")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 25000000)(env-gas 0)
 (let
@@ -1780,6 +2023,11 @@
     (AQPGAS.XI_AddNonFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
 (env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-NF-3sc-measure")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -1824,7 +2072,12 @@
         )
     )
 )
-(env-sigs [])(commit-tx)(print "")
+(env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-NF-4sc-setup")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 25000000)(env-gas 0)
 (let
@@ -1863,6 +2116,11 @@
     (AQPGAS.XI_AddNonFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
 (env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-NF-4sc-measure")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -1907,7 +2165,12 @@
         )
     )
 )
-(env-sigs [])(commit-tx)(print "")
+(env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-NF-5sc-setup")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 25000000)(env-gas 0)
 (let
@@ -1946,6 +2209,11 @@
     (AQPGAS.XI_AddNonFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
 (env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-NF-5sc-measure")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -1990,7 +2258,12 @@
         )
     )
 )
-(env-sigs [])(commit-tx)(print "")
+(env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-NF-6sc-setup")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 25000000)(env-gas 0)
 (let
@@ -2029,6 +2302,11 @@
     (AQPGAS.XI_AddNonFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
 (env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-NF-6sc-measure")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -2073,7 +2351,12 @@
         )
     )
 )
-(env-sigs [])(commit-tx)(print "")
+(env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-NF-7sc-setup")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 25000000)(env-gas 0)
 (let
@@ -2112,6 +2395,11 @@
     (AQPGAS.XI_AddNonFungibleScores patron pool-id fvt-id ouro-id n-scores)
 )
 (env-sigs [])(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-GAS-NF-7sc-measure")
 (namespace "ouronet-ns")(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let

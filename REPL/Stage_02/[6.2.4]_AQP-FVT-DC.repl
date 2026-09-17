@@ -1,4 +1,17 @@
 ;;
+;; REPL/Stage_02/[6.2.4]_AQP-FVT-DC.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_02/[6.2.4]_AQP-FVT-DC.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
+;;
 ;; REPL/Stage_02/[6.2.4]_AQP-FVT-DC.repl — DPSF collectable stake + vacate bulk smoke (TX-FVT-DC-01..05)
 ;; Loaded by REPL/DPDC-stake-smoke.repl. TX-FVT-DC-04/05 exercise DPDC-T::C_BulkTransfer via vacate batch.
 ;; Requires Stage 02 sovereign executor (DHCD-98c486052a51 nonces 1–10) + AQP-BOOT Step0 (DPDC-T IMC).
@@ -11,6 +24,8 @@
 (print "=== TX-FVT-DC-01 — SemiFungible score + class-3 DHCD pool bootstrap =========")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-FVT-DC-01 - SF score + class-3 pool bootstrap · 01 · let / invocation ==== ==============
+(print "--- [TX-FVT-DC-01 - SF score + class-3 pool bootstrap · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -107,6 +122,8 @@
 (print "=== TX-FVT-DC-02 — CC_StakeSemiFungibleCollectable (phases 1–5 recipe) ======")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-FVT-DC-02 - CC_StakeSemiFungibleCollectable end-to-end · 01 · let / invocation ==== =====
+(print "--- [TX-FVT-DC-02 - CC_StakeSemiFungibleCollectable end-to-end · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -198,6 +215,8 @@
 (print "=== TX-FVT-DC-02b — C_SyncSemiFungibleAnchors after late SF anchor =========")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-FVT-DC-02b - SF anchor sync repair while staked · 01 · let / invocation ==== ============
+(print "--- [TX-FVT-DC-02b - SF anchor sync repair while staked · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -303,6 +322,8 @@
 (print "=== TX-FVT-DC-03 — CC_UnstakeSemiFungibleCollectable ==========================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-FVT-DC-03 - CC_UnstakeSemiFungibleCollectable round-trip · 01 · let / invocation ==== ===
+(print "--- [TX-FVT-DC-03 - CC_UnstakeSemiFungibleCollectable round-trip · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -384,7 +405,11 @@
 (print "=== TX-FVT-DC-03b — M5 foreign-beneficiary SF stake/unstake (no stranding) ===")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-FVT-DC-03b - M5 non-self SF round-trip (owner ANHD, foreign beneficiary EMMA) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-FVT-DC-03b - M5 non-self SF round-trip (owner ANHD, foreign beneficiary EMMA) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-FVT-DC-03b - M5 non-self SF round-trip (owner ANHD, foreign beneficiary EMMA) · 02 · let / invocation ==== 
+(print "--- [TX-FVT-DC-03b - M5 non-self SF round-trip (owner ANHD, foreign beneficiary EMMA) · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -478,6 +503,8 @@
 (print "=== TX-FVT-DC-04 — CC_FullVacate (agnostic; pool-id only; on-chain scan) ====")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-FVT-DC-04 - CC_FullVacate (agnostic one-tx vacate, class-3 DPSF) · 01 · let / invocation ==== 
+(print "--- [TX-FVT-DC-04 - CC_FullVacate (agnostic one-tx vacate, class-3 DPSF) · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -560,6 +587,8 @@
 (print "=== TX-FVT-DC-05 — CCp_BatchVacateCollectables 2 owner legs (1 batch drains) ==")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-FVT-DC-05 - CCp_BatchVacateCollectables multi-owner (2 legs) · 01 · let / invocation ==== 
+(print "--- [TX-FVT-DC-05 - CCp_BatchVacateCollectables multi-owner (2 legs) · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -696,10 +725,14 @@
 (print "=== TX-FVT-DC-NNS — #FP1: SF PARTIAL unstake does NOT decrement pool nns until last amount ==")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-FVT-DC-NNS - #FP1 SF partial-unstake nns edge (no decrement until last amount) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-FVT-DC-NNS - #FP1 SF partial-unstake nns edge (no decrement until last amount) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 ;; Delta-based (robust to whatever nns state SfStakePool is in post-vacate). Stake the whole DHCD nonce (+1),
 ;; partial-unstake amount 1 leaving supply-1 > 0 (nns MUST stay — the position is still occupied), then unstake
 ;; the remainder (last amount -> position empties -> nns -1). Proves the SF "decrement only on last amount" rule.
+;;==== TX-FVT-DC-NNS - #FP1 SF partial-unstake nns edge (no decrement until last amount) · 02 · let / invocation ==== 
+(print "--- [TX-FVT-DC-NNS - #FP1 SF partial-unstake nns edge (no decrement until last amount) · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)

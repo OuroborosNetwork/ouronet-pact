@@ -1,3 +1,16 @@
+;;
+;; REPL/modules/DISPENSER.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/modules/DISPENSER.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 ;; REPL/modules/DISPENSER.repl — STANDALONE DISPENSER tester.
 ;;
 ;; P2 rebuild. The previous version loaded Stage_01/[6.8]_Dispenser.repl (477 lines, ZERO
@@ -17,8 +30,12 @@
 ;;
 (begin-tx "DISPENSER-01 — the sovereign token ids resolve and are distinct")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== DISPENSER-01 — the sovereign token ids resolve and are distinct · 01 · namespace ==== ======
+(print "--- [DISPENSER-01 — the sovereign token ids resolve and are distinct · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [DISPENSER-01 · 01 · sovereign ids] ---")
+;;==== DISPENSER-01 — the sovereign token ids resolve and are distinct · 02 · let / invocation ==== 
+(print "--- [DISPENSER-01 — the sovereign token ids resolve and are distinct · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -52,8 +69,12 @@
 ;;
 (begin-tx "DISPENSER-02 — the dispenser vault account exists and prices OURO")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== DISPENSER-02 — the dispenser vault account exists and prices OURO · 01 · namespace ==== ====
+(print "--- [DISPENSER-02 — the dispenser vault account exists and prices OURO · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [DISPENSER-02 · 01 · vault + price] ---")
+;;==== DISPENSER-02 — the dispenser vault account exists and prices OURO · 02 · let / invocation ==== 
+(print "--- [DISPENSER-02 — the dispenser vault account exists and prices OURO · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)

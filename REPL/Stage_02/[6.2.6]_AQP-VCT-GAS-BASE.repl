@@ -17,6 +17,8 @@
 ;;==== VCT-GAS-00 · 01 · module ==== =============================================================
 (print "--- [VCT-GAS-00 · 01 · VCT-GAS module] ---")
 (env-enable-repl-natives true)
+;;==== VCT-GAS-00 - VCT-GAS probe module + synth account deploy · 01 · env-sigs (caps) ==== =======
+(print "--- [VCT-GAS-00 - VCT-GAS probe module + synth account deploy · 01 · env-sigs (caps)] ---")
 (env-sigs
     [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}]
 )
@@ -889,6 +891,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== VCT-GAS-01 · 01 · TF anchor for OURO stake probes ==== =====================================
 (print "--- [VCT-GAS-01 · 01 · TF anchor + VctGas scores] ---")
+;;==== VCT-GAS-01 - TF anchor + shared gas-probe score bootstrap · 01 · let / invocation ==== =====
+(print "--- [VCT-GAS-01 - TF anchor + shared gas-probe score bootstrap · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -946,7 +950,11 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "--- [VCT-GAS-00b · 01 · deploy synth accounts 001..999] ---")
+;;==== VCT-GAS-00b - deploy synth accounts 001..999 · 01 · env-sigs (caps) ==== ===================
+(print "--- [VCT-GAS-00b - deploy synth accounts 001..999 · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== VCT-GAS-00b - deploy synth accounts 001..999 · 02 · let / invocation ==== ==================
+(print "--- [VCT-GAS-00b - deploy synth accounts 001..999 · 02 · let / invocation] ---")
 (let
     (
         (batch:integer 100)

@@ -37,6 +37,8 @@
 (namespace "ouronet-ns")
 ;;==== TX000 · 01 · env-chain-data ====
 (print "--- [TX000 · 01 · env-chain-data] ---")
+;;==== TX000 INIT - chain data + CODEX placeholder env-data · 01 · env-chain-data ==== ============
+(print "--- [TX000 INIT - chain data + CODEX placeholder env-data · 01 · env-chain-data] ---")
 (env-chain-data
     {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
      "block-time": TV.TIME00}
@@ -71,11 +73,15 @@
 (print "=== TX001 — A_RegisterCodexIdentity =====================================")
 ;;==== TX001 · 01 · env-sigs (codex-keyset / Demiourgos) ====
 (print "--- [TX001 · 01 · env-sigs (codex-keyset / Demiourgos)] ---")
+;;==== TX001 - CODEX|A_RegisterCodexIdentity + UR_CIX reads · 01 · env-sigs (caps) ==== ===========
+(print "--- [TX001 - CODEX|A_RegisterCodexIdentity + UR_CIX reads · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
+;;==== TX001 - CODEX|A_RegisterCodexIdentity + UR_CIX reads · 02 · let / invocation ==== ==========
+(print "--- [TX001 - CODEX|A_RegisterCodexIdentity + UR_CIX reads · 02 · let / invocation] ---")
 (let
     (
         (composite-id:string (read-string "CODEX|COMPOSITE-ID"))
@@ -139,12 +145,16 @@
 (print "=== TX002 — C_RotateCodexGuard =========================================")
 ;;==== TX002 · 01 · env-sigs (current + new codex guard) ====
 (print "--- [TX002 · 01 · env-sigs (current + new codex guard)] ---")
+;;==== TX002 - CODEX|C_RotateCodexGuard · 01 · env-sigs (caps) ==== ===============================
+(print "--- [TX002 - CODEX|C_RotateCodexGuard · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
         { "key": "PK_Florean", "caps": [] }
     ]
 )
+;;==== TX002 - CODEX|C_RotateCodexGuard · 02 · let / invocation ==== ==============================
+(print "--- [TX002 - CODEX|C_RotateCodexGuard · 02 · let / invocation] ---")
 (let
     (
         (composite-id:string (read-string "CODEX|COMPOSITE-ID"))
@@ -204,12 +214,16 @@
 (print "--- [TX003 · 01 · env-sigs (rotated codex guard + patron)] ---")
 ;;the patron key is required now that CODEX|C_RecordArweaveUpload collects IGNIS
 ;;(deter(usage) + components) — before the pricing rehaul this op was gasless.
+;;==== TX003 - CODEX|C_RecordArweaveUpload · 01 · env-sigs (caps) ==== ============================
+(print "--- [TX003 - CODEX|C_RecordArweaveUpload · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
         { "key": "PK_Florean", "caps": [] }
     ]
 )
+;;==== TX003 - CODEX|C_RecordArweaveUpload · 02 · let / invocation ==== ===========================
+(print "--- [TX003 - CODEX|C_RecordArweaveUpload · 02 · let / invocation] ---")
 (let
     (
         (composite-id:string (read-string "CODEX|COMPOSITE-ID"))
@@ -278,6 +292,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "")
 (print "=== TX004 — C_RegisterStoicTag ==========================================")
+;;==== TX004 - CODEX|C_RegisterStoicTag · 01 · let / invocation ==== ==============================
+(print "--- [TX004 - CODEX|C_RegisterStoicTag · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -400,11 +416,15 @@
 (print "=== TX005 — C_ReleaseStoicTag ===========================================")
 ;;==== TX005 · 01 · env-sigs (DALOS account owner) ====
 (print "--- [TX005 · 01 · env-sigs (DALOS account owner)] ---")
+;;==== TX005 - CODEX|C_ReleaseStoicTag · 01 · env-sigs (caps) ==== ================================
+(print "--- [TX005 - CODEX|C_ReleaseStoicTag · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
+;;==== TX005 - CODEX|C_ReleaseStoicTag · 02 · let / invocation ==== ===============================
+(print "--- [TX005 - CODEX|C_ReleaseStoicTag · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -495,6 +515,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "")
 (print "=== TX006 — C_RegisterStoicTag (released → re-active, update both tables) =====")
+;;==== TX006 - CODEX|C_RegisterStoicTag (re-activate released tag) · 01 · let / invocation ==== ===
+(print "--- [TX006 - CODEX|C_RegisterStoicTag (re-activate released tag) · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)

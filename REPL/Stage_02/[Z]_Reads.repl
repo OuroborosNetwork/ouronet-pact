@@ -12,10 +12,14 @@
 (namespace "ouronet-ns")
 ;;==== TX-Z01 [Z] - INFO-TWO Module · 01 · env-sigs (caps) ==== ===================================
 (print "--- [TX-Z01 [Z] - INFO-TWO Module · 01 · env-sigs (caps)] ---")
+;;==== TX-Z01 [Z] - INFO-TWO Module (Stage-2 INFO previews; wraps Stage-1+2 URCi readers) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-Z01 [Z] - INFO-TWO Module (Stage-2 INFO previews; wraps Stage-1+2 URCi readers) · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
 ;;==== TX-Z01 [Z] - INFO-TWO Module · 02 · load module ==== =======================================
 (print "--- [TX-Z01 [Z] - INFO-TWO Module · 02 · load module] ---")
+;;==== TX-Z01 [Z] - INFO-TWO Module (Stage-2 INFO previews; wraps Stage-1+2 URCi readers) · 02 · load module ==== 
+(print "--- [TX-Z01 [Z] - INFO-TWO Module (Stage-2 INFO previews; wraps Stage-1+2 URCi readers) · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact")
 ;;==== TX-Z01 [Z] - INFO-TWO Module · 03 · gas echo ==== ==========================================
 (print "--- [TX-Z01 [Z] - INFO-TWO Module · 03 · gas echo] ---")

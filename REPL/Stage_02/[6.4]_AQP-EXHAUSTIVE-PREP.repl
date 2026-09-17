@@ -13,6 +13,8 @@
 (print "=== TX-AQP-P01 — E|DH fragments for ANHD + LUMY (company pool) ==============")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-P01 - E|DH equity morph + LUMY transfer for DHCompany stakes · 01 · let / invocation ==== 
+(print "--- [TX-AQP-P01 - E|DH equity morph + LUMY transfer for DHCompany stakes · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -53,6 +55,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-AQP-P02 - DHCD 20/80 nonce-5 split for proportional RPS")
@@ -60,6 +66,8 @@
 (print "=== TX-AQP-P02 — DHCD nonce 5: 100 ANHD / 400 LUMY (20/80) =================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-P02 - DHCD 20/80 nonce-5 split for proportional RPS · 01 · let / invocation ==== ====
+(print "--- [TX-AQP-P02 - DHCD 20/80 nonce-5 split for proportional RPS · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)

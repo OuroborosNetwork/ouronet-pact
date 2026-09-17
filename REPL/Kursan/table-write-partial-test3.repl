@@ -1,3 +1,16 @@
+;;
+;; REPL/Kursan/table-write-partial-test3.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Kursan/table-write-partial-test3.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 (module test-write-partial3 G
   (defschema TestRow
     a:integer
@@ -33,19 +46,31 @@
 (begin-tx "setup")
   (test-write-partial3.setup)
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "update-one-field")
   (expect "update one field" {"a": 1, "b": 55, "c": 3}
     (test-write-partial3.update-one-field)
   )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "write-partial-on-existing-fails")
   (expect-failure "write partial fails" "schema mismatch"
     (test-write-partial3.write-partial-on-new-then-existing)
   )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "write-full-existing")
   (expect "write full replace existing" {"a": 1, "b": 77, "c": 3}
     (test-write-partial3.write-full-existing)

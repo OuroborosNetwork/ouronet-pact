@@ -14,6 +14,8 @@
 (print "=== TX-AQP-C01 — FVT issue + score + reward wiring readiness =================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-C01 - Steps 8–10 FVT wiring readiness · 01 · let / invocation ==== ==================
+(print "--- [TX-AQP-C01 - Steps 8–10 FVT wiring readiness · 01 · let / invocation] ---")
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -50,8 +52,14 @@
         ]
     )
 )
+;;==== TX-AQP-C01 - Steps 8–10 FVT wiring readiness · 02 · env-sigs (caps) ==== ===================
+(print "--- [TX-AQP-C01 - Steps 8–10 FVT wiring readiness · 02 · env-sigs (caps)] ---")
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-AQP-C02 - Coding Division stake + Wstoa inject/collect RPS")
@@ -59,6 +67,8 @@
 (print "=== TX-AQP-C02 — Coding Division treasury RPS (Wstoa) ======================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-C02 - Coding Division stake + Wstoa inject/collect RPS · 01 · let / invocation ==== =
+(print "--- [TX-AQP-C02 - Coding Division stake + Wstoa inject/collect RPS · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -160,6 +170,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-AQP-C02b - Company + WonderCoach stakes (inject denominators)")
@@ -167,6 +181,8 @@
 (print "=== TX-AQP-C02b — Stakes for Snakes / Subsidiary / Shares inject tests =========")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-C02b - Company + WonderCoach stakes (inject denominators) · 01 · let / invocation ==== 
+(print "--- [TX-AQP-C02b - Company + WonderCoach stakes (inject denominators) · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -217,11 +233,18 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "TX-AQP-C03 - Snakes treasury Auryn inject RPS bump")
 (print "")
 (print "=== TX-AQP-C03 — Snakes treasury Auryn inject (when snakes deb>0) =============")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-C03 - Snakes treasury Auryn inject RPS bump · 01 · let / invocation ==== ============
+(print "--- [TX-AQP-C03 - Snakes treasury Auryn inject RPS bump · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -263,6 +286,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-AQP-C04 - Subsidiary treasury Auryn inject (multi-score denominator)")
@@ -270,6 +297,8 @@
 (print "=== TX-AQP-C04 — Subsidiary treasury Auryn inject =============================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-C04 - Subsidiary treasury Auryn inject (multi-score denominator) · 01 · let / invocation ==== 
+(print "--- [TX-AQP-C04 - Subsidiary treasury Auryn inject (multi-score denominator) · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -307,6 +336,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-AQP-C05 - Company shares treasury Ouroboros inject")
@@ -314,6 +347,8 @@
 (print "=== TX-AQP-C05 — Company shares Ouroboros inject/collect =====================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-C05 - Company shares treasury Ouroboros inject · 01 · let / invocation ==== =========
+(print "--- [TX-AQP-C05 - Company shares treasury Ouroboros inject · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)

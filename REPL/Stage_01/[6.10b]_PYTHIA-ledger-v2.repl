@@ -1,3 +1,16 @@
+;;
+;; REPL/Stage_01/[6.10b]_PYTHIA-ledger-v2.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_01/[6.10b]_PYTHIA-ledger-v2.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 ;; REPL/Stage_01/[6.10b]_PYTHIA-ledger-v2.repl — PythiaLedgerV3 batch A_Flush (load after [6.10] TX008)
 ;; #72L fix: header previously said "TX007" - stale, [6.10]_PYTHIA.repl's real last tx is TX008
 ;; (TX007a/b/c were added after this header was originally written). Doc-only, no code change.
@@ -6,6 +19,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "=== TX009 — batch flush day 82 iz-complete false =========================")
+;;==== TX009 - A_Flush batch day 82 incomplete · 01 · let / invocation ==== =======================
+(print "--- [TX009 - A_Flush batch day 82 incomplete · 01 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -45,11 +60,17 @@
     )
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 (begin-tx "TX010 - A_Flush same day 82 accumulate incomplete")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "=== TX010 — same day 82 accumulate delta (iz-complete false) =============")
+;;==== TX010 - A_Flush same day 82 accumulate incomplete · 01 · let / invocation ==== =============
+(print "--- [TX010 - A_Flush same day 82 accumulate incomplete · 01 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -73,11 +94,17 @@
     ""
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 (begin-tx "TX011 - A_Flush seal 82 + open day 83 batch")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "=== TX011 — batch seal day 82 (+10) + insert day 83 =====================")
+;;==== TX011 - A_Flush seal 82 + open day 83 batch · 01 · let / invocation ==== ===================
+(print "--- [TX011 - A_Flush seal 82 + open day 83 batch · 01 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -104,11 +131,17 @@
     ""
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 (begin-tx "TX012 - A_Flush reject sealed day 82")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "=== TX012 — reject update on sealed day 82 ==============================")
+;;==== TX012 - A_Flush reject sealed day 82 · 01 · let / invocation ==== ==========================
+(print "--- [TX012 - A_Flush reject sealed day 82 · 01 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -129,11 +162,17 @@
     ""
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 (begin-tx "TX013 - A_Flush out-of-order day 50 then day 10")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "=== TX013 — order-independent txs (day 50 then day 10) =====================")
+;;==== TX013 - A_Flush out-of-order day 50 then day 10 · 01 · let / invocation ==== ===============
+(print "--- [TX013 - A_Flush out-of-order day 50 then day 10 · 01 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -158,11 +197,17 @@
     ""
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 (begin-tx "TX014 - A_Flush reject bad pondus")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "=== TX014 — reject pondus >3 dp ==========================================")
+;;==== TX014 - A_Flush reject bad pondus · 01 · let / invocation ==== =============================
+(print "--- [TX014 - A_Flush reject bad pondus · 01 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)

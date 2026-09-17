@@ -31,8 +31,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-01 [2.1] - TS02-C1 Module · 01 · env-sigs (caps) ==== ===================================
 (print "--- [TX-01 [2.1] - TS02-C1 Module · 01 · env-sigs (caps)] ---")
+;;==== TX-01 [2.1] - TS02-C1 Module · 01 · env-sigs (caps) ==== ===================================
+(print "--- [TX-01 [2.1] - TS02-C1 Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-01 [2.1] - TS02-C1 Module · 02 · load module ==== =======================================
+(print "--- [TX-01 [2.1] - TS02-C1 Module · 02 · load module] ---")
 ;;==== TX-01 [2.1] - TS02-C1 Module · 02 · load module ==== =======================================
 (print "--- [TX-01 [2.1] - TS02-C1 Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact")
@@ -51,8 +55,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-02 [2.2] - TS02-C2 Module · 01 · env-sigs (caps) ==== ===================================
 (print "--- [TX-02 [2.2] - TS02-C2 Module · 01 · env-sigs (caps)] ---")
+;;==== TX-02 [2.2] - TS02-C2 Module · 01 · env-sigs (caps) ==== ===================================
+(print "--- [TX-02 [2.2] - TS02-C2 Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-02 [2.2] - TS02-C2 Module · 02 · load module ==== =======================================
+(print "--- [TX-02 [2.2] - TS02-C2 Module · 02 · load module] ---")
 ;;==== TX-02 [2.2] - TS02-C2 Module · 02 · load module ==== =======================================
 (print "--- [TX-02 [2.2] - TS02-C2 Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact")
@@ -71,8 +79,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-02 [2.2] - TS02-C3 Module · 01 · env-sigs (caps) ==== ===================================
 (print "--- [TX-02 [2.2] - TS02-C3 Module · 01 · env-sigs (caps)] ---")
+;;==== TX-02 [2.2] - TS02-C3 Module · 01 · env-sigs (caps) ==== ===================================
+(print "--- [TX-02 [2.2] - TS02-C3 Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-02 [2.2] - TS02-C3 Module · 02 · load module ==== =======================================
+(print "--- [TX-02 [2.2] - TS02-C3 Module · 02 · load module] ---")
 ;;==== TX-02 [2.2] - TS02-C3 Module · 02 · load module ==== =======================================
 (print "--- [TX-02 [2.2] - TS02-C3 Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact")
@@ -91,10 +103,14 @@
 (namespace "ouronet-ns")
 ;;==== TX-03 [2.3] - TS02-DPAD Module · 01 · env-sigs (caps) ==== =================================
 (print "--- [TX-03 [2.3] - TS02-DPAD Module · 01 · env-sigs (caps)] ---")
+;;==== TX-03 [2.3] - TS02-DPAD Module (SOVEREIGN launchpad Talos) · 01 · env-sigs (caps) ==== =====
+(print "--- [TX-03 [2.3] - TS02-DPAD Module (SOVEREIGN launchpad Talos) · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
 ;;==== TX-03 [2.3] - TS02-DPAD Module · 02 · load module ==== =====================================
 (print "--- [TX-03 [2.3] - TS02-DPAD Module · 02 · load module] ---")
+;;==== TX-03 [2.3] - TS02-DPAD Module (SOVEREIGN launchpad Talos) · 02 · load module ==== =========
+(print "--- [TX-03 [2.3] - TS02-DPAD Module (SOVEREIGN launchpad Talos) · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_02/3_Talos/05_TS02-DPAD.pact")
 ;;==== TX-03 [2.3] - TS02-DPAD Module · 03 · gas echo ==== ========================================
 (print "--- [TX-03 [2.3] - TS02-DPAD Module · 03 · gas echo] ---")
@@ -113,10 +129,14 @@
 (namespace "ouronet-ns")
 ;;==== TX-04 [2.4] - Launchpad CITIZEN sales · 01 · env-sigs (caps) ==== ==========================
 (print "--- [TX-04 [2.4] - Launchpad CITIZEN sales · 01 · env-sigs (caps)] ---")
+;;==== TX-04 [2.4] - Launchpad CITIZEN sales (Spark/Snakes/Custodians/StoicPay/StoicIco) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-04 [2.4] - Launchpad CITIZEN sales (Spark/Snakes/Custodians/StoicPay/StoicIco) · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
 ;;==== TX-04 [2.4] - Launchpad CITIZEN sales · 02 · load modules ==== =============================
 (print "--- [TX-04 [2.4] - Launchpad CITIZEN sales · 02 · load modules] ---")
+;;==== TX-04 [2.4] - Launchpad CITIZEN sales (Spark/Snakes/Custodians/StoicPay/StoicIco) · 02 · load module ==== 
+(print "--- [TX-04 [2.4] - Launchpad CITIZEN sales (Spark/Snakes/Custodians/StoicPay/StoicIco) · 02 · load module] ---")
 (load "../../2_CITIZEN/7_Launchpad/1_Spark/01_Spark.pact")
 (load "../../2_CITIZEN/7_Launchpad/2_Snakes/02_Snakes.pact")
 (load "../../2_CITIZEN/7_Launchpad/3_Custodians/03_Custodians.pact")
@@ -124,6 +144,8 @@
 (load "../../2_CITIZEN/7_Launchpad/5_StoicIco/05_STOAICO.pact")
 ;;==== TX-04 [2.4] - Launchpad CITIZEN sales · 03 · gas echo ==== =================================
 (print "--- [TX-04 [2.4] - Launchpad CITIZEN sales · 03 · gas echo] ---")
+;;==== TX-04 [2.4] - Launchpad CITIZEN sales (Spark/Snakes/Custodians/StoicPay/StoicIco) · 03 · gas echo ==== 
+(print "--- [TX-04 [2.4] - Launchpad CITIZEN sales (Spark/Snakes/Custodians/StoicPay/StoicIco) · 03 · gas echo] ---")
 (format "<<<<<<<Launchpad CITIZEN sales Cost {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -137,10 +159,14 @@
 (namespace "ouronet-ns")
 ;;==== TX-05 [2.5] - TS02-CPAD Module · 01 · env-sigs (caps) ==== =================================
 (print "--- [TX-05 [2.5] - TS02-CPAD Module · 01 · env-sigs (caps)] ---")
+;;==== TX-05 [2.5] - TS02-CPAD Module (CITIZEN launchpad Talos) · 01 · env-sigs (caps) ==== =======
+(print "--- [TX-05 [2.5] - TS02-CPAD Module (CITIZEN launchpad Talos) · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
 ;;==== TX-05 [2.5] - TS02-CPAD Module · 02 · load module ==== =====================================
 (print "--- [TX-05 [2.5] - TS02-CPAD Module · 02 · load module] ---")
+;;==== TX-05 [2.5] - TS02-CPAD Module (CITIZEN launchpad Talos) · 02 · load module ==== ===========
+(print "--- [TX-05 [2.5] - TS02-CPAD Module (CITIZEN launchpad Talos) · 02 · load module] ---")
 (load "../../2_CITIZEN/7_Launchpad/99_TS02-CPAD.pact")
 ;;==== TX-05 [2.5] - TS02-CPAD Module · 03 · gas echo ==== ========================================
 (print "--- [TX-05 [2.5] - TS02-CPAD Module · 03 · gas echo] ---")

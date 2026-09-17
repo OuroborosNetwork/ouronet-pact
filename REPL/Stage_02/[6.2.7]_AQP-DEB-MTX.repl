@@ -1,4 +1,17 @@
 ;;
+;; REPL/Stage_02/[6.2.7]_AQP-DEB-MTX.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_02/[6.2.7]_AQP-DEB-MTX.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
+;;
 ;; REPL/Stage_02/[6.2.7]_AQP-DEB-MTX.repl — AQP deb-staleness conservation + MTX defpacts (inject + sweep).
 ;; TEST BODY ONLY: assumes full deploy + AQP-BOOT + [6.2.1-3] + [6.2.9] boot-full + [6.4] PREP/BOOT-POOLS/RPS/COLLECT
 ;; are already loaded (by deb-staleness-proof.repl or AQP-comprehensive.repl). Covers M3 #12 deb refresh/mirror,
@@ -16,8 +29,12 @@
 ;; FAILS on the pre-fix PHASE 6 (refresh without XI_SyncFvtTotalDebMirrors).
 ;; ============================================================================
 (begin-tx "TX-AQP-DEB01a - snapshot fresh pre-state")
+;;==== TX-AQP-DEB01a - snapshot fresh pre-state · 01 · namespace ==== =============================
+(print "--- [TX-AQP-DEB01a - snapshot fresh pre-state · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-DEB01a - snapshot fresh pre-state · 02 · let / invocation ==== ======================
+(print "--- [TX-AQP-DEB01a - snapshot fresh pre-state · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD)
@@ -50,12 +67,20 @@
     )
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-AQP-DEB01b - move ANHD Elite-DEB DOWN (transfer EliteAuryn away) => staleness")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-DEB01b - move ANHD Elite-DEB DOWN (transfer EliteAuryn away) => staleness · 01 · env-sigs (caps) ==== 
+(print "--- [TX-AQP-DEB01b - move ANHD Elite-DEB DOWN (transfer EliteAuryn away) => staleness · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-AQP-DEB01b - move ANHD Elite-DEB DOWN (transfer EliteAuryn away) => staleness · 02 · let / invocation ==== 
+(print "--- [TX-AQP-DEB01b - move ANHD Elite-DEB DOWN (transfer EliteAuryn away) => staleness · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD)
@@ -96,12 +121,20 @@
     )
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-AQP-DEB01c - collect => PHASE 6 refresh + mirror resync (conservation)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-DEB01c - collect => PHASE 6 refresh + mirror resync (conservation) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-AQP-DEB01c - collect => PHASE 6 refresh + mirror resync (conservation) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-AQP-DEB01c - collect => PHASE 6 refresh + mirror resync (conservation) · 02 · let / invocation ==== 
+(print "--- [TX-AQP-DEB01c - collect => PHASE 6 refresh + mirror resync (conservation) · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD)
@@ -143,6 +176,10 @@
     )
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; ============================================================================
 ;; TX-AQP-DEB03 — end-to-end presence FLIP (false→true→false) on a REAL unstake.
 ;; EMMA is a fresh account absent from SubsidiaryTreasury. Give her one DHWC nonce,
@@ -152,7 +189,11 @@
 (begin-tx "TX-AQP-DEB03a - fund EMMA with a DHWC nonce; confirm she starts ABSENT")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-DEB03a - fund EMMA with a DHWC nonce; confirm she starts ABSENT · 01 · env-sigs (caps) ==== 
+(print "--- [TX-AQP-DEB03a - fund EMMA with a DHWC nonce; confirm she starts ABSENT · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-AQP-DEB03a - fund EMMA with a DHWC nonce; confirm she starts ABSENT · 02 · let / invocation ==== 
+(print "--- [TX-AQP-DEB03a - fund EMMA with a DHWC nonce; confirm she starts ABSENT · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD)
@@ -173,12 +214,20 @@
         false (ref-FVT::UR_FVT-UP|IsPresent fvt-id emma))
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-AQP-DEB03b - EMMA stakes (present→true) then FULLY unstakes (present→false)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-DEB03b - EMMA stakes (present→true) then FULLY unstakes (present→false) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-AQP-DEB03b - EMMA stakes (present→true) then FULLY unstakes (present→false) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
+;;==== TX-AQP-DEB03b - EMMA stakes (present→true) then FULLY unstakes (present→false) · 02 · let / invocation ==== 
+(print "--- [TX-AQP-DEB03b - EMMA stakes (present→true) then FULLY unstakes (present→false) · 02 · let / invocation] ---")
 (let
     (
         (emma:string KST.EMMA)
@@ -221,6 +270,10 @@
     )
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;; ============================================================================
@@ -234,7 +287,11 @@
 (begin-tx "TX-AQP-DEB04 - partial unstake of one member keeps present=true")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-DEB04 - partial unstake of one member keeps present=true · 01 · env-sigs (caps) ==== 
+(print "--- [TX-AQP-DEB04 - partial unstake of one member keeps present=true · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-AQP-DEB04 - partial unstake of one member keeps present=true · 02 · let / invocation ==== 
+(print "--- [TX-AQP-DEB04 - partial unstake of one member keeps present=true · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD)
@@ -276,6 +333,10 @@
     )
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;; ============================================================================
 ;; TX-AQP-DEB05 — FULL multi-member walk on ONE user (the exact scenario asked).
@@ -287,7 +348,11 @@
 (begin-tx "TX-AQP-DEB05a - EMMA enters TWO members (DHWC WonderCoach + KBN Bunnies)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-DEB05a - EMMA enters TWO members (DHWC WonderCoach + KBN Bunnies) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-AQP-DEB05a - EMMA enters TWO members (DHWC WonderCoach + KBN Bunnies) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
+;;==== TX-AQP-DEB05a - EMMA enters TWO members (DHWC WonderCoach + KBN Bunnies) · 02 · let / invocation ==== 
+(print "--- [TX-AQP-DEB05a - EMMA enters TWO members (DHWC WonderCoach + KBN Bunnies) · 02 · let / invocation] ---")
 (let
     (
         (emma:string KST.EMMA)
@@ -317,12 +382,20 @@
     )
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-AQP-DEB05b - unstake member 1 (WonderCoach): STILL present via Bunnies")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-DEB05b - unstake member 1 (WonderCoach): STILL present via Bunnies · 01 · env-sigs (caps) ==== 
+(print "--- [TX-AQP-DEB05b - unstake member 1 (WonderCoach): STILL present via Bunnies · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
+;;==== TX-AQP-DEB05b - unstake member 1 (WonderCoach): STILL present via Bunnies · 02 · let / invocation ==== 
+(print "--- [TX-AQP-DEB05b - unstake member 1 (WonderCoach): STILL present via Bunnies · 02 · let / invocation] ---")
 (let
     (
         (emma:string KST.EMMA)
@@ -347,12 +420,20 @@
     )
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-AQP-DEB05c - unstake member 2 (Bunnies, the LAST): present flips FALSE")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-DEB05c - unstake member 2 (Bunnies, the LAST): present flips FALSE · 01 · env-sigs (caps) ==== 
+(print "--- [TX-AQP-DEB05c - unstake member 2 (Bunnies, the LAST): present flips FALSE · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
+;;==== TX-AQP-DEB05c - unstake member 2 (Bunnies, the LAST): present flips FALSE · 02 · let / invocation ==== 
+(print "--- [TX-AQP-DEB05c - unstake member 2 (Bunnies, the LAST): present flips FALSE · 02 · let / invocation] ---")
 (let
     (
         (emma:string KST.EMMA)
@@ -377,6 +458,10 @@
     )
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;; ============================================================================
@@ -389,7 +474,11 @@
 (begin-tx "TX-AQP-DEB06 - CC_Inject fixes stale stakers then injects on a fresh divisor")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-DEB06 - CC_Inject fixes stale stakers then injects on a fresh divisor · 01 · env-sigs (caps) ==== 
+(print "--- [TX-AQP-DEB06 - CC_Inject fixes stale stakers then injects on a fresh divisor · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-AQP-DEB06 - CC_Inject fixes stale stakers then injects on a fresh divisor · 02 · let / invocation ==== 
+(print "--- [TX-AQP-DEB06 - CC_Inject fixes stale stakers then injects on a fresh divisor · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD)
@@ -440,6 +529,10 @@
     )
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;; ============================================================================
@@ -451,7 +544,11 @@
 (begin-tx "TX-AQP-DEB07 - forced-fix count recorded by CC_Inject; collect charges + zeroes it")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-DEB07 - forced-fix count recorded by CC_Inject; collect charges + zeroes it · 01 · env-sigs (caps) ==== 
+(print "--- [TX-AQP-DEB07 - forced-fix count recorded by CC_Inject; collect charges + zeroes it · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-AQP-DEB07 - forced-fix count recorded by CC_Inject; collect charges + zeroes it · 02 · let / invocation ==== 
+(print "--- [TX-AQP-DEB07 - forced-fix count recorded by CC_Inject; collect charges + zeroes it · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD)
@@ -477,6 +574,10 @@
     )
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;; ============================================================================
@@ -489,7 +590,11 @@
 (begin-tx "TX-AQP-DEB08a - re-stale ANHD (move deb again) for the MTX defpact run")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-DEB08a - re-stale ANHD (move deb again) for the MTX defpact run · 01 · env-sigs (caps) ==== 
+(print "--- [TX-AQP-DEB08a - re-stale ANHD (move deb again) for the MTX defpact run · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-AQP-DEB08a - re-stale ANHD (move deb again) for the MTX defpact run · 02 · let / invocation ==== 
+(print "--- [TX-AQP-DEB08a - re-stale ANHD (move deb again) for the MTX defpact run · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD)
@@ -515,6 +620,10 @@
     )
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-AQP-DEB08b - MTX defpact STEP 0 (Talos MTX-AQP|2|CC_Inject) + assert the fix")
@@ -522,7 +631,11 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;; force a known pact-id so continue-pact below matches (default REPL tx hash)
 (env-hash (hash "deb08-mtx-inject"))
+;;==== TX-AQP-DEB08b - MTX defpact STEP 0 (Talos MTX-AQP|2|CC_Inject) + assert the fix · 01 · env-sigs (caps) ==== 
+(print "--- [TX-AQP-DEB08b - MTX defpact STEP 0 (Talos MTX-AQP|2|CC_Inject) + assert the fix · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-AQP-DEB08b - MTX defpact STEP 0 (Talos MTX-AQP|2|CC_Inject) + assert the fix · 02 · let / invocation ==== 
+(print "--- [TX-AQP-DEB08b - MTX defpact STEP 0 (Talos MTX-AQP|2|CC_Inject) + assert the fix · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD)
@@ -545,15 +658,25 @@
     )
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-AQP-DEB08c - continue-pact 1 (defpact step 1 = no-op, already injected)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-DEB08c - continue-pact 1 (defpact step 1 = no-op, already injected) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-AQP-DEB08c - continue-pact 1 (defpact step 1 = no-op, already injected) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print (format "<(DEB08 continue-pact 1)> => \"{}\""
     [(continue-pact 1 false (hash "deb08-mtx-inject"))]))
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;; ============================================================================
@@ -566,7 +689,11 @@
 (begin-tx "TX-AQP-DEB09 - populated score rejects boost/deb (re)config (M4 #13)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-DEB09 - populated score rejects boost/deb (re)config (M4 #13) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-AQP-DEB09 - populated score rejects boost/deb (re)config (M4 #13) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-AQP-DEB09 - populated score rejects boost/deb (re)config (M4 #13) · 02 · let / invocation ==== 
+(print "--- [TX-AQP-DEB09 - populated score rejects boost/deb (re)config (M4 #13) · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD)
@@ -616,6 +743,10 @@
     )
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;; ============================================================================
@@ -632,7 +763,11 @@
 (begin-tx "TX-AQP-DEB10a - empty CodingDivisionTreasury (unstake ANHD + LUMY) => total-deb 0")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-DEB10a - empty CodingDivisionTreasury (unstake ANHD + LUMY) => total-deb 0 · 01 · env-sigs (caps) ==== 
+(print "--- [TX-AQP-DEB10a - empty CodingDivisionTreasury (unstake ANHD + LUMY) => total-deb 0 · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Lumy", "caps": [] }])
+;;==== TX-AQP-DEB10a - empty CodingDivisionTreasury (unstake ANHD + LUMY) => total-deb 0 · 02 · let / invocation ==== 
+(print "--- [TX-AQP-DEB10a - empty CodingDivisionTreasury (unstake ANHD + LUMY) => total-deb 0 · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD)
@@ -659,12 +794,20 @@
     )
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-AQP-DEB10b - inject twice at ZERO total => escrow accrues, G/available untouched")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-DEB10b - inject twice at ZERO total => escrow accrues, G/available untouched · 01 · env-sigs (caps) ==== 
+(print "--- [TX-AQP-DEB10b - inject twice at ZERO total => escrow accrues, G/available untouched · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-AQP-DEB10b - inject twice at ZERO total => escrow accrues, G/available untouched · 02 · let / invocation ==== 
+(print "--- [TX-AQP-DEB10b - inject twice at ZERO total => escrow accrues, G/available untouched · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD)
@@ -706,12 +849,20 @@
     )
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-AQP-DEB10c - re-stake ANHD, inject => FLUSH amount+zombie to the current staker")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-DEB10c - re-stake ANHD, inject => FLUSH amount+zombie to the current staker · 01 · env-sigs (caps) ==== 
+(print "--- [TX-AQP-DEB10c - re-stake ANHD, inject => FLUSH amount+zombie to the current staker · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-AQP-DEB10c - re-stake ANHD, inject => FLUSH amount+zombie to the current staker · 02 · let / invocation ==== 
+(print "--- [TX-AQP-DEB10c - re-stake ANHD, inject => FLUSH amount+zombie to the current staker · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD)
@@ -763,6 +914,10 @@
     )
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;; ============================================================================
@@ -776,7 +931,11 @@
 (begin-tx "TX-AQP-DEB11 - CC_Inject on a class-0 FARM: fix stale members then inject")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-DEB11 - CC_Inject on a class-0 FARM: fix stale members then inject · 01 · env-sigs (caps) ==== 
+(print "--- [TX-AQP-DEB11 - CC_Inject on a class-0 FARM: fix stale members then inject · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+;;==== TX-AQP-DEB11 - CC_Inject on a class-0 FARM: fix stale members then inject · 02 · let / invocation ==== 
+(print "--- [TX-AQP-DEB11 - CC_Inject on a class-0 FARM: fix stale members then inject · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD)
@@ -838,6 +997,10 @@
     )
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;; ============================================================================
@@ -849,7 +1012,11 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (env-hash (hash "deb12-farm-mtx-inject"))
+;;==== TX-AQP-DEB12a - MTX defpact step 0 on the FARM (Talos MTX-AQP|2|CC_Inject) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-AQP-DEB12a - MTX defpact step 0 on the FARM (Talos MTX-AQP|2|CC_Inject) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-AQP-DEB12a - MTX defpact step 0 on the FARM (Talos MTX-AQP|2|CC_Inject) · 02 · let / invocation ==== 
+(print "--- [TX-AQP-DEB12a - MTX defpact step 0 on the FARM (Talos MTX-AQP|2|CC_Inject) · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD)
@@ -872,14 +1039,24 @@
     )
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 (begin-tx "TX-AQP-DEB12b - continue-pact (farm defpact step 1 = no-op, already injected)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-DEB12b - continue-pact (farm defpact step 1 = no-op, already injected) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-AQP-DEB12b - continue-pact (farm defpact step 1 = no-op, already injected) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print (format "<(DEB12 continue-pact 1)> => \"{}\""
     [(continue-pact 1 false (hash "deb12-farm-mtx-inject"))]))
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;; ============================================================================
@@ -889,8 +1066,12 @@
 ;; enumerate that score — this is what the re-score sweep (phase 3) will walk.
 ;; ============================================================================
 (begin-tx "TX-AQP-DEB13 - reverse index boost-class -> [score-ids] is enumerable + count = length")
+;;==== TX-AQP-DEB13 - reverse index boost-class -> [score-ids] is enumerable + count = length · 01 · namespace ==== 
+(print "--- [TX-AQP-DEB13 - reverse index boost-class -> [score-ids] is enumerable + count = length · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-DEB13 - reverse index boost-class -> [score-ids] is enumerable + count = length · 02 · let / invocation ==== 
+(print "--- [TX-AQP-DEB13 - reverse index boost-class -> [score-ids] is enumerable + count = length · 02 · let / invocation] ---")
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -921,6 +1102,10 @@
     )
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;; TX-AQP-SWEEP01 (re-score sweep end-to-end) — PENDING: CC_SweepRevokeAnchor is built and its pipeline executes
 ;; (pre-state read OK: agg-promile 100, lane 20, links=[silver], pool unfrozen), but the swept-revoke's authorization
@@ -945,7 +1130,11 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;; force a known pact-id so continue-pact in SWEEP02 matches
 (env-hash (hash "sweep-mtx-defpact"))
+;;==== TX-AQP-SWEEP01 - MTX|2|C_SweepRevokeAnchor defpact step 0 retires an employed anchor · 01 · env-sigs (caps) ==== 
+(print "--- [TX-AQP-SWEEP01 - MTX|2|C_SweepRevokeAnchor defpact step 0 retires an employed anchor · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Lumy", "caps": [] }])
+;;==== TX-AQP-SWEEP01 - MTX|2|C_SweepRevokeAnchor defpact step 0 retires an employed anchor · 02 · let / invocation ==== 
+(print "--- [TX-AQP-SWEEP01 - MTX|2|C_SweepRevokeAnchor defpact step 0 retires an employed anchor · 02 · let / invocation] ---")
 (let
     (
         (lumy:string KST.LUMY)
@@ -1007,6 +1196,10 @@
     )
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;; TX-AQP-SWEEP02 — continue-pact 1 completes the defpact (step 1 = no-op; step 0 was terminal).
@@ -1015,8 +1208,12 @@
 (begin-tx "TX-AQP-SWEEP02 - continue-pact 1 (defpact step 1 = no-op) + idempotence")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-SWEEP02 - continue-pact 1 (defpact step 1 = no-op) + idempotence · 01 · env-sigs (caps) ==== 
+(print "--- [TX-AQP-SWEEP02 - continue-pact 1 (defpact step 1 = no-op) + idempotence · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Lumy", "caps": [] }])
 (print (format "<(SWEEP02 continue-pact 1)> => \"{}\"" [(continue-pact 1 false (hash "sweep-mtx-defpact"))]))
+;;==== TX-AQP-SWEEP02 - continue-pact 1 (defpact step 1 = no-op) + idempotence · 02 · let / invocation ==== 
+(print "--- [TX-AQP-SWEEP02 - continue-pact 1 (defpact step 1 = no-op) + idempotence · 02 · let / invocation] ---")
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)

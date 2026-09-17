@@ -28,6 +28,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 30000000)(env-gas 0)
 (env-chain-data { "block-time": (time "2027-11-01T00:00:00Z") })
+;;==== DSA-AGN-FIXTURE - model + operator triplet + class-0 FVT · 01 · env-sigs (caps) ==== =======
+(print "--- [DSA-AGN-FIXTURE - model + operator triplet + class-0 FVT · 01 · env-sigs (caps)] ---")
 (env-sigs
   [ { "key": "PK_AncientHodler", "caps": [] }
     { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
@@ -37,6 +39,8 @@
         (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
         (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
 (print "--- [DSA-AGN-FIXTURE · 01 · define model + factory triplet + class-0 FVT] ---")
+;;==== DSA-AGN-FIXTURE - model + operator triplet + class-0 FVT · 02 · let / invocation ==== ======
+(print "--- [DSA-AGN-FIXTURE - model + operator triplet + class-0 FVT · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD)
@@ -79,6 +83,8 @@
 (begin-tx "DSA-VAULT-01 - define vault + owner/positive/duplicate guards")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 30000000)(env-gas 0)
+;;==== DSA-VAULT-01 - define vault + owner/positive/duplicate guards · 01 · env-sigs (caps) ==== ==
+(print "--- [DSA-VAULT-01 - define vault + owner/positive/duplicate guards · 01 · env-sigs (caps)] ---")
 (env-sigs
   [ { "key": "PK_AncientHodler", "caps": [] }
     { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
@@ -88,6 +94,8 @@
         (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
         (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
 (print "--- [DSA-VAULT-01 · 01 · define vault + read template] ---")
+;;==== DSA-VAULT-01 - define vault + owner/positive/duplicate guards · 02 · let / invocation ==== =
+(print "--- [DSA-VAULT-01 - define vault + owner/positive/duplicate guards · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD)
@@ -132,6 +140,8 @@
 (begin-tx "DSA-VAULT-02 - agency-open guards (gate / fee / vault-active)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 30000000)(env-gas 0)
+;;==== DSA-VAULT-02 - agency-open guards (gate / fee / vault-active) · 01 · env-sigs (caps) ==== ==
+(print "--- [DSA-VAULT-02 - agency-open guards (gate / fee / vault-active) · 01 · env-sigs (caps)] ---")
 (env-sigs
   [ { "key": "PK_AncientHodler", "caps": [] }
     { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
@@ -141,6 +151,8 @@
         (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
         (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
 (print "--- [DSA-VAULT-02 · 01 · open-agency guards reject] ---")
+;;==== DSA-VAULT-02 - agency-open guards (gate / fee / vault-active) · 02 · let / invocation ==== =
+(print "--- [DSA-VAULT-02 - agency-open guards (gate / fee / vault-active) · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD)

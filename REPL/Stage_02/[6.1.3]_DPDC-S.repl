@@ -36,6 +36,8 @@
 (namespace "ouronet-ns")
 ;;==== TX-SET-001 · 01 · env-sigs (caps) ====
 (print "--- [TX-SET-001 · 01 · env-sigs (caps)] ---")
+;;==== TX-SET-001 - Issue + Create fresh SFT (10 nonces) and NFT (4 nonces) collections · 01 · let / invocation ==== 
+(print "--- [TX-SET-001 - Issue + Create fresh SFT (10 nonces) and NFT (4 nonces) collections · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -135,9 +137,13 @@
 (namespace "ouronet-ns")
 ;;==== TX-SET-002 · 01 · env-sigs (caps) ====
 (print "--- [TX-SET-002 · 01 · env-sigs (caps)] ---")
+;;==== TX-SET-002 - Define Primordial/Composite/Hybrid SFT sets + NFT Primordial set · 01 · env-sigs (caps) ==== 
+(print "--- [TX-SET-002 - Define Primordial/Composite/Hybrid SFT sets + NFT Primordial set · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 ;;==== TX-SET-002 · 02 · Define SC1 Primordial, SC2 Composite, SC3 Hybrid, NFT-SC1 Primordial ====
 (print "--- [TX-SET-002 · 02 · define SC1 Primordial / SC2 Composite / SC3 Hybrid / NFT-SC1 Primordial] ---")
+;;==== TX-SET-002 - Define Primordial/Composite/Hybrid SFT sets + NFT Primordial set · 02 · let / invocation ==== 
+(print "--- [TX-SET-002 - Define Primordial/Composite/Hybrid SFT sets + NFT Primordial set · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -212,9 +218,13 @@
 (namespace "ouronet-ns")
 ;;==== TX-SET-003 · 01 · env-sigs (caps) ====
 (print "--- [TX-SET-003 · 01 · env-sigs (caps)] ---")
+;;==== TX-SET-003 - Primordial SFT Make -> Break round trip, exact conservation · 01 · env-sigs (caps) ==== 
+(print "--- [TX-SET-003 - Primordial SFT Make -> Break round trip, exact conservation · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 ;;==== TX-SET-003 · 02 · Make 5 SC1 sets from nonce 1 + nonce 2 ====
 (print "--- [TX-SET-003 · 02 · Make 5 SC1 (Primordial) sets from nonce 1 + nonce 2] ---")
+;;==== TX-SET-003 - Primordial SFT Make -> Break round trip, exact conservation · 02 · let / invocation ==== 
+(print "--- [TX-SET-003 - Primordial SFT Make -> Break round trip, exact conservation · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -293,9 +303,13 @@
 (namespace "ouronet-ns")
 ;;==== TX-SET-004 · 01 · env-sigs (caps) ====
 (print "--- [TX-SET-004 · 01 · env-sigs (caps)] ---")
+;;==== TX-SET-004 - Composite SFT Make -> Break round trip (built on SC1 units), exact conservation · 01 · env-sigs (caps) ==== 
+(print "--- [TX-SET-004 - Composite SFT Make -> Break round trip (built on SC1 units), exact conservation · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 ;;==== TX-SET-004 · 02 · Re-make 5 SC1 units, then Make 3 SC2 (Composite) sets from 3 of them ====
 (print "--- [TX-SET-004 · 02 · re-make 5 SC1 units; Make 3 SC2 (Composite) sets from 3 of them] ---")
+;;==== TX-SET-004 - Composite SFT Make -> Break round trip (built on SC1 units), exact conservation · 02 · let / invocation ==== 
+(print "--- [TX-SET-004 - Composite SFT Make -> Break round trip (built on SC1 units), exact conservation · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -390,9 +404,13 @@
 (namespace "ouronet-ns")
 ;;==== TX-SET-005 · 01 · env-sigs (caps) ====
 (print "--- [TX-SET-005 · 01 · env-sigs (caps)] ---")
+;;==== TX-SET-005 - Hybrid SFT Make -> Break round trip (primordial nonce 3 + composite SC1) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-SET-005 - Hybrid SFT Make -> Break round trip (primordial nonce 3 + composite SC1) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 ;;==== TX-SET-005 · 02 · Re-make 5 SC1 units; Make 2 SC3 (Hybrid) sets ====
 (print "--- [TX-SET-005 · 02 · re-make 5 SC1 units; Make 2 SC3 (Hybrid: nonce 3 + SC1) sets] ---")
+;;==== TX-SET-005 - Hybrid SFT Make -> Break round trip (primordial nonce 3 + composite SC1) · 02 · let / invocation ==== 
+(print "--- [TX-SET-005 - Hybrid SFT Make -> Break round trip (primordial nonce 3 + composite SC1) · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -500,9 +518,13 @@
 (namespace "ouronet-ns")
 ;;==== TX-SET-006 · 01 · env-sigs (caps) ====
 (print "--- [TX-SET-006 · 01 · env-sigs (caps)] ---")
+;;==== TX-SET-006 - Primordial NFT Make -> Break round trip, exact conservation · 01 · env-sigs (caps) ==== 
+(print "--- [TX-SET-006 - Primordial NFT Make -> Break round trip, exact conservation · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 ;;==== TX-SET-006 · 02 · Make: choose nonce 1 (of [1 2]) + nonce 3 (of [3 4]) ====
 (print "--- [TX-SET-006 · 02 · Make: choose nonce 1 (of [1 2]) + nonce 3 (of [3 4])] ---")
+;;==== TX-SET-006 - Primordial NFT Make -> Break round trip, exact conservation · 02 · let / invocation ==== 
+(print "--- [TX-SET-006 - Primordial NFT Make -> Break round trip, exact conservation · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -581,9 +603,13 @@
 (namespace "ouronet-ns")
 ;;==== TX-SET-007 · 01 · env-sigs (caps) ====
 (print "--- [TX-SET-007 · 01 · env-sigs (caps)] ---")
+;;==== TX-SET-007 - Admin mutations: ToggleSet / RenameSet / EnableSetClassFragmentation · 01 · env-sigs (caps) ==== 
+(print "--- [TX-SET-007 - Admin mutations: ToggleSet / RenameSet / EnableSetClassFragmentation · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 ;;==== TX-SET-007 · 02 · ToggleSet off -> EnableFragmentation rejected (#30M) -> ToggleSet on ====
 (print "--- [TX-SET-007 · 02 · ToggleSet off rejects EnableFragmentation (#30M); ToggleSet back on] ---")
+;;==== TX-SET-007 - Admin mutations: ToggleSet / RenameSet / EnableSetClassFragmentation · 02 · let / invocation ==== 
+(print "--- [TX-SET-007 - Admin mutations: ToggleSet / RenameSet / EnableSetClassFragmentation · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
@@ -709,7 +735,11 @@
 ;;`expect-failure` proving the wrong thing, which is the failure RT-C-001 is named for. Both
 ;;preconditions are therefore ASSERTED here rather than assumed, and both are read through real
 ;;readers (`UR_IzSetActive`, `UEV_IzSetClassFragmented`) rather than inferred from what ran earlier.
+;;==== TX-SET-008 - the set owner gate, which only the owner had ever driven · 01 · env-sigs (caps) ==== 
+(print "--- [TX-SET-008 - the set owner gate, which only the owner had ever driven · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
+;;==== TX-SET-008 - the set owner gate, which only the owner had ever driven · 02 · let / invocation ==== 
+(print "--- [TX-SET-008 - the set owner gate, which only the owner had ever driven · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
@@ -790,7 +820,11 @@
 ;;  · `DPDC-F|C>ENABLE-FRAGMENTATION` ends on `DPDC::CAP_Owner id son` -- the TOKEN's owner.
 ;;Both refuse with ANHD's key here only because ANHD happens to be both; the arguments are chosen so
 ;;each op is refused by its own gate.
+;;==== TX-SET-009 - the NONCE-level owner gates, on this file's SFT fixture · 01 · env-sigs (caps) ==== 
+(print "--- [TX-SET-009 - the NONCE-level owner gates, on this file's SFT fixture · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
+;;==== TX-SET-009 - the NONCE-level owner gates, on this file's SFT fixture · 02 · let / invocation ==== 
+(print "--- [TX-SET-009 - the NONCE-level owner gates, on this file's SFT fixture · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)

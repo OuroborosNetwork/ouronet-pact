@@ -1,3 +1,16 @@
+;;
+;; REPL/modules/EQUITY.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/modules/EQUITY.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 ;; REPL/modules/EQUITY.repl — STANDALONE EQUITY tester (blockchain-env-in-a-repl).
 ;; Fresh boot: Stage 00 sandbox + deploy core(s) + the EQUITY suite only.
 ;; Run: cd REPL && pact modules/EQUITY.repl   (see ARCHITECTURE/REPL_TEST_ARCHITECTURE.md)
@@ -10,11 +23,15 @@
 ;;
 (begin-tx "EQUITY-G1 — the share-tier guard family")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== EQUITY-G1 — the share-tier guard family · 01 · namespace ==== ==============================
+(print "--- [EQUITY-G1 — the share-tier guard family · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [EQUITY-G1 · 01 · tiers, ids and nonces] ---")
 ;;P3.3. All eight of EQUITY+'s unpinned guards are UEV_ -- unprotected, so a direct call is the
 ;;whole test -- and [6.1.1] has already built E|TSEQ, so the two that read real share data have
 ;;something true to read.
+;;==== EQUITY-G1 — the share-tier guard family · 02 · let / invocation ==== =======================
+(print "--- [EQUITY-G1 — the share-tier guard family · 02 · let / invocation] ---")
 (let
     (
         (ref-EQ:module{EquityV2} EQUITY)
@@ -134,6 +151,8 @@
 ;;the STOA leg splits four ways (Holdings / Maintenance / Ouroboros / Gas Station), so the payer's
 ;;coin account must sign all four TRANSFER legs. Without them the issue aborts on
 ;;"Managed capability not installed" -- a FUNDING signal, not a pricing one.
+;;==== EQ-G1 - C_IssueShareholderCollection rejects a wrong ipfs-links count · 01 · env-sigs (caps) ==== 
+(print "--- [EQ-G1 - C_IssueShareholderCollection rejects a wrong ipfs-links count · 01 · env-sigs (caps)] ---")
 (env-sigs
   [ { "key": "PK_AncientHodler", "caps": [] }
     { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
@@ -142,6 +161,8 @@
         (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
         (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
         (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+;;==== EQ-G1 - C_IssueShareholderCollection rejects a wrong ipfs-links count · 02 · let / invocation ==== 
+(print "--- [EQ-G1 - C_IssueShareholderCollection rejects a wrong ipfs-links count · 02 · let / invocation] ---")
 (let
     (
         (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
@@ -175,6 +196,8 @@
 ;;
 (begin-tx "EQ-D1 - URCi_IssueShareholderCollection: the documented three-leg decomposition")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== EQ-D1 - URCi_IssueShareholderCollection: the documented three-leg decomposition · 01 · namespace ==== 
+(print "--- [EQ-D1 - URCi_IssueShareholderCollection: the documented three-leg decomposition · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [EQ-D1 · 01 · three legs, arg-independent] ---")
 ;;DOC-CLAIM VERIFICATION (`_docclaims.py` G5). `11_EQUITY+.pact` URCi_IssueShareholderCollection
@@ -185,6 +208,8 @@
 ;;premium, ico3 the discounted 8-nonce populate. Verified STRUCTURALLY, by rebuilding the same three
 ;;legs from their own sources and concatenating them independently. If a leg is dropped, added or
 ;;re-priced, the rebuild stops matching.
+;;==== EQ-D1 - URCi_IssueShareholderCollection: the documented three-leg decomposition · 02 · let / invocation ==== 
+(print "--- [EQ-D1 - URCi_IssueShareholderCollection: the documented three-leg decomposition · 02 · let / invocation] ---")
 (let
     (
         (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
@@ -264,6 +289,8 @@
 ;;
 (begin-tx "EQ-D1b - the doc's OWN caveat about why this cannot be ground-truthed")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== EQ-D1b - the doc's OWN caveat about why this cannot be ground-truthed · 01 · namespace ==== 
+(print "--- [EQ-D1b - the doc's OWN caveat about why this cannot be ground-truthed · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [EQ-D1b · 01 · why the discount is code-proven and not test-arbitrated] ---")
 ;;CLAIM 4, and the most interesting one, because the @doc argues AGAINST testing it the obvious way:
@@ -280,6 +307,8 @@
 ;;It also pins the discount branch's three conditions on the live collection: `E|` and son hold,
 ;;`nu = 0` does not (any more), which is exactly why the discount fired at exec time and cannot be
 ;;observed now. Each condition asserted separately so a failure names which one moved.
+;;==== EQ-D1b - the doc's OWN caveat about why this cannot be ground-truthed · 02 · let / invocation ==== 
+(print "--- [EQ-D1b - the doc's OWN caveat about why this cannot be ground-truthed · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)

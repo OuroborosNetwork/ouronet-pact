@@ -1,3 +1,16 @@
+;;
+;; REPL/modules/CONFORMANCE.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/modules/CONFORMANCE.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 ;; REPL/modules/CONFORMANCE.repl — G4 DYNAMIC: the reachability claims, proven.
 ;;
 ;; The static half lives in REPL/tools/_conformance.py. This is the half a linter cannot do: the
@@ -27,7 +40,11 @@
 ;;
 ;;EMMA is a real, funded Ouronet account signing her own key -- so this is not "an unknown key is
 ;;refused", it is "a legitimate user cannot skip the toll booth".
+;;==== CONF-01 — a core C_ cannot be reached without Talos … except by one keyset · 01 · env-sigs (caps) ==== 
+(print "--- [CONF-01 — a core C_ cannot be reached without Talos … except by one keyset · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
+;;==== CONF-01 — a core C_ cannot be reached without Talos … except by one keyset · 02 · let / invocation ==== 
+(print "--- [CONF-01 — a core C_ cannot be reached without Talos … except by one keyset · 02 · let / invocation] ---")
 (let
     (
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
@@ -145,7 +162,11 @@
 ;;   XI_  is guarded by (require-capability (SECURE)) -- SECURE is granted only inside the
 ;;        module's own with-capability scopes, so it is unreachable from anywhere else.
 ;;   XE_  is guarded by (P|UEV_IMC) -- reachable from a REGISTERED module, never from top level.
+;;==== CONF-02 — XI_ is internal-only; XE_ is IMC-gated · 01 · env-sigs (caps) ==== ===============
+(print "--- [CONF-02 — XI_ is internal-only; XE_ is IMC-gated · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
+;;==== CONF-02 — XI_ is internal-only; XE_ is IMC-gated · 02 · let / invocation ==== ==============
+(print "--- [CONF-02 — XI_ is internal-only; XE_ is IMC-gated · 02 · let / invocation] ---")
 (let
     (
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
@@ -178,7 +199,11 @@
 ;;`C_`." If IGNIS::C_Collect were reachable directly, a caller could bill THEMSELVES an arbitrary
 ;;amount -- or, worse, bill someone else -- so this is the other half of CONF-01: one proves you
 ;;cannot skip the toll booth, this proves you cannot operate it.
+;;==== CONF-03 — IGNIS cannot be collected outside a Talos wrapper · 01 · env-sigs (caps) ==== ====
+(print "--- [CONF-03 — IGNIS cannot be collected outside a Talos wrapper · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
+;;==== CONF-03 — IGNIS cannot be collected outside a Talos wrapper · 02 · let / invocation ==== ===
+(print "--- [CONF-03 — IGNIS cannot be collected outside a Talos wrapper · 02 · let / invocation] ---")
 (let
     (
         (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
@@ -279,7 +304,11 @@
 ;;
 ;;EMMA is a real, funded Ouronet account -- so this is not "an unknown key is rejected", it is
 ;;"a legitimate user cannot act as the administrator", which is the property that matters.
+;;==== CONF-04 — an admin A_ is refused without the admin key · 01 · env-sigs (caps) ==== =========
+(print "--- [CONF-04 — an admin A_ is refused without the admin key · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
+;;==== CONF-04 — an admin A_ is refused without the admin key · 02 · let / invocation ==== ========
+(print "--- [CONF-04 — an admin A_ is refused without the admin key · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -325,7 +354,11 @@
 ;;
 ;;Closing it cost nothing: the sole live caller ([6.3]_SWP.repl:2443) already signs with a
 ;;Demiurgoi key. The assertions below are what keeps it closed.
+;;==== CONF-05 — every A_ in TS01-A gates on the ADMIN cap, including the one that did not · 01 · env-sigs (caps) ==== 
+(print "--- [CONF-05 — every A_ in TS01-A gates on the ADMIN cap, including the one that did not · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
+;;==== CONF-05 — every A_ in TS01-A gates on the ADMIN cap, including the one that did not · 02 · let / invocation ==== 
+(print "--- [CONF-05 — every A_ in TS01-A gates on the ADMIN cap, including the one that did not · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
@@ -380,6 +413,8 @@
 ;;legitimate-but-unprivileged user (EMMA) satisfies neither branch and the enforce-one reports
 ;;its own message. Each gets its own transaction, because a granted capability is cached for the
 ;;rest of the tx.
+;;==== CONF-06a — the module GOVERNANCE caps, swept: ATS · 01 · env-sigs (caps) ==== ==============
+(print "--- [CONF-06a — the module GOVERNANCE caps, swept: ATS · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (map print
     [
@@ -396,6 +431,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [CONF-06b · 01 · GOV|*_ADMIN] ---")
+;;==== CONF-06b — the module GOVERNANCE caps, swept: ATSU · 01 · env-sigs (caps) ==== =============
+(print "--- [CONF-06b — the module GOVERNANCE caps, swept: ATSU · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (map print
     [
@@ -412,6 +449,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [CONF-06c · 01 · GOV|*_ADMIN] ---")
+;;==== CONF-06c — the module GOVERNANCE caps, swept: VST · 01 · env-sigs (caps) ==== ==============
+(print "--- [CONF-06c — the module GOVERNANCE caps, swept: VST · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (map print
     [
@@ -428,6 +467,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [CONF-06d · 01 · GOV|*_ADMIN] ---")
+;;==== CONF-06d — the module GOVERNANCE caps, swept: LIQUID · 01 · env-sigs (caps) ==== ===========
+(print "--- [CONF-06d — the module GOVERNANCE caps, swept: LIQUID · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (map print
     [
@@ -444,6 +485,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [CONF-06e · 01 · GOV|*_ADMIN] ---")
+;;==== CONF-06e — the module GOVERNANCE caps, swept: OUROBOROS · 01 · env-sigs (caps) ==== ========
+(print "--- [CONF-06e — the module GOVERNANCE caps, swept: OUROBOROS · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (map print
     [
@@ -460,6 +503,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [CONF-06f · 01 · GOV|*_ADMIN] ---")
+;;==== CONF-06f — the module GOVERNANCE caps, swept: SWP · 01 · env-sigs (caps) ==== ==============
+(print "--- [CONF-06f — the module GOVERNANCE caps, swept: SWP · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (map print
     [
@@ -479,6 +524,8 @@
 ;;Not governance, but the same technique and the same module band. A zero or negative GAS
 ;;transfer is refused before any account is read -- so it is reachable with dummy accounts, and
 ;;the guard is what stops a caller from emitting a transfer event that moves nothing.
+;;==== CONF-06g — IGNIS|C>TRANSFER: the zero-amount floor · 01 · env-sigs (caps) ==== =============
+(print "--- [CONF-06g — IGNIS|C>TRANSFER: the zero-amount floor · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (map print
     [
@@ -495,6 +542,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [CONF-06h · 01 · gas transfer floor, negative] ---")
+;;==== CONF-06h — ...and the negative case, which is the one that would mint gas · 01 · env-sigs (caps) ==== 
+(print "--- [CONF-06h — ...and the negative case, which is the one that would mint gas · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (map print
     [
@@ -519,6 +568,8 @@
 ;;A REAL account is used with an absurd amount, rather than a dummy id with a small one. Both trip
 ;;the guard, but only the real account makes the failure attributable to the BALANCE — with a
 ;;dummy id the same message could equally mean "this account has no row at all".
+;;==== CONF-07 — IGNIS|C>DEBIT: the gas-balance floor · 01 · env-sigs (caps) ==== =================
+(print "--- [CONF-07 — IGNIS|C>DEBIT: the gas-balance floor · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (map print
     [
@@ -534,6 +585,8 @@
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (begin-tx "CONF-06 - the GS-07 default, on a module that is genuinely unregistered")
+;;==== CONF-06 - the GS-07 default, on a module that is genuinely unregistered · 01 · namespace ==== 
+(print "--- [CONF-06 - the GS-07 default, on a module that is genuinely unregistered · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [CONF-06 · 01 · P|UR_IMP before any registration] ---")
 ;;<<CONF-06>> GS-07, WHICH WAS UNPROTECTED IN ALL 61 MODULES UNTIL THIS BLOCK.
@@ -553,6 +606,8 @@
 ;;`P|UR_IMP` (59) against every `ref-X::P|A_AddIMP` target (46) leaves 13 that are NEVER
 ;;registered with -- and all ten Talos modules are among them (this harness loads Stage 1, so it pins two of them). For those, the GS-07 default is not
 ;;a nicety, it is the only thing standing between a caller and a raw table error naming a row key.
+;;==== CONF-06 - the GS-07 default, on a module that is genuinely unregistered · 02 · let / invocation ==== 
+(print "--- [CONF-06 - the GS-07 default, on a module that is genuinely unregistered · 02 · let / invocation] ---")
 (let
     (
         (ref-P|TS01C1:module{OuronetPolicyV2} TS01-C1)

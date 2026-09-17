@@ -1,3 +1,16 @@
+;;
+;; REPL/modules/CADUCEUS.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/modules/CADUCEUS.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 ;; REPL/modules/CADUCEUS.repl — STANDALONE CADUCEUS tester (the Ouronet bridge citizen module).
 ;;
 ;; WHY THIS FILE EXISTS: until now CADUCEUS had ZERO REPL coverage anywhere in the repo. No .repl
@@ -32,7 +45,11 @@
 ;;    (PK_AncientHodler / PK_Florex).
 ;;Signing only one gives a bare `Keyset failure (keys-any)` whose key list is the only clue which
 ;;of the two was wanted.
+;;==== CAD-00 — deploy the CADUCEUS citizen module · 01 · env-sigs (caps) ==== ====================
+(print "--- [CAD-00 — deploy the CADUCEUS citizen module · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": [] } ])
+;;==== CAD-00 — deploy the CADUCEUS citizen module · 02 · load module ==== ========================
+(print "--- [CAD-00 — deploy the CADUCEUS citizen module · 02 · load module] ---")
 (load "../../2_CITIZEN/6_OuronetBridge/03_CADUCEUS.pact")
 (commit-tx)
 
@@ -40,6 +57,8 @@
 ;;
 (begin-tx "CAD-G1 — the bridge refuses to operate before it is configured")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== CAD-G1 — the bridge refuses to operate before it is configured · 01 · namespace ==== =======
+(print "--- [CAD-G1 — the bridge refuses to operate before it is configured · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [CAD-G1 · 01 · UEV_Ready on a fresh, unconfigured module] ---")
 ;;P3.3. This is the ONE window in which UEV_Ready can speak: the config row is written by
@@ -73,6 +92,8 @@
 ;;
 ;;Both gates are driven in sequence here, which is the point: UEV_Ready now PASSES while
 ;;UEV_Active fails, so the two are shown to be independent rather than two names for one check.
+;;==== CAD-G2 — configured but paused: the second gate, and the first one satisfied · 01 · env-sigs (caps) ==== 
+(print "--- [CAD-G2 — configured but paused: the second gate, and the first one satisfied · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
 (CADUCEUS.A_SetBridgeConfig
     "Σ.CADUCEUS-BRIDGE-TEST"          ;;bridge-account (not deployed — these gates never read it)
@@ -106,6 +127,8 @@
 (print "--- [CAD-G3 · 01 · A_SetBridgeActive true] ---")
 ;;The positive half. Without it, CAD-G2's rejection would be satisfied equally well by a
 ;;UEV_Active that refuses every state.
+;;==== CAD-G3 — unpausing satisfies the second gate too · 01 · env-sigs (caps) ==== ===============
+(print "--- [CAD-G3 — unpausing satisfies the second gate too · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
 (CADUCEUS.A_SetBridgeActive true)
 (map print
@@ -148,6 +171,8 @@
 ;;     smart contract — hence the mock-tf fixture above.
 ;;  4] the bridge account's mint/burn/transfer ROLES on that DPTF.
 (env-data { "KEY_BRIDGE" : { "keys": ["PK_AncientHodler"] } })
+;;==== CAD-04 — full bridge bring-up: keyset, config, smart account, DPTF roles · 01 · env-sigs (caps) ==== 
+(print "--- [CAD-04 — full bridge bring-up: keyset, config, smart account, DPTF roles · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
 (define-keyset "ouronet-ns.dh_bridge_caduceus-keyset" (read-keyset "KEY_BRIDGE"))
 (let*
@@ -197,7 +222,11 @@
 ;;
 ;;Each direction is shown working FIRST with a fresh id, because a replay rejection proves nothing
 ;;if the flow rejects every signal.
+;;==== CAD-G4 — the replay guard, on both bridge directions · 01 · env-sigs (caps) ==== ===========
+(print "--- [CAD-G4 — the replay guard, on both bridge directions · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+;;==== CAD-G4 — the replay guard, on both bridge directions · 02 · let / invocation ==== ==========
+(print "--- [CAD-G4 — the replay guard, on both bridge directions · 02 · let / invocation] ---")
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -242,7 +271,11 @@
 ;;why CAD-G4 left the bridge at zero and my first attempt at this block failed with
 ;;"Cannot Debit DPTF ... into the negatives". The bridge is funded directly instead, by the DPTF
 ;;owner, which is what a real outbound transfer would do.
+;;==== CAD-G5 — the outbound direction, and its own replay refusal · 01 · env-sigs (caps) ==== ====
+(print "--- [CAD-G5 — the outbound direction, and its own replay refusal · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+;;==== CAD-G5 — the outbound direction, and its own replay refusal · 02 · let / invocation ==== ===
+(print "--- [CAD-G5 — the outbound direction, and its own replay refusal · 02 · let / invocation] ---")
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -278,6 +311,8 @@
 ;;
 (begin-tx "CAD-G6 — two Stage-1 guards the bridge fixture happens to unlock")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== CAD-G6 — two Stage-1 guards the bridge fixture happens to unlock · 01 · namespace ==== =====
+(print "--- [CAD-G6 — two Stage-1 guards the bridge fixture happens to unlock · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [CAD-G6 · 01 · TFT transfer roles + IGNIS smart patron] ---")
 ;;P3.3, and these live here for a fixture reason rather than a thematic one.

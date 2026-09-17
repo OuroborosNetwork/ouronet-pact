@@ -83,7 +83,11 @@
 (begin-tx "TX-PG-00 A_Flush inserts N=20 open days")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-PG-00 A_Flush inserts N=20 open days · 01 · env-sigs (caps) ==== ========================
+(print "--- [TX-PG-00 A_Flush inserts N=20 open days · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-PG-00 A_Flush inserts N=20 open days · 02 · let / invocation ==== =======================
+(print "--- [TX-PG-00 A_Flush inserts N=20 open days · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -99,12 +103,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-PG-01
 (begin-tx "TX-PG-01 A_Flush inserts N=21 open days")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-PG-01 A_Flush inserts N=21 open days · 01 · env-sigs (caps) ==== ========================
+(print "--- [TX-PG-01 A_Flush inserts N=21 open days · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-PG-01 A_Flush inserts N=21 open days · 02 · let / invocation ==== =======================
+(print "--- [TX-PG-01 A_Flush inserts N=21 open days · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -120,12 +131,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-PG-02
 (begin-tx "TX-PG-02 A_Flush inserts N=22 open days")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-PG-02 A_Flush inserts N=22 open days · 01 · env-sigs (caps) ==== ========================
+(print "--- [TX-PG-02 A_Flush inserts N=22 open days · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-PG-02 A_Flush inserts N=22 open days · 02 · let / invocation ==== =======================
+(print "--- [TX-PG-02 A_Flush inserts N=22 open days · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -141,12 +159,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-PG-03
 (begin-tx "TX-PG-03 A_Flush inserts N=23 open days")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-PG-03 A_Flush inserts N=23 open days · 01 · env-sigs (caps) ==== ========================
+(print "--- [TX-PG-03 A_Flush inserts N=23 open days · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-PG-03 A_Flush inserts N=23 open days · 02 · let / invocation ==== =======================
+(print "--- [TX-PG-03 A_Flush inserts N=23 open days · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -162,12 +187,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-PG-04
 (begin-tx "TX-PG-04 A_Flush inserts N=24 open days")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-PG-04 A_Flush inserts N=24 open days · 01 · env-sigs (caps) ==== ========================
+(print "--- [TX-PG-04 A_Flush inserts N=24 open days · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-PG-04 A_Flush inserts N=24 open days · 02 · let / invocation ==== =======================
+(print "--- [TX-PG-04 A_Flush inserts N=24 open days · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -183,12 +215,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-PG-05
 (begin-tx "TX-PG-05 A_Flush inserts N=25 open days")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-PG-05 A_Flush inserts N=25 open days · 01 · env-sigs (caps) ==== ========================
+(print "--- [TX-PG-05 A_Flush inserts N=25 open days · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-PG-05 A_Flush inserts N=25 open days · 02 · let / invocation ==== =======================
+(print "--- [TX-PG-05 A_Flush inserts N=25 open days · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -204,12 +243,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-PG-06
 (begin-tx "TX-PG-06 A_Flush inserts N=26 open days")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-PG-06 A_Flush inserts N=26 open days · 01 · env-sigs (caps) ==== ========================
+(print "--- [TX-PG-06 A_Flush inserts N=26 open days · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-PG-06 A_Flush inserts N=26 open days · 02 · let / invocation ==== =======================
+(print "--- [TX-PG-06 A_Flush inserts N=26 open days · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -225,12 +271,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-PG-07
 (begin-tx "TX-PG-07 A_Flush inserts N=27 open days")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-PG-07 A_Flush inserts N=27 open days · 01 · env-sigs (caps) ==== ========================
+(print "--- [TX-PG-07 A_Flush inserts N=27 open days · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-PG-07 A_Flush inserts N=27 open days · 02 · let / invocation ==== =======================
+(print "--- [TX-PG-07 A_Flush inserts N=27 open days · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -246,12 +299,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-PG-08
 (begin-tx "TX-PG-08 A_Flush inserts N=28 open days")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-PG-08 A_Flush inserts N=28 open days · 01 · env-sigs (caps) ==== ========================
+(print "--- [TX-PG-08 A_Flush inserts N=28 open days · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-PG-08 A_Flush inserts N=28 open days · 02 · let / invocation ==== =======================
+(print "--- [TX-PG-08 A_Flush inserts N=28 open days · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -267,12 +327,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-PG-09
 (begin-tx "TX-PG-09 A_Flush inserts N=29 open days")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-PG-09 A_Flush inserts N=29 open days · 01 · env-sigs (caps) ==== ========================
+(print "--- [TX-PG-09 A_Flush inserts N=29 open days · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-PG-09 A_Flush inserts N=29 open days · 02 · let / invocation ==== =======================
+(print "--- [TX-PG-09 A_Flush inserts N=29 open days · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -288,12 +355,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-PG-10
 (begin-tx "TX-PG-10 A_Flush inserts N=30 open days")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-PG-10 A_Flush inserts N=30 open days · 01 · env-sigs (caps) ==== ========================
+(print "--- [TX-PG-10 A_Flush inserts N=30 open days · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-PG-10 A_Flush inserts N=30 open days · 02 · let / invocation ==== =======================
+(print "--- [TX-PG-10 A_Flush inserts N=30 open days · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -309,12 +383,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-PG-11
 (begin-tx "TX-PG-11 A_Flush inserts N=31 open days")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-PG-11 A_Flush inserts N=31 open days · 01 · env-sigs (caps) ==== ========================
+(print "--- [TX-PG-11 A_Flush inserts N=31 open days · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-PG-11 A_Flush inserts N=31 open days · 02 · let / invocation ==== =======================
+(print "--- [TX-PG-11 A_Flush inserts N=31 open days · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -330,12 +411,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-PG-12
 (begin-tx "TX-PG-12 A_Flush inserts N=32 open days")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-PG-12 A_Flush inserts N=32 open days · 01 · env-sigs (caps) ==== ========================
+(print "--- [TX-PG-12 A_Flush inserts N=32 open days · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-PG-12 A_Flush inserts N=32 open days · 02 · let / invocation ==== =======================
+(print "--- [TX-PG-12 A_Flush inserts N=32 open days · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -351,12 +439,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-PG-13
 (begin-tx "TX-PG-13 A_Flush inserts N=33 open days")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-PG-13 A_Flush inserts N=33 open days · 01 · env-sigs (caps) ==== ========================
+(print "--- [TX-PG-13 A_Flush inserts N=33 open days · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-PG-13 A_Flush inserts N=33 open days · 02 · let / invocation ==== =======================
+(print "--- [TX-PG-13 A_Flush inserts N=33 open days · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -372,12 +467,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-PG-14
 (begin-tx "TX-PG-14 A_Flush inserts N=34 open days")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-PG-14 A_Flush inserts N=34 open days · 01 · env-sigs (caps) ==== ========================
+(print "--- [TX-PG-14 A_Flush inserts N=34 open days · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-PG-14 A_Flush inserts N=34 open days · 02 · let / invocation ==== =======================
+(print "--- [TX-PG-14 A_Flush inserts N=34 open days · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -393,12 +495,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-PG-15
 (begin-tx "TX-PG-15 A_Flush inserts N=35 open days")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-PG-15 A_Flush inserts N=35 open days · 01 · env-sigs (caps) ==== ========================
+(print "--- [TX-PG-15 A_Flush inserts N=35 open days · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-PG-15 A_Flush inserts N=35 open days · 02 · let / invocation ==== =======================
+(print "--- [TX-PG-15 A_Flush inserts N=35 open days · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -414,12 +523,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-PG-16
 (begin-tx "TX-PG-16 A_Flush inserts N=36 open days")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-PG-16 A_Flush inserts N=36 open days · 01 · env-sigs (caps) ==== ========================
+(print "--- [TX-PG-16 A_Flush inserts N=36 open days · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-PG-16 A_Flush inserts N=36 open days · 02 · let / invocation ==== =======================
+(print "--- [TX-PG-16 A_Flush inserts N=36 open days · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -435,12 +551,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-PG-17
 (begin-tx "TX-PG-17 A_Flush inserts N=38 open days")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-PG-17 A_Flush inserts N=38 open days · 01 · env-sigs (caps) ==== ========================
+(print "--- [TX-PG-17 A_Flush inserts N=38 open days · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-PG-17 A_Flush inserts N=38 open days · 02 · let / invocation ==== =======================
+(print "--- [TX-PG-17 A_Flush inserts N=38 open days · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -456,12 +579,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-PG-18
 (begin-tx "TX-PG-18 A_Flush inserts N=40 open days")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-PG-18 A_Flush inserts N=40 open days · 01 · env-sigs (caps) ==== ========================
+(print "--- [TX-PG-18 A_Flush inserts N=40 open days · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-PG-18 A_Flush inserts N=40 open days · 02 · let / invocation ==== =======================
+(print "--- [TX-PG-18 A_Flush inserts N=40 open days · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -477,12 +607,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-PG-19
 (begin-tx "TX-PG-19 A_Flush inserts N=42 open days")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-PG-19 A_Flush inserts N=42 open days · 01 · env-sigs (caps) ==== ========================
+(print "--- [TX-PG-19 A_Flush inserts N=42 open days · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-PG-19 A_Flush inserts N=42 open days · 02 · let / invocation ==== =======================
+(print "--- [TX-PG-19 A_Flush inserts N=42 open days · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -498,12 +635,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-PG-20
 (begin-tx "TX-PG-20 A_Flush inserts N=44 open days")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-PG-20 A_Flush inserts N=44 open days · 01 · env-sigs (caps) ==== ========================
+(print "--- [TX-PG-20 A_Flush inserts N=44 open days · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-PG-20 A_Flush inserts N=44 open days · 02 · let / invocation ==== =======================
+(print "--- [TX-PG-20 A_Flush inserts N=44 open days · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -519,12 +663,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-PG-21
 (begin-tx "TX-PG-21 A_Flush inserts N=46 open days")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-PG-21 A_Flush inserts N=46 open days · 01 · env-sigs (caps) ==== ========================
+(print "--- [TX-PG-21 A_Flush inserts N=46 open days · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-PG-21 A_Flush inserts N=46 open days · 02 · let / invocation ==== =======================
+(print "--- [TX-PG-21 A_Flush inserts N=46 open days · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -540,12 +691,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-PG-22
 (begin-tx "TX-PG-22 A_Flush inserts N=48 open days")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-PG-22 A_Flush inserts N=48 open days · 01 · env-sigs (caps) ==== ========================
+(print "--- [TX-PG-22 A_Flush inserts N=48 open days · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-PG-22 A_Flush inserts N=48 open days · 02 · let / invocation ==== =======================
+(print "--- [TX-PG-22 A_Flush inserts N=48 open days · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -561,12 +719,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-PG-23
 (begin-tx "TX-PG-23 A_Flush inserts N=50 open days")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-PG-23 A_Flush inserts N=50 open days · 01 · env-sigs (caps) ==== ========================
+(print "--- [TX-PG-23 A_Flush inserts N=50 open days · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-PG-23 A_Flush inserts N=50 open days · 02 · let / invocation ==== =======================
+(print "--- [TX-PG-23 A_Flush inserts N=50 open days · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -582,12 +747,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-PG-24
 (begin-tx "TX-PG-24 A_Flush inserts N=52 open days")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-PG-24 A_Flush inserts N=52 open days · 01 · env-sigs (caps) ==== ========================
+(print "--- [TX-PG-24 A_Flush inserts N=52 open days · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-PG-24 A_Flush inserts N=52 open days · 02 · let / invocation ==== =======================
+(print "--- [TX-PG-24 A_Flush inserts N=52 open days · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -603,12 +775,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-PG-25
 (begin-tx "TX-PG-25 A_Flush inserts N=54 open days")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-PG-25 A_Flush inserts N=54 open days · 01 · env-sigs (caps) ==== ========================
+(print "--- [TX-PG-25 A_Flush inserts N=54 open days · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-PG-25 A_Flush inserts N=54 open days · 02 · let / invocation ==== =======================
+(print "--- [TX-PG-25 A_Flush inserts N=54 open days · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -624,12 +803,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-PG-26
 (begin-tx "TX-PG-26 A_Flush inserts N=56 open days")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-PG-26 A_Flush inserts N=56 open days · 01 · env-sigs (caps) ==== ========================
+(print "--- [TX-PG-26 A_Flush inserts N=56 open days · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-PG-26 A_Flush inserts N=56 open days · 02 · let / invocation ==== =======================
+(print "--- [TX-PG-26 A_Flush inserts N=56 open days · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -645,12 +831,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-PG-27
 (begin-tx "TX-PG-27 A_Flush inserts N=58 open days")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-PG-27 A_Flush inserts N=58 open days · 01 · env-sigs (caps) ==== ========================
+(print "--- [TX-PG-27 A_Flush inserts N=58 open days · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-PG-27 A_Flush inserts N=58 open days · 02 · let / invocation ==== =======================
+(print "--- [TX-PG-27 A_Flush inserts N=58 open days · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -666,12 +859,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-PG-28
 (begin-tx "TX-PG-28 A_Flush inserts N=60 open days")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-PG-28 A_Flush inserts N=60 open days · 01 · env-sigs (caps) ==== ========================
+(print "--- [TX-PG-28 A_Flush inserts N=60 open days · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-PG-28 A_Flush inserts N=60 open days · 02 · let / invocation ==== =======================
+(print "--- [TX-PG-28 A_Flush inserts N=60 open days · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -687,12 +887,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-PG-29
 (begin-tx "TX-PG-29 A_Flush inserts N=1000 open days")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-PG-29 A_Flush inserts N=1000 open days · 01 · env-sigs (caps) ==== ======================
+(print "--- [TX-PG-29 A_Flush inserts N=1000 open days · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-PG-29 A_Flush inserts N=1000 open days · 02 · let / invocation ==== =====================
+(print "--- [TX-PG-29 A_Flush inserts N=1000 open days · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -708,12 +915,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-PG-30
 (begin-tx "TX-PG-30 A_Flush inserts N=5000 open days")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-PG-30 A_Flush inserts N=5000 open days · 01 · env-sigs (caps) ==== ======================
+(print "--- [TX-PG-30 A_Flush inserts N=5000 open days · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-PG-30 A_Flush inserts N=5000 open days · 02 · let / invocation ==== =====================
+(print "--- [TX-PG-30 A_Flush inserts N=5000 open days · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -729,12 +943,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-PG-31
 (begin-tx "TX-PG-31 A_Flush inserts N=10000 open days")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-PG-31 A_Flush inserts N=10000 open days · 01 · env-sigs (caps) ==== =====================
+(print "--- [TX-PG-31 A_Flush inserts N=10000 open days · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-PG-31 A_Flush inserts N=10000 open days · 02 · let / invocation ==== ====================
+(print "--- [TX-PG-31 A_Flush inserts N=10000 open days · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -750,12 +971,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-PG-32
 (begin-tx "TX-PG-32 A_Flush inserts N=15000 open days")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-PG-32 A_Flush inserts N=15000 open days · 01 · env-sigs (caps) ==== =====================
+(print "--- [TX-PG-32 A_Flush inserts N=15000 open days · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-PG-32 A_Flush inserts N=15000 open days · 02 · let / invocation ==== ====================
+(print "--- [TX-PG-32 A_Flush inserts N=15000 open days · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -771,12 +999,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-PG-33
 (begin-tx "TX-PG-33 A_Flush inserts N=17000 open days")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-PG-33 A_Flush inserts N=17000 open days · 01 · env-sigs (caps) ==== =====================
+(print "--- [TX-PG-33 A_Flush inserts N=17000 open days · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-PG-33 A_Flush inserts N=17000 open days · 02 · let / invocation ==== ====================
+(print "--- [TX-PG-33 A_Flush inserts N=17000 open days · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -792,12 +1027,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-PG-34
 (begin-tx "TX-PG-34 A_Flush inserts N=18000 open days")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-PG-34 A_Flush inserts N=18000 open days · 01 · env-sigs (caps) ==== =====================
+(print "--- [TX-PG-34 A_Flush inserts N=18000 open days · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-PG-34 A_Flush inserts N=18000 open days · 02 · let / invocation ==== ====================
+(print "--- [TX-PG-34 A_Flush inserts N=18000 open days · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -813,12 +1055,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-PG-35
 (begin-tx "TX-PG-35 A_Flush inserts N=19000 open days")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-PG-35 A_Flush inserts N=19000 open days · 01 · env-sigs (caps) ==== =====================
+(print "--- [TX-PG-35 A_Flush inserts N=19000 open days · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-PG-35 A_Flush inserts N=19000 open days · 02 · let / invocation ==== ====================
+(print "--- [TX-PG-35 A_Flush inserts N=19000 open days · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -834,12 +1083,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-PG-36
 (begin-tx "TX-PG-36 A_Flush inserts N=20000 open days")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-PG-36 A_Flush inserts N=20000 open days · 01 · env-sigs (caps) ==== =====================
+(print "--- [TX-PG-36 A_Flush inserts N=20000 open days · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-PG-36 A_Flush inserts N=20000 open days · 02 · let / invocation ==== ====================
+(print "--- [TX-PG-36 A_Flush inserts N=20000 open days · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -855,12 +1111,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-PG-37
 (begin-tx "TX-PG-37 A_Flush inserts N=19400 open days")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-PG-37 A_Flush inserts N=19400 open days · 01 · env-sigs (caps) ==== =====================
+(print "--- [TX-PG-37 A_Flush inserts N=19400 open days · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-PG-37 A_Flush inserts N=19400 open days · 02 · let / invocation ==== ====================
+(print "--- [TX-PG-37 A_Flush inserts N=19400 open days · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -876,12 +1139,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-PG-38
 (begin-tx "TX-PG-38 A_Flush inserts N=19441 open days")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-PG-38 A_Flush inserts N=19441 open days · 01 · env-sigs (caps) ==== =====================
+(print "--- [TX-PG-38 A_Flush inserts N=19441 open days · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-PG-38 A_Flush inserts N=19441 open days · 02 · let / invocation ==== ====================
+(print "--- [TX-PG-38 A_Flush inserts N=19441 open days · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -897,12 +1167,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-PG-39
 (begin-tx "TX-PG-39 A_Flush inserts N=19450 open days")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-PG-39 A_Flush inserts N=19450 open days · 01 · env-sigs (caps) ==== =====================
+(print "--- [TX-PG-39 A_Flush inserts N=19450 open days · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-PG-39 A_Flush inserts N=19450 open days · 02 · let / invocation ==== ====================
+(print "--- [TX-PG-39 A_Flush inserts N=19450 open days · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -918,12 +1195,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-PG-40
 (begin-tx "TX-PG-40 A_Flush inserts N=19500 open days")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-PG-40 A_Flush inserts N=19500 open days · 01 · env-sigs (caps) ==== =====================
+(print "--- [TX-PG-40 A_Flush inserts N=19500 open days · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-PG-40 A_Flush inserts N=19500 open days · 02 · let / invocation ==== ====================
+(print "--- [TX-PG-40 A_Flush inserts N=19500 open days · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -939,12 +1223,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-PG-41
 (begin-tx "TX-PG-41 A_Flush inserts N=19442 open days")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-PG-41 A_Flush inserts N=19442 open days · 01 · env-sigs (caps) ==== =====================
+(print "--- [TX-PG-41 A_Flush inserts N=19442 open days · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-PG-41 A_Flush inserts N=19442 open days · 02 · let / invocation ==== ====================
+(print "--- [TX-PG-41 A_Flush inserts N=19442 open days · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -960,12 +1251,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-UPD-01 update existing open days (N=10000)
 (begin-tx "TX-UPD-01 A_Flush update N=10000 open days (existing)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-UPD-01 A_Flush update N=10000 open days (existing) · 01 · env-sigs (caps) ==== ==========
+(print "--- [TX-UPD-01 A_Flush update N=10000 open days (existing) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-UPD-01 A_Flush update N=10000 open days (existing) · 02 · let / invocation ==== =========
+(print "--- [TX-UPD-01 A_Flush update N=10000 open days (existing) · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -981,12 +1279,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-UPD-02 update existing open days (N=15000)
 (begin-tx "TX-UPD-02 A_Flush update N=15000 open days (existing)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-UPD-02 A_Flush update N=15000 open days (existing) · 01 · env-sigs (caps) ==== ==========
+(print "--- [TX-UPD-02 A_Flush update N=15000 open days (existing) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-UPD-02 A_Flush update N=15000 open days (existing) · 02 · let / invocation ==== =========
+(print "--- [TX-UPD-02 A_Flush update N=15000 open days (existing) · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -1002,12 +1307,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-UPD-04 update existing open days (N=10834)
 (begin-tx "TX-UPD-04 A_Flush update N=10834 open days (existing)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-UPD-04 A_Flush update N=10834 open days (existing) · 01 · env-sigs (caps) ==== ==========
+(print "--- [TX-UPD-04 A_Flush update N=10834 open days (existing) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-UPD-04 A_Flush update N=10834 open days (existing) · 02 · let / invocation ==== =========
+(print "--- [TX-UPD-04 A_Flush update N=10834 open days (existing) · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -1023,12 +1335,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-UPD-05 update existing open days (N=10835)
 (begin-tx "TX-UPD-05 A_Flush update N=10835 open days (existing)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-UPD-05 A_Flush update N=10835 open days (existing) · 01 · env-sigs (caps) ==== ==========
+(print "--- [TX-UPD-05 A_Flush update N=10835 open days (existing) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-UPD-05 A_Flush update N=10835 open days (existing) · 02 · let / invocation ==== =========
+(print "--- [TX-UPD-05 A_Flush update N=10835 open days (existing) · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -1044,12 +1363,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-UPD-03 update existing open days (N=19441)
 (begin-tx "TX-UPD-03 A_Flush update N=19441 open days (existing)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-UPD-03 A_Flush update N=19441 open days (existing) · 01 · env-sigs (caps) ==== ==========
+(print "--- [TX-UPD-03 A_Flush update N=19441 open days (existing) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-UPD-03 A_Flush update N=19441 open days (existing) · 02 · let / invocation ==== =========
+(print "--- [TX-UPD-03 A_Flush update N=19441 open days (existing) · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -1065,12 +1391,19 @@
         [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
 )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX-UPD-SEAL-01 seal existing open days (N=9234, iz-complete=true)
 (begin-tx "TX-UPD-SEAL-01 A_Flush seal N=9234 existing open days")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-UPD-SEAL-01 A_Flush seal N=9234 existing open days · 01 · env-sigs (caps) ==== ==========
+(print "--- [TX-UPD-SEAL-01 A_Flush seal N=9234 existing open days · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-UPD-SEAL-01 A_Flush seal N=9234 existing open days · 02 · let / invocation ==== =========
+(print "--- [TX-UPD-SEAL-01 A_Flush seal N=9234 existing open days · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)

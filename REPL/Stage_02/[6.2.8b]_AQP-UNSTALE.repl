@@ -1,3 +1,16 @@
+;;
+;; REPL/Stage_02/[6.2.8b]_AQP-UNSTALE.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_02/[6.2.8b]_AQP-UNSTALE.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 ;; ============================================================================
 ;; REPL/Stage_02/[6.2.8b]_AQP-UNSTALE.repl — user self-service deb-unstale (#FP4.2).
 ;;
@@ -18,8 +31,12 @@
 (begin-tx "TX-UNSTALE01 - move ANHD Elite-DEB DOWN (transfer EliteAuryn away) => staleness")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-UNSTALE01 - move ANHD Elite-DEB DOWN (transfer EliteAuryn away) => staleness · 01 · env-sigs (caps) ==== 
+(print "--- [TX-UNSTALE01 - move ANHD Elite-DEB DOWN (transfer EliteAuryn away) => staleness · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [TX-UNSTALE01 · 01 · create fresh staleness on ANHD's treasury score] ---")
+;;==== TX-UNSTALE01 - move ANHD Elite-DEB DOWN (transfer EliteAuryn away) => staleness · 02 · let / invocation ==== 
+(print "--- [TX-UNSTALE01 - move ANHD Elite-DEB DOWN (transfer EliteAuryn away) => staleness · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD)
@@ -74,8 +91,12 @@
 (begin-tx "TX-UNSTALE02 - ANHD self-unstales via CC_UnstaleMyScores (non-penalized)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-UNSTALE02 - ANHD self-unstales via CC_UnstaleMyScores (non-penalized) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-UNSTALE02 - ANHD self-unstales via CC_UnstaleMyScores (non-penalized) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [TX-UNSTALE02 · 01 · CC_UnstaleMyScores refreshes ANHD's own stale scores] ---")
+;;==== TX-UNSTALE02 - ANHD self-unstales via CC_UnstaleMyScores (non-penalized) · 02 · let / invocation ==== 
+(print "--- [TX-UNSTALE02 - ANHD self-unstales via CC_UnstaleMyScores (non-penalized) · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD)

@@ -1,3 +1,16 @@
+;;
+;; REPL/modules/OUROBOROS.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/modules/OUROBOROS.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 ;; REPL/modules/OUROBOROS.repl — STANDALONE OUROBOROS (gas compression / sublimation) tester.
 ;;
 ;; P3.3. OUROBOROS had NO module tester at all: it is exercised incidentally by the Stage-01
@@ -21,6 +34,8 @@
 ;;
 (begin-tx "ORBR-G1 — the conversion domain: gas is INTEGRAL, and neither direction runs on dust")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== ORBR-G1 — the conversion domain: gas is INTEGRAL, and neither direction runs on dust · 01 · namespace ==== 
+(print "--- [ORBR-G1 — the conversion domain: gas is INTEGRAL, and neither direction runs on dust · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [ORBR-G1 · 01 · compress and sublimate input domains] ---")
 ;;Compress carries two guards IN SEQUENCE, and the order matters for how they must be tested:
@@ -37,6 +52,8 @@
 ;;Why gas must be integral is worth stating: IGNIS is priced and metered in whole units, so a
 ;;fractional compress would have to round somewhere, and rounding a value that is about to be
 ;;burned means either minting or destroying gas that nobody paid for.
+;;==== ORBR-G1 — the conversion domain: gas is INTEGRAL, and neither direction runs on dust · 02 · let / invocation ==== 
+(print "--- [ORBR-G1 — the conversion domain: gas is INTEGRAL, and neither direction runs on dust · 02 · let / invocation] ---")
 (let
     (
         (ref-ORBR:module{OuroborosV2} OUROBOROS)
@@ -102,6 +119,8 @@
 (begin-tx "ORBR-G2 -- drive an account's OURO negative by sublimating against a zero balance")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== ORBR-G2 -- drive an account's OURO negative by sublimating against a zero balance · 01 · env-sigs (caps) ==== 
+(print "--- [ORBR-G2 -- drive an account's OURO negative by sublimating against a zero balance · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [ORBR-G2 . 01 . set up the dispo] ---")
 ;;TFT::UEV_DispoLocker -- "When Account has negative OURO, Elite-Auryn is dispo-locked and cannot be
@@ -121,6 +140,8 @@
 (begin-tx "ORBR-G2b -- sublimate against nothing, and confirm the balance really went negative")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== ORBR-G2b -- sublimate against nothing, and confirm the balance really went negative · 01 · env-sigs (caps) ==== 
+(print "--- [ORBR-G2b -- sublimate against nothing, and confirm the balance really went negative · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (print "--- [ORBR-G2b . 01 . the overdraft] ---")
 (TS01-C2.ORBR|C_Sublimate KST.EMMA KST.EMMA 10.0)
@@ -139,6 +160,8 @@
 (begin-tx "ORBR-G2c -- Elite-Auryn is dispo-locked while the OURO balance is negative")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== ORBR-G2c -- Elite-Auryn is dispo-locked while the OURO balance is negative · 01 · env-sigs (caps) ==== 
+(print "--- [ORBR-G2c -- Elite-Auryn is dispo-locked while the OURO balance is negative · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (print "--- [ORBR-G2c . 01 . the lock, and that it is targeted] ---")
 ;;Elite-Auryn is what BACKS the overdraft, so moving it out while the account is negative would
@@ -158,10 +181,14 @@
 (begin-tx "ORBR-G2d -- ...while a SOLVENT account moves the same token freely")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== ORBR-G2d -- ...while a SOLVENT account moves the same token freely · 01 · env-sigs (caps) ==== 
+(print "--- [ORBR-G2d -- ...while a SOLVENT account moves the same token freely · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [ORBR-G2d . 01 . the contrast] ---")
 ;;Without this, ORBR-G2c would pass equally against a token that simply cannot be transferred at
 ;;all. Same token, same operation, an account whose OURO is not negative: it goes through.
+;;==== ORBR-G2d -- ...while a SOLVENT account moves the same token freely · 02 · let / invocation ==== 
+(print "--- [ORBR-G2d -- ...while a SOLVENT account moves the same token freely · 02 · let / invocation] ---")
 (let ((before:decimal (DPTF.UR_AccountSupply "ELITEAURYN-98c486052a51" KST.LUMY)))
     (TS01-C1.DPTF|C_Transfer KST.ANHD "ELITEAURYN-98c486052a51" KST.ANHD KST.LUMY 10.0 false)
     (map print
@@ -188,6 +215,8 @@
 ;;
 (begin-tx "ORB-G1 - the autonomic-roles short-circuit, asserted so the annotation cannot rot")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== ORB-G1 - the autonomic-roles short-circuit, asserted so the annotation cannot rot · 01 · namespace ==== 
+(print "--- [ORB-G1 - the autonomic-roles short-circuit, asserted so the annotation cannot rot · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [ORB-G1 · 01 · why 'Permission invalid for Ignis Exchange' can never fire] ---")
 ;;`13_OUROBOROS.pact:612` is annotated `;;UNREACHABLE BY CONSTRUCTION`. This block is what stops that
@@ -210,6 +239,8 @@
 ;;Contrast with the two BAR guards in the same function (`:603`/`:606`): those WERE mute -- displaced
 ;;by an eager read -- and were repaired 2026-09-12 by splitting the binding group. This one is a
 ;;different thing entirely: it never receives a failing input at all.
+;;==== ORB-G1 - the autonomic-roles short-circuit, asserted so the annotation cannot rot · 02 · let / invocation ==== 
+(print "--- [ORB-G1 - the autonomic-roles short-circuit, asserted so the annotation cannot rot · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)

@@ -17,6 +17,8 @@
 (namespace "ouronet-ns")
 ;;==== INIT TX 000 - Chain Data Time SetUp Definition · 01 · env-chain-data ==== ==================
 (print "--- [INIT TX 000 - Chain Data Time SetUp Definition · 01 · env-chain-data] ---")
+;;==== INIT TX 000 - Chain Data Time SetUp Definition · 01 · env-chain-data ==== ==================
+(print "--- [INIT TX 000 - Chain Data Time SetUp Definition · 01 · env-chain-data] ---")
 (env-chain-data
     {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
      "block-time": TV.TIME00}
@@ -37,12 +39,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX000 - Set Intermodule Communication · 01 · env-sigs (caps) ==== ==========================
 (print "--- [TX000 - Set Intermodule Communication · 01 · env-sigs (caps)] ---")
+;;==== TX000 - Set Intermodule Communication · 01 · env-sigs (caps) ==== ==========================
+(print "--- [TX000 - Set Intermodule Communication · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== TX000 - Set Intermodule Communication · 02 · let / invocation ==== =========================
+(print "--- [TX000 - Set Intermodule Communication · 02 · let / invocation] ---")
 ;;==== TX000 - Set Intermodule Communication · 02 · let / invocation ==== =========================
 (print "--- [TX000 - Set Intermodule Communication · 02 · let / invocation] ---")
     (let
@@ -90,6 +96,8 @@
 (print "")
 ;;==== TX000 - Set Intermodule Communication · 03 · gas echo ==== =================================
 (print "--- [TX000 - Set Intermodule Communication · 03 · gas echo] ---")
+;;==== TX000 - Set Intermodule Communication · 03 · gas echo ==== =================================
+(print "--- [TX000 - Set Intermodule Communication · 03 · gas echo] ---")
 (format "<<<<<<<TX000 - STOAICO intermodule Communictaion Setup costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -100,21 +108,31 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
 (begin-tx "TX-00c - STOAICO baseline capture (delta conservation, boot-position-independent)")
+;;==== TX-00c - STOAICO baseline capture (delta conservation, boot-position-independent) · 01 · namespace ==== 
+(print "--- [TX-00c - STOAICO baseline capture (delta conservation, boot-position-independent) · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;; Capture emma+lumy pre-existing wSTOA so the final CONSERVATION assert measures the DELTA the ICO
 ;; distributed (==10M), not an absolute — otherwise a full-boot residue on the shared KST.EMMA/KST.LUMY
 ;; accounts (e.g. ~0.012 wSTOA left by earlier suites) breaks it. (try 0.0 …): no wSTOA row yet -> 0.
+;;==== TX-00c - STOAICO baseline capture (delta conservation, boot-position-independent) · 02 · let / invocation ==== 
+(print "--- [TX-00c - STOAICO baseline capture (delta conservation, boot-position-independent) · 02 · let / invocation] ---")
 (let ((wstoa:string (DALOS.UR_WrappedStoaID)))
     (env-data
         { "stoaico-wstoa-base":
             (+ (try 0.0 (DPTF.UR_AccountSupply wstoa KST.EMMA))
                (try 0.0 (DPTF.UR_AccountSupply wstoa KST.LUMY))) }))
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 (begin-tx "TX-01 - Initialise STOA ICO")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-01 - Initialise STOA ICO · 01 · env-sigs (caps) ==== ====================================
+(print "--- [TX-01 - Initialise STOA ICO · 01 · env-sigs (caps)] ---")
 ;;==== TX-01 - Initialise STOA ICO · 01 · env-sigs (caps) ==== ====================================
 (print "--- [TX-01 - Initialise STOA ICO · 01 · env-sigs (caps)] ---")
 (env-sigs
@@ -123,6 +141,8 @@
         { "key": "PK_LPAD", "caps": [] }
     ]
 )
+;;==== TX-01 - Initialise STOA ICO · 02 · let / invocation ==== ===================================
+(print "--- [TX-01 - Initialise STOA ICO · 02 · let / invocation] ---")
 ;;==== TX-01 - Initialise STOA ICO · 02 · let / invocation ==== ===================================
 (print "--- [TX-01 - Initialise STOA ICO · 02 · let / invocation] ---")
 (let
@@ -189,6 +209,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "=== TX-01b — #5M: A_Inject into a vault WITH NO STAKERS escrows (no div-by-zero) ===")
+;;==== TX-01b - #5M escrow-on-empty: inject into the empty vault parks it as zombie · 01 · env-sigs (caps) ==== 
+(print "--- [TX-01b - #5M escrow-on-empty: inject into the empty vault parks it as zombie · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 ;; Fresh vault, no contributions yet → vault-score == 0. Injecting 3M must NOT divide by zero — it
 ;; parks the amount as zombie-rewards, to be distributed by the next non-zero-score inject.
@@ -215,6 +237,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-02 - STOAICO Stake Tests · 01 · env-sigs (caps) ==== ====================================
 (print "--- [TX-02 - STOAICO Stake Tests · 01 · env-sigs (caps)] ---")
+;;==== TX-02 - STOAICO Stake Tests · 01 · env-sigs (caps) ==== ====================================
+(print "--- [TX-02 - STOAICO Stake Tests · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -224,6 +248,8 @@
     ]
 )
 
+;;==== TX-02 - STOAICO Stake Tests · 02 · let / invocation ==== ===================================
+(print "--- [TX-02 - STOAICO Stake Tests · 02 · let / invocation] ---")
 ;;==== TX-02 - STOAICO Stake Tests · 02 · let / invocation ==== ===================================
 (print "--- [TX-02 - STOAICO Stake Tests · 02 · let / invocation] ---")
     (let
@@ -278,6 +304,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "=== TX-03 — #1C: double-collect rejected + inject barrier while a straggler is outstanding ===")
+;;==== TX-03 - #1C idempotency + inject barrier · 01 · env-sigs (caps) ==== =======================
+(print "--- [TX-03 - #1C idempotency + inject barrier · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -286,6 +314,8 @@
         { "key": "PK_Lumy", "caps": [] }
     ]
 )
+;;==== TX-03 - #1C idempotency + inject barrier · 02 · let / invocation ==== ======================
+(print "--- [TX-03 - #1C idempotency + inject barrier · 02 · let / invocation] ---")
 (let ((emma:string KST.EMMA))
     (map print
         [
@@ -312,6 +342,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "=== TX-04 — #1C: admin flush push-collects lumy (delivered to lumy), conserves, clears barrier ===")
+;;==== TX-04 - #1C admin flush: push-collect straggler, conserve, unblock · 01 · env-sigs (caps) ==== 
+(print "--- [TX-04 - #1C admin flush: push-collect straggler, conserve, unblock · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -320,6 +352,8 @@
         { "key": "PK_Lumy", "caps": [] }
     ]
 )
+;;==== TX-04 - #1C admin flush: push-collect straggler, conserve, unblock · 02 · let / invocation ==== 
+(print "--- [TX-04 - #1C admin flush: push-collect straggler, conserve, unblock · 02 · let / invocation] ---")
 (let
     (
         (emma:string KST.EMMA)
@@ -365,10 +399,14 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "=== TX-06M — #6M: after the ICO concludes (distribution-round >= 1) contributions earn no urSTOA ===")
+;;==== TX-06M - #6M post-ICO stake earns NO urSTOA (ICO-phase-only) · 01 · env-sigs (caps) ==== ===
+(print "--- [TX-06M - #6M post-ICO stake earns NO urSTOA (ICO-phase-only) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 ;; The ICO concluded at the first inject (round is now 1). A further admin stake must NOT earn urSTOA:
 ;; the global urstoa-left is untouched and the contributor's urstoa-earned is not re-credited — so a
 ;; later collect can never double-mint (pre-fix, this stake re-earned floor(new-score/5) urSTOA).
+;;==== TX-06M - #6M post-ICO stake earns NO urSTOA (ICO-phase-only) · 02 · let / invocation ==== ==
+(print "--- [TX-06M - #6M post-ICO stake earns NO urSTOA (ICO-phase-only) · 02 · let / invocation] ---")
 (let
     (
         (emma:string KST.EMMA)
@@ -438,6 +476,8 @@
 ;;     marked collected, and <unclaimed-count> falls -- that last one is the difference between
 ;;     "the abort is gone" and "the DEADLOCK is gone", because it is the barrier that had frozen
 ;;     A_Inject. She is paid with no urSTOA leg at all, which is the exact shape that used to abort.
+;;==== TX-TAL - STOAICO|C_Collect over the TALOS path, and a round-2 DEADLOCK · 01 · env-sigs (caps) ==== 
+(print "--- [TX-TAL - STOAICO|C_Collect over the TALOS path, and a round-2 DEADLOCK · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -448,6 +488,8 @@
 )
 ;; A fresh inject opens the next distribution-round and re-arms both stakers.
 (STOAICO.A_Inject KST.ANHD KST.ANHD 1000.0)
+;;==== TX-TAL - STOAICO|C_Collect over the TALOS path, and a round-2 DEADLOCK · 02 · let / invocation ==== 
+(print "--- [TX-TAL - STOAICO|C_Collect over the TALOS path, and a round-2 DEADLOCK · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)

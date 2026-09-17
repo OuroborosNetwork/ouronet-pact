@@ -1,3 +1,16 @@
+;;
+;; REPL/Stage_02/[6.2.8c]_AQP-INJECT-CC.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_02/[6.2.8c]_AQP-INJECT-CC.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 ;; ============================================================================
 ;; REPL/Stage_02/[6.2.8c]_AQP-INJECT-CC.repl — enforced-fresh inject CC-batch (#FP4.3).
 ;;
@@ -23,8 +36,12 @@
 (begin-tx "TX-INJECT-CC01 - move ANHD Elite-DEB DOWN => stale stakers in SubsidiaryTreasury")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-INJECT-CC01 - move ANHD Elite-DEB DOWN => stale stakers in SubsidiaryTreasury · 01 · env-sigs (caps) ==== 
+(print "--- [TX-INJECT-CC01 - move ANHD Elite-DEB DOWN => stale stakers in SubsidiaryTreasury · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [TX-INJECT-CC01 · 01 · create staleness for the enforced-fresh inject] ---")
+;;==== TX-INJECT-CC01 - move ANHD Elite-DEB DOWN => stale stakers in SubsidiaryTreasury · 02 · let / invocation ==== 
+(print "--- [TX-INJECT-CC01 - move ANHD Elite-DEB DOWN => stale stakers in SubsidiaryTreasury · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD)
@@ -73,8 +90,12 @@
 (begin-tx "TX-INJECT-CC02 - the enforced-fresh GATE: CC_InjectFinalize refuses while stale stakers remain")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-INJECT-CC02 - the enforced-fresh GATE: CC_InjectFinalize refuses while stale stakers remain · 01 · env-sigs (caps) ==== 
+(print "--- [TX-INJECT-CC02 - the enforced-fresh GATE: CC_InjectFinalize refuses while stale stakers remain · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [TX-INJECT-CC02 · 01 · finalize gate refuses while stale] ---")
+;;==== TX-INJECT-CC02 - the enforced-fresh GATE: CC_InjectFinalize refuses while stale stakers remain · 02 · let / invocation ==== 
+(print "--- [TX-INJECT-CC02 - the enforced-fresh GATE: CC_InjectFinalize refuses while stale stakers remain · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD)
@@ -107,8 +128,12 @@
 (begin-tx "TX-INJECT-CC03 - CCp_InjectFixChunk pages the stale set to empty")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-INJECT-CC03 - CCp_InjectFixChunk pages the stale set to empty · 01 · env-sigs (caps) ==== 
+(print "--- [TX-INJECT-CC03 - CCp_InjectFixChunk pages the stale set to empty · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [TX-INJECT-CC03 · 01 · paginated fix] ---")
+;;==== TX-INJECT-CC03 - CCp_InjectFixChunk pages the stale set to empty · 02 · let / invocation ==== 
+(print "--- [TX-INJECT-CC03 - CCp_InjectFixChunk pages the stale set to empty · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD)
@@ -172,8 +197,12 @@
 (begin-tx "TX-INJECT-CC04 - CC_InjectFinalize injects on the fresh divisor (== single-tx CC_Inject)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-INJECT-CC04 - CC_InjectFinalize injects on the fresh divisor (== single-tx CC_Inject) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-INJECT-CC04 - CC_InjectFinalize injects on the fresh divisor (== single-tx CC_Inject) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [TX-INJECT-CC04 · 01 · finalize inject] ---")
+;;==== TX-INJECT-CC04 - CC_InjectFinalize injects on the fresh divisor (== single-tx CC_Inject) · 02 · let / invocation ==== 
+(print "--- [TX-INJECT-CC04 - CC_InjectFinalize injects on the fresh divisor (== single-tx CC_Inject) · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD)

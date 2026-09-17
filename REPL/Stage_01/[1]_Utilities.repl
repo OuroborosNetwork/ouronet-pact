@@ -40,8 +40,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-01 [1.01] - Deploy U|CT · 01 · env-sigs (caps) ==== =====================================
 (print "--- [TX-01 [1.01] - Deploy U|CT · 01 · env-sigs (caps)] ---")
+;;==== TX-01 [1.01] - Deploy U|CT · 01 · env-sigs (caps) ==== =====================================
+(print "--- [TX-01 [1.01] - Deploy U|CT · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-01 [1.01] - Deploy U|CT · 02 · load module ==== =========================================
+(print "--- [TX-01 [1.01] - Deploy U|CT · 02 · load module] ---")
 ;;==== TX-01 [1.01] - Deploy U|CT · 02 · load module ==== =========================================
 (print "--- [TX-01 [1.01] - Deploy U|CT · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/1_Utilities/01_U_CT.pact")
@@ -62,8 +66,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-02 [1.02] - Deploy U|G · 01 · env-sigs (caps) ==== ======================================
 (print "--- [TX-02 [1.02] - Deploy U|G · 01 · env-sigs (caps)] ---")
+;;==== TX-02 [1.02] - Deploy U|G · 01 · env-sigs (caps) ==== ======================================
+(print "--- [TX-02 [1.02] - Deploy U|G · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-02 [1.02] - Deploy U|G · 02 · load module ==== ==========================================
+(print "--- [TX-02 [1.02] - Deploy U|G · 02 · load module] ---")
 ;;==== TX-02 [1.02] - Deploy U|G · 02 · load module ==== ==========================================
 (print "--- [TX-02 [1.02] - Deploy U|G · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/1_Utilities/02_U_G.pact")
@@ -84,8 +92,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-03 [1.03] - Deploy U|ST · 01 · env-sigs (caps) ==== =====================================
 (print "--- [TX-03 [1.03] - Deploy U|ST · 01 · env-sigs (caps)] ---")
+;;==== TX-03 [1.03] - Deploy U|ST · 01 · env-sigs (caps) ==== =====================================
+(print "--- [TX-03 [1.03] - Deploy U|ST · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-03 [1.03] - Deploy U|ST · 02 · load module ==== =========================================
+(print "--- [TX-03 [1.03] - Deploy U|ST · 02 · load module] ---")
 ;;==== TX-03 [1.03] - Deploy U|ST · 02 · load module ==== =========================================
 (print "--- [TX-03 [1.03] - Deploy U|ST · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/1_Utilities/03_U_ST.pact")
@@ -106,8 +118,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-04 [1.04] - Deploy U|RD · 01 · env-sigs (caps) ==== =====================================
 (print "--- [TX-04 [1.04] - Deploy U|RD · 01 · env-sigs (caps)] ---")
+;;==== TX-04 [1.04] - Deploy U|RD · 01 · env-sigs (caps) ==== =====================================
+(print "--- [TX-04 [1.04] - Deploy U|RD · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-04 [1.04] - Deploy U|RD · 02 · load module ==== =========================================
+(print "--- [TX-04 [1.04] - Deploy U|RD · 02 · load module] ---")
 ;;==== TX-04 [1.04] - Deploy U|RD · 02 · load module ==== =========================================
 (print "--- [TX-04 [1.04] - Deploy U|RD · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/1_Utilities/04_U_RS.pact")
@@ -128,8 +144,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-05 [1.05] - Deploy U|LST · 01 · env-sigs (caps) ==== ====================================
 (print "--- [TX-05 [1.05] - Deploy U|LST · 01 · env-sigs (caps)] ---")
+;;==== TX-05 [1.05] - Deploy U|LST · 01 · env-sigs (caps) ==== ====================================
+(print "--- [TX-05 [1.05] - Deploy U|LST · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-05 [1.05] - Deploy U|LST · 02 · load module ==== ========================================
+(print "--- [TX-05 [1.05] - Deploy U|LST · 02 · load module] ---")
 ;;==== TX-05 [1.05] - Deploy U|LST · 02 · load module ==== ========================================
 (print "--- [TX-05 [1.05] - Deploy U|LST · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/1_Utilities/05_U_LST.pact")
@@ -150,8 +170,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-04 [1.06] - Deploy U|INT · 01 · env-sigs (caps) ==== ====================================
 (print "--- [TX-04 [1.06] - Deploy U|INT · 01 · env-sigs (caps)] ---")
+;;==== TX-04 [1.06] - Deploy U|INT · 01 · env-sigs (caps) ==== ====================================
+(print "--- [TX-04 [1.06] - Deploy U|INT · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-04 [1.06] - Deploy U|INT · 02 · load module ==== ========================================
+(print "--- [TX-04 [1.06] - Deploy U|INT · 02 · load module] ---")
 ;;==== TX-04 [1.06] - Deploy U|INT · 02 · load module ==== ========================================
 (print "--- [TX-04 [1.06] - Deploy U|INT · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/1_Utilities/06_U_INT.pact")
@@ -172,8 +196,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-04 [1.07] - Deploy U|DEC · 01 · env-sigs (caps) ==== ====================================
 (print "--- [TX-04 [1.07] - Deploy U|DEC · 01 · env-sigs (caps)] ---")
+;;==== TX-04 [1.07] - Deploy U|DEC · 01 · env-sigs (caps) ==== ====================================
+(print "--- [TX-04 [1.07] - Deploy U|DEC · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-04 [1.07] - Deploy U|DEC · 02 · load module ==== ========================================
+(print "--- [TX-04 [1.07] - Deploy U|DEC · 02 · load module] ---")
 ;;==== TX-04 [1.07] - Deploy U|DEC · 02 · load module ==== ========================================
 (print "--- [TX-04 [1.07] - Deploy U|DEC · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/1_Utilities/07_U_DEC.pact")
@@ -194,8 +222,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-04 [1.08] - Deploy U|DALOS · 01 · env-sigs (caps) ==== ==================================
 (print "--- [TX-04 [1.08] - Deploy U|DALOS · 01 · env-sigs (caps)] ---")
+;;==== TX-04 [1.08] - Deploy U|DALOS · 01 · env-sigs (caps) ==== ==================================
+(print "--- [TX-04 [1.08] - Deploy U|DALOS · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-04 [1.08] - Deploy U|DALOS · 02 · load module ==== ======================================
+(print "--- [TX-04 [1.08] - Deploy U|DALOS · 02 · load module] ---")
 ;;==== TX-04 [1.08] - Deploy U|DALOS · 02 · load module ==== ======================================
 (print "--- [TX-04 [1.08] - Deploy U|DALOS · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/1_Utilities/08_U_DALOS.pact")
@@ -216,8 +248,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-04 [1.09] - Deploy U|ATS · 01 · env-sigs (caps) ==== ====================================
 (print "--- [TX-04 [1.09] - Deploy U|ATS · 01 · env-sigs (caps)] ---")
+;;==== TX-04 [1.09] - Deploy U|ATS · 01 · env-sigs (caps) ==== ====================================
+(print "--- [TX-04 [1.09] - Deploy U|ATS · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-04 [1.09] - Deploy U|ATS · 02 · load module ==== ========================================
+(print "--- [TX-04 [1.09] - Deploy U|ATS · 02 · load module] ---")
 ;;==== TX-04 [1.09] - Deploy U|ATS · 02 · load module ==== ========================================
 (print "--- [TX-04 [1.09] - Deploy U|ATS · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/1_Utilities/09_U_ATS.pact")
@@ -238,8 +274,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-04 [1.10] - Deploy U|DPTF · 01 · env-sigs (caps) ==== ===================================
 (print "--- [TX-04 [1.10] - Deploy U|DPTF · 01 · env-sigs (caps)] ---")
+;;==== TX-04 [1.10] - Deploy U|DPTF · 01 · env-sigs (caps) ==== ===================================
+(print "--- [TX-04 [1.10] - Deploy U|DPTF · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-04 [1.10] - Deploy U|DPTF · 02 · load module ==== =======================================
+(print "--- [TX-04 [1.10] - Deploy U|DPTF · 02 · load module] ---")
 ;;==== TX-04 [1.10] - Deploy U|DPTF · 02 · load module ==== =======================================
 (print "--- [TX-04 [1.10] - Deploy U|DPTF · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/1_Utilities/10_U_DPTF.pact")
@@ -260,8 +300,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-04 [1.11] - Deploy U|VST · 01 · env-sigs (caps) ==== ====================================
 (print "--- [TX-04 [1.11] - Deploy U|VST · 01 · env-sigs (caps)] ---")
+;;==== TX-04 [1.11] - Deploy U|VST · 01 · env-sigs (caps) ==== ====================================
+(print "--- [TX-04 [1.11] - Deploy U|VST · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-04 [1.11] - Deploy U|VST · 02 · load module ==== ========================================
+(print "--- [TX-04 [1.11] - Deploy U|VST · 02 · load module] ---")
 ;;==== TX-04 [1.11] - Deploy U|VST · 02 · load module ==== ========================================
 (print "--- [TX-04 [1.11] - Deploy U|VST · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/1_Utilities/11_U_VST.pact")
@@ -282,8 +326,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-04 [1.12] - Deploy U|SWP · 01 · env-sigs (caps) ==== ====================================
 (print "--- [TX-04 [1.12] - Deploy U|SWP · 01 · env-sigs (caps)] ---")
+;;==== TX-04 [1.12] - Deploy U|SWP · 01 · env-sigs (caps) ==== ====================================
+(print "--- [TX-04 [1.12] - Deploy U|SWP · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-04 [1.12] - Deploy U|SWP · 02 · load module ==== ========================================
+(print "--- [TX-04 [1.12] - Deploy U|SWP · 02 · load module] ---")
 ;;==== TX-04 [1.12] - Deploy U|SWP · 02 · load module ==== ========================================
 (print "--- [TX-04 [1.12] - Deploy U|SWP · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/1_Utilities/12_U_SWP.pact")
@@ -304,8 +352,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-04 [1.13] - Deploy U|BFS · 01 · env-sigs (caps) ==== ====================================
 (print "--- [TX-04 [1.13] - Deploy U|BFS · 01 · env-sigs (caps)] ---")
+;;==== TX-04 [1.13] - Deploy U|BFS · 01 · env-sigs (caps) ==== ====================================
+(print "--- [TX-04 [1.13] - Deploy U|BFS · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-04 [1.13] - Deploy U|BFS · 02 · load module ==== ========================================
+(print "--- [TX-04 [1.13] - Deploy U|BFS · 02 · load module] ---")
 ;;==== TX-04 [1.13] - Deploy U|BFS · 02 · load module ==== ========================================
 (print "--- [TX-04 [1.13] - Deploy U|BFS · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/1_Utilities/13_U_BFS.pact")

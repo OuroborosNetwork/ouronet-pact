@@ -24,6 +24,8 @@
 (print "=== TX-FVT-01 — TF anchor + TrueFungible score ============================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-FVT-01 - TF anchor + TrueFungible score bootstrap · 01 · let / invocation ==== ==========
+(print "--- [TX-FVT-01 - TF anchor + TrueFungible score bootstrap · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -123,6 +125,8 @@
 (print "=== TX-FVT-02 — Vault FVT seed + class-1 pool + employ score ==============")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-FVT-02 - Vault FVT seed + class-1 pool + employ score · 01 · let / invocation ==== ======
+(print "--- [TX-FVT-02 - Vault FVT seed + class-1 pool + employ score · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -242,6 +246,8 @@
 (print "=== TX-FVT-03 — CC_StakeTrueFungible (full ico1..ico5 recipe) =================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-FVT-03 - CC_StakeTrueFungible end-to-end · 01 · let / invocation ==== ===================
+(print "--- [TX-FVT-03 - CC_StakeTrueFungible end-to-end · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -334,6 +340,8 @@
 (print "=== TX-FVT-04 — FVT ToggleScoreLink smoke ==================================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-FVT-04 - FVT Control + ToggleScoreLink smoke · 01 · let / invocation ==== ===============
+(print "--- [TX-FVT-04 - FVT Control + ToggleScoreLink smoke · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -385,6 +393,8 @@
 (print "=== TX-FVT-05 — Vault inject/collect/second-collect (TfStakeVault) ===========")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-FVT-05 - Vault inject + collect + second collect=0 · 01 · let / invocation ==== =========
+(print "--- [TX-FVT-05 - Vault inject + collect + second collect=0 · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -515,6 +525,8 @@
 (print "=== TX-FVT-05b — CC_InjectStream 240 OURO / 24h → collect @12h (~120) + @24h (~120) ===")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-FVT-05b - streamed inject linear vesting smoke · 01 · let / invocation ==== =============
+(print "--- [TX-FVT-05b - streamed inject linear vesting smoke · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -590,6 +602,8 @@
 (print "=== TX-FVT-06 — C_SyncTrueFungibleAnchors after late TF anchor ==============")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-FVT-06 - TF anchor sync repair while staked · 01 · let / invocation ==== ================
+(print "--- [TX-FVT-06 - TF anchor sync repair while staked · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -701,6 +715,8 @@
 (print "=== TX-FVT-07 — TF unstake (partial 40 then full remainder) =================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-FVT-07 - Partial + full CC_UnstakeTrueFungible · 01 · let / invocation ==== =============
+(print "--- [TX-FVT-07 - Partial + full CC_UnstakeTrueFungible · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -803,6 +819,8 @@
 (print "=== TX-FVT-08 — Mosaic policy + SCORE membership-mode lock ==================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-FVT-08 - Mosaic / non-mosaic SCORE membership · 01 · let / invocation ==== ==============
+(print "--- [TX-FVT-08 - Mosaic / non-mosaic SCORE membership · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -924,6 +942,8 @@
 (print "=== TX-FVT-09 — Two stakers share vault inject by deb weight ===============")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-FVT-09 - Multi-staker vault inject/collect fairness · 01 · let / invocation ==== ========
+(print "--- [TX-FVT-09 - Multi-staker vault inject/collect fairness · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -1045,7 +1065,11 @@
 (print "=== TX-FVT-10 — M5 foreign-beneficiary TF stake/unstake (no stranding) ======")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-FVT-10 - M5 non-self TF stake/unstake (owner ANHD, foreign beneficiary EMMA) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-FVT-10 - M5 non-self TF stake/unstake (owner ANHD, foreign beneficiary EMMA) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-FVT-10 - M5 non-self TF stake/unstake (owner ANHD, foreign beneficiary EMMA) · 02 · let / invocation ==== 
+(print "--- [TX-FVT-10 - M5 non-self TF stake/unstake (owner ANHD, foreign beneficiary EMMA) · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)

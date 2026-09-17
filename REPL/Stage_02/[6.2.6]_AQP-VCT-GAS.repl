@@ -17,6 +17,8 @@
 ;;==== VCT-GAS-00 · 01 · module ==== =============================================================
 (print "--- [VCT-GAS-00 · 01 · VCT-GAS module] ---")
 (env-enable-repl-natives true)
+;;==== VCT-GAS-00 - VCT-GAS probe module + synth account deploy · 01 · env-sigs (caps) ==== =======
+(print "--- [VCT-GAS-00 - VCT-GAS probe module + synth account deploy · 01 · env-sigs (caps)] ---")
 (env-sigs
     [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}]
 )
@@ -889,6 +891,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== VCT-GAS-01 · 01 · TF anchor for OURO stake probes ==== =====================================
 (print "--- [VCT-GAS-01 · 01 · TF anchor + VctGas scores] ---")
+;;==== VCT-GAS-01 - TF anchor + shared gas-probe score bootstrap · 01 · let / invocation ==== =====
+(print "--- [VCT-GAS-01 - TF anchor + shared gas-probe score bootstrap · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -946,7 +950,11 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "--- [VCT-GAS-00b · 01 · deploy synth accounts 001..999] ---")
+;;==== VCT-GAS-00b - deploy synth accounts 001..999 · 01 · env-sigs (caps) ==== ===================
+(print "--- [VCT-GAS-00b - deploy synth accounts 001..999 · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== VCT-GAS-00b - deploy synth accounts 001..999 · 02 · let / invocation ==== ==================
+(print "--- [VCT-GAS-00b - deploy synth accounts 001..999 · 02 · let / invocation] ---")
 (let
     (
         (batch:integer 100)
@@ -977,6 +985,8 @@
 (begin-tx "VCT-GAS-DPSF-10 - DPSF vacate chunk gas probe (10 legs)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== VCT-GAS-DPSF-10 - DPSF vacate chunk gas probe (10 legs) · 01 · let / invocation ==== =======
+(print "--- [VCT-GAS-DPSF-10 - DPSF vacate chunk gas probe (10 legs) · 01 · let / invocation] ---")
 (let ((split-smart:[decimal] (VCTGAS.UC_SmartSplit KST.ANHD)))
     (env-sigs
         [
@@ -1003,6 +1013,8 @@
 (begin-tx "VCT-GAS-DPSF-25 - DPSF vacate chunk gas probe (25 legs)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== VCT-GAS-DPSF-25 - DPSF vacate chunk gas probe (25 legs) · 01 · let / invocation ==== =======
+(print "--- [VCT-GAS-DPSF-25 - DPSF vacate chunk gas probe (25 legs) · 01 · let / invocation] ---")
 (let ((split-smart:[decimal] (VCTGAS.UC_SmartSplit KST.ANHD)))
     (env-sigs
         [
@@ -1029,6 +1041,8 @@
 (begin-tx "VCT-GAS-DPSF-33 - DPSF vacate chunk gas probe (33 legs)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== VCT-GAS-DPSF-33 - DPSF vacate chunk gas probe (33 legs) · 01 · let / invocation ==== =======
+(print "--- [VCT-GAS-DPSF-33 - DPSF vacate chunk gas probe (33 legs) · 01 · let / invocation] ---")
 (let ((split-smart:[decimal] (VCTGAS.UC_SmartSplit KST.ANHD)))
     (env-sigs
         [
@@ -1055,6 +1069,8 @@
 (begin-tx "VCT-GAS-DPSF-35 - DPSF vacate chunk gas probe (35 legs)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== VCT-GAS-DPSF-35 - DPSF vacate chunk gas probe (35 legs) · 01 · let / invocation ==== =======
+(print "--- [VCT-GAS-DPSF-35 - DPSF vacate chunk gas probe (35 legs) · 01 · let / invocation] ---")
 (let ((split-smart:[decimal] (VCTGAS.UC_SmartSplit KST.ANHD)))
     (env-sigs
         [
@@ -1081,6 +1097,8 @@
 (begin-tx "VCT-GAS-DPSF-50 - DPSF vacate chunk gas probe (50 legs)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== VCT-GAS-DPSF-50 - DPSF vacate chunk gas probe (50 legs) · 01 · let / invocation ==== =======
+(print "--- [VCT-GAS-DPSF-50 - DPSF vacate chunk gas probe (50 legs) · 01 · let / invocation] ---")
 (let ((split-smart:[decimal] (VCTGAS.UC_SmartSplit KST.ANHD)))
     (env-sigs
         [
@@ -1107,6 +1125,8 @@
 (begin-tx "VCT-GAS-TF-10 - TF vacate chunk gas probe (10 legs)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== VCT-GAS-TF-10 - TF vacate chunk gas probe (10 legs) · 01 · let / invocation ==== ===========
+(print "--- [VCT-GAS-TF-10 - TF vacate chunk gas probe (10 legs) · 01 · let / invocation] ---")
 (let ((split-smart:[decimal] (VCTGAS.UC_SmartSplit KST.ANHD)))
     (env-sigs
         [
@@ -1133,6 +1153,8 @@
 (begin-tx "VCT-GAS-TF-25 - TF vacate chunk gas probe (25 legs)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== VCT-GAS-TF-25 - TF vacate chunk gas probe (25 legs) · 01 · let / invocation ==== ===========
+(print "--- [VCT-GAS-TF-25 - TF vacate chunk gas probe (25 legs) · 01 · let / invocation] ---")
 (let ((split-smart:[decimal] (VCTGAS.UC_SmartSplit KST.ANHD)))
     (env-sigs
         [
@@ -1159,6 +1181,8 @@
 (begin-tx "VCT-GAS-TF-50 - TF vacate chunk gas probe (50 legs)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== VCT-GAS-TF-50 - TF vacate chunk gas probe (50 legs) · 01 · let / invocation ==== ===========
+(print "--- [VCT-GAS-TF-50 - TF vacate chunk gas probe (50 legs) · 01 · let / invocation] ---")
 (let ((split-smart:[decimal] (VCTGAS.UC_SmartSplit KST.ANHD)))
     (env-sigs
         [
@@ -1185,6 +1209,8 @@
 (begin-tx "VCT-GAS-OF-10 - OF vacate chunk gas probe (10 legs)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== VCT-GAS-OF-10 - OF vacate chunk gas probe (10 legs) · 01 · let / invocation ==== ===========
+(print "--- [VCT-GAS-OF-10 - OF vacate chunk gas probe (10 legs) · 01 · let / invocation] ---")
 (let ((split-smart:[decimal] (VCTGAS.UC_SmartSplit KST.ANHD)))
     (env-sigs
         [
@@ -1211,6 +1237,8 @@
 (begin-tx "VCT-GAS-OF-25 - OF vacate chunk gas probe (25 legs)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== VCT-GAS-OF-25 - OF vacate chunk gas probe (25 legs) · 01 · let / invocation ==== ===========
+(print "--- [VCT-GAS-OF-25 - OF vacate chunk gas probe (25 legs) · 01 · let / invocation] ---")
 (let ((split-smart:[decimal] (VCTGAS.UC_SmartSplit KST.ANHD)))
     (env-sigs
         [
@@ -1237,6 +1265,8 @@
 (begin-tx "VCT-GAS-OF-50 - OF vacate chunk gas probe (50 legs)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== VCT-GAS-OF-50 - OF vacate chunk gas probe (50 legs) · 01 · let / invocation ==== ===========
+(print "--- [VCT-GAS-OF-50 - OF vacate chunk gas probe (50 legs) · 01 · let / invocation] ---")
 (let ((split-smart:[decimal] (VCTGAS.UC_SmartSplit KST.ANHD)))
     (env-sigs
         [
@@ -1263,6 +1293,8 @@
 (begin-tx "VCT-GAS-DPNF-10 - DPNF vacate chunk gas probe (10 legs)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== VCT-GAS-DPNF-10 - DPNF vacate chunk gas probe (10 legs) · 01 · let / invocation ==== =======
+(print "--- [VCT-GAS-DPNF-10 - DPNF vacate chunk gas probe (10 legs) · 01 · let / invocation] ---")
 (let ((split-smart:[decimal] (VCTGAS.UC_SmartSplit KST.ANHD)))
     (env-sigs
         [
@@ -1291,6 +1323,8 @@
 (begin-tx "VCT-GAS-DPNF-25 - DPNF vacate chunk gas probe (25 legs)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== VCT-GAS-DPNF-25 - DPNF vacate chunk gas probe (25 legs) · 01 · let / invocation ==== =======
+(print "--- [VCT-GAS-DPNF-25 - DPNF vacate chunk gas probe (25 legs) · 01 · let / invocation] ---")
 (let ((split-smart:[decimal] (VCTGAS.UC_SmartSplit KST.ANHD)))
     (env-sigs
         [
@@ -1319,6 +1353,8 @@
 (begin-tx "VCT-GAS-DPNF-50 - DPNF vacate chunk gas probe (50 legs)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== VCT-GAS-DPNF-50 - DPNF vacate chunk gas probe (50 legs) · 01 · let / invocation ==== =======
+(print "--- [VCT-GAS-DPNF-50 - DPNF vacate chunk gas probe (50 legs) · 01 · let / invocation] ---")
 (let ((split-smart:[decimal] (VCTGAS.UC_SmartSplit KST.ANHD)))
     (env-sigs
         [
@@ -1350,59 +1386,99 @@
 (begin-tx "VCT-GAS-DPTF-BULK-10 - DPTF bulk transfer gas (10 receivers)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== VCT-GAS-DPTF-BULK-10 - DPTF bulk transfer gas (10 receivers) · 01 · env-sigs (caps) ==== ===
+(print "--- [VCT-GAS-DPTF-BULK-10 - DPTF bulk transfer gas (10 receivers) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (VCTGAS.XI_ProbeDptfBulk KST.ANHD "OURO-98c486052a51" 10 0.01)
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 (begin-tx "VCT-GAS-DPTF-BULK-20 - DPTF bulk transfer gas (20 receivers)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== VCT-GAS-DPTF-BULK-20 - DPTF bulk transfer gas (20 receivers) · 01 · env-sigs (caps) ==== ===
+(print "--- [VCT-GAS-DPTF-BULK-20 - DPTF bulk transfer gas (20 receivers) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (VCTGAS.XI_ProbeDptfBulk KST.ANHD "OURO-98c486052a51" 20 0.01)
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 (begin-tx "VCT-GAS-DPTF-BULK-24 - DPTF bulk transfer gas (24 receivers)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== VCT-GAS-DPTF-BULK-24 - DPTF bulk transfer gas (24 receivers) · 01 · env-sigs (caps) ==== ===
+(print "--- [VCT-GAS-DPTF-BULK-24 - DPTF bulk transfer gas (24 receivers) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (VCTGAS.XI_ProbeDptfBulk KST.ANHD "OURO-98c486052a51" 24 0.01)
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 (begin-tx "VCT-GAS-DPTF-BULK-27 - DPTF bulk transfer gas (27 receivers)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== VCT-GAS-DPTF-BULK-27 - DPTF bulk transfer gas (27 receivers) · 01 · env-sigs (caps) ==== ===
+(print "--- [VCT-GAS-DPTF-BULK-27 - DPTF bulk transfer gas (27 receivers) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (VCTGAS.XI_ProbeDptfBulk KST.ANHD "OURO-98c486052a51" 27 0.01)
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 (begin-tx "VCT-GAS-DPTF-BULK-30 - DPTF bulk transfer gas (30 receivers)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== VCT-GAS-DPTF-BULK-30 - DPTF bulk transfer gas (30 receivers) · 01 · env-sigs (caps) ==== ===
+(print "--- [VCT-GAS-DPTF-BULK-30 - DPTF bulk transfer gas (30 receivers) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (VCTGAS.XI_ProbeDptfBulk KST.ANHD "OURO-98c486052a51" 30 0.01)
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 (begin-tx "VCT-GAS-DPTF-BULK-2M-27 - DPTF bulk at env-gaslimit 2000000 (27 receivers)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 2000000)(env-gas 0)
+;;==== VCT-GAS-DPTF-BULK-2M-27 - DPTF bulk at env-gaslimit 2000000 (27 receivers) · 01 · env-sigs (caps) ==== 
+(print "--- [VCT-GAS-DPTF-BULK-2M-27 - DPTF bulk at env-gaslimit 2000000 (27 receivers) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== VCT-GAS-DPTF-BULK-2M-27 - DPTF bulk at env-gaslimit 2000000 (27 receivers) · 02 · let / invocation ==== 
+(print "--- [VCT-GAS-DPTF-BULK-2M-27 - DPTF bulk at env-gaslimit 2000000 (27 receivers) · 02 · let / invocation] ---")
 (let ((bulk-gas:integer (VCTGAS.XI_ProbeDptfBulk KST.ANHD "OURO-98c486052a51" 27 0.01)))
     (expect (format "<<VCT-GAS-DPTF-BULK-2M expect>> 27-receiver bulk within 2M got={}" [bulk-gas])
         true (<= bulk-gas VCTGAS.GAS-LIMIT))
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 (print "--- [VCT-GAS-OF-7x · 7 owners × nonces-per-owner; chunk gas vs 2M] ---")
 (print "")
 (begin-tx "VCT-GAS-OF-7x1 - OF vacate 7 owners × 1 nonce (7 total)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== VCT-GAS-OF-7x1 - OF vacate 7 owners × 1 nonce (7 total) · 01 · let / invocation ==== =======
+(print "--- [VCT-GAS-OF-7x1 - OF vacate 7 owners × 1 nonce (7 total) · 01 · let / invocation] ---")
 (let ((split-smart:[decimal] (VCTGAS.UC_SmartSplit KST.ANHD)))
     (env-sigs
         [
@@ -1422,10 +1498,16 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 (begin-tx "VCT-GAS-OF-7x2 - OF vacate 7 owners × 2 nonces (14 total)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== VCT-GAS-OF-7x2 - OF vacate 7 owners × 2 nonces (14 total) · 01 · let / invocation ==== =====
+(print "--- [VCT-GAS-OF-7x2 - OF vacate 7 owners × 2 nonces (14 total) · 01 · let / invocation] ---")
 (let ((split-smart:[decimal] (VCTGAS.UC_SmartSplit KST.ANHD)))
     (env-sigs
         [
@@ -1445,10 +1527,16 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 (begin-tx "VCT-GAS-OF-7x3 - OF vacate 7 owners × 3 nonces (21 total)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== VCT-GAS-OF-7x3 - OF vacate 7 owners × 3 nonces (21 total) · 01 · let / invocation ==== =====
+(print "--- [VCT-GAS-OF-7x3 - OF vacate 7 owners × 3 nonces (21 total) · 01 · let / invocation] ---")
 (let ((split-smart:[decimal] (VCTGAS.UC_SmartSplit KST.ANHD)))
     (env-sigs
         [
@@ -1468,10 +1556,16 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 (begin-tx "VCT-GAS-OF-7x4 - OF vacate 7 owners × 4 nonces (28 total)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== VCT-GAS-OF-7x4 - OF vacate 7 owners × 4 nonces (28 total) · 01 · let / invocation ==== =====
+(print "--- [VCT-GAS-OF-7x4 - OF vacate 7 owners × 4 nonces (28 total) · 01 · let / invocation] ---")
 (let ((split-smart:[decimal] (VCTGAS.UC_SmartSplit KST.ANHD)))
     (env-sigs
         [
@@ -1491,10 +1585,16 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 (begin-tx "VCT-GAS-OF-7x5 - OF vacate 7 owners × 5 nonces (35 total)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== VCT-GAS-OF-7x5 - OF vacate 7 owners × 5 nonces (35 total) · 01 · let / invocation ==== =====
+(print "--- [VCT-GAS-OF-7x5 - OF vacate 7 owners × 5 nonces (35 total) · 01 · let / invocation] ---")
 (let ((split-smart:[decimal] (VCTGAS.UC_SmartSplit KST.ANHD)))
     (env-sigs
         [
@@ -1514,10 +1614,16 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 (begin-tx "VCT-GAS-OF-7x4-2M-SETUP - 7×4 OF vacate session (10M setup)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== VCT-GAS-OF-7x4-2M-SETUP - 7×4 OF vacate session (10M setup) · 01 · let / invocation ==== ===
+(print "--- [VCT-GAS-OF-7x4-2M-SETUP - 7×4 OF vacate session (10M setup) · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -1554,11 +1660,19 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 (begin-tx "VCT-GAS-OF-7x4-2M-VACATE - 7×4 OF chunk at env-gaslimit 2000000")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 2000000)(env-gas 0)
+;;==== VCT-GAS-OF-7x4-2M-VACATE - 7×4 OF chunk at env-gaslimit 2000000 · 01 · env-sigs (caps) ==== 
+(print "--- [VCT-GAS-OF-7x4-2M-VACATE - 7×4 OF chunk at env-gaslimit 2000000 · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== VCT-GAS-OF-7x4-2M-VACATE - 7×4 OF chunk at env-gaslimit 2000000 · 02 · let / invocation ==== 
+(print "--- [VCT-GAS-OF-7x4-2M-VACATE - 7×4 OF chunk at env-gaslimit 2000000 · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -1586,6 +1700,8 @@
 (begin-tx "VCT-GAS-2M-DPSF-29-SETUP - prepare max-policy DPSF chunk (29 nonces, 10M setup)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== VCT-GAS-2M-DPSF-29-SETUP - prepare max-policy DPSF chunk (29 nonces, 10M setup) · 01 · let / invocation ==== 
+(print "--- [VCT-GAS-2M-DPSF-29-SETUP - prepare max-policy DPSF chunk (29 nonces, 10M setup) · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -1628,7 +1744,11 @@
 (begin-tx "VCT-GAS-2M-DPSF-29-VACATE - max-policy DPSF chunk at env-gaslimit 2000000")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 2000000)(env-gas 0)
+;;==== VCT-GAS-2M-DPSF-29-VACATE - max-policy DPSF chunk at env-gaslimit 2000000 · 01 · env-sigs (caps) ==== 
+(print "--- [VCT-GAS-2M-DPSF-29-VACATE - max-policy DPSF chunk at env-gaslimit 2000000 · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== VCT-GAS-2M-DPSF-29-VACATE - max-policy DPSF chunk at env-gaslimit 2000000 · 02 · let / invocation ==== 
+(print "--- [VCT-GAS-2M-DPSF-29-VACATE - max-policy DPSF chunk at env-gaslimit 2000000 · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)

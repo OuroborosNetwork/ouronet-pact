@@ -1,3 +1,16 @@
+;;
+;; REPL/triplet-collect-golden.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/triplet-collect-golden.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 ;; Boot chain + MULTIPLET_BASE OURO collect golden path (no triplet-diag pre-stake)
 (load "Stage00_Sanboxes.repl")
 (load "Stage01_Tester.repl")
@@ -10,6 +23,8 @@
 (begin-tx "TX-BOOT-04 - AQP-BOOT Step4 core scores")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-BOOT-04 - AQP-BOOT Step4 core scores · 01 · let / invocation ==== =======================
+(print "--- [TX-BOOT-04 - AQP-BOOT Step4 core scores · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -35,9 +50,16 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "TX-BOOT-05 - AQP-BOOT Step5 subsidiary scores")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-BOOT-05 - AQP-BOOT Step5 subsidiary scores · 01 · let / invocation ==== =================
+(print "--- [TX-BOOT-05 - AQP-BOOT Step5 subsidiary scores · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)

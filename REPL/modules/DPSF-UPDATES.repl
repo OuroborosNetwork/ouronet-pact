@@ -1,3 +1,16 @@
+;;
+;; REPL/modules/DPSF-UPDATES.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/modules/DPSF-UPDATES.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 ;; REPL/modules/DPSF-UPDATES.repl — STANDALONE DPSF set-element / nonce update tester.
 ;;
 ;; P2 rebuild. The previous version was three (load) lines and NOTHING else: it inherited
@@ -25,9 +38,13 @@
 ;;
 (begin-tx "DSU-01 — what [6.1.7] actually wrote (14 ops, previously unasserted)")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== DSU-01 — what [6.1.7] actually wrote (14 ops, previously unasserted) · 01 · namespace ==== =
+(print "--- [DSU-01 — what [6.1.7] actually wrote (14 ops, previously unasserted) · 01 · namespace] ---")
 (namespace "ouronet-ns")
 ;;==== DSU-01 · 01 · native nonce 7 after UpdateNonces + BulkTransfer ====
 (print "--- [DSU-01 · 01 · native nonce 7] ---")
+;;==== DSU-01 — what [6.1.7] actually wrote (14 ops, previously unasserted) · 02 · let / invocation ==== 
+(print "--- [DSU-01 — what [6.1.7] actually wrote (14 ops, previously unasserted) · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -99,9 +116,13 @@
 (begin-tx "DSU-02 — DPSF|C_RemoveNonceScore (never exercised before)")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== DSU-02 — DPSF|C_RemoveNonceScore (never exercised before) · 01 · env-sigs (caps) ==== ======
+(print "--- [DSU-02 — DPSF|C_RemoveNonceScore (never exercised before) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 ;;==== DSU-02 · 01 · set a score, then remove it ====
 (print "--- [DSU-02 · 01 · score set then removed] ---")
+;;==== DSU-02 — DPSF|C_RemoveNonceScore (never exercised before) · 02 · let / invocation ==== =====
+(print "--- [DSU-02 — DPSF|C_RemoveNonceScore (never exercised before) · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -144,9 +165,13 @@
 (begin-tx "DSU-03 — DPSF|C_UpdateNonceURI (never exercised before)")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== DSU-03 — DPSF|C_UpdateNonceURI (never exercised before) · 01 · env-sigs (caps) ==== ========
+(print "--- [DSU-03 — DPSF|C_UpdateNonceURI (never exercised before) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 ;;==== DSU-03 · 01 · all three URI slots ====
 (print "--- [DSU-03 · 01 · URI slots] ---")
+;;==== DSU-03 — DPSF|C_UpdateNonceURI (never exercised before) · 02 · let / invocation ==== =======
+(print "--- [DSU-03 — DPSF|C_UpdateNonceURI (never exercised before) · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -203,7 +228,11 @@
 ;; someone else's holding. EMMA holds 100 of nonce 7 from [6.1.7]'s BulkTransfer and does NOT
 ;; sign here -- only ANHD, the collection owner, does. If this needed EMMA's consent it would be
 ;; a transfer, not a repurpose.
+;;==== DSU-04 — DPSF|C_Repurpose is a FORCED move, single and multi mode · 01 · env-sigs (caps) ==== 
+(print "--- [DSU-04 — DPSF|C_Repurpose is a FORCED move, single and multi mode · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== DSU-04 — DPSF|C_Repurpose is a FORCED move, single and multi mode · 02 · let / invocation ==== 
+(print "--- [DSU-04 — DPSF|C_Repurpose is a FORCED move, single and multi mode · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -265,7 +294,11 @@
 ;; NOTE (Rule 9): expect-failure catches the abort but does NOT roll back writes made before it.
 ;; Both probes below reject inside the capability, before any debit, so nothing is left behind --
 ;; and the guard assertion after each one is what PROVES that rather than assuming it.
+;;==== DSU-05 — repurpose rejections · 01 · env-sigs (caps) ==== ==================================
+(print "--- [DSU-05 — repurpose rejections · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
+;;==== DSU-05 — repurpose rejections · 02 · let / invocation ==== =================================
+(print "--- [DSU-05 — repurpose rejections · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)

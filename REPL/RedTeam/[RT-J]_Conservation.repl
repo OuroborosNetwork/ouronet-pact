@@ -1,4 +1,17 @@
 ;;
+;; REPL/RedTeam/[RT-J]_Conservation.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/RedTeam/[RT-J]_Conservation.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
+;;
 ;; REPL/RedTeam/[RT-J]_Conservation.repl — FAMILY J: ledger conservation.
 ;;
 ;; "Does the money add up?"
@@ -37,6 +50,8 @@
 ;;
 (begin-tx "RT-J-001 - does every token's supply equal the sum of its balances")
 (env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+;;==== RT-J-001 - does every token's supply equal the sum of its balances · 01 · namespace ==== ===
+(print "--- [RT-J-001 - does every token's supply equal the sum of its balances · 01 · namespace] ---")
 (namespace "ouronet-ns")
 ;;==== RT-J-001 · 01 · sweep every token, every holder ====
 (print "--- [RT-J-001 · 01 · sweep every token, every holder] ---")
@@ -153,6 +168,8 @@
 ;;
 (begin-tx "RT-J-002 - the ortofungible keeps a CACHED total beside the ledger it summarises")
 (env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+;;==== RT-J-002 - the ortofungible keeps a CACHED total beside the ledger it summarises · 01 · namespace ==== 
+(print "--- [RT-J-002 - the ortofungible keeps a CACHED total beside the ledger it summarises · 01 · namespace] ---")
 (namespace "ouronet-ns")
 ;;==== RT-J-002 · 01 · DPOF: three levels that must agree ====
 (print "--- [RT-J-002 · 01 · DPOF: three levels that must agree] ---")

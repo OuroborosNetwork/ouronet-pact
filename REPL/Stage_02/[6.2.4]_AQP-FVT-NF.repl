@@ -14,6 +14,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (env-enable-repl-natives true)
+;;==== TX-FVT-NF-00 - deploy NfSyncProbe helpers · 01 · env-sigs (caps) ==== ======================
+(print "--- [TX-FVT-NF-00 - deploy NfSyncProbe helpers · 01 · env-sigs (caps)] ---")
 (env-sigs
     [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}]
 )
@@ -43,6 +45,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-FVT-NF-01 - mint DHB + NF score/pool/vault + stake")
@@ -50,6 +56,8 @@
 (print "=== TX-FVT-NF-01 — Mint DHB probe + class-4 pool stake =====================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-FVT-NF-01 - mint DHB + NF score/pool/vault + stake · 01 · let / invocation ==== =========
+(print "--- [TX-FVT-NF-01 - mint DHB + NF score/pool/vault + stake · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -173,6 +181,8 @@
 (print "=== TX-FVT-NF-02 — C_SyncNonFungibleAnchors after late NF anchor ============")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-FVT-NF-02 - late NF anchor + C_SyncNonFungibleAnchors · 01 · let / invocation ==== ======
+(print "--- [TX-FVT-NF-02 - late NF anchor + C_SyncNonFungibleAnchors · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -279,7 +289,11 @@
 (print "=== TX-FVT-NF-03 — CC_UnstakeNonFungibleCollectable (round-trip) =============")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-FVT-NF-03 - CC_UnstakeNonFungibleCollectable round-trip + conservation · 01 · env-sigs (caps) ==== 
+(print "--- [TX-FVT-NF-03 - CC_UnstakeNonFungibleCollectable round-trip + conservation · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-FVT-NF-03 - CC_UnstakeNonFungibleCollectable round-trip + conservation · 02 · let / invocation ==== 
+(print "--- [TX-FVT-NF-03 - CC_UnstakeNonFungibleCollectable round-trip + conservation · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -368,7 +382,11 @@
 (print "=== TX-FVT-NF-04 — CC_UnstakeNonFungibleCollectable negative (nothing staked) =")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-FVT-NF-04 - unstake an unstaked NF nonce must fail (negative) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-FVT-NF-04 - unstake an unstaked NF nonce must fail (negative) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-FVT-NF-04 - unstake an unstaked NF nonce must fail (negative) · 02 · let / invocation ==== 
+(print "--- [TX-FVT-NF-04 - unstake an unstaked NF nonce must fail (negative) · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -407,7 +425,11 @@
 (print "=== TX-FVT-NF-05 — M5 foreign-beneficiary NF stake/unstake (no stranding) ===")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-FVT-NF-05 - M5 non-self NF stake/unstake (owner ANHD, foreign beneficiary EMMA) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-FVT-NF-05 - M5 non-self NF stake/unstake (owner ANHD, foreign beneficiary EMMA) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-FVT-NF-05 - M5 non-self NF stake/unstake (owner ANHD, foreign beneficiary EMMA) · 02 · let / invocation ==== 
+(print "--- [TX-FVT-NF-05 - M5 non-self NF stake/unstake (owner ANHD, foreign beneficiary EMMA) · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -484,6 +506,8 @@
 ;; FAST-DRAIN via CCp_BatchDrainCollectable. Proves the collectable drain wiring end-to-end: nonce returns, the
 ;; pool nns / user unn track the ghost position (nns/unn go 0->1->0 — the #FP1 point, caught by occupancy not
 ;; nzs), settle-on-last-drain fires, score is UNTOUCHED (0 ghost), and the pool stays FROZEN (never finalizes).
+;;==== TX-FVT-NF-DRAIN - vacate-v2 collectable(NF) fast-drain: nonce back + occupancy cleared + not finalized · 01 · let / invocation ==== 
+(print "--- [TX-FVT-NF-DRAIN - vacate-v2 collectable(NF) fast-drain: nonce back + occupancy cleared + not finalized · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -606,6 +630,8 @@
 (print "=== TX-NF-BENCH — concentrated NF (1 ben) per-nonce marginal: v1 Cp_BatchVacate vs v2 Cp_BatchDrain ==")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 100000000)
+;;==== TX-NF-BENCH - vacate-v2 gas benchmark: concentrated NF v1-vacate vs v2-drain (N=1,6 nonces) · 01 · let / invocation ==== 
+(print "--- [TX-NF-BENCH - vacate-v2 gas benchmark: concentrated NF v1-vacate vs v2-drain (N=1,6 nonces) · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -716,6 +742,8 @@
 (print "=== TX-NF-BENCH-M1 — model-1 (KBN trait scoring) N=6: v1 Cp_BatchVacate vs v2 Cp_BatchDrain ==")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 100000000)
+;;==== TX-NF-BENCH-M1 - model-1 KBN trait-scoring marginal: v1 vacate vs v2 drain (N=6) · 01 · let / invocation ==== 
+(print "--- [TX-NF-BENCH-M1 - model-1 KBN trait-scoring marginal: v1 vacate vs v2 drain (N=6) · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)

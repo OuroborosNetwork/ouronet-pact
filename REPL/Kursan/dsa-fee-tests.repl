@@ -24,16 +24,32 @@
 (begin-tx "FEE-BOOT - KBN citizen")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== FEE-BOOT - KBN citizen · 01 · env-sigs (caps) ==== =========================================
+(print "--- [FEE-BOOT - KBN citizen · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": [] }])
+;;==== FEE-BOOT - KBN citizen · 02 · load module ==== =============================================
+(print "--- [FEE-BOOT - KBN citizen · 02 · load module] ---")
 (load "../../2_CITIZEN/4_BunniesMinter/02_KBunnies.pact")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "FEE-BOOT - AQP-BOOT")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== FEE-BOOT - AQP-BOOT · 01 · env-sigs (caps) ==== ============================================
+(print "--- [FEE-BOOT - AQP-BOOT · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": [] }])
+;;==== FEE-BOOT - AQP-BOOT · 02 · load module ==== ================================================
+(print "--- [FEE-BOOT - AQP-BOOT · 02 · load module] ---")
 (load "../../2_CITIZEN/5_VaultsMinter/04_AQP-BOOT.pact")
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;;AQP-INFO is loaded HERE so the cost block below can name it. This runner is self-booting and builds
 ;;Stage 02 by hand — it never reaches `Stage_02/[Z]_Reads.repl`, which is the only other loader of the
 ;;preview module. The DSA family's fixtures exist ONLY in these `Kursan/dsa-*.repl` runners, and none
@@ -44,15 +60,30 @@
 (begin-tx "AQP-INFO - load module for the DSA cost blocks")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== AQP-INFO - load module for the DSA cost blocks · 01 · env-sigs (caps) ==== =================
+(print "--- [AQP-INFO - load module for the DSA cost blocks · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": [] }])
+;;==== AQP-INFO - load module for the DSA cost blocks · 02 · load module ==== =====================
+(print "--- [AQP-INFO - load module for the DSA cost blocks · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "FEE-BOOT - Step0")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== FEE-BOOT - Step0 · 01 · env-sigs (caps) ==== ===============================================
+(print "--- [FEE-BOOT - Step0 · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (AQP-BOOT.C_Step0_WireImcAndGovernor KST.ANHD)
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 
 ;; env-sigs helper reused: PK_AncientHodler + the gas-station 4x coin.TRANSFER block.
@@ -63,6 +94,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 60000000)(env-gas 0)
 (env-chain-data { "block-time": (time "2027-11-01T00:00:00Z") })
+;;==== FEE-01 - fragment + distribute silver to delegators · 01 · env-sigs (caps) ==== ============
+(print "--- [FEE-01 - fragment + distribute silver to delegators · 01 · env-sigs (caps)] ---")
 (env-sigs
   [ { "key": "PK_AncientHodler", "caps": [] }
     { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
@@ -72,6 +105,8 @@
         (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
         (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
 (print "--- [FEE-01 · 01 · fragment + distribute] ---")
+;;==== FEE-01 - fragment + distribute silver to delegators · 02 · let / invocation ==== ===========
+(print "--- [FEE-01 - fragment + distribute silver to delegators · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD)
@@ -101,6 +136,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 60000000)(env-gas 0)
 (env-chain-data { "block-time": (time "2027-11-01T00:00:00Z") })
+;;==== FEE-02 - model + triplet + vault + pool · 01 · env-sigs (caps) ==== ========================
+(print "--- [FEE-02 - model + triplet + vault + pool · 01 · env-sigs (caps)] ---")
 (env-sigs
   [ { "key": "PK_AncientHodler", "caps": [] }
     { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
@@ -110,6 +147,8 @@
         (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
         (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
 (print "--- [FEE-02 · 01 · model + triplet + vault + pool] ---")
+;;==== FEE-02 - model + triplet + vault + pool · 02 · let / invocation ==== =======================
+(print "--- [FEE-02 - model + triplet + vault + pool · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD)
@@ -158,6 +197,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 90000000)(env-gas 0)
 (env-chain-data { "block-time": (time "2027-11-01T00:01:00Z") })
+;;==== FEE-03 - open agency (operator stakes 1000, fee 100 per-mille) · 01 · env-sigs (caps) ==== =
+(print "--- [FEE-03 - open agency (operator stakes 1000, fee 100 per-mille) · 01 · env-sigs (caps)] ---")
 (env-sigs
   [ { "key": "PK_AncientHodler", "caps": [] }
     { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
@@ -167,6 +208,8 @@
         (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
         (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
 (print "--- [FEE-03 · 01 · open agency] ---")
+;;==== FEE-03 - open agency (operator stakes 1000, fee 100 per-mille) · 02 · let / invocation ==== 
+(print "--- [FEE-03 - open agency (operator stakes 1000, fee 100 per-mille) · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD)
@@ -201,6 +244,8 @@
 (env-gasmodel "table")(env-gaslimit 120000000)(env-gas 0)
 (env-chain-data { "block-time": (time "2027-11-01T02:00:00Z") })
 (env-data { "dsa-oracle": { "keys": ["dsa-oracle-key"], "pred": "keys-all" } })
+;;==== FEE-04 - delegators stake + oracle · 01 · env-sigs (caps) ==== =============================
+(print "--- [FEE-04 - delegators stake + oracle · 01 · env-sigs (caps)] ---")
 (env-sigs
   [ { "key": "PK_AncientHodler", "caps": [] }
     { "key": "PK_Emma", "caps": [] }
@@ -213,6 +258,8 @@
         (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
         (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
 (print "--- [FEE-04 · 01 · delegators stake + oracle] ---")
+;;==== FEE-04 - delegators stake + oracle · 02 · let / invocation ==== ============================
+(print "--- [FEE-04 - delegators stake + oracle · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD)
@@ -273,6 +320,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 120000000)(env-gas 0)
 (env-chain-data { "block-time": (time "2027-11-01T03:00:00Z") })
+;;==== FEE-05 - inject 5000 + collect all (fee 10%) · 01 · env-sigs (caps) ==== ===================
+(print "--- [FEE-05 - inject 5000 + collect all (fee 10%) · 01 · env-sigs (caps)] ---")
 (env-sigs
   [ { "key": "PK_AncientHodler", "caps": [] }
     { "key": "PK_Emma", "caps": [] }
@@ -284,6 +333,8 @@
         (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
         (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
 (print "--- [FEE-05 · 01 · inject + collect] ---")
+;;==== FEE-05 - inject 5000 + collect all (fee 10%) · 02 · let / invocation ==== ==================
+(print "--- [FEE-05 - inject 5000 + collect all (fee 10%) · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD)
@@ -341,6 +392,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 120000000)(env-gas 0)
 (env-chain-data { "block-time": (time "2027-11-01T04:00:00Z") })
+;;==== FEE-06 - fee -> 20%, inject, collect (reprice future only) · 01 · env-sigs (caps) ==== =====
+(print "--- [FEE-06 - fee -> 20%, inject, collect (reprice future only) · 01 · env-sigs (caps)] ---")
 (env-sigs
   [ { "key": "PK_AncientHodler", "caps": [] }
     { "key": "PK_Emma", "caps": [] }
@@ -352,6 +405,8 @@
         (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
         (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
 (print "--- [FEE-06 · 01 · fee change + inject + collect] ---")
+;;==== FEE-06 - fee -> 20%, inject, collect (reprice future only) · 02 · let / invocation ==== ====
+(print "--- [FEE-06 - fee -> 20%, inject, collect (reprice future only) · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD)

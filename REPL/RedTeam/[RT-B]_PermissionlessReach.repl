@@ -1,4 +1,17 @@
 ;;
+;; REPL/RedTeam/[RT-B]_PermissionlessReach.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/RedTeam/[RT-B]_PermissionlessReach.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
+;;
 ;; REPL/RedTeam/[RT-B]_PermissionlessReach.repl — FAMILY B: permissionless reach.
 ;;
 ;; "What is reachable with no capability, and what is reachable while SKIPPING Talos — and
@@ -66,7 +79,11 @@
 ;;collector against a third party, because `IGNIS::C_Collect` enforces the payer's own ownership.
 ;;*Skipping your own toll needs nobody else's signature; charging someone else's does.* The reachable
 ;;damage was unbilled ADMIN activity, never drained users. Now it is neither.
+;;==== RT-B-001 - reach a sovereign admin op without Talos, and pay nothing · 01 · env-sigs (caps) ==== 
+(print "--- [RT-B-001 - reach a sovereign admin op without Talos, and pay nothing · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
+;;==== RT-B-001 - reach a sovereign admin op without Talos, and pay nothing · 02 · let / invocation ==== 
+(print "--- [RT-B-001 - reach a sovereign admin op without Talos, and pay nothing · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)

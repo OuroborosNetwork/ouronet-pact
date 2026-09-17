@@ -16,6 +16,8 @@
 (namespace "ouronet-ns")
 ;;==== TX-00 [C0] - Chain Data Time SetUp Definition · 01 · env-chain-data ==== ===================
 (print "--- [TX-00 [C0] - Chain Data Time SetUp Definition · 01 · env-chain-data] ---")
+;;==== TX-00 [C0] - Chain Data Time SetUp Definition · 01 · env-chain-data ==== ===================
+(print "--- [TX-00 [C0] - Chain Data Time SetUp Definition · 01 · env-chain-data] ---")
 (env-chain-data
     {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
      "block-time": TV.TIME00}
@@ -50,6 +52,8 @@
 
 ;;==== TX-01 [4.1.1] - Dalos INIT [01]: Init Sovereign Standard Ouronet Account · 01 · env-sigs (caps) ==== 
 (print "--- [TX-01 [4.1.1] - Dalos INIT [01]: Init Sovereign Standard Ouronet Account · 01 · env-sigs (caps)] ---")
+;;==== TX-01 [4.1.1] - Dalos INIT [01]: Init Sovereign Standard Ouronet Account · 01 · env-sigs (caps) ==== 
+(print "--- [TX-01 [4.1.1] - Dalos INIT [01]: Init Sovereign Standard Ouronet Account · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -58,6 +62,8 @@
     ]
 )
 
+;;==== TX-01 [4.1.1] - Dalos INIT [01]: Init Sovereign Standard Ouronet Account · 02 · let / invocation ==== 
+(print "--- [TX-01 [4.1.1] - Dalos INIT [01]: Init Sovereign Standard Ouronet Account · 02 · let / invocation] ---")
 ;;==== TX-01 [4.1.1] - Dalos INIT [01]: Init Sovereign Standard Ouronet Account · 02 · let / invocation ==== 
 (print "--- [TX-01 [4.1.1] - Dalos INIT [01]: Init Sovereign Standard Ouronet Account · 02 · let / invocation] ---")
 (let
@@ -109,12 +115,16 @@
 
 ;;==== TX-02 [4.1.2] - Dalos INIT [02]: Define IMC Policies · 01 · env-sigs (caps) ==== ===========
 (print "--- [TX-02 [4.1.2] - Dalos INIT [02]: Define IMC Policies · 01 · env-sigs (caps)] ---")
+;;==== TX-02 [4.1.2] - Dalos INIT [02]: Define IMC Policies · 01 · env-sigs (caps) ==== ===========
+(print "--- [TX-02 [4.1.2] - Dalos INIT [02]: Define IMC Policies · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== TX-02 [4.1.2] - Dalos INIT [02]: Define IMC Policies · 02 · let / invocation ==== ==========
+(print "--- [TX-02 [4.1.2] - Dalos INIT [02]: Define IMC Policies · 02 · let / invocation] ---")
 ;;==== TX-02 [4.1.2] - Dalos INIT [02]: Define IMC Policies · 02 · let / invocation ==== ==========
 (print "--- [TX-02 [4.1.2] - Dalos INIT [02]: Define IMC Policies · 02 · let / invocation] ---")
 (let
@@ -202,12 +212,16 @@
 
 ;;==== TX-03 [4.1.3] - Dalos INIT [03]: Insert Dalos Table Data · 01 · env-sigs (caps) ==== =======
 (print "--- [TX-03 [4.1.3] - Dalos INIT [03]: Insert Dalos Table Data · 01 · env-sigs (caps)] ---")
+;;==== TX-03 [4.1.3] - Dalos INIT [03]: Insert Dalos Table Data · 01 · env-sigs (caps) ==== =======
+(print "--- [TX-03 [4.1.3] - Dalos INIT [03]: Insert Dalos Table Data · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== TX-03 [4.1.3] - Dalos INIT [03]: Insert Dalos Table Data · 02 · let / invocation ==== ======
+(print "--- [TX-03 [4.1.3] - Dalos INIT [03]: Insert Dalos Table Data · 02 · let / invocation] ---")
 ;;==== TX-03 [4.1.3] - Dalos INIT [03]: Insert Dalos Table Data · 02 · let / invocation ==== ======
 (print "--- [TX-03 [4.1.3] - Dalos INIT [03]: Insert Dalos Table Data · 02 · let / invocation] ---")
 (let
@@ -334,6 +348,8 @@
 
 ;;==== TX-04 [4.1.4] - Dalos INIT [05]: Insert Dalos Table Data · 01 · env-sigs (caps) ==== =======
 (print "--- [TX-04 [4.1.4] - Dalos INIT [05]: Insert Dalos Table Data · 01 · env-sigs (caps)] ---")
+;;==== TX-04 [4.1.4] - Dalos INIT [05]: Insert Dalos Table Data · 01 · env-sigs (caps) ==== =======
+(print "--- [TX-04 [4.1.4] - Dalos INIT [05]: Insert Dalos Table Data · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -346,6 +362,8 @@
     ]
 )
 
+;;==== TX-04 [4.1.4] - Dalos INIT [05]: Insert Dalos Table Data · 02 · let / invocation ==== ======
+(print "--- [TX-04 [4.1.4] - Dalos INIT [05]: Insert Dalos Table Data · 02 · let / invocation] ---")
 ;;==== TX-04 [4.1.4] - Dalos INIT [05]: Insert Dalos Table Data · 02 · let / invocation ==== ======
 (print "--- [TX-04 [4.1.4] - Dalos INIT [05]: Insert Dalos Table Data · 02 · let / invocation] ---")
 (let
@@ -525,6 +543,8 @@
 
 ;;==== TX-05 [4.1.5] - Dalos INIT [05]: Mint Primordial Tokens · 01 · env-sigs (caps) ==== ========
 (print "--- [TX-05 [4.1.5] - Dalos INIT [05]: Mint Primordial Tokens · 01 · env-sigs (caps)] ---")
+;;==== TX-05 [4.1.5] - Dalos INIT [05]: Mint Primordial Tokens · 01 · env-sigs (caps) ==== ========
+(print "--- [TX-05 [4.1.5] - Dalos INIT [05]: Mint Primordial Tokens · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -532,6 +552,8 @@
     ]
 )
 
+;;==== TX-05 [4.1.5] - Dalos INIT [05]: Mint Primordial Tokens · 02 · let / invocation ==== =======
+(print "--- [TX-05 [4.1.5] - Dalos INIT [05]: Mint Primordial Tokens · 02 · let / invocation] ---")
 ;;==== TX-05 [4.1.5] - Dalos INIT [05]: Mint Primordial Tokens · 02 · let / invocation ==== =======
 (print "--- [TX-05 [4.1.5] - Dalos INIT [05]: Mint Primordial Tokens · 02 · let / invocation] ---")
 (let
@@ -757,6 +779,8 @@
 
 ;;==== TX-06 [4.1.6] - Dalos INIT [06]: Issue Vested Snake Tokens · 01 · env-sigs (caps) ==== =====
 (print "--- [TX-06 [4.1.6] - Dalos INIT [06]: Issue Vested Snake Tokens · 01 · env-sigs (caps)] ---")
+;;==== TX-06 [4.1.6] - Dalos INIT [06]: Issue Vested Snake Tokens · 01 · env-sigs (caps) ==== =====
+(print "--- [TX-06 [4.1.6] - Dalos INIT [06]: Issue Vested Snake Tokens · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -764,6 +788,8 @@
     ]
 )
 
+;;==== TX-06 [4.1.6] - Dalos INIT [06]: Issue Vested Snake Tokens · 02 · let / invocation ==== ====
+(print "--- [TX-06 [4.1.6] - Dalos INIT [06]: Issue Vested Snake Tokens · 02 · let / invocation] ---")
 ;;==== TX-06 [4.1.6] - Dalos INIT [06]: Issue Vested Snake Tokens · 02 · let / invocation ==== ====
 (print "--- [TX-06 [4.1.6] - Dalos INIT [06]: Issue Vested Snake Tokens · 02 · let / invocation] ---")
 (let
@@ -799,12 +825,16 @@
 
 ;;==== TX-07 [4.1.7] - Dalos INIT [07]: Issue Primordial Autostake Pairs · 01 · env-sigs (caps) ==== 
 (print "--- [TX-07 [4.1.7] - Dalos INIT [07]: Issue Primordial Autostake Pairs · 01 · env-sigs (caps)] ---")
+;;==== TX-07 [4.1.7] - Dalos INIT [07]: Issue Primordial Autostake Pairs · 01 · env-sigs (caps) ==== 
+(print "--- [TX-07 [4.1.7] - Dalos INIT [07]: Issue Primordial Autostake Pairs · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== TX-07 [4.1.7] - Dalos INIT [07]: Issue Primordial Autostake Pairs · 02 · let / invocation ==== 
+(print "--- [TX-07 [4.1.7] - Dalos INIT [07]: Issue Primordial Autostake Pairs · 02 · let / invocation] ---")
 ;;==== TX-07 [4.1.7] - Dalos INIT [07]: Issue Primordial Autostake Pairs · 02 · let / invocation ==== 
 (print "--- [TX-07 [4.1.7] - Dalos INIT [07]: Issue Primordial Autostake Pairs · 02 · let / invocation] ---")
 (let
@@ -879,12 +909,16 @@
 
 ;;==== TX-08 [4.1.8] - Dalos INIT [08]: Mint Ouroboros Token · 01 · env-sigs (caps) ==== ==========
 (print "--- [TX-08 [4.1.8] - Dalos INIT [08]: Mint Ouroboros Token · 01 · env-sigs (caps)] ---")
+;;==== TX-08 [4.1.8] - Dalos INIT [08]: Mint Ouroboros Token · 01 · env-sigs (caps) ==== ==========
+(print "--- [TX-08 [4.1.8] - Dalos INIT [08]: Mint Ouroboros Token · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== TX-08 [4.1.8] - Dalos INIT [08]: Mint Ouroboros Token · 02 · let / invocation ==== =========
+(print "--- [TX-08 [4.1.8] - Dalos INIT [08]: Mint Ouroboros Token · 02 · let / invocation] ---")
 ;;==== TX-08 [4.1.8] - Dalos INIT [08]: Mint Ouroboros Token · 02 · let / invocation ==== =========
 (print "--- [TX-08 [4.1.8] - Dalos INIT [08]: Mint Ouroboros Token · 02 · let / invocation] ---")
 (let
@@ -920,12 +954,16 @@
 
 ;;==== TX-09 [4.1.9] - Dalos INIT [09]: Make Startup GAS(IGNIS) · 01 · env-sigs (caps) ==== =======
 (print "--- [TX-09 [4.1.9] - Dalos INIT [09]: Make Startup GAS(IGNIS) · 01 · env-sigs (caps)] ---")
+;;==== TX-09 [4.1.9] - Dalos INIT [09]: Make Startup GAS(IGNIS) · 01 · env-sigs (caps) ==== =======
+(print "--- [TX-09 [4.1.9] - Dalos INIT [09]: Make Startup GAS(IGNIS) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== TX-09 [4.1.9] - Dalos INIT [09]: Make Startup GAS(IGNIS) · 02 · let / invocation ==== ======
+(print "--- [TX-09 [4.1.9] - Dalos INIT [09]: Make Startup GAS(IGNIS) · 02 · let / invocation] ---")
 ;;==== TX-09 [4.1.9] - Dalos INIT [09]: Make Startup GAS(IGNIS) · 02 · let / invocation ==== ======
 (print "--- [TX-09 [4.1.9] - Dalos INIT [09]: Make Startup GAS(IGNIS) · 02 · let / invocation] ---")
 (let
@@ -962,6 +1000,8 @@
 
 ;;==== TX-10 [4.1.10] - Dalos INIT [10]: Setup WSTOA and SSTOA · 01 · env-sigs (caps) ==== ==========
 (print "--- [TX-10 [4.1.10] - Dalos INIT [10]: Setup WSTOA and SSTOA · 01 · env-sigs (caps)] ---")
+;;==== TX-10 [4.1.10] - Dalos INIT [10]: Setup WSTOA and SSTOA · 01 · env-sigs (caps) ==== ========
+(print "--- [TX-10 [4.1.10] - Dalos INIT [10]: Setup WSTOA and SSTOA · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -969,6 +1009,8 @@
 )
 
 ;;==== TX-10 [4.1.10] - Dalos INIT [10]: Setup WSTOA and SSTOA · 02 · let / invocation ==== =========
+(print "--- [TX-10 [4.1.10] - Dalos INIT [10]: Setup WSTOA and SSTOA · 02 · let / invocation] ---")
+;;==== TX-10 [4.1.10] - Dalos INIT [10]: Setup WSTOA and SSTOA · 02 · let / invocation ==== =======
 (print "--- [TX-10 [4.1.10] - Dalos INIT [10]: Setup WSTOA and SSTOA · 02 · let / invocation] ---")
 (let
     (
@@ -1022,6 +1064,8 @@
 
 ;;==== TX-11 [4.1.11] - Dalos INIT [11]: Wrap Stoa · 01 · env-sigs (caps) ==== ==================
 (print "--- [TX-11 [4.1.11] - Dalos INIT [11]: Wrap Stoa · 01 · env-sigs (caps)] ---")
+;;==== TX-11 [4.1.11] - Dalos INIT [11]: Wrap Stoa · 01 · env-sigs (caps) ==== ====================
+(print "--- [TX-11 [4.1.11] - Dalos INIT [11]: Wrap Stoa · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -1038,6 +1082,8 @@
 )
 
 ;;==== TX-11 [4.1.11] - Dalos INIT [11]: Wrap Stoa · 02 · let / invocation ==== =================
+(print "--- [TX-11 [4.1.11] - Dalos INIT [11]: Wrap Stoa · 02 · let / invocation] ---")
+;;==== TX-11 [4.1.11] - Dalos INIT [11]: Wrap Stoa · 02 · let / invocation ==== ===================
 (print "--- [TX-11 [4.1.11] - Dalos INIT [11]: Wrap Stoa · 02 · let / invocation] ---")
 (let
     (
@@ -1066,6 +1112,8 @@
 (env-data
     { "ur-sp-ks": { "keys": [ "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ], "pred": "keys-all" } })
 ;; genesis foundation authorizes the UrStoa fuel to the patron (mirrors alice->k:6fa native fuel in [0.0]_Starter)
+;;==== TX-11a [4.1.11a] - Dalos INIT [11a]: Setup UrStoa (parallel to WSTOA) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-11a [4.1.11a] - Dalos INIT [11a]: Setup UrStoa (parallel to WSTOA) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74",
@@ -1075,6 +1123,8 @@
 )
 ;;==== TX-11a [4.1.11a] - Setup UrStoa · 02 · liquid UR account + patron UrStoa fuel ==== =========
 (print "--- [TX-11a [4.1.11a] - Setup UrStoa · 02 · liquid UR account + patron UrStoa fuel] ---")
+;;==== TX-11a [4.1.11a] - Dalos INIT [11a]: Setup UrStoa (parallel to WSTOA) · 02 · let / invocation ==== 
+(print "--- [TX-11a [4.1.11a] - Dalos INIT [11a]: Setup UrStoa (parallel to WSTOA) · 02 · let / invocation] ---")
 (let
     (
         (ref-ur-coin:module{stoa-ns.ur-stoic-fungible-v1} coin)
@@ -1087,12 +1137,18 @@
     (ref-ur-coin::C_UR|TransferAnew "stoa-foundation" (ref-DALOS::UR_AccountStoa patron) (read-keyset "ur-sp-ks") 250000.0)
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 (begin-tx "TX-11b [4.1.11b] - Dalos INIT [11b]: Wrap UrStoa (mirror WrapStoa)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-11b [4.1.11b] - Wrap UrStoa · 01 · env-sigs ==== ========================================
 (print "--- [TX-11b [4.1.11b] - Wrap UrStoa · 01 · env-sigs] ---")
+;;==== TX-11b [4.1.11b] - Dalos INIT [11b]: Wrap UrStoa (mirror WrapStoa) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-11b [4.1.11b] - Dalos INIT [11b]: Wrap UrStoa (mirror WrapStoa) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -1104,6 +1160,8 @@
 )
 ;;==== TX-11b [4.1.11b] - Wrap UrStoa · 02 · WrapUrStoa + UnwrapUrStoa ==== =======================
 (print "--- [TX-11b [4.1.11b] - Wrap UrStoa · 02 · wrap + unwrap] ---")
+;;==== TX-11b [4.1.11b] - Dalos INIT [11b]: Wrap UrStoa (mirror WrapStoa) · 02 · let / invocation ==== 
+(print "--- [TX-11b [4.1.11b] - Dalos INIT [11b]: Wrap UrStoa (mirror WrapStoa) · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
@@ -1150,6 +1208,8 @@
 
 ;;==== TX-12 [4.1.12] - Dalos INIT [12]: Coil Wrapped Stoa · 01 · env-sigs (caps) ==== ==========
 (print "--- [TX-12 [4.1.12] - Dalos INIT [12]: Coil Wrapped Stoa · 01 · env-sigs (caps)] ---")
+;;==== TX-12 [4.1.12] - Dalos INIT [12]: Coil Wrapped Stoa · 01 · env-sigs (caps) ==== ============
+(print "--- [TX-12 [4.1.12] - Dalos INIT [12]: Coil Wrapped Stoa · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -1157,6 +1217,8 @@
 )
 
 ;;==== TX-12 [4.1.12] - Dalos INIT [12]: Coil Wrapped Stoa · 02 · let / invocation ==== =========
+(print "--- [TX-12 [4.1.12] - Dalos INIT [12]: Coil Wrapped Stoa · 02 · let / invocation] ---")
+;;==== TX-12 [4.1.12] - Dalos INIT [12]: Coil Wrapped Stoa · 02 · let / invocation ==== ===========
 (print "--- [TX-12 [4.1.12] - Dalos INIT [12]: Coil Wrapped Stoa · 02 · let / invocation] ---")
 (let
     (
@@ -1191,12 +1253,16 @@
 
 ;;==== TX-13 [4.1.13] - Dalos INIT [13]: KickStart Auryndex · 01 · env-sigs (caps) ==== ===========
 (print "--- [TX-13 [4.1.13] - Dalos INIT [13]: KickStart Auryndex · 01 · env-sigs (caps)] ---")
+;;==== TX-13 [4.1.13] - Dalos INIT [13]: KickStart Auryndex · 01 · env-sigs (caps) ==== ===========
+(print "--- [TX-13 [4.1.13] - Dalos INIT [13]: KickStart Auryndex · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== TX-13 [4.1.13] - Dalos INIT [13]: KickStart Auryndex · 02 · let / invocation ==== ==========
+(print "--- [TX-13 [4.1.13] - Dalos INIT [13]: KickStart Auryndex · 02 · let / invocation] ---")
 ;;==== TX-13 [4.1.13] - Dalos INIT [13]: KickStart Auryndex · 02 · let / invocation ==== ==========
 (print "--- [TX-13 [4.1.13] - Dalos INIT [13]: KickStart Auryndex · 02 · let / invocation] ---")
 (let
@@ -1229,12 +1295,16 @@
 
 ;;==== TX-14 [4.1.14] - Dalos INIT [14]: Kickstart EliteAuryndex · 01 · env-sigs (caps) ==== ======
 (print "--- [TX-14 [4.1.14] - Dalos INIT [14]: Kickstart EliteAuryndex · 01 · env-sigs (caps)] ---")
+;;==== TX-14 [4.1.14] - Dalos INIT [14]: Kickstart EliteAuryndex · 01 · env-sigs (caps) ==== ======
+(print "--- [TX-14 [4.1.14] - Dalos INIT [14]: Kickstart EliteAuryndex · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== TX-14 [4.1.14] - Dalos INIT [14]: Kickstart EliteAuryndex · 02 · let / invocation ==== =====
+(print "--- [TX-14 [4.1.14] - Dalos INIT [14]: Kickstart EliteAuryndex · 02 · let / invocation] ---")
 ;;==== TX-14 [4.1.14] - Dalos INIT [14]: Kickstart EliteAuryndex · 02 · let / invocation ==== =====
 (print "--- [TX-14 [4.1.14] - Dalos INIT [14]: Kickstart EliteAuryndex · 02 · let / invocation] ---")
 (let
@@ -1267,12 +1337,16 @@
 
 ;;==== TX-15 [4.1.15] - Dalos INIT [15]: Transmute · 01 · env-sigs (caps) ==== ====================
 (print "--- [TX-15 [4.1.15] - Dalos INIT [15]: Transmute · 01 · env-sigs (caps)] ---")
+;;==== TX-15 [4.1.15] - Dalos INIT [15]: Transmute · 01 · env-sigs (caps) ==== ====================
+(print "--- [TX-15 [4.1.15] - Dalos INIT [15]: Transmute · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== TX-15 [4.1.15] - Dalos INIT [15]: Transmute · 02 · let / invocation ==== ===================
+(print "--- [TX-15 [4.1.15] - Dalos INIT [15]: Transmute · 02 · let / invocation] ---")
 ;;==== TX-15 [4.1.15] - Dalos INIT [15]: Transmute · 02 · let / invocation ==== ===================
 (print "--- [TX-15 [4.1.15] - Dalos INIT [15]: Transmute · 02 · let / invocation] ---")
 (let
@@ -1303,12 +1377,16 @@
 
 ;;==== TX-16 [4.1.16] - Dalos INIT [16]: Transfer · 01 · env-sigs (caps) ==== =====================
 (print "--- [TX-16 [4.1.16] - Dalos INIT [16]: Transfer · 01 · env-sigs (caps)] ---")
+;;==== TX-16 [4.1.16] - Dalos INIT [16]: Transfer · 01 · env-sigs (caps) ==== =====================
+(print "--- [TX-16 [4.1.16] - Dalos INIT [16]: Transfer · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== TX-16 [4.1.16] - Dalos INIT [16]: Transfer · 02 · let / invocation ==== ====================
+(print "--- [TX-16 [4.1.16] - Dalos INIT [16]: Transfer · 02 · let / invocation] ---")
 ;;==== TX-16 [4.1.16] - Dalos INIT [16]: Transfer · 02 · let / invocation ==== ====================
 (print "--- [TX-16 [4.1.16] - Dalos INIT [16]: Transfer · 02 · let / invocation] ---")
 (let
@@ -1346,12 +1424,16 @@
 
 ;;==== TX-17 [4.1.17] - Dalos INIT [17]: Issue Special Tokens · 01 · env-sigs (caps) ==== =========
 (print "--- [TX-17 [4.1.17] - Dalos INIT [17]: Issue Special Tokens · 01 · env-sigs (caps)] ---")
+;;==== TX-17 [4.1.17] - Dalos INIT [17]: Issue Special Tokens · 01 · env-sigs (caps) ==== =========
+(print "--- [TX-17 [4.1.17] - Dalos INIT [17]: Issue Special Tokens · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== TX-17 [4.1.17] - Dalos INIT [17]: Issue Special Tokens · 02 · let / invocation ==== ========
+(print "--- [TX-17 [4.1.17] - Dalos INIT [17]: Issue Special Tokens · 02 · let / invocation] ---")
 ;;==== TX-17 [4.1.17] - Dalos INIT [17]: Issue Special Tokens · 02 · let / invocation ==== ========
 (print "--- [TX-17 [4.1.17] - Dalos INIT [17]: Issue Special Tokens · 02 · let / invocation] ---")
 (let
@@ -1447,12 +1529,16 @@
 
 ;;==== TX-18 [4.1.18] - Dalos INIT [18]: SWP Setup 1 · 01 · env-sigs (caps) ==== ==================
 (print "--- [TX-18 [4.1.18] - Dalos INIT [18]: SWP Setup 1 · 01 · env-sigs (caps)] ---")
+;;==== TX-18 [4.1.18] - Dalos INIT [18]: SWP Setup 1 · 01 · env-sigs (caps) ==== ==================
+(print "--- [TX-18 [4.1.18] - Dalos INIT [18]: SWP Setup 1 · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== TX-18 [4.1.18] - Dalos INIT [18]: SWP Setup 1 · 02 · let / invocation ==== =================
+(print "--- [TX-18 [4.1.18] - Dalos INIT [18]: SWP Setup 1 · 02 · let / invocation] ---")
 ;;==== TX-18 [4.1.18] - Dalos INIT [18]: SWP Setup 1 · 02 · let / invocation ==== =================
 (print "--- [TX-18 [4.1.18] - Dalos INIT [18]: SWP Setup 1 · 02 · let / invocation] ---")
 (let
@@ -1530,12 +1616,16 @@
 
 ;;==== TX-18 [4.1.19] - Dalos INIT [19]: SWP Setup 2 · 01 · env-sigs (caps) ==== ==================
 (print "--- [TX-18 [4.1.19] - Dalos INIT [19]: SWP Setup 2 · 01 · env-sigs (caps)] ---")
+;;==== TX-18 [4.1.19] - Dalos INIT [19]: SWP Setup 2 · 01 · env-sigs (caps) ==== ==================
+(print "--- [TX-18 [4.1.19] - Dalos INIT [19]: SWP Setup 2 · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== TX-18 [4.1.19] - Dalos INIT [19]: SWP Setup 2 · 02 · let / invocation ==== =================
+(print "--- [TX-18 [4.1.19] - Dalos INIT [19]: SWP Setup 2 · 02 · let / invocation] ---")
 ;;==== TX-18 [4.1.19] - Dalos INIT [19]: SWP Setup 2 · 02 · let / invocation ==== =================
 (print "--- [TX-18 [4.1.19] - Dalos INIT [19]: SWP Setup 2 · 02 · let / invocation] ---")
 (let
@@ -1607,12 +1697,16 @@
 
 ;;==== TX-02 [4.1.2] - Dalos INIT [02]: Define IMC Policies · 01 · env-sigs (caps) ==== ===========
 (print "--- [TX-02 [4.1.2] - Dalos INIT [02]: Define IMC Policies · 01 · env-sigs (caps)] ---")
+;;==== TX-02 [4.1.2] - Dalos INIT [02]: Define IMC Policies · 01 · env-sigs (caps) ==== ===========
+(print "--- [TX-02 [4.1.2] - Dalos INIT [02]: Define IMC Policies · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
         ;{ "key": "PK_Emma", "caps": [] }
     ]
 )
+;;==== TX-02 [4.1.2] - Dalos INIT [02]: Define IMC Policies · 02 · let / invocation ==== ==========
+(print "--- [TX-02 [4.1.2] - Dalos INIT [02]: Define IMC Policies · 02 · let / invocation] ---")
 ;;==== TX-02 [4.1.2] - Dalos INIT [02]: Define IMC Policies · 02 · let / invocation ==== ==========
 (print "--- [TX-02 [4.1.2] - Dalos INIT [02]: Define IMC Policies · 02 · let / invocation] ---")
 (let

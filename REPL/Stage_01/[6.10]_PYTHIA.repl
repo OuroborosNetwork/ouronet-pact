@@ -16,6 +16,8 @@
 ;;
 (begin-tx "TX000 INIT - chain data + PYTHIA placeholder env-data")
 (namespace "ouronet-ns")
+;;==== TX000 INIT - chain data + PYTHIA placeholder env-data · 01 · env-chain-data ==== ===========
+(print "--- [TX000 INIT - chain data + PYTHIA placeholder env-data · 01 · env-chain-data] ---")
 (env-chain-data
     {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
      "block-time": TV.TIME00,
@@ -39,11 +41,17 @@
     }
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 (begin-tx "TX001 - deploy Standard half")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "=== TX001 — C_DeployApiKey (Standard ₱.) =================================")
+;;==== TX001 - deploy Standard half · 01 · let / invocation ==== ==================================
+(print "--- [TX001 - deploy Standard half · 01 · let / invocation] ---")
 (let
     (
         (apollo-std:string (read-string "PYTHIA|APOLLO-STANDARD"))
@@ -124,11 +132,17 @@
     )
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 (begin-tx "TX002 - deploy Smart half")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "=== TX002 — C_DeployApiKey (Smart Π.) ===================================")
+;;==== TX002 - deploy Smart half · 01 · let / invocation ==== =====================================
+(print "--- [TX002 - deploy Smart half · 01 · let / invocation] ---")
 (let
     (
         (apollo-smt:string (read-string "PYTHIA|APOLLO-SMART"))
@@ -169,11 +183,17 @@
     )
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 (begin-tx "TX003 - C_Link inactive dual row")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "=== TX003 — C_Link (inactive) ===========================================")
+;;==== TX003 - C_Link inactive dual row · 01 · let / invocation ==== ==============================
+(print "--- [TX003 - C_Link inactive dual row · 01 · let / invocation] ---")
 (let
     (
         (apollo-std:string (read-string "PYTHIA|APOLLO-STANDARD"))
@@ -226,11 +246,17 @@
     )
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 (begin-tx "TX004 - A_Link Cronoton activate")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "=== TX004 — A_Link (Cronoton activate) ==================================")
+;;==== TX004 - A_Link Cronoton activate · 01 · let / invocation ==== ==============================
+(print "--- [TX004 - A_Link Cronoton activate · 01 · let / invocation] ---")
 (let
     (
         (apollo-std:string (read-string "PYTHIA|APOLLO-STANDARD"))
@@ -271,11 +297,17 @@
     )
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 (begin-tx "TX005 - C_RevokeLink owner + IGNIS")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "=== TX005 — C_RevokeLink (owner) ========================================")
+;;==== TX005 - C_RevokeLink owner + IGNIS · 01 · let / invocation ==== ============================
+(print "--- [TX005 - C_RevokeLink owner + IGNIS · 01 · let / invocation] ---")
 (let
     (
         (apollo-std:string (read-string "PYTHIA|APOLLO-STANDARD"))
@@ -321,11 +353,17 @@
     )
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 (begin-tx "TX006 - A_Link re-activate + rename")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "=== TX006 — A_Link re-activate + rename =================================")
+;;==== TX006 - A_Link re-activate + rename · 01 · let / invocation ==== ===========================
+(print "--- [TX006 - A_Link re-activate + rename · 01 · let / invocation] ---")
 (let
     (
         (apollo-std:string (read-string "PYTHIA|APOLLO-STANDARD"))
@@ -394,12 +432,20 @@
     )
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 (begin-tx "TX007 - keyless reads")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "=== TX007 — keyless UR/URD reads ========================================")
+;;==== TX007 - keyless reads · 01 · env-sigs (caps) ==== ==========================================
+(print "--- [TX007 - keyless reads · 01 · env-sigs (caps)] ---")
 (env-sigs [])
+;;==== TX007 - keyless reads · 02 · let / invocation ==== =========================================
+(print "--- [TX007 - keyless reads · 02 · let / invocation] ---")
 (let
     (
         (apollo-std:string (read-string "PYTHIA|APOLLO-STANDARD"))
@@ -428,6 +474,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "=== TX007a — C_DeployApiKey Standard pair-2 ===============================")
+;;==== TX007a - deploy Standard half pair-2 · 01 · let / invocation ==== ==========================
+(print "--- [TX007a - deploy Standard half pair-2 · 01 · let / invocation] ---")
 (let
     (
         (apollo-std:string (read-string "PYTHIA|APOLLO-STANDARD-2"))
@@ -477,6 +525,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "=== TX007b — C_DeployApiKey Smart pair-2 =================================")
+;;==== TX007b - deploy Smart half pair-2 · 01 · let / invocation ==== =============================
+(print "--- [TX007b - deploy Smart half pair-2 · 01 · let / invocation] ---")
 (let
     (
         (apollo-smt:string (read-string "PYTHIA|APOLLO-SMART-2"))
@@ -531,7 +581,11 @@
 )
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "=== TX007c — A_Link create+activate (no C_Link; auto PYTHIA-<hash12>) ===")
+;;==== TX007c - A_Link create+activate without C_Link · 01 · env-sigs (caps) ==== =================
+(print "--- [TX007c - A_Link create+activate without C_Link · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX007c - A_Link create+activate without C_Link · 02 · let / invocation ==== ================
+(print "--- [TX007c - A_Link create+activate without C_Link · 02 · let / invocation] ---")
 (let
     (
         (apollo-std:string (read-string "PYTHIA|APOLLO-STANDARD-2"))
@@ -581,7 +635,11 @@
 ;; two writes (iz-active false + XI_RecordRevocationAtHeight) through DIFFERENT caps:
 ;; A>REVOKE-DUAL (PYTHIA|CRONOTON keyset) vs C>REVOKE-DUAL (PYTHIA|OWNER of a half).
 ;; Pair-2 was created ACTIVE by A_Link in TX007c, so it is revocable here.
+;;==== TX007d - A_RevokeLink Cronoton patronless + adversarial · 01 · env-sigs (caps) ==== ========
+(print "--- [TX007d - A_RevokeLink Cronoton patronless + adversarial · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX007d - A_RevokeLink Cronoton patronless + adversarial · 02 · let / invocation ==== =======
+(print "--- [TX007d - A_RevokeLink Cronoton patronless + adversarial · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
@@ -731,7 +789,11 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "=== TX008 — Pyth ledger empty state =====================================")
+;;==== TX008 - Pyth ledger empty reads · 01 · env-sigs (caps) ==== ================================
+(print "--- [TX008 - Pyth ledger empty reads · 01 · env-sigs (caps)] ---")
 (env-sigs [])
+;;==== TX008 - Pyth ledger empty reads · 02 · let / invocation ==== ===============================
+(print "--- [TX008 - Pyth ledger empty reads · 02 · let / invocation] ---")
 (let
     (
         (ref-LEDGER:module{PythiaLedgerV3} PYTHIA)
@@ -772,7 +834,11 @@
 ;;
 ;; A dual-link key is standard(162) + BAR + smart(162) = 325. Both trips below keep every other
 ;; property intact and break exactly one, so neither can pass for the wrong reason.
+;;==== TX007e - the dual-link validators, as mirror images · 01 · env-sigs (caps) ==== ============
+(print "--- [TX007e - the dual-link validators, as mirror images · 01 · env-sigs (caps)] ---")
 (env-sigs [])
+;;==== TX007e - the dual-link validators, as mirror images · 02 · let / invocation ==== ===========
+(print "--- [TX007e - the dual-link validators, as mirror images · 02 · let / invocation] ---")
 (let
     (
         (ref-PYTHIA:module{PythiaV5} PYTHIA)
@@ -890,6 +956,10 @@
 (print "")
 (print "===^^^===")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 (begin-tx "TX007f - deploy a THIRD standard half, free, to reach the smart-half guard")
 (namespace "ouronet-ns")
@@ -900,6 +970,8 @@
 ;;standard half in the suite is already linked: the first enforce answers before the second is
 ;;asked. Reaching it needs one standard half that is deployed and FREE, which is all this
 ;;transaction creates. It is never linked, on purpose.
+;;==== TX007f - deploy a THIRD standard half, free, to reach the smart-half guard · 01 · let / invocation ==== 
+(print "--- [TX007f - deploy a THIRD standard half, free, to reach the smart-half guard · 01 · let / invocation] ---")
 (let
     (
         (apollo-std3:string (read-string "PYTHIA|APOLLO-STANDARD-3"))
@@ -933,8 +1005,14 @@
     )
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 (begin-tx "TX007g - the smart-half guard, and three siblings that CANNOT be reached")
+;;==== TX007g - the smart-half guard, and three siblings that CANNOT be reached · 01 · namespace ==== 
+(print "--- [TX007g - the smart-half guard, and three siblings that CANNOT be reached · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX007g · 01 · UEV_DualPairForLink, second enforce ==== =====================================
@@ -943,6 +1021,8 @@
 ;;past the first enforce and lands on the second. Both preconditions are asserted rather than
 ;;assumed -- the third half free, the smart half taken -- because if either were wrong this test
 ;;would still fail, just for the wrong reason, and would read as a pass.
+;;==== TX007g - the smart-half guard, and three siblings that CANNOT be reached · 02 · let / invocation ==== 
+(print "--- [TX007g - the smart-half guard, and three siblings that CANNOT be reached · 02 · let / invocation] ---")
 (let
     (
         (ref-PYTHIA:module{PythiaV5} PYTHIA)

@@ -16,7 +16,11 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [TX-I01 · 01 · DALOS INFO smoke] ---")
+;;==== TX-I01 - INFO DALOS: INFO_DALOS|* previews return well-formed ClientInfo · 01 · env-sigs (caps) ==== 
+(print "--- [TX-I01 - INFO DALOS: INFO_DALOS|* previews return well-formed ClientInfo · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-I01 - INFO DALOS: INFO_DALOS|* previews return well-formed ClientInfo · 02 · let / invocation ==== 
+(print "--- [TX-I01 - INFO DALOS: INFO_DALOS|* previews return well-formed ClientInfo · 02 · let / invocation] ---")
 (let
     (
         (p:string KST.ANHD)
@@ -51,7 +55,11 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [TX-I02 · 01 · DPTF INFO smoke] ---")
+;;==== TX-I02 - INFO DPTF: INFO_DPTF|* previews return well-formed ClientInfo (URCi-sourced) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-I02 - INFO DPTF: INFO_DPTF|* previews return well-formed ClientInfo (URCi-sourced) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-I02 - INFO DPTF: INFO_DPTF|* previews return well-formed ClientInfo (URCi-sourced) · 02 · let / invocation ==== 
+(print "--- [TX-I02 - INFO DPTF: INFO_DPTF|* previews return well-formed ClientInfo (URCi-sourced) · 02 · let / invocation] ---")
 (let
     (
         (p:string KST.ANHD)
@@ -95,11 +103,15 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [TX-I03 · 01 · DPOF INFO smoke] ---")
+;;==== TX-I03 - INFO DPOF: INFO_DPOF|* previews return well-formed ClientInfo (URCi-sourced) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-I03 - INFO DPOF: INFO_DPOF|* previews return well-formed ClientInfo (URCi-sourced) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 ;; NOTE: [6.11] loads before any DPOF is issued, so id-dependent DPOF readers (Control/Mint/
 ;; AddQuantity/Burn/UpdatePendingBranding) have no valid DPOF id here. They mirror the proven
 ;; DPTF UDC_*Cumulator(UR_Konto id) pattern exactly (green in TX-I02). Assert the id-independent
 ;; readers (Issue / DeployAccount / UpgradeBranding), which fully exercise the URCi wiring.
+;;==== TX-I03 - INFO DPOF: INFO_DPOF|* previews return well-formed ClientInfo (URCi-sourced) · 02 · let / invocation ==== 
+(print "--- [TX-I03 - INFO DPOF: INFO_DPOF|* previews return well-formed ClientInfo (URCi-sourced) · 02 · let / invocation] ---")
 (let
     (
         (p:string KST.ANHD)
@@ -127,12 +139,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [TX-I04 · 01 · VST INFO smoke] ---")
+;;==== TX-I04 - INFO VST: INFO_VST|* previews return well-formed ClientInfo (URCi-sourced) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-I04 - INFO VST: INFO_VST|* previews return well-formed ClientInfo (URCi-sourced) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 ;; NOTE: [6.11] loads before any VST special-link / vesting / sleeping / hibernating state is
 ;; created, so the state-dependent VST readers have nothing to read here. All 27 INFO_VST|* are
 ;; wiring-verified at load; their cost is the exec single-source (URCi_*), exercised by [6.7]_VST.
 ;; The two TrueFungible-link readers only read the underlying DPTF Konto (OURO exists), so they
 ;; execute end-to-end here and confirm the INFO_VST| wrapper shape.
+;;==== TX-I04 - INFO VST: INFO_VST|* previews return well-formed ClientInfo (URCi-sourced) · 02 · let / invocation ==== 
+(print "--- [TX-I04 - INFO VST: INFO_VST|* previews return well-formed ClientInfo (URCi-sourced) · 02 · let / invocation] ---")
 (let
     (
         (p:string KST.ANHD)
@@ -154,12 +170,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [TX-I05 · 01 · ATS INFO smoke] ---")
+;;==== TX-I05 - INFO ATS: previously-broken ATS previews now execute end-to-end · 01 · env-sigs (caps) ==== 
+(print "--- [TX-I05 - INFO ATS: previously-broken ATS previews now execute end-to-end · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 ;; REGRESSION GUARD. Three INFO_ATS|* wrappers passed <ats> to URCi_ readers that take a
 ;; DIFFERENT number of parameters (ToggleParameterLock takes 2, AddSecondary and
 ;; SetColdRecoveryFees take 0). Pact does not arity-check module-reference calls at load, so
 ;; INFO-ONE deployed clean and these three failed only when actually called — which no test did.
 ;; They are exercised here so the next arity slip cannot hide.
+;;==== TX-I05 - INFO ATS: previously-broken ATS previews now execute end-to-end · 02 · let / invocation ==== 
+(print "--- [TX-I05 - INFO ATS: previously-broken ATS previews now execute end-to-end · 02 · let / invocation] ---")
 (let
     (
         (p:string KST.ANHD)
@@ -203,6 +223,8 @@
 ;;The batch deliberately spans four different full costs (9, 14, 25, 29) rather than repeating one
 ;;operation: a discount applied as a constant instead of a multiplier would still satisfy a
 ;;single-value check.
+;;==== TX-I-COST - INFO cost integrity: numbers agree with numbers, and with the text · 01 · env-sigs (caps) ==== 
+(print "--- [TX-I-COST - INFO cost integrity: numbers agree with numbers, and with the text · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (

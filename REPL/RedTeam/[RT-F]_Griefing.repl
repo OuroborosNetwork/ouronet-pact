@@ -1,4 +1,17 @@
 ;;
+;; REPL/RedTeam/[RT-F]_Griefing.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/RedTeam/[RT-F]_Griefing.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
+;;
 ;; REPL/RedTeam/[RT-F]_Griefing.repl — FAMILY F: griefing / denial of service.
 ;;
 ;; "Can I make someone ELSE's operation impossible?"
@@ -69,7 +82,11 @@
 ;;AND THE FOURTH DEFPACT IN THE SAME FILE IS THE SPECIFICATION: `MTX|C_Issue` validates in step 0
 ;;and collects in step 1 — validation before money, same file, same author. When one member of a
 ;;family of identical ops is built the other way round, the odd one out is the design.
+;;==== RT-F-001 - destroy a stranger's add-liquidity fee with one ordinary swap · 01 · env-sigs (caps) ==== 
+(print "--- [RT-F-001 - destroy a stranger's add-liquidity fee with one ordinary swap · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+;;==== RT-F-001 - destroy a stranger's add-liquidity fee with one ordinary swap · 02 · let / invocation ==== 
+(print "--- [RT-F-001 - destroy a stranger's add-liquidity fee with one ordinary swap · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-CP:module{TalosStageOne_ClientPactsV4} TS01-CP)
@@ -126,7 +143,11 @@
 ;;The attacker does nothing special: a single swap, the most ordinary operation a pool supports,
 ;;on a pool they have every right to trade in. They need no knowledge of the victim beyond the
 ;;fact that adds are in flight, which on a public chain is visible.
+;;==== RT-F-001b - a stranger swaps, and the victim's paid-for operation dies · 01 · env-sigs (caps) ==== 
+(print "--- [RT-F-001b - a stranger swaps, and the victim's paid-for operation dies · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+;;==== RT-F-001b - a stranger swaps, and the victim's paid-for operation dies · 02 · let / invocation ==== 
+(print "--- [RT-F-001b - a stranger swaps, and the victim's paid-for operation dies · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)

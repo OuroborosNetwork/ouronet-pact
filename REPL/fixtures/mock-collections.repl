@@ -1,3 +1,16 @@
+;;
+;; REPL/fixtures/mock-collections.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/fixtures/mock-collections.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 ;; REPL/fixtures/mock-collections.repl — MINIMAL collectable fixtures (SFT + NFT).
 ;;
 ;; PROVIDES : NFT collection "MockNonFungible"/MOCKN  -> id MOCKN-98c486052a51, 3 nonces
@@ -14,6 +27,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [FIXTURE mock-collections · 01 · let / STOA split] ---")
+;;==== FIXTURE mock-collections — issue MOCKN + MOCKS · 01 · let / invocation ==== ================
+(print "--- [FIXTURE mock-collections — issue MOCKN + MOCKS · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -62,7 +77,11 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [FIXTURE mock-collections · 04 · create nonces] ---")
+;;==== FIXTURE mock-collections — 3 nonces each · 01 · env-sigs (caps) ==== =======================
+(print "--- [FIXTURE mock-collections — 3 nonces each · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== FIXTURE mock-collections — 3 nonces each · 02 · let / invocation ==== ======================
+(print "--- [FIXTURE mock-collections — 3 nonces each · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -96,8 +115,12 @@
 ;;|| NEXT >
 ;;
 (begin-tx "FIXTURE mock-collections — postcondition")
+;;==== FIXTURE mock-collections — postcondition · 01 · namespace ==== =============================
+(print "--- [FIXTURE mock-collections — postcondition · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [FIXTURE mock-collections · 05 · postcondition] ---")
+;;==== FIXTURE mock-collections — postcondition · 02 · let / invocation ==== ======================
+(print "--- [FIXTURE mock-collections — postcondition · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)

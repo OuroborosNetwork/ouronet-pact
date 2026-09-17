@@ -24,21 +24,45 @@
 (begin-tx "SCALE-INJ-BOOT - KBN citizen")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== SCALE-INJ-BOOT - KBN citizen · 01 · env-sigs (caps) ==== ===================================
+(print "--- [SCALE-INJ-BOOT - KBN citizen · 01 · env-sigs (caps)] ---")
 (env-sigs [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== SCALE-INJ-BOOT - KBN citizen · 02 · load module ==== =======================================
+(print "--- [SCALE-INJ-BOOT - KBN citizen · 02 · load module] ---")
 (load "../../2_CITIZEN/4_BunniesMinter/02_KBunnies.pact")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "SCALE-INJ-BOOT - AQP-BOOT")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== SCALE-INJ-BOOT - AQP-BOOT · 01 · env-sigs (caps) ==== ======================================
+(print "--- [SCALE-INJ-BOOT - AQP-BOOT · 01 · env-sigs (caps)] ---")
 (env-sigs [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== SCALE-INJ-BOOT - AQP-BOOT · 02 · load module ==== ==========================================
+(print "--- [SCALE-INJ-BOOT - AQP-BOOT · 02 · load module] ---")
 (load "../../2_CITIZEN/5_VaultsMinter/04_AQP-BOOT.pact")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "SCALE-INJ-BOOT - Step0")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== SCALE-INJ-BOOT - Step0 · 01 · env-sigs (caps) ==== =========================================
+(print "--- [SCALE-INJ-BOOT - Step0 · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print (format "<(Step0)> => \"{}\"" [(AQP-BOOT.C_Step0_WireImcAndGovernor KST.ANHD)]))
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (load "../Stage_02/[6.2.6]_AQP-VCT-GAS-BASE.repl")
 (print "")
 ;;
@@ -49,6 +73,8 @@
 (begin-tx "SCALE-INJ-01 - deb vault + 50 synth stakers + stale via Elite-DEB rise")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+;;==== SCALE-INJ-01 - deb vault + 50 synth stakers + stale via Elite-DEB rise · 01 · env-sigs (caps) ==== 
+(print "--- [SCALE-INJ-01 - deb vault + 50 synth stakers + stale via Elite-DEB rise · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -64,6 +90,8 @@
     ]
 )
 (print "--- [SCALE-INJ-01 · deb vault + stake 50 + stale] ---")
+;;==== SCALE-INJ-01 - deb vault + 50 synth stakers + stale via Elite-DEB rise · 02 · let / invocation ==== 
+(print "--- [SCALE-INJ-01 - deb vault + 50 synth stakers + stale via Elite-DEB rise · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -109,6 +137,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;; ============================================================================
@@ -117,6 +149,8 @@
 (begin-tx "SCALE-INJ-R1 - CCp_InjectFixChunk 15")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+;;==== SCALE-INJ-R1 - CCp_InjectFixChunk 15 · 01 · env-sigs (caps) ==== ===========================
+(print "--- [SCALE-INJ-R1 - CCp_InjectFixChunk 15 · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -132,6 +166,8 @@
     ]
 )
 (print "--- [SCALE-INJ-R1 · fix chunk 15] ---")
+;;==== SCALE-INJ-R1 - CCp_InjectFixChunk 15 · 02 · let / invocation ==== ==========================
+(print "--- [SCALE-INJ-R1 - CCp_InjectFixChunk 15 · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -159,10 +195,16 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 (begin-tx "SCALE-INJ-R2 - CCp_InjectFixChunk 15")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+;;==== SCALE-INJ-R2 - CCp_InjectFixChunk 15 · 01 · env-sigs (caps) ==== ===========================
+(print "--- [SCALE-INJ-R2 - CCp_InjectFixChunk 15 · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -178,6 +220,8 @@
     ]
 )
 (print "--- [SCALE-INJ-R2 · fix chunk 15] ---")
+;;==== SCALE-INJ-R2 - CCp_InjectFixChunk 15 · 02 · let / invocation ==== ==========================
+(print "--- [SCALE-INJ-R2 - CCp_InjectFixChunk 15 · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -205,10 +249,16 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 (begin-tx "SCALE-INJ-R3 - CCp_InjectFixChunk 15")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+;;==== SCALE-INJ-R3 - CCp_InjectFixChunk 15 · 01 · env-sigs (caps) ==== ===========================
+(print "--- [SCALE-INJ-R3 - CCp_InjectFixChunk 15 · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -224,6 +274,8 @@
     ]
 )
 (print "--- [SCALE-INJ-R3 · fix chunk 15] ---")
+;;==== SCALE-INJ-R3 - CCp_InjectFixChunk 15 · 02 · let / invocation ==== ==========================
+(print "--- [SCALE-INJ-R3 - CCp_InjectFixChunk 15 · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -251,10 +303,16 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 (begin-tx "SCALE-INJ-R4 - CCp_InjectFixChunk 15")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+;;==== SCALE-INJ-R4 - CCp_InjectFixChunk 15 · 01 · env-sigs (caps) ==== ===========================
+(print "--- [SCALE-INJ-R4 - CCp_InjectFixChunk 15 · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -270,6 +328,8 @@
     ]
 )
 (print "--- [SCALE-INJ-R4 · fix chunk 15] ---")
+;;==== SCALE-INJ-R4 - CCp_InjectFixChunk 15 · 02 · let / invocation ==== ==========================
+(print "--- [SCALE-INJ-R4 - CCp_InjectFixChunk 15 · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -297,11 +357,17 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;; SCALE-INJ-FINALIZE — 0 stale remain: the enforced-fresh gate passes; inject on the fresh divisor.
 (begin-tx "SCALE-INJ-FINALIZE - CC_InjectFinalize (inject 10 OURO on the fresh divisor)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+;;==== SCALE-INJ-FINALIZE - CC_InjectFinalize (inject 10 OURO on the fresh divisor) · 01 · env-sigs (caps) ==== 
+(print "--- [SCALE-INJ-FINALIZE - CC_InjectFinalize (inject 10 OURO on the fresh divisor) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -317,6 +383,8 @@
     ]
 )
 (print "--- [SCALE-INJ-FINALIZE · CC_InjectFinalize] ---")
+;;==== SCALE-INJ-FINALIZE - CC_InjectFinalize (inject 10 OURO on the fresh divisor) · 02 · let / invocation ==== 
+(print "--- [SCALE-INJ-FINALIZE - CC_InjectFinalize (inject 10 OURO on the fresh divisor) · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)

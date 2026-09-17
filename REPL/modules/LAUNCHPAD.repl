@@ -1,3 +1,16 @@
+;;
+;; REPL/modules/LAUNCHPAD.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/modules/LAUNCHPAD.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 ;; REPL/modules/LAUNCHPAD.repl — STANDALONE LAUNCHPAD tester (blockchain-env-in-a-repl).
 ;; Fresh boot: Stage 00 sandbox + deploy core(s) + the LAUNCHPAD suite only.
 ;; Run: cd REPL && pact modules/LAUNCHPAD.repl   (see ARCHITECTURE/REPL_TEST_ARCHITECTURE.md)
@@ -20,6 +33,8 @@
 ;;
 (begin-tx "TX-SPK-KPAY-PRICE - the StoicPay price curve is total and strictly positive")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-SPK-KPAY-PRICE - the StoicPay price curve is total and strictly positive · 01 · namespace ==== 
+(print "--- [TX-SPK-KPAY-PRICE - the StoicPay price curve is total and strictly positive · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [TX-SPK-KPAY-PRICE · 01 · the bounds that make the sale-concluded guard dead] ---")
 ;;BACKING FOR AN ANNOTATION, not a guard pin. `4_StoicPay` `KPAY|C>BUY` carries
@@ -37,6 +52,8 @@
 ;;
 ;;Probed across the whole shape of the curve rather than at one offset: a negative offset (before
 ;;the start), zero, the ten minutes the module itself uses, and an offset past the three-year cap.
+;;==== TX-SPK-KPAY-PRICE - the StoicPay price curve is total and strictly positive · 02 · let / invocation ==== 
+(print "--- [TX-SPK-KPAY-PRICE - the StoicPay price curve is total and strictly positive · 02 · let / invocation] ---")
 (let
     (
         (ref-KPAY:module{StoicPayV3} DEMIPAD-STOICPAY)
@@ -99,6 +116,8 @@
 ;;
 ;;PATRON IS ANHD, BUYER IS EMMA. The gas meter follows the patron, so the buyer's native-coin spend
 ;;(the 100$ gross and its 10/20/30/40 environment split) stays out of the IGNIS figure by construction.
+;;==== LPAD-I1 — INFO_DEMIPAD|Deposit quote vs measured charge · 01 · env-sigs (caps) ==== ========
+(print "--- [LPAD-I1 — INFO_DEMIPAD|Deposit quote vs measured charge · 01 · env-sigs (caps)] ---")
 (env-sigs
     [ { "key": "PK_AncientHodler", "caps": [] }
     , { "key": "PK_Emma", "caps": [] }
@@ -110,6 +129,8 @@
         , (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 2.0)
         ] }
     ])
+;;==== LPAD-I1 — INFO_DEMIPAD|Deposit quote vs measured charge · 02 · let / invocation ==== =======
+(print "--- [LPAD-I1 — INFO_DEMIPAD|Deposit quote vs measured charge · 02 · let / invocation] ---")
 (let
     (
         (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
@@ -256,7 +277,11 @@
 ;;BOTH parties sign. The cap is scoped to the account being redeemed, but step 1 of
 ;;XI_CustomRedeemSparks is a wSTOA transfer FROM the payer, and DPTF enforces the sender's
 ;;ownership -- the payer's signature is not implied by the capability the entrypoint names.
+;;==== LPAD-N2 - SPARK C_CustomRedemFewSparks: the CALLER's STOA price is what pays, not the oracle's · 01 · env-sigs (caps) ==== 
+(print "--- [LPAD-N2 - SPARK C_CustomRedemFewSparks: the CALLER's STOA price is what pays, not the oracle's · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+;;==== LPAD-N2 - SPARK C_CustomRedemFewSparks: the CALLER's STOA price is what pays, not the oracle's · 02 · let / invocation ==== 
+(print "--- [LPAD-N2 - SPARK C_CustomRedemFewSparks: the CALLER's STOA price is what pays, not the oracle's · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -344,7 +369,11 @@
 ;;assertion at the end: `INFO_RedeemSparks` is written against the ORACLE rate, so it is an exact
 ;;quote for this call and a wrong one for LPAD-N2's doubled pid. Quoting the charge and then
 ;;measuring the patron's IGNIS balance across the live call is the same shape as <<LPAD-I1>>.
+;;==== LPAD-N3 - SPARK C_CustomRedemAllSparks: ALL means the whole current balance · 01 · env-sigs (caps) ==== 
+(print "--- [LPAD-N3 - SPARK C_CustomRedemAllSparks: ALL means the whole current balance · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+;;==== LPAD-N3 - SPARK C_CustomRedemAllSparks: ALL means the whole current balance · 02 · let / invocation ==== 
+(print "--- [LPAD-N3 - SPARK C_CustomRedemAllSparks: ALL means the whole current balance · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)

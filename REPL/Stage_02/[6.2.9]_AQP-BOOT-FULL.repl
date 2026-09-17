@@ -14,12 +14,16 @@
 (print "=== TX-BOOT-01 — Step1 BunnySet (requires KBN nonces 1+ from PopulateBunnies) =====")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-BOOT-01 - AQP-BOOT Step1 BunnySet · 01 · env-sigs (caps) ==== ===========================
+(print "--- [TX-BOOT-01 - AQP-BOOT Step1 BunnySet · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
         { "key": "PK_Lumy", "caps": [] }
     ]
 )
+;;==== TX-BOOT-01 - AQP-BOOT Step1 BunnySet · 02 · let / invocation ==== ==========================
+(print "--- [TX-BOOT-01 - AQP-BOOT Step1 BunnySet · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.LUMY)
@@ -29,6 +33,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-BOOT-02 - AQP-BOOT Step2 SnakePower anchor classes")
@@ -36,6 +44,8 @@
 (print "=== TX-BOOT-02 — AQP-BOOT Step2 SnakePower anchor classes =================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-BOOT-02 - AQP-BOOT Step2 SnakePower anchor classes · 01 · let / invocation ==== =========
+(print "--- [TX-BOOT-02 - AQP-BOOT Step2 SnakePower anchor classes · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -63,6 +73,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-BOOT-03 - AQP-BOOT Step3 booster anchor classes")
@@ -70,6 +84,8 @@
 (print "=== TX-BOOT-03 — AQP-BOOT Step3 booster anchor classes =====================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-BOOT-03 - AQP-BOOT Step3 booster anchor classes · 01 · let / invocation ==== ============
+(print "--- [TX-BOOT-03 - AQP-BOOT Step3 booster anchor classes · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -97,6 +113,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-BOOT-06 - AQP-BOOT Step6 OURO LP triplet scores")
@@ -104,6 +124,8 @@
 (print "=== TX-BOOT-06 — AQP-BOOT Step6 OURO LP triplet scores =====================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-BOOT-06 - AQP-BOOT Step6 OURO LP triplet scores · 01 · let / invocation ==== ============
+(print "--- [TX-BOOT-06 - AQP-BOOT Step6 OURO LP triplet scores · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -142,6 +164,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-BOOT-07 - AQP-BOOT Step7 ANHD DPSF + OURO LP pools")
@@ -149,6 +175,8 @@
 (print "=== TX-BOOT-07 — ANHD pools (coding / company / wondercoach / ouro-lp) =========")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-BOOT-07 - AQP-BOOT Step7 ANHD DPSF + OURO LP pools · 01 · let / invocation ==== =========
+(print "--- [TX-BOOT-07 - AQP-BOOT Step7 ANHD DPSF + OURO LP pools · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -220,6 +248,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-BOOT-07b - AQP-BOOT Step7 DPNF pools (bloodshed/nosferatu/bunnies)")
@@ -227,6 +259,8 @@
 (print "=== TX-BOOT-07b — DPNF pools (ANHD patron + PK_Lumy owner guard) ===========")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-BOOT-07b - AQP-BOOT Step7 DPNF pools (bloodshed/nosferatu/bunnies) · 01 · let / invocation ==== 
+(print "--- [TX-BOOT-07b - AQP-BOOT Step7 DPNF pools (bloodshed/nosferatu/bunnies) · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -270,6 +304,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-BOOT-08 - AQP-BOOT Step8 Issue FVT entities")
@@ -277,6 +315,8 @@
 (print "=== TX-BOOT-08 — Step8 Issue FVT entities (OuroLpFarm when DHOuroLp exists) =====")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-BOOT-08 - AQP-BOOT Step8 Issue FVT entities · 01 · let / invocation ==== ================
+(print "--- [TX-BOOT-08 - AQP-BOOT Step8 Issue FVT entities · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -312,6 +352,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-BOOT-08b - Seed OURO SWP liquidity for OuroLpFarm ghost weight")
@@ -319,6 +363,8 @@
 (print "=== TX-BOOT-08b — Add liquidity to W|DLK|OURO|DWK when StoaValue=0 ============")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-BOOT-08b - Seed OURO SWP liquidity for OuroLpFarm ghost weight · 01 · let / invocation ==== 
+(print "--- [TX-BOOT-08b - Seed OURO SWP liquidity for OuroLpFarm ghost weight · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -344,6 +390,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-BOOT-09 - AQP-BOOT Step9 Add FVT score links (vault/treasury only)")
@@ -351,6 +401,8 @@
 (print "=== TX-BOOT-09 — Step9 C_AddScoreEntity on vault/treasury FVT entities =========")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-BOOT-09 - AQP-BOOT Step9 Add FVT score links (vault/treasury only) · 01 · let / invocation ==== 
+(print "--- [TX-BOOT-09 - AQP-BOOT Step9 Add FVT score links (vault/treasury only) · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -393,6 +445,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-BOOT-10 - AQP-BOOT Step10 Issue TripletFamily")
@@ -400,6 +456,8 @@
 (print "=== TX-BOOT-10 — Step10 C_IssueMultipletFamily OURO→Auryn→Elite-Auryn ==========")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-BOOT-10 - AQP-BOOT Step10 Issue TripletFamily · 01 · let / invocation ==== ==============
+(print "--- [TX-BOOT-10 - AQP-BOOT Step10 Issue TripletFamily · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -431,6 +489,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-BOOT-11 - AQP-BOOT Step11 Wire farm triplet")
@@ -438,6 +500,8 @@
 (print "=== TX-BOOT-11 — Step11 C_IssueTriplet + C_AddScoreEntity + TRIPLET_BASE reward =====")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-BOOT-11 - AQP-BOOT Step11 Wire farm triplet · 01 · let / invocation ==== ================
+(print "--- [TX-BOOT-11 - AQP-BOOT Step11 Wire farm triplet · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -480,6 +544,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-BOOT-12 - AQP-BOOT Step12 Add FVT reward links (treasuries)")
@@ -487,6 +555,8 @@
 (print "=== TX-BOOT-12 — Step12 C_AddRewardLink on vault/treasury FVT entities =========")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-BOOT-12 - AQP-BOOT Step12 Add FVT reward links (treasuries) · 01 · let / invocation ==== 
+(print "--- [TX-BOOT-12 - AQP-BOOT Step12 Add FVT reward links (treasuries) · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -521,6 +591,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-BOOT-13-SPLIT - dual reward-split ECONOMIC flip on OuroLpFarm (task #89 / D1-G2)")
@@ -528,6 +602,8 @@
 (print "=== TX-BOOT-13-SPLIT — the SAME member's W_i flips STAKED<->TVL on the real LP farm ==")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-BOOT-13-SPLIT - dual reward-split ECONOMIC flip on OuroLpFarm (task #89 / D1-G2) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-BOOT-13-SPLIT - dual reward-split ECONOMIC flip on OuroLpFarm (task #89 / D1-G2) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 ;; The OuroLpFarm has a live LP triplet member (Step11) on a seeded swpair (Step08b, StoaValue > 0).
 ;; URC_MemberLevel2Weight is the mode-aware Level-2 W_i: SPLIT|STAKED => member staked value;
@@ -573,6 +649,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=== END TX-BOOT-13-SPLIT ==================================================")
 (print "")
 (print "=== END [6.2.9]_AQP-BOOT-FULL.repl =========================================")
@@ -592,7 +672,11 @@
 ;;the guards cost nothing beyond asking.
 ;;
 ;;What is reachable, and what is not, is stated explicitly below rather than left as silence.
+;;==== TX-BOOT-G1 - the AddScoreEntity context validators, probed against the boot fixture · 01 · env-sigs (caps) ==== 
+(print "--- [TX-BOOT-G1 - the AddScoreEntity context validators, probed against the boot fixture · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-BOOT-G1 - the AddScoreEntity context validators, probed against the boot fixture · 02 · let / invocation ==== 
+(print "--- [TX-BOOT-G1 - the AddScoreEntity context validators, probed against the boot fixture · 02 · let / invocation] ---")
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -679,6 +763,10 @@
 (print "")
 (print "===^^^===")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-BOOT-G2 - UEV_SetCommonDenominatorContext, which needs the class-0 FARM")
@@ -700,7 +788,11 @@
 ;;OuroLpFarm has linked entities (TX-BOOT-11 wired its triplet), so BOTH inputs below trip the
 ;;immutability guard — a valid-looking denominator and a BAR one alike. That is asserted rather
 ;;than assumed, and it is why the shape guard is recorded as unreachable here instead of claimed.
+;;==== TX-BOOT-G2 - UEV_SetCommonDenominatorContext, which needs the class-0 FARM · 01 · env-sigs (caps) ==== 
+(print "--- [TX-BOOT-G2 - UEV_SetCommonDenominatorContext, which needs the class-0 FARM · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-BOOT-G2 - UEV_SetCommonDenominatorContext, which needs the class-0 FARM · 02 · let / invocation ==== 
+(print "--- [TX-BOOT-G2 - UEV_SetCommonDenominatorContext, which needs the class-0 FARM · 02 · let / invocation] ---")
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)

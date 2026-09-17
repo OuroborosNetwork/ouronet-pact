@@ -38,8 +38,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-02 [2.1] - IGNIS Module · 01 · env-sigs (caps) ==== =====================================
 (print "--- [TX-02 [2.1] - IGNIS Module · 01 · env-sigs (caps)] ---")
+;;==== TX-02 [2.1] - IGNIS Module · 01 · env-sigs (caps) ==== =====================================
+(print "--- [TX-02 [2.1] - IGNIS Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-02 [2.1] - IGNIS Module · 02 · load module ==== =========================================
+(print "--- [TX-02 [2.1] - IGNIS Module · 02 · load module] ---")
 ;;==== TX-02 [2.1] - IGNIS Module · 02 · load module ==== =========================================
 (print "--- [TX-02 [2.1] - IGNIS Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/02_IGNIS.pact")
@@ -60,8 +64,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-01 [2.1] - BRD Module · 01 · env-sigs (caps) ==== =======================================
 (print "--- [TX-01 [2.1] - BRD Module · 01 · env-sigs (caps)] ---")
+;;==== TX-01 [2.1] - BRD Module · 01 · env-sigs (caps) ==== =======================================
+(print "--- [TX-01 [2.1] - BRD Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-01 [2.1] - BRD Module · 02 · load module ==== ===========================================
+(print "--- [TX-01 [2.1] - BRD Module · 02 · load module] ---")
 ;;==== TX-01 [2.1] - BRD Module · 02 · load module ==== ===========================================
 (print "--- [TX-01 [2.1] - BRD Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/04_BRD.pact")
@@ -80,8 +88,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-02 [2.2] - DPTF Module · 01 · env-sigs (caps) ==== ======================================
 (print "--- [TX-02 [2.2] - DPTF Module · 01 · env-sigs (caps)] ---")
+;;==== TX-02 [2.2] - DPTF Module · 01 · env-sigs (caps) ==== ======================================
+(print "--- [TX-02 [2.2] - DPTF Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-02 [2.2] - DPTF Module · 02 · load module ==== ==========================================
+(print "--- [TX-02 [2.2] - DPTF Module · 02 · load module] ---")
 ;;==== TX-02 [2.2] - DPTF Module · 02 · load module ==== ==========================================
 (print "--- [TX-02 [2.2] - DPTF Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/05_DPTF.pact")
@@ -100,8 +112,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-03 [2.3] - DPMF Module · 01 · env-sigs (caps) ==== ======================================
 (print "--- [TX-03 [2.3] - DPMF Module · 01 · env-sigs (caps)] ---")
+;;==== TX-03 [2.3] - DPMF Module · 01 · env-sigs (caps) ==== ======================================
+(print "--- [TX-03 [2.3] - DPMF Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-03 [2.3] - DPMF Module · 02 · load module ==== ==========================================
+(print "--- [TX-03 [2.3] - DPMF Module · 02 · load module] ---")
 ;;==== TX-03 [2.3] - DPMF Module · 02 · load module ==== ==========================================
 (print "--- [TX-03 [2.3] - DPMF Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/00_DPMF.pact")
@@ -122,8 +138,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-06 [2.1] - DPOF Module · 01 · env-sigs (caps) ==== ======================================
 (print "--- [TX-06 [2.1] - DPOF Module · 01 · env-sigs (caps)] ---")
+;;==== TX-06 [2.1] - DPOF Module · 01 · env-sigs (caps) ==== ======================================
+(print "--- [TX-06 [2.1] - DPOF Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-06 [2.1] - DPOF Module · 02 · load module ==== ==========================================
+(print "--- [TX-06 [2.1] - DPOF Module · 02 · load module] ---")
 ;;==== TX-06 [2.1] - DPOF Module · 02 · load module ==== ==========================================
 (print "--- [TX-06 [2.1] - DPOF Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/06_DPOF.pact")
@@ -142,8 +162,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-07 [2.1] - ELITE Module · 01 · env-sigs (caps) ==== =====================================
 (print "--- [TX-07 [2.1] - ELITE Module · 01 · env-sigs (caps)] ---")
+;;==== TX-07 [2.1] - ELITE Module · 01 · env-sigs (caps) ==== =====================================
+(print "--- [TX-07 [2.1] - ELITE Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-07 [2.1] - ELITE Module · 02 · load module ==== =========================================
+(print "--- [TX-07 [2.1] - ELITE Module · 02 · load module] ---")
 ;;==== TX-07 [2.1] - ELITE Module · 02 · load module ==== =========================================
 (print "--- [TX-07 [2.1] - ELITE Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/07_ELITE.pact")
@@ -162,8 +186,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-04 [2.4] - ATS Module · 01 · env-sigs (caps) ==== =======================================
 (print "--- [TX-04 [2.4] - ATS Module · 01 · env-sigs (caps)] ---")
+;;==== TX-04 [2.4] - ATS Module · 01 · env-sigs (caps) ==== =======================================
+(print "--- [TX-04 [2.4] - ATS Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-04 [2.4] - ATS Module · 02 · load module ==== ===========================================
+(print "--- [TX-04 [2.4] - ATS Module · 02 · load module] ---")
 ;;==== TX-04 [2.4] - ATS Module · 02 · load module ==== ===========================================
 (print "--- [TX-04 [2.4] - ATS Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/08_ATS.pact")
@@ -182,8 +210,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-05 [2.5] - TFT Module · 01 · env-sigs (caps) ==== =======================================
 (print "--- [TX-05 [2.5] - TFT Module · 01 · env-sigs (caps)] ---")
+;;==== TX-05 [2.5] - TFT Module · 01 · env-sigs (caps) ==== =======================================
+(print "--- [TX-05 [2.5] - TFT Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-05 [2.5] - TFT Module · 02 · load module ==== ===========================================
+(print "--- [TX-05 [2.5] - TFT Module · 02 · load module] ---")
 ;;==== TX-05 [2.5] - TFT Module · 02 · load module ==== ===========================================
 (print "--- [TX-05 [2.5] - TFT Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/09_TFT.pact")
@@ -202,8 +234,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-06 [2.6] - ATSU Module · 01 · env-sigs (caps) ==== ======================================
 (print "--- [TX-06 [2.6] - ATSU Module · 01 · env-sigs (caps)] ---")
+;;==== TX-06 [2.6] - ATSU Module · 01 · env-sigs (caps) ==== ======================================
+(print "--- [TX-06 [2.6] - ATSU Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-06 [2.6] - ATSU Module · 02 · load module ==== ==========================================
+(print "--- [TX-06 [2.6] - ATSU Module · 02 · load module] ---")
 ;;==== TX-06 [2.6] - ATSU Module · 02 · load module ==== ==========================================
 (print "--- [TX-06 [2.6] - ATSU Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/10_ATSU.pact")
@@ -222,8 +258,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-07 [2.7] - VST Module · 01 · env-sigs (caps) ==== =======================================
 (print "--- [TX-07 [2.7] - VST Module · 01 · env-sigs (caps)] ---")
+;;==== TX-07 [2.7] - VST Module · 01 · env-sigs (caps) ==== =======================================
+(print "--- [TX-07 [2.7] - VST Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-07 [2.7] - VST Module · 02 · load module ==== ===========================================
+(print "--- [TX-07 [2.7] - VST Module · 02 · load module] ---")
 ;;==== TX-07 [2.7] - VST Module · 02 · load module ==== ===========================================
 (print "--- [TX-07 [2.7] - VST Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/11_VST.pact")
@@ -242,8 +282,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-08 [2.8] - LIQUID Module · 01 · env-sigs (caps) ==== ====================================
 (print "--- [TX-08 [2.8] - LIQUID Module · 01 · env-sigs (caps)] ---")
+;;==== TX-08 [2.8] - LIQUID Module · 01 · env-sigs (caps) ==== ====================================
+(print "--- [TX-08 [2.8] - LIQUID Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-08 [2.8] - LIQUID Module · 02 · load module ==== ========================================
+(print "--- [TX-08 [2.8] - LIQUID Module · 02 · load module] ---")
 ;;==== TX-08 [2.8] - LIQUID Module · 02 · load module ==== ========================================
 (print "--- [TX-08 [2.8] - LIQUID Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/12_LIQUID.pact")
@@ -262,8 +306,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-09 [2.9] - OUROBOROS Module · 01 · env-sigs (caps) ==== =================================
 (print "--- [TX-09 [2.9] - OUROBOROS Module · 01 · env-sigs (caps)] ---")
+;;==== TX-09 [2.9] - OUROBOROS Module · 01 · env-sigs (caps) ==== =================================
+(print "--- [TX-09 [2.9] - OUROBOROS Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-09 [2.9] - OUROBOROS Module · 02 · load module ==== =====================================
+(print "--- [TX-09 [2.9] - OUROBOROS Module · 02 · load module] ---")
 ;;==== TX-09 [2.9] - OUROBOROS Module · 02 · load module ==== =====================================
 (print "--- [TX-09 [2.9] - OUROBOROS Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/13_OUROBOROS.pact")
@@ -282,8 +330,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-10 [2.10] - SWPT Module · 01 · env-sigs (caps) ==== =====================================
 (print "--- [TX-10 [2.10] - SWPT Module · 01 · env-sigs (caps)] ---")
+;;==== TX-10 [2.10] - SWPT Module · 01 · env-sigs (caps) ==== =====================================
+(print "--- [TX-10 [2.10] - SWPT Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-10 [2.10] - SWPT Module · 02 · load module ==== =========================================
+(print "--- [TX-10 [2.10] - SWPT Module · 02 · load module] ---")
 ;;==== TX-10 [2.10] - SWPT Module · 02 · load module ==== =========================================
 (print "--- [TX-10 [2.10] - SWPT Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/14_SWPT.pact")
@@ -302,8 +354,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-11 [2.11] - SWP Module · 01 · env-sigs (caps) ==== ======================================
 (print "--- [TX-11 [2.11] - SWP Module · 01 · env-sigs (caps)] ---")
+;;==== TX-11 [2.11] - SWP Module · 01 · env-sigs (caps) ==== ======================================
+(print "--- [TX-11 [2.11] - SWP Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-11 [2.11] - SWP Module · 02 · load module ==== ==========================================
+(print "--- [TX-11 [2.11] - SWP Module · 02 · load module] ---")
 ;;==== TX-11 [2.11] - SWP Module · 02 · load module ==== ==========================================
 (print "--- [TX-11 [2.11] - SWP Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact")
@@ -322,8 +378,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-12 [2.12] - SWPI Module · 01 · env-sigs (caps) ==== =====================================
 (print "--- [TX-12 [2.12] - SWPI Module · 01 · env-sigs (caps)] ---")
+;;==== TX-12 [2.12] - SWPI Module · 01 · env-sigs (caps) ==== =====================================
+(print "--- [TX-12 [2.12] - SWPI Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-12 [2.12] - SWPI Module · 02 · load module ==== =========================================
+(print "--- [TX-12 [2.12] - SWPI Module · 02 · load module] ---")
 ;;==== TX-12 [2.12] - SWPI Module · 02 · load module ==== =========================================
 (print "--- [TX-12 [2.12] - SWPI Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/16_SWPI.pact")
@@ -342,8 +402,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-13 [2.13] - SWPL Module · 01 · env-sigs (caps) ==== =====================================
 (print "--- [TX-13 [2.13] - SWPL Module · 01 · env-sigs (caps)] ---")
+;;==== TX-13 [2.13] - SWPL Module · 01 · env-sigs (caps) ==== =====================================
+(print "--- [TX-13 [2.13] - SWPL Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-13 [2.13] - SWPL Module · 02 · load module ==== =========================================
+(print "--- [TX-13 [2.13] - SWPL Module · 02 · load module] ---")
 ;;==== TX-13 [2.13] - SWPL Module · 02 · load module ==== =========================================
 (print "--- [TX-13 [2.13] - SWPL Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/17_SWPL.pact")
@@ -362,8 +426,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-14 [2.14] - SWPLC Module · 01 · env-sigs (caps) ==== ====================================
 (print "--- [TX-14 [2.14] - SWPLC Module · 01 · env-sigs (caps)] ---")
+;;==== TX-14 [2.14] - SWPLC Module · 01 · env-sigs (caps) ==== ====================================
+(print "--- [TX-14 [2.14] - SWPLC Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-14 [2.14] - SWPLC Module · 02 · load module ==== ========================================
+(print "--- [TX-14 [2.14] - SWPLC Module · 02 · load module] ---")
 ;;==== TX-14 [2.14] - SWPLC Module · 02 · load module ==== ========================================
 (print "--- [TX-14 [2.14] - SWPLC Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/18_SWPLC.pact")
@@ -382,8 +450,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-14 [2.15] - SWPU Module · 01 · env-sigs (caps) ==== =====================================
 (print "--- [TX-14 [2.15] - SWPU Module · 01 · env-sigs (caps)] ---")
+;;==== TX-14 [2.15] - SWPU Module · 01 · env-sigs (caps) ==== =====================================
+(print "--- [TX-14 [2.15] - SWPU Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-14 [2.15] - SWPU Module · 02 · load module ==== =========================================
+(print "--- [TX-14 [2.15] - SWPU Module · 02 · load module] ---")
 ;;==== TX-14 [2.15] - SWPU Module · 02 · load module ==== =========================================
 (print "--- [TX-14 [2.15] - SWPU Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/19_SWPU.pact")
@@ -402,8 +474,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-14 [2.16] - MTX-SWP Module · 01 · env-sigs (caps) ==== ==================================
 (print "--- [TX-14 [2.16] - MTX-SWP Module · 01 · env-sigs (caps)] ---")
+;;==== TX-14 [2.16] - MTX-SWP Module · 01 · env-sigs (caps) ==== ==================================
+(print "--- [TX-14 [2.16] - MTX-SWP Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-14 [2.16] - MTX-SWP Module · 02 · load module ==== ======================================
+(print "--- [TX-14 [2.16] - MTX-SWP Module · 02 · load module] ---")
 ;;==== TX-14 [2.16] - MTX-SWP Module · 02 · load module ==== ======================================
 (print "--- [TX-14 [2.16] - MTX-SWP Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/20_MTX-SWP.pact")
@@ -422,8 +498,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-15 [2.18] - CODEX Module · 01 · env-sigs (caps) ==== =====================================
 (print "--- [TX-15 [2.18] - CODEX Module · 01 · env-sigs (caps)] ---")
+;;==== TX-15 [2.18] - CODEX Module · 01 · env-sigs (caps) ==== ====================================
+(print "--- [TX-15 [2.18] - CODEX Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-15 [2.18] - CODEX Module · 02 · load module ==== ========================================
+(print "--- [TX-15 [2.18] - CODEX Module · 02 · load module] ---")
 ;;==== TX-15 [2.18] - CODEX Module · 02 · load module ==== ========================================
 (print "--- [TX-15 [2.18] - CODEX Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/21_CODEX.pact")
@@ -442,8 +522,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-16 [2.19] - PYTHIA Module · 01 · env-sigs (caps) ==== ===================================
 (print "--- [TX-16 [2.19] - PYTHIA Module · 01 · env-sigs (caps)] ---")
+;;==== TX-16 [2.19] - PYTHIA Module · 01 · env-sigs (caps) ==== ===================================
+(print "--- [TX-16 [2.19] - PYTHIA Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-16 [2.19] - PYTHIA Module · 02 · load module ==== =======================================
+(print "--- [TX-16 [2.19] - PYTHIA Module · 02 · load module] ---")
 ;;==== TX-16 [2.19] - PYTHIA Module · 02 · load module ==== =======================================
 (print "--- [TX-16 [2.19] - PYTHIA Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/22_PYTHIA.pact")

@@ -1,3 +1,16 @@
+;;
+;; REPL/modules/DPDC-S.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/modules/DPDC-S.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 ;; REPL/modules/DPDC-S.repl — STANDALONE DPDC-S tester (blockchain-env-in-a-repl).
 ;; Fresh boot: Stage 00 sandbox + deploy core(s) + the DPDC-S suite only.
 ;; Run: cd REPL && pact modules/DPDC-S.repl   (see ARCHITECTURE/REPL_TEST_ARCHITECTURE.md)
@@ -10,6 +23,8 @@
 ;;
 (begin-tx "DPDC-S-G1 — the set-definition validators, against the suite's live sets")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== DPDC-S-G1 — the set-definition validators, against the suite's live sets · 01 · namespace ==== 
+(print "--- [DPDC-S-G1 — the set-definition validators, against the suite's live sets · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [DPDC-S-G1 · 01 · set-class identity and existence] ---")
 ;;P3.3, seventh module, and the best cost/benefit left in the worklist: 17 of DPDC-S's 23
@@ -17,6 +32,8 @@
 ;;[6.1.3] suite above has already built everything they read. TSFS carries 10 nonces and three
 ;;set-classes (SC1 primordial, SC2 composite, SC3 hybrid), so every trip below is taken against
 ;;REAL set data rather than a constructed shape.
+;;==== DPDC-S-G1 — the set-definition validators, against the suite's live sets · 02 · let / invocation ==== 
+(print "--- [DPDC-S-G1 — the set-definition validators, against the suite's live sets · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
@@ -231,7 +248,11 @@
 ;;key: TSFS-...|99" before the guard is consulted — the same eager-read shape catalogued elsewhere.
 ;;The only way to see the written message is an EXISTING class that is switched off, so SC1 is
 ;;toggled off, driven, and toggled back on with the restoration asserted.
+;;==== DPDC-S-G2 — set composition, renaming, and the inactive-class gate · 01 · env-sigs (caps) ==== 
+(print "--- [DPDC-S-G2 — set composition, renaming, and the inactive-class gate · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== DPDC-S-G2 — set composition, renaming, and the inactive-class gate · 02 · let / invocation ==== 
+(print "--- [DPDC-S-G2 — set composition, renaming, and the inactive-class gate · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
@@ -267,7 +288,11 @@
 (print "--- [DPDC-S-G3 · 01 · MAKE against an inactive set-class] ---")
 ;;Toggle SC1 off, drive, restore. A deactivated set-class is the issuer saying "stop minting these":
 ;;composition must stop while BREAK keeps working, so holders are never trapped in a retired set.
+;;==== DPDC-S-G3 — composition into a DEACTIVATED set-class · 01 · env-sigs (caps) ==== ===========
+(print "--- [DPDC-S-G3 — composition into a DEACTIVATED set-class · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== DPDC-S-G3 — composition into a DEACTIVATED set-class · 02 · let / invocation ==== ==========
+(print "--- [DPDC-S-G3 — composition into a DEACTIVATED set-class · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
@@ -311,7 +336,11 @@
 ;;The nonce classes used below are read out of the live collection rather than assumed: n1..n10 are
 ;;class 0, n11 is class 1 (and already fragmented), n12 class 2, n13 class 3. n12 is therefore a
 ;;genuine non-zero class, which is what the fragmentation guard needs.
+;;==== DPDC-F-G1 — the fragment repurpose, merge and enable-fragmentation rules · 01 · env-sigs (caps) ==== 
+(print "--- [DPDC-F-G1 — the fragment repurpose, merge and enable-fragmentation rules · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== DPDC-F-G1 — the fragment repurpose, merge and enable-fragmentation rules · 02 · let / invocation ==== 
+(print "--- [DPDC-F-G1 — the fragment repurpose, merge and enable-fragmentation rules · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -394,6 +423,8 @@
 ;;
 (begin-tx "DPDC-S-G4 -- UCv_TakePureWipe's size bound is STRICT")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== DPDC-S-G4 -- UCv_TakePureWipe's size bound is STRICT · 01 · namespace ==== =================
+(print "--- [DPDC-S-G4 -- UCv_TakePureWipe's size bound is STRICT · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [DPDC-S-G4 . 01 . taking a slice of the removable-nonces object] ---")
 ;;An unpinned guard from `python3 REPL/tools/_cheapseam.py`. Pure compute over a constructed object --
@@ -402,6 +433,8 @@
 ;;The bound is `(< size l)`, STRICT: taking the whole set is refused, not just taking more than
 ;;exists. That matches the @doc ("returns a SMALLER object") and is the kind of off-by-one a reader
 ;;would guess wrong in either direction, so both sides are asserted.
+;;==== DPDC-S-G4 -- UCv_TakePureWipe's size bound is STRICT · 02 · let / invocation ==== ==========
+(print "--- [DPDC-S-G4 -- UCv_TakePureWipe's size bound is STRICT · 02 · let / invocation] ---")
 (let ((obj:object{DpdcManagementV2.RemovableNonces} (DPDC-MNG.UDC_RemovableNonces [1 2] [10 20])))
     (map print
         [
@@ -425,6 +458,8 @@
 (begin-tx "DPDC-S-G5 - DPDC-S|C>ENABLE-FRAGMENTATION is not idempotent")
 (env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== DPDC-S-G5 - DPDC-S|C>ENABLE-FRAGMENTATION is not idempotent · 01 · env-sigs (caps) ==== ====
+(print "--- [DPDC-S-G5 - DPDC-S|C>ENABLE-FRAGMENTATION is not idempotent · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [DPDC-S-G5 · 01 · a re-entry check on set-class fragmentation] ---")
 ;;`08_DPDC-S.pact:379`. Enabling fragmentation writes split-data onto the set class; doing it twice
@@ -439,6 +474,8 @@
 ;;IT IS THE FIRST STATEMENT IN THE CAP -- ahead of UEV_SetClass, the active-state gate, CAP_Owner and
 ;;the NonceData validator -- so nothing owner- or shape-related can answer first, and the assertion
 ;;below is unambiguous about which rule fired.
+;;==== DPDC-S-G5 - DPDC-S|C>ENABLE-FRAGMENTATION is not idempotent · 02 · let / invocation ==== ===
+(print "--- [DPDC-S-G5 - DPDC-S|C>ENABLE-FRAGMENTATION is not idempotent · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
@@ -473,6 +510,8 @@
 (begin-tx "DPDC-S-G6 - DPDC-MNG|C>IZ-CLASS-ZERO refuses a nonce that carries a set class")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== DPDC-S-G6 - DPDC-MNG|C>IZ-CLASS-ZERO refuses a nonce that carries a set class · 01 · env-sigs (caps) ==== 
+(print "--- [DPDC-S-G6 - DPDC-MNG|C>IZ-CLASS-ZERO refuses a nonce that carries a set class · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [DPDC-S-G6 · 01 · offering a class-1 nonce to a class-zero-only path] ---")
 ;;`06_DPDC-MNG.pact:280`. The cap does not test the nonces one at a time; it runs them through
@@ -488,6 +527,8 @@
 ;;
 ;;TSFS is the collection that can drive it: this suite leaves nonce 11 carrying set class 1 while
 ;;n1..n10 stay class 0, so the SAME collection supplies both the rejected input and the control.
+;;==== DPDC-S-G6 - DPDC-MNG|C>IZ-CLASS-ZERO refuses a nonce that carries a set class · 02 · let / invocation ==== 
+(print "--- [DPDC-S-G6 - DPDC-MNG|C>IZ-CLASS-ZERO refuses a nonce that carries a set class · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)

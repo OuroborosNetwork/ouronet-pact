@@ -1,3 +1,16 @@
+;;
+;; REPL/modules/ATS.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/modules/ATS.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 ;; REPL/modules/ATS.repl — STANDALONE ATS tester (blockchain-env-in-a-repl).
 ;; Fresh boot: Stage 00 sandbox + deploy core(s) + the ATS suite only.
 ;; Run: cd REPL && pact modules/ATS.repl   (see ARCHITECTURE/REPL_TEST_ARCHITECTURE.md)
@@ -14,6 +27,8 @@
 ;;ATS|C_Constrict appeared ONLY in archive/ats-constrict-harness.repl, a driver that opens by
 ;;declaring it "covers the uncovered ATS|C_Constrict client op" and then asserts nothing at all.
 ;;This is the same flow with observable outcomes.
+;;==== ATS-CNS — C_Constrict: hibernating stake, previously tested by NOTHING · 01 · env-sigs (caps) ==== 
+(print "--- [ATS-CNS — C_Constrict: hibernating stake, previously tested by NOTHING · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -33,6 +48,8 @@
     ]
 )
 (print "--- [ATS-CNS · 02 · hibernation link + constrict] ---")
+;;==== ATS-CNS — C_Constrict: hibernating stake, previously tested by NOTHING · 02 · let / invocation ==== 
+(print "--- [ATS-CNS — C_Constrict: hibernating stake, previously tested by NOTHING · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -87,6 +104,8 @@
 (namespace "ouronet-ns")
 (print "--- [ATS-BRD · 01 · branding upgrade on an ATS pair] ---")
 ;;ATS|C_UpgradeBranding appeared in no live invocation anywhere in the suite.
+;;==== ATS-BRD — ATS|C_UpgradeBranding, and an INFO reader that cannot run · 01 · env-sigs (caps) ==== 
+(print "--- [ATS-BRD — ATS|C_UpgradeBranding, and an INFO reader that cannot run · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -105,6 +124,8 @@
         }
     ]
 )
+;;==== ATS-BRD — ATS|C_UpgradeBranding, and an INFO reader that cannot run · 02 · let / invocation ==== 
+(print "--- [ATS-BRD — ATS|C_UpgradeBranding, and an INFO reader that cannot run · 02 · let / invocation] ---")
 (let
     (
         (ref-BRD:module{BrandingV2} BRD)
@@ -210,7 +231,11 @@
 ;;The property that gives the op its PURPOSE is the pending/live split: an unreviewed submission
 ;;must land in the pending row and leave the live row alone. A test that only checked "it wrote
 ;;something" would pass even if the two rows were swapped, which is the whole risk.
+;;==== ATS-PBRD — C_UpdatePendingBranding writes PENDING, never LIVE · 01 · env-sigs (caps) ==== ==
+(print "--- [ATS-PBRD — C_UpdatePendingBranding writes PENDING, never LIVE · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== ATS-PBRD — C_UpdatePendingBranding writes PENDING, never LIVE · 02 · let / invocation ==== =
+(print "--- [ATS-PBRD — C_UpdatePendingBranding writes PENDING, never LIVE · 02 · let / invocation] ---")
 (let
     (
         (ref-BRD:module{BrandingV2} BRD)
@@ -266,6 +291,8 @@
 ;;
 (begin-tx "ATS-G1 — the existence guards, as 2x2s on their own boolean argument")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== ATS-G1 — the existence guards, as 2x2s on their own boolean argument · 01 · namespace ==== =
+(print "--- [ATS-G1 — the existence guards, as 2x2s on their own boolean argument · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [ATS-G1 · 01 · RT / RBT existence] ---")
 ;;P3.3. UEV_RewardTokenExistance and UEV_RewardBearingTokenExistance take the expected answer as
@@ -276,6 +303,8 @@
 ;;
 ;;Every id below is DERIVED from the live pair, never typed: the suite's PlebeicStrength pair
 ;;reports its own reward token and its own cold RBT.
+;;==== ATS-G1 — the existence guards, as 2x2s on their own boolean argument · 02 · let / invocation ==== 
+(print "--- [ATS-G1 — the existence guards, as 2x2s on their own boolean argument · 02 · let / invocation] ---")
 (let
     (
         (ref-ATS:module{AutostakeV3} ATS)
@@ -398,6 +427,8 @@
 ;;
 ;;Pinned through Talos (ATS|C_Syphon) because that is the only supported client path; the
 ;;expected text is unique to ATSU, so nothing else can be credited for it.
+;;==== ATS-G2 — ATSU|C>SYPHON: the gate that fronts a six-guard family · 01 · let / invocation ==== 
+(print "--- [ATS-G2 — ATSU|C>SYPHON: the gate that fronts a six-guard family · 01 · let / invocation] ---")
 (let
     (
         (ref-ATS:module{AutostakeV3} ATS)
@@ -482,6 +513,8 @@
 ;;
 (begin-tx "ATS-G3 — the URCv_ band: two derivations that refuse to answer a nonsense question")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== ATS-G3 — the URCv_ band: two derivations that refuse to answer a nonsense question · 01 · namespace ==== 
+(print "--- [ATS-G3 — the URCv_ band: two derivations that refuse to answer a nonsense question · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [ATS-G3 · 01 · RT position and RBT split bound] ---")
 ;;Both guards here sit on URCv_ functions -- the enforce is INTRINSIC to the derivation rather
@@ -499,6 +532,8 @@
 ;;                            the pair's own RBT supply the conversion is meaningless, and the
 ;;                            bound is derived from the LIVE supply rather than a constant so it
 ;;                            stays exact whatever the pair currently holds.
+;;==== ATS-G3 — the URCv_ band: two derivations that refuse to answer a nonsense question · 02 · let / invocation ==== 
+(print "--- [ATS-G3 — the URCv_ band: two derivations that refuse to answer a nonsense question · 02 · let / invocation] ---")
 (let
     (
         (ref-ATS:module{AutostakeV3} ATS)
@@ -537,6 +572,8 @@
 ;;
 (begin-tx "ATS-G4 — three constructors that refuse to build a nonsense object")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== ATS-G4 — three constructors that refuse to build a nonsense object · 01 · namespace ==== ===
+(print "--- [ATS-G4 — three constructors that refuse to build a nonsense object · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [ATS-G4 · 01 · UDC_RT, UDC_BrandingFlag, UEV_TwentyFourPrecision] ---")
 ;;Three guards from three different modules, grouped because they are the same KIND of guard: a
@@ -549,6 +586,8 @@
 ;;would prove the fold fires, but not that it inspects every field -- a fold that dropped the
 ;;last two conjuncts would pass exactly the same test. So each field is driven negative on its
 ;;own, and the happy path pins the object it actually builds.
+;;==== ATS-G4 — three constructors that refuse to build a nonsense object · 02 · let / invocation ==== 
+(print "--- [ATS-G4 — three constructors that refuse to build a nonsense object · 02 · let / invocation] ---")
 (let
     (
         (ref-ATS:module{AutostakeV3} ATS)
@@ -622,6 +661,8 @@
 ;;cases tripped guard 1 — the pair has a different number of reward tokens, so nothing past the
 ;;first guard was ever reached. Reading the length from the pair makes the block correct whatever
 ;;the fixture holds, and the bad case is that length PLUS ONE rather than an arbitrary size.
+;;==== ATS-G5 — ATSU|C>X_KICKSTART: four sequential guards, four distinct trips · 01 · env-sigs (caps) ==== 
+(print "--- [ATS-G5 — ATSU|C>X_KICKSTART: four sequential guards, four distinct trips · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
@@ -672,7 +713,11 @@
 ;;the owner's for CAP_Owner. My first attempt signed only as the patron and was rejected by the
 ;;ownership gate long before the guard — which would have read as a pass had I not checked the
 ;;message.
+;;==== ATS-G6 — no royalties to withdraw, on a pair that has collected none · 01 · env-sigs (caps) ==== 
+(print "--- [ATS-G6 — no royalties to withdraw, on a pair that has collected none · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AOZ", "caps": [] } { "key": "PK_AncientHodler", "caps": [] }])
+;;==== ATS-G6 — no royalties to withdraw, on a pair that has collected none · 02 · let / invocation ==== 
+(print "--- [ATS-G6 — no royalties to withdraw, on a pair that has collected none · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
@@ -707,7 +752,11 @@
 ;;
 ;;The other two control flags are read and written back UNCHANGED, so this call alters exactly one
 ;;thing. Writing literals there would silently reconfigure the pair.
+;;==== ATS-G7a — turn SYPHONING on (the fixture the syphon-amount guards need) · 01 · env-sigs (caps) ==== 
+(print "--- [ATS-G7a — turn SYPHONING on (the fixture the syphon-amount guards need) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AOZ", "caps": [] } { "key": "PK_AncientHodler", "caps": [] }])
+;;==== ATS-G7a — turn SYPHONING on (the fixture the syphon-amount guards need) · 02 · let / invocation ==== 
+(print "--- [ATS-G7a — turn SYPHONING on (the fixture the syphon-amount guards need) · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
@@ -738,6 +787,8 @@
 ;;
 ;;The list length is derived from the pair's reward-token count, because a length mismatch would
 ;;trip its own guard earlier still.
+;;==== ATS-G7b — the two syphon-amount guards, each reached past the one before it · 01 · env-sigs (caps) ==== 
+(print "--- [ATS-G7b — the two syphon-amount guards, each reached past the one before it · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AOZ", "caps": [] } { "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
@@ -770,7 +821,11 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [ATS-G7c · 01 · restore syphoning] ---")
+;;==== ATS-G7c — restore: syphoning back OFF, leave the pair as found · 01 · env-sigs (caps) ==== =
+(print "--- [ATS-G7c — restore: syphoning back OFF, leave the pair as found · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AOZ", "caps": [] } { "key": "PK_AncientHodler", "caps": [] }])
+;;==== ATS-G7c — restore: syphoning back OFF, leave the pair as found · 02 · let / invocation ==== 
+(print "--- [ATS-G7c — restore: syphoning back OFF, leave the pair as found · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
@@ -802,6 +857,8 @@
 ;;BOTH signatures are present throughout: PlebeicStrength and its reward tokens are AOZ-owned, so
 ;;the patron's key alone gets rejected by an ownership gate before any of these guards. My first
 ;;attempt did exactly that and returned a keyset failure rather than the guard's message.
+;;==== ATS-G8 — issue-data sanity, the Cold-RBT precision rule, and the syphon floor · 01 · env-sigs (caps) ==== 
+(print "--- [ATS-G8 — issue-data sanity, the Cold-RBT precision rule, and the syphon floor · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AOZ", "caps": [] } { "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
@@ -855,6 +912,8 @@
 ;;
 ;;BOTH signatures again: PlebeicStrength is AOZ-owned, so CAP_Owner inside each cap rejects the
 ;;patron's key alone long before either guard is consulted.
+;;==== ATS-G9 — the primal reward token, and the KickStart inflation ceiling · 01 · env-sigs (caps) ==== 
+(print "--- [ATS-G9 — the primal reward token, and the KickStart inflation ceiling · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AOZ", "caps": [] } { "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
@@ -918,6 +977,8 @@
 ;;They live in THIS suite for a load reason, not a thematic one: modules/ATS.repl is the only tester
 ;;that loads both. Plain (non-@event) defcaps, so test-capability reaches them directly; EMMA is a
 ;;legitimate account that simply is not an admin.
+;;==== ATS-G10 — the two CITIZEN module-governance caps · 01 · env-sigs (caps) ==== ===============
+(print "--- [ATS-G10 — the two CITIZEN module-governance caps · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (map print
     [
@@ -935,6 +996,8 @@
 (begin-tx "ATS-G11 -- VestedCoil: whose signature is actually required")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== ATS-G11 -- VestedCoil: whose signature is actually required · 01 · env-sigs (caps) ==== ====
+(print "--- [ATS-G11 -- VestedCoil: whose signature is actually required · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (print "--- [ATS-G11 . 01 . a third party cannot coil someone else's tokens] ---")
 ;;FOUND BY `python3 tools/_docclaims.py`, auditing @doc text for AUTHORITY claims no test pins.
@@ -968,6 +1031,8 @@
 ;;
 (begin-tx "ATS-G12 -- the cold-recovery-position guard, both directions")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== ATS-G12 -- the cold-recovery-position guard, both directions · 01 · namespace ==== =========
+(print "--- [ATS-G12 -- the cold-recovery-position guard, both directions · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [ATS-G12 . 01 . position 0 vs a real position] ---")
 ;;An unpinned guard from `python3 REPL/tools/_cheapseam.py`, selected because its `enforce` is the FIRST
@@ -995,6 +1060,8 @@
 (begin-tx "ATS-G13 — hibernation fronts both Coil and Curl, and Curl checks BOTH pairs")
 (env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== ATS-G13 — hibernation fronts both Coil and Curl, and Curl checks BOTH pairs · 01 · env-sigs (caps) ==== 
+(print "--- [ATS-G13 — hibernation fronts both Coil and Curl, and Curl checks BOTH pairs · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [ATS-G13 · 01 · the hibernation gate] ---")
 ;;Two unpinned guards, and neither needed a fixture: Auryndex and KORIndex are ALREADY hibernating by
@@ -1010,6 +1077,8 @@
 ;;error instead and the hibernation guard is never reached. (That is exactly what happened on the
 ;;first attempt -- "true Existance isnt verified for Token AURYN…", because AURYN is not Auryndex's
 ;;RT. Its RT is OURO.)
+;;==== ATS-G13 — hibernation fronts both Coil and Curl, and Curl checks BOTH pairs · 02 · let / invocation ==== 
+(print "--- [ATS-G13 — hibernation fronts both Coil and Curl, and Curl checks BOTH pairs · 02 · let / invocation] ---")
 (let
     (
         (ref-ATS:module{AutostakeV3} ATS)
@@ -1067,6 +1136,8 @@
 ;;"Keyset failure (keys-all): [PK_Emma…]". That looks like the guard firing and is not. Reaching an
 ;;enforce-one's own message means failing EVERY branch, so the caller must hold NONE of the five --
 ;;here LUMY, a funded third party who is neither admin nor related to EMMA.
+;;==== ATS-G14 — the ledger-permission gate, and the Hot-RBT type gate · 01 · env-sigs (caps) ==== 
+(print "--- [ATS-G14 — the ledger-permission gate, and the Hot-RBT type gate · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Lumy", "caps": [] }])
 (print
     (expect-failure "<<ATS-G14>> a third party with no admin and no relation to the account is refused"
@@ -1109,6 +1180,8 @@
 ;;thing wrong with it is that it is not reward-bearing -- which is precisely what the mute guard was
 ;;written to say.
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== ATS-G14 — the ledger-permission gate, and the Hot-RBT type gate · 02 · let / invocation ==== 
+(print "--- [ATS-G14 — the ledger-permission gate, and the Hot-RBT type gate · 02 · let / invocation] ---")
 (let ((h:string "H|AURYN-98c486052a51"))
     (map print
         [
@@ -1140,10 +1213,14 @@
 (begin-tx "ATS-G15 — elite positions, index precision, and the Hot-RBT prefix exclusion")
 (env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== ATS-G15 — elite positions, index precision, and the Hot-RBT prefix exclusion · 01 · env-sigs (caps) ==== 
+(print "--- [ATS-G15 — elite positions, index precision, and the Hot-RBT prefix exclusion · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [ATS-G15 · 01 · two guards the existing chain already satisfies] ---")
 ;;Neither of these needed a fixture. The pairs this suite builds already sit on the rejecting side,
 ;;and nothing had called the guards.
+;;==== ATS-G15 — elite positions, index precision, and the Hot-RBT prefix exclusion · 02 · let / invocation ==== 
+(print "--- [ATS-G15 — elite positions, index precision, and the Hot-RBT prefix exclusion · 02 · let / invocation] ---")
 (let
     (
         (ref-ATS:module{AutostakeV3} ATS)
@@ -1287,6 +1364,8 @@
 ;;PK_AOZ is needed because `CAP_Owner atspair` runs BEFORE the enforces being tested, and TestKickPair
 ;;is owned by an AOZ account. Without it the refusal is a bare "Keyset failure (keys-all): [PK_AOZ…]",
 ;;which looks like the guard firing and is not -- the first run of this test made exactly that mistake.
+;;==== ATS-G16 — the parameter lock's two-sided rule, and the seven-RT ceiling · 01 · env-sigs (caps) ==== 
+(print "--- [ATS-G16 — the parameter lock's two-sided rule, and the seven-RT ceiling · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }, { "key": "PK_AOZ", "caps": [] }])
 (print "--- [ATS-G16 · 01 · locking and unlocking are guarded in OPPOSITE directions] ---")
 ;;ATS|C>TOGGLE-PARAMETER-LOCK carries two enforces that are mirror images, and a test that only drove
@@ -1301,6 +1380,8 @@
 ;;`TestKickPair` has all three recoveries off, `Auryndex` has cold recovery on. Nothing had called the
 ;;guards with either one. That is three of today's ATS pins found the same way -- the chain already
 ;;had the state.
+;;==== ATS-G16 — the parameter lock's two-sided rule, and the seven-RT ceiling · 02 · let / invocation ==== 
+(print "--- [ATS-G16 — the parameter lock's two-sided rule, and the seven-RT ceiling · 02 · let / invocation] ---")
 (let
     (
         (ref-ATS:module{AutostakeV3} ATS)
@@ -1390,6 +1471,8 @@
 (begin-tx "ATS-G17 — the two ATSU index/position guards, and a message that is only half right")
 (env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== ATS-G17 — the two ATSU index/position guards, and a message that is only half right · 01 · env-sigs (caps) ==== 
+(print "--- [ATS-G17 — the two ATSU index/position guards, and a message that is only half right · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }, { "key": "PK_AOZ", "caps": [] }])
 (print "--- [ATS-G17 · 01 · no cold-recovery positions left] ---")
 ;;C_ColdRecovery (10_ATSU.pact:1714) enforces `(!= usable-cold-recovery-position 0)`, and 0 is what
@@ -1403,6 +1486,8 @@
 ;;Pattern and boundary: 2026-09-12-state-driven-guard-coverage.md; ATS-G17b is the leakage check.
 (env-module-admin ATS)
 (env-module-admin DPTF)
+;;==== ATS-G17 — the two ATSU index/position guards, and a message that is only half right · 02 · let / invocation ==== 
+(print "--- [ATS-G17 — the two ATSU index/position guards, and a message that is only half right · 02 · let / invocation] ---")
 (let
     (
         (ref-ATS:module{AutostakeV3} ATS)
@@ -1520,6 +1605,8 @@
 (begin-tx "ATS-G18 — Constrict and Brumate read hibernation in OPPOSITE directions")
 (env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== ATS-G18 — Constrict and Brumate read hibernation in OPPOSITE directions · 01 · env-sigs (caps) ==== 
+(print "--- [ATS-G18 — Constrict and Brumate read hibernation in OPPOSITE directions · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [ATS-G18 · 01 · the hibernation polarity of each operation] ---")
 ;;`ATSU|C>CONSTRICT` and `ATSU|C>BRUMATE` live in 11_VST.pact and are the hibernating counterparts of
@@ -1535,6 +1622,8 @@
 ;;The reward token is read from each pair at runtime, because `UEV_RewardTokenExistance` runs BEFORE
 ;;both enforces -- a wrong token id gets the existence error and the hibernation guard is never reached.
 ;;(ATS-G13 learned that the hard way.)
+;;==== ATS-G18 — Constrict and Brumate read hibernation in OPPOSITE directions · 02 · let / invocation ==== 
+(print "--- [ATS-G18 — Constrict and Brumate read hibernation in OPPOSITE directions · 02 · let / invocation] ---")
 (let
     (
         (ref-ATS:module{AutostakeV3} ATS)
@@ -1605,6 +1694,8 @@
 ;;THE RECOVERER HAS TO BE ANHD. EMMA's major elite tier is 0, so `(take 0 pstate)` is empty and she
 ;;gets the earlier "All existing Positions are used!" instead -- which is asserted below, because the
 ;;contrast between the two accounts IS the mechanism.
+;;==== ATS-G19 - ATSU|C>COLD_RECOVERY: a derived position the pair does not have · 01 · let / invocation ==== 
+(print "--- [ATS-G19 - ATSU|C>COLD_RECOVERY: a derived position the pair does not have · 01 · let / invocation] ---")
 (let
     (
         (ref-ATS:module{AutostakeV3} ATS)
@@ -1678,6 +1769,8 @@
 (begin-tx "ATS-G21 - ATSU|C>SYPHON: per-token resident amounts bound the syphon")
 (env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== ATS-G21 - ATSU|C>SYPHON: per-token resident amounts bound the syphon · 01 · env-sigs (caps) ==== 
+(print "--- [ATS-G21 - ATSU|C>SYPHON: per-token resident amounts bound the syphon · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_AOZ", "caps": [] }])
 (print "--- [ATS-G21 · 01 · syphoning more than a token's resident amount] ---")
 ;;`10_ATSU.pact:568`. Syphoning withdraws accrued reward tokens from a pair. The guard is written in
@@ -1695,6 +1788,8 @@
 ;;  * the SUM must stay under the syphon index -- measured at ~502 here, so one oversized leg at 300
 ;;    with zeros beside it clears the sum rule while still breaking the per-leg one. A flat
 ;;    "everything huge" list would have been stopped by the sum instead and pinned the wrong guard.
+;;==== ATS-G21 - ATSU|C>SYPHON: per-token resident amounts bound the syphon · 02 · let / invocation ==== 
+(print "--- [ATS-G21 - ATSU|C>SYPHON: per-token resident amounts bound the syphon · 02 · let / invocation] ---")
 (let
     (
         (ref-ATS:module{AutostakeV3} ATS)
@@ -1757,7 +1852,11 @@
 ;;Setup for <<ATS-G23>>, in its own transaction because it is an IGNIS-collecting client op.
 ;;KORIndex is the only pair in the suite with cold recovery already false; direct recovery is the
 ;;single remaining gate, and switching it is an ordinary pair-owner operation. Restored in G23c.
+;;==== ATS-G23a — open the one gate that fronts the hot-RBT re-registration route · 01 · env-sigs (caps) ==== 
+(print "--- [ATS-G23a — open the one gate that fronts the hot-RBT re-registration route · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== ATS-G23a — open the one gate that fronts the hot-RBT re-registration route · 02 · let / invocation ==== 
+(print "--- [ATS-G23a — open the one gate that fronts the hot-RBT re-registration route · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
@@ -1802,7 +1901,11 @@
 ;;specific than it could be. Reordering writes inside a Stage-1 client path to improve a message is
 ;;a worse trade than documenting it, so `06_DPOF:2617` carries a `;;UNREACHABLE` annotation pointing
 ;;back here. If ico2 ever stops clearing can-upgrade, this test fails and the guard becomes live.
+;;==== ATS-G23 — the hot-RBT re-registration route, driven to the wall it actually hits · 01 · env-sigs (caps) ==== 
+(print "--- [ATS-G23 — the hot-RBT re-registration route, driven to the wall it actually hits · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== ATS-G23 — the hot-RBT re-registration route, driven to the wall it actually hits · 02 · let / invocation ==== 
+(print "--- [ATS-G23 — the hot-RBT re-registration route, driven to the wall it actually hits · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
@@ -1843,7 +1946,11 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [ATS-G23c · 01 · direct recovery back ON] ---")
+;;==== ATS-G23c — restore KORIndex's direct recovery (leave the fixture as found) · 01 · env-sigs (caps) ==== 
+(print "--- [ATS-G23c — restore KORIndex's direct recovery (leave the fixture as found) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== ATS-G23c — restore KORIndex's direct recovery (leave the fixture as found) · 02 · let / invocation ==== 
+(print "--- [ATS-G23c — restore KORIndex's direct recovery (leave the fixture as found) · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
@@ -1867,6 +1974,8 @@
 ;;
 (begin-tx "ATS-F1 — the reward-token SENTINEL invariant, swept across every RT on the chain")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== ATS-F1 — the reward-token SENTINEL invariant, swept across every RT on the chain · 01 · namespace ==== 
+(print "--- [ATS-F1 — the reward-token SENTINEL invariant, swept across every RT on the chain · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [ATS-F1 · 01 · no DPTF may hold an EMPTY reward-token list] ---")
 ;;REGRESSION SWEEP for a real defect found 2026-09-13 and fixed in `05_DPTF.pact`
@@ -1894,6 +2003,8 @@
 ;;THIS SWEEP IS THE REGRESSION TRIP-WIRE and is deliberately written as an INVARIANT over every
 ;;token the chain actually has, not as a replay of the one path -- the same emptying could arrive
 ;;from any future writer of that column, and an invariant catches all of them.
+;;==== ATS-F1 — the reward-token SENTINEL invariant, swept across every RT on the chain · 02 · let / invocation ==== 
+(print "--- [ATS-F1 — the reward-token SENTINEL invariant, swept across every RT on the chain · 02 · let / invocation] ---")
 (let
     (
         (ref-ATS:module{AutostakeV3} ATS)
@@ -1979,7 +2090,11 @@
 ;;A dormant precedent for this existed at `_scratch_infoone_h6_coil_cost.repl` -- written for DALOS
 ;;audit #11H, quoting the same owner instruction -- but it is an UNGATED scratch written against the
 ;;since-removed V1 interfaces, so nothing has been enforcing it. This is the gated version.
+;;==== ATS-I1 — THE INFO COST TEMPLATE: predicted cost vs what the op actually charges · 01 · env-sigs (caps) ==== 
+(print "--- [ATS-I1 — THE INFO COST TEMPLATE: predicted cost vs what the op actually charges · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AOZ", "caps": [] } { "key": "PK_AncientHodler", "caps": [] }])
+;;==== ATS-I1 — THE INFO COST TEMPLATE: predicted cost vs what the op actually charges · 02 · let / invocation ==== 
+(print "--- [ATS-I1 — THE INFO COST TEMPLATE: predicted cost vs what the op actually charges · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)

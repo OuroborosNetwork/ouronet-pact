@@ -36,6 +36,8 @@
 (namespace "ouronet-ns")
 ;;==== TX-EQUITY-001 · 01 · env-sigs (caps) ====
 (print "--- [TX-EQUITY-001 · 01 · env-sigs (caps)] ---")
+;;==== TX-EQUITY-001 - Issue Shareholder Collection · 01 · let / invocation ==== ==================
+(print "--- [TX-EQUITY-001 - Issue Shareholder Collection · 01 · let / invocation] ---")
 (let
     (
         (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
@@ -128,9 +130,13 @@
 (namespace "ouronet-ns")
 ;;==== TX-EQUITY-002 · 01 · env-sigs (caps) ====
 (print "--- [TX-EQUITY-002 · 01 · env-sigs (caps)] ---")
+;;==== TX-EQUITY-002 - Make / Convert / Break round trip, exact conservation · 01 · env-sigs (caps) ==== 
+(print "--- [TX-EQUITY-002 - Make / Convert / Break round trip, exact conservation · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 ;;==== TX-EQUITY-002 · 02 · Make: 100,000 shares -> 1,000 Tier-1 packages ====
 (print "--- [TX-EQUITY-002 · 02 · Make 100,000 shares -> Tier 1 (100 shares/unit) = 1,000 units] ---")
+;;==== TX-EQUITY-002 - Make / Convert / Break round trip, exact conservation · 02 · let / invocation ==== 
+(print "--- [TX-EQUITY-002 - Make / Convert / Break round trip, exact conservation · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -240,9 +246,13 @@
 (namespace "ouronet-ns")
 ;;==== TX-EQUITY-003 · 01 · env-sigs (caps) ====
 (print "--- [TX-EQUITY-003 · 01 · env-sigs (caps)] ---")
+;;==== TX-EQUITY-003 - negative paths: capacity, modulo, invalid nonce/tier · 01 · env-sigs (caps) ==== 
+(print "--- [TX-EQUITY-003 - negative paths: capacity, modulo, invalid nonce/tier · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 ;;==== TX-EQUITY-003 · 02 · capacity / modulo / morph-target validation ====
 (print "--- [TX-EQUITY-003 · 02 · capacity / modulo / morph-target validation] ---")
+;;==== TX-EQUITY-003 - negative paths: capacity, modulo, invalid nonce/tier · 02 · let / invocation ==== 
+(print "--- [TX-EQUITY-003 - negative paths: capacity, modulo, invalid nonce/tier · 02 · let / invocation] ---")
 (let
     (
         (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)

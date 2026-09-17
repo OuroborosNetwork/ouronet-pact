@@ -34,6 +34,8 @@
 (print "--- [SPARK-BUY-GT] pure-citizen Spark buy + GAS-delta ---")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-SPARK-BUY-GT - pure-citizen SPARK|C_BuySparks executes + INFO_BuySparks == real gas delta · 01 · let / invocation ==== 
+(print "--- [TX-SPARK-BUY-GT - pure-citizen SPARK|C_BuySparks executes + INFO_BuySparks == real gas delta · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -115,13 +117,21 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;==== SPARK-REDEEM-URCi · redeem cost reader computes (exec needs a payer!=redeemer wSTOA fixture) ====
 (begin-tx "TX-SPARK-REDEEM-URCi - URCi_RedeemSparks / INFO_RedeemSparks compute the 6-leg Sigma cost")
 (print "--- [SPARK-REDEEM-URCi] redeem cost reader ---")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-SPARK-REDEEM-URCi - URCi_RedeemSparks / INFO_RedeemSparks compute the 6-leg Sigma cost · 01 · env-sigs (caps) ==== 
+(print "--- [TX-SPARK-REDEEM-URCi - URCi_RedeemSparks / INFO_RedeemSparks compute the 6-leg Sigma cost · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-SPARK-REDEEM-URCi - URCi_RedeemSparks / INFO_RedeemSparks compute the 6-leg Sigma cost · 02 · let / invocation ==== 
+(print "--- [TX-SPARK-REDEEM-URCi - URCi_RedeemSparks / INFO_RedeemSparks compute the 6-leg Sigma cost · 02 · let / invocation] ---")
 (let
     (
         (ref-SPARK:module{SparksV2} DEMIPAD-SPARK)
@@ -141,12 +151,18 @@
           (expect "SPARK-REDEEM-URCi: discounted INFO cost is positive and <= raw" true (and (> predicted 0.0) (<= predicted urci))) ])
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;==== STOICPAY-BUY-GT · pure-citizen 3-leg buy functional + GAS-delta ground truth ====
 (begin-tx "TX-STOICPAY-BUY-GT - pure-citizen KPAY|C_BuyStoicPay + INFO_BuyStoicPay == real gas delta")
 (print "--- [STOICPAY-BUY-GT] pure-citizen StoicPay buy (deposit + transfer + venture split) + GAS-delta ---")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-STOICPAY-BUY-GT - pure-citizen KPAY|C_BuyStoicPay + INFO_BuyStoicPay == real gas delta · 01 · let / invocation ==== 
+(print "--- [TX-STOICPAY-BUY-GT - pure-citizen KPAY|C_BuyStoicPay + INFO_BuyStoicPay == real gas delta · 01 · let / invocation] ---")
 (let
     (
         (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)

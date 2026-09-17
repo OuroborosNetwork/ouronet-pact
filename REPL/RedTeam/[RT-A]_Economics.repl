@@ -1,4 +1,17 @@
 ;;
+;; REPL/RedTeam/[RT-A]_Economics.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/RedTeam/[RT-A]_Economics.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
+;;
 ;; REPL/RedTeam/[RT-A]_Economics.repl — FAMILY A: arithmetic & value.
 ;;
 ;; "Can the math be made to produce something other than what was intended?"
@@ -53,7 +66,11 @@
 ;;THAT IS THE GENERAL LESSON, and it is worth the paper: a preview-versus-charge check, however
 ;;rigorous, cannot see this class. It asks "does this route quote what it charges", and both routes
 ;;pass. The question nobody was asking is "do two routes to the same operation charge the same".
+;;==== RT-A-001 - route around the lp-churn deterrent by picking the other Talos client · 01 · env-sigs (caps) ==== 
+(print "--- [RT-A-001 - route around the lp-churn deterrent by picking the other Talos client · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+;;==== RT-A-001 - route around the lp-churn deterrent by picking the other Talos client · 02 · let / invocation ==== 
+(print "--- [RT-A-001 - route around the lp-churn deterrent by picking the other Talos client · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-CP:module{TalosStageOne_ClientPactsV4} TS01-CP)
@@ -191,7 +208,11 @@
 ;;            price and the thing paid for it are not visible together anywhere. If a future change
 ;;            ever removed or conditioned that freeze, the bypass would become real and nothing
 ;;            would notice, because no test asserts the two are coupled. This one does.
+;;==== RT-A-002 - the door that requires asymmetry is the one that does not tax it · 01 · env-sigs (caps) ==== 
+(print "--- [RT-A-002 - the door that requires asymmetry is the one that does not tax it · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== RT-A-002 - the door that requires asymmetry is the one that does not tax it · 02 · let / invocation ==== 
+(print "--- [RT-A-002 - the door that requires asymmetry is the one that does not tax it · 02 · let / invocation] ---")
 (let
     (
         (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)

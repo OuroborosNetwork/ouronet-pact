@@ -20,6 +20,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-CNS-001 · 01 · env-sigs (patron + STOA caps) ====
 (print "--- [TX-CNS-001 · 01 · env-sigs] ---")
+;;==== TX-CNS-001 - enable hibernation on Auryndex, then Constrict OURO · 01 · env-sigs (caps) ==== 
+(print "--- [TX-CNS-001 - enable hibernation on Auryndex, then Constrict OURO · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -40,6 +42,8 @@
 )
 ;;==== TX-CNS-001 · 02 · SetHibernationFees + Constrict ====
 (print "--- [TX-CNS-001 · 02 · hibernation + constrict] ---")
+;;==== TX-CNS-001 - enable hibernation on Auryndex, then Constrict OURO · 02 · let / invocation ==== 
+(print "--- [TX-CNS-001 - enable hibernation on Auryndex, then Constrict OURO · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)

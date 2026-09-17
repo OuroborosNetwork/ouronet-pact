@@ -21,6 +21,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-LQD-000 · 01 · env-sigs (patron + STOA fee caps for the DPTF issue) ====
 (print "--- [TX-LQD-000 · 01 · env-sigs] ---")
+;;==== TX-LQD-000 - deploy + register the Ouronet wrapped-UrStoa DPTF (boot gap fixture) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-LQD-000 - deploy + register the Ouronet wrapped-UrStoa DPTF (boot gap fixture) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -44,6 +46,8 @@
 )
 ;;==== TX-LQD-000 · 02 · issue wrapped-UrStoa DPTF, register ur-stoa-id, deploy liquid account ====
 (print "--- [TX-LQD-000 · 02 · deploy wrapped-UrStoa token] ---")
+;;==== TX-LQD-000 - deploy + register the Ouronet wrapped-UrStoa DPTF (boot gap fixture) · 02 · let / invocation ==== 
+(print "--- [TX-LQD-000 - deploy + register the Ouronet wrapped-UrStoa DPTF (boot gap fixture) · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -71,6 +75,10 @@
 )
 (print "===^^^===")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;;================================================================================
 (begin-tx "TX-LQD-001 - fund patron Stoa addr with UrStoa, then WrapUrStoa + UnwrapUrStoa")
 (namespace "ouronet-ns")
@@ -84,6 +92,8 @@
         , "pred": "keys-all" }
     }
 )
+;;==== TX-LQD-001 - fund patron Stoa addr with UrStoa, then WrapUrStoa + UnwrapUrStoa · 01 · env-sigs (caps) ==== 
+(print "--- [TX-LQD-001 - fund patron Stoa addr with UrStoa, then WrapUrStoa + UnwrapUrStoa · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74",
@@ -110,6 +120,8 @@
 )
 ;;==== TX-LQD-001 · 02 · fund UrStoa + WrapUrStoa + UnwrapUrStoa ====
 (print "--- [TX-LQD-001 · 02 · fund + wrap + unwrap] ---")
+;;==== TX-LQD-001 - fund patron Stoa addr with UrStoa, then WrapUrStoa + UnwrapUrStoa · 02 · let / invocation ==== 
+(print "--- [TX-LQD-001 - fund patron Stoa addr with UrStoa, then WrapUrStoa + UnwrapUrStoa · 02 · let / invocation] ---")
 (let
     (
         (ref-ur-coin:module{stoa-ns.ur-stoic-fungible-v1} coin)

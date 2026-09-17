@@ -31,8 +31,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-ZZ [Stage_Z] - DPL-UR unified module (Stage_Z/01_DPL-UR.pact) · 01 · env-sigs (caps) ==== 
 (print "--- [TX-ZZ [Stage_Z] - DPL-UR unified module (Stage_Z/01_DPL-UR.pact) · 01 · env-sigs (caps)] ---")
+;;==== TX-ZZ [Stage_Z] - DPL-UR unified module (Stage_Z/01_DPL-UR.pact) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-ZZ [Stage_Z] - DPL-UR unified module (Stage_Z/01_DPL-UR.pact) · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-ZZ [Stage_Z] - DPL-UR unified module (Stage_Z/01_DPL-UR.pact) · 02 · load module ==== ===
+(print "--- [TX-ZZ [Stage_Z] - DPL-UR unified module (Stage_Z/01_DPL-UR.pact) · 02 · load module] ---")
 ;;==== TX-ZZ [Stage_Z] - DPL-UR unified module (Stage_Z/01_DPL-UR.pact) · 02 · load module ==== ===
 (print "--- [TX-ZZ [Stage_Z] - DPL-UR unified module (Stage_Z/01_DPL-UR.pact) · 02 · load module] ---")
 (load "../2_CITIZEN/Stage_Z/01_DPL-UR.pact")
@@ -51,10 +55,14 @@
 (namespace "ouronet-ns")
 ;;==== TX-ZZ [Stage_Z] - EXPLORER read module · 01 · env-sigs (caps) ==== ==========================
 (print "--- [TX-ZZ [Stage_Z] - EXPLORER read module · 01 · env-sigs (caps)] ---")
+;;==== TX-ZZ [Stage_Z] - EXPLORER read module (Stage_Z/02_EXPLORER.pact) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-ZZ [Stage_Z] - EXPLORER read module (Stage_Z/02_EXPLORER.pact) · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
 ;;==== TX-ZZ [Stage_Z] - EXPLORER read module · 02 · load module ==== ===============================
 (print "--- [TX-ZZ [Stage_Z] - EXPLORER read module · 02 · load module] ---")
+;;==== TX-ZZ [Stage_Z] - EXPLORER read module (Stage_Z/02_EXPLORER.pact) · 02 · load module ==== ==
+(print "--- [TX-ZZ [Stage_Z] - EXPLORER read module (Stage_Z/02_EXPLORER.pact) · 02 · load module] ---")
 (load "../2_CITIZEN/Stage_Z/02_EXPLORER.pact")
 ;;==== TX-ZZ [Stage_Z] - EXPLORER read module · 03 · gas echo ==== =================================
 (print "--- [TX-ZZ [Stage_Z] - EXPLORER read module · 03 · gas echo] ---")

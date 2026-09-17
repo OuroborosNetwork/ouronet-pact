@@ -36,6 +36,8 @@
 (begin-tx "TX-BOOT-04 - AQP-BOOT Step4 core scores")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-BOOT-04 - AQP-BOOT Step4 core scores · 01 · let / invocation ==== =======================
+(print "--- [TX-BOOT-04 - AQP-BOOT Step4 core scores · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -61,9 +63,16 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "TX-BOOT-05 - AQP-BOOT Step5 subsidiary scores")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-BOOT-05 - AQP-BOOT Step5 subsidiary scores · 01 · let / invocation ==== =================
+(print "--- [TX-BOOT-05 - AQP-BOOT Step5 subsidiary scores · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -100,6 +109,8 @@
 (print "=== TX-HET-01 - OuroLpFarm triplet: heterogeneous matrix drives lane routing ====")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-HET-01 - heterogeneous quality-split routing + O(1) reprice · 01 · let / invocation ==== 
+(print "--- [TX-HET-01 - heterogeneous quality-split routing + O(1) reprice · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -290,6 +301,8 @@
 (print "=== TX-HET-02 - quality-split guard rejections =================================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-HET-02 - guard rejections · 01 · let / invocation ==== ==================================
+(print "--- [TX-HET-02 - guard rejections · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)

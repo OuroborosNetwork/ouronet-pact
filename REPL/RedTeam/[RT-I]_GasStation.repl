@@ -1,4 +1,17 @@
 ;;
+;; REPL/RedTeam/[RT-I]_GasStation.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/RedTeam/[RT-I]_GasStation.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
+;;
 ;; REPL/RedTeam/[RT-I]_GasStation.repl — FAMILY I: the gas station's payable surface.
 ;;
 ;; "What will Ouronet agree to pay for?"
@@ -101,6 +114,8 @@
 ;;demonstrated. Capability scope is per-transaction; so is each case below.
 ;;BASELINE. Without this the refusals below prove nothing -- a Case 3 that rejects everything is not
 ;;a hole, it is a closed door.
+;;==== RT-I-001a - BASELINE: the intended Case 3 shape is funded · 01 · env-sigs (caps) ==== ======
+(print "--- [RT-I-001a - BASELINE: the intended Case 3 shape is funded · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (env-data { "exec-code": ["(namespace \"ouronet-ns\")"
                    "(IGNIS.C_Collect \"Ѻ.attacker\" (IGNIS.UDC_CustomCodeCumulator))"
@@ -122,6 +137,8 @@
 (print "--- [RT-I-001b] ---")
 ;;CONTROL. Case 1 really is tight, so the station is not simply open to everything; the only
 ;;question is what Case 3 lets past. This is the assertion that caught the vacuous first draft.
+;;==== RT-I-001b - CONTROL: a single foreign form is refused · 01 · env-sigs (caps) ==== ==========
+(print "--- [RT-I-001b - CONTROL: a single foreign form is refused · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (env-data { "exec-code": ["(bogus.thing)"] })
 (print
@@ -141,6 +158,8 @@
 (namespace "ouronet-ns")
 (print "--- [RT-I-001c] ---")
 ;;THE ATTACK. Identical prefix, one extra form at index 3 that no enforce in Case 3 ever reads.
+;;==== RT-I-001c - ATTACK: a fourth, unvalidated form · 01 · env-sigs (caps) ==== =================
+(print "--- [RT-I-001c - ATTACK: a fourth, unvalidated form · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (env-data { "exec-code": ["(namespace \"ouronet-ns\")"
                    "(IGNIS.C_Collect \"Ѻ.attacker\" (IGNIS.UDC_CustomCodeCumulator))"
@@ -162,6 +181,8 @@
 (namespace "ouronet-ns")
 (print "--- [RT-I-001d] ---")
 ;;...and it is not a one-form allowance. `(>= n 3)` bounds nothing above.
+;;==== RT-I-001d - ATTACK: the appended count is unbounded · 01 · env-sigs (caps) ==== ============
+(print "--- [RT-I-001d - ATTACK: the appended count is unbounded · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (env-data { "exec-code": ["(namespace \"ouronet-ns\")"
                    "(IGNIS.C_Collect \"Ѻ.attacker\" (IGNIS.UDC_CustomCodeCumulator))"
@@ -184,6 +205,8 @@
 (print "--- [RT-I-001e] ---")
 ;;A SECOND, INDEPENDENT way past the same case: the form-2 check is `(take 4 ...)` = "(let", so
 ;;everything after those four characters is free.
+;;==== RT-I-001e - ATTACK: form 2's body is unread · 01 · env-sigs (caps) ==== ====================
+(print "--- [RT-I-001e - ATTACK: form 2's body is unread · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (env-data { "exec-code": ["(namespace \"ouronet-ns\")"
                    "(IGNIS.C_Collect \"Ѻ.attacker\" (IGNIS.UDC_CustomCodeCumulator))"
@@ -212,7 +235,11 @@
 ;;So the question is not "can arbitrary code ride in" -- RT-I-001c proves it can -- but "what is the
 ;;exchange rate". Measured here rather than asserted, because a flat fee against a bounded subsidy
 ;;is only a defect if the fee is the smaller number.
+;;==== RT-I-001f - what the unvalidated tail actually COSTS the attacker · 01 · env-sigs (caps) ==== 
+(print "--- [RT-I-001f - what the unvalidated tail actually COSTS the attacker · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== RT-I-001f - what the unvalidated tail actually COSTS the attacker · 02 · let / invocation ==== 
+(print "--- [RT-I-001f - what the unvalidated tail actually COSTS the attacker · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -275,7 +302,11 @@
 ;;FIXED 2026-09-15 by making `iz-gassles-patron` compare against GOV|DALOS|SC_NAME instead of
 ;;reading the flag. The designated account stays exempt -- the DSP daily minters are unaffected --
 ;;and every other smart account now reaches UEV_Patron and is REFUSED BY NAME.
+;;==== RT-I-001g - the exemption jumped over a guard that already said this · 01 · env-sigs (caps) ==== 
+(print "--- [RT-I-001g - the exemption jumped over a guard that already said this · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }, { "key": "PK_BJ", "caps": [] }])
+;;==== RT-I-001g - the exemption jumped over a guard that already said this · 02 · let / invocation ==== 
+(print "--- [RT-I-001g - the exemption jumped over a guard that already said this · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -303,6 +334,8 @@
 ;;
 (begin-tx "RT-I-001h - WHICH accounts are gassless, against the stated design")
 (env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+;;==== RT-I-001h - WHICH accounts are gassless, against the stated design · 01 · namespace ==== ===
+(print "--- [RT-I-001h - WHICH accounts are gassless, against the stated design · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [RT-I-001h · the exemption's actual population] ---")
 ;;OWNER'S STATED DESIGN (2026-09-15): "an IGNIS gas payer account can only be a STANDARD account. A
@@ -319,6 +352,8 @@
 ;;
 ;;So the exemption's population is "every smart account", not "one". This block states that as a
 ;;measurement on a specific, ordinary user account.
+;;==== RT-I-001h - WHICH accounts are gassless, against the stated design · 02 · let / invocation ==== 
+(print "--- [RT-I-001h - WHICH accounts are gassless, against the stated design · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -347,6 +382,8 @@
 ;;
 (begin-tx "RT-I-001i - why the one-line fix is NOT safe")
 (env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+;;==== RT-I-001i - why the one-line fix is NOT safe · 01 · namespace ==== =========================
+(print "--- [RT-I-001i - why the one-line fix is NOT safe · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [RT-I-001i · the exemption's live dependants] ---")
 ;;THE INTENDED ACCOUNT EXISTS, AND THE OWNER REMEMBERED IT CORRECTLY. `03_DSP+.pact` defines
@@ -367,6 +404,8 @@
 ;;    AQP|SC_NAME -> SWPLC::C_Fuel             (04_RPS:5317)
 ;;This block pins that those accounts really are gassless today, so the constraint on any fix is a
 ;;measurement rather than a worry.
+;;==== RT-I-001i - why the one-line fix is NOT safe · 02 · let / invocation ==== ==================
+(print "--- [RT-I-001i - why the one-line fix is NOT safe · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -427,6 +466,8 @@
 ;;in a module suite. What was genuinely missing was not the cap -- it was the ARM BESIDE the cap.
 (env-data {"exec-code": ["(ouronet-ns.TS01-C1.something)"]})
 (env-chain-data { "gas-limit": 100000000, "gas-price": 0.001 })
+;;==== RT-I-002 — the station's spending cap, and who it does not apply to · 01 · env-sigs (caps) ==== 
+(print "--- [RT-I-002 — the station's spending cap, and who it does not apply to · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (map print
     [
@@ -451,6 +492,8 @@
 ;;The admission is therefore attributable to `(enforce-guard GOV|MD_DALOS)` and to nothing else.
 (env-data {"exec-code": ["(ouronet-ns.TS01-C1.something)"]})
 (env-chain-data { "gas-limit": 100000000, "gas-price": 0.001 })
+;;==== RT-I-002b — the identical notional, signed by the Demiurgoi master · 01 · env-sigs (caps) ==== 
+(print "--- [RT-I-002b — the identical notional, signed by the Demiurgoi master · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Florin", "caps": [] }])
 (map print
     [

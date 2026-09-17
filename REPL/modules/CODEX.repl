@@ -1,3 +1,16 @@
+;;
+;; REPL/modules/CODEX.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/modules/CODEX.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 ;; REPL/modules/CODEX.repl — STANDALONE CODEX tester (blockchain-env-in-a-repl).
 ;; Fresh boot: Stage 00 sandbox + deploy core(s) + the CODEX suite only.
 ;; Run: cd REPL && pact modules/CODEX.repl   (see ARCHITECTURE/REPL_TEST_ARCHITECTURE.md)
@@ -26,7 +39,11 @@
 ;;
 ;;The interface is TalosStageOne_ClientFourV8, not V2 — the Talos client interfaces are at different
 ;;version numbers from each other, and guessing costs a "Cannot find module" round trip.
+;;==== CODEX-G1 — the StoicTag registry's four uniqueness and liveness guards · 01 · env-sigs (caps) ==== 
+(print "--- [CODEX-G1 — the StoicTag registry's four uniqueness and liveness guards · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== CODEX-G1 — the StoicTag registry's four uniqueness and liveness guards · 02 · let / invocation ==== 
+(print "--- [CODEX-G1 — the StoicTag registry's four uniqueness and liveness guards · 02 · let / invocation] ---")
 (let
     (
         (ref-CODEX:module{CodexV2} CODEX)
@@ -74,7 +91,11 @@
 ;;
 ;;This is the distinction the two guards exist for: release keeps the row (so the name's history and
 ;;its former holder stay auditable), which means "absent" and "released" must be told apart.
+;;==== CODEX-G2 — releasing a tag that is present but already released · 01 · env-sigs (caps) ==== 
+(print "--- [CODEX-G2 — releasing a tag that is present but already released · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== CODEX-G2 — releasing a tag that is present but already released · 02 · let / invocation ==== 
+(print "--- [CODEX-G2 — releasing a tag that is present but already released · 02 · let / invocation] ---")
 (let
     (
         (ref-CODEX:module{CodexV2} CODEX)
@@ -146,6 +167,8 @@
 (env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
 (namespace "ouronet-ns")
 (env-data { "CX_KS": { "keys": ["PK_AncientHodler"], "pred": "keys-all" } })
+;;==== CODEX-G3 — the composite-id guard, and the one input it cannot describe · 01 · env-sigs (caps) ==== 
+(print "--- [CODEX-G3 — the composite-id guard, and the one input it cannot describe · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [CODEX-G3 · 01 · a codex-id is two Apollo halves joined by a colon] ---")
 ;;`CODEX|A>REGISTER-IDENTITY` folds SEVEN conditions under one message: the composite length, the

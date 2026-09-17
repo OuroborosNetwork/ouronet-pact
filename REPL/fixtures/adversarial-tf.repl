@@ -1,3 +1,16 @@
+;;
+;; REPL/fixtures/adversarial-tf.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/fixtures/adversarial-tf.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 ;; REPL/fixtures/adversarial-tf.repl — ADVERSARIAL true-fungible fixture.
 ;;
 ;; PROVIDES : 3 DPTFs owned by KST.ANHD, precision 24 —
@@ -31,6 +44,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [FIXTURE adversarial-tf · 01 · let / STOA split] ---")
+;;==== FIXTURE adversarial-tf — issue ADVO · 01 · let / invocation ==== ===========================
+(print "--- [FIXTURE adversarial-tf — issue ADVO · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -89,7 +104,11 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [FIXTURE adversarial-tf · 04 · spend the origin mint] ---")
+;;==== FIXTURE adversarial-tf — SPEND the origin mint · 01 · env-sigs (caps) ==== =================
+(print "--- [FIXTURE adversarial-tf — SPEND the origin mint · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== FIXTURE adversarial-tf — SPEND the origin mint · 02 · let / invocation ==== ================
+(print "--- [FIXTURE adversarial-tf — SPEND the origin mint · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -114,8 +133,12 @@
 ;;|| NEXT >
 ;;
 (begin-tx "FIXTURE adversarial-tf — postcondition")
+;;==== FIXTURE adversarial-tf — postcondition · 01 · namespace ==== ===============================
+(print "--- [FIXTURE adversarial-tf — postcondition · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [FIXTURE adversarial-tf · 05 · postcondition] ---")
+;;==== FIXTURE adversarial-tf — postcondition · 02 · let / invocation ==== ========================
+(print "--- [FIXTURE adversarial-tf — postcondition · 02 · let / invocation] ---")
 (let
     (
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)

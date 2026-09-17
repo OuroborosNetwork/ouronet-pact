@@ -17,6 +17,8 @@
 (namespace "ouronet-ns")
 ;;==== INIT TX 000 - Chain Data Time SetUp Definition · 01 · env-chain-data ==== ==================
 (print "--- [INIT TX 000 - Chain Data Time SetUp Definition · 01 · env-chain-data] ---")
+;;==== INIT TX 000 - Chain Data Time SetUp Definition · 01 · env-chain-data ==== ==================
+(print "--- [INIT TX 000 - Chain Data Time SetUp Definition · 01 · env-chain-data] ---")
 (env-chain-data
     {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
      "block-time": TV.TIME00}
@@ -33,12 +35,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP TX 001 - Admin Tests · 01 · env-sigs (caps) ==== =======================================
 (print "--- [SWP TX 001 - Admin Tests · 01 · env-sigs (caps)] ---")
+;;==== SWP TX 001 - Admin Tests · 01 · env-sigs (caps) ==== =======================================
+(print "--- [SWP TX 001 - Admin Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== SWP TX 001 - Admin Tests · 02 · let / invocation ==== ======================================
+(print "--- [SWP TX 001 - Admin Tests · 02 · let / invocation] ---")
 ;;==== SWP TX 001 - Admin Tests · 02 · let / invocation ==== ======================================
 (print "--- [SWP TX 001 - Admin Tests · 02 · let / invocation] ---")
 (let
@@ -185,6 +191,8 @@
 (print "")
 ;;==== SWP TX 001 - Admin Tests · 03 · gas echo ==== ==============================================
 (print "--- [SWP TX 001 - Admin Tests · 03 · gas echo] ---")
+;;==== SWP TX 001 - Admin Tests · 03 · gas echo ==== ==============================================
+(print "--- [SWP TX 001 - Admin Tests · 03 · gas echo] ---")
 (format "<<<<<<<STEP 002 Admin Tests {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -214,6 +222,8 @@
 ;;several unrelated, pre-existing broken transactions later in this file
 ;;(a never-issued ATS pair, a never-registered smart account) block the file
 ;;from loading that far; out of scope for this fix, not touched.
+;;==== SWP TX 002 - #61L C_UpgradeBrandingLPs Proof · 01 · let / invocation ==== ==================
+(print "--- [SWP TX 002 - #61L C_UpgradeBrandingLPs Proof · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -311,6 +321,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP TX 001 - Admin Tests · 01 · env-sigs (caps) ==== =======================================
 (print "--- [SWP TX 001 - Admin Tests · 01 · env-sigs (caps)] ---")
+;;==== SWP TX 001 - Admin Tests · 01 · env-sigs (caps) ==== =======================================
+(print "--- [SWP TX 001 - Admin Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -318,6 +330,8 @@
     ]
 )
 
+;;==== SWP TX 001 - Admin Tests · 02 · let / invocation ==== ======================================
+(print "--- [SWP TX 001 - Admin Tests · 02 · let / invocation] ---")
 ;;==== SWP TX 001 - Admin Tests · 02 · let / invocation ==== ======================================
 (print "--- [SWP TX 001 - Admin Tests · 02 · let / invocation] ---")
 (let
@@ -360,6 +374,8 @@
 (print "")
 ;;==== SWP TX 001 - Admin Tests · 03 · gas echo ==== ==============================================
 (print "--- [SWP TX 001 - Admin Tests · 03 · gas echo] ---")
+;;==== SWP TX 001 - Admin Tests · 03 · gas echo ==== ==============================================
+(print "--- [SWP TX 001 - Admin Tests · 03 · gas echo] ---")
 (format "<<<<<<<STEP 002 Admin Tests {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -375,6 +391,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP TX 001 - Admin Tests · 01 · env-sigs (caps) ==== =======================================
 (print "--- [SWP TX 001 - Admin Tests · 01 · env-sigs (caps)] ---")
+;;==== SWP TX 001 - Admin Tests · 01 · env-sigs (caps) ==== =======================================
+(print "--- [SWP TX 001 - Admin Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -382,6 +400,8 @@
     ]
 )
 
+;;==== SWP TX 001 - Admin Tests · 02 · let / invocation ==== ======================================
+(print "--- [SWP TX 001 - Admin Tests · 02 · let / invocation] ---")
 ;;==== SWP TX 001 - Admin Tests · 02 · let / invocation ==== ======================================
 (print "--- [SWP TX 001 - Admin Tests · 02 · let / invocation] ---")
 (let
@@ -475,6 +495,8 @@
 (print "")
 ;;==== SWP TX 001 - Admin Tests · 03 · gas echo ==== ==============================================
 (print "--- [SWP TX 001 - Admin Tests · 03 · gas echo] ---")
+;;==== SWP TX 001 - Admin Tests · 03 · gas echo ==== ==============================================
+(print "--- [SWP TX 001 - Admin Tests · 03 · gas echo] ---")
 (format "<<<<<<<Upgrade Branding costs {} >>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -490,6 +512,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== DPTF - Tests · 01 · env-sigs (caps) ==== ===================================================
 (print "--- [DPTF - Tests · 01 · env-sigs (caps)] ---")
+;;==== DPTF - Tests · 01 · env-sigs (caps) ==== ===================================================
+(print "--- [DPTF - Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -497,6 +521,8 @@
     ]
 )
 
+;;==== DPTF - Tests · 02 · let / invocation ==== ==================================================
+(print "--- [DPTF - Tests · 02 · let / invocation] ---")
 ;;==== DPTF - Tests · 02 · let / invocation ==== ==================================================
 (print "--- [DPTF - Tests · 02 · let / invocation] ---")
 (let
@@ -543,6 +569,8 @@
 
 (print "")
 (print "")
+;;==== DPTF - Tests · 03 · gas echo ==== ==========================================================
+(print "--- [DPTF - Tests · 03 · gas echo] ---")
 ;;==== DPTF - Tests · 03 · gas echo ==== ==========================================================
 (print "--- [DPTF - Tests · 03 · gas echo] ---")
 (format "<<<<<<<STEP 002 Admin Tests {} STOA GAS>>>>>>>" [(env-gas)])

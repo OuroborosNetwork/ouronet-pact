@@ -19,21 +19,45 @@
 (begin-tx "SCALE-SWP-BOOT - KBN citizen")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== SCALE-SWP-BOOT - KBN citizen · 01 · env-sigs (caps) ==== ===================================
+(print "--- [SCALE-SWP-BOOT - KBN citizen · 01 · env-sigs (caps)] ---")
 (env-sigs [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== SCALE-SWP-BOOT - KBN citizen · 02 · load module ==== =======================================
+(print "--- [SCALE-SWP-BOOT - KBN citizen · 02 · load module] ---")
 (load "../../2_CITIZEN/4_BunniesMinter/02_KBunnies.pact")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "SCALE-SWP-BOOT - AQP-BOOT")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== SCALE-SWP-BOOT - AQP-BOOT · 01 · env-sigs (caps) ==== ======================================
+(print "--- [SCALE-SWP-BOOT - AQP-BOOT · 01 · env-sigs (caps)] ---")
 (env-sigs [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== SCALE-SWP-BOOT - AQP-BOOT · 02 · load module ==== ==========================================
+(print "--- [SCALE-SWP-BOOT - AQP-BOOT · 02 · load module] ---")
 (load "../../2_CITIZEN/5_VaultsMinter/04_AQP-BOOT.pact")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "SCALE-SWP-BOOT - Step0")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== SCALE-SWP-BOOT - Step0 · 01 · env-sigs (caps) ==== =========================================
+(print "--- [SCALE-SWP-BOOT - Step0 · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print (format "<(Step0)> => \"{}\"" [(AQP-BOOT.C_Step0_WireImcAndGovernor KST.ANHD)]))
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (load "../Stage_02/[6.2.6]_AQP-VCT-GAS-BASE.repl")
 (print "")
 ;;
@@ -43,6 +67,8 @@
 (begin-tx "SCALE-SWP-01 - anchor + boost-linked score + 50 synth stakers")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+;;==== SCALE-SWP-01 - anchor + boost-linked score + 50 synth stakers · 01 · env-sigs (caps) ==== ==
+(print "--- [SCALE-SWP-01 - anchor + boost-linked score + 50 synth stakers · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -58,6 +84,8 @@
     ]
 )
 (print "--- [SCALE-SWP-01 · anchor + boost-linked score + stake 50] ---")
+;;==== SCALE-SWP-01 - anchor + boost-linked score + 50 synth stakers · 02 · let / invocation ==== =
+(print "--- [SCALE-SWP-01 - anchor + boost-linked score + 50 synth stakers · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -98,6 +126,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;; ============================================================================
@@ -107,6 +139,8 @@
 (begin-tx "SCALE-SWP-BEGIN - CC_SweepBegin (revoke + freeze + open cursor)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+;;==== SCALE-SWP-BEGIN - CC_SweepBegin (revoke + freeze + open cursor) · 01 · env-sigs (caps) ==== 
+(print "--- [SCALE-SWP-BEGIN - CC_SweepBegin (revoke + freeze + open cursor) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -122,6 +156,8 @@
     ]
 )
 (print "--- [SCALE-SWP-BEGIN · CC_SweepBegin] ---")
+;;==== SCALE-SWP-BEGIN - CC_SweepBegin (revoke + freeze + open cursor) · 02 · let / invocation ==== 
+(print "--- [SCALE-SWP-BEGIN - CC_SweepBegin (revoke + freeze + open cursor) · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -156,10 +192,16 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 (begin-tx "SCALE-SWP-FREEZE - collect is refused while the sweep is open")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+;;==== SCALE-SWP-FREEZE - collect is refused while the sweep is open · 01 · env-sigs (caps) ==== ==
+(print "--- [SCALE-SWP-FREEZE - collect is refused while the sweep is open · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [SCALE-SWP-FREEZE . collect during an open sweep] ---")
 ;;FVT::UEV_CollectContext's first guard -- "Collect is frozen while a re-score sweep is in progress
@@ -171,6 +213,8 @@
 ;;Why it matters, from the source's own note: mid-sweep the aggregate-promile is in flux, so a
 ;;collect on an unswept holder would refresh deb against a stale-high aggregate -- i.e. pay out on
 ;;a number the sweep is in the middle of correcting.
+;;==== SCALE-SWP-FREEZE - collect is refused while the sweep is open · 02 · let / invocation ==== =
+(print "--- [SCALE-SWP-FREEZE - collect is refused while the sweep is open · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -227,10 +271,16 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 (begin-tx "SCALE-SWP-R1 - CCp_SweepRecomputeChunk 15")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+;;==== SCALE-SWP-R1 - CCp_SweepRecomputeChunk 15 · 01 · env-sigs (caps) ==== ======================
+(print "--- [SCALE-SWP-R1 - CCp_SweepRecomputeChunk 15 · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -246,6 +296,8 @@
     ]
 )
 (print "--- [SCALE-SWP-R1 · recompute chunk 15] ---")
+;;==== SCALE-SWP-R1 - CCp_SweepRecomputeChunk 15 · 02 · let / invocation ==== =====================
+(print "--- [SCALE-SWP-R1 - CCp_SweepRecomputeChunk 15 · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -276,10 +328,16 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 (begin-tx "SCALE-SWP-R2 - CCp_SweepRecomputeChunk 15")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+;;==== SCALE-SWP-R2 - CCp_SweepRecomputeChunk 15 · 01 · env-sigs (caps) ==== ======================
+(print "--- [SCALE-SWP-R2 - CCp_SweepRecomputeChunk 15 · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -295,6 +353,8 @@
     ]
 )
 (print "--- [SCALE-SWP-R2 · recompute chunk 15] ---")
+;;==== SCALE-SWP-R2 - CCp_SweepRecomputeChunk 15 · 02 · let / invocation ==== =====================
+(print "--- [SCALE-SWP-R2 - CCp_SweepRecomputeChunk 15 · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -325,10 +385,16 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 (begin-tx "SCALE-SWP-R3 - CCp_SweepRecomputeChunk 15")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+;;==== SCALE-SWP-R3 - CCp_SweepRecomputeChunk 15 · 01 · env-sigs (caps) ==== ======================
+(print "--- [SCALE-SWP-R3 - CCp_SweepRecomputeChunk 15 · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -344,6 +410,8 @@
     ]
 )
 (print "--- [SCALE-SWP-R3 · recompute chunk 15] ---")
+;;==== SCALE-SWP-R3 - CCp_SweepRecomputeChunk 15 · 02 · let / invocation ==== =====================
+(print "--- [SCALE-SWP-R3 - CCp_SweepRecomputeChunk 15 · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -374,10 +442,16 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 (begin-tx "SCALE-SWP-R4 - CCp_SweepRecomputeChunk 15")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+;;==== SCALE-SWP-R4 - CCp_SweepRecomputeChunk 15 · 01 · env-sigs (caps) ==== ======================
+(print "--- [SCALE-SWP-R4 - CCp_SweepRecomputeChunk 15 · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -393,6 +467,8 @@
     ]
 )
 (print "--- [SCALE-SWP-R4 · recompute chunk 15] ---")
+;;==== SCALE-SWP-R4 - CCp_SweepRecomputeChunk 15 · 02 · let / invocation ==== =====================
+(print "--- [SCALE-SWP-R4 - CCp_SweepRecomputeChunk 15 · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -423,11 +499,19 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;; SCALE-SWP-DONE — after the final chunk: cursor closed, pool unfrozen, promiles recomputed to 0.
 (begin-tx "SCALE-SWP-DONE - end-state check")
+;;==== SCALE-SWP-DONE - end-state check · 01 · namespace ==== =====================================
+(print "--- [SCALE-SWP-DONE - end-state check · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SCALE-SWP-DONE - end-state check · 02 · let / invocation ==== ==============================
+(print "--- [SCALE-SWP-DONE - end-state check · 02 · let / invocation] ---")
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)

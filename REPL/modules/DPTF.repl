@@ -1,3 +1,16 @@
+;;
+;; REPL/modules/DPTF.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/modules/DPTF.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 ;; REPL/modules/DPTF.repl — STANDALONE DPTF tester.
 ;;
 ;; P2 rebuild. The previous version loaded Stage_01/[6.2]_DPTF.repl -- 1,493 lines with ZERO
@@ -17,8 +30,12 @@
 ;;
 (begin-tx "DPTF-01 — issuance properties (C_Issue, via fixture)")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== DPTF-01 — issuance properties (C_Issue, via fixture) · 01 · namespace ==== =================
+(print "--- [DPTF-01 — issuance properties (C_Issue, via fixture) · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [DPTF-01 · 01 · issuance properties] ---")
+;;==== DPTF-01 — issuance properties (C_Issue, via fixture) · 02 · let / invocation ==== ==========
+(print "--- [DPTF-01 — issuance properties (C_Issue, via fixture) · 02 · let / invocation] ---")
 (let
     (
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
@@ -46,7 +63,11 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [DPTF-02 · 01 · mint] ---")
+;;==== DPTF-02 — C_Mint raises supply and credits the account · 01 · env-sigs (caps) ==== =========
+(print "--- [DPTF-02 — C_Mint raises supply and credits the account · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== DPTF-02 — C_Mint raises supply and credits the account · 02 · let / invocation ==== ========
+(print "--- [DPTF-02 — C_Mint raises supply and credits the account · 02 · let / invocation] ---")
 (let
     (
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
@@ -97,7 +118,11 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [DPTF-03 · 01 · transfer] ---")
+;;==== DPTF-03 — C_Transfer moves balance, conserving supply · 01 · env-sigs (caps) ==== ==========
+(print "--- [DPTF-03 — C_Transfer moves balance, conserving supply · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== DPTF-03 — C_Transfer moves balance, conserving supply · 02 · let / invocation ==== =========
+(print "--- [DPTF-03 — C_Transfer moves balance, conserving supply · 02 · let / invocation] ---")
 (let
     (
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
@@ -134,7 +159,11 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [DPTF-04 · 01 · burn] ---")
+;;==== DPTF-04 — C_Burn lowers supply and debits the account · 01 · env-sigs (caps) ==== ==========
+(print "--- [DPTF-04 — C_Burn lowers supply and debits the account · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== DPTF-04 — C_Burn lowers supply and debits the account · 02 · let / invocation ==== =========
+(print "--- [DPTF-04 — C_Burn lowers supply and debits the account · 02 · let / invocation] ---")
 (let
     (
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
@@ -185,7 +214,11 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [DPTF-05 · 01 · fee surface] ---")
+;;==== DPTF-05 — fee surface: SetFee / ToggleFee / SetFeeTarget / ResetFeeTarget · 01 · env-sigs (caps) ==== 
+(print "--- [DPTF-05 — fee surface: SetFee / ToggleFee / SetFeeTarget / ResetFeeTarget · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== DPTF-05 — fee surface: SetFee / ToggleFee / SetFeeTarget / ResetFeeTarget · 02 · let / invocation ==== 
+(print "--- [DPTF-05 — fee surface: SetFee / ToggleFee / SetFeeTarget / ResetFeeTarget · 02 · let / invocation] ---")
 (let
     (
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
@@ -237,7 +270,11 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [DPTF-06 · 01 · properties + roles] ---")
+;;==== DPTF-06 — C_SetMinMove / C_TogglePause / C_ToggleTransferRole / C_ToggleFeeExemptionRole · 01 · env-sigs (caps) ==== 
+(print "--- [DPTF-06 — C_SetMinMove / C_TogglePause / C_ToggleTransferRole / C_ToggleFeeExemptionRole · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== DPTF-06 — C_SetMinMove / C_TogglePause / C_ToggleTransferRole / C_ToggleFeeExemptionRole · 02 · let / invocation ==== 
+(print "--- [DPTF-06 — C_SetMinMove / C_TogglePause / C_ToggleTransferRole / C_ToggleFeeExemptionRole · 02 · let / invocation] ---")
 (let
     (
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
@@ -300,7 +337,11 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [DPTF-07 · 01 · control + ownership] ---")
+;;==== DPTF-07 — C_Control flips properties; C_RotateOwnership moves the konto · 01 · env-sigs (caps) ==== 
+(print "--- [DPTF-07 — C_Control flips properties; C_RotateOwnership moves the konto · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }, { "key": "PK_Emma", "caps": [] }])
+;;==== DPTF-07 — C_Control flips properties; C_RotateOwnership moves the konto · 02 · let / invocation ==== 
+(print "--- [DPTF-07 — C_Control flips properties; C_RotateOwnership moves the konto · 02 · let / invocation] ---")
 (let
     (
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
@@ -372,9 +413,13 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [DPTF-08 · 01 · multi-bulk transfer] ---")
+;;==== DPTF-08 — C_MultiBulkTransfer: fans out across tokens AND receivers · 01 · env-sigs (caps) ==== 
+(print "--- [DPTF-08 — C_MultiBulkTransfer: fans out across tokens AND receivers · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 ;;Until now this op appeared ONLY in an archived probe that calls it and checks nothing.
 ;;Calling an op is not testing it (RULE 6).
+;;==== DPTF-08 — C_MultiBulkTransfer: fans out across tokens AND receivers · 02 · let / invocation ==== 
+(print "--- [DPTF-08 — C_MultiBulkTransfer: fans out across tokens AND receivers · 02 · let / invocation] ---")
 (let
     (
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
@@ -425,7 +470,11 @@
 ;;     DPTF|C>WIPE -> DPTF|C>X_WIPE -> UEV_CanWipeON + UEV_AccountFreezeState(atbw, true)
 ;; so an account cannot be wiped unless it has FIRST been frozen. Wipe is the second half of a
 ;; two-step confiscation, not a one-shot -- and each half is separately visible on chain.
+;;==== DPTF-09 — DPTF|C_Wipe: the account must be FROZEN first · 01 · env-sigs (caps) ==== ========
+(print "--- [DPTF-09 — DPTF|C_Wipe: the account must be FROZEN first · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== DPTF-09 — DPTF|C_Wipe: the account must be FROZEN first · 02 · let / invocation ==== =======
+(print "--- [DPTF-09 — DPTF|C_Wipe: the account must be FROZEN first · 02 · let / invocation] ---")
 (let
     (
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
@@ -513,7 +562,11 @@
 ;;PASS and on MOCKB (flag OFF, from DPTF-07's C_Control) must REJECT. A rejection test alone
 ;;cannot tell "the guard works" from "the guard always fires" -- and a guard that always fires is
 ;;a bug that no expect-failure would ever catch.
+;;==== DPTF-G1 — the UEV_ guard family, probed DIRECTLY · 01 · env-sigs (caps) ==== ===============
+(print "--- [DPTF-G1 — the UEV_ guard family, probed DIRECTLY · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== DPTF-G1 — the UEV_ guard family, probed DIRECTLY · 02 · let / invocation ==== ==============
+(print "--- [DPTF-G1 — the UEV_ guard family, probed DIRECTLY · 02 · let / invocation] ---")
 (let
     (
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
@@ -633,6 +686,8 @@
 ;;
 (begin-tx "DPTF-G2 — the special-link existence family, as 2x2s on their own boolean argument")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== DPTF-G2 — the special-link existence family, as 2x2s on their own boolean argument · 01 · namespace ==== 
+(print "--- [DPTF-G2 — the special-link existence family, as 2x2s on their own boolean argument · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [DPTF-G2 · 01 · vesting / sleeping / hibernation / frozen / reserved] ---")
 ;;P3.3. Five guards with one shape: (enforce (= has-X existance) ...). Each takes the EXPECTED
@@ -647,6 +702,8 @@
 ;;The messages share the tail "is not satisfied with existance" with DPOF and DPMF, so each
 ;;expectation is anchored on its own leading noun and the calls go through ref-DPTF:: -- the
 ;;module reference is what makes the attribution exact (see _enforce_coverage.py --ambiguous).
+;;==== DPTF-G2 — the special-link existence family, as 2x2s on their own boolean argument · 02 · let / invocation ==== 
+(print "--- [DPTF-G2 — the special-link existence family, as 2x2s on their own boolean argument · 02 · let / invocation] ---")
 (let
     (
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
@@ -699,6 +756,8 @@
 ;;Two DISTINCT receivers are used deliberately: UEV_IzUnique runs on the receiver list one line
 ;;ABOVE this guard, so a repeated receiver would trip the uniqueness check instead and this
 ;;assertion would be passing for the wrong reason.
+;;==== DPTF-G3 — DPTF|C>X-BULK-TRANSFER: receivers and amounts must pair up · 01 · env-sigs (caps) ==== 
+(print "--- [DPTF-G3 — DPTF|C>X-BULK-TRANSFER: receivers and amounts must pair up · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (map print
     [
@@ -727,6 +786,8 @@
 ;;of the `if` entirely (it is checked for existence, not against the whitelist). The guard only
 ;;speaks for a SMART account, so the input is the VST smart-contract account — a real Σ. account
 ;;that is neither DALOS nor OUROBOROS.
+;;==== DPTF-G4 — module governance, the treasury-dispo domain, and the smart fee-target rule · 01 · env-sigs (caps) ==== 
+(print "--- [DPTF-G4 — module governance, the treasury-dispo domain, and the smart fee-target rule · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (map print
     [
@@ -745,7 +806,11 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [DPTF-G4b · 01 · dispo type and fee target] ---")
+;;==== DPTF-G4b — treasury dispo type, and the smart-account fee-target whitelist · 01 · env-sigs (caps) ==== 
+(print "--- [DPTF-G4b — treasury dispo type, and the smart-account fee-target whitelist · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== DPTF-G4b — treasury dispo type, and the smart-account fee-target whitelist · 02 · let / invocation ==== 
+(print "--- [DPTF-G4b — treasury dispo type, and the smart-account fee-target whitelist · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
@@ -814,6 +879,8 @@
 ;;is valid for pinning a guard's REACTION to a state, and says NOTHING about whether the state is
 ;;reachable in production. Keep those two claims apart -- conflating them is what produced two
 ;;withdrawn findings in this suite.
+;;==== DPTF-G6 — the treasury-in-debt fixture, and the four guards behind it · 01 · env-sigs (caps) ==== 
+(print "--- [DPTF-G6 — the treasury-in-debt fixture, and the four guards behind it · 01 · env-sigs (caps)] ---")
 (env-sigs
     [ { "key": "PK_AncientHodler", "caps": [] }
       ;;the treasury is a SMART account; UEV_SmartAccOwn's enforce-one accepts its SOVEREIGN's
@@ -822,6 +889,8 @@
       { "key": "PK_DHV", "caps": [] }
     ]
 )
+;;==== DPTF-G6 — the treasury-in-debt fixture, and the four guards behind it · 02 · let / invocation ==== 
+(print "--- [DPTF-G6 — the treasury-in-debt fixture, and the four guards behind it · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -933,6 +1002,8 @@
 ;;
 (begin-tx "DPTF-G5 — URCv_Parent: the frozen-LP exclusion, which is a 4th-character test")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== DPTF-G5 — URCv_Parent: the frozen-LP exclusion, which is a 4th-character test · 01 · namespace ==== 
+(print "--- [DPTF-G5 — URCv_Parent: the frozen-LP exclusion, which is a 4th-character test · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [DPTF-G5 · 01 · parent resolution] ---")
 ;;URCv_Parent resolves a special token back to the token it was derived from. Its guard is easy to
@@ -949,6 +1020,8 @@
 ;;
 ;;Both sides are driven, because a guard that rejected every "F|" token would satisfy the
 ;;rejection identically while breaking ordinary parent lookups.
+;;==== DPTF-G5 — URCv_Parent: the frozen-LP exclusion, which is a 4th-character test · 02 · let / invocation ==== 
+(print "--- [DPTF-G5 — URCv_Parent: the frozen-LP exclusion, which is a 4th-character test · 02 · let / invocation] ---")
 (let
     (
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
@@ -992,7 +1065,11 @@
 ;;freeze a standard account's OURO and wipe more than it holds. Every wipe path passes
 ;;UDC_EmptyDispo, whose UC_OuroDispo is 0.0, so the floor is 0.0 and any over-wipe breaches it.
 ;;The freeze is required first by DPTF|C>X_WIPE (UEV_AccountFreezeState … true).
+;;==== DPTF-G7 — the OURO dispo floor, and why its sibling guard cannot fire · 01 · env-sigs (caps) ==== 
+(print "--- [DPTF-G7 — the OURO dispo floor, and why its sibling guard cannot fire · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== DPTF-G7 — the OURO dispo floor, and why its sibling guard cannot fire · 02 · let / invocation ==== 
+(print "--- [DPTF-G7 — the OURO dispo floor, and why its sibling guard cannot fire · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -1175,7 +1252,11 @@
 ;;"Dispo" is the OURO credit line: an account may go NEGATIVE in OURO down to a floor, and clearing the
 ;;dispo settles that debt. So "requires Negative OURO" is not a sanity check, it is the operation's
 ;;whole premise -- there is nothing to clear on an account in credit.
+;;==== DPTF-G10 — clearing a dispo: the two preconditions, and the smart-account exclusion · 01 · env-sigs (caps) ==== 
+(print "--- [DPTF-G10 — clearing a dispo: the two preconditions, and the smart-account exclusion · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== DPTF-G10 — clearing a dispo: the two preconditions, and the smart-account exclusion · 02 · let / invocation ==== 
+(print "--- [DPTF-G10 — clearing a dispo: the two preconditions, and the smart-account exclusion · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -1283,6 +1364,8 @@
 (begin-tx "DPTF-G11 — the multi-transfer list parity check")
 (env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== DPTF-G11 — the multi-transfer list parity check · 01 · env-sigs (caps) ==== ================
+(print "--- [DPTF-G11 — the multi-transfer list parity check · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [DPTF-G11 · 01 · one amount per token, and the tokens must be distinct] ---")
 ;;`DPTF|C>MULTI-TRANSFER` (09_TFT.pact:432) takes parallel token and amount lists and requires them to
@@ -1294,6 +1377,8 @@
 ;;
 ;;Neither needs the tokens to exist: both checks are list-shape and run ahead of every id lookup. That is
 ;;why this test can name MOCKA/MOCKB without caring whether this chain has issued them.
+;;==== DPTF-G11 — the multi-transfer list parity check · 02 · let / invocation ==== ===============
+(print "--- [DPTF-G11 — the multi-transfer list parity check · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
@@ -1326,6 +1411,8 @@
 (begin-tx "DPTF-G12 - XBv_UpdateSupply: supply cannot go negative")
 (env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== DPTF-G12 - XBv_UpdateSupply: supply cannot go negative · 01 · env-sigs (caps) ==== =========
+(print "--- [DPTF-G12 - XBv_UpdateSupply: supply cannot go negative · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [DPTF-G12 · 01 · the DEBIT branch, on a broken invariant] ---")
 ;;`05_DPTF.pact:2328`. `XBv_UpdateSupply` carries the SAME message on both branches:
@@ -1341,6 +1428,8 @@
 ;;guard is unreachable because an INVARIANT holds, drive the invariant false and EXECUTE it --
 ;;annotate only when no state could ever reach it. So the balance is forced above the supply and the
 ;;burn is attempted, which is precisely the corruption this enforce exists to stop.
+;;==== DPTF-G12 - XBv_UpdateSupply: supply cannot go negative · 02 · let / invocation ==== ========
+(print "--- [DPTF-G12 - XBv_UpdateSupply: supply cannot go negative · 02 · let / invocation] ---")
 (let
     (
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)

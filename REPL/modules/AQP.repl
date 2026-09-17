@@ -1,3 +1,16 @@
+;;
+;; REPL/modules/AQP.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/modules/AQP.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 ;; REPL/modules/AQP.repl — STANDALONE AQP tester (ANK/SCORE/POOL/RPS/FVT/VCT/MTX/DSA).
 ;; Fresh boot: Stage 00 + Stage 1 + Stage 2 deploy cores + the AQP suite umbrella.
 ;; Run: cd REPL && pact modules/AQP.repl
@@ -18,7 +31,11 @@
 ;;and it is why the rest of this block uses SfStakeVault: on a frozen FVT the freeze enforce
 ;;fires FIRST and masks the other six, so every "rejection" below would have been rejecting for
 ;;the wrong reason. The first draft of this block did exactly that.
+;;==== AQP-G1 — the FVT UEV_*Context validators, probed DIRECTLY · 01 · env-sigs (caps) ==== ======
+(print "--- [AQP-G1 — the FVT UEV_*Context validators, probed DIRECTLY · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== AQP-G1 — the FVT UEV_*Context validators, probed DIRECTLY · 02 · let / invocation ==== =====
+(print "--- [AQP-G1 — the FVT UEV_*Context validators, probed DIRECTLY · 02 · let / invocation] ---")
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -113,7 +130,11 @@
 ;;That is the same shape as DALOS's standard/smart 2x2, widened. It proves each validator is
 ;;discriminating rather than merely present -- five validators that all accepted everything
 ;;would satisfy five independent "it rejects garbage" tests and still be broken.
+;;==== AQP-G2 — the SCORE stake-context family, as a CROSS-KIND matrix · 01 · env-sigs (caps) ==== 
+(print "--- [AQP-G2 — the SCORE stake-context family, as a CROSS-KIND matrix · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== AQP-G2 — the SCORE stake-context family, as a CROSS-KIND matrix · 02 · let / invocation ==== 
+(print "--- [AQP-G2 — the SCORE stake-context family, as a CROSS-KIND matrix · 02 · let / invocation] ---")
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -172,6 +193,8 @@
 ;;
 (begin-tx "AQP-G3 — SCORE's NF-definition branch selector, as a 2x2 on its two list arguments")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== AQP-G3 — SCORE's NF-definition branch selector, as a 2x2 on its two list arguments · 01 · namespace ==== 
+(print "--- [AQP-G3 — SCORE's NF-definition branch selector, as a 2x2 on its two list arguments · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [AQP-G3 · 01 · trait-xor-set branch] ---")
 ;;P3.3. UEV_IzNonFungibleScoreDefinitionTraitBranch enforces that EXACTLY ONE of two definition
@@ -184,6 +207,8 @@
 ;;RETURN VALUE is checked too, because the function's job is not just to reject -- it tells the
 ;;caller which branch was chosen, and a guard that accepted correctly while mis-reporting the
 ;;branch would pass every rejection test written.
+;;==== AQP-G3 — SCORE's NF-definition branch selector, as a 2x2 on its two list arguments · 02 · let / invocation ==== 
+(print "--- [AQP-G3 — SCORE's NF-definition branch selector, as a 2x2 on its two list arguments · 02 · let / invocation] ---")
 (let
     (
         (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
@@ -213,6 +238,8 @@
 ;;
 (begin-tx "AQP-G4 — ANK's fungibility tuple, as a truth table on one list argument")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== AQP-G4 — ANK's fungibility tuple, as a truth table on one list argument · 01 · namespace ==== 
+(print "--- [AQP-G4 — ANK's fungibility tuple, as a truth table on one list argument · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [AQP-G4 · 01 · asset-fungibility tuple] ---")
 ;;P3.3, list-shape class. UEV_AnkFungibility enforces (and (= l 2) (!= tuple [true false])) on a
@@ -227,6 +254,8 @@
 ;;The message "Invalid Fungibility" is a SUBSTRING of DEMIPAD's "Invalid Fungibility variable",
 ;;so this is pinned through ref-ANK:: -- the module reference is what keeps the attribution on
 ;;AQP-ANK rather than crediting both.
+;;==== AQP-G4 — ANK's fungibility tuple, as a truth table on one list argument · 02 · let / invocation ==== 
+(print "--- [AQP-G4 — ANK's fungibility tuple, as a truth table on one list argument · 02 · let / invocation] ---")
 (let
     (
         (ref-ANK:module{AcquisitionAnchorsV2} AQP-ANK)
@@ -258,6 +287,8 @@
 ;;
 (begin-tx "AQP-G5 — SCORE's NF-definition list alignment, in both definition modes")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== AQP-G5 — SCORE's NF-definition list alignment, in both definition modes · 01 · namespace ==== 
+(print "--- [AQP-G5 — SCORE's NF-definition list alignment, in both definition modes · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [AQP-G5 · 01 · trait-mode and set-mode input alignment] ---")
 ;;P3.3, list-shape class. AQP-G3 pinned the BRANCH SELECTOR (trait xor set); these are the two
@@ -271,6 +302,8 @@
 ;;Two rejections per validator, because the rule is a CONJUNCTION and one input cannot prove
 ;;both halves: an empty pair isolates the non-empty clause (lengths are equal, so alignment
 ;;cannot be what fires), and a mismatched pair isolates the alignment clause (both non-empty).
+;;==== AQP-G5 — SCORE's NF-definition list alignment, in both definition modes · 02 · let / invocation ==== 
+(print "--- [AQP-G5 — SCORE's NF-definition list alignment, in both definition modes · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -329,6 +362,8 @@
 ;;
 (begin-tx "AQP-G7 — three Stage-2 argument-domain guards, including one string prefix that gates a refund")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== AQP-G7 — three Stage-2 argument-domain guards, including one string prefix that gates a refund · 01 · namespace ==== 
+(print "--- [AQP-G7 — three Stage-2 argument-domain guards, including one string prefix that gates a refund · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [AQP-G7 · 01 · score precision, class floor, reserved-token vacate] ---")
 ;;All three validate arguments only -- no table, no capability. Grouped because they belong to
@@ -339,6 +374,8 @@
 ;;a RESERVED token. Reserved DPTFs are the ones a pool has locked as its own backing, so
 ;;vacating one would refund a user with collateral that is not theirs. A guard that cheap
 ;;protecting something that expensive is exactly the kind that goes untested for years.
+;;==== AQP-G7 — three Stage-2 argument-domain guards, including one string prefix that gates a refund · 02 · let / invocation ==== 
+(print "--- [AQP-G7 — three Stage-2 argument-domain guards, including one string prefix that gates a refund · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
@@ -381,6 +418,8 @@
 ;;
 (begin-tx "AQP-G8a — the stake-update arity family, reached with test-capability")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== AQP-G8a — the stake-update arity family, reached with test-capability · 01 · namespace ==== 
+(print "--- [AQP-G8a — the stake-update arity family, reached with test-capability · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [AQP-G8a · 01 · class-2 native DPOF nonces] ---")
 ;;FIVE near-identical defcaps -- one per asset kind -- each opening with the SAME structural
@@ -416,6 +455,8 @@
 ;;
 (begin-tx "AQP-G8b — stake-update arity: sleeping/hibernating DPOF nonces")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== AQP-G8b — stake-update arity: sleeping/hibernating DPOF nonces · 01 · namespace ==== =======
+(print "--- [AQP-G8b — stake-update arity: sleeping/hibernating DPOF nonces · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [AQP-G8b · 01 · sleeping/hibernating DPOF nonces] ---")
 (map print
@@ -431,6 +472,8 @@
 ;;
 (begin-tx "AQP-G8c — stake-update arity: orto LP nonces")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== AQP-G8c — stake-update arity: orto LP nonces · 01 · namespace ==== =========================
+(print "--- [AQP-G8c — stake-update arity: orto LP nonces · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [AQP-G8c · 01 · orto LP nonces] ---")
 (map print
@@ -446,6 +489,8 @@
 ;;
 (begin-tx "AQP-G8d — stake-update arity: DPSF (semi-fungible) nonces")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== AQP-G8d — stake-update arity: DPSF (semi-fungible) nonces · 01 · namespace ==== ============
+(print "--- [AQP-G8d — stake-update arity: DPSF (semi-fungible) nonces · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [AQP-G8d · 01 · DPSF (semi-fungible) nonces] ---")
 (map print
@@ -461,6 +506,8 @@
 ;;
 (begin-tx "AQP-G8e — stake-update arity: DPNF (non-fungible) nonces")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== AQP-G8e — stake-update arity: DPNF (non-fungible) nonces · 01 · namespace ==== =============
+(print "--- [AQP-G8e — stake-update arity: DPNF (non-fungible) nonces · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [AQP-G8e · 01 · DPNF (non-fungible) nonces] ---")
 (map print
@@ -490,6 +537,8 @@
 ;;So the class guard is driven with an ORTO pool offered to the TF flow, and the admission guard
 ;;with the one pool that passes the class check but is not open for staking. Each case satisfies
 ;;the guards before it — a pool that failed both would only ever prove the first.
+;;==== AQP-G9 — the three FVT stake-flow admission caps, driven by pool CLASS · 01 · env-sigs (caps) ==== 
+(print "--- [AQP-G9 — the three FVT stake-flow admission caps, driven by pool CLASS · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
@@ -572,6 +621,8 @@
 ;;The guard is what stops a stake credited in one asset from being accounted against a pool
 ;;denominated in another. Its input is a REAL token (MOCKA) that simply is not this pool's asset,
 ;;not a ghost id — a ghost would also fail a dozen other ways and prove less.
+;;==== AQP-G10 — the leg guard, reached on a pool that is genuinely OPEN for staking · 01 · env-sigs (caps) ==== 
+(print "--- [AQP-G10 — the leg guard, reached on a pool that is genuinely OPEN for staking · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
@@ -611,6 +662,8 @@
 ;;The recipe is lifted from [6.2.10]_AQP-NEGATIVES: disable in its own transaction, assert, restore
 ;;in another. One IGNIS-collecting client op per transaction, and the toggle is called WITHOUT a
 ;;(try …) wrapper because it writes — Pact forbids database writes inside `try`.
+;;==== AQP-G11a — close the ORTO pool for staking (borrowing [6.2.10]'s disable/restore recipe) · 01 · env-sigs (caps) ==== 
+(print "--- [AQP-G11a — close the ORTO pool for staking (borrowing [6.2.10]'s disable/restore recipe) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
@@ -629,6 +682,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [AQP-G11b · 01 · orto admission refusal] ---")
+;;==== AQP-G11b — ...and the ORTO flow now refuses it at its OWN admission guard · 01 · env-sigs (caps) ==== 
+(print "--- [AQP-G11b — ...and the ORTO flow now refuses it at its OWN admission guard · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
@@ -658,6 +713,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [AQP-G11c · 01 · restore OfStakePool] ---")
+;;==== AQP-G11c — restore: re-open the ORTO pool, leave the suite as found · 01 · env-sigs (caps) ==== 
+(print "--- [AQP-G11c — restore: re-open the ORTO pool, leave the suite as found · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
@@ -692,6 +749,8 @@
 ;;The recipe is lifted from [6.2.10]_AQP-NEGATIVES: disable in its own transaction, assert, restore
 ;;in another. One IGNIS-collecting client op per transaction, and the toggle is called WITHOUT a
 ;;(try …) wrapper because it writes — Pact forbids database writes inside `try`.
+;;==== AQP-G12a — close the COLLECTABLE pool for staking (borrowing [6.2.10]'s disable/restore recipe) · 01 · env-sigs (caps) ==== 
+(print "--- [AQP-G12a — close the COLLECTABLE pool for staking (borrowing [6.2.10]'s disable/restore recipe) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
@@ -710,6 +769,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [AQP-G12b · 01 · collectable admission refusal] ---")
+;;==== AQP-G12b — ...and the COLLECTABLE flow now refuses it at its OWN admission guard · 01 · env-sigs (caps) ==== 
+(print "--- [AQP-G12b — ...and the COLLECTABLE flow now refuses it at its OWN admission guard · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
@@ -739,6 +800,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [AQP-G12c · 01 · restore SfStakePool] ---")
+;;==== AQP-G12c — restore: re-open the COLLECTABLE pool, leave the suite as found · 01 · env-sigs (caps) ==== 
+(print "--- [AQP-G12c — restore: re-open the COLLECTABLE pool, leave the suite as found · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
@@ -780,7 +843,11 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [AQP-G13a-off · 01 · unlink ResumeVacScore] ---")
+;;==== AQP-G13a-off — disable the true-fungible pool's FVT ScoreEntityLink · 01 · env-sigs (caps) ==== 
+(print "--- [AQP-G13a-off — disable the true-fungible pool's FVT ScoreEntityLink · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== AQP-G13a-off — disable the true-fungible pool's FVT ScoreEntityLink · 02 · let / invocation ==== 
+(print "--- [AQP-G13a-off — disable the true-fungible pool's FVT ScoreEntityLink · 02 · let / invocation] ---")
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -798,6 +865,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [AQP-G13a · 01 · true-fungible reward pipeline] ---")
+;;==== AQP-G13a — the true-fungible flow refuses a pool whose reward pipeline is broken · 01 · env-sigs (caps) ==== 
+(print "--- [AQP-G13a — the true-fungible flow refuses a pool whose reward pipeline is broken · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
@@ -829,7 +898,11 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [AQP-G13a-on · 01 · relink ResumeVacScore] ---")
+;;==== AQP-G13a-on — restore the link, leave the suite as found · 01 · env-sigs (caps) ==== =======
+(print "--- [AQP-G13a-on — restore the link, leave the suite as found · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== AQP-G13a-on — restore the link, leave the suite as found · 02 · let / invocation ==== ======
+(print "--- [AQP-G13a-on — restore the link, leave the suite as found · 02 · let / invocation] ---")
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -849,12 +922,20 @@
 )
 (env-sigs [])
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-G13b-off — disable the orto-fungible pool's FVT ScoreEntityLink")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [AQP-G13b-off · 01 · unlink OfStakeScore] ---")
+;;==== AQP-G13b-off — disable the orto-fungible pool's FVT ScoreEntityLink · 01 · env-sigs (caps) ==== 
+(print "--- [AQP-G13b-off — disable the orto-fungible pool's FVT ScoreEntityLink · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== AQP-G13b-off — disable the orto-fungible pool's FVT ScoreEntityLink · 02 · let / invocation ==== 
+(print "--- [AQP-G13b-off — disable the orto-fungible pool's FVT ScoreEntityLink · 02 · let / invocation] ---")
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -872,6 +953,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [AQP-G13b · 01 · orto-fungible reward pipeline] ---")
+;;==== AQP-G13b — the orto-fungible flow refuses a pool whose reward pipeline is broken · 01 · env-sigs (caps) ==== 
+(print "--- [AQP-G13b — the orto-fungible flow refuses a pool whose reward pipeline is broken · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
@@ -903,7 +986,11 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [AQP-G13b-on · 01 · relink OfStakeScore] ---")
+;;==== AQP-G13b-on — restore the link, leave the suite as found · 01 · env-sigs (caps) ==== =======
+(print "--- [AQP-G13b-on — restore the link, leave the suite as found · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== AQP-G13b-on — restore the link, leave the suite as found · 02 · let / invocation ==== ======
+(print "--- [AQP-G13b-on — restore the link, leave the suite as found · 02 · let / invocation] ---")
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -923,12 +1010,20 @@
 )
 (env-sigs [])
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "AQP-G13c-off — disable the collectable pool's FVT ScoreEntityLink")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [AQP-G13c-off · 01 · unlink SfStakeScore] ---")
+;;==== AQP-G13c-off — disable the collectable pool's FVT ScoreEntityLink · 01 · env-sigs (caps) ==== 
+(print "--- [AQP-G13c-off — disable the collectable pool's FVT ScoreEntityLink · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== AQP-G13c-off — disable the collectable pool's FVT ScoreEntityLink · 02 · let / invocation ==== 
+(print "--- [AQP-G13c-off — disable the collectable pool's FVT ScoreEntityLink · 02 · let / invocation] ---")
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -946,6 +1041,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [AQP-G13c · 01 · collectable reward pipeline] ---")
+;;==== AQP-G13c — the collectable flow refuses a pool whose reward pipeline is broken · 01 · env-sigs (caps) ==== 
+(print "--- [AQP-G13c — the collectable flow refuses a pool whose reward pipeline is broken · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
@@ -977,7 +1074,11 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [AQP-G13c-on · 01 · relink SfStakeScore] ---")
+;;==== AQP-G13c-on — restore the link, leave the suite as found · 01 · env-sigs (caps) ==== =======
+(print "--- [AQP-G13c-on — restore the link, leave the suite as found · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== AQP-G13c-on — restore the link, leave the suite as found · 02 · let / invocation ==== ======
+(print "--- [AQP-G13c-on — restore the link, leave the suite as found · 02 · let / invocation] ---")
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -1014,6 +1115,8 @@
 ;;the cap's own let — the same eager-binding degradation already recorded at PYTHIA <<TX007e-03>>,
 ;;FVT <<TX-BOOT-G1>> and DALOS <<DALOS-G2e>> — and would prove nothing about the guard. Passing
 ;;ONE real score three times satisfies existence and fails only distinctness, which is the point.
+;;==== AQP-G14 — SCR|C>ISSUE-TRIPLET distinctness, via the real Talos client path · 01 · env-sigs (caps) ==== 
+(print "--- [AQP-G14 — SCR|C>ISSUE-TRIPLET distinctness, via the real Talos client path · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
@@ -1045,6 +1148,8 @@
 ;;This guard sits BELOW the arity check pinned in AQP-G8d, so the lists here are deliberately
 ;;well-formed — one nonce, one amount, equal positive length. The only thing wrong is that the
 ;;amount is zero, which would credit a score for a stake of nothing.
+;;==== AQP-G15 — SCR|XE>UPDATE-STAKE-DPSF: a zero nonce amount is not a stake · 01 · env-sigs (caps) ==== 
+(print "--- [AQP-G15 — SCR|XE>UPDATE-STAKE-DPSF: a zero nonce amount is not a stake · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
@@ -1091,7 +1196,11 @@
 ;;passing the fold above first, which my first attempt did not — precision 2 and zero multipliers
 ;;tripped the shape gate and the assertion would have been passing for the wrong reason. The call
 ;;below uses precision 3 and positive multipliers so the ONLY thing wrong is the BAR denominator.
+;;==== AQP-G16 — SCR|XI>ISSUE-SCORE: the shape gate, then the class/lp-denominator rule behind it · 01 · env-sigs (caps) ==== 
+(print "--- [AQP-G16 — SCR|XI>ISSUE-SCORE: the shape gate, then the class/lp-denominator rule behind it · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== AQP-G16 — SCR|XI>ISSUE-SCORE: the shape gate, then the class/lp-denominator rule behind it · 02 · let / invocation ==== 
+(print "--- [AQP-G16 — SCR|XI>ISSUE-SCORE: the shape gate, then the class/lp-denominator rule behind it · 02 · let / invocation] ---")
 (let
     (
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
@@ -1122,7 +1231,11 @@
 (print "--- [AQP-G17 · 01 · models, SF definitions, boost-class links] ---")
 ;;Three more @event-cap guards through the Talos path, grouped because each is the entry check of
 ;;a different SCORE lifecycle operation.
+;;==== AQP-G17 — score models, definitions and boost links · 01 · env-sigs (caps) ==== ============
+(print "--- [AQP-G17 — score models, definitions and boost links · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== AQP-G17 — score models, definitions and boost links · 02 · let / invocation ==== ===========
+(print "--- [AQP-G17 — score models, definitions and boost links · 02 · let / invocation] ---")
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -1173,7 +1286,11 @@
 ;;are mutually exclusive by construction: a FARM (class 0) must name a real DPTF as its common
 ;;denominator, while a VAULT or TREASURY (class 1-2) must leave it BAR. Either rule alone reads
 ;;like an arbitrary restriction; the pair is the actual invariant — only farms denominate.
+;;==== AQP-G18 — FVT|C>ISSUE-FVT: class bounds, name reuse, and the denominator contract · 01 · env-sigs (caps) ==== 
+(print "--- [AQP-G18 — FVT|C>ISSUE-FVT: class bounds, name reuse, and the denominator contract · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== AQP-G18 — FVT|C>ISSUE-FVT: class bounds, name reuse, and the denominator contract · 02 · let / invocation ==== 
+(print "--- [AQP-G18 — FVT|C>ISSUE-FVT: class bounds, name reuse, and the denominator contract · 02 · let / invocation] ---")
 (let
     (
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
@@ -1215,6 +1332,8 @@
 ;;rejects an asset that is the WRONG KIND for an otherwise-valid class. OURO is a perfectly good
 ;;asset — it just is not a liquidity asset, so offering it to class 0 trips the second guard while
 ;;class 9 trips the first. One input would have proved only one of them.
+;;==== AQP-G19 — the pool/score wiring validators, called directly · 01 · env-sigs (caps) ==== ====
+(print "--- [AQP-G19 — the pool/score wiring validators, called directly · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
@@ -1272,6 +1391,8 @@
 ;;DSA's Talos entrypoints searched for `DSA|C_*` and found none, which looked like a wiring gap —
 ;;CLAUDE.md requires every core C_ to be wired into Talos. It is not a gap: the wrappers are named
 ;;`AQP-DSA|C_*` and my pattern simply missed the prefix. Ten of them exist in TS02-C3.
+;;==== AQP-G20 — DSA: module governance, vault class, and the oracle-validity floor · 01 · env-sigs (caps) ==== 
+(print "--- [AQP-G20 — DSA: module governance, vault class, and the oracle-validity floor · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (map print
     [
@@ -1293,6 +1414,8 @@
 ;;denominator, and the agency's capture arithmetic is denominated in one — so binding one would
 ;;produce a vault whose capture cannot be computed. SfStakeVault is class 1, which is what makes
 ;;it the right negative input rather than a nonsense id.
+;;==== AQP-G20b — the vault-class rule and the oracle-validity floor · 01 · env-sigs (caps) ==== ==
+(print "--- [AQP-G20b — the vault-class rule and the oracle-validity floor · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
@@ -1342,6 +1465,8 @@
 ;;THE HAPPY PATH IS ASSERTED FIRST and it is what makes the rest meaningful: the live chain
 ;;(OURO, Auryn, Elite-Auryn over Auryndex and EliteAuryndex) is accepted. Every rejection below is
 ;;that exact tuple with ONE element changed, so each failure is attributable to the change.
+;;==== AQP-G21 — UEV_IssueMultipletFamilyContext: the OURO → Auryn → Elite-Auryn chain · 01 · env-sigs (caps) ==== 
+(print "--- [AQP-G21 — UEV_IssueMultipletFamilyContext: the OURO → Auryn → Elite-Auryn chain · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
@@ -1386,7 +1511,11 @@
 ;;for a vault or treasury, and the guard folds both facts into one message: farm class only, and
 ;;the value must be one of two constants. SfStakeVault is class 1, so this input is wrong on the
 ;;class axis; the value is also wrong, which the single shared message cannot distinguish.
+;;==== AQP-G22 — FVT|C>SET-SPLIT-MODE: farm-only, and a closed value set · 01 · env-sigs (caps) ==== 
+(print "--- [AQP-G22 — FVT|C>SET-SPLIT-MODE: farm-only, and a closed value set · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== AQP-G22 — FVT|C>SET-SPLIT-MODE: farm-only, and a closed value set · 02 · let / invocation ==== 
+(print "--- [AQP-G22 — FVT|C>SET-SPLIT-MODE: farm-only, and a closed value set · 02 · let / invocation] ---")
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -1466,6 +1595,8 @@
 (print "--- [AQP-G23b · 01 · common-denominator shape] ---")
 ;;With an unlinked farm in hand the immutability guard passes and the shape guard is finally the
 ;;one that answers. Both sides are pinned: a real native DPTF is accepted, BAR is not.
+;;==== AQP-G23b — ...and the common-denominator SHAPE guard, now reachable · 01 · env-sigs (caps) ==== 
+(print "--- [AQP-G23b — ...and the common-denominator SHAPE guard, now reachable · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
@@ -1614,7 +1745,11 @@
 (print "--- [AQP-G24c · 01 · pool-link both scores] ---")
 ;;ResumeVacPool and DrainVacPool are both aqp-class 1, which is what lets a class-1 score be added:
 ;;the pool-assignment validator requires the score's class to equal the pool's.
+;;==== AQP-G24c — give both fresh scores a POOL link (class-1 pools, matching their class) · 01 · env-sigs (caps) ==== 
+(print "--- [AQP-G24c — give both fresh scores a POOL link (class-1 pools, matching their class) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+;;==== AQP-G24c — give both fresh scores a POOL link (class-1 pools, matching their class) · 02 · let / invocation ==== 
+(print "--- [AQP-G24c — give both fresh scores a POOL link (class-1 pools, matching their class) · 02 · let / invocation] ---")
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -1632,7 +1767,11 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [AQP-G24d · 01 · pool-link the EMMA score] ---")
+;;==== AQP-G24d — ...and the EMMA-owned one to the other class-1 pool · 01 · env-sigs (caps) ==== =
+(print "--- [AQP-G24d — ...and the EMMA-owned one to the other class-1 pool · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+;;==== AQP-G24d — ...and the EMMA-owned one to the other class-1 pool · 02 · let / invocation ==== 
+(print "--- [AQP-G24d — ...and the EMMA-owned one to the other class-1 pool · 02 · let / invocation] ---")
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -1650,6 +1789,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [AQP-G24e · 01 · owner match, and the vault/treasury branch] ---")
+;;==== AQP-G24e — the two guards the fixture was built for · 01 · env-sigs (caps) ==== ============
+(print "--- [AQP-G24e — the two guards the fixture was built for · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
@@ -1692,6 +1833,8 @@
 ;;
 (begin-tx "AQP-G26 — the PER-ELEMENT NF score-definition rules, both modes")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== AQP-G26 — the PER-ELEMENT NF score-definition rules, both modes · 01 · namespace ==== ======
+(print "--- [AQP-G26 — the PER-ELEMENT NF score-definition rules, both modes · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [AQP-G26 · 01 · per-element trait/set score-definition folds] ---")
 ;;P3.3. AQP-G5 pinned the FIRST enforce in each of these two validators -- the one demanding the
@@ -1704,6 +1847,8 @@
 ;;reject three of these inputs if any ONE conjunct had been dropped. The negative-score clause
 ;;in particular is load-bearing: a negative class score flows straight into the reward
 ;;arithmetic, so silently admitting one mangles every payout denominated in it.
+;;==== AQP-G26 — the PER-ELEMENT NF score-definition rules, both modes · 02 · let / invocation ==== 
+(print "--- [AQP-G26 — the PER-ELEMENT NF score-definition rules, both modes · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -1771,6 +1916,8 @@
 ;;(<= chunk MAX) -- and one input can only ever prove one half. The upper case is computed from
 ;;the module's own constant rather than written as a literal, so a gas-budget retune of
 ;;INJECT-FIX-CHUNK-MAX moves the test with the code instead of silently making it vacuous.
+;;==== AQP-G28 — the Hydra chunk bounds, and a drain with no sweep to drain · 01 · env-sigs (caps) ==== 
+(print "--- [AQP-G28 — the Hydra chunk bounds, and a drain with no sweep to drain · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
@@ -1834,10 +1981,14 @@
 ;;
 (begin-tx "AQP-G29 — an anchor cannot be issued against an inactive BoostClass")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== AQP-G29 — an anchor cannot be issued against an inactive BoostClass · 01 · namespace ==== ==
+(print "--- [AQP-G29 — an anchor cannot be issued against an inactive BoostClass · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [AQP-G29 · 01 · UEV_IssueAnchor BoostClass activity] ---")
 ;;P3.3. A plain callable UEV_. UR_BC|Data is a with-default-read, so a BoostClass id that was
 ;;never created reads back with class-active false and the first guard answers -- no fixture.
+;;==== AQP-G29 — an anchor cannot be issued against an inactive BoostClass · 02 · let / invocation ==== 
+(print "--- [AQP-G29 — an anchor cannot be issued against an inactive BoostClass · 02 · let / invocation] ---")
 (let
     (
         (ref-ANK:module{AcquisitionAnchorsV2} AQP-ANK)
@@ -1863,6 +2014,8 @@
 ;;
 (begin-tx "AQP-G30 — score/pool assignment and revocation preconditions")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== AQP-G30 — score/pool assignment and revocation preconditions · 01 · namespace ==== =========
+(print "--- [AQP-G30 — score/pool assignment and revocation preconditions · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [AQP-G30 · 01 · UEV_AddScorePoolAndScore / UEV_RevokeScorePoolAndScore] ---")
 ;;P3.3. Two plain callable UEV_s, driven against the pools and the fresh G24Score this file already
@@ -1950,6 +2103,8 @@
 ;;deliberately. The fix for both: hoist the BAR check into its own enforce above the fold, or read
 ;;the family through a with-default-read (the pattern UR_FVT-SEL|ScoreEntityLink already uses, whose
 ;;@doc says "absent rows read as disabled" — which is why its sibling conjuncts are SAFE).
+;;==== AQP-G31 — FIXED: two RPS folds that were defeated by their own later conjunct · 01 · env-sigs (caps) ==== 
+(print "--- [AQP-G31 — FIXED: two RPS folds that were defeated by their own later conjunct · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
@@ -2011,7 +2166,11 @@
 ;;
 ;;P|TS is not an @event cap, so test-capability acquires it directly. GAP is restored to the value
 ;;found, and the restoration is asserted: it is global state shared with every later block.
+;;==== AQP-G32 — the Global Administrative Pause freezes every Stage-2 Talos client too · 01 · env-sigs (caps) ==== 
+(print "--- [AQP-G32 — the Global Administrative Pause freezes every Stage-2 Talos client too · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== AQP-G32 — the Global Administrative Pause freezes every Stage-2 Talos client too · 02 · let / invocation ==== 
+(print "--- [AQP-G32 — the Global Administrative Pause freezes every Stage-2 Talos client too · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -2065,6 +2224,8 @@
 ;;made the cap SUCCEED, and the suite reported "expected failure, got result: ()". EMMA is a
 ;;legitimate account that is neither a Demiurgos nor the master, which is the only way to see the
 ;;refusal.
+;;==== AQP-G33 — MTX-AQP module governance refuses an unprivileged signer · 01 · env-sigs (caps) ==== 
+(print "--- [AQP-G33 — MTX-AQP module governance refuses an unprivileged signer · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (map print
     [
@@ -2094,6 +2255,8 @@
 ;;arrays. The fold is a conjunction, so one input proves one conjunct; and the asset case is the one
 ;;that matters most, because a batch naming another pool's token with valid-looking legs is the
 ;;shape an attacker would actually send.
+;;==== AQP-G34 — the three vacate-batch admission caps · 01 · env-sigs (caps) ==== ================
+(print "--- [AQP-G34 — the three vacate-batch admission caps · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
@@ -2173,7 +2336,11 @@
 ;;score-entity-link behind. That is harmless ONLY because this is the final transaction of a
 ;;leaf tester (nothing loads modules/AQP.repl -- not Z.repl, not ZALL.repl). Move this block, or
 ;;append after it, and the orphan becomes visible to whatever follows.
+;;==== AQP-G27 — SCORE's own defensive fvt-link guard (leaks state; keep last) · 01 · env-sigs (caps) ==== 
+(print "--- [AQP-G27 — SCORE's own defensive fvt-link guard (leaks state; keep last) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== AQP-G27 — SCORE's own defensive fvt-link guard (leaks state; keep last) · 02 · let / invocation ==== 
+(print "--- [AQP-G27 — SCORE's own defensive fvt-link guard (leaks state; keep last) · 02 · let / invocation] ---")
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -2215,6 +2382,8 @@
 ;;
 (begin-tx "AQP-G25 — UEV_IssueAnchor: a REVOKED boost class cannot take new anchors")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== AQP-G25 — UEV_IssueAnchor: a REVOKED boost class cannot take new anchors · 01 · namespace ==== 
+(print "--- [AQP-G25 — UEV_IssueAnchor: a REVOKED boost class cannot take new anchors · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [AQP-G25 · 01 · boost-class activity] ---")
 ;;Found via _cheapseam.py, which ranks the remaining plain-callable guards by how many enforces sit
@@ -2227,6 +2396,8 @@
 ;;
 ;;The precondition is asserted rather than assumed: if that class were somehow still active this
 ;;test would pass for an entirely different reason.
+;;==== AQP-G25 — UEV_IssueAnchor: a REVOKED boost class cannot take new anchors · 02 · let / invocation ==== 
+(print "--- [AQP-G25 — UEV_IssueAnchor: a REVOKED boost class cannot take new anchors · 02 · let / invocation] ---")
 (let
     (
         (ref-ANK:module{AcquisitionAnchorsV2} AQP-ANK)
@@ -2251,6 +2422,8 @@
 (begin-tx "AQP-G38 - a score cannot be linked to an inactive BoostClass")
 (env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== AQP-G38 - a score cannot be linked to an inactive BoostClass · 01 · env-sigs (caps) ==== ===
+(print "--- [AQP-G38 - a score cannot be linked to an inactive BoostClass · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [AQP-G38 · 01 · SCR|C>CREATE-BOOST-CLASS-LINK-SCORE activity] ---")
 ;;`02_SCORE.pact:894`. AQP-G25 just above pins the ANCHOR side of the boost-class activity rule
@@ -2266,6 +2439,8 @@
 ;;THE CONTRAST IS THE SAME CLASS, REACTIVATED, rather than a different active class. One variable
 ;;changes between the refusal and the acceptance, so the acceptance cannot be explained by anything
 ;;else about the two classes. `rollback-tx` discards both the reactivation and the link it allows.
+;;==== AQP-G38 - a score cannot be linked to an inactive BoostClass · 02 · let / invocation ==== ==
+(print "--- [AQP-G38 - a score cannot be linked to an inactive BoostClass · 02 · let / invocation] ---")
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -2343,6 +2518,8 @@
 (begin-tx "AQP-G39 - score control requires can-upgrade, which control itself can revoke")
 (env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== AQP-G39 - score control requires can-upgrade, which control itself can revoke · 01 · env-sigs (caps) ==== 
+(print "--- [AQP-G39 - score control requires can-upgrade, which control itself can revoke · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [AQP-G39 · 01 · SCR|C>CONTROL-SCORE requires can-upgrade true] ---")
 ;;`02_SCORE.pact:744`. NO `env-module-admin` HERE, and that is the point worth recording: the
@@ -2358,6 +2535,8 @@
 ;;Preferred over driving the field directly, on the rule this suite has been following: use the
 ;;client path when one exists, and `env-module-admin` only when NO legitimate flow produces the
 ;;state (AQP-G38 above, where the boost class had to be retired by a different module).
+;;==== AQP-G39 - score control requires can-upgrade, which control itself can revoke · 02 · let / invocation ==== 
+(print "--- [AQP-G39 - score control requires can-upgrade, which control itself can revoke · 02 · let / invocation] ---")
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -2426,6 +2605,8 @@
 (begin-tx "EL-6 - the convention the internal predicates depend on, made explicit")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== EL-6 - the convention the internal predicates depend on, made explicit · 01 · env-sigs (caps) ==== 
+(print "--- [EL-6 - the convention the internal predicates depend on, made explicit · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [EL-6 . 01 . the client's non-empty guard is load-bearing] ---")
 ;;Sweeping the AQP/VCT side (for the empty-list defect family recorded in
@@ -2460,6 +2641,8 @@
 
 (begin-tx "EL-6b - and the predicate it shields, asserted as the thing being shielded")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== EL-6b - and the predicate it shields, asserted as the thing being shielded · 01 · namespace ==== 
+(print "--- [EL-6b - and the predicate it shields, asserted as the thing being shielded · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [EL-6b . 01 . the unguarded predicate underneath] ---")
 ;;The other half of the pair. This is what the client guard above is standing in front of. It is
@@ -2522,6 +2705,8 @@
 (begin-tx "AQP-G46b - fixture: bundle the triplet (silver = G25Score, already pool-linked)")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== AQP-G46b - fixture: bundle the triplet (silver = G25Score, already pool-linked) · 01 · env-sigs (caps) ==== 
+(print "--- [AQP-G46b - fixture: bundle the triplet (silver = G25Score, already pool-linked) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
@@ -2553,6 +2738,8 @@
 (begin-tx "AQP-G46 - UEV_AddScoreEntityTripletContext: three of its five enforces")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== AQP-G46 - UEV_AddScoreEntityTripletContext: three of its five enforces · 01 · env-sigs (caps) ==== 
+(print "--- [AQP-G46 - UEV_AddScoreEntityTripletContext: three of its five enforces · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
@@ -2616,6 +2803,8 @@
 (begin-tx "AQP-VAC-GAS -- FullVacate must stay inside one transaction")
 (env-gasmodel "table")(env-gaslimit 1000000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== AQP-VAC-GAS -- FullVacate must stay inside one transaction · 01 · env-sigs (caps) ==== =====
+(print "--- [AQP-VAC-GAS -- FullVacate must stay inside one transaction · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [AQP-VAC-GAS . 01 . single-tx budget] ---")
 ;;CC_FullVacate's @doc calls it an "AGNOSTIC single-tx full vacate". That is a COST claim, and
@@ -2653,6 +2842,8 @@
 ;;
 (begin-tx "AQP-G35 — the three anchor-admission guards, and a label that is an object")
 (env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+;;==== AQP-G35 — the three anchor-admission guards, and a label that is an object · 01 · namespace ==== 
+(print "--- [AQP-G35 — the three anchor-admission guards, and a label that is an object · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [AQP-G35 · 01 · boost-class active, 7-anchor slot, 49-anchor asset cap] ---")
 ;;Three unpinned guards, all of them a single field read, all of them needing state no suite reaches:
@@ -2666,6 +2857,8 @@
 ;;the assertion passes for the wrong reason. Each case therefore restores the field it changed before
 ;;the next one runs, and the 49-cap case is asserted through BOTH functions that carry it.
 (env-module-admin AQP-ANK)
+;;==== AQP-G35 — the three anchor-admission guards, and a label that is an object · 02 · let / invocation ==== 
+(print "--- [AQP-G35 — the three anchor-admission guards, and a label that is an object · 02 · let / invocation] ---")
 (let
     (
         (bc:string "TfStakeBoost-98c486052a51")
@@ -2795,12 +2988,16 @@
 (begin-tx "AQP-G37 — four ANK admission guards, none of which needed a fixture")
 (env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== AQP-G37 — four ANK admission guards, none of which needed a fixture · 01 · env-sigs (caps) ==== 
+(print "--- [AQP-G37 — four ANK admission guards, none of which needed a fixture · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [AQP-G37 · 01 · what may carry an anchor] ---")
 ;;Four unpinned guards in 01_ANK.pact, and the chain this file builds already satisfies every one of
 ;;them. Three are pure argument-domain; the fourth needed a boost class that is empty AND inactive, and
 ;;this suite leaves eight of those lying around (CoreBoostTFa..g and TempClassTF). Nothing had called
 ;;any of them.
+;;==== AQP-G37 — four ANK admission guards, none of which needed a fixture · 02 · let / invocation ==== 
+(print "--- [AQP-G37 — four ANK admission guards, none of which needed a fixture · 02 · let / invocation] ---")
 (let
     (
         (ref-ANK:module{AcquisitionAnchorsV2} AQP-ANK)
@@ -2938,6 +3135,8 @@
 ;;SfStakePool with son=true does. The leg offered is MVST — a REAL ortofungible held by this suite,
 ;;not a ghost id. A ghost would fail here too but would prove less, since it would also fail every
 ;;existence check downstream and the rejection would not be attributable to the leg rule.
+;;==== AQP-G40 — the COLLECTABLE leg guard (the sibling of AQP-G10's true-fungible one) · 01 · env-sigs (caps) ==== 
+(print "--- [AQP-G40 — the COLLECTABLE leg guard (the sibling of AQP-G10's true-fungible one) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
@@ -2981,6 +3180,8 @@
 ;;[6.2.5] fully vacated and auto-finalised, so it passes admission in BOTH directions; the four
 ;;preconditions are asserted below rather than assumed, precisely because the message cannot tell
 ;;the five conjuncts apart.
+;;==== AQP-G41 — the TF pool-custody composite, driven on its tracker-balance conjunct · 01 · env-sigs (caps) ==== 
+(print "--- [AQP-G41 — the TF pool-custody composite, driven on its tracker-balance conjunct · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
@@ -3036,6 +3237,8 @@
 ;;Driven on `SCR|XI>X_ISSUE-NF-SCORE-DEFINITION` directly rather than through the client, because
 ;;the client cap runs `UEV_NonFungibleScoreDefinition` first and that validator rejects a class-1
 ;;score with its own wording — which would have credited this enforce for a rejection it never made.
+;;==== AQP-G42 — the DPNF score-definition class gate · 01 · env-sigs (caps) ==== =================
+(print "--- [AQP-G42 — the DPNF score-definition class gate · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
@@ -3081,7 +3284,11 @@
 ;;this suite — which is what makes the owner resolution meaningful rather than an abort on a missing
 ;;row, and it is why this transaction signs PK_Lumy: DHB's owner konto is Lumy's, not the patron's.
 ;;The whole block sits in a `rollback-tx`, so the junk pool never reaches a later assertion.
+;;==== AQP-G44 — the vacate class backstop, driven on a FORCED corrupt pool row · 01 · env-sigs (caps) ==== 
+(print "--- [AQP-G44 — the vacate class backstop, driven on a FORCED corrupt pool row · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Lumy", "caps": [] }])
+;;==== AQP-G44 — the vacate class backstop, driven on a FORCED corrupt pool row · 02 · let / invocation ==== 
+(print "--- [AQP-G44 — the vacate class backstop, driven on a FORCED corrupt pool row · 02 · let / invocation] ---")
 (let
     (
         (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
@@ -3187,6 +3394,8 @@
 ;;
 (begin-tx "AQP-D1a — the STOA peg claim: baseline at $0.10")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== AQP-D1a — the STOA peg claim: baseline at $0.10 · 01 · namespace ==== ======================
+(print "--- [AQP-D1a — the STOA peg claim: baseline at $0.10 · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [AQP-D1a · 01 · dollar-denominated STOA prices at the hard peg] ---")
 ;;DOC-CLAIM VERIFICATION (`_docclaims.py` G5), three claims at once.
@@ -3204,6 +3413,8 @@
 ;;broken code too, which is exactly the trap this pair of transactions is built to avoid.
 ;;
 ;;This block pins the baseline; AQP-D1b moves the peg and shows the dollar value survive it.
+;;==== AQP-D1a — the STOA peg claim: baseline at $0.10 · 02 · let / invocation ==== ===============
+(print "--- [AQP-D1a — the STOA peg claim: baseline at $0.10 · 02 · let / invocation] ---")
 (let
     (
         (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
@@ -3246,7 +3457,11 @@
 ;;
 ;;This is what fails on the pre-rehaul code the @docs describe: a hardcoded 0.01/0.02 usage price
 ;;does not move when the peg does, so the dollar value would swing by 2.5x here.
+;;==== AQP-D1b — move the peg: the AMOUNT moves, the VALUE holds · 01 · env-sigs (caps) ==== ======
+(print "--- [AQP-D1b — move the peg: the AMOUNT moves, the VALUE holds · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== AQP-D1b — move the peg: the AMOUNT moves, the VALUE holds · 02 · let / invocation ==== =====
+(print "--- [AQP-D1b — move the peg: the AMOUNT moves, the VALUE holds · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
@@ -3290,6 +3505,8 @@
 ;;
 (begin-tx "AQP-D2 — URC_VacatePoolTfIds: both documented branches of the existence filter")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== AQP-D2 — URC_VacatePoolTfIds: both documented branches of the existence filter · 01 · namespace ==== 
+(print "--- [AQP-D2 — URC_VacatePoolTfIds: both documented branches of the existence filter · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [AQP-D2 · 01 · the native id always, the F| counterpart only when it exists] ---")
 ;;DOC-CLAIM VERIFICATION (`_docclaims.py` G5). `06_VCT.pact` URC_VacatePoolTfIds:
@@ -3307,6 +3524,8 @@
 ;;`env-module-admin DPTF` is needed for the cross-module write and MUST sit at transaction top
 ;;level -- inside the `let` it silently aborts the whole file with no FAILURE line at all, which is
 ;;the "grep -c FAILURE = 0 is not proof of success" shape. That is why the block is split.
+;;==== AQP-D2 — URC_VacatePoolTfIds: both documented branches of the existence filter · 02 · let / invocation ==== 
+(print "--- [AQP-D2 — URC_VacatePoolTfIds: both documented branches of the existence filter · 02 · let / invocation] ---")
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -3402,7 +3621,11 @@
 ;;Driven for real, not just derived: `AQP-VCT.SECURE` is `(defcap SECURE () true)`, so the writer
 ;;is reachable with `test-capability`, and the whole block is wrapped in `rollback-tx` so the
 ;;freeze flags it sets never reach a later assertion.
+;;==== AQP-D3 — XI_SetPoolFvtsVacateFrozen: the derivation, and the blast radius it claims · 01 · env-sigs (caps) ==== 
+(print "--- [AQP-D3 — XI_SetPoolFvtsVacateFrozen: the derivation, and the blast radius it claims · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== AQP-D3 — XI_SetPoolFvtsVacateFrozen: the derivation, and the blast radius it claims · 02 · let / invocation ==== 
+(print "--- [AQP-D3 — XI_SetPoolFvtsVacateFrozen: the derivation, and the blast radius it claims · 02 · let / invocation] ---")
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -3601,6 +3824,8 @@
 ;;
 (begin-tx "AQP-F2 — RPS: the zero-guards, the singular/plural staleness pair, and the stake-flow previews")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== AQP-F2 — RPS: the zero-guards, the singular/plural staleness pair, and the stake-flow previews · 01 · namespace ==== 
+(print "--- [AQP-F2 — RPS: the zero-guards, the singular/plural staleness pair, and the stake-flow previews · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [AQP-F2 · 01 · the IGNIS mirrors' zero-guards, both arms] ---")
 ;;FUNCTION COVERAGE (G6, Tier 1: RPS). The `URC_*Ignis` family are read-only IFP MIRRORS of write
@@ -3611,6 +3836,8 @@
 ;;Each carries an explicit zero-guard in its @doc ("0 when amount<=0", "0 when ffc<=0"). Both arms
 ;;are asserted for each: a guard tested only on its zero side passes on a function that always
 ;;returns zero, which for a PRICE reader is the failure that would go unnoticed longest.
+;;==== AQP-F2 — RPS: the zero-guards, the singular/plural staleness pair, and the stake-flow previews · 02 · let / invocation ==== 
+(print "--- [AQP-F2 — RPS: the zero-guards, the singular/plural staleness pair, and the stake-flow previews · 02 · let / invocation] ---")
 (let
     (
         (ouro:string "OURO-98c486052a51")
@@ -3752,6 +3979,8 @@
 ;;
 (begin-tx "AQP-F3 — VCT: the pure vacate shape-converters, on the edges that bit")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== AQP-F3 — VCT: the pure vacate shape-converters, on the edges that bit · 01 · namespace ==== 
+(print "--- [AQP-F3 — VCT: the pure vacate shape-converters, on the edges that bit · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [AQP-F3 · 01 · the decimal→integer row converters, now a single implementation] ---")
 ;;FUNCTION COVERAGE (G6, Tier 1: VCT). The `UC_Vacate*` / `UC_*AmountsRow*` family are PURE shape
@@ -3771,6 +4000,8 @@
 ;;appends, so an empty amounts row is unreachable -- but it was a footgun armed for whoever next
 ;;changed the leg builder. The function now delegates to its twin, so there is one implementation.
 ;;These assertions are what hold it there.
+;;==== AQP-F3 — VCT: the pure vacate shape-converters, on the edges that bit · 02 · let / invocation ==== 
+(print "--- [AQP-F3 — VCT: the pure vacate shape-converters, on the edges that bit · 02 · let / invocation] ---")
 (let
     (
         (ref-VCT:module{AcquisitionVacateV2} AQP-VCT)
@@ -3840,6 +4071,8 @@
 ;;
 (begin-tx "AQP-F4 — AQP: the M5 cross-pool stake scans, owner side against beneficiary side")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== AQP-F4 — AQP: the M5 cross-pool stake scans, owner side against beneficiary side · 01 · namespace ==== 
+(print "--- [AQP-F4 — AQP: the M5 cross-pool stake scans, owner side against beneficiary side · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [AQP-F4 · 01 · the same leg, seen from both ends] ---")
 ;;FUNCTION COVERAGE (G6, Tier 1: AQP). `URH_AQP|{Dptf,Dpof,Dpsf,Dpnf}StakesBy{Owner,Beneficiary}` are
@@ -3853,6 +4086,8 @@
 ;;stronger check than either one asserted against a hand-written expectation, and it needs no new
 ;;fixture: this suite already holds a SELF-stake (owner = beneficiary = ANHD), which is the case
 ;;where both scans must return the very same leg.
+;;==== AQP-F4 — AQP: the M5 cross-pool stake scans, owner side against beneficiary side · 02 · let / invocation ==== 
+(print "--- [AQP-F4 — AQP: the M5 cross-pool stake scans, owner side against beneficiary side · 02 · let / invocation] ---")
 (let
     (
         (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
@@ -3933,6 +4168,8 @@
 ;;
 (begin-tx "AQP-F5 — SCORE: the user-score identity readers, real row against defaulted row")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== AQP-F5 — SCORE: the user-score identity readers, real row against defaulted row · 01 · namespace ==== 
+(print "--- [AQP-F5 — SCORE: the user-score identity readers, real row against defaulted row · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [AQP-F5 · 01 · identity is preserved whether or not the row exists] ---")
 ;;FUNCTION COVERAGE (G6, Tier 1: SCORE). `UR_U-SCR|UserScore{OuronetAccount,PoolId,ScoreId}` had
@@ -3949,6 +4186,8 @@
 ;;    G24Score      -> no row, reads as the UDC default, base-score 0.0
 ;;Identity must be correct in the first case and ECHOED in the second, and the values must
 ;;distinguish them. That is the whole documented contract in four assertions.
+;;==== AQP-F5 — SCORE: the user-score identity readers, real row against defaulted row · 02 · let / invocation ==== 
+(print "--- [AQP-F5 — SCORE: the user-score identity readers, real row against defaulted row · 02 · let / invocation] ---")
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -4027,6 +4266,8 @@
 ;;
 (begin-tx "AQP-F6 — VCT: the shadowed batch guard gets its voice back")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== AQP-F6 — VCT: the shadowed batch guard gets its voice back · 01 · namespace ==== ===========
+(print "--- [AQP-F6 — VCT: the shadowed batch guard gets its voice back · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [AQP-F6 · 01 · an empty vacate batch is REFUSED, not faulted] ---")
 ;;MUTE-GUARD FIX, verified live before and after (2026-09-13).
@@ -4049,6 +4290,8 @@
 ;;    (UC_TfLegsFromParallelArrays [] [] []) => FAULT      <- but this ran first
 ;;
 ;;Four functions in this module carried the same trap; all four are now total.
+;;==== AQP-F6 — VCT: the shadowed batch guard gets its voice back · 02 · let / invocation ==== ====
+(print "--- [AQP-F6 — VCT: the shadowed batch guard gets its voice back · 02 · let / invocation] ---")
 (let
     (
         (ref-VCT:module{AcquisitionVacateV2} AQP-VCT)
@@ -4096,6 +4339,8 @@
 ;;
 (begin-tx "AQP-F7 — the four tracker row-reader families, on a REAL row and an ABSENT one")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== AQP-F7 — the four tracker row-reader families, on a REAL row and an ABSENT one · 01 · namespace ==== 
+(print "--- [AQP-F7 — the four tracker row-reader families, on a REAL row and an ABSENT one · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [AQP-F7 · 01 · tracker identity round-trips, with existence established first] ---")
 ;;FUNCTION COVERAGE (G6, Tier 1: AQP). Twenty per-field tracker readers -- UR_AQP|{DPTF,DPOF,DPSF,
@@ -4114,6 +4359,8 @@
 ;;This is the third reader family in this codebase with that shape -- see RPS's UR_FVT-RU|* in
 ;;Kursan/AQP-stream-tests.repl <<T-STREAM-RT>> and SCORE's UR_U-SCR|* in <<AQP-F5>>. So existence is
 ;;established first, from the BALANCE, which is the only field that cannot be faked by the default.
+;;==== AQP-F7 — the four tracker row-reader families, on a REAL row and an ABSENT one · 02 · let / invocation ==== 
+(print "--- [AQP-F7 — the four tracker row-reader families, on a REAL row and an ABSENT one · 02 · let / invocation] ---")
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -4183,6 +4430,8 @@
 ;;
 (begin-tx "AQP-F8 — VCT: the batch cost estimators, against their own documented decomposition")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== AQP-F8 — VCT: the batch cost estimators, against their own documented decomposition · 01 · namespace ==== 
+(print "--- [AQP-F8 — VCT: the batch cost estimators, against their own documented decomposition · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [AQP-F8 · 01 · FullVacate is the sum of the per-lane batch readers] ---")
 ;;FUNCTION COVERAGE (G6, Tier 1: VCT). The `URCi_Batch*` / `URCi_FullVacate` family are IFP MIRRORS:
@@ -4202,6 +4451,8 @@
 ;;
 ;;Both are differentials between functions, so neither depends on a hardcoded price that would rot
 ;;the next time the IGNIS tiers move.
+;;==== AQP-F8 — VCT: the batch cost estimators, against their own documented decomposition · 02 · let / invocation ==== 
+(print "--- [AQP-F8 — VCT: the batch cost estimators, against their own documented decomposition · 02 · let / invocation] ---")
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -4260,6 +4511,8 @@
 ;;
 (begin-tx "AQP-F9 — RPS: URCi_CollectFull against the three legs it says it is made of")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== AQP-F9 — RPS: URCi_CollectFull against the three legs it says it is made of · 01 · namespace ==== 
+(print "--- [AQP-F9 — RPS: URCi_CollectFull against the three legs it says it is made of · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [AQP-F9 · 01 · the collect cost preview, decomposed] ---")
 ;;FUNCTION COVERAGE (G6, Tier 1: RPS). `URCi_CollectFull` is the number a client is quoted before
@@ -4277,6 +4530,8 @@
 ;;(`UR_SCR|ScoreAqpoolLink`, or the TRIPLET's silver score when the entity is a triplet). The rebuild
 ;;below derives it the same way, so a change to that resolution shows up here rather than silently
 ;;pricing a different pool's legs.
+;;==== AQP-F9 — RPS: URCi_CollectFull against the three legs it says it is made of · 02 · let / invocation ==== 
+(print "--- [AQP-F9 — RPS: URCi_CollectFull against the three legs it says it is made of · 02 · let / invocation] ---")
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -4342,6 +4597,8 @@
 ;;
 (begin-tx "AQP-F10 — AQP: the 7-slot score constructor, the leg validators, and the OF/NF tracker echo")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== AQP-F10 — AQP: the 7-slot score constructor, the leg validators, and the OF/NF tracker echo · 01 · namespace ==== 
+(print "--- [AQP-F10 — AQP: the 7-slot score constructor, the leg validators, and the OF/NF tracker echo · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [AQP-F10 · 01 · every score slot must be independently addressable] ---")
 ;;FUNCTION COVERAGE (G6, Tier 1: AQP). `UDC_AQP|SchemaWithScoreAtSlot` writes one score-id into one
@@ -4353,6 +4610,8 @@
 ;;NOTHING downstream would notice, because a score-id in the wrong slot is still a valid score-id in
 ;;a valid slot. The only way to see it is to address each slot in turn and assert that exactly one
 ;;field moved. So that is what this does: seven writes, each checked against all seven fields.
+;;==== AQP-F10 — AQP: the 7-slot score constructor, the leg validators, and the OF/NF tracker echo · 02 · let / invocation ==== 
+(print "--- [AQP-F10 — AQP: the 7-slot score constructor, the leg validators, and the OF/NF tracker echo · 02 · let / invocation] ---")
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -4537,6 +4796,8 @@
 ;;score issuance is STOA-priced, so the gas-station key must sign the four coin.TRANSFER legs --
 ;;the same block [6.2.9] and the grand tour use. Without it the issue aborts on
 ;;"Managed capability not installed", which is a funding signal, not a logic failure.
+;;==== AQP-F11 — SCORE: the NF score-definition WRITE path, which nothing had ever run · 01 · env-sigs (caps) ==== 
+(print "--- [AQP-F11 — SCORE: the NF score-definition WRITE path, which nothing had ever run · 01 · env-sigs (caps)] ---")
 (env-sigs
   [ { "key": "PK_AncientHodler", "caps": [] }
     { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
@@ -4545,6 +4806,8 @@
         (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
         (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
         (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+;;==== AQP-F11 — SCORE: the NF score-definition WRITE path, which nothing had ever run · 02 · let / invocation ==== 
+(print "--- [AQP-F11 — SCORE: the NF score-definition WRITE path, which nothing had ever run · 02 · let / invocation] ---")
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -4699,6 +4962,8 @@
 ;;
 (begin-tx "AQP-F13 — RPS: the multiplet LADDER, and the two stake-flow previews' documented asymmetry")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== AQP-F13 — RPS: the multiplet LADDER, and the two stake-flow previews' documented asymmetry · 01 · namespace ==== 
+(print "--- [AQP-F13 — RPS: the multiplet LADDER, and the two stake-flow previews' documented asymmetry · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [AQP-F13 · 01 · the multiplet family is a ladder, and its id encodes its own rungs] ---")
 ;;FUNCTION COVERAGE (G6, Tier 1: RPS). The `UR_FVT-MF|*` readers describe a MULTIPLET FAMILY -- the
@@ -4710,6 +4975,8 @@
 ;;id they were looked up by. And the two `ats-*` fields name the autostake pair joining consecutive
 ;;rungs -- so the pair at rung i->i+1 must be the one whose REWARD TOKEN is token-i. That is a
 ;;cross-module consistency check (RPS row vs ATS registry) that nothing else in the suite makes.
+;;==== AQP-F13 — RPS: the multiplet LADDER, and the two stake-flow previews' documented asymmetry · 02 · let / invocation ==== 
+(print "--- [AQP-F13 — RPS: the multiplet LADDER, and the two stake-flow previews' documented asymmetry · 02 · let / invocation] ---")
 (let
     (
         (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
@@ -4866,6 +5133,8 @@
 ;;
 (begin-tx "AQP-F14 — VCT: the vacate leg validators, on both sides of every bound they state")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== AQP-F14 — VCT: the vacate leg validators, on both sides of every bound they state · 01 · namespace ==== 
+(print "--- [AQP-F14 — VCT: the vacate leg validators, on both sides of every bound they state · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [AQP-F14 · 01 · vacate is ALL-OR-NOTHING per leg] ---")
 ;;FUNCTION COVERAGE (G6, Tier 1: VCT). These predicates gate every vacate batch and none had ever
@@ -4876,6 +5145,8 @@
 ;;(NO PARTIAL VACATE)". It is not a lower bound, it is an EQUALITY -- a vacate leg must take the
 ;;whole staked balance or nothing. Under-vacating and over-vacating are both refused, and only a
 ;;three-point test (under / exact / over) shows that; a `>=` bound would pass the first two.
+;;==== AQP-F14 — VCT: the vacate leg validators, on both sides of every bound they state · 02 · let / invocation ==== 
+(print "--- [AQP-F14 — VCT: the vacate leg validators, on both sides of every bound they state · 02 · let / invocation] ---")
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -5005,12 +5276,16 @@
 ;;
 (begin-tx "AQP-F15 — VCT: the collectable leg validators and the nonce-leg array builders")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== AQP-F15 — VCT: the collectable leg validators and the nonce-leg array builders · 01 · namespace ==== 
+(print "--- [AQP-F15 — VCT: the collectable leg validators and the nonce-leg array builders · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [AQP-F15 · 01 · the collectable twin of the all-or-nothing rule] ---")
 ;;FUNCTION COVERAGE (G6, Tier 1: VCT). The collectable-side vacate validators, none ever called.
 ;;They mirror the TF ones pinned in <<AQP-F14>>, over the live DPSF tracker row this suite holds
 ;;(SfStakePool / DHCD / ANHD / nonce 1 / 500 units), so the same all-or-nothing rule can be checked
 ;;on the nonce-keyed tables rather than only the amount-keyed one.
+;;==== AQP-F15 — VCT: the collectable leg validators and the nonce-leg array builders · 02 · let / invocation ==== 
+(print "--- [AQP-F15 — VCT: the collectable leg validators and the nonce-leg array builders · 02 · let / invocation] ---")
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -5152,7 +5427,11 @@
 ;;depends on `env-sigs`, so each is driven twice: once signed by the real owner (passes) and once
 ;;with NO signature at all (refuses). A cap tested only while signed is indistinguishable from a
 ;;no-op -- which, as <<AQP-F15>> just showed, is a live hazard in this module.
+;;==== AQP-F16 — the ownership caps and leg validators, each on both sides of its gate · 01 · env-sigs (caps) ==== 
+(print "--- [AQP-F16 — the ownership caps and leg validators, each on both sides of its gate · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== AQP-F16 — the ownership caps and leg validators, each on both sides of its gate · 02 · let / invocation ==== 
+(print "--- [AQP-F16 — the ownership caps and leg validators, each on both sides of its gate · 02 · let / invocation] ---")
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -5273,6 +5552,8 @@
 ;;
 (begin-tx "AQP-F17 — the last of Tier 1: royalty custody previews, inject plans, unstake sufficiency")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== AQP-F17 — the last of Tier 1: royalty custody previews, inject plans, unstake sufficiency · 01 · namespace ==== 
+(print "--- [AQP-F17 — the last of Tier 1: royalty custody previews, inject plans, unstake sufficiency · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [AQP-F17 · 01 · the three royalty-custody cost previews] ---")
 ;;FUNCTION COVERAGE (G6, Tier 1). The last client-reachable functions in RPS / AQP / SCORE.
@@ -5282,6 +5563,8 @@
 ;;with no state requirement beyond the vault, so the testable content is that they are DISTINCT --
 ;;three different operations must not collapse to one number, which is what a copy-pasted preview
 ;;would produce.
+;;==== AQP-F17 — the last of Tier 1: royalty custody previews, inject plans, unstake sufficiency · 02 · let / invocation ==== 
+(print "--- [AQP-F17 — the last of Tier 1: royalty custody previews, inject plans, unstake sufficiency · 02 · let / invocation] ---")
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)

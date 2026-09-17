@@ -16,7 +16,11 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-AT-001 · 01 · env-sigs (patron only) ====
 (print "--- [TX-AT-001 · 01 · env-sigs (patron only)] ---")
+;;==== TX-AT-001 - issue TF anchor, SetCommonDenominator, RotateOwnership · 01 · env-sigs (caps) ==== 
+(print "--- [TX-AT-001 - issue TF anchor, SetCommonDenominator, RotateOwnership · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+;;==== TX-AT-001 - issue TF anchor, SetCommonDenominator, RotateOwnership · 02 · let / invocation ==== 
+(print "--- [TX-AT-001 - issue TF anchor, SetCommonDenominator, RotateOwnership · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)

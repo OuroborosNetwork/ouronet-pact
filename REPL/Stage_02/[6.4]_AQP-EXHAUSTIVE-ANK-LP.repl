@@ -13,6 +13,8 @@
 (print "=== TX-AQP-A01 — SnakePower + booster anchor classes exist ==================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-A01 - Anchor class inventory after boot Steps 2–3 · 01 · let / invocation ==== ======
+(print "--- [TX-AQP-A01 - Anchor class inventory after boot Steps 2–3 · 01 · let / invocation] ---")
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -34,6 +36,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-AQP-A02 - LP score boost links from Step 6 triplet")
@@ -41,6 +47,8 @@
 (print "=== TX-AQP-A02 — Bronze/Golden boost-link → Silver (LP triplet) ============")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-A02 - LP score boost links from Step 6 triplet · 01 · let / invocation ==== =========
+(print "--- [TX-AQP-A02 - LP score boost links from Step 6 triplet · 01 · let / invocation] ---")
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -61,6 +69,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-AQP-A03 - OURO LP stake + anchor sync raises boosted score")
@@ -68,6 +80,8 @@
 (print "=== TX-AQP-A03 — DHOuroLp stake: base vs boosted SilverSnakePower ============")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-A03 - OURO LP stake + anchor sync raises boosted score · 01 · let / invocation ==== =
+(print "--- [TX-AQP-A03 - OURO LP stake + anchor sync raises boosted score · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -160,6 +174,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-AQP-A04 - staking a conforming Elk0nite-trait KBN bunny grants EMMA the Elk0nite promile")
@@ -167,6 +185,8 @@
 (print "=== TX-AQP-A04 — trait-anchor promile path: stake a CONFORMING Elk0nite bunny ==")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-A04 - staking a conforming Elk0nite-trait KBN bunny grants EMMA the Elk0nite promile · 01 · let / invocation ==== 
+(print "--- [TX-AQP-A04 - staking a conforming Elk0nite-trait KBN bunny grants EMMA the Elk0nite promile · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -222,6 +242,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;; ============================================================================
@@ -235,6 +259,8 @@
 (print "=== TX-AQP-A05a — GAS baseline: stake a bunny matching ONE anchor ===========")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+;;==== TX-AQP-A05a - single-anchor KBN bunny stake (gas baseline) · 01 · let / invocation ==== ====
+(print "--- [TX-AQP-A05a - single-anchor KBN bunny stake (gas baseline) · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -264,6 +290,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;; ============================================================================
@@ -284,6 +314,8 @@
 (print "=== TX-AQP-A05b — MULTI-ANCHOR fan-out from a single NFT stake ==============")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+;;==== TX-AQP-A05b - multi-anchor fan-out: one Legendary Elite-Auryn Rain bunny -> 5 anchors / 4 boost-classes · 01 · let / invocation ==== 
+(print "--- [TX-AQP-A05b - multi-anchor fan-out: one Legendary Elite-Auryn Rain bunny -> 5 anchors / 4 boost-classes · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)

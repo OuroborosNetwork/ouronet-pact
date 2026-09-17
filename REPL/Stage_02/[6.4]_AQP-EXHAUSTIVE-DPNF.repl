@@ -13,6 +13,8 @@
 (print "=== TX-AQP-NF01 — EMMA stakes DHB nonce on DHBloodshed pool ================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-NF01 - DHBloodshed NF stake + subsidiary score deb · 01 · let / invocation ==== =====
+(print "--- [TX-AQP-NF01 - DHBloodshed NF stake + subsidiary score deb · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -77,6 +79,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-AQP-NF02 - DHNosferatu NF stake")
@@ -84,6 +90,8 @@
 (print "=== TX-AQP-NF02 — EMMA stakes DHN on DHNosferatu pool ========================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-NF02 - DHNosferatu NF stake · 01 · let / invocation ==== ============================
+(print "--- [TX-AQP-NF02 - DHNosferatu NF stake · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -119,6 +127,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-AQP-NF03 - DHBunnies KBN NF stake + SubsidiaryBunnies deb")
@@ -126,6 +138,8 @@
 (print "=== TX-AQP-NF03 — EMMA stakes KBN bunny on DHBunnies pool (creator/creator) =====")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-NF03 - DHBunnies KBN NF stake + SubsidiaryBunnies deb · 01 · let / invocation ==== ==
+(print "--- [TX-AQP-NF03 - DHBunnies KBN NF stake + SubsidiaryBunnies deb · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -172,6 +186,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-AQP-NF04 - Subsidiary treasury Auryn inject after DPNF denominators")
@@ -179,6 +197,8 @@
 (print "=== TX-AQP-NF04 — SubsidiaryTreasury inject after NF + SF denominators ======")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-NF04 - Subsidiary treasury Auryn inject after DPNF denominators · 01 · let / invocation ==== 
+(print "--- [TX-AQP-NF04 - Subsidiary treasury Auryn inject after DPNF denominators · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -238,7 +258,11 @@
 ;; precision-6-conform score, the ONLY condition that can reject v=-1.0 is the L7 #19 non-negativity guard
 ;; (02_SCORE.pact:2722) — non-vacuous by construction. Completes #19 def-score coverage across all three
 ;; surviving guards: SF nonce ([6.2.2]), NF set-class ([6.2.10]), NF trait (here).
+;;==== TX-AQP-NF-NEGDEF - negative NF trait definition score rejected (L7 #19) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-AQP-NF-NEGDEF - negative NF trait definition score rejected (L7 #19) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-AQP-NF-NEGDEF - negative NF trait definition score rejected (L7 #19) · 02 · let / invocation ==== 
+(print "--- [TX-AQP-NF-NEGDEF - negative NF trait definition score rejected (L7 #19) · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -283,6 +307,8 @@
 ;;           populated with Rarity+Background at def-issuance).
 ;; nonce25 => Legendary(9999)+"Legendary Photo Shoot"(undefined=>0) = 9999 (proves it picks Legendary for
 ;;           THIS nonce, and undefined (key,value) => 0). No class def => class-part = 0 (class-rev 0 branch).
+;;==== TX-AQP-M1 - DPNF model-1 point-read scoring correctness (#FP0 validation) · 01 · let / invocation ==== 
+(print "--- [TX-AQP-M1 - DPNF model-1 point-read scoring correctness (#FP0 validation) · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)

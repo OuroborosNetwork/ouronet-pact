@@ -12,6 +12,8 @@
 (print "=== TX-AQP-BP01 — DHWonderCoach SubsidiaryWonderCoach stake cycle ============")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-BP01 - DHWonderCoach DPSF stake + unstake · 01 · let / invocation ==== ==============
+(print "--- [TX-AQP-BP01 - DHWonderCoach DPSF stake + unstake · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -51,6 +53,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-AQP-BP02 - DHCompany shares score stake (E|DH tier-7 morph)")
@@ -58,6 +64,8 @@
 (print "=== TX-AQP-BP02 — CompanySharesTreasury denominator via E|DH stake ==========")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-BP02 - DHCompany shares score stake (E|DH tier-7 morph) · 01 · let / invocation ==== 
+(print "--- [TX-AQP-BP02 - DHCompany shares score stake (E|DH tier-7 morph) · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -89,6 +97,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-AQP-BP03 - DHOuroLp TF stake + farm Auryn inject readiness")
@@ -96,6 +108,8 @@
 (print "=== TX-AQP-BP03 — OURO LP pool TF stake + OuroLpFarm inject denominator ======")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-BP03 - DHOuroLp TF stake + farm Auryn inject readiness · 01 · let / invocation ==== =
+(print "--- [TX-AQP-BP03 - DHOuroLp TF stake + farm Auryn inject readiness · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)

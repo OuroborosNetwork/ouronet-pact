@@ -22,9 +22,13 @@
 ;;================================================================================
 (begin-tx "TX-AQPP-001 - AQP price sweep: observed IGNIS == deter + components")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQPP-001 - AQP price sweep: observed IGNIS == deter + components · 01 · namespace ==== ==
+(print "--- [TX-AQPP-001 - AQP price sweep: observed IGNIS == deter + components · 01 · namespace] ---")
 (namespace "ouronet-ns")
 ;;==== TX-AQPP-001 · 01 · SCORE + RPS readers ====
 (print "--- [TX-AQPP-001 · 01 · SCORE + RPS readers] ---")
+;;==== TX-AQPP-001 - AQP price sweep: observed IGNIS == deter + components · 02 · let / invocation ==== 
+(print "--- [TX-AQPP-001 - AQP price sweep: observed IGNIS == deter + components · 02 · let / invocation] ---")
 (let
     (
         (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
@@ -111,6 +115,8 @@
 ;;================================================================================
 (begin-tx "TX-AQPP-002 - AQP component gap closed: every migrated reader bills deter + components")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQPP-002 - AQP component gap closed: every migrated reader bills deter + components · 01 · namespace ==== 
+(print "--- [TX-AQPP-002 - AQP component gap closed: every migrated reader bills deter + components · 01 · namespace] ---")
 (namespace "ouronet-ns")
 ;;==== TX-AQPP-002 · 01 · AQP family sweep ====
 (print "--- [TX-AQPP-002 · 01 · AQP family sweep] ---")
@@ -118,6 +124,8 @@
 ;;and nothing read them, so an anchor/pool/score/FVT op charged its deterrent and none of the
 ;;work it actually does. Owner closed that gap 2026-09-06. Each assertion below pins one op to
 ;;deter + components; a reader silently reverting to a bare UC_IgnisDeter fails exactly one.
+;;==== TX-AQPP-002 - AQP component gap closed: every migrated reader bills deter + components · 02 · let / invocation ==== 
+(print "--- [TX-AQPP-002 - AQP component gap closed: every migrated reader bills deter + components · 02 · let / invocation] ---")
 (let
     (
         (ref-IGNIS:module{IgnisCollectorV2} IGNIS)

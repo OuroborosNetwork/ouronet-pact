@@ -1,3 +1,16 @@
+;;
+;; REPL/Stage_02/[6.2.8d]_AQP-UNSTALE-ALL-CC.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_02/[6.2.8d]_AQP-UNSTALE-ALL-CC.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 ;; ============================================================================
 ;; REPL/Stage_02/[6.2.8d]_AQP-UNSTALE-ALL-CC.repl — OWNER mass deb-unstale (CCp_UnstaleAll).
 ;;
@@ -21,8 +34,12 @@
 (begin-tx "TX-UNSTALEALL01 - move ANHD Elite-DEB DOWN => stale present staker(s)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-UNSTALEALL01 - move ANHD Elite-DEB DOWN => stale present staker(s) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-UNSTALEALL01 - move ANHD Elite-DEB DOWN => stale present staker(s) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [TX-UNSTALEALL01 · 01 · create staleness for the owner mass-unstale] ---")
+;;==== TX-UNSTALEALL01 - move ANHD Elite-DEB DOWN => stale present staker(s) · 02 · let / invocation ==== 
+(print "--- [TX-UNSTALEALL01 - move ANHD Elite-DEB DOWN => stale present staker(s) · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD)
@@ -70,8 +87,12 @@
 (begin-tx "TX-UNSTALEALL02 - owner-gate: a NON-owner (Emma) is refused")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-UNSTALEALL02 - owner-gate: a NON-owner (Emma) is refused · 01 · env-sigs (caps) ==== ====
+(print "--- [TX-UNSTALEALL02 - owner-gate: a NON-owner (Emma) is refused · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (print "--- [TX-UNSTALEALL02 · 01 · non-owner refused by CAP_EnforceAccountOwnership] ---")
+;;==== TX-UNSTALEALL02 - owner-gate: a NON-owner (Emma) is refused · 02 · let / invocation ==== ===
+(print "--- [TX-UNSTALEALL02 - owner-gate: a NON-owner (Emma) is refused · 02 · let / invocation] ---")
 (let
     (
         (emma:string KST.EMMA)
@@ -102,8 +123,12 @@
 (begin-tx "TX-UNSTALEALL03 - owner ANHD mass-unstales (penalized) => injection-ready")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-UNSTALEALL03 - owner ANHD mass-unstales (penalized) => injection-ready · 01 · env-sigs (caps) ==== 
+(print "--- [TX-UNSTALEALL03 - owner ANHD mass-unstales (penalized) => injection-ready · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [TX-UNSTALEALL03 · 01 · CCp_UnstaleAll refreshes every stale staker, penalized] ---")
+;;==== TX-UNSTALEALL03 - owner ANHD mass-unstales (penalized) => injection-ready · 02 · let / invocation ==== 
+(print "--- [TX-UNSTALEALL03 - owner ANHD mass-unstales (penalized) => injection-ready · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD)
@@ -174,8 +199,12 @@
 (begin-tx "TX-UNSTALEALL04 - re-run on the fresh entity => all up to date, no new penalty")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-UNSTALEALL04 - re-run on the fresh entity => all up to date, no new penalty · 01 · env-sigs (caps) ==== 
+(print "--- [TX-UNSTALEALL04 - re-run on the fresh entity => all up to date, no new penalty · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [TX-UNSTALEALL04 · 01 · idempotent no-op reports all up to date] ---")
+;;==== TX-UNSTALEALL04 - re-run on the fresh entity => all up to date, no new penalty · 02 · let / invocation ==== 
+(print "--- [TX-UNSTALEALL04 - re-run on the fresh entity => all up to date, no new penalty · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD)

@@ -1,3 +1,16 @@
+;;
+;; REPL/modules/PYTHIA.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/modules/PYTHIA.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 ;; REPL/modules/PYTHIA.repl — STANDALONE PYTHIA tester (blockchain-env-in-a-repl).
 ;; Fresh boot: Stage 00 sandbox + deploy core(s) + the PYTHIA suite only.
 ;; Run: cd REPL && pact modules/PYTHIA.repl   (see ARCHITECTURE/REPL_TEST_ARCHITECTURE.md)
@@ -20,7 +33,11 @@
 ;;client path reached them, so the admin could not actually change either price. The test that
 ;;matters is therefore that the Talos wrapper MOVES THE VALUE the readers return -- not that it
 ;;returns a string.
+;;==== PYTHIA-PRICE — the two admin price setters (previously only in an UNGATED probe) · 01 · env-sigs (caps) ==== 
+(print "--- [PYTHIA-PRICE — the two admin price setters (previously only in an UNGATED probe) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== PYTHIA-PRICE — the two admin price setters (previously only in an UNGATED probe) · 02 · let / invocation ==== 
+(print "--- [PYTHIA-PRICE — the two admin price setters (previously only in an UNGATED probe) · 02 · let / invocation] ---")
 (let
     (
         (ref-PYTHIA:module{PythiaV5} PYTHIA)
@@ -69,6 +86,8 @@
 (begin-tx "PYTHIA-G1 — an API key needs key material")
 (env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== PYTHIA-G1 — an API key needs key material · 01 · env-sigs (caps) ==== ======================
+(print "--- [PYTHIA-G1 — an API key needs key material · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [PYTHIA-G1 · 01 · the empty-pubkey guard] ---")
 ;;`PYTHIA|C>DEPLOY-API-KEY`'s first statement is `(enforce (!= public "") …)`, ahead of the Apollo-account
@@ -119,6 +138,8 @@
 ;;revokes it and TX006 RE-ACTIVATES it through the Cronoton `A_Link` path and renames the lane. So
 ;;by the time this block runs the pair has been round the full revoke/re-activate cycle -- the
 ;;richest state an attacker could try to recycle -- and the free entry point is still closed.
+;;==== PYTHIA-LINK-ECON — why the FREE link is not a free-work vector · 01 · let / invocation ==== 
+(print "--- [PYTHIA-LINK-ECON — why the FREE link is not a free-work vector · 01 · let / invocation] ---")
 (let
     (
         (ref-PYTHIA:module{PythiaV5} PYTHIA)

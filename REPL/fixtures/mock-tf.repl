@@ -1,3 +1,16 @@
+;;
+;; REPL/fixtures/mock-tf.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/fixtures/mock-tf.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 ;; REPL/fixtures/mock-tf.repl — MINIMAL true-fungible fixture.
 ;;
 ;; PROVIDES : 2 DPTFs owned by KST.ANHD — "MockAlpha"/MOCKA and "MockBeta"/MOCKB,
@@ -16,6 +29,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [FIXTURE mock-tf · 01 · let / STOA split] ---")
+;;==== FIXTURE mock-tf — issue MOCKA + MOCKB · 01 · let / invocation ==== =========================
+(print "--- [FIXTURE mock-tf — issue MOCKA + MOCKB · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -71,8 +86,12 @@
 ;;|| NEXT >
 ;;
 (begin-tx "FIXTURE mock-tf — postcondition")
+;;==== FIXTURE mock-tf — postcondition · 01 · namespace ==== ======================================
+(print "--- [FIXTURE mock-tf — postcondition · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [FIXTURE mock-tf · 04 · postcondition] ---")
+;;==== FIXTURE mock-tf — postcondition · 02 · let / invocation ==== ===============================
+(print "--- [FIXTURE mock-tf — postcondition · 02 · let / invocation] ---")
 (let
     (
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)

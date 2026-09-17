@@ -13,6 +13,8 @@
 (print "=== TX-AQP-CL01 — CodingDivisionTreasury: UrStoa-style last_rps checkpoints G ===")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-CL01 - Vault class-1 Wstoa collect (single-tier vs G) · 01 · let / invocation ==== ==
+(print "--- [TX-AQP-CL01 - Vault class-1 Wstoa collect (single-tier vs G) · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -68,6 +70,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-AQP-CL02 - Treasury (class-1) Auryn collect on SubsidiaryTreasury")
@@ -75,6 +81,8 @@
 (print "=== TX-AQP-CL02 — SubsidiaryTreasury: same G single-tier as vault =============")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-CL02 - Treasury (class-1) Auryn collect on SubsidiaryTreasury · 01 · let / invocation ==== 
+(print "--- [TX-AQP-CL02 - Treasury (class-1) Auryn collect on SubsidiaryTreasury · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -151,6 +159,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-AQP-CL03 - Farm class-0 Auryn collect (two-tier L_i)")
@@ -158,6 +170,8 @@
 (print "=== TX-AQP-CL03 — OuroLpFarm: triplet Tier-2 + MULTIPLET_BASE OURO collect =========")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-CL03 - Farm class-0 Auryn collect (two-tier L_i) · 01 · let / invocation ==== =======
+(print "--- [TX-AQP-CL03 - Farm class-0 Auryn collect (two-tier L_i) · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)

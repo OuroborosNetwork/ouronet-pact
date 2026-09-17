@@ -1,4 +1,17 @@
 ;;
+;; REPL/RedTeam/[RT-D2]_Ownership-Collectables.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/RedTeam/[RT-D2]_Ownership-Collectables.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
+;;
 ;; REPL/RedTeam/[RT-D2]_Ownership-Collectables.repl — FAMILY D: ownership bypass, Stage 2.
 ;;
 ;; "Can I act on assets whose ownership I have not proven?"
@@ -57,6 +70,8 @@
 ;;
 (begin-tx "RT-D-002 - an abbreviation is not an identity")
 (env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+;;==== RT-D-002 - an abbreviation is not an identity · 01 · namespace ==== ========================
+(print "--- [RT-D-002 - an abbreviation is not an identity · 01 · namespace] ---")
 (namespace "ouronet-ns")
 ;;==== RT-D-002 · 01 · two different accounts, one stored holder ====
 (print "--- [RT-D-002 · 01 · two different accounts, one stored holder] ---")
@@ -155,6 +170,8 @@
 (begin-tx "RT-K-004 - the collectable family: a role reported on a collection that does not exist")
 (env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== RT-K-004 - the collectable family: a role reported on a collection that does not exist · 01 · env-sigs (caps) ==== 
+(print "--- [RT-K-004 - the collectable family: a role reported on a collection that does not exist · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] } ])
 ;;==== RT-K-004 · 01 · DPDC preview vs exec at a collection that does not exist ====
 (print "--- [RT-K-004 · 01 · DPDC preview vs exec at a collection that does not exist] ---")
@@ -191,6 +208,8 @@
 ;;Mirroring the role check would have bought message parity at the cost of turning 401 cost quotes
 ;;into dry runs, which was decided against.
 ;;
+;;==== RT-K-004 - the collectable family: a role reported on a collection that does not exist · 02 · let / invocation ==== 
+(print "--- [RT-K-004 - the collectable family: a role reported on a collection that does not exist · 02 · let / invocation] ---")
 (let
     (
         (bad:string "NOSUCHCOL-98c486052a51")
@@ -235,6 +254,8 @@
 (begin-tx "RT-K-007 - a third guard that existed and could not run")
 (env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== RT-K-007 - a third guard that existed and could not run · 01 · env-sigs (caps) ==== ========
+(print "--- [RT-K-007 - a third guard that existed and could not run · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
 ;;==== RT-K-007 · 01 · AQP anchors: the validator beneath a bare read ====
 (print "--- [RT-K-007 · 01 · AQP anchors: the validator beneath a bare read] ---")
@@ -279,6 +300,8 @@
 ;;fixtures for every one of them. That is a real piece of work with a real design question inside it,
 ;;and it is not something to smuggle in behind a one-line commit.
 ;;
+;;==== RT-K-007 - a third guard that existed and could not run · 02 · let / invocation ==== =======
+(print "--- [RT-K-007 - a third guard that existed and could not run · 02 · let / invocation] ---")
 (let
     (
         (bad:string "NOSUCHANK-98c486052a51")
@@ -327,7 +350,11 @@
 ;;            possession gate as the TRUE holder -- so possession cannot be what refuses this, and
 ;;            ownership is the only thing left.
 ;;RESULT:     REFUSED at the owner gate, naming the victim's key.
+;;==== RT-D-004 - the same theft, one collectable nonce · 01 · env-sigs (caps) ==== ===============
+(print "--- [RT-D-004 - the same theft, one collectable nonce · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
+;;==== RT-D-004 - the same theft, one collectable nonce · 02 · let / invocation ==== ==============
+(print "--- [RT-D-004 - the same theft, one collectable nonce · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -381,6 +408,8 @@
 ;; Cost measured: the file goes from ~7s to ~12s. [6.2.5]_AQP-VCT is deliberately NOT loaded — it
 ;; DRAINS these pools, and an empty pool cannot satisfy the leg checks the attacks must satisfy.
 ;;
+;;==== RT-D-004 - the same theft, one collectable nonce · 03 · load module ==== ===================
+(print "--- [RT-D-004 - the same theft, one collectable nonce · 03 · load module] ---")
 (load "../Stage_02/[6.2.1]_AQP-ANK.repl")
 (load "../Stage_02/[6.2.2]_AQP-SCORE.repl")
 (load "../Stage_02/[6.2.3]_AQP-POOL.repl")

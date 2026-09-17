@@ -16,6 +16,8 @@
 (namespace "ouronet-ns")
 ;;==== TX-00 [C0] - Chain Data Time SetUp Definition · 01 · env-chain-data ==== ===================
 (print "--- [TX-00 [C0] - Chain Data Time SetUp Definition · 01 · env-chain-data] ---")
+;;==== TX-00 [C0] - Chain Data Time SetUp Definition · 01 · env-chain-data ==== ===================
+(print "--- [TX-00 [C0] - Chain Data Time SetUp Definition · 01 · env-chain-data] ---")
 (env-chain-data
     {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
      "block-time": TV.TIME00}
@@ -50,6 +52,8 @@
 (begin-tx "TX-01 [1.1] - Define Keys Used in Stage 02 Modules")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-01 [1.1] - Define Keys Used in Stage 02 Modules · 01 · env-sigs (caps) ==== =============
+(print "--- [TX-01 [1.1] - Define Keys Used in Stage 02 Modules · 01 · env-sigs (caps)] ---")
 ;;==== TX-01 [1.1] - Define Keys Used in Stage 02 Modules · 01 · env-sigs (caps) ==== =============
 (print "--- [TX-01 [1.1] - Define Keys Used in Stage 02 Modules · 01 · env-sigs (caps)] ---")
 (env-sigs
@@ -117,6 +121,8 @@
     )
 ;;==== TX-01 [1.1] - Define Keys Used in Stage 02 Modules · 02 · let / invocation ==== ============
 (print "--- [TX-01 [1.1] - Define Keys Used in Stage 02 Modules · 02 · let / invocation] ---")
+;;==== TX-01 [1.1] - Define Keys Used in Stage 02 Modules · 02 · let / invocation ==== ============
+(print "--- [TX-01 [1.1] - Define Keys Used in Stage 02 Modules · 02 · let / invocation] ---")
     (let
         (
             (ref-coin:module{stoa-ns.fungible-v1} coin)
@@ -181,8 +187,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-02 [2.1] - DPDC-UDC Module · 01 · env-sigs (caps) ==== ==================================
 (print "--- [TX-02 [2.1] - DPDC-UDC Module · 01 · env-sigs (caps)] ---")
+;;==== TX-02 [2.1] - DPDC-UDC Module · 01 · env-sigs (caps) ==== ==================================
+(print "--- [TX-02 [2.1] - DPDC-UDC Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-02 [2.1] - DPDC-UDC Module · 02 · load module ==== ======================================
+(print "--- [TX-02 [2.1] - DPDC-UDC Module · 02 · load module] ---")
 ;;==== TX-02 [2.1] - DPDC-UDC Module · 02 · load module ==== ======================================
 (print "--- [TX-02 [2.1] - DPDC-UDC Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/01_DPDC-UDC.pact")
@@ -201,8 +211,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-03 [2.2] - DPDC Module · 01 · env-sigs (caps) ==== ======================================
 (print "--- [TX-03 [2.2] - DPDC Module · 01 · env-sigs (caps)] ---")
+;;==== TX-03 [2.2] - DPDC Module · 01 · env-sigs (caps) ==== ======================================
+(print "--- [TX-03 [2.2] - DPDC Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-03 [2.2] - DPDC Module · 02 · load module ==== ==========================================
+(print "--- [TX-03 [2.2] - DPDC Module · 02 · load module] ---")
 ;;==== TX-03 [2.2] - DPDC Module · 02 · load module ==== ==========================================
 (print "--- [TX-03 [2.2] - DPDC Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/02_DPDC.pact")
@@ -221,8 +235,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-04 [2.3] - DPDC-C Module · 01 · env-sigs (caps) ==== ====================================
 (print "--- [TX-04 [2.3] - DPDC-C Module · 01 · env-sigs (caps)] ---")
+;;==== TX-04 [2.3] - DPDC-C Module · 01 · env-sigs (caps) ==== ====================================
+(print "--- [TX-04 [2.3] - DPDC-C Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-04 [2.3] - DPDC-C Module · 02 · load module ==== ========================================
+(print "--- [TX-04 [2.3] - DPDC-C Module · 02 · load module] ---")
 ;;==== TX-04 [2.3] - DPDC-C Module · 02 · load module ==== ========================================
 (print "--- [TX-04 [2.3] - DPDC-C Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/03_DPDC-C.pact")
@@ -241,8 +259,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-05 [2.4] - DPDC-I Module · 01 · env-sigs (caps) ==== ====================================
 (print "--- [TX-05 [2.4] - DPDC-I Module · 01 · env-sigs (caps)] ---")
+;;==== TX-05 [2.4] - DPDC-I Module · 01 · env-sigs (caps) ==== ====================================
+(print "--- [TX-05 [2.4] - DPDC-I Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-05 [2.4] - DPDC-I Module · 02 · load module ==== ========================================
+(print "--- [TX-05 [2.4] - DPDC-I Module · 02 · load module] ---")
 ;;==== TX-05 [2.4] - DPDC-I Module · 02 · load module ==== ========================================
 (print "--- [TX-05 [2.4] - DPDC-I Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/04_DPDC-I.pact")
@@ -261,8 +283,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-06 [2.5] - DPDC-R Module · 01 · env-sigs (caps) ==== ====================================
 (print "--- [TX-06 [2.5] - DPDC-R Module · 01 · env-sigs (caps)] ---")
+;;==== TX-06 [2.5] - DPDC-R Module · 01 · env-sigs (caps) ==== ====================================
+(print "--- [TX-06 [2.5] - DPDC-R Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-06 [2.5] - DPDC-R Module · 02 · load module ==== ========================================
+(print "--- [TX-06 [2.5] - DPDC-R Module · 02 · load module] ---")
 ;;==== TX-06 [2.5] - DPDC-R Module · 02 · load module ==== ========================================
 (print "--- [TX-06 [2.5] - DPDC-R Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/05_DPDC-R.pact")
@@ -281,8 +307,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-07 [2.6] - DPDC-MNG Module · 01 · env-sigs (caps) ==== ==================================
 (print "--- [TX-07 [2.6] - DPDC-MNG Module · 01 · env-sigs (caps)] ---")
+;;==== TX-07 [2.6] - DPDC-MNG Module · 01 · env-sigs (caps) ==== ==================================
+(print "--- [TX-07 [2.6] - DPDC-MNG Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-07 [2.6] - DPDC-MNG Module · 02 · load module ==== ======================================
+(print "--- [TX-07 [2.6] - DPDC-MNG Module · 02 · load module] ---")
 ;;==== TX-07 [2.6] - DPDC-MNG Module · 02 · load module ==== ======================================
 (print "--- [TX-07 [2.6] - DPDC-MNG Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/06_DPDC-MNG.pact")
@@ -301,8 +331,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-08 [2.7] - DPDC-T Module · 01 · env-sigs (caps) ==== ====================================
 (print "--- [TX-08 [2.7] - DPDC-T Module · 01 · env-sigs (caps)] ---")
+;;==== TX-08 [2.7] - DPDC-T Module · 01 · env-sigs (caps) ==== ====================================
+(print "--- [TX-08 [2.7] - DPDC-T Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-08 [2.7] - DPDC-T Module · 02 · load module ==== ========================================
+(print "--- [TX-08 [2.7] - DPDC-T Module · 02 · load module] ---")
 ;;==== TX-08 [2.7] - DPDC-T Module · 02 · load module ==== ========================================
 (print "--- [TX-08 [2.7] - DPDC-T Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/07_DPDC-T.pact")
@@ -321,8 +355,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-09 [2.8] - DPDC-S Module · 01 · env-sigs (caps) ==== ====================================
 (print "--- [TX-09 [2.8] - DPDC-S Module · 01 · env-sigs (caps)] ---")
+;;==== TX-09 [2.8] - DPDC-S Module · 01 · env-sigs (caps) ==== ====================================
+(print "--- [TX-09 [2.8] - DPDC-S Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-09 [2.8] - DPDC-S Module · 02 · load module ==== ========================================
+(print "--- [TX-09 [2.8] - DPDC-S Module · 02 · load module] ---")
 ;;==== TX-09 [2.8] - DPDC-S Module · 02 · load module ==== ========================================
 (print "--- [TX-09 [2.8] - DPDC-S Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/08_DPDC-S.pact")
@@ -341,8 +379,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-10 [2.9] - DPDC-F Module · 01 · env-sigs (caps) ==== ====================================
 (print "--- [TX-10 [2.9] - DPDC-F Module · 01 · env-sigs (caps)] ---")
+;;==== TX-10 [2.9] - DPDC-F Module · 01 · env-sigs (caps) ==== ====================================
+(print "--- [TX-10 [2.9] - DPDC-F Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-10 [2.9] - DPDC-F Module · 02 · load module ==== ========================================
+(print "--- [TX-10 [2.9] - DPDC-F Module · 02 · load module] ---")
 ;;==== TX-10 [2.9] - DPDC-F Module · 02 · load module ==== ========================================
 (print "--- [TX-10 [2.9] - DPDC-F Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/09_DPDC-F.pact")
@@ -361,8 +403,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-11 [2.10] - DPDC-N Module · 01 · env-sigs (caps) ==== ===================================
 (print "--- [TX-11 [2.10] - DPDC-N Module · 01 · env-sigs (caps)] ---")
+;;==== TX-11 [2.10] - DPDC-N Module · 01 · env-sigs (caps) ==== ===================================
+(print "--- [TX-11 [2.10] - DPDC-N Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-11 [2.10] - DPDC-N Module · 02 · load module ==== =======================================
+(print "--- [TX-11 [2.10] - DPDC-N Module · 02 · load module] ---")
 ;;==== TX-11 [2.10] - DPDC-N Module · 02 · load module ==== =======================================
 (print "--- [TX-11 [2.10] - DPDC-N Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/10_DPDC-N.pact")
@@ -381,8 +427,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-12 [2.11] - EQUITY Module · 01 · env-sigs (caps) ==== ===================================
 (print "--- [TX-12 [2.11] - EQUITY Module · 01 · env-sigs (caps)] ---")
+;;==== TX-12 [2.11] - EQUITY Module · 01 · env-sigs (caps) ==== ===================================
+(print "--- [TX-12 [2.11] - EQUITY Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-12 [2.11] - EQUITY Module · 02 · load module ==== =======================================
+(print "--- [TX-12 [2.11] - EQUITY Module · 02 · load module] ---")
 ;;==== TX-12 [2.11] - EQUITY Module · 02 · load module ==== =======================================
 (print "--- [TX-12 [2.11] - EQUITY Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/11_EQUITY+.pact")

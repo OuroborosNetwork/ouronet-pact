@@ -19,9 +19,13 @@
 (namespace "ouronet-ns")
 ;;==== TX-HW-001 · 01 · env-sigs (caps) ====
 (print "--- [TX-HW-001 · 01 · env-sigs] ---")
+;;==== TX-HW-001 - Mint nonces 9..20 to EMMA (unfreeze/fund/refreeze) · 01 · env-sigs (caps) ==== =
+(print "--- [TX-HW-001 - Mint nonces 9..20 to EMMA (unfreeze/fund/refreeze) · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
 ;;==== TX-HW-001 · 02 · create/fund/freeze ====
 (print "--- [TX-HW-001 · 02 · create/fund/freeze] ---")
+;;==== TX-HW-001 - Mint nonces 9..20 to EMMA (unfreeze/fund/refreeze) · 02 · let / invocation ==== 
+(print "--- [TX-HW-001 - Mint nonces 9..20 to EMMA (unfreeze/fund/refreeze) · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
@@ -67,6 +71,8 @@
 ;;================================================================================
 (begin-tx "TX-HW-002 - Preflight: seed math + slice plan shape (UI /local step)")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-HW-002 - Preflight: seed math + slice plan shape (UI /local step) · 01 · namespace ==== =
+(print "--- [TX-HW-002 - Preflight: seed math + slice plan shape (UI /local step) · 01 · namespace] ---")
 (namespace "ouronet-ns")
 ;;==== TX-HW-002 · 01 · plan asserts ====
 (print "--- [TX-HW-002 · 01 · plan asserts] ---")
@@ -115,9 +121,13 @@
 (namespace "ouronet-ns")
 ;;==== TX-HW-003 · 01 · env-sigs (caps) ====
 (print "--- [TX-HW-003 · 01 · env-sigs] ---")
+;;==== TX-HW-003 - Slice 0 (nonces 9..12): static payload, freeze holds · 01 · env-sigs (caps) ==== 
+(print "--- [TX-HW-003 - Slice 0 (nonces 9..12): static payload, freeze holds · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
 ;;==== TX-HW-003 · 02 · fire slice 0 ====
 (print "--- [TX-HW-003 · 02 · fire slice 0] ---")
+;;==== TX-HW-003 - Slice 0 (nonces 9..12): static payload, freeze holds · 02 · let / invocation ==== 
+(print "--- [TX-HW-003 - Slice 0 (nonces 9..12): static payload, freeze holds · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -153,9 +163,13 @@
 (namespace "ouronet-ns")
 ;;==== TX-HW-004 · 01 · env-sigs (caps) ====
 (print "--- [TX-HW-004 · 01 · env-sigs] ---")
+;;==== TX-HW-004 - Replay slice 0 REVERTS (idempotency: live table = completion ledger) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-HW-004 - Replay slice 0 REVERTS (idempotency: live table = completion ledger) · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
 ;;==== TX-HW-004 · 02 · replay negative ====
 (print "--- [TX-HW-004 · 02 · replay negative] ---")
+;;==== TX-HW-004 - Replay slice 0 REVERTS (idempotency: live table = completion ledger) · 02 · let / invocation ==== 
+(print "--- [TX-HW-004 - Replay slice 0 REVERTS (idempotency: live table = completion ledger) · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
@@ -189,9 +203,13 @@
 (namespace "ouronet-ns")
 ;;==== TX-HW-005 · 01 · env-sigs (caps) ====
 (print "--- [TX-HW-005 · 01 · env-sigs] ---")
+;;==== TX-HW-005 - Unfreeze mid-campaign: slice 1 REVERTS, refreeze, slice 1 lands · 01 · env-sigs (caps) ==== 
+(print "--- [TX-HW-005 - Unfreeze mid-campaign: slice 1 REVERTS, refreeze, slice 1 lands · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
 ;;==== TX-HW-005 · 02 · freeze negative + slice 1 ====
 (print "--- [TX-HW-005 · 02 · freeze negative + slice 1] ---")
+;;==== TX-HW-005 - Unfreeze mid-campaign: slice 1 REVERTS, refreeze, slice 1 lands · 02 · let / invocation ==== 
+(print "--- [TX-HW-005 - Unfreeze mid-campaign: slice 1 REVERTS, refreeze, slice 1 lands · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
@@ -234,9 +252,13 @@
 (namespace "ouronet-ns")
 ;;==== TX-HW-006 · 01 · env-sigs (caps) ====
 (print "--- [TX-HW-006 · 01 · env-sigs] ---")
+;;==== TX-HW-006 - Slice 2 (last): terminal state exactly empty · 01 · env-sigs (caps) ==== =======
+(print "--- [TX-HW-006 - Slice 2 (last): terminal state exactly empty · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
 ;;==== TX-HW-006 · 02 · fire slice 2 + terminal asserts ====
 (print "--- [TX-HW-006 · 02 · fire slice 2 + terminal asserts] ---")
+;;==== TX-HW-006 - Slice 2 (last): terminal state exactly empty · 02 · let / invocation ==== ======
+(print "--- [TX-HW-006 - Slice 2 (last): terminal state exactly empty · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -277,9 +299,13 @@
 (namespace "ouronet-ns")
 ;;==== TX-HW-007 · 01 · env-sigs (caps) ====
 (print "--- [TX-HW-007 · 01 · env-sigs] ---")
+;;==== TX-HW-007 - SFT Hydra wipe: fresh nonces, 2 slices, replay reverts, terminal empty · 01 · env-sigs (caps) ==== 
+(print "--- [TX-HW-007 - SFT Hydra wipe: fresh nonces, 2 slices, replay reverts, terminal empty · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
 ;;==== TX-HW-007 · 02 · create 8 SFT nonces / fund LUMY / freeze ====
 (print "--- [TX-HW-007 · 02 · create 8 SFT nonces / fund LUMY / freeze] ---")
+;;==== TX-HW-007 - SFT Hydra wipe: fresh nonces, 2 slices, replay reverts, terminal empty · 02 · let / invocation ==== 
+(print "--- [TX-HW-007 - SFT Hydra wipe: fresh nonces, 2 slices, replay reverts, terminal empty · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)

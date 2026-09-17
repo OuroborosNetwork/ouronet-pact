@@ -1,3 +1,16 @@
+;;
+;; REPL/Kursan/table-write-partial-test.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Kursan/table-write-partial-test.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 ;; Minimal test: insert / update / write — partial vs full row objects
 
 (module test-write-partial G
@@ -57,31 +70,51 @@
 (begin-tx "insert-full")
   (expect "insert full row" {"a": 1, "b": 2, "c": 3} (test-write-partial.run-insert-full))
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "insert-partial-fails")
   (expect-failure "insert partial row fails schema" "schema mismatch"
     (test-write-partial.run-insert-partial)
   )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "update-existing-partial")
   (expect "update partial merges fields" {"a": 99, "b": 2, "c": 3}
     (test-write-partial.run-update-existing-partial)
   )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "update-missing-fails")
   (expect-failure "update missing key fails" "No value found"
     (test-write-partial.run-update-missing)
   )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "write-new-partial")
   (expect "write new partial row" {"a": 7, "b": 0, "c": 0}
     (test-write-partial.run-write-new-partial)
   )
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "write-existing-partial")
   (expect "write existing partial merges" {"a": 99, "b": 55, "c": 3}
     (test-write-partial.run-write-existing-partial)

@@ -12,6 +12,8 @@
 (print "=== TX-AQP-FA01 — Toggle score/reward links on CodingDivisionTreasury =========")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-FA01 - FVT C_ToggleScoreEntityLink + C_ToggleRewardLink round-trip · 01 · let / invocation ==== 
+(print "--- [TX-AQP-FA01 - FVT C_ToggleScoreEntityLink + C_ToggleRewardLink round-trip · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -80,6 +82,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-AQP-FA02 - FVT C_Control can-upgrade flag")
@@ -87,6 +93,8 @@
 (print "=== TX-AQP-FA02 — C_Control on SnakesTreasury ================================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-FA02 - FVT C_Control can-upgrade flag · 01 · let / invocation ==== ==================
+(print "--- [TX-AQP-FA02 - FVT C_Control can-upgrade flag · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -129,6 +137,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-AQP-FA03 - OuroLpFarm C_SetCommonDenominator echo")
@@ -136,6 +148,8 @@
 (print "=== TX-AQP-FA03 — Farm common-denominator read (OURO DPTF id) ================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-FA03 - OuroLpFarm C_SetCommonDenominator echo · 01 · let / invocation ==== ==========
+(print "--- [TX-AQP-FA03 - OuroLpFarm C_SetCommonDenominator echo · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -161,14 +175,22 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 (begin-tx "TX-AQP-FA04 - RPS reward-link and stake-leg validators")
 (print "")
 (print "=== TX-AQP-FA04 — RPS UEV_ guards on their own arguments =====================")
+;;==== TX-AQP-FA04 - RPS reward-link and stake-leg validators · 01 · namespace ==== ===============
+(print "--- [TX-AQP-FA04 - RPS reward-link and stake-leg validators · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;; Both validators are module-only (no interface stub), so they are reached by dotted access.
 ;; Neither writes; the FVT and its WSTOA reward link are the ones TX-AQP-FA01 already uses.
+;;==== TX-AQP-FA04 - RPS reward-link and stake-leg validators · 02 · let / invocation ==== ========
+(print "--- [TX-AQP-FA04 - RPS reward-link and stake-leg validators · 02 · let / invocation] ---")
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)

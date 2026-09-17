@@ -27,6 +27,8 @@
         , "pred": "keys-all" }
     }
 )
+;;==== TX-MIG-001 - migrate the DALOS SC Stoa balance to a target Stoa account · 01 · env-sigs (caps) ==== 
+(print "--- [TX-MIG-001 - migrate the DALOS SC Stoa balance to a target Stoa account · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -36,6 +38,8 @@
 )
 ;;==== TX-MIG-001 · 02 · fund DALOS SC Stoa, empty target, GAP on, MigrateLiquidFunds ====
 (print "--- [TX-MIG-001 · 02 · fund + gap + migrate] ---")
+;;==== TX-MIG-001 - migrate the DALOS SC Stoa balance to a target Stoa account · 02 · let / invocation ==== 
+(print "--- [TX-MIG-001 - migrate the DALOS SC Stoa balance to a target Stoa account · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)

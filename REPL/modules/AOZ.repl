@@ -1,3 +1,16 @@
+;;
+;; REPL/modules/AOZ.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/modules/AOZ.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 ;; REPL/modules/AOZ.repl — STANDALONE AOZ registrar tester (blockchain-env-in-a-repl).
 ;; Fresh boot: Stage 00 sandbox + the Stage 01 deploy core (which deploys AOZ and runs its
 ;; primal-asset init). AOZ has no [6.x] scenario suite of its own, so there is nothing else to add.
@@ -25,6 +38,8 @@
 ;;
 (begin-tx "AOZ-01 — the baseline the whole file's arithmetic rests on")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== AOZ-01 — the baseline the whole file's arithmetic rests on · 01 · namespace ==== ===========
+(print "--- [AOZ-01 — the baseline the whole file's arithmetic rests on · 01 · namespace] ---")
 (namespace "ouronet-ns")
 ;;==== AOZ-01 · 01 · counter baseline after the deploy core ====
 (print "--- [AOZ-01 · 01 · counter baseline after the deploy core] ---")
@@ -37,6 +52,8 @@
 ;;A zero counter on its own proves nothing -- it is also what a dead module returns. So the zero
 ;;is witnessed twice over: by the non-zero primal counters next to it, by a primal id that
 ;;actually reads back, and by the registry rows themselves being ABSENT rather than blank.
+;;==== AOZ-01 — the baseline the whole file's arithmetic rests on · 02 · let / invocation ==== ====
+(print "--- [AOZ-01 — the baseline the whole file's arithmetic rests on · 02 · let / invocation] ---")
 (let
     (
         (ref-AOZ:module{AgeOfZalmoxis} AOZ)
@@ -88,7 +105,11 @@
 ;;ids back out of position 1 is what proves XI_W|TrueFungible / XI_W|OrtoFungible /
 ;;XI_W|SemiFungible each write their OWN table -- a crosswire between two of the seven
 ;;near-identical writers would otherwise pass every count-only check in this file.
+;;==== AOZ-02 — append semantics: the id lands at count+1 and the counter follows · 01 · env-sigs (caps) ==== 
+(print "--- [AOZ-02 — append semantics: the id lands at count+1 and the counter follows · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AOZ", "caps": [] }])
+;;==== AOZ-02 — append semantics: the id lands at count+1 and the counter follows · 02 · let / invocation ==== 
+(print "--- [AOZ-02 — append semantics: the id lands at count+1 and the counter follows · 02 · let / invocation] ---")
 (let
     (
         (ref-AOZ:module{AgeOfZalmoxis} AOZ)
@@ -159,7 +180,11 @@
 ;;literal. Each step moves exactly one slot by exactly one; any leak into another slot -- or a
 ;;failure to move the intended slot -- fails the step. The +1 in the changed slot is itself the
 ;;witness that the registration did something, so no step can pass vacuously.
+;;==== AOZ-03 — the four counters are INDEPENDENT · 01 · env-sigs (caps) ==== =====================
+(print "--- [AOZ-03 — the four counters are INDEPENDENT · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AOZ", "caps": [] }])
+;;==== AOZ-03 — the four counters are INDEPENDENT · 02 · let / invocation ==== ====================
+(print "--- [AOZ-03 — the four counters are INDEPENDENT · 02 · let / invocation] ---")
 (let
     (
         (ref-AOZ:module{AgeOfZalmoxis} AOZ)
@@ -221,7 +246,11 @@
 ;;user with her own keyset, so the refusal is "not an AOZ admin", not "not a known key". The
 ;;message is the module's own, TYPO INCLUDED ("satisfed"), because that string is what a caller
 ;;actually sees and a silent re-word should register as a change.
+;;==== AOZ-04 — SECURE-ADMIN is the only way in · 01 · env-sigs (caps) ==== =======================
+(print "--- [AOZ-04 — SECURE-ADMIN is the only way in · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
+;;==== AOZ-04 — SECURE-ADMIN is the only way in · 02 · let / invocation ==== ======================
+(print "--- [AOZ-04 — SECURE-ADMIN is the only way in · 02 · let / invocation] ---")
 (let
     (
         (ref-AOZ:module{AgeOfZalmoxis} AOZ)
@@ -325,7 +354,11 @@
 ;;Note the failure mode is not merely cosmetic: the counter is the append cursor, so a duplicated
 ;;entry permanently shifts every subsequent position. There is no way to remove the extra rows --
 ;;the module has no delete path.
+;;==== AOZ-05 — FINDING: the registrars have NO dedupe guard · 01 · env-sigs (caps) ==== ==========
+(print "--- [AOZ-05 — FINDING: the registrars have NO dedupe guard · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AOZ", "caps": [] }])
+;;==== AOZ-05 — FINDING: the registrars have NO dedupe guard · 02 · let / invocation ==== =========
+(print "--- [AOZ-05 — FINDING: the registrars have NO dedupe guard · 02 · let / invocation] ---")
 (let
     (
         (ref-AOZ:module{AgeOfZalmoxis} AOZ)
@@ -393,7 +426,11 @@
 ;;though nothing could read it. The assertions below no longer need that trick -- they read the
 ;;value directly, which is the point -- but the technique is the reason the defect was provable
 ;;rather than merely suspected.
+;;==== AOZ-06 — DEFECT FIXED: UR_NonFungible read the SemiFungible column · 01 · env-sigs (caps) ==== 
+(print "--- [AOZ-06 — DEFECT FIXED: UR_NonFungible read the SemiFungible column · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AOZ", "caps": [] }])
+;;==== AOZ-06 — DEFECT FIXED: UR_NonFungible read the SemiFungible column · 02 · let / invocation ==== 
+(print "--- [AOZ-06 — DEFECT FIXED: UR_NonFungible read the SemiFungible column · 02 · let / invocation] ---")
 (let
     (
         (ref-AOZ:module{AgeOfZalmoxis} AOZ)
@@ -441,6 +478,8 @@
 ;;
 (begin-tx "AOZ-07 — POSITION IS IDENTITY: the contract Stage-Z's dispenser reads by literal index")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== AOZ-07 — POSITION IS IDENTITY: the contract Stage-Z's dispenser reads by literal index · 01 · namespace ==== 
+(print "--- [AOZ-07 — POSITION IS IDENTITY: the contract Stage-Z's dispenser reads by literal index · 01 · namespace] ---")
 (namespace "ouronet-ns")
 ;;==== AOZ-07 · 01 · the two registries that are actually consumed ====
 (print "--- [AOZ-07 · 01 · the two registries that are actually consumed] ---")
@@ -473,6 +512,8 @@
 ;;have already been run correctly; adding a dedupe scan would change the behaviour of deployed
 ;;admin functions to prevent a failure this assertion detects for free. If the mapping ever stops
 ;;holding, THIS goes red, and it goes red naming the role that moved.
+;;==== AOZ-07 — POSITION IS IDENTITY: the contract Stage-Z's dispenser reads by literal index · 02 · let / invocation ==== 
+(print "--- [AOZ-07 — POSITION IS IDENTITY: the contract Stage-Z's dispenser reads by literal index · 02 · let / invocation] ---")
 (let
     (
         (ref-AOZ:module{AgeOfZalmoxis} AOZ)

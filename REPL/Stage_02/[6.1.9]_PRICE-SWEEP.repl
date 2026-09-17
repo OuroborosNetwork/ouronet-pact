@@ -24,9 +24,13 @@
 ;;================================================================================
 (begin-tx "TX-DPP-001 - DPDC price sweep: observed IGNIS == deter + components")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-DPP-001 - DPDC price sweep: observed IGNIS == deter + components · 01 · namespace ==== ==
+(print "--- [TX-DPP-001 - DPDC price sweep: observed IGNIS == deter + components · 01 · namespace] ---")
 (namespace "ouronet-ns")
 ;;==== TX-DPP-001 · 01 · full-module sweep ====
 (print "--- [TX-DPP-001 · 01 · full-module sweep] ---")
+;;==== TX-DPP-001 - DPDC price sweep: observed IGNIS == deter + components · 02 · let / invocation ==== 
+(print "--- [TX-DPP-001 - DPDC price sweep: observed IGNIS == deter + components · 02 · let / invocation] ---")
 (let
     (
         (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
@@ -193,11 +197,15 @@
 ;;================================================================================
 (begin-tx "TX-OFP-001 - DPOF price sweep: observed IGNIS == deter + components")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-OFP-001 - DPOF price sweep: observed IGNIS == deter + components · 01 · namespace ==== ==
+(print "--- [TX-OFP-001 - DPOF price sweep: observed IGNIS == deter + components · 01 · namespace] ---")
 (namespace "ouronet-ns")
 ;;==== TX-OFP-001 · 01 · full-module sweep ====
 (print "--- [TX-OFP-001 · 01 · full-module sweep] ---")
 ;;All 14 migrated DPOF cost readers. The 12 below take an ortofungible id; the two after them
 ;;are deterrence-only (no components leg), so they are asserted against UC_IgnisDeter directly.
+;;==== TX-OFP-001 - DPOF price sweep: observed IGNIS == deter + components · 02 · let / invocation ==== 
+(print "--- [TX-OFP-001 - DPOF price sweep: observed IGNIS == deter + components · 02 · let / invocation] ---")
 (let
     (
         (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
@@ -265,6 +273,8 @@
 ;;================================================================================
 (begin-tx "TX-SWPP-001 - SWP price sweep: observed IGNIS == deter + components")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-SWPP-001 - SWP price sweep: observed IGNIS == deter + components · 01 · namespace ==== ==
+(print "--- [TX-SWPP-001 - SWP price sweep: observed IGNIS == deter + components · 01 · namespace] ---")
 (namespace "ouronet-ns")
 ;;==== TX-SWPP-001 · 01 · full-module sweep ====
 (print "--- [TX-SWPP-001 · 01 · full-module sweep] ---")
@@ -273,6 +283,8 @@
 ;;which pairs it creates; it only requires that at least one pair exists.
 ;;NOT swept here: the six SWPLC liquidity readers are composed (deter + transfer/burn legs), so
 ;;they have no single deter+components identity to assert — they need a floor-style check instead.
+;;==== TX-SWPP-001 - SWP price sweep: observed IGNIS == deter + components · 02 · let / invocation ==== 
+(print "--- [TX-SWPP-001 - SWP price sweep: observed IGNIS == deter + components · 02 · let / invocation] ---")
 (let
     (
         (ref-IGNIS:module{IgnisCollectorV2} IGNIS)

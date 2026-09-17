@@ -16,6 +16,8 @@
 (namespace "ouronet-ns")
 ;;==== TX-00 [C0] - Chain Data Time SetUp Definition · 01 · env-chain-data ==== ===================
 (print "--- [TX-00 [C0] - Chain Data Time SetUp Definition · 01 · env-chain-data] ---")
+;;==== TX-00 [C0] - Chain Data Time SetUp Definition · 01 · env-chain-data ==== ===================
+(print "--- [TX-00 [C0] - Chain Data Time SetUp Definition · 01 · env-chain-data] ---")
 (env-chain-data
     {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
      "block-time": TV.TIME00}
@@ -52,8 +54,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-01 [2] - DALOS Module · 01 · env-sigs (caps) ==== =======================================
 (print "--- [TX-01 [2] - DALOS Module · 01 · env-sigs (caps)] ---")
+;;==== TX-01 [2] - DALOS Module · 01 · env-sigs (caps) ==== =======================================
+(print "--- [TX-01 [2] - DALOS Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-01 [2] - DALOS Module · 02 · load module ==== ===========================================
+(print "--- [TX-01 [2] - DALOS Module · 02 · load module] ---")
 ;;==== TX-01 [2] - DALOS Module · 02 · load module ==== ===========================================
 (print "--- [TX-01 [2] - DALOS Module · 02 · load module] ---")
 (load "../../2_CITIZEN/3_NosferatuMinter/01_NOSFERATU.pact")
@@ -80,6 +86,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 01 · env-sigs (caps) ==== ==================
 (print "--- [TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 01 · env-sigs (caps)] ---")
+;;==== TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 01 · env-sigs (caps) ==== ==================
+(print "--- [TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -90,6 +98,8 @@
 (namespace "ouronet-ns")
 
 
+;;==== TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 02 · let / invocation ==== =================
+(print "--- [TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 02 · let / invocation] ---")
 ;;==== TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 02 · let / invocation ==== =================
 (print "--- [TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 02 · let / invocation] ---")
 (let
@@ -189,6 +199,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-03 [3.2] - Mint Nosferatu Legendary (71-100) and Epic (1-40) · 01 · env-sigs (caps) ==== 
 (print "--- [TX-03 [3.2] - Mint Nosferatu Legendary (71-100) and Epic (1-40) · 01 · env-sigs (caps)] ---")
+;;==== TX-03 [3.2] - Mint Nosferatu Legendary (71-100) and Epic (1-40) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-03 [3.2] - Mint Nosferatu Legendary (71-100) and Epic (1-40) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -199,6 +211,8 @@
 (namespace "ouronet-ns")
 
 
+;;==== TX-03 [3.2] - Mint Nosferatu Legendary (71-100) and Epic (1-40) · 02 · let / invocation ==== 
+(print "--- [TX-03 [3.2] - Mint Nosferatu Legendary (71-100) and Epic (1-40) · 02 · let / invocation] ---")
 ;;==== TX-03 [3.2] - Mint Nosferatu Legendary (71-100) and Epic (1-40) · 02 · let / invocation ==== 
 (print "--- [TX-03 [3.2] - Mint Nosferatu Legendary (71-100) and Epic (1-40) · 02 · let / invocation] ---")
 (let
@@ -299,6 +313,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-04 [3.3] - Mint Nosferatu Epic (41-110) · 01 · env-sigs (caps) ==== =====================
 (print "--- [TX-04 [3.3] - Mint Nosferatu Epic (41-110) · 01 · env-sigs (caps)] ---")
+;;==== TX-04 [3.3] - Mint Nosferatu Epic (41-110) · 01 · env-sigs (caps) ==== =====================
+(print "--- [TX-04 [3.3] - Mint Nosferatu Epic (41-110) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -309,6 +325,8 @@
 (namespace "ouronet-ns")
 
 
+;;==== TX-04 [3.3] - Mint Nosferatu Epic (41-110) · 02 · let / invocation ==== ====================
+(print "--- [TX-04 [3.3] - Mint Nosferatu Epic (41-110) · 02 · let / invocation] ---")
 ;;==== TX-04 [3.3] - Mint Nosferatu Epic (41-110) · 02 · let / invocation ==== ====================
 (print "--- [TX-04 [3.3] - Mint Nosferatu Epic (41-110) · 02 · let / invocation] ---")
 (let
@@ -408,6 +426,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-05 [3.4] - Mint Nosferatu Epic (111-180) · 01 · env-sigs (caps) ==== ====================
 (print "--- [TX-05 [3.4] - Mint Nosferatu Epic (111-180) · 01 · env-sigs (caps)] ---")
+;;==== TX-05 [3.4] - Mint Nosferatu Epic (111-180) · 01 · env-sigs (caps) ==== ====================
+(print "--- [TX-05 [3.4] - Mint Nosferatu Epic (111-180) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -418,6 +438,8 @@
 (namespace "ouronet-ns")
 
 
+;;==== TX-05 [3.4] - Mint Nosferatu Epic (111-180) · 02 · let / invocation ==== ===================
+(print "--- [TX-05 [3.4] - Mint Nosferatu Epic (111-180) · 02 · let / invocation] ---")
 ;;==== TX-05 [3.4] - Mint Nosferatu Epic (111-180) · 02 · let / invocation ==== ===================
 (print "--- [TX-05 [3.4] - Mint Nosferatu Epic (111-180) · 02 · let / invocation] ---")
 (let
@@ -517,6 +539,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-06 [3.5] - Mint Nosferatu Epic (181-200) and Rare (1-50) · 01 · env-sigs (caps) ==== ====
 (print "--- [TX-06 [3.5] - Mint Nosferatu Epic (181-200) and Rare (1-50) · 01 · env-sigs (caps)] ---")
+;;==== TX-06 [3.5] - Mint Nosferatu Epic (181-200) and Rare (1-50) · 01 · env-sigs (caps) ==== ====
+(print "--- [TX-06 [3.5] - Mint Nosferatu Epic (181-200) and Rare (1-50) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -527,6 +551,8 @@
 (namespace "ouronet-ns")
 
 
+;;==== TX-06 [3.5] - Mint Nosferatu Epic (181-200) and Rare (1-50) · 02 · let / invocation ==== ===
+(print "--- [TX-06 [3.5] - Mint Nosferatu Epic (181-200) and Rare (1-50) · 02 · let / invocation] ---")
 ;;==== TX-06 [3.5] - Mint Nosferatu Epic (181-200) and Rare (1-50) · 02 · let / invocation ==== ===
 (print "--- [TX-06 [3.5] - Mint Nosferatu Epic (181-200) and Rare (1-50) · 02 · let / invocation] ---")
 (let
@@ -627,6 +653,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-07 [3.6] - Mint Nosferatu Rare (51-120) · 01 · env-sigs (caps) ==== =====================
 (print "--- [TX-07 [3.6] - Mint Nosferatu Rare (51-120) · 01 · env-sigs (caps)] ---")
+;;==== TX-07 [3.6] - Mint Nosferatu Rare (51-120) · 01 · env-sigs (caps) ==== =====================
+(print "--- [TX-07 [3.6] - Mint Nosferatu Rare (51-120) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -637,6 +665,8 @@
 (namespace "ouronet-ns")
 
 
+;;==== TX-07 [3.6] - Mint Nosferatu Rare (51-120) · 02 · let / invocation ==== ====================
+(print "--- [TX-07 [3.6] - Mint Nosferatu Rare (51-120) · 02 · let / invocation] ---")
 ;;==== TX-07 [3.6] - Mint Nosferatu Rare (51-120) · 02 · let / invocation ==== ====================
 (print "--- [TX-07 [3.6] - Mint Nosferatu Rare (51-120) · 02 · let / invocation] ---")
 (let
@@ -736,6 +766,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-08 [3.7] - Mint Nosferatu Rare (121-190) · 01 · env-sigs (caps) ==== ====================
 (print "--- [TX-08 [3.7] - Mint Nosferatu Rare (121-190) · 01 · env-sigs (caps)] ---")
+;;==== TX-08 [3.7] - Mint Nosferatu Rare (121-190) · 01 · env-sigs (caps) ==== ====================
+(print "--- [TX-08 [3.7] - Mint Nosferatu Rare (121-190) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -746,6 +778,8 @@
 (namespace "ouronet-ns")
 
 
+;;==== TX-08 [3.7] - Mint Nosferatu Rare (121-190) · 02 · let / invocation ==== ===================
+(print "--- [TX-08 [3.7] - Mint Nosferatu Rare (121-190) · 02 · let / invocation] ---")
 ;;==== TX-08 [3.7] - Mint Nosferatu Rare (121-190) · 02 · let / invocation ==== ===================
 (print "--- [TX-08 [3.7] - Mint Nosferatu Rare (121-190) · 02 · let / invocation] ---")
 (let
@@ -845,6 +879,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-09 [3.8] - Mint Nosferatu Rare (191-260) · 01 · env-sigs (caps) ==== ====================
 (print "--- [TX-09 [3.8] - Mint Nosferatu Rare (191-260) · 01 · env-sigs (caps)] ---")
+;;==== TX-09 [3.8] - Mint Nosferatu Rare (191-260) · 01 · env-sigs (caps) ==== ====================
+(print "--- [TX-09 [3.8] - Mint Nosferatu Rare (191-260) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -855,6 +891,8 @@
 (namespace "ouronet-ns")
 
 
+;;==== TX-09 [3.8] - Mint Nosferatu Rare (191-260) · 02 · let / invocation ==== ===================
+(print "--- [TX-09 [3.8] - Mint Nosferatu Rare (191-260) · 02 · let / invocation] ---")
 ;;==== TX-09 [3.8] - Mint Nosferatu Rare (191-260) · 02 · let / invocation ==== ===================
 (print "--- [TX-09 [3.8] - Mint Nosferatu Rare (191-260) · 02 · let / invocation] ---")
 (let
@@ -954,6 +992,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-10 [3.9] - Mint Nosferatu Rare (261-330) · 01 · env-sigs (caps) ==== ====================
 (print "--- [TX-10 [3.9] - Mint Nosferatu Rare (261-330) · 01 · env-sigs (caps)] ---")
+;;==== TX-10 [3.9] - Mint Nosferatu Rare (261-330) · 01 · env-sigs (caps) ==== ====================
+(print "--- [TX-10 [3.9] - Mint Nosferatu Rare (261-330) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -964,6 +1004,8 @@
 (namespace "ouronet-ns")
 
 
+;;==== TX-10 [3.9] - Mint Nosferatu Rare (261-330) · 02 · let / invocation ==== ===================
+(print "--- [TX-10 [3.9] - Mint Nosferatu Rare (261-330) · 02 · let / invocation] ---")
 ;;==== TX-10 [3.9] - Mint Nosferatu Rare (261-330) · 02 · let / invocation ==== ===================
 (print "--- [TX-10 [3.9] - Mint Nosferatu Rare (261-330) · 02 · let / invocation] ---")
 (let
@@ -1063,6 +1105,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-11 [3.10] - Mint Nosferatu Rare (331-400) · 01 · env-sigs (caps) ==== ===================
 (print "--- [TX-11 [3.10] - Mint Nosferatu Rare (331-400) · 01 · env-sigs (caps)] ---")
+;;==== TX-11 [3.10] - Mint Nosferatu Rare (331-400) · 01 · env-sigs (caps) ==== ===================
+(print "--- [TX-11 [3.10] - Mint Nosferatu Rare (331-400) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -1073,6 +1117,8 @@
 (namespace "ouronet-ns")
 
 
+;;==== TX-11 [3.10] - Mint Nosferatu Rare (331-400) · 02 · let / invocation ==== ==================
+(print "--- [TX-11 [3.10] - Mint Nosferatu Rare (331-400) · 02 · let / invocation] ---")
 ;;==== TX-11 [3.10] - Mint Nosferatu Rare (331-400) · 02 · let / invocation ==== ==================
 (print "--- [TX-11 [3.10] - Mint Nosferatu Rare (331-400) · 02 · let / invocation] ---")
 (let
@@ -1172,6 +1218,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-12 [3.11] - Mint Nosferatu Common (1-70) · 01 · env-sigs (caps) ==== ====================
 (print "--- [TX-12 [3.11] - Mint Nosferatu Common (1-70) · 01 · env-sigs (caps)] ---")
+;;==== TX-12 [3.11] - Mint Nosferatu Common (1-70) · 01 · env-sigs (caps) ==== ====================
+(print "--- [TX-12 [3.11] - Mint Nosferatu Common (1-70) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -1182,6 +1230,8 @@
 (namespace "ouronet-ns")
 
 
+;;==== TX-12 [3.11] - Mint Nosferatu Common (1-70) · 02 · let / invocation ==== ===================
+(print "--- [TX-12 [3.11] - Mint Nosferatu Common (1-70) · 02 · let / invocation] ---")
 ;;==== TX-12 [3.11] - Mint Nosferatu Common (1-70) · 02 · let / invocation ==== ===================
 (print "--- [TX-12 [3.11] - Mint Nosferatu Common (1-70) · 02 · let / invocation] ---")
 (let
@@ -1281,6 +1331,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-13 [3.12] - Mint Nosferatu Common (71-140) · 01 · env-sigs (caps) ==== ==================
 (print "--- [TX-13 [3.12] - Mint Nosferatu Common (71-140) · 01 · env-sigs (caps)] ---")
+;;==== TX-13 [3.12] - Mint Nosferatu Common (71-140) · 01 · env-sigs (caps) ==== ==================
+(print "--- [TX-13 [3.12] - Mint Nosferatu Common (71-140) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -1291,6 +1343,8 @@
 (namespace "ouronet-ns")
 
 
+;;==== TX-13 [3.12] - Mint Nosferatu Common (71-140) · 02 · let / invocation ==== =================
+(print "--- [TX-13 [3.12] - Mint Nosferatu Common (71-140) · 02 · let / invocation] ---")
 ;;==== TX-13 [3.12] - Mint Nosferatu Common (71-140) · 02 · let / invocation ==== =================
 (print "--- [TX-13 [3.12] - Mint Nosferatu Common (71-140) · 02 · let / invocation] ---")
 (let
@@ -1390,6 +1444,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-14 [3.13] - Mint Nosferatu Common (141-210) · 01 · env-sigs (caps) ==== =================
 (print "--- [TX-14 [3.13] - Mint Nosferatu Common (141-210) · 01 · env-sigs (caps)] ---")
+;;==== TX-14 [3.13] - Mint Nosferatu Common (141-210) · 01 · env-sigs (caps) ==== =================
+(print "--- [TX-14 [3.13] - Mint Nosferatu Common (141-210) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -1400,6 +1456,8 @@
 (namespace "ouronet-ns")
 
 
+;;==== TX-14 [3.13] - Mint Nosferatu Common (141-210) · 02 · let / invocation ==== ================
+(print "--- [TX-14 [3.13] - Mint Nosferatu Common (141-210) · 02 · let / invocation] ---")
 ;;==== TX-14 [3.13] - Mint Nosferatu Common (141-210) · 02 · let / invocation ==== ================
 (print "--- [TX-14 [3.13] - Mint Nosferatu Common (141-210) · 02 · let / invocation] ---")
 (let
@@ -1499,6 +1557,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-14 [3.14] - Mint Nosferatu Common (211-280) · 01 · env-sigs (caps) ==== =================
 (print "--- [TX-14 [3.14] - Mint Nosferatu Common (211-280) · 01 · env-sigs (caps)] ---")
+;;==== TX-14 [3.14] - Mint Nosferatu Common (211-280) · 01 · env-sigs (caps) ==== =================
+(print "--- [TX-14 [3.14] - Mint Nosferatu Common (211-280) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -1509,6 +1569,8 @@
 (namespace "ouronet-ns")
 
 
+;;==== TX-14 [3.14] - Mint Nosferatu Common (211-280) · 02 · let / invocation ==== ================
+(print "--- [TX-14 [3.14] - Mint Nosferatu Common (211-280) · 02 · let / invocation] ---")
 ;;==== TX-14 [3.14] - Mint Nosferatu Common (211-280) · 02 · let / invocation ==== ================
 (print "--- [TX-14 [3.14] - Mint Nosferatu Common (211-280) · 02 · let / invocation] ---")
 (let
@@ -1608,6 +1670,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-16 [3.15] - Mint Nosferatu Common (281-350) · 01 · env-sigs (caps) ==== =================
 (print "--- [TX-16 [3.15] - Mint Nosferatu Common (281-350) · 01 · env-sigs (caps)] ---")
+;;==== TX-16 [3.15] - Mint Nosferatu Common (281-350) · 01 · env-sigs (caps) ==== =================
+(print "--- [TX-16 [3.15] - Mint Nosferatu Common (281-350) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -1618,6 +1682,8 @@
 (namespace "ouronet-ns")
 
 
+;;==== TX-16 [3.15] - Mint Nosferatu Common (281-350) · 02 · let / invocation ==== ================
+(print "--- [TX-16 [3.15] - Mint Nosferatu Common (281-350) · 02 · let / invocation] ---")
 ;;==== TX-16 [3.15] - Mint Nosferatu Common (281-350) · 02 · let / invocation ==== ================
 (print "--- [TX-16 [3.15] - Mint Nosferatu Common (281-350) · 02 · let / invocation] ---")
 (let
@@ -1717,6 +1783,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-17 [3.16] - Mint Nosferatu Common (351-420) · 01 · env-sigs (caps) ==== =================
 (print "--- [TX-17 [3.16] - Mint Nosferatu Common (351-420) · 01 · env-sigs (caps)] ---")
+;;==== TX-17 [3.16] - Mint Nosferatu Common (351-420) · 01 · env-sigs (caps) ==== =================
+(print "--- [TX-17 [3.16] - Mint Nosferatu Common (351-420) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -1727,6 +1795,8 @@
 (namespace "ouronet-ns")
 
 
+;;==== TX-17 [3.16] - Mint Nosferatu Common (351-420) · 02 · let / invocation ==== ================
+(print "--- [TX-17 [3.16] - Mint Nosferatu Common (351-420) · 02 · let / invocation] ---")
 ;;==== TX-17 [3.16] - Mint Nosferatu Common (351-420) · 02 · let / invocation ==== ================
 (print "--- [TX-17 [3.16] - Mint Nosferatu Common (351-420) · 02 · let / invocation] ---")
 (let
@@ -1826,6 +1896,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-18 [3.17] - Mint Nosferatu Common (421-490) · 01 · env-sigs (caps) ==== =================
 (print "--- [TX-18 [3.17] - Mint Nosferatu Common (421-490) · 01 · env-sigs (caps)] ---")
+;;==== TX-18 [3.17] - Mint Nosferatu Common (421-490) · 01 · env-sigs (caps) ==== =================
+(print "--- [TX-18 [3.17] - Mint Nosferatu Common (421-490) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -1836,6 +1908,8 @@
 (namespace "ouronet-ns")
 
 
+;;==== TX-18 [3.17] - Mint Nosferatu Common (421-490) · 02 · let / invocation ==== ================
+(print "--- [TX-18 [3.17] - Mint Nosferatu Common (421-490) · 02 · let / invocation] ---")
 ;;==== TX-18 [3.17] - Mint Nosferatu Common (421-490) · 02 · let / invocation ==== ================
 (print "--- [TX-18 [3.17] - Mint Nosferatu Common (421-490) · 02 · let / invocation] ---")
 (let
@@ -1935,6 +2009,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-19 [3.18] - Mint Nosferatu Common (491-560) · 01 · env-sigs (caps) ==== =================
 (print "--- [TX-19 [3.18] - Mint Nosferatu Common (491-560) · 01 · env-sigs (caps)] ---")
+;;==== TX-19 [3.18] - Mint Nosferatu Common (491-560) · 01 · env-sigs (caps) ==== =================
+(print "--- [TX-19 [3.18] - Mint Nosferatu Common (491-560) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -1945,6 +2021,8 @@
 (namespace "ouronet-ns")
 
 
+;;==== TX-19 [3.18] - Mint Nosferatu Common (491-560) · 02 · let / invocation ==== ================
+(print "--- [TX-19 [3.18] - Mint Nosferatu Common (491-560) · 02 · let / invocation] ---")
 ;;==== TX-19 [3.18] - Mint Nosferatu Common (491-560) · 02 · let / invocation ==== ================
 (print "--- [TX-19 [3.18] - Mint Nosferatu Common (491-560) · 02 · let / invocation] ---")
 (let
@@ -2044,6 +2122,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-20 [3.19] - Mint Nosferatu Common (561-630) · 01 · env-sigs (caps) ==== =================
 (print "--- [TX-20 [3.19] - Mint Nosferatu Common (561-630) · 01 · env-sigs (caps)] ---")
+;;==== TX-20 [3.19] - Mint Nosferatu Common (561-630) · 01 · env-sigs (caps) ==== =================
+(print "--- [TX-20 [3.19] - Mint Nosferatu Common (561-630) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -2054,6 +2134,8 @@
 (namespace "ouronet-ns")
 
 
+;;==== TX-20 [3.19] - Mint Nosferatu Common (561-630) · 02 · let / invocation ==== ================
+(print "--- [TX-20 [3.19] - Mint Nosferatu Common (561-630) · 02 · let / invocation] ---")
 ;;==== TX-20 [3.19] - Mint Nosferatu Common (561-630) · 02 · let / invocation ==== ================
 (print "--- [TX-20 [3.19] - Mint Nosferatu Common (561-630) · 02 · let / invocation] ---")
 (let
@@ -2153,6 +2235,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-21 [3.20] - Mint Nosferatu Common (631-700) · 01 · env-sigs (caps) ==== =================
 (print "--- [TX-21 [3.20] - Mint Nosferatu Common (631-700) · 01 · env-sigs (caps)] ---")
+;;==== TX-21 [3.20] - Mint Nosferatu Common (631-700) · 01 · env-sigs (caps) ==== =================
+(print "--- [TX-21 [3.20] - Mint Nosferatu Common (631-700) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -2163,6 +2247,8 @@
 (namespace "ouronet-ns")
 
 
+;;==== TX-21 [3.20] - Mint Nosferatu Common (631-700) · 02 · let / invocation ==== ================
+(print "--- [TX-21 [3.20] - Mint Nosferatu Common (631-700) · 02 · let / invocation] ---")
 ;;==== TX-21 [3.20] - Mint Nosferatu Common (631-700) · 02 · let / invocation ==== ================
 (print "--- [TX-21 [3.20] - Mint Nosferatu Common (631-700) · 02 · let / invocation] ---")
 (let
@@ -2262,6 +2348,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-22 [3.21] - Mint Nosferatu Common (701-770) · 01 · env-sigs (caps) ==== =================
 (print "--- [TX-22 [3.21] - Mint Nosferatu Common (701-770) · 01 · env-sigs (caps)] ---")
+;;==== TX-22 [3.21] - Mint Nosferatu Common (701-770) · 01 · env-sigs (caps) ==== =================
+(print "--- [TX-22 [3.21] - Mint Nosferatu Common (701-770) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -2272,6 +2360,8 @@
 (namespace "ouronet-ns")
 
 
+;;==== TX-22 [3.21] - Mint Nosferatu Common (701-770) · 02 · let / invocation ==== ================
+(print "--- [TX-22 [3.21] - Mint Nosferatu Common (701-770) · 02 · let / invocation] ---")
 ;;==== TX-22 [3.21] - Mint Nosferatu Common (701-770) · 02 · let / invocation ==== ================
 (print "--- [TX-22 [3.21] - Mint Nosferatu Common (701-770) · 02 · let / invocation] ---")
 (let
@@ -2371,6 +2461,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-23 [3.22] - Mint Nosferatu Common (771-800) · 01 · env-sigs (caps) ==== =================
 (print "--- [TX-23 [3.22] - Mint Nosferatu Common (771-800) · 01 · env-sigs (caps)] ---")
+;;==== TX-23 [3.22] - Mint Nosferatu Common (771-800) · 01 · env-sigs (caps) ==== =================
+(print "--- [TX-23 [3.22] - Mint Nosferatu Common (771-800) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -2381,6 +2473,8 @@
 (namespace "ouronet-ns")
 
 
+;;==== TX-23 [3.22] - Mint Nosferatu Common (771-800) · 02 · let / invocation ==== ================
+(print "--- [TX-23 [3.22] - Mint Nosferatu Common (771-800) · 02 · let / invocation] ---")
 ;;==== TX-23 [3.22] - Mint Nosferatu Common (771-800) · 02 · let / invocation ==== ================
 (print "--- [TX-23 [3.22] - Mint Nosferatu Common (771-800) · 02 · let / invocation] ---")
 (let
@@ -2451,6 +2545,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX 010 -- Bloodshed Transfer Tests · 01 · env-sigs (caps) ==== =============================
 (print "--- [TX 010 -- Bloodshed Transfer Tests · 01 · env-sigs (caps)] ---")
+;;==== TX 010 -- Bloodshed Transfer Tests · 01 · env-sigs (caps) ==== =============================
+(print "--- [TX 010 -- Bloodshed Transfer Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -2493,6 +2589,8 @@
 (begin-tx "NSFR-G1 — the three NOSFERATU argument guards")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== NSFR-G1 — the three NOSFERATU argument guards · 01 · env-sigs (caps) ==== ==================
+(print "--- [NSFR-G1 — the three NOSFERATU argument guards · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [NSFR-G1 · 01 · rarity, and the mdm/positions agreement] ---")
 ;;THE FIRST ASSERTIONS ON THIS PATH. Everything above mints; nothing above checks anything, so this
@@ -2507,6 +2605,8 @@
 ;;pinned by `modules/DPDC.repl <<DPDC-G15>>` -- same wording, same rule, different module. Pinned
 ;;separately because a shared message proves only one site, and a duplicated rule is exactly where a
 ;;copy-paste slip survives review.
+;;==== NSFR-G1 — the three NOSFERATU argument guards · 02 · let / invocation ==== =================
+(print "--- [NSFR-G1 — the three NOSFERATU argument guards · 02 · let / invocation] ---")
 (let
     (
         ;;NOSFERATU declares no interface (it is a plain citizen module), so there is no
@@ -2555,6 +2655,8 @@
 ;;
 (begin-tx "NSFR-G2 - the split-call minting shape is price-neutral, and WHY")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== NSFR-G2 - the split-call minting shape is price-neutral, and WHY · 01 · namespace ==== =====
+(print "--- [NSFR-G2 - the split-call minting shape is price-neutral, and WHY · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [NSFR-G2 · 01 · one 70-element call vs a 30 + 40 pair] ---")
 ;;CONFORMANCE OBSERVATION `self-C-call-citizen`, settled by execution.
@@ -2582,6 +2684,8 @@
 ;;an E| semi-fungible would put only the first half on the discount. DHN is a DPNF (son=false), so
 ;;the branch cannot apply here -- pinned below, so that a future collection that IS E|+son fails
 ;;this test instead of silently mispricing.
+;;==== NSFR-G2 - the split-call minting shape is price-neutral, and WHY · 02 · let / invocation ==== 
+(print "--- [NSFR-G2 - the split-call minting shape is price-neutral, and WHY · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
@@ -2635,6 +2739,8 @@
 ;;holding `role-nft-recreate` and the account every A_Fix rung has to be handed -- `C_Fix` ends in
 ;;DPDC-N's SET-DATA cap, which calls UEV_RoleNftRecreateON then CAP_EnforceAccountOwnership on it.
 ;;ANHD pays the IGNIS, exactly as it does for the A_Step calls above.
+;;==== NSFR-F1 - the A_Fix ladder, actually executed · 01 · env-sigs (caps) ==== ==================
+(print "--- [NSFR-F1 - the A_Fix ladder, actually executed · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -2674,6 +2780,8 @@
 ;;plausible name and metadata for whatever nonce it lands on. Asserting the un-shifted mapping
 ;;would make this shared suite red under ZALL for a reason that is not this file's to fix, so
 ;;everything below is written to hold under EVERY loader.
+;;==== NSFR-F1 - the A_Fix ladder, actually executed · 02 · let / invocation ==== =================
+(print "--- [NSFR-F1 - the A_Fix ladder, actually executed · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
@@ -2807,6 +2915,8 @@
 (namespace "ouronet-ns")
 ;;==== NSFR-F3 · 01 · env-sigs (caps) ==== ========================================================
 (print "--- [NSFR-F3 · 01 · env-sigs (caps)] ---")
+;;==== NSFR-F3 - the length guard, enforced through the real rung · 01 · env-sigs (caps) ==== =====
+(print "--- [NSFR-F3 - the length guard, enforced through the real rung · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -2824,6 +2934,8 @@
 ;;the wrong list length here and mis-mint on chain.
 ;;
 ;;Both directions (19 and 21), because a one-sided test cannot tell a parity check from a floor.
+;;==== NSFR-F3 - the length guard, enforced through the real rung · 02 · let / invocation ==== ====
+(print "--- [NSFR-F3 - the length guard, enforced through the real rung · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)

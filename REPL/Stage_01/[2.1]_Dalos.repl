@@ -36,6 +36,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-01 [1.1] - Define Keys Used in the DALOS Module · 01 · env-sigs (caps) ==== =============
 (print "--- [TX-01 [1.1] - Define Keys Used in the DALOS Module · 01 · env-sigs (caps)] ---")
+;;==== TX-01 [1.1] - Define Keys Used in the DALOS Module · 01 · env-sigs (caps) ==== =============
+(print "--- [TX-01 [1.1] - Define Keys Used in the DALOS Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
 
@@ -71,6 +73,8 @@
     ;;Create Autostake and Vesting STOA Accounts (for use in Repl)
 ;;==== TX-01 [1.1] - Define Keys Used in the DALOS Module · 02 · let / invocation ==== ============
 (print "--- [TX-01 [1.1] - Define Keys Used in the DALOS Module · 02 · let / invocation] ---")
+;;==== TX-01 [1.1] - Define Keys Used in the DALOS Module · 02 · let / invocation ==== ============
+(print "--- [TX-01 [1.1] - Define Keys Used in the DALOS Module · 02 · let / invocation] ---")
     (let
         (
             (ref-coin:module{stoa-ns.fungible-v1} coin)
@@ -92,6 +96,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
 ;;==== TX-02 [1.2] - Stoa Account Creation and Fuel of 1st Account · 01 · env-sigs (caps) ==== ==
+(print "--- [TX-02 [1.2] - Stoa Account Creation and Fuel of 1st Account · 01 · env-sigs (caps)] ---")
+;;==== TX-02 [1.2] - Stoa Account Creation and Fuel of 1st Account · 01 · env-sigs (caps) ==== ====
 (print "--- [TX-02 [1.2] - Stoa Account Creation and Fuel of 1st Account · 01 · env-sigs (caps)] ---")
 (env-sigs [])
 (env-gas)
@@ -130,8 +136,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-02 [2] - DALOS Module · 01 · env-sigs (caps) ==== =======================================
 (print "--- [TX-02 [2] - DALOS Module · 01 · env-sigs (caps)] ---")
+;;==== TX-02 [2] - DALOS Module · 01 · env-sigs (caps) ==== =======================================
+(print "--- [TX-02 [2] - DALOS Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-02 [2] - DALOS Module · 02 · load module ==== ===========================================
+(print "--- [TX-02 [2] - DALOS Module · 02 · load module] ---")
 ;;==== TX-02 [2] - DALOS Module · 02 · load module ==== ===========================================
 (print "--- [TX-02 [2] - DALOS Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/01_DALOS.pact")
@@ -158,6 +168,8 @@
 (begin-tx "TX-03 [C3.1] - Deploy Ouronet Accounts for Testing Purposes")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-03 [C3.1] - Deploy Ouronet Accounts for Testing Purposes · 01 · env-sigs (caps) ==== ====
+(print "--- [TX-03 [C3.1] - Deploy Ouronet Accounts for Testing Purposes · 01 · env-sigs (caps)] ---")
 ;;==== TX-03 [C3.1] - Deploy Ouronet Accounts for Testing Purposes · 01 · env-sigs (caps) ==== ====
 (print "--- [TX-03 [C3.1] - Deploy Ouronet Accounts for Testing Purposes · 01 · env-sigs (caps)] ---")
 (env-sigs 
@@ -210,6 +222,8 @@
         ,"KEY_TEST_MultiKey": { "keys": ["PK_Emma", "PK_AncientHodler"], "pred": "keys-all" }
     }
 )
+;;==== TX-04 [C3.2] - Guard-type policy on Ouronet Account guard/governor slots · 01 · env-sigs (caps) ==== 
+(print "--- [TX-04 [C3.2] - Guard-type policy on Ouronet Account guard/governor slots · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -248,6 +262,8 @@
 ;;comes back, a test says so.
 ;;==== TX-04 [C3.2] - Guard-type policy · 03 · helper unit expects ==== =============================
 (print "--- [TX-04 [C3.2] - Guard-type policy · 03 · helper unit expects] ---")
+;;==== TX-04 [C3.2] - Guard-type policy on Ouronet Account guard/governor slots · 02 · let / invocation ==== 
+(print "--- [TX-04 [C3.2] - Guard-type policy on Ouronet Account guard/governor slots · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)

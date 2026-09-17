@@ -1,3 +1,16 @@
+;;
+;; REPL/modules/DPDC-FRAGMENTS.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/modules/DPDC-FRAGMENTS.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 ;; REPL/modules/DPDC-FRAGMENTS.repl — STANDALONE DPDC-FRAGMENTS tester (blockchain-env-in-a-repl).
 ;; Fresh boot: Stage 00 sandbox + deploy core(s) + the DPDC-FRAGMENTS suite only.
 ;; Run: cd REPL && pact modules/DPDC-FRAGMENTS.repl   (see ARCHITECTURE/REPL_TEST_ARCHITECTURE.md)
@@ -12,6 +25,8 @@
 (begin-tx "DPDC-F-G2 - DPDC-F|C>ENABLE-FRAGMENTATION is not idempotent")
 (env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== DPDC-F-G2 - DPDC-F|C>ENABLE-FRAGMENTATION is not idempotent · 01 · env-sigs (caps) ==== ====
+(print "--- [DPDC-F-G2 - DPDC-F|C>ENABLE-FRAGMENTATION is not idempotent · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [DPDC-F-G2 · 01 · a re-entry check on nonce fragmentation] ---")
 ;;`09_DPDC-F.pact:239`, the NONCE-level twin of the set-class rule pinned by
@@ -30,6 +45,8 @@
 ;;immediately above, and `UEV_IzNonceFragmented`'s second disjunct only becomes true for a NON-zero
 ;;nonce class -- which :238 has already rejected. So the ONLY path to this message is the
 ;;split-data-is-non-zero disjunct on a class-0 nonce, which is exactly what TFRG nonce 1 is.
+;;==== DPDC-F-G2 - DPDC-F|C>ENABLE-FRAGMENTATION is not idempotent · 02 · let / invocation ==== ===
+(print "--- [DPDC-F-G2 - DPDC-F|C>ENABLE-FRAGMENTATION is not idempotent · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -63,6 +80,8 @@
 (begin-tx "DPDC-F-G3 - DPDC-MNG|C>REMOVE-CLASS-ZERO-NONCES protects fragment collateral")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== DPDC-F-G3 - DPDC-MNG|C>REMOVE-CLASS-ZERO-NONCES protects fragment collateral · 01 · env-sigs (caps) ==== 
+(print "--- [DPDC-F-G3 - DPDC-MNG|C>REMOVE-CLASS-ZERO-NONCES protects fragment collateral · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [DPDC-F-G3 · 01 · removing a nonce that is backing outstanding fragments] ---")
 ;;`06_DPDC-MNG.pact:440` — the DPDC Audit #5C follow-up. The DPDC smart account doubles as a
@@ -80,6 +99,8 @@
 ;;The account argument is the DPDC system account itself, read from `GOV|DPDC|SC_NAME` rather than
 ;;written out: it is a 200-odd character principal and hardcoding it would rot the moment governance
 ;;rotated it. Reading it is also what makes the CONTROL below meaningful.
+;;==== DPDC-F-G3 - DPDC-MNG|C>REMOVE-CLASS-ZERO-NONCES protects fragment collateral · 02 · let / invocation ==== 
+(print "--- [DPDC-F-G3 - DPDC-MNG|C>REMOVE-CLASS-ZERO-NONCES protects fragment collateral · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)

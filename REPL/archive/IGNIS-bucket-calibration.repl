@@ -29,6 +29,8 @@
 (namespace "ouronet-ns")
 ;;==== TX-CAL-001 · 01 · env-sigs ==== ============================================================
 (print "--- [TX-CAL-001 · 01 · env-sigs] ---")
+;;==== TX-CAL-001 Probe module + tables · 01 · env-sigs (caps) ==== ===============================
+(print "--- [TX-CAL-001 Probe module + tables · 01 · env-sigs (caps)] ---")
 (env-sigs [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
 ;;==== TX-CAL-001 · 02 · probe module ==== ========================================================
 (print "--- [TX-CAL-001 · 02 · probe module] ---")
@@ -76,6 +78,8 @@
 (print "")
 (begin-tx "TX-CAL-002 Measure insert / read / update gas")
 (env-gasmodel "table")(env-gaslimit 100000000)
+;;==== TX-CAL-002 Measure insert / read / update gas · 01 · namespace ==== ========================
+(print "--- [TX-CAL-002 Measure insert / read / update gas · 01 · namespace] ---")
 (namespace "ouronet-ns")
 ;;==== TX-CAL-002 · 01 · measure + compare to IG|WEIGHTS ==== =====================================
 (print "--- [TX-CAL-002 · 01 · measure + compare to IG|WEIGHTS] ---")
@@ -117,6 +121,7 @@
 (print "<<TX-CAL-002>> bucket calibration measured — compare <(meas)> vs <(model)> above")
 (print "===^^^===")
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")

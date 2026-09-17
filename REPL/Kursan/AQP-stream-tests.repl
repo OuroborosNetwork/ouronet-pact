@@ -22,21 +22,45 @@
 (begin-tx "STREAM-BOOT - KBN citizen")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== STREAM-BOOT - KBN citizen · 01 · env-sigs (caps) ==== ======================================
+(print "--- [STREAM-BOOT - KBN citizen · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": [] }])
+;;==== STREAM-BOOT - KBN citizen · 02 · load module ==== ==========================================
+(print "--- [STREAM-BOOT - KBN citizen · 02 · load module] ---")
 (load "../../2_CITIZEN/4_BunniesMinter/02_KBunnies.pact")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "STREAM-BOOT - AQP-BOOT")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== STREAM-BOOT - AQP-BOOT · 01 · env-sigs (caps) ==== =========================================
+(print "--- [STREAM-BOOT - AQP-BOOT · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": [] }])
+;;==== STREAM-BOOT - AQP-BOOT · 02 · load module ==== =============================================
+(print "--- [STREAM-BOOT - AQP-BOOT · 02 · load module] ---")
 (load "../../2_CITIZEN/5_VaultsMinter/04_AQP-BOOT.pact")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "STREAM-BOOT - Step0")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== STREAM-BOOT - Step0 · 01 · env-sigs (caps) ==== ============================================
+(print "--- [STREAM-BOOT - Step0 · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print (format "<(Step0)> => \"{}\"" [(AQP-BOOT.C_Step0_WireImcAndGovernor KST.ANHD)]))
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;; ============================================================================
@@ -45,6 +69,8 @@
 (begin-tx "T-STREAM-FIXTURE - vault + score + pool")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+;;==== T-STREAM-FIXTURE - vault + score + pool · 01 · env-sigs (caps) ==== ========================
+(print "--- [T-STREAM-FIXTURE - vault + score + pool · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -60,6 +86,8 @@
     ]
 )
 (print "--- [T-STREAM-FIXTURE · build vault] ---")
+;;==== T-STREAM-FIXTURE - vault + score + pool · 02 · let / invocation ==== =======================
+(print "--- [T-STREAM-FIXTURE - vault + score + pool · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -87,6 +115,10 @@
           (expect "<<T-STREAM-FIXTURE>> vault stake-ready" true (ref-FVT::URC_PoolEmployedScoresFvtStakeReady pool-id)) ]))
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;; ============================================================================
@@ -95,6 +127,8 @@
 (begin-tx "T-STREAM-01 - late staker 180/60")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+;;==== T-STREAM-01 - late staker 180/60 · 01 · let / invocation ==== ==============================
+(print "--- [T-STREAM-01 - late staker 180/60 · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -209,6 +243,10 @@
     (env-sigs [])
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;; ============================================================================
@@ -218,6 +256,8 @@
 (begin-tx "T-STREAM-02 - superposition (two overlapping streams)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+;;==== T-STREAM-02 - superposition (two overlapping streams) · 01 · let / invocation ==== =========
+(print "--- [T-STREAM-02 - superposition (two overlapping streams) · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -273,6 +313,10 @@
     (env-sigs [])
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;; ============================================================================
@@ -282,6 +326,8 @@
 (begin-tx "T-STREAM-03 - zero-weight interval escrows to zombie (D9)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+;;==== T-STREAM-03 - zero-weight interval escrows to zombie (D9) · 01 · let / invocation ==== =====
+(print "--- [T-STREAM-03 - zero-weight interval escrows to zombie (D9) · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -335,6 +381,10 @@
     (env-sigs [])
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;; ============================================================================
@@ -344,6 +394,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
 (env-chain-data { "block-time": (time "2027-06-01T00:00:00Z") })
+;;==== T-STREAM-04 - streamed inject guard bounds · 01 · let / invocation ==== ====================
+(print "--- [T-STREAM-04 - streamed inject guard bounds · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -371,6 +423,10 @@
     (env-sigs [])
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;; ============================================================================
@@ -380,6 +436,8 @@
 (begin-tx "T-STREAM-05 - vault drip gas probe")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+;;==== T-STREAM-05 - vault drip gas probe · 01 · let / invocation ==== ============================
+(print "--- [T-STREAM-05 - vault drip gas probe · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -429,6 +487,10 @@
     (env-sigs [])
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;; ============================================================================
@@ -439,6 +501,8 @@
 (begin-tx "T-STREAM-06 - farm (class 0) streamed drip")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+;;==== T-STREAM-06 - farm (class 0) streamed drip · 01 · let / invocation ==== ====================
+(print "--- [T-STREAM-06 - farm (class 0) streamed drip · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -506,6 +570,8 @@
 ;;|| NEXT >
 ;;
 (begin-tx "T-STREAM-RT - RPS per-field readers: the key round-trip")
+;;==== T-STREAM-RT - RPS per-field readers: the key round-trip · 01 · namespace ==== ==============
+(print "--- [T-STREAM-RT - RPS per-field readers: the key round-trip · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "--- [T-STREAM-RT · 01 · every identity field reads back the key component it was stored under] ---")
@@ -523,6 +589,8 @@
 ;;
 ;;A single wrong reader here would be invisible to every existing test, because the value returned is
 ;;still a plausible id of the right shape. Asserting the ROUND TRIP is what makes it visible.
+;;==== T-STREAM-RT - RPS per-field readers: the key round-trip · 02 · let / invocation ==== =======
+(print "--- [T-STREAM-RT - RPS per-field readers: the key round-trip · 02 · let / invocation] ---")
 (let
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)

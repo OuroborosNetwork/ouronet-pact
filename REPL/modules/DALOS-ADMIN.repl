@@ -1,3 +1,16 @@
+;;
+;; REPL/modules/DALOS-ADMIN.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/modules/DALOS-ADMIN.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 ;; REPL/modules/DALOS-ADMIN.repl — STANDALONE DALOS admin-surface tester.
 ;;
 ;; P2 rebuild: 4 net assertions against a 20-entrypoint admin surface, now covering the toggles
@@ -18,7 +31,11 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [DALOS-ADMIN-01 · 01 · toggles] ---")
+;;==== DALOS-ADMIN-01 — global toggles round-trip · 01 · env-sigs (caps) ==== =====================
+(print "--- [DALOS-ADMIN-01 — global toggles round-trip · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== DALOS-ADMIN-01 — global toggles round-trip · 02 · let / invocation ==== ====================
+(print "--- [DALOS-ADMIN-01 — global toggles round-trip · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -57,7 +74,11 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [DALOS-ADMIN-02 · 01 · usage price] ---")
+;;==== DALOS-ADMIN-02 — A_UpdateUsagePrice writes the price the pricing layer reads · 01 · env-sigs (caps) ==== 
+(print "--- [DALOS-ADMIN-02 — A_UpdateUsagePrice writes the price the pricing layer reads · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== DALOS-ADMIN-02 — A_UpdateUsagePrice writes the price the pricing layer reads · 02 · let / invocation ==== 
+(print "--- [DALOS-ADMIN-02 — A_UpdateUsagePrice writes the price the pricing layer reads · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -113,7 +134,11 @@
 (env-data
     { "MIGRATE_TARGET_KS": { "keys": ["PK_AncientHodler"], "pred": "keys-all" } }
 )
+;;==== DALOS-ADMIN-03 — A_MigrateLiquidFunds: the gas-station escape hatch · 01 · env-sigs (caps) ==== 
+(print "--- [DALOS-ADMIN-03 — A_MigrateLiquidFunds: the gas-station escape hatch · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== DALOS-ADMIN-03 — A_MigrateLiquidFunds: the gas-station escape hatch · 02 · let / invocation ==== 
+(print "--- [DALOS-ADMIN-03 — A_MigrateLiquidFunds: the gas-station escape hatch · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -186,7 +211,11 @@
     { "MIGRATE_TARGET_KS"  : { "keys": ["PK_AncientHodler"], "pred": "keys-all" }
     , "MIGRATE_TARGET_KS2" : { "keys": ["PK_Emma"], "pred": "keys-all" } }
 )
+;;==== DALOS-ADMIN-03b — the migration gate, and the message that lies about it · 01 · env-sigs (caps) ==== 
+(print "--- [DALOS-ADMIN-03b — the migration gate, and the message that lies about it · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== DALOS-ADMIN-03b — the migration gate, and the message that lies about it · 02 · let / invocation ==== 
+(print "--- [DALOS-ADMIN-03b — the migration gate, and the message that lies about it · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -255,7 +284,11 @@
 ;;the off-diagonal must reject. That is strictly stronger than testing either guard alone: it
 ;;proves each one refuses the other's input, which is the property a caller actually relies on
 ;;when it picks which to call.
+;;==== DALOS-G1 — the account-type guard family, probed DIRECTLY · 01 · env-sigs (caps) ==== ======
+(print "--- [DALOS-G1 — the account-type guard family, probed DIRECTLY · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== DALOS-G1 — the account-type guard family, probed DIRECTLY · 02 · let / invocation ==== =====
+(print "--- [DALOS-G1 — the account-type guard family, probed DIRECTLY · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -378,6 +411,8 @@
 (begin-tx "DALOS-G8 - UEV_StandardAccOwn's governor check, driven")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== DALOS-G8 - UEV_StandardAccOwn's governor check, driven · 01 · env-sigs (caps) ==== =========
+(print "--- [DALOS-G8 - UEV_StandardAccOwn's governor check, driven · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [DALOS-G8 · 01 · guard and governor forced apart] ---")
 ;;`01_DALOS.pact:1215` -- "Incompatible Governer Guard detected for Standard DALOS Account",
@@ -396,6 +431,8 @@
 ;;So this is not "pinning an unreachable guard". It is the one case where the two techniques give
 ;;different answers, and the executing one answers the question actually being asked: if the
 ;;invariant upstream ever breaks, does this catch it? It does.
+;;==== DALOS-G8 - UEV_StandardAccOwn's governor check, driven · 02 · let / invocation ==== ========
+(print "--- [DALOS-G8 - UEV_StandardAccOwn's governor check, driven · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -472,6 +509,8 @@
 ;;
 ;;Reached through the real Talos path (TS01-A), not the core function, so this is the permission a
 ;;client would actually meet.
+;;==== DALOS-G9 - DALOS|S>SET-OURO-PRICE: who may move the IGNIS source price · 01 · let / invocation ==== 
+(print "--- [DALOS-G9 - DALOS|S>SET-OURO-PRICE: who may move the IGNIS source price · 01 · let / invocation] ---")
 (let
     (
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
@@ -533,6 +572,8 @@
 ;;test-capability stays granted for the rest of the tx, so a second acquisition with the SAME
 ;;arguments returns the cached grant WITHOUT re-running the body -- every rejection after the
 ;;happy path silently passed as `()`. The first draft of this block did exactly that.
+;;==== DALOS-G2a — GAS_PAYER: the payable form IS funded · 01 · env-sigs (caps) ==== ==============
+(print "--- [DALOS-G2a — GAS_PAYER: the payable form IS funded · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (env-chain-data { "gas-limit": 1000, "gas-price": 0.0000001 })
 (env-data {"exec-code": ["(ouronet-ns.TS01-C1.something)"]})
@@ -552,6 +593,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [DALOS-G2b · 01 · empty exec code] ---")
+;;==== DALOS-G2b — GAS_PAYER: a transaction carrying no forms · 01 · env-sigs (caps) ==== =========
+(print "--- [DALOS-G2b — GAS_PAYER: a transaction carrying no forms · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (env-chain-data { "gas-limit": 1000, "gas-price": 0.0000001 })
 (env-data {"exec-code": []})
@@ -572,6 +615,8 @@
 (print "--- [DALOS-G2c · 01 · payable module set] ---")
 ;;The one that matters commercially: the station funds coin.C_, ouronet-ns.TS*, ouronet-ns.DSP*
 ;;and STOAICO, and nothing else.
+;;==== DALOS-G2c — GAS_PAYER: a form outside the payable module set · 01 · env-sigs (caps) ==== ===
+(print "--- [DALOS-G2c — GAS_PAYER: a form outside the payable module set · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (env-chain-data { "gas-limit": 1000, "gas-price": 0.0000001 })
 (env-data {"exec-code": ["(bogus.thing)"]})
@@ -592,6 +637,8 @@
 (print "--- [DALOS-G2d · 01 · notional ceiling] ---")
 ;;Same payable form as DALOS-G2a, so the ONLY thing that changed is the gas budget -- which is
 ;;what makes this attributable to the ceiling and not to the code shape.
+;;==== DALOS-G2d — GAS_PAYER: the notional ceiling, same form as the happy path · 01 · env-sigs (caps) ==== 
+(print "--- [DALOS-G2d — GAS_PAYER: the notional ceiling, same form as the happy path · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (env-data {"exec-code": ["(ouronet-ns.TS01-C1.something)"]})
 (env-chain-data { "gas-limit": 100000000, "gas-price": 0.001 })
@@ -634,6 +681,8 @@
 ;;Likewise "First form must be coin.C_, ouronet-ns.TS, or ouronet-ns.DSP" is the message of an
 ;;enforce-one NESTED in the outer enforce-one's branch list. Pact discards a failed branch's
 ;;message and reports the OUTER one -- which is exactly what DALOS-G2c observes.
+;;==== DALOS-G2e — GAS_PAYER: two guards that cannot fire, and why · 01 · env-sigs (caps) ==== ====
+(print "--- [DALOS-G2e — GAS_PAYER: two guards that cannot fire, and why · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (env-chain-data { "gas-limit": 1000, "gas-price": 0.0000001 })
 (env-data {})
@@ -661,7 +710,11 @@
 ;;Every one reads its CURRENT value and feeds it straight back, so the tests stay correct whatever
 ;;state earlier blocks leave behind. Hardcoding `false` would pass today and silently stop testing
 ;;anything the day something flips one of them.
+;;==== DALOS-G3 — the idempotent-toggle family: setting a flag to what it already is · 01 · env-sigs (caps) ==== 
+(print "--- [DALOS-G3 — the idempotent-toggle family: setting a flag to what it already is · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== DALOS-G3 — the idempotent-toggle family: setting a flag to what it already is · 02 · let / invocation ==== 
+(print "--- [DALOS-G3 — the idempotent-toggle family: setting a flag to what it already is · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
@@ -709,7 +762,11 @@
 ;;Those are separate fields with separate meanings ("may a user pay this contract directly" vs
 ;;"may another contract pay it"), and a refactor that collapsed the tree into a single
 ;;payable-anything flag would still pass a test that only drove one of them.
+;;==== DALOS-G4 — transferability, the smart-account control no-op, and account glyphs · 01 · env-sigs (caps) ==== 
+(print "--- [DALOS-G4 — transferability, the smart-account control no-op, and account glyphs · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== DALOS-G4 — transferability, the smart-account control no-op, and account glyphs · 02 · let / invocation ==== 
+(print "--- [DALOS-G4 — transferability, the smart-account control no-op, and account glyphs · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -784,6 +841,8 @@
 ;;REPL state, not pool state, which is why the prior values are captured and put back at the end.
 ;;(env-chain-data returns a string, not a bool, so it cannot be folded into a let binding typed
 ;;:bool — the calls stay as their own statements.)
+;;==== DALOS-G5 — the gas-station notional allowance, driven directly · 01 · let / invocation ==== 
+(print "--- [DALOS-G5 — the gas-station notional allowance, driven directly · 01 · let / invocation] ---")
 (let
     (
         (prior-price:decimal (at "gas-price" (chain-data)))
@@ -832,7 +891,11 @@
 ;;
 ;;GAP is restored to whatever it was found as (not to a hardcoded false), and the restoration is
 ;;asserted: this is global state and DALOS-ADMIN-03 later depends on GAP being off.
+;;==== DALOS-G6 — the Global Administrative Pause freezes every Stage-1 Talos client · 01 · env-sigs (caps) ==== 
+(print "--- [DALOS-G6 — the Global Administrative Pause freezes every Stage-1 Talos client · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== DALOS-G6 — the Global Administrative Pause freezes every Stage-1 Talos client · 02 · let / invocation ==== 
+(print "--- [DALOS-G6 — the Global Administrative Pause freezes every Stage-1 Talos client · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -887,6 +950,8 @@
 ;;govern whether each module can be REPLACED, so an unguarded one is the highest-consequence defect
 ;;available. Each is a plain (non-@event) defcap, so test-capability reaches it directly; EMMA is a
 ;;legitimate account that simply is not a Demiurgos.
+;;==== DALOS-G7 — three more module-governance caps refuse a non-admin signer · 01 · env-sigs (caps) ==== 
+(print "--- [DALOS-G7 — three more module-governance caps refuse a non-admin signer · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (map print
     [
@@ -905,6 +970,8 @@
 ;;
 (begin-tx "DALOS-G2f -- enforce-one recovers from a failed enforce, NOT from a native fault")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== DALOS-G2f -- enforce-one recovers from a failed enforce, NOT from a native fault · 01 · namespace ==== 
+(print "--- [DALOS-G2f -- enforce-one recovers from a failed enforce, NOT from a native fault · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [DALOS-G2f . 01 . the limit of enforce-one] ---")
 ;;DALOS-G2c pinned that enforce-one SWALLOWS a nested branch's message and reports its own. This

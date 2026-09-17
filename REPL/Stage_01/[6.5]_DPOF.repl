@@ -17,6 +17,8 @@
 (namespace "ouronet-ns")
 ;;==== INIT TX 000 - Chain Data Time SetUp Definition · 01 · env-chain-data ==== ==================
 (print "--- [INIT TX 000 - Chain Data Time SetUp Definition · 01 · env-chain-data] ---")
+;;==== INIT TX 000 - Chain Data Time SetUp Definition · 01 · env-chain-data ==== ==================
+(print "--- [INIT TX 000 - Chain Data Time SetUp Definition · 01 · env-chain-data] ---")
 (env-chain-data
     {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
      "block-time": TV.TIME00}
@@ -34,6 +36,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP TX 01 - Issue DPMF Test · 01 · env-sigs (caps) ==== ====================================
 (print "--- [SWP TX 01 - Issue DPMF Test · 01 · env-sigs (caps)] ---")
+;;==== SWP TX 01 - Issue DPMF Test · 01 · env-sigs (caps) ==== ====================================
+(print "--- [SWP TX 01 - Issue DPMF Test · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -41,6 +45,8 @@
     ]
 )
 
+;;==== SWP TX 01 - Issue DPMF Test · 02 · let / invocation ==== ===================================
+(print "--- [SWP TX 01 - Issue DPMF Test · 02 · let / invocation] ---")
 ;;==== SWP TX 01 - Issue DPMF Test · 02 · let / invocation ==== ===================================
 (print "--- [SWP TX 01 - Issue DPMF Test · 02 · let / invocation] ---")
 (let
@@ -112,6 +118,8 @@
 (print "")
 ;;==== SWP TX 01 - Issue DPMF Test · 03 · gas echo ==== ===========================================
 (print "--- [SWP TX 01 - Issue DPMF Test · 03 · gas echo] ---")
+;;==== SWP TX 01 - Issue DPMF Test · 03 · gas echo ==== ===========================================
+(print "--- [SWP TX 01 - Issue DPMF Test · 03 · gas echo] ---")
 (format "<<<<<<<STEP 001 Issue DPMF Costs {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -127,6 +135,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== STEP 002 DPMF Tests · 01 · env-sigs (caps) ==== ============================================
 (print "--- [STEP 002 DPMF Tests · 01 · env-sigs (caps)] ---")
+;;==== STEP 002 DPMF Tests · 01 · env-sigs (caps) ==== ============================================
+(print "--- [STEP 002 DPMF Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -134,6 +144,8 @@
     ]
 )
 
+;;==== STEP 002 DPMF Tests · 02 · let / invocation ==== ===========================================
+(print "--- [STEP 002 DPMF Tests · 02 · let / invocation] ---")
 ;;==== STEP 002 DPMF Tests · 02 · let / invocation ==== ===========================================
 (print "--- [STEP 002 DPMF Tests · 02 · let / invocation] ---")
 (let
@@ -246,6 +258,8 @@
 
 (print "")
 (print "")
+;;==== STEP 002 DPMF Tests · 03 · gas echo ==== ===================================================
+(print "--- [STEP 002 DPMF Tests · 03 · gas echo] ---")
 ;;==== STEP 002 DPMF Tests · 03 · gas echo ==== ===================================================
 (print "--- [STEP 002 DPMF Tests · 03 · gas echo] ---")
 (format "<<<<<<<STEP 002 DPMF Tests {} STOA GAS>>>>>>>" [(env-gas)])

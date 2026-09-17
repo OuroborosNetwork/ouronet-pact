@@ -16,6 +16,8 @@
 (namespace "ouronet-ns")
 ;;==== TX-00 [C0] - Chain Data Time SetUp Definition · 01 · env-chain-data ==== ===================
 (print "--- [TX-00 [C0] - Chain Data Time SetUp Definition · 01 · env-chain-data] ---")
+;;==== TX-00 [C0] - Chain Data Time SetUp Definition · 01 · env-chain-data ==== ===================
+(print "--- [TX-00 [C0] - Chain Data Time SetUp Definition · 01 · env-chain-data] ---")
 (env-chain-data
     {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
      "block-time": TV.TIME00}
@@ -50,6 +52,8 @@
 (begin-tx "TX-01 [1.1] - Define Keys Used in the DALOS Module")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-01 [1.1] - Define Keys Used in the DALOS Module · 01 · env-sigs (caps) ==== =============
+(print "--- [TX-01 [1.1] - Define Keys Used in the DALOS Module · 01 · env-sigs (caps)] ---")
 ;;==== TX-01 [1.1] - Define Keys Used in the DALOS Module · 01 · env-sigs (caps) ==== =============
 (print "--- [TX-01 [1.1] - Define Keys Used in the DALOS Module · 01 · env-sigs (caps)] ---")
 (env-sigs
@@ -137,6 +141,8 @@
     )
 ;;==== TX-01 [1.1] - Define Keys Used in the DALOS Module · 02 · let / invocation ==== ============
 (print "--- [TX-01 [1.1] - Define Keys Used in the DALOS Module · 02 · let / invocation] ---")
+;;==== TX-01 [1.1] - Define Keys Used in the DALOS Module · 02 · let / invocation ==== ============
+(print "--- [TX-01 [1.1] - Define Keys Used in the DALOS Module · 02 · let / invocation] ---")
     (let
         (
             (ref-coin:module{stoa-ns.fungible-v1} coin)
@@ -202,8 +208,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-02 [2] - DALOS Module · 01 · env-sigs (caps) ==== =======================================
 (print "--- [TX-02 [2] - DALOS Module · 01 · env-sigs (caps)] ---")
+;;==== TX-02 [2] - DALOS Module · 01 · env-sigs (caps) ==== =======================================
+(print "--- [TX-02 [2] - DALOS Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-02 [2] - DALOS Module · 02 · load module ==== ===========================================
+(print "--- [TX-02 [2] - DALOS Module · 02 · load module] ---")
 ;;==== TX-02 [2] - DALOS Module · 02 · load module ==== ===========================================
 (print "--- [TX-02 [2] - DALOS Module · 02 · load module] ---")
 (load "../../2_CITIZEN/Stage_Z/03_DSP+.pact")
@@ -233,6 +243,8 @@
 
 ;;==== TX-03 [3.1] - DSP Init [1]: Dispenser Setup · 01 · env-sigs (caps) ==== ====================
 (print "--- [TX-03 [3.1] - DSP Init [1]: Dispenser Setup · 01 · env-sigs (caps)] ---")
+;;==== TX-03 [3.1] - DSP Init [1]: Dispenser Setup · 01 · env-sigs (caps) ==== ====================
+(print "--- [TX-03 [3.1] - DSP Init [1]: Dispenser Setup · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -241,6 +253,8 @@
     ]
 )
 
+;;==== TX-03 [3.1] - DSP Init [1]: Dispenser Setup · 02 · let / invocation ==== ===================
+(print "--- [TX-03 [3.1] - DSP Init [1]: Dispenser Setup · 02 · let / invocation] ---")
 ;;==== TX-03 [3.1] - DSP Init [1]: Dispenser Setup · 02 · let / invocation ==== ===================
 (print "--- [TX-03 [3.1] - DSP Init [1]: Dispenser Setup · 02 · let / invocation] ---")
 (let

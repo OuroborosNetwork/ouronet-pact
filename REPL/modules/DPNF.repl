@@ -1,3 +1,16 @@
+;;
+;; REPL/modules/DPNF.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/modules/DPNF.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 ;; REPL/modules/DPNF.repl — STANDALONE DPNF (non-fungible collection) tester.
 ;;
 ;; P2 rebuild. The previous version loaded Stage_02/[6.1.4]_DPDC-NF.repl and produced only 6 net
@@ -20,8 +33,12 @@
 ;;
 (begin-tx "DPNF-01 — collection properties and nonce baseline")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== DPNF-01 — collection properties and nonce baseline · 01 · namespace ==== ===================
+(print "--- [DPNF-01 — collection properties and nonce baseline · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [DPNF-01 · 01 · properties] ---")
+;;==== DPNF-01 — collection properties and nonce baseline · 02 · let / invocation ==== ============
+(print "--- [DPNF-01 — collection properties and nonce baseline · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -50,7 +67,11 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [DPNF-02 · 01 · per-field updates] ---")
+;;==== DPNF-02 — the nonce-field family each writes ITS OWN field · 01 · env-sigs (caps) ==== =====
+(print "--- [DPNF-02 — the nonce-field family each writes ITS OWN field · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== DPNF-02 — the nonce-field family each writes ITS OWN field · 02 · let / invocation ==== ====
+(print "--- [DPNF-02 — the nonce-field family each writes ITS OWN field · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -93,7 +114,11 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [DPNF-03 · 01 · transfer + roles] ---")
+;;==== DPNF-03 — C_TransferNonce moves a unique nonce; roles gate what they claim · 01 · env-sigs (caps) ==== 
+(print "--- [DPNF-03 — C_TransferNonce moves a unique nonce; roles gate what they claim · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== DPNF-03 — C_TransferNonce moves a unique nonce; roles gate what they claim · 02 · let / invocation ==== 
+(print "--- [DPNF-03 — C_TransferNonce moves a unique nonce; roles gate what they claim · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -132,10 +157,14 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [DPNF-04 · 01 · previously untested surface] ---")
+;;==== DPNF-04 — ops that ONLY assertion-free probes had ever touched · 01 · env-sigs (caps) ==== =
+(print "--- [DPNF-04 — ops that ONLY assertion-free probes had ever touched · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 ;;These three appear NOWHERE in any asserting test -- only in archived probe files that call
 ;;them and check nothing. One such probe even advertises itself as "covering" its op. Calling an
 ;;op is not testing it (RULE 6), so they get real assertions here.
+;;==== DPNF-04 — ops that ONLY assertion-free probes had ever touched · 02 · let / invocation ==== 
+(print "--- [DPNF-04 — ops that ONLY assertion-free probes had ever touched · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -198,7 +227,11 @@
 ;; Never exercised by any test before. Repurpose is NOT a transfer: the collection owner moves a
 ;; nonce out of a third party's holding, and that party does not sign. EMMA received nonce 3 in
 ;; DPNF-03 and signs nothing here -- only ANHD does. That asymmetry IS the op.
+;;==== DPNF-05 — DPNF|C_Repurpose: the collection owner takes a nonce BACK · 01 · env-sigs (caps) ==== 
+(print "--- [DPNF-05 — DPNF|C_Repurpose: the collection owner takes a nonce BACK · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== DPNF-05 — DPNF|C_Repurpose: the collection owner takes a nonce BACK · 02 · let / invocation ==== 
+(print "--- [DPNF-05 — DPNF|C_Repurpose: the collection owner takes a nonce BACK · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)

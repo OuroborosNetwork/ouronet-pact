@@ -1,4 +1,17 @@
 ;;
+;; REPL/RedTeam/[RT-H]_InputDomain.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/RedTeam/[RT-H]_InputDomain.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
+;;
 ;; REPL/RedTeam/[RT-H]_InputDomain.repl — FAMILY H: input domain.
 ;;
 ;; "What happens at the edges of what an argument is allowed to be?"
@@ -63,7 +76,11 @@
 ;;the difference this block measures: not merely that the attacks fail, but that they fail EARLY
 ;;and for a reason that names them. The old defences remain in place behind these; they are simply
 ;;no longer the thing standing between a malformed set and the pool.
+;;==== RT-H-001 - swap a token for itself, and swap a token twice · 01 · env-sigs (caps) ==== =====
+(print "--- [RT-H-001 - swap a token for itself, and swap a token twice · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== RT-H-001 - swap a token for itself, and swap a token twice · 02 · let / invocation ==== ====
+(print "--- [RT-H-001 - swap a token for itself, and swap a token twice · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
@@ -291,7 +308,11 @@
 ;;Same sentinel, same eager-`let` ordering, same error shape, different table -- and the sibling
 ;;immediately above it was left alone. The repair here is the one that was already written once.
 ;;
+;;==== RT-H-003 - the BAR sentinel as a table key, again · 01 · env-sigs (caps) ==== ==============
+(print "--- [RT-H-003 - the BAR sentinel as a table key, again · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+;;==== RT-H-003 - the BAR sentinel as a table key, again · 02 · let / invocation ==== =============
+(print "--- [RT-H-003 - the BAR sentinel as a table key, again · 02 · let / invocation] ---")
 (let
     (
         (pool:string "Bisthanium-98c486052a51")

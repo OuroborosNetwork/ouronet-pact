@@ -1,4 +1,17 @@
 ;;
+;; REPL/Stage_02/[6.5]_AQP-INFO.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_02/[6.5]_AQP-INFO.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
+;;
 ;; REPL/Stage_02/[6.5]_AQP-INFO.repl — AQP-INFO cost-preview asserts (scenario form).
 ;; Extracted from Kursan/aqp-info-tests.repl body so it composes under a shared boot
 ;; (AQP-FULL) as well as standalone. Read-only: deploys the AQP-INFO add-on module,
@@ -7,7 +20,11 @@
 (begin-tx "AQP-INFO - load module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== AQP-INFO - load module · 01 · env-sigs (caps) ==== =========================================
+(print "--- [AQP-INFO - load module · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": [] }])
+;;==== AQP-INFO - load module · 02 · load module ==== =============================================
+(print "--- [AQP-INFO - load module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact")
 (commit-tx)
 ;;
@@ -17,17 +34,29 @@
 ;;
 (begin-tx "AQP-INFO - confirm billing live")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== AQP-INFO - confirm billing live · 01 · namespace ==== ======================================
+(print "--- [AQP-INFO - confirm billing live · 01 · namespace] ---")
 (namespace "ouronet-ns")
+;;==== AQP-INFO - confirm billing live · 02 · let / invocation ==== ===============================
+(print "--- [AQP-INFO - confirm billing live · 02 · let / invocation] ---")
 (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS))
     (expect "virtual IGNIS billing is live (costs are real, not subsidised)" false (ref-IGNIS::URC_IsVirtualGasZero)))
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;;==== AQP-INFO · ANK group cost-equality ====
 (begin-tx "AQP-INFO-ANK - anchor group cost equality")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== AQP-INFO-ANK - anchor group cost equality · 01 · namespace ==== ============================
+(print "--- [AQP-INFO-ANK - anchor group cost equality · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "=== AQP-INFO ANK group: info cost == execution cost source ===")
+;;==== AQP-INFO-ANK - anchor group cost equality · 02 · let / invocation ==== =====================
+(print "--- [AQP-INFO-ANK - anchor group cost equality · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD)
@@ -100,13 +129,21 @@
     )
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;;==== AQP-INFO · SCORE group cost-equality ====
 (begin-tx "AQP-INFO-SCR - score group cost equality")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== AQP-INFO-SCR - score group cost equality · 01 · namespace ==== =============================
+(print "--- [AQP-INFO-SCR - score group cost equality · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "=== AQP-INFO SCORE group: info cost == execution cost source ===")
+;;==== AQP-INFO-SCR - score group cost equality · 02 · let / invocation ==== ======================
+(print "--- [AQP-INFO-SCR - score group cost equality · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD)
@@ -200,13 +237,21 @@
     )
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;;==== AQP-INFO · POOL config group cost-equality ====
 (begin-tx "AQP-INFO-POOL - pool config cost equality")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== AQP-INFO-POOL - pool config cost equality · 01 · namespace ==== ============================
+(print "--- [AQP-INFO-POOL - pool config cost equality · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "=== AQP-INFO POOL config group: info cost == execution cost source ===")
+;;==== AQP-INFO-POOL - pool config cost equality · 02 · let / invocation ==== =====================
+(print "--- [AQP-INFO-POOL - pool config cost equality · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD)
@@ -260,13 +305,21 @@
     )
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;;==== AQP-INFO · FVT group cost-equality ====
 (begin-tx "AQP-INFO-FVT - fvt group cost equality")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== AQP-INFO-FVT - fvt group cost equality · 01 · namespace ==== ===============================
+(print "--- [AQP-INFO-FVT - fvt group cost equality · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "=== AQP-INFO FVT group: info cost == execution cost source ===")
+;;==== AQP-INFO-FVT - fvt group cost equality · 02 · let / invocation ==== ========================
+(print "--- [AQP-INFO-FVT - fvt group cost equality · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD)
@@ -342,14 +395,22 @@
     )
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;;==== AQP-INFO · DSA + MTX group cost-equality ====
 (begin-tx "AQP-INFO-DSA - dsa + mtx cost equality")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (env-data { "gg": { "keys": ["gk"], "pred": "keys-all" } })
+;;==== AQP-INFO-DSA - dsa + mtx cost equality · 01 · namespace ==== ===============================
+(print "--- [AQP-INFO-DSA - dsa + mtx cost equality · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "=== AQP-INFO DSA + MTX groups: info cost == execution cost source ===")
+;;==== AQP-INFO-DSA - dsa + mtx cost equality · 02 · let / invocation ==== ========================
+(print "--- [AQP-INFO-DSA - dsa + mtx cost equality · 02 · let / invocation] ---")
 (let
     (
         (anhd:string KST.ANHD)

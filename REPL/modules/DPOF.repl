@@ -1,3 +1,16 @@
+;;
+;; REPL/modules/DPOF.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/modules/DPOF.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 ;; REPL/modules/DPOF.repl — STANDALONE DPOF (ortofungible) tester.
 ;;
 ;; P2 rebuild. The previous version asserted NOTHING about DPOF -- it printed exactly the deploy
@@ -15,8 +28,12 @@
 ;;
 (begin-tx "DPOF-01 — issuance properties (C_Issue, via fixture)")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== DPOF-01 — issuance properties (C_Issue, via fixture) · 01 · namespace ==== =================
+(print "--- [DPOF-01 — issuance properties (C_Issue, via fixture) · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [DPOF-01 · 01 · issuance properties] ---")
+;;==== DPOF-01 — issuance properties (C_Issue, via fixture) · 02 · let / invocation ==== ==========
+(print "--- [DPOF-01 — issuance properties (C_Issue, via fixture) · 02 · let / invocation] ---")
 (let
     (
         (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
@@ -48,7 +65,11 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [DPOF-02 · 01 · mint creates a nonce] ---")
+;;==== DPOF-02 — C_Mint creates a NEW NONCE (not a flat supply bump) · 01 · env-sigs (caps) ==== ==
+(print "--- [DPOF-02 — C_Mint creates a NEW NONCE (not a flat supply bump) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== DPOF-02 — C_Mint creates a NEW NONCE (not a flat supply bump) · 02 · let / invocation ==== =
+(print "--- [DPOF-02 — C_Mint creates a NEW NONCE (not a flat supply bump) · 02 · let / invocation] ---")
 (let
     (
         (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
@@ -99,7 +120,11 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [DPOF-03 · 01 · add-quantity grows in place] ---")
+;;==== DPOF-03 — C_AddQuantity grows an EXISTING nonce in place · 01 · env-sigs (caps) ==== =======
+(print "--- [DPOF-03 — C_AddQuantity grows an EXISTING nonce in place · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== DPOF-03 — C_AddQuantity grows an EXISTING nonce in place · 02 · let / invocation ==== ======
+(print "--- [DPOF-03 — C_AddQuantity grows an EXISTING nonce in place · 02 · let / invocation] ---")
 (let
     (
         (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
@@ -132,7 +157,11 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [DPOF-04 · 01 · nonce transfer] ---")
+;;==== DPOF-04 — C_Transfer moves a whole nonce; supply is conserved · 01 · env-sigs (caps) ==== ==
+(print "--- [DPOF-04 — C_Transfer moves a whole nonce; supply is conserved · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== DPOF-04 — C_Transfer moves a whole nonce; supply is conserved · 02 · let / invocation ==== =
+(print "--- [DPOF-04 — C_Transfer moves a whole nonce; supply is conserved · 02 · let / invocation] ---")
 (let
     (
         (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
@@ -168,7 +197,11 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [DPOF-05 · 01 · pause + control] ---")
+;;==== DPOF-05 — pause + control properties · 01 · env-sigs (caps) ==== ===========================
+(print "--- [DPOF-05 — pause + control properties · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== DPOF-05 — pause + control properties · 02 · let / invocation ==== ==========================
+(print "--- [DPOF-05 — pause + control properties · 02 · let / invocation] ---")
 (let
     (
         (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
@@ -251,7 +284,11 @@
 ;;A single move cannot detect this -- after one move the previous holder IS the owner, who keeps
 ;;the role for other reasons. It takes TWO consecutive moves, so that the second one's previous
 ;;holder is a third party with nothing else granting them the role.
+;;==== DPOF-MCR — C_MoveCreateRole MOVES, it does not merely grant (audit #2C) · 01 · env-sigs (caps) ==== 
+(print "--- [DPOF-MCR — C_MoveCreateRole MOVES, it does not merely grant (audit #2C) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== DPOF-MCR — C_MoveCreateRole MOVES, it does not merely grant (audit #2C) · 02 · let / invocation ==== 
+(print "--- [DPOF-MCR — C_MoveCreateRole MOVES, it does not merely grant (audit #2C) · 02 · let / invocation] ---")
 (let
     (
         (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
@@ -309,7 +346,11 @@
 ;;
 ;;MOCKO is issued with can-freeze and can-wipe OFF and everything else ON, so one fixture gives
 ;;both sides of the property family without needing a second token.
+;;==== DPOF-G1 — the UEV_ guard family, probed DIRECTLY · 01 · env-sigs (caps) ==== ===============
+(print "--- [DPOF-G1 — the UEV_ guard family, probed DIRECTLY · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== DPOF-G1 — the UEV_ guard family, probed DIRECTLY · 02 · let / invocation ==== ==============
+(print "--- [DPOF-G1 — the UEV_ guard family, probed DIRECTLY · 02 · let / invocation] ---")
 (let
     (
         (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
@@ -437,6 +478,8 @@
 ;;
 (begin-tx "DPOF-G2 — UCv_TakePureWipe: the slice bound is STRICT, and that is load-bearing")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== DPOF-G2 — UCv_TakePureWipe: the slice bound is STRICT, and that is load-bearing · 01 · namespace ==== 
+(print "--- [DPOF-G2 — UCv_TakePureWipe: the slice bound is STRICT, and that is load-bearing · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [DPOF-G2 · 01 · wipe-slice arity] ---")
 ;;UCv_TakePureWipe cuts the first <size> entries off a RemovableNonces object — it is the knife
@@ -447,6 +490,8 @@
 ;;that accepted it would loop forever handing itself back the same work. So the bound is pinned
 ;;on BOTH sides — one below the length succeeds, exactly the length is refused — because a test
 ;;that only tried an obviously-too-large size would pass just as happily against (<= size l).
+;;==== DPOF-G2 — UCv_TakePureWipe: the slice bound is STRICT, and that is load-bearing · 02 · let / invocation ==== 
+(print "--- [DPOF-G2 — UCv_TakePureWipe: the slice bound is STRICT, and that is load-bearing · 02 · let / invocation] ---")
 (let
     (
         (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
@@ -490,6 +535,8 @@
 ;;
 ;;Each case takes its own transaction: a granted capability is cached for the rest of the tx, so
 ;;re-acquiring the same one returns the grant WITHOUT re-running the body.
+;;==== DPOF-G3a — DPOF|C>DEBIT: the list-arity gate that fronts every wipe and transmit · 01 · env-sigs (caps) ==== 
+(print "--- [DPOF-G3a — DPOF|C>DEBIT: the list-arity gate that fronts every wipe and transmit · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (map print
     [
@@ -512,6 +559,8 @@
 ;;
 ;;A real id is required here — unlike DPOF-G3a, both predicates READ (UR_IzNonce / UR_NoncesUsed),
 ;;so a dummy id would abort in the read rather than reach the guard.
+;;==== DPOF-G3b — DPOF|C>CREDIT: a nonce chain that is neither singular nor consecutive · 01 · env-sigs (caps) ==== 
+(print "--- [DPOF-G3b — DPOF|C>CREDIT: a nonce chain that is neither singular nor consecutive · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (map print
     [
@@ -549,6 +598,8 @@
 ;;and it is the first line of the cap, above every read. An out-of-domain tag would otherwise fall
 ;;through the cond to BAR and update the wrong linkage, so the guard is doing real work here even
 ;;though every in-tree caller passes a literal.
+;;==== DPOF-G3c — DPOF|C>UPDATE-SPECIAL: the vesting/sleeping/hibernation tag · 01 · env-sigs (caps) ==== 
+(print "--- [DPOF-G3c — DPOF|C>UPDATE-SPECIAL: the vesting/sleeping/hibernation tag · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (map print
     [
@@ -566,6 +617,8 @@
 ;;
 (begin-tx "DPOF-G4 — the ortofungible amount-precision rule")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== DPOF-G4 — the ortofungible amount-precision rule · 01 · namespace ==== =====================
+(print "--- [DPOF-G4 — the ortofungible amount-precision rule · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [DPOF-G4 · 01 · UEV_Amount precision] ---")
 ;;P3.3. A plain callable UEV_. The amount must be representable at the token's OWN decimals --
@@ -608,6 +661,8 @@
 (begin-tx "DPOF-G5 -- transfer roles: inactive until somebody holds one")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== DPOF-G5 -- transfer roles: inactive until somebody holds one · 01 · env-sigs (caps) ==== ===
+(print "--- [DPOF-G5 -- transfer roles: inactive until somebody holds one · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print "--- [DPOF-G5 . 01 . activating the role set] ---")
 ;;DPOF::UEV_MoveRoleCheck's "Incompatible Transfer Roles from {} to {}" was UNPINNED
@@ -621,6 +676,8 @@
 ;;copy-paste bug -- it computed the RECEIVER's membership from <sender> a second time, silently
 ;;degrading sender-OR-receiver to sender-only. Nothing asserted that DPOF's version really is an OR.
 ;;DPOF-G5c below does.
+;;==== DPOF-G5 -- transfer roles: inactive until somebody holds one · 02 · let / invocation ==== ==
+(print "--- [DPOF-G5 -- transfer roles: inactive until somebody holds one · 02 · let / invocation] ---")
 (let ((mo:string "MOCKO-98c486052a51"))
     (map print
         [
@@ -649,6 +706,8 @@
 ;;
 (begin-tx "DPOF-G5b -- neither party holds the role: refused")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== DPOF-G5b -- neither party holds the role: refused · 01 · namespace ==== ====================
+(print "--- [DPOF-G5b -- neither party holds the role: refused · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [DPOF-G5b . 01 . the rejection] ---")
 ;;Matched on the stable prefix: the full message interpolates two 162-glyph account strings.
@@ -665,11 +724,15 @@
 ;;
 (begin-tx "DPOF-G5c -- and the semantics are sender-OR-receiver, not sender-only")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== DPOF-G5c -- and the semantics are sender-OR-receiver, not sender-only · 01 · namespace ==== 
+(print "--- [DPOF-G5c -- and the semantics are sender-OR-receiver, not sender-only · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [DPOF-G5c . 01 . the OR, asserted from both sides] ---")
 ;;This is the half that the DPDC twin got wrong (#16H) and that nothing here checked. EITHER party
 ;;holding the role is enough. Asserting only the sender side would pass just as well against a
 ;;sender-only implementation -- which is precisely the bug that shipped next door.
+;;==== DPOF-G5c -- and the semantics are sender-OR-receiver, not sender-only · 02 · let / invocation ==== 
+(print "--- [DPOF-G5c -- and the semantics are sender-OR-receiver, not sender-only · 02 · let / invocation] ---")
 (let ((mo:string "MOCKO-98c486052a51"))
     (map print
         [
@@ -694,6 +757,8 @@
 ;;
 (begin-tx "DPOF-G6 — a nonce taken out of circulation, which is a state production really writes")
 (env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+;;==== DPOF-G6 — a nonce taken out of circulation, which is a state production really writes · 01 · namespace ==== 
+(print "--- [DPOF-G6 — a nonce taken out of circulation, which is a state production really writes · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [DPOF-G6 · 01 · the -1.0 out-of-circulation sentinel] ---")
 ;;UEV_NoncesCirculating enforces, per nonce, `(!= nonce-supply -1.0)`. Nothing in the suite had ever
@@ -712,6 +777,8 @@
 ;;The nonce row used here exists because of the earlier transactions in this file -- MOCKO nonce 1
 ;;with supply 1250.0. That is also why this block is at the END: at load time the nonce table is
 ;;empty and the guard's `read` would fail for a missing row instead of the reason being tested.
+;;==== DPOF-G6 — a nonce taken out of circulation, which is a state production really writes · 02 · let / invocation ==== 
+(print "--- [DPOF-G6 — a nonce taken out of circulation, which is a state production really writes · 02 · let / invocation] ---")
 (let ((t:string "MOCKO-98c486052a51"))
     (map print
         [
@@ -821,12 +888,16 @@
 ;;PK_Emma is here for the SUCCEEDING debit in section 03 only: nonce 1 ended up in her account earlier
 ;;in this file, and a transfer is signed by the holder. Every REFUSAL below needs only the admin key,
 ;;because each of those guards sits in front of the ownership check.
+;;==== DPOF-G12 — three client guards: bulk-transfer shape, the ATS-owner mint rule, the debit floor · 01 · env-sigs (caps) ==== 
+(print "--- [DPOF-G12 — three client guards: bulk-transfer shape, the ATS-owner mint rule, the debit floor · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }, { "key": "PK_Emma", "caps": [] }])
 (print "--- [DPOF-G12 · 01 · the bulk-transfer shape check, two ways to fail it] ---")
 ;;DPOF|C>BULK-TRANSFER folds several shape conditions into ONE message, so the same sentence answers
 ;;for different mistakes. Two of them are driven here because a single case would leave the `fold`
 ;;half-tested: an EMPTY receiver list (`(> l 0)`) and receivers that outnumber the nonce legs
 ;;(`(= l (length nonces-array))`). Pure argument-domain -- no fixture at all.
+;;==== DPOF-G12 — three client guards: bulk-transfer shape, the ATS-owner mint rule, the debit floor · 02 · let / invocation ==== 
+(print "--- [DPOF-G12 — three client guards: bulk-transfer shape, the ATS-owner mint rule, the debit floor · 02 · let / invocation] ---")
 (let
     (
         (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)

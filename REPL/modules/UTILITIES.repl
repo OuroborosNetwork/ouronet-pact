@@ -1,3 +1,16 @@
+;;
+;; REPL/modules/UTILITIES.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/modules/UTILITIES.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 ;; REPL/modules/UTILITIES.repl — STANDALONE tester for the U_* utility guards.
 ;;
 ;; P3.3, sixth module — and the cheapest class in the worklist. 09_U_ATS's guards are almost all
@@ -17,6 +30,8 @@
 ;;
 (begin-tx "UTIL-01 — UCv_SplitBalanceWithBooleans: four SEQUENTIAL guards, four distinct trips")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== UTIL-01 — UCv_SplitBalanceWithBooleans: four SEQUENTIAL guards, four distinct trips · 01 · namespace ==== 
+(print "--- [UTIL-01 — UCv_SplitBalanceWithBooleans: four SEQUENTIAL guards, four distinct trips · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [UTIL-01 · 01 · sequential guards, each tripped past the ones before it] ---")
 ;;This function carries FOUR enforces in a row, and each one masks every guard after it. So four
@@ -28,6 +43,8 @@
 ;;   2  (> split 0.0)                         "Amount {} to small to split into {} milestones"
 ;;   3  (= milestones tr-nr)                  "Input Lists do not sync"
 ;;   4  (= (+ big-chunk last-split) amount)   "Amount of {} could not be split ... succesfully"
+;;==== UTIL-01 — UCv_SplitBalanceWithBooleans: four SEQUENTIAL guards, four distinct trips · 02 · let / invocation ==== 
+(print "--- [UTIL-01 — UCv_SplitBalanceWithBooleans: four SEQUENTIAL guards, four distinct trips · 02 · let / invocation] ---")
 (let
     (
         (ref-U|ATS:module{UtilityAtsV3} U|ATS)
@@ -76,12 +93,16 @@
 ;;
 (begin-tx "UTIL-02 — the interval builders: two guards that differ by ONE divisor")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== UTIL-02 — the interval builders: two guards that differ by ONE divisor · 01 · namespace ==== 
+(print "--- [UTIL-02 — the interval builders: two guards that differ by ONE divisor · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [UTIL-02 · 01 · hard vs soft intervals] ---")
 ;;UCv_MakeHardIntervals and UCv_MakeSoftIntervals are near-twins: Soft carries the SAME
 ;;divisibility guard as Hard, plus one more (growth must divide by 3, because Soft splits each
 ;;growth step into thirds). Testing them as a pair is what shows the extra guard exists —
 ;;a single test on Soft would pass against a copy of Hard.
+;;==== UTIL-02 — the interval builders: two guards that differ by ONE divisor · 02 · let / invocation ==== 
+(print "--- [UTIL-02 — the interval builders: two guards that differ by ONE divisor · 02 · let / invocation] ---")
 (let
     (
         (ref-U|ATS:module{UtilityAtsV3} U|ATS)
@@ -118,12 +139,16 @@
 ;;
 (begin-tx "UTIL-03 — UEV_ColdDurationParameters: one predicate, two messages")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== UTIL-03 — UEV_ColdDurationParameters: one predicate, two messages · 01 · namespace ==== ====
+(print "--- [UTIL-03 — UEV_ColdDurationParameters: one predicate, two messages · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [UTIL-03 · 01 · the soft/hard branch] ---")
 ;;Same check on both branches, but the SOFT message names the offending values and the HARD one
 ;;does not. Asserted as a pair because the branch flag is the only thing that differs: a caller
 ;;that passed the flag the wrong way round would get a correct-looking rejection with the wrong
 ;;noun in it, and no test that looked at one branch alone would notice.
+;;==== UTIL-03 — UEV_ColdDurationParameters: one predicate, two messages · 02 · let / invocation ==== 
+(print "--- [UTIL-03 — UEV_ColdDurationParameters: one predicate, two messages · 02 · let / invocation] ---")
 (let
     (
         (ref-U|ATS:module{UtilityAtsV3} U|ATS)
@@ -152,6 +177,8 @@
 ;;
 (begin-tx "UTIL-04 — the bounded scalars, and what a folded enforce costs in diagnosis")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== UTIL-04 — the bounded scalars, and what a folded enforce costs in diagnosis · 01 · namespace ==== 
+(print "--- [UTIL-04 — the bounded scalars, and what a folded enforce costs in diagnosis · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [UTIL-04 · 01 · fee, decay, fee-position] ---")
 ;;UEV_Fee folds THREE independent conditions into one enforce and one message:
@@ -161,6 +188,8 @@
 ;;from the error text. The three tests below tell them apart only because each varies one input
 ;;— a caller debugging in production has no such handle. Recorded here rather than argued: the
 ;;rule is the house style, and this is what it buys and what it costs.
+;;==== UTIL-04 — the bounded scalars, and what a folded enforce costs in diagnosis · 02 · let / invocation ==== 
+(print "--- [UTIL-04 — the bounded scalars, and what a folded enforce costs in diagnosis · 02 · let / invocation] ---")
 (let
     (
         (ref-U|ATS:module{UtilityAtsV3} U|ATS)
@@ -212,12 +241,16 @@
 ;;
 (begin-tx "UTIL-05 — UCv_SolidifyUnstakeObject: a bounds guard with one message for both ends")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== UTIL-05 — UCv_SolidifyUnstakeObject: a bounds guard with one message for both ends · 01 · namespace ==== 
+(print "--- [UTIL-05 — UCv_SolidifyUnstakeObject: a bounds guard with one message for both ends · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [UTIL-05 · 01 · remove-position bounds] ---")
 ;;(and (> remove-position 0) (< remove-position how-many-rts)) under a single "Invalid
 ;;<remove-position>". Position 0 is excluded deliberately: index 0 is the PRIMAL reward token
 ;;that everything else folds INTO, so removing it is meaningless rather than merely out of
 ;;range. Both ends asserted; both give the same text.
+;;==== UTIL-05 — UCv_SolidifyUnstakeObject: a bounds guard with one message for both ends · 02 · let / invocation ==== 
+(print "--- [UTIL-05 — UCv_SolidifyUnstakeObject: a bounds guard with one message for both ends · 02 · let / invocation] ---")
 (let
     (
         (ref-U|ATS:module{UtilityAtsV3} U|ATS)
@@ -257,6 +290,8 @@
 ;;
 (begin-tx "UTIL-06 — UEV_AutostakeIndex: four guards, and one that ONE input can reach")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== UTIL-06 — UEV_AutostakeIndex: four guards, and one that ONE input can reach · 01 · namespace ==== 
+(print "--- [UTIL-06 — UEV_AutostakeIndex: four guards, and one that ONE input can reach · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [UTIL-06 · 01 · the atspair name guards, in order] ---")
 ;;Four sequential enforces, so again each trip must pass the ones before it:
@@ -279,6 +314,8 @@
 ;;Both are asserted below rather than described. The guard is not load-bearing: guard 3's
 ;;alphanumeric check catches "AB$CD" anyway, which is why this has never surfaced as a bug. But
 ;;a guard whose message describes a check it does not perform is a trap for the next reader.
+;;==== UTIL-06 — UEV_AutostakeIndex: four guards, and one that ONE input can reach · 02 · let / invocation ==== 
+(print "--- [UTIL-06 — UEV_AutostakeIndex: four guards, and one that ONE input can reach · 02 · let / invocation] ---")
 (let
     (
         (ref-U|ATS:module{UtilityAtsV3} U|ATS)
@@ -334,12 +371,16 @@
 ;;
 (begin-tx "UTIL-07 — the cold-recovery fee schedule: thresholds and array shape")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== UTIL-07 — the cold-recovery fee schedule: thresholds and array shape · 01 · namespace ==== =
+(print "--- [UTIL-07 — the cold-recovery fee schedule: thresholds and array shape · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [UTIL-07 · 01 · fee thresholds] ---")
 ;;UEV_CRF|FeeThresholds guards a fee LADDER: 1..100 entries, each at C-RBT precision, strictly
 ;;increasing. Strictly increasing is the interesting one -- a ladder that is merely
 ;;non-decreasing would let two rungs collide and make the fee lookup ambiguous, so EQUAL
 ;;neighbours are asserted to be refused, not just descending ones.
+;;==== UTIL-07 — the cold-recovery fee schedule: thresholds and array shape · 02 · let / invocation ==== 
+(print "--- [UTIL-07 — the cold-recovery fee schedule: thresholds and array shape · 02 · let / invocation] ---")
 (let
     (
         (ref-U|ATS:module{UtilityAtsV3} U|ATS)
@@ -403,6 +444,8 @@
 ;;
 (begin-tx "UTIL-08 — UEV_HibernationFees: bounds, then a divisibility nobody would guess")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== UTIL-08 — UEV_HibernationFees: bounds, then a divisibility nobody would guess · 01 · namespace ==== 
+(print "--- [UTIL-08 — UEV_HibernationFees: bounds, then a divisibility nobody would guess · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [UTIL-08 · 01 · peak/decay] ---")
 ;;Two enforces. The first folds SIX bounds into one message; the second is a scaled-integer
@@ -413,6 +456,8 @@
 ;;a stray malformed 7th predicate `(= () 0.0)` comparing Pact's unit value against 0.0 -- always
 ;;false, so the enforce rejected EVERY input. It was deleted 2026-08-17. The happy-path
 ;;assertion below is what would have caught it; there was no such assertion at the time.
+;;==== UTIL-08 — UEV_HibernationFees: bounds, then a divisibility nobody would guess · 02 · let / invocation ==== 
+(print "--- [UTIL-08 — UEV_HibernationFees: bounds, then a divisibility nobody would guess · 02 · let / invocation] ---")
 (let
     (
         (ref-U|ATS:module{UtilityAtsV3} U|ATS)
@@ -444,6 +489,8 @@
 ;;
 (begin-tx "UTIL-09 — the glyph account shape guards, mutated from REAL accounts")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== UTIL-09 — the glyph account shape guards, mutated from REAL accounts · 01 · namespace ==== =
+(print "--- [UTIL-09 — the glyph account shape guards, mutated from REAL accounts · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [UTIL-09 · 01 · DALOS account shape] ---")
 ;;A 162-character glyph account has four independent shape rules, and each trip below is the
@@ -455,6 +502,8 @@
 ;;   2  enforce-one on the first character  "Address|Account format is invalid"
 ;;   3  (= second ".")                      "...second Character must be a <.>"
 ;;   4  GLYPH|UEV_MsDc on the body          "Characters do not conform to the DALOS|CHARSET"
+;;==== UTIL-09 — the glyph account shape guards, mutated from REAL accounts · 02 · let / invocation ==== 
+(print "--- [UTIL-09 — the glyph account shape guards, mutated from REAL accounts · 02 · let / invocation] ---")
 (let
     (
         (ref-U|DALOS:module{UtilityDalosGlyphsV3} U|DALOS)
@@ -546,6 +595,8 @@
 ;;
 (begin-tx "UTIL-10 — UEV_Fee, twice: two functions, one name, different rules")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== UTIL-10 — UEV_Fee, twice: two functions, one name, different rules · 01 · namespace ==== ===
+(print "--- [UTIL-10 — UEV_Fee, twice: two functions, one name, different rules · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [UTIL-10 · 01 · the two fee validators] ---")
 ;;There are TWO UEV_Fee functions in the utilities and they do not agree:
@@ -556,6 +607,8 @@
 ;;So the DALOS validator has a HOLE the ATS one does not: 0.5 is a perfectly good fee to the ATS
 ;;rule and refused by the DALOS rule. Asserted directly against each other below, because a
 ;;caller holding a fee and choosing between them has no way to know that from the names.
+;;==== UTIL-10 — UEV_Fee, twice: two functions, one name, different rules · 02 · let / invocation ==== 
+(print "--- [UTIL-10 — UEV_Fee, twice: two functions, one name, different rules · 02 · let / invocation] ---")
 (let
     (
         (ref-U|ATS:module{UtilityAtsV3} U|ATS)
@@ -635,12 +688,16 @@
 ;;
 (begin-tx "UTIL-11 — the small utility guards, swept")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== UTIL-11 — the small utility guards, swept · 01 · namespace ==== ============================
+(print "--- [UTIL-11 — the small utility guards, swept · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [UTIL-11 · 01 · guard combinators, lists, integers, decimals] ---")
 ;;The tail of the utility worklist: one or two guards each, across six modules. Cheap enough
 ;;that leaving them unpinned would be pure neglect -- every one is a pure function reached by a
 ;;direct call. Each still gets its accepting case, because a guard that always fires satisfies
 ;;every rejection test ever written against it.
+;;==== UTIL-11 — the small utility guards, swept · 02 · let / invocation ==== =====================
+(print "--- [UTIL-11 — the small utility guards, swept · 02 · let / invocation] ---")
 (let
     (
         (ref-U|G:module{OuronetGuardsV2} U|G)
@@ -776,7 +833,11 @@
 ;;refuse it and the non-strict form must accept it. Three such inputs pin all six.
 ;;
 ;;These read (chain-data) directly, so env-chain-data IS the fixture -- no accounts, no tables.
+;;==== UTIL-12 — the gas-station bounds: three STRICT/NON-STRICT pairs · 01 · env-chain-data ==== =
+(print "--- [UTIL-12 — the gas-station bounds: three STRICT/NON-STRICT pairs · 01 · env-chain-data] ---")
 (env-chain-data { "gas-limit": 1000, "gas-price": 0.001 })
+;;==== UTIL-12 — the gas-station bounds: three STRICT/NON-STRICT pairs · 02 · let / invocation ==== 
+(print "--- [UTIL-12 — the gas-station bounds: three STRICT/NON-STRICT pairs · 02 · let / invocation] ---")
 (let
     (
         (ref-U|ST:module{OuronetGasStationV2} U|ST)
@@ -836,6 +897,8 @@
 ;;
 (begin-tx "UTIL-13 — UCv_SplitBalanceForVesting: two live guards, and one that CANNOT fire")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== UTIL-13 — UCv_SplitBalanceForVesting: two live guards, and one that CANNOT fire · 01 · namespace ==== 
+(print "--- [UTIL-13 — UCv_SplitBalanceForVesting: two live guards, and one that CANNOT fire · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [UTIL-13 · 01 · the vesting splitter] ---")
 ;;The sibling of UTIL-01's UCv_SplitBalanceWithBooleans, and it carries the same three-guard
@@ -857,6 +920,8 @@
 ;;precision loses the remainder to floor, and the pieces then sum to less than what was handed
 ;;in -- 1.005 over 2 milestones at precision 2 gives 0.50 + 0.50 = 1.00, and 0.005 of someone's
 ;;balance would have evaporated. That is the guard that makes this function safe to hold funds.
+;;==== UTIL-13 — UCv_SplitBalanceForVesting: two live guards, and one that CANNOT fire · 02 · let / invocation ==== 
+(print "--- [UTIL-13 — UCv_SplitBalanceForVesting: two live guards, and one that CANNOT fire · 02 · let / invocation] ---")
 (let
     (
         (ref-U|VST:module{UtilityVstV2} U|VST)
@@ -900,6 +965,8 @@
 ;;
 (begin-tx "UTIL-14 — the last three utility guards: reserved names, tag shape, role removal")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== UTIL-14 — the last three utility guards: reserved names, tag shape, role removal · 01 · namespace ==== 
+(print "--- [UTIL-14 — the last three utility guards: reserved names, tag shape, role removal · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (env-data {"probe-ks":["abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcd"]})
 (print "--- [UTIL-14 · 01 · U|RS reserved-name protocol] ---")
@@ -915,6 +982,8 @@
 ;;and the refusal splits by prefix, `k:` getting its own message. Both refusals are pinned, and
 ;;both acceptances too — because a guard that refused everything would satisfy the rejections
 ;;while making every legitimate account unusable, which is the more expensive failure.
+;;==== UTIL-14 — the last three utility guards: reserved names, tag shape, role removal · 02 · let / invocation ==== 
+(print "--- [UTIL-14 — the last three utility guards: reserved names, tag shape, role removal · 02 · let / invocation] ---")
 (let
     (
         (ref-U|RS:module{ReservedAccountsV2} U|RS)
@@ -971,6 +1040,8 @@
 (begin-tx "UTIL-15 — the ATS audit's C2 fix, which had no witness at all")
 (print "")
 (print "=== UTIL-15 — UC_ReshapeUnstakeObject runs UNCONDITIONALLY ==================")
+;;==== UTIL-15 — the ATS audit's C2 fix, which had no witness at all · 01 · namespace ==== ========
+(print "--- [UTIL-15 — the ATS audit's C2 fix, which had no witness at all · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;THE ATS AUDIT'S `C2` WAS A CRITICAL-RANKED FINDING AND ITS FIX HAD NO WITNESS. Established while
@@ -990,6 +1061,8 @@
 ;;THE WITNESS IS THE ZERO CASE, and it is chosen precisely because the removed gate REJECTS it --
 ;;asserted below rather than assumed. Reinstating the gate makes the zero object come back with
 ;;three elements instead of two, and this block goes red. That is the property `C2` bought.
+;;==== UTIL-15 — the ATS audit's C2 fix, which had no witness at all · 02 · let / invocation ==== =
+(print "--- [UTIL-15 — the ATS audit's C2 fix, which had no witness at all · 02 · let / invocation] ---")
 (let
     (
         (ref-U|ATS:module{UtilityAtsV3} U|ATS)

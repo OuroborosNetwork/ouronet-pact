@@ -41,6 +41,8 @@
 (namespace "ouronet-ns")
 ;;==== TX-FRAG-001 · 01 · env-sigs (caps) ====
 (print "--- [TX-FRAG-001 · 01 · env-sigs (caps)] ---")
+;;==== TX-FRAG-001 - Issue + Create fragmentable SFT nonce · 01 · let / invocation ==== ===========
+(print "--- [TX-FRAG-001 - Issue + Create fragmentable SFT nonce · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -122,9 +124,13 @@
 (namespace "ouronet-ns")
 ;;==== TX-FRAG-002 · 01 · env-sigs (caps) - ANHD (owner) enables + transfers ====
 (print "--- [TX-FRAG-002 · 01 · env-sigs (caps) - ANHD] ---")
+;;==== TX-FRAG-002 - Enable fragmentation, transfer to LUMY, Make -> Merge exact conservation · 01 · env-sigs (caps) ==== 
+(print "--- [TX-FRAG-002 - Enable fragmentation, transfer to LUMY, Make -> Merge exact conservation · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 ;;==== TX-FRAG-002 · 02 · owner enables fragmentation for nonce 1, transfers 100 units to LUMY ====
 (print "--- [TX-FRAG-002 · 02 · owner enables fragmentation + transfers 100 units to LUMY] ---")
+;;==== TX-FRAG-002 - Enable fragmentation, transfer to LUMY, Make -> Merge exact conservation · 02 · let / invocation ==== 
+(print "--- [TX-FRAG-002 - Enable fragmentation, transfer to LUMY, Make -> Merge exact conservation · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -235,9 +241,13 @@
 (namespace "ouronet-ns")
 ;;==== TX-FRAG-003 · 01 · env-sigs (caps) - LUMY re-fragments her restored native units ====
 (print "--- [TX-FRAG-003 · 01 · env-sigs (caps) - LUMY] ---")
+;;==== TX-FRAG-003 - Repurpose consent gate: non-owner rejected, owner succeeds · 01 · env-sigs (caps) ==== 
+(print "--- [TX-FRAG-003 - Repurpose consent gate: non-owner rejected, owner succeeds · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Lumy", "caps": [] }])
 ;;==== TX-FRAG-003 · 02 · re-fragment LUMY's 100 native units for the repurpose probe ====
 (print "--- [TX-FRAG-003 · 02 · re-fragment LUMY's 100 native units for the repurpose probe] ---")
+;;==== TX-FRAG-003 - Repurpose consent gate: non-owner rejected, owner succeeds · 02 · let / invocation ==== 
+(print "--- [TX-FRAG-003 - Repurpose consent gate: non-owner rejected, owner succeeds · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)

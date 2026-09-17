@@ -13,6 +13,8 @@
 (print "=== TX-AQP-CL03 — OuroLpFarm: triplet Tier-2 + MULTIPLET_BASE OURO collect =========")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-CL03 - Farm triplet MULTIPLET_BASE OURO collect · 01 · let / invocation ==== ========
+(print "--- [TX-AQP-CL03 - Farm triplet MULTIPLET_BASE OURO collect · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -230,6 +232,8 @@
 (print "=== TX-AQP-CL04 — OuroLpFarm: two stakers share inject by W_user =============")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-CL04 - Farm multi-staker inject/collect fairness · 01 · let / invocation ==== =======
+(print "--- [TX-AQP-CL04 - Farm multi-staker inject/collect fairness · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -528,6 +532,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-AQP-CL05 - DHOuroLp dual-stream vacate (TF LP + Z| OF LP)")
@@ -535,6 +543,8 @@
 (print "=== TX-AQP-CL05 — VCT-15: vacate TF LP then Z| sleeping LP on DHOuroLp ======")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-CL05 - DHOuroLp dual-stream vacate (TF LP + Z| OF LP) · 01 · let / invocation ==== ==
+(print "--- [TX-AQP-CL05 - DHOuroLp dual-stream vacate (TF LP + Z| OF LP) · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)

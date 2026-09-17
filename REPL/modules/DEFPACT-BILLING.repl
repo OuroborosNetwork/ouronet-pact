@@ -1,4 +1,17 @@
 ;;
+;; REPL/modules/DEFPACT-BILLING.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/modules/DEFPACT-BILLING.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
+;;
 ;; REPL/modules/DEFPACT-BILLING.repl — the DEFPACT BILLING harness.
 ;;
 ;; WHY THIS FILE EXISTS, and why it did not exist before 2026-09-14.
@@ -78,7 +91,11 @@
 ;;which is IGNIS moved as PRINCIPAL and therefore touches no cumulator. Z_Reads' preview DECLARES
 ;;the tax in its pre-text (UC_LiquidityTaxDeclaration); this asserts the declaration is arithmetic,
 ;;not decoration.
+;;==== DPB-01 - the MULTISTEP add-liquidity door, billed end to end · 01 · env-sigs (caps) ==== ===
+(print "--- [DPB-01 - the MULTISTEP add-liquidity door, billed end to end · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== DPB-01 - the MULTISTEP add-liquidity door, billed end to end · 02 · let / invocation ==== ==
+(print "--- [DPB-01 - the MULTISTEP add-liquidity door, billed end to end · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-CP:module{TalosStageOne_ClientPactsV4} TS01-CP)
@@ -204,6 +221,8 @@
 ;;
 ;;WHY THIS NEEDED A NEW HARNESS: the exec spans three transactions. No existing suite could bracket
 ;;it, so nothing in 21,580 assertions could compare this preview to this charge.
+;;==== DPB-02 - the MULTISTEP pool issuance, billed end to end (the GS-04 proof) · 01 · let / invocation ==== 
+(print "--- [DPB-02 - the MULTISTEP pool issuance, billed end to end (the GS-04 proof) · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -304,6 +323,8 @@
 ;;LOOK COVERED. Here the covered twin was the one I fixed. All three route through the same
 ;;SWPI::URCi_IssuePool now, so re-pointing any ONE of them back at URCi_Issue would leave DPB-02
 ;;green and ship the over-quote on the other two.
+;;==== DPB-03 - the STABLE pool defpact, preview vs charge · 01 · let / invocation ==== ===========
+(print "--- [DPB-03 - the STABLE pool defpact, preview vs charge · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -398,6 +419,8 @@
 ;;LOOK COVERED. Here the covered twin was the one I fixed. All three route through the same
 ;;SWPI::URCi_IssuePool now, so re-pointing any ONE of them back at URCi_Issue would leave DPB-02
 ;;green and ship the over-quote on the other two.
+;;==== DPB-04 - the WEIGHTED pool defpact, preview vs charge · 01 · let / invocation ==== =========
+(print "--- [DPB-04 - the WEIGHTED pool defpact, preview vs charge · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -496,7 +519,11 @@
 ;;
 ;;So this block varies it. With IGNIS collection switched OFF, every door to the operation must go
 ;;free -- and the defpact door is the one that used to keep charging.
+;;==== DPB-05 - GS-05: the defpact door with the virtual-gas switch OFF · 01 · env-sigs (caps) ==== 
+(print "--- [DPB-05 - GS-05: the defpact door with the virtual-gas switch OFF · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== DPB-05 - GS-05: the defpact door with the virtual-gas switch OFF · 02 · let / invocation ==== 
+(print "--- [DPB-05 - GS-05: the defpact door with the virtual-gas switch OFF · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)

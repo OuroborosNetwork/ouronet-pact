@@ -16,9 +16,13 @@
 (namespace "ouronet-ns")
 ;;==== TX-DP-001 · 01 · env-sigs (caps) ====
 (print "--- [TX-DP-001 · 01 · env-sigs] ---")
+;;==== TX-DP-001 - register CNF (NF) to launchpad, fuel a nonce, retrieve it · 01 · env-sigs (caps) ==== 
+(print "--- [TX-DP-001 - register CNF (NF) to launchpad, fuel a nonce, retrieve it · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
 ;;==== TX-DP-001 · 02 · register / fuel / retrieve ====
 (print "--- [TX-DP-001 · 02 · register / fuel / retrieve] ---")
+;;==== TX-DP-001 - register CNF (NF) to launchpad, fuel a nonce, retrieve it · 02 · let / invocation ==== 
+(print "--- [TX-DP-001 - register CNF (NF) to launchpad, fuel a nonce, retrieve it · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -42,15 +46,23 @@
 )
 (print "===^^^===")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;;================================================================================
 (begin-tx "TX-DP-002 - SF (TSFS) register / fuel / retrieve")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 ;;==== TX-DP-002 · 01 · env-sigs (caps) ====
 (print "--- [TX-DP-002 · 01 · env-sigs] ---")
+;;==== TX-DP-002 - SF (TSFS) register / fuel / retrieve · 01 · env-sigs (caps) ==== ===============
+(print "--- [TX-DP-002 - SF (TSFS) register / fuel / retrieve · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
 ;;==== TX-DP-002 · 02 · SF fuel / retrieve ====
 (print "--- [TX-DP-002 · 02 · SF fuel / retrieve] ---")
+;;==== TX-DP-002 - SF (TSFS) register / fuel / retrieve · 02 · let / invocation ==== ==============
+(print "--- [TX-DP-002 - SF (TSFS) register / fuel / retrieve · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -78,9 +90,13 @@
 (namespace "ouronet-ns")
 ;;==== TX-DP-003 · 01 · env-sigs (caps) ====
 (print "--- [TX-DP-003 · 01 · env-sigs] ---")
+;;==== TX-DP-003 - TF (OURO) register / fuel / retrieve · 01 · env-sigs (caps) ==== ===============
+(print "--- [TX-DP-003 - TF (OURO) register / fuel / retrieve · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
 ;;==== TX-DP-003 · 02 · TF fuel / retrieve ====
 (print "--- [TX-DP-003 · 02 · TF fuel / retrieve] ---")
+;;==== TX-DP-003 - TF (OURO) register / fuel / retrieve · 02 · let / invocation ==== ==============
+(print "--- [TX-DP-003 - TF (OURO) register / fuel / retrieve · 02 · let / invocation] ---")
 (let
     (
         (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
@@ -96,12 +112,18 @@
 )
 (print "===^^^===")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;;================================================================================
 (begin-tx "TX-DP-004 - OF: issue fresh DPOF, mint, register, fuel, retrieve")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 ;;==== TX-DP-004 · 01 · env-sigs (STOA fee caps for DPOF issue) ====
 (print "--- [TX-DP-004 · 01 · env-sigs] ---")
+;;==== TX-DP-004 - OF: issue fresh DPOF, mint, register, fuel, retrieve · 01 · env-sigs (caps) ==== 
+(print "--- [TX-DP-004 - OF: issue fresh DPOF, mint, register, fuel, retrieve · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -122,6 +144,8 @@
 )
 ;;==== TX-DP-004 · 02 · issue / mint / register / fuel / retrieve ====
 (print "--- [TX-DP-004 · 02 · OF issue/mint/fuel/retrieve] ---")
+;;==== TX-DP-004 - OF: issue fresh DPOF, mint, register, fuel, retrieve · 02 · let / invocation ==== 
+(print "--- [TX-DP-004 - OF: issue fresh DPOF, mint, register, fuel, retrieve · 02 · let / invocation] ---")
 (let
     (
         (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)

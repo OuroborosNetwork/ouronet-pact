@@ -15,6 +15,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (env-enable-repl-natives true)
+;;==== TX-VCT-00 - deploy VacateDpnfProbe helpers · 01 · env-sigs (caps) ==== =====================
+(print "--- [TX-VCT-00 - deploy VacateDpnfProbe helpers · 01 · env-sigs (caps)] ---")
 (env-sigs
     [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}]
 )
@@ -44,6 +46,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (begin-tx "TX-VCT-TF01b - REHAUL: XB_VacateTrueFungible (pool-id only, on-chain scan)")
@@ -51,7 +57,11 @@
 (print "=== TX-VCT-TF01b — REHAUL TF vacate: input is JUST the pool-id (legs scanned on-chain) ===")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-VCT-TF01b - REHAUL: XB_VacateTrueFungible (pool-id only, on-chain scan) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-VCT-TF01b - REHAUL: XB_VacateTrueFungible (pool-id only, on-chain scan) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-VCT-TF01b - REHAUL: XB_VacateTrueFungible (pool-id only, on-chain scan) · 02 · let / invocation ==== 
+(print "--- [TX-VCT-TF01b - REHAUL: XB_VacateTrueFungible (pool-id only, on-chain scan) · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -103,6 +113,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=== END TX-VCT-TF01b =======================================================")
 (print "")
 ;;
@@ -111,7 +125,11 @@
 (print "=== TX-VCT-CC01 — REHAUL agnostic full vacate: CC_FullVacate(pool-id) on class-1 ===")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-VCT-CC01 - REHAUL: CC_FullVacate agnostic (class-1 pool, pool-id only) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-VCT-CC01 - REHAUL: CC_FullVacate agnostic (class-1 pool, pool-id only) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-VCT-CC01 - REHAUL: CC_FullVacate agnostic (class-1 pool, pool-id only) · 02 · let / invocation ==== 
+(print "--- [TX-VCT-CC01 - REHAUL: CC_FullVacate agnostic (class-1 pool, pool-id only) · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -156,6 +174,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=== END TX-VCT-CC01 ========================================================")
 (print "")
 ;;
@@ -164,7 +186,11 @@
 (print "=== TX-VCT-CC02 — empty-lane guard: CC_FullVacate on an ALREADY-EMPTY pool must no-op ===")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-VCT-CC02 - REHAUL: CC_FullVacate empty-lane no-op (already-empty pool) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-VCT-CC02 - REHAUL: CC_FullVacate empty-lane no-op (already-empty pool) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-VCT-CC02 - REHAUL: CC_FullVacate empty-lane no-op (already-empty pool) · 02 · let / invocation ==== 
+(print "--- [TX-VCT-CC02 - REHAUL: CC_FullVacate empty-lane no-op (already-empty pool) · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -196,6 +222,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=== END TX-VCT-CC02 ========================================================")
 (print "")
 ;;
@@ -204,6 +234,8 @@
 (print "=== TX-VCT-TF02 — TF batch vacate (1 batch drains all → auto-finalize) =====")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-VCT-TF02 - CCp_BatchVacateTrueFungible single batch · 01 · let / invocation ==== ========
+(print "--- [TX-VCT-TF02 - CCp_BatchVacateTrueFungible single batch · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -266,6 +298,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=== END TX-VCT-TF02 ========================================================")
 (print "")
 ;;
@@ -274,7 +310,11 @@
 (print "=== TX-VCT-L01b — REHAUL OF vacate: pool-id + dpof only (legs scanned on-chain) ===")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-VCT-L01b - REHAUL: XB_VacateOrtoFungible (pool-id + dpof only, on-chain scan) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-VCT-L01b - REHAUL: XB_VacateOrtoFungible (pool-id + dpof only, on-chain scan) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-VCT-L01b - REHAUL: XB_VacateOrtoFungible (pool-id + dpof only, on-chain scan) · 02 · let / invocation ==== 
+(print "--- [TX-VCT-L01b - REHAUL: XB_VacateOrtoFungible (pool-id + dpof only, on-chain scan) · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -314,6 +354,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=== END TX-VCT-L01b ========================================================")
 (print "")
 ;;
@@ -322,6 +366,8 @@
 (print "=== TX-VCT-L02 — DPSF Legs: batch0 finalize=false → re-plan → finalize =====")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-VCT-L02 - DPSF Legs partial then continue finalize · 01 · let / invocation ==== =========
+(print "--- [TX-VCT-L02 - DPSF Legs partial then continue finalize · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -427,6 +473,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=== END TX-VCT-L02 =========================================================")
 (print "")
 ;;
@@ -435,6 +485,8 @@
 (print "=== TX-VCT-L02b — REHAUL DPSF vacate: pool-id + dpsf only (whole collection) ===")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-VCT-L02b - REHAUL: XB_VacateSemiFungible (pool-id + dpsf only, on-chain scan) · 01 · let / invocation ==== 
+(print "--- [TX-VCT-L02b - REHAUL: XB_VacateSemiFungible (pool-id + dpsf only, on-chain scan) · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -488,6 +540,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=== END TX-VCT-L02b ========================================================")
 (print "")
 ;;
@@ -496,6 +552,8 @@
 (print "=== TX-VCT-L03 — Abort a vacate campaign mid-batch (stake stays disabled) ===")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-VCT-L03 - C_AbortVacate mid batch (partial → abort) · 01 · let / invocation ==== ========
+(print "--- [TX-VCT-L03 - C_AbortVacate mid batch (partial → abort) · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -617,6 +675,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=== END TX-VCT-L03 =========================================================")
 (print "")
 ;;
@@ -625,6 +687,8 @@
 (print "=== TX-VCT-L04 — Re-enable stake after abort ================================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-VCT-L04 - C_EnablePoolStake after abort · 01 · let / invocation ==== ====================
+(print "--- [TX-VCT-L04 - C_EnablePoolStake after abort · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -666,7 +730,11 @@
 ;; a defun (runs the enforce). EMMA is NOT the SfStakePool owner (owner = ANHD); all three must fail.
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-VCT-L04b - only the pool OWNER may vacate / abort / enable (owner-gate negatives) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-VCT-L04b - only the pool OWNER may vacate / abort / enable (owner-gate negatives) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
+;;==== TX-VCT-L04b - only the pool OWNER may vacate / abort / enable (owner-gate negatives) · 02 · let / invocation ==== 
+(print "--- [TX-VCT-L04b - only the pool OWNER may vacate / abort / enable (owner-gate negatives) · 02 · let / invocation] ---")
 (let
     (
         (foreign:string KST.EMMA)
@@ -694,6 +762,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=== END TX-VCT-L04b =========================================================")
 (print "")
 ;;
@@ -702,6 +774,8 @@
 (print "=== TX-VCT-DPNF01 — DPNF full vacate (DHB mint probe) ======================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-VCT-DPNF01 - DHB full vacate (mint probe) · 01 · let / invocation ==== ==================
+(print "--- [TX-VCT-DPNF01 - DHB full vacate (mint probe) · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -813,6 +887,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=== END TX-VCT-DPNF01 ======================================================")
 (print "")
 ;;
@@ -821,6 +899,8 @@
 (print "=== TX-VCT-DPNF02 — DPNF Legs vacate (DHN mint probe) =======================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-VCT-DPNF02 - DHN Legs vacate (mint probe) · 01 · let / invocation ==== ==================
+(print "--- [TX-VCT-DPNF02 - DHN Legs vacate (mint probe) · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -932,6 +1012,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=== END TX-VCT-DPNF02 ======================================================")
 (print "")
 ;;
@@ -940,6 +1024,8 @@
 (print "=== TX-VCT-DPNF02b — REHAUL DPNF vacate: pool-id + dpnf only (whole collection) ===")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-VCT-DPNF02b - REHAUL: XB_VacateNonFungible (pool-id + dpnf only, on-chain scan) · 01 · let / invocation ==== 
+(print "--- [TX-VCT-DPNF02b - REHAUL: XB_VacateNonFungible (pool-id + dpnf only, on-chain scan) · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -990,6 +1076,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=== END TX-VCT-DPNF02b =====================================================")
 (print "")
 ;;
@@ -998,6 +1088,8 @@
 (print "=== TX-VCT-DPNF03 — DPNF Legs vacate (KBN mint probe) =======================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-VCT-DPNF03 - KBN Legs vacate (mint probe) · 01 · let / invocation ==== ==================
+(print "--- [TX-VCT-DPNF03 - KBN Legs vacate (mint probe) · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -1109,6 +1201,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=== END TX-VCT-DPNF03 ======================================================")
 (print "")
 ;;
@@ -1117,6 +1213,8 @@
 (print "=== TX-VCT-N01 — empty batch arrays rejected (gas-ok requires l>0) ===========")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-VCT-N01 - expect-failure empty batch arrays rejected · 01 · let / invocation ==== =======
+(print "--- [TX-VCT-N01 - expect-failure empty batch arrays rejected · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -1169,6 +1267,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=== END TX-VCT-N01 ===========================================================")
 (print "")
 ;;
@@ -1177,6 +1279,8 @@
 (print "=== TX-VCT-N02 — batch per-leg amount must match tracker (else rejected) ====")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-VCT-N02 - expect-failure batch amount mismatch vs tracker · 01 · let / invocation ==== ==
+(print "--- [TX-VCT-N02 - expect-failure batch amount mismatch vs tracker · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -1229,6 +1333,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=== END TX-VCT-N02 ===========================================================")
 (print "")
 ;;
@@ -1237,6 +1345,8 @@
 (print "=== TX-VCT-P01 — UI offline plan smoke (no vacate writes) ==================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-VCT-P01 - offline plan helpers (URD + URDC + UC) · 01 · let / invocation ==== ===========
+(print "--- [TX-VCT-P01 - offline plan helpers (URD + URDC + UC) · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -1282,6 +1392,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=== END TX-VCT-P01 ===========================================================")
 (print "")
 ;;
@@ -1290,6 +1404,8 @@
 (print "=== TX-VCT-L05 — TF Legs: 2 owners → N=2 finalize=false then finalize =====")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-VCT-L05 - TF Legs multi-batch two owners · 01 · let / invocation ==== ===================
+(print "--- [TX-VCT-L05 - TF Legs multi-batch two owners · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -1390,6 +1506,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=== END TX-VCT-L05 =========================================================")
 (print "")
 ;;
@@ -1398,6 +1518,8 @@
 (print "=== TX-VCT-N03 — partial batch does NOT auto-finalize (pool not empty) ======")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-VCT-N03 - partial batch leaves vacate in progress · 01 · let / invocation ==== ==========
+(print "--- [TX-VCT-N03 - partial batch leaves vacate in progress · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -1480,6 +1602,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=== END TX-VCT-N03 ===========================================================")
 (print "")
 ;;
@@ -1488,6 +1614,8 @@
 (print "=== TX-VCT-L06 — OF Legs: 2 owners → N=2 finalize=false then finalize =====")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-VCT-L06 - OF Legs multi-batch two owners · 01 · let / invocation ==== ===================
+(print "--- [TX-VCT-L06 - OF Legs multi-batch two owners · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -1630,6 +1758,8 @@
 (print "=== TX-VCT-RESUME-A — Round 1 drains 1 of 3 legs; campaign FREEZES, not finalized ==")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-VCT-RESUME-A - dedicated pool bootstrap + stake 3 legs + ROUND 1 (partial) · 01 · let / invocation ==== 
+(print "--- [TX-VCT-RESUME-A - dedicated pool bootstrap + stake 3 legs + ROUND 1 (partial) · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -1725,7 +1855,11 @@
 (print "=== TX-VCT-RESUME-B — Round 2 tx1: UI re-reads remaining, drains EMMA; STILL frozen ==")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-VCT-RESUME-B - RE-INITIATE round 2, tx 1 of 2 (continue from frozen state) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-VCT-RESUME-B - RE-INITIATE round 2, tx 1 of 2 (continue from frozen state) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-VCT-RESUME-B - RE-INITIATE round 2, tx 1 of 2 (continue from frozen state) · 02 · let / invocation ==== 
+(print "--- [TX-VCT-RESUME-B - RE-INITIATE round 2, tx 1 of 2 (continue from frozen state) · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -1781,7 +1915,11 @@
 (print "=== TX-VCT-RESUME-C — Round 2 tx2: last leg drained → campaign auto-finalizes ==")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-VCT-RESUME-C - round 2, tx 2 of 2: drain LAST leg → AUTO-FINALIZE · 01 · env-sigs (caps) ==== 
+(print "--- [TX-VCT-RESUME-C - round 2, tx 2 of 2: drain LAST leg → AUTO-FINALIZE · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-VCT-RESUME-C - round 2, tx 2 of 2: drain LAST leg → AUTO-FINALIZE · 02 · let / invocation ==== 
+(print "--- [TX-VCT-RESUME-C - round 2, tx 2 of 2: drain LAST leg → AUTO-FINALIZE · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -1836,6 +1974,8 @@
 ;; ONCE (unn==0), but does NOT decrement the per-user score and does NOT finalize. Scores stay live (to be
 ;; nuked lazily by the finalize generation bump, Step 4); the pool stays FROZEN until finalize. This is what
 ;; makes the drain cheap: no per-position score math, no aggregate delta.
+;;==== TX-VCT-DRAIN - vacate-v2 FAST-DRAIN: assets back + scores UNTOUCHED + not finalized · 01 · let / invocation ==== 
+(print "--- [TX-VCT-DRAIN - vacate-v2 FAST-DRAIN: assets back + scores UNTOUCHED + not finalized · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -1963,10 +2103,14 @@
 (print "=== TX-VCT-FINALIZE — v2 C_FinalizeVacate: bump generation + bulk-zero aggregates on the drained pool ==")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-VCT-FINALIZE - vacate-v2 nuke: drained pool -> scores lazily 0 + re-enabled + re-stake fresh · 01 · env-sigs (caps) ==== 
+(print "--- [TX-VCT-FINALIZE - vacate-v2 nuke: drained pool -> scores lazily 0 + re-enabled + re-stake fresh · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 ;; DrainVacPool was fully drained by TX-VCT-DRAIN (nns=0) but left FROZEN with scores UNTOUCHED (base 20). The
 ;; finalize nukes: it bumps each employed score's vacate-generation (so every per-user row reads 0 — stale) and
 ;; bulk-zeroes the aggregate totals, then re-enables the pool. A fresh re-stake then reads live again (gen reset).
+;;==== TX-VCT-FINALIZE - vacate-v2 nuke: drained pool -> scores lazily 0 + re-enabled + re-stake fresh · 02 · let / invocation ==== 
+(print "--- [TX-VCT-FINALIZE - vacate-v2 nuke: drained pool -> scores lazily 0 + re-enabled + re-stake fresh · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -2054,6 +2198,8 @@
 ;; batch whose est = unique-bens × PER-BEN + positions × PER-POS exceeds VACATE-GAS-BUDGET (2M). Tested at BOTH
 ;; boundaries — CONCENTRATED (1 beneficiary, many positions) and SPREAD (1 position per beneficiary) — reading
 ;; the ACTUAL constants so a coefficient change is caught. Applies to BOTH v1 vacate and v2 drain (shared cap).
+;;==== TX-VCT-GASBOUND - #FP2 Gap 1: vacate gas-max backstop (URC_*GasOk boundaries) · 01 · let / invocation ==== 
+(print "--- [TX-VCT-GASBOUND - #FP2 Gap 1: vacate gas-max backstop (URC_*GasOk boundaries) · 01 · let / invocation] ---")
 (let
     (
         (ref-VCT:module{AcquisitionVacateV2} AQP-VCT)
@@ -2094,6 +2240,8 @@
         )
     )
 )
+;;==== TX-VCT-GASBOUND - #FP2 Gap 1: vacate gas-max backstop (URC_*GasOk boundaries) · 02 · env-sigs (caps) ==== 
+(print "--- [TX-VCT-GASBOUND - #FP2 Gap 1: vacate gas-max backstop (URC_*GasOk boundaries) · 02 · env-sigs (caps)] ---")
 (env-sigs [])
 (commit-tx)
 (print "=== END TX-VCT-GASBOUND =====================================================")

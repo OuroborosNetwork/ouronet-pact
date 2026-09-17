@@ -20,9 +20,13 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-VSTH-001 · 01 · env-sigs (patron) ====
 (print "--- [TX-VSTH-001 · 01 · env-sigs] ---")
+;;==== TX-VSTH-001 - Vest + Reserve on OURO (isolated, funds may lock) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-VSTH-001 - Vest + Reserve on OURO (isolated, funds may lock) · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
 ;;==== TX-VSTH-001 · 02 · Vest (standalone) + Reserve (open then reserve) ====
 (print "--- [TX-VSTH-001 · 02 · vest / reserve] ---")
+;;==== TX-VSTH-001 - Vest + Reserve on OURO (isolated, funds may lock) · 02 · let / invocation ==== 
+(print "--- [TX-VSTH-001 - Vest + Reserve on OURO (isolated, funds may lock) · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -41,6 +45,10 @@
 )
 (print "===^^^===")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;;================================================================================
 (begin-tx "TX-VSTH-002 - Unvest the matured OURO vesting (time advanced past duration)")
 (namespace "ouronet-ns")
@@ -49,9 +57,13 @@
 (env-chain-data { "block-time": (time "2030-01-01T00:00:00Z") })
 ;;==== TX-VSTH-002 · 01 · env-sigs (patron) ====
 (print "--- [TX-VSTH-002 · 01 · env-sigs] ---")
+;;==== TX-VSTH-002 - Unvest the matured OURO vesting (time advanced past duration) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-VSTH-002 - Unvest the matured OURO vesting (time advanced past duration) · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
 ;;==== TX-VSTH-002 · 02 · Unvest ====
 (print "--- [TX-VSTH-002 · 02 · unvest matured position] ---")
+;;==== TX-VSTH-002 - Unvest the matured OURO vesting (time advanced past duration) · 02 · let / invocation ==== 
+(print "--- [TX-VSTH-002 - Unvest the matured OURO vesting (time advanced past duration) · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -65,12 +77,18 @@
 )
 (print "===^^^===")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;;================================================================================
 (begin-tx "TX-VSTH-003 - Sleep / Freeze / Hibernate on OURO (self-created links)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-VSTH-003 · 01 · env-sigs (patron) ====
 (print "--- [TX-VSTH-003 · 01 · env-sigs] ---")
+;;==== TX-VSTH-003 - Sleep / Freeze / Hibernate on OURO (self-created links) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-VSTH-003 - Sleep / Freeze / Hibernate on OURO (self-created links) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -91,6 +109,8 @@
 )
 ;;==== TX-VSTH-003 · 02 · create sleeping/frozen/hibernating links on OURO, then Sleep/Freeze/Hibernate ====
 (print "--- [TX-VSTH-003 · 02 · create links + sleep/freeze/hibernate] ---")
+;;==== TX-VSTH-003 - Sleep / Freeze / Hibernate on OURO (self-created links) · 02 · let / invocation ==== 
+(print "--- [TX-VSTH-003 - Sleep / Freeze / Hibernate on OURO (self-created links) · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -112,6 +132,10 @@
 )
 (print "===^^^===")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;;================================================================================
 (begin-tx "TX-VSTH-004 - Unsleep + Awake the matured OURO positions (time advanced)")
 (namespace "ouronet-ns")
@@ -120,6 +144,8 @@
 (env-chain-data { "block-time": (time "2035-01-01T00:00:00Z") })
 ;;==== TX-VSTH-004 · 01 · env-sigs (patron) ====
 (print "--- [TX-VSTH-004 · 01 · env-sigs] ---")
+;;==== TX-VSTH-004 - Unsleep + Awake the matured OURO positions (time advanced) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-VSTH-004 - Unsleep + Awake the matured OURO positions (time advanced) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -140,6 +166,8 @@
 )
 ;;==== TX-VSTH-004 · 02 · Unsleep + Awake ====
 (print "--- [TX-VSTH-004 · 02 · unsleep + awake matured] ---")
+;;==== TX-VSTH-004 - Unsleep + Awake the matured OURO positions (time advanced) · 02 · let / invocation ==== 
+(print "--- [TX-VSTH-004 - Unsleep + Awake the matured OURO positions (time advanced) · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -155,12 +183,18 @@
 )
 (print "===^^^===")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;;================================================================================
 (begin-tx "TX-VSTH-005 - ToggleTransferRole on frozen / reserved / sleeping special tokens")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-VSTH-005 · 01 · env-sigs (patron + STOA caps) ====
 (print "--- [TX-VSTH-005 · 01 · env-sigs] ---")
+;;==== TX-VSTH-005 - ToggleTransferRole on frozen / reserved / sleeping special tokens · 01 · env-sigs (caps) ==== 
+(print "--- [TX-VSTH-005 - ToggleTransferRole on frozen / reserved / sleeping special tokens · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -181,6 +215,8 @@
 )
 ;;==== TX-VSTH-005 · 02 · toggle transfer roles on the special tokens ====
 (print "--- [TX-VSTH-005 · 02 · toggle transfer roles] ---")
+;;==== TX-VSTH-005 - ToggleTransferRole on frozen / reserved / sleeping special tokens · 02 · let / invocation ==== 
+(print "--- [TX-VSTH-005 - ToggleTransferRole on frozen / reserved / sleeping special tokens · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -197,12 +233,18 @@
 )
 (print "===^^^===")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;;================================================================================
 (begin-tx "TX-VSTH-006 - RepurposeFrozen (account-recovery): fund EMMA, recover to LUMY")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-VSTH-006 · 01 · env-sigs (patron + STOA caps) ====
 (print "--- [TX-VSTH-006 · 01 · env-sigs] ---")
+;;==== TX-VSTH-006 - RepurposeFrozen (account-recovery): fund EMMA, recover to LUMY · 01 · env-sigs (caps) ==== 
+(print "--- [TX-VSTH-006 - RepurposeFrozen (account-recovery): fund EMMA, recover to LUMY · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -223,6 +265,8 @@
 )
 ;;==== TX-VSTH-006 · 02 · fund EMMA with OURO, then RepurposeFrozen EMMA -> LUMY ====
 (print "--- [TX-VSTH-006 · 02 · fund + repurpose-frozen] ---")
+;;==== TX-VSTH-006 - RepurposeFrozen (account-recovery): fund EMMA, recover to LUMY · 02 · let / invocation ==== 
+(print "--- [TX-VSTH-006 - RepurposeFrozen (account-recovery): fund EMMA, recover to LUMY · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -241,12 +285,18 @@
 )
 (print "===^^^===")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;;================================================================================
 (begin-tx "TX-VSTH-007 - RepurposeReserved (account-recovery): recover LUMY's OURO to AOZT")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-VSTH-007 · 01 · env-sigs (patron + STOA caps) ====
 (print "--- [TX-VSTH-007 · 01 · env-sigs] ---")
+;;==== TX-VSTH-007 - RepurposeReserved (account-recovery): recover LUMY's OURO to AOZT · 01 · env-sigs (caps) ==== 
+(print "--- [TX-VSTH-007 - RepurposeReserved (account-recovery): recover LUMY's OURO to AOZT · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -267,6 +317,8 @@
 )
 ;;==== TX-VSTH-007 · 02 · RepurposeReserved LUMY -> AOZT ====
 (print "--- [TX-VSTH-007 · 02 · repurpose-reserved] ---")
+;;==== TX-VSTH-007 - RepurposeReserved (account-recovery): recover LUMY's OURO to AOZT · 02 · let / invocation ==== 
+(print "--- [TX-VSTH-007 - RepurposeReserved (account-recovery): recover LUMY's OURO to AOZT · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -282,12 +334,18 @@
 )
 (print "===^^^===")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;;================================================================================
 (begin-tx "TX-VSTH-008 - RepurposeVested (nonce account-recovery): vest to AOZT, recover to patron")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-VSTH-008 · 01 · env-sigs (patron + STOA caps) ====
 (print "--- [TX-VSTH-008 · 01 · env-sigs] ---")
+;;==== TX-VSTH-008 - RepurposeVested (nonce account-recovery): vest to AOZT, recover to patron · 01 · env-sigs (caps) ==== 
+(print "--- [TX-VSTH-008 - RepurposeVested (nonce account-recovery): vest to AOZT, recover to patron · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -308,6 +366,8 @@
 )
 ;;==== TX-VSTH-008 · 02 · vest to AOZT, then RepurposeVested that nonce -> patron ====
 (print "--- [TX-VSTH-008 · 02 · vest + repurpose-vested] ---")
+;;==== TX-VSTH-008 - RepurposeVested (nonce account-recovery): vest to AOZT, recover to patron · 02 · let / invocation ==== 
+(print "--- [TX-VSTH-008 - RepurposeVested (nonce account-recovery): vest to AOZT, recover to patron · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -332,12 +392,18 @@
 )
 (print "===^^^===")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;;================================================================================
 (begin-tx "TX-VSTH-009 - RepurposeSleeping (nonce account-recovery): sleep to AOZT, recover to patron")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-VSTH-009 · 01 · env-sigs (patron + STOA caps) ====
 (print "--- [TX-VSTH-009 · 01 · env-sigs] ---")
+;;==== TX-VSTH-009 - RepurposeSleeping (nonce account-recovery): sleep to AOZT, recover to patron · 01 · env-sigs (caps) ==== 
+(print "--- [TX-VSTH-009 - RepurposeSleeping (nonce account-recovery): sleep to AOZT, recover to patron · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -358,6 +424,8 @@
 )
 ;;==== TX-VSTH-009 · 02 · sleep to AOZT, then RepurposeSleeping that nonce -> patron ====
 (print "--- [TX-VSTH-009 · 02 · sleep + repurpose-sleeping] ---")
+;;==== TX-VSTH-009 - RepurposeSleeping (nonce account-recovery): sleep to AOZT, recover to patron · 02 · let / invocation ==== 
+(print "--- [TX-VSTH-009 - RepurposeSleeping (nonce account-recovery): sleep to AOZT, recover to patron · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -382,12 +450,18 @@
 )
 (print "===^^^===")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;;================================================================================
 (begin-tx "TX-VSTH-010 - Slumber: merge two of the patron's sleeping OURO nonces")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-VSTH-010 · 01 · env-sigs (patron + STOA caps) ====
 (print "--- [TX-VSTH-010 · 01 · env-sigs] ---")
+;;==== TX-VSTH-010 - Slumber: merge two of the patron's sleeping OURO nonces · 01 · env-sigs (caps) ==== 
+(print "--- [TX-VSTH-010 - Slumber: merge two of the patron's sleeping OURO nonces · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -408,6 +482,8 @@
 )
 ;;==== TX-VSTH-010 · 02 · sleep twice to patron, then Slumber (merge) the two nonces ====
 (print "--- [TX-VSTH-010 · 02 · sleep x2 + slumber] ---")
+;;==== TX-VSTH-010 - Slumber: merge two of the patron's sleeping OURO nonces · 02 · let / invocation ==== 
+(print "--- [TX-VSTH-010 - Slumber: merge two of the patron's sleeping OURO nonces · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -433,12 +509,18 @@
 )
 (print "===^^^===")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;;================================================================================
 (begin-tx "TX-VSTH-011 - RepurposeMerge: recover the patron's merged sleeping nonce to LUMY")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-VSTH-011 · 01 · env-sigs (patron + STOA caps) ====
 (print "--- [TX-VSTH-011 · 01 · env-sigs] ---")
+;;==== TX-VSTH-011 - RepurposeMerge: recover the patron's merged sleeping nonce to LUMY · 01 · env-sigs (caps) ==== 
+(print "--- [TX-VSTH-011 - RepurposeMerge: recover the patron's merged sleeping nonce to LUMY · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -459,6 +541,8 @@
 )
 ;;==== TX-VSTH-011 · 02 · RepurposeMerge the patron's merged sleeping nonce -> LUMY ====
 (print "--- [TX-VSTH-011 · 02 · repurpose-merge] ---")
+;;==== TX-VSTH-011 - RepurposeMerge: recover the patron's merged sleeping nonce to LUMY · 02 · let / invocation ==== 
+(print "--- [TX-VSTH-011 - RepurposeMerge: recover the patron's merged sleeping nonce to LUMY · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -484,12 +568,18 @@
 )
 (print "===^^^===")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;;================================================================================
 (begin-tx "TX-VSTH-012 - Unreserve: move R|OURO to a non-custodian smart account, then Unreserve")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX-VSTH-012 · 01 · env-sigs (patron + STOA caps) ====
 (print "--- [TX-VSTH-012 · 01 · env-sigs] ---")
+;;==== TX-VSTH-012 - Unreserve: move R|OURO to a non-custodian smart account, then Unreserve · 01 · env-sigs (caps) ==== 
+(print "--- [TX-VSTH-012 - Unreserve: move R|OURO to a non-custodian smart account, then Unreserve · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -510,6 +600,8 @@
 )
 ;;==== TX-VSTH-012 · 02 · transfer R|OURO to a NON-custodian smart account, then Unreserve ====
 (print "--- [TX-VSTH-012 · 02 · move R|OURO to smart acct + unreserve] ---")
+;;==== TX-VSTH-012 - Unreserve: move R|OURO to a non-custodian smart account, then Unreserve · 02 · let / invocation ==== 
+(print "--- [TX-VSTH-012 - Unreserve: move R|OURO to a non-custodian smart account, then Unreserve · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)

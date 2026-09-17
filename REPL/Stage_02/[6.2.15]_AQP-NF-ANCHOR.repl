@@ -17,6 +17,8 @@
 (namespace "ouronet-ns")
 ;;==== TX-NA-001 · 01 · env-sigs (generous STOA caps: DPNF issue + NF anchor) ====
 (print "--- [TX-NA-001 · 01 · env-sigs] ---")
+;;==== TX-NA-001 - issue trait-bearing DPNF, anchor on the trait · 01 · env-sigs (caps) ==== ======
+(print "--- [TX-NA-001 - issue trait-bearing DPNF, anchor on the trait · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -37,6 +39,8 @@
 )
 ;;==== TX-NA-001 · 02 · issue DPNF -> create trait nonces -> IssueNonFungibleAnchor ====
 (print "--- [TX-NA-001 · 02 · issue trait DPNF + NF anchor] ---")
+;;==== TX-NA-001 - issue trait-bearing DPNF, anchor on the trait · 02 · let / invocation ==== =====
+(print "--- [TX-NA-001 - issue trait-bearing DPNF, anchor on the trait · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)

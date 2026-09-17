@@ -20,6 +20,8 @@
 (print "--- [TX901 · 01 · TF stake cost equality] ---")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-INFO-GT-TF-STAKE - INFO_StakeTrueFungible.ignis-need == real GAS delta · 01 · env-sigs (caps) ==== 
+(print "--- [TX-INFO-GT-TF-STAKE - INFO_StakeTrueFungible.ignis-need == real GAS delta · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
@@ -69,6 +71,10 @@
                 predicted (- pre-gas post-gas)) ]))
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;;==== TX902 · 01 · TF unstake cost equality ====
@@ -76,6 +82,8 @@
 (print "--- [TX902 · 01 · TF unstake cost equality] ---")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-INFO-GT-TF-UNSTAKE - INFO_UnstakeTrueFungible.ignis-need == real GAS delta · 01 · env-sigs (caps) ==== 
+(print "--- [TX-INFO-GT-TF-UNSTAKE - INFO_UnstakeTrueFungible.ignis-need == real GAS delta · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
@@ -122,6 +130,10 @@
                 predicted (- pre-gas post-gas)) ]))
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;;==== TX903 · 01 · fresh OF fixture (class-2, avoids [6.2.4] vacate collision) ====
@@ -129,6 +141,8 @@
 (print "--- [TX903 · 01 · fresh OF fixture] ---")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-INFO-GT-OF-FIXTURE - issue fresh OF score/pool/vault + mint MVST · 01 · let / invocation ==== 
+(print "--- [TX-INFO-GT-OF-FIXTURE - issue fresh OF score/pool/vault + mint MVST · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -180,6 +194,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;;==== TX904 · 01 · OF stake cost equality ====
@@ -187,6 +205,8 @@
 (print "--- [TX904 · 01 · OF stake cost equality] ---")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-INFO-GT-OF-STAKE - INFO_StakeOrtoFungible.ignis-need == real GAS delta · 01 · env-sigs (caps) ==== 
+(print "--- [TX-INFO-GT-OF-STAKE - INFO_StakeOrtoFungible.ignis-need == real GAS delta · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
@@ -250,6 +270,10 @@
                 predicted (- pre-gas post-gas)) ]))
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;;==== TX905 · 01 · fresh SF fixture (class-3, exercises the full collectable helper) ====
@@ -257,6 +281,8 @@
 (print "--- [TX905 · 01 · fresh SF fixture] ---")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-INFO-GT-SF-FIXTURE - issue fresh SF score/pool/vault (DHCD) · 01 · let / invocation ==== 
+(print "--- [TX-INFO-GT-SF-FIXTURE - issue fresh SF score/pool/vault (DHCD) · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -302,6 +328,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;;==== TX906 · 01 · SF stake cost equality ====
@@ -309,6 +339,8 @@
 (print "--- [TX906 · 01 · SF stake cost equality] ---")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-INFO-GT-SF-STAKE - INFO_StakeSemiFungibleCollectable.ignis-need == real GAS delta · 01 · env-sigs (caps) ==== 
+(print "--- [TX-INFO-GT-SF-STAKE - INFO_StakeSemiFungibleCollectable.ignis-need == real GAS delta · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
@@ -359,6 +391,10 @@
                 predicted (- pre-gas post-gas)) ]))
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;;==== TX907 · 01 · TF batch-vacate cost equality (dirty-read legs -> real GAS delta) ====
@@ -366,7 +402,11 @@
 (print "--- [TX907 · 01 · TF batch-vacate cost equality] ---")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-INFO-GT-TF-VACATE - INFO_BatchVacateTrueFungible.ignis-need == real GAS delta · 01 · env-sigs (caps) ==== 
+(print "--- [TX-INFO-GT-TF-VACATE - INFO_BatchVacateTrueFungible.ignis-need == real GAS delta · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-INFO-GT-TF-VACATE - INFO_BatchVacateTrueFungible.ignis-need == real GAS delta · 02 · let / invocation ==== 
+(print "--- [TX-INFO-GT-TF-VACATE - INFO_BatchVacateTrueFungible.ignis-need == real GAS delta · 02 · let / invocation] ---")
 (let
     (
         (patron:string          KST.ANHD)
@@ -420,6 +460,10 @@
     )
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;;==== TX909 · 01 · OF batch-vacate cost equality (dirty-read scan legs -> real GAS delta) ====
@@ -427,7 +471,11 @@
 (print "--- [TX909 · 01 · OF batch-vacate cost equality] ---")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-INFO-GT-OF-VACATE - INFO_BatchVacateOrtoFungible.ignis-need == real GAS delta · 01 · env-sigs (caps) ==== 
+(print "--- [TX-INFO-GT-OF-VACATE - INFO_BatchVacateOrtoFungible.ignis-need == real GAS delta · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-INFO-GT-OF-VACATE - INFO_BatchVacateOrtoFungible.ignis-need == real GAS delta · 02 · let / invocation ==== 
+(print "--- [TX-INFO-GT-OF-VACATE - INFO_BatchVacateOrtoFungible.ignis-need == real GAS delta · 02 · let / invocation] ---")
 (let
     (
         (patron:string          KST.ANHD)
@@ -473,6 +521,10 @@
     )
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;;==== TX910 · 01 · SF collectable batch-vacate cost equality (dirty-read scan legs -> real GAS delta) ====
@@ -480,7 +532,11 @@
 (print "--- [TX910 · 01 · SF batch-vacate cost equality] ---")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-INFO-GT-SF-VACATE - INFO_BatchVacateCollectables.ignis-need == real GAS delta · 01 · env-sigs (caps) ==== 
+(print "--- [TX-INFO-GT-SF-VACATE - INFO_BatchVacateCollectables.ignis-need == real GAS delta · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-INFO-GT-SF-VACATE - INFO_BatchVacateCollectables.ignis-need == real GAS delta · 02 · let / invocation ==== 
+(print "--- [TX-INFO-GT-SF-VACATE - INFO_BatchVacateCollectables.ignis-need == real GAS delta · 02 · let / invocation] ---")
 (let
     (
         (patron:string          KST.ANHD)
@@ -527,6 +583,10 @@
     )
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;;==== TX911 · 01 · fresh TF DRAIN fixture (own pool — vacate/drain each consume their pool) ====
@@ -534,6 +594,8 @@
 (print "--- [TX911 · 01 · fresh TF drain fixture] ---")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-INFO-GT-TF-DRAIN-FIXTURE - fresh TF score/pool/vault + stake · 01 · let / invocation ==== 
+(print "--- [TX-INFO-GT-TF-DRAIN-FIXTURE - fresh TF score/pool/vault + stake · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -570,13 +632,21 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;==== TX911 · 02 · stake into the fresh TF drain pool ====
 (begin-tx "TX-INFO-GT-TF-DRAIN-STAKE - stake OURO into the fresh TF drain pool")
 (print "--- [TX911 · 02 · stake into TF drain pool] ---")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-INFO-GT-TF-DRAIN-STAKE - stake OURO into the fresh TF drain pool · 01 · env-sigs (caps) ==== 
+(print "--- [TX-INFO-GT-TF-DRAIN-STAKE - stake OURO into the fresh TF drain pool · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-INFO-GT-TF-DRAIN-STAKE - stake OURO into the fresh TF drain pool · 02 · let / invocation ==== 
+(print "--- [TX-INFO-GT-TF-DRAIN-STAKE - stake OURO into the fresh TF drain pool · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD) (ouro-id:string "OURO-98c486052a51")
@@ -588,13 +658,21 @@
         [(ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id patron patron ouro-id 100.0)]))
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;==== TX911 · 03 · TF batch-DRAIN cost equality (data-dependent UserUnn==0 subset -> real GAS delta) ====
 (begin-tx "TX-INFO-GT-TF-DRAIN - INFO_BatchDrainTrueFungible.ignis-need == real GAS delta")
 (print "--- [TX911 · 03 · TF batch-drain cost equality] ---")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-INFO-GT-TF-DRAIN - INFO_BatchDrainTrueFungible.ignis-need == real GAS delta · 01 · env-sigs (caps) ==== 
+(print "--- [TX-INFO-GT-TF-DRAIN - INFO_BatchDrainTrueFungible.ignis-need == real GAS delta · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-INFO-GT-TF-DRAIN - INFO_BatchDrainTrueFungible.ignis-need == real GAS delta · 02 · let / invocation ==== 
+(print "--- [TX-INFO-GT-TF-DRAIN - INFO_BatchDrainTrueFungible.ignis-need == real GAS delta · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD) (gas-id:string "GAS-98c486052a51")
@@ -639,6 +717,10 @@
     )
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;;==== TX912 · 01 · fresh OF DRAIN fixture (own pool + fresh MVST nonce) ====
@@ -646,6 +728,8 @@
 (print "--- [TX912 · 01 · fresh OF drain fixture] ---")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-INFO-GT-OF-DRAIN-FIXTURE - fresh OF score/pool/vault + mint MVST · 01 · let / invocation ==== 
+(print "--- [TX-INFO-GT-OF-DRAIN-FIXTURE - fresh OF score/pool/vault + mint MVST · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD) (owner-konto:string KST.ANHD)
@@ -681,13 +765,21 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;==== TX912 · 02 · stake the fresh MVST nonce into the OF drain pool ====
 (begin-tx "TX-INFO-GT-OF-DRAIN-STAKE")
 (print "--- [TX912 · 02 · stake into OF drain pool] ---")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-INFO-GT-OF-DRAIN-STAKE · 01 · env-sigs (caps) ==== ======================================
+(print "--- [TX-INFO-GT-OF-DRAIN-STAKE · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-INFO-GT-OF-DRAIN-STAKE · 02 · let / invocation ==== =====================================
+(print "--- [TX-INFO-GT-OF-DRAIN-STAKE · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD) (dpof-id:string "MVST-98c486052a51")
@@ -704,13 +796,21 @@
             [fresh-nonce (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron pool-id patron patron dpof-id [fresh-nonce])])))
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;==== TX912 · 03 · OF batch-DRAIN cost equality ====
 (begin-tx "TX-INFO-GT-OF-DRAIN - INFO_BatchDrainOrtoFungible.ignis-need == real GAS delta")
 (print "--- [TX912 · 03 · OF batch-drain cost equality] ---")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-INFO-GT-OF-DRAIN - INFO_BatchDrainOrtoFungible.ignis-need == real GAS delta · 01 · env-sigs (caps) ==== 
+(print "--- [TX-INFO-GT-OF-DRAIN - INFO_BatchDrainOrtoFungible.ignis-need == real GAS delta · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-INFO-GT-OF-DRAIN - INFO_BatchDrainOrtoFungible.ignis-need == real GAS delta · 02 · let / invocation ==== 
+(print "--- [TX-INFO-GT-OF-DRAIN - INFO_BatchDrainOrtoFungible.ignis-need == real GAS delta · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD) (gas-id:string "GAS-98c486052a51")
@@ -751,12 +851,18 @@
     )
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;==== TX913 · 01 · fresh SF DRAIN fixture (class-3 collectable) ====
 (begin-tx "TX-INFO-GT-SF-DRAIN-FIXTURE - fresh SF score/pool/vault (DHCD)")
 (print "--- [TX913 · 01 · fresh SF drain fixture] ---")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-INFO-GT-SF-DRAIN-FIXTURE - fresh SF score/pool/vault (DHCD) · 01 · let / invocation ==== 
+(print "--- [TX-INFO-GT-SF-DRAIN-FIXTURE - fresh SF score/pool/vault (DHCD) · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD) (owner-konto:string KST.ANHD)
@@ -790,13 +896,21 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;==== TX913 · 02 · stake a DHCD nonce into the SF drain pool ====
 (begin-tx "TX-INFO-GT-SF-DRAIN-STAKE")
 (print "--- [TX913 · 02 · stake into SF drain pool] ---")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-INFO-GT-SF-DRAIN-STAKE · 01 · env-sigs (caps) ==== ======================================
+(print "--- [TX-INFO-GT-SF-DRAIN-STAKE · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-INFO-GT-SF-DRAIN-STAKE · 02 · let / invocation ==== =====================================
+(print "--- [TX-INFO-GT-SF-DRAIN-STAKE · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD) (dpsf-id:string "DHCD-98c486052a51")
@@ -812,13 +926,21 @@
             [fresh-nonce (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron pool-id patron patron dpsf-id [fresh-nonce])])))
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;==== TX913 · 03 · SF/coll batch-DRAIN cost equality ====
 (begin-tx "TX-INFO-GT-SF-DRAIN - INFO_BatchDrainCollectable.ignis-need == real GAS delta")
 (print "--- [TX913 · 03 · SF batch-drain cost equality] ---")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-INFO-GT-SF-DRAIN - INFO_BatchDrainCollectable.ignis-need == real GAS delta · 01 · env-sigs (caps) ==== 
+(print "--- [TX-INFO-GT-SF-DRAIN - INFO_BatchDrainCollectable.ignis-need == real GAS delta · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-INFO-GT-SF-DRAIN - INFO_BatchDrainCollectable.ignis-need == real GAS delta · 02 · let / invocation ==== 
+(print "--- [TX-INFO-GT-SF-DRAIN - INFO_BatchDrainCollectable.ignis-need == real GAS delta · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD) (gas-id:string "GAS-98c486052a51") (son:bool true)
@@ -861,12 +983,18 @@
     )
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;==== TX914 · 01 · fresh FULL-VACATE fixture (class-1 TF pool) ====
 (begin-tx "TX-INFO-GT-FULLVACATE-FIXTURE - fresh class-1 TF score/pool/vault")
 (print "--- [TX914 · 01 · fresh full-vacate fixture] ---")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-INFO-GT-FULLVACATE-FIXTURE - fresh class-1 TF score/pool/vault · 01 · let / invocation ==== 
+(print "--- [TX-INFO-GT-FULLVACATE-FIXTURE - fresh class-1 TF score/pool/vault · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD) (owner-konto:string KST.ANHD)
@@ -900,13 +1028,21 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;==== TX914 · 02 · stake into the full-vacate pool ====
 (begin-tx "TX-INFO-GT-FULLVACATE-STAKE")
 (print "--- [TX914 · 02 · stake into full-vacate pool] ---")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-INFO-GT-FULLVACATE-STAKE · 01 · env-sigs (caps) ==== ====================================
+(print "--- [TX-INFO-GT-FULLVACATE-STAKE · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-INFO-GT-FULLVACATE-STAKE · 02 · let / invocation ==== ===================================
+(print "--- [TX-INFO-GT-FULLVACATE-STAKE · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD) (ouro-id:string "OURO-98c486052a51")
@@ -918,13 +1054,21 @@
         [(ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id patron patron ouro-id 100.0)]))
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;==== TX914 · 03 · FULL-VACATE cost equality (Σ over lanes, single-tx scan+exec) ====
 (begin-tx "TX-INFO-GT-FULLVACATE - INFO_FullVacate.ignis-need == real GAS delta")
 (print "--- [TX914 · 03 · full-vacate cost equality] ---")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-INFO-GT-FULLVACATE - INFO_FullVacate.ignis-need == real GAS delta · 01 · env-sigs (caps) ==== 
+(print "--- [TX-INFO-GT-FULLVACATE - INFO_FullVacate.ignis-need == real GAS delta · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-INFO-GT-FULLVACATE - INFO_FullVacate.ignis-need == real GAS delta · 02 · let / invocation ==== 
+(print "--- [TX-INFO-GT-FULLVACATE - INFO_FullVacate.ignis-need == real GAS delta · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD) (gas-id:string "GAS-98c486052a51")

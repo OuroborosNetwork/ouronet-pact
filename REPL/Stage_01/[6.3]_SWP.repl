@@ -17,6 +17,8 @@
 (namespace "ouronet-ns")
 ;;==== INIT TX 000 - Chain Data Time SetUp Definition · 01 · env-chain-data ==== ==================
 (print "--- [INIT TX 000 - Chain Data Time SetUp Definition · 01 · env-chain-data] ---")
+;;==== INIT TX 000 - Chain Data Time SetUp Definition · 01 · env-chain-data ==== ==================
+(print "--- [INIT TX 000 - Chain Data Time SetUp Definition · 01 · env-chain-data] ---")
 (env-chain-data
     {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
      "block-time": TV.TIME00}
@@ -95,6 +97,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 001 - Make 10k DWK · 01 · env-sigs (caps) ==== ======================================
 (print "--- [SWP|TX 001 - Make 10k DWK · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 001 - Make 10k DWK · 01 · env-sigs (caps) ==== ======================================
+(print "--- [SWP|TX 001 - Make 10k DWK · 01 · env-sigs (caps)] ---")
 (env-sigs
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -111,6 +115,8 @@
 
 ;;==== SWP|TX 001 - Make 10k DWK · 02 · let / invocation ==== =====================================
 (print "--- [SWP|TX 001 - Make 10k DWK · 02 · let / invocation] ---")
+;;==== SWP|TX 001 - Make 10k DWK · 02 · let / invocation ==== =====================================
+(print "--- [SWP|TX 001 - Make 10k DWK · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
@@ -119,6 +125,8 @@
 )
 (print "")
 (print "")
+;;==== SWP|TX 001 - Make 10k DWK · 03 · gas echo ==== =============================================
+(print "--- [SWP|TX 001 - Make 10k DWK · 03 · gas echo] ---")
 ;;==== SWP|TX 001 - Make 10k DWK · 03 · gas echo ==== =============================================
 (print "--- [SWP|TX 001 - Make 10k DWK · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 001 WrapStoa ==> {} STOA GAS>>>>>>>" [(env-gas)])
@@ -136,12 +144,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 002 - Coil 5k DLK · 01 · env-sigs (caps) ==== =======================================
 (print "--- [SWP|TX 002 - Coil 5k DLK · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 002 - Coil 5k DLK · 01 · env-sigs (caps) ==== =======================================
+(print "--- [SWP|TX 002 - Coil 5k DLK · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== SWP|TX 002 - Coil 5k DLK · 02 · let / invocation ==== ======================================
+(print "--- [SWP|TX 002 - Coil 5k DLK · 02 · let / invocation] ---")
 ;;==== SWP|TX 002 - Coil 5k DLK · 02 · let / invocation ==== ======================================
 (print "--- [SWP|TX 002 - Coil 5k DLK · 02 · let / invocation] ---")
 (let
@@ -177,6 +189,8 @@
 (print "")
 ;;==== SWP|TX 002 - Coil 5k DLK · 03 · gas echo ==== ==============================================
 (print "--- [SWP|TX 002 - Coil 5k DLK · 03 · gas echo] ---")
+;;==== SWP|TX 002 - Coil 5k DLK · 03 · gas echo ==== ==============================================
+(print "--- [SWP|TX 002 - Coil 5k DLK · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 002 Coil DWK ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -193,12 +207,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 003 - Move 50k OURO from ANHD to AOZ · 01 · env-sigs (caps) ==== ====================
 (print "--- [SWP|TX 003 - Move 50k OURO from ANHD to AOZ · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 003 - Move 50k OURO from ANHD to AOZ · 01 · env-sigs (caps) ==== ====================
+(print "--- [SWP|TX 003 - Move 50k OURO from ANHD to AOZ · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== SWP|TX 003 - Move 50k OURO from ANHD to AOZ · 02 · let / invocation ==== ===================
+(print "--- [SWP|TX 003 - Move 50k OURO from ANHD to AOZ · 02 · let / invocation] ---")
 ;;==== SWP|TX 003 - Move 50k OURO from ANHD to AOZ · 02 · let / invocation ==== ===================
 (print "--- [SWP|TX 003 - Move 50k OURO from ANHD to AOZ · 02 · let / invocation] ---")
 (let
@@ -219,6 +237,8 @@
 (print "")
 ;;==== SWP|TX 003 - Move 50k OURO from ANHD to AOZ · 03 · gas echo ==== ===========================
 (print "--- [SWP|TX 003 - Move 50k OURO from ANHD to AOZ · 03 · gas echo] ---")
+;;==== SWP|TX 003 - Move 50k OURO from ANHD to AOZ · 03 · gas echo ==== ===========================
+(print "--- [SWP|TX 003 - Move 50k OURO from ANHD to AOZ · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 003 Transfer 50k OURO ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -230,6 +250,8 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
 (begin-tx "SWP|TX 003b - #37M/M3 proof: empty-pool-state calls no longer crash")
+;;==== SWP|TX 003b - #37M/M3 proof: empty-pool-state calls no longer crash · 01 · namespace ==== ==
+(print "--- [SWP|TX 003b - #37M/M3 proof: empty-pool-state calls no longer crash · 01 · namespace] ---")
 (namespace "ouronet-ns")
 ;;==== SWP|TX 003b - #37M/M3 proof · 01 · genuine empty-pool-state calls ====
 (print "--- [SWP|TX 003b - #37M/M3 proof · 01 · genuine empty-pool-state calls] ---")
@@ -238,6 +260,8 @@
 ;;flagged. Before the fix, URC_AllPoolTokens/URC_ComputeGraphPath crashed hard
 ;;with an opaque "Array index out of bounds" instead of returning a clean
 ;;empty/[BAR] result.
+;;==== SWP|TX 003b - #37M/M3 proof: empty-pool-state calls no longer crash · 02 · let / invocation ==== 
+(print "--- [SWP|TX 003b - #37M/M3 proof: empty-pool-state calls no longer crash · 02 · let / invocation] ---")
 (let
     (
         (ref-SWP:module{SwapperV4} SWP)
@@ -274,6 +298,8 @@
 (begin-tx "SWP|TX 04 - Issue W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 04 - Issue W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51 · 01 · let / invocation ==== 
+(print "--- [SWP|TX 04 - Issue W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51 · 01 · let / invocation] ---")
 ;;==== SWP|TX 04 - Issue W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51 · 01 · let / invocation ==== 
 (print "--- [SWP|TX 04 - Issue W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51 · 01 · let / invocation] ---")
 (let
@@ -359,6 +385,8 @@
 (begin-tx "SWP|TX 005 - Issue S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 005 - Issue S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51 · 01 · let / invocation ==== 
+(print "--- [SWP|TX 005 - Issue S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51 · 01 · let / invocation] ---")
 ;;==== SWP|TX 005 - Issue S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51 · 01 · let / invocation ==== 
 (print "--- [SWP|TX 005 - Issue S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51 · 01 · let / invocation] ---")
 (let
@@ -452,11 +480,15 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 006 - Issue P|OURO-98c486052a51|PKOSON-98c486052a51 · 01 · env-sigs (caps) ==== =====
 (print "--- [SWP|TX 006 - Issue P|OURO-98c486052a51|PKOSON-98c486052a51 · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 006 - Issue P|OURO-98c486052a51|PKOSON-98c486052a51 · 01 · env-sigs (caps) ==== =====
+(print "--- [SWP|TX 006 - Issue P|OURO-98c486052a51|PKOSON-98c486052a51 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
     ]
 )
+;;==== SWP|TX 006 - Issue P|OURO-98c486052a51|PKOSON-98c486052a51 · 02 · let / invocation ==== ====
+(print "--- [SWP|TX 006 - Issue P|OURO-98c486052a51|PKOSON-98c486052a51 · 02 · let / invocation] ---")
 ;;==== SWP|TX 006 - Issue P|OURO-98c486052a51|PKOSON-98c486052a51 · 02 · let / invocation ==== ====
 (print "--- [SWP|TX 006 - Issue P|OURO-98c486052a51|PKOSON-98c486052a51 · 02 · let / invocation] ---")
 (let
@@ -540,11 +572,15 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 007 - Issue S|PKOSON-98c486052a51|EKOSON-98c486052a51|AKOSON-98c486052a51 · 01 · env-sigs (caps) ==== 
 (print "--- [SWP|TX 007 - Issue S|PKOSON-98c486052a51|EKOSON-98c486052a51|AKOSON-98c486052a51 · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 007 - Issue S|PKOSON-98c486052a51|EKOSON-98c486052a51|AKOSON-98c486052a51 · 01 · env-sigs (caps) ==== 
+(print "--- [SWP|TX 007 - Issue S|PKOSON-98c486052a51|EKOSON-98c486052a51|AKOSON-98c486052a51 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
     ]
 )
+;;==== SWP|TX 007 - Issue S|PKOSON-98c486052a51|EKOSON-98c486052a51|AKOSON-98c486052a51 · 02 · let / invocation ==== 
+(print "--- [SWP|TX 007 - Issue S|PKOSON-98c486052a51|EKOSON-98c486052a51|AKOSON-98c486052a51 · 02 · let / invocation] ---")
 ;;==== SWP|TX 007 - Issue S|PKOSON-98c486052a51|EKOSON-98c486052a51|AKOSON-98c486052a51 · 02 · let / invocation ==== 
 (print "--- [SWP|TX 007 - Issue S|PKOSON-98c486052a51|EKOSON-98c486052a51|AKOSON-98c486052a51 · 02 · let / invocation] ---")
 (let
@@ -631,11 +667,15 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 008 - Issue P|OURO-98c486052a51|BUSD-98c486052a51 · 01 · env-sigs (caps) ==== =======
 (print "--- [SWP|TX 008 - Issue P|OURO-98c486052a51|BUSD-98c486052a51 · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 008 - Issue P|OURO-98c486052a51|BUSD-98c486052a51 · 01 · env-sigs (caps) ==== =======
+(print "--- [SWP|TX 008 - Issue P|OURO-98c486052a51|BUSD-98c486052a51 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
+;;==== SWP|TX 008 - Issue P|OURO-98c486052a51|BUSD-98c486052a51 · 02 · let / invocation ==== ======
+(print "--- [SWP|TX 008 - Issue P|OURO-98c486052a51|BUSD-98c486052a51 · 02 · let / invocation] ---")
 ;;==== SWP|TX 008 - Issue P|OURO-98c486052a51|BUSD-98c486052a51 · 02 · let / invocation ==== ======
 (print "--- [SWP|TX 008 - Issue P|OURO-98c486052a51|BUSD-98c486052a51 · 02 · let / invocation] ---")
 (let
@@ -724,12 +764,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 009 - Mint 100 mil VST Origin · 01 · env-sigs (caps) ==== ===========================
 (print "--- [SWP|TX 009 - Mint 100 mil VST Origin · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 009 - Mint 100 mil VST Origin · 01 · env-sigs (caps) ==== ===========================
+(print "--- [SWP|TX 009 - Mint 100 mil VST Origin · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== SWP|TX 009 - Mint 100 mil VST Origin · 02 · let / invocation ==== ==========================
+(print "--- [SWP|TX 009 - Mint 100 mil VST Origin · 02 · let / invocation] ---")
 ;;==== SWP|TX 009 - Mint 100 mil VST Origin · 02 · let / invocation ==== ==========================
 (print "--- [SWP|TX 009 - Mint 100 mil VST Origin · 02 · let / invocation] ---")
 (let
@@ -744,6 +788,8 @@
 
 (print "")
 (print "")
+;;==== SWP|TX 009 - Mint 100 mil VST Origin · 03 · gas echo ==== ==================================
+(print "--- [SWP|TX 009 - Mint 100 mil VST Origin · 03 · gas echo] ---")
 ;;==== SWP|TX 009 - Mint 100 mil VST Origin · 03 · gas echo ==== ==================================
 (print "--- [SWP|TX 009 - Mint 100 mil VST Origin · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 009 Origin MInt VST ==> {} STOA GAS>>>>>>>" [(env-gas)])
@@ -761,11 +807,15 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 010 - Issue P|OURO-98c486052a51|VST-98c486052a51 · 01 · env-sigs (caps) ==== ========
 (print "--- [SWP|TX 010 - Issue P|OURO-98c486052a51|VST-98c486052a51 · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 010 - Issue P|OURO-98c486052a51|VST-98c486052a51 · 01 · env-sigs (caps) ==== ========
+(print "--- [SWP|TX 010 - Issue P|OURO-98c486052a51|VST-98c486052a51 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
+;;==== SWP|TX 010 - Issue P|OURO-98c486052a51|VST-98c486052a51 · 02 · let / invocation ==== =======
+(print "--- [SWP|TX 010 - Issue P|OURO-98c486052a51|VST-98c486052a51 · 02 · let / invocation] ---")
 ;;==== SWP|TX 010 - Issue P|OURO-98c486052a51|VST-98c486052a51 · 02 · let / invocation ==== =======
 (print "--- [SWP|TX 010 - Issue P|OURO-98c486052a51|VST-98c486052a51 · 02 · let / invocation] ---")
 (let
@@ -857,11 +907,15 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 011 - Issue P|OURO-98c486052a51|BUSD-98c486052a51|TUSD-98c486052a51|VST-98c486052a51 · 01 · env-sigs (caps) ==== 
 (print "--- [SWP|TX 011 - Issue P|OURO-98c486052a51|BUSD-98c486052a51|TUSD-98c486052a51|VST-98c486052a51 · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 011 - Issue P|OURO-98c486052a51|BUSD-98c486052a51|TUSD-98c486052a51|VST-98c486052a51 · 01 · env-sigs (caps) ==== 
+(print "--- [SWP|TX 011 - Issue P|OURO-98c486052a51|BUSD-98c486052a51|TUSD-98c486052a51|VST-98c486052a51 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
+;;==== SWP|TX 011 - Issue P|OURO-98c486052a51|BUSD-98c486052a51|TUSD-98c486052a51|VST-98c486052a51 · 02 · let / invocation ==== 
+(print "--- [SWP|TX 011 - Issue P|OURO-98c486052a51|BUSD-98c486052a51|TUSD-98c486052a51|VST-98c486052a51 · 02 · let / invocation] ---")
 ;;==== SWP|TX 011 - Issue P|OURO-98c486052a51|BUSD-98c486052a51|TUSD-98c486052a51|VST-98c486052a51 · 02 · let / invocation ==== 
 (print "--- [SWP|TX 011 - Issue P|OURO-98c486052a51|BUSD-98c486052a51|TUSD-98c486052a51|VST-98c486052a51 · 02 · let / invocation] ---")
 (let
@@ -951,12 +1005,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 012a - Issue Stable 7xUSD via defpact 0|2 · 01 · env-sigs (caps) ==== ===============
 (print "--- [SWP|TX 012a - Issue Stable 7xUSD via defpact 0|2 · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 012a - Issue Stable 7xUSD via defpact 0|2 · 01 · env-sigs (caps) ==== ===============
+(print "--- [SWP|TX 012a - Issue Stable 7xUSD via defpact 0|2 · 01 · env-sigs (caps)] ---")
 (env-sigs
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== SWP|TX 012a - Issue Stable 7xUSD via defpact 0|2 · 02 · let / invocation ==== ==============
+(print "--- [SWP|TX 012a - Issue Stable 7xUSD via defpact 0|2 · 02 · let / invocation] ---")
 ;;==== SWP|TX 012a - Issue Stable 7xUSD via defpact 0|2 · 02 · let / invocation ==== ==============
 (print "--- [SWP|TX 012a - Issue Stable 7xUSD via defpact 0|2 · 02 · let / invocation] ---")
 (let
@@ -1026,6 +1084,8 @@
 (print "")
 ;;==== SWP|TX 012a - Issue Stable 7xUSD via defpact 0|2 · 03 · gas echo ==== ======================
 (print "--- [SWP|TX 012a - Issue Stable 7xUSD via defpact 0|2 · 03 · gas echo] ---")
+;;==== SWP|TX 012a - Issue Stable 7xUSD via defpact 0|2 · 03 · gas echo ==== ======================
+(print "--- [SWP|TX 012a - Issue Stable 7xUSD via defpact 0|2 · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 012a Issue Stable 7xUSD STEP 0|2 ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -1040,6 +1100,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
+;;==== SWP|TX 012b - Issue Stable 7xUSD via defpact 1|2 · 01 · let / invocation ==== ==============
+(print "--- [SWP|TX 012b - Issue Stable 7xUSD via defpact 1|2 · 01 · let / invocation] ---")
 ;;==== SWP|TX 012b - Issue Stable 7xUSD via defpact 1|2 · 01 · let / invocation ==== ==============
 (print "--- [SWP|TX 012b - Issue Stable 7xUSD via defpact 1|2 · 01 · let / invocation] ---")
 (let
@@ -1091,6 +1153,8 @@
 (print "")
 ;;==== SWP|TX 012b - Issue Stable 7xUSD via defpact 1|2 · 03 · gas echo ==== ======================
 (print "--- [SWP|TX 012b - Issue Stable 7xUSD via defpact 1|2 · 03 · gas echo] ---")
+;;==== SWP|TX 012b - Issue Stable 7xUSD via defpact 1|2 · 03 · gas echo ==== ======================
+(print "--- [SWP|TX 012b - Issue Stable 7xUSD via defpact 1|2 · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 012b Issue Stable 7xUSD STEP 1|2 ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -1106,6 +1170,8 @@
 (namespace "ouronet-ns")
 ;;==== SWP|TX 012c - Issue Stable 7xUSD via defpact 2|2 · 01 · env-sigs (caps) ==== ===============
 (print "--- [SWP|TX 012c - Issue Stable 7xUSD via defpact 2|2 · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 012c - Issue Stable 7xUSD via defpact 2|2 · 01 · env-sigs (caps) ==== ===============
+(print "--- [SWP|TX 012c - Issue Stable 7xUSD via defpact 2|2 · 01 · env-sigs (caps)] ---")
 (env-sigs
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -1116,6 +1182,8 @@
 
 (print "")
 (print "")
+;;==== SWP|TX 012c - Issue Stable 7xUSD via defpact 2|2 · 02 · gas echo ==== ======================
+(print "--- [SWP|TX 012c - Issue Stable 7xUSD via defpact 2|2 · 02 · gas echo] ---")
 ;;==== SWP|TX 012c - Issue Stable 7xUSD via defpact 2|2 · 02 · gas echo ==== ======================
 (print "--- [SWP|TX 012c - Issue Stable 7xUSD via defpact 2|2 · 02 · gas echo] ---")
 (format "<<<<<<<SWP|TX 012c Issue Stable 7xUSD STEP 2|2 ==> {} STOA GAS>>>>>>>" [(env-gas)])
@@ -1131,6 +1199,8 @@
 (begin-tx "SWP|TX 013 - Issue W|OURO-98c486052a51|TEUR-98c486052a51|EURT-98c486052a51|EURC-98c486052a51|EURD-98c486052a51|AEUR-98c486052a51|CEUR-98c486052a51")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 013 - Issue W|OURO-98c486052a51|TEUR-98c486052a51|EURT-98c486052a51|EURC-98c486052a51|EURD-98c486052a51|AEUR-98c486052a51|CEUR-98c486052a51 · 01 · let / invocation ==== 
+(print "--- [SWP|TX 013 - Issue W|OURO-98c486052a51|TEUR-98c486052a51|EURT-98c486052a51|EURC-98c486052a51|EURD-98c486052a51|AEUR-98c486052a51|CEUR-98c486052a51 · 01 · let / invocation] ---")
 ;;==== SWP|TX 013 - Issue W|OURO-98c486052a51|TEUR-98c486052a51|EURT-98c486052a51|EURC-98c486052a51|EURD-98c486052a51|AEUR-98c486052a51|CEUR-98c486052a51 · 01 · let / invocation ==== 
 (print "--- [SWP|TX 013 - Issue W|OURO-98c486052a51|TEUR-98c486052a51|EURT-98c486052a51|EURC-98c486052a51|EURD-98c486052a51|AEUR-98c486052a51|CEUR-98c486052a51 · 01 · let / invocation] ---")
 (let
@@ -1237,12 +1307,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 014 - Enable Pools Functionality · 01 · env-sigs (caps) ==== ========================
 (print "--- [SWP|TX 014 - Enable Pools Functionality · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 014 - Enable Pools Functionality · 01 · env-sigs (caps) ==== ========================
+(print "--- [SWP|TX 014 - Enable Pools Functionality · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
         { "key": "PK_AOZ", "caps": [] }
     ]
 )
+;;==== SWP|TX 014 - Enable Pools Functionality · 02 · let / invocation ==== =======================
+(print "--- [SWP|TX 014 - Enable Pools Functionality · 02 · let / invocation] ---")
 ;;==== SWP|TX 014 - Enable Pools Functionality · 02 · let / invocation ==== =======================
 (print "--- [SWP|TX 014 - Enable Pools Functionality · 02 · let / invocation] ---")
 (let
@@ -1345,6 +1419,8 @@
 (print "")
 ;;==== SWP|TX 014 - Enable Pools Functionality · 03 · gas echo ==== ===============================
 (print "--- [SWP|TX 014 - Enable Pools Functionality · 03 · gas echo] ---")
+;;==== SWP|TX 014 - Enable Pools Functionality · 03 · gas echo ==== ===============================
+(print "--- [SWP|TX 014 - Enable Pools Functionality · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 014 Enable Pools Functionality ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -1361,12 +1437,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 015 - Slippage Object Tests · 01 · env-sigs (caps) ==== =============================
 (print "--- [SWP|TX 015 - Slippage Object Tests · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 015 - Slippage Object Tests · 01 · env-sigs (caps) ==== =============================
+(print "--- [SWP|TX 015 - Slippage Object Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== SWP|TX 015 - Slippage Object Tests · 02 · let / invocation ==== ============================
+(print "--- [SWP|TX 015 - Slippage Object Tests · 02 · let / invocation] ---")
 ;;==== SWP|TX 015 - Slippage Object Tests · 02 · let / invocation ==== ============================
 (print "--- [SWP|TX 015 - Slippage Object Tests · 02 · let / invocation] ---")
 (let
@@ -1430,6 +1510,8 @@
 (print "")
 ;;==== SWP|TX 015 - Slippage Object Tests · 03 · gas echo ==== ====================================
 (print "--- [SWP|TX 015 - Slippage Object Tests · 03 · gas echo] ---")
+;;==== SWP|TX 015 - Slippage Object Tests · 03 · gas echo ==== ====================================
+(print "--- [SWP|TX 015 - Slippage Object Tests · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 015 Slippage Object Tests ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -1444,6 +1526,8 @@
 (begin-tx "SWP|TX 016a - 1x SmartSwaps")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 016a - 1x SmartSwaps · 01 · env-sigs (caps) ==== ====================================
+(print "--- [SWP|TX 016a - 1x SmartSwaps · 01 · env-sigs (caps)] ---")
 ;;==== SWP|TX 016a - 1x SmartSwaps · 01 · env-sigs (caps) ==== ====================================
 (print "--- [SWP|TX 016a - 1x SmartSwaps · 01 · env-sigs (caps)] ---")
 (env-sigs 
@@ -1462,6 +1546,8 @@
 ;;test itself asserted nothing. Pins the real, measured output for this
 ;;exact swap/topology so a real routing/pricing regression here would now
 ;;fail loudly instead of silently.
+;;==== SWP|TX 016a - 1x SmartSwaps · 02 · let / invocation ==== ===================================
+(print "--- [SWP|TX 016a - 1x SmartSwaps · 02 · let / invocation] ---")
 (let
     (
         (ref-SWPU:module{SwapperUsageV3} SWPU)
@@ -1494,6 +1580,8 @@
 (print "")
 ;;==== SWP|TX 016a - 1x SmartSwaps · 03 · gas echo ==== ===========================================
 (print "--- [SWP|TX 016a - 1x SmartSwaps · 03 · gas echo] ---")
+;;==== SWP|TX 016a - 1x SmartSwaps · 03 · gas echo ==== ===========================================
+(print "--- [SWP|TX 016a - 1x SmartSwaps · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 016a - 1x SmartSwaps ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -1509,6 +1597,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 016b - Issue TSTY Test Token (#27M Proof) · 01 · let / invocation ==== ===============
+(print "--- [SWP|TX 016b - Issue TSTY Test Token (#27M Proof) · 01 · let / invocation] ---")
+;;==== SWP|TX 016b - Issue TSTY Test Token (#27M Proof) · 01 · let / invocation ==== ==============
 (print "--- [SWP|TX 016b - Issue TSTY Test Token (#27M Proof) · 01 · let / invocation] ---")
 (let
     (
@@ -1579,6 +1669,8 @@
 (print "")
 ;;==== SWP|TX 016b - Issue TSTY Test Token (#27M Proof) · 03 · gas echo ==== ========================
 (print "--- [SWP|TX 016b - Issue TSTY Test Token (#27M Proof) · 03 · gas echo] ---")
+;;==== SWP|TX 016b - Issue TSTY Test Token (#27M Proof) · 03 · gas echo ==== ======================
+(print "--- [SWP|TX 016b - Issue TSTY Test Token (#27M Proof) · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 016b Issue TSTY ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -1594,12 +1686,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 016c - Mint TSTY to KST.ANHD (#27M Proof) · 01 · env-sigs (caps) ==== =================
 (print "--- [SWP|TX 016c - Mint TSTY to KST.ANHD (#27M Proof) · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 016c - Mint TSTY to KST.ANHD (#27M Proof) · 01 · env-sigs (caps) ==== ===============
+(print "--- [SWP|TX 016c - Mint TSTY to KST.ANHD (#27M Proof) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 ;;==== SWP|TX 016c - Mint TSTY to KST.ANHD (#27M Proof) · 02 · let / invocation ==== ================
+(print "--- [SWP|TX 016c - Mint TSTY to KST.ANHD (#27M Proof) · 02 · let / invocation] ---")
+;;==== SWP|TX 016c - Mint TSTY to KST.ANHD (#27M Proof) · 02 · let / invocation ==== ==============
 (print "--- [SWP|TX 016c - Mint TSTY to KST.ANHD (#27M Proof) · 02 · let / invocation] ---")
 (let
     (
@@ -1613,6 +1709,8 @@
 (print "")
 (print "")
 ;;==== SWP|TX 016c - Mint TSTY to KST.ANHD (#27M Proof) · 03 · gas echo ==== ========================
+(print "--- [SWP|TX 016c - Mint TSTY to KST.ANHD (#27M Proof) · 03 · gas echo] ---")
+;;==== SWP|TX 016c - Mint TSTY to KST.ANHD (#27M Proof) · 03 · gas echo ==== ======================
 (print "--- [SWP|TX 016c - Mint TSTY to KST.ANHD (#27M Proof) · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 016c Mint TSTY ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
@@ -1628,6 +1726,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 016d - Issue P|OURO|TSTY Pool (#27M Proof) · 01 · let / invocation ==== ===============
+(print "--- [SWP|TX 016d - Issue P|OURO|TSTY Pool (#27M Proof) · 01 · let / invocation] ---")
+;;==== SWP|TX 016d - Issue P|OURO|TSTY Pool (#27M Proof) · 01 · let / invocation ==== =============
 (print "--- [SWP|TX 016d - Issue P|OURO|TSTY Pool (#27M Proof) · 01 · let / invocation] ---")
 (let
     (
@@ -1708,6 +1808,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 016e - Issue W|OURO|TSTY Parallel Pool (#27M Proof) · 01 · let / invocation ==== ======
+(print "--- [SWP|TX 016e - Issue W|OURO|TSTY Parallel Pool (#27M Proof) · 01 · let / invocation] ---")
+;;==== SWP|TX 016e - Issue W|OURO|TSTY Parallel Pool (#27M Proof) · 01 · let / invocation ==== ====
 (print "--- [SWP|TX 016e - Issue W|OURO|TSTY Parallel Pool (#27M Proof) · 01 · let / invocation] ---")
 (let
     (
@@ -1790,12 +1892,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 016f - Enable Swap on #27M Proof Pools · 01 · env-sigs (caps) ==== =====================
 (print "--- [SWP|TX 016f - Enable Swap on #27M Proof Pools · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 016f - Enable Swap on #27M Proof Pools · 01 · env-sigs (caps) ==== ==================
+(print "--- [SWP|TX 016f - Enable Swap on #27M Proof Pools · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 ;;==== SWP|TX 016f - Enable Swap on #27M Proof Pools · 02 · let / invocation ==== ====================
+(print "--- [SWP|TX 016f - Enable Swap on #27M Proof Pools · 02 · let / invocation] ---")
+;;==== SWP|TX 016f - Enable Swap on #27M Proof Pools · 02 · let / invocation ==== =================
 (print "--- [SWP|TX 016f - Enable Swap on #27M Proof Pools · 02 · let / invocation] ---")
 (let
     (
@@ -1809,6 +1915,8 @@
 (print "")
 (print "")
 ;;==== SWP|TX 016f - Enable Swap on #27M Proof Pools · 03 · gas echo ==== ============================
+(print "--- [SWP|TX 016f - Enable Swap on #27M Proof Pools · 03 · gas echo] ---")
+;;==== SWP|TX 016f - Enable Swap on #27M Proof Pools · 03 · gas echo ==== =========================
 (print "--- [SWP|TX 016f - Enable Swap on #27M Proof Pools · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 016f Enable Swap ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
@@ -1825,12 +1933,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 016g - #27M/M13 Adversarial Proof Swap · 01 · env-sigs (caps) ==== =====================
 (print "--- [SWP|TX 016g - #27M/M13 Adversarial Proof Swap · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 016g - #27M/M13 Adversarial Proof Swap · 01 · env-sigs (caps) ==== ==================
+(print "--- [SWP|TX 016g - #27M/M13 Adversarial Proof Swap · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 ;;==== SWP|TX 016g - #27M/M13 Adversarial Proof Swap · 02 · let / invocation ==== ====================
+(print "--- [SWP|TX 016g - #27M/M13 Adversarial Proof Swap · 02 · let / invocation] ---")
+;;==== SWP|TX 016g - #27M/M13 Adversarial Proof Swap · 02 · let / invocation ==== =================
 (print "--- [SWP|TX 016g - #27M/M13 Adversarial Proof Swap · 02 · let / invocation] ---")
 (let
     (
@@ -1905,6 +2017,8 @@
 (print "")
 ;;==== SWP|TX 016g - #27M/M13 Adversarial Proof Swap · 03 · gas echo ==== =============================
 (print "--- [SWP|TX 016g - #27M/M13 Adversarial Proof Swap · 03 · gas echo] ---")
+;;==== SWP|TX 016g - #27M/M13 Adversarial Proof Swap · 03 · gas echo ==== =========================
+(print "--- [SWP|TX 016g - #27M/M13 Adversarial Proof Swap · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 016g #27M Proof Swap ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -1921,12 +2035,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 016 - 4x Swaps · 01 · env-sigs (caps) ==== ==========================================
 (print "--- [SWP|TX 016 - 4x Swaps · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 016 - 4x Swaps · 01 · env-sigs (caps) ==== ==========================================
+(print "--- [SWP|TX 016 - 4x Swaps · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== SWP|TX 016 - 4x Swaps · 02 · let / invocation ==== =========================================
+(print "--- [SWP|TX 016 - 4x Swaps · 02 · let / invocation] ---")
 ;;==== SWP|TX 016 - 4x Swaps · 02 · let / invocation ==== =========================================
 (print "--- [SWP|TX 016 - 4x Swaps · 02 · let / invocation] ---")
 (let
@@ -1999,6 +2117,8 @@
 (print "")
 ;;==== SWP|TX 016 - 4x Swaps · 03 · gas echo ==== =================================================
 (print "--- [SWP|TX 016 - 4x Swaps · 03 · gas echo] ---")
+;;==== SWP|TX 016 - 4x Swaps · 03 · gas echo ==== =================================================
+(print "--- [SWP|TX 016 - 4x Swaps · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 016 - 4x Swaps ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -2015,12 +2135,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 017 - 1x Swap with Slippage · 01 · env-sigs (caps) ==== =============================
 (print "--- [SWP|TX 017 - 1x Swap with Slippage · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 017 - 1x Swap with Slippage · 01 · env-sigs (caps) ==== =============================
+(print "--- [SWP|TX 017 - 1x Swap with Slippage · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== SWP|TX 017 - 1x Swap with Slippage · 02 · let / invocation ==== ============================
+(print "--- [SWP|TX 017 - 1x Swap with Slippage · 02 · let / invocation] ---")
 ;;==== SWP|TX 017 - 1x Swap with Slippage · 02 · let / invocation ==== ============================
 (print "--- [SWP|TX 017 - 1x Swap with Slippage · 02 · let / invocation] ---")
 (let
@@ -2056,6 +2180,8 @@
 (print "")
 ;;==== SWP|TX 017 - 1x Swap with Slippage · 03 · gas echo ==== ====================================
 (print "--- [SWP|TX 017 - 1x Swap with Slippage · 03 · gas echo] ---")
+;;==== SWP|TX 017 - 1x Swap with Slippage · 03 · gas echo ==== ====================================
+(print "--- [SWP|TX 017 - 1x Swap with Slippage · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 017 1x Swap with Slippage ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -2072,12 +2198,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 018 1x Add Liq Max Cost · 01 · env-sigs (caps) ==== =================================
 (print "--- [SWP|TX 018 1x Add Liq Max Cost · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 018 1x Add Liq Max Cost · 01 · env-sigs (caps) ==== =================================
+(print "--- [SWP|TX 018 1x Add Liq Max Cost · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 (acquire-module-admin ouronet-ns.SWPL)
+;;==== SWP|TX 018 1x Add Liq Max Cost · 02 · let / invocation ==== ================================
+(print "--- [SWP|TX 018 1x Add Liq Max Cost · 02 · let / invocation] ---")
 ;;==== SWP|TX 018 1x Add Liq Max Cost · 02 · let / invocation ==== ================================
 (print "--- [SWP|TX 018 1x Add Liq Max Cost · 02 · let / invocation] ---")
 (let
@@ -2151,6 +2281,8 @@
 (print "")
 ;;==== SWP|TX 018 1x Add Liq Max Cost · 03 · gas echo ==== ========================================
 (print "--- [SWP|TX 018 1x Add Liq Max Cost · 03 · gas echo] ---")
+;;==== SWP|TX 018 1x Add Liq Max Cost · 03 · gas echo ==== ========================================
+(print "--- [SWP|TX 018 1x Add Liq Max Cost · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 018 1x Add Liq Max Cost ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -2175,6 +2307,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 019a - Add Standard Liquidity 0|2 · 01 · env-sigs (caps) ==== =======================
 (print "--- [SWP|TX 019a - Add Standard Liquidity 0|2 · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 019a - Add Standard Liquidity 0|2 · 01 · env-sigs (caps) ==== =======================
+(print "--- [SWP|TX 019a - Add Standard Liquidity 0|2 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -2182,6 +2316,8 @@
     ]
 )
 
+;;==== SWP|TX 019a - Add Standard Liquidity 0|2 · 02 · let / invocation ==== ======================
+(print "--- [SWP|TX 019a - Add Standard Liquidity 0|2 · 02 · let / invocation] ---")
 ;;==== SWP|TX 019a - Add Standard Liquidity 0|2 · 02 · let / invocation ==== ======================
 (print "--- [SWP|TX 019a - Add Standard Liquidity 0|2 · 02 · let / invocation] ---")
 (let
@@ -2201,6 +2337,8 @@
 (print "")
 ;;==== SWP|TX 019a - Add Standard Liquidity 0|2 · 03 · gas echo ==== ==============================
 (print "--- [SWP|TX 019a - Add Standard Liquidity 0|2 · 03 · gas echo] ---")
+;;==== SWP|TX 019a - Add Standard Liquidity 0|2 · 03 · gas echo ==== ==============================
+(print "--- [SWP|TX 019a - Add Standard Liquidity 0|2 · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 019a - Add Standard Liquidity 0|2 ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -2217,6 +2355,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 019b - Add Standard Liquidity 1|2 · 01 · env-sigs (caps) ==== =======================
 (print "--- [SWP|TX 019b - Add Standard Liquidity 1|2 · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 019b - Add Standard Liquidity 1|2 · 01 · env-sigs (caps) ==== =======================
+(print "--- [SWP|TX 019b - Add Standard Liquidity 1|2 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -2229,6 +2369,8 @@
 
 (print "")
 (print "")
+;;==== SWP|TX 019b - Add Standard Liquidity 1|2 · 02 · gas echo ==== ==============================
+(print "--- [SWP|TX 019b - Add Standard Liquidity 1|2 · 02 · gas echo] ---")
 ;;==== SWP|TX 019b - Add Standard Liquidity 1|2 · 02 · gas echo ==== ==============================
 (print "--- [SWP|TX 019b - Add Standard Liquidity 1|2 · 02 · gas echo] ---")
 (format "<<<<<<<SWP|TX 019b - Add Standard Liquidity 1|2 ==> {} STOA GAS>>>>>>>" [(env-gas)])
@@ -2248,6 +2390,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 019c - Add Standard Liquidity 2|2 · 01 · env-sigs (caps) ==== =======================
 (print "--- [SWP|TX 019c - Add Standard Liquidity 2|2 · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 019c - Add Standard Liquidity 2|2 · 01 · env-sigs (caps) ==== =======================
+(print "--- [SWP|TX 019c - Add Standard Liquidity 2|2 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -2260,6 +2404,8 @@
 
 (print "")
 (print "")
+;;==== SWP|TX 019c - Add Standard Liquidity 2|2 · 02 · gas echo ==== ==============================
+(print "--- [SWP|TX 019c - Add Standard Liquidity 2|2 · 02 · gas echo] ---")
 ;;==== SWP|TX 019c - Add Standard Liquidity 2|2 · 02 · gas echo ==== ==============================
 (print "--- [SWP|TX 019c - Add Standard Liquidity 2|2 · 02 · gas echo] ---")
 (format "<<<<<<<SWP|TX 019c - Add Standard Liquidity 2|2 ==> {} STOA GAS>>>>>>>" [(env-gas)])
@@ -2280,12 +2426,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 020 - Add Balanced Liqudity · 01 · env-sigs (caps) ==== =============================
 (print "--- [SWP|TX 020 - Add Balanced Liqudity · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 020 - Add Balanced Liqudity · 01 · env-sigs (caps) ==== =============================
+(print "--- [SWP|TX 020 - Add Balanced Liqudity · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== SWP|TX 020 - Add Balanced Liqudity · 02 · let / invocation ==== ============================
+(print "--- [SWP|TX 020 - Add Balanced Liqudity · 02 · let / invocation] ---")
 ;;==== SWP|TX 020 - Add Balanced Liqudity · 02 · let / invocation ==== ============================
 (print "--- [SWP|TX 020 - Add Balanced Liqudity · 02 · let / invocation] ---")
 (let
@@ -2345,6 +2495,8 @@
 (print "")
 ;;==== SWP|TX 020 - Add Balanced Liqudity · 03 · gas echo ==== ====================================
 (print "--- [SWP|TX 020 - Add Balanced Liqudity · 03 · gas echo] ---")
+;;==== SWP|TX 020 - Add Balanced Liqudity · 03 · gas echo ==== ====================================
+(print "--- [SWP|TX 020 - Add Balanced Liqudity · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 020 Add Balanced Liquidity ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -2361,12 +2513,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 021 - Worth Tests · 01 · env-sigs (caps) ==== =======================================
 (print "--- [SWP|TX 021 - Worth Tests · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 021 - Worth Tests · 01 · env-sigs (caps) ==== =======================================
+(print "--- [SWP|TX 021 - Worth Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== SWP|TX 021 - Worth Tests · 02 · let / invocation ==== ======================================
+(print "--- [SWP|TX 021 - Worth Tests · 02 · let / invocation] ---")
 ;;==== SWP|TX 021 - Worth Tests · 02 · let / invocation ==== ======================================
 (print "--- [SWP|TX 021 - Worth Tests · 02 · let / invocation] ---")
 (let
@@ -2422,6 +2578,8 @@
 (print "")
 ;;==== SWP|TX 021 - Worth Tests · 03 · gas echo ==== ==============================================
 (print "--- [SWP|TX 021 - Worth Tests · 03 · gas echo] ---")
+;;==== SWP|TX 021 - Worth Tests · 03 · gas echo ==== ==============================================
+(print "--- [SWP|TX 021 - Worth Tests · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 021 - Worth Tests ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -2438,12 +2596,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 022 - ORBR Fueling Tests · 01 · env-sigs (caps) ==== ================================
 (print "--- [SWP|TX 022 - ORBR Fueling Tests · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 022 - ORBR Fueling Tests · 01 · env-sigs (caps) ==== ================================
+(print "--- [SWP|TX 022 - ORBR Fueling Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== SWP|TX 022 - ORBR Fueling Tests · 02 · let / invocation ==== ===============================
+(print "--- [SWP|TX 022 - ORBR Fueling Tests · 02 · let / invocation] ---")
 ;;==== SWP|TX 022 - ORBR Fueling Tests · 02 · let / invocation ==== ===============================
 (print "--- [SWP|TX 022 - ORBR Fueling Tests · 02 · let / invocation] ---")
 (let
@@ -2478,6 +2640,8 @@
 (print "")
 ;;==== SWP|TX 022 - ORBR Fueling Tests · 03 · gas echo ==== =======================================
 (print "--- [SWP|TX 022 - ORBR Fueling Tests · 03 · gas echo] ---")
+;;==== SWP|TX 022 - ORBR Fueling Tests · 03 · gas echo ==== =======================================
+(print "--- [SWP|TX 022 - ORBR Fueling Tests · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 022 - ORBR Fueling Tests ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -2492,6 +2656,8 @@
 (begin-tx "SWP|TX 023 - Deploy Smart Account")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 023 - Deploy Smart Account · 01 · let / invocation ==== =============================
+(print "--- [SWP|TX 023 - Deploy Smart Account · 01 · let / invocation] ---")
 ;;==== SWP|TX 023 - Deploy Smart Account · 01 · let / invocation ==== =============================
 (print "--- [SWP|TX 023 - Deploy Smart Account · 01 · let / invocation] ---")
 (let
@@ -2573,6 +2739,8 @@
 (print "")
 ;;==== SWP|TX 023 - Deploy Smart Account · 03 · gas echo ==== =====================================
 (print "--- [SWP|TX 023 - Deploy Smart Account · 03 · gas echo] ---")
+;;==== SWP|TX 023 - Deploy Smart Account · 03 · gas echo ==== =====================================
+(print "--- [SWP|TX 023 - Deploy Smart Account · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 023 - Deploy Smart Account ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -2589,12 +2757,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 024 - Reservation Tests · 01 · env-sigs (caps) ==== =================================
 (print "--- [SWP|TX 024 - Reservation Tests · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 024 - Reservation Tests · 01 · env-sigs (caps) ==== =================================
+(print "--- [SWP|TX 024 - Reservation Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== SWP|TX 024 - Reservation Tests · 02 · let / invocation ==== ================================
+(print "--- [SWP|TX 024 - Reservation Tests · 02 · let / invocation] ---")
 ;;==== SWP|TX 024 - Reservation Tests · 02 · let / invocation ==== ================================
 (print "--- [SWP|TX 024 - Reservation Tests · 02 · let / invocation] ---")
 (let
@@ -2652,6 +2824,8 @@
 (print "")
 ;;==== SWP|TX 024 - Reservation Tests · 03 · gas echo ==== ========================================
 (print "--- [SWP|TX 024 - Reservation Tests · 03 · gas echo] ---")
+;;==== SWP|TX 024 - Reservation Tests · 03 · gas echo ==== ========================================
+(print "--- [SWP|TX 024 - Reservation Tests · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 024 - Reservation Tests ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -2668,12 +2842,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 025 - Freeze & Repurpose Frozen · 01 · env-sigs (caps) ==== =========================
 (print "--- [SWP|TX 025 - Freeze & Repurpose Frozen · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 025 - Freeze & Repurpose Frozen · 01 · env-sigs (caps) ==== =========================
+(print "--- [SWP|TX 025 - Freeze & Repurpose Frozen · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== SWP|TX 025 - Freeze & Repurpose Frozen · 02 · let / invocation ==== ========================
+(print "--- [SWP|TX 025 - Freeze & Repurpose Frozen · 02 · let / invocation] ---")
 ;;==== SWP|TX 025 - Freeze & Repurpose Frozen · 02 · let / invocation ==== ========================
 (print "--- [SWP|TX 025 - Freeze & Repurpose Frozen · 02 · let / invocation] ---")
 (let
@@ -2706,6 +2884,8 @@
 (print "")
 ;;==== SWP|TX 025 - Freeze & Repurpose Frozen · 03 · gas echo ==== ================================
 (print "--- [SWP|TX 025 - Freeze & Repurpose Frozen · 03 · gas echo] ---")
+;;==== SWP|TX 025 - Freeze & Repurpose Frozen · 03 · gas echo ==== ================================
+(print "--- [SWP|TX 025 - Freeze & Repurpose Frozen · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 025 - Freeze & Repurpose Frozen ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -2722,6 +2902,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 026 - Sleep & Repurpose Sleep · 01 · env-sigs (caps) ==== ===========================
 (print "--- [SWP|TX 026 - Sleep & Repurpose Sleep · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 026 - Sleep & Repurpose Sleep · 01 · env-sigs (caps) ==== ===========================
+(print "--- [SWP|TX 026 - Sleep & Repurpose Sleep · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -2729,6 +2911,8 @@
     ]
 )
 
+;;==== SWP|TX 026 - Sleep & Repurpose Sleep · 02 · let / invocation ==== ==========================
+(print "--- [SWP|TX 026 - Sleep & Repurpose Sleep · 02 · let / invocation] ---")
 ;;==== SWP|TX 026 - Sleep & Repurpose Sleep · 02 · let / invocation ==== ==========================
 (print "--- [SWP|TX 026 - Sleep & Repurpose Sleep · 02 · let / invocation] ---")
 (let
@@ -2804,6 +2988,8 @@
 (print "")
 ;;==== SWP|TX 026 - Sleep & Repurpose Sleep · 03 · gas echo ==== ==================================
 (print "--- [SWP|TX 026 - Sleep & Repurpose Sleep · 03 · gas echo] ---")
+;;==== SWP|TX 026 - Sleep & Repurpose Sleep · 03 · gas echo ==== ==================================
+(print "--- [SWP|TX 026 - Sleep & Repurpose Sleep · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 026 - Sleep & Repurpose Sleep ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -2820,6 +3006,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 027 - Merge Repurpose Tests · 01 · env-sigs (caps) ==== =============================
 (print "--- [SWP|TX 027 - Merge Repurpose Tests · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 027 - Merge Repurpose Tests · 01 · env-sigs (caps) ==== =============================
+(print "--- [SWP|TX 027 - Merge Repurpose Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -2827,6 +3015,8 @@
     ]
 )
 
+;;==== SWP|TX 027 - Merge Repurpose Tests · 02 · let / invocation ==== ============================
+(print "--- [SWP|TX 027 - Merge Repurpose Tests · 02 · let / invocation] ---")
 ;;==== SWP|TX 027 - Merge Repurpose Tests · 02 · let / invocation ==== ============================
 (print "--- [SWP|TX 027 - Merge Repurpose Tests · 02 · let / invocation] ---")
 (let
@@ -2852,6 +3042,8 @@
 (print "")
 ;;==== SWP|TX 027 - Merge Repurpose Tests · 03 · gas echo ==== ====================================
 (print "--- [SWP|TX 027 - Merge Repurpose Tests · 03 · gas echo] ---")
+;;==== SWP|TX 027 - Merge Repurpose Tests · 03 · gas echo ==== ====================================
+(print "--- [SWP|TX 027 - Merge Repurpose Tests · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 027 - Merge Repurpose Tests ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -2868,6 +3060,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 028 - Vesting Tests · 01 · env-sigs (caps) ==== =====================================
 (print "--- [SWP|TX 028 - Vesting Tests · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 028 - Vesting Tests · 01 · env-sigs (caps) ==== =====================================
+(print "--- [SWP|TX 028 - Vesting Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -2875,6 +3069,8 @@
     ]
 )
 
+;;==== SWP|TX 028 - Vesting Tests · 02 · let / invocation ==== ====================================
+(print "--- [SWP|TX 028 - Vesting Tests · 02 · let / invocation] ---")
 ;;==== SWP|TX 028 - Vesting Tests · 02 · let / invocation ==== ====================================
 (print "--- [SWP|TX 028 - Vesting Tests · 02 · let / invocation] ---")
 (let
@@ -2899,6 +3095,8 @@
 (print "")
 ;;==== SWP|TX 028 - Vesting Tests · 03 · gas echo ==== ============================================
 (print "--- [SWP|TX 028 - Vesting Tests · 03 · gas echo] ---")
+;;==== SWP|TX 028 - Vesting Tests · 03 · gas echo ==== ============================================
+(print "--- [SWP|TX 028 - Vesting Tests · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 028 - Vesting Tests ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -2915,6 +3113,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 029 - Unvesting Tests · 01 · env-sigs (caps) ==== ===================================
 (print "--- [SWP|TX 029 - Unvesting Tests · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 029 - Unvesting Tests · 01 · env-sigs (caps) ==== ===================================
+(print "--- [SWP|TX 029 - Unvesting Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -2922,6 +3122,8 @@
     ]
 )
 
+;;==== SWP|TX 029 - Unvesting Tests · 02 · let / invocation ==== ==================================
+(print "--- [SWP|TX 029 - Unvesting Tests · 02 · let / invocation] ---")
 ;;==== SWP|TX 029 - Unvesting Tests · 02 · let / invocation ==== ==================================
 (print "--- [SWP|TX 029 - Unvesting Tests · 02 · let / invocation] ---")
 (let
@@ -2953,6 +3155,8 @@
 (print "")
 ;;==== SWP|TX 029 - Unvesting Tests · 03 · gas echo ==== ==========================================
 (print "--- [SWP|TX 029 - Unvesting Tests · 03 · gas echo] ---")
+;;==== SWP|TX 029 - Unvesting Tests · 03 · gas echo ==== ==========================================
+(print "--- [SWP|TX 029 - Unvesting Tests · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 029 - Unvesting Tests ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -2969,6 +3173,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 030 - Vested Ouro Tranasfer RoleTests · 01 · env-sigs (caps) ==== ===================
 (print "--- [SWP|TX 030 - Vested Ouro Tranasfer RoleTests · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 030 - Vested Ouro Tranasfer RoleTests · 01 · env-sigs (caps) ==== ===================
+(print "--- [SWP|TX 030 - Vested Ouro Tranasfer RoleTests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -2976,6 +3182,8 @@
     ]
 )
 
+;;==== SWP|TX 030 - Vested Ouro Tranasfer RoleTests · 02 · let / invocation ==== ==================
+(print "--- [SWP|TX 030 - Vested Ouro Tranasfer RoleTests · 02 · let / invocation] ---")
 ;;==== SWP|TX 030 - Vested Ouro Tranasfer RoleTests · 02 · let / invocation ==== ==================
 (print "--- [SWP|TX 030 - Vested Ouro Tranasfer RoleTests · 02 · let / invocation] ---")
 (let
@@ -2988,6 +3196,8 @@
 
 (print "")
 (print "")
+;;==== SWP|TX 030 - Vested Ouro Tranasfer RoleTests · 03 · gas echo ==== ==========================
+(print "--- [SWP|TX 030 - Vested Ouro Tranasfer RoleTests · 03 · gas echo] ---")
 ;;==== SWP|TX 030 - Vested Ouro Tranasfer RoleTests · 03 · gas echo ==== ==========================
 (print "--- [SWP|TX 030 - Vested Ouro Tranasfer RoleTests · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 030 - Vested Ouro Tranasfer RoleTests ==> {} STOA GAS>>>>>>>" [(env-gas)])
@@ -3006,6 +3216,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 031 - Further Vesting Tests · 01 · env-sigs (caps) ==== =============================
 (print "--- [SWP|TX 031 - Further Vesting Tests · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 031 - Further Vesting Tests · 01 · env-sigs (caps) ==== =============================
+(print "--- [SWP|TX 031 - Further Vesting Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -3013,6 +3225,8 @@
     ]
 )
 
+;;==== SWP|TX 031 - Further Vesting Tests · 02 · let / invocation ==== ============================
+(print "--- [SWP|TX 031 - Further Vesting Tests · 02 · let / invocation] ---")
 ;;==== SWP|TX 031 - Further Vesting Tests · 02 · let / invocation ==== ============================
 (print "--- [SWP|TX 031 - Further Vesting Tests · 02 · let / invocation] ---")
 (let
@@ -3051,6 +3265,8 @@
 (print "")
 ;;==== SWP|TX 031 - Further Vesting Tests · 03 · gas echo ==== ====================================
 (print "--- [SWP|TX 031 - Further Vesting Tests · 03 · gas echo] ---")
+;;==== SWP|TX 031 - Further Vesting Tests · 03 · gas echo ==== ====================================
+(print "--- [SWP|TX 031 - Further Vesting Tests · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 031 - Further Vesting Tests ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -3067,6 +3283,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 032 - Enable Frozen and Sleeping LP for Pool · 01 · env-sigs (caps) ==== ============
 (print "--- [SWP|TX 032 - Enable Frozen and Sleeping LP for Pool · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 032 - Enable Frozen and Sleeping LP for Pool · 01 · env-sigs (caps) ==== ============
+(print "--- [SWP|TX 032 - Enable Frozen and Sleeping LP for Pool · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -3074,6 +3292,8 @@
     ]
 )
 
+;;==== SWP|TX 032 - Enable Frozen and Sleeping LP for Pool · 02 · let / invocation ==== ===========
+(print "--- [SWP|TX 032 - Enable Frozen and Sleeping LP for Pool · 02 · let / invocation] ---")
 ;;==== SWP|TX 032 - Enable Frozen and Sleeping LP for Pool · 02 · let / invocation ==== ===========
 (print "--- [SWP|TX 032 - Enable Frozen and Sleeping LP for Pool · 02 · let / invocation] ---")
 (let
@@ -3144,6 +3364,8 @@
 (print "")
 ;;==== SWP|TX 032 - Enable Frozen and Sleeping LP for Pool · 03 · gas echo ==== ===================
 (print "--- [SWP|TX 032 - Enable Frozen and Sleeping LP for Pool · 03 · gas echo] ---")
+;;==== SWP|TX 032 - Enable Frozen and Sleeping LP for Pool · 03 · gas echo ==== ===================
+(print "--- [SWP|TX 032 - Enable Frozen and Sleeping LP for Pool · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 032 - Enable Frozen and Sleeping LP for Pool ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -3158,6 +3380,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 032a - #31M/M7 Owner-Auth Adversarial Proof · 01 · let / invocation ==== ==============
+(print "--- [SWP|TX 032a - #31M/M7 Owner-Auth Adversarial Proof · 01 · let / invocation] ---")
+;;==== SWP|TX 032a - #31M/M7 Owner-Auth Adversarial Proof · 01 · let / invocation ==== ============
 (print "--- [SWP|TX 032a - #31M/M7 Owner-Auth Adversarial Proof · 01 · let / invocation] ---")
 (let
     (
@@ -3204,6 +3428,8 @@
 (print "")
 ;;==== SWP|TX 032a - #31M/M7 Owner-Auth Adversarial Proof · 03 · gas echo ==== =======================
 (print "--- [SWP|TX 032a - #31M/M7 Owner-Auth Adversarial Proof · 03 · gas echo] ---")
+;;==== SWP|TX 032a - #31M/M7 Owner-Auth Adversarial Proof · 03 · gas echo ==== ====================
+(print "--- [SWP|TX 032a - #31M/M7 Owner-Auth Adversarial Proof · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 032a #31M Proof ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -3218,6 +3444,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 032b - #31M/M7 True Owner Still Works · 01 · let / invocation ==== =====================
+(print "--- [SWP|TX 032b - #31M/M7 True Owner Still Works · 01 · let / invocation] ---")
+;;==== SWP|TX 032b - #31M/M7 True Owner Still Works · 01 · let / invocation ==== ==================
 (print "--- [SWP|TX 032b - #31M/M7 True Owner Still Works · 01 · let / invocation] ---")
 (let
     (
@@ -3290,6 +3518,8 @@
 (print "")
 ;;==== SWP|TX 032b - #31M/M7 True Owner Still Works · 03 · gas echo ==== =============================
 (print "--- [SWP|TX 032b - #31M/M7 True Owner Still Works · 03 · gas echo] ---")
+;;==== SWP|TX 032b - #31M/M7 True Owner Still Works · 03 · gas echo ==== ==========================
+(print "--- [SWP|TX 032b - #31M/M7 True Owner Still Works · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 032b #31M Owner Proof ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -3305,6 +3535,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 032c - Issue TSTC/TSTD/TSTZ Test Tokens (#34M Proof) · 01 · let / invocation ==== =====
+(print "--- [SWP|TX 032c - Issue TSTC/TSTD/TSTZ Test Tokens (#34M Proof) · 01 · let / invocation] ---")
+;;==== SWP|TX 032c - Issue TSTC/TSTD/TSTZ Test Tokens (#34M Proof) · 01 · let / invocation ==== ===
 (print "--- [SWP|TX 032c - Issue TSTC/TSTD/TSTZ Test Tokens (#34M Proof) · 01 · let / invocation] ---")
 (let
     (
@@ -3375,6 +3607,8 @@
 (print "")
 ;;==== SWP|TX 032c - Issue TSTC/TSTD/TSTZ Test Tokens (#34M Proof) · 03 · gas echo ==== ===============
 (print "--- [SWP|TX 032c - Issue TSTC/TSTD/TSTZ Test Tokens (#34M Proof) · 03 · gas echo] ---")
+;;==== SWP|TX 032c - Issue TSTC/TSTD/TSTZ Test Tokens (#34M Proof) · 03 · gas echo ==== ===========
+(print "--- [SWP|TX 032c - Issue TSTC/TSTD/TSTZ Test Tokens (#34M Proof) · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 032c Issue TSTC/TSTD/TSTZ ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -3390,12 +3624,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 032d - Mint TSTC/TSTD/TSTZ to KST.ANHD (#34M Proof) · 01 · env-sigs (caps) ==== =========
 (print "--- [SWP|TX 032d - Mint TSTC/TSTD/TSTZ to KST.ANHD (#34M Proof) · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 032d - Mint TSTC/TSTD/TSTZ to KST.ANHD (#34M Proof) · 01 · env-sigs (caps) ==== =====
+(print "--- [SWP|TX 032d - Mint TSTC/TSTD/TSTZ to KST.ANHD (#34M Proof) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 ;;==== SWP|TX 032d - Mint TSTC/TSTD/TSTZ to KST.ANHD (#34M Proof) · 02 · let / invocation ==== ========
+(print "--- [SWP|TX 032d - Mint TSTC/TSTD/TSTZ to KST.ANHD (#34M Proof) · 02 · let / invocation] ---")
+;;==== SWP|TX 032d - Mint TSTC/TSTD/TSTZ to KST.ANHD (#34M Proof) · 02 · let / invocation ==== ====
 (print "--- [SWP|TX 032d - Mint TSTC/TSTD/TSTZ to KST.ANHD (#34M Proof) · 02 · let / invocation] ---")
 (let
     (
@@ -3416,6 +3654,8 @@
 (print "")
 ;;==== SWP|TX 032d - Mint TSTC/TSTD/TSTZ to KST.ANHD (#34M Proof) · 03 · gas echo ==== =================
 (print "--- [SWP|TX 032d - Mint TSTC/TSTD/TSTZ to KST.ANHD (#34M Proof) · 03 · gas echo] ---")
+;;==== SWP|TX 032d - Mint TSTC/TSTD/TSTZ to KST.ANHD (#34M Proof) · 03 · gas echo ==== ============
+(print "--- [SWP|TX 032d - Mint TSTC/TSTD/TSTZ to KST.ANHD (#34M Proof) · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 032d Mint TSTC/TSTD/TSTZ ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -3431,6 +3671,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 032e - Issue Diamond-Topology Pools (#34M Proof) · 01 · let / invocation ==== ===========
 (print "--- [SWP|TX 032e - Issue Diamond-Topology Pools (#34M Proof) · 01 · let / invocation] ---")
+;;==== SWP|TX 032e - Issue Diamond-Topology Pools A-C-Z / A-D-Z (#34M Proof) · 01 · let / invocation ==== 
+(print "--- [SWP|TX 032e - Issue Diamond-Topology Pools A-C-Z / A-D-Z (#34M Proof) · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -3525,6 +3767,8 @@
 (print "")
 ;;==== SWP|TX 032e - Issue Diamond-Topology Pools (#34M Proof) · 03 · gas echo ==== ====================
 (print "--- [SWP|TX 032e - Issue Diamond-Topology Pools (#34M Proof) · 03 · gas echo] ---")
+;;==== SWP|TX 032e - Issue Diamond-Topology Pools A-C-Z / A-D-Z (#34M Proof) · 03 · gas echo ==== =
+(print "--- [SWP|TX 032e - Issue Diamond-Topology Pools A-C-Z / A-D-Z (#34M Proof) · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 032e Issue Diamond Pools ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -3540,12 +3784,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 032f - Enable Swap on Diamond-Topology Pools (#34M Proof) · 01 · env-sigs (caps) ==== ===
 (print "--- [SWP|TX 032f - Enable Swap on Diamond-Topology Pools (#34M Proof) · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 032f - Enable Swap on Diamond-Topology Pools (#34M Proof) · 01 · env-sigs (caps) ==== 
+(print "--- [SWP|TX 032f - Enable Swap on Diamond-Topology Pools (#34M Proof) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 ;;==== SWP|TX 032f - Enable Swap on Diamond-Topology Pools (#34M Proof) · 02 · let / invocation ==== ==
+(print "--- [SWP|TX 032f - Enable Swap on Diamond-Topology Pools (#34M Proof) · 02 · let / invocation] ---")
+;;==== SWP|TX 032f - Enable Swap on Diamond-Topology Pools (#34M Proof) · 02 · let / invocation ==== 
 (print "--- [SWP|TX 032f - Enable Swap on Diamond-Topology Pools (#34M Proof) · 02 · let / invocation] ---")
 (let
     (
@@ -3559,6 +3807,8 @@
 (print "")
 (print "")
 ;;==== SWP|TX 032f - Enable Swap on Diamond-Topology Pools (#34M Proof) · 03 · gas echo ==== ==========
+(print "--- [SWP|TX 032f - Enable Swap on Diamond-Topology Pools (#34M Proof) · 03 · gas echo] ---")
+;;==== SWP|TX 032f - Enable Swap on Diamond-Topology Pools (#34M Proof) · 03 · gas echo ==== ======
 (print "--- [SWP|TX 032f - Enable Swap on Diamond-Topology Pools (#34M Proof) · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 032f Enable Swap ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
@@ -3574,6 +3824,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 032g - #34M/M2 Adversarial Proof Swap · 01 · env-sigs (caps) ==== =======================
+(print "--- [SWP|TX 032g - #34M/M2 Adversarial Proof Swap · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 032g - #34M/M2 Adversarial Proof Swap · 01 · env-sigs (caps) ==== ===================
 (print "--- [SWP|TX 032g - #34M/M2 Adversarial Proof Swap · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
@@ -3595,6 +3847,8 @@
 ;;correctly finds the better route when called directly — also proven below — it's
 ;;simply no longer wired into the default live path.
 ;;==== SWP|TX 032g - #34M/M2 Adversarial Proof Swap · 02 · let / invocation ==== ======================
+(print "--- [SWP|TX 032g - #34M/M2 Adversarial Proof Swap · 02 · let / invocation] ---")
+;;==== SWP|TX 032g - #34M/M2 Adversarial Proof Swap · 02 · let / invocation ==== ==================
 (print "--- [SWP|TX 032g - #34M/M2 Adversarial Proof Swap · 02 · let / invocation] ---")
 (let
     (
@@ -3665,6 +3919,8 @@
 (print "")
 ;;==== SWP|TX 032g - #34M/M2 Adversarial Proof Swap · 03 · gas echo ==== ==============================
 (print "--- [SWP|TX 032g - #34M/M2 Adversarial Proof Swap · 03 · gas echo] ---")
+;;==== SWP|TX 032g - #34M/M2 Adversarial Proof Swap · 03 · gas echo ==== ==========================
+(print "--- [SWP|TX 032g - #34M/M2 Adversarial Proof Swap · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 032g #34M Proof ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -3680,6 +3936,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 032h - Issue TSTN/TSTM/TSTQ Test Tokens (#34bM Proof) · 01 · let / invocation ==== ====
+(print "--- [SWP|TX 032h - Issue TSTN/TSTM/TSTQ Test Tokens (#34bM Proof) · 01 · let / invocation] ---")
+;;==== SWP|TX 032h - Issue TSTN/TSTM/TSTQ Test Tokens (#34bM Proof) · 01 · let / invocation ==== ==
 (print "--- [SWP|TX 032h - Issue TSTN/TSTM/TSTQ Test Tokens (#34bM Proof) · 01 · let / invocation] ---")
 (let
     (
@@ -3750,6 +4008,8 @@
 (print "")
 ;;==== SWP|TX 032h - Issue TSTN/TSTM/TSTQ Test Tokens (#34bM Proof) · 03 · gas echo ==== ===============
 (print "--- [SWP|TX 032h - Issue TSTN/TSTM/TSTQ Test Tokens (#34bM Proof) · 03 · gas echo] ---")
+;;==== SWP|TX 032h - Issue TSTN/TSTM/TSTQ Test Tokens (#34bM Proof) · 03 · gas echo ==== ==========
+(print "--- [SWP|TX 032h - Issue TSTN/TSTM/TSTQ Test Tokens (#34bM Proof) · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 032h Issue TSTN/TSTM/TSTQ ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -3765,12 +4025,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 032i - Mint TSTN/TSTM/TSTQ to KST.ANHD (#34bM Proof) · 01 · env-sigs (caps) ==== ========
 (print "--- [SWP|TX 032i - Mint TSTN/TSTM/TSTQ to KST.ANHD (#34bM Proof) · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 032i - Mint TSTN/TSTM/TSTQ to KST.ANHD (#34bM Proof) · 01 · env-sigs (caps) ==== ====
+(print "--- [SWP|TX 032i - Mint TSTN/TSTM/TSTQ to KST.ANHD (#34bM Proof) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 ;;==== SWP|TX 032i - Mint TSTN/TSTM/TSTQ to KST.ANHD (#34bM Proof) · 02 · let / invocation ==== =======
+(print "--- [SWP|TX 032i - Mint TSTN/TSTM/TSTQ to KST.ANHD (#34bM Proof) · 02 · let / invocation] ---")
+;;==== SWP|TX 032i - Mint TSTN/TSTM/TSTQ to KST.ANHD (#34bM Proof) · 02 · let / invocation ==== ===
 (print "--- [SWP|TX 032i - Mint TSTN/TSTM/TSTQ to KST.ANHD (#34bM Proof) · 02 · let / invocation] ---")
 (let
     (
@@ -3784,6 +4048,8 @@
 (print "")
 (print "")
 ;;==== SWP|TX 032i - Mint TSTN/TSTM/TSTQ to KST.ANHD (#34bM Proof) · 03 · gas echo ==== =================
+(print "--- [SWP|TX 032i - Mint TSTN/TSTM/TSTQ to KST.ANHD (#34bM Proof) · 03 · gas echo] ---")
+;;==== SWP|TX 032i - Mint TSTN/TSTM/TSTQ to KST.ANHD (#34bM Proof) · 03 · gas echo ==== ===========
 (print "--- [SWP|TX 032i - Mint TSTN/TSTM/TSTQ to KST.ANHD (#34bM Proof) · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 032i Mint TSTN/TSTM/TSTQ ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
@@ -3800,6 +4066,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 032j - #34bM Adversarial Proof · 01 · let / invocation ==== =============================
 (print "--- [SWP|TX 032j - #34bM Adversarial Proof · 01 · let / invocation] ---")
+;;==== SWP|TX 032j - #34bM Adversarial Proof: Direct-Anchor-Only Chain Rejection · 01 · let / invocation ==== 
+(print "--- [SWP|TX 032j - #34bM Adversarial Proof: Direct-Anchor-Only Chain Rejection · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -3868,6 +4136,8 @@
 (print "")
 ;;==== SWP|TX 032j - #34bM Adversarial Proof · 03 · gas echo ==== =====================================
 (print "--- [SWP|TX 032j - #34bM Adversarial Proof · 03 · gas echo] ---")
+;;==== SWP|TX 032j - #34bM Adversarial Proof: Direct-Anchor-Only Chain Rejection · 03 · gas echo ==== 
+(print "--- [SWP|TX 032j - #34bM Adversarial Proof: Direct-Anchor-Only Chain Rejection · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 032j #34bM Setup ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -3883,6 +4153,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 032k - #34bM Adversarial Proof (2-hop rejection) · 01 · let / invocation ==== ============
 (print "--- [SWP|TX 032k - #34bM Adversarial Proof (2-hop rejection) · 01 · let / invocation] ---")
+;;==== SWP|TX 032k - #34bM Adversarial Proof: S|TSTM|TSTQ Must Be Rejected · 01 · let / invocation ==== 
+(print "--- [SWP|TX 032k - #34bM Adversarial Proof: S|TSTM|TSTQ Must Be Rejected · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -3956,6 +4228,8 @@
 (print "")
 ;;==== SWP|TX 032k - #34bM Adversarial Proof (2-hop rejection) · 03 · gas echo ==== =====================
 (print "--- [SWP|TX 032k - #34bM Adversarial Proof (2-hop rejection) · 03 · gas echo] ---")
+;;==== SWP|TX 032k - #34bM Adversarial Proof: S|TSTM|TSTQ Must Be Rejected · 03 · gas echo ==== ===
+(print "--- [SWP|TX 032k - #34bM Adversarial Proof: S|TSTM|TSTQ Must Be Rejected · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 032k #34bM Proof ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -3990,6 +4264,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 032l - Issue 37 Tokens for Worst-Case Gas Test (P0.5) · 01 · let / invocation ==== =====
+(print "--- [SWP|TX 032l - Issue 37 Tokens for Worst-Case Gas Test (P0.5) · 01 · let / invocation] ---")
+;;==== SWP|TX 032l - Issue 37 Tokens for Worst-Case Gas Test (P0.5) · 01 · let / invocation ==== ==
 (print "--- [SWP|TX 032l - Issue 37 Tokens for Worst-Case Gas Test (P0.5) · 01 · let / invocation] ---")
 (let
     (
@@ -4078,6 +4354,8 @@
 (print "")
 ;;==== SWP|TX 032l - Issue 37 Tokens for Worst-Case Gas Test (P0.5) · 03 · gas echo ==== ================
 (print "--- [SWP|TX 032l - Issue 37 Tokens for Worst-Case Gas Test (P0.5) · 03 · gas echo] ---")
+;;==== SWP|TX 032l - Issue 37 Tokens for Worst-Case Gas Test (P0.5) · 03 · gas echo ==== ==========
+(print "--- [SWP|TX 032l - Issue 37 Tokens for Worst-Case Gas Test (P0.5) · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 032l Issue 37 Tokens ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -4093,6 +4371,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 032m - Mint 37 Tokens (P0.5) · 01 · env-sigs (caps) ==== =================================
 (print "--- [SWP|TX 032m - Mint 37 Tokens (P0.5) · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 032m - Mint 37 Tokens for Worst-Case Gas Test (P0.5) · 01 · env-sigs (caps) ==== ====
+(print "--- [SWP|TX 032m - Mint 37 Tokens for Worst-Case Gas Test (P0.5) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -4100,6 +4380,8 @@
 )
 ;;==== SWP|TX 032m - Mint 37 Tokens (P0.5) · 02 · let / invocation ==== ================================
 (print "--- [SWP|TX 032m - Mint 37 Tokens (P0.5) · 02 · let / invocation] ---")
+;;==== SWP|TX 032m - Mint 37 Tokens for Worst-Case Gas Test (P0.5) · 02 · let / invocation ==== ===
+(print "--- [SWP|TX 032m - Mint 37 Tokens for Worst-Case Gas Test (P0.5) · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -4125,6 +4407,8 @@
 (print "")
 ;;==== SWP|TX 032m - Mint 37 Tokens (P0.5) · 03 · gas echo ==== ========================================
 (print "--- [SWP|TX 032m - Mint 37 Tokens (P0.5) · 03 · gas echo] ---")
+;;==== SWP|TX 032m - Mint 37 Tokens for Worst-Case Gas Test (P0.5) · 03 · gas echo ==== ===========
+(print "--- [SWP|TX 032m - Mint 37 Tokens for Worst-Case Gas Test (P0.5) · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 032m Mint 37 Tokens ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -4140,12 +4424,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 032n - Register W1/W4/W7 as Principals (P0.5) · 01 · env-sigs (caps) ==== ================
 (print "--- [SWP|TX 032n - Register W1/W4/W7 as Principals (P0.5) · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 032n - Register W1/W4/W7 as Principals (P0.5) · 01 · env-sigs (caps) ==== ===========
+(print "--- [SWP|TX 032n - Register W1/W4/W7 as Principals (P0.5) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 ;;==== SWP|TX 032n - Register W1/W4/W7 as Principals (P0.5) · 02 · let / invocation ==== ===============
+(print "--- [SWP|TX 032n - Register W1/W4/W7 as Principals (P0.5) · 02 · let / invocation] ---")
+;;==== SWP|TX 032n - Register W1/W4/W7 as Principals (P0.5) · 02 · let / invocation ==== ==========
 (print "--- [SWP|TX 032n - Register W1/W4/W7 as Principals (P0.5) · 02 · let / invocation] ---")
 (let
     (
@@ -4161,6 +4449,8 @@
 (print "")
 ;;==== SWP|TX 032n - Register W1/W4/W7 as Principals (P0.5) · 03 · gas echo ==== ========================
 (print "--- [SWP|TX 032n - Register W1/W4/W7 as Principals (P0.5) · 03 · gas echo] ---")
+;;==== SWP|TX 032n - Register W1/W4/W7 as Principals (P0.5) · 03 · gas echo ==== ==================
+(print "--- [SWP|TX 032n - Register W1/W4/W7 as Principals (P0.5) · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 032n Register Principals ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -4175,6 +4465,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 032o - Issue 6 Maximal 7-Token Pools (P0.5) · 01 · let / invocation ==== ==================
+(print "--- [SWP|TX 032o - Issue 6 Maximal 7-Token Pools (P0.5) · 01 · let / invocation] ---")
+;;==== SWP|TX 032o - Issue 6 Maximal 7-Token Pools (P0.5) · 01 · let / invocation ==== ============
 (print "--- [SWP|TX 032o - Issue 6 Maximal 7-Token Pools (P0.5) · 01 · let / invocation] ---")
 (let
     (
@@ -4302,6 +4594,8 @@
 (print "")
 ;;==== SWP|TX 032o - Issue 6 Maximal 7-Token Pools (P0.5) · 03 · gas echo ==== ===========================
 (print "--- [SWP|TX 032o - Issue 6 Maximal 7-Token Pools (P0.5) · 03 · gas echo] ---")
+;;==== SWP|TX 032o - Issue 6 Maximal 7-Token Pools (P0.5) · 03 · gas echo ==== ====================
+(print "--- [SWP|TX 032o - Issue 6 Maximal 7-Token Pools (P0.5) · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 032o Issue 6 Pools ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -4325,6 +4619,8 @@
 ;;computable too, without creating any shortcut: W7 remains reachable from OURO
 ;;only via the same 6-hop chain either way, since nothing else touches it.
 (print "--- [SWP|TX 032o2 - Throwaway OURO|W1 Anchor (P0.5) · 01 · let / invocation] ---")
+;;==== SWP|TX 032o2 - Throwaway OURO|W1 Worth-Anchor Pool (P0.5) · 01 · let / invocation ==== =====
+(print "--- [SWP|TX 032o2 - Throwaway OURO|W1 Worth-Anchor Pool (P0.5) · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -4393,6 +4689,8 @@
 (print "")
 ;;==== SWP|TX 032o2 - Throwaway OURO|W1 Anchor (P0.5) · 03 · gas echo ==== ================================
 (print "--- [SWP|TX 032o2 - Throwaway OURO|W1 Anchor (P0.5) · 03 · gas echo] ---")
+;;==== SWP|TX 032o2 - Throwaway OURO|W1 Worth-Anchor Pool (P0.5) · 03 · gas echo ==== =============
+(print "--- [SWP|TX 032o2 - Throwaway OURO|W1 Worth-Anchor Pool (P0.5) · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 032o2 Throwaway Anchor ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -4418,6 +4716,8 @@
 ;;exists to catch a future refactor that changes HOW deposits are collected (e.g.
 ;;away from C_MultiTransfer) and silently drops this composed protection without
 ;;anyone adding a replacement.
+;;==== SWP|TX 032o3 - #74 Duplicate-Token Issuance Rejection Proof (Permanent) · 01 · let / invocation ==== 
+(print "--- [SWP|TX 032o3 - #74 Duplicate-Token Issuance Rejection Proof (Permanent) · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -4490,6 +4790,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 032p - Fee Targets + Enable Swap (P0.5) · 01 · env-sigs (caps) ==== ========================
 (print "--- [SWP|TX 032p - Fee Targets + Enable Swap (P0.5) · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 032p - 7 Special Fee Targets + Enable Swap on All 6 Pools (P0.5) · 01 · env-sigs (caps) ==== 
+(print "--- [SWP|TX 032p - 7 Special Fee Targets + Enable Swap on All 6 Pools (P0.5) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -4497,6 +4799,8 @@
 )
 ;;==== SWP|TX 032p - Fee Targets + Enable Swap (P0.5) · 02 · let / invocation ==== =======================
 (print "--- [SWP|TX 032p - Fee Targets + Enable Swap (P0.5) · 02 · let / invocation] ---")
+;;==== SWP|TX 032p - 7 Special Fee Targets + Enable Swap on All 6 Pools (P0.5) · 02 · let / invocation ==== 
+(print "--- [SWP|TX 032p - 7 Special Fee Targets + Enable Swap on All 6 Pools (P0.5) · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
@@ -4535,6 +4839,8 @@
 (print "")
 ;;==== SWP|TX 032p - Fee Targets + Enable Swap (P0.5) · 03 · gas echo ==== ===============================
 (print "--- [SWP|TX 032p - Fee Targets + Enable Swap (P0.5) · 03 · gas echo] ---")
+;;==== SWP|TX 032p - 7 Special Fee Targets + Enable Swap on All 6 Pools (P0.5) · 03 · gas echo ==== 
+(print "--- [SWP|TX 032p - 7 Special Fee Targets + Enable Swap on All 6 Pools (P0.5) · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 032p Fee Targets + Enable ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -4550,6 +4856,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 032q - P0.5 Worst-Case Gas Measurement · 01 · env-sigs (caps) ==== =========================
 (print "--- [SWP|TX 032q - P0.5 Worst-Case Gas Measurement · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 032q - P0.5 Worst-Case 6-Hop SmartSwap Gas Measurement · 01 · env-sigs (caps) ==== ==
+(print "--- [SWP|TX 032q - P0.5 Worst-Case 6-Hop SmartSwap Gas Measurement · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -4564,6 +4872,8 @@
 ;;the true worst case must explicitly turn it on for this measurement — and back
 ;;off immediately after, since it's global and would otherwise silently change
 ;;every fee computation for the rest of this file's later transactions.
+;;==== SWP|TX 032q - P0.5 Worst-Case 6-Hop SmartSwap Gas Measurement · 02 · let / invocation ==== =
+(print "--- [SWP|TX 032q - P0.5 Worst-Case 6-Hop SmartSwap Gas Measurement · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
@@ -4791,7 +5101,11 @@
 (begin-tx "SWP|TX 032u - P2-Scale Checkpoint @ ~42 active pools")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 032u - P2-Scale Checkpoint @ ~42 active pools · 01 · env-sigs (caps) ==== ===========
+(print "--- [SWP|TX 032u - P2-Scale Checkpoint @ ~42 active pools · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== SWP|TX 032u - P2-Scale Checkpoint @ ~42 active pools · 02 · let / invocation ==== ==========
+(print "--- [SWP|TX 032u - P2-Scale Checkpoint @ ~42 active pools · 02 · let / invocation] ---")
 (let ((ref-SWP:module{SwapperV4} SWP)) (print (format "P2-scale checkpoint: active swpairs = {}" [(length (ref-SWP::URC_ActiveSwpairs))])))
 (let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost true))
 (env-gas 0)
@@ -4808,6 +5122,8 @@
 (begin-tx "SWP|TX 032v - Activate Next 20 P2-Scale Noise Pools (-> ~62 active)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 2000000000)(env-gas 0)
+;;==== SWP|TX 032v - Activate Next 20 P2-Scale Noise Pools (-> ~62 active) · 01 · env-sigs (caps) ==== 
+(print "--- [SWP|TX 032v - Activate Next 20 P2-Scale Noise Pools (-> ~62 active) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
@@ -4826,7 +5142,11 @@
 (begin-tx "SWP|TX 032w - P2-Scale Checkpoint @ ~62 active pools")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 032w - P2-Scale Checkpoint @ ~62 active pools · 01 · env-sigs (caps) ==== ===========
+(print "--- [SWP|TX 032w - P2-Scale Checkpoint @ ~62 active pools · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== SWP|TX 032w - P2-Scale Checkpoint @ ~62 active pools · 02 · let / invocation ==== ==========
+(print "--- [SWP|TX 032w - P2-Scale Checkpoint @ ~62 active pools · 02 · let / invocation] ---")
 (let ((ref-SWP:module{SwapperV4} SWP)) (print (format "P2-scale checkpoint: active swpairs = {}" [(length (ref-SWP::URC_ActiveSwpairs))])))
 (let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost true))
 (env-gas 0)
@@ -4843,6 +5163,8 @@
 (begin-tx "SWP|TX 032x - Activate Next 20 P2-Scale Noise Pools (-> ~82 active)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 2000000000)(env-gas 0)
+;;==== SWP|TX 032x - Activate Next 20 P2-Scale Noise Pools (-> ~82 active) · 01 · env-sigs (caps) ==== 
+(print "--- [SWP|TX 032x - Activate Next 20 P2-Scale Noise Pools (-> ~82 active) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
@@ -4861,7 +5183,11 @@
 (begin-tx "SWP|TX 032y - P2-Scale Checkpoint @ ~82 active pools")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 032y - P2-Scale Checkpoint @ ~82 active pools · 01 · env-sigs (caps) ==== ===========
+(print "--- [SWP|TX 032y - P2-Scale Checkpoint @ ~82 active pools · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== SWP|TX 032y - P2-Scale Checkpoint @ ~82 active pools · 02 · let / invocation ==== ==========
+(print "--- [SWP|TX 032y - P2-Scale Checkpoint @ ~82 active pools · 02 · let / invocation] ---")
 (let ((ref-SWP:module{SwapperV4} SWP)) (print (format "P2-scale checkpoint: active swpairs = {}" [(length (ref-SWP::URC_ActiveSwpairs))])))
 (let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost true))
 (env-gas 0)
@@ -4878,6 +5204,8 @@
 (begin-tx "SWP|TX 032z - Activate Last 20 P2-Scale Noise Pools (-> ~102 active)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 2000000000)(env-gas 0)
+;;==== SWP|TX 032z - Activate Last 20 P2-Scale Noise Pools (-> ~102 active) · 01 · env-sigs (caps) ==== 
+(print "--- [SWP|TX 032z - Activate Last 20 P2-Scale Noise Pools (-> ~102 active) · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let*
     (
@@ -4896,7 +5224,11 @@
 (begin-tx "SWP|TX 032z2 - P2-Scale Checkpoint @ ~102 active pools")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 032z2 - P2-Scale Checkpoint @ ~102 active pools · 01 · env-sigs (caps) ==== =========
+(print "--- [SWP|TX 032z2 - P2-Scale Checkpoint @ ~102 active pools · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== SWP|TX 032z2 - P2-Scale Checkpoint @ ~102 active pools · 02 · let / invocation ==== ========
+(print "--- [SWP|TX 032z2 - P2-Scale Checkpoint @ ~102 active pools · 02 · let / invocation] ---")
 (let ((ref-SWP:module{SwapperV4} SWP)) (print (format "P2-scale checkpoint: active swpairs = {}" [(length (ref-SWP::URC_ActiveSwpairs))])))
 (let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost true))
 (env-gas 0)
@@ -4946,6 +5278,8 @@
         )
     )
 )
+;;==== SWP|TX 032z2b - #38M/M4 proof: UCx_GraphNodeLinks single-pass rewrite, same result + gas at ~102 active pools · 03 · env-sigs (caps) ==== 
+(print "--- [SWP|TX 032z2b - #38M/M4 proof: UCx_GraphNodeLinks single-pass rewrite, same result + gas at ~102 active pools · 03 · env-sigs (caps)] ---")
 (env-sigs [])
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -4953,6 +5287,8 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
 (begin-tx "SWP|TX 032z3 - #34 Phase 7 Core Function Verification (Permanent)")
+;;==== SWP|TX 032z3 - #34 Phase 7 Core Function Verification (Permanent) · 01 · namespace ==== ====
+(print "--- [SWP|TX 032z3 - #34 Phase 7 Core Function Verification (Permanent) · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 032z3 - #34 Phase 7 Core Function Verification · 01 · let / invocation ====
@@ -5044,11 +5380,18 @@
     )
 )
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "SWP|TX 032z4 - #34 Phase 7 XI_RegisterPath Write-Safety Proof (Permanent)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 032z4 - #34 Phase 7 Write-Safety Proof · 01 · env-sigs (caps) ====
 (print "--- [SWP|TX 032z4 - #34 Phase 7 Write-Safety Proof · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 032z4 - #34 Phase 7 XI_RegisterPath Write-Safety Proof (Permanent) · 01 · env-sigs (caps) ==== 
+(print "--- [SWP|TX 032z4 - #34 Phase 7 XI_RegisterPath Write-Safety Proof (Permanent) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -5117,6 +5460,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 032z5 - XI_RawLiquidPump Crash-Bug Fix Proof · 01 · env-sigs (caps) ====
 (print "--- [SWP|TX 032z5 - XI_RawLiquidPump Crash-Bug Fix Proof · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 032z5 - #34 XI_RawLiquidPump Crash-Bug Fix Proof (Permanent) · 01 · env-sigs (caps) ==== 
+(print "--- [SWP|TX 032z5 - #34 XI_RawLiquidPump Crash-Bug Fix Proof (Permanent) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -5132,6 +5477,8 @@
 ;;pumped for hops with no active route.
 ;;==== SWP|TX 032z5 - XI_RawLiquidPump Crash-Bug Fix Proof · 02 · let / invocation ====
 (print "--- [SWP|TX 032z5 - XI_RawLiquidPump Crash-Bug Fix Proof · 02 · let / invocation] ---")
+;;==== SWP|TX 032z5 - #34 XI_RawLiquidPump Crash-Bug Fix Proof (Permanent) · 02 · let / invocation ==== 
+(print "--- [SWP|TX 032z5 - #34 XI_RawLiquidPump Crash-Bug Fix Proof (Permanent) · 02 · let / invocation] ---")
 (let ((ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3))
     (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD "P|OURO-98c486052a51|W1-98c486052a51" false)
 )
@@ -5169,6 +5516,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 032z6 - Bundle-Based SmartSwap Proof · 01 · env-sigs (caps) ====
 (print "--- [SWP|TX 032z6 - Bundle-Based SmartSwap Proof · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 032z6 - #34 Phase 8 Bundle-Based SmartSwap Proof + Gas Comparison (Permanent) · 01 · env-sigs (caps) ==== 
+(print "--- [SWP|TX 032z6 - #34 Phase 8 Bundle-Based SmartSwap Proof + Gas Comparison (Permanent) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -5185,6 +5534,8 @@
 ;;anything.
 ;;==== SWP|TX 032z6 - Bundle-Based SmartSwap Proof · 02 · dirty-read bundle + measured call ====
 (print "--- [SWP|TX 032z6 - Bundle-Based SmartSwap Proof · 02 · dirty-read bundle + measured call] ---")
+;;==== SWP|TX 032z6 - #34 Phase 8 Bundle-Based SmartSwap Proof + Gas Comparison (Permanent) · 02 · let / invocation ==== 
+(print "--- [SWP|TX 032z6 - #34 Phase 8 Bundle-Based SmartSwap Proof + Gas Comparison (Permanent) · 02 · let / invocation] ---")
 (let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost true))
 (let*
     (
@@ -5299,6 +5650,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 032z6b - #65bL Phase 1 PathCache Proof · 01 · env-sigs (caps) ====
 (print "--- [SWP|TX 032z6b - #65bL Phase 1 PathCache Proof · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 032z6b - #65bL Phase 1 PathCache-Wired URCx_Hopper Proof (Permanent) · 01 · env-sigs (caps) ==== 
+(print "--- [SWP|TX 032z6b - #65bL Phase 1 PathCache-Wired URCx_Hopper Proof (Permanent) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -5368,6 +5721,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 032z6c - #65bL Phase 4 Proof · 01 · env-sigs (caps) ====
 (print "--- [SWP|TX 032z6c - #65bL Phase 4 Proof · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 032z6c - #65bL Phase 4 Shared Raw-Graph URC_PoolValueFromRaw Proof (Permanent) · 01 · env-sigs (caps) ==== 
+(print "--- [SWP|TX 032z6c - #65bL Phase 4 Shared Raw-Graph URC_PoolValueFromRaw Proof (Permanent) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -5483,6 +5838,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 032z6d - swap-route cache proof · 01 · env-sigs (caps) ====
 (print "--- [SWP|TX 032z6d - swap-route cache proof · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 032z6d - #65bL swap-route cache registration + reuse proof (Permanent) · 01 · env-sigs (caps) ==== 
+(print "--- [SWP|TX 032z6d - #65bL swap-route cache registration + reuse proof (Permanent) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -5542,6 +5899,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 032z6e - #65bL Phase 7 Proof · 01 · env-sigs (caps) ====
 (print "--- [SWP|TX 032z6e - #65bL Phase 7 Proof · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 032z6e - #65bL Phase 7 Shared Graph-Build URC_PoolValueFromGraph Proof (Permanent) · 01 · env-sigs (caps) ==== 
+(print "--- [SWP|TX 032z6e - #65bL Phase 7 Shared Graph-Build URC_PoolValueFromGraph Proof (Permanent) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -5640,6 +5999,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "--- [SWP|TX 032z6f - #65fL Phase 8b / #73C Proof · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 032z6f - #65fL Phase 8b / #73C OURO Shortcut Gas + Correctness Proof (Permanent) · 01 · env-sigs (caps) ==== 
+(print "--- [SWP|TX 032z6f - #65fL Phase 8b / #73C OURO Shortcut Gas + Correctness Proof (Permanent) · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
 ;;#65fL Phase 8b: URC_WorthWSTOA's own id==OURO shortcut (URC_SingleOuroWorthWSTOA) vs the
 ;;graph-search path (URC_Hopper ouro->DWK, reproduced directly here for comparison) — the exact
@@ -5700,6 +6061,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 032z7 - Boost-Path Cache Registration Proof · 01 · env-sigs (caps) ====
 (print "--- [SWP|TX 032z7 - Boost-Path Cache Registration Proof · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 032z7 - #34 Phase 8 Boost-Path Cache Registration Proof (Short Path) (Permanent) · 01 · env-sigs (caps) ==== 
+(print "--- [SWP|TX 032z7 - #34 Phase 8 Boost-Path Cache Registration Proof (Short Path) (Permanent) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -5713,6 +6076,8 @@
 ;;S|DLK|OURO|DWK stable pool), well within the P0.4 cap.
 ;;==== SWP|TX 032z7 - Boost-Path Cache Registration Proof · 02 · dirty-read bundle + call ====
 (print "--- [SWP|TX 032z7 - Boost-Path Cache Registration Proof · 02 · dirty-read bundle + call] ---")
+;;==== SWP|TX 032z7 - #34 Phase 8 Boost-Path Cache Registration Proof (Short Path) (Permanent) · 02 · let / invocation ==== 
+(print "--- [SWP|TX 032z7 - #34 Phase 8 Boost-Path Cache Registration Proof (Short Path) (Permanent) · 02 · let / invocation] ---")
 (let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost true))
 (let*
     (
@@ -5791,6 +6156,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "--- [SWP|TX 032z8a - #65fL Phase 8a Proof · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 032z8a - #65fL Phase 8a URC_HopperActiveShortest Warm-Cache Proof (Permanent) · 01 · env-sigs (caps) ==== 
+(print "--- [SWP|TX 032z8a - #65fL Phase 8a URC_HopperActiveShortest Warm-Cache Proof (Permanent) · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
 ;;#65fL Phase 8a: URC_HopperActiveShortest (Liquid Boost's own id->DLK search) now checks
 ;;SWPT|PathCache first. SWP|TX 032z7 (immediately above) already proved boost-path
@@ -5840,6 +6207,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "--- [SWP|TX 032z8b - #65fL Phase 8b Real Pool Proof · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 032z8b - #65fL Phase 8b Real OURO-Anchored Pool Repricing Proof (Permanent) · 01 · env-sigs (caps) ==== 
+(print "--- [SWP|TX 032z8b - #65fL Phase 8b Real OURO-Anchored Pool Repricing Proof (Permanent) · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
 ;;#65fL Phase 8b: owner asked directly whether the OURO/SSTOA shortcut actually reaches the
 ;;STOA-repricing loop (URC_PoolValue*) for a REAL pool whose first token literally IS a major
@@ -5892,6 +6261,8 @@
 ;;principal, connected 1 hop to OURO (organic, not adversarial) — the cheapest realistic shape
 ;;a minor principal's own reachability can take.
 (print "--- [SWP|TX 032z8c1 - MPTEST Setup · 01 · let / invocation] ---")
+;;==== SWP|TX 032z8c1 - Issue+Mint MPTEST (Minor-Principal Repricing Proof Setup) · 01 · let / invocation ==== 
+(print "--- [SWP|TX 032z8c1 - Issue+Mint MPTEST (Minor-Principal Repricing Proof Setup) · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -5947,6 +6318,8 @@
     )
 )
 (print "")
+;;==== SWP|TX 032z8c1 - Issue+Mint MPTEST (Minor-Principal Repricing Proof Setup) · 03 · gas echo ==== 
+(print "--- [SWP|TX 032z8c1 - Issue+Mint MPTEST (Minor-Principal Repricing Proof Setup) · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 032z8c1 Issue MPTEST ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (env-sigs [])
 (commit-tx)
@@ -5957,6 +6330,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "--- [SWP|TX 032z8c2 - MPTEST Anchor Setup · 01 · let / invocation] ---")
+;;==== SWP|TX 032z8c2 - Mint MPTEST + Register as Minor Principal + Issue [MPTEST,OURO] Anchor Pool · 01 · let / invocation ==== 
+(print "--- [SWP|TX 032z8c2 - Mint MPTEST + Register as Minor Principal + Issue [MPTEST,OURO] Anchor Pool · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -6022,6 +6397,8 @@
     )
 )
 (print "")
+;;==== SWP|TX 032z8c2 - Mint MPTEST + Register as Minor Principal + Issue [MPTEST,OURO] Anchor Pool · 03 · gas echo ==== 
+(print "--- [SWP|TX 032z8c2 - Mint MPTEST + Register as Minor Principal + Issue [MPTEST,OURO] Anchor Pool · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 032z8c2 MPTEST Anchor Pool ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (env-sigs [])
 (commit-tx)
@@ -6032,6 +6409,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "--- [SWP|TX 032z8c - Minor-Principal Repricing Spectrum · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 032z8c - #65fL Minor-Principal Pool Repricing Spectrum Proof (Permanent) · 01 · env-sigs (caps) ==== 
+(print "--- [SWP|TX 032z8c - #65fL Minor-Principal Pool Repricing Spectrum Proof (Permanent) · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
 ;;#65fL: completes the spectrum owner asked for — major-anchored (SWP|TX 032z8b, 3,524 gas,
 ;;zero search) vs a REALISTIC minor-principal-anchored pool (MPTEST, 1 hop from OURO — the
@@ -6084,6 +6463,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "--- [SWP|TX 032z8d - Targeted-BFS Early-Exit Proof · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 032z8d - #65hL Targeted-BFS Early-Exit Proof (Permanent) · 01 · env-sigs (caps) ==== 
+(print "--- [SWP|TX 032z8d - #65hL Targeted-BFS Early-Exit Proof (Permanent) · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
 ;;#65hL: owner asked whether the search algorithm itself could be made
 ;;cheaper "if something is closer" — BFS as an algorithm CLASS was already
@@ -6167,6 +6548,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "--- [SWP|TX 032z8e - #73C Depth-Skew Proportionality Proof · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 032z8e - #73C Depth-Skew Proportionality Proof (Permanent) · 01 · env-sigs (caps) ==== 
+(print "--- [SWP|TX 032z8e - #73C Depth-Skew Proportionality Proof (Permanent) · 01 · env-sigs (caps)] ---")
 (env-sigs [])
 ;;#73C: owner's own finding — "worth of a big amount" computed by simulating a REAL swap
 ;;of that whole amount is NOT proportional to "worth of 1 unit" x amount, once the amount
@@ -6214,6 +6597,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 032z8 - Adversarial Malformed-Bundle Proof · 01 · env-sigs (caps) ====
 (print "--- [SWP|TX 032z8 - Adversarial Malformed-Bundle Proof · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 032z8 - #34 Phase 10 Adversarial Malformed-Bundle Proof (Permanent) · 01 · env-sigs (caps) ==== 
+(print "--- [SWP|TX 032z8 - #34 Phase 10 Adversarial Malformed-Bundle Proof (Permanent) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -6299,6 +6684,8 @@
 )
 ;;==== SWP|TX 032z8 - Adversarial Malformed-Bundle Proof · 03 · pricing-path graceful degrade ====
 (print "--- [SWP|TX 032z8 - Adversarial Malformed-Bundle Proof · 03 · pricing-path graceful degrade] ---")
+;;==== SWP|TX 032z8 - #34 Phase 10 Adversarial Malformed-Bundle Proof (Permanent) · 02 · let / invocation ==== 
+(print "--- [SWP|TX 032z8 - #34 Phase 10 Adversarial Malformed-Bundle Proof (Permanent) · 02 · let / invocation] ---")
 (let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost true))
 (let*
     (
@@ -6360,6 +6747,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 033 - Add Frozen & Sleeping Liquidity · 01 · env-sigs (caps) ==== ===================
 (print "--- [SWP|TX 033 - Add Frozen & Sleeping Liquidity · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 033 - Add Frozen & Sleeping Liquidity · 01 · env-sigs (caps) ==== ===================
+(print "--- [SWP|TX 033 - Add Frozen & Sleeping Liquidity · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -6367,6 +6756,8 @@
     ]
 )
 
+;;==== SWP|TX 033 - Add Frozen & Sleeping Liquidity · 02 · let / invocation ==== ==================
+(print "--- [SWP|TX 033 - Add Frozen & Sleeping Liquidity · 02 · let / invocation] ---")
 ;;==== SWP|TX 033 - Add Frozen & Sleeping Liquidity · 02 · let / invocation ==== ==================
 (print "--- [SWP|TX 033 - Add Frozen & Sleeping Liquidity · 02 · let / invocation] ---")
 (let
@@ -6448,6 +6839,8 @@
 (print "")
 ;;==== SWP|TX 033 - Add Frozen & Sleeping Liquidity · 03 · gas echo ==== ==========================
 (print "--- [SWP|TX 033 - Add Frozen & Sleeping Liquidity · 03 · gas echo] ---")
+;;==== SWP|TX 033 - Add Frozen & Sleeping Liquidity · 03 · gas echo ==== ==========================
+(print "--- [SWP|TX 033 - Add Frozen & Sleeping Liquidity · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 033 - Add Frozen & Sleeping Liquidity ==> ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -6468,12 +6861,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 034a - Add Iced Liquidity 0|2 · 01 · env-sigs (caps) ==== ===========================
 (print "--- [SWP|TX 034a - Add Iced Liquidity 0|2 · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 034a - Add Iced Liquidity 0|2 · 01 · env-sigs (caps) ==== ===========================
+(print "--- [SWP|TX 034a - Add Iced Liquidity 0|2 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== SWP|TX 034a - Add Iced Liquidity 0|2 · 02 · let / invocation ==== ==========================
+(print "--- [SWP|TX 034a - Add Iced Liquidity 0|2 · 02 · let / invocation] ---")
 ;;==== SWP|TX 034a - Add Iced Liquidity 0|2 · 02 · let / invocation ==== ==========================
 (print "--- [SWP|TX 034a - Add Iced Liquidity 0|2 · 02 · let / invocation] ---")
 (let
@@ -6501,6 +6898,8 @@
 (print "")
 ;;==== SWP|TX 034a - Add Iced Liquidity 0|2 · 03 · gas echo ==== ==================================
 (print "--- [SWP|TX 034a - Add Iced Liquidity 0|2 · 03 · gas echo] ---")
+;;==== SWP|TX 034a - Add Iced Liquidity 0|2 · 03 · gas echo ==== ==================================
+(print "--- [SWP|TX 034a - Add Iced Liquidity 0|2 · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 034a - Add Iced Liquidity 0|2 ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -6517,6 +6916,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 034b - Add Iced Liquidity 1|2 · 01 · env-sigs (caps) ==== ===========================
 (print "--- [SWP|TX 034b - Add Iced Liquidity 1|2 · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 034b - Add Iced Liquidity 1|2 · 01 · env-sigs (caps) ==== ===========================
+(print "--- [SWP|TX 034b - Add Iced Liquidity 1|2 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -6528,6 +6929,8 @@
 
 (print "")
 (print "")
+;;==== SWP|TX 034b - Add Iced Liquidity 1|2 · 02 · gas echo ==== ==================================
+(print "--- [SWP|TX 034b - Add Iced Liquidity 1|2 · 02 · gas echo] ---")
 ;;==== SWP|TX 034b - Add Iced Liquidity 1|2 · 02 · gas echo ==== ==================================
 (print "--- [SWP|TX 034b - Add Iced Liquidity 1|2 · 02 · gas echo] ---")
 (format "<<<<<<<SWP|TX 034b - Add Iced Liquidity 1|2 ==> {} STOA GAS>>>>>>>" [(env-gas)])
@@ -6547,6 +6950,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 034c - Add Iced Liquidity 2|2 · 01 · env-sigs (caps) ==== ===========================
 (print "--- [SWP|TX 034c - Add Iced Liquidity 2|2 · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 034c - Add Iced Liquidity 2|2 · 01 · env-sigs (caps) ==== ===========================
+(print "--- [SWP|TX 034c - Add Iced Liquidity 2|2 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -6558,6 +6963,8 @@
 
 (print "")
 (print "")
+;;==== SWP|TX 034c - Add Iced Liquidity 2|2 · 02 · gas echo ==== ==================================
+(print "--- [SWP|TX 034c - Add Iced Liquidity 2|2 · 02 · gas echo] ---")
 ;;==== SWP|TX 034c - Add Iced Liquidity 2|2 · 02 · gas echo ==== ==================================
 (print "--- [SWP|TX 034c - Add Iced Liquidity 2|2 · 02 · gas echo] ---")
 (format "<<<<<<<SWP|TX 034c - Add Iced Liquidity 2|2 ==> {} STOA GAS>>>>>>>" [(env-gas)])
@@ -6580,12 +6987,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 035a - Add Glacial Liquidity 0|2 · 01 · env-sigs (caps) ==== ========================
 (print "--- [SWP|TX 035a - Add Glacial Liquidity 0|2 · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 035a - Add Glacial Liquidity 0|2 · 01 · env-sigs (caps) ==== ========================
+(print "--- [SWP|TX 035a - Add Glacial Liquidity 0|2 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== SWP|TX 035a - Add Glacial Liquidity 0|2 · 02 · let / invocation ==== =======================
+(print "--- [SWP|TX 035a - Add Glacial Liquidity 0|2 · 02 · let / invocation] ---")
 ;;==== SWP|TX 035a - Add Glacial Liquidity 0|2 · 02 · let / invocation ==== =======================
 (print "--- [SWP|TX 035a - Add Glacial Liquidity 0|2 · 02 · let / invocation] ---")
 (let
@@ -6616,6 +7027,8 @@
 (print "")
 ;;==== SWP|TX 035a - Add Glacial Liquidity 0|2 · 03 · gas echo ==== ===============================
 (print "--- [SWP|TX 035a - Add Glacial Liquidity 0|2 · 03 · gas echo] ---")
+;;==== SWP|TX 035a - Add Glacial Liquidity 0|2 · 03 · gas echo ==== ===============================
+(print "--- [SWP|TX 035a - Add Glacial Liquidity 0|2 · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 035a - Add Glacial Liquidity 0|2 ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -6632,6 +7045,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 035b - Add Glacial Liquidity 1|2 · 01 · env-sigs (caps) ==== ========================
 (print "--- [SWP|TX 035b - Add Glacial Liquidity 1|2 · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 035b - Add Glacial Liquidity 1|2 · 01 · env-sigs (caps) ==== ========================
+(print "--- [SWP|TX 035b - Add Glacial Liquidity 1|2 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -6643,6 +7058,8 @@
 
 (print "")
 (print "")
+;;==== SWP|TX 035b - Add Glacial Liquidity 1|2 · 02 · gas echo ==== ===============================
+(print "--- [SWP|TX 035b - Add Glacial Liquidity 1|2 · 02 · gas echo] ---")
 ;;==== SWP|TX 035b - Add Glacial Liquidity 1|2 · 02 · gas echo ==== ===============================
 (print "--- [SWP|TX 035b - Add Glacial Liquidity 1|2 · 02 · gas echo] ---")
 (format "<<<<<<<SWP|TX 035b - Add Glacial Liquidity 1|2 ==> {} STOA GAS>>>>>>>" [(env-gas)])
@@ -6662,6 +7079,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 035c - Add Glacial Liquidity 2|2 · 01 · env-sigs (caps) ==== ========================
 (print "--- [SWP|TX 035c - Add Glacial Liquidity 2|2 · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 035c - Add Glacial Liquidity 2|2 · 01 · env-sigs (caps) ==== ========================
+(print "--- [SWP|TX 035c - Add Glacial Liquidity 2|2 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -6673,6 +7092,8 @@
 
 (print "")
 (print "")
+;;==== SWP|TX 035c - Add Glacial Liquidity 2|2 · 02 · gas echo ==== ===============================
+(print "--- [SWP|TX 035c - Add Glacial Liquidity 2|2 · 02 · gas echo] ---")
 ;;==== SWP|TX 035c - Add Glacial Liquidity 2|2 · 02 · gas echo ==== ===============================
 (print "--- [SWP|TX 035c - Add Glacial Liquidity 2|2 · 02 · gas echo] ---")
 (format "<<<<<<<SWP|TX 035c - Add Glacial Liquidity 2|2 ==> {} STOA GAS>>>>>>>" [(env-gas)])
@@ -6694,6 +7115,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 036 - Making some Sleeping Tokens · 01 · env-sigs (caps) ==== =======================
 (print "--- [SWP|TX 036 - Making some Sleeping Tokens · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 036 - Making some Sleeping Tokens · 01 · env-sigs (caps) ==== =======================
+(print "--- [SWP|TX 036 - Making some Sleeping Tokens · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -6701,6 +7124,8 @@
     ]
 )
 
+;;==== SWP|TX 036 - Making some Sleeping Tokens · 02 · let / invocation ==== ======================
+(print "--- [SWP|TX 036 - Making some Sleeping Tokens · 02 · let / invocation] ---")
 ;;==== SWP|TX 036 - Making some Sleeping Tokens · 02 · let / invocation ==== ======================
 (print "--- [SWP|TX 036 - Making some Sleeping Tokens · 02 · let / invocation] ---")
 (let
@@ -6738,6 +7163,8 @@
 (print "")
 ;;==== SWP|TX 036 - Making some Sleeping Tokens · 03 · gas echo ==== ==============================
 (print "--- [SWP|TX 036 - Making some Sleeping Tokens · 03 · gas echo] ---")
+;;==== SWP|TX 036 - Making some Sleeping Tokens · 03 · gas echo ==== ==============================
+(print "--- [SWP|TX 036 - Making some Sleeping Tokens · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 036 - Making some Sleeping Tokens ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -6754,6 +7181,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 036a - Add Sleeping Liquidity 0|2 · 01 · env-sigs (caps) ==== =======================
 (print "--- [SWP|TX 036a - Add Sleeping Liquidity 0|2 · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 036a - Add Sleeping Liquidity 0|2 · 01 · env-sigs (caps) ==== =======================
+(print "--- [SWP|TX 036a - Add Sleeping Liquidity 0|2 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -6761,6 +7190,8 @@
     ]
 )
 
+;;==== SWP|TX 036a - Add Sleeping Liquidity 0|2 · 02 · let / invocation ==== ======================
+(print "--- [SWP|TX 036a - Add Sleeping Liquidity 0|2 · 02 · let / invocation] ---")
 ;;==== SWP|TX 036a - Add Sleeping Liquidity 0|2 · 02 · let / invocation ==== ======================
 (print "--- [SWP|TX 036a - Add Sleeping Liquidity 0|2 · 02 · let / invocation] ---")
 (let
@@ -6806,6 +7237,8 @@
 (print "")
 ;;==== SWP|TX 036a - Add Sleeping Liquidity 0|2 · 03 · gas echo ==== ==============================
 (print "--- [SWP|TX 036a - Add Sleeping Liquidity 0|2 · 03 · gas echo] ---")
+;;==== SWP|TX 036a - Add Sleeping Liquidity 0|2 · 03 · gas echo ==== ==============================
+(print "--- [SWP|TX 036a - Add Sleeping Liquidity 0|2 · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 036a - Add Sleeping Liquidity 0|2 ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -6822,6 +7255,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 036b - Add Sleeping Liquidity 1|2 · 01 · env-sigs (caps) ==== =======================
 (print "--- [SWP|TX 036b - Add Sleeping Liquidity 1|2 · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 036b - Add Sleeping Liquidity 1|2 · 01 · env-sigs (caps) ==== =======================
+(print "--- [SWP|TX 036b - Add Sleeping Liquidity 1|2 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -6834,6 +7269,8 @@
 
 (print "")
 (print "")
+;;==== SWP|TX 036b - Add Sleeping Liquidity 1|2 · 02 · gas echo ==== ==============================
+(print "--- [SWP|TX 036b - Add Sleeping Liquidity 1|2 · 02 · gas echo] ---")
 ;;==== SWP|TX 036b - Add Sleeping Liquidity 1|2 · 02 · gas echo ==== ==============================
 (print "--- [SWP|TX 036b - Add Sleeping Liquidity 1|2 · 02 · gas echo] ---")
 (format "<<<<<<<SWP|TX 036b - Add Sleeping Liquidity 1|2 ==> {} STOA GAS>>>>>>>" [(env-gas)])
@@ -6853,6 +7290,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 036c - Add Sleeping Liquidity 2|2 · 01 · env-sigs (caps) ==== =======================
 (print "--- [SWP|TX 036c - Add Sleeping Liquidity 2|2 · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 036c - Add Sleeping Liquidity 2|2 · 01 · env-sigs (caps) ==== =======================
+(print "--- [SWP|TX 036c - Add Sleeping Liquidity 2|2 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -6865,6 +7304,8 @@
 
 (print "")
 (print "")
+;;==== SWP|TX 036c - Add Sleeping Liquidity 2|2 · 02 · gas echo ==== ==============================
+(print "--- [SWP|TX 036c - Add Sleeping Liquidity 2|2 · 02 · gas echo] ---")
 ;;==== SWP|TX 036c - Add Sleeping Liquidity 2|2 · 02 · gas echo ==== ==============================
 (print "--- [SWP|TX 036c - Add Sleeping Liquidity 2|2 · 02 · gas echo] ---")
 (format "<<<<<<<SWP|TX 036c - Add Sleeping Liquidity 2|2 ==> {} STOA GAS>>>>>>>" [(env-gas)])
@@ -6887,12 +7328,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 037a - Add Frozen Liquidity 0|2 · 01 · env-sigs (caps) ==== =========================
 (print "--- [SWP|TX 037a - Add Frozen Liquidity 0|2 · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 037a - Add Frozen Liquidity 0|2 · 01 · env-sigs (caps) ==== =========================
+(print "--- [SWP|TX 037a - Add Frozen Liquidity 0|2 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== SWP|TX 037a - Add Frozen Liquidity 0|2 · 02 · let / invocation ==== ========================
+(print "--- [SWP|TX 037a - Add Frozen Liquidity 0|2 · 02 · let / invocation] ---")
 ;;==== SWP|TX 037a - Add Frozen Liquidity 0|2 · 02 · let / invocation ==== ========================
 (print "--- [SWP|TX 037a - Add Frozen Liquidity 0|2 · 02 · let / invocation] ---")
 (let
@@ -6926,6 +7371,8 @@
 (print "")
 ;;==== SWP|TX 037a - Add Frozen Liquidity 0|2 · 03 · gas echo ==== ================================
 (print "--- [SWP|TX 037a - Add Frozen Liquidity 0|2 · 03 · gas echo] ---")
+;;==== SWP|TX 037a - Add Frozen Liquidity 0|2 · 03 · gas echo ==== ================================
+(print "--- [SWP|TX 037a - Add Frozen Liquidity 0|2 · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 037a - Add Frozen Liquidity 0|2 ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -6942,6 +7389,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 037b - Add Frozen Liquidity 1|2 · 01 · env-sigs (caps) ==== =========================
 (print "--- [SWP|TX 037b - Add Frozen Liquidity 1|2 · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 037b - Add Frozen Liquidity 1|2 · 01 · env-sigs (caps) ==== =========================
+(print "--- [SWP|TX 037b - Add Frozen Liquidity 1|2 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -6953,6 +7402,8 @@
 
 (print "")
 (print "")
+;;==== SWP|TX 037b - Add Frozen Liquidity 1|2 · 02 · gas echo ==== ================================
+(print "--- [SWP|TX 037b - Add Frozen Liquidity 1|2 · 02 · gas echo] ---")
 ;;==== SWP|TX 037b - Add Frozen Liquidity 1|2 · 02 · gas echo ==== ================================
 (print "--- [SWP|TX 037b - Add Frozen Liquidity 1|2 · 02 · gas echo] ---")
 (format "<<<<<<<SWP|TX 037b - Add Frozen Liquidity 1|2 ==> {} STOA GAS>>>>>>>" [(env-gas)])
@@ -6972,6 +7423,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 037c - Add Frozen Liquidity 2|2 · 01 · env-sigs (caps) ==== =========================
 (print "--- [SWP|TX 037c - Add Frozen Liquidity 2|2 · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 037c - Add Frozen Liquidity 2|2 · 01 · env-sigs (caps) ==== =========================
+(print "--- [SWP|TX 037c - Add Frozen Liquidity 2|2 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -6983,6 +7436,8 @@
 
 (print "")
 (print "")
+;;==== SWP|TX 037c - Add Frozen Liquidity 2|2 · 02 · gas echo ==== ================================
+(print "--- [SWP|TX 037c - Add Frozen Liquidity 2|2 · 02 · gas echo] ---")
 ;;==== SWP|TX 037c - Add Frozen Liquidity 2|2 · 02 · gas echo ==== ================================
 (print "--- [SWP|TX 037c - Add Frozen Liquidity 2|2 · 02 · gas echo] ---")
 (format "<<<<<<<SWP|TX 037c - Add Frozen Liquidity 2|2 ==> {} STOA GAS>>>>>>>" [(env-gas)])
@@ -7001,6 +7456,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 038 - Add Iced Liquidity · 01 · env-sigs (caps) ==== ================================
 (print "--- [SWP|TX 038 - Add Iced Liquidity · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 038 - Add Iced Liquidity · 01 · env-sigs (caps) ==== ================================
+(print "--- [SWP|TX 038 - Add Iced Liquidity · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -7008,6 +7465,8 @@
     ]
 )
 
+;;==== SWP|TX 038 - Add Iced Liquidity · 02 · let / invocation ==== ===============================
+(print "--- [SWP|TX 038 - Add Iced Liquidity · 02 · let / invocation] ---")
 ;;==== SWP|TX 038 - Add Iced Liquidity · 02 · let / invocation ==== ===============================
 (print "--- [SWP|TX 038 - Add Iced Liquidity · 02 · let / invocation] ---")
 (let
@@ -7022,6 +7481,8 @@
 
 (print "")
 (print "")
+;;==== SWP|TX 038 - Add Iced Liquidity · 03 · gas echo ==== =======================================
+(print "--- [SWP|TX 038 - Add Iced Liquidity · 03 · gas echo] ---")
 ;;==== SWP|TX 038 - Add Iced Liquidity · 03 · gas echo ==== =======================================
 (print "--- [SWP|TX 038 - Add Iced Liquidity · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 038 - Add Iced Liquidity ==> {} STOA GAS>>>>>>>" [(env-gas)])
@@ -7039,6 +7500,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 038b - #56L Adversarial Proof · 01 · env-sigs (caps) ====
 (print "--- [SWP|TX 038b - #56L Adversarial Proof · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 038b - #56L Adversarial Proof: Negative Amount Rejected · 01 · env-sigs (caps) ==== =
+(print "--- [SWP|TX 038b - #56L Adversarial Proof: Negative Amount Rejected · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -7051,6 +7514,8 @@
 ;;URC_AreAmountsBalanced would have let this straight through despite the negative
 ;;element; the new per-element check in URCv_AreAmountsBalanced must reject it
 ;;cleanly instead, before any transfer is attempted.
+;;==== SWP|TX 038b - #56L Adversarial Proof: Negative Amount Rejected · 02 · let / invocation ==== 
+(print "--- [SWP|TX 038b - #56L Adversarial Proof: Negative Amount Rejected · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
@@ -7086,6 +7551,8 @@
 ;;pool6's reserves have moved through hundreds of prior transactions by this point
 ;;in the suite — the delta is what actually proves the fix, not any specific
 ;;absolute number.
+;;==== SWP|TX 038c - #62L C_Fuel Proof · 01 · let / invocation ==== ===============================
+(print "--- [SWP|TX 038c - #62L C_Fuel Proof · 01 · let / invocation] ---")
 (let
     (
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
@@ -7131,6 +7598,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 039 - Add Glacial Liquidity · 01 · env-sigs (caps) ==== =============================
 (print "--- [SWP|TX 039 - Add Glacial Liquidity · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 039 - Add Glacial Liquidity · 01 · env-sigs (caps) ==== =============================
+(print "--- [SWP|TX 039 - Add Glacial Liquidity · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -7138,6 +7607,8 @@
     ]
 )
 
+;;==== SWP|TX 039 - Add Glacial Liquidity · 02 · let / invocation ==== ============================
+(print "--- [SWP|TX 039 - Add Glacial Liquidity · 02 · let / invocation] ---")
 ;;==== SWP|TX 039 - Add Glacial Liquidity · 02 · let / invocation ==== ============================
 (print "--- [SWP|TX 039 - Add Glacial Liquidity · 02 · let / invocation] ---")
 (let
@@ -7155,6 +7626,8 @@
 
 (print "")
 (print "")
+;;==== SWP|TX 039 - Add Glacial Liquidity · 03 · gas echo ==== ====================================
+(print "--- [SWP|TX 039 - Add Glacial Liquidity · 03 · gas echo] ---")
 ;;==== SWP|TX 039 - Add Glacial Liquidity · 03 · gas echo ==== ====================================
 (print "--- [SWP|TX 039 - Add Glacial Liquidity · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 039 - Add Glacial Liquidity ==> {} STOA GAS>>>>>>>" [(env-gas)])
@@ -7177,6 +7650,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 040 - Management Tests · 01 · env-sigs (caps) ==== ==================================
 (print "--- [SWP|TX 040 - Management Tests · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 040 - Management Tests · 01 · env-sigs (caps) ==== ==================================
+(print "--- [SWP|TX 040 - Management Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -7185,6 +7660,8 @@
     ]
 )
 
+;;==== SWP|TX 040 - Management Tests · 02 · let / invocation ==== =================================
+(print "--- [SWP|TX 040 - Management Tests · 02 · let / invocation] ---")
 ;;==== SWP|TX 040 - Management Tests · 02 · let / invocation ==== =================================
 (print "--- [SWP|TX 040 - Management Tests · 02 · let / invocation] ---")
 (let
@@ -7265,6 +7742,8 @@
 (print "")
 ;;==== SWP|TX 040 - Management Tests · 03 · gas echo ==== =========================================
 (print "--- [SWP|TX 040 - Management Tests · 03 · gas echo] ---")
+;;==== SWP|TX 040 - Management Tests · 03 · gas echo ==== =========================================
+(print "--- [SWP|TX 040 - Management Tests · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 040 - Management Tests ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -7284,6 +7763,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 041 - Issue BVST · 01 · env-sigs (caps) ==== ========================================
 (print "--- [SWP|TX 041 - Issue BVST · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 041 - Issue BVST · 01 · env-sigs (caps) ==== ========================================
+(print "--- [SWP|TX 041 - Issue BVST · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -7291,6 +7772,8 @@
         { "key": "PK_AOZ", "caps": [] }
     ]
 )
+;;==== SWP|TX 041 - Issue BVST · 02 · let / invocation ==== =======================================
+(print "--- [SWP|TX 041 - Issue BVST · 02 · let / invocation] ---")
 ;;==== SWP|TX 041 - Issue BVST · 02 · let / invocation ==== =======================================
 (print "--- [SWP|TX 041 - Issue BVST · 02 · let / invocation] ---")
 (let
@@ -7382,6 +7865,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 042 - BVST Fee Withdrawal Testing · 01 · env-sigs (caps) ==== =======================
 (print "--- [SWP|TX 042 - BVST Fee Withdrawal Testing · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 042 - BVST Fee Withdrawal Testing · 01 · env-sigs (caps) ==== =======================
+(print "--- [SWP|TX 042 - BVST Fee Withdrawal Testing · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -7390,6 +7875,8 @@
     ]
 )
 
+;;==== SWP|TX 042 - BVST Fee Withdrawal Testing · 02 · let / invocation ==== ======================
+(print "--- [SWP|TX 042 - BVST Fee Withdrawal Testing · 02 · let / invocation] ---")
 ;;==== SWP|TX 042 - BVST Fee Withdrawal Testing · 02 · let / invocation ==== ======================
 (print "--- [SWP|TX 042 - BVST Fee Withdrawal Testing · 02 · let / invocation] ---")
 (let
@@ -7480,6 +7967,8 @@
 (print "")
 ;;==== SWP|TX 042 - BVST Fee Withdrawal Testing · 03 · gas echo ==== ==============================
 (print "--- [SWP|TX 042 - BVST Fee Withdrawal Testing · 03 · gas echo] ---")
+;;==== SWP|TX 042 - BVST Fee Withdrawal Testing · 03 · gas echo ==== ==============================
+(print "--- [SWP|TX 042 - BVST Fee Withdrawal Testing · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 042 - BVST Fee Withdrawal Testing ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -7496,6 +7985,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 043 - Migration Test · 01 · env-sigs (caps) ==== ====================================
 (print "--- [SWP|TX 043 - Migration Test · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 043 - Migration Test · 01 · env-sigs (caps) ==== ====================================
+(print "--- [SWP|TX 043 - Migration Test · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -7504,6 +7995,8 @@
     ]
 )
 
+;;==== SWP|TX 043 - Migration Test · 02 · let / invocation ==== ===================================
+(print "--- [SWP|TX 043 - Migration Test · 02 · let / invocation] ---")
 ;;==== SWP|TX 043 - Migration Test · 02 · let / invocation ==== ===================================
 (print "--- [SWP|TX 043 - Migration Test · 02 · let / invocation] ---")
 (let
@@ -7549,6 +8042,8 @@
 (print "")
 ;;==== SWP|TX 043 - Migration Test · 03 · gas echo ==== ===========================================
 (print "--- [SWP|TX 043 - Migration Test · 03 · gas echo] ---")
+;;==== SWP|TX 043 - Migration Test · 03 · gas echo ==== ===========================================
+(print "--- [SWP|TX 043 - Migration Test · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 043 - Migration Test ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -7569,6 +8064,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 044 - Treasury Dispo Tests · 01 · env-sigs (caps) ==== ==============================
 (print "--- [SWP|TX 044 - Treasury Dispo Tests · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 044 - Treasury Dispo Tests · 01 · env-sigs (caps) ==== ==============================
+(print "--- [SWP|TX 044 - Treasury Dispo Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -7578,6 +8075,8 @@
     ]
 )
 
+;;==== SWP|TX 044 - Treasury Dispo Tests · 02 · let / invocation ==== =============================
+(print "--- [SWP|TX 044 - Treasury Dispo Tests · 02 · let / invocation] ---")
 ;;==== SWP|TX 044 - Treasury Dispo Tests · 02 · let / invocation ==== =============================
 (print "--- [SWP|TX 044 - Treasury Dispo Tests · 02 · let / invocation] ---")
 (let
@@ -7631,6 +8130,8 @@
 (print "")
 ;;==== SWP|TX 044 - Treasury Dispo Tests · 03 · gas echo ==== =====================================
 (print "--- [SWP|TX 044 - Treasury Dispo Tests · 03 · gas echo] ---")
+;;==== SWP|TX 044 - Treasury Dispo Tests · 03 · gas echo ==== =====================================
+(print "--- [SWP|TX 044 - Treasury Dispo Tests · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 044 - Treasury Dispo Tests ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -7649,6 +8150,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 045 - VSE and Swap Math Tests · 01 · env-sigs (caps) ==== ===========================
 (print "--- [SWP|TX 045 - VSE and Swap Math Tests · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 045 - VSE and Swap Math Tests · 01 · env-sigs (caps) ==== ===========================
+(print "--- [SWP|TX 045 - VSE and Swap Math Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -7659,6 +8162,8 @@
         { "key": "PK_DHV", "caps": [] }
     ]
 )
+;;==== SWP|TX 045 - VSE and Swap Math Tests · 02 · let / invocation ==== ==========================
+(print "--- [SWP|TX 045 - VSE and Swap Math Tests · 02 · let / invocation] ---")
 ;;==== SWP|TX 045 - VSE and Swap Math Tests · 02 · let / invocation ==== ==========================
 (print "--- [SWP|TX 045 - VSE and Swap Math Tests · 02 · let / invocation] ---")
 (let
@@ -7892,6 +8397,8 @@
 (print "")
 ;;==== SWP|TX 045 - VSE and Swap Math Tests · 03 · gas echo ==== ==================================
 (print "--- [SWP|TX 045 - VSE and Swap Math Tests · 03 · gas echo] ---")
+;;==== SWP|TX 045 - VSE and Swap Math Tests · 03 · gas echo ==== ==================================
+(print "--- [SWP|TX 045 - VSE and Swap Math Tests · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 045 - VSE and Swap Math Tests ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -7908,6 +8415,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 046 - Empy Emma of GAS · 01 · env-sigs (caps) ==== ==================================
 (print "--- [SWP|TX 046 - Empy Emma of GAS · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 046 - Empy Emma of GAS · 01 · env-sigs (caps) ==== ==================================
+(print "--- [SWP|TX 046 - Empy Emma of GAS · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -7917,6 +8426,8 @@
     ]
 )
 
+;;==== SWP|TX 046 - Empy Emma of GAS · 02 · let / invocation ==== =================================
+(print "--- [SWP|TX 046 - Empy Emma of GAS · 02 · let / invocation] ---")
 ;;==== SWP|TX 046 - Empy Emma of GAS · 02 · let / invocation ==== =================================
 (print "--- [SWP|TX 046 - Empy Emma of GAS · 02 · let / invocation] ---")
 (let
@@ -7951,6 +8462,8 @@
 (print "")
 ;;==== SWP|TX 046 - Empy Emma of GAS · 03 · gas echo ==== =========================================
 (print "--- [SWP|TX 046 - Empy Emma of GAS · 03 · gas echo] ---")
+;;==== SWP|TX 046 - Empy Emma of GAS · 03 · gas echo ==== =========================================
+(print "--- [SWP|TX 046 - Empy Emma of GAS · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 046 - Empy Emma of GAS ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -7967,6 +8480,8 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 046 - Firestarter · 01 · env-sigs (caps) ==== =======================================
 (print "--- [SWP|TX 046 - Firestarter · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 046 - Firestarter · 01 · env-sigs (caps) ==== =======================================
+(print "--- [SWP|TX 046 - Firestarter · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -7975,6 +8490,8 @@
         { "key": "PK_DHV", "caps": [] }
     ]
 )
+;;==== SWP|TX 046 - Firestarter · 02 · let / invocation ==== ======================================
+(print "--- [SWP|TX 046 - Firestarter · 02 · let / invocation] ---")
 ;;==== SWP|TX 046 - Firestarter · 02 · let / invocation ==== ======================================
 (print "--- [SWP|TX 046 - Firestarter · 02 · let / invocation] ---")
 (let
@@ -8025,6 +8542,8 @@
 (print "")
 ;;==== SWP|TX 046 - Firestarter · 03 · gas echo ==== ==============================================
 (print "--- [SWP|TX 046 - Firestarter · 03 · gas echo] ---")
+;;==== SWP|TX 046 - Firestarter · 03 · gas echo ==== ==============================================
+(print "--- [SWP|TX 046 - Firestarter · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 046 - Firestarter ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -8041,12 +8560,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 047 - OURO transfer sanity · 01 · env-sigs (caps) ==== ==============================
 (print "--- [SWP|TX 047 - OURO transfer sanity · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 047 - OURO transfer sanity · 01 · env-sigs (caps) ==== ==============================
+(print "--- [SWP|TX 047 - OURO transfer sanity · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
         { "key": "PK_Emma", "caps": [] }
     ]
 )
+;;==== SWP|TX 047 - OURO transfer sanity · 02 · let / invocation ==== =============================
+(print "--- [SWP|TX 047 - OURO transfer sanity · 02 · let / invocation] ---")
 ;;==== SWP|TX 047 - OURO transfer sanity · 02 · let / invocation ==== =============================
 (print "--- [SWP|TX 047 - OURO transfer sanity · 02 · let / invocation] ---")
 (let
@@ -8067,6 +8590,8 @@
 (print "")
 ;;==== SWP|TX 047 - OURO transfer sanity · 03 · gas echo ==== =====================================
 (print "--- [SWP|TX 047 - OURO transfer sanity · 03 · gas echo] ---")
+;;==== SWP|TX 047 - OURO transfer sanity · 03 · gas echo ==== =====================================
+(print "--- [SWP|TX 047 - OURO transfer sanity · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 047 - OURO transfer sanity ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -8083,12 +8608,16 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== SWP|TX 048 - Emma pool ops · 01 · env-sigs (caps) ==== =====================================
 (print "--- [SWP|TX 048 - Emma pool ops · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 048 - Emma pool ops · 01 · env-sigs (caps) ==== =====================================
+(print "--- [SWP|TX 048 - Emma pool ops · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_Emma", "caps": [] }
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
+;;==== SWP|TX 048 - Emma pool ops · 02 · let / invocation ==== ====================================
+(print "--- [SWP|TX 048 - Emma pool ops · 02 · let / invocation] ---")
 ;;==== SWP|TX 048 - Emma pool ops · 02 · let / invocation ==== ====================================
 (print "--- [SWP|TX 048 - Emma pool ops · 02 · let / invocation] ---")
 (let
@@ -8126,6 +8655,8 @@
 (print "")
 ;;==== SWP|TX 048 - Emma pool ops · 03 · gas echo ==== ============================================
 (print "--- [SWP|TX 048 - Emma pool ops · 03 · gas echo] ---")
+;;==== SWP|TX 048 - Emma pool ops · 03 · gas echo ==== ============================================
+(print "--- [SWP|TX 048 - Emma pool ops · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 048 - Emma pool ops ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -8145,6 +8676,8 @@
 ;;at full-regression time, not assumed).
 ;;==== SWP|TX 049 - Issue + Mint TSTE/TSTF · 01 · let / invocation ====
 (print "--- [SWP|TX 049 - Issue + Mint TSTE/TSTF · 01 · let / invocation] ---")
+;;==== SWP|TX 049 - #34 Phase 11 Issue + Mint TSTE/TSTF Test Tokens (4-Route Proof) · 01 · let / invocation ==== 
+(print "--- [SWP|TX 049 - #34 Phase 11 Issue + Mint TSTE/TSTF Test Tokens (4-Route Proof) · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -8239,6 +8772,8 @@
 (print "")
 ;;==== SWP|TX 049 - Issue + Mint TSTE/TSTF · 04 · gas echo ====
 (print "--- [SWP|TX 049 - Issue + Mint TSTE/TSTF · 04 · gas echo] ---")
+;;==== SWP|TX 049 - #34 Phase 11 Issue + Mint TSTE/TSTF Test Tokens (4-Route Proof) · 03 · gas echo ==== 
+(print "--- [SWP|TX 049 - #34 Phase 11 Issue + Mint TSTE/TSTF Test Tokens (4-Route Proof) · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 049 Issue + Mint TSTE/TSTF ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -8257,6 +8792,8 @@
 (env-gasmodel "table")(env-gaslimit 2000000000)(env-gas 0)
 ;;==== SWP|TX 050 - Issue TSTE/TSTF Diamond-Extension Pools · 01 · let / invocation ====
 (print "--- [SWP|TX 050 - Issue TSTE/TSTF Diamond-Extension Pools · 01 · let / invocation] ---")
+;;==== SWP|TX 050 - #34 Phase 11 Issue TSTE/TSTF Diamond-Extension Pools (4-Route Proof) · 01 · let / invocation ==== 
+(print "--- [SWP|TX 050 - #34 Phase 11 Issue TSTE/TSTF Diamond-Extension Pools (4-Route Proof) · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -8352,6 +8889,8 @@
 (print "")
 ;;==== SWP|TX 050 - Issue TSTE/TSTF Diamond-Extension Pools · 03 · gas echo ====
 (print "--- [SWP|TX 050 - Issue TSTE/TSTF Diamond-Extension Pools · 03 · gas echo] ---")
+;;==== SWP|TX 050 - #34 Phase 11 Issue TSTE/TSTF Diamond-Extension Pools (4-Route Proof) · 03 · gas echo ==== 
+(print "--- [SWP|TX 050 - #34 Phase 11 Issue TSTE/TSTF Diamond-Extension Pools (4-Route Proof) · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 050 Issue TSTE/TSTF Pools ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -8364,7 +8903,11 @@
 (begin-tx "SWP|TX 051 - #34 Phase 11 Enable Swap on TSTE/TSTF Pools")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 2000000000)(env-gas 0)
+;;==== SWP|TX 051 - #34 Phase 11 Enable Swap on TSTE/TSTF Pools · 01 · env-sigs (caps) ==== =======
+(print "--- [SWP|TX 051 - #34 Phase 11 Enable Swap on TSTE/TSTF Pools · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== SWP|TX 051 - #34 Phase 11 Enable Swap on TSTE/TSTF Pools · 02 · let / invocation ==== ======
+(print "--- [SWP|TX 051 - #34 Phase 11 Enable Swap on TSTE/TSTF Pools · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
@@ -8389,6 +8932,8 @@
 (env-gasmodel "table")(env-gaslimit 2000000000)(env-gas 0)
 ;;==== SWP|TX 052 - Exhaustive Route Discovery Proof · 01 · env-sigs (caps) ====
 (print "--- [SWP|TX 052 - Exhaustive Route Discovery Proof · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 052 - #34 Phase 11 Genuine Exhaustive Route Discovery Proof (Permanent) · 01 · env-sigs (caps) ==== 
+(print "--- [SWP|TX 052 - #34 Phase 11 Genuine Exhaustive Route Discovery Proof (Permanent) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -8491,6 +9036,8 @@
 (print "")
 ;;==== SWP|TX 052 - Exhaustive Route Discovery Proof · 03 · gas echo ====
 (print "--- [SWP|TX 052 - Exhaustive Route Discovery Proof · 03 · gas echo] ---")
+;;==== SWP|TX 052 - #34 Phase 11 Genuine Exhaustive Route Discovery Proof (Permanent) · 02 · gas echo ==== 
+(print "--- [SWP|TX 052 - #34 Phase 11 Genuine Exhaustive Route Discovery Proof (Permanent) · 02 · gas echo] ---")
 (format "<<<<<<<SWP|TX 052 #34 Phase 11 Exhaustive Discovery Proof ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -8508,6 +9055,8 @@
 (env-gasmodel "table")(env-gaslimit 2000000000)(env-gas 0)
 ;;==== SWP|TX 053 - Realistic-Scale Exhaustive Search Measurement · 01 · env-sigs (caps) ====
 (print "--- [SWP|TX 053 - Realistic-Scale Exhaustive Search Measurement · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 053 - #34 Phase 12 Realistic-Scale Exhaustive Search Measurement (Permanent) · 01 · env-sigs (caps) ==== 
+(print "--- [SWP|TX 053 - #34 Phase 12 Realistic-Scale Exhaustive Search Measurement (Permanent) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -8526,6 +9075,8 @@
 ;;true total of 4), showing the early-exit short-circuit at work.
 ;;==== SWP|TX 053 - Realistic-Scale Exhaustive Search Measurement · 02 · Part A: scale ====
 (print "--- [SWP|TX 053 - Realistic-Scale Exhaustive Search Measurement · 02 · Part A: scale] ---")
+;;==== SWP|TX 053 - #34 Phase 12 Realistic-Scale Exhaustive Search Measurement (Permanent) · 02 · let / invocation ==== 
+(print "--- [SWP|TX 053 - #34 Phase 12 Realistic-Scale Exhaustive Search Measurement (Permanent) · 02 · let / invocation] ---")
 (let
     (
         (ref-SWPT:module{SwapTracerV3} SWPT)
@@ -8654,6 +9205,8 @@
 (print "")
 ;;==== SWP|TX 053 - Realistic-Scale Exhaustive Search Measurement · 04 · gas echo ====
 (print "--- [SWP|TX 053 - Realistic-Scale Exhaustive Search Measurement · 04 · gas echo] ---")
+;;==== SWP|TX 053 - #34 Phase 12 Realistic-Scale Exhaustive Search Measurement (Permanent) · 03 · gas echo ==== 
+(print "--- [SWP|TX 053 - #34 Phase 12 Realistic-Scale Exhaustive Search Measurement (Permanent) · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 053 #34 Phase 12 Realistic-Scale Measurement ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -8669,6 +9222,8 @@
 (env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
 ;;==== SWP|TX 054 - C_SmartSwapWithSlippage · 01 · env-sigs (caps) ====
 (print "--- [SWP|TX 054 - C_SmartSwapWithSlippage · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 054 - C_SmartSwapWithSlippage: the bundle path's slippage branch · 01 · env-sigs (caps) ==== 
+(print "--- [SWP|TX 054 - C_SmartSwapWithSlippage: the bundle path's slippage branch · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -8903,6 +9458,8 @@
 (print "")
 ;;==== SWP|TX 054 - C_SmartSwapWithSlippage · 04 · gas echo ====
 (print "--- [SWP|TX 054 - C_SmartSwapWithSlippage · 04 · gas echo] ---")
+;;==== SWP|TX 054 - C_SmartSwapWithSlippage: the bundle path's slippage branch · 03 · gas echo ==== 
+(print "--- [SWP|TX 054 - C_SmartSwapWithSlippage: the bundle path's slippage branch · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 054 C_SmartSwapWithSlippage ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "===^^^===")
@@ -8942,6 +9499,8 @@
 ;;================================================================================
 ;;==== SWP|TX 055 - ADD-OR-SWAP owner gate · 01 · env-sigs (caps) ====
 (print "--- [SWP|TX 055 - ADD-OR-SWAP owner gate · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 055 - SWP|C>ADD-OR-SWAP: the owner gate, reached past its shape rule · 01 · env-sigs (caps) ==== 
+(print "--- [SWP|TX 055 - SWP|C>ADD-OR-SWAP: the owner gate, reached past its shape rule · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_Lumy", "caps": [] }
@@ -8949,6 +9508,8 @@
 )
 ;;==== SWP|TX 055 - ADD-OR-SWAP owner gate · 02 · the naive attack hits the SHAPE rule ====
 (print "--- [SWP|TX 055 - ADD-OR-SWAP owner gate · 02 · the naive attack hits the SHAPE rule] ---")
+;;==== SWP|TX 055 - SWP|C>ADD-OR-SWAP: the owner gate, reached past its shape rule · 02 · let / invocation ==== 
+(print "--- [SWP|TX 055 - SWP|C>ADD-OR-SWAP: the owner gate, reached past its shape rule · 02 · let / invocation] ---")
 (let
     (
         (ref-SWP:module{SwapperV4} SWP)
@@ -9051,6 +9612,8 @@
 (print "")
 ;;==== SWP|TX 055 - ADD-OR-SWAP owner gate · 05 · gas echo ====
 (print "--- [SWP|TX 055 - ADD-OR-SWAP owner gate · 05 · gas echo] ---")
+;;==== SWP|TX 055 - SWP|C>ADD-OR-SWAP: the owner gate, reached past its shape rule · 03 · gas echo ==== 
+(print "--- [SWP|TX 055 - SWP|C>ADD-OR-SWAP: the owner gate, reached past its shape rule · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 055 ADD-OR-SWAP owner gate ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "===^^^===")
@@ -9088,6 +9651,8 @@
 ;;================================================================================
 ;;==== SWP|TX 056 - SPECIAL-FEE-TARGETS owner gate · 01 · env-sigs (caps) ====
 (print "--- [SWP|TX 056 - SPECIAL-FEE-TARGETS owner gate · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 056 - SPW|S>UPDATE_SPECIAL-FEE-TARGETS: the owner gate, past the tier rule · 01 · env-sigs (caps) ==== 
+(print "--- [SWP|TX 056 - SPW|S>UPDATE_SPECIAL-FEE-TARGETS: the owner gate, past the tier rule · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_Lumy", "caps": [] }
@@ -9095,6 +9660,8 @@
 )
 ;;==== SWP|TX 056 - SPECIAL-FEE-TARGETS owner gate · 02 · the naive attack hits the TIER rule ====
 (print "--- [SWP|TX 056 - SPECIAL-FEE-TARGETS owner gate · 02 · the naive attack hits the TIER rule] ---")
+;;==== SWP|TX 056 - SPW|S>UPDATE_SPECIAL-FEE-TARGETS: the owner gate, past the tier rule · 02 · let / invocation ==== 
+(print "--- [SWP|TX 056 - SPW|S>UPDATE_SPECIAL-FEE-TARGETS: the owner gate, past the tier rule · 02 · let / invocation] ---")
 (let
     (
         (ref-SWP:module{SwapperV4} SWP)
@@ -9214,6 +9781,8 @@
 (print "")
 ;;==== SWP|TX 056 - SPECIAL-FEE-TARGETS owner gate · 05 · gas echo ====
 (print "--- [SWP|TX 056 - SPECIAL-FEE-TARGETS owner gate · 05 · gas echo] ---")
+;;==== SWP|TX 056 - SPW|S>UPDATE_SPECIAL-FEE-TARGETS: the owner gate, past the tier rule · 03 · gas echo ==== 
+(print "--- [SWP|TX 056 - SPW|S>UPDATE_SPECIAL-FEE-TARGETS: the owner gate, past the tier rule · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 056 SPECIAL-FEE-TARGETS owner gate ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "===^^^===")
@@ -9262,6 +9831,8 @@
 ;;================================================================================
 ;;==== SWP|TX 057 - eager-let forensic · 01 · env-sigs (caps) ====
 (print "--- [SWP|TX 057 - eager-let forensic · 01 · env-sigs (caps)] ---")
+;;==== SWP|TX 057 - C_ToggleAddOrSwap's eager let: the writes above the gate are unreachable · 01 · env-sigs (caps) ==== 
+(print "--- [SWP|TX 057 - C_ToggleAddOrSwap's eager let: the writes above the gate are unreachable · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -9273,6 +9844,8 @@
 ;;it a role. The readers still answer `true` for the SWP contract account and `false` for an
 ;;ordinary one -- which is what proves the `true` comes from the autonomic override and not
 ;;from the reader being trivially true.
+;;==== SWP|TX 057 - C_ToggleAddOrSwap's eager let: the writes above the gate are unreachable · 02 · let / invocation ==== 
+(print "--- [SWP|TX 057 - C_ToggleAddOrSwap's eager let: the writes above the gate are unreachable · 02 · let / invocation] ---")
 (let
     (
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
@@ -9370,6 +9943,8 @@
 (print "")
 ;;==== SWP|TX 057 - eager-let forensic · 05 · gas echo ====
 (print "--- [SWP|TX 057 - eager-let forensic · 05 · gas echo] ---")
+;;==== SWP|TX 057 - C_ToggleAddOrSwap's eager let: the writes above the gate are unreachable · 03 · gas echo ==== 
+(print "--- [SWP|TX 057 - C_ToggleAddOrSwap's eager let: the writes above the gate are unreachable · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 057 eager-let forensic ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "===^^^===")

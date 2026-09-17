@@ -13,6 +13,8 @@
 (print "=== TX-AQP-TD01 — Ouroboros/Auryn/Elite-Auryn rain bunnies + DHOuroLp LP =====")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-AQP-TD01 - Rain bunny anchors + LP stake → Silver/Bronze/Golden triples · 01 · let / invocation ==== 
+(print "--- [TX-AQP-TD01 - Rain bunny anchors + LP stake → Silver/Bronze/Golden triples · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)

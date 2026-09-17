@@ -1,3 +1,16 @@
+;;
+;; REPL/modules/AQP-LP.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/modules/AQP-LP.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 ;; REPL/modules/AQP-LP.repl — AQP on a chain that ALSO has SWP liquidity pools.
 ;;
 ;; WHY THIS FILE EXISTS. Several AQP-SCORE / AQP guards read an SWP LP pair AND an AQP score in the same
@@ -23,6 +36,8 @@
 (begin-tx "AQPLP-G1 — the LP-stake score context, on a chain that has both halves")
 (env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== AQPLP-G1 — the LP-stake score context, on a chain that has both halves · 01 · env-sigs (caps) ==== 
+(print "--- [AQPLP-G1 — the LP-stake score context, on a chain that has both halves · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 ;;The LP id is DISCOVERED from the chain, not hardcoded. The issuance-only path builds its own pairs
 ;;(S|AG-…|AL-…, S|AL-…|AU-… and so on), NOT the S|DLK-…|OURO-…|DWK-… that the full [6.3]_SWP suite makes --
@@ -33,6 +48,8 @@
 ;;The whole point of this file, asserted before anything depends on it: an SWP LP pair and an AQP score on
 ;;one chain. If either half ever stops loading, this says so directly instead of the guard below failing
 ;;for an unrelated reason.
+;;==== AQPLP-G1 — the LP-stake score context, on a chain that has both halves · 02 · let / invocation ==== 
+(print "--- [AQPLP-G1 — the LP-stake score context, on a chain that has both halves · 02 · let / invocation] ---")
 (let
     (
         (ref-SWP:module{SwapperV4} SWP)
@@ -99,6 +116,8 @@
 ;;otherwise the call dies in `coin.TRANSFER` before the score exists. The fee is split across receivers,
 ;;so all four legs are granted with headroom rather than exact amounts (pinning the split here would make
 ;;this fixture fail on every price change).
+;;==== AQPLP-G2 — a CLASS-0 liquidity score, and the guards that needed one · 01 · env-sigs (caps) ==== 
+(print "--- [AQPLP-G2 — a CLASS-0 liquidity score, and the guards that needed one · 01 · env-sigs (caps)] ---")
 (env-sigs
     [ { "key": "PK_AncientHodler", "caps": [] }
       { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
@@ -119,6 +138,8 @@
 ;;It is one client call: `AQP-SCR|C_IssueLiquidityScore` creates a class-0 score with a chosen
 ;;lp-denominator. Done here rather than in `modules/AQP.repl` because the interesting guards compare that
 ;;denominator against an SWP PAIR, and this is the only chain carrying both.
+;;==== AQPLP-G2 — a CLASS-0 liquidity score, and the guards that needed one · 02 · let / invocation ==== 
+(print "--- [AQPLP-G2 — a CLASS-0 liquidity score, and the guards that needed one · 02 · let / invocation] ---")
 (let
     (
         (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
@@ -192,6 +213,8 @@
 (env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
 (namespace "ouronet-ns")
 ;;same STOA caps as AQPLP-G2 -- issuing a pool is priced the same way as issuing a score
+;;==== AQPLP-G3 — the class-0 pool rule, reached by building the pool the suite never had · 01 · env-sigs (caps) ==== 
+(print "--- [AQPLP-G3 — the class-0 pool rule, reached by building the pool the suite never had · 01 · env-sigs (caps)] ---")
 (env-sigs
     [ { "key": "PK_AncientHodler", "caps": [] }
       { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
@@ -214,6 +237,8 @@
 ;;Reaching 3 therefore needs a class-0 POOL as well as the class-0 SCORE from AQPLP-G2 -- and the AQP
 ;;suite builds neither. The pool is one client call, `AQP-POOL|C_Issue … 0`, anchored on the same LP token
 ;;the score was NOT given as its denominator. That mismatch is the whole subject of enforce 3.
+;;==== AQPLP-G3 — the class-0 pool rule, reached by building the pool the suite never had · 02 · let / invocation ==== 
+(print "--- [AQPLP-G3 — the class-0 pool rule, reached by building the pool the suite never had · 02 · let / invocation] ---")
 (let
     (
         (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)

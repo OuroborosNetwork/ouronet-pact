@@ -35,8 +35,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-01 [2] - ANK Module · 01 · env-sigs (caps) ==== =========================================
 (print "--- [TX-01 [2] - ANK Module · 01 · env-sigs (caps)] ---")
+;;==== TX-01 [2] - ANK Module · 01 · env-sigs (caps) ==== =========================================
+(print "--- [TX-01 [2] - ANK Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-01 [2] - ANK Module · 02 · load module ==== =============================================
+(print "--- [TX-01 [2] - ANK Module · 02 · load module] ---")
 ;;==== TX-01 [2] - ANK Module · 02 · load module ==== =============================================
 (print "--- [TX-01 [2] - ANK Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_02/2_Core/03_AQP/01_ANK.pact")
@@ -55,8 +59,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-01 [2] - SCORE Module · 01 · env-sigs (caps) ==== =======================================
 (print "--- [TX-01 [2] - SCORE Module · 01 · env-sigs (caps)] ---")
+;;==== TX-01 [2] - SCORE Module · 01 · env-sigs (caps) ==== =======================================
+(print "--- [TX-01 [2] - SCORE Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-01 [2] - SCORE Module · 02 · load module ==== ===========================================
+(print "--- [TX-01 [2] - SCORE Module · 02 · load module] ---")
 ;;==== TX-01 [2] - SCORE Module · 02 · load module ==== ===========================================
 (print "--- [TX-01 [2] - SCORE Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_02/2_Core/03_AQP/02_SCORE.pact")
@@ -75,8 +83,12 @@
 (namespace "ouronet-ns")
 ;;==== TX-01 [2] - AQP Module · 01 · env-sigs (caps) ==== =========================================
 (print "--- [TX-01 [2] - AQP Module · 01 · env-sigs (caps)] ---")
+;;==== TX-01 [2] - AQP Module · 01 · env-sigs (caps) ==== =========================================
+(print "--- [TX-01 [2] - AQP Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-01 [2] - AQP Module · 02 · load module ==== =============================================
+(print "--- [TX-01 [2] - AQP Module · 02 · load module] ---")
 ;;==== TX-01 [2] - AQP Module · 02 · load module ==== =============================================
 (print "--- [TX-01 [2] - AQP Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_02/2_Core/03_AQP/03_AQP.pact")
@@ -94,21 +106,33 @@
 (env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [TX-01 [1b] - RPS Module · 01 · env-sigs] ---")
+;;==== TX-01 [1b] - RPS Module (reward engine, deploys before FVT) · 01 · env-sigs (caps) ==== ====
+(print "--- [TX-01 [1b] - RPS Module (reward engine, deploys before FVT) · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
 (print "--- [TX-01 [1b] - RPS Module · 02 · load module] ---")
+;;==== TX-01 [1b] - RPS Module (reward engine, deploys before FVT) · 02 · load module ==== ========
+(print "--- [TX-01 [1b] - RPS Module (reward engine, deploys before FVT) · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_02/2_Core/03_AQP/04_RPS.pact")
 (print (format "<<<<<<<RPS Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 (begin-tx "TX-01 [2] - FVT Module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 ;;==== TX-01 [2] - FVT Module · 01 · env-sigs (caps) ==== =========================================
 (print "--- [TX-01 [2] - FVT Module · 01 · env-sigs (caps)] ---")
+;;==== TX-01 [2] - FVT Module · 01 · env-sigs (caps) ==== =========================================
+(print "--- [TX-01 [2] - FVT Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-01 [2] - FVT Module · 02 · load module ==== =============================================
+(print "--- [TX-01 [2] - FVT Module · 02 · load module] ---")
 ;;==== TX-01 [2] - FVT Module · 02 · load module ==== =============================================
 (print "--- [TX-01 [2] - FVT Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_02/2_Core/03_AQP/05_FVT.pact")
@@ -126,8 +150,12 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [TX-01 [2] - VCT Module · 01 · env-sigs (caps)] ---")
+;;==== TX-01 [2] - VCT Module · 01 · env-sigs (caps) ==== =========================================
+(print "--- [TX-01 [2] - VCT Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+(print "--- [TX-01 [2] - VCT Module · 02 · load module] ---")
+;;==== TX-01 [2] - VCT Module · 02 · load module ==== =============================================
 (print "--- [TX-01 [2] - VCT Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_02/2_Core/03_AQP/06_VCT.pact")
 (print "--- [TX-01 [2] - VCT Module · 03 · gas echo] ---")
@@ -143,8 +171,12 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [TX-01 [3] - MTX-AQP Module · 01 · env-sigs (caps)] ---")
+;;==== TX-01 [3] - MTX-AQP Module · 01 · env-sigs (caps) ==== =====================================
+(print "--- [TX-01 [3] - MTX-AQP Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+(print "--- [TX-01 [3] - MTX-AQP Module · 02 · load module] ---")
+;;==== TX-01 [3] - MTX-AQP Module · 02 · load module ==== =========================================
 (print "--- [TX-01 [3] - MTX-AQP Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_02/2_Core/03_AQP/07_MTX-AQP.pact")
 (print "--- [TX-01 [3] - MTX-AQP Module · 03 · gas echo] ---")
@@ -159,8 +191,12 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [TX-01 [4] - DSA Module · 01 · env-sigs (caps)] ---")
+;;==== TX-01 [4] - DSA Module · 01 · env-sigs (caps) ==== =========================================
+(print "--- [TX-01 [4] - DSA Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+(print "--- [TX-01 [4] - DSA Module · 02 · load module] ---")
+;;==== TX-01 [4] - DSA Module · 02 · load module ==== =============================================
 (print "--- [TX-01 [4] - DSA Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_02/2_Core/03_AQP/08_DSA.pact")
 (print "--- [TX-01 [4] - DSA Module · 03 · gas echo] ---")

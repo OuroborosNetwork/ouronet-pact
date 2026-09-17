@@ -27,21 +27,45 @@
 (begin-tx "SCALE-SWP-BOOT - KBN citizen")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== SCALE-SWP-BOOT - KBN citizen · 01 · env-sigs (caps) ==== ===================================
+(print "--- [SCALE-SWP-BOOT - KBN citizen · 01 · env-sigs (caps)] ---")
 (env-sigs [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== SCALE-SWP-BOOT - KBN citizen · 02 · load module ==== =======================================
+(print "--- [SCALE-SWP-BOOT - KBN citizen · 02 · load module] ---")
 (load "../../2_CITIZEN/4_BunniesMinter/02_KBunnies.pact")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "SCALE-SWP-BOOT - AQP-BOOT")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== SCALE-SWP-BOOT - AQP-BOOT · 01 · env-sigs (caps) ==== ======================================
+(print "--- [SCALE-SWP-BOOT - AQP-BOOT · 01 · env-sigs (caps)] ---")
 (env-sigs [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== SCALE-SWP-BOOT - AQP-BOOT · 02 · load module ==== ==========================================
+(print "--- [SCALE-SWP-BOOT - AQP-BOOT · 02 · load module] ---")
 (load "../../2_CITIZEN/5_VaultsMinter/04_AQP-BOOT.pact")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "SCALE-SWP-BOOT - Step0")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== SCALE-SWP-BOOT - Step0 · 01 · env-sigs (caps) ==== =========================================
+(print "--- [SCALE-SWP-BOOT - Step0 · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print (format "<(Step0)> => \"{}\"" [(AQP-BOOT.C_Step0_WireImcAndGovernor KST.ANHD)]))
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (load "../Stage_02/[6.2.6]_AQP-VCT-GAS-BASE.repl")
 (print "")
 ;;
@@ -51,6 +75,8 @@
 (begin-tx "SCALE-SWP-01 - anchor + boost-linked score + 50 synth stakers")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+;;==== SCALE-SWP-01 - anchor + boost-linked score + 50 synth stakers · 01 · env-sigs (caps) ==== ==
+(print "--- [SCALE-SWP-01 - anchor + boost-linked score + 50 synth stakers · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -66,6 +92,8 @@
     ]
 )
 (print "--- [SCALE-SWP-01 · anchor + boost-linked score + stake 50] ---")
+;;==== SCALE-SWP-01 - anchor + boost-linked score + 50 synth stakers · 02 · let / invocation ==== =
+(print "--- [SCALE-SWP-01 - anchor + boost-linked score + 50 synth stakers · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -106,6 +134,10 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;; ============================================================================
@@ -114,13 +146,23 @@
 (begin-tx "SWP1-INFO - load AQP-INFO for the cost block below")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== SWP1-INFO - load AQP-INFO for the cost block below · 01 · env-sigs (caps) ==== =============
+(print "--- [SWP1-INFO - load AQP-INFO for the cost block below · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": [] }])
+;;==== SWP1-INFO - load AQP-INFO for the cost block below · 02 · load module ==== =================
+(print "--- [SWP1-INFO - load AQP-INFO for the cost block below · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact")
 (commit-tx)
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
 (begin-tx "SWP1-EXEC - AQP-FVT|CC_SweepRevokeAnchor (single tx, 50 holders)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+;;==== SWP1-EXEC - AQP-FVT|CC_SweepRevokeAnchor (single tx, 50 holders) · 01 · env-sigs (caps) ==== 
+(print "--- [SWP1-EXEC - AQP-FVT|CC_SweepRevokeAnchor (single tx, 50 holders) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -136,6 +178,8 @@
     ]
 )
 (print "--- [SWP1-EXEC · CC_SweepRevokeAnchor] ---")
+;;==== SWP1-EXEC - AQP-FVT|CC_SweepRevokeAnchor (single tx, 50 holders) · 02 · let / invocation ==== 
+(print "--- [SWP1-EXEC - AQP-FVT|CC_SweepRevokeAnchor (single tx, 50 holders) · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)

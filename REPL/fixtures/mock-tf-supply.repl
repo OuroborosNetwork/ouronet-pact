@@ -1,3 +1,16 @@
+;;
+;; REPL/fixtures/mock-tf-supply.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/fixtures/mock-tf-supply.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 ;; REPL/fixtures/mock-tf-supply.repl — mint circulating supply into the mock true fungibles.
 ;;
 ;; PROVIDES : 1,000,000 MOCKA + 1,000,000 MOCKB held by KST.ANHD.
@@ -11,7 +24,11 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [FIXTURE mock-tf-supply · 01 · mint supply] ---")
+;;==== FIXTURE mock-tf-supply — mint supply into MOCKA/MOCKB · 01 · env-sigs (caps) ==== ==========
+(print "--- [FIXTURE mock-tf-supply — mint supply into MOCKA/MOCKB · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== FIXTURE mock-tf-supply — mint supply into MOCKA/MOCKB · 02 · let / invocation ==== =========
+(print "--- [FIXTURE mock-tf-supply — mint supply into MOCKA/MOCKB · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -26,8 +43,12 @@
 ;;|| NEXT >
 ;;
 (begin-tx "FIXTURE mock-tf-supply — postcondition")
+;;==== FIXTURE mock-tf-supply — postcondition · 01 · namespace ==== ===============================
+(print "--- [FIXTURE mock-tf-supply — postcondition · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [FIXTURE mock-tf-supply · 05 · postcondition] ---")
+;;==== FIXTURE mock-tf-supply — postcondition · 02 · let / invocation ==== ========================
+(print "--- [FIXTURE mock-tf-supply — postcondition · 02 · let / invocation] ---")
 (let
     (
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
