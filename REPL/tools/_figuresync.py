@@ -141,6 +141,13 @@ def stats_staleness():
     is the same loop for the one figure that can be derived statically. The EXECUTED count cannot be
     (it needs a live gate), so it is deliberately not checked here; `_gate.py` is the only thing that
     knows it, and the honest move is to say so rather than to check a number this tool cannot see.
+
+    THE WORKFLOW THIS IMPOSES, stated so it is not mistaken for a nuisance and removed. The check is
+    EXACT-MATCH, so any commit that adds or removes an assertion fails the gate until
+    `tools/_suite_stats.py` is re-run. That is the point, and it is the same contract `_pricesync`
+    already imposes on the price artefacts: a generated figure that is allowed to lag is a figure
+    nobody can cite. It caught its own first drift within the hour -- three assertions, added after
+    the regeneration that had just fixed a 275-assertion gap.
     """
     import re as _re
     live = 0
