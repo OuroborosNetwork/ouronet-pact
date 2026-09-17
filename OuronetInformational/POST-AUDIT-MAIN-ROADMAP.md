@@ -30,12 +30,20 @@ Every element carries a dotted address so you can point at it exactly. Header si
 >
 > | phase | marked | measured in the tree today |
 > |---|---|---|
-> | 1.1 `URCi` cost architecture | ❌ NEXT | **267** distinct `URCi_` readers across `1_SOVEREIGN/` |
-> | 1.2 INFO rehaul | ❌ | **335** distinct `INFO_` previews |
-> | 1.3 Re-price IGNIS | ❌ | `IGNIS-PRICE-SHEET.md` generated + gate-enforced (`_pricesync.py --check`) |
-> | 1.4 AQP module splits | ❌ | `04_RPS.pact` exists — the `04_FVT` split shipped |
-> | 1.5 REPL finalization | ❌ | **22,939** assertions across 120 suites, one-command gate (`_gate.py`) |
-> | 1.6 Red team | ❌ | **IN PROGRESS** — 29 attacks, families A–K, 0 succeeded (`RED-TEAM-REPORT.md`) |
+> | 1.1 `URCi` cost architecture | ❌ NEXT | **256** distinct `URCi_` readers (307 implementations) in `1_SOVEREIGN/` |
+> | 1.2 INFO rehaul | ❌ | **420** distinct `INFO_` previews in `1_SOVEREIGN/`; **414 of 414** client-facing cost previews measured |
+> | 1.3 Re-price IGNIS | ❌ | `IGNIS-PRICE-SHEET.md` generated + gate-enforced (`_pricesync.py --check`); **442** priced client functions |
+> | 1.4 AQP module splits | ❌ | `04_RPS.pact` exists — the `04_FVT` split shipped. **Not finished**: 1.4.1.2 leaves `RPS` in the Danger band and `SCORE` in Warning |
+> | 1.5 REPL finalization | ❌ | **25,025** assertions, one-command gate (`_gate.py`) |
+> | 1.6 Red team | ✅ **DONE 2026-09-17** | **38 attacks, 11 families, 20 found a defect, none succeeded**; Audit Book Parts I–III written |
+>
+> **CORRECTED 2026-09-17, and the correction is mine.** This block was added to flag the checkboxes
+> as stale, and then published **267** `URCi_` and **335** `INFO_` — figures I carried in rather than
+> measured. Counted from the tree: **256** and **420**. Both were wrong, in OPPOSITE directions, so
+> no sanity check on one would have caught the other. A block whose entire purpose is *"the marks
+> above are stale, here is the measurement"* is the last place a number should be quoted from memory.
+> Method: `(defun URCi_…` / `(defun INFO_…` at module level, comments stripped, `1_SOVEREIGN/` only —
+> the scope the rows themselves state.
 >
 > The checkboxes below are deliberately NOT flipped: each sub-item needs its own verification, and
 > marking a phase ✅ from an aggregate count is exactly the kind of unearned claim the DEFECT-LEDGER
