@@ -2020,25 +2020,37 @@
             \ While ensuring a Sleeping LP cant be used for this operation."
         (let
             (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (fourth:string (drop 3 (take 4 id)))
-                (parent:string (URCv_Parent id))
             )
             ;;#31M fix: moved here from URCv_Parent, which must never enforce - this is the only
             ;;caller that actually needs this rejection (per this function's own @doc).
-            ;;UNPINNED, and the reason is worth stating because it partly defeats the #31M fix
-            ;;above: <parent> is bound EAGERLY in the same let, by calling URCv_Parent, which
-            ;;READS the properties table. So a sleeping-LP id that does not exist aborts in that
-            ;;read before this enforce runs -- the check was moved here to be reachable, and is
-            ;;now shielded by the very function it was extracted from. Reaching it needs a REAL
-            ;;issued sleeping-LP token, which no suite creates. The DPTF twin (URCv_Parent, same
-            ;;4th-character test) enforces BEFORE its read and IS pinned -- REPL/modules/DPTF.repl
-            ;;<<DPTF-G5>>. Binding <parent> lazily inside the (if …) below would make this one
-            ;;reachable with a bare id, matching its twin.
+            ;;
+            ;;HOISTED 2026-09-17, ABOVE the <parent> binding, and the note that used to sit here was
+            ;;half wrong in a way worth recording. It said flatly that this enforce was UNPINNED and
+            ;;UNREACHABLE -- that <parent>, bound eagerly by URCv_Parent, READS the properties table,
+            ;;so any sleeping-LP id aborts in that read first, and that reaching it "needs a REAL
+            ;;issued sleeping-LP token, which no suite creates".
+            ;;
+            ;;Measured, both halves: `URCv_Parent` only reads for ids prefixed `V|`, `Z|` or `H|`;
+            ;;every other shape falls through to its `dpof` default with NO read at all. So
+            ;;`Z|X|NOSUCH-…` did abort on the raw table key exactly as described, while
+            ;;`ABC|NOSUCH-…` reached this enforce and produced its written message. A PARTIAL shadow,
+            ;;not a total one -- the same shape as DEFECT-LEDGER G-10.
+            ;;
+            ;;<fourth> is a pure string slice of <id> and needs no table access, so the guard is
+            ;;simply hoisted above the binding. Both shapes now refuse in the written words, which is
+            ;;also what the DPTF twin does (it enforces before its read) -- the twin is pinned by
+            ;;REPL/modules/DPTF.repl <<DPTF-G5>>, and this one by <<DPOF-G16>>.
             (enforce (!= fourth BAR) "Sleeping LP Tokens not allowed for this operation")
-            (if (= parent id)
-                (CAP_Owner id)
-                (ref-DPTF::CAP_Owner parent)
+            (let
+                (
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (parent:string (URCv_Parent id))
+                )
+                (if (= parent id)
+                    (CAP_Owner id)
+                    (ref-DPTF::CAP_Owner parent)
+                )
             )
         )
     )

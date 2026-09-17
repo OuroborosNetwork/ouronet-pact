@@ -2337,3 +2337,51 @@
 )
 (env-sigs [])
 (rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-G16 — the M7 sleeping-LP guard, hoisted out of a partial shadow")
+(print "")
+(print "=== DPOF-G16 — UEV_ParentOwnership rejects sleeping-LP ids ==================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;M7 / #31M moved this rejection out of `URCv_Parent` (a `URC_` must never enforce) into
+;;`UEV_ParentOwnership`, its only caller that needs it. The source then recorded the guard as
+;;UNPINNED and UNREACHABLE -- that `parent`, bound eagerly, reads the properties table, so any
+;;sleeping-LP id aborts in that read first, and witnessing it would need "a REAL issued sleeping-LP
+;;token, which no suite creates".
+;;
+;;THAT NOTE WAS HALF WRONG, measured both ways. `URCv_Parent` only reads for ids prefixed `V|`, `Z|`
+;;or `H|`; every other shape falls through to its default with NO read. So `Z|X|NOSUCH-…` did abort
+;;on the raw table key as described, while `ABC|NOSUCH-…` reached the enforce and returned its
+;;written message. A PARTIAL shadow, not a total one -- and the half that worked was witnessing
+;;nothing because nobody had tried it.
+;;
+;;`fourth` is a pure string slice needing no table access, so the guard was hoisted above the
+;;binding. Both shapes are pinned here BECAUSE they used to differ: if the hoist is ever reverted,
+;;the first assertion goes red while the second stays green, which names the regression exactly.
+(let
+    (
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+    )
+    (map print
+        [
+            ;;THE SHAPE THAT USED TO DIE IN THE READ. This is the assertion the hoist buys.
+            (expect-failure "<<DPOF-G16>> M7: a `Z|`-prefixed sleeping-LP id is refused in the guard's own words"
+                "Sleeping LP Tokens not allowed for this operation"
+                (ref-DPOF::UEV_ParentOwnership "Z|X|NOSUCH-98c486052a51"))
+            ;;THE SHAPE THAT ALWAYS REACHED IT, pinned so the pair localises any regression.
+            (expect-failure "<<DPOF-G16>> ...and so is a non-prefixed one, which always reached it"
+                "Sleeping LP Tokens not allowed for this operation"
+                (ref-DPOF::UEV_ParentOwnership "ABC|NOSUCH-98c486052a51"))
+            ;;NON-VACUITY: an id whose 4th character is NOT the sentinel is not refused by THIS
+            ;;guard -- it gets past it and fails later, on ownership. Without this the two
+            ;;assertions above would be satisfied by a guard that rejected everything.
+            (expect-failure "<<DPOF-G16>> ...while a normal id passes this guard and fails later, elsewhere"
+                "No value found in table"
+                (ref-DPOF::UEV_ParentOwnership "NORMALID-98c486052a51"))
+        ]
+    )
+    ""
+)
+(rollback-tx)
