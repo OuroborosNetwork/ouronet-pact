@@ -165,6 +165,16 @@ def reach(seed):
 # check RT-D-001 attacks -- is composed by `DPTF|C>CLASS-1-TRANSFER` and friends and is acquired
 # directly by nothing, so following only `with-capability` left it invisible. Closing over
 # `compose-capability` as well is what makes the DEBIT/TRANSFER layer assessable at all.
+# CLAUDE.md's prefix table lists FOUR client-entry families, not two: `C_`/`CC_` and the Hydra
+# recipe forms `Cp_`/`CCp_` (and admin `A_`/`AA_`/`Ap_`/`AAp_`). The first cut of the reachability
+# split tested only `C_`/`A_`/`CC_`/`AA_`, which mislabelled the whole VCT vacate-batch band as
+# unreachable -- `CCp_BatchVacateCollectables` is a client entrypoint, a multi-transaction recipe,
+# not an internal. A prefix filter that does not match the documented prefix table will always fail
+# silently and in the direction of LESS work, which is the direction nobody checks.
+_CLIENT_PFX = ("C_", "CC_", "Cp_", "CCp_", "A_", "AA_", "Ap_", "AAp_")
+def _iz_client(fn):
+    return fn.split("|")[-1].startswith(_CLIENT_PFX) or fn.startswith(_CLIENT_PFX)
+
 composes = collections.defaultdict(set)
 for f in R('1_SOVEREIGN/**/*.pact') + R('2_CITIZEN/**/*.pact'):
     src = strip_comments(open(f).read())
@@ -348,8 +358,7 @@ if "--weak" in sys.argv:
     for cap, fil, shd, ob in sorted(rows, key=lambda r: r[0]):
         if not (ob and cap_depth.get((cap, ob[1]), 99) >= 2): continue
         owners = [fn for (mod, fn), caps in fn_caps.items() if cap in caps]
-        client = [fn for fn in owners if fn.split("|")[-1][:2] in ("C_", "A_")
-                  or fn.startswith(("C_", "A_", "CC_", "AA_"))]
+        client = [fn for fn in owners if _iz_client(fn)]
         (_testable if client else _inner).append((fil, cap, ob[1], cap_depth[(cap, ob[1])], owners))
     print("  TESTABLE -- a client op acquires this gate, so an attack can target it:")
     for fil, cap, w, d, owners in _testable:
@@ -370,6 +379,49 @@ sh = [r for r in rows if r[2]]
 print(f"\nof the {len(sh)} whose ownership gate sits AFTER a business enforce:")
 print(f"  observed     : {sum(1 for r in sh if r[3])}")
 print(f"  NEVER observed: {sum(1 for r in sh if not r[3])}")
-print("\n--- shadowed AND never observed (the actionable set) ---")
-for cap, fil, _, _ in [r for r in sh if not r[3]]:
-    print(f"   {fil:22} {cap}")
+# The TESTABLE / STRUCTURALLY-INNER split below was originally applied only to the depth-2+ list.
+# That was an asymmetry with real cost: the actionable list is the one that drives work, so an
+# unsplit actionable list is precisely where impossible tasks get generated. A gate acquired only by
+# an `XE_` forward-module entrypoint (called by another MODULE, never a client) or composed by
+# another capability cannot be attributed by ANY client-surface test -- the outer gate refuses first,
+# by design. Listing those beside genuinely reachable gates makes the worklist overstate itself in
+# the same way the pre-transitive denominator understated it. Split here too, 2026-09-17.
+# CORRECTION, same session: the first cut of this split called every "composed only" cap
+# structurally inner, which cut the actionable set 23 -> 10. That over-corrected, and in exactly the
+# direction the earlier binary/dilution mistake went -- a tidier number reached by discarding real
+# work. `compose-capability` is an edge, not a wall: if a PARENT cap composes this one and a client
+# `C_` acquires that parent, a client-surface test does reach this gate, and the refusal IS
+# attributable to it provided the parent raises nothing first. `DPOF|C>DEBIT` is exactly that shape.
+# So walk UP the composition edges before declaring anything unreachable.
+_parents = collections.defaultdict(set)
+for _p, _cs in composes.items():
+    for _c in _cs: _parents[_c].add(_p)
+
+def _client_acquirers(cap, seen=None):
+    """Functions that can reach `cap`, following composition edges upward."""
+    seen = seen or set()
+    if cap in seen: return []
+    seen.add(cap)
+    out = [fn for (mod, fn), cs in fn_caps.items() if cap in cs]
+    for par in _parents.get(cap, ()):
+        out += _client_acquirers(par, seen)
+    return out
+
+def _split_reachable(caps):
+    t, i = [], []
+    for cap, fil in caps:
+        owners = _client_acquirers(cap)
+        client = [fn for fn in owners if _iz_client(fn)]
+        (t if client else i).append((fil, cap, sorted(set(client)) or sorted(set(owners))))
+    return t, i
+
+_act = [(cap, fil) for cap, fil, _, _ in [r for r in sh if not r[3]]]
+_t, _i = _split_reachable(_act)
+print(f"\n--- shadowed AND never observed (the actionable set: {len(_act)}) ---")
+print(f"  TESTABLE -- a client C_/A_ acquires this gate, so an attack can target it ({len(_t)}):")
+for fil, cap, owners in sorted(_t):
+    print(f"     {fil:22} {cap}")
+print(f"  STRUCTURALLY INNER -- composed only, or reached solely through XE_/XI_ ({len(_i)}):")
+print("  no client-surface test can attribute a refusal to these; NOT work.")
+for fil, cap, owners in sorted(_i):
+    print(f"     {fil:22} {cap:38} acquired by {owners or 'nothing (composed only)'}")

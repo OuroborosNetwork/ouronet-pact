@@ -2808,3 +2808,31 @@ fail the master keyset. What was *measured* is that step 1 charges and that step
 obstacle at `p=true` is the master keyset. That a caller who cannot satisfy it therefore pays and is
 refused is **one inference step**, not a measurement. Closing it needs a non-Demiurgoi account that
 owns a DPTF.
+
+## 8.5 The actionable list was overstating itself — 23 → 19, via two errors in opposite directions
+
+`_ownerobs.py` gained a TESTABLE / STRUCTURALLY-INNER split for the depth-2+ column on 2026-09-16,
+and that split prevented seven impossible tasks. It was never applied to the **actionable** column —
+which is the one that drives work, and therefore the one where an impossible task actually costs
+something. Fixed 2026-09-17. Getting it right took three passes, and both wrong passes are worth
+keeping because they failed in *opposite* directions:
+
+| pass | rule | actionable | wrong because |
+|---|---|---|---|
+| 1 | "acquired by nothing" ⇒ inner | **10** | `compose-capability` is an **edge, not a wall** |
+| 2 | walk composition edges upward | **16** | client-prefix test didn't match CLAUDE.md's prefix table |
+| 3 | + `Cp_`/`CCp_`/`Ap_`/`AAp_` | **19** | — |
+
+**Pass 1 cut the list by more than half and was the tidier number** — the same pull that produced
+the "1 of 63 attributable" binary. `DPOF|C>DEBIT` is composed, never directly acquired, and a client
+op *does* reach it; calling it unreachable would have retired a live gate on the DEBIT layer.
+
+**Pass 2's error is the one to generalise.** The filter tested `C_`/`A_`/`CC_`/`AA_` — four of the
+**eight** client-entry prefixes CLAUDE.md documents. It missed the Hydra recipe forms, so the entire
+VCT vacate-batch band was filed as unreachable although `CCp_BatchVacateCollectables` is a client
+entrypoint by definition. **A prefix filter that does not match the documented prefix table fails
+silently and always toward LESS work** — the direction nobody audits, because a shrinking worklist
+reads as progress.
+
+Remaining 4 are genuinely inner: the three `SCR|XE>` forward-module entrypoints (called by another
+*module*, never a client) and `SWP|S>WEIGHTS` via `XB_ModifyWeights`.
