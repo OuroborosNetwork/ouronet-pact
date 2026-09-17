@@ -2332,6 +2332,28 @@ recorded the same error in other people's tools, and it recurred in mine.
 | depth 1 | **9** | circumstantial |
 | depth 2+ — merely on the path | **8** | proves nothing about this gate |
 
+**A depth-2+ credit is not automatically work, and treating it as work would have generated seven
+impossible tasks.** Some gates are **structurally inner**: composed by another capability, or
+acquired only by an `XE_` forward-module entrypoint, which by StoicSyntax is called by another
+*module* and never by a client. No client-surface test can attribute a refusal to those — the outer
+gate refuses first, by design. `--weak` now splits them:
+
+| | |
+|---|---|
+| **testable** — a client `C_`/`A_` acquires the gate | **0 remaining** |
+| **structurally inner** — composed, or `XE_`-only | **7** |
+
+The seven: `AQP|XE>{COLLECTABLE,TRUE-FUNGIBLE}-POOL-CUSTODY`, `DPTF|C>UPDATE-SPECIAL`,
+`DPOF|C>UPDATE-SPECIAL` (all `XE_`-only), and `DPTF|C>X_TOGGLE-TRANSFER-ROLE`,
+`DPOF|S>X_TOGGLE-TRANSFER-ROLE`, `LIQUID|C>X_WRAPPER` (acquired by *nothing* — composed only).
+
+The single testable one, `ATSU|C>KICKSTART`, was **credited by the wrong test entirely**:
+`CONFORMANCE.repl` `<<CONF-05>>` drives `ATS|A_KickStart`, the **admin** path, and is refused by
+module governance. That refusal is real and says nothing about pool ownership — the capability's own
+`@doc` states the two paths differ on exactly this point: *"Owners needing a higher ratio use
+A_KickStart, gated by module governance instead of pool ownership."* `ATS-G25` drives the
+owner-facing `ATS|C_KickStart` instead.
+
 **Depth is a proxy and it under-rates as well as over-rates.** `DPTF-G14` / `DPOF-G14` were written
 specifically for `DPTF|C>ISSUE` and `DPOF|C>ISSUE`, and land at **depth 1**, not 0, because the Talos
 wrapper reaches the core issue one hop further in than the metric's seed. The tests target those

@@ -338,10 +338,26 @@ if "--weak" in sys.argv:
     # Caps whose ONLY evidence is a refusal from an op that reaches many gates. They sit in the
     # observed column and are therefore absent from the actionable list, but the credit is close to
     # worthless -- these are gaps that LOOK covered, which is strictly worse than gaps that look open.
-    print("\n--- credited ONLY from depth 2+: in the observed column, but nothing proves it ---")
+    # A depth-2+ credit is not automatically a testing gap. Some gates are STRUCTURALLY INNER: they
+    # are composed by another capability, or acquired only by an `XE_` forward-module entrypoint that
+    # by StoicSyntax is called by another MODULE and never by a client. No client-surface test can
+    # ever attribute a refusal to those -- the outer gate refuses first, by design. Listing them as
+    # work generates impossible tasks, so they are split out and named for what they are.
+    print("\n--- credited ONLY from depth 2+ ---")
+    _inner, _testable = [], []
     for cap, fil, shd, ob in sorted(rows, key=lambda r: r[0]):
-        if ob and cap_depth.get((cap, ob[1]), 99) >= 2:
-            print(f"   {fil:22} {cap:34} via {ob[1]} (depth {cap_depth[(cap, ob[1])]})")
+        if not (ob and cap_depth.get((cap, ob[1]), 99) >= 2): continue
+        owners = [fn for (mod, fn), caps in fn_caps.items() if cap in caps]
+        client = [fn for fn in owners if fn.split("|")[-1][:2] in ("C_", "A_")
+                  or fn.startswith(("C_", "A_", "CC_", "AA_"))]
+        (_testable if client else _inner).append((fil, cap, ob[1], cap_depth[(cap, ob[1])], owners))
+    print("  TESTABLE -- a client op acquires this gate, so an attack can target it:")
+    for fil, cap, w, d, owners in _testable:
+        print(f"     {fil:22} {cap:34} via {w} (depth {d})")
+    print("  STRUCTURALLY INNER -- composed, or reached only through an XE_ forward entrypoint;")
+    print("  no client-surface test can attribute to these, and the outer gate refuses first:")
+    for fil, cap, w, d, owners in _inner:
+        print(f"     {fil:22} {cap:34} acquired by {owners or 'nothing (composed only)'}")
     print()
 
 if "--dilution" in sys.argv:

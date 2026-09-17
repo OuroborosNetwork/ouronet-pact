@@ -4482,3 +4482,56 @@
 )
 (env-sigs [])
 (rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "ATS-G25 — the kickstart owner gate, on the OWNER-facing path")
+(print "")
+(print "=== ATS-G25 — non-owner C_KickStart =========================================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+;;`ATSU|C>KICKSTART` opens on `(ref-ATS::CAP_Owner ats)` -- the PAIR's owner -- ahead of its 100.0
+;;index ceiling, and nothing had ever driven it with a non-owner.
+;;
+;;IT LOOKED COVERED, AND BY THE WRONG TEST. `_ownerobs.py` credited it from `ATS|A_KickStart` at
+;;depth 2 -- `CONFORMANCE.repl`'s `<<CONF-05>>`, which drives the ADMIN path as EMMA and is refused
+;;by module governance. That refusal is real and says nothing about pool ownership: the two paths
+;;are deliberately different, and this capability's own @doc says so -- "Owners needing a higher
+;;ratio use A_KickStart, gated by module governance instead of pool ownership." A test refused by
+;;the admin gate cannot witness the owner gate of a different entrypoint.
+;;
+;;The pair is SELECTED, not named, on the same reasoning as ATS-G24: `URH_OwnedAutostakePairs`
+;;returns the pairs an account OWNS, so any element of ANHD's list is ANHD-owned by construction,
+;;and the non-vacuity of the attack follows from the selection rather than from an assumption.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (attacker:string KST.EMMA)
+        (victim:string KST.ANHD)
+    )
+    (let ((owned:[string] (ref-ATS::URH_OwnedAutostakePairs victim)))
+        (map print
+            [
+                (expect "<<ATS-G25>> the victim owns at least one ATS pair to aim at"
+                    true (> (length owned) 0))
+                (expect "<<ATS-G25>> ...and the attacker is not that owner"
+                    false (= attacker victim))
+            ]
+        )
+        (map print
+            [
+                ;;`CAP_Owner` runs FIRST here, ahead of every shape and index guard, so the
+                ;;amounts below need not be well-formed to reach it -- they are plausible only so
+                ;;that a shape refusal could not be mistaken for the one under test.
+                (expect-failure "<<ATS-G25>> a non-owner cannot kickstart someone else's pair"
+                    "Keyset failure (keys-all): [PK_Ancie...]"
+                    (ref-TS01-C2::ATS|C_KickStart attacker attacker (at 0 owned) [1.0] 1.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
