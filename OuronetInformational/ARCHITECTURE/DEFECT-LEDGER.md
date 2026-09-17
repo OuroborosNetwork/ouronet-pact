@@ -3904,3 +3904,29 @@ and require a green gate with an unchanged assertion count.
 
 > CLAUDE.md's warning was right, and slightly understated: it frames the risk as *duplicated banners
 > from running both tools*. The single tool alone corrupts code.
+
+### §8.34 CLOSED — the formatter is fixed and the drift is applied
+
+`_anchors` selected the first line matching `(let` / `(load` / `(env-sigs` **anywhere in a
+transaction body, at any nesting depth**. A nested match put the banner inside another expression.
+
+Fixed with a depth guard: candidates are filtered to lines beginning at **paren depth zero**, counted
+with strings and `;;` comments discounted — because a paren inside either is not a paren, which is
+the reason `_pactlex` exists. A nested anchor is **dropped rather than relocated**: a banner in the
+wrong place is worse than a missing one, and the tool cannot know where the author would have put it.
+
+**Verified by re-running the experiment that failed**, which is the condition this section set:
+
+| | before the fix | after |
+|---|---|---|
+| files changed | 186 | 186 |
+| insertions | 9,051 | **8,433** |
+| suites BROKEN | **5** | **0** |
+| gate | FAILED, 24,711 assertions | **GREEN, 25,029** |
+
+**25,029 is the same count as before the tool ran at all.** That identity — not the green — is the
+evidence that 186 files of insertion changed no behaviour. The 618 dropped insertions were every one
+of the anchors landing inside an expression.
+
+Applied in two commits: the tool fix, then the formatting alone, which is the standalone reviewable
+act CLAUDE.md asks for. **The drift is gone**; a bare `--apply` is now a no-op.
