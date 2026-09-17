@@ -626,3 +626,25 @@
 ;;FULL> ANK extended suites — need the FULL profile (AQP-BOOT Steps 1–3/6 + [5.4] populate):
 ;;FULL>   [6.4]_AQP-EXHAUSTIVE-ANK-LP.repl   (bunny anchors → LP score boost)
 ;;FULL>   [6.4]_AQP-TRIPLET-DIAG.repl        (triplet ANK/score diagnostics)
+;;PROBE-START
+(begin-tx "PROBE-ANK3")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{"key":"PK_AncientHodler","caps":[]}])
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+    )
+    (print (format "PROBE usage standard  = {}" [(ref-DALOS::UR_UsagePrice "standard")]))
+    (print (format "PROBE usage smart     = {}" [(ref-DALOS::UR_UsagePrice "smart")]))
+    (print (format "PROBE stoa anchor     = {}" [(ref-IGNIS::UC_StoaPrice "anchor")]))
+    (print (format "PROBE stoa issue-score= {}" [(ref-IGNIS::UC_StoaPrice "issue-score")]))
+    (print (format "PROBE stoa issue-fvt  = {}" [(ref-IGNIS::UC_StoaPrice "issue-fvt")]))
+    (print (format "PROBE split 20xstd    = {}" [(ref-DALOS::URC_SplitSTOAPrices KST.ANHD (* (ref-DALOS::UR_UsagePrice "standard") 20.0))]))
+    (print (format "PROBE split 100       = {}" [(ref-DALOS::URC_SplitSTOAPrices KST.ANHD 100.0)]))
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+;;PROBE-END

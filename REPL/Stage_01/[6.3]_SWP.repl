@@ -8909,46 +8909,469 @@
 (env-sigs [])
 (commit-tx)
 
-
-
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
-(begin-tx "PROBE2")
+(begin-tx "SWP|TX 055 - SWP|C>ADD-OR-SWAP: the owner gate, reached past its shape rule")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
-(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-(let
-    (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-    )
-    (ref-TS01-C1::DPTF|C_ToggleFeeExemptionRole KST.ANHD "TSTN-98c486052a51" KST.SWAPR false)
+;;================================================================================
+;;SWP|C>ADD-OR-SWAP (15_SWP.pact:640) runs its checks in this order:
+;;
+;;  1. eager (let)  add = (UR_CanAdd swpair) / swap = (UR_CanSwap swpair)  -- reads only
+;;  2. (if add-or-swap (enforce (!= add toggle) ...) (enforce (!= swap toggle) ...))
+;;                    -- the SHAPE rule: a toggle must actually change something
+;;  3. (CAP_Owner swpair)
+;;                    -- the OWNERSHIP gate
+;;
+;;The ownership gate is SHADOWED: the shape rule speaks first. DEFECT-LEDGER 8.2 records
+;;this cap by name and states the consequence -- "a no-op toggle is refused by the shape
+;;rule first" -- so the obvious attack never reaches CAP_Owner, and a test built on it
+;;would stay green with CAP_Owner DELETED. Group 02 runs that naive attack and shows the
+;;wrong message coming back. Group 03 changes exactly ONE thing -- the state requested --
+;;so the shape rule is satisfied and ownership is the only thing left that can refuse.
+;;Per DEFECT-LEDGER 7.2h the remedy is a FIXTURE, never a reorder: reordering would trade
+;;this unobservable guard for the other one rather than remove either.
+;;
+;;THE ATTACKER IS LUMY, NOT ANHD. `PK_AncientHodler` is both an ordinary account key and a
+;;Demiurgoi master, and it owns every pool this suite builds, so an ANHD-signed refusal
+;;would prove nothing at all. `KST.LUMY` owns no SWP pair here -- group 02 ASSERTS that
+;;rather than assuming it, so a future fixture that hands LUMY a pool turns the
+;;precondition red instead of quietly making the attack vacuous.
+;;================================================================================
+;;==== SWP|TX 055 - ADD-OR-SWAP owner gate · 01 · env-sigs (caps) ====
+(print "--- [SWP|TX 055 - ADD-OR-SWAP owner gate · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [
+        { "key": "PK_Lumy", "caps": [] }
+    ]
 )
-(print (format "PROBE2 after-revoke feex = {}" [(DPTF.UR_AccountRoleFeeExemption "TSTN-98c486052a51" KST.SWAPR)]))
-(env-sigs [{ "key": "PK_Lumy", "caps": [] }])
+;;==== SWP|TX 055 - ADD-OR-SWAP owner gate · 02 · the naive attack hits the SHAPE rule ====
+(print "--- [SWP|TX 055 - ADD-OR-SWAP owner gate · 02 · the naive attack hits the SHAPE rule] ---")
 (let
     (
+        (ref-SWP:module{SwapperV4} SWP)
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
-        (inert:string "P|OURO-98c486052a51|TSTN-98c486052a51")
+        (pool1:string "W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
     )
     (map print
         [
-            (expect-failure "PROBE2-D1 non-owner drive with a GENUINELY-MISSING role" "ZZZNOPE"
-                (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.LUMY inert true))
+            (expect "<<SWP|TX 055-02>> the pool is owned by ANHD, so LUMY is a genuine outsider"
+                true
+                (and
+                    (= (ref-SWP::UR_OwnerKonto pool1) KST.ANHD)
+                    (!= (ref-SWP::UR_OwnerKonto pool1) KST.LUMY)))
+            (expect "<<SWP|TX 055-02>> precondition: <can-add> is ON, so asking for ON is a NO-OP"
+                true
+                (ref-SWP::UR_CanAdd pool1))
+            ;;The refusal below is the whole point of the block. It is NOT an access-control
+            ;;result: it is the shape rule, and it would arrive unchanged if CAP_Owner were
+            ;;deleted from the capability. Pinning it here is what makes group 03 a control.
+            (expect-failure
+                "<<SWP|TX 055-02>> the NO-OP toggle is refused by the SHAPE rule -- ownership is never reached"
+                "Similar boolean unallowed for <can-add> or <can-swap>"
+                (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.LUMY pool1 true))
         ]
     )
     ""
 )
-(print (format "PROBE2 after-attack feex = {}" [(DPTF.UR_AccountRoleFeeExemption "TSTN-98c486052a51" KST.SWAPR)]))
-(print (format "PROBE2 after-attack can-add = {}" [(SWP.UR_CanAdd "P|OURO-98c486052a51|TSTN-98c486052a51")]))
-(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print "")
+;;==== SWP|TX 055 - ADD-OR-SWAP owner gate · 03 · a REAL change reaches CAP_Owner ====
+(print "--- [SWP|TX 055 - ADD-OR-SWAP owner gate · 03 · a REAL change reaches CAP_Owner] ---")
+;;Same signer, same pool, same entrypoint. The ONLY difference from group 02 is the boolean
+;;being asked for: <false> against a live <can-add> is a genuine change, so the shape rule
+;;passes and CAP_Owner is the sole remaining obstacle. The message changing from the shape
+;;wording to a keyset failure -- with nothing but the requested state moved -- is the
+;;attribution proof that this refusal belongs to the ownership gate.
+;;
+;;The key named in the refusal is the VICTIM's (PK_AncientHodler), not the attacker's. That
+;;is the correct signature for CAP_Owner -> DALOS::CAP_EnforceAccountOwnership on a standard
+;;`Ѻ.` account: it enforces the OWNER's keys-all guard. A bare "Keyset failure" match would
+;;not separate "the owner gate refused" from "the attacker's own signature was rejected".
 (let
     (
-        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-SWP:module{SwapperV4} SWP)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
+        (pool1:string "W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
     )
-    (ref-TS01-C1::DPTF|C_ToggleFeeExemptionRole KST.ANHD "TSTN-98c486052a51" KST.SWAPR true)
+    (map print
+        [
+            (expect-failure
+                "<<SWP|TX 055-03>> a genuine CHANGE clears the shape rule and CAP_Owner refuses the outsider"
+                "Keyset failure (keys-all): [PK_Ancie"
+                (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.LUMY pool1 false))
+            ;;NOT decoration. `expect-failure` does not roll back DB writes in the REPL
+            ;;(DEFECT-LEDGER T-13), so a write that had landed before the abort would be
+            ;;visible right here. It is not.
+            (expect "<<SWP|TX 055-03>> and nothing moved: <can-add> is still ON"
+                true
+                (ref-SWP::UR_CanAdd pool1))
+        ]
+    )
+    ""
 )
-(print (format "PROBE2 after-restore feex = {}" [(DPTF.UR_AccountRoleFeeExemption "TSTN-98c486052a51" KST.SWAPR)]))
+(print "")
+;;==== SWP|TX 055 - ADD-OR-SWAP owner gate · 04 · non-vacuity: the owner succeeds ====
+(print "--- [SWP|TX 055 - ADD-OR-SWAP owner gate · 04 · non-vacuity: the owner succeeds] ---")
+;;Without this half, group 03's refusal could equally mean "this call is broken". One thing
+;;changes against group 03 -- the signer -- and the identical call goes through. The pool is
+;;then put back exactly as it was found, and the restore is ASSERTED (T-31): [6.3] is loaded
+;;by ZALL, modules/SWP, modules/ADMIN, modules/LAUNCHPAD and modules/DEFPACT-BILLING, and a
+;;silently-unrestored <can-add> would surface as an unrelated suite failing later.
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+    ]
+)
+(let
+    (
+        (ref-SWP:module{SwapperV4} SWP)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
+        (pool1:string "W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
+    )
+    (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD pool1 false)
+    (map print
+        [
+            (expect "<<SWP|TX 055-04>> non-vacuity: the identical call SUCCEEDS when the owner signs"
+                false
+                (ref-SWP::UR_CanAdd pool1))
+        ]
+    )
+    (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD pool1 true)
+    (map print
+        [
+            (expect "<<SWP|TX 055-04>> ...and the fixture is put back exactly as it was found"
+                true
+                (ref-SWP::UR_CanAdd pool1))
+        ]
+    )
+    ""
+)
+(print "")
+;;==== SWP|TX 055 - ADD-OR-SWAP owner gate · 05 · gas echo ====
+(print "--- [SWP|TX 055 - ADD-OR-SWAP owner gate · 05 · gas echo] ---")
+(format "<<<<<<<SWP|TX 055 ADD-OR-SWAP owner gate ==> {} STOA GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "SWP|TX 056 - SPW|S>UPDATE_SPECIAL-FEE-TARGETS: the owner gate, past the tier rule")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+;;================================================================================
+;;SPW|S>UPDATE_SPECIAL-FEE-TARGETS (15_SWP.pact:611) runs its checks in this order:
+;;
+;;  1. eager (let)  target-no = (length targets); owner = (UR_OwnerKonto swpair);
+;;                  major = (DALOS::UR_Elite-Tier-Major owner); max = cond(major)
+;;                                                          -- reads only
+;;  2. (enforce (and (>= target-no 1) (<= target-no max)) "Increase Major Elite Tier ...")
+;;                                                          -- the TIER rule
+;;  3. (CAP_Owner swpair)                                   -- the OWNERSHIP gate
+;;  4. (map UEV_FeeSplit targets)                           -- per-target shape, LAST
+;;
+;;Same shape as 055 and recorded in the same DEFECT-LEDGER 8.2 paragraph: a business
+;;`enforce` runs before `CAP_Owner`. Note the tier rule is a property of the OWNER's elite
+;;tier, not of the caller's -- an outsider inherits the victim's allowance -- so the naive
+;;over-long attack is refused for a reason that has nothing to do with who is asking, and
+;;would be refused identically with CAP_Owner deleted.
+;;
+;;THE FIXTURE is a target list of length 2. It satisfies check 2 for any owner tier (the
+;;floor is 1 and the smallest ceiling is 1... 2 needs major >= 2), it is well-formed for
+;;check 4, and it therefore leaves CAP_Owner as the only thing that can refuse. The owner's
+;;major is ASSERTED below so that a future fixture which demotes ANHD turns the precondition
+;;red rather than letting the attack silently fall back into the tier rule.
+;;================================================================================
+;;==== SWP|TX 056 - SPECIAL-FEE-TARGETS owner gate · 01 · env-sigs (caps) ====
+(print "--- [SWP|TX 056 - SPECIAL-FEE-TARGETS owner gate · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [
+        { "key": "PK_Lumy", "caps": [] }
+    ]
+)
+;;==== SWP|TX 056 - SPECIAL-FEE-TARGETS owner gate · 02 · the naive attack hits the TIER rule ====
+(print "--- [SWP|TX 056 - SPECIAL-FEE-TARGETS owner gate · 02 · the naive attack hits the TIER rule] ---")
+(let
+    (
+        (ref-SWP:module{SwapperV4} SWP)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
+        (pool1:string "W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
+        (eight:[object{SwapperV4.FeeSplit}]
+            [
+                {"target":KST.BYTA, "value":15}
+                {"target":KST.LUMY, "value":125}
+                {"target":KST.COCA, "value":35}
+                {"target":KST.KISS, "value":35}
+                {"target":KST.PLCS, "value":50}
+                {"target":KST.NANI, "value":60}
+                {"target":KST.AOZT, "value":10}
+                {"target":KST.EMMA, "value":10}
+            ]
+        )
+    )
+    (map print
+        [
+            (expect "<<SWP|TX 056-02>> the pool is owned by ANHD, so LUMY is a genuine outsider"
+                true
+                (and
+                    (= (ref-SWP::UR_OwnerKonto pool1) KST.ANHD)
+                    (!= (ref-SWP::UR_OwnerKonto pool1) KST.LUMY)))
+            (expect "<<SWP|TX 056-02>> precondition: the OWNER's major tier is 7, so max targets is 7"
+                7
+                (ref-DALOS::UR_Elite-Tier-Major (ref-SWP::UR_OwnerKonto pool1)))
+            ;;Eight targets against a ceiling of seven. Refused -- but by the tier rule, which
+            ;;is the shadowing guard, not by ownership. This is the control group 03 needs.
+            (expect-failure
+                "<<SWP|TX 056-02>> an over-long list is refused by the TIER rule -- ownership is never reached"
+                "Increase Major Elite Tier to add more Special Targets"
+                (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.LUMY pool1 eight))
+        ]
+    )
+    ""
+)
+(print "")
+;;==== SWP|TX 056 - SPECIAL-FEE-TARGETS owner gate · 03 · a within-tier list reaches CAP_Owner ====
+(print "--- [SWP|TX 056 - SPECIAL-FEE-TARGETS owner gate · 03 · a within-tier list reaches CAP_Owner] ---")
+;;Same signer, same pool, same entrypoint. The ONLY difference from group 02 is the LENGTH
+;;of the payload. The message changes from the tier wording to a keyset failure naming the
+;;POOL OWNER's key -- which is the attribution proof that the refusal is CAP_Owner's.
+(let
+    (
+        (ref-SWP:module{SwapperV4} SWP)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
+        (pool1:string "W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
+        (two:[object{SwapperV4.FeeSplit}]
+            [
+                {"target":KST.BYTA, "value":50}
+                {"target":KST.LUMY, "value":50}
+            ]
+        )
+    )
+    (map print
+        [
+            (expect-failure
+                "<<SWP|TX 056-03>> a within-tier list clears the tier rule and CAP_Owner refuses the outsider"
+                "Keyset failure (keys-all): [PK_Ancie"
+                (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.LUMY pool1 two))
+            ;;T-13 again: a landed write would be visible here. The pool still carries its
+            ;;original seven targets, so the attacker redirected nothing.
+            (expect "<<SWP|TX 056-03>> and nothing moved: the pool still carries its 7 original targets"
+                7
+                (length (ref-SWP::UR_FeeSPT pool1)))
+        ]
+    )
+    ""
+)
+(print "")
+;;==== SWP|TX 056 - SPECIAL-FEE-TARGETS owner gate · 04 · non-vacuity: the owner succeeds ====
+(print "--- [SWP|TX 056 - SPECIAL-FEE-TARGETS owner gate · 04 · non-vacuity: the owner succeeds] ---")
+;;One thing changes against group 03 -- the signer -- and the identical two-target call goes
+;;through. Without this half a refusal could mean "the payload was malformed" rather than
+;;"the caller was refused". The original seven-target list is read BEFORE the mutation (the
+;;`let` binds eagerly) and written back afterwards, with the restore asserted.
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+    ]
+)
+(let
+    (
+        (ref-SWP:module{SwapperV4} SWP)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
+        (pool1:string "W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
+        (original:[object{SwapperV4.FeeSplit}]
+            (ref-SWP::UR_FeeSPT "W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51"))
+        (two:[object{SwapperV4.FeeSplit}]
+            [
+                {"target":KST.BYTA, "value":50}
+                {"target":KST.LUMY, "value":50}
+            ]
+        )
+    )
+    (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD pool1 two)
+    (map print
+        [
+            (expect "<<SWP|TX 056-04>> non-vacuity: the identical call SUCCEEDS when the owner signs"
+                2
+                (length (ref-SWP::UR_FeeSPT pool1)))
+        ]
+    )
+    (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD pool1 original)
+    (map print
+        [
+            (expect "<<SWP|TX 056-04>> ...and the fixture is put back exactly as it was found"
+                original
+                (ref-SWP::UR_FeeSPT pool1))
+        ]
+    )
+    ""
+)
+(print "")
+;;==== SWP|TX 056 - SPECIAL-FEE-TARGETS owner gate · 05 · gas echo ====
+(print "--- [SWP|TX 056 - SPECIAL-FEE-TARGETS owner gate · 05 · gas echo] ---")
+(format "<<<<<<<SWP|TX 056 SPECIAL-FEE-TARGETS owner gate ==> {} STOA GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "SWP|TX 057 - C_ToggleAddOrSwap's eager let: the writes above the gate are unreachable")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+;;================================================================================
+;;THE SHAPE DEFECT-LEDGER 8.2 FILED AS "worth watching":
+;;
+;;  C_ToggleAddOrSwap (15_SWP.pact:2156) binds `ico1` in an EAGER (let) that, when
+;;  <toggle> is true, calls DPTF::C_ToggleBurnRole / C_ToggleMintRole /
+;;  C_ToggleFeeExemptionRole -- real persisted writes -- ABOVE the
+;;  (with-capability (SWP|C>ADD-OR-SWAP ...)) that the function's own @doc calls
+;;  "the ONLY place in this call chain that enforces pool ownership".
+;;
+;;The ledger's verdict was "not exploitable today, by transaction atomicity". That is true
+;;but it is the WEAKEST of the three reasons, and it is the only one that would survive a
+;;refactor. Measured here, there are two stronger ones, and both are structural:
+;;
+;;  (a) THE BRANCH IS UNREACHABLE. Every one of those calls sits behind (if (not <role>) ...),
+;;      and the three readers -- DPTF::UR_AccountRoleBurn / UR_AccountRoleMint /
+;;      UR_AccountRoleFeeExemption (05_DPTF.pact:1308/1327/1364) -- each end on
+;;      `(or ... (DALOS::UR_AutonomicRoles account))`. SWP|SC_NAME is one of the eight
+;;      accounts UR_AutonomicRoles hard-codes (01_DALOS.pact:1236 region), so all three
+;;      return true for it on EVERY token, always. `(not role)` is never true. Group 02
+;;      measures this on a token that has never been inside a pool.
+;;
+;;  (b) IF IT WERE TAKEN, DPTF WOULD REFUSE IT. DPTF|C>X_TOGGLE-*-ROLE opens on
+;;      DALOS::UEV_NotSmartOuronetAccount, which rejects those same eight accounts. Group 03
+;;      drives that path directly, with the RIGHTFUL OWNER signing, so the refusal cannot be
+;;      mistaken for an ownership failure.
+;;
+;;  (c) and only then, atomicity. Group 04 drives the non-owner toggle-ON and reads the state
+;;      back afterwards -- which is evidence rather than ceremony, because `expect-failure`
+;;      does not roll back REPL writes (DEFECT-LEDGER T-13).
+;;
+;;VERDICT: no DPTF role flag can be moved by a non-owner through this path, and none is moved.
+;;The cost preview URCi_ToggleAddOrSwap (15_SWP.pact:1408) mirrors the exec branch-for-branch
+;;on the same readers, so preview and charge stay in agreement; there is no pricing gap here.
+;;================================================================================
+;;==== SWP|TX 057 - eager-let forensic · 01 · env-sigs (caps) ====
+(print "--- [SWP|TX 057 - eager-let forensic · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+    ]
+)
+;;==== SWP|TX 057 - eager-let forensic · 02 · the role readers hard-wire TRUE for SWP ====
+(print "--- [SWP|TX 057 - eager-let forensic · 02 · the role readers hard-wire TRUE for SWP] ---")
+;;TSTQ was issued at SWP|TX 032h and never became a pool token, so nothing has ever granted
+;;it a role. The readers still answer `true` for the SWP contract account and `false` for an
+;;ordinary one -- which is what proves the `true` comes from the autonomic override and not
+;;from the reader being trivially true.
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (tstq:string "TSTQ-98c486052a51")
+    )
+    (map print
+        [
+            (expect "<<SWP|TX 057-02>> burn role reads TRUE for SWP on a token it has never touched"
+                true (ref-DPTF::UR_AccountRoleBurn tstq KST.SWAPR))
+            (expect "<<SWP|TX 057-02>> mint role reads TRUE for SWP on a token it has never touched"
+                true (ref-DPTF::UR_AccountRoleMint tstq KST.SWAPR))
+            (expect "<<SWP|TX 057-02>> fee-exemption reads TRUE for SWP on a token it has never touched"
+                true (ref-DPTF::UR_AccountRoleFeeExemption tstq KST.SWAPR))
+            (expect "<<SWP|TX 057-02>> ...and FALSE for an ordinary account, so the reader is not trivially true"
+                false
+                (fold (or) false
+                    [
+                        (ref-DPTF::UR_AccountRoleBurn tstq KST.LUMY)
+                        (ref-DPTF::UR_AccountRoleMint tstq KST.LUMY)
+                        (ref-DPTF::UR_AccountRoleFeeExemption tstq KST.LUMY)
+                    ]))
+        ]
+    )
+    ""
+)
+(print "")
+;;==== SWP|TX 057 - eager-let forensic · 03 · DPTF refuses the SWP account outright ====
+(print "--- [SWP|TX 057 - eager-let forensic · 03 · DPTF refuses the SWP account outright] ---")
+;;The second line of defence, driven with the TOKEN OWNER signing. TSTN is owned by ANHD and
+;;ANHD is the signer, so this refusal is NOT an ownership refusal -- it is DPTF declining to
+;;hand-toggle a role on one of the eight protocol contracts at all. Any attempt by the eager
+;;`let` to repair a missing role would die here, owner or not.
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (tstn:string "TSTN-98c486052a51")
+    )
+    (map print
+        [
+            (expect "<<SWP|TX 057-03>> the signer really is the token owner, so this is not an ownership test"
+                true (= (ref-DPTF::UR_Konto tstn) KST.ANHD))
+            (expect-failure
+                "<<SWP|TX 057-03>> DPTF refuses to toggle a role on the SWP contract account, even for its owner"
+                "Non Smart Ouronet Accounts required for exec"
+                (ref-TS01-C1::DPTF|C_ToggleFeeExemptionRole KST.ANHD tstn KST.SWAPR false))
+        ]
+    )
+    ""
+)
+(print "")
+;;==== SWP|TX 057 - eager-let forensic · 04 · the non-owner toggle-ON leaves no trace ====
+(print "--- [SWP|TX 057 - eager-let forensic · 04 · the non-owner toggle-ON leaves no trace] ---")
+;;A SECOND, INDEPENDENT FIXTURE FOR SWP|C>ADD-OR-SWAP, in the opposite direction to 055-03.
+;;P|OURO|TSTN is inert -- add and swap both OFF -- so asking for add=ON is a genuine change
+;;and the shape rule passes. This is also the only drive in the suite that actually ENTERS
+;;the eager `let`'s toggle branch with a non-owner signing, which is what makes the two
+;;state reads below a measurement of the ledger's open question rather than a formality.
+(env-sigs
+    [
+        { "key": "PK_Lumy", "caps": [] }
+    ]
+)
+(let
+    (
+        (ref-SWP:module{SwapperV4} SWP)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
+        (inert:string "P|OURO-98c486052a51|TSTN-98c486052a51")
+        (tstn:string "TSTN-98c486052a51")
+    )
+    (map print
+        [
+            (expect "<<SWP|TX 057-04>> the inert pool is owned by ANHD, so LUMY is an outsider to it too"
+                true
+                (and
+                    (= (ref-SWP::UR_OwnerKonto inert) KST.ANHD)
+                    (!= (ref-SWP::UR_OwnerKonto inert) KST.LUMY)))
+            (expect "<<SWP|TX 057-04>> precondition: <can-add> is OFF, so asking for ON is a real CHANGE"
+                false (ref-SWP::UR_CanAdd inert))
+            (expect-failure
+                "<<SWP|TX 057-04>> the toggle-ON clears the shape rule and CAP_Owner refuses the outsider"
+                "Keyset failure (keys-all): [PK_Ancie"
+                (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.LUMY inert true))
+            ;;The measurement. Writes are not rolled back by `expect-failure` (T-13), so a
+            ;;role flag or a pool flag moved above the capability would still be sitting here.
+            (expect "<<SWP|TX 057-04>> no DPTF role flag moved above the gate -- fee-exemption unchanged"
+                true (ref-DPTF::UR_AccountRoleFeeExemption tstn KST.SWAPR))
+            (expect "<<SWP|TX 057-04>> ...and the pool flag the call was after is untouched"
+                false (ref-SWP::UR_CanAdd inert))
+        ]
+    )
+    ""
+)
+(print "")
+;;==== SWP|TX 057 - eager-let forensic · 05 · gas echo ====
+(print "--- [SWP|TX 057 - eager-let forensic · 05 · gas echo] ---")
+(format "<<<<<<<SWP|TX 057 eager-let forensic ==> {} STOA GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "===^^^===")
 (env-sigs [])
 (commit-tx)

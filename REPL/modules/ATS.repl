@@ -4535,3 +4535,139 @@
 )
 (env-sigs [])
 (rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "ATS-G26a — give the attacker a token of her own, so the FIRST owner gate can pass")
+(print "")
+(print "=== ATS-G26 — ATS|C>ADD-REWARD-TOKEN: two owner gates, one behind the other ===")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;`ATS|C>ADD-REWARD-TOKEN` carries TWO ownership checks in sequence:
+;;
+;;    (enforce (<= n 6) "An ATS Pair can have a maximum of 7 RTs")   <- business
+;;    (ref-DPTF::CAP_Owner reward-token)                             <- gate 1: the TOKEN
+;;    (CAP_Owner atspair)                                            <- gate 2: the PAIR
+;;
+;;and until this block neither had ever refused anybody. The trap is that the obvious attack cannot
+;;tell them apart: every DPTF and every ATS pair in this suite is owned by ANHD, so BOTH gates fail
+;;with the identical `Keyset failure (keys-all): [PK_Ancie...]`. An assertion on that message would
+;;be green, unattributable, and would survive the deletion of gate 2 entirely.
+;;
+;;So the attacker is given a token she genuinely owns. With `CAP_Owner reward-token` passing by
+;;construction, the same message can only be coming from `CAP_Owner atspair` -- ownership-behind-
+;;ownership, separated by a fixture rather than by reading. This issuance is a legitimate client op,
+;;not a table poke: EMMA pays her own STOA fee for it.
+(env-sigs
+    [
+        { "key": "PK_Emma", "caps": [] }
+        { "key": "ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48"
+        , "caps":
+            [
+                (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48"
+                    "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000.0)
+                (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48"
+                    "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000.0)
+                (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48"
+                    "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000.0)
+                (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48"
+                    "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000.0)
+            ]
+        }
+    ]
+)
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+    )
+    (ref-TS01-C1::DPTF|C_Issue KST.EMMA KST.EMMA
+        ["EmmaCoin"] ["EMCO"] [24] [true] [true] [true] [false] [false] [true])
+    ""
+)
+(env-sigs [])
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "ATS-G26 — the pair's own owner gate, isolated from the token's")
+(print "")
+(print "--- [ATS-G26 · 01 · adding a reward token to somebody else's pair] ---")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;KORIndex is the target because it is the only ANHD pair with cold recovery already off. That does
+;;not matter for the attack -- both recovery guards sit BEHIND ownership, which these very assertions
+;;demonstrate by reaching the ownership message on a pair whose direct recovery is ON -- but it makes
+;;the non-vacuity half in G26b reachable with a single owner toggle instead of two.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (kor:string "KORIndex-98c486052a51")
+        (attacker:string KST.EMMA)
+        (victim:string KST.ANHD)
+    )
+    (map print
+        [
+            ;;THE FIXTURE IS THE WHOLE POINT, so it is asserted rather than assumed.
+            (expect "<<ATS-G26>> the attacker owns a DPTF of her own, so gate 1 will PASS"
+                true (contains "EMCO-98c486052a51" (ref-DPTF::URH_OwnedTrueFungibles attacker)))
+            (expect "<<ATS-G26>> ...and she does NOT own the target pair, so gate 2 must refuse"
+                false (contains kor (ref-ATS::URH_OwnedAutostakePairs attacker)))
+            (expect "<<ATS-G26>> ...which the victim does"
+                true (contains kor (ref-ATS::URH_OwnedAutostakePairs victim)))
+            (expect "<<ATS-G26>> ...and the pair is under the 7-RT ceiling, so the business rule passes"
+                true (<= (length (ref-ATS::UR_RewardTokens kor)) 6))
+            ;;AMBIGUOUS BY CONSTRUCTION -- kept deliberately. Offering a token the attacker does NOT
+            ;;own is refused, but ANHD owns both PSTOA and KORIndex, so this message cannot say which
+            ;;gate spoke. It is asserted to document that the obvious test is the unattributable one.
+            (expect-failure "<<ATS-G26>> a token she does not own is refused -- but by WHICH gate is unknowable here"
+                "Keyset failure (keys-all): [PK_Ancie...]"
+                (ref-TS01-C2::ATS|C_AddSecondary attacker kor "PSTOA-98c486052a51" false))
+            ;;ATTRIBUTABLE. Same attacker, same pair, same message -- but now the token is hers, so
+            ;;`DPTF::CAP_Owner reward-token` cannot be the refuser. Only `CAP_Owner atspair` remains.
+            (expect-failure "<<ATS-G26>> owning the token does NOT let you attach it to someone else's pair"
+                "Keyset failure (keys-all): [PK_Ancie...]"
+                (ref-TS01-C2::ATS|C_AddSecondary attacker kor "EMCO-98c486052a51" false))
+            ;;...and the refusal was TOTAL.
+            (expect "<<ATS-G26>> ...and no reward token was attached"
+                1 (length (ref-ATS::UR_RewardTokens kor)))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "ATS-G26b — the identical op, run by the pair owner, must WORK")
+(print "")
+(print "--- [ATS-G26b · 01 · non-vacuity] ---")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;Without this half, both refusals above could mean "C_AddSecondary is simply broken on this pair".
+;;Direct recovery is switched off first because it guards the op from BEHIND the ownership checks --
+;;which is itself the proof that reaching the ownership message above was not an accident of the
+;;recovery flags. Switching it is an ordinary pair-owner operation, the same one ATS-G23a performs.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (kor:string "KORIndex-98c486052a51")
+    )
+    (ref-TS01-C2::ATS|C_SwitchDirectRecovery KST.ANHD kor false)
+    (print (format "<(ATS|C_AddSecondary by the pair owner)> => \"{}\""
+        [(ref-TS01-C2::ATS|C_AddSecondary KST.ANHD kor "VST-98c486052a51" false)]))
+    (map print
+        [
+            (expect "<<ATS-G26>> with the pair owner signing, the identical op succeeds"
+                2 (length (ref-ATS::UR_RewardTokens kor)))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)

@@ -2937,3 +2937,33 @@ read before the receiver's freeze state. The non-vacuity half has to unfreeze fi
 constant is a NAME-RESOLUTION failure that kills the entire top-level form **silently — zero output,
 no error line**. Two probes "returned nothing" and were misread as the transaction aborting early.
 If a probe prints nothing at all, suspect a misspelled constant before suspecting the contract.
+
+## 8.8 `ATS|C>ADD-REWARD-TOKEN` — ownership behind ownership, and why the obvious test is the useless one
+
+This defcap carries **two** ownership checks in sequence:
+
+```pact
+(enforce (<= n 6) "An ATS Pair can have a maximum of 7 RTs")   ;; business
+(ref-DPTF::CAP_Owner reward-token)                             ;; gate 1: the TOKEN
+(CAP_Owner atspair)                                            ;; gate 2: the PAIR
+```
+
+Neither had ever refused anybody. **The trap is that the obvious attack cannot tell them apart.**
+Every DPTF and every ATS pair in the suite is owned by ANHD, so both gates fail with the *identical*
+`Keyset failure (keys-all): [PK_Ancie...]`. An assertion on that message is green, unattributable,
+and **survives the deletion of gate 2 entirely** — the shadowed-gate pathology, reached not by
+ordering but by two guards that happen to name the same key.
+
+**The fixture is the separation.** `ATS-G26a` has the attacker issue a DPTF of her own — a legitimate
+client op, her own STOA fee — so `CAP_Owner reward-token` passes *by construction*. The same message
+then can only be `CAP_Owner atspair`. `ATS-G26` pins both calls side by side and labels the first one
+as the unattributable one, deliberately, so the distinction is documented rather than assumed.
+
+> This is the third distinct way a gate has gone dark in this programme. Not ordering (§7.2h), not a
+> missing hop in the mapping (§8.5), but **two guards that refuse with the same words**. No static
+> scan can see it: both checks are present, both are reached, and the test is green.
+
+**Measured on the way, and it matters for the test's own soundness:** `ATS|C>ADD-TOKEN`'s cold- and
+direct-recovery guards sit **behind** both ownership checks. Proven rather than read — the attack
+reaches the ownership message on KORIndex while its direct recovery is ON. That is why the
+non-vacuity half has to switch it off first, and says so.

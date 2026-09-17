@@ -15,11 +15,36 @@
 ;;   <<RT-D-002e>>  ...BY THE FULL-ACCOUNT CHECK      (pinned by message)
 ;;   <<RT-D-002f>>  the ORIGINAL check keeps its ORIGINAL message for everyone else
 ;;
+;; The tail of this file asks a THIRD version of the same question, of the AQP vacate surface,
+;; where the shape is neither `patron` vs `account` nor an abbreviation but a SHADOW: three
+;; `VCT|C>*` capabilities call `CAP_VctVacatePoolOwner` only AFTER a four- or five-conjunct
+;; business `enforce`, so every negative ever written for them was refused by the business rule
+;; and the ownership line had never once been seen refusing anybody (DEFECT-LEDGER 7.2h). The
+;; remedy is a FIXTURE that satisfies the earlier conjuncts, never a reorder.
+;;
+;;   <<RT-D-005*>>  VCT|C>TRUE-FUNGIBLE-VACATE        (TfStakePool — a SMART-account owner konto)
+;;   <<RT-D-006*>>  VCT|C>ORTO-FUNGIBLE-VACATE-BATCH  (OfStakePool — attacker vacates her OWN leg)
+;;   <<RT-D-007*>>  VCT|C>COLLECTABLE-VACATE-BATCH    (NfSyncPool + SfStakePool, both branches)
+;;
+;;   ...a  the checks that run BEFORE the gate are all satisfied  (the fixture, asserted)
+;;   ...b  the attacker demonstrably does not own the pool
+;;   ...c  THE ATTACK, refused, pinned by the VICTIM's key or konto
+;;   ...d  the fast-drain twin on the same defcap, refused identically
+;;   ...e  the gate ALONE produces that exact refusal                 (attribution)
+;;   ...f/g/h/i  NON-VACUITY: one added signature, same call, it succeeds
+;;
 ;; Source: 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/02_DPDC.pact  (UEV_NonceQuantityInclusion)
 ;;         1_SOVEREIGN/STAGE_01/2_Core/02_IGNIS.pact         (OI|UC_ShortAccount)
 ;;         1_SOVEREIGN/STAGE_01/1_Utilities/08_U_DALOS.pact  (GLYPH|UEV_DalosAccount)
+;;         1_SOVEREIGN/STAGE_02/2_Core/03_AQP/06_VCT.pact    (the three VCT|C>* vacate caps,
+;;                                                            CAP_VctVacatePoolOwner)
+;;         1_SOVEREIGN/STAGE_01/2_Core/01_DALOS.pact         (CAP_EnforceAccountOwnership —
+;;                                                            BOTH halves, standard and smart)
+;;         1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact      (AQP-POOL|CCp_Batch* wrappers)
 ;;
 ;; REPL tests: <<RT-D-002a>> <<RT-D-002b>> <<RT-D-002c>> <<RT-D-002d>> <<RT-D-002e>> <<RT-D-002f>>
+;;             <<RT-D-005a>>..<<RT-D-005g>>  <<RT-D-006a>>..<<RT-D-006g>>
+;;             <<RT-D-007a>>..<<RT-D-007i>>
 ;;
 ;; Run: cd REPL && pact "RedTeam/[RT-D2]_Ownership-Collectables.repl"
 ;;
@@ -339,4 +364,510 @@
     ""
 )
 (env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+;; ============================================================================================
+;; THE VCT VACATE OWNER GATES — fixture chain, loaded HERE and not at the top of the file.
+;; ============================================================================================
+;; The three attacks below need a live AQP pool with live staked legs, which the DPDC chain above
+;; does not provide. The four AQP suites are therefore loaded at this point, AFTER every existing
+;; assertion in this file has already run, so that nothing they mutate (OURO anchors, MVST/DHCD/DHB
+;; nonces, pool trackers) can move a fixture RT-D-002 / RT-K-004 / RT-K-007 / RT-D-004 depend on.
+;; Loading them at the top would have been tidier and would have put four suites' worth of state
+;; changes upstream of six assertions that were green before this block existed.
+;;
+;; Cost measured: the file goes from ~7s to ~12s. [6.2.5]_AQP-VCT is deliberately NOT loaded — it
+;; DRAINS these pools, and an empty pool cannot satisfy the leg checks the attacks must satisfy.
+;;
+(load "../Stage_02/[6.2.1]_AQP-ANK.repl")
+(load "../Stage_02/[6.2.2]_AQP-SCORE.repl")
+(load "../Stage_02/[6.2.3]_AQP-POOL.repl")
+(load "../Stage_02/[6.2.4]_AQP-FVT.repl")
+
+;;|| NEXT >
+;;
+(begin-tx "RT-D-VCT-FIXTURE - live legs for the three vacate gates")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== RT-D-VCT-FIXTURE · 01 · stake the legs the gates will be driven against ====
+(print "--- [RT-D-VCT-FIXTURE · 01 · stake the legs the gates will be driven against] ---")
+;;NOT AN ATTACK — the fixture the three attacks below are built on, and the reason they are not
+;;vacuous. Each gate's defcap runs a business `enforce` BEFORE its ownership call, and that enforce
+;;is satisfied only by a leg that really is staked, for exactly its full tracker balance, in a pool
+;;of the right class holding the right asset. A batch that fails any of those is turned away by the
+;;business rule and never reaches the owner gate at all — which is the precise trap DEFECT-LEDGER
+;;7.2h was written about. So the legs are made real first.
+;;
+;;[6.2.4] leaves TfStakePool with two live TF legs (EMMA 40.0, ANHD 60.0) and every OF/DPSF/DPNF
+;;pool EMPTY — its stake suites unstake what they stake. The three stakes below re-fill one leg in
+;;each of the remaining families. Chosen so that in every case the leg belongs to the ATTACKER or
+;;to somebody other than the pool owner, so the only authority the refusal can be about is the
+;;POOL's.
+(env-sigs [ { "key": "PK_Emma", "caps": [] } { "key": "PK_AncientHodler", "caps": [] } ])
+(let
+    (
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+    )
+    (map print
+        [
+            ;;OF — EMMA stakes HER OWN MVST nonce 2 into OfStakePool, which ANHD owns.
+            (format "<(CC_StakeOrtoFungible EMMA)> => \"{}\""
+                [(ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible KST.EMMA
+                    (ref-U|DALOS::UDC_Makeid "OfStakePool") KST.EMMA KST.EMMA "MVST-98c486052a51" [2])])
+            ;;DPNF — ANHD stakes HIS OWN DHB nonce 1 into NfSyncPool, which LUMY owns.
+            (format "<(CC_StakeNonFungibleCollectable ANHD)> => \"{}\""
+                [(ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable KST.ANHD
+                    (ref-U|DALOS::UDC_Makeid "NfSyncPool") KST.ANHD KST.ANHD "DHB-98c486052a51" [1])])
+            ;;DPSF — ANHD stakes DHCD nonce 1 into SfStakePool, which ANHD owns. This one exists so
+            ;;the SAME defcap can be shown naming a DIFFERENT victim (see RT-D-007).
+            (format "<(CC_StakeSemiFungibleCollectable ANHD)> => \"{}\""
+                [(ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable KST.ANHD
+                    (ref-U|DALOS::UDC_Makeid "SfStakePool") KST.ANHD KST.ANHD "DHCD-98c486052a51" [1])])
+        ])
+    ""
+)
+(env-sigs [])
+(print "")
+(print "===^^^===")
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "RT-D-005 - the true-fungible vacate gate, witnessed for the first time")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== RT-D-005 · 01 · the shadowing checks, satisfied on purpose ====
+(print "--- [RT-D-005 · 01 · the shadowing checks, satisfied on purpose] ---")
+;;<<RT-D-005>> FAMILY: D | STATUS: REFUSED
+;;HYPOTHESIS: `VCT|C>TRUE-FUNGIBLE-VACATE` gates the TF batch-vacate recipe
+;;            (`CCp_BatchVacateTrueFungible` / `CCp_BatchDrainTrueFungible`) on
+;;            `CAP_VctVacatePoolOwner`. That call sits AFTER a four-conjunct business `enforce`
+;;            ("Invalid TF vacate cap input"), and no test has ever reached past it: every negative
+;;            in the suite trips the business rule, and a business-rule refusal is byte-identical
+;;            whether the ownership line is present or DELETED. So the claim under test is not
+;;            "vacate is protected" but "the protection can be SEEN protecting" -- a stranger who
+;;            supplies a perfectly valid batch must still be refused, BY OWNERSHIP, by name.
+;;METHOD:     satisfy all four earlier conjuncts by construction and assert each one true before
+;;            attacking, so the refusal cannot be the business rule. EMMA is the attacker and the
+;;            batch names HER OWN leg (owner EMMA, beneficiary EMMA, 40.0 OURO -- left live by
+;;            [6.2.4]), so no third party's authority is needed for any part of the request except
+;;            the pool's. Then the same call is repeated with one extra signature.
+;;RESULT:     REFUSED, and attributably: `Smart DALOS Account <konto> Ownership could not be
+;;            verified!`. TfStakePool's owner konto is the OURO token's konto, which is the
+;;            Talos/gas SMART account -- so this gate speaks the SMART-account half of
+;;            `CAP_EnforceAccountOwnership`, not a keyset failure (DEFECT-LEDGER 7.2h defect 4:
+;;            a detector that knew only the keyset half read every smart-owned gate as unobserved).
+;;            Non-vacuity: the identical call with ANHD -- the smart account's SOVEREIGN -- also
+;;            signing succeeds and vacates the leg.
+;;
+;;WHAT ALREADY EXISTED, stated precisely, because "no test has ever reached this" is the kind of
+;;claim this project has been wrong about before. TWO things were already green and NEITHER of them
+;;covers these three capabilities:
+;;
+;;  * `[6.2.5]_AQP-VCT.repl` <<TX-VCT-L04b>> drives a non-owner at `CC_FullVacate`, `C_AbortVacate`
+;;    and `C_EnablePoolStake`. Those caps call `CAP_VctVacatePoolOwner` FIRST, before any business
+;;    rule -- they are the correctly-ordered siblings, and they are exactly the ones that were easy
+;;    to witness. The three BATCH caps were left alone.
+;;  * `modules/AQP.repl` <<AQP-F16>> calls `CAP_VctVacatePoolOwner` DIRECTLY, unsigned. That
+;;    witnesses the DEFUN. It says nothing about whether any capability ever reaches it: a defcap
+;;    whose business `enforce` always fires first would leave AQP-F16 green forever. The gate and
+;;    the route to the gate are two different claims, and only the first had evidence.
+;;
+;;So `...e` below is NOT the interesting assertion -- it is the attribution instrument. `...c` and
+;;`...d` are the new facts: the ROUTE through a batch capability actually arrives at the gate.
+;;
+;;WHY EMMA AND NOT ANHD. ANHD is the Demiurgoi master key AND the sovereign of the account that
+;;owns this pool, so an "attack" signed by ANHD would pass the gate and prove nothing. EMMA is a
+;;STAKER here and nothing else: she has value in the pool and still may not run the pool-owner
+;;recipe. `URC_AqpOwnerKonto` is asserted below to be neither her nor anything she controls.
+;;
+;;SHAPE, since it decides how these may be driven: `CCp_` is a HYDRA recipe, not a defpact, and
+;;this one is a FED SLICE -- it takes explicit owner/beneficiary/amount arrays rather than a page
+;;size, and computes no window from stored progress. Per CLAUDE.md's recipe axes that makes it
+;;order-independent; the attack therefore needs no prior batch to have run.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let*
+    (
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-VCT:module{AcquisitionVacateV2} AQP-VCT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "TfStakePool"))
+        (ouro-id:string "OURO-98c486052a51")
+        (attacker:string KST.EMMA)
+        (owner-konto:string (ref-AQP::URC_AqpOwnerKonto pool-id))
+    )
+    (map print
+        [
+            ;;THE FIXTURE IS THE WHOLE POINT. If any of these four goes false the attack below stops
+            ;;testing ownership and starts testing the business rule -- silently, and still green.
+            ;;Asserting them makes that failure mode turn THIS line red instead.
+            (expect
+                "<<RT-D-005a>> all four checks that run BEFORE the owner gate are satisfied by this batch"
+                [true true true true]
+                [ (ref-AQP::URC_StakeTrueFungiblePoolClassOk pool-id)
+                  (ref-AQP::URC_StakeTrueFungibleDptfMatchesPool pool-id ouro-id)
+                  (ref-VCT::URC_TfOwnerArraysGasOk [attacker] [attacker] [40.0])
+                  (ref-VCT::URC_VacateTfLegsOk pool-id ouro-id
+                      [(ref-VCT::UDC_VacateTfLeg attacker attacker 40.0)]) ])
+            ;;...and the attacker demonstrably does not own the pool, by either route the smart
+            ;;account admits (its own konto, or its sovereign).
+            (expect
+                (format "<<RT-D-005b>> the attacker is neither the pool's owner konto nor its sovereign [{}]"
+                    [(ref-DALOS::UR_AccountSovereign owner-konto)])
+                [false false true]
+                [ (= attacker owner-konto)
+                  (= attacker (ref-DALOS::UR_AccountSovereign owner-konto))
+                  (ref-DALOS::UR_AccountType owner-konto) ])
+        ])
+    ;;==== RT-D-005 · 02 · the attack, and the gate that refuses it ====
+    (print "--- [RT-D-005 · 02 · the attack, and the gate that refuses it] ---")
+    (map print
+        [
+            ;;THE ATTACK. Pinned by the FULL sentence, with the victim konto interpolated: an
+            ;;unqualified match would not separate "the owner gate refused" from any other
+            ;;`enforce-one` in the tree, and a bare "it was refused" would survive deletion of the
+            ;;very line under test.
+            ;;
+            ;;THE SENTENCE IS SPELLED OUT AT EACH SITE RATHER THAN BOUND ONCE, against this repo's
+            ;;usual let-it-if-used-twice rule, and the reason is measurement. `REPL/tools/_ownerobs.py`
+            ;;-- the instrument that answers "which owner gates has no test ever reached" -- reads
+            ;;the BALANCED extent of each `expect-failure` and looks for the ownership signature
+            ;;INSIDE it. A message hoisted into the enclosing `let*` is invisible to it, so the
+            ;;first draft of this block left two of these three gates still reported as NEVER
+            ;;OBSERVED while actually witnessing them. That is the false-comfort direction, and a
+            ;;repeated string literal is a cheap price for a tool that can see its own coverage.
+            (expect-failure
+                "<<RT-D-005c>> ATTACK REFUSED: a staker with a perfectly valid batch is not the pool owner"
+                (format "Smart DALOS Account {} Ownership could not be verified!" [owner-konto])
+                (ref-TS02-C3::AQP-POOL|CCp_BatchVacateTrueFungible
+                    attacker pool-id ouro-id [attacker] [attacker] [40.0]))
+            ;;THE TWIN ENTRY on the same defcap. A separate `defun` is a separate door, and an
+            ;;adjacent green assertion is the most convincing way for one to stay dark
+            ;;(DEFECT-LEDGER 7.2h, the sibling-gate trap).
+            (expect-failure
+                "<<RT-D-005d>> ...and the fast-drain twin, which acquires the same cap, refuses identically"
+                (format "Smart DALOS Account {} Ownership could not be verified!" [owner-konto])
+                (ref-TS02-C3::AQP-POOL|CCp_BatchDrainTrueFungible
+                    attacker pool-id ouro-id [attacker] [attacker] [40.0]))
+            ;;ATTRIBUTION, in isolation. The gate is a bare `defun`, so it can be called on its own:
+            ;;the same sentence from `CAP_VctVacatePoolOwner` alone is what makes the two refusals
+            ;;above ATTRIBUTABLE rather than merely COINCIDENT with it.
+            (expect-failure
+                "<<RT-D-005e>> ...and the gate ALONE produces that exact sentence, so the refusal is its"
+                (format "Smart DALOS Account {} Ownership could not be verified!" [owner-konto])
+                (ouronet-ns.AQP-VCT.CAP_VctVacatePoolOwner pool-id))
+        ])
+    ""
+)
+;;==== RT-D-005 · 03 · non-vacuity: one added signature, same call, it succeeds ====
+(print "--- [RT-D-005 · 03 · non-vacuity: one added signature, same call, it succeeds] ---")
+;;WITHOUT THIS HALF a refusal proves nothing: "this call is broken" and "this call is guarded"
+;;look the same from outside. Exactly ONE thing changes -- ANHD's signature is added. Same patron,
+;;same pool, same asset, same arrays.
+(env-sigs [{ "key": "PK_Emma", "caps": [] } { "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+    )
+    (let
+        (
+            (pool-id:string (ref-U|DALOS::UDC_Makeid "TfStakePool"))
+        )
+        (map print
+            [
+                (expect
+                    "<<RT-D-005f>> ...and the gate alone now PASSES for the sovereign's signature"
+                    true (ouronet-ns.AQP-VCT.CAP_VctVacatePoolOwner pool-id))
+                (expect
+                    "<<RT-D-005g>> NON-VACUITY: the identical batch succeeds once the owner signs"
+                    "Batch-vacated 1 TF leg(s) on Pool TfStakePool-98c486052a51 (asset OURO-98c486052a51)."
+                    (ref-TS02-C3::AQP-POOL|CCp_BatchVacateTrueFungible
+                        KST.EMMA pool-id "OURO-98c486052a51" [KST.EMMA] [KST.EMMA] [40.0]))
+            ])
+        ""
+    )
+)
+(env-sigs [])
+(print "")
+(print "===^^^===")
+;;ROLLED BACK, not committed: the non-vacuity half really does vacate the leg, and the next two
+;;blocks are written against a pool set that still has its stake in it.
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "RT-D-006 - the orto-fungible vacate gate, witnessed for the first time")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== RT-D-006 · 01 · the shadowing checks, satisfied on purpose ====
+(print "--- [RT-D-006 · 01 · the shadowing checks, satisfied on purpose] ---")
+;;<<RT-D-006>> FAMILY: D | STATUS: REFUSED
+;;HYPOTHESIS: same shape, different family and different code.
+;;            `VCT|C>ORTO-FUNGIBLE-VACATE-BATCH` guards `CCp_BatchVacateOrtoFungible` /
+;;            `CCp_BatchDrainOrtoFungible` and puts `CAP_VctVacatePoolOwner` after a FOUR-conjunct
+;;            `enforce` ("Invalid OF vacate batch"). Nothing in the suite has ever driven it with a
+;;            non-owner, so deleting the ownership line would turn no assertion red while being the
+;;            only thing between a stranger and every staker's position in an OF pool.
+;;METHOD:     EMMA stakes her OWN MVST nonce 2 into OfStakePool (fixture block above), which ANHD
+;;            owns, then tries to vacate exactly that leg. Every earlier conjunct is satisfied and
+;;            asserted. Note the amounts are NOT supplied by the caller here -- the recipe resolves
+;;            them from the live tracker (`URC_ResolveOfDecimalAmountsFromTracker`, an EAGER `let`
+;;            that runs BEFORE the `with-capability`), so the "no partial vacate" conjunct is true
+;;            by construction and cannot be what refuses.
+;;RESULT:     REFUSED, naming the VICTIM: `Keyset failure (keys-all): [PK_Ancie...]` while the
+;;            attacker signs PK_Emma. Non-vacuity: one added signature and the same call vacates.
+;;
+;;WHY THE LEG IS THE ATTACKER'S OWN, and why that matters more than it looks. If the batch named
+;;ANHD's leg, then adding ANHD's signature in the control would be ambiguous -- it could be
+;;authorising the leg rather than the pool. Naming EMMA's own leg removes that reading entirely:
+;;the ONLY thing ANHD's signature can be doing is satisfying `CAP_VctVacatePoolOwner`. It also
+;;states the rule being tested in its sharpest form -- VACATE IS A POOL-OWNER OPERATION, so a
+;;staker may not use it even to withdraw her own stake.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let*
+    (
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
+        (ref-VCT:module{AcquisitionVacateV2} AQP-VCT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "OfStakePool"))
+        (mvst-id:string "MVST-98c486052a51")
+        (attacker:string KST.EMMA)
+        (nonces:[[integer]] [[2]])
+    )
+    (map print
+        [
+            (expect
+                "<<RT-D-006a>> all four checks that run BEFORE the owner gate are satisfied by this batch"
+                [true true true true]
+                [ (ref-AQP::URC_StakeOrtoFungibleDpofMatchesPool pool-id mvst-id)
+                  (ref-VCT::URC_BatchOwnerArraysGasOk [attacker] [attacker] nonces 33)
+                  (ref-VCT::URC_VacateBatchNonceTotalOk nonces)
+                  (ref-VCT::URC_VacateOrtoLegsOk pool-id mvst-id [attacker] [attacker] nonces
+                      (ref-VCT::URC_ResolveOfDecimalAmountsFromTracker
+                          pool-id mvst-id [attacker] [attacker] nonces)) ])
+            ;;The victim named in the refusal below is the pool owner, and it is not the attacker.
+            (expect
+                "<<RT-D-006b>> the pool is owned by ANHD, a STANDARD account, and not by the attacker"
+                [true false]
+                [ (= (ref-AQP::URC_AqpOwnerKonto pool-id) KST.ANHD)
+                  (= (ref-AQP::URC_AqpOwnerKonto pool-id) attacker) ])
+        ])
+    ;;==== RT-D-006 · 02 · the attack, and the gate that refuses it ====
+    (print "--- [RT-D-006 · 02 · the attack, and the gate that refuses it] ---")
+    (map print
+        [
+            ;;Pinned to the VICTIM's key, not to a bare "Keyset failure": the attacker signs
+            ;;PK_Emma, so a refusal naming PK_Ancie cannot be "the attacker's own signature was
+            ;;rejected" -- which is the reading an unqualified match would let through while
+            ;;proving the opposite (RT-D-004 carries the same caution).
+            (expect-failure
+                "<<RT-D-006c>> ATTACK REFUSED: a staker may not vacate even her OWN leg -- the pool is not hers"
+                "Keyset failure (keys-all): [PK_Ancie...]"
+                (ref-TS02-C3::AQP-POOL|CCp_BatchVacateOrtoFungible
+                    attacker pool-id mvst-id [attacker] [attacker] nonces))
+            (expect-failure
+                "<<RT-D-006d>> ...and the fast-drain twin, which acquires the same cap, refuses identically"
+                "Keyset failure (keys-all): [PK_Ancie...]"
+                (ref-TS02-C3::AQP-POOL|CCp_BatchDrainOrtoFungible
+                    attacker pool-id mvst-id [attacker] [attacker] nonces))
+            (expect-failure
+                "<<RT-D-006e>> ...and the gate ALONE produces that exact refusal, so the refusal is its"
+                "Keyset failure (keys-all): [PK_Ancie...]"
+                (ouronet-ns.AQP-VCT.CAP_VctVacatePoolOwner pool-id))
+        ])
+    ""
+)
+;;==== RT-D-006 · 03 · non-vacuity: one added signature, same call, it succeeds ====
+(print "--- [RT-D-006 · 03 · non-vacuity: one added signature, same call, it succeeds] ---")
+(env-sigs [{ "key": "PK_Emma", "caps": [] } { "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+    )
+    (let
+        (
+            (pool-id:string (ref-U|DALOS::UDC_Makeid "OfStakePool"))
+        )
+        (map print
+            [
+                (expect
+                    "<<RT-D-006f>> ...and the gate alone now PASSES for the pool owner's signature"
+                    true (ouronet-ns.AQP-VCT.CAP_VctVacatePoolOwner pool-id))
+                (expect
+                    "<<RT-D-006g>> NON-VACUITY: the identical batch succeeds once the owner signs"
+                    "Batch-vacated 1 OF leg(s) on Pool OfStakePool-98c486052a51 (asset MVST-98c486052a51)."
+                    (ref-TS02-C3::AQP-POOL|CCp_BatchVacateOrtoFungible
+                        KST.EMMA pool-id "MVST-98c486052a51" [KST.EMMA] [KST.EMMA] [[2]]))
+            ])
+        ""
+    )
+)
+(env-sigs [])
+(print "")
+(print "===^^^===")
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "RT-D-007 - the collectable vacate gate, witnessed for the first time")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== RT-D-007 · 01 · the shadowing checks, satisfied on purpose ====
+(print "--- [RT-D-007 · 01 · the shadowing checks, satisfied on purpose] ---")
+;;<<RT-D-007>> FAMILY: D | STATUS: REFUSED
+;;HYPOTHESIS: the third of the three, and the one with the longest shadow.
+;;            `VCT|C>COLLECTABLE-VACATE-BATCH` guards `CCp_BatchVacateCollectables` /
+;;            `CCp_BatchDrainCollectable` for BOTH collectable branches (son=true DPSF, son=false
+;;            DPNF) and puts `CAP_VctVacatePoolOwner` after a FIVE-conjunct `enforce` ("Invalid
+;;            collectable vacate batch"). Five business conjuncts is five different ways for an
+;;            attack to be turned away before the gate is reached, and none of the suite's
+;;            negatives gets past them.
+;;METHOD:     the attacker is ANHD -- deliberately the strongest key available, the Demiurgoi
+;;            master keyset member, AND the owner of the very nonce in the batch. The pool is
+;;            NfSyncPool, which LUMY owns. So the request is impeccable in every respect except
+;;            the one under test, and the attacker's own authority is maximal.
+;;RESULT:     REFUSED, naming LUMY: `Keyset failure (keys-all): [PK_Lumy...]` while the attacker
+;;            signs PK_AncientHodler. The admin key does not override pool ownership. Non-vacuity:
+;;            adding PK_Lumy -- and changing nothing else -- vacates.
+;;
+;;AND A DIFFERENTIAL, because "the message names the victim" is only worth asserting if the message
+;;is DERIVED. The SAME defcap is driven a second time on SfStakePool (son=true, DPSF, owned by
+;;ANHD) with EMMA attacking, and names PK_Ancie instead. One capability, two pools, two different
+;;keys in the refusal: the sentence tracks `URC_AqpOwnerKonto` and is not a constant.
+;;
+;;WHY ANHD IS THE RIGHT ATTACKER HERE AND THE WRONG ONE IN RT-D-005/006. An attack signed by a key
+;;that already owns the thing proves nothing -- ANHD owns OfStakePool and is sovereign of
+;;TfStakePool's owner, so there he is useless. NfSyncPool is LUMY's, and that makes ANHD the most
+;;informative possible attacker: if the gate can refuse the master key, it refuses anybody.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let*
+    (
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
+        (ref-VCT:module{AcquisitionVacateV2} AQP-VCT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "NfSyncPool"))
+        (dhb-id:string "DHB-98c486052a51")
+        (attacker:string KST.ANHD)
+        (nonces:[[integer]] [[1]])
+        (amounts:[[integer]] [[1]])
+    )
+    (map print
+        [
+            (expect
+                "<<RT-D-007a>> all five checks that run BEFORE the owner gate are satisfied by this batch"
+                [true true true true true]
+                [ (ref-AQP::URC_StakeCollectablePoolClassOk pool-id false)
+                  (ref-AQP::URC_StakeCollectableMatchesPool pool-id dhb-id)
+                  (ref-VCT::URC_BatchOwnerArraysGasOk [attacker] [attacker] nonces 30)
+                  (ref-VCT::URC_VacateBatchNonceTotalOk nonces)
+                  (ref-VCT::URC_VacateCollectableLegsOk pool-id dhb-id false
+                      [attacker] [attacker] nonces amounts) ])
+            (expect
+                "<<RT-D-007b>> the pool is LUMY's; the attacker owns the NONCE in it but not the POOL"
+                [true false true]
+                [ (= (ref-AQP::URC_AqpOwnerKonto pool-id) KST.LUMY)
+                  (= (ref-AQP::URC_AqpOwnerKonto pool-id) attacker)
+                  (> (ref-AQP::UR_AQP|DPNFTrackerBalance pool-id dhb-id attacker attacker 1) 0.0) ])
+        ])
+    ;;==== RT-D-007 · 02 · the attack, and the gate that refuses it ====
+    (print "--- [RT-D-007 · 02 · the attack, and the gate that refuses it] ---")
+    (map print
+        [
+            (expect-failure
+                "<<RT-D-007c>> ATTACK REFUSED: the Demiurgoi master key does not override pool ownership"
+                "Keyset failure (keys-all): [PK_Lumy...]"
+                (ref-TS02-C3::AQP-POOL|CCp_BatchVacateCollectables
+                    attacker pool-id dhb-id false [attacker] [attacker] nonces amounts))
+            (expect-failure
+                "<<RT-D-007d>> ...and the fast-drain twin, which acquires the same cap, refuses identically"
+                "Keyset failure (keys-all): [PK_Lumy...]"
+                (ref-TS02-C3::AQP-POOL|CCp_BatchDrainCollectable
+                    attacker pool-id dhb-id false [attacker] [attacker] nonces amounts))
+            (expect-failure
+                "<<RT-D-007e>> ...and the gate ALONE produces that exact refusal, so the refusal is its"
+                "Keyset failure (keys-all): [PK_Lumy...]"
+                (ouronet-ns.AQP-VCT.CAP_VctVacatePoolOwner pool-id))
+        ])
+    ""
+)
+;;==== RT-D-007 · 03 · the same defcap, a different pool, a different victim ====
+(print "--- [RT-D-007 · 03 · the same defcap, a different pool, a different victim] ---")
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let*
+    (
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
+        (ref-VCT:module{AcquisitionVacateV2} AQP-VCT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "SfStakePool"))
+        (dhcd-id:string "DHCD-98c486052a51")
+        (attacker:string KST.EMMA)
+        (nonces:[[integer]] [[1]])
+        (amounts:[[integer]] [[500]])
+    )
+    (map print
+        [
+            ;;son=true this time: the DPSF branch of the same capability, whose gas-max conjunct
+            ;;takes the other side of the `if`. The five conjuncts are re-asserted because they are
+            ;;computed from DIFFERENT readers on this branch.
+            (expect
+                "<<RT-D-007f>> the DPSF branch's five earlier checks are satisfied too"
+                [true true true true true]
+                [ (ref-AQP::URC_StakeCollectablePoolClassOk pool-id true)
+                  (ref-AQP::URC_StakeCollectableMatchesPool pool-id dhcd-id)
+                  (ref-VCT::URC_BatchOwnerArraysGasOk [KST.ANHD] [KST.ANHD] nonces 29)
+                  (ref-VCT::URC_VacateBatchNonceTotalOk nonces)
+                  (ref-VCT::URC_VacateCollectableLegsOk pool-id dhcd-id true
+                      [KST.ANHD] [KST.ANHD] nonces amounts) ])
+            ;;THE DIFFERENTIAL. Same capability, same line of code, a pool with a different owner --
+            ;;and the refusal names a different key. That is what makes RT-D-007c's "[PK_Lumy...]"
+            ;;evidence about ownership rather than a constant string that any refusal would print.
+            (expect-failure
+                "<<RT-D-007g>> the SAME defcap names a DIFFERENT victim on a DIFFERENTLY-OWNED pool"
+                "Keyset failure (keys-all): [PK_Ancie...]"
+                (ref-TS02-C3::AQP-POOL|CCp_BatchVacateCollectables
+                    attacker pool-id dhcd-id true [KST.ANHD] [KST.ANHD] nonces amounts))
+        ])
+    ""
+)
+;;==== RT-D-007 · 04 · non-vacuity: one added signature, same call, it succeeds ====
+(print "--- [RT-D-007 · 04 · non-vacuity: one added signature, same call, it succeeds] ---")
+;;PK_AncientHodler is still the patron and still the leg's owner; PK_Lumy is ADDED. Nothing else
+;;about the call changes.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Lumy", "caps": [] }])
+(let
+    (
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+    )
+    (let
+        (
+            (pool-id:string (ref-U|DALOS::UDC_Makeid "NfSyncPool"))
+        )
+        (map print
+            [
+                (expect
+                    "<<RT-D-007h>> ...and the gate alone now PASSES for the pool owner's signature"
+                    true (ouronet-ns.AQP-VCT.CAP_VctVacatePoolOwner pool-id))
+                (expect
+                    "<<RT-D-007i>> NON-VACUITY: the identical batch succeeds once the owner signs"
+                    "Batch-vacated 1 collectable leg(s) on Pool NfSyncPool-98c486052a51 (asset DHB-98c486052a51, son false)."
+                    (ref-TS02-C3::AQP-POOL|CCp_BatchVacateCollectables
+                        KST.ANHD pool-id "DHB-98c486052a51" false [KST.ANHD] [KST.ANHD] [[1]] [[1]]))
+            ])
+        ""
+    )
+)
+(env-sigs [])
+(print "")
+(print "===^^^===")
 (rollback-tx)

@@ -417,3 +417,44 @@
 ;;FULL> SCR extended coverage — via the FULL profile:
 ;;FULL>   [6.4]_AQP-TRIPLET-DIAG.repl        (triplet score diagnostics; also exercised by the FVT triplet suite)
 
+;;PROBE-START
+(begin-tx "PROBE-SCORE2")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{"key":"PK_Emma","caps":[]}])
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+    )
+    (map print
+        [
+            (expect-failure "PROBE-F1 ISSUE-FVT shadow class 3" "ZZZ"
+                (ref-TS02-C3::AQP-FVT|C_Issue KST.EMMA "RtProbeVault" KST.ANHD 3 "|"))
+            (expect-failure "PROBE-F2 ISSUE-FVT shadow bad denominator" "ZZZ"
+                (ref-TS02-C3::AQP-FVT|C_Issue KST.EMMA "RtProbeVault" KST.ANHD 1 "OURO-98c486052a51"))
+            (expect-failure "PROBE-F3 ISSUE-FVT gate" "ZZZ"
+                (ref-TS02-C3::AQP-FVT|C_Issue KST.EMMA "RtProbeVault" KST.ANHD 1 "|"))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+(begin-tx "PROBE-SCORE3")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{"key":"PK_AncientHodler","caps":[]}])
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+    )
+    (print (format "PROBE NONVAC-SCORE  => {}" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore KST.ANHD KST.ANHD "RtProbeScore" 3 true)]))
+    (print (format "PROBE NONVAC-FVT    => {}" [(ref-TS02-C3::AQP-FVT|C_Issue KST.ANHD "RtProbeVault" KST.ANHD 1 "|")]))
+    (print (format "PROBE NONVAC-SFDEF  => {}" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition KST.ANHD "TheCodingDivision-98c486052a51" "DHCD-98c486052a51" [11] [1.0])]))
+    (print (format "PROBE NONVAC-TRIPLET=> {}" [(ref-TS02-C3::AQP-SCR|C_IssueTriplet KST.ANHD "TheCodingDivision-98c486052a51" "DemiourgosShareholder-98c486052a51" "DemiourgosSnakes-98c486052a51")]))
+    (print (format "PROBE NONVAC-NFSET  => {}" [(ref-TS02-C3::AQP-SCR|C_IssueNonFungibleSetScoreDefinition KST.ANHD "Bloodshed-98c486052a51" "KBN-98c486052a51" [0] [1.0])]))
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+;;PROBE-END
