@@ -3821,3 +3821,41 @@ guard at `0.0`.
 | Talos client entrypoints never driven | **0** |
 | cross-module calls to a non-existent member | **0** |
 | positive assertions that cannot fail | **0** |
+
+## 8.33 `00_DPMF` scoping, settled by measurement
+
+The open question was whether the legacy MetaFungible module is in scope for hardening — it holds
+**14 of the 18** ownership capabilities `_ownerobs.py` cannot assess, so the answer decides whether
+that 18 is a gap or a correct exclusion. Measured rather than left for a ruling:
+
+| check | result |
+|---|---|
+| modref bindings to its interface, anywhere outside itself | **0** |
+| `ref-DPMF::` call sites outside its own file | **0** |
+| Talos wrappers reaching it | **0** |
+| **deployed?** | **yes** — `[2.2]_Core.repl` |
+| deploy cost | **128,156 gas**, 6.4% of a block |
+
+**It is deployed, and nothing can call it.** Not "nothing does" — nothing *can*: there is no modref
+binding through which any module could reach it, and no Talos wrapper exposes it, so it is
+unreachable from the only supported client path.
+
+> **So the 14 excluded capabilities are a correct exclusion, not a gap**, and `_ownerobs.py`'s
+> denominator is right to omit them. Witnessing a gate on a module no caller can reach would test
+> nothing. The remaining 4 are the `SCR|XE>` trio and `SWP|S>WEIGHTS`, already recorded as
+> structurally inner.
+
+The module retains a real cost — a deploy slot at 6.4% of a block on every redeploy — and that is a
+separate question from auditing it, belonging to the deploy-ready phase rather than here.
+
+### Four rename leftovers found on the way
+
+Searching for live DPMF reach turned up four references in modules that have nothing to do with it —
+all survivors of the DPMF → DPOF rename:
+
+- `02_TS01-C1.pact` ×3 — `DPOF|C_ToggleAddQuantityRole`, `…ToggleBurnRole`, `…MoveCreateRole`, each
+  calling DPOF while its `@doc` says *"for a DPMF Token"*.
+- `18_SWPLC.pact` — `;;Move Z|DPMF to vst-sc and burn it`, above code that moves a sleeping **DPOF**.
+
+Corrected. Small, but the same class as §8.6 and §8.20: **documentation that outlived what it
+described**, and here it was actively misleading about which token family a live client op acts on.

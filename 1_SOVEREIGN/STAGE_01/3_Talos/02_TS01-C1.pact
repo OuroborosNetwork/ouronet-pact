@@ -1162,7 +1162,7 @@
         )
     )
     (defun DPOF|C_ToggleAddQuantityRole (patron:string id:string account:string toggle:bool)
-        @doc "Toggles <add-quantity-role> for a DPMF Token <id> on a specific <account>"
+        @doc "Toggles <add-quantity-role> for a DPOF Token <id> on a specific <account>"
         (with-capability (P|TS)
             (let
                 (
@@ -1176,7 +1176,7 @@
         )
     )
     (defun DPOF|C_ToggleBurnRole (patron:string id:string account:string toggle:bool)
-        @doc "Toggles <burn-role> for a DPMF Token <id> on a specific <account>"
+        @doc "Toggles <burn-role> for a DPOF Token <id> on a specific <account>"
         (with-capability (P|TS)
             (let
                 (
@@ -1190,7 +1190,7 @@
         )
     )
     (defun DPOF|C_MoveCreateRole (patron:string id:string receiver:string)
-        @doc "Moves <create-role> for a DPMF Token <id> to <receiver> \
+        @doc "Moves <create-role> for a DPOF Token <id> to <receiver> \
         \ Only a single account may have this role"
         (with-capability (P|TS)
             (let

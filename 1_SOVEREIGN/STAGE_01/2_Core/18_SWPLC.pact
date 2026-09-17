@@ -1359,7 +1359,7 @@
                         (dt:integer (floor (diff-time release-date present-time)))
                         ;;
                         ;;
-                        ;;Move Z|DPMF to vst-sc and burn it
+                        ;;Move the sleeping DPOF (Z| prefix) to vst-sc and burn it
                         (ico1:object{IgnisCollectorV2.OutputCumulator}
                             (ref-DPOF::C_Transfer sleeping-dpof [nonce] account vst-sc true)
                         )
