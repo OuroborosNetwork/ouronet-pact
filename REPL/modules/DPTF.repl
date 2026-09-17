@@ -2774,3 +2774,56 @@
 )
 (env-sigs [])
 (rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-G12 — the DALOS audit's N2 ownership gate, which had no witness")
+(print "")
+(print "=== DPTF-G12 — DPTF|C_DeployAccount ownership ==============================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;N2's fix put `CAP_EnforceAccountOwnership account` in the Talos wrapper at `02_TS01-C1.pact:710`:
+;;deploying a token onto an Ouronet account must be authorised by that ACCOUNT, not merely paid for
+;;by whoever is calling.
+;;
+;;It was recorded as only PARTIALLY witnessed, and the distinction is the point.
+;;`modules/CONFORMANCE.repl` <<CONF-01>> asserts that the CORE `DPTF::C_DeployAccount` is refused
+;;from outside Talos -- that is `P|UEV_IMC`, the inter-module gate, a different guard entirely.
+;;Nothing drove the TALOS WRAPPER against an account the signer does not own, so deleting this line
+;;would have left CONF-01 green.
+;;
+;;THE PATRON/OWNER SPLIT, again: LUMY pays and calls, EMMA is named as the account. The refusal names
+;;EMMA's key, which is what separates "the ownership gate spoke" from "LUMY's signature was rejected".
+;;Worth noting where the gate sits: it fires BEFORE the token-existence check, measured -- the same
+;;attack against a nonexistent id is still refused by ownership, not by existence.
+(env-sigs [{ "key": "PK_Lumy", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+    )
+    (map print
+        [
+            (expect-failure "<<DPTF-G12>> N2: paying does not let you deploy a token onto someone else's account"
+                "Keyset failure (keys-all): [PK_Emma...]"
+                (ref-TS01-C1::DPTF|C_DeployAccount KST.LUMY "MOCKA-98c486052a51" KST.EMMA))
+        ]
+    )
+    ""
+)
+(env-sigs [{ "key": "PK_Lumy", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+    )
+    (map print
+        [
+            ;;NON-VACUITY: only the signer set changes. LUMY still pays; EMMA now consents.
+            (expect "<<DPTF-G12>> ...while with the account holder's signature the identical call works"
+                true (contains "added to"
+                    (ref-TS01-C1::DPTF|C_DeployAccount KST.LUMY "MOCKA-98c486052a51" KST.EMMA)))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
