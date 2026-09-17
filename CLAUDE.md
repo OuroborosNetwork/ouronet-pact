@@ -79,6 +79,18 @@ tree was committed; "the tree was committed" is not a safety property.
 **Run only ONE of the two.** `_normalize_repl_layout` already calls `_subdivide_repl`'s logic
 internally; running both duplicates the banners it inserts.
 
+**AND AS OF 2026-09-17, DO NOT RUN EITHER.** The warning above understates the risk: the single tool
+alone **corrupts code**. Applied and gated on 2026-09-17 — 186 files, +9,051/−99, **five suites
+BROKEN**, assertions 25,029 → 24,711, reverted. Two demonstrated defects: it inserts a banner
+`(print …)` into **inline `(module …)` blocks** (a REPL native, disallowed there — it broke
+`[RT-G]_HostileCitizen.repl`, which deploys a hostile module as its attack), and it inserts banners
+**inside multi-line expressions**, splitting them (`modules/AQP.repl`, a `;;====` between an
+`(expect …)` form's arguments). The second is the dangerous one: it fails loudly only when the
+result stops parsing, and an insertion that leaves a parseable form would silently change meaning
+across 186 files. The fix is for the tool to use `_pactlex.balanced()` — which every other tool
+already uses, because line-oriented scanning of Pact is unsafe — and insert only at top-level
+boundaries. See DEFECT-LEDGER §8.34.
+
 **Both are currently NON-NO-OP on the committed tree**: `--apply` changes ~167 files, so the
 committed REPL layout has drifted from what the formatter produces (expected — blocks get appended
 by hand). Re-normalising is a deliberate, reviewable act, not a tidy-up to fold into another commit.
