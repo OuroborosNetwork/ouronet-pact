@@ -18,7 +18,7 @@ code reads like it would be. Every finding in this Part was reached by running s
 
 ## The register
 
-**35 attacks across 11 families. 19 found a defect. None succeeded.**
+**36 attacks across 11 families. 19 found a defect. None succeeded.**
 
 "None succeeded" means no attack achieved its stated goal — no value was moved, no gate was bypassed,
 no privilege was escalated. It does **not** mean nothing was wrong: 19 of the 35 exposed a real
@@ -34,7 +34,7 @@ defect on the way to being refused, and those are the substance of this Part.
 | **F** — griefing | 2 | 2 | 0 |
 | **G** — hostile citizen module | 2 | 0 | 2 |
 | **H** — input domain | 3 | 3 | 0 |
-| **I** — gas station | 1 | 1 | 0 |
+| **I** — gas station | 2 | 1 | 1 |
 | **J** — conservation of value | 3 | 1 | 2 |
 | **K** — preview/exec parity | 7 | 7 | 0 |
 
@@ -57,7 +57,7 @@ actually received — stated as coverage, not as a claim of completeness.
 | arithmetic / rounding / precision | A, J | **adequate** — the share-price boundary and the supply-vs-balances split |
 | defpact / Hydra-slice races | F | **adequate** — both attacks found defects, one of them a live money defect |
 | cross-module boundary abuse | G, B | **adequate** |
-| gas-station exploitation | I | **thin — one attack.** It found a real defect, and the surface deserves more |
+| gas-station exploitation | I | **assessed as thin on an attack count of one — and that assessment was wrong.** `modules/DALOS-ADMIN.repl` already drives the gas capability through five blocks, including its spending ceiling. What was missing was not the cap but the arm beside it |
 | ordering / reentrancy-like | E | **thin — two attacks, both refused.** One of them documents a *structural absence* rather than a guard: nothing in the multi-transaction layer checks who is driving a recipe; safety today is a property of what each step happens to touch |
 
 Two of the nine rows were **not on the plan at all** and were invented during the round: **J**
@@ -65,7 +65,16 @@ Two of the nine rows were **not on the plan at all** and were invented during th
 rate. A planned list of attack surfaces is a hypothesis about where defects live, and this one was
 wrong about the most productive surface in the system.
 
-The two thin rows are named rather than rounded up. Family E's thinness is qualified: its second
+**One of those "thin" rows was a mistake in the assessment, not in the coverage.** Family I was
+called the round's weakest surface because it contained one attack. The gas capability was in fact
+already driven through five blocks of a module suite, including its spending ceiling with a
+same-form control. **Counting attacks in a red-team family undercounts coverage that lives
+elsewhere** — and this is the second time in the round that "weakest family" turned out to mean
+"fewest attacks" rather than "least covered". The genuine gap, once looked for properly, was not the
+cap but the arm beside it: the cap is one branch of an `enforce-one` whose other branch is the admin
+guard, so the master keyset has no spending limit at all. Measured, and now pinned.
+
+The remaining thin row is named rather than rounded up. Family E's thinness is qualified: its second
 attack establishes that the defpact layer performs **no** driver check, and that every step is
 currently safe only because it happens to move the starter's own tokens. A future step touching only
 protocol state would have nothing to demand the starter's key, and that attack would succeed against
