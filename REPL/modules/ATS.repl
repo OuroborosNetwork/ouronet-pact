@@ -4837,3 +4837,110 @@
     ""
 )
 (rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "ATS-G28 — the #6H parameter-lock fix, which had no witness")
+(print "")
+(print "=== ATS-G28 — parameter-lock gates royalty + hibernation fees ===============")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;THE ATS AUDIT'S #6H WAS A HIGH-RANKED FINDING AND ITS FIX HAD NO WITNESS. The fix made
+;;`(UEV_ParameterLockState atspair false)` the FIRST statement of `ATS|S>ROYALTY` and
+;;`ATS|S>SET-HIBERNATION-FEES`, so a locked pair's economics cannot be edited. Its message --
+;;"Parameter-lock for ATS Pair {} must be set to {} for this operation" -- appeared in NO .repl at
+;;all. <<ATS-G16>> tests the lock's own two-sided toggle rule; nothing tested that either SETTER is
+;;behind it, so deleting both hoisted guards would have turned nothing red.
+;;
+;;THE TEST IS THE BEFORE/AFTER PAIR ON ONE PAIR. Same owner, same op, same arguments -- only the
+;;lock flips. That is what makes the refusal attributable to the lock and not to ownership, an
+;;argument bound, or the pair's state: all of those are identical across the two halves.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+    )
+    (let
+        (
+            (pair:string (at 0 (ref-ATS::URH_OwnedAutostakePairs KST.ANHD)))
+        )
+        ;;NON-VACUITY FIRST, and it has to come first: the setter must be shown WORKING while
+        ;;unlocked, or "refused when locked" could just mean "this op is broken".
+        (map print
+            [
+                (expect "<<ATS-G28>> UNLOCKED, the owner can set the royalty"
+                    true (contains "Royalty"
+                        (ref-TS01-C2::ATS|C_UpdateRoyalty KST.ANHD pair 100.0)))
+            ]
+        )
+        (ref-TS01-C2::ATS|C_ToggleParameterLock KST.ANHD pair true)
+        (map print
+            [
+                ;;THE FIX, both setters. Everything but the lock is unchanged from the line above.
+                (expect-failure "<<ATS-G28>> LOCKED, the same owner cannot set the royalty (#6H)"
+                    "Parameter-lock for ATS Pair"
+                    (ref-TS01-C2::ATS|C_UpdateRoyalty KST.ANHD pair 120.0))
+                (expect-failure "<<ATS-G28>> ...nor the hibernation fees, the fix's other half"
+                    "Parameter-lock for ATS Pair"
+                    (ref-TS01-C2::ATS|C_SetHibernationFees KST.ANHD pair 10.0 1.0))
+                ;;...and the lock really is what changed.
+                ;;...and the lock really is what changed. `UEV_ParameterLockState` is the only
+                ;;reader of this flag on the interface, so it is probed the way <<ATS-G24>> does:
+                ;;it returns cleanly for the state that holds and raises for the one that does not.
+                (expect "<<ATS-G28>> ...and the pair is in fact locked now"
+                    "LOCKED"
+                    (try "NOT-LOCKED"
+                        (let ((z:string "LOCKED")) (ref-ATS::UEV_ParameterLockState pair true) z)))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "ATS-G29 — the #32N soft-failure fix, which had no witness")
+(print "")
+(print "=== ATS-G29 — URC_MultiCull's empty branch returns an OBJECT ================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;#32N / N1: `URC_MultiCull` used to return a raw `[decimal]` on its "nothing cullable" branch and an
+;;OBJECT on the other. `XI_MultiCull` binds the result as `:object`, so the empty branch was a hard
+;;type crash -- reachable by ANY account with a position that is simply not ripe yet, which is the
+;;ordinary state of most stakers most of the time. The fix makes the empty branch return the same
+;;4-key shape, and Talos reports it distinctly instead of dying.
+;;
+;;The fix was present and UNWITNESSED: the string "Nothing to Cull" appeared only in
+;;`archive/_audit_ats_baseline.repl`, which `_gate.py` excludes by name as a retired probe. Reverting
+;;the fix would have turned nothing red.
+;;
+;;THE ACCOUNT MATTERS. It must have a ledger row in the pair but nothing ripe -- an account with NO
+;;row dies earlier, at a bare `read` in `UR_P0` (measured), which is a different failure entirely and
+;;would witness nothing about #32N.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+    )
+    (let
+        (
+            (pair:string (at 0 (ref-ATS::URH_OwnedAutostakePairs KST.ANHD)))
+        )
+        (map print
+            [
+                ;;THE FIX: the op RETURNS, and says why. Before it, this call crashed on a type
+                ;;mismatch -- so the assertion that matters is simply that a sentence comes back.
+                (expect "<<ATS-G29>> a staker with nothing ripe gets a SENTENCE, not a type crash"
+                    true (contains "Nothing to Cull"
+                        (ref-TS01-C2::ATS|C_Cull KST.ANHD KST.ANHD pair)))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
