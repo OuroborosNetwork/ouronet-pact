@@ -196,6 +196,7 @@ talos_src = {}
 for f in R('1_SOVEREIGN/**/3_Talos/*.pact') + R('2_CITIZEN/**/*TS02*.pact'):
     talos_src[f] = strip_comments(open(f).read())
 wrappers = collections.defaultdict(set)
+cap_depth = {}
 for f, src in talos_src.items():
     for m in re.finditer(r'\(defun\s+([A-Za-z0-9_|>\-]+)', src):
         s0 = m.start(); e0 = balanced(src, s0)
@@ -209,16 +210,37 @@ for f, src in talos_src.items():
             tgt = rm.get(cm.group(1))
             if tgt and (tgt, cm.group(2)) in fn_body:
                 seeds.add((tgt, cm.group(2)))
-        for k in set().union(*(reach(sd) for sd in seeds)) if seeds else set():
+        # DEPTH, not just reachability. The cap acquired by the op the test actually CALLS is the
+        # one a refusal is attributable to; anything reached further down the chain is merely on the
+        # path. `SWP|C>ENABLE-FROZEN` is the defcap of `SWP|C_EnableFrozenLP` (depth 0) and its
+        # non-owner test at `[6.3]_SWP.repl:3180` genuinely pins it; `DPTF|C>ISSUE` sits ten hops
+        # downstream of the same call and is credited by the same refusal, which proves nothing
+        # about DPTF issuance. Dilution counted how many caps shared a credit; depth says which one
+        # earned it.
+        seen_depth = {}
+        frontier, d = set(seeds), 0
+        while frontier:
+            nxt = set()
+            for k in frontier:
+                if k in seen_depth: continue
+                seen_depth[k] = d
+                if k not in _callee_cache: _callee_cache[k] = callees(k)
+                nxt |= _callee_cache[k] - set(seen_depth)
+            frontier, d = nxt, d + 1
+        for k, kd in seen_depth.items():
             for c in fn_caps.get(k, ()):
                 for c2 in cap_closure(c):
                     if c2 in gated:
                         wrappers[c2].add(wname)
+                        prev = cap_depth.get((c2, wname))
+                        if prev is None or kd < prev:
+                            cap_depth[(c2, wname)] = kd
 
 # ---- 4. which wrappers are driven by a test pinning a Keyset failure
 repls = {f: open(f, errors='ignore').read()
          for f in R('REPL/**/*.repl') if '/archive/' not in f}
-def observed(names, own_msgs):
+def observed(names, own_msgs, cap_for_attr):
+    hits = []
     for f, txt in repls.items():
         for em in re.finditer(r'\(expect-failure\b', txt):
             # BALANCED extent, not a fixed window. A 900-char window spans the NEIGHBOURING
@@ -234,8 +256,13 @@ def observed(names, own_msgs):
                 continue
             for nm in names:
                 if re.search(re.escape(nm) + r'(?![A-Za-z0-9_|\-])', seg):
-                    return (f.split('/')[-1], nm)
-    return None
+                    hits.append((f.split('/')[-1], nm))
+    # BEST credit, not the FIRST one found. Returning the first match made attribution depend on
+    # file iteration order: `DPTF|C>DEBIT` was reported at depth 3 via `ORBR|C_WithdrawFees` while
+    # RT-D-003 -- the test written specifically to witness it -- credits it far closer. A metric
+    # that ranks evidence must not pick its evidence arbitrarily.
+    if not hits: return None
+    return min(hits, key=lambda h: cap_depth.get((cap_for_attr, h[1]), 99))
 
 # --census: the tool's OWN denominator. Every figure this script prints is conditioned on a cap
 # being reachable from a qualified Talos wrapper, and a reader who is not told how many caps fail
@@ -281,7 +308,7 @@ for cap, (fil, shadowed, own_msgs) in sorted(gated.items()):
     # identifier with `\\b`: a name that is unique inside its module is not unique in the tree.
     names = {n for n in wrappers.get(cap, set()) if '|' in n}
     if not names: continue
-    rows.append((cap, fil, shadowed, observed(names, own_msgs)))
+    rows.append((cap, fil, shadowed, observed(names, own_msgs, cap)))
 
 # ATTRIBUTION. "Reached by a test" is not "refused by this gate". A wrapper that reaches N gated caps
 # credits all N from one refusal, though exactly one of them raised it. Where N == 1 the refusal IS
@@ -303,11 +330,20 @@ print(f"  observed (UPPER bound -- reachability, not proof): {obs}")
 # reached exactly ONE gate, which scored 1 of 63 and read as "the observed column is worthless".
 # The distribution says otherwise: half the credits come from ops reaching two gates, which is decent
 # evidence, while a fifth come from ops reaching ten or more, which is nearly none. A binary hid both.
-_dil = [reach_count[r[3][1]] for r in rows if r[3]]
-print(f"     credited by an op reaching 1 gate (attributable)  : {sum(1 for d in _dil if d == 1)}")
-print(f"     ...2 gates (strong)                               : {sum(1 for d in _dil if d == 2)}")
-print(f"     ...3-9 gates (weak)                               : {sum(1 for d in _dil if 3 <= d <= 9)}")
-print(f"     ...10+ gates (near-worthless as evidence)         : {sum(1 for d in _dil if d >= 10)}")
+_dep = [cap_depth.get((r[0], r[3][1]), 99) for r in rows if r[3]]
+print(f"     ATTRIBUTED  (depth 0 -- the called op's own gate)  : {sum(1 for d in _dep if d == 0)}")
+print(f"     circumstantial (depth 1)                          : {sum(1 for d in _dep if d == 1)}")
+print(f"     on the path only (depth 2+)                       : {sum(1 for d in _dep if d >= 2)}")
+if "--weak" in sys.argv:
+    # Caps whose ONLY evidence is a refusal from an op that reaches many gates. They sit in the
+    # observed column and are therefore absent from the actionable list, but the credit is close to
+    # worthless -- these are gaps that LOOK covered, which is strictly worse than gaps that look open.
+    print("\n--- credited ONLY from depth 2+: in the observed column, but nothing proves it ---")
+    for cap, fil, shd, ob in sorted(rows, key=lambda r: r[0]):
+        if ob and cap_depth.get((cap, ob[1]), 99) >= 2:
+            print(f"   {fil:22} {cap:34} via {ob[1]} (depth {cap_depth[(cap, ob[1])]})")
+    print()
+
 if "--dilution" in sys.argv:
     _d = collections.Counter(reach_count[r[3][1]] for r in rows if r[3])
     print("     dilution of the crediting op (gates it reaches -> how many caps it credits):")

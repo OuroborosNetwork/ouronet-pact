@@ -2323,22 +2323,33 @@ never visible. Progress reported against an excluding denominator flatters itsel
 second time in the same programme that a ratio has been published without its exclusions: §7.2g
 recorded the same error in other people's tools, and it recurred in mine.
 
-**HOW loose, measured.** `--dilution` reports, for each credited gate, how many gated caps the
-crediting op reaches — because a refusal credits all of them while exactly one raised it:
+**HOW loose, measured — by DEPTH, after two wrong metrics.** The question is which gate a refusal
+*belongs* to. The answer is the hop-distance from the op the test actually called:
 
-| the crediting op reaches | caps credited | worth as evidence |
+| credit | caps | what it is worth |
 |---|---|---|
-| 1 gate | **1** | attributable — the refusal *is* this gate |
-| 2 gates | **29** | strong |
-| 3–9 gates | **19** | weak |
-| 10+ gates | **14** | near-worthless |
+| **depth 0** — the called op's own gate | **44** | attributed: the refusal *is* this gate |
+| depth 1 | **7** | circumstantial |
+| depth 2+ — merely on the path | **12** | proves nothing about this gate |
 
-The first cut of this metric was a **binary** — "attributable" only at dilution 1 — which scored
-**1 of 63** and read as *the observed column is worthless*. That over-corrected: the distribution
-shows nearly half the credits are at dilution 2, which is decent evidence. A binary hid both the
-good half and the bad. The lesson is the one this section keeps re-learning from the other side:
-**a single number chosen to summarise a distribution is a claim about the distribution**, and here
-it was the wrong one — in my own metric, on the same day I wrote the caveat it was meant to quantify.
+Two earlier cuts of this metric were wrong, both in the direction of a tidy number:
+
+1. **A binary** — "attributable" only when the crediting op reached exactly one gate — scored
+   **1 of 63** and read as *the observed column is worthless*. It wasn't; it was the wrong axis.
+2. **Dilution** (how many caps share a credit) was better but still wrong, because it ranks a test
+   by its blast radius rather than by its target. It filed `SWP|C>ENABLE-FROZEN` as
+   "near-worthless" evidence when `[6.3]_SWP.repl:3180` is a test written *specifically* for that
+   gate — the M7 regression — which happens to sit on a path reaching ten others.
+
+Depth separates them correctly: `SWP|C>ENABLE-FROZEN` is depth 0 from `SWP|C_EnableFrozenLP`, while
+`DPTF|C>ISSUE`, credited by the very same refusal, is three hops downstream and proves nothing.
+Selecting the **shallowest** credit rather than the first one found matters too: `DPTF|C>DEBIT` was
+reported at depth 3 via `ORBR|C_WithdrawFees` while RT-D-003 — written specifically to witness it —
+credits it at depth 0. A metric that ranks evidence must not pick its evidence by file iteration
+order.
+
+**A single number chosen to summarise a distribution is a claim about that distribution**, and I made
+that claim wrongly twice in one day, in my own metric, about the caveat it exists to quantify.
 
 **A DEMONSTRATED instance of the upper bound being loose, found the day it was introduced.**
 `DPOF|C>TRANSFER` was scored **observed** before any test had ever driven a non-owner ortofungible
