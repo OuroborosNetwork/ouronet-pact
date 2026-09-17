@@ -3288,3 +3288,41 @@ repair that makes the count honest turns that assertion red and has to be done d
 > Both of this round's last two findings came from **counting a population** rather than inspecting a
 > candidate — the Talos wrappers without a result sentence (§8.15 F1), and this recipe. Intuition
 > kept pointing at surfaces that were already covered.
+
+## 8.17 Client-entrypoint coverage — 452 measured, and the one that is never executed
+
+The counting method that found §8.16's untested recipe generalises to the whole client surface.
+Talos wrappers are the only supported client path, so they are the population that matters.
+
+**452 Talos client entrypoints. 451 are driven by at least one test file. One is not.**
+
+**The first run of this measurement was wrong, in the flattering direction.** It reported **zero**
+undriven, because a plain substring search counts a name that appears only in a *comment*. Stripping
+comments moved the answer to **1 undriven** and the thinly-covered set from 24 to **38** — fourteen
+entrypoints existed in prose only. The same error the assertion-vacuity work exists to catch,
+committed in a coverage measurement, on the same day as §8.10's vacuous mutation test.
+
+### The one: `TS02-CPAD::P|A_AddIMP`
+
+The forward inter-module-policy registration on the **citizen launchpad Talos**. It is never
+executed by any test, and the reason is visible in the suites:
+
+```pact
+;;Forward IMC
+;(ref-P|STOAICO::P|A_AddIMP mg)     Needed on Mainnet
+;                                   Not needed on repl because it is already added on TS02-DPAD
+```
+
+Two such lines exist, both commented out, both labelled **"Needed on Mainnet"** —
+`[6.3]_STOAICO.repl:69` and `[5.3]_Launchpad.repl:897`. The STOAICO one states its reason; the
+launchpad one gives none.
+
+**The reason is about the policy ROW, not about the function.** The row ends up registered by another
+route in the REPL, so the deploy still works — but `P|A_AddIMP` *itself* is never called, and it is
+an **authorisation-registration** function gated on the module's admin capability. If its guard or
+its write were wrong, no test would say so, and the first execution would be on mainnet.
+
+> **The deploy sequence the tests prove is not the deploy sequence mainnet will run**, and the step
+> that differs is on the inter-module authorisation surface. That is a narrow gap — one function of
+> 452 — but it is precisely the kind that only shows up in production, because the thing skipping it
+> is the environment, not the code.
