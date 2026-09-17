@@ -406,8 +406,483 @@
 (print "")
 (commit-tx)
 (print "")
-(print "=== END TX-SCORE-11 · FILE [6.2.2]_AQP-SCORE.repl DONE =========================")
-(print "=== AQP-FAST: TX-SCORE-01–09,11 run; FULL: restore TX-SCORE-10 + [6.2.1] TX006–007 ===")
+(print "=== END TX-SCORE-11 ===========================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;RED-TEAM ADDITION 2026-09-17 — TX-SCORE-12 … TX-SCORE-14b.
+;;
+;;WHAT THESE FIVE BLOCKS ARE FOR. Five owner gates in the Stage-2 AQP issuance surface had never been
+;;shown refusing anybody: `SCR|XI>ISSUE-SCORE`, `FVT|C>ISSUE-FVT`, `SCR|C>ISSUE-SF-SCORE-DEFINITION`,
+;;`SCR|C>ISSUE-TRIPLET` and `SCR|XI>X_ISSUE-NF-SCORE-DEFINITION`. MEASURED, not assumed: every
+;;pre-existing `expect-failure` in the tree that drives one of their client ops trips an ARGUMENT or
+;;SHAPE guard and signs as the owner -- `<<AQP-G16>>` (precision / nft-score-model / lp-denominator),
+;;`<<AQP-G18>>` (fvt-class / denominator / name reuse), `<<AQP-G17>>` and `<<TX-SCR L7#19>>` (list
+;;alignment, negative values), `<<AQP-G14>>` / `<<GT-16>>` (triplet distinctness, denominator) and
+;;`<<AQP-F11>>` (set-class range). Not one of them is an ownership refusal, so deleting the
+;;`CAP_EnforceAccountOwnership` line from any of the five would not have turned one assertion red --
+;;the exact condition DEFECT-LEDGER 7.2h exists to name, and a shadowed gate is indistinguishable
+;;from an absent one from the outside.
+;;
+;;ALL FIVE SIT BEHIND A BUSINESS `enforce`, AND NONE OF THEM IS FIXED BY REORDERING. Ordering can
+;;expose only ONE of two state-dependent guards at a time; a FIXTURE that satisfies the earlier guard
+;;exposes BOTH. Each block below therefore does two things a naive attack cannot: it satisfies every
+;;check that runs before ownership, and it proves it did so with a DIFFERENTIAL PAIR -- one call with
+;;a bad business input showing the EARLIER check's message, then the same call with a good input
+;;showing the OWNERSHIP message. The pair is what separates "refused" from "refused by this gate".
+;;
+;;THE ATTACKER IS EMMA. EMMA is an ordinary standard account and is NOT a member of the Demiurgoi
+;;master keyset (ANHD + FLRN), so no refusal of hers can be confused with an admin decision. The
+;;VICTIM is ANHD, who owns every AQP fixture in this file -- and ANHD is safe in the victim role: the
+;;ambiguity CLAUDE.md warns about (ANHD being both an ordinary key and a Demiurgoi master) only bites
+;;when ANHD is the ATTACKER, because then a SUCCESS could mean "admitted as admin". EMMA is also the
+;;foreign signer `[6.2.10]` `TX-AQP-NEG-OWNER2` uses for the AQP family, so "a known non-owner" means
+;;the same identity in both suites.
+;;
+;;EVERY REFUSAL BELOW NAMES `PK_Ancie...` -- ANHD's key, the VICTIM's -- and NOT `PK_Emma`. That is
+;;what tells "the owner gate refused" apart from "the attacker's own signature was rejected", which
+;;would pass while proving the opposite (RT-D-004's lesson).
+;;
+;;All five blocks end in `rollback-tx`: the attacks write nothing by construction, and the non-vacuity
+;;controls write a score, an FVT, a definition row and a triplet which must NOT survive into the rest
+;;of the AQP chain.
+(print "")
+(begin-tx "TX-SCORE-12 - SCR|XI>ISSUE-SCORE: claiming an owner-konto you do not control")
+(print "")
+(print "=== TX-SCORE-12 — SCR|XI>ISSUE-SCORE owner gate (non-owner refused) ==========")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-SCORE-12 · 01 · the shadow, and the gate behind it ======================
+(print "--- [TX-SCORE-12 · 01 · the shadow, and the gate behind it] ---")
+;;`SCR|XI>ISSUE-SCORE` is the shared core of all five `SCR|C>ISSUE-*-SCORE` client caps; this block
+;;reaches it through the SemiFungible one (score-class 3), which is the client op `[6.2.2]` already
+;;drives in TX-SCORE-01. The gate is `CAP_EnforceAccountOwnership owner-konto`, and owner-konto is an
+;;ARGUMENT: the attack is not "take someone's score" but "mint a new score in someone else's name".
+;;
+;;THREE checks run BEFORE the ownership call:
+;;  1] the compound enforce on precision / score-class / the three multipliers / nft-score-model
+;;  2] the lp-denominator enforce (BAR for classes 1-4; supplied by the class-3 wrapper, so it cannot
+;;     be tripped from the client surface -- listed for completeness, not used as the shadow)
+;;  3] UEV_AutostakeIndex <score-name>
+;;The differential pair below trips (1) and then satisfies it.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (attacker:string KST.EMMA)
+        (victim:string KST.ANHD)
+        (score-name:string "RtScrOwnerProbe")
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+    )
+    (map print
+        [
+            ;;NON-VACUITY OF THE FIXTURE: the attacker is not the victim, and the name is free -- so
+            ;;neither "same account" nor an insert collision can be what refuses below.
+            (expect "<<TX-SCORE-12>> the attacker is not the victim"
+                false (= attacker victim))
+            (expect "<<TX-SCORE-12>> the score-name is unused, so nothing collides on insert"
+                false (contains (ref-U|DALOS::UDC_Makeid score-name) (ref-SCR::URH_SCR|AllScoreIds)))
+            ;;THE SHADOW, DEMONSTRATED. precision 2 is below the [3,24] band, so check (1) refuses
+            ;;before ownership is ever consulted. A test written this way passes identically with
+            ;;`CAP_EnforceAccountOwnership` deleted.
+            (expect-failure "<<TX-SCORE-12>> SHADOW: precision 2 is refused by the argument enforce, NOT by ownership"
+                "Invalid precision, score-class, mx-frozen, mx-sleeping, mx-hibernated or nft-score-model"
+                (ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore attacker victim score-name 2 true))
+            ;;THE GATE. The identical call with precision 3. The message changes to a keyset failure
+            ;;naming the VICTIM's key, so the refusal is attributable to the ownership call and to
+            ;;nothing upstream of it.
+            (expect-failure "<<TX-SCORE-12>> GATE: precision 3 reaches CAP_EnforceAccountOwnership, which refuses and names the victim"
+                "Keyset failure (keys-all): [PK_Ancie...]"
+                (ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore attacker victim score-name 3 true))
+            ;;AND THE PATRON IS NOT WHAT IS BEING TESTED. Same attack with the VICTIM named as patron
+            ;;-- i.e. with the attacker not even paying -- is refused identically, because STOA and
+            ;;IGNIS collection both happen INSIDE the `with-capability` body, strictly after the
+            ;;defcap has already refused. Asserted rather than read off the call chain: eager `let`
+            ;;bindings in Talos wrappers and core `C_`s routinely fire before the `with-capability`
+            ;;that follows them, so "the gate runs first" is a claim that has to be executed.
+            (expect-failure "<<TX-SCORE-12>> ...and naming the victim as patron changes nothing: the gate is upstream of billing"
+                "Keyset failure (keys-all): [PK_Ancie...]"
+                (ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore victim victim score-name 3 true))
+            ;;...and the refusal was TOTAL.
+            (expect "<<TX-SCORE-12>> ...and no score row was created by any of the three attempts"
+                false (contains (ref-U|DALOS::UDC_Makeid score-name) (ref-SCR::URH_SCR|AllScoreIds)))
+        ]
+    )
+    ""
+)
+(print "")
+(print (format "<(REPL|env-gas)> TX-SCORE-12 after rollback => \"{}\"" [(env-gas)]))
+(env-sigs [])
+(rollback-tx)
+(print "")
+(print "=== END TX-SCORE-12 ==========================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-SCORE-12b - the identical score issuance, with the named owner signing, must WORK")
+(print "")
+(print "=== TX-SCORE-12b — SCR|XI>ISSUE-SCORE non-vacuity control ====================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-SCORE-12b · 01 · non-vacuity ===========================================
+(print "--- [TX-SCORE-12b · 01 · non-vacuity] ---")
+;;An `expect-failure` proves a call was refused, never that the operation works when it should.
+;;Without this control TX-SCORE-12 would still be green if the score-name, the class or the STOA
+;;wiring were wrong in some way that refuses EVERYBODY -- the refusal would be real and the
+;;attribution false. The call below differs from TX-SCORE-12's GATE line only in who signs.
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-konto:string KST.ANHD)
+        (score-name:string "RtScrOwnerProbe")
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (split-stoa:[decimal]
+            (ref-DALOS::URC_SplitSTOAPrices KST.ANHD (ref-DALOS::UR_UsagePrice "smart"))
+        )
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa))
+                ]
+            }
+        ]
+    )
+    (print (format "<(TS02-C3.AQP-SCR|C_IssueSemiFungibleScore, named owner signing)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron owner-konto score-name 3 true)]))
+    (let
+        (
+            (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+        )
+        (map print
+            [
+                (expect "<<TX-SCORE-12b>> with the named owner signing, the identical issuance succeeds"
+                    owner-konto (ref-SCR::UR_SCR|ScoreOwnerKonto score-id))
+                (expect "<<TX-SCORE-12b>> ...and it is the class the attack asked for"
+                    3 (ref-SCR::UR_SCR|ScoreClass score-id))
+            ]
+        )
+    )
+    ""
+)
+(print "")
+(print (format "<(REPL|env-gas)> TX-SCORE-12b after rollback => \"{}\"" [(env-gas)]))
+(env-sigs [])
+(rollback-tx)
+(print "")
+(print "=== END TX-SCORE-12b =========================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;WHY AN AQP-FVT GATE LIVES IN THE SCORE SUITE. `FVT|C>ISSUE-FVT` belongs to `[6.2.4]_AQP-FVT.repl`,
+;;which is not in this change's writable scope. It is placed here because it is the SAME CONSTRUCTION
+;;as TX-SCORE-12 -- `CAP_EnforceAccountOwnership` applied to an owner-konto ARGUMENT at issuance, with
+;;the identical fixture shape -- and because both suites run before the FVT one, so nothing downstream
+;;can have latched. Move it to `[6.2.4]` when that file is next touched.
+(begin-tx "TX-SCORE-13 - FVT|C>ISSUE-FVT: claiming an owner-konto you do not control")
+(print "")
+(print "=== TX-SCORE-13 — FVT|C>ISSUE-FVT owner gate (non-owner refused) =============")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-SCORE-13 · 01 · two shadows, and the gate behind them ===================
+(print "--- [TX-SCORE-13 · 01 · two shadows, and the gate behind them] ---")
+;;FOUR checks run before `CAP_EnforceAccountOwnership owner-konto`:
+;;  1] fvt-class in 0..2 AND fvt-name unused
+;;  2] the common-denominator branch enforce (class 0 needs a native DPTF; classes 1-2 need "|")
+;;  3] DPTF::UEV_id on the denominator (class-0 branch only)
+;;  4] UEV_AutostakeIndex <fvt-name>
+;;TWO of them are trippable from the client surface, and both are shown below before the fixture that
+;;satisfies them -- so the gate assertion cannot be crediting either.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (attacker:string KST.EMMA)
+        (victim:string KST.ANHD)
+        (fvt-name:string "RtFvtOwnerProbe")
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+    )
+    (map print
+        [
+            ;;NON-VACUITY OF THE FIXTURE. `URC_FvtExists` is reached by MODULE NAME rather than through
+            ;;`ref-RPS::`, because it is NOT declared on `AcquisitionRewardPerShareV1` -- see the
+            ;;FINDING note under TX-SCORE-13b.
+            (expect "<<TX-SCORE-13>> the attacker is not the victim"
+                false (= attacker victim))
+            (expect "<<TX-SCORE-13>> the fvt-name is unused, so check (1) cannot be what refuses"
+                false (RPS.URC_FvtExists (ref-U|DALOS::UDC_Makeid fvt-name)))
+            ;;SHADOW 1 -- an out-of-band fvt-class trips check (1).
+            (expect-failure "<<TX-SCORE-13>> SHADOW 1: fvt-class 3 is refused by the class/name enforce, NOT by ownership"
+                "Invalid FVT issue: fvt-class must be 0..2 and fvt-name must be unused"
+                (ref-TS02-C3::AQP-FVT|C_Issue attacker fvt-name victim 3 "|"))
+            ;;SHADOW 2 -- a valid class with the wrong denominator trips check (2), one step closer.
+            (expect-failure "<<TX-SCORE-13>> SHADOW 2: a vault with a DPTF denominator is refused by the denominator enforce, NOT by ownership"
+                "Vault/Treasury FVT common-denominator must be |"
+                (ref-TS02-C3::AQP-FVT|C_Issue attacker fvt-name victim 1 "OURO-98c486052a51"))
+            ;;THE GATE. Class 1 with "|" satisfies all four; the message becomes a keyset failure
+            ;;naming the VICTIM's key.
+            (expect-failure "<<TX-SCORE-13>> GATE: a well-formed vault reaches CAP_EnforceAccountOwnership, which refuses and names the victim"
+                "Keyset failure (keys-all): [PK_Ancie...]"
+                (ref-TS02-C3::AQP-FVT|C_Issue attacker fvt-name victim 1 "|"))
+            ;;...and the refusal was TOTAL.
+            (expect "<<TX-SCORE-13>> ...and no FVT row was created by any of the three attempts"
+                false (RPS.URC_FvtExists (ref-U|DALOS::UDC_Makeid fvt-name)))
+        ]
+    )
+    ""
+)
+(print "")
+(print (format "<(REPL|env-gas)> TX-SCORE-13 after rollback => \"{}\"" [(env-gas)]))
+(env-sigs [])
+(rollback-tx)
+(print "")
+(print "=== END TX-SCORE-13 ==========================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-SCORE-13b - the identical FVT issuance, with the named owner signing, must WORK")
+(print "")
+(print "=== TX-SCORE-13b — FVT|C>ISSUE-FVT non-vacuity control =======================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-SCORE-13b · 01 · non-vacuity ===========================================
+(print "--- [TX-SCORE-13b · 01 · non-vacuity] ---")
+;;FINDING, recorded here because this is where it bites: `FVT|C>ISSUE-FVT` calls
+;;`(ref-RPS::URC_FvtExists fvt-id)` on a `module{AcquisitionRewardPerShareV1}` reference, and
+;;`URC_FvtExists` is NOT among that interface's declared members (04_RPS.pact lines 1-84 declare
+;;`URC_FvtRpsGlobalRowExists`, `URC_FvtScoreEntityLinkRowExists` and `URC_MultipletFamilyExists`, but
+;;not this one). VERIFIED BY EXECUTION that this is not a load error: Pact 5.4 resolves a modref member
+;;dynamically against the concrete module, so `ref-RPS::URC_FvtExists` simply works -- which is exactly
+;;why nothing surfaces it. Nothing is broken today; what is broken is the repo's coupling contract,
+;;"only the used interface members matter". A second implementer of `AcquisitionRewardPerShareV1` would
+;;satisfy the type and fail at runtime on the very first conjunct of the FVT issuance guard. The
+;;precondition above therefore calls the module directly, which is the honest form for a member that
+;;is not on the interface. Reported, not fixed -- `.pact` sources are out of this change's scope.
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-konto:string KST.ANHD)
+        (fvt-name:string "RtFvtOwnerProbe")
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (split-stoa:[decimal]
+            (ref-DALOS::URC_SplitSTOAPrices KST.ANHD (ref-DALOS::UR_UsagePrice "smart"))
+        )
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa))
+                ]
+            }
+        ]
+    )
+    (print (format "<(TS02-C3.AQP-FVT|C_Issue, named owner signing)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_Issue patron fvt-name owner-konto 1 "|")]))
+    (map print
+        [
+            (expect "<<TX-SCORE-13b>> with the named owner signing, the identical issuance succeeds"
+                owner-konto (ref-RPS::UR_FVT|OwnerKonto (ref-U|DALOS::UDC_Makeid fvt-name)))
+        ]
+    )
+    ""
+)
+(print "")
+(print (format "<(REPL|env-gas)> TX-SCORE-13b after rollback => \"{}\"" [(env-gas)]))
+(env-sigs [])
+(rollback-tx)
+(print "")
+(print "=== END TX-SCORE-13b =========================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-SCORE-14 - three SCORE owner gates on entities the attacker does not own")
+(print "")
+(print "=== TX-SCORE-14 — SF-definition / triplet / NF-set owner gates ===============")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-SCORE-14 · 01 · three shadows, three gates ==============================
+(print "--- [TX-SCORE-14 · 01 · three shadows, three gates] ---")
+;;Unlike TX-SCORE-12/13, these three gates read the owner OUT OF AN EXISTING ROW rather than taking it
+;;as an argument, so the fixture has to be an entity ANHD already owns and the attack is "write to
+;;someone else's score". All three fixtures are the boot scores created in TX-SCORE-08/09, and the
+;;preconditions each gate's earlier `enforce` depends on are ASSERTED rather than assumed -- if a
+;;future suite flips one of them, the precondition goes red instead of the refusal quietly becoming
+;;vacuous again.
+;;
+;;a] `SCR|C>ISSUE-SF-SCORE-DEFINITION` -- earlier: score row exists, sft-equality FALSE, both lists
+;;   non-empty and aligned, max nonce <= DPDC nonces-used. Then ownership. TheCodingDivision is the
+;;   only class-3 fixture with sft-equality false AND a DPSF (DHCD) deep enough for nonce 11.
+;;b] `SCR|C>ISSUE-TRIPLET` -- earlier: all three rows exist, pairwise distinct, same owner, same
+;;   score-class, category not INVALID, none already in a triplet. Then ownership.
+;;c] `SCR|XI>X_ISSUE-NF-SCORE-DEFINITION` -- composed only; the client op that reaches it here is
+;;   `C_IssueNonFungibleSetScoreDefinition`. SET mode, not trait mode, ON PURPOSE: trait mode runs
+;;   `UEV_NonFungibleScoreDefinitionTrait`, which reads nonce 1's metadata off the DPNF, and in the
+;;   AQP-FAST profile KBN has no minted nonce at all (TX004 in `[6.2.1]` asserts zero). A trait-mode
+;;   attack would die in that reader and never reach ownership. Set mode needs no nonce: with
+;;   `UR_SetClassesUsed` at 0 the only in-range nonce-class is 0, which is what the gate call uses.
+;;   Its shadow is the enforce IMMEDIATELY above the ownership line, inside the same defcap.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (attacker:string KST.EMMA)
+        (victim:string KST.ANHD)
+        (coding-id:string "TheCodingDivision-98c486052a51")
+        (shareholder-id:string "DemiourgosShareholder-98c486052a51")
+        (snakes-id:string "DemiourgosSnakes-98c486052a51")
+        (bloodshed-id:string "Bloodshed-98c486052a51")
+        (dhcd-id:string "DHCD-98c486052a51")
+        (kbn-id:string "KBN-98c486052a51")
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+    )
+    (map print
+        [
+            (expect "<<TX-SCORE-14>> the attacker is not the victim"
+                false (= attacker victim))
+            ;;--- a] SF score definition ------------------------------------------------------------
+            (expect "<<TX-SCORE-14 SF-DEF>> TheCodingDivision is owned by the victim (SF-DEF precondition)"
+                victim (ref-SCR::UR_SCR|ScoreOwnerKonto coding-id))
+            (expect "<<TX-SCORE-14 SF-DEF>> ...and its sft-equality is false, which the guard requires"
+                false (ref-SCR::UR_SCR|ScoreSftEquality coding-id))
+            (expect "<<TX-SCORE-14 SF-DEF>> ...and DHCD is deep enough for nonce 11"
+                true (>= (ref-DPDC::UR_NoncesUsed dhcd-id true) 11))
+            (expect-failure "<<TX-SCORE-14 SF-DEF>> SHADOW: misaligned nonce/value lists are refused by the input enforce, NOT by ownership"
+                "Invalid score/dpsf inputs: score must exist, sft-equality false, nonce/value lists aligned, and max nonce <= DPDC nonces-used"
+                (ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition attacker coding-id dhcd-id [11] [1.0 2.0]))
+            (expect-failure "<<TX-SCORE-14 SF-DEF>> GATE: aligned lists reach CAP_EnforceAccountOwnership, which refuses and names the victim"
+                "Keyset failure (keys-all): [PK_Ancie...]"
+                (ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition attacker coding-id dhcd-id [11] [1.0]))
+            ;;--- b] triplet ------------------------------------------------------------------------
+            (expect "<<TX-SCORE-14 TRIPLET>> all three trio members are class 3 (same-class conjunct)"
+                [3 3 3] [(ref-SCR::UR_SCR|ScoreClass coding-id) (ref-SCR::UR_SCR|ScoreClass shareholder-id) (ref-SCR::UR_SCR|ScoreClass snakes-id)])
+            (expect "<<TX-SCORE-14 TRIPLET>> ...and none of them is already in a triplet"
+                [false false false] [(ref-SCR::UR_SCR|ScoreTriplet coding-id) (ref-SCR::UR_SCR|ScoreTriplet shareholder-id) (ref-SCR::UR_SCR|ScoreTriplet snakes-id)])
+            (expect-failure "<<TX-SCORE-14 TRIPLET>> SHADOW: a non-distinct trio is refused by the bundle enforce, NOT by ownership"
+                "SCR|C>ISSUE-TRIPLET: scores must exist, be distinct, same owner and score-class, valid category, not already in a triplet"
+                (ref-TS02-C3::AQP-SCR|C_IssueTriplet attacker coding-id coding-id snakes-id))
+            (expect-failure "<<TX-SCORE-14 TRIPLET>> GATE: a distinct trio reaches CAP_EnforceAccountOwnership, which refuses and names the victim"
+                "Keyset failure (keys-all): [PK_Ancie...]"
+                (ref-TS02-C3::AQP-SCR|C_IssueTriplet attacker coding-id shareholder-id snakes-id))
+            ;;--- c] NF set-mode score definition ----------------------------------------------------
+            (expect "<<TX-SCORE-14 NF-SET>> Bloodshed is a class-4 score owned by the victim"
+                [4 victim] [(ref-SCR::UR_SCR|ScoreClass bloodshed-id) (ref-SCR::UR_SCR|ScoreOwnerKonto bloodshed-id)])
+            ;;SHADOW 1 -- the set-range enforce inside `UEV_NonFungibleScoreDefinitionSet`, which runs
+            ;;before the composed cap is even entered. The out-of-range class is computed from the
+            ;;LIVE `UR_SetClassesUsed` rather than hard-coded: the AQP-FAST profile mints no KBN
+            ;;nonce-classes and the FULL profile mints some, and a literal here would silently start
+            ;;testing the in-range branch on one of the two. (It did: the first draft asserted
+            ;;"set-classes used = 0" and went red under `AQP-comprehensive.repl`.)
+            (expect-failure "<<TX-SCORE-14 NF-SET>> SHADOW 1: an out-of-range nonce-class is refused by the set-range enforce, NOT by ownership"
+                "Invalid DPNF set score definition (nonce-class="
+                (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleSetScoreDefinition attacker bloodshed-id kbn-id [(+ 1 (ref-DPDC::UR_SetClassesUsed kbn-id false))] [1.0]))
+            ;;SHADOW 2 -- the enforce IMMEDIATELY above the ownership line, inside the target defcap.
+            (expect-failure "<<TX-SCORE-14 NF-SET>> SHADOW 2: a class-3 score is refused by the class enforce one line above the gate"
+                "Invalid score/dpnf: score must exist as DPNF (class 4) with matching score-id"
+                (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleSetScoreDefinition attacker coding-id kbn-id [0] [1.0]))
+            ;;THE GATE. nonce-class 0 is in range for ANY value of `UR_SetClassesUsed`, so this call
+            ;;clears both shadows in every profile.
+            (expect-failure "<<TX-SCORE-14 NF-SET>> GATE: a class-4 score reaches CAP_EnforceAccountOwnership, which refuses and names the victim"
+                "Keyset failure (keys-all): [PK_Ancie...]"
+                (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleSetScoreDefinition attacker bloodshed-id kbn-id [0] [1.0]))
+            ;;...and every refusal was TOTAL: no triplet was marked, and nonce 11 still carries the
+            ;;value TX-SCORE-11 left on it.
+            (expect "<<TX-SCORE-14>> ...and no score was marked as belonging to a triplet"
+                [false false false] [(ref-SCR::UR_SCR|ScoreTriplet coding-id) (ref-SCR::UR_SCR|ScoreTriplet shareholder-id) (ref-SCR::UR_SCR|ScoreTriplet snakes-id)])
+            (expect "<<TX-SCORE-14>> ...and the SF definition for nonce 11 is untouched"
+                75.0 (ref-SCR::UR_S-DEF|SFScoreNonceScoreValue coding-id dhcd-id 11))
+        ]
+    )
+    ""
+)
+(print "")
+(print (format "<(REPL|env-gas)> TX-SCORE-14 after rollback => \"{}\"" [(env-gas)]))
+(env-sigs [])
+(rollback-tx)
+(print "")
+(print "=== END TX-SCORE-14 ==========================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-SCORE-14b - the identical three writes, with the score owner signing, must WORK")
+(print "")
+(print "=== TX-SCORE-14b — SF-definition / triplet / NF-set non-vacuity controls =====")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-SCORE-14b · 01 · non-vacuity ===========================================
+(print "--- [TX-SCORE-14b · 01 · non-vacuity] ---")
+;;The three calls below are byte-identical to TX-SCORE-14's three GATE lines except for the signature
+;;and the patron. Each one must SUCCEED, and each is checked on STATE rather than on the return
+;;string, so a wrapper that reported success without writing would not pass. Rolled back: the AQP
+;;chain downstream of this file expects these scores untripleted and nonce 11 at 75.0.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (patron:string KST.ANHD)
+        (coding-id:string "TheCodingDivision-98c486052a51")
+        (shareholder-id:string "DemiourgosShareholder-98c486052a51")
+        (snakes-id:string "DemiourgosSnakes-98c486052a51")
+        (bloodshed-id:string "Bloodshed-98c486052a51")
+        (dhcd-id:string "DHCD-98c486052a51")
+        (kbn-id:string "KBN-98c486052a51")
+        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+    )
+    (map print
+        [
+            (format "<(TS02-C3.AQP-SCR|C_IssueSemiFungibleScoreDefinition, owner signing)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition patron coding-id dhcd-id [11] [1.0])])
+            (format "<(TS02-C3.AQP-SCR|C_IssueTriplet, owner signing)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueTriplet patron coding-id shareholder-id snakes-id)])
+            (format "<(TS02-C3.AQP-SCR|C_IssueNonFungibleSetScoreDefinition, owner signing)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueNonFungibleSetScoreDefinition patron bloodshed-id kbn-id [0] [1.0])])
+        ]
+    )
+    (map print
+        [
+            (expect "<<TX-SCORE-14b>> with the owner signing, the identical SF definition lands on nonce 11"
+                1.0 (ref-SCR::UR_S-DEF|SFScoreNonceScoreValue coding-id dhcd-id 11))
+            (expect "<<TX-SCORE-14b>> ...the identical triplet is bundled, and all three rows are marked"
+                [true true true] [(ref-SCR::UR_SCR|ScoreTriplet coding-id) (ref-SCR::UR_SCR|ScoreTriplet shareholder-id) (ref-SCR::UR_SCR|ScoreTriplet snakes-id)])
+            (expect "<<TX-SCORE-14b>> ...and the identical NF set-mode definition lands on nonce-class 0"
+                1.0 (ref-SCR::UR_N-DEF|NFClassScoreTraitScoreValue bloodshed-id kbn-id 0))
+        ]
+    )
+    ""
+)
+(print "")
+(print (format "<(REPL|env-gas)> TX-SCORE-14b after rollback => \"{}\"" [(env-gas)]))
+(env-sigs [])
+(rollback-tx)
+(print "")
+(print "=== END TX-SCORE-14b · FILE [6.2.2]_AQP-SCORE.repl DONE =======================")
+(print "=== AQP-FAST: TX-SCORE-01–09,11–14b run; FULL: restore TX-SCORE-10 + [6.2.1] TX006–007 ===")
 (print "")
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;|| NEXT                   >
@@ -417,44 +892,3 @@
 ;;FULL> SCR extended coverage — via the FULL profile:
 ;;FULL>   [6.4]_AQP-TRIPLET-DIAG.repl        (triplet score diagnostics; also exercised by the FVT triplet suite)
 
-;;PROBE-START
-(begin-tx "PROBE-SCORE2")
-(namespace "ouronet-ns")
-(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
-(env-sigs [{"key":"PK_Emma","caps":[]}])
-(let
-    (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
-    )
-    (map print
-        [
-            (expect-failure "PROBE-F1 ISSUE-FVT shadow class 3" "ZZZ"
-                (ref-TS02-C3::AQP-FVT|C_Issue KST.EMMA "RtProbeVault" KST.ANHD 3 "|"))
-            (expect-failure "PROBE-F2 ISSUE-FVT shadow bad denominator" "ZZZ"
-                (ref-TS02-C3::AQP-FVT|C_Issue KST.EMMA "RtProbeVault" KST.ANHD 1 "OURO-98c486052a51"))
-            (expect-failure "PROBE-F3 ISSUE-FVT gate" "ZZZ"
-                (ref-TS02-C3::AQP-FVT|C_Issue KST.EMMA "RtProbeVault" KST.ANHD 1 "|"))
-        ]
-    )
-    ""
-)
-(env-sigs [])
-(rollback-tx)
-(begin-tx "PROBE-SCORE3")
-(namespace "ouronet-ns")
-(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
-(env-sigs [{"key":"PK_AncientHodler","caps":[]}])
-(let
-    (
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
-    )
-    (print (format "PROBE NONVAC-SCORE  => {}" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore KST.ANHD KST.ANHD "RtProbeScore" 3 true)]))
-    (print (format "PROBE NONVAC-FVT    => {}" [(ref-TS02-C3::AQP-FVT|C_Issue KST.ANHD "RtProbeVault" KST.ANHD 1 "|")]))
-    (print (format "PROBE NONVAC-SFDEF  => {}" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition KST.ANHD "TheCodingDivision-98c486052a51" "DHCD-98c486052a51" [11] [1.0])]))
-    (print (format "PROBE NONVAC-TRIPLET=> {}" [(ref-TS02-C3::AQP-SCR|C_IssueTriplet KST.ANHD "TheCodingDivision-98c486052a51" "DemiourgosShareholder-98c486052a51" "DemiourgosSnakes-98c486052a51")]))
-    (print (format "PROBE NONVAC-NFSET  => {}" [(ref-TS02-C3::AQP-SCR|C_IssueNonFungibleSetScoreDefinition KST.ANHD "Bloodshed-98c486052a51" "KBN-98c486052a51" [0] [1.0])]))
-    ""
-)
-(env-sigs [])
-(rollback-tx)
-;;PROBE-END

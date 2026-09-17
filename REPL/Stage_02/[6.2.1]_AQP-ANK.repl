@@ -616,7 +616,182 @@
 ;(print "")
 ;(print "=== END TX007 · FILE [6.2.1]_AQP-ANK.repl DONE =========================")
 ;(print "")
-(print "=== END [6.2.1]_AQP-ANK.repl (AQP-FAST: TX001–005 + TX003 cap-chain; FULL: uncomment TX006–007) ===")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX008 - ANK|C>ISSUE-DPTF: the owner gate behind the anchor-issuance checklist")
+(print "")
+(print "=== TX008 — ANK|C>ISSUE-DPTF owner gate (non-owner refused) ==============")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX008 · 01 · the shadow, and the gate behind it ============================
+(print "--- [TX008 · 01 · the shadow, and the gate behind it] ---")
+;;`ANK|C>ISSUE-DPTF` is the anchor-issuance door for a true fungible. The ONLY thing in it that asks
+;;who the caller is is `CAP_TF|Owner dptf-id`, which resolves the underlying token's owner-konto and
+;;hands it to `DALOS::CAP_EnforceAccountOwnership`. Until this block that call had never refused
+;;anybody THROUGH THIS DEFCAP -- measured, not assumed: every `expect-failure` in the tree naming
+;;`C_IssueTrueFungibleAnchor` drives a bound or shape guard (`<<TX001 M6#15>>` x6, the 8-slot
+;;BoostClass cap, `<<AQP-G37>>`'s LP-token refusal), and every successful issuance signs as the
+;;rightful owner. Deleting the gate would not have turned one assertion red. (`CAP_TF|Owner` is
+;;shared with the anchor-management ops via `CAP_Owner`; this block claims nothing about those.)
+;;
+;;THE SHADOW IS REAL, AND A NAIVE ATTACK DIES IN IT. SEVEN checks run BEFORE the ownership call:
+;;  1] the id-shape enforce (no BAR 4th char, no "S|"/"W|"/"P|" prefix)
+;;  2] UEV_AutostakeIndex <anchor-name>
+;;  3] DPTF::UEV_id <dptf-id>
+;;  4] DPTF::UEV_Amount <dptf-id> <dptf-amount>
+;;  5] the M6 #15 bound enforce -- dptf-amount within [1000, 1,000,000]
+;;  6] UEV_AutostakeIndex <boost-class-name> (acnoi=true branch only)
+;;  7] UEV_Promile <anchor-precision> <anchor-promile>
+;;Any attack that trips one of those SEVEN is refused before ownership is ever consulted, and would
+;;pass identically with `CAP_TF|Owner` deleted. The fixture below satisfies all seven, so the owner
+;;gate is the only thing left that can refuse -- and the differential pair proves both halves.
+;;
+;;THE ATTACKER IS LUMY; THE VICTIM IS THE OURO OWNER. LUMY is an ordinary standard account and is
+;;NOT a member of the Demiurgoi master keyset (that is ANHD + FLRN), so a refusal cannot be confused
+;;with an admin decision -- the ambiguity CLAUDE.md warns about for ANHD-as-attacker does not arise.
+;;LUMY is also the attacker in the sibling reference `[6.1.6]_DPOF.repl` TX-OF-003, so "a known
+;;non-owner" means the same identity in both red-team fixtures. LUMY pays her own patron gas here:
+;;paying for the transaction is not evidence of owning the asset it touches (RT-D-001's lesson).
+;;
+;;WHY THE REFUSAL IS WORDED AS A SMART ACCOUNT AND NOT AS A KEYSET FAILURE: OURO is owned by a
+;;`Σ.` SMART account, and `CAP_EnforceAccountOwnership` is an `if` on account type -- a standard
+;;account raises a raw keyset failure, a smart account raises "Smart DALOS Account … Ownership
+;;could not be verified!". That is the SECOND of the two ownership refusals, and recognising only
+;;the first is what made this whole family read as unobserved (DEFECT-LEDGER 7.2h, instrument
+;;defect 4). The expected message below is BUILT FROM THE LIVE OWNER, so it names the victim by
+;;identity: if the fixture's owner ever changes, this assertion goes red rather than quietly
+;;matching some other account's refusal.
+(env-sigs [{ "key": "PK_Lumy", "caps": [] }])
+(let
+    (
+        (attacker:string KST.LUMY)
+        (ouro-id:string "OURO-98c486052a51")
+        (anchor-name:string "RtAnkOwnerProbe")
+        (class-name:string "RtAnkOwnerClass")
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-ANK:module{AcquisitionAnchorsV2} AQP-ANK)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+    )
+    (let
+        (
+            (victim:string (ref-DPTF::UR_Konto ouro-id))
+            (anchors-before:integer (length (ref-ANK::URH_ANK|AllAnchorIds)))
+            ;;captured, not hard-coded: TX004 leaves OURO bare in the AQP-FAST profile, but the FULL
+            ;;profile's AQP-BOOT steps run between here and there. What this block needs to prove is
+            ;;that the two refusals changed NOTHING, which is a delta, not an absolute.
+            (ouro-anchors-before:integer (ref-ANK::UR_AA|AnchorsActive ouro-id))
+        )
+        (map print
+            [
+                ;;NON-VACUITY OF THE FIXTURE, asserted rather than assumed.
+                (expect (format "<<TX008>> the attacker {} is not the OURO owner" [attacker])
+                    false (= attacker victim))
+                (expect (format "<<TX008>> the OURO owner {} is a SMART account (so the refusal is the smart-account form)" [victim])
+                    true (ref-DALOS::UR_AccountType victim))
+                ;;THE SHADOW, DEMONSTRATED. Same signer, same everything, only <dptf-amount> below the
+                ;;M6 #15 floor. The refusal comes from check 5 and says so -- and a test written this
+                ;;way would pass with the ownership gate deleted. It exists so the NEXT line can be
+                ;;shown to have escaped it.
+                (expect-failure "<<TX008>> SHADOW: an out-of-band dptf-amount is refused by the M6 #15 bound, NOT by ownership"
+                    "TF anchor denominated amount (dptf-amount) must be within [1000, 1,000,000]"
+                    (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor attacker anchor-name ouro-id true class-name 3 100.0 10.0))
+                ;;THE GATE. The identical call with an in-band amount. Every one of the seven earlier
+                ;;checks now passes, the message changes, and it NAMES THE VICTIM -- so the refusal is
+                ;;attributable to `CAP_TF|Owner` and to nothing upstream of it.
+                (expect-failure "<<TX008>> GATE: an in-band amount reaches CAP_TF|Owner, which refuses and names the victim"
+                    (format "Smart DALOS Account {} Ownership could not be verified!" [victim])
+                    (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor attacker anchor-name ouro-id true class-name 3 100.0 1000.0))
+                ;;...and the refusal was TOTAL: no anchor row, no BoostClass row.
+                (expect "<<TX008>> ...and no anchor was created by either attempt"
+                    anchors-before (length (ref-ANK::URH_ANK|AllAnchorIds)))
+                (expect "<<TX008>> ...and OURO's active-anchor count is unchanged"
+                    ouro-anchors-before (ref-ANK::UR_AA|AnchorsActive ouro-id))
+            ]
+        )
+    )
+    ""
+)
+(print "")
+(print (format "<(REPL|env-gas)> TX008 after rollback => \"{}\"" [(env-gas)]))
+(env-sigs [])
+(rollback-tx)
+(print "")
+(print "=== END TX008 ==========================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX008b - the identical anchor issuance, with the rightful owner signing, must WORK")
+(print "")
+(print "=== TX008b — ANK|C>ISSUE-DPTF non-vacuity control ========================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX008b · 01 · non-vacuity ==================================================
+(print "--- [TX008b · 01 · non-vacuity] ---")
+;;An `expect-failure` proves a call was refused; it never proves the operation works when it should.
+;;Without this block TX008 would still pass if the anchor name, the BoostClass name, the promile or
+;;the amount were quietly wrong in some way that refuses everybody -- the refusal would then be
+;;correct and the attribution false. The call below is byte-identical to TX008's GATE line except
+;;for the SIGNATURE (and the patron who pays the STOA), and it succeeds.
+;;
+;;For a `Σ.` smart account "ownership" is `enforce-one` over the account guard, the sovereign's
+;;guard and the governor -- ANHD demonstrably satisfies one of the three and LUMY none of them,
+;;which is the whole content of the refusal above. The tx is rolled back, so this control leaves
+;;the anchor/BoostClass tables exactly as TX004 left them.
+(let
+    (
+        (patron:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        (anchor-name:string "RtAnkOwnerProbe")
+        (class-name:string "RtAnkOwnerClass")
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-ANK:module{AcquisitionAnchorsV2} AQP-ANK)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        ;;acnoi=true costs 2x the anchor STOA deterrence; "standard" is the same 50 STOA figure.
+        (split-stoa:[decimal]
+            (ref-DALOS::URC_SplitSTOAPrices KST.ANHD (* (ref-DALOS::UR_UsagePrice "standard") 2.0))
+        )
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa))
+                ]
+            }
+        ]
+    )
+    (print (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor, rightful owner signing)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron anchor-name ouro-id true class-name 3 100.0 1000.0)]))
+    (map print
+        [
+            (expect "<<TX008b>> with the rightful owner signing, the identical issuance succeeds"
+                ouro-id (ref-ANK::UR_ANK|AnchoredAsset "RtAnkOwnerProbe-98c486052a51"))
+            (expect "<<TX008b>> ...and the anchor is live"
+                true (ref-ANK::UR_ANK|State "RtAnkOwnerProbe-98c486052a51"))
+            (expect "<<TX008b>> ...and the inline BoostClass was created and is active"
+                true (ref-ANK::UR_BC|Active "RtAnkOwnerClass-98c486052a51"))
+        ]
+    )
+    ""
+)
+(print "")
+(print (format "<(REPL|env-gas)> TX008b after rollback => \"{}\"" [(env-gas)]))
+(env-sigs [])
+(rollback-tx)
+(print "")
+(print "=== END TX008b =========================================================")
+(print "")
+(print "=== END [6.2.1]_AQP-ANK.repl (AQP-FAST: TX001–005 + TX003 cap-chain + TX008/TX008b owner gate; FULL: uncomment TX006–007) ===")
 (print "")
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;|| NEXT                   >
@@ -626,25 +801,3 @@
 ;;FULL> ANK extended suites — need the FULL profile (AQP-BOOT Steps 1–3/6 + [5.4] populate):
 ;;FULL>   [6.4]_AQP-EXHAUSTIVE-ANK-LP.repl   (bunny anchors → LP score boost)
 ;;FULL>   [6.4]_AQP-TRIPLET-DIAG.repl        (triplet ANK/score diagnostics)
-;;PROBE-START
-(begin-tx "PROBE-ANK3")
-(namespace "ouronet-ns")
-(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
-(env-sigs [{"key":"PK_AncientHodler","caps":[]}])
-(let
-    (
-        (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-    )
-    (print (format "PROBE usage standard  = {}" [(ref-DALOS::UR_UsagePrice "standard")]))
-    (print (format "PROBE usage smart     = {}" [(ref-DALOS::UR_UsagePrice "smart")]))
-    (print (format "PROBE stoa anchor     = {}" [(ref-IGNIS::UC_StoaPrice "anchor")]))
-    (print (format "PROBE stoa issue-score= {}" [(ref-IGNIS::UC_StoaPrice "issue-score")]))
-    (print (format "PROBE stoa issue-fvt  = {}" [(ref-IGNIS::UC_StoaPrice "issue-fvt")]))
-    (print (format "PROBE split 20xstd    = {}" [(ref-DALOS::URC_SplitSTOAPrices KST.ANHD (* (ref-DALOS::UR_UsagePrice "standard") 20.0))]))
-    (print (format "PROBE split 100       = {}" [(ref-DALOS::URC_SplitSTOAPrices KST.ANHD 100.0)]))
-    ""
-)
-(env-sigs [])
-(rollback-tx)
-;;PROBE-END

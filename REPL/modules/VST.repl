@@ -2884,3 +2884,120 @@
 )
 (env-sigs [])
 (rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-G1 — the gate that stands between anyone and total confiscation")
+(print "")
+(print "=== VST-G1 — VST|C>REPURPOSE-TRUE-FUNGIBLE ==================================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;WHAT THIS GATE ACTUALLY GUARDS, measured rather than inferred. `XI_RepurposeTrueFungible` freezes
+;;`repurpose-from`, WIPES the token off that account, unfreezes, re-mints the whole amount to the VST
+;;smart account and transfers it to `repurpose-to`. Driven successfully in VST-G1b below, it moves
+;;**999250.0 MOCKA** -- the victim's ENTIRE balance -- to an address the caller names. `repurpose-from`
+;;is a free parameter and the account being emptied never consents. `CAP_Owner dptf` is the only
+;;thing standing in the way, and until this block it had never refused anybody.
+;;
+;;AN ASYMMETRY WORTH KNOWING, not a defect: the defcap derives `dptf` as `UR_Frozen <token>` and
+;;checks ownership of the FROZEN VARIANT (`F|MOCKA`), while the body operates on the BASE token
+;;(`MOCKA`). That is coherent -- confiscation is a power of the FREEZE authority, not of the token's
+;;own owner -- but it means the key that matters here is VESTG's, never the token holder's.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (t:string "MOCKA-98c486052a51")
+        (attacker:string KST.EMMA)
+        (victim:string KST.ANHD)
+    )
+    (let
+        (
+            (base-before:decimal (ref-DPTF::UR_AccountSupply t victim))
+        )
+        (map print
+            [
+                ;;THE FIXTURE, asserted. If the victim held nothing there would be nothing to take
+                ;;and the attack would be vacuous however it were refused.
+                (expect "<<VST-G1>> the victim holds a large balance, so there is something to take"
+                    true (> base-before 0.0))
+                (expect "<<VST-G1>> the authorising token is the FROZEN variant, owned by the VST smart account"
+                    KST.VESTG (ref-DPTF::UR_Konto (ref-DPTF::UR_Frozen t)))
+                (expect "<<VST-G1>> ...and the attacker is not the victim"
+                    false (= attacker victim))
+                ;;THE SHADOW. `UEV_SenderWithReceiver` runs BEFORE `CAP_Owner`, so naming the same
+                ;;account twice is refused by a rule that has nothing to do with authority. A test
+                ;;written this way would pass identically with the ownership check deleted.
+                (expect-failure "<<VST-G1>> SHADOW: same sender and receiver is refused by the shape rule, not by ownership"
+                    "Sender and Receiver must be different"
+                    (ref-TS01-C2::VST|C_RepurposeFrozen attacker t victim victim))
+                ;;THE GATE. Same attacker, same token, same victim -- only the receiver differs, which
+                ;;clears the shape rule. The message is now the SMART-ACCOUNT half of
+                ;;`CAP_EnforceAccountOwnership`, naming VESTG: the authority the attacker lacks.
+                (expect-failure "<<VST-G1>> GATE: a stranger cannot confiscate and reissue someone else's balance"
+                    "Ownership could not be verified"
+                    (ref-TS01-C2::VST|C_RepurposeFrozen attacker t victim attacker))
+                ;;...and the refusal was TOTAL.
+                (expect "<<VST-G1>> ...and not one unit moved"
+                    base-before (ref-DPTF::UR_AccountSupply t victim))
+                (expect "<<VST-G1>> ...nor did the attacker receive anything"
+                    0.0 (ref-DPTF::UR_AccountSupply t attacker))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "VST-G1b — with VESTG's sovereign signing, the confiscation goes through")
+(print "")
+(print "--- [VST-G1b · 01 · non-vacuity] ---")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;Without this half, VST-G1 would pass if `C_RepurposeFrozen` were simply broken. `can-freeze` has to
+;;be switched on first -- it is off for MOCKA at this point in the suite -- and that is not a
+;;convenience: `UEV_CanFreeze` sits BEHIND the ownership gate, which is precisely what VST-G1's
+;;refusal demonstrates. The attack above reached the ownership message with `can-freeze` still FALSE,
+;;so the flag cannot be what refused it. Enabling it is an ordinary token-owner operation.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+    )
+    (ref-TS01-C1::DPTF|C_Control KST.ANHD "MOCKA-98c486052a51" true true true true true true)
+    ""
+)
+(env-sigs [{ "key": "PK_Emma", "caps": [] } { "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+        (t:string "MOCKA-98c486052a51")
+        (receiver:string KST.EMMA)
+        (victim:string KST.ANHD)
+    )
+    (let
+        (
+            (base-before:decimal (ref-DPTF::UR_AccountSupply t victim))
+        )
+        (print (format "<(VST|C_RepurposeFrozen with VESTG's sovereign signing)> => \"{}\""
+            [(ref-TS01-C2::VST|C_RepurposeFrozen receiver t victim receiver)]))
+        (map print
+            [
+                ;;THE WHOLE BALANCE MOVES. This is the assertion that makes VST-G1 worth having:
+                ;;it measures what the gate is holding back.
+                (expect "<<VST-G1>> the victim's ENTIRE balance is wiped"
+                    0.0 (ref-DPTF::UR_AccountSupply t victim))
+                (expect "<<VST-G1>> ...and re-minted to the named receiver, to the unit"
+                    base-before (ref-DPTF::UR_AccountSupply t receiver))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
