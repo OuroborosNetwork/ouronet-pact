@@ -174,5 +174,118 @@
 )
 (print "===^^^===")
 (commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;
+(begin-tx "TX-OF-003 - DPOF|C>DEBIT: the ownership gate behind partial transmit")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-OF-003 · 01 · the shadow, and the gate behind it ====
+(print "--- [TX-OF-003 · 01 · the shadow, and the gate behind it] ---")
+;;`DPOF|C>DEBIT` carries `CAP_EnforceAccountOwnership <sender>` and, until this block, had never
+;;refused anybody anywhere in the tree. Delete that line and nothing turns red. It is reached only
+;;THROUGH `DPOF|C>TRANSMIT` -- which has no ownership check of its own -- so a one-hop Talos->function
+;;scan could not see it at all; it became visible only once `REPL/tools/_ownerobs.py` followed
+;;`compose-capability` edges as well as call edges.
+;;
+;;WHY THIS SUITE AND NOT modules/DPOF.repl: `C_Transmit` needs `segmentation` ON, and the Stage-1
+;;MOCKO fixture ships with it OFF -- so the attack there dies at `UEV_SegmentationState`, which would
+;;have made a green test that proves nothing about ownership. COF already has segmentation enabled by
+;;TX-OF-001, so the fixture is the real one rather than one manufactured for the attack.
+;;
+;;THE ATTACKER IS LUMY AND THE VICTIM IS ANHD. ANHD is both an ordinary account key and a Demiurgoi
+;;master, which is only a problem when ANHD is the ATTACKER (a success could then mean "admitted
+;;because they own the token"). As the VICTIM the ambiguity does not arise: LUMY demonstrably is not
+;;ANHD, and the refusal names ANHD's key.
+(env-sigs [{ "key": "PK_Lumy", "caps": [] }])
+(let
+    (
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (id:string "COF-98c486052a51")
+        (attacker:string KST.LUMY)
+        (victim:string KST.ANHD)
+    )
+    (let
+        (
+            (supply-before:decimal (ref-DPOF::UR_NonceSupply id 1))
+        )
+        (map print
+            [
+                ;;NON-VACUITY of the fixture: there is something to steal, and the attacker is not the victim.
+                (expect "<<TX-OF-003>> the victim holds nonce 1, so there is something to take"
+                    true (> supply-before 0.0))
+                (expect "<<TX-OF-003>> ...and the attacker is not the victim"
+                    false (= attacker victim))
+                ;;THE SHADOW, DEMONSTRATED. `DPOF|C>DEBIT` runs a length check, a uniqueness check and
+                ;;an amount-vs-supply fold BEFORE it ever asks who the sender is. An over-supply amount
+                ;;is therefore refused by the FOLD, and a test written that way would pass identically
+                ;;with the ownership check deleted. This assertion exists to prove the shadow is real,
+                ;;so that the next one can be shown to have escaped it.
+                (expect-failure "<<TX-OF-003>> SHADOW: an over-supply amount is refused by the amount fold, NOT by ownership"
+                    "Cannot Debit into the Negatives for Orto-Fungible COF-98c486052a51 Nonce 1 on Account"
+                    (ref-TS01-C1::DPOF|C_Transmit attacker id [1] [999999.0] victim attacker false))
+                ;;THE GATE. Same call, same signer, only the amount changed to one the fold accepts.
+                ;;The message changes to name the VICTIM's key -- so the refusal is attributable to
+                ;;`CAP_EnforceAccountOwnership sender` and to nothing upstream of it.
+                (expect-failure "<<TX-OF-003>> GATE: a valid amount reaches ownership, which refuses and names the victim"
+                    "Keyset failure (keys-all): [PK_Ancie...]"
+                    (ref-TS01-C1::DPOF|C_Transmit attacker id [1] [10.0] victim attacker false))
+                ;;...and the refusal was TOTAL.
+                (expect "<<TX-OF-003>> ...and no supply moved"
+                    supply-before (ref-DPOF::UR_NonceSupply id 1))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;
+(begin-tx "TX-OF-003b - the identical debit, with the holder signing, must WORK")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-OF-003b · 01 · non-vacuity ====
+(print "--- [TX-OF-003b · 01 · non-vacuity] ---")
+;;An `expect-failure` proves a call was refused, never that the operation works when it should. LUMY
+;;is left FROZEN for COF by TX-OF-002's wipe tests, so the receiver leg would refuse this transfer
+;;whoever signed it -- the unfreeze below is what makes the success attributable to the signature and
+;;not to the fixture. (That freeze is also why the GATE assertion above is sound: `DPOF|C>DEBIT`
+;;composes ahead of `DPOF|C>CREDIT`, so ownership refuses before the receiver's freeze is ever read.)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+    )
+    (ref-TS01-C1::DPOF|C_ToggleFreezeAccount KST.ANHD "COF-98c486052a51" KST.LUMY false)
+    ""
+)
+(env-sigs [{ "key": "PK_Lumy", "caps": [] } { "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (id:string "COF-98c486052a51")
+    )
+    (print (format "<(TS01-C1.DPOF|C_Transmit, holder signing, LUMY paying)> => \"{}\""
+        [(ref-TS01-C1::DPOF|C_Transmit KST.LUMY id [1] [10.0] KST.ANHD KST.LUMY false)]))
+    (map print
+        [
+            (expect "<<TX-OF-003>> with the holder signing, the identical debit succeeds"
+                10.0 (ref-DPOF::UR_AccountSupply id KST.LUMY))
+            (expect "<<TX-OF-003>> ...and it came out of the victim's balance"
+                0.0 (ref-DPOF::UR_AccountSupply id KST.ANHD))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
 (print "")
 (print "=== END FILE [6.1.6]_DPOF.repl (7 DPOF tail ops + Hydra wipe) ===")

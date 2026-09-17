@@ -8909,44 +8909,46 @@
 (env-sigs [])
 (commit-tx)
 
+
+
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
-(begin-tx "PROBE")
+(begin-tx "PROBE2")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-SWP:module{SwapperV4} SWP)
-        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (pairs:[string] (ref-SWP::URH_OwnedSwapPairs KST.ANHD))
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
     )
-    (print (format "PROBE pair-count = {}" [(length pairs)]))
-    (map
-        (lambda (p:string)
-            (let
-                (
-                    (lp:string (ref-SWP::UR_TokenLP p))
-                    (amp:decimal (ref-SWP::UR_Amplifier p))
-                    (pt:[string] (ref-SWP::UR_PoolTokens p))
-                )
-                (print
-                    (format "PROBE|{}|add={}|swap={}|lpburn={}|lpmint={}|feex={}"
-                        [ p (ref-SWP::UR_CanAdd p) (ref-SWP::UR_CanSwap p)
-                          (ref-DPTF::UR_AccountRoleBurn lp KST.SWAPR)
-                          (ref-DPTF::UR_AccountRoleMint lp KST.SWAPR)
-                          (map (lambda (t:string) (ref-DPTF::UR_AccountRoleFeeExemption t KST.SWAPR))
-                               (if (= amp -1.0) (drop 1 pt) pt))
-                        ]
-                    )
-                )
-            )
-        )
-        pairs
+    (ref-TS01-C1::DPTF|C_ToggleFeeExemptionRole KST.ANHD "TSTN-98c486052a51" KST.SWAPR false)
+)
+(print (format "PROBE2 after-revoke feex = {}" [(DPTF.UR_AccountRoleFeeExemption "TSTN-98c486052a51" KST.SWAPR)]))
+(env-sigs [{ "key": "PK_Lumy", "caps": [] }])
+(let
+    (
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
+        (inert:string "P|OURO-98c486052a51|TSTN-98c486052a51")
+    )
+    (map print
+        [
+            (expect-failure "PROBE2-D1 non-owner drive with a GENUINELY-MISSING role" "ZZZNOPE"
+                (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.LUMY inert true))
+        ]
     )
     ""
 )
+(print (format "PROBE2 after-attack feex = {}" [(DPTF.UR_AccountRoleFeeExemption "TSTN-98c486052a51" KST.SWAPR)]))
+(print (format "PROBE2 after-attack can-add = {}" [(SWP.UR_CanAdd "P|OURO-98c486052a51|TSTN-98c486052a51")]))
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+    )
+    (ref-TS01-C1::DPTF|C_ToggleFeeExemptionRole KST.ANHD "TSTN-98c486052a51" KST.SWAPR true)
+)
+(print (format "PROBE2 after-restore feex = {}" [(DPTF.UR_AccountRoleFeeExemption "TSTN-98c486052a51" KST.SWAPR)]))
 (env-sigs [])
 (commit-tx)

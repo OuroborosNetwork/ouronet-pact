@@ -2902,3 +2902,38 @@ clean when it is removed.
 > the whole argument for discovery over enumeration: a hardcoded list cannot report its own
 > incompleteness, so it says *clean* about what it never opened. Same shape as the `skipped` counter
 > that hid 18 unpriced entrypoints, and as the owner-gate denominator that excluded a third of the tree.
+
+## 8.7 `DPOF|C>DEBIT` — witnessed, and the differential pair becomes the house style
+
+`DPOF|C>DEBIT` carries `CAP_EnforceAccountOwnership sender` and had **never refused anybody anywhere
+in the tree**. It is reached only *through* `DPOF|C>TRANSMIT` — which has no ownership check of its
+own — so a one-hop Talos→function scan could not see it; it became visible only once `_ownerobs.py`
+followed `compose-capability` edges as well as call edges (§8.5).
+
+**The first attempt would have been worthless, and the fixture is why.** `C_Transmit` requires
+`segmentation` ON. The Stage-1 MOCKO fixture ships with it **OFF**, so the attack died at
+`UEV_SegmentationState` — a green `expect-failure` that says nothing whatever about ownership. Moving
+to `[6.1.6]`'s COF fixture, where TX-OF-001 already enables segmentation, made the attack land on the
+real gate using a real fixture rather than one manufactured for the attack.
+
+**`TX-OF-003` pins a DIFFERENTIAL PAIR, and this is now the house style for a shadowed gate:**
+
+| call | amount | refused by | message |
+|---|---|---|---|
+| shadow | `999999.0` | the amount-vs-supply fold | `Cannot Debit into the Negatives …` |
+| gate | `10.0` | `CAP_EnforceAccountOwnership` | `Keyset failure (keys-all): [PK_Ancie...]` |
+
+Everything else is held constant — same signer, same sender, same nonce. The pair proves **both**
+that the shadow is real *and* that the fixture escaped it, in one artefact. A lone
+`expect-failure` on the ownership message proves only that *something* refused; the pair localises
+it. Non-vacuity closes it: the identical debit with the holder signing moves 10.0 to LUMY.
+
+**One incidental confirmation worth keeping.** LUMY is left frozen for COF by TX-OF-002's wipe tests,
+so the receiver leg refuses that transfer whoever signs. The attack still hit the *ownership* message
+— which independently proves `DPOF|C>DEBIT` composes **ahead of** `DPOF|C>CREDIT`, i.e. ownership is
+read before the receiver's freeze state. The non-vacuity half has to unfreeze first, and says so.
+
+**A REPL trap that cost two probes.** `KST.AOZ` does not exist; the constant is `KST.AOZT`. A bad
+constant is a NAME-RESOLUTION failure that kills the entire top-level form **silently — zero output,
+no error line**. Two probes "returned nothing" and were misread as the transaction aborting early.
+If a probe prints nothing at all, suspect a misspelled constant before suspecting the contract.
