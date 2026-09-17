@@ -915,3 +915,454 @@
 (rollback-tx)
 (print "=== END TX-SET-010 ==================================================")
 (print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+
+(begin-tx "TX-SET-011 - DPDC-C|C>REGISTER-NONCES: the r-nft-create gate, first witness")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-SET-011 · 01 · what runs BEFORE the ownership call ====
+(print "--- [TX-SET-011 · 01 · what runs BEFORE the ownership call] ---")
+;;`DPDC-C|C>REGISTER-NONCES` ends on `DALOS::CAP_EnforceAccountOwnership <r-nft-create>` and that
+;;call had never refused anybody anywhere in the tree. Every `DPSF|C_Create` / `DPNF|C_Create` in
+;;the suite is signed by the account that holds the role, so deleting the gate would have turned
+;;nothing red -- the shadowed-gate pathology of DEFECT-LEDGER §7.2h, reached here by ordering.
+;;
+;;THE CHECKS THAT PRECEDE IT, in execution order, read off the defcap head in `03_DPDC-C.pact`:
+;;  [a] the `let` itself -- `(ref-DPDC::UR_Verum5 id son)` is EAGER and funnels into a bare `read`,
+;;      so a nonexistent collection dies in the table, not in any enforce;
+;;  [b] `(enforce (= l1 l2) "Incompatible Input Data for Registering …")` -- unreachable through
+;;      the single-nonce door, since `C_CreateNewNonce` builds BOTH lists itself as `[x]`;
+;;  [c] per index, `UEV_NonceDataForCreation ind` -- "Incorrect Fragmentation Data" et al;
+;;  [d] per index, with son=TRUE and sft-set-mode=FALSE, `(enforce (>= amount 0) …)`.
+;;[d] is the NEAREST shadow, so the pair below is built on it: a fixture that clears [d] has by
+;;construction cleared [a]-[c] too, which is why the amount is the only thing that moves.
+;;
+;;ATTACKER = EMMA. Not ANHD: ANHD holds `r-nft-create` on this collection (asserted below) and is
+;;also its owner konto and a Demiurgoi master, so an ANHD-signed attack is SATISFIED by the gate
+;;rather than refused by it, and proves nothing. EMMA holds no role on this collection at all.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (attacker:string KST.EMMA)
+        (victim:string KST.ANHD)
+        (third:string KST.FLRN)
+        (sft-id:string "TSFS-98c486052a51")
+    )
+    (let
+        (
+            (used-before:integer (ref-DPDC::UR_NoncesUsed sft-id true))
+            (type:object{DpdcUdcV2.URI|Type}
+                (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        )
+        (let
+            (
+                (nd:object{DpdcUdcV2.DPDC|NonceData}
+                    (ref-DPDC-UDC::UDC_NonceData
+                        0.0 0.0 "CreateGateN" "create-gate probe"
+                        (ref-DPDC-UDC::UDC_NoMetaData) type
+                        (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)
+                        (ref-DPDC-UDC::UDC_ZeroURI|Data)
+                    )
+                )
+            )
+            (map print
+                [
+                    ;;the gate's target, ASSERTED rather than assumed -- if a later suite moves the
+                    ;;role, this line goes red instead of the refusals below going quietly vacuous.
+                    (expect "<<TX-SET-011>> ANHD holds <r-nft-create> on TSFS -- the gate's target"
+                        victim (ref-DPDC::UR_Verum5 sft-id true))
+                    (expect "<<TX-SET-011>> ...and ANHD is ALSO the owner konto, which is why the\
+                        \ refusal message alone cannot attribute (group 04 separates them)"
+                        victim (ref-DPDC::UR_OwnerKonto sft-id true))
+                    (expect "<<TX-SET-011>> EMMA holds no create role here, so she is a real stranger"
+                        false (ref-DPDC::UR_CA|R-Create sft-id true attacker))
+                ]
+            )
+            ;;==== TX-SET-011 · 02 · the differential pair: only <amount> moves ====
+            (print "--- [TX-SET-011 · 02 · the differential pair: only <amount> moves] ---")
+            ;;Same signer, same patron, same collection, same NonceData object. The ONLY difference
+            ;;is the integer. A lone `expect-failure` on the keyset message would prove that
+            ;;SOMETHING refused; the pair localises it between check [d] and the write.
+            (map print
+                [
+                    (expect-failure "<<TX-SET-011>> SHADOW: a negative amount never reaches the gate"
+                        "For an SFT Collectable the -5 must be greater or equal to 0"
+                        (ref-TS02-C1::DPSF|C_Create attacker sft-id [-5] [nd]))
+                    (expect-failure "<<TX-SET-011>> GATE: the identical call with a LEGAL amount is\
+                        \ refused by <r-nft-create> ownership instead"
+                        "Keyset failure (keys-all): [PK_Ancie...]"
+                        (ref-TS02-C1::DPSF|C_Create attacker sft-id [1] [nd]))
+                    ;;and the zero-object arm of [c], to show the pair cleared a real guard too.
+                    (expect-failure "<<TX-SET-011>> ...while the ZERO NonceData dies at [c], above [d]"
+                        "Incorrect Fragmentation Data"
+                        (ref-TS02-C1::DPSF|C_Create attacker sft-id [1]
+                            [(ref-DPDC-UDC::UDC_ZeroNonceData)]))
+                    (expect "<<TX-SET-011>> ...and no nonce was registered by any of the three"
+                        used-before (ref-DPDC::UR_NoncesUsed sft-id true))
+                ]
+            )
+            ;;==== TX-SET-011 · 03 · non-vacuity: the rightful role-holder succeeds ====
+            (print "--- [TX-SET-011 · 03 · non-vacuity: the rightful role-holder succeeds] ---")
+            ;;Byte-identical call to the GATE line above; only the signature and the patron change.
+            (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+            (map print
+                [
+                    (expect "<<TX-SET-011>> the role-holder's identical Create is accepted"
+                        (format "Created [\"1 <CreateGateN>\"] Clas 0 SemiFungible(s)\
+                            \ within the {} DPSF Collection" [sft-id])
+                        (ref-TS02-C1::DPSF|C_Create victim sft-id [1] [nd]))
+                    (expect "<<TX-SET-011>> ...and the collection really gained a nonce"
+                        (+ used-before 1) (ref-DPDC::UR_NoncesUsed sft-id true))
+                    (expect "<<TX-SET-011>> ...whose single unit sits on the role-holder's account"
+                        1 (ref-DPDC::UR_AccountNonceSupply victim sft-id true (+ used-before 1)))
+                ]
+            )
+            ;;==== TX-SET-011 · 04 · attribution: the gate reads the ROLE, not the owner ====
+            (print "--- [TX-SET-011 · 04 · attribution: the gate reads the ROLE, not the owner] ---")
+            ;;DEFECT-LEDGER §8.8's trap in a different costume: ANHD holds `r-nft-create` AND the
+            ;;owner konto, so "Keyset failure … [PK_Ancie...]" is true of either reading and cannot
+            ;;attribute on its own. Separate them by MOVING the role to a third party (FLRN) with a
+            ;;legitimate owner-signed client op, leaving the owner konto untouched:
+            ;;  · the attacker's refusal must now name PK_Flore -- the role moved, the message moved;
+            ;;  · and ANHD, STILL the owner, must be refused by those same words.
+            ;;The second half is the decisive one. An OWNER gate cannot refuse the OWNER.
+            (map print
+                [
+                    (expect "<<TX-SET-011>> the owner moves <r-nft-create> to a third party"
+                        third
+                        (let ((ignore:string (ref-TS02-C1::DPSF|C_MoveCreateRole victim sft-id third)))
+                            (ref-DPDC::UR_Verum5 sft-id true)))
+                    (expect "<<TX-SET-011>> ...while the owner konto is untouched"
+                        victim (ref-DPDC::UR_OwnerKonto sft-id true))
+                    (expect-failure "<<TX-SET-011>> ...and now ANHD, the OWNER, is refused -- naming\
+                        \ the ROLE-HOLDER's key. An owner gate cannot do that"
+                        "Keyset failure (keys-all): [PK_Flore...]"
+                        (ref-TS02-C1::DPSF|C_Create victim sft-id [1] [nd]))
+                ]
+            )
+            (env-sigs [{ "key": "PK_Emma", "caps": [] }])
+            (map print
+                [
+                    (expect-failure "<<TX-SET-011>> ...and the stranger's refusal followed the role\
+                        \ from PK_Ancie to PK_Flore"
+                        "Keyset failure (keys-all): [PK_Flore...]"
+                        (ref-TS02-C1::DPSF|C_Create attacker sft-id [1] [nd]))
+                ]
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+;;ROLLBACK, not commit: group 03 registers a nonce and group 04 relocates a Verum role on TSFS,
+;;and this file is a FIXTURE for [6.1.5]/[6.1.6]/[6.1.7] and for four module testers. Everything
+;;asserted above is asserted inside the transaction, so the evidence survives the rollback.
+(rollback-tx)
+(print "=== END TX-SET-011 ==================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+
+(begin-tx "TX-SET-012 - DPDC-N|C>SET-DATA: the r-nft-recreate account gate, first witness")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-SET-012 · 01 · what runs BEFORE the ownership call ====
+(print "--- [TX-SET-012 · 01 · what runs BEFORE the ownership call] ---")
+;;`DPDC-N|C>SET-DATA` ends its authorisation on `DALOS::CAP_EnforceAccountOwnership account` and
+;;that call had never refused anybody either. Note WHICH account: not the collection owner, the
+;;`account` ARGUMENT -- the same patron-vs-target split as RT-D-001, and the reason group 05 is
+;;here at all.
+;;
+;;THE CHECKS THAT PRECEDE IT, in execution order (`10_DPDC-N.pact`, defcap head):
+;;  [a] the `let` -- lengths only, NO table read, so unlike TX-SET-011 nothing dies in a `read`;
+;;  [b] `(enforce (= l1 l2) "Invalid Inputs for Updating Nonces")`;
+;;  [c] `UEV_RoleNftRecreateON id son account` -- the per-account `role-nft-recreate` flag.
+;;Everything else in the defcap (`UEV_NonceDataForCreation`, `UEV_NonceDataUpdater`,
+;;`UEV_NotSetInstance`) runs AFTER the ownership call, so it cannot shadow it and is not used here.
+;;
+;;TWO pairs are pinned rather than one, because [b] and [c] shadow differently:
+;;  · pair 1 varies ONLY the list length, holding the account -- and therefore the ownership
+;;    target -- byte-identical. This is the §8.7 shape exactly.
+;;  · pair 2 varies ONLY the account, which is the NEAREST shadow [c]; clearing it is what a real
+;;    attacker has to do, and it is the pair that shows the fixture escaped the role check.
+;;
+;;ATTACKER = EMMA, victim = ANHD, for the reason given in TX-SET-011 · 01.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (attacker:string KST.EMMA)
+        (victim:string KST.ANHD)
+        (third:string KST.FLRN)
+        (sft-id:string "TSFS-98c486052a51")
+        (nonce:integer 1)
+    )
+    (let
+        (
+            (name-before:string (at "name" (ref-DPDC::UR_NonceData sft-id true nonce)))
+            (type:object{DpdcUdcV2.URI|Type}
+                (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        )
+        (let
+            (
+                (nd:object{DpdcUdcV2.DPDC|NonceData}
+                    (ref-DPDC-UDC::UDC_NonceData
+                        0.0 0.0 "SetDataN" "set-data gate probe"
+                        (ref-DPDC-UDC::UDC_NoMetaData) type
+                        (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)
+                        (ref-DPDC-UDC::UDC_ZeroURI|Data)
+                    )
+                )
+            )
+            (map print
+                [
+                    (expect "<<TX-SET-012>> ANHD carries <role-nft-recreate> -- so check [c] passes\
+                        \ for him and ownership is the only thing left that can refuse"
+                        true (ref-DPDC::UR_CA|R-Recreate sft-id true victim))
+                    (expect "<<TX-SET-012>> EMMA does NOT, so an EMMA-as-account call stops at [c]"
+                        false (ref-DPDC::UR_CA|R-Recreate sft-id true attacker))
+                    (expect "<<TX-SET-012>> ...and the name we are about to try to overwrite is not\
+                        \ already the one we would write"
+                        false (= name-before "SetDataN"))
+                ]
+            )
+            ;;==== TX-SET-012 · 02 · pair 1: only the LIST LENGTH moves ====
+            (print "--- [TX-SET-012 · 02 · pair 1: only the LIST LENGTH moves] ---")
+            ;;Same signer, same patron, same collection, same account, same NonceData. `[1 2]`
+            ;;against a one-element data list trips [b]; `[1]` against the same list clears it.
+            (map print
+                [
+                    (expect-failure "<<TX-SET-012>> SHADOW: mismatched list lengths never reach the gate"
+                        "Invalid Inputs for Updating Nonces"
+                        (ref-TS02-C1::DPSF|C_UpdateNonces attacker sft-id victim [1 2] true [nd]))
+                    (expect-failure "<<TX-SET-012>> GATE: the identical call with matching lengths is\
+                        \ refused by account ownership instead"
+                        "Keyset failure (keys-all): [PK_Ancie...]"
+                        (ref-TS02-C1::DPSF|C_UpdateNonces attacker sft-id victim [nonce] true [nd]))
+                ]
+            )
+            ;;==== TX-SET-012 · 03 · pair 2: only the ACCOUNT moves (the nearest shadow) ====
+            (print "--- [TX-SET-012 · 03 · pair 2: only the ACCOUNT moves (the nearest shadow)] ---")
+            ;;The naive attack is EMMA naming her OWN account -- and it is worthless: it is refused
+            ;;by [c] and would pass identically with the ownership call DELETED. Naming the victim's
+            ;;account is what clears [c], and it is also the only shape that is actually an attack.
+            (map print
+                [
+                    (expect-failure "<<TX-SET-012>> SHADOW: the naive attack -- EMMA names her own\
+                        \ account -- dies at the ROLE check, one line above the gate"
+                        "Element Data cannot be Updated while using the"
+                        (ref-TS02-C1::DPSF|C_UpdateNonces attacker sft-id attacker [nonce] true [nd]))
+                    (expect-failure "<<TX-SET-012>> GATE: naming the ROLE-HOLDER's account clears [c]\
+                        \ and lands on ownership"
+                        "Keyset failure (keys-all): [PK_Ancie...]"
+                        (ref-TS02-C1::DPSF|C_UpdateNonces attacker sft-id victim [nonce] true [nd]))
+                    (expect "<<TX-SET-012>> ...and none of the four refusals moved the nonce's name"
+                        name-before (at "name" (ref-DPDC::UR_NonceData sft-id true nonce)))
+                ]
+            )
+            ;;==== TX-SET-012 · 04 · non-vacuity: the rightful owner succeeds ====
+            (print "--- [TX-SET-012 · 04 · non-vacuity: the rightful owner succeeds] ---")
+            ;;Byte-identical to the GATE line above; only the signature and the patron change.
+            (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+            ;;The return value is deliberately NOT pinned: this wrapper hands back IGNIS::C_Collect's
+            ;;raw "Write succeeded" rather than the `format` sentence CLAUDE.md requires of a Talos
+            ;;`C_*`. That is a reportable deviation, and pinning it would make its repair red.
+            ;;The STATE change is the assertion.
+            (map print
+                [
+                    (expect "<<TX-SET-012>> the account owner's identical update is accepted, and\
+                        \ the nonce's name really changes"
+                        "SetDataN"
+                        (let
+                            (
+                                (ignore:string
+                                    (ref-TS02-C1::DPSF|C_UpdateNonces victim sft-id victim
+                                        [nonce] true [nd]))
+                            )
+                            (at "name" (ref-DPDC::UR_NonceData sft-id true nonce))
+                        ))
+                ]
+            )
+            ;;==== TX-SET-012 · 05 · attribution: the gate reads the ARGUMENT, not the owner ====
+            (print "--- [TX-SET-012 · 05 · attribution: the gate reads the ARGUMENT, not the owner] ---")
+            ;;Same §8.8 problem as TX-SET-011: ANHD is the owner konto AND the recreate-role holder,
+            ;;so PK_Ancie is true of either reading. Move `r-nft-recreate` to FLRN with an
+            ;;owner-signed client op and re-run: the refusal must follow the ARGUMENT.
+            (map print
+                [
+                    (expect "<<TX-SET-012>> the owner moves <r-nft-recreate> to a third party"
+                        true
+                        (let ((ignore:string (ref-TS02-C1::DPSF|C_MoveRecreateRole victim sft-id third)))
+                            (ref-DPDC::UR_CA|R-Recreate sft-id true third)))
+                    (expect "<<TX-SET-012>> ...while the owner konto is untouched"
+                        victim (ref-DPDC::UR_OwnerKonto sft-id true))
+                    (expect-failure "<<TX-SET-012>> ...and ANHD, STILL the owner, is now refused by\
+                        \ the ROLE check -- he lost the flag, not the collection"
+                        "Element Data cannot be Updated while using the"
+                        (ref-TS02-C1::DPSF|C_UpdateNonces victim sft-id victim [nonce] true [nd]))
+                ]
+            )
+            (env-sigs [{ "key": "PK_Emma", "caps": [] }])
+            (map print
+                [
+                    (expect-failure "<<TX-SET-012>> ...and the stranger naming the NEW role-holder is\
+                        \ refused by PK_Flore's keyset, not the owner's. The gate is on <account>"
+                        "Keyset failure (keys-all): [PK_Flore...]"
+                        (ref-TS02-C1::DPSF|C_UpdateNonces attacker sft-id third [nonce] true [nd]))
+                ]
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+;;ROLLBACK for the same reason as TX-SET-011: group 04 rewrites nonce 1's NonceData and group 05
+;;relocates a Verum role, and downstream suites read this fixture.
+(rollback-tx)
+(print "=== END TX-SET-012 ==================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+
+(begin-tx "TX-SET-013 - DPDC|C>TG_EXEMPTION-R: the collection-owner gate, first witness")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-SET-013 · 01 · what runs BEFORE the ownership call ====
+(print "--- [TX-SET-013 · 01 · what runs BEFORE the ownership call] ---")
+;;`DPDC|C>TG_EXEMPTION-R` ends on `DPDC::CAP_Owner id son` -- the COLLECTION's owner konto, not the
+;;account being granted the role. Never witnessed refusing anybody: every exemption toggle in the
+;;tree is owner-signed.
+;;
+;;THE CHECKS THAT PRECEDE IT, in execution order (`05_DPDC-R.pact`, defcap head):
+;;  [a] the `let` -- `(ref-DALOS::UR_AccountType account)` is EAGER and a hard read, so an account
+;;      that does not exist in DALOS dies in the table rather than in any enforce;
+;;  [b] `(enforce type "Only Smart Ouronet Accounts can get this role")`;
+;;  [c] `UEV_AccountExemptionState id son account (not toggle)` -- the flag must currently be the
+;;      OPPOSITE of what is being asked for.
+;;[b] is where the obvious attack dies, and dying there proves nothing: EMMA is an ordinary `Ѻ.`
+;;account, so "attacker toggles her own exemption" is refused identically with the owner gate
+;;DELETED. [c] is the NEAREST shadow, and the pair in group 03 is built on it.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPDC:module{DpdcV2} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (attacker:string KST.EMMA)
+        (victim:string KST.ANHD)
+        (smart:string KST.TALOS)
+        (smart2:string KST.SWAPR)
+        (sft-id:string "TSFS-98c486052a51")
+    )
+    (map print
+        [
+            (expect "<<TX-SET-013>> TSFS is owned by ANHD -- the gate's target"
+                victim (ref-DPDC::UR_OwnerKonto sft-id true))
+            (expect "<<TX-SET-013>> EMMA is an ORDINARY account, so she cannot clear check [b]"
+                false (ref-DALOS::UR_AccountType attacker))
+            (expect "<<TX-SET-013>> the Talos smart account CAN, which is what makes it a fixture"
+                true (ref-DALOS::UR_AccountType smart))
+            (expect "<<TX-SET-013>> ...and its exemption flag is still OFF, so <toggle=true> clears\
+                \ check [c] while <toggle=false> does not"
+                false (ref-DPDC::UR_CA|R-Exemption sft-id true smart))
+        ]
+    )
+    ;;==== TX-SET-013 · 02 · the worthless attack, kept as the shadow it is ====
+    (print "--- [TX-SET-013 · 02 · the worthless attack, kept as the shadow it is] ---")
+    ;;This is the test a naive sweep would have written and called a pass. It is green, it says
+    ;;nothing about ownership, and it would stay green if `CAP_Owner` were removed from the defcap.
+    (map print
+        [
+            (expect-failure "<<TX-SET-013>> SHADOW [b]: EMMA naming her own ORDINARY account never\
+                \ reaches the gate"
+                "Only Smart Ouronet Accounts can get this role"
+                (ref-TS02-C1::DPSF|C_ToggleExemptionRole attacker sft-id attacker true))
+        ]
+    )
+    ;;==== TX-SET-013 · 03 · the differential pair: only <toggle> moves ====
+    (print "--- [TX-SET-013 · 03 · the differential pair: only <toggle> moves] ---")
+    ;;Same signer, same patron, same collection, same target account. The ONLY difference is one
+    ;;boolean -- and that boolean is consumed by exactly two places: check [c], and the write that
+    ;;lies beyond the gate. `false` asks the flag to already be ON, which it is not, so [c] speaks;
+    ;;`true` agrees with the world, [c] is satisfied, and the next thing in the defcap answers.
+    (map print
+        [
+            (expect-failure "<<TX-SET-013>> SHADOW [c]: <toggle=false> is refused by the state check\
+                \ one line above the gate"
+                "must be set to true for exec"
+                (ref-TS02-C1::DPSF|C_ToggleExemptionRole attacker sft-id smart false))
+            (expect-failure "<<TX-SET-013>> GATE: the identical call with <toggle=true> is refused by\
+                \ the COLLECTION OWNER's keyset instead"
+                "Keyset failure (keys-all): [PK_Ancie...]"
+                (ref-TS02-C1::DPSF|C_ToggleExemptionRole attacker sft-id smart true))
+            (expect "<<TX-SET-013>> ...and neither refusal flipped the flag"
+                false (ref-DPDC::UR_CA|R-Exemption sft-id true smart))
+        ]
+    )
+    ;;==== TX-SET-013 · 04 · attribution: the refused keyset is the OWNER's, not the target's ====
+    (print "--- [TX-SET-013 · 04 · attribution: the refused keyset is the OWNER's, not the target's] ---")
+    ;;§8.8's question asked of this gate: could "PK_Ancie" be the TARGET account's guard rather than
+    ;;the collection owner's? No, and it is cheap to prove rather than assume. The two smart
+    ;;accounts below are guarded by DIFFERENT keysets (`dh_sc_dalos-keyset` vs `dh_sc_swapper-keyset`,
+    ;;neither of them ANHD's `dh_ah-keyset`), yet both refusals name the SAME key -- the one
+    ;;belonging to the collection owner, who is not either of them.
+    (map print
+        [
+            (expect "<<TX-SET-013>> the two smart targets are guarded by DIFFERENT keysets"
+                false
+                (= (format "{}" [(ref-DALOS::UR_AccountGuard smart)])
+                   (format "{}" [(ref-DALOS::UR_AccountGuard smart2)])))
+            (expect "<<TX-SET-013>> ...and neither is guarded by the owner's keyset"
+                [false false]
+                [(= (format "{}" [(ref-DALOS::UR_AccountGuard smart)])
+                    (format "{}" [(ref-DALOS::UR_AccountGuard victim)]))
+                 (= (format "{}" [(ref-DALOS::UR_AccountGuard smart2)])
+                    (format "{}" [(ref-DALOS::UR_AccountGuard victim)]))])
+            (expect "<<TX-SET-013>> the second target's flag is OFF too, so it clears [c] the same way"
+                false (ref-DPDC::UR_CA|R-Exemption sft-id true smart2))
+            (expect-failure "<<TX-SET-013>> ...yet the refusal names the SAME key for BOTH targets,\
+                \ which only the owner reading explains"
+                "Keyset failure (keys-all): [PK_Ancie...]"
+                (ref-TS02-C1::DPSF|C_ToggleExemptionRole attacker sft-id smart2 true))
+        ]
+    )
+    ;;==== TX-SET-013 · 05 · non-vacuity: the rightful owner succeeds ====
+    (print "--- [TX-SET-013 · 05 · non-vacuity: the rightful owner succeeds] ---")
+    ;;Byte-identical to the GATE line in group 03; only the signature and the patron change. The
+    ;;return value is NOT pinned -- this wrapper hands back IGNIS::C_Collect's raw "Write succeeded"
+    ;;instead of a `format` sentence, and pinning that would make its repair red. The FLAG is the
+    ;;assertion.
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (map print
+        [
+            (expect "<<TX-SET-013>> the owner's identical toggle is accepted, and the exemption\
+                \ flag really flips OFF -> ON"
+                true
+                (let
+                    (
+                        (ignore:string
+                            (ref-TS02-C1::DPSF|C_ToggleExemptionRole victim sft-id smart true))
+                    )
+                    (ref-DPDC::UR_CA|R-Exemption sft-id true smart)
+                ))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+;;ROLLBACK: group 05 grants a real role on TSFS, and downstream suites read this fixture.
+(rollback-tx)
+(print "=== END TX-SET-013 ==================================================")
+(print "")

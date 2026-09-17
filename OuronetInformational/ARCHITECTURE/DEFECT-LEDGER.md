@@ -3181,3 +3181,69 @@ load-bearing the day the master key is driven by automation rather than by a per
 nested inside that `enforce-one` is **mute**. A caller who exceeds the allowance is never told that
 is why — they receive the outer *"Add multiple conditions…"*. `RT-I-002` pins the outer message
 deliberately, so the test records what a caller actually sees rather than what the code says.
+
+## 8.15 The shadowed-gate worklist is empty — and three findings from the last band
+
+**`DPDC-C|C>REGISTER-NONCES`, `DPDC-N|C>SET-DATA` and `DPDC|C>TG_EXEMPTION-R`** are witnessed, with
+differential pairs and non-vacuity controls. That closes the programme:
+
+| | start | end |
+|---|---:|---:|
+| ownership-gated defcaps reachable from a named op | 112 *(as then measured)* | **167** |
+| observed | 19 | **84** |
+| attributed at depth 0 | — | **65** |
+| **shadowed AND never witnessed — TESTABLE** | 23 | **0** |
+
+Four remain, all **structurally inner** — three `SCR|XE>` forward-module entrypoints and
+`SWP|S>WEIGHTS` via `XB_ModifyWeights`. No client-surface test can attribute a refusal to those; the
+outer gate refuses first, by design. They are not work.
+
+**The sharpest attribution proof in the whole programme came from this band.** `DPDC-C|C>REGISTER-NONCES`
+is guarded on the `r-nft-create` role-holder, and in the fixture that is the same account as the
+collection owner — so `PK_Ancie` is true of *either* reading and attributes nothing. The remedy was
+to **move the role**: the owner legitimately transfers `r-nft-create` to a third party, leaving the
+owner konto untouched, and then **the owner — still the owner — is refused, naming the new
+role-holder's key.** An owner gate cannot refuse the owner. That separates the two readings with a
+legitimate operation rather than an assertion.
+
+**A near-miss worth recording.** The verification command I supplied was wrong: `modules/DPDC.repl`
+loads a mock-collection fixture, not `[6.1.3]`, so it would never have executed the new tests. The
+correct tester is `modules/DPDC-S.repl`. A green run of the wrong harness is indistinguishable from a
+green run of the right one — this is the `head -6` class again, and it was caught only because the
+agent checked which file the tester actually loads instead of trusting the instruction.
+
+### F1 — 112 of 298 Talos client wrappers return no sentence at all
+
+CLAUDE.md: *"Talos `C_*` functions end with a clear `format` result string explaining the branch
+taken, not raw IDs."* Measured across every Talos module, sovereign and citizen:
+
+| file | no `format` / total |
+|---|---|
+| `05_TS01-P.pact` (defpacts) | **8 / 8** |
+| `99_TS02-CPAD.pact` (citizen launchpad) | **7 / 7** |
+| `01_TS02-C1.pact` | 36 / 62 |
+| `02_TS02-C2.pact` | 33 / 57 |
+| `02_TS01-C1.pact` | 14 / 59 |
+| `03_TS01-C2.pact` | 5 / 70 |
+| **total** | **112 / 298 (38%)** |
+
+Those wrappers return `IGNIS::C_Collect`'s raw `"Write succeeded"`. Unlike §8.11's modref case —
+where counting showed the deviation *was* the convention — here **62% comply**, so the rule is the
+norm and the deviation is concentrated: Stage 1 ~15%, Stage 2 ~58%, and both the defpact and citizen
+Talos at 100%. That reads as a convention applied in Stage 1 and not carried forward.
+
+Not a security defect. It has a concrete downstream cost: the roadmap's UI capstone consumes exactly
+these return strings (*"button = client fn"*), and `"Write succeeded"` tells a user nothing about
+which branch ran. **Recorded with the measurement rather than fixed** — 112 functions is a deliberate
+sweep, not a red-team repair, and the returns were pointedly **not pinned**, since pinning
+`"Write succeeded"` would make the repair red.
+
+### F2 / F3 — two smaller ones
+
+- `DPSF|C_MoveCreateRole` locks the collection **owner** out of nonce creation once the role is
+  moved. Intended — that is what a transferable role means — and it is precisely what makes the
+  attribution proof above work. Recorded because an owner who moves the role to a lost account has no
+  owner-level path back *through the create path*; recovery exists, but only by moving the role again.
+- `DPDC-C|C>REGISTER-NONCES`'s length check is unreachable through the single-nonce door, which
+  constructs both lists itself. Not a hole — but the *"a single Nonce"* arm of its message is dead
+  text, the same shape as two `UNREACHABLE` branches already annotated in that defcap.
