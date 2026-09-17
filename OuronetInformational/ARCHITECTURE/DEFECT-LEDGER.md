@@ -1135,6 +1135,22 @@ because the plan builder does not emit BAR today.
 | **G-26** | `01_DALOS.pact:397/414/425` `GAS_PAYER` exec-code folds (×3) | Same index sub-shape on `exec-lines`. | `<<DALOS-G2e>>`, `<<DALOS-G2f>>` |
 | **G-27** | `04_RPS.pact:3919` | The one remaining `[read]` hit from `_foldeager.py`: a later conjunct `(= (UR_FVT\|FvtClass fvt-id) 0)` hard-reads what an earlier conjunct guards. | — |
 
+| **G-44** | `08_DPDC-S.pact` `DPDC-S\|C>MAKE` — "Set-Class {} is not active for Set Composition" | A **partial** shadow, measured both ways 2026-09-17. The `let` binds `(iz-active (UR_IzSetActive id son set-class))`, which funnels to `UR_Set`'s bare `read` — so an **existing but inactive** class reaches the message, while a **nonexistent** one aborts on `No value found in table … DPSF\|SetsTable for key: TSFS-98c486052a51\|99`. Same split as G-10: live for one input, mute for the likelier one. Set classes are **1-based**, so `0` — the natural off-by-one — is in the mute half. | — |
+| **G-45** | `08_DPDC-S.pact` `DPDC-S\|C>RENAME` — no domain guard at all | Binds `(current-name (UR_SetName …))`, the same hard read, and unlike its sibling never calls `UEV_SetClass`. **The module already contains a live guard for this exact input** — `UEV_SetClass`'s hoisted `(enforce (> set-class 0) "Invalid Set-Class Value")` — and `RENAME` is not wired to it, so `set-class 0` surfaces a raw table key instead of the sentence written for it. Measured at `0` and at `99`. | — |
+
+Both were found by a probe at `set-class 0` that was meant to build a *test fixture*, not to look for
+a defect — the fixture died in the reader. **Fixing either needs a `with-default-read` existence
+reader that `DPDC-S` does not have** (the module's only two `with-default-read`s are on the policy
+table), which is the same disposition and the same blocker as G-21; `URC_TripletExists` remains the
+in-repo precedent. Recorded rather than patched because adding a reader to a canonical Stage-2 module
+and rewiring two client defcaps is a design change, not a mechanical one.
+
+**Not a finding, and worth recording as such:** `UEV_SetClass`'s *second* enforce
+(`(= set-class sc)`, "Invalid DPDC Set Data") is also unreachable for a nonexistent class — but that
+is **already dispositioned**. `02_SCORE.pact:890` keeps its structural twin deliberately, "as a
+data-integrity assertion against a corrupt write (same disposition as `DPDC-S::UEV_SetClass`'s
+`(= set-class sc)`)". A sweep that flagged it would be re-reporting a decision as a defect.
+
 ### 1.2.3 Guards that are dead, and whose stated rule is therefore unenforced
 
 Distinct from the class above: the input never reaches a *wrong* error, because the check is a
