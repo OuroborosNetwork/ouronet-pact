@@ -1132,3 +1132,60 @@
 )
 (env-sigs [])
 (rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DALOS-G7 — the M1 STOA-ledger cleanup fix, which had no witness")
+(print "")
+(print "=== DALOS-G7 — C_RotateStoa reads the OLD address before overwriting =======")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;M1 / #25M: `C_RotateStoa` must read the OLD stoa address BEFORE `XI_RotateStoa` overwrites it.
+;;Without that, `UR_AccountStoa` returns the ALREADY-ROTATED address, the ledger cleanup targets the
+;;wrong key, and the old address's ledger row is orphaned forever -- an account still listed under a
+;;stoa address it no longer uses, permanently.
+;;
+;;The fix (`01_DALOS.pact:1874`) was present and unwitnessed: `UR_StoaLedger` had ZERO references in
+;;any `.repl` in the tree. Nothing read the table the fix exists to keep correct.
+;;
+;;THE ASSERTION THAT CARRIES THE FIX IS THE FIRST ONE. Adding the account to the NEW ledger happens
+;;either way -- that line is not what #25M repaired. What breaks without the fix is the REMOVAL from
+;;the old one, because the cleanup is handed the new address and deletes from the wrong row. So the
+;;"gone from OLD" assertion is the one that goes red on a revert, and the "present in NEW" assertion
+;;is there to show the rotation actually happened rather than silently no-opping.
+(env-sigs [{ "key": "PK_Emma", "caps": [] } { "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (new-stoa:string "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e")
+    )
+    (let
+        (
+            (old-stoa:string (ref-DALOS::UR_AccountStoa KST.EMMA))
+        )
+        (map print
+            [
+                ;;PRECONDITION: the account really is listed under its current address, so the
+                ;;removal below is a state CHANGE and not a vacuous "was never there".
+                (expect "<<DALOS-G7>> the account starts out listed under its current stoa address"
+                    true (contains KST.EMMA (ref-DALOS::UR_StoaLedger old-stoa)))
+                (expect "<<DALOS-G7>> ...and the two addresses differ, so the rotation is real"
+                    false (= old-stoa new-stoa))
+            ]
+        )
+        (ref-TS01-C1::DALOS|C_RotateStoa KST.ANHD KST.EMMA new-stoa)
+        (map print
+            [
+                ;;THE FIX. Without it the cleanup is handed the NEW address and the old row is orphaned.
+                (expect "<<DALOS-G7>> M1: after rotating, the account is GONE from the old ledger"
+                    false (contains KST.EMMA (ref-DALOS::UR_StoaLedger old-stoa)))
+                (expect "<<DALOS-G7>> ...and present in the new one, so the rotation happened"
+                    true (contains KST.EMMA (ref-DALOS::UR_StoaLedger new-stoa)))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
