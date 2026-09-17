@@ -3649,3 +3649,33 @@ This is the part worth keeping.
 > **A witness for a fix is harder to write than a test for a feature**, because the question is not
 > "does this work?" but "what input behaves differently under the *old* code?" Four times out of
 > eleven, the obvious answer to the first question answered nothing about the second.
+
+## 8.27 "No live pricing path reads a database table" — false as written, and a near-miss
+
+`IGNIS-PRICING.md` §2 stated *"no live pricing path reads a database table — the DALOS usage-price
+tiers are gone from every client path."* **Seven live core reads remain**: `04_BRD.pact:408`
+(`"blue"`), `11_VST.pact` ×4, `20_MTX-SWP.pact:1048-49`, plus the INFO previews mirroring them.
+
+**The single-source property nonetheless holds**, which is why this is a wording fix and not a
+pricing defect: `[4.0]_Sovereign-Executor.repl:255-260` re-seeds those keys from
+`IGNIS::UC_StoaPrice` — from `IG|DETER` — explicitly *"not hand-set: one source of truth"*. Verified
+by execution: `UR_UsagePrice "blue"`, `UC_StoaPrice "branding-blue"` and `URCi_UpgradeBranding 1` all
+return **250.0**.
+
+**What the wording hid is that propagation is TWO steps**: constant → deploy-time seeding → table →
+read. Retuning `IG|DETER` on a live chain moves nothing until the seeding is re-run. A sentence
+saying the table is out of the path implies one step, and an operator who believed it would retune
+the constant and watch the price not move.
+
+### The near-miss
+
+The same executor sets those keys to **hand-written literals** twenty lines earlier — `"blue" 0.025`
+at `:236` — and that block is superseded at `:255-260`. Reading only the first block gives:
+documented 250 STOA/month against a seeded 0.025, a factor of **10,000**, on a live billing path.
+
+I had the arithmetic and stopped to measure instead. All three readings returned 250.0.
+
+> **Two blocks writing the same keys, the second overriding the first, twenty lines apart.** Reading
+> either one alone gives a confident and opposite answer. This is the fourth time in the programme
+> that a defect inferred from reading evaporated on execution — and the first where the wrong answer
+> would have been a ten-thousand-fold underpricing claim against a shipped system.

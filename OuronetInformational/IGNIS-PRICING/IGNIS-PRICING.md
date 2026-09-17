@@ -51,9 +51,30 @@ do not "correct" it to derive from IG\|DETER.
 # 2. Where a price lives
 
 Four constant maps, all in `1_SOVEREIGN/STAGE_01/2_Core/02_IGNIS.pact`.
-**A price is retuned there and nowhere else.** As of 2026-09-07 **no live pricing path reads a
-database table** — the DALOS usage-price tiers are gone from every client path (owner: "we run no
-more table values, but constants for determining prices now").
+**A price is retuned there and nowhere else.** As of 2026-09-07 the DALOS usage-price tiers no
+longer carry an independent value (owner: *"we run no more table values, but constants for
+determining prices now"*).
+
+> **CORRECTED 2026-09-17.** This used to say **"no live pricing path reads a database table"**, and
+> that sentence is false as written. **Seven live core reads of `UR_UsagePrice` remain** on pricing
+> paths — `04_BRD.pact:408` (`"blue"`), `11_VST.pact` ×4 (`"dptf"`/`"dpmf"`), `20_MTX-SWP.pact:1048-49`
+> (`"dptf"`+`"swp"`) — plus the INFO previews that mirror them.
+>
+> **The single-source property still holds**, which is why this is a wording fix and not a defect:
+> `REPL/Stage_01/[4.0]_Sovereign-Executor.repl:255-260` re-seeds those keys from
+> `IGNIS::UC_StoaPrice`, i.e. **from `IG|DETER`**, explicitly *"not hand-set: one source of truth"*.
+> Verified by execution: `UR_UsagePrice "blue"`, `UC_StoaPrice "branding-blue"` and
+> `URCi_UpgradeBranding 1` all return **250.0**.
+>
+> **What the old wording hid is that propagation is TWO steps, not one**: constant → deploy-time
+> seeding → table → read. Retuning `IG|DETER` on a live chain does not move these seven prices until
+> the seeding is re-run. A sentence saying the table is out of the path implies one step, and an
+> operator who believed it would retune the constant and see no change.
+>
+> *(A caution from finding this: the executor ALSO sets these keys to hand-written literals at
+> `:228-236` — `"blue" 0.025` — and those lines are superseded twenty lines later. Reading only the
+> first block suggests the constant is ignored and the price is 10,000x wrong. It is not. The
+> measurement above is what settled it.)*
 
 | map | holds | keys |
 |---|---|---:|
