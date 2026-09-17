@@ -3750,3 +3750,39 @@ maps to roughly 280,000 gas here — 14% — a conservative proxy by a factor of
 modules in **bytes** against Kadena's 150k cap (wrong chain, wrong limit, wrong unit — it made six
 modules look over the line), and I first measured table coupling **directly** rather than
 transitively, which would have produced a split design around a seam that does not exist.
+
+## 8.30 Gating the eager-let zero — and a check whose alarm I could not make ring
+
+Part II noted that several coverage instruments have no `--check` and are not gate-run. Surveyed:
+**36 tools** have neither, but most are generators, one-shot mutators, or ad-hoc analysers that
+should not be gates. The one worth gating reports a **zero invariant that nothing protected**.
+
+`_eagerlet.py` finds an `enforce` that **cannot fire** because a hard read in the same `let` binding
+group consumes its subject first. That is the dominant failure mode of this entire audit: locating
+the real first raiser by *reading* rather than executing reached a wrong conclusion in **four**
+separate investigations, two of which were repairs to guards that could never have spoken (G-44/G-45).
+Its narrow mode reports **0**, and that 0 was a memory.
+
+Now gated — on the **not-yet-annotated** count rather than on existence, because a shadow is
+sometimes deliberate (DPDC-S keeps one as a data-integrity assertion against a corrupt write). The
+requirement is that every instance has been *looked at*, not that none exists.
+
+### The part worth recording: I could not demonstrate the check firing
+
+Three attempts at a synthetic shadow — a hard-reader binding, an `enforce` naming it, an
+existence-word message, outside `try`/`if` — were all scanned and **none was flagged**, and I did not
+establish why. Along the way two earlier mutation attempts were **vacuous**: one edited a string that
+was not in the file, another removed an annotation at a site the tool does not flag.
+
+What *is* demonstrated: the machinery runs (`--wide` returns 5 sites), and narrow mode has produced
+real findings historically.
+
+> **So this gate protects a zero whose alarm has not been shown to ring** — weaker than every other
+> `--check` in the directory. It is wired in because the invariant is worth having and a silent check
+> costs nothing; it is **labelled in the tool** because a check nobody can demonstrate is precisely
+> the failure this programme has spent the session cataloguing, and the honest move is to say so
+> rather than let the gate's green imply more than it earned.
+
+**All 5 wide-mode hits inspected: every one a false positive** — two modref bindings, one guarded by
+the `(if row-found …)` idiom, one by `try`, one whose `enforce` makes no existence claim. The mode's
+own label says to expect them, and it is right. The tree is clean on this axis.

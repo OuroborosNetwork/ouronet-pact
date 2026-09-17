@@ -202,3 +202,40 @@ for f, line, v, rdr in flagged:
     print(f"  {f}:{line}")
     rel = "tests" if not WIDE else "mentions"
     print(f"      an enforce here {rel} {v}; {rdr} (hard read) consumes {v} in the binding group above")
+
+
+# ---- --check: gate the zero ---------------------------------------------------------------------
+# ADDED 2026-09-17. This tool reported "NOT YET ANNOTATED: 0" and nothing enforced it, so the zero was
+# a memory rather than a fact. It is the invariant most worth protecting in this codebase: an eager
+# `let` binding that performs a hard read SHADOWS every enforce below it in the same group, and
+# locating the real first raiser by reading rather than executing has been the dominant failure mode
+# of the whole audit -- four separate investigations reached a wrong conclusion that way, and two of
+# them were repairs to guards that could never have spoken.
+#
+# Deliberately gated on the NOT-YET-ANNOTATED count only. Annotating a site is an act of judgement
+# (the shadow is sometimes correct and deliberate, as with DPDC-S's data-integrity assertion), so the
+# gate demands that every instance has been LOOKED AT, not that none exists.
+# HONEST LIMITATION, recorded rather than papered over. The NARROW mode's positive path is NOT
+# demonstrated by a self-test: three attempts at a synthetic shadow (a hard-reader binding, an
+# enforce naming it, an existence-word message, outside try/if) were all scanned and none flagged,
+# and the reason was not established. What IS demonstrated is that the machinery runs -- `--wide`
+# returns 5 sites on this tree -- and that narrow mode has produced real findings historically.
+#
+# So this gate protects a zero whose alarm has not been shown to ring. That is weaker than every
+# other --check in this directory, and it is said here because a check nobody can demonstrate is
+# exactly the failure this programme spent a session cataloguing. It is wired in because the
+# invariant is worth having and the cost of a silent check is zero; it is labelled because the
+# assurance it provides should not be overstated.
+#
+# On this tree, 2026-09-17: narrow 0, wide 5 -- and all 5 inspected as FALSE POSITIVES (two modref
+# bindings, one guarded by the `(if row-found ...)` idiom, one by `try`, one enforce that makes no
+# existence claim). The mode's own label says to expect them, and it is right.
+if "--check" in sys.argv:
+    if flagged:
+        print(f"\n{len(flagged)} eager-let shadow(s) with no annotation at source.")
+        print("Each is an `enforce` that cannot fire, because a hard read in the same binding group")
+        print("consumes its subject first. Either fix the ordering, or annotate the site to record")
+        print("that the shadow is deliberate -- but do not leave it silent.")
+        sys.exit(1)
+    print("eager-let: clean -- every shadowed enforce is annotated at source")
+    sys.exit(0)

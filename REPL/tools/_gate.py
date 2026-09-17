@@ -358,6 +358,19 @@ def main():
         print(_px.stdout + _px.stderr)
         sys.exit("GATE FAILED: a live function prefix is unknown to tools/skeleton.py.")
 
+    # EAGER-LET SHADOWS -- an `enforce` that cannot fire because a hard read in the same binding
+    # group consumes its subject first. This is the dominant failure mode of the 2026-09 audit:
+    # locating the real first raiser by READING rather than executing reached a wrong conclusion in
+    # four separate investigations, two of which were repairs to guards that could never speak.
+    # Gated on the NOT-YET-ANNOTATED count, not on existence: a shadow is sometimes deliberate, so
+    # the requirement is that every instance has been LOOKED AT. See the limitation note in the tool
+    # -- its alarm path is not self-demonstrated, and that is stated there rather than assumed away.
+    _el = subprocess.run([sys.executable, "tools/_eagerlet.py", "--check"],
+                         capture_output=True, text=True)
+    if _el.returncode != 0:
+        print(_el.stdout + _el.stderr)
+        sys.exit("GATE FAILED: an enforce is shadowed by an eager hard read, unannotated.")
+
     # AUDIT BOOK TABLES -- the book's headline tables must sum to their own totals, and Part III's
     # must match the attack register in the tree. Added 2026-09-17 after Part I's verification pass
     # found an audit tracker that said "FIXED: 19" while enumerating 18, with a compensating
