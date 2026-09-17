@@ -310,6 +310,17 @@
                     (expect-failure "<<TX-HET-02>> non-owner cannot set quality split"
                 "Keyset failure (keys-all): [PK_Ancie...]"
                         (ref-TS02-C3::AQP-FVT|C_SetQualitySplit emma farm-id ouro-id "HETEROGENEOUS" [1000 0 0] [1000 0 0] [1000 0 0]))
+                    ;;THE SIBLING GATE, which had no witness until 2026-09-17. `FVT|C>SET-SPLIT-MODE`
+                    ;;is a DIFFERENT defcap from `C>SET-QUALITY-SPLIT` above -- same owner, same farm,
+                    ;;separate `CAP_EnforceAccountOwnership` -- so the assertion above said nothing
+                    ;;about it, and deleting its owner check would have turned nothing red
+                    ;;(`REPL/tools/_ownerobs.py`). Its own guard is the farm-class-0 test that this
+                    ;;whole block is already wrapped in, so the owner gate is genuinely what refuses.
+                    ;;The mode is read from the module CONSTANT rather than written as a literal, so
+                    ;;the test cannot drift from the value the guard actually compares against.
+                    (expect-failure "<<TX-HET-02>> ...nor the split mode, which is a separate owner gate"
+                        "Keyset failure (keys-all): [PK_Ancie...]"
+                        (ref-TS02-C3::AQP-FVT|C_SetSplitMode emma farm-id AQP-FVT.CT_SPLIT_MODE_TVL))
                 ]
             )
             (print "--- [TX-HET-02 - 02 - a row not summing to 1000 rejected] ---")
