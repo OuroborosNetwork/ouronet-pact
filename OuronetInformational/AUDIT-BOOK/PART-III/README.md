@@ -118,10 +118,17 @@ position is indistinguishable from a deleted one, from the outside.
 
 ## Verification state
 
-At the time of writing, the full gate is **green at 24,962 assertions** (19,988 positive, 4,974
+At the time of writing, the full gate is **green at 25,029 assertions** (20,036 positive, 4,993
 negative) across the whole system — every deploy stage, every scenario suite, every red-team attack,
 plus the static checks on generated artefacts, tool paths, prefix vocabulary, cross-module member
-resolution, and assertion vacuity. Wall time ~7 minutes. Reproduction: Appendix 1.
+resolution, assertion vacuity, eager-let shadows, and this book's own tables. Wall time ~5-7 minutes.
+Reproduction: Appendix 1.
+
+> **That number is a snapshot and will move.** It rose from 22,939 to 25,029 during the round
+> documented here. The canonical value is whatever `ARCHITECTURE/REPL_SUITE_STATS.md` holds, and
+> `_figuresync.py --check` now verifies that file **against the tree** — it previously verified only
+> that every document agreed with it, which is circular and was green while all of them were wrong
+> together (DEFECT-LEDGER §8.22).
 
 ## Chapters
 
