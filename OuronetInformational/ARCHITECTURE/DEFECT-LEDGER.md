@@ -2515,6 +2515,42 @@ literals *inside tools* and cannot see a path in prose.
 
 ## 7.3 Known-open, recorded deliberately
 
+- **The AQP shared-reader question (G-37..G-41): DECIDED 2026-09-17, and the decided remedy is NOT
+  the one that was proposed.** *(owner delegated the call; this is the measurement it rests on.)*
+
+  **Defaulting the shared `UR_SCR|Score*` readers is the wrong fix, and the measurement says so.**
+  Driving `AQP-SCR|C_IssueNonFungibleScoreDefinition` at a score that does not exist returns
+  `No value found in table ouronet-ns.AQP-SCORE_SCR|T|Score for key: NOSUCHSCORE-…`. The caller
+  **never reaches** any of the five guards whose messages claim existence, so defaulting the readers
+  beneath them changes nothing anyone sees — while turning three *deliberate* pins red in
+  `[6.5]_AQP-INFO.repl`, which pins those raw preview aborts on purpose. A cosmetic fix bought with
+  a real regression.
+
+  **The caller-visible defect is real and sits at the FIRST RAISER — which I failed to locate in
+  three attempts, and that is the finding worth keeping.**
+
+  | attempt | guessed raiser | result |
+  |---|---|---|
+  | 1 | `UEV_NonFungibleScoreDefinition`'s `(precision (UR_SCR|ScorePrecision …))` | guard added, **still the raw key** |
+  | 2 | core `C_IssueNonFungibleScoreDefinition`'s `(owner-konto …)` — bound and **never used** | removed, **still the raw key** |
+  | 3 | — | at least one further eager read precedes the first named guard |
+
+  Each guess came from *reading* the call chain; each was wrong. The same pattern had just been
+  demonstrated twice in one day — G-44's first raiser was in the **Talos wrapper**, not the defcap,
+  and was caught only because `TX-SET-010` pinned both paths of a two-path repair. **On an eager-`let`
+  path, the first raiser is found by executing, not by reading**: bind a probe to the op, drive it at
+  the bad input, and read what comes back. That is cheap, and it is the only thing that has worked.
+
+  **Status: actionable, with the method recorded and the wrong remedy ruled out.** The fix is an
+  existence `enforce` at whatever the true first raiser turns out to be — `URC_ScoreExists`
+  (`with-default-read`, the `URC_ScoreEntityModelExists` precedent in the same file) is the reader it
+  needs. Not attempted further here: three failed locations at the end of a long session is the point
+  to stop, and the tree was returned to its last green commit rather than left carrying a half-fix.
+
+  *One measured by-product, recorded because it is independently true:* the core `C_` binds
+  `owner-konto` and **never uses it** — a wasted bare `read` per call. Removing it did not change
+  what a caller sees, so it was not kept as part of a fix it does not make.
+
 - **RT-F-001's sibling question: CLOSED 2026-09-17 by owner ruling — and my entry was wrong on its
   own central claim.** *(raised 2026-09-16, settled and corrected here.)*
 
