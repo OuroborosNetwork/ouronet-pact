@@ -2827,3 +2827,102 @@
 )
 (env-sigs [])
 (rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-G14a — CONTROL: the overdraft alone is permitted")
+(print "")
+(print "=== DPTF-G14 — dispo-data is recomputed for EVERY leg =======================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;M5 / #29M (ranked MEDIUM, and the chapter calls it under-ranked): `dispo-data` was snapshotted ONCE
+;;before the multi-transfer fold and reused for every leg. An account's permitted OURO OVERDRAFT is a
+;;function of its Elite-Auryn holdings, so a leg that sends Elite-Auryn away leaves every LATER leg
+;;in the same batch checking against a stale, too-generous limit -- real OURO-overdraft inflation.
+;;The fix recomputes it inside each leg's own `let` (`09_TFT.pact:1797`, `:1867`).
+;;
+;;It was present and unwitnessed. <<DPTF-G7>> pins the OURO dispo FLOOR on a wipe -- a different
+;;guard on a different path. No test had ever built a batch combining an EA-REDUCING leg with an
+;;overdraft leg, which is the only shape that distinguishes the fixed code from the broken code.
+;;
+;;THE TWO HALVES ARE IN SEPARATE TRANSACTIONS, and that is not cosmetic. `expect-failure` does NOT
+;;roll back REPL writes: with both halves in one transaction the refused batch's FIRST leg (the
+;;Elite-Auryn drain) still lands, and the control then fails for the very reason it is meant to
+;;disprove. That is what the first draft of this block did -- a control that fails looks like a
+;;broken test, not like a contaminated one.
+;;
+;;[a] CONTROL FIRST: 1,580,000 OURO alone -- more than the sender holds -- SUCCEEDS, landing around
+;;-12,426. A legitimate overdraft, backed by ~114,907 Elite-Auryn.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ouro:string "OURO-98c486052a51")
+        (overdraft:decimal 1580000.0)
+    )
+    (let
+        (
+            (elite-auryn:string (ref-DALOS::UR_EliteAurynID))
+            (ouro-held:decimal (ref-DPTF::UR_AccountSupply ouro KST.ANHD))
+        )
+        (map print
+            [
+                ;;PRECONDITIONS: it must really be an overdraft, and the backing must really exist.
+                (expect "<<DPTF-G14>> the amount really exceeds the sender's OURO, so it IS an overdraft"
+                    true (> overdraft ouro-held))
+                (expect "<<DPTF-G14>> ...and the sender really holds the Elite-Auryn that permits it"
+                    true (> (ref-DPTF::UR_AccountSupply elite-auryn KST.ANHD) 0.0))
+            ]
+        )
+        (ref-TS01-C1::DPTF|C_MultiTransfer KST.ANHD [ouro] KST.ANHD KST.EMMA [overdraft] false)
+        (map print
+            [
+                (expect "<<DPTF-G14>> CONTROL: the overdraft ALONE is permitted, backed by the Elite-Auryn"
+                    true (< (ref-DPTF::UR_AccountSupply ouro KST.ANHD) 0.0))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-G14b — THE FIX: the same overdraft behind an EA-draining leg is refused")
+(print "")
+(print "--- [DPTF-G14b · 01 · the same amount, one leg in front of it] ---")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;[b] Same sender, same receiver, same OURO amount. The ONLY difference from G14a is the leg in
+;;front of it, which sends the Elite-Auryn away. On the pre-fix code this also succeeded, and the
+;;sender ended overdrafted with nothing backing it.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ouro:string "OURO-98c486052a51")
+        (overdraft:decimal 1580000.0)
+    )
+    (let
+        (
+            (elite-auryn:string (ref-DALOS::UR_EliteAurynID))
+        )
+        (map print
+            [
+                (expect-failure "<<DPTF-G14>> M5: an EA-draining leg makes the NEXT leg's overdraft fail"
+                    "Cannot Debit OURO from"
+                    (ref-TS01-C1::DPTF|C_MultiTransfer KST.ANHD
+                        [elite-auryn ouro] KST.ANHD KST.EMMA
+                        [(ref-DPTF::UR_AccountSupply elite-auryn KST.ANHD) overdraft] false))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
