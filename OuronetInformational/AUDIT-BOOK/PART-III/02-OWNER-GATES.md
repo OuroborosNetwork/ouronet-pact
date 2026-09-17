@@ -117,13 +117,34 @@ an improvement; it only moves which column lies.**
 |---|---:|---:|
 | ownership-gated capabilities in the tree | 185 | 185 |
 | …reachable from a named client operation | 112 *(as then measured)* | **167** |
-| …with a test that caused them to refuse | 19 | **82** |
-| …attributed at depth 0 (the test targeted *this* gate) | — | **63** |
-| shadowed **and** never witnessed — the worklist | 23 | **2** |
+| …with a test that caused them to refuse | 19 | **84** |
+| …attributed at depth 0 (the test targeted *this* gate) | — | **65** |
+| shadowed **and** never witnessed — **the worklist** | 23 | **0** |
+
+**The worklist is empty.** Four capabilities remain unwitnessed and all four are *structurally
+inner* — three forward-module entrypoints called only by another module, and one reached solely
+through a both-internal-and-external function. No client-surface test can attribute a refusal to
+those: the outer gate refuses first, by design. They are named rather than counted as a gap.
 
 The 18 capabilities outside the denominator are named rather than buried: **14 are in the legacy
 `00_DPMF` module**, which the architecture marks as historical and frozen; the rest are four
 special-band capabilities in `STOAICO`, `DPDC` and `RPS`.
+
+## The sharpest attribution proof came last
+
+The final band produced the cleanest separation technique in the programme, and it is worth stating
+because it generalises.
+
+`DPDC-C|C>REGISTER-NONCES` is guarded on the holder of a **transferable role**, not on the collection
+owner. In the fixtures those are the same account — so the refusal names a key that is true of
+*either* reading, and attributes nothing. The two candidate explanations are indistinguishable.
+
+The remedy was not a better assertion. It was to **move the role**: the owner legitimately transfers
+it to a third party, leaving the owner konto untouched, and then the owner — **still the owner** — is
+refused, naming the new role-holder's key.
+
+> An owner gate cannot refuse the owner. One legitimate operation separates two readings that no
+> amount of assertion-writing could.
 
 ## What the gates turned out to be guarding
 
