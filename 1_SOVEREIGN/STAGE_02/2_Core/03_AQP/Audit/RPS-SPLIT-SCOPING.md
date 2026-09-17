@@ -52,10 +52,37 @@ The mechanical options are exhausted, so the remaining ones are decisions rather
    a proxy for it. **That measurement does not exist and would settle whether this is urgent.**
 3. **Accept it with a recorded rationale**, as `00_DPMF` is accepted under a different rule.
 
-> **Recommendation: measure option 2 before designing option 1.** The band is a proxy; the limit is
-> gas. A module can be over the proxy and inside the limit, and the split being scoped here is a
-> large refactor with an interface cascade behind it. It would be worth knowing the real number
-> first — and that is a measurement, not a judgement call.
+> **Recommendation was: measure option 2 before designing option 1.** MEASURED, same day — and it
+> changes the answer.
+
+## Finding 3 — the real constraint has 5.6x headroom
+
+The band is a **proxy** for deploy gas. The limit is gas. The suite already measures it and nobody
+had read the number:
+
+| module | deploy gas | share of StoaChain's 2,000,000 block limit |
+|---|---:|---:|
+| **RPS** | **353,662** | **18%** |
+| FVT | 252,470 | 13% |
+| VCT | 243,157 | 12% |
+| SCORE | 229,505 | 11% |
+| AQP | 203,552 | 10% |
+
+*(Method: `cd REPL && pact modules/AQP.repl`, which deploys the family and prints each module's gas.
+The lines were already there.)*
+
+**RPS is the largest module in the system and uses under a fifth of a block.** The Danger band says
+*"split before deploying"*; the constraint it stands for is not close to binding.
+
+So the honest position is **not** "RPS must be split". It is: *the line-count bands are mis-calibrated
+against the limit they were derived from*, and RPS is the module that exposes it. A threshold of
+4,500 lines maps to roughly 280,000 gas here — **14% of a block** — which is a conservative proxy by
+a factor of five or so.
+
+> **The question 1.4.1.2 should answer is no longer "how do we split RPS" but "are the bands right".**
+> One of those is a large refactor with an interface cascade behind it; the other is a calibration
+> check against a number the suite already prints. The refactor was scoped first because the band
+> said Danger, and the band was never checked against the thing it approximates.
 
 ## What was checked and found not to apply
 
