@@ -3859,3 +3859,48 @@ all survivors of the DPMF → DPOF rename:
 
 Corrected. Small, but the same class as §8.6 and §8.20: **documentation that outlived what it
 described**, and here it was actively misleading about which token family a live client op acts on.
+
+## 8.34 The formatter drift was never applied because the formatter is broken
+
+CLAUDE.md records that `_normalize_repl_layout.py --apply` changes ~167 files and calls re-normalising
+*"a deliberate, reviewable act"*. Attempted, gated, and **reverted** — because the tool corrupts the
+suite. Measured: **186 files, +9,051/−99**, five suites **BROKEN**, assertions **25,029 → 24,711**.
+
+**Two distinct defects, both demonstrated:**
+
+**1. It inserts REPL natives into inline module code.** `RedTeam/[RT-G]_HostileCitizen.repl` deploys a
+hostile module inline — that *is* the attack — so the file contains a real `(module …)` block. The
+formatter dropped a banner `(print …)` inside it:
+
+```
+:59:0: repl native disallowed in module code.
+ 59 | (print "--- [RT-G-001a - deploy a hostile module into the OPEN user namespace · 02 · …] ---")
+```
+
+**2. It inserts banners INSIDE multi-line expressions.** The serious one. In `modules/AQP.repl` a
+`;;====` banner landed between the arguments of an `(expect …)` form:
+
+```
+:3222:12: Attempted to apply a closure to too many arguments
+ 3222 |  (expect "<<AQP-G41>> ...while the SAME amount in the STAKE direction is accepted outright"
+ 3223 |      "granted"
+ 3224 |  ;;==== AQP-G41 — … · 02 · let / invocation ====
+```
+
+> **The second defect is the dangerous one, and it is dangerous for a reason the first is not.** A
+> REPL native in module code fails loudly and immediately. A banner inserted between an expression's
+> arguments fails loudly **only when the result no longer parses** — and an insertion that happens to
+> leave a parseable form would change what the expression *means*, silently, across 186 files. The
+> gate caught this instance. Nothing guarantees it catches the next.
+
+**The tool needs to know where a form begins and ends before it inserts anything.** The repo already
+has that: `REPL/tools/_pactlex.py`'s `balanced()`, which every other tool uses precisely because
+line-oriented scanning of Pact is unsafe. The formatter does not use it.
+
+**Status: the drift stays.** It is not a tidy-up waiting for someone to run it — the committed layout
+is correct and the generator is not. Re-normalising should not be attempted again until the tool
+inserts only at top-level boundaries, and the honest way to prove that is to re-run this experiment
+and require a green gate with an unchanged assertion count.
+
+> CLAUDE.md's warning was right, and slightly understated: it frames the risk as *duplicated banners
+> from running both tools*. The single tool alone corrupts code.
