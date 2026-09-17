@@ -687,3 +687,82 @@
 (print "")
 (print "=== END FILE [6.1.3]_DPDC-S.repl ========================================")
 (print "")
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+
+(begin-tx "TX-SET-008 - the set owner gate, which only the owner had ever driven")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-SET-008 · 01 · non-owner RenameSet / EnableSetClassFragmentation ====
+(print "--- [TX-SET-008 · 01 · non-owner RenameSet / EnableSetClassFragmentation] ---")
+;;TX-SET-007 above drives both of these ops, and drives them WELL -- but always as <owner>. Both
+;;defcaps end on `DPDC::CAP_Owner id son`, so that gate had never been shown refusing anybody:
+;;delete it from both and nothing in this file, or anywhere else, would have turned red. Surfaced by
+;;`REPL/tools/_ownerobs.py`, which enumerates exactly that question across the tree.
+;;
+;;SC2 is used rather than SC1 because TX-SET-007 leaves SC1 FRAGMENTED, and
+;;`C>ENABLE-FRAGMENTATION` opens with `(enforce (not iz-fragmented) …)`. Aiming at SC1 would be
+;;refused by that enforce, with a message that has nothing to do with ownership -- a passing
+;;`expect-failure` proving the wrong thing, which is the failure RT-C-001 is named for. Both
+;;preconditions are therefore ASSERTED here rather than assumed, and both are read through real
+;;readers (`UR_IzSetActive`, `UEV_IzSetClassFragmented`) rather than inferred from what ran earlier.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (attacker:string KST.EMMA)
+        (sft-id:string "TSFS-98c486052a51")
+        (sc:integer 2)
+        (new-name:string "ZZ-NonOwnerRename")
+    )
+    (let
+        (
+            (name-before:string (ref-DPDC-S::UR_SetName sft-id true sc))
+            (type:object{DpdcUdcV2.URI|Type}
+                (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        )
+        (let
+            (
+                (nd:object{DpdcUdcV2.DPDC|NonceData}
+                    (ref-DPDC-UDC::UDC_NonceData
+                        0.0 0.0 "FragSC2" "Fragmentation marker" (ref-DPDC-UDC::UDC_NoMetaData) type
+                        (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)
+                    )
+                )
+            )
+            (map print
+                [
+                    ;;PRECONDITIONS. Both ops run these guards ahead of the owner check.
+                    (expect "<<TX-SET-008>> SC2 is ACTIVE, so neither op stops at the active-state gate"
+                        true (ref-DPDC-S::UR_IzSetActive sft-id true sc))
+                    (expect "<<TX-SET-008>> SC2 is NOT fragmented, so EnableFragmentation reaches its owner check"
+                        false (ref-DPDC-S::UEV_IzSetClassFragmented sft-id true sc))
+                    (expect "<<TX-SET-008>> ...and the proposed name really differs from the current one"
+                        false (= new-name name-before))
+                    ;;THE TWO REFUSALS, pinned to the OWNER's key rather than a bare keyset failure.
+                    (expect-failure "<<TX-SET-008>> a non-owner cannot rename a set class"
+                        "Keyset failure (keys-all): [PK_Ancie...]"
+                        (ref-TS02-C1::DPSF|C_RenameSet attacker sft-id sc new-name))
+                    (expect-failure "<<TX-SET-008>> a non-owner cannot enable fragmentation on a set class"
+                        "Keyset failure (keys-all): [PK_Ancie...]"
+                        (ref-TS02-C1::DPSF|C_EnableSetClassFragmentation attacker sft-id sc nd))
+                    ;;...and both refusals were TOTAL.
+                    (expect "<<TX-SET-008>> ...and neither the name nor the fragmentation flag moved"
+                        [name-before false]
+                        [(ref-DPDC-S::UR_SetName sft-id true sc)
+                         (ref-DPDC-S::UEV_IzSetClassFragmented sft-id true sc)])
+                ]
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-SET-008 ==================================================")
+(print "")
