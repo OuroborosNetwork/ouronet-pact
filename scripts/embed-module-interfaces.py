@@ -291,8 +291,21 @@ def migrate_stage(
 
 
 def main() -> None:
+    # CLAUDE.md: "Tools that rewrite source require `--apply`." This one did not, and it was also
+    # invisible to `_toolpaths.py --check`, which scanned three tool directories and not this fourth
+    # one. It is a ONE-SHOT migration that already ran: the interfaces are co-located today per
+    # StoicSyntax Prefixes §7.10, so a bare re-run on the current tree is purely destructive -- it
+    # would re-slim `0_Interfaces/*` against KEEP_* allowlists whose names no longer exist in the
+    # tree. It does at least carry an `if __name__ == "__main__"` guard, so unlike the `_fvt*` class
+    # that caused the 2026-09-15 incident, merely importing it was never enough to fire it.
+    # Inverted 2026-09-17: --apply now required, --dry-run kept as a no-op alias for compatibility.
+    if "--apply" not in sys.argv:
+        print("REFUSING: this tool rewrites .pact sources in place and is a completed one-shot\n"
+              "migration. Re-running it on the current tree is destructive. Pass --apply if you\n"
+              "genuinely mean it. See scripts/ note in CLAUDE.md and DEFECT-LEDGER 8.6.")
+        raise SystemExit(2)
     dry = "--dry-run" in sys.argv
-    stages = sys.argv[1:]
+    stages = [a for a in sys.argv[1:] if a != "--apply"]
     if not stages or stages[0].startswith("--"):
         stages = ["s01", "s02"]
 

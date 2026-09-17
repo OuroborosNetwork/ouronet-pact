@@ -44,9 +44,15 @@ ROOT = os.path.dirname(REPL)                               # repo root
 # and a module-index generator in `OuronetInformational/tools/`. A checker that covers one of three
 # directories reports clean about the two it never opened -- the same shape as the `skipped` counter
 # that hid 18 unpriced entrypoints. Enumerate the directories instead of naming one.
+# CORRECTED 2026-09-17: there are FOUR, not three. `scripts/` holds `embed-module-interfaces.py`,
+# which rewrites `.pact` sources and -- until today -- WROTE BY DEFAULT, the exact inversion of
+# CLAUDE.md's `--apply` rule, while being invisible to this checker. The comment above committed the
+# same error it was written to warn about: it enumerated the directories it knew and then asserted
+# that was all of them. Enumerating is not the fix; DISCOVERING is. See `_orphan_tool_dirs` below.
 TOOL_DIRS = [HERE,
              os.path.join(ROOT, 'tools'),
-             os.path.join(ROOT, 'OuronetInformational', 'tools')]
+             os.path.join(ROOT, 'OuronetInformational', 'tools'),
+             os.path.join(ROOT, 'scripts')]
 
 PATHISH_EXT = ('.py', '.repl', '.pact', '.md', '.json', '.txt', '.csv')
 OPENERS = {'open', 'spec_from_file_location', 'Path', 'read_text'}
@@ -188,6 +194,30 @@ def scan_one(path):
     return fails, warns
 
 
+def _orphan_tool_dirs():
+    """Directories holding .py files that TOOL_DIRS does not cover.
+
+    The 2026-09-17 miss was not "we forgot scripts/" -- it was that a hardcoded list cannot report
+    its own incompleteness, so the checker said `clean` about a directory it had never opened. That
+    is the same shape as the `skipped` counter that hid 18 unpriced entrypoints, and as the owner-gate
+    denominator that excluded a third of the tree. The remedy for an enumeration that can go stale is
+    a DISCOVERY pass that makes staleness loud. Skips vendored/virtual trees and the sandboxes, which
+    hold third-party sources rather than repo tooling.
+    """
+    skip = {'.git', 'node_modules', '__pycache__', '.venv', 'venv', 'archive',
+            '00_KadenaSandbox', '00_StoaSandbox', '.bee', '.wasp'}
+    known = {os.path.realpath(d) for d in TOOL_DIRS}
+    found = {}
+    for dp, dns, fns in os.walk(ROOT):
+        dns[:] = [d for d in dns if d not in skip and not d.startswith('.')]
+        if os.path.realpath(dp) in known:
+            continue
+        pys = [f for f in fns if f.endswith('.py')]
+        if pys:
+            found[os.path.relpath(dp, ROOT)] = sorted(pys)
+    return found
+
+
 def check(quiet=False):
     allf, allw = [], []
     tools = sorted(t for d in TOOL_DIRS for t in _glob.glob(os.path.join(d, '*.py')))
@@ -210,6 +240,13 @@ def check(quiet=False):
         print("\nA tool that dies on import produces no output, so output-diffing cannot see it.")
     elif not quiet:
         print("  clean -- every module-level path literal resolves")
+    orph = _orphan_tool_dirs()
+    if orph and not quiet:
+        print(f"\n  NOTE: {len(orph)} directory(ies) hold .py files outside TOOL_DIRS and are NOT")
+        print("  path-checked. If any of these rewrite source, they are exactly the class this")
+        print("  checker exists for -- add them to TOOL_DIRS or confirm they are not tooling:")
+        for d, fs in sorted(orph.items()):
+            print(f"     {d}/  ({', '.join(fs[:4])}{' ...' if len(fs) > 4 else ''})")
     return len(allf)
 
 

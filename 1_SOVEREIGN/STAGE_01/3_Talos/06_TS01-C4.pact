@@ -1,6 +1,7 @@
 ;; TS01-C4 — Talos Stage One Client Four (CODEX + PYTHIA dual-Apollo + Pyth ledger flush).
 ;; Deploy: load THIS file — TalosStageOne_ClientFourV8 + TS01-C4 module ship together.
-;; Historical registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/03_Talos.pact (ClientFour V1–V5 + V6BlockTime).
+;; Historical registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/03_Talos.pact — EMPTY; the frozen-copy
+;; convention was retired 2026-09-02 (StoicSyntax §7.10). ClientFour V1–V6 live in git only.
 ;; Prior live ClientFourV6 lived only in this file (superseded by V7 — patronless A_RevokeLink).
 ;; Prerequisite: PYTHIA module deployed (22_PYTHIA.pact ships PythiaV5 + PythiaLedgerV3).
 ;; REPL: REPL/Stage_01/[6.10]_PYTHIA.repl

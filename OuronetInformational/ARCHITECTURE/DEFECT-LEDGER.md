@@ -2836,3 +2836,69 @@ reads as progress.
 
 Remaining 4 are genuinely inner: the three `SCR|XE>` forward-module entrypoints (called by another
 *module*, never a client) and `SWP|S>WEIGHTS` via `XB_ModifyWeights`.
+
+## 8.6 M14: closed as SUPERSEDED, not reopened — and the fourth tool directory
+
+§8.2 recorded M14's archived interfaces as *"silently deleted by an automated sweep"* whose heuristic
+guaranteed it would delete the artefact the fix created. The mechanism is right. **The intent was
+wrong, and the correction matters more than the finding.**
+
+`6833a21` was not a rogue tool. It was step 5b-2.4 of a sequenced phase executing a dated canon
+amendment — `StoicSyntax-Prefixes.md` §7.10, *"Retire the pool: delete the `0_Interfaces/` files;
+**git history preserves old versions**"*, written the same day. The frozen-copy convention was
+**deliberately abandoned**. The phase author's only miss was not noticing that one of the "dead 0/0"
+blocks was a 10-day-old owner-directed fix.
+
+**And the convention is self-defeating under this repo's own cascade rule.** A restored archive
+cannot be both loadable and historical: the deleted V2 text carries 12 type references to interface
+versions that no longer exist (`SwapperV3`, `SwapperUsageV2`, `BrandingV1`), so a verbatim restore
+**fails to load** — proven at the time, Fix #25's own first attempt died on
+`Module SwapperUsageV2 has no such member: Slippage`. Rewriting those refs to today's versions
+fabricates a "V2" typed against types V2 never saw. Meanwhile the archive that *did* live in-tree was
+rewritten by **three separate canon sweeps** in ten days (+92% in size) until its `@doc` read
+`SwapperV3.PoolTokens … (superseded when SwapperV3 shipped)` — documenting a surface that never
+existed. **An in-tree archive is a strictly worse provenance store than git: mutable, swept,
+deployed, and silently falsifiable.**
+
+> **M14 is CLOSED AS SUPERSEDED.** Nothing restored. Do not re-add frozen copies.
+
+### The real defect was six comments that outlived what they described
+
+| site | claimed | actual |
+|---|---|---|
+| `STAGE_01/0_Interfaces/03_Talos.pact` | "ClientFour V1–V5 historical **below**"; "Latest: ClientThreeV3/ClientPactsV3" | 9-line file, nothing below; live are **V4/V4/V8** |
+| `3_Talos/04_TS01-C3.pact` | "prior live ClientThreeV2 **frozen here**" | one interface, `…V4` |
+| `3_Talos/05_TS01-P.pact` | "prior live ClientPactsV2 **frozen here**" | same |
+| `3_Talos/06_TS01-C4.pact` | "Historical registry … (ClientFour V1–V5 + V6BlockTime)" | deleted |
+| `STAGE_01/0_Interfaces/02_Core.pact` | "SHARED + HISTORICAL only" | holds neither; **0 interfaces** |
+| `STAGE_02/0_Interfaces/02_Core.pact` | "DpdcUdcV2 types … **keep here**" | **0 interfaces**; co-located |
+
+All six corrected. **All three Stage-01 registry files declare zero interfaces** — co-location is
+complete and the directory is vestigial. `REPL/Stage_01/[0.1]_Interfaces.repl` is the same shape one
+layer out: three transactions that print *"Deploy Stage One Utility Interfaces"*, a `· 02 · load
+module` banner and a gas cost, while containing **zero `(load …)` calls**. It is loaded by ~40
+harnesses, so it stays — but it now says what it does.
+
+> This is the shadowed-gate pathology in documentation. A comment that survived the thing it
+> describes is indistinguishable from a correct one, from the outside — the same property that makes
+> a shadowed `defcap` indistinguishable from an absent one.
+
+### The fourth tool directory
+
+CLAUDE.md said there were **three**. `scripts/embed-module-interfaces.py` is a fourth, and it
+**rewrote `.pact` sources by default** (`dry = "--dry-run" in sys.argv`) — the exact inversion of
+CLAUDE.md's *"Tools that rewrite source require `--apply`"* — while being invisible to
+`_toolpaths.py --check`. It is a **completed one-shot migration**, so a bare re-run on today's tree
+would re-slim the registries against `KEEP_*` allowlists whose names no longer exist. Less severe
+than the `_fvt*` class only because it carries an `if __name__ == "__main__"` guard, so importing it
+was never enough to fire it.
+
+Fixed: `--apply` now required; `scripts/` added to `TOOL_DIRS`; and `_toolpaths.py` gained
+`_orphan_tool_dirs()`, which **reports any directory holding `.py` files that `TOOL_DIRS` does not
+cover**. Verified non-vacuously — a scratch directory is detected and named, then the report returns
+clean when it is removed.
+
+> **The sentence added in 2026-09-15 to warn against under-enumeration under-enumerated.** That is
+> the whole argument for discovery over enumeration: a hardcoded list cannot report its own
+> incompleteness, so it says *clean* about what it never opened. Same shape as the `skipped` counter
+> that hid 18 unpriced entrypoints, and as the owner-gate denominator that excluded a third of the tree.

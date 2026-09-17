@@ -15,13 +15,18 @@
 ;;
 ;;================================================================================
 ;;                                                                              ;;
-;;                      [3 TXs]                                                 ;;
-;;              LOAD    01_Utilities.pact  — utility interfaces (always here)   ;;
-;;              LOAD    02_Core.pact       — SHARED + HISTORICAL core only      ;;
-;;              LOAD    03_Talos.pact      — HISTORICAL Talos (ClientFour V1–5) ;;
+;;                      [3 TXs — ALL THREE NOW LOAD NOTHING]                    ;;
 ;;                                                                              ;;
-;;   Module-owned latest interfaces ship inside 2_Core/*.pact and 3_Talos/*.pact;;
-;;   (one load per module tx in [2.2]_Core.repl / [3]_Talos.repl).             ;;
+;;   This file is a VESTIGE and is kept only so the ~40 harnesses that load it   ;;
+;;   keep working. It deploys no interface. All three Stage-01 registry files    ;;
+;;   (01_Utilities / 02_Core / 03_Talos) declare ZERO interfaces: every one is   ;;
+;;   co-located with its module and deploys with it, per StoicSyntax §7.10       ;;
+;;   (2026-09-02). The banner here used to announce three LOADs and the tx       ;;
+;;   bodies still print "load module" and a gas cost — theatre for work that no  ;;
+;;   longer happens. Corrected 2026-09-17; see DEFECT-LEDGER §8.6.               ;;
+;;                                                                              ;;
+;;   Module-owned interfaces ship inside 2_Core/*.pact and 3_Talos/*.pact        ;;
+;;   (one load per module tx in [2.2]_Core.repl / [3]_Talos.repl).              ;;
 ;;                                                                              ;;
 ;;================================================================================
 ;;
@@ -34,8 +39,8 @@
 (print "--- [TX-01 [0.01] - Deploy Stage One Utility Interfaces · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
-;;==== TX-01 [0.01] - Deploy Stage One Utility Interfaces · 02 · load module ==== =================
-(print "--- [TX-01 [0.01] - Deploy Stage One Utility Interfaces · 02 · load module] ---")
+;;==== TX-01 [0.01] - Deploy Stage One Utility Interfaces · 02 · load module (NONE — see header) ==== =================
+(print "--- [TX-01 [0.01] - Deploy Stage One Utility Interfaces · 02 · load module (NONE — see header)] ---")
 ;;==== TX-01 [0.01] - Deploy Stage One Utility Interfaces · 03 · gas echo ==== ====================
 (print "--- [TX-01 [0.01] - Deploy Stage One Utility Interfaces · 03 · gas echo] ---")
 (format "<<<<<<<Stage One Utility Interfaces Costs {} GAS>>>>>>>" [(env-gas)])
@@ -55,8 +60,8 @@
 (print "--- [TX-02 [0.02] - Deploy Stage One Core Interfaces · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
-;;==== TX-02 [0.02] - Deploy Stage One Core Interfaces · 02 · load module ==== ====================
-(print "--- [TX-02 [0.02] - Deploy Stage One Core Interfaces · 02 · load module] ---")
+;;==== TX-02 [0.02] - Deploy Stage One Core Interfaces · 02 · load module (NONE — see header) ==== ====================
+(print "--- [TX-02 [0.02] - Deploy Stage One Core Interfaces · 02 · load module (NONE — see header)] ---")
 ;;==== TX-02 [0.02] - Deploy Stage One Core Interfaces · 03 · gas echo ==== =======================
 (print "--- [TX-02 [0.02] - Deploy Stage One Core Interfaces · 03 · gas echo] ---")
 (format "<<<<<<<Core Interfaces Costs {} GAS>>>>>>>" [(env-gas)])
@@ -76,8 +81,8 @@
 (print "--- [TX-03 [0.03] - Deploy Stage One Talos Interfaces · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
-;;==== TX-03 [0.03] - Deploy Stage One Talos Interfaces · 02 · load module ==== ===================
-(print "--- [TX-03 [0.03] - Deploy Stage One Talos Interfaces · 02 · load module] ---")
+;;==== TX-03 [0.03] - Deploy Stage One Talos Interfaces · 02 · load module (NONE — see header) ==== ===================
+(print "--- [TX-03 [0.03] - Deploy Stage One Talos Interfaces · 02 · load module (NONE — see header)] ---")
 ;;==== TX-03 [0.03] - Deploy Stage One Talos Interfaces · 03 · gas echo ==== ======================
 (print "--- [TX-03 [0.03] - Deploy Stage One Talos Interfaces · 03 · gas echo] ---")
 (format "<<<<<<<Talos Interfaces Costs {} GAS>>>>>>>" [(env-gas)])

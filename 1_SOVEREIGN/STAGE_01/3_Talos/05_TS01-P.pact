@@ -1,10 +1,10 @@
 ;; Deploy: load THIS file — interface(s) + module ship together.
 ;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/03_Talos.pact
-;; #39M/M14 fix: prior live ClientPactsV2 frozen here, alongside its sibling ClientThreeV2
-;; (frozen in 04_TS01-C3.pact for the same reason) rather than the central registry — kept
-;; together with its always-paired sibling rather than split across files.
-;;
-;; net: v3   ·   dev: v4   ;; bumped by the StoicSyntax refactor — deploy v4 then set net: v4
+;; NO FROZEN PREDECESSOR HERE. Audit fix #25 (M14/#39M) archived ClientPactsV2 in this
+;; file; commit 6833a21 (2026-09-02) deleted it under StoicSyntax-Prefixes §7.10, which
+;; retired the frozen-copy convention in favour of git history. The comment that claimed the
+;; archive was 'frozen here' outlived the archive by two weeks — documentation that survives
+;; what it describes is indistinguishable from correct, from the outside. See DEFECT-LEDGER §8.6.
 (interface TalosStageOne_ClientPactsV4
     @doc "Exposes Ouronet Stage One Client Multistep Functions \
         \ Currently including functions from SWP Module. \

@@ -1,12 +1,10 @@
 ;; Deploy: load THIS file — interface(s) + module ship together.
 ;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/03_Talos.pact
-;; #39M/M14 fix: prior live ClientThreeV2 frozen here, not in the central registry above —
-;; V2's Smart Swap functions type against SwapperUsageV3.Slippage, a module-owned interface
-;; (declared in 19_SWPU.pact) that isn't resolvable yet at the registry's early Interfaces-
-;; load point (mirrors the same reason ClientFourV6 was left undocumented-in-full there, per
-;; that file's own comment — module-owned-type dependency, not resolvable in the early registry).
-;;
-;; net: v3   ·   dev: v4   ;; bumped by the StoicSyntax refactor — deploy v4 then set net: v4
+;; NO FROZEN PREDECESSOR HERE. Audit fix #25 (M14/#39M) archived ClientThreeV2 in this
+;; file; commit 6833a21 (2026-09-02) deleted it under StoicSyntax-Prefixes §7.10, which
+;; retired the frozen-copy convention in favour of git history. The comment that claimed the
+;; archive was 'frozen here' outlived the archive by two weeks — documentation that survives
+;; what it describes is indistinguishable from correct, from the outside. See DEFECT-LEDGER §8.6.
 (interface TalosStageOne_ClientThreeV4
     @doc "Exposes Ouronet Stage One Third Batch of Client Functions \
         \ Modules: SWP are included in the Second Batch\
