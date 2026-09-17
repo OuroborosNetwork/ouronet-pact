@@ -12,13 +12,55 @@
 (load "Stage_01/[3]_Talos.repl")
 (load "Stage_01/[4.0]_Sovereign-Executor.repl")
 
-(begin-tx "M6 CHECK - UR_Hibernation still returns BAR for a normal token, unaffected by the fix")
+(begin-tx "M6 CHECK - UR_Hibernation is a PURE getter, and its return value is unchanged")
 (namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;THIS FILE USED TO ASSERT NOTHING. It is a gate entrypoint -- it ran on every gate, printed a value,
+;;and proved nothing; the suite manifest recorded it as 0 positive / 0 negative assertions. A file
+;;that runs and cannot fail is a green light wired to nothing, which is exactly the class
+;;`tools/_vacuous.py` exists to catch, one level up: not a vacuous assertion, but no assertion at all.
+;;
+;;#30M's fix: `UR_Hibernation` used to be a `read` that silently BACKFILLED a missing
+;;hibernation-link with a live table `update` -- a read/write-separation violation of the `UR_`
+;;prefix contract. The write is gone; the in-memory fallback is kept, so the return value is
+;;unchanged for every caller.
+;;
+;;HOW THE PURITY IS WITNESSED, and why it takes gas to do it. The backfill branch was already dead on
+;;every real token (confirmed against live chain state: all 18 deployed DPTFs have the field
+;;populated), so reinstating the `update` would be OBSERVATIONALLY IDENTICAL in its return value --
+;;there is no input whose answer would change. What a reinstated write cannot hide is its COST. The
+;;assertion below compares this reader against `UR_Sleeping`, its structurally identical
+;;pure-read sibling on the same table and row: measured 149 vs 148 gas. A table write costs far more
+;;than the one-gas spread between them, so re-adding it turns this red.
 (let
     (
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ouro-id:string "OURO-98c486052a51")
     )
-    (print (format "UR_Hibernation(OURO) => {} (expected BAR/empty, unaffected by the fix)" [(ref-DPTF::UR_Hibernation ouro-id)]))
+    (let ((g0:integer (env-gas)))
+        (ref-DPTF::UR_Hibernation ouro-id)
+        (let ((hib-gas:integer (- (env-gas) g0)))
+            (let ((g1:integer (env-gas)))
+                (ref-DPTF::UR_Sleeping ouro-id)
+                (let ((sib-gas:integer (- (env-gas) g1)))
+                    (map print
+                        [
+                            ;;THE RETURN VALUE, which the fix had to leave alone.
+                            (expect "<<M6>> UR_Hibernation(OURO) still returns the BAR sentinel"
+                                "|" (ref-DPTF::UR_Hibernation ouro-id))
+                            ;;NON-VACUITY for the gas comparison: the sibling must actually cost
+                            ;;something, or "within a few gas of it" would be satisfied by zero.
+                            (expect "<<M6>> the pure-read sibling costs real gas, so the bound below means something"
+                                true (> sib-gas 100))
+                            ;;THE PURITY. A table write cannot fit in this margin.
+                            (expect "<<M6>> ...and UR_Hibernation costs no more than a pure read does"
+                                true (<= hib-gas (+ sib-gas 20)))
+                        ]
+                    )
+                    ""
+                )
+            )
+        )
+    )
 )
 (commit-tx)
