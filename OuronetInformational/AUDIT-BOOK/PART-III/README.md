@@ -43,6 +43,34 @@ accounting balance?) and **K** (does the free preview agree with the charged exe
 largest family in the round and every one of its seven attacks found something — which says more
 about where to look for defects in this kind of system than any of the planned families did.
 
+## Coverage against the plan
+
+The round was specified before it began, naming eight attack surfaces. This is what each one
+actually received — stated as coverage, not as a claim of completeness.
+
+| planned surface | families | assessment |
+|---|---|---|
+| capability & auth bypass, composed caps | B, C, D, G | **the deepest** — plus the whole owner-gate programme, Chapter 2 |
+| sentinel / collision | H, D | **good** — three input-domain defects, all fixed |
+| preview / execution divergence *(not on the plan)* | K | **the largest family; every attack found a defect** |
+| economic & MEV — front-run, sandwich, ratio extremes | A | **good** — the sandwich attack exists and the AMM's floor now has a witness |
+| arithmetic / rounding / precision | A, J | **adequate** — the share-price boundary and the supply-vs-balances split |
+| defpact / Hydra-slice races | F | **adequate** — both attacks found defects, one of them a live money defect |
+| cross-module boundary abuse | G, B | **adequate** |
+| gas-station exploitation | I | **thin — one attack.** It found a real defect, and the surface deserves more |
+| ordering / reentrancy-like | E | **thin — two attacks, both refused.** One of them documents a *structural absence* rather than a guard: nothing in the multi-transaction layer checks who is driving a recipe; safety today is a property of what each step happens to touch |
+
+Two of the nine rows were **not on the plan at all** and were invented during the round: **J**
+(does the protocol's own accounting balance?) and **K**. K is the largest family and had a 100% hit
+rate. A planned list of attack surfaces is a hypothesis about where defects live, and this one was
+wrong about the most productive surface in the system.
+
+The two thin rows are named rather than rounded up. Family E's thinness is qualified: its second
+attack establishes that the defpact layer performs **no** driver check, and that every step is
+currently safe only because it happens to move the starter's own tokens. A future step touching only
+protocol state would have nothing to demand the starter's key, and that attack would succeed against
+it without anything else changing.
+
 ## The headline results
 
 **Two live money defects, both found and both fixed.**
@@ -68,6 +96,13 @@ largest single thread in the round and has its own chapter. Of 167 ownership-gat
 reachable from a named client operation, **19 had never caused a refusal in any test** — not because
 they were absent, but because a business rule ran first and answered on their behalf. A gate in that
 position is indistinguishable from a deleted one, from the outside.
+
+## Verification state
+
+At the time of writing, the full gate is **green at 24,962 assertions** (19,988 positive, 4,974
+negative) across the whole system — every deploy stage, every scenario suite, every red-team attack,
+plus the static checks on generated artefacts, tool paths, prefix vocabulary, cross-module member
+resolution, and assertion vacuity. Wall time ~7 minutes. Reproduction: Appendix 1.
 
 ## Chapters
 
