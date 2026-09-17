@@ -3607,3 +3607,45 @@ named**, so the convention stays visible rather than being dropped or quietly no
 
 That is the **fifth** enumeration-vs-discovery defect of the session, and the register was the tool
 recording all the others.
+
+## 8.26 The eleven unwitnessed fixes — all closed
+
+Part I's verification pass found eleven fixes present in source with **nothing in the running suite
+that would go red if they were reverted**. Their proofs had been written into scratch harnesses that
+now live in `REPL/archive/`, which `_gate.py` excludes by name. Two were CRITICAL-ranked.
+
+All eleven are closed. **Not one was closed by a straightforward test** — each needed a specific
+input, fixture or measurement that distinguishes the fixed code from the reverted code:
+
+| finding | witness | the difficulty |
+|---|---|---|
+| ATS `C2` ⚠ | `<<UTIL-15>>` | drive the **all-zero** object the removed gate *rejects*, and show it is reshaped anyway |
+| ATS `#6H` | `<<ATS-G28>>` | lock a pool, then show the **same owner** is refused on both setters |
+| ATS `#32N` | `<<ATS-G29>>` | an account with a ledger row but nothing ripe; one with no row dies earlier, elsewhere |
+| ATS `#5C` | `<<ATS-G30>>` | no usual-owner pool has a Hot-RBT; the fixture that does is third-party-owned, which makes the refusal *more* legible |
+| DALOS `C3` ⚠ | `<<DPOF-G15>>` | duplicated **nonce** lists on all three caps — the message was already asserted, at other call sites |
+| DALOS `H3` | `<<CUM-G8>>` | two **distinct** smart-account interactors, or compression merges the legs and the branch is never entered |
+| DALOS `M5` | `<<DPTF-G14>>` | a batch whose first leg removes the collateral the second leg's overdraft depends on |
+| DALOS `M6` | `<<M6>>` | the return value cannot change, so the witness is **gas**: no more than a pure-read sibling |
+| DALOS `M7` | `<<DPOF-G16>>` | the source claimed unreachable; it was a **partial** shadow, and the guard was hoisted |
+| DALOS `M1` | `<<DALOS-G7>>` | read the ledger table no test had ever read |
+| DALOS `N2` | `<<DPTF-G12>>` | drive the **Talos wrapper**, not the core — the existing test pinned a different guard |
+
+### Four first attempts passed while proving nothing
+
+This is the part worth keeping.
+
+- **`H3`**: both legs on one interactor. They were **compressed into a single entry** before the
+  fix's branch was reached — the bundle settled, `IGNIS|S>FREE` never fired, and the assertion was
+  green. The block now asserts the non-merge (two COLLECT events, not one) so it cannot decay back.
+- **`M5`**: control and attack in one transaction. **`expect-failure` does not roll back REPL
+  writes**, so the refused batch's Elite-Auryn leg still landed and the control then failed for the
+  exact reason it exists to disprove. A contaminated control looks like a broken test.
+- **`M6`**: the file was already a gate entrypoint with **zero assertions** — it ran on every gate
+  and could not fail. Not a vacuous assertion; no assertion at all.
+- **`M7`**: the source comment asserting unreachability was **half wrong**. Measured, the reader only
+  performs a table read for three id prefixes; every other shape reached the guard all along.
+
+> **A witness for a fix is harder to write than a test for a feature**, because the question is not
+> "does this work?" but "what input behaves differently under the *old* code?" Four times out of
+> eleven, the obvious answer to the first question answered nothing about the second.

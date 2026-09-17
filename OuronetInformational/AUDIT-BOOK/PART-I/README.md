@@ -57,10 +57,27 @@ scratch harnesses that now sit in an archive directory the gate excludes by name
 > canonical suite files rather than into scratch harnesses.** That is a filing decision, not a
 > rigour one, and it is the single largest difference in durability between these six rounds.
 
-The critical one is closed (Part III records how). The rest are being closed as this book is
-assembled — which is the argument for the book's second rule: *every fix names the assertion that
-would go red if it were reverted.* Without that rule, a fix and a claim look identical six weeks
-later.
+**All eleven are now closed**, as this book was assembled:
+
+| finding | what the witness had to do |
+|---|---|
+| ATS `C2` (critical) | drive the **all-zero** object the removed gate *rejects*, and show it is reshaped anyway |
+| ATS `#6H` | lock a pool, then show the **same owner** is refused on both setters |
+| ATS `#32N` | drive a cull from an account that has a ledger row but nothing ripe — one with no row dies earlier, elsewhere |
+| ATS `#5C` | none of the usual owner's pools has a Hot-RBT; the fixture that does is owned by a third account, which makes the refusal *more* legible |
+| DALOS `C3` (critical) | hand a duplicated **nonce** list to all three capabilities — the message was already asserted, at other call sites |
+| DALOS `H3` | two **distinct** smart-account interactors, or compression merges the legs and the fix's branch is never entered |
+| DALOS `M5` | a batch whose first leg removes the collateral the second leg's overdraft depends on |
+| DALOS `M6` | the return value cannot change, so the witness is **gas**: the reader must cost no more than its pure-read sibling |
+| DALOS `M7` | the source said it was unreachable; measurement showed a **partial** shadow, and the guard was hoisted |
+| DALOS `M1` | read the ledger table that no test had ever read |
+| DALOS `N2` | drive the **Talos wrapper**, not the core — the existing test pinned a different guard entirely |
+
+> Not one of them was closed by a straightforward test. Every case needed a specific input, fixture
+> or measurement that distinguishes the fixed code from the reverted code — and in four of them a
+> first attempt passed while proving nothing. That is the argument for the book's second rule:
+> *every fix names the assertion that would go red if it were reverted.* Without it, a fix and a
+> claim look identical six weeks later.
 
 ### Two audits' own arithmetic did not add up
 
