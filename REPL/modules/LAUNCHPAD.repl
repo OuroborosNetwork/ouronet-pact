@@ -596,3 +596,78 @@
 (print "===^^^===")
 (env-sigs [])
 (rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "LPAD-N7 — the one client entrypoint in the tree that no test ever executed")
+(print "")
+(print "=== LPAD-N7 — TS02-CPAD::P|A_AddIMP ========================================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;FOUND BY COUNTING THE POPULATION, not by suspecting this function. Enumerating all 452 Talos client
+;;entrypoints in the tree and counting the test files that drive each one left exactly ONE at zero:
+;;this function, the forward inter-module-policy registration on the CITIZEN launchpad Talos.
+;;
+;;WHY IT WAS NEVER DRIVEN. Both of its call sites are commented out, labelled "Needed on Mainnet":
+;;`[6.3]_STOAICO.repl:69` and `[5.3]_Launchpad.repl:897`. The STOAICO one gives its reason -- "Not
+;;needed on repl because it is already added on TS02-DPAD". That reason is about the policy ROW,
+;;which another route registers, and NOT about this function, which is an authorisation-registration
+;;op gated on the module's own admin capability. So the row was covered and the code was not: if this
+;;guard or this write were wrong, nothing in the tree would say so and the first execution would be
+;;on mainnet.
+;;
+;;It also substantiates a claim `REPL/RedTeam/[RT-G]_HostileCitizen.repl` makes in prose and never
+;;tested -- "Registration itself is closed too: `P|A_AddIMP` requires admin, so an attacker cannot
+;;add their own guard to the list." That is the whole reason the inter-module boundary holds, and it
+;;was asserted rather than shown.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (hostile:guard (create-capability-guard (TS02-CPAD.P|TALOS-SUMMONER)))
+    )
+    (map print
+        [
+            ;;THE ATTACK. A stranger tries to append a policy guard to the citizen Talos's
+            ;;inter-module policy list. Succeeding would let a foreign module satisfy `P|UEV_IMC`
+            ;;and reach the sovereign core through the citizen boundary.
+            ;;The message names the ADMIN keyset -- not the attacker's key -- which is what
+            ;;separates "the admin gate refused" from "this signature was rejected".
+            (expect-failure "<<LPAD-N7>> a stranger cannot register an inter-module policy guard"
+                "Keyset failure (keys-any): [PK_Ancie..., PK_Flore...]"
+                (TS02-CPAD.P|A_AddIMP hostile))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "LPAD-N7b — and the admin can, so the gate is the only difference")
+(print "")
+(print "--- [LPAD-N7b · 01 · non-vacuity] ---")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;Without this half the assertion above would pass if `P|A_AddIMP` were broken outright -- and since
+;;this function had NEVER been executed, "broken outright" was a live possibility rather than a
+;;rhetorical one. Only the signer set changes.
+;;
+;;The return is `IGNIS::C_Collect`'s raw "Write succeeded" rather than a sentence; that is the §8.15
+;;F1 shape and is deliberately NOT pinned here -- pinning it would make its repair red. The
+;;assertion is that the call completes.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Florin", "caps": [] }])
+(let
+    (
+        (mg:guard (create-capability-guard (TS02-CPAD.P|TALOS-SUMMONER)))
+    )
+    (map print
+        [
+            (expect "<<LPAD-N7>> the admin keyset can, so the refusal above is the gate and not a broken op"
+                true (!= "" (format "{}" [(TS02-CPAD.P|A_AddIMP mg)])))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)

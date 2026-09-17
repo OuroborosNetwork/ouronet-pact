@@ -82,9 +82,10 @@ fix entry with its proof.
 
 ### The method's one real discipline
 
-Fourteen findings were proved by **reverting the fix and re-running** (`git stash`), so the pre-fix
-bug shape was observed rather than assumed: C1, C7, H1, H2, H5, H8, H11, #24M, #31M, #32M, #35M and
-others. This caught two methodology errors before they were presented as proof — in both cases an
+Findings were proved by **reverting the fix and re-running** (`git stash`), so the pre-fix bug shape
+was observed rather than assumed. `FINAL-AUDIT-REPORT.md` names eleven: C1, C7, H1, H2, H5, H8, H11,
+#24M, #31M, #32M, #35M. This caught two methodology errors before they were presented as proof — in
+both cases an
 `expect-failure` that "passed" because an unrelated `UEV_IMC` guard rejected the call, not the check
 under test. The audit recorded those errors rather than quietly correcting them.
 
@@ -135,7 +136,7 @@ Line numbers drift. Every citation below was resolved fresh on 2026-09-17.
 | **#3C** | Same unsigned-amount hole reached through `C_MakeFragments`/`C_MergeFragments` | **ALREADY CLOSED by #1C** | Same chokepoint. Rejection traced live to `03_DPDC-C.pact` `UEV_Amount`. [VERIFIED by reading] |
 | **#4C** | `C_RepurposeCollectableFragments` moves a holder's balance with no consent/freeze/wipe gate | **REFUTED — design** | Deliberate admin account-recovery tool, gated on `CAP_Owner` via `wipe-mode=true`. No code change. |
 | **#5C** | Burn/wipe orphans fragment collateral held in the `dpdc` escrow account | **FIXED (+narrowed)** | `06_DPDC-MNG.pact:439-470` `C>REMOVE-CLASS-ZERO-NONCES`, escrow block narrowed to *currently fragmented* nonces via `UR_SplitNonceData`. [VERIFIED by reading] |
-| **#6C** | Composite set with `allowed-sclass = 0` — Make succeeds, Break can never succeed, value stranded | **FIXED** | `08_DPDC-S.pact:968-971` — `(fold (and) true (map (lambda (sc) (> sc 0)) …))`. [VERIFIED by reading] |
+| **#6C** | Composite set with `allowed-sclass = 0` — Make succeeds, Break can never succeed, value stranded | **FIXED** | `08_DPDC-S.pact:974-977` — `(fold (and) true (map (lambda (sc) (> sc 0)) …))`. [VERIFIED by reading] |
 | **#7C** | `C_UpdateSetMultiplier` crashes on every call — a `let` type annotation bug. Confirmed on mainnet | **FIXED, then removed entirely** | Function deleted by #15H. `08_DPDC-S.pact:99` and `:1143` carry removal notes; Talos wrappers removed at `01_TS02-C1.pact:148/1190`, `02_TS02-C2.pact:145/1041`. [VERIFIED by command — 0 live definitions tree-wide] |
 | **#8C** | `how-many-sets` unbounded on Make/Break | **FIXED** | `08_DPDC-S.pact:323` and `:338` — `(enforce (> how-many-sets 0) …)` in both `C>MAKE` and `C>BREAK`. [VERIFIED by reading] |
 
@@ -171,8 +172,8 @@ Line numbers drift. Every citation below was resolved fresh on 2026-09-17.
 | **#27M** | Fragment make+merge round trip and repurpose-without-consent executed but never asserted | **FIXED** | `REPL/Stage_02/[6.1.2]_DPDC-FRAGMENTS.repl`, wired at `Stage02_Tester.repl:41`. [VERIFIED by command] |
 | **#28M** | EQUITY "shareholder collection" identity is a self-checked `"E\|"` string prefix | **REFUTED** | Two stacked walls: `iz-special=false` is hardcoded on the only public issuance path, so `\|` cannot appear in a publicly-issued ticker; and `DPDC-I\|C>ISSUE` enforces ownership of `dpdc` itself. |
 | **#29M** | EQUITY's 50 % packaging cap is an undocumented magic constant | **FIXED** | `11_EQUITY+.pact:239` `PACKAGING_CAP_DIVISOR`, used at `:388`. [VERIFIED by reading] |
-| **#30M** | `C_EnableSetClassFragmentation` skips the active-state gate its four siblings enforce | **FIXED** | `08_DPDC-S.pact:402` — `(UEV_SetActiveState id son set-class true)` with the audit reference in the comment. [VERIFIED by reading] |
-| **#31M** | Primordial set bounds check only the running maximum, not each value | **FIXED** | `08_DPDC-S.pact:914-928` — per-element `0 < abs(n) <= nu`. [VERIFIED by reading] |
+| **#30M** | `C_EnableSetClassFragmentation` skips the active-state gate its four siblings enforce | **FIXED** | `08_DPDC-S.pact:405` — `(UEV_SetActiveState id son set-class true)` with the audit reference in the comment. [VERIFIED by reading] |
+| **#31M** | Primordial set bounds check only the running maximum, not each value | **FIXED** | `08_DPDC-S.pact:917-929` — per-element `0 < abs(n) <= nu`. [VERIFIED by reading] |
 | **#32M** | Hybrid set Make-time and Break-time constituent ordering are opposite conventions | **FIXED** | `08_DPDC-S.pact:1080` — normalised to primordial-first, with cross-referencing comments at both sites. [VERIFIED by reading] |
 | **#33M** | Collection id keyed only on `prev-block-hash` — same-block same-ticker collides | **REFUTED — accepted** | Live-verified twice; the second check corrected the first assumption (NFT+SFT same ticker **also** collides, in the shared `BRD|BrandingTable`, before DPDC's own tables are reached). Documented on `UDC_Makeid` (`08_U_DALOS.pact:231`). |
 | **#34M** | `URD_AccountNoncesWithSupplies` returns `[{}]` instead of `[]` when empty | **FIXED** | `02_DPDC.pact:892-913`, now `URH_AccountNoncesWithSupplies`, empty case `[]` with the audit note in place. [VERIFIED by reading] |
