@@ -3422,6 +3422,23 @@ ATS. SWP is the exception — all nine of its proof tags survive, **because they
 canonical suite files rather than into scratch harnesses.** That is the whole difference, and it is
 a filing decision, not a rigour one.
 
+### CLOSED the same day — `<<UTIL-15>>`
+
+The gap is now shut. The witness is the **zero case**, chosen because the removed gate *rejects* it —
+which the test asserts rather than assumes, so that if an all-zero object ever starts passing the
+predicate, the precondition goes red and tells the next reader the case no longer exercises what it
+claims to.
+
+| assertion | what it holds |
+|---|---|
+| `UC_IzUnstakeObjectValid zero` is **false** | the removed gate would have skipped this object |
+| …and **true** for a live one | the predicate is not simply always false |
+| the zero object's array **shrinks 3 → 2** | **the fix** — the reshape runs anyway |
+| a live object folds `5+7 → 12` into slot 0 | non-vacuity: it is not merely truncating |
+
+Reinstating the gate makes the zero object come back with three elements and this block turns red.
+That is the property `C2` bought, and it is now held by something that runs.
+
 ### The stale justification beside it
 
 `Stage01_Tester.repl:47` excluded `[6.6]_ATS.repl` with the reason *"ATS tests run via their own

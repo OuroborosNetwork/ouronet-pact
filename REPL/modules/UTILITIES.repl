@@ -965,4 +965,63 @@
     ""
 )
 (commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "UTIL-15 — the ATS audit's C2 fix, which had no witness at all")
+(print "")
+(print "=== UTIL-15 — UC_ReshapeUnstakeObject runs UNCONDITIONALLY ==================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;THE ATS AUDIT'S `C2` WAS A CRITICAL-RANKED FINDING AND ITS FIX HAD NO WITNESS. Established while
+;;assembling Part I of the Audit Book: `UC_ReshapeUnstakeObject` was referenced by exactly ONE .repl
+;;in the whole tree -- `REPL/archive/_audit_ats_baseline.repl` -- and `_gate.py` excludes `archive/`
+;;BY NAME, on the recorded grounds that it "does not run to completion, so its 32 assertions are NOT
+;;coverage". So the fix was present in source and nothing in the running suite would have turned red
+;;if it were reverted. `<<UTIL-05>>` does exercise a neighbour, but the INNER function -- bypassing
+;;the very gate whose removal WAS the fix.
+;;
+;;WHAT THE FIX WAS. The reshape used to be conditional on `UC_IzUnstakeObjectValid`. An all-zero
+;;(never-touched) unstake object fails that predicate, so it was skipped -- and skipping it left the
+;;object's array at its OLD length while the pool's reward-token list had shrunk. Every later
+;;structural comparison (`URCx_PosObjSt`, `XIv_StoreUnstakeObject`) then reads a stale longer array
+;;and misclassifies an empty slot as permanently occupied.
+;;
+;;THE WITNESS IS THE ZERO CASE, and it is chosen precisely because the removed gate REJECTS it --
+;;asserted below rather than assumed. Reinstating the gate makes the zero object come back with
+;;three elements instead of two, and this block goes red. That is the property `C2` bought.
+(let
+    (
+        (ref-U|ATS:module{UtilityAtsV3} U|ATS)
+        (zero:object{UtilityAtsV3.Awo}
+            { "reward-tokens" : [0.0, 0.0, 0.0]
+            , "cull-time"     : (time "2026-10-10T00:00:00Z") })
+        (live:object{UtilityAtsV3.Awo}
+            { "reward-tokens" : [5.0, 7.0, 3.0]
+            , "cull-time"     : (time "2026-10-10T00:00:00Z") })
+    )
+    (map print
+        [
+            ;;THE PRECONDITION THAT MAKES THIS A TEST OF THE FIX. If the all-zero object ever starts
+            ;;passing the predicate, this assertion goes red and tells the next reader that the case
+            ;;below no longer exercises what it claims to.
+            (expect "<<UTIL-15>> the removed gate REJECTS an all-zero unstake object"
+                false (ref-U|ATS::UC_IzUnstakeObjectValid zero))
+            (expect "<<UTIL-15>> ...while accepting a live one, so the predicate is not simply always false"
+                true (ref-U|ATS::UC_IzUnstakeObjectValid live))
+            ;;THE FIX. The object the gate rejects is reshaped anyway: three slots become two.
+            (expect "<<UTIL-15>> the all-zero object is reshaped ANYWAY -- the array shrinks 3 -> 2"
+                [0.0 0.0]
+                (at "reward-tokens" (ref-U|ATS::UC_ReshapeUnstakeObject zero 1)))
+            ;;NON-VACUITY: the live path still folds the removed slot's value into slot 0, so the
+            ;;function is not merely truncating everything it is handed.
+            (expect "<<UTIL-15>> ...and a live object folds the removed slot into the primal, 5+7 -> 12"
+                [12.0 3.0]
+                (at "reward-tokens" (ref-U|ATS::UC_ReshapeUnstakeObject live 1)))
+        ]
+    )
+    ""
+)
+(commit-tx)
+
 (print "=== END modules/UTILITIES.repl ===")
