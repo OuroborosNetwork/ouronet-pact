@@ -43,8 +43,17 @@
     ;(load "Stage_01/[6.4]_Admin.repl")
 ;; #12a GUARD — keep [6.5]_DPOF + [6.6]_ATS COMMENTED here: the AQP Stage-2 path self-loads
 ;; [6.5]_DPOF via [6.2.4]_AQP-FVT-OF, so loading it here too RE-ISSUES MVST -> duplicate-insert
-;; abort in AQP-comprehensive / AQP-core-vct. ATS tests run via their own driver _audit_ats_baseline.repl
-;; (Stage-1-only, no double-load). (The 'ats' merge briefly uncommented these and broke the AQP suites.)
+;; abort in AQP-comprehensive / AQP-core-vct. (The 'ats' merge briefly uncommented these and broke
+;; the AQP suites.)
+;;
+;; CORRECTED 2026-09-17. This used to add "ATS tests run via their own driver
+;; _audit_ats_baseline.repl (Stage-1-only, no double-load)" — and that driver lives in
+;; REPL/archive/, which `_gate.py` excludes BY NAME as a retired probe that does not run to
+;; completion. So the stated reason for excluding [6.6]_ATS pointed at something that executes
+;; nowhere. The EXCLUSION is still correct (the double-load abort is real) and the ATS coverage is
+;; still real — `ZALL.repl:38` and `modules/ATS.repl:6` both load [6.6] — but the justification
+;; written beside it had outlived the thing it named. A reason that no longer holds is worse than
+;; no reason: it answers the question a reader would otherwise go and check.
 ;(load "Stage_01/[6.5]_DPOF.repl")
 ;(load "Stage_01/[6.6]_ATS.repl")
 ;(load "Stage_01/[6.7]_VST.repl")

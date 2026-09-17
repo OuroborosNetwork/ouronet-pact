@@ -3397,3 +3397,44 @@ path, which is the third-largest.
 None of this is a defect: the split is deliberate and documented, and **the gate runs everything**.
 It is recorded so that "green" is always qualified by *which runner* — a `Z.repl` run showing green
 has not executed 39% of the files, including the suite that proves the most audit findings.
+
+## 8.20 An audit's own priority fix, with no witness that would go red
+
+From Part I's ATS chapter, and it is the cleanest example in the book of why this project's second
+rule exists (*every fix names the assertion that would go red if it were reverted*).
+
+The ATS audit's `C2` was a **critical**-ranked finding. Its fix removed a validity gate from
+`UC_ReshapeUnstakeObject`. Verified today:
+
+- `UC_ReshapeUnstakeObject` is referenced by **exactly one** `.repl` in the tree —
+  `REPL/archive/_audit_ats_baseline.repl` — and `_gate.py` **excludes `archive/` by name**, on the
+  recorded grounds that it *"does not run to completion, so its 32 assertions are NOT coverage"*.
+  [VERIFIED by command]
+- `<<UTIL-05>>` does test something, but the **inner** function — bypassing the very gate whose
+  removal was the fix.
+- `UC_IzUnstakeObjectValid`, the gate itself, still exists with **no callers**. [VERIFIED by command]
+
+So the fix is present in source and **nothing in the running suite would turn red if it were
+reverted.** The `Secondary Remove 1|5`–`5|5` blocks in `[6.6]_ATS.repl` contain zero `expect` forms.
+
+The same chapter names six more of this shape in DALOS (C3, H3, M5, M6, M7, M1) and three more in
+ATS. SWP is the exception — all nine of its proof tags survive, **because they were written into the
+canonical suite files rather than into scratch harnesses.** That is the whole difference, and it is
+a filing decision, not a rigour one.
+
+### The stale justification beside it
+
+`Stage01_Tester.repl:47` excluded `[6.6]_ATS.repl` with the reason *"ATS tests run via their own
+driver `_audit_ats_baseline.repl`"* — the archived file above, which runs nowhere. The **exclusion**
+is correct (the double-load abort it guards against is real) and ATS coverage **is** real
+(`ZALL.repl:38`, `modules/ATS.repl:6`). Only the reason had outlived the thing it named. Corrected.
+
+> A reason that no longer holds is worse than no reason: it answers the question a reader would
+> otherwise go and check. Third instance of this shape today, after M14's dangling archive comments
+> (§8.6) and the two AQP design documents (§8.11's sibling correction).
+
+### And a counting error in the audit's own summary
+
+ATS's `ISSUES-RANKED.md` tally says **"FIXED: 19"** and enumerates **18**; `AUDIT-REPORT.md` states
+19/13/3 = 35 where the true split is 18/14/3 = 35. **Two compensating off-by-ones, so the total
+checks out.** A total that reconciles is the reason nobody re-counted the parts.
