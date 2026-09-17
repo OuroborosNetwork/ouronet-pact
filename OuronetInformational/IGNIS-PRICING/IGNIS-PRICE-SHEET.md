@@ -633,7 +633,7 @@ another Talos wrapper, not a core op) or admin entrypoints that are exempt by ru
 | P\|A_AddIMP | admin entrypoint -- IGNIS + STOA free by owner rule, nothing to price |
 
 ---
-182 simple (exact price) · 199 complex (floor price) · 11 STOA-only · 50 exempt · 0 unresolved · 5 unpriced · 431 Talos client functions
+182 simple (exact price) · 199 complex (floor price) · 11 STOA-only · 50 exempt · 0 unresolved · 5 unpriced · 442 Talos client functions
 
 `×N` on a core op = the wrapper drives N priced core ops in a FIXED composition (still exactly knowable).
 

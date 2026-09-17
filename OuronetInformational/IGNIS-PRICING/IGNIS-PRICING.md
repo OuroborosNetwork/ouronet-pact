@@ -246,7 +246,7 @@ table is the completion ledger.
 | **P5** migrate ~200 `URCi_` readers off legacy tiers | **done** — zero deterrence-only readers, zero legacy tier calls on a client path |
 | **P6** retire dead cumulator constructors | **done in practice** — the 11 surviving `UDC_<tier>Cumulator` refs are all in `00_DPMF.pact`, dead code that is out of scope |
 | **P7** REPL price assertions (acceptance gate) | **done** — 73 assertions in `[6.1]_Cumulator.repl` plus 8 full-module sweeps (DPTF, ATS, DPDC, DPOF, SWP, SCORE/RPS, AQP, IG\|LEGS) |
-| **P8** the documentation price list | **done** — 431 Talos client functions priced, 0 unresolved. 5 entrypoints carry no row: 3 admin ops (free by rule) and 2 shape-B wrappers that bill through their own `URCi_` reader. All 5 are listed in the sheet's `UNPRICED` section (2026-09-15: they used to be dropped silently) |
+| **P8** the documentation price list | **done** — 442 Talos client functions priced, 0 unresolved. (2026-09-17: was published as **431** — the generator's headline summed exact+floor+exempt and silently dropped the 11 STOA-only rows, which ARE priced client functions, billed in STOA rather than IGNIS. `_pricesync --check` requires this prose to quote the generator's total, so the gate ENFORCED the undercount and would have gone red on anyone correcting it.) 5 entrypoints carry no row: 3 admin ops (free by rule) and 2 shape-B wrappers that bill through their own `URCi_` reader. All 5 are listed in the sheet's `UNPRICED` section (2026-09-15: they used to be dropped silently) |
 
 **Beyond the original plan** (owner decisions taken after it was written): the dollar rule for all
 STOA; the constants-only conversion (65 table reads lifted); the `define-set` / `ats-secondary` /
@@ -255,7 +255,7 @@ STOA; the constants-only conversion (65 table reads lifted); the `define-set` / 
 
 ## What is open
 
-**431** Talos client functions carry a price; **5** carry no row, and the sheet now says which:
+**442** Talos client functions carry a price; **5** carry no row, and the sheet now says which:
 
 ```
 182 exact  ·  199 floor  ·  11 STOA-only  ·  50 exempt  ·  0 unresolved  ·  5 unpriced

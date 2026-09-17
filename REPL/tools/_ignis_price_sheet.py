@@ -727,7 +727,15 @@ print(f"\n---\n{nsimple} simple (exact price) · {ncomplex} complex (floor price
       f"{nstoaonly} STOA-only · {nexempt} exempt"
       f" · {nunknown} unresolved"
       f" · {len(_unpriced)} unpriced"
-      f" · {nsimple+ncomplex+nexempt} Talos client functions"
+      # CORRECTED 2026-09-17: this used to read `nsimple+ncomplex+nexempt`, silently dropping the
+      # STOA-only rows -- which ARE Talos client functions, priced in STOA instead of IGNIS
+      # (branding upgrades, the PYTHIA tolls, the CODEX StoicTag family). The published total was
+      # 431 where the sheet itself lists 442 rows. Worse than a stale figure: `_pricesync.py`'s
+      # narrative check requires IGNIS-PRICING.md to quote THIS number, so the gate ENFORCED the
+      # undercount and would have turned RED on anyone correcting the prose. An artefact check that
+      # locks in its generator's arithmetic error is the §1.2 "pinning the wrong message" inversion,
+      # one level up.
+      f" · {nsimple+ncomplex+nstoaonly+nexempt} Talos client functions"
       f"\n\n`×N` on a core op = the wrapper drives N priced core ops in a FIXED composition"
       f" (still exactly knowable).\n")
 print("Regenerate: `python3 REPL/tools/_ignis_price_sheet.py > OuronetInformational/IGNIS-PRICING/IGNIS-PRICE-SHEET.md`")

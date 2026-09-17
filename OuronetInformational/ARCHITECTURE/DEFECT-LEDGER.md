@@ -3455,3 +3455,37 @@ is correct (the double-load abort it guards against is real) and ATS coverage **
 ATS's `ISSUES-RANKED.md` tally says **"FIXED: 19"** and enumerates **18**; `AUDIT-REPORT.md` states
 19/13/3 = 35 where the true split is 18/14/3 = 35. **Two compensating off-by-ones, so the total
 checks out.** A total that reconciles is the reason nobody re-counted the parts.
+
+## 8.21 A gate that enforced its own generator's arithmetic error
+
+Found while assembling Part II, and it is the worst instrument defect in the record — not because the
+number was large, but because **the gate would have rejected the correction.**
+
+`_ignis_price_sheet.py`'s footer computed its headline as `nsimple + ncomplex + nexempt`, silently
+dropping `nstoaonly`. STOA-only rows *are* Talos client functions — branding upgrades, the PYTHIA
+tolls, the CODEX StoicTag family — priced in **STOA rather than IGNIS**, which is a billing route,
+not an absence of price. The sheet listed **442** rows and published **431**.
+
+**And `_pricesync.py --check` requires `IGNIS-PRICING.md` to quote that total**, failing the gate if
+it does not. That check exists for a good reason — a generated artefact guarded by the gate, quoted
+by a narrative nobody checks, just moves the stale number one file along. But its effect here was
+exact and backwards:
+
+> **The gate enforced the undercount, and anyone correcting the prose to 442 would have turned it
+> red.** That is §1.2's *"pinning the wrong message is worse than pinning none"* one level up: an
+> artefact check that locks in its generator's arithmetic makes the error a requirement.
+
+Fixed at the generator; both artefacts regenerated; the narrative now quotes **442**, and
+`_pricesync --check` passes on all three. The undercount had been recorded in this ledger's §5 as
+420/430 and never chased to its cause.
+
+### And a self-contradiction in the project's own entry point
+
+`CLAUDE.md` line 122 described `2_CITIZEN/7_Launchpad/99_TS02-**D**PAD.pact` as *"the **sovereign**
+Talos orchestrator … co-located with the launchpad"*. **That file does not exist**, and the sentence
+contradicted the layout table thirteen lines above it, which is correct.
+
+The two modules are `99_TS02-**C**PAD.pact` (citizen, in the launchpad) and
+`1_SOVEREIGN/STAGE_02/3_Talos/05_TS02-**D**PAD.pact` (sovereign, moved out). One letter separates
+them, and the wrong one sat in the sentence that assigns the sovereign/citizen role — the single
+distinction the architecture rests on. Corrected.
