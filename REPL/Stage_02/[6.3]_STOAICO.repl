@@ -581,4 +581,10 @@
     ""
 )
 (env-sigs [])
-(commit-tx)
+(rollback-tx)
+;;ROLLED BACK, not committed. The first draft of this block ended on `commit-tx` and the collect it
+;;drives CONSUMED the last unclaimed straggler -- which is the exact fixture `[RT-E]_Sequencing.repl`
+;;<<RT-E-001>> needs, since that attack is about what the vault pays the LAST claimant. The gate
+;;caught it: RT-E-001 went red with "the rightful last claimant is still paid the WHOLE vault".
+;;A parity measurement has no business mutating shared state; the assertions are all made INSIDE the
+;;transaction, so rolling back costs nothing and leaves the fixture for the suite that needs it.

@@ -358,6 +358,18 @@ def main():
         print(_px.stdout + _px.stderr)
         sys.exit("GATE FAILED: a live function prefix is unknown to tools/skeleton.py.")
 
+    # AUDIT BOOK TABLES -- the book's headline tables must sum to their own totals, and Part III's
+    # must match the attack register in the tree. Added 2026-09-17 after Part I's verification pass
+    # found an audit tracker that said "FIXED: 19" while enumerating 18, with a compensating
+    # off-by-one elsewhere so the TOTAL RECONCILED -- which is exactly why nobody re-counted the
+    # parts. A book whose third stated rule is about counts should not contain a table that does not
+    # add up, and it is the sort of thing no reviewer checks because it looks like it must be right.
+    _bt = subprocess.run([sys.executable, "tools/_booktables.py", "--check"],
+                         capture_output=True, text=True)
+    if _bt.returncode != 0:
+        print(_bt.stdout + _bt.stderr)
+        sys.exit("GATE FAILED: an Audit Book table does not add up.")
+
     # MODREF MEMBERS -- fatal only on LIVE class-B: a `(ref-X::member ...)` call where `member` is
     # defined NOWHERE in the module implementing X. Pact 5 resolves modref members DYNAMICALLY, so
     # such a call loads and runs, and only raises if that branch is ever taken -- invisible to every
