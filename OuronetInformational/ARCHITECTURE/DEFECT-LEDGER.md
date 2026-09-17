@@ -3247,3 +3247,44 @@ sweep, not a red-team repair, and the returns were pointedly **not pinned**, sin
 - `DPDC-C|C>REGISTER-NONCES`'s length check is unreachable through the single-nonce door, which
   constructs both lists itself. Not a hole — but the *"a single Nonce"* arm of its message is dead
   text, the same shape as two `UNREACHABLE` branches already annotated in that defcap.
+
+## 8.16 `RT-E-003` — the one Hydra recipe with no tests, found by counting
+
+Family E (sequencing) was the round's thinnest, and §8.14 had just established that *"thinnest"*
+usually means *"fewest attacks"* rather than *"least covered"*. So the gap was located by
+**measurement** instead of intuition: enumerate every `Cp_`/`CCp_`/`Ap_`/`AAp_` recipe in the tree
+and count the test files that drive each.
+
+Eleven recipes. Ten are driven by between three and seven files. **`Ap_FlushUncollectedSlice` is
+driven by zero** — an *admin* entrypoint that push-collects **other people's rewards**, with no test
+anywhere.
+
+Its `@doc` makes three claims, none of them previously verified. All three hold, measured:
+
+| claim | measured |
+|---|---|
+| value goes to each **account** — *"not to the admin, not burned"* | straggler **+690.53** wSTOA; **the admin's balance does not move** |
+| re-runs are **idempotent** | replay pays nothing more, and the round stamp does not advance again |
+| order-independent | the fixture has one straggler, so **not tested** — stated rather than implied |
+
+The admin's balance is read at every step deliberately: *"delivers to the account"* and *"delivers to
+whoever ran it"* produce the **identical success string**, so the return value cannot distinguish
+them and only the balance can.
+
+### The reporting defect the replay exposed
+
+Both runs return `"Flush slice processed 1 account(s)"` — because the count is `(length accounts)`,
+the **input** length, not the number actually collected. The per-account
+`"Account … already collected — skipped"` result is computed and then discarded by the `map`.
+
+So an operator retrying a slice — which is exactly what a multi-transaction recipe invites — sees
+**"processed 1 account(s)" for a run that processed none**, and cannot tell a retry from real work by
+its return value.
+
+**Same class as G-47**: a message that claims more than happened. The money is correct; only the
+report is not. Pinned as an *observation of current behaviour* (`run1` equals `run2`), so a future
+repair that makes the count honest turns that assertion red and has to be done deliberately.
+
+> Both of this round's last two findings came from **counting a population** rather than inspecting a
+> candidate — the Talos wrappers without a result sentence (§8.15 F1), and this recipe. Intuition
+> kept pointing at surfaces that were already covered.

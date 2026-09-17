@@ -328,3 +328,98 @@
 (print "===^^^===")
 (env-sigs [])
 (rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "RT-E-003 — replaying an admin Hydra slice that pushes other people's money")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== RT-E-003 · 01 · the slice, then the same slice again ====
+(print "--- [RT-E-003 · 01 · the slice, then the same slice again] ---")
+;;<<RT-E-003>> FAMILY: E | STATUS: REFUSED
+;;HYPOTHESIS: `Ap_FlushUncollectedSlice` is an ADMIN Hydra recipe that push-collects other people's
+;;            rewards. Its `@doc` makes three claims and NONE of them was tested -- the function is
+;;            driven by ZERO tests anywhere in the tree, the only one of the eleven `Cp_`/`CCp_`/`Ap_`
+;;            recipes with no coverage at all. The claims: value goes to each ACCOUNT ("not to the
+;;            admin, not burned"), the slice is order-independent, and "re-runs are idempotent".
+;;            A recipe is by construction multi-transaction, so a replay is not a hypothetical --
+;;            it is what a retrying operator does.
+;;METHOD:     measure the straggler's balance, the ADMIN's balance and the round stamp; run the
+;;            slice; measure again; run the IDENTICAL slice a second time; measure again. The
+;;            admin's balance is read at every step because "delivers to the account" and "delivers
+;;            to whoever ran it" produce the same success string.
+;;RESULT:     REFUSED -- all three claims hold. The account gains, the admin does not move, and the
+;;            replay is a genuine no-op. One reporting defect found, below.
+;;
+;;FOUND BY COUNTING, NOT BY SUSPICION. The sequencing family was the round's thinnest and the
+;;question "which surface is least covered?" was answered by enumerating every Hydra recipe in the
+;;tree and counting the test files that drive each. Ten had between three and seven. This one had
+;;zero -- an admin entrypoint that moves other people's money, with no test.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Florin", "caps": [] }])
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+    )
+    (let
+        (
+            (straggler:string (at 0 (STOAICO.URH_UncollectedAccounts)))
+            (wstoa:string (STOAICO.UR_Global8))
+            (cur-round:integer (STOAICO.UR_Global11))
+        )
+        (let
+            (
+                ;;Ordered deliberately: each read is a point in time, not a value in a set.
+                (acct-before:decimal (ref-DPTF::UR_AccountSupply wstoa straggler))
+                (admin-before:decimal (ref-DPTF::UR_AccountSupply wstoa KST.ANHD))
+                (stamp-before:integer (STOAICO.UR_User5 straggler))
+                (run1:string (STOAICO.Ap_FlushUncollectedSlice KST.ANHD [straggler]))
+                (acct-mid:decimal (ref-DPTF::UR_AccountSupply wstoa straggler))
+                (admin-mid:decimal (ref-DPTF::UR_AccountSupply wstoa KST.ANHD))
+                (stamp-mid:integer (STOAICO.UR_User5 straggler))
+                ;;THE REPLAY. Byte-identical arguments, immediately after.
+                (run2:string (STOAICO.Ap_FlushUncollectedSlice KST.ANHD [straggler]))
+                (acct-post:decimal (ref-DPTF::UR_AccountSupply wstoa straggler))
+                (admin-post:decimal (ref-DPTF::UR_AccountSupply wstoa KST.ANHD))
+                (stamp-post:integer (STOAICO.UR_User5 straggler))
+            )
+            (map print
+                [
+                    ;;THE FIXTURE. A straggler who is genuinely behind the current round -- without
+                    ;;this the flush would be a no-op on the FIRST run and the replay would prove
+                    ;;nothing at all.
+                    (expect "<<RT-E-003>> the straggler is behind the current distribution round"
+                        true (< stamp-before cur-round))
+                    ;;CLAIM 1 -- the value reaches the ACCOUNT.
+                    (expect "<<RT-E-003>> the first flush pays the straggler"
+                        true (> acct-mid acct-before))
+                    ;;...AND NOT THE ADMIN. This is the assertion that separates "push-collect" from
+                    ;;"admin sweep", and the two are indistinguishable from the return string alone.
+                    (expect "<<RT-E-003>> ...and the admin who ran it gains nothing"
+                        admin-before admin-mid)
+                    (expect "<<RT-E-003>> ...and the straggler is stamped for the current round"
+                        cur-round stamp-mid)
+                    ;;CLAIM 3 -- the replay is a genuine no-op, not a second payment.
+                    (expect "<<RT-E-003>> REPLAY: running the identical slice again pays nothing more"
+                        acct-mid acct-post)
+                    (expect "<<RT-E-003>> ...nor to the admin"
+                        admin-before admin-post)
+                    (expect "<<RT-E-003>> ...and the round stamp does not advance again"
+                        stamp-mid stamp-post)
+                    ;;THE REPORTING DEFECT, pinned as an OBSERVATION of current behaviour.
+                    ;;Both runs return the same sentence, because the count is `(length accounts)` --
+                    ;;the INPUT length -- not the number actually collected. The per-account
+                    ;;"already collected - skipped" result is computed and then discarded. So an
+                    ;;operator retrying a slice sees "processed 1 account(s)" for a run that
+                    ;;processed none, and cannot tell a retry from real work by its return value.
+                    ;;Same class as G-47: a message that claims more than happened. The money is
+                    ;;correct; only the report is not.
+                    (expect "<<RT-E-003>> FINDING: the replay reports the same count as the real run"
+                        run1 run2)
+                ]
+            )
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)

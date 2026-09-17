@@ -1606,14 +1606,14 @@ divergences visible at once.
 | B — Permissionless reach | 2 |  | 1 | 1 |
 | C — Admin impersonation | 1 |  |  | 1 |
 | D — Ownership bypass | 7 |  | 1 | 6 |
-| E — Sequencing & state | 2 |  |  | 2 |
+| E — Sequencing & state | 3 |  |  | 3 |
 | F — Griefing / denial of service | 2 |  | 2 |  |
 | G — Hostile citizen module | 2 |  |  | 2 |
 | H — Input domain | 3 |  | 3 |  |
 | I — Gas station payable surface | 2 |  | 1 | 1 |
 | J — Ledger conservation | 3 |  | 1 | 2 |
 | K — Preview/exec divergence | 7 |  | 7 |  |
-| **total** | **36** | **0** | **19** | **17** |
+| **total** | **37** | **0** | **19** | **18** |
 <!-- REGISTER:END -->
 
 **Seven of fourteen attacks found a defect, and all seven are fixed and measured.** The table above
