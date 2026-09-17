@@ -583,8 +583,11 @@
 (env-sigs [])
 (rollback-tx)
 ;;ROLLED BACK, not committed. The first draft of this block ended on `commit-tx` and the collect it
-;;drives CONSUMED the last unclaimed straggler -- which is the exact fixture `[RT-E]_Sequencing.repl`
-;;<<RT-E-001>> needs, since that attack is about what the vault pays the LAST claimant. The gate
+;;drives CONSUMED the last unclaimed straggler -- the exact fixture that the RT-E-001 attack in
+;;`[RT-E]_Sequencing.repl` needs, since it is about what the vault pays the LAST claimant. The gate
 ;;caught it: RT-E-001 went red with "the rightful last claimant is still paid the WHOLE vault".
+;;(The tag is written bare here, not in `<<...>>` at line start: the attack register scans every
+;;.repl for that form, so quoting another block's tag in a comment registers a malformed header --
+;;which is how this very file failed the gate a second time.)
 ;;A parity measurement has no business mutating shared state; the assertions are all made INSIDE the
 ;;transaction, so rolling back costs nothing and leaves the fixture for the suite that needs it.
