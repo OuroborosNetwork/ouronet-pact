@@ -121,6 +121,41 @@ of reverting and transaction rollback no longer guaranteed it.
 
 ---
 
+## Failure 5 — The acceptance criterion a defect satisfies
+
+The four failures above are about the *test*. This one is about what the test was asked to prove,
+and it is the most expensive mistake in the record because **the test was correct and green.**
+
+An earlier audit round found that a reward vault's "last claimant takes the remaining dust" branch
+tested the wrong condition. It wrote a fix, and it wrote down how the fix would be verified
+[VERIFIED by reading, `ROUND-02-FIXES.md:437`]:
+
+> *"…collects → **both the global and member vaults drain to exactly 0.0**. This proves…"*
+
+That is a reasonable criterion. Conservation of value is exactly what you want from a vault. The
+test was written, it passed, and the finding was closed.
+
+**The defect satisfied it.** The fix had been built by porting the canonical token-ledger vault and
+dropping two of its guards, and the surviving branch let a **fully-exited** account collect the whole
+vault while the rightful sole claimant received `0.0`. The vault still drained to exactly zero. Value
+was still conserved. Every unit that went in came out — to the wrong account.
+
+Found nearly a month later, by a red-team attack asking a different question: not *"does the vault
+balance?"* but *"who received it?"*
+
+> **"Nothing was lost" and "the right person got it" are different claims, and only one of them was
+> being checked.** A conservation criterion cannot distinguish a correct payout from a theft that
+> happens to balance.
+
+The repaired branch now carries `(> deb-user 0.0)` — *"still in the claimant set"* — and the source
+comment records why the predicate is that one: it is the same predicate the collect path itself uses
+to remove a caller from the set, so the reader and the counter finally agree.
+
+The generalisable rule is not "write better tests". It is:
+
+> **When you write down how a fix will be verified, ask what else would satisfy it.** If a defect
+> can, the criterion is measuring a property of the system rather than the correctness of the change.
+
 ## What this costs
 
 Roughly: for every line of attack, three or four lines of fixture and control, and a comment

@@ -3326,3 +3326,34 @@ its write were wrong, no test would say so, and the first execution would be on 
 > that differs is on the inter-module authorisation surface. That is a narrow gap — one function of
 > 452 — but it is precisely the kind that only shows up in production, because the thing skipping it
 > is the environment, not the code.
+
+## 8.18 The acceptance criterion that a defect satisfied
+
+Surfaced while assembling Part I of the Audit Book, and it is the most transferable item in the
+entire record because **nothing was sloppy**: the test was written, was correct, and was green.
+
+An earlier AQP round found that a reward vault's *"last claimant takes the remaining dust"* branch
+tested the wrong condition. It wrote a fix — a port of the canonical `coin` vault — and it wrote down
+how the fix would be verified (`ROUND-02-FIXES.md:437`):
+
+> *"…collects → **both the global and member vaults drain to exactly 0.0** (`gc→0`). This proves…"*
+
+**The defect satisfied that criterion.** The port had dropped two of the original's guards, and the
+surviving branch let a **fully-exited** account collect the whole vault while the rightful sole
+claimant received `0.0`. The vault still drained to exactly zero. Value was still conserved. Every
+unit that went in came out — to the wrong account.
+
+It was found ~2 weeks later by a red-team attack asking a different question: not *"does the vault
+balance?"* but *"who received it?"* Both branches now carry `(> deb-user 0.0)` — *"still in the
+claimant set"* — at `04_RPS.pact:1891` and `:1894`, and the source comment records why that predicate:
+it is the one the collect path itself uses to remove a caller from the set, so reader and counter
+agree. Pinned by `<<TX-AQP-CL04>>`.
+
+> **"Nothing was lost" and "the right person got it" are different claims, and only one was being
+> checked.** A conservation criterion cannot distinguish a correct payout from a theft that balances.
+
+**The rule is not "write better tests".** It is: *when you write down how a fix will be verified, ask
+what else would satisfy it.* If a defect can, the criterion is measuring a property of the system
+rather than the correctness of the change. Recorded as Failure 5 in the Audit Book's method chapter,
+alongside the four failure modes that concern the test itself — this one concerns the acceptance
+criterion, and no amount of care in writing the test would have caught it.
