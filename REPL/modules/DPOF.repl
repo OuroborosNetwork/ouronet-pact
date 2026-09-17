@@ -2189,6 +2189,15 @@
                 (expect-failure "<<DPOF-G13>> paying the gas does not let you move someone else's nonce"
                     "Keyset failure (keys-all): [PK_Emma...]"
                     (ref-TS01-C1::DPOF|C_Transfer attacker o [1] victim attacker false))
+                ;;THE PLURAL DOOR. `DPOF|C>BULK-TRANSFER` is a SEPARATE defcap with its own
+                ;;`CAP_EnforceAccountOwnership sender`, so the assertion above says nothing about
+                ;;it -- the same sibling-gate trap that left `FVT|C>SET-SPLIT-MODE` unwitnessed one
+                ;;line from a passing test. Unlike the singular door this one checks ownership
+                ;;FIRST, ahead of its list-shape fold, so a correctly-shaped batch is not needed to
+                ;;reach the gate; one is passed anyway so the refusal cannot be blamed on shape.
+                (expect-failure "<<DPOF-G13>> ...nor in bulk, which is a separate gate"
+                    "Keyset failure (keys-all): [PK_Emma...]"
+                    (ref-TS01-C1::DPOF|C_BulkTransfer attacker o [[1]] victim [attacker] false))
                 ;;...and the refusal was TOTAL.
                 (expect "<<DPOF-G13>> ...and the nonce did not move"
                     holder-before (ref-DPOF::UR_NonceHolder o 1))

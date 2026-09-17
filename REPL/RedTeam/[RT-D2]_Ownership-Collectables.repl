@@ -307,6 +307,7 @@
     (
         (ref-DPDC:module{DpdcV2} DPDC)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
         (id:string "CNF-98c486052a51")
         (nonce:integer 2)
         (attacker:string KST.EMMA)
@@ -324,6 +325,13 @@
                 "Keyset failure (keys-all): [PK_Ancie...]"
                 (ref-TS02-C2::DPNF|C_TransferNonce attacker id victim attacker nonce 1 false))
             ;;...and the nonce did not move: the victim still passes the possession gate afterwards.
+            ;;THE PLURAL DOOR, a separate defcap with its own `CAP_EnforceAccountOwnership sender`.
+            ;;The singular assertion above says nothing about it. Unlike the singular collectable
+            ;;door, this one checks ownership BEFORE its list-shape fold, so the batch below is
+            ;;well-formed only so that a shape error cannot be mistaken for the refusal under test.
+            (expect-failure "<<RT-D-004>> ...nor in bulk, which is a separate gate"
+                "Keyset failure (keys-all): [PK_Ancie...]"
+                (ref-TS02-C1::DPDC|C_BulkTransfer attacker id false [[nonce]] [[1]] victim [attacker] false))
             (expect "<<RT-D-004>> ...and the victim still holds the nonce"
                 true (> (ref-DPDC::UR_AccountNonceSupply victim id false nonce) 0))
         ]

@@ -2328,9 +2328,17 @@ recorded the same error in other people's tools, and it recurred in mine.
 
 | credit | caps | what it is worth |
 |---|---|---|
-| **depth 0** — the called op's own gate | **44** | attributed: the refusal *is* this gate |
+| **depth 0** — the called op's own gate | **46** | attributed: the refusal *is* this gate |
 | depth 1 | **7** | circumstantial |
-| depth 2+ — merely on the path | **12** | proves nothing about this gate |
+| depth 2+ — merely on the path | **10** | proves nothing about this gate |
+
+**The depth-2+ column is a worklist, and it found two gates on its first day.** `DPOF|C>BULK-TRANSFER`
+and `DPDC-T|C>BULK-TRANSFER` each sat in the observed column, credited from four hops away, while no
+test had ever driven either with a non-owner. Both are the **plural door** beside a singular one that
+*was* witnessed — the same sibling-gate trap that left `FVT|C>SET-SPLIT-MODE` unwitnessed one line
+from a passing test, and `DPTF|C>MULTI-TRANSFER` unwitnessed beside `RT-D-001`. Three instances now,
+in three different families: **a separate `defcap` is a separate gate, and an adjacent green
+assertion is the most convincing way for one to stay dark.**
 
 Two earlier cuts of this metric were wrong, both in the direction of a tidy number:
 
