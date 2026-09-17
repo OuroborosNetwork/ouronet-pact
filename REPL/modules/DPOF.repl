@@ -2241,3 +2241,38 @@
 )
 (env-sigs [])
 (rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-G14 — the ortofungible issuance owner gate")
+(print "")
+(print "=== DPOF-G14 — non-owner C_Issue ============================================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;The ortofungible twin of DPTF-G14, and worth asserting separately for the reason this suite keeps
+;;re-learning: `DPOF|C>ISSUE` is its own defcap with its own `CAP_EnforceAccountOwnership account`,
+;;so a passing assertion on the DPTF side says nothing about it. Like its twin it was NOT on the
+;;actionable list -- it sat in the observed column, credited at depth 2 by a VST link op that issues
+;;an ortofungible on its way past.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (attacker:string KST.EMMA)
+        (victim:string KST.ANHD)
+    )
+    (map print
+        [
+            (expect "<<DPOF-G14>> the attacker is not the account being named as issuer"
+                false (= attacker victim))
+            (expect-failure "<<DPOF-G14>> paying the fee does not let you issue an ortofungible onto someone else's account"
+                "Keyset failure (keys-all): [PK_Ancie...]"
+                (ref-TS01-C1::DPOF|C_Issue attacker victim
+                    ["NonOwnerIssueOf"] ["NOIOF"] [24]
+                    [true] [true] [true] [true] [true] [true] [true]))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)

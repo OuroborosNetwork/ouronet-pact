@@ -2329,8 +2329,14 @@ recorded the same error in other people's tools, and it recurred in mine.
 | credit | caps | what it is worth |
 |---|---|---|
 | **depth 0** — the called op's own gate | **46** | attributed: the refusal *is* this gate |
-| depth 1 | **7** | circumstantial |
-| depth 2+ — merely on the path | **10** | proves nothing about this gate |
+| depth 1 | **9** | circumstantial |
+| depth 2+ — merely on the path | **8** | proves nothing about this gate |
+
+**Depth is a proxy and it under-rates as well as over-rates.** `DPTF-G14` / `DPOF-G14` were written
+specifically for `DPTF|C>ISSUE` and `DPOF|C>ISSUE`, and land at **depth 1**, not 0, because the Talos
+wrapper reaches the core issue one hop further in than the metric's seed. The tests target those
+gates exactly; the number says "circumstantial". Read the column as *evidence strength*, never as a
+verdict — the same caution the observed count itself carries.
 
 **The depth-2+ column is a worklist, and it found two gates on its first day.** `DPOF|C>BULK-TRANSFER`
 and `DPDC-T|C>BULK-TRANSFER` each sat in the observed column, credited from four hops away, while no

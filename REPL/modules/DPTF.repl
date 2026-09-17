@@ -2733,3 +2733,44 @@
 )
 (env-sigs [])
 (rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPTF-G14 — the issuance owner gate: naming someone else as the issuer")
+(print "")
+(print "=== DPTF-G14 — non-owner C_Issue ============================================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;`DPTF|C>ISSUE` opens on `CAP_EnforceAccountOwnership account` -- the account the token is issued
+;;TO, which is a separate argument from the patron who pays. Every issuance in this suite and in the
+;;deploy chain passes the same account for both, so the gate had never been shown refusing anybody.
+;;It was not on the actionable list either: it sat in `_ownerobs.py`'s OBSERVED column, credited from
+;;two hops away by a VST link op that happens to issue a token on its way past. The depth column
+;;added 2026-09-17 is what surfaced it -- credit at depth 2 proves nothing about the gate itself.
+;;
+;;This is RT-D-001's patron/owner split applied to CREATION rather than movement: the attacker pays
+;;the fee and names the victim as the account that will own the new token.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (attacker:string KST.EMMA)
+        (victim:string KST.ANHD)
+    )
+    (map print
+        [
+            (expect "<<DPTF-G14>> the attacker is not the account being named as issuer"
+                false (= attacker victim))
+            ;;The lists are well-formed and mutually consistent: C>ISSUE checks their lengths, and a
+            ;;ragged set would be refused for shape with a message that says nothing about ownership.
+            (expect-failure "<<DPTF-G14>> paying the fee does not let you issue a token onto someone else's account"
+                "Keyset failure (keys-all): [PK_Ancie...]"
+                (ref-TS01-C1::DPTF|C_Issue attacker victim
+                    ["NonOwnerIssueTf"] ["NOITF"] [24]
+                    [true] [true] [true] [true] [true] [true]))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
