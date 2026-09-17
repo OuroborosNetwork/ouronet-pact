@@ -3514,3 +3514,52 @@ it, and the honest move is to say so rather than to guess.
 **This is the second gate-level defect of the same family today**, after §8.21's price sheet — and
 the two are mirror images. `_pricesync` enforced a number that was *wrong*; `_figuresync` enforced a
 number that was *unchecked*. Both were green. Both would have stayed green indefinitely.
+
+## 8.23 The gate-log discovery that was one extension away from a day-old report
+
+Closing §8.22's loop required regenerating `REPL_SUITE_STATS.md`, which reads the most recent green
+gate output. `_suite_stats.py`'s `_newest_gate()` globbed `/tmp/gate*.out` **and** `/tmp/gate*.log`
+— two extensions, added after a previous incident where globbing *one* had silently quoted a stale
+run.
+
+A gate run redirected to `/tmp/gate_run3.txt` matches neither. The function would have returned a run
+**from the previous day**, and the regenerated report would have been green, plausible, and a day
+wrong — with `_figuresync` then enforcing those figures across every narrative document.
+
+> **Globbing two extensions is the same mistake as globbing one, just later.** The output's extension
+> is the operator's choice; the only reliable marker is the content. Now matches any `/tmp/gate*`
+> file containing `GATE GREEN`.
+
+That is the **fourth** enumeration-vs-discovery defect found in a single session — after
+`_toolpaths.py`'s directory list, `_ownerobs.py`'s client-prefix filter, and `_info_measured.py`'s
+three-file preview list. All four had the same signature: a hand-maintained list, no way for the tool
+to notice the list was incomplete, and a confident report about a population it had never seen in
+full. The tool's own docstring here already warned about it *for two extensions* and did not
+generalise.
+
+**With all three loops closed, the figures moved for the first time in weeks:** distinct assertions
+**5,555 → 5,830**, executed **22,454 → 24,986**, positive **18,300 → 20,006**, negative
+**4,154 → 4,980**. Every one of those had been consistent across every document and wrong.
+
+## 8.24 `_info_measured.py` reported a perfect score over a population it had defined to exclude the gaps
+
+The preview-coverage tool scanned **three hardcoded files**. Every `ClientInfo`-returning preview
+defined elsewhere was invisible, and it reported:
+
+> `CLIENT-FACING: 401 · named in a live .repl: 401 · MEASURED: 401 · client-facing, NEVER named: 0`
+
+Discovering the population instead finds **14 more** — 4 in PYTHIA, 4 in CODEX, 6 across the citizen
+launchpad sales — and **one of them is named in no live `.repl` at all**. Honest figures:
+
+| | before | after |
+|---|---:|---:|
+| declared | 410 | **423** |
+| client-facing | 401 | **414** |
+| measured | 401 | **413** |
+| **never named** | **0** | **1** |
+
+> A hardcoded list cannot report its own incompleteness, so it reports **clean** about what it never
+> opened. Here it reported a **perfect score**, which is worse — a perfect score ends the enquiry.
+
+The one gap is `STOAICO::INFO_Collect`, and chasing it found something better than a missing test —
+see §8.25.

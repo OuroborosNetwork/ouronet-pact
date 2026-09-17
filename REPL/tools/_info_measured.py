@@ -29,17 +29,37 @@ import os as _os2, sys as _sys2
 _sys2.path.insert(0, _os2.path.dirname(_os2.path.abspath(__file__)))
 from _pactlex import strip_comments
 
-PREVIEW_SOURCES = [
-    "../1_SOVEREIGN/STAGE_01/Z_Reads/02_INFO-ONE+.pact",
-    "../1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact",
-    "../1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact",
-]
+# CORRECTED 2026-09-17 -- this was a HARDCODED THREE-FILE LIST, and every `ClientInfo` preview
+# defined outside those three was invisible. The tool then reported "401 client-facing / 401 named /
+# 401 MEASURED / 0 never named" -- a perfect score over a population it had defined so as to exclude
+# the gaps. Discovering instead of enumerating finds **14 more**, in PYTHIA (4), CODEX (4) and the
+# five citizen launchpad sales (6) -- and **one of the fourteen is named in no live `.repl` at all**
+# (`STOAICO::INFO_Collect`). The honest figures are 415 client-facing and 414 measured.
+#
+# Third instance of this exact shape in one day, after `_toolpaths.py`'s TOOL_DIRS (which missed a
+# fourth directory holding a tool that rewrote contract sources) and `_ownerobs.py`'s client-prefix
+# filter (which matched four of the eight documented prefixes). A hardcoded list cannot report its
+# own incompleteness, so it reports CLEAN about what it never opened -- and here it reported a
+# perfect score, which is worse, because a perfect score ends the enquiry.
+def _preview_sources():
+    """Every .pact that defines a `ClientInfo`-returning INFO_ preview."""
+    import glob as _g
+    hits = []
+    for pat in ("1_SOVEREIGN/**/*.pact", "2_CITIZEN/**/*.pact"):
+        for f in _g.glob(os.path.join(REPO, pat), recursive=True):
+            if "/Audit/" in f or "/archive/" in f:
+                continue
+            t = open(f, encoding="utf8", errors="ignore").read()
+            if re.search(r'^    \(defun\s+INFO_[A-Za-z0-9|_\-]+\s*:object\{[^}]*ClientInfo\}',
+                         t, re.M):
+                hits.append(f)
+    return sorted(hits)
+REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 NAME_RE = re.compile(r'INFO_[A-Za-z0-9|_\-]+')
 
 def declared():
     out = {}
-    for f in PREVIEW_SOURCES:
-        p = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), f)
+    for p in _preview_sources():
         # ONLY ClientInfo-returning previews. The owner's rule -- "the INFO function must output
         # the exact same cost as the real execution function" -- is about COST previews. Matching
         # every INFO_ defun swept in display readers that quote no cost at all
@@ -49,7 +69,7 @@ def declared():
         for m in re.finditer(r'^\s+\(defun (INFO_[^\s:(]+)(:[^\s(]+)?', open(p).read(), re.M):
             if 'ClientInfo' not in (m.group(2) or ''):
                 continue
-            out[m.group(1)] = os.path.basename(f)
+            out[m.group(1)] = os.path.basename(p)
     return out
 
 def internal_helpers(dec):
@@ -67,11 +87,10 @@ def internal_helpers(dec):
     that cries wolf nine times is a coverage report nobody reads to the end.
     """
     helpers = set()
-    for f in PREVIEW_SOURCES:
-        p = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), f)
+    for p in _preview_sources():
         src = open(p).read()
         for name in dec:
-            if dec[name] != os.path.basename(f):
+            if dec[name] != os.path.basename(p):
                 continue
             # a CALL, not the defun: "(NAME " with a space, never "(defun NAME"
             if re.search(r'(?<!defun )\(' + re.escape(name) + r'[\s)]', src):

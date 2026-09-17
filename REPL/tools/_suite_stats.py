@@ -30,8 +30,20 @@ def _newest_gate():
     # executed per full gate run" or "gate entrypoints" -- silently. _figuresync then reported
     # "clean" while no longer checking either figure, because its canonical source had stopped
     # containing them. A generator that degrades quietly takes its checker down with it.
-    outs = [f for f in (_g.glob("/tmp/gate*.out") + _g.glob("/tmp/gate*.log"))
-            if "GATE GREEN" in open(f, errors="ignore").read()]
+    # CORRECTED 2026-09-17: globbing two EXTENSIONS is the same mistake as globbing one, just
+    # later. A gate run redirected to `/tmp/gate_run3.txt` matched neither, so this silently
+    # returned a run from the PREVIOUS DAY and the report would have been written from it -- green,
+    # plausible, and a day wrong. The output's extension is the operator's choice; the only
+    # reliable marker is the content. Match any `/tmp/gate*` FILE that says GATE GREEN.
+    outs = []
+    for f in _g.glob("/tmp/gate*"):
+        if not os.path.isfile(f):
+            continue
+        try:
+            if "GATE GREEN" in open(f, errors="ignore").read():
+                outs.append(f)
+        except OSError:
+            continue
     return max(outs, key=os.path.getmtime) if outs else None
 
 
