@@ -15,6 +15,35 @@
 | 6 | **AQP** | acquisition pools — anchors, scores, rewards, vaults | **33** | `STAGE_02/2_Core/03_AQP/Audit/` |
 |  |  | | **314** | |
 
+## Independent corroboration of the counts (2026-09-17)
+
+The per-module totals above were re-derived from the audit trees by a **different method** than the
+chapters used — counting distinct finding ids in the source `.md` files rather than reading the
+trackers:
+
+| module | chapter | independent count | |
+|---|---:|---:|---|
+| DALOS | 88 | **88** | exact |
+| ATS | 35 | **35** | exact |
+| DPDC | 58 | **58** | exact |
+| DEMIPAD | 17 | **17** | exact |
+| SWP | 83 | 82 | within 1 |
+| AQP | 33 | 36 | differs by 3 |
+
+**The two that differ are the two with irregular id schemes** — SWP uses letter-suffixed ids
+(`#65bL`, `#32bM`) and AQP uses a bare class-letter form (`C1`, `H4`, `S4`) that a pattern also
+matches in prose. **The independent method is cruder than the chapters', so the chapters' figures
+stand**; this is corroboration, not a correction, and the two gaps are recorded rather than
+reconciled away.
+
+> An attempt to audit the chapters' findings *tables* row-by-row was abandoned: the six chapters use
+> different table shapes, and a single regex produced obvious nonsense on three of them (0 rows where
+> there are dozens). A measurement that cannot be trusted is not reported as a number — which is the
+> book's third rule applied to the book's own audit.
+
+`REPL/tools/_booktables.py` gates only what it can check **exactly**: that the two headline tables
+sum to their own totals, and that Part III's total matches the attack register in the tree.
+
 ## What the verification pass found
 
 ### The headline is a positive one
