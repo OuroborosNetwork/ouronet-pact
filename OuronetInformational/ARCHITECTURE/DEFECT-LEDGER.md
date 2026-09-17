@@ -3357,3 +3357,43 @@ what else would satisfy it.* If a defect can, the criterion is measuring a prope
 rather than the correctness of the change. Recorded as Failure 5 in the Audit Book's method chapter,
 alongside the four failure modes that concern the test itself — this one concerns the acceptance
 criterion, and no amount of care in writing the test would have caught it.
+
+## 8.19 What the fast path actually skips — measured
+
+CLAUDE.md warns that `Z.repl` is *"the fast path, not the gate"* and names some of what it skips.
+Part I's DEMIPAD chapter independently found that **both** launchpad proof suites are commented out
+of `Stage02_Tester.repl`. Neither statement gives a size, so here it is, by transitively resolving
+every **uncommented** `(load …)` from each runner:
+
+| runner | files | assertion **sites** |
+|---|---:|---:|
+| `Z.repl` | 173 | **922** |
+| `ZALL.repl` | 189 | **1,422** |
+| **in ZALL only** | **20** | **561 (39%)** |
+
+The largest omissions:
+
+| sites | suite |
+|---:|---|
+| 133 | `Stage_01/[6.3]_SWP.repl` |
+| 109 | `Stage_02/[5.3]_Launchpad.repl` |
+| 94 | `Stage_01/[6.10]_PYTHIA.repl` |
+| 75 | `Stage_01/[6.1]_Cumulator.repl` |
+| 42 | `Stage_01/[6.6]_ATS.repl` |
+| 32 | `Stage_02/[6.3]_STOAICO.repl` · 32 `[6.9]_CODEX.repl` |
+
+**Read "sites", not "assertions".** These are static `(expect …)` forms; one inside a `map` over ten
+items executes ten times. The gate reports **24,972 executed** assertions against **1,422 sites**, so
+the ratio is roughly 18:1 and is not uniform across suites. The 39% figure is therefore a measure of
+*what code is loaded*, not of *how much checking happens* — and no attempt is made here to convert
+between them, because a weighted figure would look more precise and be less true.
+
+**It corroborates three separate observations from different directions.** The SWP Round III
+re-verify found that most of that audit's adversarial proofs live in `[6.3]_SWP.repl` — the single
+largest omission. The DEMIPAD chapter found both its launchpad suites skipped. And CLAUDE.md's own
+correction records that `[6.1]_Cumulator.repl`'s 75 leg-level pricing assertions are out of the fast
+path, which is the third-largest.
+
+None of this is a defect: the split is deliberate and documented, and **the gate runs everything**.
+It is recorded so that "green" is always qualified by *which runner* — a `Z.repl` run showing green
+has not executed 39% of the files, including the suite that proves the most audit findings.
