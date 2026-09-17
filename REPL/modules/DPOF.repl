@@ -2145,3 +2145,90 @@
 )
 (env-sigs [])
 (rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-G13 — the ortofungible sender gate, and the DEBIT gate behind it")
+(print "")
+(print "=== DPOF-G13 — non-owner C_Transfer =========================================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;DPOF-04 above proves a nonce transfer WORKS. It says nothing about who may perform one: it signs as
+;;the holder throughout. `DPOF|C>TRANSFER` opens on `CAP_EnforceAccountOwnership sender`, and the
+;;debit leg reaches `DPOF|C>DEBIT`, which carries its own ownership check -- and until this block
+;;NEITHER had ever been shown refusing anybody. Delete either and nothing in this suite turns red.
+;;Surfaced by `REPL/tools/_ownerobs.py` only after its mapping was made transitive: `DPOF|C>DEBIT` is
+;;reached THROUGH the transfer, never directly from Talos, so a one-hop scan could not see it at all.
+;;
+;;THE ATTACKER IS LUMY, NOT ANHD, deliberately. ANHD created MOCKO, so an attack signed by ANHD would
+;;leave "was it refused because the signer is not the SENDER, or admitted because the signer owns the
+;;TOKEN?" unanswered. LUMY is neither, which makes the refusal attributable to the sender check alone.
+(env-sigs [{ "key": "PK_Lumy", "caps": [] }])
+(let
+    (
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (o:string "MOCKO-98c486052a51")
+        (attacker:string KST.LUMY)
+        (victim:string KST.EMMA)
+    )
+    (let
+        (
+            (holder-before:string (ref-DPOF::UR_NonceHolder o 1))
+        )
+        (map print
+            [
+                ;;NON-VACUITY: the victim really holds it, and the attacker really is not the victim.
+                (expect "<<DPOF-G13>> the victim holds nonce 1, so there is something to take"
+                    victim holder-before)
+                (expect "<<DPOF-G13>> ...and the attacker is not the victim"
+                    false (= attacker victim))
+                ;;THE ATTACK: the attacker pays AND receives; the victim is named as sender.
+                ;;The message names the VICTIM's key, which is what separates "the sender gate
+                ;;refused" from "the attacker's own signature was rejected".
+                (expect-failure "<<DPOF-G13>> paying the gas does not let you move someone else's nonce"
+                    "Keyset failure (keys-all): [PK_Emma...]"
+                    (ref-TS01-C1::DPOF|C_Transfer attacker o [1] victim attacker false))
+                ;;...and the refusal was TOTAL.
+                (expect "<<DPOF-G13>> ...and the nonce did not move"
+                    holder-before (ref-DPOF::UR_NonceHolder o 1))
+            ]
+        )
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "DPOF-G13b — the identical call, with the holder signing, must WORK")
+(print "")
+(print "=== DPOF-G13b — sponsorship is real, so the refusal above is specific =========")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;THE NON-VACUITY HALF. An `expect-failure` proves a call was refused, not that the guard under test
+;;refused it, and not that the operation works when it should. If LUMY simply could not sponsor, or
+;;this nonce could not move at all, the block above would pass for reasons unrelated to ownership.
+;;So the identical call runs again with the HOLDER signing while LUMY remains the patron.
+(env-sigs [{ "key": "PK_Lumy", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (o:string "MOCKO-98c486052a51")
+        (sponsor:string KST.LUMY)
+        (holder:string KST.EMMA)
+    )
+    (print (format "<(TS01-C1.DPOF|C_Transfer sponsored by LUMY)> => \"{}\""
+        [(ref-TS01-C1::DPOF|C_Transfer sponsor o [1] holder sponsor false)]))
+    (map print
+        [
+            (expect "<<DPOF-G13>> with the holder signing, the identical call succeeds"
+                sponsor (ref-DPOF::UR_NonceHolder o 1))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)

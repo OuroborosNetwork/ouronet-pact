@@ -2323,6 +2323,14 @@ never visible. Progress reported against an excluding denominator flatters itsel
 second time in the same programme that a ratio has been published without its exclusions: §7.2g
 recorded the same error in other people's tools, and it recurred in mine.
 
+**A DEMONSTRATED instance of the upper bound being loose, found the day it was introduced.**
+`DPOF|C>TRANSFER` was scored **observed** before any test had ever driven a non-owner ortofungible
+transfer — it was credited transitively by some other op that reaches it. `DPOF-G13` (2026-09-17)
+wrote that attack for the first time: LUMY pays and receives, EMMA is named as sender, and the
+refusal names EMMA's key. **The measured counts did not move**, because the gate was already in the
+observed column. So the gap was real, the test was worth writing, and the tool said it was covered.
+Use the observed column to decide nothing; use the actionable list to decide what to write next.
+
 **The correction is not free, and the tool now says so in its own output.** Transitive reachability
 makes **`observed` an UPPER bound** — a test that drives op A and is refused credits every gated cap
 reachable from A, while only one of them actually refused; attribution along a path is reachability,
