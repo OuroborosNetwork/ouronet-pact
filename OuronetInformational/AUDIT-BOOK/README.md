@@ -1,7 +1,11 @@
 # The Ouronet Audit Book
 
-> **Status: IN ASSEMBLY** (started 2026-09-17). Roadmap §1.6.2.1.
+> **Status: ALL THREE PARTS WRITTEN** (2026-09-17). Roadmap §1.6.2.1.
 > One consolidated, publishable account of every audit performed on Ouronet, end to end.
+>
+> **~9,000 lines across 18 chapters.** Part I verifies 314 findings from six module audits against
+> *current* source; Part II documents the main-work round from the tree and the commit history
+> rather than from its own plan; Part III records 38 red-team attacks, 20 of which found a defect.
 
 ## What this book is
 

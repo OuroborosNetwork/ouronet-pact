@@ -317,7 +317,28 @@ Tasks #81, #82. With the code in its **final shape**, just before redeploy: a co
 red-team attack on ALL modules** to expose vulnerabilities. Its findings + fixes become Part III of the book.
 
 #### 1.6.1 · Subphase — Red team attack (all modules)
-- [ ] ❌ **1.6.1.1 Red team attack (all modules).** Multi-agent adversarial security audit: fan out
+- [x] ✅ **1.6.1.1 Red team attack (all modules) — DONE 2026-09-17.** **38 attacks across 11 families;
+      20 found a defect; none succeeded.** All eight planned attack surfaces covered, and two families
+      were invented during the round that were not on this list — **J** (conservation of value) and
+      **K** (preview/exec parity). K is the largest family and **every one of its eight attacks found
+      a defect**, which says the planned list was wrong about where defects live.
+      · **Owner-gate programme complete**: of 167 ownership capabilities reachable from a named client
+        op, 19 had ever refused anybody at the start and **84** do now (**65** attributed at depth 0).
+        The shadowed-and-never-witnessed worklist went **23 → 0**; the four remaining are structurally
+        inner and cannot be witnessed by any client-surface test.
+      · **Two live money defects found and fixed**: a **−38.65%** OURO mispricing feeding the oracle,
+        the launchpad and the explorer; and a permissioned issuance that charged **2,919.77 IGNIS +
+        459 STOA** before the gate that refuses it.
+      · **Coverage closed**: 1 of 452 client entrypoints was driven by no test — now driven. 1 of 790
+        live `enforce` sites was unpinned, plus 3 outside the checker's denominator — all pinned.
+        414 of 414 client-facing cost previews measured (the tool had reported 401/401 over a
+        population that excluded the gaps).
+      · **Fifteen instrument defects** found in the measuring tools, several worse than the contract
+        defects — including a gate that **enforced its generator's arithmetic error** and would have
+        gone red on the correction, and a figure checker whose source of truth was never checked.
+      Full record: `ARCHITECTURE/DEFECT-LEDGER.md` §7–§8, `RED-TEAM-REPORT.md`, `REPL/RedTeam/*`.
+      *(Original spec below, kept.)*
+- [ ] ❌ **1.6.1.1 (original) Red team attack (all modules).** Multi-agent adversarial security audit: fan out
       attackers per module / attack-surface — capability & auth bypass (module-boundary guard,
       composed caps), arithmetic/rounding/precision, economic & MEV (front-run, sandwich, ratio
       extremes), ordering/reentrancy-like, cross-module boundary abuse, defpact/Hydra-slice races,
@@ -342,7 +363,7 @@ red-team attack on ALL modules** to expose vulnerabilities. Its findings + fixes
       finding — the adversarial pass subsumes it). Fold DPTF-DPOF leads in at merge.
 
 #### 1.6.2 · Subphase — Assemble the Audit Book
-- [~] 🟡 **1.6.2.1 Assemble the Audit Book — IN ASSEMBLY, started 2026-09-17.** Lives at
+- [~] 🟢 **1.6.2.1 Assemble the Audit Book — ALL THREE PARTS WRITTEN 2026-09-17.** Lives at
       `OuronetInformational/AUDIT-BOOK/`. **Part III is written** (front matter + 4 chapters: method,
       the owner-gate programme, the 19 defects, and the instrument defects). Parts I and II are in
       progress. The book states three rules up front and each exists because violating it produced a
