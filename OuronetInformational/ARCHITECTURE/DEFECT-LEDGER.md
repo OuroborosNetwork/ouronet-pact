@@ -2298,6 +2298,38 @@ After all four, it reproduces the hand result exactly and clears `DEFINE-VAULT`.
 | + `FVT|C>SET-SPLIT-MODE`, one line beside its sibling | **39** | **73** |
 | …of the 38 whose gate sits after a business `enforce` | 11 → **29** | 27 → **9** |
 
+**EVERY ROW ABOVE IS AGAINST A DENOMINATOR OF 112, AND THE TREE HAS 185 OWNER-GATED `defcap`s.**
+*(corrected 2026-09-17)* The mapping followed **one hop** — a Talos wrapper calling a function that
+acquires the cap — and **73 caps were excluded from their own ratio**, which reads as neither
+witnessed nor unwitnessed. The excluded set was not a random third: it held the entire **DEBIT
+layer** (`DPTF|C>DEBIT`, `DPOF|C>DEBIT`, `DPDC-C|C>SINGLE-DEBIT`) and `DPTF|C>X-TRANSFER` — the
+gates that actually stop a stranger moving someone else's tokens, and, in `DPTF|C>DEBIT`'s case,
+**the gate RT-D-003 was written to witness.** The tool could not see the thing its own test proves.
+
+The chain broke at a **non-gated intermediary**: `C_Transfer` acquires `DPTF|C>CLASS-1-TRANSFER`,
+which carries no `CAP_` of its own and merely *composes* `DPTF|C>X-TRANSFER`, which carries the
+sender check. Recording only already-gated caps severed the transfer family at that link. Closing
+over core→core calls **and** `compose-capability` edges, then filtering to gated caps last:
+
+| | before | after |
+|---|---|---|
+| denominator | 112 | **167** |
+| excluded, i.e. unassessable | 73 | **18** |
+| observed | 39 | **63** |
+| shadowed subset, actionable | 9 | **23** |
+
+**The corrected actionable figure is 23, not 9.** The fourteen extra were never "closed" — they were
+never visible. Progress reported against an excluding denominator flatters itself, and this is the
+second time in the same programme that a ratio has been published without its exclusions: §7.2g
+recorded the same error in other people's tools, and it recurred in mine.
+
+**The correction is not free, and the tool now says so in its own output.** Transitive reachability
+makes **`observed` an UPPER bound** — a test that drives op A and is refused credits every gated cap
+reachable from A, while only one of them actually refused; attribution along a path is reachability,
+not proof. **`never observed` is therefore a LOWER bound on the gap**, which is the safe direction:
+everything on the actionable list is genuinely unreached by any test, so the list is sound but
+incomplete. It is a worklist, not a coverage score.
+
 Re-run it with `python3 REPL/tools/_ownerobs.py`; the rows above are checkpoints on one measurement,
 not four separate claims.
 

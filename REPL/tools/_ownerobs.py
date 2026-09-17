@@ -29,11 +29,22 @@ non-owner tests added to `[6.2.10]` on 2026-09-16 must flip EXACTLY three entrie
      and was reported unobserved. Fixed by also collecting each defcap's ownership-worded `enforce`
      messages.
 
-KNOWN LIMIT, deliberately not papered over: the denominator is a FLOOR. A cap is only counted when a
-Talos wrapper calls, on a ref bound to the owning module, a function that acquires it.
-`DPTF|C>X-TRANSFER` is reached through class caps rather than directly, so it reads `observed=None`
-while RT-D-001 plainly exercises it. Under-counting observation is the safe direction for this
-question; over-counting would manufacture false comfort.
+REACHABILITY IS TRANSITIVE (2026-09-17), AND THAT CHANGES WHAT THE NUMBERS MEAN. Read both:
+
+  · The DENOMINATOR is now nearly complete. Following core->core calls AND capability composition
+    took it from 112 of 185 caps to 167, i.e. from a third of the tree excluded to 18 -- and the
+    excluded third was not a random third. It contained the DEBIT layer (`DPTF|C>DEBIT`,
+    `DPOF|C>DEBIT`, `DPDC-C|C>SINGLE-DEBIT`) and `DPTF|C>X-TRANSFER`: the gates that actually stop
+    a stranger moving someone else's tokens, and the one RT-D-003 was written to witness. An
+    excluded cap is absent from the ratio, which reads as neither witnessed nor unwitnessed.
+
+  · "OBSERVED" IS NOW AN UPPER BOUND. A test that drives op A and gets an ownership refusal credits
+    every gated cap transitively reachable from A, though only one of them actually refused.
+    Attribution along a path is by REACHABILITY, not proof.
+
+  · "NEVER OBSERVED" IS THEREFORE A LOWER BOUND on the gap, which is the safe direction: everything
+    on the actionable list is genuinely unreached by any test, so it is sound but incomplete. Act on
+    that list; do not read the observed count as a coverage score.
 """
 import re, glob, os, sys, collections
 
@@ -92,38 +103,117 @@ for f in R('1_SOVEREIGN/**/*.pact') + R('2_CITIZEN/**/*.pact'):
                     if re.search(r'owner|ownership', q, re.I)]
         gated[m.group(1)] = (os.path.basename(f), bool(n and n.start() < c.start()), own_msgs)
 
-# ---- 2. core functions that acquire each gated defcap
-users = collections.defaultdict(set)
+# ---- 2. the CORE CALL GRAPH, and which caps each core function acquires.
+# TRANSITIVE, since 2026-09-17. The first version followed ONE hop -- a Talos wrapper calling a
+# function that acquires the cap -- and that excluded 73 of the tree's 185 CAP_*-bearing defcaps
+# from its own denominator, including the entire DEBIT layer: `DPTF|C>DEBIT`, `DPOF|C>DEBIT`,
+# `DPDC-C|C>SINGLE-DEBIT`, `DPTF|C>X-TRANSFER`. Those are reached THROUGH a core function
+# (`C_MultiTransfer` -> `ref-DPTF::XB_DebitTrueFungible` -> `DPTF|C>DEBIT`), never directly from
+# Talos. `DPTF|C>DEBIT` is the gate RT-D-003 was written to witness, so the tool could not see the
+# thing its own test proves. Excluding a cap is not neutral: it is absent from the ratio entirely,
+# which reads as neither witnessed nor unwitnessed.
+fn_body, fn_caps, fn_names = {}, collections.defaultdict(set), collections.defaultdict(set)
 for f in R('1_SOVEREIGN/**/*.pact') + R('2_CITIZEN/**/*.pact'):
     src = strip_comments(open(f).read())
+    mod = module_of(f)
     for m in re.finditer(r'\(def(?:un|pact)\s+([A-Za-z0-9_|>\-]+)', src):
-        s = m.start(); e = balanced(src, s)
-        if e is None: continue
-        body = src[s:e+1]
+        s0 = m.start(); e0 = balanced(src, s0)
+        if e0 is None: continue
+        body = src[s0:e0+1]
+        if len(body.split('\n')) < 3: continue              # interface stub
+        key = (mod, m.group(1))
+        fn_body[key] = body
+        fn_names[mod].add(m.group(1))
+        # EVERY acquired capability, gated or not. Filtering to gated ones here broke the chain at
+        # any NON-gated intermediary: `C_Transfer` acquires `DPTF|C>CLASS-1-TRANSFER`, which carries
+        # no CAP_ of its own and merely composes `DPTF|C>X-TRANSFER`, which carries the sender
+        # ownership check. Recording only gated caps made that entire transfer family invisible.
+        # Gating is applied at the END, after the composition closure.
         for w in re.finditer(r'with-capability\s*\(\s*([A-Za-z0-9_|>\-]+)', body):
-            if w.group(1) in gated:
-                users[w.group(1)].add((module_of(f), m.group(1)))
+            fn_caps[key].add(w.group(1))
 
-# ---- 3. Talos wrappers that call those core functions
+def callees(key):
+    """Core functions this one calls: qualified via its own refmap, plus same-module bare calls."""
+    mod, _ = key
+    body = fn_body.get(key, "")
+    out = set()
+    rm = refmap(body)
+    for cm in re.finditer(r'(ref-[A-Za-z0-9_|\-]+)::([A-Za-z0-9_|>\-]+)', body):
+        tgt = rm.get(cm.group(1))
+        if tgt and (tgt, cm.group(2)) in fn_body:
+            out.add((tgt, cm.group(2)))
+    for cm in re.finditer(r'\(([A-Za-z0-9_|>\-]+)', body):
+        n = cm.group(1)
+        if n in fn_names[mod] and (mod, n) != key:
+            out.add((mod, n))
+    return out
+
+_callee_cache = {}
+def reach(seed):
+    """Every core function transitively reachable from <seed>, seed included."""
+    seen, stack = set(), [seed]
+    while stack:
+        k = stack.pop()
+        if k in seen or k not in fn_body: continue
+        seen.add(k)
+        if k not in _callee_cache: _callee_cache[k] = callees(k)
+        stack.extend(_callee_cache[k] - seen)
+    return seen
+
+# CAP -> CAP edges. A capability is not only ACQUIRED by a function; it is also COMPOSED by another
+# capability, and that is a second way to reach a gate. `DPTF|C>X-TRANSFER` -- the sender-ownership
+# check RT-D-001 attacks -- is composed by `DPTF|C>CLASS-1-TRANSFER` and friends and is acquired
+# directly by nothing, so following only `with-capability` left it invisible. Closing over
+# `compose-capability` as well is what makes the DEBIT/TRANSFER layer assessable at all.
+composes = collections.defaultdict(set)
+for f in R('1_SOVEREIGN/**/*.pact') + R('2_CITIZEN/**/*.pact'):
+    src = strip_comments(open(f).read())
+    for m in re.finditer(r'\(defcap\s+([A-Za-z0-9_|>\-]+)', src):
+        s0 = m.start(); e0 = balanced(src, s0)
+        if e0 is None: continue
+        body = src[s0:e0+1]
+        for cm in re.finditer(r'compose-capability\s*\(\s*([A-Za-z0-9_|>\-]+)', body):
+            composes[m.group(1)].add(cm.group(1))
+
+def cap_closure(cap):
+    seen, stack = set(), [cap]
+    while stack:
+        c = stack.pop()
+        if c in seen: continue
+        seen.add(c)
+        stack.extend(composes.get(c, set()) - seen)
+    return seen
+
+users = collections.defaultdict(set)
+for key, caps in fn_caps.items():
+    for c in caps:
+        for c2 in cap_closure(c):
+            if c2 in gated:
+                users[c2].add(key)
+
+# ---- 3. Talos wrappers, mapped through the transitive closure of what they call
 talos_src = {}
 for f in R('1_SOVEREIGN/**/3_Talos/*.pact') + R('2_CITIZEN/**/*TS02*.pact'):
     talos_src[f] = strip_comments(open(f).read())
 wrappers = collections.defaultdict(set)
-for cap, funs in users.items():
-    for f, src in talos_src.items():
-        for m in re.finditer(r'\(defun\s+([A-Za-z0-9_|>\-]+)', src):
-            s = m.start(); e = balanced(src, s)
-            if e is None: continue
-            body = src[s:e+1]
-            if len(body.split('\n')) < 4: continue          # interface stub, not the impl
-            rm = refmap(body)
-            for mod, fn in funs:
-                # `::C_Control` alone is NOT enough -- seven modules define one. Require the
-                # call to sit on a ref bound to the module that actually owns the gated cap.
-                for cm in re.finditer(r'(ref-[A-Za-z0-9_|\-]+)::' + re.escape(fn)
-                                      + r'(?![A-Za-z0-9_|\-])', body):
-                    if rm.get(cm.group(1)) == mod:
-                        wrappers[cap].add(m.group(1))
+for f, src in talos_src.items():
+    for m in re.finditer(r'\(defun\s+([A-Za-z0-9_|>\-]+)', src):
+        s0 = m.start(); e0 = balanced(src, s0)
+        if e0 is None: continue
+        body = src[s0:e0+1]
+        if len(body.split('\n')) < 4: continue              # interface stub, not the impl
+        wname = m.group(1)
+        rm = refmap(body)
+        seeds = set()
+        for cm in re.finditer(r'(ref-[A-Za-z0-9_|\-]+)::([A-Za-z0-9_|>\-]+)', body):
+            tgt = rm.get(cm.group(1))
+            if tgt and (tgt, cm.group(2)) in fn_body:
+                seeds.add((tgt, cm.group(2)))
+        for k in set().union(*(reach(sd) for sd in seeds)) if seeds else set():
+            for c in fn_caps.get(k, ()):
+                for c2 in cap_closure(c):
+                    if c2 in gated:
+                        wrappers[c2].add(wname)
 
 # ---- 4. which wrappers are driven by a test pinning a Keyset failure
 repls = {f: open(f, errors='ignore').read()
@@ -147,6 +237,42 @@ def observed(names, own_msgs):
                     return f.split('/')[-1]
     return None
 
+# --census: the tool's OWN denominator. Every figure this script prints is conditioned on a cap
+# being reachable from a qualified Talos wrapper, and a reader who is not told how many caps fail
+# that condition cannot tell "39 of 112 witnessed" from "39 of everything". A scanner that reports a
+# ratio without its exclusions is the shape section 7.2g of the DEFECT-LEDGER is about.
+if "--census" in sys.argv:
+    _all = set(gated)
+    _mapped = {c for c in gated if {n for n in wrappers.get(c, set()) if "|" in n}}
+    _users = {c for c in gated if users.get(c)}
+    print(f"CAP_*-bearing defcaps in the tree        : {len(_all)}")
+    print(f"  ...acquired by some core fn            : {len(_users)}")
+    print(f"  ...AND reached by a Talos wrapper      : {len(_mapped)}   <- the denominator used below")
+    print(f"  EXCLUDED, i.e. invisible to this tool  : {len(_all) - len(_mapped)}")
+    _c = collections.Counter(gated[c][0] for c in _all - _mapped)
+    print("  excluded, by file:")
+    for k, v in _c.most_common(12):
+        print(f"     {v:3}  {k}")
+    # Exclusion is not automatically a gap. A cap with no Talos wrapper may be legitimately
+    # unreachable -- a protected XI_/XE_/S> band cap, or a member of the LEGACY DPMF module -- so
+    # the names are printed alongside the count. A bare "73 excluded" invites both over- and
+    # under-reaction; the split below is the thing worth acting on.
+    _band = collections.Counter()
+    for c in sorted(_all - _mapped):
+        seg = c.split("|")[-1]
+        _band["client C>" if seg.startswith("C>") else
+              "special S>" if seg.startswith("S>") else
+              "internal X" if seg[:1] == "X" else
+              "admin/other"] += 1
+    print("  excluded, by band:")
+    for k, v in _band.most_common():
+        print(f"     {v:3}  {k}")
+    if "--names" in sys.argv:
+        print("  excluded names:")
+        for c in sorted(_all - _mapped):
+            print(f"     {gated[c][0]:22} {c}")
+    print()
+
 rows = []
 for cap, (fil, shadowed, own_msgs) in sorted(gated.items()):
     # ONLY module-qualified Talos wrapper names. The bare core names (`C_Control`, `C_Issue`…)
@@ -159,8 +285,8 @@ for cap, (fil, shadowed, own_msgs) in sorted(gated.items()):
 
 tot = len(rows); obs = sum(1 for r in rows if r[3])
 print(f"owner-gated defcaps reachable from a named op : {tot}")
-print(f"  observed refusing somebody (either signature): {obs}")
-print(f"  NEVER observed                              : {tot-obs}")
+print(f"  observed (UPPER bound -- reachability, not proof): {obs}")
+print(f"  NEVER observed (LOWER bound on the real gap): {tot-obs}")
 sh = [r for r in rows if r[2]]
 print(f"\nof the {len(sh)} whose ownership gate sits AFTER a business enforce:")
 print(f"  observed     : {sum(1 for r in sh if r[3])}")
