@@ -342,7 +342,16 @@ red-team attack on ALL modules** to expose vulnerabilities. Its findings + fixes
       finding — the adversarial pass subsumes it). Fold DPTF-DPOF leads in at merge.
 
 #### 1.6.2 · Subphase — Assemble the Audit Book
-- [ ] ❌ **1.6.2.1 Assemble the Audit Book** (expected hundreds of pages) — spec: `AUDIT-BOOK.md`:
+- [~] 🟡 **1.6.2.1 Assemble the Audit Book — IN ASSEMBLY, started 2026-09-17.** Lives at
+      `OuronetInformational/AUDIT-BOOK/`. **Part III is written** (front matter + 4 chapters: method,
+      the owner-gate programme, the 19 defects, and the instrument defects). Parts I and II are in
+      progress. The book states three rules up front and each exists because violating it produced a
+      wrong result during the work being documented: every claim carries its evidence class, every fix
+      names the assertion that goes red if reverted, and every count is reported with its exclusions.
+      **Verification is part of assembly, not a formality** — Part I chapters re-check that each fix
+      recorded as FIXED is still present in current source, because §8.2 found one that was not.
+      *(Original spec below, kept.)*
+- [ ] ❌ **1.6.2.1 (original) Assemble the Audit Book** (expected hundreds of pages) — spec: `AUDIT-BOOK.md`:
       - **Part I** — initial module audits (ATS, SWP, DPDC, DPTF-DPOF, AQP) — the `…/Audit/*` trees.
       - **Part II** — the whole main-work round (Phases 1.1–1.5): every URCi/INFO/re-price/split/REPL
         modification + fix, documented audit-style. **Document main-work AS IT LANDS — it IS Part II.**
