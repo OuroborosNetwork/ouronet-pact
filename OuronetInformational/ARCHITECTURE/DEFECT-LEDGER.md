@@ -3153,3 +3153,31 @@ a **broader** check, and only someone who passes it while not being the recovere
 
 **Programme position: the actionable set is 23 → 2**, both DPDC and both in flight. Observed 63 → 82,
 depth-0 attributed 47 → 63.
+
+## 8.14 `RT-I-002` — and a correction to how "thin" was assessed
+
+The gas-station family was called the round's thinnest surface on an **attack count** — one attack.
+That assessment was wrong in the way counts usually are. `modules/DALOS-ADMIN.repl` already drives
+`GAS_PAYER` through five blocks, including the notional ceiling at `<<DALOS-G2d>>` (same payable
+form, only the gas budget changed, so the refusal is attributable) and two dead guards at
+`<<DALOS-G2e>>`. **Counting attacks in a red-team family undercounts coverage that lives in a module
+suite** — the same error as §8.3, where "weakest family" turned out to mean "fewest attacks", not
+"least covered".
+
+What *was* missing was not the cap but **the arm beside it**. `GAS_PAYER`'s spending cap is one arm
+of an `enforce-one` whose first arm is `(enforce-guard GOV|MD_DALOS)`. An `enforce-one` passes if any
+arm passes, so the Demiurgoi master keyset does not have a *higher* allowance — it has **none**.
+
+Measured, holding everything constant but the signer set: the same payable form at **100,000,000 gas
+× 0.001** is refused for a stranger and **admitted for the master keyset**.
+
+**Not a defect.** It is the documented shape of the `enforce-one`, and an admin needing headroom is a
+reasonable design. It is recorded because the property had never been witnessed and it is worth
+knowing: the station's spending cap is the difference between subsidising a client call and funding
+an arbitrarily expensive transaction, and for one keyset that difference does not exist. It becomes
+load-bearing the day the master key is driven by automation rather than by a person.
+
+**Secondary, already documented in the source and now pinned from the attack side:** every message
+nested inside that `enforce-one` is **mute**. A caller who exceeds the allowance is never told that
+is why — they receive the outer *"Add multiple conditions…"*. `RT-I-002` pins the outer message
+deliberately, so the test records what a caller actually sees rather than what the code says.

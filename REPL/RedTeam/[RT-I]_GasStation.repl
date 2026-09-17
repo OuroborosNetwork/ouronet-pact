@@ -395,3 +395,67 @@
 )
 (print "===^^^===")
 (commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "RT-I-002 — the station's spending cap, and who it does not apply to")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== RT-I-002 · 01 · the cap holds for a stranger ====
+(print "--- [RT-I-002 · 01 · the cap holds for a stranger] ---")
+;;<<RT-I-002>> FAMILY: I | STATUS: REFUSED
+;;HYPOTHESIS: `GAS_PAYER`'s spending cap is not a plain enforce -- it is one arm of an `enforce-one`
+;;            whose FIRST arm is `(enforce-guard GOV|MD_DALOS)`. An `enforce-one` passes if ANY arm
+;;            passes, so the Demiurgoi master keyset does not merely have a higher allowance: it has
+;;            NO allowance check at all. If that is so, the gas station's only spending bound is
+;;            absent for its most powerful key, and nothing in the tree says so.
+;;METHOD:     hold EVERYTHING constant -- the same payable form, the same 100,000,000 gas at a
+;;            1,000x price -- and change ONLY the signer set. A differential of exactly one variable,
+;;            because a refusal and an admission under different inputs would prove nothing about
+;;            the guard.
+;;RESULT:     REFUSED for a stranger, ADMITTED for the master keyset. No privilege was escalated --
+;;            this is the documented shape of the `enforce-one`, not a bypass of it -- but the
+;;            PROPERTY had never been witnessed, and it is worth witnessing: the station's spending
+;;            cap is the difference between subsidising a client call and funding an arbitrarily
+;;            expensive transaction, and for one keyset that difference does not exist. It matters
+;;            the day the master key is driven by automation rather than by a person.
+;;
+;;WHY THIS BLOCK EXISTS AT ALL. Family I was assessed as the round's thinnest surface on an attack
+;;COUNT -- one attack. That assessment was wrong in the way counts usually are: `modules/DALOS-ADMIN.repl`
+;;already drives `GAS_PAYER` through five blocks, including the notional ceiling at <<DALOS-G2d>>
+;;and two dead guards at <<DALOS-G2e>>. Counting attacks in a family undercounts coverage that lives
+;;in a module suite. What was genuinely missing was not the cap -- it was the ARM BESIDE the cap.
+(env-data {"exec-code": ["(ouronet-ns.TS01-C1.something)"]})
+(env-chain-data { "gas-limit": 100000000, "gas-price": 0.001 })
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(map print
+    [
+        ;;The stranger is refused -- and by the OUTER `enforce-one`'s message, never the cap's own.
+        ;;Every nested message inside a Pact `enforce-one` is mute: all arms are tried, and the outer
+        ;;message is what surfaces. So a caller who exceeds the allowance is never told that is why.
+        (expect-failure "<<RT-I-002>> a stranger cannot have an over-budget transaction funded"
+            "Add multiple conditions needed to use Ouronet DALOS Gas-Station"
+            (test-capability (DALOS.GAS_PAYER KST.EMMA 1000 0.001)))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "RT-I-002b — the identical notional, signed by the Demiurgoi master")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== RT-I-002 · 02 · and does not apply to the master keyset ====
+(print "--- [RT-I-002 · 02 · and does not apply to the master keyset] ---")
+;;Same form, same gas-limit, same gas-price, same account being funded. ONLY the signer set differs.
+;;The admission is therefore attributable to `(enforce-guard GOV|MD_DALOS)` and to nothing else.
+(env-data {"exec-code": ["(ouronet-ns.TS01-C1.something)"]})
+(env-chain-data { "gas-limit": 100000000, "gas-price": 0.001 })
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Florin", "caps": [] }])
+(map print
+    [
+        (expect "<<RT-I-002>> the master keyset has the same transaction funded, uncapped"
+            true (!= "" (format "{}" [(test-capability (DALOS.GAS_PAYER KST.EMMA 1000 0.001))])))
+    ]
+)
+(commit-tx)

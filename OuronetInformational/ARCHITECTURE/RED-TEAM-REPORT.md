@@ -1610,10 +1610,10 @@ divergences visible at once.
 | F — Griefing / denial of service | 2 |  | 2 |  |
 | G — Hostile citizen module | 2 |  |  | 2 |
 | H — Input domain | 3 |  | 3 |  |
-| I — Gas station payable surface | 1 |  | 1 |  |
+| I — Gas station payable surface | 2 |  | 1 | 1 |
 | J — Ledger conservation | 3 |  | 1 | 2 |
 | K — Preview/exec divergence | 7 |  | 7 |  |
-| **total** | **35** | **0** | **19** | **16** |
+| **total** | **36** | **0** | **19** | **17** |
 <!-- REGISTER:END -->
 
 **Seven of fourteen attacks found a defect, and all seven are fixed and measured.** The table above
