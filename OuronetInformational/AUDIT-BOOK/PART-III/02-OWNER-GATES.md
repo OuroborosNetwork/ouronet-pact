@@ -126,9 +126,19 @@ inner* — three forward-module entrypoints called only by another module, and o
 through a both-internal-and-external function. No client-surface test can attribute a refusal to
 those: the outer gate refuses first, by design. They are named rather than counted as a gap.
 
-The 18 capabilities outside the denominator are named rather than buried: **14 are in the legacy
-`00_DPMF` module**, which the architecture marks as historical and frozen; the rest are four
-special-band capabilities in `STOAICO`, `DPDC` and `RPS`.
+The 18 capabilities outside the denominator are named rather than buried, and the exclusion has
+since been **verified rather than assumed**. **14 are in the legacy `00_DPMF` module**; the rest are
+four special-band capabilities in `STOAICO`, `DPDC` and `RPS`.
+
+`00_DPMF`'s exclusion was the open question, since it carries most of the 18. Measured: **zero**
+modref bindings to its interface anywhere outside itself, **zero** `ref-DPMF::` call sites, **zero**
+Talos wrappers reaching it — and it **is** deployed, at 128,156 gas.
+
+> It is deployed and nothing **can** call it. Not "nothing does" — there is no binding through which
+> any module could reach it, so it is unreachable from the only supported client path. Witnessing a
+> gate on a module no caller can reach would test nothing, which makes those 14 a **correct
+> exclusion rather than a gap**. The module's deploy-slot cost is real and is a separate question,
+> belonging to the redeploy phase.
 
 ## The sharpest attribution proof came last
 
