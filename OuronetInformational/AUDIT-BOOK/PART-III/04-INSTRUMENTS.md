@@ -12,7 +12,7 @@ was found.
 
 ## The pattern
 
-Nine separate instrument defects, and eight of them are the same shape:
+Fifteen instrument defects, and the majority are one shape:
 
 > **A measurement that silently excludes part of its own subject, and therefore reports `clean` or a
 > ratio about a population it never examined.**
@@ -45,6 +45,44 @@ The index was wrong about **13 of 49 entries**. The documented alternative to th
 was itself unreliable.
 
 ---
+
+## Five tools reported on populations they had defined to exclude the gaps
+
+This is the dominant failure mode in the whole record, and it is worth naming precisely because each
+instance looked different and none looked like a bug.
+
+| tool | enumerated | missed | what it reported |
+|---|---|---|---|
+| path checker | 3 tool directories | a 4th, holding a tool that **rewrote contract sources by default** | `clean` |
+| owner-gate mapper | 4 of the 8 documented client prefixes | an entire batch-operation family | a shrinking worklist |
+| preview coverage | **3 hardcoded files** | 14 previews, one of them never tested at all | **401 of 401, 0 gaps** |
+| stats generator | 2 log file *extensions* | a run written with a third | a report from **the previous day** |
+| attack register | one directory | an attack that had to live beside its fixtures | a total of 37 where 38 existed |
+
+Five tools. Five hand-maintained lists. **No list can report its own incompleteness**, so each
+reported confidently about a population it had never seen in full — and the preview tool reported a
+*perfect score*, which is worse than a gap, because a perfect score ends the enquiry.
+
+The remedy in every case was the same: **discover the population, then check the list against it.**
+Where discovery is impossible — a figure that needs a live run the tool cannot perform — the honest
+move is to say the tool cannot see it, not to check a number it cannot derive.
+
+## Two checks that enforced what they should have questioned
+
+Worse than a tool that misses something is a tool that **locks in the error**.
+
+- The **price-sheet generator** computed its headline by summing three of its four categories,
+  dropping the rows priced in one currency rather than another — publishing **431** where the sheet
+  listed **442**. And the artefact checker *required the narrative to quote that total*. **The gate
+  enforced the undercount and would have gone red on anyone correcting it.**
+- The **figure checker** verified that every narrative document agreed with a generated stats file,
+  and never that the stats file agreed with the tree. Perfectly circular: **every figure in every
+  document matched, and all of them were wrong together** — by 275 assertions and counting. Closing
+  the loop moved four published figures at once, the first movement in weeks.
+
+> A consistency check between N documents and one source proves the N documents consistent. It says
+> nothing about the source — and a stale source reads *more* convincingly than a correct one,
+> because everything agrees.
 
 ## The path checker scanned three of the four tool directories
 

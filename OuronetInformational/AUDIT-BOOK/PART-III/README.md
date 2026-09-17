@@ -18,7 +18,7 @@ code reads like it would be. Every finding in this Part was reached by running s
 
 ## The register
 
-**37 attacks across 11 families. 19 found a defect. None succeeded.**
+**38 attacks across 11 families. 20 found a defect. None succeeded.**
 
 "None succeeded" means no attack achieved its stated goal — no value was moved, no gate was bypassed,
 no privilege was escalated. It does **not** mean nothing was wrong: 19 of the 35 exposed a real
@@ -36,7 +36,7 @@ defect on the way to being refused, and those are the substance of this Part.
 | **H** — input domain | 3 | 3 | 0 |
 | **I** — gas station | 2 | 1 | 1 |
 | **J** — conservation of value | 3 | 1 | 2 |
-| **K** — preview/exec parity | 7 | 7 | 0 |
+| **K** — preview/exec parity | 8 | 8 | 0 |
 
 Two families were **invented during the round** rather than planned: **J** (does the protocol's own
 accounting balance?) and **K** (does the free preview agree with the charged execution?). K is the
@@ -52,7 +52,7 @@ actually received — stated as coverage, not as a claim of completeness.
 |---|---|---|
 | capability & auth bypass, composed caps | B, C, D, G | **the deepest** — plus the whole owner-gate programme, Chapter 2 |
 | sentinel / collision | H, D | **good** — three input-domain defects, all fixed |
-| preview / execution divergence *(not on the plan)* | K | **the largest family; every attack found a defect** |
+| preview / execution divergence *(not on the plan)* | K | **the largest family; every one of its eight attacks found a defect** |
 | economic & MEV — front-run, sandwich, ratio extremes | A | **good** — the sandwich attack exists and the AMM's floor now has a witness |
 | arithmetic / rounding / precision | A, J | **adequate** — the share-price boundary and the supply-vs-balances split |
 | defpact / Hydra-slice races | F | **adequate** — both attacks found defects, one of them a live money defect |
