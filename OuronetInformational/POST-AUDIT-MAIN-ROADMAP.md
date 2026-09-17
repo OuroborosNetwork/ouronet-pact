@@ -33,7 +33,7 @@ Every element carries a dotted address so you can point at it exactly. Header si
 > | 1.1 `URCi` cost architecture | ❌ NEXT | **256** distinct `URCi_` readers (307 implementations) in `1_SOVEREIGN/` |
 > | 1.2 INFO rehaul | ❌ | **420** distinct `INFO_` previews in `1_SOVEREIGN/`; **414 of 414** client-facing cost previews measured |
 > | 1.3 Re-price IGNIS | ❌ | `IGNIS-PRICE-SHEET.md` generated + gate-enforced (`_pricesync.py --check`); **442** priced client functions |
-> | 1.4 AQP module splits | ❌ | `04_RPS.pact` exists — the `04_FVT` split shipped. **Not finished**: 1.4.1.2 leaves `RPS` in the Danger band and `SCORE` in Warning |
+> | 1.4 AQP module splits | ❌ | `04_RPS.pact` exists — the `04_FVT` split shipped. 1.4.1.2 leaves `RPS` in the **Danger** band by LINE COUNT — but RPS deploys at **353,662 gas of StoaChain's 2,000,000**, 18% of a block. **The band is a proxy that was never checked against the limit it approximates.** Scoping: `03_AQP/Audit/RPS-SPLIT-SCOPING.md`; there is no table seam and no prose remedy, so the open question is the CALIBRATION, not the split |
 > | 1.5 REPL finalization | ❌ | **25,025** assertions, one-command gate (`_gate.py`) |
 > | 1.6 Red team | ✅ **DONE 2026-09-17** | **38 attacks, 11 families, 20 found a defect, none succeeded**; Audit Book Parts I–III written |
 >
