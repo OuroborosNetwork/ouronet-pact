@@ -249,6 +249,38 @@ for f, src in talos_src.items():
 # ---- 4. which wrappers are driven by a test pinning a Keyset failure
 repls = {f: open(f, errors='ignore').read()
          for f in R('REPL/**/*.repl') if '/archive/' not in f}
+_LET_CACHE = {}
+def _let_extents(txt):
+    """(start, end, binding-list-text) for every `let`/`let*` in `txt`, computed ONCE per file.
+
+    The first cut recomputed this inside the per-`expect-failure` loop, which is quadratic: every
+    assertion re-scanned every `let` in the file and re-ran `balanced()` on each. On the real suite
+    that turned a seconds-long tool into a multi-minute one -- and a tool slow enough to skip is a
+    tool that stops being run.
+    """
+    key = id(txt)
+    if key in _LET_CACHE: return _LET_CACHE[key]
+    out = []
+    for lm in re.finditer(r'\(let\*?\s*\(', txt):
+        ext = balanced(txt, lm.start())
+        if ext is None: continue
+        bstart = lm.end() - 1
+        bend = balanced(txt, bstart)
+        if bend is not None:
+            out.append((lm.start(), ext, txt[bstart:bend + 1]))
+    _LET_CACHE[key] = out
+    return out
+
+
+def _enclosing_let_bindings(txt, pos):
+    """Binding lists of every `let`/`let*` whose balanced extent contains `pos`.
+
+    Only the BINDING LIST is returned, never the body -- the body of an outer `let` can span an
+    entire transaction and would reintroduce the fixed-window over-crediting bug from the other side.
+    """
+    return [b for (s0, e0, b) in _let_extents(txt) if s0 <= pos <= e0]
+
+
 def observed(names, own_msgs, cap_for_attr):
     hits = []
     for f, txt in repls.items():
@@ -261,8 +293,22 @@ def observed(names, own_msgs, cap_for_attr):
             end = balanced(txt, em.start())
             if end is None: continue
             seg = txt[em.start():end + 1]
-            if not (any(sig in seg for sig in OWNERSHIP_SIGNATURES)
-                    or any(m[:40] in seg for m in own_msgs)):
+            # ...but the EXPECTED MESSAGE is not always inside that form. This repo's own style rule
+            # ("use `let` when a bound name is used more than once") actively encourages hoisting a
+            # repeated expected-failure string into the enclosing `let`, which changes nothing about
+            # what the test asserts -- and made the tool report an already-witnessed gate as NEVER
+            # OBSERVED. Demonstrated by controlled mutation: hoisting one literal in RT-D-006 moved
+            # the actionable set 19 -> 20 with the REPL still green. So the SIGNATURE search widens
+            # to the binding lists of every enclosing `let`/`let*`.
+            #
+            # Deliberately asymmetric: only the signature search widens. The WRAPPER-NAME search
+            # stays on the balanced form, because a wrapper name appears in the call itself and
+            # widening it would re-open the over-crediting hole that the fixed-window bug caused --
+            # trading a blind spot for a false positive is not an improvement, it just moves which
+            # column lies.
+            sig_scope = seg + "".join(_enclosing_let_bindings(txt, em.start()))
+            if not (any(sig in sig_scope for sig in OWNERSHIP_SIGNATURES)
+                    or any(m[:40] in sig_scope for m in own_msgs)):
                 continue
             for nm in names:
                 if re.search(re.escape(nm) + r'(?![A-Za-z0-9_|\-])', seg):
@@ -425,3 +471,41 @@ print(f"  STRUCTURALLY INNER -- composed only, or reached solely through XE_/XI_
 print("  no client-surface test can attribute a refusal to these; NOT work.")
 for fil, cap, owners in sorted(_i):
     print(f"     {fil:22} {cap:38} acquired by {owners or 'nothing (composed only)'}")
+
+
+# ---- selftest: does the let-hoist widening actually DETECT anything? ----------------------------
+# Added 2026-09-17 after a mutation test of mine reported "10 -> 10, unchanged" while having patched
+# ZERO occurrences -- the sed-equivalent matched nothing and the run proved precisely nothing. That
+# is the vacuous-test failure this whole programme exists to catch, committed by the instrument's own
+# author while checking the instrument. A synthetic pair is immune: it cannot silently fail to apply.
+if "--selftest" in sys.argv:
+    INLINE = '''(let ((attacker:string A) (pool:string P))
+    (expect-failure "doc" "Keyset failure (keys-all): [PK_Ancie...]"
+        (ref-TS02-C3::AQP-POOL|CCp_BatchVacateOrtoFungible attacker pool)))'''
+    HOISTED = '''(let ((attacker:string A) (kf:string "Keyset failure (keys-all): [PK_Ancie...]"))
+    (expect-failure "doc" kf
+        (ref-TS02-C3::AQP-POOL|CCp_BatchVacateOrtoFungible attacker pool)))'''
+    UNRELATED = '''(let ((attacker:string A) (kf:string "Some entirely other message"))
+    (expect-failure "doc" kf
+        (ref-TS02-C3::AQP-POOL|CCp_BatchVacateOrtoFungible attacker pool)))'''
+
+    def _probe(text):
+        m = re.search(r'\(expect-failure\b', text)
+        end = balanced(text, m.start())
+        seg = text[m.start():end + 1]
+        scope = seg + "".join(_enclosing_let_bindings(text, m.start()))
+        return any(sig in scope for sig in OWNERSHIP_SIGNATURES)
+
+    ok = True
+    for label, text, want in (("inline literal        ", INLINE, True),
+                              ("hoisted into the let  ", HOISTED, True),
+                              ("unrelated let binding ", UNRELATED, False)):
+        got = _probe(text)
+        flag = "OK " if got == want else "FAIL"
+        if got != want: ok = False
+        print(f"  selftest {flag}  {label} -> detected={got} (want {want})")
+    # The third case is the one that keeps the widening honest: if an enclosing `let` binding that
+    # has NOTHING to do with ownership were enough to credit a gate, the fix would have traded a
+    # blind spot for a false positive, which is not an improvement -- it only moves which column lies.
+    print("  selftest", "PASS" if ok else "FAILED")
+    sys.exit(0 if ok else 1)

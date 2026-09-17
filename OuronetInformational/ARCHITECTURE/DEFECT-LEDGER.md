@@ -3016,3 +3016,36 @@ that did not execute, on both the bundle path (pre-existing) and now the `CC_` p
 introduce it, but makes it reachable on one more door — and `[6.3]_SWP.repl` `SWP|TX 054-03`'s own
 comment asserts the opposite (*"There is no event, no failure, and no balance change to trip over"*).
 That comment is false today, independently of these fixes.
+
+## 8.10 `_ownerobs.py` — a blind spot the repo's own style rule would have triggered
+
+Found by controlled mutation during the VCT work, not by reading: the detector required the
+ownership signature to appear **lexically inside** the balanced `expect-failure` form. Hoisting a
+repeated expected-message literal into the enclosing `let` — which changes nothing about what the
+test asserts, and which **this repo's own style rule actively encourages** (*"use `let` when a bound
+name is used more than once"*) — made an already-witnessed gate report as NEVER OBSERVED. Measured:
+hoisting one literal moved the actionable set 19 → 20 with the REPL still green.
+
+Fixed by widening the **signature** search to the binding lists of every enclosing `let`/`let*`.
+**Deliberately asymmetric** — the wrapper-name search stays on the balanced form, because a wrapper
+name appears in the call itself and widening it would re-open the fixed-window over-crediting bug.
+*Trading a blind spot for a false positive is not an improvement; it only moves which column lies.*
+
+**Two things went wrong while fixing it, and both are the point.**
+
+1. **The first cut was quadratic** — it re-scanned every `let` in the file, and re-ran `balanced()`
+   on each, once per assertion. A seconds-long tool became a multi-minute one. Cached per file:
+   **4.5 s**. A tool slow enough to skip is a tool that stops being run.
+
+2. **My own mutation test was vacuous, and reported success.** I patched the literal, re-ran, and
+   got *"10 → 10, unchanged"* — from a patch that had replaced **zero occurrences**. The slicing
+   matched nothing. That is precisely the failure this programme exists to catch, committed by the
+   instrument's author while checking the instrument, one screen after writing a negative control
+   into someone else's test.
+
+The remedy is a `--selftest` that **cannot silently fail to apply**: three synthetic snippets —
+inline literal, hoisted literal, and an unrelated `let` binding that must **not** credit. The third
+is what keeps the widening honest.
+
+> A mutation test that reports "no change" is indistinguishable from a mutation that never happened.
+> Assert the mutation applied, or use a fixture where non-application is impossible.
