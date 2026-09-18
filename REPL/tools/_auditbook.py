@@ -24,6 +24,7 @@ BOOK = os.path.join(ROOT, "Audit", "book")
 SRC = os.path.join(BOOK, "src")
 OUT_MD = os.path.join(ROOT, "Audit", "OURONET-AUDIT-BOOK.md")
 OUT_DOCX = os.path.join(ROOT, "Audit", "OURONET-AUDIT-BOOK.docx")
+OUT_PDF = os.path.join(ROOT, "Audit", "OURONET-AUDIT-BOOK.pdf")
 
 VERSION = "1.0"
 
@@ -295,8 +296,17 @@ def figures():
     return f
 
 
-def demote(text, by=1):
-    """Push every ATX heading down `by` levels so chapter titles own H1."""
+def demote(text, by=0):
+    """Push every ATX heading down `by` levels so chapter titles own H1.
+
+    `by` is 0, not 1. Each chapter source carries exactly one H1 -- its own title -- which the
+    assembler strips and replaces with a numbered one, leaving that source's `##` sections as the
+    top level BELOW the chapter. Demoting them again produced a document with 25 Heading 1s, one
+    Heading 2, 165 Heading 3s and 195 Heading 4s: an outline with a rank missing, which is what
+    Word and every PDF bookmark tree read to build navigation. Verified fence-aware across all 24
+    sources that none carries a second real H1, so nothing is promoted into a chapter title by
+    this.
+    """
     out = []
     fence = False
     for ln in text.split("\n"):
@@ -316,7 +326,10 @@ FIGREF = re.compile(r'\{\{fig:([a-z0-9_]+)\}\}')
 LITERAL_CHREF = re.compile(r'\b[Cc]hapters?\s+\d+')
 
 
-def build():
+def build(pages=None):
+    """Assemble the book. `pages` maps chapter key -> printed page number; when given, the
+    contents list is emitted with page numbers instead of anchor links (the .docx has pages, the
+    .md does not)."""
     figs = figures()
     nums = {k: i for i, (k, _, _) in enumerate(CHAPTERS, 1)}
     titles = {k: t for k, t, _ in CHAPTERS}
@@ -355,7 +368,10 @@ def build():
             return f"{figs[k]:,}"
         body = FIGREF.sub(_figsub, body)
         anchor = re.sub(r'[^a-z0-9]+', '-', title.lower()).strip('-')
-        toc.append(f"{i:2}. [{title}](#{i}-{anchor})")
+        if pages is None:
+            toc.append(f"{i:2}. [{title}](#{i}-{anchor})")
+        else:
+            toc.append(f"| {i} | {title} | {pages.get(key, '?')} |")
         parts.append(f"\n\n---\n\n# {i}. {title}\n\n{demote(body).strip()}\n")
     if bad:
         sys.exit("CROSS-REFERENCE ERRORS:\n  " + "\n  ".join(bad))
@@ -370,9 +386,123 @@ def build():
         f"> **This file is GENERATED.** Edit the chapter sources under `AUDIT-BOOK/`, then rebuild "
         f"with `python3 REPL/tools/_auditbook.py --docx`. Editing this file directly will be "
         f"overwritten, and `--check` fails the gate if it drifts from its sources.\n\n"
-        f"## Contents\n\n" + "\n".join(toc) + "\n"
+        f"## Contents\n\n"
+        # Column widths in a pandoc pipe table are taken from the DASH COUNTS on the separator
+        # row, not from the content. Left even, the chapter column came out narrow enough to wrap
+        # every multi-word title onto a second line.
+        # Column widths in a pandoc pipe table come from the DASH COUNTS on the separator row,
+        # not from the content. Two failures here, both caught by the convergence check rather
+        # than by looking: even widths wrapped every multi-word title onto a second line, and a
+        # Page column sized for the word "Page" wrapped every THREE-DIGIT number -- which changes
+        # the table's HEIGHT between passes and so shifts the very pagination it is reporting.
+        + ("| # | Chapter | Page |\n|:---:|" + "-" * 64 + "|-----:|\n" if pages else "")
+        + "\n".join(toc) + "\n"
     )
     return head + "".join(parts)
+
+
+
+# ---------------------------------------------------------------------------
+# PAGE-NUMBERED CONTENTS, without a field code.
+#
+# Pandoc's `--toc` inserts a Word TOC FIELD. Two problems with it here. First, it is a DUPLICATE:
+# this book already writes its own contents list. Second, and the reason it is gone, a TOC field
+# can pull entries from other documents (that is what the `RD` switch is for), so Word greets every
+# reader with "This document contains fields that may refer to other files. Do you want to update
+# the fields?" before showing them anything. The answer is meaningless to a reader and the prompt
+# cannot be suppressed from inside the document.
+#
+# So the contents is ordinary text, and its page numbers are MEASURED: render once, read which page
+# each chapter landed on, write those numbers in, render again. The contents table has a fixed row
+# count, so its own height does not change between passes and the numbers converge immediately --
+# which the second render then CHECKS rather than assumes.
+# ---------------------------------------------------------------------------
+
+def _render_pdf(docx_path, outdir):
+    subprocess.run(["soffice", "--headless", "--convert-to", "pdf", "--outdir", outdir,
+                    docx_path], capture_output=True, timeout=900)
+    pdf = os.path.join(outdir, os.path.splitext(os.path.basename(docx_path))[0] + ".pdf")
+    return pdf if os.path.exists(pdf) else None
+
+
+def _chapter_pages(pdf):
+    """chapter key -> 1-based printed page, by finding each chapter heading in the rendered text."""
+    txt = subprocess.run(["pdftotext", "-layout", pdf, "-"],
+                         capture_output=True, text=True, timeout=300).stdout
+    pages = txt.split("\f")
+    found = {}
+    for i, (key, title, _) in enumerate(CHAPTERS, 1):
+        needle = f"{i}. {title}"
+        for pno, body in enumerate(pages, 1):
+            head = "\n".join([l for l in body.split("\n") if l.strip()][:8])
+            if needle in head:
+                found[key] = pno
+                break
+    return found
+
+
+def _pandoc(md_path, docx_path):
+    ref = os.path.join(BOOK, "reference.docx")
+    if not os.path.exists(ref):
+        sys.exit("reference.docx is missing -- run: python3 REPL/tools/_docxref.py")
+    r = subprocess.run(["pandoc", md_path, "-o", docx_path, "--reference-doc", ref,
+                        "-V", f"title=The Ouronet Audit Book v{VERSION}"],
+                       capture_output=True, text=True)
+    if r.returncode:
+        sys.exit(r.stdout + r.stderr)
+
+
+def build_docx():
+    """Two passes: measure the pagination, then write it into the contents and re-emit."""
+    import tempfile
+    tmp = tempfile.mkdtemp(prefix="auditbook-")
+    md1 = os.path.join(tmp, "pass1.md")
+    dx1 = os.path.join(tmp, "pass1.docx")
+    keys = [k for k, _, _ in CHAPTERS]
+
+    # pass 1 -- placeholder numbers, so the contents table has its final HEIGHT
+    # Placeholder is three digits, matching the widest real page number. A one-digit placeholder
+    # gives pass 1 a different table height from pass 2, which moves every chapter by a page and
+    # makes convergence impossible by construction.
+    open(md1, "w", encoding="utf-8").write(build(pages={k: 999 for k in keys}))
+    _pandoc(md1, dx1)
+    pdf1 = _render_pdf(dx1, tmp)
+    if not pdf1:
+        print("  page numbering: soffice produced no PDF -- emitting contents without pages")
+        _pandoc(OUT_MD, OUT_DOCX)
+        return
+    pages = _chapter_pages(pdf1)
+    missing = [k for k in keys if k not in pages]
+    if missing:
+        sys.exit(f"page numbering: could not locate {len(missing)} chapter heading(s) in the "
+                 f"rendered PDF: {', '.join(missing)}\n"
+                 f"The contents would be wrong, so nothing is written.")
+
+    # pass 2 -- the real numbers
+    md2 = os.path.join(tmp, "pass2.md")
+    open(md2, "w", encoding="utf-8").write(build(pages=pages))
+    _pandoc(md2, OUT_DOCX)
+
+    # VERIFY it converged. Same row count both passes, so it should -- but "should" is how a
+    # contents list ends up off by a page.
+    pdf2 = _render_pdf(OUT_DOCX, tmp)
+    if pdf2:
+        again = _chapter_pages(pdf2)
+        drift = {k: (pages[k], again[k]) for k in pages if k in again and again[k] != pages[k]}
+        if drift:
+            print(f"  page numbering: DID NOT CONVERGE for {len(drift)} chapter(s):")
+            for k, (a, b) in sorted(drift.items()):
+                print(f"     {k}: contents says {a}, renders on {b}")
+            sys.exit("The contents would be wrong. Nothing further written.")
+        n = len(re.findall(rb'/Type\s*/Page[^s]', open(pdf2, "rb").read()))
+        print(f"  page numbering: converged -- {len(pages)} chapters, {n} pages")
+        # The convergence check already rendered a correct PDF, so ship it. It costs nothing, and
+        # it is the copy a reader can open and PRINT without Word's Protected View getting in the
+        # way -- which is a property of how the file reached the machine, not of the file, and so
+        # cannot be fixed from this side.
+        import shutil
+        shutil.copyfile(pdf2, OUT_PDF)
+        print(f"wrote {os.path.relpath(OUT_PDF, ROOT)}  ({n} pages)")
 
 
 def main():
@@ -398,20 +528,9 @@ def main():
     print(f"wrote {os.path.relpath(OUT_MD, ROOT)}  "
           f"(v{VERSION}, {len(CHAPTERS)} chapters, {len(text.splitlines()):,} lines)")
     if "--docx" in sys.argv:
-        # Page geometry, the running header and the page-number footer all come from the
-        # reference doc -- pandoc has no flags for them. It is generated by _docxref.py, and is
-        # passed here rather than being left to pandoc's default, which has no margins set at all
-        # and no footer.
-        ref = os.path.join(BOOK, "reference.docx")
-        if not os.path.exists(ref):
-            print("reference.docx is missing -- run: python3 REPL/tools/_docxref.py")
-            return 1
-        r = subprocess.run(["pandoc", OUT_MD, "-o", OUT_DOCX, "--toc", "--toc-depth=2",
-                            "--reference-doc", ref,
-                            "-V", f"title=The Ouronet Audit Book v{VERSION}"],
-                           capture_output=True, text=True)
-        if r.returncode:
-            print(r.stdout + r.stderr); return 1
+        # Page geometry, running header and page-number footer all come from the reference doc --
+        # pandoc has no flags for any of them. Generated by _docxref.py.
+        build_docx()
         print(f"wrote {os.path.relpath(OUT_DOCX, ROOT)}")
     return 0
 

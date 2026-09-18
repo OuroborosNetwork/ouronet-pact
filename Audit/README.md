@@ -5,7 +5,9 @@ Everything produced by Ouronet's audit programme, in one place.
 ## The deliverable
 
 **[`OURONET-AUDIT-BOOK.md`](OURONET-AUDIT-BOOK.md)** — the consolidated audit book, 24 chapters.
-**[`OURONET-AUDIT-BOOK.docx`](OURONET-AUDIT-BOOK.docx)** — the same, for conversion to PDF.
+**[`OURONET-AUDIT-BOOK.docx`](OURONET-AUDIT-BOOK.docx)** — the same, A4, 229 pages.
+**[`OURONET-AUDIT-BOOK.pdf`](OURONET-AUDIT-BOOK.pdf)** — rendered. Read or print this one; it is
+produced by the same build and needs no Word.
 
 Both are **generated**. Do not edit them; edit the sources in [`book/`](book/) and rebuild:
 
@@ -31,12 +33,73 @@ It is generated rather than committed-and-hand-edited for one reason: it is a 10
 whatever it is supposed to enforce. The decisions — margin width, page size, body point size — are
 constants at the top of that script.
 
-Measured effect, rendered to PDF both ways:
+### Page-break behaviour
 
-| | pages |
-|---|---:|
-| pandoc default (no reference doc) | 384 |
-| **this layout** | **216** |
+Word breaks wherever the page runs out, which strands a heading alone at the foot of a page, splits
+a code block across the fold, and leaves single orphaned lines mid-sentence. Four rules fix that,
+all in the reference document:
+
+| rule | effect |
+|---|---|
+| `widowControl` | no single line of a paragraph is left alone at the top or bottom of a page |
+| `keepNext` on headings | a heading is never the last thing on a page — it moves with its first paragraph |
+| `keepLines` on code + headings | a code block is never split; if it does not fit, the whole thing moves |
+| `pageBreakBefore` on `Heading 1` | every chapter starts on a fresh page |
+
+`keepLines` is deliberately **not** applied to body prose. It would forbid any paragraph from
+spanning a page at all, so a long paragraph arriving near the bottom pushes a near-empty page.
+Widow/orphan control is what typesetting actually uses for prose and it removes the case that
+matters — a sentence broken with one line stranded behind.
+
+Measured effect, rendered to PDF each way:
+
+| | pages | |
+|---|---:|---|
+| pandoc default (no reference doc) | 384 | 2.54 cm margins, 11 pt |
+| thin layout only | 216 | breaks fall wherever they fall |
+| **thin layout + page-break rules** | **229** | the shipped artefact |
+
+The 13 extra pages are the cost of not splitting things. Average density is 45 lines of text per
+page, and exactly one page in the book is near-empty.
+
+### Why there is no Word "update fields?" prompt
+
+There are **no field codes in the document body** — `pandoc --toc` is not used.
+
+That option inserts a Word *TOC field*, which caused two problems. It was a duplicate, since this
+book writes its own contents list; and because a TOC field can pull entries from other documents
+(that is what its `RD` switch is for), Word greeted every reader with *"This document contains
+fields that may refer to other files. Do you want to update the fields in this document?"* before
+showing them anything. That prompt cannot be suppressed from inside a document — the only fix is
+not to have the field.
+
+So the contents list is ordinary text, and its page numbers are **measured**: the build renders the
+document, reads which page each chapter landed on, writes those numbers in, and renders again to
+confirm they did not move. If they move, the build **fails** rather than shipping a contents list
+that is off by a page. It has caught itself twice — once when the page column was too narrow for
+three digits, which changed the table's height and therefore the pagination it was reporting.
+
+The only fields left are `PAGE` and `NUMPAGES` in the footer. Those are required (a literal page
+number would print the same number on every page) and they do not reflow the body.
+
+### Protected View, and why this side cannot fix it
+
+Protected View is **not a property of this document**. Windows tags files that arrive from the
+internet, from email, or from some network and WSL locations with a *Mark of the Web*, and Word
+opens anything so tagged in a read-only sandbox. Nothing that can be written inside a `.docx` turns
+it off, so the generator cannot help.
+
+It also explains the rest of what you see. **Printing is disabled in Protected View** — that is the
+sandbox, not a document restriction. And the layout shifting when you click *Enable Editing* was
+the TOC field finally being allowed to resolve; with the field gone, that shift should be gone too.
+
+Three ways out, in order of least effort:
+
+1. **Read the PDF instead.** It is built from the same source, paginated identically, and prints.
+2. **Unblock the file once:** right-click → *Properties* → tick **Unblock** → *OK*.
+3. **Trust the folder:** Word → *File* → *Options* → *Trust Center* → *Trust Center Settings* →
+   *Trusted Locations* → add the folder. Or under *Protected View*, untick the source it is coming
+   from (network / internet / Outlook).
 
 Page size is pinned to A4 explicitly rather than left unset. Pandoc's default leaves it to the
 reader's locale — Letter in the US, A4 elsewhere — and a document that repaginates depending on who

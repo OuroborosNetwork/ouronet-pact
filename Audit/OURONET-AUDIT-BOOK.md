@@ -61,7 +61,7 @@ audit and doubles as the most honest description of how each subsystem actually 
 is about the instruments — and about the fifteen defects found *in the instruments*, which is the
 chapter most likely to change how you think about your own tooling.
 
-### What this book claims, and in what voice
+## What this book claims, and in what voice
 
 Three commitments shape every chapter, and they are worth stating because they are unusual.
 
@@ -86,7 +86,7 @@ turn anybody away is reported as never observed, not as "presumed working". A bo
 a bound. Where the honest answer is "nothing is known about this from the outside", the book says
 that.
 
-### How to read a figure in this book
+## How to read a figure in this book
 
 Every quantitative claim here is re-derivable, and most are generated rather than typed. The
 headline tables are checked by `REPL/tools/_booktables.py`, which fails the build if a table stops
@@ -102,7 +102,7 @@ Only re-derivation from the tree detects it.
 So: where a number in this book looks important, Chapter 23 tells you how to reproduce it. If it
 does not reproduce, the book is wrong and the tree is right.
 
-### Structure
+## Structure
 
 - **Chapter 2–Chapter 3** — orientation: what the system is, and the test plant that
   verified it. Every later chapter cites these.
@@ -123,7 +123,7 @@ route, and the cross-references are written to support it.
 
 # 2. The system under audit
 
-### What Ouronet is
+## What Ouronet is
 
 Ouronet is a virtual blockchain written entirely in Pact, Kadena's smart-contract language, and
 deployed on StoaChain — a Chainweb-class stack with its own native coin and namespace economy —
@@ -179,7 +179,7 @@ records exist and deliberately disagree — `LIVE-INTERFACE-VERSIONS.md` records
 on chain**, the tree records what is **developed**, and the first is never refreshed from the second
 because being the thing the second is compared against is its whole purpose.
 
-### The asset taxonomy
+## The asset taxonomy
 
 Ouronet defines four asset families plus one legacy one. The distinctions are not marketing
 categories: each family is a different set of tables with a different row key, and the row key tells
@@ -229,7 +229,7 @@ able to interact with SWP), **AQP** acquisition pools (earning pools with anchor
 reward-per-share accounting), **VST** vesting, and **DEMIPAD**, the launchpad whose per-asset sales
 were deliberately pushed out into citizen modules.
 
-### Sovereign and citizen
+## Sovereign and citizen
 
 Every module in the tree is one of two classes, and the tree says which by path. **Sovereign**
 (`1_SOVEREIGN/`) modules are the canonical Ouronet architecture, maintained by the project. They
@@ -260,7 +260,7 @@ counterpart `1_SOVEREIGN/STAGE_02/3_Talos/05_TS02-DPAD.pact` carries the `DEMIPA
 letter apart, and the project's own documentation had the roles swapped until 2026-09-17. And **the
 citizen minters invert the client direction**; see the end of the next section.
 
-### The layer cake
+## The layer cake
 
 Sovereign code is three layers: **Utilities → Core → Talos**.
 
@@ -314,13 +314,13 @@ to mishandle. The conformance tooling splits these out as `self-C-call-citizen` 
 to those two files. The bound is the point: a citizen `C_` that *does* return an `OutputCumulator`
 is an ordinary billing shape A and the rule applies to it normally.
 
-### IGNIS: virtual gas on top of real gas
+## IGNIS: virtual gas on top of real gas
 
 `IGNIS` is the virtual-chain gas collector, its unit pegged hard at **1 IGNIS = 1 US/EUR cent**, so
 a 5000 deterrence is $50. Balances are not a fungible — they are the `ignis` field on the `DALOS`
 account row, so charging gas is an account-table update.
 
-#### The OutputCumulator
+### The OutputCumulator
 
 The object that carries a charge through an operation is the `OutputCumulator`, defined in
 `IGNIS`:
@@ -355,7 +355,7 @@ caller-side convention until a red-team finding in September 2026 made it an enf
 `C_` builds a cumulator that only Talos may collect. A self-call can drop it or double it. For
 sovereign modules the count of such calls must stay at zero.
 
-#### The cost model
+### The cost model
 
 ```
 IGNIS charged = deter (IG|DETER) + the op's own compute (IG|COMPONENTS)    ;; UC_IgnisPrice
@@ -389,7 +389,7 @@ concatenates leaves into the op's total, and the `INFO_` preview calls the compo
 lives in the same module as the function it prices — if a module gets too big the module is split,
 not its cost functions. The tree holds **595** `URCi_` and **623** `INFO_` definitions.
 
-#### The six billing shapes
+### The six billing shapes
 
 The description above — core `C_` returns the cumulator, Talos collects — is the common case but not
 the only correct one. A full trace of all 38 non-cumulator `C_`s on 2026-09-13 found six legitimate
@@ -416,7 +416,7 @@ cheap: linking requires two deployed Apollo halves at 500 native STOA each, and 
 never cleared (revoke only deactivates), so it is one-shot per pair, forever. If counterparts ever
 become clearable, the op stops being safe.
 
-### The function prefix system
+## The function prefix system
 
 Every function name in sovereign Pact begins with a prefix that is a contract about what the
 function may do. The prefixes are the vocabulary the rest of this book uses. They split into
@@ -472,7 +472,7 @@ Counted with `grep -rhoP '^\s*\(defun\s+\Q<prefix>\E'` across `1_SOVEREIGN/` and
 `XB_` 62 · `WU_` 62 · `CAP_` 35 · `UCv_` 34 · `CC_` 32 · `URCv_` 28 · `WW_` 28 · `URHC_` 20 ·
 `WI_` 20 · `CCp_` 18 · `Cp_` 4 · `AA_` 3 · `Ap_` 1.
 
-### Capability bands C1–C4
+## Capability bands C1–C4
 
 Capabilities in every module are grouped into four bands, in this order: **C1** — trivial, "always
 `true`"-style capability roots; **C2** — simple capabilities that do **not** compose other
@@ -527,7 +527,7 @@ Two qualifications this book needs the reader to carry:
   design, and hoisting the bare `compose-capability` out of the branch silently changes who may
   call the function.
 
-### Interfaces and the cascade rule
+## Interfaces and the cascade rule
 
 Kadena's roughly 150k deploy-size cap forces a strict deploy order: a module may only call into
 modules already deployed. Everything in this section is downstream of that one constraint.
@@ -583,7 +583,7 @@ Three narrower rules follow from the same mechanics:
   `DemiourgosPactMetaFungibleV7`, `PythiaV5`) and three unversioned citizen interfaces
   (`AgeOfZalmoxis`, `Bloodshed`, `Dispenser`).
 
-### The scale of the thing
+## The scale of the thing
 
 Every figure below was measured on 2026-09-18 against the working tree, each taken twice by two
 different commands. Where the project's own tooling reports a different number for the same
@@ -650,7 +650,7 @@ machine that does the running — its size, how it is organised, why a full veri
 minutes instead of eighty, and what the procedure actually is. It is placed before the audit
 chapters because every one of them cites it.
 
-### The corpus, measured
+## The corpus, measured
 
 | | |
 |---|---:|
@@ -682,7 +682,7 @@ how three of this programme's own instruments came to report tidier numbers than
 For scale, the code under test is **93 Pact modules**. The suite is therefore larger than a
 one-to-one relationship with the subject; roughly speaking, there is more test than there is system.
 
-### Two assertion counts, and which one to quote
+## Two assertion counts, and which one to quote
 
 This distinction matters enough that the generated statistics file leads with it, because quoting
 the wrong one overstates the suite by more than four times.
@@ -709,7 +709,7 @@ fire first, and in a language with eager `let` bindings, an unrelated check firi
 normal case, not the exotic one. Exactly **one** message-free negative assertion remains in the
 tree, and it sits in an ungated scratch file.
 
-### One runner, and why that is a rule
+## One runner, and why that is a rule
 
 > **RULE 4 — there is exactly ONE authoritative runner: `python3 REPL/tools/_gate.py`.**
 
@@ -742,7 +742,7 @@ Two faster paths exist and neither is the gate:
 - `cd REPL && pact ZALL.repl` — every suite, but serially, in one process, as a single gate
   entrypoint. It is the largest single entrypoint and therefore sets the floor described below.
 
-### Why it runs in parallel, and why that is safe
+## Why it runs in parallel, and why that is safe
 
 **Verified with `strace`: a `pact <file>.repl` run opens ZERO files for writing.**
 
@@ -766,7 +766,7 @@ This is worth stating plainly because "run the tests in parallel" is usually a p
 database-isolation problem attached. Here it is free, and it is free because of a property that was
 *measured* rather than assumed — the `strace` run is the reason the claim is in this book at all.
 
-### The arithmetic of the speedup
+## The arithmetic of the speedup
 
 From the most recent green run, on 16 cores:
 
@@ -782,7 +782,7 @@ A 14.8× speedup on 16 workers is 92% efficiency. The residual 8% is scheduling 
 end of a run the remaining long entrypoints cannot fill 16 workers, so cores idle. It is **not** a
 single dominant file — see the next section, where that turns out to matter.
 
-### Why more cores would not help
+## Why more cores would not help
 
 The testers are independent, which is what gives the parallelism. But **one file can only use one
 core**, so a single long entrypoint is a hard floor:
@@ -819,7 +819,7 @@ This is the reason the suite is organised as 92 entrypoints rather than one. The
 aesthetic; it is the direct consequence of that formula. When a suite grows past the bound, the fix
 is to split the entrypoint, and the rule tells you which one and by how much.
 
-### The half of the gate that matters more
+## The half of the gate that matters more
 
 The gate has two jobs, and running the tests is the first one.
 
@@ -845,7 +845,7 @@ which was never checked and is not what happens: the file dies at its very first
 Ouronet code runs, because it was moved into a subdirectory and its relative paths were never
 fixed. A wrong exclusion reason sends the next person to debug a module that is never reached.
 
-### Fixtures: mock by default
+## Fixtures: mock by default
 
 > **RULE 2 — a module tester builds the SMALLEST fixture that exercises its logic.**
 
@@ -859,7 +859,7 @@ live-shaped collection. That collection is correct for the tests that need a rea
 and wrong as a default, because nothing about burning a single token needs 500 nonces. Under RULE 1,
 a 28-second fixture in the wrong file is 28 seconds added to the floor of the entire suite.
 
-### Assertion discipline
+## Assertion discipline
 
 Five rules govern what an assertion must do to count. Each was written after a violation.
 
@@ -889,7 +889,7 @@ when the *gated* figure — how much of that coverage a red build would actually
 439/448. A test that exists but that no gate entrypoint reaches is RULE 11's failure mode, and the
 orphan check above is its enforcement.
 
-### The checks that are not tests
+## The checks that are not tests
 
 A tree can pass all 25,035 assertions and still fail the gate. These static checks are **fatal**:
 
@@ -908,7 +908,7 @@ A tree can pass all 25,035 assertions and still fail the gate. These static chec
 every check that consumed their output silently stopped checking anything. A tool that fails to load
 produces no output, and no output is indistinguishable from clean output to anything downstream.
 
-### The procedure, end to end
+## The procedure, end to end
 
 1. **Change something.**
 2. **Run the affected module tester** — `cd REPL && pact modules/ATS.repl`. Seconds to a minute.
@@ -925,7 +925,7 @@ produces no output, and no output is indistinguishable from clean output to anyt
    reverted. RULE 7: a red-team finding closes with a regression test named for the finding, not
    with a note.
 
-### What the suite does not do
+## What the suite does not do
 
 - **It is not a fuzzer.** Every input is chosen. Adversarial cases are *derived from the source* —
   enumerate the `enforce`s, write the input that trips each — rather than discovered by search.
@@ -960,7 +960,7 @@ produces no output, and no output is indistinguishable from clean output to anyt
 | 6 | **AQP** | acquisition pools — anchors, scores, rewards, vaults | **33** | `Audit/module-audits/AQP/` |
 |  |  | | **314** | |
 
-### How these audits were run
+## How these audits were run
 
 All six followed the same shape, and the shape is worth stating because it determines what the
 numbers in the table above mean.
@@ -1008,7 +1008,7 @@ something its silence would mean.
 part of Part I with the most to say — because re-checking an audit's own word against current source
 is not a formality, and this one found four different ways that word had become unreliable.
 
-### Independent corroboration of the counts (2026-09-17)
+## Independent corroboration of the counts (2026-09-17)
 
 The per-module totals above were re-derived from the audit trees by a **different method** than the
 chapters used — counting distinct finding ids in the source `.md` files rather than reading the
@@ -1037,9 +1037,9 @@ reconciled away.
 `REPL/tools/_booktables.py` gates only what it can check **exactly**: that the two headline tables
 sum to their own totals, and that Part III's total matches the attack register in the tree.
 
-### What the verification pass found
+## What the verification pass found
 
-#### The headline is a positive one
+### The headline is a positive one
 
 **Of the hundreds of fixes recorded as FIXED, essentially all are present in current source** — and
 that held through four intervening whole-tree rewrites: an interface version cascade, the Part II
@@ -1058,7 +1058,7 @@ unresolved question remains.
 > rather than replaced, because what it was counting is not recoverable. AQP's fixes *are* annotated
 > (`audit finding #15M / M6`, `L7 #19`, and so on), just not to one pattern.
 
-#### One fix was genuinely gone
+### One fix was genuinely gone
 
 The SWP audit's `M14` archived two frozen historical interfaces. A later automated sweep deleted
 them, because **zero references is the defining property of a deliberately-frozen archive** and the
@@ -1066,7 +1066,7 @@ tool's heuristic was "zero references means dead". Investigated in full and clos
 not reopened**: a dated convention amendment had retired the frozen-copy practice the same day, and
 a restored archive cannot be both loadable and historical under this codebase's cascade rule.
 
-#### Two verdicts rested on premises that had been retracted
+### Two verdicts rested on premises that had been retracted
 
 - **SWP `M11`/`M12`** were closed as DESIGN on the grounds that a module family had *"zero client
   wiring — unreachable"*. That premise was retracted three weeks earlier and the verdicts were never
@@ -1075,7 +1075,7 @@ a restored archive cannot be both loadable and historical under this codebase's 
   protocol-wide rename that constant now serves as the **STOA**/USD price, unchanged. Nothing in the
   tree asserts the two coincide. Flagged, not fixed.
 
-#### And a class of fix that was present but unwitnessed
+### And a class of fix that was present but unwitnessed
 
 Eleven fixes — including **two** critical-ranked findings, ATS `C2` and DALOS `C3` — were present in
 source with **nothing in the running suite that would go red if they were reverted**. Their proofs
@@ -1112,12 +1112,12 @@ were written into scratch harnesses that now sit in an archive directory the gat
 > *every fix names the assertion that would go red if it were reverted.* Without it, a fix and a
 > claim look identical six weeks later.
 
-#### Two audits' own arithmetic did not add up
+### Two audits' own arithmetic did not add up
 
 One tracker states *"FIXED: 19"* and enumerates 18, with a compensating error elsewhere so that the
 **total reconciles**. A total that reconciles is precisely why nobody re-counted the parts.
 
-#### And two design documents understate the shipped code
+### And two design documents understate the shipped code
 
 Both in the AQP tree. One declares an operational constraint — an anchor *"locked forever"* until an
 unwind is built — that has not applied since the unwind shipped, through two client doors. **A reader
@@ -1137,7 +1137,7 @@ preserved.
 > Audit ran 2026-08-22 → 2026-08-29. This chapter was written 2026-09-17 and re-checks every
 > recorded fix against the tree as it stands today.
 
-### Evidence labels used in this chapter
+## Evidence labels used in this chapter
 
 | label | means |
 |---|---|
@@ -1154,7 +1154,7 @@ execution performed for this chapter. Claims about what the source *says* today 
 
 ---
 
-### 1.1 What the module does
+## 1.1 What the module does
 
 "DALOS" names this audit but not its scope. The scope is **everything in Stage 1 that the sibling ATS
 and SWP audits did not claim** — twenty-two modules and thirteen utility libraries, organised by the
@@ -1191,7 +1191,7 @@ a hypothetical: it is finding C3, below, and it is exactly the path it took.
 
 ---
 
-### 1.2 How it was audited
+## 1.2 How it was audited
 
 The audit ran in the same shape as its siblings (ATS, SWP, AQP) and borrowed their discipline
 explicitly.
@@ -1253,7 +1253,7 @@ CONFIRMED/PLAUSIBLE tags on those clusters rest more on reading than on executio
 
 ---
 
-### 1.3 The findings
+## 1.3 The findings
 
 88 findings: `#1C`–`#85L` plus N1–N3. Severity is **as recorded by the audit**, not re-graded here.
 The *Evidence today* column is what this chapter checked, on 2026-09-17, against current source.
@@ -1266,7 +1266,7 @@ every interface. The `INFO-ONE+`/`INFO-ZERO` modules were moved out of `2_Core/`
 `INFO_MODULE|Name`. Where a fix is recorded against a name that no longer exists, this chapter says
 so explicitly rather than reporting it missing.
 
-#### CRITICAL
+### CRITICAL
 
 | id | summary | severity | verdict | evidence today |
 |---|---|---|---|---|
@@ -1277,7 +1277,7 @@ so explicitly rather than reporting it missing.
 | C5 `#5C` | `DPOF\|INFO_UpgradeBranding` called `OI\|OI\|UDC_DynamicKadenaCost` — doubled prefix, unbound variable, every call crashed | CRIT | **FIXED** | **Fix site no longer exists.** `21_INFO-ONE+.pact` was retired (commit `42fb75d`); the successor `Z_Reads/02_INFO-ONE+.pact:1198 INFO_DPOF\|UpgradeBranding` is a full rewrite delegating to `DPOF::URCi_UpgradeBranding`. Zero `OI\|OI\|` occurrences tree-wide. [V-cmd] |
 | N1 | `DPOF::C_Transmit` completely non-functional for every caller — `C>TRANSMIT` read `"meta-data"`, schema field is `"meta-data-array"` | CRIT-equiv | **FIXED** | `06_DPOF.pact:1027` reads `"meta-data-array"`; the schema/constructor at `:1223` agrees. [V-read] `C_Transmit` is exercised by `modules/DPOF.repl` and `Stage_02/[6.1.6]_DPOF.repl`. [V-cmd] |
 
-#### HIGH
+### HIGH
 
 | id | summary | severity | verdict | evidence today |
 |---|---|---|---|---|
@@ -1301,7 +1301,7 @@ so explicitly rather than reporting it missing.
 | H18 `#23H` | `OUROBOROS::C_SublimateV2` is live and actively called but absent from `OuroborosV1` | HIGH | **FIXED** | `13_OUROBOROS.pact:72` declares it; `:791` implements it; `3_Talos/03_TS01-C2.pact:147/1816` and `04_TS01-C3.pact:875` call it. [V-read] |
 | H19 `#24H` | Four live `C_*` functions absent from `CodexV1`, which declared no `C_` at all | HIGH | **FIXED** | `2_Core/21_CODEX.pact:120-123` — all four declared. [V-read] |
 
-#### MEDIUM
+### MEDIUM
 
 | id | summary | severity | verdict | evidence today |
 |---|---|---|---|---|
@@ -1335,7 +1335,7 @@ so explicitly rather than reporting it missing.
 | N2 | `TS01-C1::DPTF\|C_DeployAccount`/`DPOF\|C_DeployAccount` ungated — any signer could force any account to associate with any token | MED-equiv | **FIXED** | `3_Talos/02_TS01-C1.pact:710` — `(ref-DALOS::CAP_EnforceAccountOwnership account)`; new admin path `DPTF\|A_DeployAccount`/`DPOF\|A_DeployAccount` at `01_TS01-A.pact:574, :601` behind `P\|ADMINISTRATIVE-SUMMONER`. [V-read] |
 | N3 | Three `TS01-A` treasury admin functions gated only by bare-true `P\|TS` | CRIT? | **REFUTED** | Core layer independently composes `GOV\|DPTF_ADMIN`. Pinned: `REPL/_scratch_ts01a_n3_treasury_gate_check.repl`, a gate entrypoint with one negative assertion. [V-cmd] |
 
-#### LOW
+### LOW
 
 | id | summary | verdict | evidence today |
 |---|---|---|---|
@@ -1381,9 +1381,9 @@ proved byte-identical output against retained `_OLD` copies before deleting them
 
 ---
 
-### 1.4 Six findings worth the telling
+## 1.4 Six findings worth the telling
 
-#### (a) C2 — the revoke that revoked the wrong account, and why one test could never catch it
+### (a) C2 — the revoke that revoked the wrong account, and why one test could never catch it
 
 `DPOF::C_MoveCreateRole` is supposed to be one atomic grant-and-revoke: the new holder gets the
 create/mint role, the old holder loses it. It called `XI_UpdateVerum4` (write the new holder of
@@ -1413,7 +1413,7 @@ the assertion:
 **The fix was a reorder of two lines.** `06_DPOF.pact:3093` and `:3095`, under the comment at
 `:3088-3092` that names #2C. [V-read]
 
-#### (b) N1 — the bug found while building the proof for a different bug
+### (b) N1 — the bug found while building the proof for a different bug
 
 While constructing the REPL proof for C3 (nonce uniqueness), the audit needed a *working*
 `C_Transmit` call to attack with duplicated nonces. The very first ordinary, non-duplicated call
@@ -1432,7 +1432,7 @@ call, since the two are causally unrelated.
 The general lesson the audit drew, and it is worth keeping: **building the attack harness for one
 finding is itself an audit technique**, because it forces you to execute the happy path first.
 
-#### (c) M5 — ranked MEDIUM, and it was an exploit
+### (c) M5 — ranked MEDIUM, and it was an exploit
 
 The finding as written was a code-organisation complaint: `TFT::C_MultiTransfer` and
 `C_MultiBulkTransfer` compute `dispo-data` once, before the fold over legs, and reuse the snapshot
@@ -1463,7 +1463,7 @@ was not.
 **The fix is present**: `09_TFT.pact:1797-1803` and `:1867-1869` recompute per leg. [V-read] **The
 staleness itself has no witness in the running suite** — see §1.5.
 
-#### (d) M7 — the fix that moved the problem instead of removing it, and said so
+### (d) M7 — the fix that moved the problem instead of removing it, and said so
 
 `DPOF::URC_Parent` contained `(enforce (!= fourth BAR) "Sleeping LP Tokens not allowed…")`. A `URC_`
 contractually never enforces, and this one made *every* caller pay for a rejection only one of them
@@ -1501,7 +1501,7 @@ Rule 1 exists for, appearing in a *fix* rather than in original code; and the co
 incompleteness of its own repair, at the site, is what made the repair findable at all — the note is
 the only reason anyone went and measured it.
 
-#### (e) H14 — the stub that was fixed, then quietly re-denominated
+### (e) H14 — the stub that was fixed, then quietly re-denominated
 
 The finding: `U_CT::UR|KDA-PID`, the sole KDA/USD price feed used across asymmetric-LP IGNIS
 taxation and DemiPad pricing, is a hardcoded `1.0` with the real `dia-oracle.get-value "KDA/USD"`
@@ -1529,7 +1529,7 @@ non-production `0_Sample/` files. [V-cmd] See §1.5.
 > **Corrected 2026-09-18.** This wrote the id as `#L58` and quoted the 308/17 figure in the present
 > tense, as if it described the tree today. It describes the tree in 2026-08, before the rename.
 
-#### (f) H4 — the escape hatches were checked before "different from its siblings" became "bug"
+### (f) H4 — the escape hatches were checked before "different from its siblings" became "bug"
 
 Three of the five Toggle-Verum client recipes in `05_DPTF.pact` lacked `(UEV_IMC)`. Two had it. The
 tempting inference — *inconsistent, therefore broken* — is exactly the inference that had already
@@ -1553,9 +1553,9 @@ rather than implying three live reproductions. [REPORTED]
 
 ---
 
-### 1.5 What remains open
+## 1.5 What remains open
 
-#### Findings the audit left open on purpose
+### Findings the audit left open on purpose
 
 | item | state today | why |
 |---|---|---|
@@ -1564,7 +1564,7 @@ rather than implying three live reproductions. [REPORTED]
 | **H14 `#19H`** — no live price oracle | **Open by design.** `01_U_CT.pact:364` returns a hardcoded `0.1`; the real oracle call is commented one line above. [V-read] | Blocked on an oracle existing. Now carries the additional, unrecorded question of whether `0.1` is still the right number after the KDA→STOA re-denomination. |
 | **C3(weighted)-class residues** — n/a to this tree | — | — |
 
-#### Findings closed as DESIGN or NOT A BUG that a reader should still know about
+### Findings closed as DESIGN or NOT A BUG that a reader should still know about
 
 - **C4** — `VST::C_Unreserve` can only be called by the token manager, never the reserver. This is
   correct *given* that Reserve/Unreserve is escrow-for-purchase rather than a symmetric lock, but it
@@ -1579,7 +1579,7 @@ rather than implying three live reproductions. [REPORTED]
   dead code by design, but it is *loadable* dead code sitting in the deploy order; the closure rests
   on the promise that it will never be upgraded.
 
-#### Seven fixes that were present in source with no witness — all seven now closed
+### Seven fixes that were present in source with no witness — all seven now closed
 
 This is the book's Rule 2 applied to this chapter, and on 2026-09-17 it was where the DALOS tree was
 weakest. The audit's proofs were built as `REPL/_scratch_*.repl` harnesses. **Six of them were later
@@ -1625,7 +1625,7 @@ remainder of it in this tree. Closing them is worth reading as a set, because **
 by simply calling the function** — each needed a specific input, fixture or measurement that tells
 the fixed code apart from the reverted code.
 
-#### Two fixes whose target no longer exists
+### Two fixes whose target no longer exists
 
 Neither is a regression, but both should be stated plainly rather than ticked as "fixed":
 
@@ -1638,7 +1638,7 @@ Neither is a regression, but both should be stated plainly rather than ticked as
 - **H11** was *deferred*, not fixed, and is now moot for the same reason: the duplicate `ifp3`
   binding cannot exist in a function that makes one `URCi_ColdRecovery` call. [V-read]
 
-#### Corrections to the audit's own record
+### Corrections to the audit's own record
 
 - The DALOS README's status tracker is accurate on every row this chapter re-checked. No
   discrepancies found between the tracker, `ISSUES-RANKED.md` and `ROUND-02-FIXES.md`. [V-cmd]
@@ -1664,7 +1664,7 @@ the audit trail or the ledger, not re-established here). **No test was executed 
 
 ---
 
-### 2.1 What the module does
+## 2.1 What the module does
 
 ATS is Ouronet's staking engine. A user deposits *reward tokens* (RT) into a pool — an **ATS-pair** —
 and receives a *reward-bearing token* (RBT) that represents their claim on the pool. The RBT is not a
@@ -1700,7 +1700,7 @@ Both of those are in this chapter. The first is C2. The second is M2.
 
 ---
 
-### 2.2 How it was audited
+## 2.2 How it was audited
 
 **Round I — four parallel lenses, read-only, plus a hand-run lead pass on the priority target.**
 The scope was split by role rather than by file: admin/lifecycle, usage/token-custody, utility maths,
@@ -1769,7 +1769,7 @@ there was nothing to run. Two real bugs (N2 and N3) fell out the moment tests we
 
 ---
 
-### 2.3 The findings
+## 2.3 The findings
 
 35 findings: `#1C`–`#31L` from Round I, plus `#32N`–`#35N` appended after the original list was
 published (deliberately appended rather than renumbered, so the original numbering never shifts).
@@ -1777,7 +1777,7 @@ Severity is as recorded. The audit uses two ID schemes in parallel — a ranked 
 per-severity `C1`/`H2`/`M6`/`L9`/`N1` — and this chapter gives both, because the tree's own
 cross-references use whichever was to hand.
 
-#### CRITICAL
+### CRITICAL
 
 | id | summary | severity | verdict | evidence today |
 |---|---|---|---|---|
@@ -1787,7 +1787,7 @@ cross-references use whichever was to hand.
 | `#4C` / C4 | `syphon` floor has no monotonicity, lock or timelock — the owner can re-lower it and extract ~95%+ of pool backing in one call | CRIT | **NOT A BUG** | Owner: full at-will discretionary control (bounded `>= 0.1`) is intended; stakers trust the pool owner with this lever. Proposed ratchet explicitly rejected. [REPORTED] |
 | `#5C` / C5 | `C_HOT-RBT\|UpdatePendingBranding`/`UpgradeBranding` have **no** owner or entity-linkage check at all | CRIT | **FIXED** | `08_ATS.pact:736` — new unevented core `ATS\|C>HOT-RBT-BRD` resolves the owning pair from the hot-rbt id, `CAP_Owner`, then composes `ATS\|GOV`; `:746` and `:750` are the two `@event` leaves; used at `:2993` and `:3004`. [V-read] |
 
-#### HIGH
+### HIGH
 
 | id | summary | severity | verdict | evidence today |
 |---|---|---|---|---|
@@ -1796,7 +1796,7 @@ cross-references use whichever was to hand.
 | `#8H` / H3 | `URC_RBT`'s `abs()` masks the `-1.0` "uninitialised index" sentinel — Coil/Curl bypass KickStart, genesis inflation / zero-mint donation | HIGH | **NOT A BUG** (both scenarios) | Scenario 1: bare-Coil bootstrap is the intended alternative to KickStart. Scenario 2: refuted on tracing — `DPTF\|C>CREDIT`'s `UEV_Amount` reverts a `0.0` mint atomically, so no silent-donation window exists. [REPORTED] |
 | `#9H` / H4 | `UEV_ColdDurationParameters`' soft branch calls `enforce` with 3 arguments — soft cold-recovery duration can never be set post-genesis | HIGH | **FIXED** | `1_Utilities/09_U_ATS.pact:730-758` — one correctly-formed 2-arg enforce per branch; the `@doc` names both `#9H / H4` and `#16M / M7`. [V-read] **Witnessed**: `REPL/modules/UTILITIES.repl:158-163` `<<UTIL-03>>` — soft branch accepted with valid params, and refused with a message that *names the values*, asserted as a pair against the hard branch's anonymous message. [V-read] |
 
-#### MEDIUM
+### MEDIUM
 
 | id | summary | severity | verdict | evidence today |
 |---|---|---|---|---|
@@ -1810,7 +1810,7 @@ cross-references use whichever was to hand.
 | `#17M` / M8 | `UC_SplitByIndexedRBT` has no zero-guard on `resident-sum` — reachable div-by-zero | MED | **NOT A BUG** | Proven from `URC_Index`'s own formula: `resident-sum = 0.0` is the *only* way `index` reads exactly `0.0`, so a strictly-positive index guarantees a nonzero divisor by construction. [REPORTED] |
 | `#18M` / M9 | `UC_SplitByIndexedRBT` trusts positional alignment of two arrays with no length-parity guard | MED | **NOT A BUG** | Both arrays are a 1:1 map over the same `reward-tokens` list; they cannot desync. [REPORTED] |
 
-#### LOW
+### LOW
 
 | id | summary | verdict | evidence today |
 |---|---|---|---|
@@ -1828,7 +1828,7 @@ cross-references use whichever was to hand.
 | `#30L` / L12 | Several ATSU master defcaps put a bare-ref validation call before local `enforce`s | **ONGOING (kept)** | Deferred to the StoicSyntax sweep; confirmed harmless (affects only which message fires first). [REPORTED] |
 | `#31L` / L13 | Talos wrapper `ATS\|C_SetHotRecoveryFee` (singular) vs core `C_SetHotRecoveryFees` (plural) | **NOT A BUG (left as-is)** | Renaming would cascade into a new interface version plus two citizen-module consumers plus a coordinated redeploy. [REPORTED] |
 
-#### Appended after the original list
+### Appended after the original list
 
 | id | summary | severity | verdict | evidence today |
 |---|---|---|---|---|
@@ -1837,7 +1837,7 @@ cross-references use whichever was to hand.
 | `#34N` / N3 | `P\|A_Define` in `01_TS01-A.pact` never registered `ATS` or `ATSU` as permitted Talos-admin callers — `ATS\|A_RemoveSecondary` and `ATS\|A_KickStart` were **unreachable, unconditionally, for any signer** | HIGH | **FIXED** | `3_Talos/01_TS01-A.pact:249-250` — `(ref-P\|ATS::P\|A_AddIMP mg)` and `(ref-P\|ATSU::P\|A_AddIMP mg)`, in the list alongside the eight that were already there; the missing `ref-P\|ATSU` binding is at `:234`. The in-source comment at `:219` records the history. [V-read] |
 | `#35N` / N4 | The audit added 5 new public functions across 5 interfaces with no version bump — 3 of them already live on mainnet under those exact names | — | **ONGOING (deployment prerequisite)** | **Resolved by the later redeploy phase.** All three required bumps are present: `UtilityAtsV2 → UtilityAtsV3` (`09_U_ATS.pact:2`), `AutostakeUsageV1 → AutostakeUsageV2` (`10_ATSU.pact:6`), `AutostakeV2 → AutostakeV3` (`08_ATS.pact:6`). [V-cmd] |
 
-#### A note on this tree's own counting
+### A note on this tree's own counting
 
 The audit's two summary documents disagree with each other and with the list they summarise. This is
 worth stating precisely, because Rule 3 of this book exists for it.
@@ -1852,9 +1852,9 @@ it changes the headline number an outside reader would quote.
 
 ---
 
-### 2.4 Six findings worth the telling
+## 2.4 Six findings worth the telling
 
-#### (a) C2 — one bug, three symptoms, and the sentinel that made it invisible
+### (a) C2 — one bug, three symptoms, and the sentinel that made it invisible
 
 This was the audit's declared priority target, and it is the best-diagnosed finding in the tree.
 
@@ -1912,7 +1912,7 @@ anyway, 3 slots to 2. Reinstating the gate turns it red. [V-cmd] See §2.5.
 > written on 2026-09-17 and was closed the same day; the caveat now applies to the archived proof,
 > not to the finding.
 
-#### (b) C3 — the function that had never once worked, and the fixture that nearly hid it
+### (b) C3 — the function that had never once worked, and the fixture that nearly hid it
 
 `C_Redeem` is the only exit from hot recovery. It fed `are-fee-rts` — a summed *decimal* fee amount —
 straight into `(if are-fee-rts …)`. Pact's `if` requires a `:bool` and does not coerce a decimal
@@ -1943,7 +1943,7 @@ is still live today: `[6.6]_ATS.repl:524` asserts the early redeem paid *strictl
 value (proving a real fee was withheld, not just "didn't crash"), and `:611` asserts the matured
 redeem paid exactly full value. [V-read]
 
-#### (c) N3 — two admin functions that were dead on arrival, found only because someone wrote a test
+### (c) N3 — two admin functions that were dead on arrival, found only because someone wrote a test
 
 `P|A_Define` is the function each Talos module runs once at init to register itself as a permitted
 caller into every core module its admin functions must reach — one `(ref-P|<MODULE>::P|A_AddIMP mg)`
@@ -1970,7 +1970,7 @@ the record, not one.
 
 `3_Talos/01_TS01-A.pact:249-250` [V-read].
 
-#### (d) M2 — the finding whose premise was refuted, and which survived anyway
+### (d) M2 — the finding whose premise was refuted, and which survived anyway
 
 M2 (`#11M`) originally rested on the same "silent zero-mint donation" story as H3, which the audit
 had just **refuted**: an exact-`0.0` mint reverts the whole transaction atomically via
@@ -2006,7 +2006,7 @@ runs in production, with only the orthogonal virgin-pool gate inferred rather th
 [REPORTED] That coverage has since been replaced by real assertions: `modules/ATS.repl:956`
 `<<ATS-G9>>` refuses an owner-path KickStart above index 100.0. [V-read]
 
-#### (e) C5 — the owner worked out why the suspicious code was correct, and found the real gap underneath it
+### (e) C5 — the owner worked out why the suspicious code was correct, and found the real gap underneath it
 
 `C_HOT-RBT|UpdatePendingBranding` and `C_HOT-RBT|UpgradeBranding` wrapped themselves in
 `with-capability (ATS|GOV)` — the trivially-true "Simple vault" cap that C1 had just been refuted
@@ -2032,7 +2032,7 @@ the worked example. It is the same §14.7 that M2's KickStart fix then used.
 
 `08_ATS.pact:736` (core), `:746`, `:750` (leaves) [V-read].
 
-#### (f) N1 — the crash that was live on mainnet and had simply never been triggered
+### (f) N1 — the crash that was live on mainnet and had simply never been triggered
 
 `URC_MultiCull` returns an object on its "here's what's cullable" branch and a bare `[decimal]` on
 its "nothing cullable yet" branch. `XI_MultiCull` binds the result as `:object`. Any account calling
@@ -2064,9 +2064,9 @@ doesn't have any.
 
 ---
 
-### 2.5 What remains open
+## 2.5 What remains open
 
-#### Deliberately open
+### Deliberately open
 
 | item | state today | why |
 |---|---|---|
@@ -2075,7 +2075,7 @@ doesn't have any.
 | **`#20L` / L2** — `UR_P-KEYS`/`UR_KEYS` are raw `keys` scans under a `UR_` prefix | Repo-wide, off any client mutation path. | Owner: *"by design so far"*; belongs to the module rehaul, not a piecemeal ATS fix. |
 | **`#31L` / L13** — Talos/core naming asymmetry on `SetHotRecoveryFee(s)` | Left as-is. | Renaming cascades into a new interface version plus two citizen-module consumers plus a coordinated redeploy, for a cosmetic gain. |
 
-#### Closed as NOT A BUG, but a reader should know
+### Closed as NOT A BUG, but a reader should know
 
 - **`#4C` / C4 — the syphon lever is unbounded above `0.1` and has no timelock.** A pool owner can
   re-lower `syphon` at will and extract the great majority of a pool's commingled RT backing
@@ -2095,7 +2095,7 @@ doesn't have any.
   `UC_SplitByIndexedRBT`'s chain checks `index > 0` before calling in. Safe by construction today;
   safe by a construction that has been wrong before.
 
-#### Four fixes that were present in source with no witness — all four now closed
+### Four fixes that were present in source with no witness — all four now closed
 
 This is where the ATS tree was in materially worse shape than it looked, and the cause was mechanical
 rather than anyone's neglect.
@@ -2137,7 +2137,7 @@ The rest were already witnessed, and this chapter names the assertion for each: 
 > `<<UTIL-06>>`, the atspair name-length guard. They are `<<UTIL-03>>` and `<<UTIL-07>>`
 > respectively; every number above was re-resolved against the current files.
 
-#### One regression in the audit's own fix
+### One regression in the audit's own fix
 
 Fix #15's write-up states that it *"uncommented the `[6.5]_DPOF.repl`/`[6.6]_ATS.repl` load lines in
 `Stage01_Tester.repl`"*, and records that it found them disabled in that worktree — *"the same class
@@ -2167,7 +2167,7 @@ outlived the thing it described, and is indistinguishable from a true one from t
 > 2026-09-17" note retracting it in the same terms used here, and `DEFECT-LEDGER.md` §8.20 records
 > the fix. [V-read]
 
-#### Not re-verified for this chapter
+### Not re-verified for this chapter
 
 `#25L` (the `XI_Normalize` 16-branch trace), `#12M`, `#13M`, `#14M`, `#17M`, `#18M`, `#23L`, `#24L`
 and `#26L` were closed by tracing arguments that this chapter did not re-derive. Their verdicts are
@@ -2191,7 +2191,7 @@ Evidence labels are the same as Chapters 5 and 6: **[V-cmd]**, **[V-read]**, **[
 
 ---
 
-### 3.1 What the module does
+## 3.1 What the module does
 
 SWP is Ouronet's automated market maker — the thing that lets one token become another without a
 counterparty. It is eleven files, and unlike ATS or DALOS it is not one module with helpers; it is a
@@ -2234,7 +2234,7 @@ is exactly that case.
 
 ---
 
-### 3.2 How it was audited
+## 3.2 How it was audited
 
 **Round I — nine parallel deep-read passes over eleven files, read-only.** Same contract as its
 siblings: load `StoicSyntax.md` first, work read-only, assume nothing is correct despite being live
@@ -2311,7 +2311,7 @@ agrees with it, including on the one that was missing.
 
 ---
 
-### 3.3 The findings
+## 3.3 The findings
 
 **Counting, with the denominator stated.** Round I produced **71** findings (`#1C`–`#71L`: 13C, 12H,
 14M, 32L). Twelve more were added off-cycle afterwards — `#32bM`, `#34bM`, `#65bL`, `#65cL`, `#65dL`,
@@ -2323,7 +2323,7 @@ for their own denominator; none of them is "the number of findings" without sayi
 
 The table below follows the ranked order. Severity is as recorded.
 
-#### CRITICAL
+### CRITICAL
 
 | id | summary | verdict | evidence today |
 |---|---|---|---|
@@ -2344,7 +2344,7 @@ The table below follows the ranked order. Severity is as recorded.
 | `#12C` / C5 | `UEV_Issue` never checks individual genesis reserves `> 0` | **REFUTED** | Validated on every issuance path by the mandatory funding transfer itself (`C_MultiTransfer` → `XB_DebitTrueFungible` → `DPTF\|C>DEBIT` → `UEV_Amount`), just not inside `UEV_Issue`. The original trace stopped one defcap too shallow. [REPORTED] |
 | `#13C` / C6 | The routing graph's node set is narrower than its live edge set — paths of 4+ hops corrupted or silently lost | **FIXED** | `12_U_SWP.pact:993 UC_MakeGraphNodes` now builds from the full caller-supplied swpairs universe. [V-read] Adversarial repro: reverting only this function broke *pool issuance itself* (a 3-hop connectivity check failed), which is a stronger demonstration of reach than the finding claimed. [REPORTED] |
 
-#### HIGH
+### HIGH
 
 | id | summary | verdict | evidence today |
 |---|---|---|---|
@@ -2361,7 +2361,7 @@ The table below follows the ranked order. Severity is as recorded.
 | `#24H` / H1 | `UC_ComputeD`/`UC_ComputeY` use a fixed iteration count with no convergence check | **FIXED** | `12_U_SWP.pact:370-374`, `:445-446`, `:548` — all three bumped to 12 iterations, `@doc` at `:521-530` records the measurement: at 1000× skew `UC_ComputeD` at 6 iterations was **0.0078 short** and fully converged (bit-identical to a 255-iteration reference) by iteration 10; 12 gives 2 iterations of margin. Pact is Turing-incomplete, so a dynamic convergence break is not expressible. Cost measured: **+64 gas flat** per stable swap. [V-read] |
 | `#25H` / H8 | Asymmetric-deficit compensation never returned to the diluted pool's own LPs | **DESIGN** | Protocol-wide value capture (treasury / special targets / primordial-pool boost) is the intended model, not per-pool LP protection. [REPORTED] |
 
-#### MEDIUM
+### MEDIUM
 
 | id | summary | verdict | evidence today |
 |---|---|---|---|
@@ -2382,7 +2382,7 @@ The table below follows the ranked order. Severity is as recorded.
 | `#38M` / M4 | BFS graph-node lookup linear-scans on every pop (O(V²)), no size cap | **FIXED** | `13_U_BFS.pact:382 UCx_GraphNodeLinks` rewritten to a single `filter` pass. Measured on the real ~102-pool topology: byte-identical 7-hop route, **423,762 → 256,867 gas (~39%)**. [V-read/REPORTED] |
 | `#39M` / M14 | `ClientThreeV2`/`ClientPactsV2` overwritten in place instead of archived | **FIXED → SINCE DELETED → CLOSED AS SUPERSEDED** | **The only fix in this tree that is not present today.** See §3.4(d). [V-cmd] |
 
-#### LOW
+### LOW
 
 | id | summary | verdict | evidence today |
 |---|---|---|---|
@@ -2428,9 +2428,9 @@ The table below follows the ranked order. Severity is as recorded.
 
 ---
 
-### 3.4 Six findings worth the telling
+## 3.4 Six findings worth the telling
 
-#### (a) `#7C` / C3 — the rounding bias that was not a rounding bug
+### (a) `#7C` / C3 — the rounding bias that was not a rounding bug
 
 Two independent auditors reported the same thing: all six swap formulas round toward the trader
 rather than the pool, giving a repeatable fee-free round-trip profit. Numeric simulation confirmed
@@ -2462,7 +2462,7 @@ limitation of the underlying language, not tracked as an open bug."*
 That is the right way to leave something open. The alternative — quietly fixing the stable half and
 marking C3 "FIXED" — would have made the tracker look cleaner and the system less understood.
 
-#### (b) `#21H` / H3 — the finding that was answered by deleting the concept, not the bug
+### (b) `#21H` / H3 — the finding that was answered by deleting the concept, not the bug
 
 `SWPT` maintained a routing graph keyed by *principal token*. Remove a principal and every Tracer
 entry filed under it was orphaned, with no resync path. The natural fix is a resync function.
@@ -2494,7 +2494,7 @@ That last move is worth naming: *"we proved it can't break, and we removed the a
 a defensible position, and the tree records both halves rather than presenting the second as though
 it repaired the first.
 
-#### (c) `#26M` / M9 — the guard that punished the user for good luck
+### (c) `#26M` / M9 — the guard that punished the user for good luck
 
 `SWPU`'s slippage protection bound the output on **both** sides: a minimum *and* a maximum. A
 maximum means a swap reverts because the price moved **in the user's favour** between quote and
@@ -2516,7 +2516,7 @@ is deliberately allowed. So `19_SWPU.pact`'s `(>= feeless-final min)`, which the
 *"the real protection this whole check exists for"*, was asserted nowhere. Part III's `RT-A-004`
 closed that. [REPORTED — `DEFECT-LEDGER.md` §8.3]
 
-#### (d) `#39M` / M14 — the fix a later sweep deleted, and why the deletion was right
+### (d) `#39M` / M14 — the fix a later sweep deleted, and why the deletion was right
 
 M14 was small: the historical interfaces `TalosStageOne_ClientThreeV2` and `ClientPactsV2` had been
 *overwritten in place* rather than archived, unlike the sibling `ClientFour` block in the same file.
@@ -2564,7 +2564,7 @@ interfaces are absent tree-wide] This chapter records it as the tree's one delet
 the deletion was wrong, but because a reader checking this audit's claims will find a `FIXED` verdict
 whose artefact is gone, and deserves to know which of the two possible reasons applies.
 
-#### (e) `#32M` / M11 — the verdict whose premise was retracted, and sat for three weeks
+### (e) `#32M` / M11 — the verdict whose premise was retracted, and sat for three weeks
 
 This is the case the book's own front matter is describing when it says a reachability claim needs
 re-checking.
@@ -2639,7 +2639,7 @@ is that step 1 charges and that step 2's first and only obstacle at `p=true` is 
 That a caller who cannot satisfy it therefore pays and is refused is **one inference step**, not a
 measurement. Closing it needs a non-Demiurgoi account that owns a DPTF.
 
-#### (f) `#73C`'s twin — the follow-up that was filed, not chased, and was worth 38%
+### (f) `#73C`'s twin — the follow-up that was filed, not chased, and was worth 38%
 
 `MERGE-HANDOFF.md` closed the SWP branch with a section headed *"The one item genuinely worth a look,
 not just deferred by design"*:
@@ -2704,9 +2704,9 @@ matching order. [REPORTED — §8.1]
 
 ---
 
-### 3.5 What remains open
+## 3.5 What remains open
 
-#### Open by design, and material
+### Open by design, and material
 
 | item | state | why |
 |---|---|---|
@@ -2717,7 +2717,7 @@ matching order. [REPORTED — §8.1]
 | **`#33M` / M12** — explicit rollback costs more than silent abandonment | **Design, now measured.** | 53.00 IGNIS extra, nothing refunded. For the AddLiquidity family this is a ruled anti-spam design; the `MTX\|C_Issue` instance has no such ruling but is small next to what M11 was charging. [REPORTED] |
 | **`#4C` / C4-equivalent trust levers** | — | `#30M` (one-phase ownership transfer), `#60L` (fee attribution), `#48L` (magic constants) are all closed as design with client-side or owner-side mitigations. None is a defect; all are trust assumptions a reader should be able to see. |
 
-#### Latent, found but not chased
+### Latent, found but not chased
 
 - **`URCx_PrimordialValueAndOuroSupply` hard-codes reserve order.** `0=SSTOA, 1=OURO, 2=WSTOA`,
   while the defining capability checks only membership and length. A primordial pool issued with the
@@ -2730,7 +2730,7 @@ matching order. [REPORTED — §8.1]
   `LQ|INITIATION-FEE` in step 0 as anti-spam. `GAS_PAYER` Case 1 whitelists the `ouronet-ns.TS…`
   prefix, so the station pays it. [REPORTED — §8.4]
 
-#### Tagged-for-sweep items that have since been done
+### Tagged-for-sweep items that have since been done
 
 Four LOW findings were deferred to a protocol-wide StoicSyntax pass rather than fixed piecemeal. That
 pass ran, and all four are closed, though the SWP tracker was never updated to say so:
@@ -2747,7 +2747,7 @@ versions ahead of where the audit left it — `UtilitySwpV2`, `BreadthFirstSearc
 `SwapperV4`, `SwapperIssueV4`, `SwapperLiquidityV2`, `SwapperLiquidityClientV2`, `SwapperUsageV3`,
 `SwapperMtxV4`, `TalosStageOne_ClientThreeV4`, `TalosStageOne_ClientPactsV4`. [V-cmd]
 
-#### Fix presence, re-checked
+### Fix presence, re-checked
 
 Part III re-verified all 42 SWP fixes against current source and found **41 present, 1 not found**
 (M14). [REPORTED — `DEFECT-LEDGER.md` §8.2] This chapter independently spot-checked **32** of them by
@@ -2786,7 +2786,7 @@ suite rather than into scratch harnesses is why eight of the nine are alive. `01
 counter-example that shows the filing decision has to be re-checked, not assumed — a file can be a
 canonical suite file and still be outside the gate.
 
-#### Three ordering observations from the re-verify, still open
+### Three ordering observations from the re-verify, still open
 
 Part III's SWP re-verify independently found `CAP_Owner` sitting **after** the business check in
 `SWP|C>ENABLE-FROZEN`, `C>ENABLE-SLEEPING`, `C>ADD-OR-SWAP`, `S>WEIGHTS`, `S>RT_CAN-CHANGE` and
@@ -2817,7 +2817,7 @@ check lives in the capability it has not acquired yet. [REPORTED — §8.2]
 
 ---
 
-### 1. What DPDC is, and what breaks if it breaks
+## 1. What DPDC is, and what breaks if it breaks
 
 DPDC — *Digital Property / Deed Collectable* — is Ouronet's NFT and SFT stack. Where `DPTF` handles
 plain fungible tokens and `DPOF` handles metadata-carrying "ortofungibles", DPDC handles the two
@@ -2856,7 +2856,7 @@ Some of this code is **live on StoaChain**. That is not a hypothetical audit.
 
 ---
 
-### 2. How it was audited
+## 2. How it was audited
 
 The tree records five documents and one honest gap. The real sequence was:
 
@@ -2888,7 +2888,7 @@ uncaught until an audit-of-the-audit. Four things had to happen in the same turn
 reached: feedback entry, tracker row, `ISSUES-RANKED` annotation, and — if code changed — a numbered
 fix entry with its proof.
 
-#### The method's one real discipline
+### The method's one real discipline
 
 Findings were proved by **reverting the fix and re-running** (`git stash`), so the pre-fix bug shape
 was observed rather than assumed. `FINAL-AUDIT-REPORT.md` names eleven: C1, C7, H1, H2, H5, H8, H11,
@@ -2902,14 +2902,14 @@ confirmed **byte-identical on mainnet** through a keyless Pythia dirty-read agai
 `ouronet-ns.DPDC-S` (hash `Qslr8IXA10HEYsiHPnjvvCy4hYNIh3bfPQvD7w5QEoU`). The feature had never
 worked in production, and the audit could say so with a hash rather than a guess.
 
-#### Round III never happened
+### Round III never happened
 
 `README.md` names a Round III re-verify and says *"(not yet created)"*. It was not created. The
 `FINAL-AUDIT-REPORT.md` closes the audit on Round II plus `Z.repl` green. **The DPDC audit is a
 two-round audit that planned a third.** Everything below is verified against current source by this
 chapter, which is the closest thing the tree has to the Round III that was skipped.
 
-#### New test coverage built
+### New test coverage built
 
 Three canonical integration suites, all wired into the live `Stage02_Tester.repl` pipeline rather
 than written and left disconnected [VERIFIED by command — `Stage02_Tester.repl` lines 38, 41, 45]:
@@ -2927,7 +2927,7 @@ print-only. That is worth stating plainly: the prior coverage was not thin, it w
 
 ---
 
-### 3. The findings
+## 3. The findings
 
 Severity is as **recorded by the audit**. Verdict is as closed by the audit. The evidence column is
 **this chapter's** verification — what, in current source as of 2026-09-17, would have to be deleted
@@ -2935,7 +2935,7 @@ for the finding to come back.
 
 Line numbers drift. Every citation below was resolved fresh on 2026-09-17.
 
-#### CRITICAL (8)
+### CRITICAL (8)
 
 | id | summary | verdict | evidence today |
 |---|---|---|---|
@@ -2948,7 +2948,7 @@ Line numbers drift. Every citation below was resolved fresh on 2026-09-17.
 | **#7C** | `C_UpdateSetMultiplier` crashes on every call — a `let` type annotation bug. Confirmed on mainnet | **FIXED, then removed entirely** | Function deleted by #15H. `08_DPDC-S.pact:99` and `:1143` carry removal notes; Talos wrappers removed at `01_TS02-C1.pact:148/1190`, `02_TS02-C2.pact:145/1041`. [VERIFIED by command — 0 live definitions tree-wide] |
 | **#8C** | `how-many-sets` unbounded on Make/Break | **FIXED** | `08_DPDC-S.pact:323` and `:338` — `(enforce (> how-many-sets 0) …)` in both `C>MAKE` and `C>BREAK`. [VERIFIED by reading] |
 
-#### HIGH (14 + 2 sub-findings)
+### HIGH (14 + 2 sub-findings)
 
 | id | summary | verdict | evidence today |
 |---|---|---|---|
@@ -2969,7 +2969,7 @@ Line numbers drift. Every citation below was resolved fresh on 2026-09-17.
 | **#21H** | `score-multiplier` unvalidated at Define, checked at Update | **ALREADY CLOSED by #15H** | Subsumed by the fix chain above. |
 | **#22H** | EQUITY — the entire financial-instrument module had zero test coverage | **FIXED** | `REPL/Stage_02/[6.1.1]_EQUITY.repl`, wired at `Stage02_Tester.repl:38`. [VERIFIED by command] |
 
-#### MEDIUM (16)
+### MEDIUM (16)
 
 | id | summary | verdict | evidence today |
 |---|---|---|---|
@@ -2990,7 +2990,7 @@ Line numbers drift. Every citation below was resolved fresh on 2026-09-17.
 | **#37M** | `UDC_ZeroNonceData` called cross-module through a typed ref but absent from that interface | **FIXED, +3 more** | `01_DPDC-UDC.pact:273`; sweep found `CAP_OwnerOrCreator` (`02_DPDC.pact:221`), `UEV_CanWipeON` (`:193`), `C_DefineHybridSet` (`08_DPDC-S.pact:127`). [VERIFIED by reading] |
 | **#38M** | `UDC_NoPrimordialSet`/`NoCompositeSet` sentinels indistinguishable from real data | **ALREADY CLOSED** | Primordial `[0]` blocked by #31M's per-element bound; Composite `-1` by the `sc > 0` check. Both present. [VERIFIED by reading] |
 
-#### LOW (17 + 1 unnumbered)
+### LOW (17 + 1 unnumbered)
 
 | id | summary | verdict | evidence today |
 |---|---|---|---|
@@ -3022,12 +3022,12 @@ repeated as published.
 
 ---
 
-### 4. Seven findings worth the retelling
+## 4. Seven findings worth the retelling
 
 These are chosen for what they teach, not for severity. Four of them start with a hypothesis that was
 **wrong**.
 
-#### 4.1 #1C — the fix was one function, because the bug was one function
+### 4.1 #1C — the fix was one function, because the bug was one function
 
 The finding read like eleven bugs. A negative `amount` passed to `DPDC-T::C_Transfer` inverts the
 sign of a credit into a debit; the same hole is reachable through fragments (#3C), through hybrid
@@ -3055,7 +3055,7 @@ grepping for `> 0` would conclude the fix was weakened. It was made correct.
 
 **Verified 2026-09-17:** `03_DPDC-C.pact:594`, called at `:1086`. [VERIFIED by reading]
 
-#### 4.2 #2C — refuted twice, hardened anyway, and the hardening is the point
+### 4.2 #2C — refuted twice, hardened anyway, and the hardening is the point
 
 Reported as a CRITICAL drain: `C_IgnisRoyaltyCollector` debits a caller-named `patron`'s IGNIS
 balance with no authorisation check anywhere in the chain. Name someone else's smart account, collect
@@ -3080,7 +3080,7 @@ naming someone else's account is rejected at the new line with a keyset failure.
 `UEV_EnforceAccountType sender false` at `:395` that the refutation rested on. **Both are present** —
 the refutation's premise and the belt-and-braces fix. [VERIFIED by reading]
 
-#### 4.3 #5C → Fix #19 — the fix that broke EQUITY, and the test that found it
+### 4.3 #5C → Fix #19 — the fix that broke EQUITY, and the test that found it
 
 #5C: nothing stopped a collection owner from freezing and wiping the protocol's own `dpdc` escrow
 account, destroying the collateral behind every outstanding fragment claim. Fix #3 added one check to
@@ -3107,7 +3107,7 @@ audit did not discover this by re-reading its own fix.
 **Verified 2026-09-17:** `06_DPDC-MNG.pact:439-470`. The narrowed form is present, the reasoning is
 in the source comment, and the deploy-order constraint is recorded there too. [VERIFIED by reading]
 
-#### 4.4 #15H — a bound, then immutability, then a *tighter* bound, and the reason for each
+### 4.4 #15H — a bound, then immutability, then a *tighter* bound, and the reason for each
 
 The finding was ordinary: a set-class `score-multiplier` with no bound, retroactively re-pricing every
 outstanding member of a set instantly (the same shape as the SWP audit's `C_ModifyWeights`).
@@ -3142,7 +3142,7 @@ load-bearing today in a way it was not when it was written.
 **Verified 2026-09-17:** `08_DPDC-S.pact:1031-1047` (the bound), `:99`/`:1143` and the four Talos
 sites (the removal), `02_SCORE.pact:2131-2134` (the consumer). [VERIFIED by reading]
 
-#### 4.5 #35M — removing the function was the fix, and the removal broke the launchpad
+### 4.5 #35M — removing the function was the fix, and the removal broke the launchpad
 
 `XBv_DeployAccountSFT`/`NFT` associate an account with a collection, and never check the caller
 controls the target account. Any signer could force any account to associate with any collection.
@@ -3177,7 +3177,7 @@ definition of either removed function remains. [VERIFIED by command]
 > `XBv_DeployAccountSFT` / `XBv_DeployAccountNFT` (`02_DPDC.pact:229`, `:1342`). The unprefixed
 > names have zero hits.
 
-#### 4.6 #19H — one check at the entry, not four checks in four branches
+### 4.6 #19H — one check at the entry, not four checks in four branches
 
 `UR_N|Score` is the public "cooked" score reader. DPDC stores `-1.0` as the *unscored* sentinel, and
 the reader is supposed to clamp it to `0.0`. It did — in one of its four arithmetic branches. The
@@ -3202,7 +3202,7 @@ time, so nothing needed updating.
 **Verified 2026-09-17:** `08_DPDC-S.pact:554-570`. The sentinel test is the first form inside the
 `let` body, on `raw-nonce-score`, before either branch. [VERIFIED by reading]
 
-#### 4.7 #33M — the refutation whose own first assumption was wrong
+### 4.7 #33M — the refutation whose own first assumption was wrong
 
 `UDC_Makeid` derives a collection id from `prev-block-hash`, a block-level constant identical for
 every transaction in a block. Two same-ticker issuances in one block collide, and the second aborts
@@ -3227,14 +3227,14 @@ recorded as accepted-by-design rather than as fixed.
 
 ---
 
-### 5. What later rounds found in DPDC that this audit did not
+## 5. What later rounds found in DPDC that this audit did not
 
 The DPDC audit closed in August 2026. Two later programmes — the guard-reachability round and the
 red-team round — went back over the same modules. What they found is not a criticism of this audit
 so much as a demonstration that **reading a call chain to decide what refuses first is unreliable**,
 which is this book's first rule.
 
-#### The guards this audit added, that could not speak
+### The guards this audit added, that could not speak
 
 `#8C`'s fix put `(enforce (> how-many-sets 0) …)` inside `DPDC-S|C>MAKE`. Correct check, correct
 capability. It sits in the `let` body, and the `let` binds `(iz-active (UR_IzSetActive …))`, which
@@ -3269,7 +3269,7 @@ could reach. The audit's own careful `expect-failure` proofs did not catch them,
 drives a guard from a state where it *can* fire proves the guard works and says nothing about the
 states where it cannot.
 
-#### #42L was deferred, and the red team partly closed it
+### #42L was deferred, and the red team partly closed it
 
 `#42L` — *no REPL coverage exercises the ownership gate's negative path for any of the 12 role
 functions* — was deferred to a planned suite refactor. It was the finding the audit itself called
@@ -3293,7 +3293,7 @@ command, 2026-09-18 — this said "67 KB"; the file is 71,491 bytes]
 
 **#42L is therefore partly closed, by a different programme, and its deferral stands for the rest.**
 
-#### The exec diagnosis bug behind a preview
+### The exec diagnosis bug behind a preview
 
 `RT-K-004` went after `INFO_DPNF|Burn` and found the preview died on a raw properties read. The
 *exec* turned out to be worse: `DPDC-MNG|C>BURN-NFT` checked the burn **role** before establishing the
@@ -3303,7 +3303,7 @@ and the preview calls the same function.
 
 ---
 
-### 6. What remains open
+## 6. What remains open
 
 Four findings were deferred, deliberately and with reasons. None is a correctness gap; all four are
 coverage or discipline items folded into larger planned work.
@@ -3343,7 +3343,7 @@ positions and not oversights:
 
 ---
 
-### 7. Verification result for this chapter
+## 7. Verification result for this chapter
 
 Every finding recorded as FIXED was searched for in current source on 2026-09-17.
 
@@ -3415,7 +3415,7 @@ without one is indistinguishable from ordinary code the moment its line number m
 
 ---
 
-### 1. What DEMIPAD is, and what breaks if it breaks
+## 1. What DEMIPAD is, and what breaks if it breaks
 
 DEMIPAD is Ouronet's launchpad: the venue where Demiourgos.Holdings sells assets to the public. It is
 **permissioned** — not anyone can list — which matters for several of the verdicts below, because the
@@ -3445,7 +3445,7 @@ whoever asks first.
 All three of those were found here. So was a sale module that had been copied from its twin and
 half-wired.
 
-#### Where these modules live now
+### Where these modules live now
 
 The audit's single most consequential outcome was **not a code fix**. Finding #15L asked why several
 `C_` entrypoints lacked `UEV_IMC`, the sovereign inter-module gate. The answer was that they should
@@ -3470,14 +3470,14 @@ append-only record and a trap for a reader.
 
 ---
 
-### 2. How it was audited, and what the tree does not contain
+## 2. How it was audited, and what the tree does not contain
 
 The DEMIPAD audit is **792 lines across four files**. The DPDC tree is 5,093 and the AQP tree is
 4,233 across 14 files (it was 4,112 across 13 when this chapter was written — `RPS-SPLIT-SCOPING.md`
 landed 2026-09-17). This chapter is shorter than its neighbours because its source is, and padding
 it would misrepresent the coverage.
 
-#### What was run
+### What was run
 
 `README.md` describes a five-step method, and steps 1–2 are the part that distinguishes this audit
 from its siblings:
@@ -3502,7 +3502,7 @@ settle-before-score ordering and `last-rps` snapshot-after (so a late staker can
 injects), the over-unstake block, and the `open-for-business` enforcement path. A negative result
 recorded is worth more than a negative result assumed.
 
-#### What the tree does not contain
+### What the tree does not contain
 
 Being specific about this is the point of the section:
 
@@ -3528,7 +3528,7 @@ gate and watched 1,568 urSTOA be minted twice.
 That is a higher bidirectional-proof rate than either neighbouring audit, in a quarter of the
 documentation. **The tree is thin; the work in it is not.**
 
-#### One live-vs-workspace check that changed a finding into a non-finding
+### One live-vs-workspace check that changed a finding into a non-finding
 
 Finding **#11M** deserves separate mention as method. The audit measured StoicPay's team-split
 accounting against the **workspace** copy of `04_STOICPAY.pact` and derived a real inconsistency: the
@@ -3548,7 +3548,7 @@ produces a confident, wrong finding.
 
 ---
 
-### 3. The findings
+## 3. The findings
 
 All 17, in the audit's own ranking. Severity as recorded; evidence as verified 2026-09-17.
 
@@ -3574,9 +3574,9 @@ All 17, in the audit's own ranking. Severity as recorded; evidence as verified 2
 
 ---
 
-### 4. Five findings worth the retelling
+## 4. Five findings worth the retelling
 
-#### 4.1 #1C — the vault that paid the whole balance to whoever called last
+### 4.1 #1C — the vault that paid the whole balance to whoever called last
 
 Four of the six lenses found it independently, which is the strongest corroboration signal in the
 tree.
@@ -3626,7 +3626,7 @@ family are present in `2_CITIZEN/7_Launchpad/5_StoicIco/05_STOAICO.pact`. [VERIF
 
 **And it was not the end of the story.** See §5.
 
-#### 4.2 #2H — a promise in a `@doc` that the code never made
+### 4.2 #2H — a promise in a `@doc` that the code never made
 
 `00_Demipad.pact`'s documentation promises buyers: *"if `retrieval = false` the only way to retrieve
 Assets is a buy."* That is the launchpad's anti-rug guarantee. Deposited inventory is locked in;
@@ -3659,7 +3659,7 @@ or an admin re-enable."* It is worth knowing that the inner string will never be
 **Verified 2026-09-17:** `00_Demipad.pact:412-419`, composed at `:477`, `:482`, `:487`, `:492`.
 [VERIFIED by reading]
 
-#### 4.3 #3H + #4H — the half-wired twin, and why fixing one alone would have crashed
+### 4.3 #3H + #4H — the half-wired twin, and why fixing one alone would have crashed
 
 Custodians is a copy of Snakes. It is not a finished copy, and the audit's cross-cutting note says so
 plainly: *"Custodians is a half-wired copy of Snakes — the whole module needs a line-by-line reconcile
@@ -3688,7 +3688,7 @@ identifier and capturing `Unbound free variable … DEMIPAD.GOV|LAUNCHPAD|SC_NAM
 
 **Verified 2026-09-17:** `03_Custodians.pact:496-499` and `:302-303`. [VERIFIED by reading]
 
-#### 4.4 #8M — the stub had to be unreachable, not silent
+### 4.4 #8M — the stub had to be unreachable, not silent
 
 `direct-injection` is an **unbuilt feature**. In `C_Deposit`, with the flag true, the inbound token
 transfer became a no-op — no tokens entered the shared launchpad account — while the seller-ledger
@@ -3721,7 +3721,7 @@ failure, got result: true"*.
 **Verified 2026-09-17:** `00_Demipad.pact:1208-1216`, composed at `:580`. The `@doc` records the whole
 reasoning, including what the reserved state is for. [VERIFIED by reading]
 
-#### 4.5 #17L — the fix that was correct and lasted one day
+### 4.5 #17L — the fix that was correct and lasted one day
 
 `URCI_Acquire` installs capabilities so a buyer can pay without pre-signing transfer caps. The finding
 had two halves. The first — *the interface omits it, so cross-module calls "don't resolve"* — was
@@ -3753,9 +3753,9 @@ most likely place for a future reader of this tree to draw a wrong conclusion.
 
 ---
 
-### 5. What later rounds found, including one thing this audit built and got wrong
+## 5. What later rounds found, including one thing this audit built and got wrong
 
-#### The #1C fix was correct, and the reader underneath it was not
+### The #1C fix was correct, and the reader underneath it was not
 
 The red-team round came back to STOAICO on 2026-09-14 and attacked the dust sweep from the other side.
 `DEFECT-LEDGER.md` §1.1d records it as **GS-06**.
@@ -3798,7 +3798,7 @@ defect un-exploitable. But **#1C's own description of the root cause named the r
 changed. The audit fixed the capability and the counter, which closed the attack, and left the
 mis-derived number in place. Sixteen days later it was still lying to every preview.
 
-#### And the sibling it was ported from had the same shape, worse
+### And the sibling it was ported from had the same shape, worse
 
 The same session found **GS-08** in AQP: `AQP-RPS::URC_CollectClaimableRewards` had the identical
 counter-only sweep branch — and there, no `last-collected-round` stamp exists. A fully-exited account
@@ -3810,7 +3810,7 @@ Both are ports of the Stoa `coin` UrStoa vault, whose comments the code still ca
 and the repair is preserved in genesis with the pre-fix version commented out directly above it. **The
 caller conjunct was dropped in both ports.**
 
-#### The verdict on #13L rests on a premise that a sibling counter later failed
+### The verdict on #13L rests on a premise that a sibling counter later failed
 
 **#13L** — *`unclaimed-count`/`nzs-count` have no lower bound* — was declined, and the reasoning was:
 *use the canonical AQP implementation, verified bug-free — no clamp.* AQP's `WU_Score|NzsCount` updates
@@ -3835,7 +3835,7 @@ AQP-RPS guard was `deb == 0` with no membership test.
 by the round stamp #1C added, plus the flush's uncollected-only walk. But the **form** of the argument
 should be read with care.
 
-#### Every citizen launchpad preview quoted a purchase it would refuse
+### Every citizen launchpad preview quoted a purchase it would refuse
 
 **RT-K-006** found that Spark, Snakes, Custodians and StoicPay all price through
 `DEMIPAD::URCi_Deposit`, and the amount check lived **inline in `DEMIPAD|C>DEPOSIT`**, where no reader
@@ -3853,7 +3853,7 @@ other buyers act and a preview should not validate what the caller cannot contro
 August; the red team found in September that the *quote* the buyer reads before signing did not share
 the execution path's arithmetic guards. A guard in one of two paths is half a guard.
 
-#### Two guard-reachability defects in the launchpad core
+### Two guard-reachability defects in the launchpad core
 
 `DEFECT-LEDGER.md` §1.2.1 records `G-05`, and calls it *"the clearest instance"* of the eager-`let`
 class in the codebase. The message *"Asset … is not registered to the Demiourgos Lauchpad"*
@@ -3872,7 +3872,7 @@ rather than repaired.
 
 ---
 
-### 6. What remains open
+## 6. What remains open
 
 **Two WONTFIX verdicts**, both argued rather than waved away:
 
@@ -3908,7 +3908,7 @@ buyer signs. The on-chain code holds no poll-time baseline to recover a percenta
 
 ---
 
-### 7. Verification result for this chapter
+## 7. Verification result for this chapter
 
 Every fix recorded as FIXED was searched for in current source on 2026-09-17.
 
@@ -3965,7 +3965,7 @@ Part I.*
 
 ---
 
-### 1. What AQP is, and what breaks if it breaks
+## 1. What AQP is, and what breaks if it breaks
 
 AQP is Ouronet's **staking and reward engine**. A user stakes an asset — a fungible token, an LP
 token, an ortofungible, a semi-fungible or an NFT — into a *pool*; the stake is converted into a
@@ -4003,9 +4003,9 @@ by a different round, are the same thing again.
 
 ---
 
-### 2. How it was audited
+## 2. How it was audited
 
-#### The declared cycle, and the one round that did not happen
+### The declared cycle, and the one round that did not happen
 
 `README.md` lays out an append-only cycle: **Round I findings** (frozen) → **Round I owner feedback**
 (frozen) → **Round II fixes** (sequential, one at a time, each green-lit) → **Round III re-verify**
@@ -4021,7 +4021,7 @@ fix *should* have and does not. Fix #7 (H1) names two. Fix #8 (H5) names two. Fi
 full negative test for its own lock. Those are not oversights; they are a deliberately maintained
 backlog for a round that was never run.
 
-#### Round I
+### Round I
 
 One deep-read auditor per module, five modules, ~15,300 lines. The two CRITICALs and M6 were
 **lead-verified against code** before being written up, which is why `ROUND-01-FINDINGS.md` tags each
@@ -4036,7 +4036,7 @@ score changes, checkpoint **after**); VCT's fully-bound TF vacate and on-chain g
 section is the sign-off backbone, and it is where the audit stated, of VCT, that *"discipline
 [is] exemplary"*. Section 5 of this chapter records what a later round found in VCT.
 
-#### Round I feedback — where the owner changed the work
+### Round I feedback — where the owner changed the work
 
 `ROUND-01-OWNER-FEEDBACK.md` is 97 lines and unusually consequential. Five findings were converted
 from bugs into **StoicSyntax rules** (`R1`–`R5`) rather than fixed:
@@ -4060,7 +4060,7 @@ The feedback file closes with an owner note that is the most honest thing in the
 > **The AQP modules grew too complex to hold entirely in one human's head, which is why this audit was
 > delegated.**
 
-#### Round II — 25 numbered fixes, plus the design documents
+### Round II — 25 numbered fixes, plus the design documents
 
 `ROUND-02-FIXES.md` is 1,057 lines and carries **23** `## Fix #` headings (26 `##` headings in all).
 What distinguishes it from the DPDC tree is that **five findings were too large to fix and produced
@@ -4086,7 +4086,7 @@ tabled below plus `DSA-DELEGATED-STAKING-DESIGN.md`, which this chapter's own §
 That is the real shape of this audit: **a third of it is architecture, not repair.** Section 6 reports
 which claims in those documents are still true.
 
-#### The proof standard
+### The proof standard
 
 The tree records green-gates at three levels: a **golden** triplet-collect suite, the fast `Z.repl`,
 and — unique to AQP — `bash REPL/run-aqp-audit.sh`, a comprehensive multi-suite run. At the time it
@@ -4110,20 +4110,20 @@ And one Pact gotcha that cost time and is worth passing on: **`select` is disall
 
 ---
 
-### 3. The findings
+## 3. The findings
 
 33 tracked rows. Severity as recorded; evidence as verified 2026-09-17. Note that `04_FVT.pact` was
 split into `04_RPS.pact` + `05_FVT.pact` and `05_VCT.pact` renumbered to `06_VCT.pact` after this
 audit, so the audit's own file references no longer resolve.
 
-#### CRITICAL (2)
+### CRITICAL (2)
 
 | id | summary | verdict | evidence today |
 |---|---|---|---|
 | **C1** | OF/DPSF/DPNF vacate legs are not bound to staked rows — five validators defined and never wired; a pool owner could name any victim's nonce | **FIXED** | `06_VCT.pact` — all five now appear 2–4× (definition **plus** call sites): `URC_VacateOrtoLegBeneficiaryOk`, `…OrtoNoncesSufficient`, `…CollectableLegBeneficiaryOk`, `…CollectableNoncesSufficient`, `…CollectableRollupSufficient`. [VERIFIED by command] |
 | **C2** | Farm inject divisor captured **before** the in-transaction ghost-TVL sync → over- or under-distribution, vault insolvency | **FIXED** | `04_RPS.pact:4477-4483` — the denominator is bound *inside* `XI_DistributeInjectAmount`, after the sync, via `URC_FarmInjectDenominatorFresh` for farms. [VERIFIED by reading] |
 
-#### HIGH (6, including one discovered mid-fix)
+### HIGH (6, including one discovered mid-fix)
 
 | id | summary | verdict | evidence today |
 |---|---|---|---|
@@ -4134,7 +4134,7 @@ audit, so the audit's own file references no longer resolve.
 | **H5** | Triplet Tier-2 divisor runs an unbounded `select` on the hot path — O(stakers) per stake/collect/inject | **FIXED** | `04_RPS.pact:431` `total-lane-weight` (the maintained divisor) and `:386` `contrib-weight` (the matching per-user snapshot); `URD_UserScoreStakerAccounts` deleted from SCORE. [VERIFIED by reading] |
 | **S4** | *(surfaced by H5)* triplet reward math branches on **FVT class** instead of the true-triplet flag → numerator/divisor basis mismatch | **FIXED** | Branches on `UR_SCR|TripletTrueTriplet` (any class): true → lanes, non-true → Σ-deb. |
 
-#### MEDIUM (7)
+### MEDIUM (7)
 
 | id | summary | verdict | evidence today |
 |---|---|---|---|
@@ -4146,7 +4146,7 @@ audit, so the audit's own file references no longer resolve.
 | **M6** | TF anchor promile is pro-rated; the README documents a whole-step model with a 1000 cap | **DOC-FIX + new guard** | Code was right. `01_ANK.pact:1617-1619` `UEV_Promile` — precision exactly 3, promile in `[1, 10000]`. [VERIFIED by reading] |
 | **M7** | *(ATSU)* `C_Coil`/`C_Curl` revert when a tiny input's pool-index conversion rounds below token precision | **REFUTED — by design** | A precision artefact; amounts within ~1 ulp of maximum precision are unusable for Coil/Curl by design. |
 
-#### LOW (10)
+### LOW (10)
 
 | id | summary | verdict | evidence today |
 |---|---|---|---|
@@ -4161,14 +4161,14 @@ audit, so the audit's own file references no longer resolve.
 | **L9** | Dead `VACATE-MAX-LEGS = 16` + an unused parity helper | **DEFERRED, then removed** | Both gone. [VERIFIED by command — 0 hits tree-wide] |
 | **L10** | `CC_Collect` settles the member Tier-2 twice | **DONE** | Already resolved by M3's redesign; three orphaned functions deleted. [VERIFIED by command — `XI_CollectRpsPreScore`, `XI_1|CollectSettleAndBank`, `URDC_BuildCollectScorePlan` all absent] |
 
-#### New findings raised during Round II (2)
+### New findings raised during Round II (2)
 
 | id | summary | verdict |
 |---|---|---|
 | **N1** | The comprehensive suite's "negative payout" and "over-accumulate" failures | **RESOLVED — no core bug, three *test-layer* defects**: a driver double-loading a suite that self-loads, two assertions testing an absolute value where a delta was meant, and one coincidental pass |
 | **N2** | The enforced-fresh inject was excluded from farms on an incomplete rationale | **DONE** — the `class ≠ 0` guard's reasoning (*"farms use a fresh denominator"*) covered only the farm Tier-1 `S`; the Tier-2 `L_i` divisor is stale-able for singular and non-true-triplet members, which a **mosaic farm** hits |
 
-#### The vacate rehaul's own findings (6)
+### The vacate rehaul's own findings (6)
 
 Raised by an owner-requested adversarial review *after* the single-transaction agnostic vacate shipped.
 They sit inside H4 phase 4 and change no verdict above.
@@ -4184,9 +4184,9 @@ They sit inside H4 phase 4 and change no verdict above.
 
 ---
 
-### 4. Seven findings worth the retelling
+## 4. Seven findings worth the retelling
 
-#### 4.1 C1 — five validators, written, correct, and connected to nothing
+### 4.1 C1 — five validators, written, correct, and connected to nothing
 
 The TF vacate path binds every leg to a real staked row: `URC_VacateTfLegsOk` →
 `URC_VacateTfLegBalancesOk` enforces `amount > 0`, `amount == staked-bal(owner, beneficiary)`, and
@@ -4217,7 +4217,7 @@ The fix is exactly what the finding said: wire the five, as TF already does.
 **Verified 2026-09-17** by the same method that found it — an occurrence count. All five now appear
 2–4 times in `06_VCT.pact`, and `URC_VacateTfLegsOk` still appears twice. [VERIFIED by command]
 
-#### 4.2 H1 — the fix that broke the exit, and the redesign that replaced it
+### 4.2 H1 — the fix that broke the exit, and the redesign that replaced it
 
 The finding: an LP position's **value** — its lp-denominator equivalent at *current* SWP reserves — is
 stored as the user's persistent base score, and reversed on unstake at the *then*-current reserves.
@@ -4264,7 +4264,7 @@ legitimate transient negatives survive.
 should become fully transient. Both are gas/purity questions, not correctness ones — the C2 fix
 already makes the current shape conserve.
 
-#### 4.3 H5 — deleting a scan without breaking conservation
+### 4.3 H5 — deleting a scan without breaking conservation
 
 `URC_FarmTripletTier1Denominator` ran a full `select` over `SCR|T|UserScore`, mapped over **every**
 staker in the pool, and re-derived each staker's lane weight **live** — on every stake, every collect
@@ -4310,7 +4310,7 @@ That property was already system-wide, and cataloguing it is what produced
 **Verified 2026-09-17:** `04_RPS.pact:431` and `:386`; the deleted reader has zero hits.
 [VERIFIED by command]
 
-#### 4.4 H4 — the fix that admits it is temporary, in the source
+### 4.4 H4 — the fix that admits it is temporary, in the source
 
 Revoking an anchor deactivates it and strips it from the boost-class and asset bookkeeping. It never
 decrements any holder's stored `aggregate-promile`, and it never zeroes the per-user anchor promile.
@@ -4346,7 +4346,7 @@ The decrement exists as `XE_UnbumpBoostClassScoreLinks`. [VERIFIED by reading]
 `:58-77` naming both Talos doors and the live decrement at `01_ANK.pact:2184`, written while this
 book was assembled. See §6.
 
-#### 4.5 L7 — the audit closed it as a misdiagnosis, and the close was the misdiagnosis
+### 4.5 L7 — the audit closed it as a misdiagnosis, and the close was the misdiagnosis
 
 This one is included because it is the only finding in Part I where the audit **wrote a formal "no
 fix, the finding's premise is wrong" entry and then had to supersede it**, and both entries are still
@@ -4394,7 +4394,7 @@ audit trail.* One sentinel, two audits, three wrong conclusions between them.
 **Verified 2026-09-17:** `02_SCORE.pact:2116-2133` carries the clamp and the `L7 #19` reference; the
 definition validators are at `:841`. [VERIFIED by reading]
 
-#### 4.6 M3 — the footgun where adding a boost removed your rewards
+### 4.6 M3 — the footgun where adding a boost removed your rewards
 
 `nominal-boosted = floor(base × promile/1000, p)`, where `promile` is the user's aggregate across the
 boost class and **defaults to 0.0** with no 1000 baseline.
@@ -4437,7 +4437,7 @@ of this entire audit's method:
 > Passed the suites only because deb is static there (refresh = permanent no-op → the branch was never
 > executed).
 
-#### 4.7 L1 — the misplaced `enforce` that was not a misplaced `enforce`
+### 4.7 L1 — the misplaced `enforce` that was not a misplaced `enforce`
 
 Reported as discipline: `URC_OrtoStakeWholeNonceAmounts` contains an `enforce`, and a `URC_` must not.
 Move it to a `UEV_` or return a bool. A ten-minute fix.
@@ -4462,9 +4462,9 @@ for — including, sometimes, its author.
 
 ---
 
-### 5. What later rounds found in AQP
+## 5. What later rounds found in AQP
 
-#### 5.1 M1 — the audit built the dust sweep, and wrote the test that hid the bug
+### 5.1 M1 — the audit built the dust sweep, and wrote the test that hid the bug
 
 M1 reported that the `unclaimed-count == 1` full-supply branch from the canonical vault was never
 implemented in AQP, so residual dust accumulated locked in the vault. Fix #10 built it, as a **dual**
@@ -4553,7 +4553,7 @@ A codebase-wide scan for the shape — *a branch on `(= <counter> 1)` selecting 
 returned **10 sites, and every live one is now guarded.** `06_VCT.pact` has no sweep branch at all;
 `05_FVT.pact` is a facade delegating to RPS, so the RPS repair covers it.
 
-#### 5.2 L4 — the audit wired in a validator that could never speak
+### 5.2 L4 — the audit wired in a validator that could never speak
 
 Fix #17 closed L4 by adding `(UEV_LiveAnchor anchor-id)` as the first check in `ANK|C>REVOKE`. The
 validator already existed and was unused; wiring it in means a double-revoke aborts cleanly at the top
@@ -4589,7 +4589,7 @@ no such anchor had ever existed. **Delete the owner gate and the line would stil
 RT-K-007 surfaced it by changing the message it was matching. It now pins the **liveness** gate, which
 is what that input actually tests.
 
-#### 5.3 Six more mute guards in AQP, and the count is the finding
+### 5.3 Six more mute guards in AQP, and the count is the finding
 
 `DEFECT-LEDGER.md` §1.2 catalogues the guard-reachability class across the codebase. AQP holds a
 disproportionate share, and several sit directly on top of this audit's work:
@@ -4615,7 +4615,7 @@ instrument reading them truncated its window at 300 characters and the messages 
 the five is the direct twin of an already-ledgered site in the same file — *which is the strongest
 available evidence that hand-finding had been sampling this class, not enumerating it.*
 
-#### 5.4 The owner gates that had never refused anybody
+### 5.4 The owner gates that had never refused anybody
 
 `DEFECT-LEDGER.md` §7.2h asked a measurable question: **which owner-ownership capabilities has no test
 ever shown refusing anybody?** Four AQP gates sit behind a **latched** flag — once false it is
@@ -4648,7 +4648,7 @@ ownership is the only thing left that can refuse — and, for rotation, passing 
 preceded by an `expect` pinning the flag it depends on, so a future suite that latches a flag early
 turns the **precondition** red rather than letting the refusal go quietly vacuous.
 
-#### 5.5 A bare-called `defcap` that silently no-opped the entire vacate owner gate
+### 5.5 A bare-called `defcap` that silently no-opped the entire vacate owner gate
 
 Not in either ledger — recorded only in the source, at `06_VCT.pact:2214`:
 
@@ -4669,9 +4669,9 @@ from the FVT split, which tells us nothing about the earlier form. *(not verifie
 
 ---
 
-### 6. What remains open
+## 6. What remains open
 
-#### The design documents: what landed
+### The design documents: what landed
 
 Each of these was checked against current source on 2026-09-17.
 
@@ -4686,7 +4686,7 @@ Each of these was checked against current source on 2026-09-17.
 | **M3-DEB** (`M3-DEB-DESIGN.md`) | the score model plus the deb-staleness subsystem | **SHIPPED, and the document says otherwise.** See below. |
 | **Anchor staleness** (`ANCHOR-STALENESS-INVENTORY.md`) | a map, not a build | Its `S2/H4` row was stale; a correction box now sits above it. See below. |
 
-#### Two design documents contradicted the code — one of them, and only one, really did
+### Two design documents contradicted the code — one of them, and only one, really did
 
 This is the only place where this chapter's verification disagreed with the audit tree. Both
 documents now carry correction boxes; one of those boxes corrects **this chapter**.
@@ -4719,7 +4719,7 @@ needed correcting on the second. The surviving finding is still the failure mode
 rule is about — **a true record whose coverage stopped** — and in the anchor case a reader who
 trusted the document would have planned around a permanent operational lock that does not exist.
 
-#### Genuinely open
+### Genuinely open
 
 | what | why |
 |---|---|
@@ -4731,7 +4731,7 @@ trusted the document would have planned around a permanent operational lock that
 | **`04_RPS.pact:3983-3995` and `:3053`** | `G-27` and `G-24`: the remaining eager-fold read (the row above) and a *partial* shadow in `UEV_QualitySplitContext` that survived the `G-16` repair. (**Corrected 2026-09-18** — this cited `:3919` and `:3027`, both inherited from `DEFECT-LEDGER.md:1141/1144` and both stale: `:3919` is inside `XI_1\|EnsureScoreRewardRows` and `:3027` is a comment inside the neighbouring `UEV_AddRewardLinkContext`.) |
 | **The `M7` refutation's scope** | ATSU precision artefacts are by design, but the fix entry notes the interaction: M1's dust sweep cannot recover **sub-precision** triplet dust, because the ATS ladder cannot move it. Economically negligible, structurally permanent. |
 
-#### One accepted property that a reader should understand as a property, not a bug
+### One accepted property that a reader should understand as a property, not a bug
 
 **Stale-until-restake.** A user's stored score is a snapshot taken at their last stake or unstake, and
 nothing recomputes it when the *anchor* side changes. That is deliberate — you cannot re-price N
@@ -4743,7 +4743,7 @@ enforced-fresh inject.
 
 ---
 
-### 7. Verification result for this chapter
+## 7. Verification result for this chapter
 
 Every finding recorded as fixed was searched for in current source on 2026-09-17.
 
@@ -4803,7 +4803,7 @@ preview and pricing surface across every module in the tree.*
 > `ARCHITECTURE/REPL_TEST_ARCHITECTURE.md`, `Audit/records/REPL-ROUND-REPORT.md`,
 > `Audit/records/DEFECT-LEDGER.md`, and 370 commits between 2026-08-30 and 2026-09-14.
 
-### What this round was
+## What this round was
 
 Part I audited modules that already existed. Part III attacked a system that was already finished.
 This Part covers the work in between: building, across the whole codebase, **one cost reader per
@@ -4823,7 +4823,7 @@ operations short — the chapter says so with the file and the number.
 
 ---
 
-### The round, in numbers
+## The round, in numbers
 
 **[VERIFIED by command]** — `git diff --shortstat 0ab7639 b8284a5`, the first commit of the phased
 roadmap board (2026-08-30) to the round's own closing checkpoint (2026-09-14).
@@ -4866,7 +4866,7 @@ shape of the round.
 
 ---
 
-### What each phase produced, measured today
+## What each phase produced, measured today
 
 Every figure below is re-derived from the working tree, not quoted from a status document. The
 command is named in the chapter that owns it.
@@ -4881,7 +4881,7 @@ command is named in the chapter that owns it.
 
 ---
 
-### The Part II findings register, and where each one ended
+## The Part II findings register, and where each one ended
 
 The owner's directive for this book (`Audit/BOOK-DIRECTIVE.md`, 2026-08-27) specifies
 that Part II carry a findings register: twelve numbered defects, six from the coverage-completion
@@ -4930,7 +4930,7 @@ unexamined one a year later.
 
 ---
 
-### Three published figures that the tree did not support
+## Three published figures that the tree did not support
 
 Found while writing this Part. Each was a live discrepancy when written, each was verifiable with
 one command, and each was a different failure mode.
@@ -4991,7 +4991,7 @@ prose document to quote the wrong total, and failed the gate if it did not.** Ch
 
 ---
 
-### Chapters
+## Chapters
 
 | | |
 |---|---|
@@ -5000,7 +5000,7 @@ prose document to quote the wrong total, and failed the gate if it did not.** Ch
 | `03-SPLITS.md` | The deploy ceiling, the FVT split, what the split cost, and what it did not finish |
 | `04-REPL.md` | The test architecture: six gates, 92 entrypoints, and where the verification has holes |
 
-### How to re-derive anything in this Part
+## How to re-derive anything in this Part
 
 The book's reproduction appendix (`APPENDIX/01-REPRODUCTION.md`) covers the gate and the two money
 defects. The counts specific to this Part come from the following, all read-only and all runnable
@@ -5063,7 +5063,7 @@ This chapter is about replacing that with one derivation, and about what the rep
 
 ---
 
-### 1. The two prefixes
+## 1. The two prefixes
 
 **`URCi_`** — a pure, read-only cost reader. No `enforce`, no writes. It returns the cost of one
 operation, and it is called from **two** places: the execution path, to bill; and the preview, to
@@ -5089,14 +5089,14 @@ tree, and they are why a naive `grep '(defun URCi_'` undercounts the surface by 
 
 ---
 
-### 2. The census
+## 2. The census
 
 **[VERIFIED by command]** — the parser in `PART-II/README.md`, which separates interface
 declarations (before the `(module …)` form, in this codebase's co-located interface files) from
 implementations (after it). This is the same rule `REPL/tools/_scale_report.py` uses, so the numbers
 below agree with the project's own generated statistics.
 
-#### `URCi_` — 322 implementations
+### `URCi_` — 322 implementations
 
 | | |
 |---|---:|
@@ -5175,7 +5175,7 @@ Distribution across the tree, largest first — **[VERIFIED by command]**:
 | `10_ATSU.pact` | 14 | …23 further modules | 1–8 each |
 | `15_SWP.pact` | 13 | **citizen launchpad (5 modules)** | 1–2 each |
 
-#### `INFO_` — 426 implementations, in ten files
+### `INFO_` — 426 implementations, in ten files
 
 **[VERIFIED by command]**. The consolidation target of roadmap 1.2.2.1 — *"one INFO module per
 stage, relocated to `Z_Reads/`, deployed last"* — is **substantially but not entirely** met:
@@ -5195,7 +5195,7 @@ interfaces. That is a defensible choice for a module that may already hold a nam
 chain, and the reason it is worth mentioning at all is that the alternative — deleting it — would
 have been invisible in every count in this book.
 
-#### What is inside an `INFO_` body
+### What is inside an `INFO_` body
 
 A complete, exhaustive partition of all 426 — **[VERIFIED by command]**, a script that splits each
 module body at top-level `(defun` boundaries and classifies the remainder of each block:
@@ -5214,7 +5214,7 @@ further down. Counting them as unwrapped is a mistake the project made once and 
 `_info_measured.py` carries the note, and the reason it matters is stated well there: *"a coverage
 report that cries wolf nine times is a coverage report nobody reads to the end."*
 
-#### The published figures this contradicts
+### The published figures this contradicts
 
 | source | says | tree says |
 |---|---|---|
@@ -5237,7 +5237,7 @@ be wearing an operation count's label. Not asserted as an error — but a reader
 
 ---
 
-### 3. How the surface was built
+## 3. How the surface was built
 
 **[VERIFIED by command]** — `git log --oneline --since=2026-08-30 --until=2026-09-03`. The walk went
 in deploy order, one module per commit, and each commit's message states what was proven:
@@ -5274,7 +5274,7 @@ implementation census in §2; they are given only to show the shape of the work.
 
 ---
 
-### 4. What the surface was for, and how it is checked
+## 4. What the surface was for, and how it is checked
 
 The point of one reader with two callers is that the preview and the charge cannot disagree. The
 project stated the specification as an owner rule:
@@ -5294,14 +5294,14 @@ Everything in §5 was found by the third.
 
 ---
 
-### 5. What it found
+## 5. What it found
 
 `DEFECT-LEDGER.md` §1.1a lists **17 preview-versus-charge entries covering the project's running
 count of 19 defects**; §1.1b lists **13 further mispriced or unbilled operations**. The full register
 is there and this book does not reproduce it. What belongs here is the **shape**, because the shapes
 recur and the counts do not.
 
-#### Three failure modes, and they are not the same problem
+### Three failure modes, and they are not the same problem
 
 **(a) A literal zero for a currency the operation really charges.** The preview returned
 `OI|UDC_NoStoaCosts` — rendered to a client as *"Operation is free of native Stoa"* — for operations
@@ -5324,7 +5324,7 @@ royalty payment made *out of the patron* before the sale's own collect: measured
 the single-transaction path at 500 STOA, the defpact path at 600 — and all six previews quoted the
 second, so the three single-transaction previews over-quoted by 100 STOA each.
 
-#### The one that was wrong in both directions
+### The one that was wrong in both directions
 
 `P-10` is the entry to read if you read only one. Seven `VST` special-link previews added a
 `vst-link` deterrence of 279 raw IGNIS that the execution path **never charged**, while
@@ -5336,7 +5336,7 @@ fee on *every special link ever created*. That is a revenue defect, not a quotin
 why the entry was escalated to an owner ruling rather than repaired on sight: there was no way to
 tell from the code which of the two numbers was the intended one.
 
-#### The invariant, and its documented escape hatch
+### The invariant, and its documented escape hatch
 
 `IGNIS-PRICING.md` §5 states the guarantee as *"it is called inside the execution path for billing
 AND served to the UI for preview, so the two cannot drift."* The project's own defect ledger
@@ -5349,7 +5349,7 @@ That escape hatch, plus an `INFO_` layer free to hard-code `NoStoaCosts`, **prod
 seventeen §1.1a defects.** The ledger's proposed wording is the honest one and this book adopts it:
 *the two cannot drift **where the execution path calls the reader***.
 
-#### And a shape that survived a green pipeline
+### And a shape that survived a green pipeline
 
 `B-01`, from the pricing walk rather than from measurement, because it is the clearest statement of
 what a test suite does not do. `DPDC-MNG::URCi_Control` and `URCi_WipeNonce` were already branchy —
@@ -5367,7 +5367,7 @@ assertions.
 
 ---
 
-### 6. Coverage of the measurement — and what its denominator excluded
+## 6. Coverage of the measurement — and what its denominator excluded
 
 > **CLOSED 2026-09-17.** Both halves of this finding are repaired, and the section is kept as
 > written because the *shape* of the error is the reusable part.
@@ -5448,7 +5448,7 @@ own incompleteness.* Chapter 22 records the same failure mode in `_toolpaths.py`
 remedy that was applied there: make the checker **discover** its subject and report any directory
 its list does not cover. The same remedy fits here, and has not been applied.
 
-#### The instrument is also not in the gate
+### The instrument is also not in the gate
 
 **[VERIFIED by reading]** `REPL/tools/_gate.py` runs twelve static checks as fatal pre-checks. Every
 tool in `REPL/tools/` that has a `--check` mode is one of them. **`_info_measured.py` has no
@@ -5482,7 +5482,7 @@ return.
 
 ---
 
-### 1. The model
+## 1. The model
 
 ```
 IGNIS charged = deter(op) + components(op)          ;; UC_IgnisPrice
@@ -5504,7 +5504,7 @@ The deliberate exception, recorded in the function's own `@doc` so nobody "corre
 `CODEX::UC_StoicTagStoaFee` is **1 STOA per glyph**, fixed in STOA units. A glyph costs one STOA
 whatever the oracle says.
 
-### 2. Where a price lives
+## 2. Where a price lives
 
 Four constant maps, all in `1_SOVEREIGN/STAGE_01/2_Core/02_IGNIS.pact`. **[VERIFIED by command]** —
 key counts parsed from the `defconst` bodies today:
@@ -5519,7 +5519,7 @@ key counts parsed from the `defconst` bodies today:
 `IGNIS-PRICING.md` §2 says `IG|COMPONENTS` holds *"~394"* and §8 says 396; `DEFECT-LEDGER.md` §5
 item 16 already flagged that one document carries three different counts. The tree says **396**.
 
-#### The calibration, and what it overturned
+### The calibration, and what it overturned
 
 `IG|WEIGHTS` was not modelled and left alone — it was measured against real gas in the rehaul's
 sixth substage, and **three of its four parameters were wrong**:
@@ -5537,7 +5537,7 @@ roughly 4,900 and 2,100 nonces in a 2M-gas transaction against a configured ceil
 *A ceiling set 40× too low charges users for transactions they did not need.* Both were raised to
 about a quarter of the measured ceiling, which is a deliberate margin rather than an estimate.
 
-#### The distinction that prevented a compounding error
+### The distinction that prevented a compounding error
 
 > **A legacy tier read that is MULTIPLIED BY A COUNT is a *unit*, not a price.**
 
@@ -5551,7 +5551,7 @@ is multiplied.**
 
 ---
 
-### 3. What the round actually changed
+## 3. What the round actually changed
 
 The decision log in `IGNIS-PRICING.md` §9 is the authority. The entries worth reading as an auditor
 are the ones where a live price was wrong by an order of magnitude or more:
@@ -5568,7 +5568,7 @@ are the ones where a live price was wrong by an order of magnitude or more:
 That last row is the one to keep. **A naming convention was load-bearing on money**: seven live
 client operations collected nothing because their prefix told the biller they were administrative.
 
-#### The constants-only conversion, and how parity was proven
+### The constants-only conversion, and how parity was proven
 
 Owner, 2026-09-07: *"we run no more table values, but constants for determining prices now."* All
 **65** live `UR_UsagePrice "ignis|*"` reads became `UC_IgnisLeg "tier-*"` against six new `IG|LEGS`
@@ -5590,7 +5590,7 @@ class of failure had already destroyed source once before in this project, delet
 four utility files. `IGNIS-PRICING.md` §8 now carries the rule in imperative form: **never use
 paren-depth scanning to define an edit region in Pact.**
 
-#### One claim in the authoritative document that the tree does not support
+### One claim in the authoritative document that the tree does not support
 
 **[VERIFIED by command]** — `grep -rn 'UR_UsagePrice' --include=*.pact 1_SOVEREIGN 2_CITIZEN`.
 
@@ -5626,13 +5626,13 @@ one, and the second step is an admin entrypoint that the test ledger records as 
 
 ---
 
-### 4. The generated price sheet
+## 4. The generated price sheet
 
 `IGNIS-PRICE-SHEET.md` is the per-function price list and the declared input to the Chapter-2 user
 documentation. It is produced by `REPL/tools/_ignis_price_sheet.py`, which walks the Talos client
 surface and extracts each operation's real cumulator legs.
 
-#### The generator's own defect history is the most useful part of it
+### The generator's own defect history is the most useful part of it
 
 Every defect found in it *made the published sheet disagree with a chain that was already correct* —
 so when a price looks wrong, the sheet is the first suspect, not the contract. The full-coverage pass
@@ -5665,7 +5665,7 @@ The invariant that caught both is worth stating on its own: **for a re-pricing r
 already-priced row must not change value** — so diffing the regenerated sheet at every step is what
 rejected two generator "fixes" before they shipped.
 
-#### The one that is worst to get wrong
+### The one that is worst to get wrong
 
 `SWP|C_Firestarter` is the **bootstrap** operation for a brand-new account, and it is *gated on the
 caller holding under 100 IGNIS*. The sheet published it at **≥ 93 IGNIS**. The wrapper builds three
@@ -5683,7 +5683,7 @@ cumulator.
 
 ---
 
-### 5. The gate mechanism — how the artefacts stay true
+## 5. The gate mechanism — how the artefacts stay true
 
 This is the control a reader should understand, because it is stronger than what most projects have
 and because its boundary is exactly where this chapter's finding sits.
@@ -5724,7 +5724,7 @@ literal in every tool. Both are also fatal in the gate.
 
 ---
 
-### 6. The finding: a gate-enforced headline that was eleven operations short
+## 6. The finding: a gate-enforced headline that was eleven operations short
 
 > **CLOSED 2026-09-17.** Everything in this section describes a defect that is now repaired.
 > `_ignis_price_sheet.py` sums `nsimple + ncomplex + nstoaonly + nexempt` (line 743, having moved
@@ -5802,7 +5802,7 @@ the headline, as the authoritative document does twice, does not.
 
 ---
 
-### 7. What the pricing is actually tested by
+## 7. What the pricing is actually tested by
 
 **[VERIFIED by command]**, counting `(expect …)` forms in the three dedicated suites:
 
@@ -5816,7 +5816,7 @@ the headline, as the authoritative document does twice, does not.
 Plus the measured preview-versus-charge proofs described in Chapter 12, which are balance deltas
 rather than table comparisons.
 
-#### Which of them run where, stated exactly
+### Which of them run where, stated exactly
 
 `CLAUDE.md` warns that the fast-path runner skips pricing suites, and that warning has itself been
 corrected once for overstating the case. The precise position today — **[VERIFIED by command]**:
@@ -5836,7 +5836,7 @@ every leg-level one, are outside the fast path — and none of them are outside 
 
 ---
 
-### 8. What this chapter does not establish
+## 8. What this chapter does not establish
 
 - **`components` is a model, not a measurement, per operation.** The sheet says so in its own
   caveat: it counts the core operation's own module-internal work, and *"cross-module callee
@@ -5875,7 +5875,7 @@ module had grown past the point where any transaction containing it could be min
 
 ---
 
-### 1. Why there is a ceiling at all
+## 1. Why there is a ceiling at all
 
 Chainweb charges a transaction for its size, and **the size charge grows as the seventh power** of
 that size. `MODULE-SIZING.md` tabulates the consequence against StoaChain's 2,000,000-gas block
@@ -5923,7 +5923,7 @@ capabilities guard writes to them; and that choice is **permanent**.
 
 ---
 
-### 2. The blocker
+## 2. The blocker
 
 **[VERIFIED by command]** — `git show <rev>:…/04_FVT.pact | wc -l`:
 
@@ -5940,7 +5940,7 @@ harder the moment the module holds live data.
 
 ---
 
-### 3. The seam, and how it was chosen
+## 3. The seam, and how it was chosen
 
 The design (`FVT-SPLIT-DESIGN.md`) reads as an **accountant** and an **estate registrar**:
 
@@ -5978,7 +5978,7 @@ crosses the boundary once per *phase*, never once per *user*.
 
 ---
 
-### 4. What shipped, against what was designed
+## 4. What shipped, against what was designed
 
 **[VERIFIED by command]**. This is the part the design documents do not reconcile, and it is the
 chapter's main finding.
@@ -6022,7 +6022,7 @@ measured on chain.
 > cost the same per line. The original text is kept, with its `[INFERRED]` label, because the label
 > did its job — it is what made the claim checkable, and it is why the measurement was taken.
 
-#### The band census today
+### The band census today
 
 **[VERIFIED by command]** — `find 1_SOVEREIGN 2_CITIZEN -name '*.pact' -not -path '*/Audit/*' |
 xargs wc -l`, classified against `MODULE-SIZING.md` §1:
@@ -6043,7 +6043,7 @@ consequence of adding a cost reader and a preview to every operation.
 
 ---
 
-### 5. What Phase 1.4 did not finish
+## 5. What Phase 1.4 did not finish
 
 The roadmap lists three steps. **[VERIFIED by reading]** the tree, one is done and two are not:
 
@@ -6069,7 +6069,7 @@ pointed at a file that is not there.
 
 ---
 
-### 6. The second split, and a stale line it left in the governing document
+## 6. The second split, and a stale line it left in the governing document
 
 The round performed a **second** split along a different axis, and it is worth recording because it
 is a split for *authorisation* reasons rather than size ones.
@@ -6109,7 +6109,7 @@ concludes that the sovereign/citizen boundary is a labelling convention rather t
 
 ---
 
-### 7. What the split cost in coupling, measured
+## 7. What the split cost in coupling, measured
 
 **[VERIFIED by command]** — cross-module calls written as `MODULE.fn` dot-notation rather than as a
 module reference `(ref-M::fn …)`, counted over `1_SOVEREIGN` + `2_CITIZEN` with comments and strings
@@ -6145,7 +6145,7 @@ with no published price while the generator's footer reported `0 unresolved` (Ch
 
 ---
 
-### 8. What this chapter does not establish
+## 8. What this chapter does not establish
 
 - **The deploy-gas figures are extrapolations, not chain measurements.** `RPS load-exec 362K / FVT
   250K` came from the REPL's `table` gas model, which measures runtime load execution, not
@@ -6177,7 +6177,7 @@ that, and rebuilt the runner architecture around the result.
 
 ---
 
-### 1. What was built, in size
+## 1. What was built, in size
 
 **[VERIFIED by command]** — `git archive <rev> REPL | wc -l`, and the same `(expect…)` regex
 `REPL/tools/_suite_stats.py` uses for its own "distinct assertions written" row:
@@ -6206,7 +6206,7 @@ what an assertion proved exposed that it proved nothing.
 
 ---
 
-### 2. The model: three suites, six gates
+## 2. The model: three suites, six gates
 
 The architecture document's opening distinction is the one that organises everything else:
 
@@ -6278,19 +6278,19 @@ closed here"*, which is the correct disposition and the correct place for it.
 
 ---
 
-### 3. The gate
+## 3. The gate
 
 `python3 REPL/tools/_gate.py`. It resolves its own paths and `chdir`s to its own directory, so it
 runs from anywhere. **[VERIFIED by reading]**, it does four things in order.
 
-#### (a) It refuses to start on a dirty workspace
+### (a) It refuses to start on a dirty workspace
 
 Any `modules/_*.repl`, `RedTeam/_*.repl`, or non-`_verify_finding_` `Kursan/_*.repl` fails the gate
 immediately. `modules/` is globbed into the entrypoint list, so a forgotten iteration probe becomes a
 real entrypoint — which happened, and failed the gate 200 seconds in with a message about wrong
 expected strings rather than about a leftover file.
 
-#### (b) Fifteen static checks, every one fatal
+### (b) Fifteen static checks, every one fatal
 
 **[VERIFIED by reading `_gate.py`]** — fifteen tools are invoked as `--check` subprocesses, and
 **every one of them `sys.exit`s the gate on a non-zero return**:
@@ -6331,7 +6331,7 @@ checks on 2026-09-14 after a verification pass found their "0" was a hand-measur
 byte-compiled them and ran one selftest, but never ran either tool, so re-introducing a defect that
 had been *verified exploitable* before it was fixed would have left the gate green.
 
-#### (c) Tool integrity
+### (c) Tool integrity
 
 Every `_*.py` in `REPL/tools/` is byte-compiled, and `--selftest` is run on the nine that have one.
 <sub>CORRECTED 2026-09-18: this said **ten**. Nine `_*.py` in `REPL/tools/` contain `--selftest`
@@ -6342,7 +6342,7 @@ inside a string, **and the gate went green twice while the conformance checker c
 
 > *A tool that cannot run is worse than a missing tool, because its silence reads as clean.*
 
-#### (d) The orphan check, which is the load-bearing one
+### (d) The orphan check, which is the load-bearing one
 
 The gate computes the transitive `(load …)` closure of all 92 entrypoints and **fails if any `.repl`
 containing an assertion is outside it** and not on an 18-entry exclusion list, each entry of which
@@ -6354,7 +6354,7 @@ This exists because it was missing. Four `deb-staleness-*` drivers were archived
 path to an entire AQP suite family. **~125 assertions silently left the suite and the ledger never
 noticed, because the ledger counts files, not execution.**
 
-#### What the gate actually runs
+### What the gate actually runs
 
 **[VERIFIED by command]**, reconstructing the entrypoint list from `_gate.py` without running it:
 
@@ -6381,7 +6381,7 @@ regression names itself. Most of what this round found was found in the second m
 
 ---
 
-### 4. "One command tests the entire system" — what that actually means
+## 4. "One command tests the entire system" — what that actually means
 
 Roadmap step **1.5.1.3** asks for a *"single comprehensive run — the whole codebase, one boot… one
 hermetic run that boots once and exercises ALL Pact code."*
@@ -6425,7 +6425,7 @@ only carries the first one well.**
 
 ---
 
-### 5. The entrypoint surface, independently reproduced
+## 5. The entrypoint surface, independently reproduced
 
 `REPL-TEST-LEDGER.md` is generated by `REPL/tools/_test_ledger.py`. Running that generator on
 2026-09-18 reports:
@@ -6454,7 +6454,7 @@ committed `.md`, and the committed `.md` has not been regenerated since. The 289
 the adversarial phase landed. The 100% is the subject of the rest of this section, because it did not
 fall for the reason the ledger gives.</sub>
 
-#### G1 read 447 of 448, and the one that was missing was the instrument
+### G1 read 447 of 448, and the one that was missing was the instrument
 
 > **REPAIRED 2026-09-18.** The one-line fix described at the end of this section has since been
 > made. `_test_ledger.py` now accepts `(rollback-tx)` as a block terminator, and G1 reads
@@ -6532,7 +6532,7 @@ were exactly the blocks the ledger could not see. The instrument was blind in pr
 anti-correlation with where the evidence is densest, and it had been for as long as both rules
 existed. Neither rule is wrong; nobody had put them side by side.
 
-#### Reading the 167
+### Reading the 167
 
 **Assertions are attributed by transaction block**, credited to every operation invoked in the same
 `(begin-tx … commit-tx)`. So the columns measure how well an operation's *neighbourhood* is asserted,
@@ -6551,7 +6551,7 @@ has 58 invocations and no assertion of any kind.</sub>
 
 ---
 
-### 6. What the round found
+## 6. What the round found
 
 `DEFECT-LEDGER.md` compiles **131 contract defects** for the REPL round, counted separately from the
 adversarial round for a stated reason: 131 is *compiled from project records*, while every red-team
@@ -6602,7 +6602,7 @@ the sweep was mutation-tested against the known one before its zero was trusted.
 Administrative Pause to be **on**, and told the operator it must be **off**. One word; the logic was
 always right; anyone following the message would disarm the pause and retry forever.
 
-#### Instruments built during the round
+### Instruments built during the round
 
 Each was built the moment a defect revealed a class, and **each was mutation-tested against the
 defect that motivated it** — the bug is reintroduced, the tool must report it, the bug is reverted:
@@ -6618,11 +6618,11 @@ defect that motivated it** — the bug is reintroduced, the tool must report it,
 
 ---
 
-### 7. Where the verification has holes
+## 7. Where the verification has holes
 
 This is the section the chapter exists for.
 
-#### 7.1 The coverage instruments are snapshots, not gates
+### 7.1 The coverage instruments are snapshots, not gates
 
 **[VERIFIED by command]**. Fifteen tools are run by the gate as fatal `--check` subprocesses
 (§3(b)). The instruments that produce this chapter's *coverage numbers* are not among them, because
@@ -6663,7 +6663,7 @@ above. **Deleting every `ignis-need` assertion from `launchpad-groundtruth.repl`
 nothing red**, and the published figure would still read
 414 / 414.
 
-#### 7.2 `_figuresync` locks the narrative to the stats file, not to the tree
+### 7.2 `_figuresync` locks the narrative to the stats file, not to the tree
 
 `_figuresync.py --check` is fatal and is a genuinely good control: it prevents the narrative audit
 documents from carrying a figure the generated statistics do not support, deliberately scoped to
@@ -6696,7 +6696,7 @@ The contrast with Chapter 13's `_pricesync.py` is the whole point: `_pricesync` 
 diffs**, so its artefacts cannot go stale without the gate failing. `_figuresync` compares two
 committed files. *Two controls with the same intent, one closed loop and one open one.*
 
-#### 7.3 Two generators rewrite a tracked artefact on a bare invocation
+### 7.3 Two generators rewrite a tracked artefact on a bare invocation
 
 **[VERIFIED by reading]** — `_suite_stats.py:331` writes `ARCHITECTURE/REPL_SUITE_STATS.md` and
 `_toolindex.py:46` writes `REPL/TOOLS.md`, in both cases with no `--apply`, `--write` or `--check`
@@ -6727,7 +6727,7 @@ than a shrug: all three are gate-fatal `--check` tools (§3(b)), and `TOOLS.md` 
 replaced the dangerous behaviour does not list the newest checks. `_suite_stats.py:319` is corrected
 to `:331` above; the write moved, the absence of a flag did not.</sub>
 
-#### 7.4 Phase 1.5's own steps, checked against the tree
+### 7.4 Phase 1.5's own steps, checked against the tree
 
 | step, and what it asked for | measured position |
 |---|---|
@@ -6741,7 +6741,7 @@ instrument is not gated — was re-checked and still holds. Row 1.5.1.2 said *"G
 *"G2's live unpinned worklist at 1"* and *"G6 open at 84%, 708 unreached"*. The G2 worklist has
 reached zero, which is the only one of the three that is a completed piece of work.</sub>
 
-#### 7.5 And the finding that qualifies every green assertion in this Part
+### 7.5 And the finding that qualifies every green assertion in this Part
 
 It comes from the adversarial round, and Part III states it in full, but it belongs here because it
 bounds what Chapter 15's numbers certify. Four red-team attacks were **refused by the wrong
@@ -6782,7 +6782,7 @@ subset of the refused count and quoting them as a fraction of it would be false.
 
 ---
 
-### 8. The methodology traps worth publishing
+## 8. The methodology traps worth publishing
 
 The round's report keeps a section for the mistakes made while measuring, and three transfer directly
 to anyone auditing a system like this.
@@ -6820,7 +6820,7 @@ was easier to quote answered the wrong one.**
 > `Audit/records/DEFECT-LEDGER.md` (the defect record), and `REPL/RedTeam/*.repl` (the attacks
 > themselves, which run in the gate).
 
-### What this round was
+## What this round was
 
 Parts I and II document audits that read the code and asked *"is this right?"*. This round asked a
 different question: **"can I make it do something it should not?"** — and answered it by executing
@@ -6832,7 +6832,7 @@ bindings are eager, so a value bound in a Talos wrapper is read **before** the `
 follows it — which means the check that actually refuses a bad input is routinely not the one the
 code reads like it would be. Every finding in this Part was reached by running something.
 
-### The register
+## The register
 
 **38 attacks across 11 families. 20 found a defect. None succeeded.**
 
@@ -6863,7 +6863,7 @@ accounting balance?) and **K** (does the free preview agree with the charged exe
 largest family in the round and every one of its eight attacks found something — which says more
 about where to look for defects in this kind of system than any of the planned families did.
 
-### Coverage against the plan
+## Coverage against the plan
 
 The round was specified before it began, naming eight attack surfaces. This is what each one
 actually received — stated as coverage, not as a claim of completeness.
@@ -6910,7 +6910,7 @@ currently safe only because it happens to move the starter's own tokens. A futur
 protocol state would have nothing to demand the starter's key, and that attack would succeed against
 it without anything else changing.
 
-### The headline results
+## The headline results
 
 **Two live money defects, both found and both fixed.**
 
@@ -6945,7 +6945,7 @@ the count that **had** one. The error survived because the sentence is true-soun
 direction — a small number of gates in an alarming state is exactly what the passage is claiming —
 and nothing checked it against the table in Chapter 19 that it paraphrases.*
 
-### Verification state
+## Verification state
 
 At the time of writing, the full gate is **green at 25,035 assertions** (20,042 positive, 4,993
 negative) across the whole system — every deploy stage, every scenario suite, every red-team attack,
@@ -6959,7 +6959,7 @@ Reproduction: Appendix 1.
 > that every document agreed with it, which is circular and was green while all of them were wrong
 > together (DEFECT-LEDGER §8.22).
 
-### Chapters
+## Chapters
 
 | | |
 |---|---|
@@ -6979,7 +6979,7 @@ format, and a different definition of success. This chapter is about those choic
 was shaped the way it was, and how it was physically built — before the next three chapters report
 what it found.
 
-### Why run one at all
+## Why run one at all
 
 The two prior rounds had already read every sovereign module. A reasonable objection to a red team
 at that point is that it can only re-find what careful reading already found.
@@ -7006,7 +7006,7 @@ Four separate times in this programme a conclusion reached by reading was overtu
 That is the whole justification for the round. Everything in Parts III and IV was reached by
 running something.
 
-### Who the attacker is
+## Who the attacker is
 
 A threat model that says "an attacker" and stops has not been written. This round used four
 distinct attacker classes, because they have genuinely different reach and the interesting defects
@@ -7031,7 +7031,7 @@ and that module's code runs with whatever the namespace permits. A citizen modul
 it is code, calling code, inside the same chain. Family G exists entirely to ask what that buys an
 attacker.
 
-### How the families were chosen
+## How the families were chosen
 
 Eight attack surfaces were named in the round's specification before any attack was written. The
 point of naming them in advance was to make coverage a checkable claim rather than a feeling:
@@ -7060,7 +7060,7 @@ methodological result here. It did not come from suspicion about any particular 
 from **counting the population and noticing an entire class of behaviour that had no coverage at
 all**. Chapter 18's discussion of acceptance criteria is downstream of this.
 
-### What counts as a finished attack
+## What counts as a finished attack
 
 An attack was not considered done when it produced a refusal. It was considered done when it
 produced a refusal **that could only have come from the guard under test**. Those are very
@@ -7081,7 +7081,7 @@ report "a non-admin was refused" while the ownership capability it claims to be 
 deleted. **A shadowed gate is indistinguishable from an absent one from the outside.** Chapter 19
 is the programme that went looking for them.
 
-### The exploit-first rule
+## The exploit-first rule
 
 Where an attack found a defect, the defect was **measured before it was repaired**, by executing the
 exploit and recording what it actually cost or moved. Only then was the fix written.
@@ -7102,7 +7102,7 @@ it:
 
 The rule generalises: **locate by execution, not by reading.**
 
-### How it was physically built
+## How it was physically built
 
 The round produces no separate report artefact, and that is deliberate. A red-team report is a
 document that was true on the day it was written. What this round produces instead is **executable
@@ -7144,7 +7144,7 @@ any attack registered from outside that directory by name. One is: `RT-K-008` li
 The convention is that attacks live in `RedTeam/`; the tool's job is to make every exception
 visible rather than to enforce a tidiness that would push a test away from its fixture.
 
-### What "none succeeded" means, and what it does not
+## What "none succeeded" means, and what it does not
 
 The headline result is that **no attack achieved its stated goal**. No value was moved that should
 not have moved, no gate was bypassed, no privilege was escalated, no accounting invariant was
@@ -7181,7 +7181,7 @@ every rule below was learned by producing the worthless version first.
 
 ---
 
-### Failure 1 — Vacuity: the refusal came from somewhere else
+## Failure 1 — Vacuity: the refusal came from somewhere else
 
 The dominant failure mode. A capability is written like this:
 
@@ -7203,7 +7203,7 @@ scripted reorder during this programme silently converted an unconditional admin
 conditional one by hoisting a `compose-capability` out of the `if` that guarded it. **The remedy is a
 fixture that satisfies the earlier checks**, so the gate is the only thing left that can refuse.
 
-#### The differential pair
+### The differential pair
 
 The house form, adopted after `DPOF|C>DEBIT`. Hold everything constant except the one input that
 clears the shadow, and pin **both** messages:
@@ -7219,7 +7219,7 @@ that *something* refused.
 
 ---
 
-### Failure 2 — Unattributability: the refusal is real but anonymous
+## Failure 2 — Unattributability: the refusal is real but anonymous
 
 `ATS|C>ADD-REWARD-TOKEN` carries **two** ownership checks in sequence — the reward token's, then the
 pool's. Every token and every pool in the fixtures is owned by the same account, so both checks fail
@@ -7235,7 +7235,7 @@ owns, so the first gate passes by construction and the message can only be the s
 
 ---
 
-### Failure 3 — No non-vacuity control: you proved a refusal, not a rule
+## Failure 3 — No non-vacuity control: you proved a refusal, not a rule
 
 `expect-failure` proves a call was refused. It does not prove the operation *works* when it should.
 A wrapper that returned an error unconditionally would satisfy every attack in this round.
@@ -7252,7 +7252,7 @@ of the gate, on it, and past it.
 
 ---
 
-### Failure 4 — The wrong attacker
+## Failure 4 — The wrong attacker
 
 In these fixtures the account `ANHD` is simultaneously an ordinary user key, a member of the
 Demiurgoi master keyset, and the owner of most assets under test. An attack signed by ANHD therefore
@@ -7272,7 +7272,7 @@ in the system still cannot act on somebody else's behalf"*, and no lesser key ge
 
 ---
 
-### A fifth rule, about what you are allowed to pin
+## A fifth rule, about what you are allowed to pin
 
 When an operation is refused by something **wrong** — an index fault where a written guard should
 have spoken — the temptation is to pin the fault text, because it is what happens.
@@ -7288,7 +7288,7 @@ of reverting and transaction rollback no longer guaranteed it.
 
 ---
 
-### Failure 5 — The acceptance criterion a defect satisfies
+## Failure 5 — The acceptance criterion a defect satisfies
 
 The four failures above are about the *test*. This one is about what the test was asked to prove,
 and it is the most expensive mistake in the record because **the test was correct and green.**
@@ -7323,7 +7323,7 @@ The generalisable rule is not "write better tests". It is:
 > **When you write down how a fix will be verified, ask what else would satisfy it.** If a defect
 > can, the criterion is measuring a property of the system rather than the correctness of the change.
 
-### What this costs
+## What this costs
 
 Roughly: for every line of attack, three or four lines of fixture and control, and a comment
 explaining why that attacker and that input. The attacks in `REPL/RedTeam/` are mostly comment.
@@ -7344,7 +7344,7 @@ invisible to every form of review that does not execute the code.
 
 ---
 
-### The question
+## The question
 
 Ouronet gates asset operations with capabilities of the form:
 
@@ -7363,13 +7363,13 @@ one whose deletion would turn nothing red.
 
 ---
 
-### The measurement, and the four times it was wrong
+## The measurement, and the four times it was wrong
 
 The instrument is `REPL/tools/_ownerobs.py`. Its history is more instructive than its output, and it
 is documented here rather than hidden because **every correction moved the number in the direction of
 more work, not less.**
 
-#### It began by excluding a third of the tree from its own denominator
+### It began by excluding a third of the tree from its own denominator
 
 The first version mapped each Talos wrapper to the function it called, one hop, and asked which of
 those functions acquired a gated capability. It reported *"39 of 112 witnessed"*.
@@ -7392,7 +7392,7 @@ list **9 → 23**.
 > The fourteen extra gates were never closed. They were never **visible**. Several status reports had
 > overstated progress for exactly that reason.
 
-#### Then it credited gates that no test had targeted
+### Then it credited gates that no test had targeted
 
 Transitive reachability makes `observed` an **upper bound**: one refused call credits every gate on
 its path, though only one of them refused. This was written down as a caveat, and then demonstrated
@@ -7417,7 +7417,7 @@ covered, credited from four hops away, with no test having ever targeted them �
 `DPOF|C>BULK-TRANSFER` and `DPDC-T|C>BULK-TRANSFER`, each **the plural door beside a witnessed
 singular one**. None was on the actionable list. Without the split, none would have been written.
 
-#### Then it generated impossible work
+### Then it generated impossible work
 
 Some gates cannot be witnessed by any client-surface test: those composed only by another capability,
 or acquired solely through an `XE_` forward-module entrypoint, which by this codebase's conventions is
@@ -7432,7 +7432,7 @@ although its entrypoints are client recipes by definition.
 > A prefix filter that disagrees with the documented prefix table fails silently and **always toward
 > less work** — the direction nobody audits, because a shrinking worklist reads as progress.
 
-#### And it had a blind spot the codebase's own style rule would trigger
+### And it had a blind spot the codebase's own style rule would trigger
 
 The detector required the expected refusal message to appear *lexically inside* the assertion form.
 Hoisting a repeated message literal into the enclosing `let` — which changes nothing about what the
@@ -7446,7 +7446,7 @@ an improvement; it only moves which column lies.**
 
 ---
 
-### Where it ended
+## Where it ended
 
 | | at the round's start | at the round's end |
 |---|---:|---:|
@@ -7476,7 +7476,7 @@ Talos wrappers reaching it — and it **is** deployed, at 128,156 gas.
 > exclusion rather than a gap**. The module's deploy-slot cost is real and is a separate question,
 > belonging to the redeploy phase.
 
-### The sharpest attribution proof came last
+## The sharpest attribution proof came last
 
 The final band produced the cleanest separation technique in the programme, and it is worth stating
 because it generalises.
@@ -7492,7 +7492,7 @@ refused, naming the new role-holder's key.
 > An owner gate cannot refuse the owner. One legitimate operation separates two readings that no
 > amount of assertion-writing could.
 
-### What the gates turned out to be guarding
+## What the gates turned out to be guarding
 
 Witnessing forces you to find out what an operation actually does, which repeatedly turned out to be
 more than its name suggested.
@@ -7533,9 +7533,9 @@ table can agree with the register while the prose beneath it enumerates a differ
 
 ---
 
-### Tier 1 — Money
+## Tier 1 — Money
 
-#### A 38.65% mispricing of OURO, feeding the oracle, the launchpad and the explorer
+### A 38.65% mispricing of OURO, feeding the oracle, the launchpad and the explorer
 
 `URC_OuroPrimordialPrice` priced a **weighted** three-token pool with a flat
 `value / supply` ratio — the weights omitted entirely. Its sibling `URC_SingleOuroWorthWSTOA` had
@@ -7568,7 +7568,7 @@ defect was real, rather than resting on a measurement somebody took once.
 > nothing in a suite of ~23,000 assertions — which is exactly how it shipped, and exactly how its
 > repair could have regressed unnoticed.
 
-#### A fee charged before the gate that refuses — `RT-F-002`
+### A fee charged before the gate that refuses — `RT-F-002`
 
 `MTX|C_Issue` with the permissioned flag set:
 
@@ -7598,21 +7598,21 @@ a **non-vacuity** (the operation completes when the admin key signs), and the **
 > the flag off and false with it on: *shape* validation precedes the money, *authorisation* follows
 > it. The operation cited as the counter-example was carrying the unrepaired case.
 
-#### A deterrent charged on one door and not the other — `RT-A-001`
+### A deterrent charged on one door and not the other — `RT-A-001`
 
 Adding standard liquidity was reachable through **two** live client paths, and only one charged the
 `lp-churn` deterrent. A deterrent with a free door is not a deterrent.
 
-#### A share price that could be gamed at the rounding boundary — `RT-A-003`
+### A share price that could be gamed at the rounding boundary — `RT-A-003`
 
 An autostake pool's index is a share price, `floor(resident-sum / rbt-supply, p)`, and the deposit
 path inverts it. The two `floor` operations do not commute, leaving an exploitable edge.
 
 ---
 
-### Tier 2 — The protocol lying about what it did
+## Tier 2 — The protocol lying about what it did
 
-#### A swap that reported success while moving nothing — `RT-A-005`
+### A swap that reported success while moving nothing — `RT-A-005`
 
 The AMM's slippage floor — the line the source itself calls *"the real protection this whole check
 exists for"* — **refuses by returning**, not by raising. It returns a one-element payload carrying
@@ -7641,12 +7641,12 @@ The two repairs differ because the two payloads do: the smart-swap door can test
 single/multi doors cannot — both payloads are one element — so they test the **type** (success is a
 decimal, refusal a string).
 
-#### A documented field that did not hold what it said — `RT-D-002`
+### A documented field that did not hold what it said — `RT-D-002`
 
 A collectable's `nonce-holder` field is documented as *"stores the account holding the nonce"*. It
 does not. Anything reading it as authoritative is reading a value that can be stale.
 
-#### The preview and the execution disagreeing about refusal — `RT-K-001` … `RT-K-008`
+### The preview and the execution disagreeing about refusal — `RT-K-001` … `RT-K-008`
 
 **The largest family in the round: eight attacks, eight defects, on a surface nobody had swept.**
 
@@ -7672,7 +7672,7 @@ stops before it reaches the case nobody suspected.
 
 ---
 
-### Tier 3 — Reach, sentinels and accounting
+## Tier 3 — Reach, sentinels and accounting
 
 | id | defect |
 |---|---|
@@ -7711,9 +7711,9 @@ Read *refused* carefully. It means the attack was turned away — which is the s
 | **total** | **38** | **20** | **18** |
 
 
-### Family A — Arithmetic and value
+## Family A — Arithmetic and value
 
-#### RT-A-001 · FIXED
+### RT-A-001 · FIXED
 
 *Runs in* `REPL/RedTeam/[RT-A]_Economics.repl`
 
@@ -7725,7 +7725,7 @@ Read *refused* carefully. It means the attack was turned away — which is the s
 
 > WHY THIS IS A REAL FINDING AND NOT A PRICING PREFERENCE. `lp-churn` is a DETERRENT: its purpose is to make frequent add/remove cycling expensive, which protects the remaining liquidity providers from having the pool churned around them. A deterrent that can be declined is not a deterrent. And the cheaper door is the one the gas station subsidises. TS01-C3::SWP|C_AddLiquidity          -> SWPLC   -> UC_IgnisPrice "..." "lp-churn"  = 1051.0 TS01-CP::SWP|C_AddStandardLiquidity  -> MTX-SWP -> a literal                       =  100.0 Both are `P|UEV_IMC`-gated Talos clients, so both are the supported path; this is not a matter of calling core directly. `lp-churn` appears ZERO times in `20_MTX-SWP.pact`. The earlier repair that put every add-liquidity op onto `UC_IgnisPrice` landed in `18_SWPLC.pact` only, and nothing compared the two modules afterwards -- the suite measured each route against ITS OWN preview, and both agreed with themselves. THAT IS THE GENERAL LESSON, and it is worth the paper: a preview-versus-charge check, however rigorous, cannot see this class. It asks "does this route quote what it charges", and both routes pass. The question nobody was asking is "do two routes to the same operation charge the same". ==== RT-A-001 - route around the lp-churn deterrent by picking the other Talos client · 01 · env-sigs (caps) ====
 
-#### RT-A-002 · REFUSED
+### RT-A-002 · REFUSED
 
 *Runs in* `REPL/RedTeam/[RT-A]_Economics.repl`
 
@@ -7737,7 +7737,7 @@ Read *refused* carefully. It means the attack was turned away — which is the s
 
 > WHY THIS BLOCK EXISTS ANYWAY. The two consequences of one flag -- "no tax" and "LP is frozen" -- live FORTY LINES AND ONE DEFPACT STEP APART, in different capabilities. The price and the thing paid for it are not visible together anywhere. If a future change ever removed or conditioned that freeze, the bypass would become real and nothing would notice, because no test asserts the two are coupled. This one does. ==== RT-A-002 - the door that requires asymmetry is the one that does not tax it · 01 · env-sigs (caps) ====
 
-#### RT-A-003 · FIXED
+### RT-A-003 · FIXED
 
 *Runs in* `REPL/RedTeam/[RT-A]_Economics.repl`
 
@@ -7749,7 +7749,7 @@ Read *refused* carefully. It means the attack was turned away — which is the s
 
 > WHY THE SIBLING IS THE WHOLE POINT. `ATSU|C>FUEL` carries (enforce (>= index 0.1) "Fueling requires an ATS-Pair Index of at least 0.1") and its comment block is unusually careful -- it was REWORDED on 2026-09-13 precisely so a caller whose index is 0.05 is not told something untrue about their own pair. That much thought went into the message of one guard, while `ATSU|C>COIL` -- the op an ordinary user actually reaches -- has NO index check at all and dies inside the arithmetic. The guard was not missing because the state was unknown. It was missing on the door nobody looked at.
 
-#### RT-A-004 · REFUSED
+### RT-A-004 · REFUSED
 
 *Runs in* `REPL/RedTeam/[RT-A]_Economics.repl`
 
@@ -7761,7 +7761,7 @@ Read *refused* carefully. It means the attack was turned away — which is the s
 
 > WHY THIS BLOCK EXISTS AT ALL. That floor had NO witness before 2026-09-17. The only tests naming "out of Slippage bounds" are the #26M pair in `[6.2+3]_DPTF-SWP_Issuance-Only.repl`, and BOTH assert the message must NOT appear -- positive slippage is deliberately allowed, matching every major AMM. So the most important economic guard in the AMM was asserted only in the direction that proves it stays quiet. Deleting `(>= feeless-final min)` would have turned nothing in this tree red.
 
-#### RT-A-005 · FIXED
+### RT-A-005 · FIXED
 
 *Runs in* `REPL/RedTeam/[RT-A]_Economics.repl`
 
@@ -7778,9 +7778,9 @@ Read *refused* carefully. It means the attack was turned away — which is the s
 > Measured on shipped code before the fix, verbatim: "Succesfully swapped input(s) to Expected Output of 2366.80... out of Slippage bounds min of 990000.0 - max of 1010000.0 OURO-98c486052a51" The transaction COMMITS. The swap `@event` has already fired -- it sits on the `with-capability`, ahead of the floor check -- so an off-chain indexer sees a swap event and a success string for a swap that never happened. Zero in, zero out. THE ASSERTION THAT IS THE REGRESSION is the second one. Before the fix `(contains "Succesfully" result)` was TRUE on a swap that moved nothing. Everything else here would have passed on the defective code.
 
 
-### Family B — Permissionless reach
+## Family B — Permissionless reach
 
-#### RT-B-001 · FIXED
+### RT-B-001 · FIXED
 
 *Runs in* `REPL/RedTeam/[RT-B]_PermissionlessReach.repl`
 
@@ -7796,7 +7796,7 @@ Read *refused* carefully. It means the attack was turned away — which is the s
 
 > THE CORRECTION, and it is the part worth publishing. The registration that produced this lives at REPL/Stage_01/[2.1]_Dalos.repl        (a TEST FIXTURE) and NOWHERE else in the repository -- in particular, in no genesis payload. The DEPLOYED system never had this exception. This block was reporting a live hole in CLAUDE.md's "only supported client path" sentence; there was no hole. There was something else, and it is not obviously less serious: An audit harness that grants itself a privilege the real system withholds will certify behaviour nobody can reach. It was load-bearing, too. Five guard-type assertions in [2.1] called `ref-DALOS::C_Rotate*` directly while being LABELLED with the Talos entrypoint names. They passed only because of this registration, and removing it made them -- and only them, out of 21,732 assertions -- go red. They now run through Talos at `[6.12]_DALOS-ADMIN.repl` <<TX-DA-004>>. FIXED 2026-09-14 on the owner's ruling: "master key passes as module is correct. RotateStoa must pass through talos, if it doesn't it's a bug." The MECHANISM is correct and untouched -- a registered module guard should satisfy `P|UEV_IMC`, and every real module still registers through `P|A_AddIMP` at deploy. What is gone is the harness registering a KEY as though it were a module.
 
-#### RT-B-002 · REFUSED
+### RT-B-002 · REFUSED
 
 *Runs in* `REPL/RedTeam/[RT-B]_PermissionlessReach.repl`
 
@@ -7809,9 +7809,9 @@ Read *refused* carefully. It means the attack was turned away — which is the s
 > 05_DPTF.pact  DPTF|C>X_TOGGLE-TRANSFER-ROLE   ft in ["F|" "R|"]  SKIPS two validations 03_DPDC-C.pact URCi_RegisterCollectablesPrice  ft = "E|"          price DIVIDED BY 1000 07_DPDC-T.pact URC_TotalTransferPrice          ft = "E|"          per-nonce price /1000 An id is `UDC_Makeid(ticker)` = ticker + "-" + block-hash, so the prefix is simply the first two characters of a CALLER-SUPPLIED TICKER. `CT_SPECIAL` is ["|" "-" "^"] and `UEV_NameOrTicker` applies NO positional rule -- a special character is legal at index 0. So the question is whether a caller can name a token `E|...` and buy the thousandfold discount that `C_IssueShareholderCollection` charges a $100 equity premium for. WHY THIS IS WORTH A TEST DESPITE BEING REFUSED. The prefixes are load-bearing in three modules and the only thing standing between a user and one of them is a literal `false` written out four times, with nothing central enforcing it. A new issue wrapper that plumbed `iz-special` through to its caller -- the obvious thing to do if someone ever wants user-defined LP-style names -- would open all three privileges at once, in three modules none of which mention `iz-special`. The refusal below is pinned by message so that wrapper cannot land quietly.
 
 
-### Family C — Admin impersonation
+## Family C — Admin impersonation
 
-#### RT-C-001 · REFUSED
+### RT-C-001 · REFUSED
 
 *Runs in* `REPL/RedTeam/[RT-C]_AdminImpersonation.repl`
 
@@ -7824,9 +7824,9 @@ Read *refused* carefully. It means the attack was turned away — which is the s
 > THE RESULT THAT MATTERS IS THE ONE THAT ALMOST PASSED FOR SUCCESS. `DPTF|A_WipeTreasuryDebt` is refused by "Cannot Wipe Positive Treasury Balance" -- a BUSINESS guard, not an authorisation one. Reading `GOV|WIPE_ALL-TREASURY-DEBT` explains why: (enforce (< treasury-supply 0.0) "Cannot Wipe Positive Treasury Balance")   ;; line 402 (compose-capability (GOV|DPTF_ADMIN))                                       ;; line 403 The admin gate IS there, one line below -- but it is UNREACHABLE while the treasury is solvent, which is its normal state. So for this operation the suite can say "a non-admin was refused" without ever having exercised the admin check at all. Had `GOV|DPTF_ADMIN` been missing from that cap, this test would still be green. That is why the assertion below is deliberately worded as the business guard rather than as an admin refusal: writing it as "the admin gate refused" would state something this fixture has not shown. The honest score for this block is SEVEN admin refusals and one shadowed gate, and the shadowed one is logged as a follow-up rather than counted as a pass. A note on why `try` is banned here. An earlier pass ran these eight through `(try "REFUSED" ...)` and reported 8/8 refused -- which is TRUE and useless. The distinction above is invisible without the message, and the shadowed gate would have gone unnoticed.
 
 
-### Family D — Ownership bypass
+## Family D — Ownership bypass
 
-#### RT-D-001 · REFUSED
+### RT-D-001 · REFUSED
 
 *Runs in* `REPL/RedTeam/[RT-D]_Ownership.repl`
 
@@ -7836,7 +7836,7 @@ Read *refused* carefully. It means the attack was turned away — which is the s
 
 **What happened.** refused at `CAP_EnforceAccountOwnership` on the SENDER, naming the victim's key. Sponsorship still works when the owner signs, so the two roles are genuinely separate rather than collapsed into "whoever pays".
 
-#### RT-D-002 · FIXED
+### RT-D-002 · FIXED
 
 *Runs in* `REPL/RedTeam/[RT-D2]_Ownership-Collectables.repl`
 
@@ -7848,7 +7848,7 @@ Read *refused* carefully. It means the attack was turned away — which is the s
 
 > WHY THE `patron`/`account` SPLIT DOES NOT SAVE THIS. `DPDC-C|C>SINGLE-DEBIT` gates with `CAP_EnforceAccountOwnership account` -- so the caller must genuinely own the account they name. An attacker naming their OWN colliding account satisfies that completely. The second gate, the one that is supposed to establish that this account holds THIS NFT, is the abbreviation compare. And `DALOS|C_DeployStandardAccount` is a permissionless CLIENT wrapper on TS01-C1, whose STOA fee is itself toggle-conditional -- so the colliding account costs nothing to obtain. WHAT THE FUNCTION ALREADY HAD. `UEV_NonceQuantityInclusion` opens by binding `(nonce-supply (UR_AccountNonceSupply account id son nonce))` -- a read keyed by the FULL account string. The SFT branch enforces against it. The NFT branch BINDS IT AND NEVER USES IT. The fix is not new machinery; it is spending the value the function already computed.
 
-#### RT-D-003 · REFUSED
+### RT-D-003 · REFUSED
 
 *Runs in* `REPL/RedTeam/[RT-D]_Ownership.repl`
 
@@ -7860,7 +7860,7 @@ Read *refused* carefully. It means the attack was turned away — which is the s
 
 > WHY THIS TEST EXISTS AT ALL. `DPTF|C>DEBIT`'s ownership check was, before this block, pinned by NOTHING. RT-D-001 exercises X-TRANSFER's OWN `CAP_EnforceAccountOwnership sender`, a different call site, so deleting the one inside `DPTF|C>DEBIT` would not have turned a single assertion red -- while being the sole thing standing between a stranger and every multi-transfer in the tree. That is the shape CLAUDE.md's authorise-first ruling is about, arrived at from the other side: not a gate in the wrong order, but a gate with no witness.
 
-#### RT-D-004 · REFUSED
+### RT-D-004 · REFUSED
 
 *Runs in* `REPL/RedTeam/[RT-D2]_Ownership-Collectables.repl`
 
@@ -7870,7 +7870,7 @@ Read *refused* carefully. It means the attack was turned away — which is the s
 
 **What happened.** REFUSED at the owner gate, naming the victim's key. ==== RT-D-004 - the same theft, one collectable nonce · 01 · env-sigs (caps) ==== ===============
 
-#### RT-D-005 · REFUSED
+### RT-D-005 · REFUSED
 
 *Runs in* `REPL/RedTeam/[RT-D2]_Ownership-Collectables.repl`
 
@@ -7882,7 +7882,7 @@ Read *refused* carefully. It means the attack was turned away — which is the s
 
 > WHAT ALREADY EXISTED, stated precisely, because "no test has ever reached this" is the kind of claim this project has been wrong about before. TWO things were already green and NEITHER of them covers these three capabilities: * `[6.2.5]_AQP-VCT.repl` <<TX-VCT-L04b>> drives a non-owner at `CC_FullVacate`, `C_AbortVacate` and `C_EnablePoolStake`. Those caps call `CAP_VctVacatePoolOwner` FIRST, before any business rule -- they are the correctly-ordered siblings, and they are exactly the ones that were easy to witness. The three BATCH caps were left alone. * `modules/AQP.repl` <<AQP-F16>> calls `CAP_VctVacatePoolOwner` DIRECTLY, unsigned. That witnesses the DEFUN. It says nothing about whether any capability ever reaches it: a defcap whose business `enforce` always fires first would leave AQP-F16 green forever. The gate and the route to the gate are two different claims, and only the first had evidence. So `...e` below is NOT the interesting assertion -- it is the attribution instrument. `...c` and `...d` are the new facts: the ROUTE through a batch capability actually arrives at the gate. WHY EMMA AND NOT ANHD. ANHD is the Demiurgoi master key AND the sovereign of the account that owns this pool, so an "attack" signed by ANHD would pass the gate and prove nothing. EMMA is a STAKER here and nothing else: she has value in the pool and still may not run the pool-owner recipe. `URC_AqpOwnerKonto` is asserted below to be neither her nor anything she controls. SHAPE, since it decides how these may be driven: `CCp_` is a HYDRA recipe, not a defpact, and this one is a FED SLICE -- it takes explicit owner/beneficiary/amount arrays rather than a page size, and computes no window from stored progress. Per CLAUDE.md's recipe axes that makes it order-independent; the attack therefore needs no prior batch to have run.
 
-#### RT-D-006 · REFUSED
+### RT-D-006 · REFUSED
 
 *Runs in* `REPL/RedTeam/[RT-D2]_Ownership-Collectables.repl`
 
@@ -7894,7 +7894,7 @@ Read *refused* carefully. It means the attack was turned away — which is the s
 
 > WHY THE LEG IS THE ATTACKER'S OWN, and why that matters more than it looks. If the batch named ANHD's leg, then adding ANHD's signature in the control would be ambiguous -- it could be authorising the leg rather than the pool. Naming EMMA's own leg removes that reading entirely: the ONLY thing ANHD's signature can be doing is satisfying `CAP_VctVacatePoolOwner`. It also states the rule being tested in its sharpest form -- VACATE IS A POOL-OWNER OPERATION, so a staker may not use it even to withdraw her own stake.
 
-#### RT-D-007 · REFUSED
+### RT-D-007 · REFUSED
 
 *Runs in* `REPL/RedTeam/[RT-D2]_Ownership-Collectables.repl`
 
@@ -7907,9 +7907,9 @@ Read *refused* carefully. It means the attack was turned away — which is the s
 > AND A DIFFERENTIAL, because "the message names the victim" is only worth asserting if the message is DERIVED. The SAME defcap is driven a second time on SfStakePool (son=true, DPSF, owned by ANHD) with EMMA attacking, and names PK_Ancie instead. One capability, two pools, two different keys in the refusal: the sentence tracks `URC_AqpOwnerKonto` and is not a constant. WHY ANHD IS THE RIGHT ATTACKER HERE AND THE WRONG ONE IN RT-D-005/006. An attack signed by a key that already owns the thing proves nothing -- ANHD owns OfStakePool and is sovereign of TfStakePool's owner, so there he is useless. NfSyncPool is LUMY's, and that makes ANHD the most informative possible attacker: if the gate can refuse the master key, it refuses anybody.
 
 
-### Family E — Sequencing and state
+## Family E — Sequencing and state
 
-#### RT-E-001 · REFUSED
+### RT-E-001 · REFUSED
 
 *Runs in* `REPL/RedTeam/[RT-E]_Sequencing.repl`
 
@@ -7921,7 +7921,7 @@ Read *refused* carefully. It means the attack was turned away — which is the s
 
 > THE HALF THAT IS TRUE, and it is worth pinning on its own. After the late stake: unclaimed-count = 1      nzs-count = 3       <- they have diverged, exactly as predicted URC_AvailableRewards(newcomer)  = 0.000000000000     <- owed nothing URC_ClaimableRewards(newcomer)  = 690.525983513596   <- offered the ENTIRE vault So `URC_ClaimableRewards` will hand the whole remaining supply to an account with no claim on it. That value is real and it is wrong; it is simply not reachable through the collect path. WHAT STOPS IT, and it is deliberate rather than lucky. `A_Stake`'s insert for a new contributor stamps <last-collected-round> with the CURRENT distribution-round: ;;#1C: new contributor starts at the CURRENT distribution-round, so a (mis-ordered) ;;     post-inject stake is not eligible for the already-injected round. (UDC_UserData 0.0 0 (UR_Global6) 0.0 (UR_Global11) account) and `STOAICO|REDEEM-CONTRIBUTION` enforces `(< last-collected-round distribution-round)`. A newcomer is therefore born already-collected for the round they joined. Someone modelled this exact attack and closed it at the eligibility layer. WHY THIS IS STILL WORTH A BLOCK RATHER THAN A SHRUG. The theft is prevented by ONE stamp, in a different function from the one that computes the dangerous number, with no assertion previously connecting them. `URC_ClaimableRewards` is also read by presentation paths, where it will state a figure the account cannot have. If that stamp is ever changed -- a new contributor starting at round 0, say, which reads like a harmless initialisation -- this becomes a live theft primitive with no other guard in the way. The assertions below pin BOTH halves, so the day the stamp moves, the first two go red and name what broke.
 
-#### RT-E-002 · REFUSED
+### RT-E-002 · REFUSED
 
 *Runs in* `REPL/RedTeam/[RT-E]_Sequencing.repl`
 
@@ -7933,7 +7933,7 @@ Read *refused* carefully. It means the attack was turned away — which is the s
 
 > That is safe today and structurally thin. Every MTX step currently moves the starter's tokens, so every one demands their key. A future step that touched only protocol state -- a sweep, a recompute, a flag flip -- would have nothing to demand it, and this attack would succeed against that step without anything else changing. The attack is worth keeping precisely because it does not test a guard; it tests an ABSENCE, and the absence is still there. NON-VACUITY is asserted in RT-E-002b: the same pact, continued by the account that started it, proceeds. A step that refused everyone would satisfy the refusal above and prove nothing -- RT-C-001's lesson.
 
-#### RT-E-003 · REFUSED
+### RT-E-003 · REFUSED
 
 *Runs in* `REPL/RedTeam/[RT-E]_Sequencing.repl`
 
@@ -7946,9 +7946,9 @@ Read *refused* carefully. It means the attack was turned away — which is the s
 > FOUND BY COUNTING, NOT BY SUSPICION. The sequencing family was the round's thinnest and the question "which surface is least covered?" was answered by enumerating every Hydra recipe in the tree and counting the test files that drive each. Ten had between three and seven. This one had zero -- an admin entrypoint that moves other people's money, with no test.
 
 
-### Family F — Griefing and denial of service
+## Family F — Griefing and denial of service
 
-#### RT-F-001 · FIXED
+### RT-F-001 · FIXED
 
 *Runs in* `REPL/RedTeam/[RT-F]_Griefing.repl`
 
@@ -7964,7 +7964,7 @@ Read *refused* carefully. It means the attack was turned away — which is the s
 
 > THE GUARD ITSELF IS CORRECT AND MUST STAY. Executing a quote against a pool that has since moved is how a liquidity provider silently gets a worse ratio than the one they agreed to. `SWPX-10` in modules/SWP.repl already pins that the guard fires. What NOTHING pinned is what it costs the victim when it does. THE DEFECT IS THE ORDER OF FEE AND VALIDATION, not the validation. Money moves in step 0; the condition that decides whether the operation can happen at all is checked in step 1. Between them sits the open chain. On a pool with any trading activity the add is not merely grief-able — it is unreliable by construction, because `PoolState` equality is exact and includes supplies. AND IT IS WORSE BECAUSE OF <<RT-A-001>>. That repair raised this step-0 fee from a flat 100.0 to the real 1051.0 raw deterrent — correctly, since the cheap door was letting providers decline the churn deterrent entirely. But the same change multiplied the griefing payoff by ten: what an attacker destroys with one swap went from 53.0 to 557.03 net. Closing an economic bypass widened a denial-of-service. That trade is worth making — an optional deterrent is worse than an expensive one — but it must be recorded rather than discovered later, and it is the reason this block sits directly after RT-A-001 in the report. RECOMMENDED, NOT APPLIED: collect the deterrent in the step that SUCCEEDS, or refund it on the rollback path. Both change when money moves inside a defpact, which is a design decision and not a transcription fix, so it is left for a ruling. The block pins present behaviour meanwhile. THE RULING COVERS THREE OPS, NOT ONE (established 2026-09-16 by asking the same question of every defpact in the tree). `MTX|C_AddFrozenLiquidity` and `MTX|C_AddSleepingLiquidity` collect the same `URCi_AddLiquidityInitiation` in step 0 and carry the SAME step-1 guard with the same message, character for character. Everything above applies to them verbatim; neither is pinned, because nobody in this chain holds the frozen LP twin and the LP has no sleeping link, so pinning them needs fixtures staged first. See DEFECT-LEDGER 7.3.
 
-#### RT-F-002 · FIXED
+### RT-F-002 · FIXED
 
 *Runs in* `REPL/RedTeam/[RT-F]_Griefing.repl`
 
@@ -7977,9 +7977,9 @@ Read *refused* carefully. It means the attack was turned away — which is the s
 > ORIGINALLY FILED AS M11 AND CLOSED AS UNREACHABLE. The verdict rested on "MTX-SWP has zero Talos wiring"; `05_TS01-P.pact:221-330` wires all six starters. DEFECT-LEDGER 8.4.
 
 
-### Family G — Hostile citizen module
+## Family G — Hostile citizen module
 
-#### RT-G-001 · REFUSED
+### RT-G-001 · REFUSED
 
 *Runs in* `REPL/RedTeam/[RT-G]_HostileCitizen.repl`
 
@@ -7991,7 +7991,7 @@ Read *refused* carefully. It means the attack was turned away — which is the s
 
 > WHY THE BOUNDARY HOLDS, mechanically. `P|UEV_IMC` passes only if the caller holds one of the capability guards registered in DALOS's policy list, and those are `create-capability-guard`s over capabilities that only the owning module's own code can bring into scope. A foreign module cannot acquire another module's capability in Pact, so it cannot satisfy the gate no matter what it signs. Registration itself is closed too: `DALOS::P|A_AddIMP` requires `GOV|DALOS_ADMIN`, so an attacker cannot add their own guard to the list. A WHOLE-SURFACE SCAN BACKS THIS UP rather than leaving it at two samples. Of the 290 `C_`/`CC_` implementations across the sovereign core, 289 carry `P|UEV_IMC`. The single exception is `IGNIS::C_TransferDalosFuel`, and it is safe by DELEGATION rather than by a gate: its body is a `coin::transfer`, and Stoa's coin requires the SENDER's own managed TRANSFER capability. That is attacked separately at <<RT-G-002>> rather than taken on trust. ==== RT-G-001b - the adversary attacks the sovereign core · 01 · env-sigs (caps) ==== ===========
 
-#### RT-G-002 · REFUSED
+### RT-G-002 · REFUSED
 
 *Runs in* `REPL/RedTeam/[RT-G]_HostileCitizen.repl`
 
@@ -8004,9 +8004,9 @@ Read *refused* carefully. It means the attack was turned away — which is the s
 > WHY THIS ENTRYPOINT HAS NO GATE, and why that is defensible. It is a PRIMITIVE: every `STOA|C_Collect*` path funnels through it, so gating it with `P|UEV_IMC` would gate the collector against itself. CLAUDE.md classes it with the `STOA|C_Collect*` family for exactly this reason. Its authorisation is DELEGATED one layer down to Stoa's coin contract instead of being restated. THE LAYER THAT ACTUALLY HOLDS, and it is not the one people assume. Attempt (1) fails on `Managed capability not installed`, which sounds like the defence but is not: an attacker simply installs it, and attempt (2) does. What stops (2) is that the gas station's STOA account is a `c:` PRINCIPAL whose guard is `(create-capability-guard (DALOS|NATIVE-AUTOMATIC))`, and `coin.pact:144`'s `(enforce-guard (UR_Guard sender))` therefore demands a CAPABILITY, not a signature. No key can satisfy it; only DALOS's own code bringing that capability into scope can. Capability not acquired: CapabilityGuard {name: ouronet-ns.DALOS.DALOS|NATIVE-AUTOMATIC ...} That is the property worth publishing: the sovereign smart accounts are not protected by secrecy or by a signature that could leak, but by a guard that is unsatisfiable from outside the module. An attacker holding EVERY private key in the system still cannot move the gas station's funds. ==== RT-G-002 - drain the gas station through the one ungated entrypoint · 01 · env-sigs (caps) ====
 
 
-### Family H — Input domain
+## Family H — Input domain
 
-#### RT-H-001 · FIXED
+### RT-H-001 · FIXED
 
 *Runs in* `REPL/RedTeam/[RT-H]_InputDomain.repl`
 
@@ -8018,7 +8018,7 @@ Read *refused* carefully. It means the attack was turned away — which is the s
 
 > WHAT USED TO REFUSE THE SELF-SWAP, and it was not a validator. `output-id` in `input-ids` passed every check in `SWPU|X>SWAP`: it is on the pool, its amount is positive, the lengths match. The swap proceeded INTO the curve math, which computed an output of exactly ZERO -- adding and removing the same token on a constant-function curve nets to nothing -- and the transfer of that zero was then refused by `DPTF::UEV_Amount`'s `(> amount 0.0)`. The transaction was rejected by a ZERO-AMOUNT TRANSFER RULE, three modules away from the mistake, and only because the arithmetic happened to land on exactly 0.0. That was the finding. The system was not protected from self-swaps by a rule forbidding them; it was protected by the curve returning zero. Any future change that made a self-swap return a non-zero positive amount -- a different curve, an amplifier, a fee rebate, a rounding direction -- would have turned this into value creation with no guard in the way. WHAT USED TO REFUSE THE DUPLICATE was also not a uniqueness rule: "Only a single Input can be used in Stable Swap" is a POOL-TYPE rule. It happened to make duplicates unconstructible on a STABLE pool because stable pools take one input at all. It said nothing about weighted pools, which accept several inputs by design -- so the duplicate case was pinned only for the stable shape and the weighted shape was an open follow-up. THE FIX. `SWPU|X>SWAP` now states both rules directly, as properties of the SET: (enforce (not (contains output-id input-ids)) "Output Token ... cannot also be an Input ...") (ref-U|LST::UEV_IzUnique input-ids) Both now refuse IN THE CAPABILITY, before any debit and before the curve is evaluated. That is the difference this block measures: not merely that the attacks fail, but that they fail EARLY and for a reason that names them. The old defences remain in place behind these; they are simply no longer the thing standing between a malformed set and the pool. ==== RT-H-001 - swap a token for itself, and swap a token twice · 01 · env-sigs (caps) ==== =====
 
-#### RT-H-002 · FIXED
+### RT-H-002 · FIXED
 
 *Runs in* `REPL/RedTeam/[RT-H]_InputDomain.repl`
 
@@ -8028,7 +8028,7 @@ Read *refused* carefully. It means the attack was turned away — which is the s
 
 **What happened.** the ceiling is not enforced anywhere the value is USED. `UEV_SwapData` validates token sets, lengths and output-not-in-inputs and says nothing about slippage; a grep for `enforce` beside `slippage` in 19_SWPU.pact returns ONE hit and it is a doc comment. Above 100% the derived `min` goes NEGATIVE, which makes the bound a no-op -- every possible output passes. That is what the <= 50 ceiling exists to prevent.
 
-#### RT-H-003 · FIXED
+### RT-H-003 · FIXED
 
 *Runs in* `REPL/RedTeam/[RT-H]_InputDomain.repl`
 
@@ -8041,9 +8041,9 @@ Read *refused* carefully. It means the attack was turned away — which is the s
 > THIS EXACT BUG WAS FIXED TWENTY LINES BELOW, THREE DAYS EARLIER. `C_Recover` carries a comment block explaining that its capability was moved ABOVE its `let` on 2026-09-12 because "for a token that is not reward-bearing `UR_RewardBearingToken` returns the BAR sentinel, so the next binding looked up ATS pair `|` and died with `No value found in table ouronet-ns.ATS_ATS|Pairs for key: |`." Same sentinel, same eager-`let` ordering, same error shape, different table -- and the sibling immediately above it was left alone. The repair here is the one that was already written once. ==== RT-H-003 - the BAR sentinel as a table key, again · 01 · env-sigs (caps) ==== ==============
 
 
-### Family I — Gas-station payable surface
+## Family I — Gas-station payable surface
 
-#### RT-I-001 · FIXED
+### RT-I-001 · FIXED
 
 *Runs in* `REPL/RedTeam/[RT-I]_GasStation.repl`
 
@@ -8055,7 +8055,7 @@ Read *refused* carefully. It means the attack was turned away — which is the s
 
 > OWNER: "an IGNIS gas payer account can only be a STANDARD account. A smart account can never be a gassless payer, EXCEPT one single account HARDCODED into the code, to allow admin-based gassless IGNIS transactions -- the Ouroboros daily minter uses such a gassless patron. No other smart account should have this property." THE CODE IMPLEMENTS NO SUCH HARDCODING. `iz-gassles-patron` is `(DALOS::UR_AccountType patron)` = the `smart-contract` flag, which `XI_DeploySmartAccount` sets to `true` UNCONDITIONALLY. "gassles" appears exactly TWICE in all of 1_SOVEREIGN and both are those two lines. So the exemption's population is not one account -- it is SEVEN system smart accounts created by [4.0]_Sovereign-Executor, PLUS every user smart account, because `DALOS|C_DeploySmartAccount` is a CLIENT wrapper (TS01-C1:311), not an admin one. Measured on KC.BJ -- an ordinary user account on a user keyset -- at RT-I-001h. FIX SHAPE (the account is the owner's to name): `iz-gassles-patron` should compare the patron against the ONE designated account, not read the smart flag. The original framing below still holds and is the mechanism: the defect is NOT the unvalidated tail -- that is the custom-code door working as designed, with the fee as its bound. The defect is that THE FEE CAN BE DECLINED. Every link measured below: 1. Case 3 inspects forms 0, 1, 2 only; `(>= n 3)` bounds nothing above.   [RT-I-001c] 2. The COUNT of appended forms is unbounded.                              [RT-I-001d] 3. Form 2 need only START with "(let" -- its body is unread.              [RT-I-001e] 4. The door is priced at a FLAT (* 5.0 tier-biggest): 25 raw, 13.25 after a top-tier discount -- independent of what the tail does.              [RT-I-001f] 5. A GASSLESS (smart) account pays 0.0. `IGNIS::C_Collect` collects only `(if (and (!= ignis-sum 0.0) (not iz-gassles-patron)) ...)`.           [RT-I-001g] 6. Smart accounts are PERMISSIONLESS: `DALOS|C_DeploySmartAccount` is a CLIENT wrapper on TS01-C1:311, not an admin one, priced in STOA at `acct-smart` 1000 deter = 100 STOA (~$10) -- and that fee is itself conditional on `UR_AccountCreationStoa`, so it is ZERO when the account-creation toggle is off. So: pay once (or nothing), then submit unlimited transactions of the shape `namespace + IGNIS.C_Collect(CustomCodeCumulator) + (let ...) + <arbitrary code>`, paying NO IGNIS, with the gas station funding up to DALOS|GAS-BUDGET = 2,000,000 gas units of NATIVE STOA each time. (There is no gas station for IGNIS -- only for native STOA.) THIS IS RT-A-001's SHAPE IN THE GAS STATION: a deterrent that can be declined. There the second door skipped `lp-churn`; here the gassless exemption skips the custom-code fee. The appended code still satisfies its own guards, so it is not theft -- it is FREE EXECUTION, which is the one thing a gas station exists to ration. SCOPE OF WHAT IS PROVEN. Links 1-5 are measured in this file; link 6 is read off the Talos surface. The COMPOSITION is not executed end to end, because the REPL cannot simulate chainweb's buy-gas phase -- `test-capability` acquires GAS_PAYER exactly as buy-gas would, which is what makes 1-3 real, but no REPL can show the KDA actually leaving the station. That last step is an on-chain smoke test, and it is the only part of this finding that is inference rather than measurement. ONE TRANSACTION PER CASE, AND THAT IS NOT COSMETIC. The first draft of this attack put all five cases in ONE begin-tx and reported a clean success. It was vacuous: `test-capability` GRANTS the capability for the remainder of the transaction, so cases 2-5 never re-evaluated the defcap body at all -- they were reading a cap already in scope from case 1. The CONTROL is what exposed it: a single foreign form, which DALOS-G2c proves is refused, came back as "expected failure, got result: ()". Without that control this file would have claimed a gas-station hole it had not demonstrated. Capability scope is per-transaction; so is each case below. BASELINE. Without this the refusals below prove nothing -- a Case 3 that rejects everything is not a hole, it is a closed door. ==== RT-I-001a - BASELINE: the intended Case 3 shape is funded · 01 · env-sigs (caps) ==== ======
 
-#### RT-I-002 · REFUSED
+### RT-I-002 · REFUSED
 
 *Runs in* `REPL/RedTeam/[RT-I]_GasStation.repl`
 
@@ -8068,9 +8068,9 @@ Read *refused* carefully. It means the attack was turned away — which is the s
 > WHY THIS BLOCK EXISTS AT ALL. Family I was assessed as the round's thinnest surface on an attack COUNT -- one attack. That assessment was wrong in the way counts usually are: `modules/DALOS-ADMIN.repl` already drives `GAS_PAYER` through five blocks, including the notional ceiling at <<DALOS-G2d>> and two dead guards at <<DALOS-G2e>>. Counting attacks in a family undercounts coverage that lives in a module suite. What was genuinely missing was not the cap -- it was the ARM BESIDE the cap.
 
 
-### Family J — Ledger conservation
+## Family J — Ledger conservation
 
-#### RT-J-001 · FIXED
+### RT-J-001 · FIXED
 
 *Runs in* `REPL/RedTeam/[RT-J]_Conservation.repl`
 
@@ -8082,7 +8082,7 @@ Read *refused* carefully. It means the attack was turned away — which is the s
 
 > WHY THE TWO NON-VACUITY GUARDS ARE NOT DECORATION. This sweep is an argument of the form "I looked everywhere and found nothing", which is worthless unless "everywhere" is proven. Both guards fired for real during construction: (a) the first run reported OURO conserved and GAS off by 9302.0225. Both were WRONG -- the sweep was summing DALOS balances over only the accounts that happened to own a DPTF placeholder row, 6 of 24. The partition guard says every row is attributed; the account guard says every ACCOUNT is swept. Only the second one could catch that. (b) loading [6.3]_SWP raised the account count from 24 to 26 -- it deploys two more. The account guard went red immediately. Without it the sweep would have quietly gone back to under-counting, and reported a DIFFERENT wrong number with equal confidence.
 
-#### RT-J-002 · REFUSED
+### RT-J-002 · REFUSED
 
 *Runs in* `REPL/RedTeam/[RT-J]_Conservation.repl`
 
@@ -8094,7 +8094,7 @@ Read *refused* carefully. It means the attack was turned away — which is the s
 
 > THE FIRST RUN LOOKED LIKE FOUR DEFECTS AND WAS FOUR MISREADINGS OF ONE CONVENTION. Summing nonce supplies naively gave `Z|VST` short by 31.0, `DDKOSON` by 4.0, `V|OURO` by 1.0, and `Z|OURO` a NEGATIVE total of -1.0 against a supply of 0.0. Every one of those deltas turned out to equal that token's `UR_NoncesExcluded` exactly, because an excluded nonce is TOMBSTONED, not deleted: supply = -1.0   and   holder = BAR `-1.0` is a marker, not a balance. So the assertions below do not merely skip tombstones -- that would hide the convention rather than test it. They pin it: the tombstone COUNT must equal `UR_NoncesExcluded`, no nonce may carry any other negative value, and `supply = -1.0` must hold if and only if `holder = BAR`. MUTATION-TESTED, because an all-green sweep is exactly the shape a vacuous one has. TWO controls were needed, and finding that out was the point: 1] sentinel -1.0 -> -2.0 in this block: <<RT-J-002b>>, <<RT-J-002c>> and <<RT-J-002d>> go red. 2] that control left <<RT-J-002e>> GREEN -- and the reason matters. 002e selects a nonce by its HOLDER, and a tombstone's holder is BAR, which is not an account, so no account ever picks a tombstone up no matter what the sentinel is. The aggregate-vs-ledger check is therefore independent of the tombstone convention, and needed its own control: flipping the holder match to `!=` reddens <<RT-J-002e>> and NOTHING ELSE. One perturbation reddening four assertions would have PROVEN LESS, not more -- it would have meant the four were one assertion wearing four labels.
 
-#### RT-J-003 · REFUSED
+### RT-J-003 · REFUSED
 
 *Runs in* `REPL/RedTeam/[RT-J2]_Conservation-Collectables.repl`
 
@@ -8107,9 +8107,9 @@ Read *refused* carefully. It means the attack was turned away — which is the s
 > THE MISREADING THIS FILE EXISTS TO PREVENT. Summed naively, DPNF looks broken: six `CNF` nonces and one `TSFN` nonce report supply 1 against zero holdings. They are not leaks. `nonce-supply` for an NFT is documented as "Always 1 ... even when burned or wiped" (01_DPDC-UDC.pact:55) and `nonce-holder = BAR` means the nonce is INACTIVATED. So <<RT-J-003e>> pins the constant itself: if `nonce-supply` ever becomes a real quantity for NFTs, this goes red and whoever made that change is told that the sweep above now means something different. <<RT-J-003c>> IS ALSO RT-D-002's SAFETY PREMISE. That fix added a full-account possession check to `UEV_NonceQuantityInclusion` on the strength of one measurement -- that AccountSupplies is reliably maintained for NFTs. Here that measurement becomes a standing assertion instead of a memory. MUTATION-TESTED, one control PER ASSERTION. RT-J-002 established why that matters: a single perturbation reddening several assertions proves they are one assertion wearing several labels, and a single perturbation that leaves one green proves nothing about it at all. Each of these reddens EXACTLY its own line and nothing else: 003a   count rows with parts > 2 instead of < 3 003b   compare DPSF supply against (held + 1) 003c   flip the holder short-form match to != 003d   flag inactive nonces with n = 0 instead of n != 0 003e   assert the NFT supply constant is 2 instead of 1
 
 
-### Family K — Preview/execution divergence
+## Family K — Preview/execution divergence
 
-#### RT-K-001 · FIXED
+### RT-K-001 · FIXED
 
 *Runs in* `REPL/RedTeam/[RT-K]_PreviewParity.repl`
 
@@ -8121,7 +8121,7 @@ Read *refused* carefully. It means the attack was turned away — which is the s
 
 > WHAT WAS FOUND, of seven ops swept: Coil, Curl        parity already -- their guard lives in URC_RBT, which BOTH paths share. Fuel              the preview returned a FULL QUOTE, ignis-need 0.53, with the post-text "Succesfully fueled 100.0 BI-... into ATS-Pair Bisthanium-..." for an op C_Fuel refuses outright. A confident prediction of success for something that cannot happen. ColdRecovery      the preview threw `No value found in table ouronet-ns.ATS_ATS|Ledger for key: <pool>|<the caller's full 162-char account>` -- a raw table error that also prints the account back at them. DirectRecovery    the preview threw `Arithmetic exception: div by zero, decimal`. HotRecovery       both refused cleanly but for DIFFERENT reasons -- the preview named the missing Hot-RBT, the op named the toggle. Both true; still a divergence. AND THE BUG HAD THREE LAYERS, which is the part worth remembering. DirectRecovery carried it in the exec (fixed first), again in `URCi_DirectRecovery` (its own eager `let`), and AGAIN in `INFO_ATS|DirectRecovery`, whose wrapper re-derives `release-amounts` before it ever calls the cost reader. Fixing the first two left the quote still throwing. THE REPAIRS ARE ALL "SHARE THE GUARD", NEVER "COPY THE MESSAGE": * `UEV_FuelableIndex` -- new module-local helper, called by ATSU|C>FUEL *and* URCi_Fuel, so the message exists once; * the Cold/Direct/Hot previews call `ref-ATS::UEV_*RecoveryState` -- the very function their capabilities call; * `URCv_RTSplitAmounts` gets the zero-index guard once, covering all TEN of its call sites; * `INFO_ATS|DirectRecovery` binds its cost reader FIRST, so the op's gate runs before the wrapper's own derivations. ==== RT-K-001 - does the quote refuse where the op refuses · 02 · let / invocation ==== =========
 
-#### RT-K-002 · FIXED
+### RT-K-002 · FIXED
 
 *Runs in* `REPL/RedTeam/[RT-K]_PreviewParity.repl`
 
@@ -8133,7 +8133,7 @@ Read *refused* carefully. It means the attack was turned away — which is the s
 
 > THE LINE THIS BLOCK DRAWS, because getting it wrong would mean bolting validation onto 401 previews on my own authority: STRUCTURAL impossibility -- the token does not exist, the pool index is zero, there is no Hot-RBT. Nothing the caller does in this block makes the op available. A quote here is simply WRONG, and `INFO_DPTF|Burn` was returning the post-text "Succesfully burned 1.0 NOSUCHTOKEN-98c486052a51 on Account ..." -- narrating success for a token that has never existed. FIXED: URCi_Burn / URCi_Mint now call `UEV_id`, the same check the exec uses, so both refuse in one wording. TRANSIENT affordability -- the balance is too low, the role is missing. These change between the quote and the submission, and that is the normal life of a quote. `INFO_DPTF|Transfer` quotes 99,999,999 BUSD against a balance of 8,929,990 and says "Succesfully transfered ...". That is defensible AS A COST QUOTE: `post-text` reads as the success TEMPLATE rather than a prediction, and a UI may well want the price before the user has funded anything. It is also arguably a dry-run failure. THAT IS AN OWNER DECISION, not mine, so <<RT-K-002e>> pins the CURRENT behaviour rather than changing it -- documented, and impossible to alter silently. ALSO OBSERVED, and left alone deliberately: driven at a non-existent id, `DPTF|C_Transfer` and its preview BOTH give the raw `No value found in table ouronet-ns.DPTF_DPTF|PropertiesTable for key:` -- they are in PARITY, so it is not a family-K divergence, but neither carries the `UEV_id` check that `C_Burn` and `C_Mint` both have. That is the sibling-rule shape from RT-H-003 on a hotter path, and it is recorded rather than patched here because it changes a refusal MESSAGE on the most frequently called op in the system, which is exactly the kind of change that wants its own pass. ==== RT-K-002 - the same question of the most-used family, and where the line is · 02 · let / invocation ====
 
-#### RT-K-003 · FIXED
+### RT-K-003 · FIXED
 
 *Runs in* `REPL/RedTeam/[RT-K]_PreviewParity.repl`
 
@@ -8147,7 +8147,7 @@ Read *refused* carefully. It means the attack was turned away — which is the s
 
 > WHAT THE SWEEP RETURNED, and the negative half is most of it: RotateOwnership, TogglePause, AddQuantity, Burn, Mint IN PARITY. Both paths give the SAME raw `No value found in table ouronet-ns.DPOF_DPOF|T|Properties for key: ...`. Not a family-K divergence -- the quote is exactly as wrong as the op, which is all family K asks. The shared raw WORDING is a separate, H-class gap and is recorded as known-open in DEFECT-LEDGER 7.3, together with the same gap on DPTF|C_Transfer. <<RT-K-003d>> pins the PARITY, deliberately not the wording: it must keep holding if and when that wording is improved on both sides. DeployAccount    DIVERGED. The preview returned a full quote narrating "Succesfully deployed a New DPOF Account for DPOF NOSUCHOFT-98c486052a51 ..." -- the wrapper only ever FORMATS <id>, so nothing in it touched the token. AND THE EXEC SIDE WAS THE MORE INTERESTING HALF. `C_DeployAccount` ALREADY CALLED `UEV_id`. It sat in the `let` BODY, three lines under a binding group whose second entry is `(create-role-account (UR_Verum4 id))` -- a read of DPOF|T|VerumRoles. Pact evaluates every binding in a group before the body, so the check written for exactly this input could never run, and the op died with `No value found in table ouronet-ns.DPOF_DPOF|T|VerumRoles for key: <id>`. ==== RT-K-003 - the ortofungible family, and a guard that existed but could not run · 02 · let / invocation ====
 
-#### RT-K-004 · FIXED
+### RT-K-004 · FIXED
 
 *Runs in* `REPL/RedTeam/[RT-D2]_Ownership-Collectables.repl`
 
@@ -8161,7 +8161,7 @@ Read *refused* carefully. It means the attack was turned away — which is the s
 
 > AND ONE REAL DIVERGENCE, which also turned out to be an EXEC diagnosis bug: preview  raw `No value found in table ouronet-ns.DPDC_DPNF|T|Properties for key: ...` exec     clean, but WRONG ABOUT WHY: "NFT Burn Role for NOSUCHCOL-98c486052a51 on Account ... must be set to true for exec" The op answered about a ROLE ON A COLLECTION IT HAD NOT ESTABLISHED EXISTS. That message is true and useless: there is no collection to hold a role on. `DPDC-MNG|C>BURN-NFT` checked the role before existence, so `UEV_id` -- which DPDC already has, and which yields "DPNF ID <id> does not exist" -- never got the chance to say the useful thing. WHY THE PREVIEW GOT ONLY THE STRUCTURAL CHECK, and not the role check its exec also runs: family K's rule from RT-K-002 is that a preview validates what the caller CANNOT change (the collection does not exist) and not what they can (a role they may be granted between quote and submission). Mirroring the role check would have bought message parity at the cost of turning 401 cost quotes into dry runs, which was decided against. ==== RT-K-004 - the collectable family: a role reported on a collection that does not exist · 02 · let / invocation ====
 
-#### RT-K-005 · FIXED
+### RT-K-005 · FIXED
 
 *Runs in* `REPL/RedTeam/[RT-K]_PreviewParity.repl`
 
@@ -8173,7 +8173,7 @@ Read *refused* carefully. It means the attack was turned away — which is the s
 
 > WHY THIS ONE IS WORTH MORE THAN A TIDIER MESSAGE. `SWP|C_AddIcedLiquidity` is a DEFPACT. `UEV_AddChilledLiquidity` refuses the door on a pair without frozen LP -- but it refuses in STEP 1, and RT-A-002 already measured that STEP 0 SUCCEEDS AND COLLECTS THE INITIATION FEE. So the quote is the only chance a caller has to learn the door is shut BEFORE paying to find out. And what the quote said instead was `DPTF ID | does not exist`. With frozen LP off, the frozen- token getter returns the BAR sentinel, which reached a token-existence check -- a true statement that names the SEPARATOR as if it were a token, about a token the caller never mentioned. Third family in which the BAR sentinel has surfaced as a user-facing message (RT-H-003, RT-K-003). ONLY THE FROZEN-LP HALF IS CHECKED in the preview. `UEV_AddChilledLiquidity`'s other enforce depends on the amounts, which the caller controls and can change between quote and submission -- transient, and family K validates what the caller CANNOT change (RT-K-002). ==== RT-K-005 - the swap family: a quote that could not warn about a door it knew was shut · 02 · let / invocation ====
 
-#### RT-K-006 · FIXED
+### RT-K-006 · FIXED
 
 *Runs in* `REPL/RedTeam/[RT-K2]_PreviewParity-Launchpad.repl`
 
@@ -8185,7 +8185,7 @@ Read *refused* carefully. It means the attack was turned away — which is the s
 
 > WHAT WAS FOUND, in both directions at once: buy 0     the PREVIEW QUOTED IT. The exec refuses "Invalid Dollar Amount for Deposit". buy -5    both refused -- with DIFFERENT MESSAGES. The exec gave its own; the preview gave "Deposit amount must be non-negative", which belongs to `UCv_ComputeDepositRoyalty` and was reached incidentally on the way to a price. A refusal borrowed from whichever helper happened to notice first is not the op's answer, it is a coincidence. THE FIX POINT IS WHY THIS ONE IS WORTH ITS RUNTIME. Every launchpad sale -- Spark, Snakes, Custodians, StoicPay -- prices its purchase through `DEMIPAD::URCi_Deposit`, and every one of them executes through `DEMIPAD|C>DEPOSIT`. The check lived INLINE in the capability, so the reader had no way to share it. Extracted to `UEV_DepositDollarAmount` and called by both, ONE definition now serves every sale on the launchpad. ==== RT-K-006 - the launchpad quote, at an amount no sale can honour · 02 · let / invocation ====
 
-#### RT-K-007 · FIXED
+### RT-K-007 · FIXED
 
 *Runs in* `REPL/RedTeam/[RT-D2]_Ownership-Collectables.repl`
 
@@ -8197,7 +8197,7 @@ Read *refused* carefully. It means the attack was turned away — which is the s
 
 > `UEV_LiveAnchor` EXISTS AND IS WRITTEN FOR EXACTLY THIS INPUT: (enforce iz-anchor-active (format "Anchor {} must be alive for operation" [anchor-id])) It could not deliver that sentence. `iz-anchor-active` comes from `UR_ANK|State`, which was a bare `read` -- so for an anchor that does not exist the raw `No value found in table ouronet-ns.AQP-ANK_ANK|T|Anchor for key: <id>` fired one line earlier, every time. The validator was reachable for anchors that exist and unreachable for the only input that needed it. THIRD INSTANCE OF ONE SHAPE, and the first where the obstruction was a READER rather than an eager `let`: C_Recover (2026-09-12) and C_HotRecovery (RT-H-003) had their capability below the bindings; C_DeployAccount (RT-K-003) had its check below the bindings; here the check is in the right place and the value it reads raises before it can be tested. Same lesson from a new direction: A GUARD BEING PRESENT IS NOT A GUARD BEING REACHABLE, and `grep` cannot tell the two apart. Fixed by defaulting `UR_ANK|State` -- an anchor that does not exist is not active, which is what both of its callers mean by the question (the other, an anchor filter, already screens BAR and wants false for anything not alive). Same shape as DPTF's `UEV_id`, which defaults <supply> to -1.0 for exactly this reason. THE PREVIEW HALF IS RECORDED, NOT FIXED, and DEFECT-LEDGER 7.3 carries the reason: `INFO_AQP-ANK|RevokeAnchor` still quotes a revoke of an anchor that never existed, post-text "Anchor <id> revoked." Guarding it is a two-line change, and it breaks `[6.5]_AQP-INFO.repl` -- a DELIBERATELY FIXTURE-FREE cost-shape suite that passes arbitrary ids ("ANK-x", "DPTF-x", "BC-x") to all 83 AQP readers on the sound principle that AQP prices are ARGUMENT-INDEPENDENT. Making AQP previews validate ids would require anchor, score and boost-class fixtures for every one of them. That is a real piece of work with a real design question inside it, and it is not something to smuggle in behind a one-line commit. ==== RT-K-007 - a third guard that existed and could not run · 02 · let / invocation ==== =======
 
-#### RT-K-008 · FIXED
+### RT-K-008 · FIXED
 
 *Runs in* `REPL/Stage_02/[6.3]_STOAICO.repl`
 
@@ -8224,7 +8224,7 @@ was found.
 
 ---
 
-### The pattern
+## The pattern
 
 Fifteen instrument defects, and the majority are one shape:
 
@@ -8237,7 +8237,7 @@ one does not.
 
 ---
 
-### The coverage instrument reported ratios without their exclusions — twice
+## The coverage instrument reported ratios without their exclusions — twice
 
 `_ownerobs.py` spent days reporting *"39 of 112 ownership gates witnessed"*. The tree contains
 **185**. Seventy-three were outside the denominator, including the entire token-DEBIT layer — the
@@ -8248,7 +8248,7 @@ catalogued this error **in other tools**. It recurred in the tool written to aud
 
 ---
 
-### The tool index was wrong about a quarter of the tools it indexed
+## The tool index was wrong about a quarter of the tools it indexed
 
 The repository documentation names `TOOLS.md` as the safe way to learn what a tool does — explicitly,
 *"never run a tool to find out what it does; read its docstring, or check the table"*. That guidance
@@ -8260,7 +8260,7 @@ was itself unreliable.
 
 ---
 
-### Five tools reported on populations they had defined to exclude the gaps
+## Five tools reported on populations they had defined to exclude the gaps
 
 This is the dominant failure mode in the whole record, and it is worth naming precisely because each
 instance looked different and none looked like a bug.
@@ -8281,7 +8281,7 @@ The remedy in every case was the same: **discover the population, then check the
 Where discovery is impossible — a figure that needs a live run the tool cannot perform — the honest
 move is to say the tool cannot see it, not to check a number it cannot derive.
 
-### Two checks that enforced what they should have questioned
+## Two checks that enforced what they should have questioned
 
 Worse than a tool that misses something is a tool that **locks in the error**.
 
@@ -8298,7 +8298,7 @@ Worse than a tool that misses something is a tool that **locks in the error**.
 > nothing about the source — and a stale source reads *more* convincingly than a correct one,
 > because everything agrees.
 
-### The path checker scanned three of the four tool directories
+## The path checker scanned three of the four tool directories
 
 `_toolpaths.py` exists to catch tools that reference paths which no longer resolve — a real incident,
 in which moving the tool directory killed eleven tools that died at *import*, so nothing that diffed
@@ -8318,7 +8318,7 @@ under-enumeration. **It under-enumerated.**
 
 ---
 
-### Three metrics that were wrong in the direction of a tidier number
+## Three metrics that were wrong in the direction of a tidier number
 
 Chapter 19 records the binary → dilution → depth progression in full. The generalisable part:
 
@@ -8337,7 +8337,7 @@ documented client prefixes. The first error shrank the worklist by more than hal
 
 ---
 
-### Two mistakes made while checking for mistakes
+## Two mistakes made while checking for mistakes
 
 These are recorded because they are the most instructive items in the chapter.
 
@@ -8363,7 +8363,7 @@ auditing it.
 
 ---
 
-### Two process defects
+## Two process defects
 
 **Source-rewriting tools that ran on a bare invocation.** Two REPL formatters rewrote the tree
 without `--apply`, and because one of them also performs the other's work, running both duplicated
@@ -8381,7 +8381,7 @@ rests on the record of who established what, and with what evidence.
 
 ---
 
-### What was added
+## What was added
 
 | instrument | what it protects |
 |---|---|
@@ -8404,7 +8404,7 @@ gated rather than remembered.
 
 ---
 
-### Turning the instrument on the book
+## Turning the instrument on the book
 
 *(Added 2026-09-18, when this book was consolidated into a single volume.)*
 
@@ -8469,7 +8469,7 @@ Every result in this book was produced by running something, and every one can b
 appendix is the instruction set — set-up, the commands, the expected output, and a figure-by-figure
 index of which command produces which number in this book.
 
-### What you need
+## What you need
 
 | | |
 |---|---|
@@ -8492,7 +8492,7 @@ python3 REPL/tools/_gate.py
 Relative `(load …)` paths inside the suite are written from `REPL/`, so anything invoking `pact`
 directly must run from there. The gate `chdir`s itself and does not care.
 
-### The one command that matters
+## The one command that matters
 
 ```bash
 python3 REPL/tools/_gate.py
@@ -8517,7 +8517,7 @@ failing assertions — that is a **static check** refusing, and the reason is pr
 **A green gate is the only claim this book makes about the code as a whole.** Everything else is a
 claim about a specific operation, and each of those names the assertion that proves it.
 
-#### Confirming deploy-readiness specifically
+### Confirming deploy-readiness specifically
 
 Loading the whole deploy chain, in order, is a narrower and faster question than the gate:
 
@@ -8529,7 +8529,7 @@ Deploy-ready means **exit 0 with an empty stderr**. Do not grep the output for t
 conclude from it: this suite contains negative tests whose *names* contain the word, and a grep for
 it returns 14 hits on a perfectly clean run.
 
-### Running one piece
+## Running one piece
 
 The full gate takes minutes. For iterating on a single module there are standalone testers that boot
 a fresh environment and run only that module's suites:
@@ -8541,7 +8541,7 @@ cd REPL && pact "RedTeam/[RT-A]_Economics.repl"   # one red-team family, self-lo
 
 Each red-team file loads its own prerequisites, so any attack family can be run alone.
 
-### A warning that is not boilerplate
+## A warning that is not boilerplate
 
 **Do not run a tool to find out what it does.** Several tools in this repository rewrite contract
 sources. They now refuse without an explicit `--apply`, but that protection exists *because* a loop
@@ -8551,7 +8551,7 @@ a live contract. Read the docstring, or `REPL/TOOLS.md`.
 Note also that `REPL/TOOLS.md` was itself found to be wrong about 13 of 49 entries during this round
 (Chapter 22). It is generated now. Regenerate before trusting it.
 
-### Reproducing the two money defects
+## Reproducing the two money defects
 
 Both were established by controlled experiment, and both experiments are reproducible from outside
 the repository — no repo file needs to be created or modified. Write a probe to `/tmp`, load the
@@ -8573,7 +8573,7 @@ steps. Step 1 commits; step 2 refuses. Then run the same drive with the flag off
 *different* refusal message — that differential is what makes the refusal attributable to the admin
 gate rather than to anything downstream. Pinned as `RT-F-002`.
 
-### Reproducing a specific figure from this book
+## Reproducing a specific figure from this book
 
 Every quantitative claim in the book comes from one of these. Run the command, compare the number.
 
@@ -8596,7 +8596,7 @@ times during this programme a published figure went stale while every document a
 other document, because they had all been copied from one original — so cross-checking the prose
 detects nothing and only re-derivation does.
 
-### Rebuilding this book
+## Rebuilding this book
 
 The book is a generated artefact, and its staleness is a gate failure like any other.
 
@@ -8610,7 +8610,7 @@ Chapter sources live under `Audit/book/`; the order, the numbering and the
 version string live in `REPL/tools/_auditbook.py`. Chapter 21 has no source file at all — it is
 emitted from the `;;<<RT-*>>` headers in the attack files, so editing an attack edits the book.
 
-### Reading the coverage numbers
+## Reading the coverage numbers
 
 ```bash
 python3 REPL/tools/_ownerobs.py              # the current owner-gate position
@@ -8635,7 +8635,7 @@ Two properties of the output are stated in the tool itself and bear repeating:
   **Use the observed column to decide nothing.** A test written specifically to close a gap once
   moved no counts at all, because the gap had already been credited transitively.
 
-### Checking the audit's own bookkeeping
+## Checking the audit's own bookkeeping
 
 ```bash
 python3 REPL/tools/_redteam.py --check   # the attack register and the defect ledger must agree
@@ -8661,7 +8661,7 @@ Three separate times in this programme a published number was found to have gone
 document agreed with every other document. That is the failure this appendix is built against: the
 figures below are re-derivable from the tree, not copied between files.
 
-### The gate
+## The gate
 
 `python3 REPL/tools/_gate.py` is the gate. It runs 92 entrypoints across 321 reachable files on 16
 workers, takes roughly five to seven minutes, and is the only thing entitled to the word "green".
@@ -8693,7 +8693,7 @@ assertion but fails one of these does not go green:
 The orphan check is the least obvious and the most valuable: a test file that nothing loads is a
 test file that passes forever. It found files in this tree.
 
-### Deployment readiness
+## Deployment readiness
 
 Confirmed by execution, not inspection:
 
@@ -8720,7 +8720,7 @@ seven and not eleven because the first attempt to derive it parsed the highest v
 the live column of the table cut it from eleven to seven. That error is recorded here because it is
 the kind that produces a bump which loads fine and is wrong.
 
-### Coverage worklists, all at zero
+## Coverage worklists, all at zero
 
 Each of these began the programme at a non-zero number and was driven to zero. Each is measured by
 a tool that can be re-run; none is a judgement.
@@ -8746,7 +8746,7 @@ Two of these rows carry deliberate, stated exclusions, and the exclusions are th
   reported as a bound rather than closed, and why an earlier version of this same measurement was
   wrong four times, twice in each direction.
 
-### Scale
+## Scale
 
 Measured from the tree, not from memory:
 
@@ -8761,7 +8761,7 @@ Measured from the tree, not from memory:
 | priced operations in the generated price sheet | 442 |
 | red-team attacks | 38 |
 
-### What is not verified
+## What is not verified
 
 An audit book that lists only what it proved is a sales document. The following are known,
 deliberate limits of the work in this volume:

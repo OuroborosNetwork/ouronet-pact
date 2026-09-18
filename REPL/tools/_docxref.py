@@ -18,6 +18,7 @@ import subprocess
 import sys
 
 from docx import Document
+from docx.enum.style import WD_STYLE_TYPE
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
@@ -40,6 +41,42 @@ PAGE_W_CM = 21.0
 PAGE_H_CM = 29.7
 BODY_PT = 10
 LINE_SPACING = 1.06
+
+# --- PAGE-BREAK BEHAVIOUR ---------------------------------------------------------------------
+# Word's default is to break wherever the page runs out, which strands a heading alone at the foot
+# of a page, splits a code block across the fold, and leaves single orphaned lines. All four rules
+# below cost pages and buy readability; the owner asked for that trade explicitly.
+#
+#   widowControl   no single line of a paragraph is left alone at the top or bottom of a page
+#   keepNext       a heading is never the last thing on a page -- it moves with its first paragraph
+#   keepLines      the paragraph is never split at all; if it does not fit, the WHOLE thing moves
+#   pageBreakBefore  every chapter (Heading 1) starts on a fresh page
+#
+# keepLines is applied to CODE and headings, not to body text. On body text it forbids any
+# paragraph from spanning a page, so a 30-line paragraph arriving 5 lines from the bottom pushes a
+# near-empty page. Measured both ways; see the table in Audit/README.md. Widow/orphan control is
+# what typesetting actually uses for prose, and it is what removes the "split mid-sentence with one
+# line left behind" case the owner described.
+KEEP_WITH_NEXT = ["Heading 1", "Heading 2", "Heading 3", "Heading 4", "Heading 5", "Heading 6",
+                  "Title", "Subtitle", "Image Caption", "Table Caption", "Caption",
+                  "Definition Term"]
+NEVER_SPLIT = ["Source Code", "Heading 1", "Heading 2", "Heading 3", "Heading 4", "Heading 5",
+               "Heading 6", "Title", "Subtitle", "Table Caption", "Image Caption", "Caption"]
+CHAPTER_STYLE = "Heading 1"
+
+# The BODY styles pandoc actually emits, counted from a built book:
+#   Compact 3473 · BodyText 716 · FirstParagraph 444 · BlockText 173
+# Setting widow control on `Normal` alone is not enough to reach them reliably, so they are set
+# explicitly. This list was MEASURED from the output, not guessed -- an earlier version of this
+# script set four style names of which one did not exist, and the `except KeyError` around it meant
+# code blocks silently got no page-break protection at all. That is the defect the owner was
+# looking at when they asked why code was splitting across pages.
+BODY_STYLES = ["Normal", "Compact", "Body Text", "First Paragraph", "Block Text"]
+
+# Pandoc's default reference.docx does NOT define a code-block style -- it injects `SourceCode`
+# into the OUTPUT when it meets a code block. A rule set on a style that is not in the reference
+# therefore reaches nothing. It has to be created here for pandoc to pick ours up instead.
+CODE_STYLE = "Source Code"
 
 
 def _field(run, instr):
@@ -91,14 +128,63 @@ def build():
             run.font.size = Pt(8)
             run.font.color.rgb = None
 
-    # tighten body text
+    # tighten body text, and stop paragraphs stranding single lines across the fold
     try:
         n = doc.styles["Normal"]
         n.font.size = Pt(BODY_PT)
         n.paragraph_format.line_spacing = LINE_SPACING
         n.paragraph_format.space_after = Pt(4)
+        n.paragraph_format.widow_control = True
     except KeyError:
         pass
+
+    # Create the code-block style if the reference lacks it (it does), so the keep rule below has
+    # something to attach to. python-docx derives the styleId from the name by removing spaces,
+    # giving `SourceCode` -- which is exactly what pandoc writes into w:pStyle.
+    if CODE_STYLE not in {st.name for st in doc.styles}:
+        cs = doc.styles.add_style(CODE_STYLE, WD_STYLE_TYPE.PARAGRAPH)
+        cs.font.name = "Consolas"
+        cs.font.size = Pt(BODY_PT - 2)
+        cs.paragraph_format.space_after = Pt(6)
+
+    # NO SILENT MISSES. A style named here that does not exist is a bug in this list, and the
+    # previous version swallowed exactly that case -- so every miss is collected and raised.
+    missing = []
+
+    def _pf(name):
+        names = {st.name: st for st in doc.styles}
+        st = names.get(name)
+        if st is None or not hasattr(st, "paragraph_format"):
+            missing.append(name)
+            return None
+        return st.paragraph_format
+
+    for name in KEEP_WITH_NEXT:
+        pf = _pf(name)
+        if pf is not None:
+            pf.keep_with_next = True
+            pf.widow_control = True
+
+    for name in NEVER_SPLIT:
+        pf = _pf(name)
+        if pf is not None:
+            pf.keep_together = True
+
+    for name in BODY_STYLES:
+        pf = _pf(name)
+        if pf is not None:
+            pf.widow_control = True
+
+    pf = _pf(CHAPTER_STYLE)
+    if pf is not None:
+        pf.page_break_before = True
+
+    if missing:
+        raise SystemExit(
+            "_docxref: these styles were named but do not exist as paragraph styles in the\n"
+            "reference document, so their rules would reach nothing:\n   "
+            + "\n   ".join(sorted(set(missing)))
+            + "\nFix the list at the top of this script -- do not silence it.")
     # code blocks a touch smaller again -- this book is full of them and they must not wrap
     for sname in ("Source Code", "Verbatim Char", "Code"):
         try:
@@ -127,6 +213,29 @@ def check():
         if got is None or abs(got.cm - want) > 0.05:
             bad.append(f"{name} = {got.cm if got else None}, want {want}")
     xml = s.footer.paragraphs[0]._p.xml if s.footer.paragraphs else ""
+    for name in ("Heading 1", "Heading 2"):
+        try:
+            if not d.styles[name].paragraph_format.keep_with_next:
+                bad.append(f"{name}: keep_with_next is not set")
+        except KeyError:
+            bad.append(f"{name}: style missing")
+    try:
+        if not d.styles[CHAPTER_STYLE].paragraph_format.page_break_before:
+            bad.append(f"{CHAPTER_STYLE}: page_break_before is not set")
+    except KeyError:
+        pass
+    names = {st.name: st for st in d.styles}
+    for nm in BODY_STYLES:
+        st = names.get(nm)
+        if st is None:
+            bad.append(f"{nm}: style missing from reference")
+        elif not st.paragraph_format.widow_control:
+            bad.append(f"{nm}: widow_control is not set")
+    cs = names.get(CODE_STYLE)
+    if cs is None:
+        bad.append(f"{CODE_STYLE}: style missing -- code blocks will split across pages")
+    elif not cs.paragraph_format.keep_together:
+        bad.append(f"{CODE_STYLE}: keep_together is not set")
     if "PAGE" not in xml:
         bad.append("footer carries no PAGE field")
     if "NUMPAGES" not in xml:
@@ -137,7 +246,8 @@ def check():
             print("   " + b)
         return 1
     print(f"docx reference: clean -- A4 {PAGE_W_CM}x{PAGE_H_CM} cm, {MARGIN_CM} cm margins, "
-          f"footer carries PAGE of NUMPAGES")
+          f"PAGE of NUMPAGES footer, widow control, headings kept with their text, "
+          f"chapters on fresh pages")
     return 0
 
 
