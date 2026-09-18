@@ -1116,7 +1116,7 @@ Three dead `ref-DALOS` modref bindings removed from `INFO_SWP|Issue{Stable,Stand
 ## SESSION 2, PART 15 — the adversarial programme, and the folder tidy
 
 The constructive round closed at PART 13/14. What followed was a separate **red-team programme**,
-reported in full at `ARCHITECTURE/RED-TEAM-REPORT.md`. This entry records only what a future session
+reported in full at `Audit/records/RED-TEAM-REPORT.md`. This entry records only what a future session
 needs to pick it up.
 
 ### Where it lives
@@ -1124,7 +1124,7 @@ needs to pick it up.
     REPL/RedTeam/              the adversarial suite -- globbed into the gate like modules/
     REPL/RedTeam/README.md     the method: families, block header, the two rules
     REPL/tools/_redteam.py           the ATTACK REGISTER, gate-enforced on malformed headers
-    ARCHITECTURE/RED-TEAM-REPORT.md   five stages + closing assessment
+    Audit/records/RED-TEAM-REPORT.md   five stages + closing assessment
 
 It is a SEPARATE folder on purpose. A suite that mixes constructive and adversarial assertions can
 report "21,580 assertions" with nobody able to say how many were attacks.

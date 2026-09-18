@@ -783,7 +783,7 @@ way it sweeps `(module …)`.
 > were not drift at all — the classifier's `FN_CLASS` did not know `URv_`/`XIv_`/`XBv_`, the same
 > variant-prefix blind spot that hid five ops from the price-sheet generator on the same day. With
 > the vocabulary corrected, **15 files remain genuinely non-canonical** (mostly `defconst`
-> placement), listed in `ARCHITECTURE/DEFECT-LEDGER.md`. `REPL/tools/_prefixsync.py --check`, now
+> placement), listed in `Audit/records/DEFECT-LEDGER.md`. `REPL/tools/_prefixsync.py --check`, now
 > fatal in the gate, stops the vocabulary falling behind again.
 
 Canon is now **self-enforcing** so future work can't silently drift (no re-sweep needed):

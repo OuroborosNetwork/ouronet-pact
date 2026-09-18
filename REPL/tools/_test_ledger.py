@@ -2,7 +2,7 @@
 """REPL TEST LEDGER — every client function, how often it is tested, where, and how.
 
 Run from the repo root:
-    python3 REPL/_test_ledger.py > OuronetInformational/ARCHITECTURE/REPL-TEST-LEDGER.md
+    python3 REPL/_test_ledger.py > Audit/records/REPL-TEST-LEDGER.md
 
 Purpose: give a later audit/documentation agent a single machine-generated inventory of what
 has been tested, how many times, positively and adversarially, and from which testers -- so the
@@ -138,7 +138,7 @@ gated    = [o for o in tested if o not in set(ungated)]
 # ---- report ------------------------------------------------------------------------------------
 print("# REPL TEST LEDGER — what is tested, how often, and how\n")
 print("**GENERATED — do not edit.** `python3 REPL/_test_ledger.py > "
-      "OuronetInformational/ARCHITECTURE/REPL-TEST-LEDGER.md`\n")
+      "Audit/records/REPL-TEST-LEDGER.md`\n")
 print("This is the evidence base for the audit and documentation papers: every client entrypoint "
       "Ouronet exposes, how many times each is exercised, how many positive and adversarial "
       "assertions surround it, and which test files touch it.\n")

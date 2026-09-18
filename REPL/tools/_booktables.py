@@ -25,7 +25,7 @@ import subprocess
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-BOOK = os.path.join(ROOT, "OuronetInformational", "AUDIT-BOOK")
+BOOK = os.path.join(ROOT, "Audit", "book")
 TOOLS = os.path.join(ROOT, "REPL", "tools")
 
 

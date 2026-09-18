@@ -49,5 +49,5 @@ cycle** — owner's stated sequencing: finish all in-flight audits (DALOS + SWP)
 **then** a dedicated INFO-function coverage project (enumerate every `C_*` across Stage 1 and Stage
 2, confirm which already have a matching `INFO_*`, audit those for correctness against their real
 counterpart's actual cost/behavior, and write the missing ones) → **then** the StoicSyntax sweep.
-Tracked in `1_SOVEREIGN/STAGE_01/2_Core/Audit/DALOS/README.md`'s "Downstream plan" section so it
+Tracked in `Audit/module-audits/DALOS/README.md`'s "Downstream plan" section so it
 isn't lost between now and when that phase actually starts.

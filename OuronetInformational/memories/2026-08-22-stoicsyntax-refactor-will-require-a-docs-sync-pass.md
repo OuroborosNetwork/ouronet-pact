@@ -31,5 +31,5 @@ references, and cross-links will point at names that no longer exist.
 audit-trail cleanup) — the exact moment several new, detailed docs (two HANDOFF files, updated
 `ROUND-02-FIXES.md` fix entries, etc.) were being finalized, all full of function names that this
 refactor will eventually change. Cross-referenced from
-`1_SOVEREIGN/STAGE_01/2_Core/Audit/SWP/README.md`'s status tracker so a future reader lands here
+`Audit/module-audits/SWP/README.md`'s status tracker so a future reader lands here
 before assuming the audit docs are permanently accurate.

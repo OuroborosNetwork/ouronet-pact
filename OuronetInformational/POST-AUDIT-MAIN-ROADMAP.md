@@ -48,7 +48,7 @@ Every element carries a dotted address so you can point at it exactly. Header si
 > The checkboxes below are deliberately NOT flipped: each sub-item needs its own verification, and
 > marking a phase ✅ from an aggregate count is exactly the kind of unearned claim the DEFECT-LEDGER
 > exists to catch. Treat individual ❌ marks as *unverified*, not as *not done*. The live status of
-> the red-team round is `ARCHITECTURE/RED-TEAM-REPORT.md` (register) and `ARCHITECTURE/DEFECT-LEDGER.md`
+> the red-team round is `Audit/records/RED-TEAM-REPORT.md` (register) and `Audit/records/DEFECT-LEDGER.md`
 > (findings); the live status of owner-gate coverage is `python3 REPL/tools/_ownerobs.py`.
 
 **The shape of the work.** **Chapter 1** is one long **code-finalization spine** (Phases 0→7) that ends in
@@ -127,7 +127,7 @@ green on pact 5.4.1, and snapshot the live interface versions. **PHASE COMPLETE 
 
 #### 1.0.4 · Subphase — DEMIPAD audit
 - [x] ✅ **1.0.4.1 DEMIPAD audit — DONE (2026-08-30). All 17 findings closed, one at a time, each
-      REPL-proven + committed.** Tracker `1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/Audit/` (README,
+      REPL-proven + committed.** Tracker `Audit/module-audits/DEMIPAD/` (README,
       ROUND-01-FINDINGS, ISSUES-RANKED, ROUND-02-FIXES). Tally: 1 Critical (#1C STOAICO drain), 3 High
       (#2H retrieval-gate, #3H/#4H Custodians), 8 Medium (#5M–#12M), 5 Low (#13L–#17L). #13L/#14L verified
       WONTFIX (canonical AQP no-clamp / KPAY 24-dec exact); the rest fixed + proven. **Three structural
@@ -344,7 +344,7 @@ red-team attack on ALL modules** to expose vulnerabilities. Its findings + fixes
       · **Fifteen instrument defects** found in the measuring tools, several worse than the contract
         defects — including a gate that **enforced its generator's arithmetic error** and would have
         gone red on the correction, and a figure checker whose source of truth was never checked.
-      Full record: `ARCHITECTURE/DEFECT-LEDGER.md` §7–§8, `RED-TEAM-REPORT.md`, `REPL/RedTeam/*`.
+      Full record: `Audit/records/DEFECT-LEDGER.md` §7–§8, `RED-TEAM-REPORT.md`, `REPL/RedTeam/*`.
       *(Original spec below, kept.)*
 - [ ] ❌ **1.6.1.1 (original) Red team attack (all modules).** Multi-agent adversarial security audit: fan out
       attackers per module / attack-surface — capability & auth bypass (module-boundary guard,
@@ -354,7 +354,7 @@ red-team attack on ALL modules** to expose vulnerabilities. Its findings + fixes
       candidate finding against code (CONFIRMED/REFUTED), fix, re-test. Same rigor as the initial
       audits, adversarial framing.
 - [x] ✅ **1.6.1.2 Carried-over leads for the red team — ALL THREE WORKED 2026-09-17.** Results in
-      `ARCHITECTURE/DEFECT-LEDGER.md` §8. **`URC_OuroPrimordialPrice`: CONFIRMED and LIVE** — the
+      `Audit/records/DEFECT-LEDGER.md` §8. **`URC_OuroPrimordialPrice`: CONFIRMED and LIVE** — the
       weight omission is real, measured at **−38.65% at genesis weights** by a controlled experiment
       (output bit-identical across three weightings), and it reaches the OURO oracle write and
       DEMIPAD launchpad payments (§8.1). **Round III re-verify: 42 fixes re-checked, 100% coverage,
@@ -372,7 +372,7 @@ red-team attack on ALL modules** to expose vulnerabilities. Its findings + fixes
 
 #### 1.6.2 · Subphase — Assemble the Audit Book
 - [~] 🟢 **1.6.2.1 Assemble the Audit Book — ALL THREE PARTS WRITTEN 2026-09-17.** Lives at
-      `OuronetInformational/AUDIT-BOOK/`. **Part III is written** (front matter + 4 chapters: method,
+      `Audit/book/`. **Part III is written** (front matter + 4 chapters: method,
       the owner-gate programme, the 19 defects, and the instrument defects). Parts I and II are in
       progress. The book states three rules up front and each exists because violating it produced a
       wrong result during the work being documented: every claim carries its evidence class, every fix
@@ -557,7 +557,7 @@ list into this section.** SWP / DPDC / DPTF-DPOF each added a block here at merg
 / `ROUND-02-FIXES.md` are the source).
 
 #### 4.2.1 · Subphase — ATS audit carry-over
-Source: `1_SOVEREIGN/STAGE_01/2_Core/Audit/ATS/` (MERGED to main). Verified on main: the two live fixes
+Source: `Audit/module-audits/ATS/` (MERGED to main). Verified on main: the two live fixes
 landed — `P|A_Define` IMP registration (`3_Talos/01_TS01-A.pact:165-166`) and `C_HOT-RBT|Repurpose`
 `UR_NonceMetaData` arity fix (`08_ATS.pact:1919`). Remaining:
 - [ ] ❌ **Open owner-decisions (don't close without asking):**
@@ -579,7 +579,7 @@ landed — `P|A_Define` IMP registration (`3_Talos/01_TS01-A.pact:165-166`) and 
       `P|A_Define` are all closed.
 
 #### 4.2.2 · Subphase — DPDC audit carry-over
-Source: `1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/Audit/` (MERGED to main, `7efe386`). All 11 DPDC modules, 58
+Source: `Audit/module-audits/DPDC/` (MERGED to main, `7efe386`). All 11 DPDC modules, 58
 tracked items ALL closed (35 fixed+live-verified, 13 refuted, 4 already-closed, 2 no-bug, 4 deferred). 3 new
 canonical REPL suites wired in (`[6.1.1]_EQUITY`, `[6.1.2]_DPDC-FRAGMENTS`, `[6.1.3]_DPDC-S`). Interface
 changes pre-mainnet, no bump. Signatures my AQP-INFO calls (`UDC_MultiTransferCumulator`,
@@ -598,7 +598,7 @@ changes pre-mainnet, no bump. Signatures my AQP-INFO calls (`UDC_MultiTransferCu
       (audit evidence) — keep or prune per owner.
 
 #### 4.2.3 · Subphase — SWP audit carry-over
-Source: `1_SOVEREIGN/STAGE_01/2_Core/Audit/SWP/` (MERGED to main, `cc230d5`). Full SWP family
+Source: `Audit/module-audits/SWP/` (MERGED to main, `cc230d5`). Full SWP family
 (SWP/SWPI/SWPT/SWPL/SWPLC/SWPU/MTX-SWP + U|SWP). ALL closed: 13 CRIT, 12 HIGH, 14 MED, 32 LOW + the `#65bL`
 gas master-issue (worst-case now under the 2M ceiling, ~74% cold-cache reduction). Big structural fixes:
 SwapTracer `V1→V2` (H3 principal-orphan redesign), ClientThree/ClientPacts `→V2` (M14), `SwapperV3` gained
@@ -633,7 +633,7 @@ into SWP verified intact (11/11 resolve). Deferred:
 - [ ] ❌ Moot: live-vs-local Pythia diff — ruled moot by owner (full redeploy planned anyway).
 
 #### 4.2.4 · Subphase — DALOS / "rest of Stage 1" audit carry-over
-Source: `1_SOVEREIGN/STAGE_01/2_Core/Audit/DALOS/` (the `dptf-dpof` worktree; MERGED, `07556e1`). Broad
+Source: `Audit/module-audits/DALOS/` (the `dptf-dpof` worktree; MERGED, `07556e1`). Broad
 audit of **everything in Stage 1 not claimed by ATS/SWP** — DALOS, DPTF/DPOF/TFT, IGNIS, ELITE, DPMF,
 utilities (U_CT/LST/INT/DEC/DALOS/VST), OUROBOROS, CODEX/PYTHIA, TS01 Talos, + the interface cascade. All
 CRIT/HIGH/MED/LOW closed (fixed/refuted/finalized) except the deferrals below. Added
@@ -655,7 +655,7 @@ system-account deploys). Seam (TFT/DPOF/DPTF/IGNIS signatures my AQP-INFO calls)
       (no bump) — informs the 1.0.3.1/1.7 version map (ATS/SWP interface versions were out of this audit's scope).
 
 #### 4.2.5 · Subphase — DEMIPAD audit carry-over
-Source: `1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/Audit/` (DONE on main 2026-08-30).
+Source: `Audit/module-audits/DEMIPAD/` (DONE on main 2026-08-30).
 - [ ] ❌ **STOAICO folder placement (open sub-decision).** Placed under `2_CITIZEN/7_Launchpad/5_StoicIco/`
       (staking-ICO alongside the KPAY sale). Confirm that vs a standalone citizen folder — owner call.
 - [x] ✅ **AOZ+/DSP+ naming — DONE.** AOZ moved to its own citizen-#1 folder `2_CITIZEN/1_AOZ/`;

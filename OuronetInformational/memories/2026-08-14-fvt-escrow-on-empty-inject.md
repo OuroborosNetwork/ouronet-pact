@@ -40,4 +40,4 @@ bumping `available-rewards` with an undistributed amount.
 ANHD (sole staker, denom 500) → inject 5 flushes (zombie→0) → ANHD collects **exactly 30 Wstoa** (5 flush + 25
 escrow). Gates: golden 33/0, Z 225/0, deb-proof 121/0.
 
-Full write-up: `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/Audit/ROUND-02-FIXES.md` (§ *Feature — FVT: escrow-on-empty inject*).
+Full write-up: `Audit/module-audits/AQP/ROUND-02-FIXES.md` (§ *Feature — FVT: escrow-on-empty inject*).

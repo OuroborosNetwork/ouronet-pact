@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-18
 **Reporter:** Claude (this session), working an ATS module audit under
-`1_SOVEREIGN/STAGE_01/2_Core/Audit/ATS/`
+`Audit/module-audits/ATS/`
 **Severity:** High — real, already-owner-approved code fixes were silently discarded from disk,
 mid-session, with no error, no prompt, and no warning. This is a data-loss / workflow-integrity bug in
 how this shared repo is being used by multiple concurrent agents, not a one-off mistake by either agent.
@@ -145,7 +145,7 @@ visibility this session doesn't have) is better positioned to investigate than I
 ## 5. Current status — recovered, not yet re-verified beyond this session
 
 I have since **manually re-applied** everything listed in §2, using the fix descriptions already recorded
-in `1_SOVEREIGN/STAGE_01/2_Core/Audit/ATS/ROUND-02-FIXES.md` (Fixes #6, #9, and the relevant part of #7),
+in `Audit/module-audits/ATS/ROUND-02-FIXES.md` (Fixes #6, #9, and the relevant part of #7),
 and re-ran the full local REPL proof suite (`REPL/_audit_ats_baseline.repl`, `REPL/_iso_check.repl`) —
 both come back `Load successful`, 0 failures, matching the state before the loss was discovered.
 
@@ -171,8 +171,8 @@ cause — a session shouldn't need to work around unpredictable data loss by com
   `1_SOVEREIGN/STAGE_01/3_Talos/01_TS01-A.pact`, `1_SOVEREIGN/STAGE_01/3_Talos/03_TS01-C2.pact`,
   `1_SOVEREIGN/STAGE_01/3_Talos/05_TS01-P.pact`
 - Fix content used to restore (source of truth for what was lost):
-  `1_SOVEREIGN/STAGE_01/2_Core/Audit/ATS/ROUND-02-FIXES.md` (Fixes #6/#9/#11-related portions), and this
-  session's own `1_SOVEREIGN/STAGE_01/2_Core/Audit/ATS/ROUND-01-OWNER-FEEDBACK.md` for context.
+  `Audit/module-audits/ATS/ROUND-02-FIXES.md` (Fixes #6/#9/#11-related portions), and this
+  session's own `Audit/module-audits/ATS/ROUND-01-OWNER-FEEDBACK.md` for context.
 - Repo: `OuroborosNetwork/ouronet-pact`, branch `main`, 77 commits ahead of `origin/main` (nothing pushed).
 
 ---

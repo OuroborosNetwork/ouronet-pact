@@ -1,7 +1,7 @@
 # 2026-08-11 — StoicSyntax §19: Ouronet-specific rules (from AQP audit Round I)
 
 **Context.** During the AQP audit (Round I owner feedback — see
-`1_SOVEREIGN/STAGE_02/2_Core/03_AQP/Audit/ROUND-01-OWNER-FEEDBACK.md`), several audit "discipline
+`Audit/module-audits/AQP/ROUND-01-OWNER-FEEDBACK.md`), several audit "discipline
 violations" were ruled **not bugs** by the owner but **Ouronet-specific conventions** that StoicSyntax
 should explicitly allow. Rather than leave these scattered as inline "Ouronet example" callouts, the owner
 asked for a **single consolidated chapter**. This is fix **#1** of the AQP audit Round II fix plan.

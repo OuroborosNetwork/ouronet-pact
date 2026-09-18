@@ -31,6 +31,11 @@ import os, re, sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPL = os.path.dirname(HERE)
 ARCH = os.path.join(os.path.dirname(REPL), "OuronetInformational", "ARCHITECTURE")
+# Four records moved to Audit/records/ on 2026-09-18 (the defect ledger, the red-team report, the
+# round report, the test ledger). They are scanned here TOO, and not instead: dropping them would
+# have shrunk this checker's denominator silently, which is precisely the failure it exists to
+# catch. The scanned-file count is printed so a future drop is visible rather than silent.
+RECORDS = os.path.join(os.path.dirname(REPL), "Audit", "records")
 STATS = os.path.join(ARCH, "REPL_SUITE_STATS.md")
 
 # label-in-stats  ->  labels that may restate it elsewhere
@@ -67,8 +72,15 @@ CANON = {
 # document. A checker whose coverage depends on a human remembering to extend it is the shape of
 # defect this tool exists to catch.
 def _narrative():
-    return sorted(f for f in os.listdir(ARCH)
-                  if f.endswith(".md") and f != os.path.basename(STATS))
+    """(name, path) for every narrative .md, across BOTH document directories."""
+    out = []
+    for d in (ARCH, RECORDS):
+        if not os.path.isdir(d):
+            continue
+        for f in sorted(os.listdir(d)):
+            if f.endswith(".md") and f != os.path.basename(STATS):
+                out.append((f, os.path.join(d, f)))
+    return sorted(out)
 
 def rows(text):
     out = {}
@@ -171,14 +183,16 @@ def stats_staleness():
 
 def main():
     stats = open(STATS, encoding="utf-8").read()
-    docs = [(n, open(os.path.join(ARCH, n), encoding="utf-8").read()) for n in _narrative()]
+    _nar = _narrative()
+    docs = [(n, open(p, encoding="utf-8").read()) for n, p in _nar]
+    _paths = dict(_nar)
     want, errs = scan(stats, docs, strict=True)
     if "--write" in sys.argv and not [e for e in errs if "MISSING" in e]:
         total = 0
         for name, text in docs:
             out, n = rewrite(text, want)
             if n:
-                open(os.path.join(ARCH, name), "w", encoding="utf-8").write(out)
+                open(_paths[name], "w", encoding="utf-8").write(out)
                 print(f"  rewrote {n} figure row(s) in {name}")
                 total += n
         print(f"figure sync: wrote {total} row(s). "
@@ -195,7 +209,9 @@ def main():
         for e in errs:
             print("   " + e)
         return 1 if "--check" in sys.argv else 0
-    print("figure sync: clean -- every labelled table figure matches the generated source")
+    print(f"figure sync: clean -- {len(docs)} narrative documents scanned across "
+          f"{len(set(os.path.dirname(p) for p in _paths.values()))} directories; "
+          f"every labelled table figure matches the generated source")
     return 0
 
 def selftest():

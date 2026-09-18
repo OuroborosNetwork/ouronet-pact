@@ -20,10 +20,10 @@ import sys
 from datetime import date
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-BOOK = os.path.join(ROOT, "OuronetInformational", "AUDIT-BOOK")
+BOOK = os.path.join(ROOT, "Audit", "book")
 SRC = os.path.join(BOOK, "src")
-OUT_MD = os.path.join(BOOK, "OURONET-AUDIT-BOOK.md")
-OUT_DOCX = os.path.join(BOOK, "OURONET-AUDIT-BOOK.docx")
+OUT_MD = os.path.join(ROOT, "Audit", "OURONET-AUDIT-BOOK.md")
+OUT_DOCX = os.path.join(ROOT, "Audit", "OURONET-AUDIT-BOOK.docx")
 
 VERSION = "1.0"
 

@@ -28,7 +28,7 @@ verified via full `Z.repl`/issuance-only regression at every step, not just at t
 | `OuronetInformational/HANDOFFS/HANDOFF-swp-smartswap-bundle-architecture.md` | New — finished-mechanism write-up + client/UI dirty-read orchestration guide (Phase 9), written against the real built code. |
 | `OuronetInformational/StoicSyntax.md` | New §19.5 (R6): every `deftable` must carry a `;;Key = <...>` comment — formalized from the pre-existing AQP convention (owner reminder), version 1.7.0 → 1.8.0. |
 | `OuronetInformational/INDEX.md` | Registered both `HANDOFF-swp-*.md` docs in the Handoffs table (the exhaustive-path-search one was previously unlisted). |
-| `1_SOVEREIGN/STAGE_01/2_Core/Audit/SWP/{README,ISSUES-RANKED,ROUND-01-OWNER-FEEDBACK,ROUND-02-FIXES}.md` | Phase 13 itself — closed out the M2/#34 status rows, added `ROUND-02-FIXES.md` Fix #21 (Phases 6-13 summary, matching the established fix-entry template). |
+| `Audit/module-audits/SWP/{README,ISSUES-RANKED,ROUND-01-OWNER-FEEDBACK,ROUND-02-FIXES}.md` | Phase 13 itself — closed out the M2/#34 status rows, added `ROUND-02-FIXES.md` Fix #21 (Phases 6-13 summary, matching the established fix-entry template). |
 | `OuronetInformational/memories/2026-08-22-stoicsyntax-refactor-will-require-a-docs-sync-pass.md` | New — flags that this whole audit trail + both HANDOFF docs reference pre-refactor names and will need a doc-sync pass once the planned project-wide StoicSyntax refactor lands. |
 
 **The headline numbers, for anyone who only reads this table:** `CC_SmartSwap` (self-searching)

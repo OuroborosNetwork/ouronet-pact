@@ -74,7 +74,7 @@
 > be nothing.)*
 >
 > Treat the bands below as a **review prompt**, not a gate, until they are re-derived from gas.
-> See `03_AQP/Audit/RPS-SPLIT-SCOPING.md` and `ARCHITECTURE/DEFECT-LEDGER.md` §8.29, §8.31.
+> See `03_AQP/Audit/RPS-SPLIT-SCOPING.md` and `Audit/records/DEFECT-LEDGER.md` §8.29, §8.31.
 
 | Target | under **3,500** | fine |
 | Acceptable | 3,500 – 4,000 | only **with a plan** |

@@ -72,7 +72,7 @@ All 18 DPTF token ids live on StoaChain chain 0 at the time of this check
 `WSTOA-8Nh-JO8JO4F5`, `WURSTOA-dlnv354-4ngb`, `W|SSTOA-OURO-WSTOA|LP-6D_MJJXmhuz3`) already have
 `hibernation-link` populated — **zero gaps**. This confirmed the read-that-writes backfill branch
 in `UR_Hibernation` is fully dead code on the real deployed state, so it was safe to simplify to a
-pure getter with no migration step needed. See `1_SOVEREIGN/STAGE_01/2_Core/Audit/DALOS/
+pure getter with no migration step needed. See `Audit/module-audits/DALOS/
 ROUND-02-FIXES.md` Fix #25.
 
 ## General lesson for future agents

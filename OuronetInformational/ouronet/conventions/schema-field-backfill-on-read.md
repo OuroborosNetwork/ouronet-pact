@@ -1,7 +1,7 @@
 # Schema-field backfill hidden inside a `UR_*` read (anti-pattern + retirement playbook)
 
 **Origin:** DALOS audit, finding #30M (`DPTF::UR_Hibernation`), fixed 2026-08-28. See
-`1_SOVEREIGN/STAGE_01/2_Core/Audit/DALOS/ROUND-02-FIXES.md` Fix #25 for the full worked example.
+`Audit/module-audits/DALOS/ROUND-02-FIXES.md` Fix #25 for the full worked example.
 
 ## The shape of the problem
 
@@ -86,7 +86,7 @@ was only caught once, incidentally, for `UR_Hibernation`. **There may be other i
 same pattern elsewhere in the codebase that haven't been found yet.** A dedicated sweep for this
 specific shape (grep for `UR_*`/`UR|*`-prefixed functions containing `update`/`write`/`insert`) is
 recommended as part of the eventual main-branch work, using the retirement playbook above for each
-instance found. See `1_SOVEREIGN/STAGE_01/2_Core/Audit/DALOS/README.md`'s Downstream plan for the
+instance found. See `Audit/module-audits/DALOS/README.md`'s Downstream plan for the
 tracking entry this is filed under (owner instruction, 2026-08-28: any such finding, present or
 future, in that audit's list should be deferred to this sweep rather than fixed piecemeal, citing
 this document).

@@ -151,7 +151,7 @@ depending on fixture contamination and is not proving what it claims.
 
 ### The ledger — the evidence base
 
-`REPL/tools/_test_ledger.py` generates `ARCHITECTURE/REPL-TEST-LEDGER.md` (+ a `.json` twin): **every
+`REPL/tools/_test_ledger.py` generates `Audit/records/REPL-TEST-LEDGER.md` (+ a `.json` twin): **every
 client entrypoint, how many times it is invoked, how many positive and adversarial assertions
 surround it, and which test files touch it.** This is what a later audit or documentation agent
 reads to write the testing paper from evidence instead of recollection, and it doubles as the
@@ -545,7 +545,7 @@ assembled. 175 files never ran, including **~32 audit-finding regression tests**
 ### Baseline — measured 2026-09-09 (every phase moves one of these)
 
 *"start" is the measurement that opened this campaign; "now" is the current value. Regenerate the
-coverage rows with `python3 REPL/tools/_test_ledger.py > OuronetInformational/ARCHITECTURE/REPL-TEST-LEDGER.md`
+coverage rows with `python3 REPL/tools/_test_ledger.py > Audit/records/REPL-TEST-LEDGER.md`
 and the protection rows with `cd REPL && python3 tools/_gate.py`.*
 
 | # | metric | start | now | target |

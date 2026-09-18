@@ -194,6 +194,88 @@ def scan_one(path):
     return fails, warns
 
 
+# ---------------------------------------------------------------------------------------------
+# MODULE-LEVEL PATH CONSTANTS. Added 2026-09-18, after this tool reported
+#     "clean -- every module-level path literal resolves"
+# while `_redteam.py`'s LEDGER constant pointed at a file that had been moved that hour. The
+# constant is an `os.path.join(...)` Call assigned to a name; it is only ever opened later, INSIDE
+# a function, via a variable. The scan below looks at literals passed to open()/subprocess(), so it
+# never saw either end of it -- and `_redteam.py --check` is gate-fatal, so the breakage would have
+# surfaced as a red gate with a confusing message rather than as the path error it was.
+#
+# The success message was wrong in the specific way this project keeps finding: it described a
+# larger population than it checked, so its "clean" read as a stronger claim than it was.
+#
+# This resolves the common idioms only -- dirname/abspath/join over __file__, string constants, and
+# names already resolved in the same module. Anything it cannot evaluate is SKIPPED rather than
+# guessed, and the count of skipped names is reported so the coverage gap is visible.
+# ---------------------------------------------------------------------------------------------
+def _const_eval(node, names, selfpath):
+    """Best-effort static evaluation of a path expression. Returns str or None."""
+    if isinstance(node, ast.Constant) and isinstance(node.value, str):
+        return node.value
+    if isinstance(node, ast.Name):
+        return names.get(node.id)
+    if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
+        parts = []
+        f = node.func
+        while isinstance(f, ast.Attribute):
+            parts.append(f.attr); f = f.value
+        if not isinstance(f, ast.Name):
+            return None
+        parts.append(f.id)
+        fname = ".".join(reversed(parts))
+        args = [_const_eval(a, names, selfpath) for a in node.args]
+        if fname in ("os.path.join",) and args and all(a is not None for a in args):
+            return os.path.join(*args)
+        if fname in ("os.path.dirname",) and len(args) == 1 and args[0] is not None:
+            return os.path.dirname(args[0])
+        if fname in ("os.path.abspath", "os.path.realpath", "os.path.normpath") \
+                and len(args) == 1 and args[0] is not None:
+            return getattr(os.path, fname.split(".")[-1])(args[0])
+        if fname == "os.path.expanduser" and len(args) == 1 and args[0] is not None:
+            return os.path.expanduser(args[0])
+    return None
+
+
+def scan_constants(path):
+    """Module-level NAME = <path expression> assignments whose target does not exist."""
+    try:
+        tree = ast.parse(open(path, encoding="utf-8", errors="replace").read())
+    except SyntaxError:
+        return [], 0
+    names = {"__file__": path}
+    bad, skipped = [], 0
+    for node in tree.body:
+        if not isinstance(node, ast.Assign) or len(node.targets) != 1:
+            continue
+        tgt = node.targets[0]
+        if not isinstance(tgt, ast.Name):
+            continue
+        val = _const_eval(node.value, names, path)
+        if val is None:
+            # only count it as a gap if it LOOKED like a path expression
+            if isinstance(node.value, ast.Call):
+                src = ast.dump(node.value)
+                if "os" in src and "path" in src:
+                    skipped += 1
+            continue
+        names[tgt.id] = val
+        # Only CONSTRUCTED paths. A bare string constant ending in an extension is usually a
+        # basename used for matching, not a file to open -- `_modref.py`'s
+        # `LEGACY = "00_DPMF.pact"` is compared with `in`, never opened, and the first version of
+        # this check flagged it. Requiring both a Call on the right-hand side and a separator in
+        # the result keeps the check to things that are genuinely addressing a location on disk.
+        if not isinstance(node.value, ast.Call) or os.sep not in val:
+            continue
+        if not val.endswith(PATHISH_EXT):
+            continue
+        if not os.path.exists(val):
+            bad.append((os.path.basename(path), node.lineno, tgt.id,
+                        os.path.relpath(val, ROOT) if val.startswith(ROOT) else val))
+    return bad, skipped
+
+
 def _orphan_tool_dirs():
     """Directories holding .py files that TOOL_DIRS does not cover.
 
@@ -219,11 +301,14 @@ def _orphan_tool_dirs():
 
 
 def check(quiet=False):
-    allf, allw = [], []
+    allf, allw, allc = [], [], []
+    skipped = 0
     tools = sorted(t for d in TOOL_DIRS for t in _glob.glob(os.path.join(d, '*.py')))
     for t in tools:
         f, w = scan_one(t)
         allf += f; allw += w
+        c, sk = scan_constants(t)
+        allc += c; skipped += sk
     if not quiet:
         print(f"tool path integrity: {len(tools)} tools scanned (statically -- nothing executed)")
         for tool, ln, lit, why in allw:
@@ -240,6 +325,16 @@ def check(quiet=False):
         print("\nA tool that dies on import produces no output, so output-diffing cannot see it.")
     elif not quiet:
         print("  clean -- every module-level path literal resolves")
+    if allc:
+        print(f"\n{len(allc)} MODULE-LEVEL PATH CONSTANT(S) POINT AT NOTHING:")
+        for tool, ln, name, val in allc:
+            print(f"  {tool}:{ln}  {name} -> {val}")
+        print("\nThese are assigned at import and opened later inside a function, so neither the\n"
+              "literal scan above nor an output diff can see them. A moved file leaves the tool\n"
+              "importable and failing at use.")
+    elif not quiet:
+        print(f"  clean -- every module-level path CONSTANT resolves "
+              f"({skipped} path expression(s) too dynamic to evaluate, not checked)")
     orph = _orphan_tool_dirs()
     if orph and not quiet:
         print(f"\n  NOTE: {len(orph)} directory(ies) hold .py files outside TOOL_DIRS and are NOT")
@@ -247,7 +342,7 @@ def check(quiet=False):
         print("  checker exists for -- add them to TOOL_DIRS or confirm they are not tooling:")
         for d, fs in sorted(orph.items()):
             print(f"     {d}/  ({', '.join(fs[:4])}{' ...' if len(fs) > 4 else ''})")
-    return len(allf)
+    return len(allf) + len(allc)
 
 
 def selftest():
