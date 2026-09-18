@@ -5620,24 +5620,22 @@
 )
 
 ;; --- tables for 04_RPS.pact (16 defined) ---
-;; UPGRADE MODE: this module is assumed already deployed, so its
-;; tables already exist and (create-table) would ABORT the whole
-;; transaction. They are listed here, commented, for reference.
-;; If any of these is NEW since the last deploy, uncomment JUST it.
-;; (create-table P|T)
-;; (create-table P|MT)
-;; (create-table FVT|T|RPS|Global)
-;; (create-table FVT|T|RPS|Member)
-;; (create-table FVT|T|RPS|User)
-;; (create-table FVT|T|RPS|Stream)
-;; (create-table FVT|T|MemberUserWeight)
-;; (create-table FVT|T|MemberVault)
-;; (create-table FVT|T|ForcedFixCount)
-;; (create-table FVT|T|RewardAggregate)
-;; (create-table FVT|T|ScoreEntityLink)
-;; (create-table FVT|T|MultipletFamily)
-;; (create-table FVT|T|UserPresence)
-;; (create-table FVT|T|AgencyFee)
-;; (create-table FVT|T|QualitySplit)
-;; (create-table FVT|T|DsaOracleConfig)
+;; NEW MODULE this round -- not live on chain, so its tables do
+;; not exist yet and these create-table calls are ACTIVE.
+(create-table P|T)
+(create-table P|MT)
+(create-table FVT|T|RPS|Global)
+(create-table FVT|T|RPS|Member)
+(create-table FVT|T|RPS|User)
+(create-table FVT|T|RPS|Stream)
+(create-table FVT|T|MemberUserWeight)
+(create-table FVT|T|MemberVault)
+(create-table FVT|T|ForcedFixCount)
+(create-table FVT|T|RewardAggregate)
+(create-table FVT|T|ScoreEntityLink)
+(create-table FVT|T|MultipletFamily)
+(create-table FVT|T|UserPresence)
+(create-table FVT|T|AgencyFee)
+(create-table FVT|T|QualitySplit)
+(create-table FVT|T|DsaOracleConfig)
 

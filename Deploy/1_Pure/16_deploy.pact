@@ -3994,13 +3994,11 @@
                               ;; Key = <Anchor-ID>
 
 ;; --- tables for 05_FVT.pact (5 defined) ---
-;; UPGRADE MODE: this module is assumed already deployed, so its
-;; tables already exist and (create-table) would ABORT the whole
-;; transaction. They are listed here, commented, for reference.
-;; If any of these is NEW since the last deploy, uncomment JUST it.
-;; (create-table P|T)
-;; (create-table P|MT)
-;; (create-table FVT|T)
-;; (create-table FVT|T|VacateFreeze)
-;; (create-table FVT|T|SweepProgress)
+;; NEW MODULE this round -- not live on chain, so its tables do
+;; not exist yet and these create-table calls are ACTIVE.
+(create-table P|T)
+(create-table P|MT)
+(create-table FVT|T)
+(create-table FVT|T|VacateFreeze)
+(create-table FVT|T|SweepProgress)
 

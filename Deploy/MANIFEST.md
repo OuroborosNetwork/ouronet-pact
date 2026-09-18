@@ -4,7 +4,7 @@
 
 - per-transaction gas budget: **1,700,000** (StoaChain block limit 2,000,000)
 - module-deploy transactions: **19**
-- modules deployed: **51**
+- modules deployed: **52**
 - measured module gas: **5,753,676**
 
 ## Read this before deploying
@@ -19,7 +19,6 @@
 
 These name an interface that bumped this round, so Pact's cascade rule requires them to be redeployed -- but no deploy chain loads them, so **they are not in the files below**:
 
-- `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact`
 - `2_CITIZEN/Stage_Z/01_DPL-UR.pact`
 
 `01_DPL-UR.pact` is expected: Stage Z deploys from `deploy-stagezz.repl`, a separate chain that runs last.
@@ -112,6 +111,6 @@ Read top to bottom. **`step`** is the position in the full sequence; **`file`** 
 | 15 | **15** | DEPLOY 1 modules: 04_RPS | 353,658 | `Deploy/1_Pure/15_deploy.pact` |
 | 16 | **16** | DEPLOY 1 modules: 05_FVT | 252,465 | `Deploy/1_Pure/16_deploy.pact` |
 | 17 | **17** | DEPLOY 3 modules: 06_VCT, 07_MTX-AQP, 08_DSA | 392,563 | `Deploy/1_Pure/17_deploy.pact` |
-| 18 | **18** | DEPLOY 4 modules: 01_TS02-C1, 02_TS02-C2, 04_TS02-C3, 05_TS02-DPAD | 405,136 | `Deploy/1_Pure/18_deploy.pact` |
-| 19 | **19** | DEPLOY 4 modules: 02_Snakes, 03_Custodians, 01_INFO-TWO, 04_AQP-BOOT | 202,253 | `Deploy/1_Pure/19_deploy.pact` |
+| 18 | **18** | DEPLOY 3 modules: 09_AQP-INFO, 01_TS02-C1, 02_TS02-C2 | 221,896 | `Deploy/1_Pure/18_deploy.pact` |
+| 19 | **19** | DEPLOY 6 modules: 04_TS02-C3, 05_TS02-DPAD, 02_Snakes, 03_Custodians, 01_INFO-TWO, 04_AQP-BOOT | 385,493 | `Deploy/1_Pure/19_deploy.pact` |
 | 20 | — | *init* — deploy-stage02 · AQP-BOOT Step0 WireImcAndGovernor | — | `Deploy/2_Init/` · `REPL/deploy-stage02.repl:63` |

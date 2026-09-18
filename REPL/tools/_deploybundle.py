@@ -77,6 +77,17 @@ ROUNDS = {
                        "AcquisitionAnchorsV3", "AcquisitionVacateV3", "AqpMtxV3", "DsaV3"],
         # init this round needs -- matched against the block label, case-insensitive
         "init": ["AQP-BOOT"],
+        # Modules that are NEW on chain this round. Owner confirmed 2026-09-18: none of the AQP
+        # family is live -- this round deploys it for the first time. New modules get their
+        # `(create-table ...)` calls ACTIVE; everything else in the round is an upgrade of a live
+        # module, where create-table would abort because the table already exists.
+        "new": ["/03_AQP/", "04_AQP-BOOT.pact"],
+        # Modules the deploy REPL chain never loads but that this round must ship anyway, and the
+        # module they must follow. 09_AQP-INFO is the AQP cost-preview surface: 1,405 lines, 18
+        # test files reference it, it names a bumped interface, and no chain deploys it. With AQP
+        # not live, it is new like the rest of the family -- so it is injected here rather than
+        # left to be noticed on the day.
+        "extra": [("1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact", "08_DSA.pact")],
     },
 }
 DEFAULT_ROUND = "2026-09-aqp"
@@ -259,6 +270,7 @@ def main():
         rnd, keep, initpat = None, None, None
     else:
         rnd = ROUNDS[rname]
+        NEW_KEYS.extend(rnd.get("new", []))
         keep = round_modules(rnd)
         initpat = [x.lower() for x in rnd["init"]]
 
@@ -272,6 +284,21 @@ def main():
                     scoped.append({**b, "pacts": sel})
             elif any(k in b["label"].lower() for k in initpat):
                 scoped.append(b)
+        for relpath, after in rnd.get("extra", []):
+            ap = os.path.join(ROOT, relpath)
+            if not os.path.exists(ap):
+                sys.exit(f"round {rname}: extra module missing from the tree: {relpath}")
+            idx = next((i for i, b in enumerate(scoped)
+                        if any(os.path.basename(x) == after for x in b["pacts"])), None)
+            if idx is None:
+                sys.exit(f"round {rname}: cannot place {os.path.basename(relpath)} -- "
+                         f"anchor {after} is not in this round")
+            scoped.insert(idx + 1, {"label": f"INJECTED {os.path.basename(relpath)}",
+                                    "file": "(not in any deploy chain)", "line": 0,
+                                    "pacts": [os.path.normpath(ap)],
+                                    "gas": 0, "stage": "injected"})
+            print(f"  injected {os.path.basename(relpath)} after {after} "
+                  f"(in no deploy chain; gas unknown)")
         blocks = scoped
         print(f"ROUND {rname} -- {rnd['why']}")
         print(f"  modules needing redeploy   : {len(keep)}")
@@ -439,17 +466,21 @@ def write(steps, budget, maxbytes, mode="upgrade", existing=frozenset()):
             rel = os.path.relpath(p, ROOT)
             src = open(p, encoding="utf8", errors="replace").read()
             code, tables = split_tables(src)
+            is_new = any(k in rel.replace(os.sep, "/") for k in NEW_KEYS)
             inventory.append((rel, tables))
             body.append(f";; ===== {rel} {'=' * max(0, 60 - len(rel))}")
             body.append(code)
             if tables:
-                want = ([] if mode == "upgrade"
-                        else [t for t in tables if t not in existing])
+                want = ([t for t in tables if t not in existing]
+                        if (is_new or mode != "upgrade") else [])
                 skipped = [t for t in tables if t not in want]
                 body.append("")
                 body.append(f";; --- tables for {os.path.basename(rel)} "
                             f"({len(tables)} defined) ---")
-                if mode == "upgrade":
+                if is_new:
+                    body.append(";; NEW MODULE this round -- not live on chain, so its tables do")
+                    body.append(";; not exist yet and these create-table calls are ACTIVE.")
+                elif mode == "upgrade":
                     body.append(";; UPGRADE MODE: this module is assumed already deployed, so its")
                     body.append(";; tables already exist and (create-table) would ABORT the whole")
                     body.append(";; transaction. They are listed here, commented, for reference.")
@@ -476,6 +507,7 @@ def write(steps, budget, maxbytes, mode="upgrade", existing=frozenset()):
 
 INIT_SEQ = []
 ORPHANS = []
+NEW_KEYS = []
 
 
 def emit_init(seq, step):

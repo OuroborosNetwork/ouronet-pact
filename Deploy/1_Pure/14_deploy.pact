@@ -3513,21 +3513,19 @@
 ;;
 
 ;; --- tables for 03_AQP.pact (13 defined) ---
-;; UPGRADE MODE: this module is assumed already deployed, so its
-;; tables already exist and (create-table) would ABORT the whole
-;; transaction. They are listed here, commented, for reference.
-;; If any of these is NEW since the last deploy, uncomment JUST it.
-;; (create-table P|T)
-;; (create-table P|MT)
-;; (create-table AQP|T|Pool)
-;; (create-table AQP|T|DPTFTracker)
-;; (create-table AQP|T|DPOFTracker)
-;; (create-table AQP|T|DPSFTracker)
-;; (create-table AQP|T|DPNFTracker)
-;; (create-table AQP|T|BenDptfTotal)
-;; (create-table AQP|T|BenDpsfNonceTotal)
-;; (create-table AQP|T|BenDpnfNonceTotal)
-;; (create-table AQP|T|BenDpsfAnkMeta)
-;; (create-table AQP|T|BenDpnfAnkMeta)
-;; (create-table AQP|T|UserOccupancy)
+;; NEW MODULE this round -- not live on chain, so its tables do
+;; not exist yet and these create-table calls are ACTIVE.
+(create-table P|T)
+(create-table P|MT)
+(create-table AQP|T|Pool)
+(create-table AQP|T|DPTFTracker)
+(create-table AQP|T|DPOFTracker)
+(create-table AQP|T|DPSFTracker)
+(create-table AQP|T|DPNFTracker)
+(create-table AQP|T|BenDptfTotal)
+(create-table AQP|T|BenDpsfNonceTotal)
+(create-table AQP|T|BenDpnfNonceTotal)
+(create-table AQP|T|BenDpsfAnkMeta)
+(create-table AQP|T|BenDpnfAnkMeta)
+(create-table AQP|T|UserOccupancy)
 

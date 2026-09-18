@@ -3524,12 +3524,10 @@
 )
 
 ;; --- tables for 06_VCT.pact (2 defined) ---
-;; UPGRADE MODE: this module is assumed already deployed, so its
-;; tables already exist and (create-table) would ABORT the whole
-;; transaction. They are listed here, commented, for reference.
-;; If any of these is NEW since the last deploy, uncomment JUST it.
-;; (create-table P|T)
-;; (create-table P|MT)
+;; NEW MODULE this round -- not live on chain, so its tables do
+;; not exist yet and these create-table calls are ACTIVE.
+(create-table P|T)
+(create-table P|MT)
 
 ;; ===== 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/07_MTX-AQP.pact ==========
 ;; Deploy: load THIS file — interface + module ship together (model: 1_SOVEREIGN/STAGE_01/2_Core/20_MTX-SWP.pact).
@@ -4039,12 +4037,10 @@
 )
 
 ;; --- tables for 07_MTX-AQP.pact (2 defined) ---
-;; UPGRADE MODE: this module is assumed already deployed, so its
-;; tables already exist and (create-table) would ABORT the whole
-;; transaction. They are listed here, commented, for reference.
-;; If any of these is NEW since the last deploy, uncomment JUST it.
-;; (create-table P|T)
-;; (create-table P|MT)
+;; NEW MODULE this round -- not live on chain, so its tables do
+;; not exist yet and these create-table calls are ACTIVE.
+(create-table P|T)
+(create-table P|MT)
 
 ;; ===== 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/08_DSA.pact ==============
 ;; Deploy: load THIS file — interface + module ship together (model: 07_MTX-AQP.pact).
@@ -4997,13 +4993,11 @@
 )
 
 ;; --- tables for 08_DSA.pact (5 defined) ---
-;; UPGRADE MODE: this module is assumed already deployed, so its
-;; tables already exist and (create-table) would ABORT the whole
-;; transaction. They are listed here, commented, for reference.
-;; If any of these is NEW since the last deploy, uncomment JUST it.
-;; (create-table P|T)
-;; (create-table P|MT)
-;; (create-table DSA|T|Template)
-;; (create-table DSA|T|Agency)
-;; (create-table DSA|T|OracleAuth)
+;; NEW MODULE this round -- not live on chain, so its tables do
+;; not exist yet and these create-table calls are ACTIVE.
+(create-table P|T)
+(create-table P|MT)
+(create-table DSA|T|Template)
+(create-table DSA|T|Agency)
+(create-table DSA|T|OracleAuth)
 
