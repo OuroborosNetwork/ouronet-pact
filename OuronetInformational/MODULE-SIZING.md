@@ -31,7 +31,20 @@
 > **A threshold on this proxy cannot order the population, so it cannot decide which module to
 > split.** Nothing is near the limit: the worst case uses 22% of a block.
 >
-> ### Proposed replacement — bands in GAS, for an owner ruling
+> ### ⚖ OWNER RULING 2026-09-18: NO SPLITTING REQUIRED
+>
+> *"I don't think we need any splitting of modules, we already did that before we started this, to
+> get to the final Pact code shape."*
+>
+> **Phase 1.4.1.2 is CLOSED — not deferred.** The splits that mattered were done before this audit
+> began; `04_FVT` → `RPS` + `FVT` was the last of them. The measurements below support the ruling
+> independently: nothing exceeds 22% of a block, `RPS` sits at 18%, and the line bands mis-order the
+> population they are supposed to rank.
+>
+> The bands stay as a **review prompt**, not a gate. The proposal below is kept for whenever someone
+> wants to re-derive them from gas; it is not pending work.
+>
+> ### Proposal — bands in GAS (not scheduled; kept for reference)
 >
 > The limit is a **block**: 2,000,000 gas on StoaChain. Stating bands as a share of it removes the
 > proxy entirely.
