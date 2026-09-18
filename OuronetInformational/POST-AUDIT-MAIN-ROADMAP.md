@@ -400,7 +400,11 @@ exposure is a `2_CITIZEN/` third-party calling sovereign via `.` (a deliberate i
 if we upgrade a core they `.`-reference in place, we'd have to `bless` their old hash for them.
 
 #### 1.7.1 · Subphase — Version bump + cascade refactor
-- [ ] ❌ **1.7.1.1 Interface version bump.** For every interface whose code changed, bump its suffix to
+- [x] ✅ **1.7.1.1 Interface version bump — DONE 2026-09-18.** 7 interfaces were at dev == live and
+      bumped to live+1 (`AcquisitionAnchors`, `AcquisitionPools`, `AcquisitionScores`,
+      `AcquisitionVacate`, `AqpMtx`, `Dsa`, `IgnisCollector`); 3,333 reference updates across 116
+      files. 56 were already at live+1, 2 ahead, 9 never deployed. See DEFECT-LEDGER §8.36.
+- [ ] ❌ **1.7.1.1 (original) Interface version bump.** For every interface whose code changed, bump its suffix to
       **live + 1** using the Phase-1.0.3.1 live→target map (`V1`→`V2`, or `V2`→`V3` where local already moved).
 - [ ] ❌ **1.7.1.2 Cascade refactor (BIG — whole codebase; task #85).** Per the cascade rule: every interface
       that names a bumped one (`module{B}` / `object{B.Schema}`) must itself bump, and EVERY consumer
@@ -412,7 +416,15 @@ if we upgrade a core they `.`-reference in place, we'd have to `bless` their old
       lands after the red team (logic is final); do it, then re-gate.
 
 #### 1.7.2 · Subphase — Deploy-ready gate + fresh redeploy
-- [ ] ❌ **1.7.2.1 Deploy-ready gate:** whole-codebase single run (1.5.1.3) green + all audits closed + book
+- [x] ✅ **1.7.2.1 Deploy-ready gate — PASSES 2026-09-18.** All five preconditions verified, each by a
+      command rather than a judgement: whole-codebase run **GREEN at 25,035 assertions**; all audits
+      closed (`_redteam.py --check`: register sync ok, ledger coverage ok — 20/20 defect-finding
+      attacks recorded in both); Audit Book assembled (19 files, Parts I–III + appendix); every module
+      within the deploy ceiling (**owner ruling 2026-09-18** — no splitting required; nothing exceeds
+      22% of a block); version bump green (**0** interfaces left at their live version). Only
+      **1.7.2.2**, the fresh redeploy itself, remains in this phase — and that is an on-chain act.
+      *(Original below.)*
+- [ ] ❌ **1.7.2.1 (original) Deploy-ready gate:** whole-codebase single run (1.5.1.3) green + all audits closed + book
       assembled + every module within the deploy ceiling (rule B; FVT split done) + version bump green.
 - [ ] ❌ **1.7.2.2 Fresh top-to-bottom redeploy** of Stage 1 + Stage 2 (+ citizens). This finalized
       entrypoint set is the shape the UI enumerates.

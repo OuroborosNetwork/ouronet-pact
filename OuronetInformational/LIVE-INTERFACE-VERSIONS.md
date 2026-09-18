@@ -4,6 +4,17 @@
 > **Roadmap Phase 0.4.** For any interface whose code changes at Phase 7, the target suffix = **live + 1**.
 > `OuronetPolicyV1` (every module implements it) omitted for brevity.
 
+> **⚠ 2026-09-18 — THE BUMP HAS HAPPENED. This table is the LIVE (pre-bump) state and stays that way.**
+> Phase 1.7.1.1 moved 7 interfaces from dev == live to live+1 (`AcquisitionAnchors`,
+> `AcquisitionPools`, `AcquisitionScores`, `AcquisitionVacate`, `AqpMtx`, `Dsa`, `IgnisCollector`).
+> **Do not refresh this file from the tree** — it records what is deployed ON CHAIN, and its whole
+> purpose is to be the thing the tree is compared against. It becomes stale only when a redeploy
+> lands, and should be re-snapshotted then, from the chain.
+>
+> *(A caution for whoever does that: the first bump map built from this file read `Autostake` as live
+> at V3 because it took the highest version mentioned ANYWHERE in the document, including prose. The
+> table says V2. Parse the live column only.)*
+
 | Module | Live interface(s) implemented |
 |--------|-------------------------------|
 | `ATS` | `AutostakeComputerV1`, `AutostakeV2`, `BrandingUsagePrimaryV1` |
