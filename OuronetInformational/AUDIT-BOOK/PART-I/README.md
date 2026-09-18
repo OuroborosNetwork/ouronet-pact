@@ -15,6 +15,54 @@
 | 6 | **AQP** | acquisition pools — anchors, scores, rewards, vaults | **33** | `STAGE_02/2_Core/03_AQP/Audit/` |
 |  |  | | **314** | |
 
+## How these audits were run
+
+All six followed the same shape, and the shape is worth stating because it determines what the
+numbers in the table above mean.
+
+**Scope was fixed in writing before the reading began.** Each audit opens by naming its modules, its
+utilities, the Talos wiring that exposes them, and the interfaces involved. ATS, for instance, scoped
+two core modules, two utility modules, four Talos modules and six interfaces. A finding outside that
+scope was recorded but not counted, which is why the per-module totals are comparable to each other.
+
+**Two rounds, with an owner decision between them.** Round I raised findings and stopped. It did not
+fix anything. The output was a ranked issue list, which the owner reviewed and ruled on — the
+`ROUND-01-OWNER-FEEDBACK.md` in each tree is that ruling. Round II then implemented the fixes the
+owner accepted. The separation matters: an auditor who fixes as they read inevitably stops raising
+the findings that are inconvenient to fix, and the ruling step forces every finding to be
+adjudicated on the record rather than quietly dropped.
+
+**A finding has one of four dispositions**, and all four are counted in the totals:
+
+| disposition | meaning |
+|---|---|
+| **fixed and proven** | repaired, with a REPL regression test that goes red if the repair is reverted |
+| **closed as not-a-bug** | investigated and found to be intentional design, with the reasoning recorded |
+| **deferred** | confirmed real, deliberately not fixed now, with the reason and the trigger stated |
+| **open** | none. Every audit closed with zero |
+
+ATS is representative: 35 raised, 19 fixed and proven, 13 closed as intentional, 3 deferred — two to
+a planned module rehaul and one tracked as a hard prerequisite for deployment. **A third of the
+findings in these audits were not defects**, and reporting them anyway is deliberate. A finding
+closed as intentional is a piece of design rationale that now exists in writing, and the next reader
+who has the same suspicion can stop in one minute instead of one day.
+
+**Severity is on the id, not in a column.** The id schemes differ by module — SWP writes `#65bL` and
+`#32bM`, AQP writes `C1` / `H4` / `S4` — but in all of them the letter is the severity class, so a
+finding cannot be referred to without its severity coming along. The inconsistency between schemes
+is a real wart, and it is what makes the two count discrepancies below unresolvable by pattern
+matching.
+
+**Each audit named its priority target before starting.** ATS's was whether removing and re-adding a
+reward token preserves accounting for stakers whose positions predate the change. It does not, in
+three independently confirmed ways sharing one root cause. Naming the target in advance is what
+separates an audit from a reading: it creates something the audit can *fail* to find, and therefore
+something its silence would mean.
+
+**Then, months later, every FIXED was re-checked.** That pass is the next section, and it is the
+part of Part I with the most to say — because re-checking an audit's own word against current source
+is not a formality, and this one found four different ways that word had become unreliable.
+
 ## Independent corroboration of the counts (2026-09-17)
 
 The per-module totals above were re-derived from the audit trees by a **different method** than the
@@ -71,7 +119,7 @@ a restored archive cannot be both loadable and historical under this codebase's 
 
 - **SWP `M11`/`M12`** were closed as DESIGN on the grounds that a module family had *"zero client
   wiring — unreachable"*. That premise was retracted three weeks earlier and the verdicts were never
-  revisited. Reopened during this work, proven **live by execution**, and fixed. Part III, Chapter 3.
+  revisited. Reopened during this work, proven **live by execution**, and fixed. {{ch:defects}}.
 - **DALOS `H14`** fixed a constant chosen as *"mainnet's approximate KDA/USD price"*. After a
   protocol-wide rename that constant now serves as the **STOA**/USD price, unchanged. Nothing in the
   tree asserts the two coincide. Flagged, not fixed.

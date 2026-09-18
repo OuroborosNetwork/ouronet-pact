@@ -113,7 +113,7 @@ and **all twelve are run by the gate and are fatal**:
 | `_colproj --check` | a projecting `read` names a column its own table's schema lacks |
 | `_redteam --check` | a `RedTeam/` block has a malformed or duplicate attack header — *"a shrinking register looks exactly like a clean one"* |
 | `_figuresync --check` | an audit document quotes a figure the generated statistics do not support |
-| `_pricesync --check` | a generated pricing artefact does not match its generator (Chapter 2 §5) |
+| `_pricesync --check` | a generated pricing artefact does not match its generator ({{ch:pricing}} §5) |
 | `_toolpaths --check` | a tool hard-codes a path that no longer resolves |
 | `_prefixsync --check` | a function prefix live in the tree is unknown to the tooling's vocabulary |
 | `_modref --check` | a `(ref-X::member …)` call where `member` is defined **nowhere** in the implementing module |
@@ -363,7 +363,7 @@ last generated the stats file and at HEAD:
 | distinct assertions at HEAD (2026-09-17) | **5,867** |
 
 The generated statistics are **261 assertions stale today**, and nothing is red. The contrast with
-Chapter 2's `_pricesync.py` is the whole point: `_pricesync` **re-runs its generators in memory and
+{{ch:pricing}}'s `_pricesync.py` is the whole point: `_pricesync` **re-runs its generators in memory and
 diffs**, so its artefacts cannot go stale without the gate failing. `_figuresync` compares two
 committed files. *Two controls with the same intent, one closed loop and one open one.*
 
@@ -386,14 +386,14 @@ of the tools it names write by default.
 
 | step, and what it asked for | measured position |
 |---|---|
-| **1.5.1.1** CI-gate the ground-truth harness; extend it to cover **every** INFO function | the harnesses exist and **are** gate entrypoints (`launchpad-groundtruth.repl`, `triplet-collect-golden.repl`, `modules/DEFPACT-BILLING.repl`, the `deb-staleness-*` drivers), and 401 previews are measured. **The coverage instrument that says so is not gated**, and its denominator omits 14 previews of which one is genuinely unmeasured (Chapter 1 §6) |
+| **1.5.1.1** CI-gate the ground-truth harness; extend it to cover **every** INFO function | the harnesses exist and **are** gate entrypoints (`launchpad-groundtruth.repl`, `triplet-collect-golden.repl`, `modules/DEFPACT-BILLING.repl`, the `deb-staleness-*` drivers), and 401 previews are measured. **The coverage instrument that says so is not gated**, and its denominator omits 14 previews of which one is genuinely unmeasured ({{ch:previews}} §6) |
 | **1.5.1.2** repo-wide REPL coverage completion | **substantially done** — G1 at 448/448 with zero entrypoints reachable only from an ungated file; G2's live unpinned worklist at 1; G5 closed. **G6 open at 84%, 708 functions unreached** |
 | **1.5.1.3** single comprehensive run, one boot, all Pact code | **met by a different mechanism.** The one-boot runner carries 25% of the distinct assertions; the comprehensive run is the 92-way parallel gate |
 
 ### 7.5 And the finding that qualifies every green assertion in this Part
 
 It comes from the adversarial round, and Part III states it in full, but it belongs here because it
-bounds what Chapter 4's numbers certify. **Three of the red team's six clean refusals were by the
+bounds what {{ch:suite}}'s numbers certify. **Three of the red team's six clean refusals were by the
 wrong guard**:
 
 | attack | the guard that ought to refuse | the guard that actually did |

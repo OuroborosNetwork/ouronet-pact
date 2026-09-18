@@ -577,4 +577,4 @@ without one is indistinguishable from ordinary code the moment its line number m
 
 ---
 
-*Next: Chapter 5 — DEMIPAD, the sovereign launchpad, and the smallest audit tree in the book.*
+*Next: {{ch:demipad}} — DEMIPAD, the sovereign launchpad, and the smallest audit tree in the book.*

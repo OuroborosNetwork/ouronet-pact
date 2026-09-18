@@ -5,7 +5,7 @@
 > Audit ran 2026-08-16 → 2026-08-19. This chapter was written 2026-09-17 and re-checks every
 > recorded fix against the tree as it stands today.
 
-Evidence labels are the same as Chapter 1: **[V-cmd]** (established by running a read-only command),
+Evidence labels are the same as {{ch:dalos}}: **[V-cmd]** (established by running a read-only command),
 **[V-read]** (established by reading the cited source), **[INFERRED]**, **[REPORTED]** (quoted from
 the audit trail or the ledger, not re-established here). **No test was executed for this chapter.**
 

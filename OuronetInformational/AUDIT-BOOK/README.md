@@ -1,70 +1,63 @@
-# The Ouronet Audit Book
+# The Ouronet Audit Book — sources
 
-> **Status: ALL THREE PARTS WRITTEN** (2026-09-17). Roadmap §1.6.2.1.
-> One consolidated, publishable account of every audit performed on Ouronet, end to end.
->
-> **6,184 lines across 19 files.** Part I verifies 314 findings from six module audits against
-> *current* source; Part II documents the main-work round from the tree and the commit history
-> rather than from its own plan; Part III records 38 red-team attacks, 20 of which found a defect.
+**The book itself is [`OURONET-AUDIT-BOOK.md`](OURONET-AUDIT-BOOK.md)** (and its `.docx`
+equivalent). That file is **generated**. Do not edit it.
 
-## What this book is
+## Building
 
-Ouronet is a virtual blockchain implemented entirely in Pact, deployed on StoaChain under the
-`ouronet-ns` namespace. This book is the record of how it was audited: what was looked for, what was
-found, what was done about it, and — the part most audit reports omit — **what proves the fix is
-still there**.
+```bash
+python3 REPL/tools/_auditbook.py            # rebuild the .md
+python3 REPL/tools/_auditbook.py --docx     # ...and convert to .docx via pandoc
+python3 REPL/tools/_auditbook.py --check    # exit 1 if the .md is stale -- this runs in the gate
+```
 
-It is written to be read by someone who did not do the work and has no reason to take its word for
-anything.
+The version number lives in `VERSION` at the top of `REPL/tools/_auditbook.py`. Bump it there.
 
-## The three parts
+## Why it is generated
 
-| Part | Covers | Source material |
-|---|---|---|
-| **I** | The initial per-module audits — ATS, DALOS, SWP, DPDC, DEMIPAD, AQP | the `…/Audit/*` trees (31,225 lines) |
-| **II** | The main-work round, Phases 1.1–1.5 — every `URCi_`/`INFO_` reader, re-pricing, module split and REPL change, documented audit-style | `POST-AUDIT-MAIN-ROADMAP.md`, the commit history, `IGNIS-PRICING/` |
-| **III** | The red-team round — vulnerabilities sought, found, fixed | `RED-TEAM-REPORT.md`, `DEFECT-LEDGER.md`, `REPL/RedTeam/*` |
+The book quotes roughly two hundred figures that move whenever the suite does. Three separate times
+in this programme a published figure went stale while every document agreed with every other
+document — because they had all been copied from the same original, so cross-checking them detected
+nothing. A book assembled by hand is a snapshot nobody can re-derive.
 
-## Three rules this book holds itself to
+Two things follow, and both are enforced by `_gate.py`:
 
-These are not stylistic. Each exists because violating it produced a wrong result during the work
-being documented, and each is recorded in `ARCHITECTURE/DEFECT-LEDGER.md` with the incident attached.
-
-**1. Every claim carries its evidence class.** A finding is marked as established by *execution*, by
-*reading*, or by *inference*, and the three are never blurred. Reading the call chain to decide what
-refuses first was wrong **four separate times** in this programme — eager `let` bindings fire before
-the `with-capability` that follows them, so the first raiser is routinely somewhere other than where
-the code reads like it is. Where this book says "measured", something was run.
-
-**2. Every fix names the assertion that would go red if it were reverted.** A fix with no witness is
-a claim, not a repair. Several findings in Part I were recorded as *"adversarially proven"* at the
-time with nothing retained; Part III includes cases where the proof of a fix was **deleted by a later
-automated sweep** and nobody noticed, because deletion turned nothing red.
-
-**3. A count is reported with its exclusions, or not at all.** Ratios in this book state their
-denominator. The programme's own coverage instrument spent days reporting "39 of 112 owner gates
-witnessed" while the tree held **185** — a third of them, including the entire token-DEBIT layer,
-were excluded from their own denominator and therefore appeared in no column at all. An excluded item
-is not reported as a gap; it is absent, which reads as neither.
-
-> Where this book is uncertain, it says so. Where it was wrong earlier and corrected itself, it says
-> that too, and keeps the wrong version visible — a correction with the error deleted teaches nobody
-> anything, and this project's most useful findings came from re-examining its own conclusions.
+- **`_auditbook.py --check`** fails the gate if the published `.md` has drifted from these sources.
+- **`_booktables.py --check`** fails the gate if a headline table stops summing to its own total, or
+  if the defects chapter stops naming every attack the register marks FIXED.
 
 ## Layout
 
-```
-AUDIT-BOOK/
-  README.md            <- this file: front matter, rules, reading order
-  PART-I/              <- per-module audit chapters
-  PART-II/             <- main-work chapters (1.1-1.5)
-  PART-III/            <- the red-team round
-  APPENDIX/            <- registers, instrument notes, reproduction commands
-```
+| source | becomes |
+|---|---|
+| `src/00-front.md` | how to read the book |
+| `src/01-system.md` | the system under audit — architecture orientation |
+| `PART-I/*` | the six per-module audit chapters |
+| `PART-II/*` | the main-work round |
+| `PART-III/README.md`, `src/30-design.md`, `PART-III/01…03` | the red team |
+| *generated from `REPL/**/*.repl`* | `src/34-register.md` — the full attack register |
+| `PART-III/04-INSTRUMENTS.md` | the instruments |
+| `APPENDIX/01-REPRODUCTION.md`, `src/90-state.md` | the appendices |
 
-## Reading order
+Chapter **order and numbering** are owned by the `CHAPTERS` list in `_auditbook.py`.
 
-Part III is the shortest and the most concrete; a reader wanting to judge the work quickly should
-start at `PART-III/README.md`. Part I is the historical foundation and explains why Part II exists.
-Part II is the largest and the least dramatic — it is mostly the systematic construction of the
-preview/pricing surface, and its value is in completeness rather than in individual findings.
+## Cross-references
+
+A chapter source may **not** write a chapter number literally. Write `{{ch:register}}` (→ "Chapter
+20") or `{{n:register}}` (→ "20", for ranges). `--check` rejects any literal `Chapter <n>` in a
+source.
+
+This rule exists because consolidating per-part numbering ("Part III, Chapter 2") into one volume
+invalidated 45 cross-references at once. With the macro, reordering `CHAPTERS` renumbers the whole
+book automatically; without it, every reorder silently leaves a dozen references pointing at the
+wrong chapter.
+
+The keys are the first element of each `CHAPTERS` row: `front`, `system`, `part1`, `dalos`, `ats`,
+`swp`, `dpdc`, `demipad`, `aqp`, `part2`, `previews`, `pricing`, `splits`, `suite`, `part3`,
+`design`, `method`, `ownergates`, `defects`, `register`, `instruments`, `repro`, `state`.
+
+## The register chapter
+
+`src/34-register.md` has no file on disk. It is emitted by `chapter_register()` from the
+`;;<<RT-*>>` headers in the attack `.repl` files themselves — the same text each attack carries in
+source. Editing an attack changes the book; there is no second copy to drift.

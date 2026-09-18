@@ -412,7 +412,7 @@ entry in the file**, marked superseded, rather than editing it away. A correctio
 deleted teaches nobody anything.
 
 There is a fourth thing. This is the **same `-1.0` DPDC sentinel** that DPDC's own audit found leaking
-through three of four branches of `UR_N|Score` (#19H, Chapter 4 §4.6), found independently, in a
+through three of four branches of `UR_N|Score` (#19H, {{ch:dpdc}} §4.6), found independently, in a
 different module, by a different team, weeks apart. And DPDC's finding notes that *a sibling audit
 (AQP) had already committed a false "already fixed" assumption about this exact function to its own
 audit trail.* One sentinel, two audits, three wrong conclusions between them.
@@ -555,7 +555,7 @@ Both are ports of the Stoa `coin` UrStoa vault — the AQP comments still name t
 (*"coin step 1"*, *"coin step 2"*). `coin` is correct: its guard is
 `(and (= unclaimed-count 1) (> available 0.0))`, and its own repair is preserved in
 `genesis/stoa-genesis-4.pact` with the pre-fix version commented out immediately above. **The caller
-conjunct was dropped in the copy — in AQP and, separately, in STOAICO (Chapter 5 §5).**
+conjunct was dropped in the copy — in AQP and, separately, in STOAICO ({{ch:demipad}} §5).**
 
 The second dropped guard is the subtler one and it caused GS-09. In `coin`, a zero-amount payout
 **aborts** at step 1 (`C_Transmit` → `UEV_Amount`). AQP turned that abort into a **skip**
@@ -791,7 +791,7 @@ C2's entire inject path into a different module and a different file.
    `05_FVT.pact` holds 14 `defschema` and `04_RPS.pact` 19 [VERIFIED by command] — but *"the tree was
    committed"* is not a safety property, and this family is the one that proved it.
 
-The practice that made this chapter possible is the same one Chapter 4 recommends, applied less
+The practice that made this chapter possible is the same one {{ch:dpdc}} recommends, applied less
 consistently here: **fixes that left a finding id in a source comment could be found after the module
 was split in two and renumbered.** Counted 2026-09-17: `01_ANK.pact` 9, `02_SCORE.pact` 9,
 `05_FVT.pact` 7, `04_RPS.pact` 3, `07_MTX-AQP.pact` 1, `03_AQP.pact` 1 — and **`06_VCT.pact` 0**, in

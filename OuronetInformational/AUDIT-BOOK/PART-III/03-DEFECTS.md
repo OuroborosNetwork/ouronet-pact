@@ -1,9 +1,20 @@
-# Part III · Chapter 3 — The nineteen defects
+# Part III · Chapter 3 — The twenty defects
 
 Every defect below was found by driving a live operation, was fixed, and carries the assertion tag
 that goes red if the fix is reverted. The tags run in the gate.
 
 Ordered by what a user would lose, not by the order they were found.
+
+**Twenty of the thirty-eight attacks found a defect**, and all twenty are below. One further defect
+— the OURO mispricing that opens Tier 1 — was found by the audit rounds rather than by an attack,
+and is included here because it was the most expensive single finding in the whole programme and
+belongs with the money.
+
+*This chapter enumerated eighteen while its title said nineteen and the register said twenty, for
+several days, and the discrepancy was found by a machine and not by a reader. `_booktables.py` now
+checks that every attack the register marks FIXED is named somewhere in this chapter — a check
+written because the earlier version compared only the summary **table** against the register, and a
+table can agree with the register while the prose beneath it enumerates a different set.*
 
 ---
 
@@ -120,9 +131,9 @@ decimal, refusal a string).
 A collectable's `nonce-holder` field is documented as *"stores the account holding the nonce"*. It
 does not. Anything reading it as authoritative is reading a value that can be stale.
 
-### The preview and the execution disagreeing about refusal — `RT-K-001` … `RT-K-007`
+### The preview and the execution disagreeing about refusal — `RT-K-001` … `RT-K-008`
 
-**The largest family in the round: seven attacks, seven defects, on a surface nobody had swept.**
+**The largest family in the round: eight attacks, eight defects, on a surface nobody had swept.**
 
 Ouronet offers a free `INFO_` preview for every priced operation. Cost parity — *does the preview
 quote what the operation charges?* — was proven for all 401 previews. **Refusal parity — does the
@@ -137,6 +148,13 @@ The launchpad case is the sharpest because its separating input is not a malform
 live object and the amount is simply one no sale can honour. A caller checking the preview before
 committing gets a crash where the operation would have given them a reason.
 
+The eighth, `RT-K-008`, was found differently from the other seven and the difference is the
+methodological point of the whole family. The first seven came from suspicion about a surface. The
+eighth came from **counting the population**: `INFO_Collect` was the one client-facing cost preview
+in the entire tree named by no test at all, and it was identified by enumerating all of them and
+subtracting, not by anyone noticing it. A sweep that stops when the suspicious cases are exhausted
+stops before it reaches the case nobody suspected.
+
 ---
 
 ## Tier 3 — Reach, sentinels and accounting
@@ -149,3 +167,4 @@ committing gets a crash where the operation would have given them a reason.
 | `RT-H-003` | A reader returns the `"|"` sentinel when an autostake pair has no hot reward token — **nine of fifteen live pairs** were in that state — and callers treated the sentinel as an id |
 | `RT-I-001` | The gas station whitelists by reading the transaction's top-level forms; one case pinned a **single** form, so appending others changed what was actually executed under a matched whitelist |
 | `RT-J-001` | A true fungible's `supply` and the sum of its account balances are written by **separate paths**, so the protocol's own accounting could diverge from itself |
+| `RT-F-001` | The multi-transaction liquidity recipe collected its **entire deterrent in step 0**, then validated in step 1 that the pool had not moved since it quoted. A caller whose pool shifted between the two — which anybody else's transaction can cause — paid in full for an operation that then refused. The griefing shape is that the *attacker* controls whether the *victim's* already-paid transaction can complete |

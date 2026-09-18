@@ -259,7 +259,7 @@ documents.
 
 It also had a measured cost inside the round itself. `_ignis_price_sheet.py` could not see
 dot-notation calls at all, which is one of the four blind spots that left 18 live client entrypoints
-with no published price while the generator's footer reported `0 unresolved` (Chapter 2, §5).
+with no published price while the generator's footer reported `0 unresolved` ({{ch:pricing}}, §5).
 *A convention that a tool does not implement is a convention the tool is blind to.*
 
 ---

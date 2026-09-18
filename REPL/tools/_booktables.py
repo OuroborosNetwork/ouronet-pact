@@ -70,6 +70,56 @@ def check_partiii():
     return errs
 
 
+def check_defects_enumerated():
+    """Every attack the register marks FIXED must be NAMED in the defects chapter.
+
+    WHY THIS IS SEPARATE FROM check_partiii(). That check compares the summary TABLE against the
+    register, and it passed for several days while the chapter under it enumerated eighteen defects,
+    its own title said nineteen, and the register said twenty. A table can agree with the generator
+    while the prose beneath it describes a different set -- which is the same off-by-one-with-a-
+    reconciling-total that this whole tool was written about, reproduced inside the tool's own blind
+    spot. Checking a total is not checking a list.
+
+    A range written `RT-K-001` ... `RT-K-008` counts as naming every id between the endpoints; the
+    chapter groups families that way deliberately and forcing it to spell out eight ids would make
+    it worse to read for no gain in truth.
+    """
+    t = _read("PART-III", "03-DEFECTS.md")
+    if t is None:
+        return ["PART-III/03-DEFECTS.md is missing"]
+    named = set(re.findall(r'RT-[A-K]-\d+', t))
+    # expand `RT-K-001` <sep> `RT-K-008` ranges
+    for m in re.finditer(r'`(RT-([A-K])-(\d+))`\s*(?:\.\.\.|…|–|—)\s*`RT-\2-(\d+)`', t):
+        fam, lo, hi = m.group(2), int(m.group(3)), int(m.group(4))
+        named |= {f"RT-{fam}-{i:03d}" for i in range(lo, hi + 1)}
+
+    try:
+        out = subprocess.run([sys.executable, os.path.join(TOOLS, "_redteam.py")],
+                             capture_output=True, text=True, timeout=300).stdout
+    except Exception as e:                                    # pragma: no cover
+        return [f"defects chapter: could not run _redteam.py ({e})"]
+    fixed = set(re.findall(r'^\s*(RT-[A-K]-\d+)\s+\[FIXED\]', out, re.M))
+    if not fixed:
+        return ["defects chapter: _redteam.py reported no FIXED attacks -- refusing to pass vacuously"]
+    missing = sorted(fixed - named)
+    errs = []
+    if missing:
+        errs.append("PART-III/03-DEFECTS.md does not name these FIXED attacks: "
+                    + ", ".join(missing))
+    # the chapter title states a count; it must match the register
+    words = {"eighteen": 18, "nineteen": 19, "twenty": 20, "twenty-one": 21, "twenty-two": 22,
+             "seventeen": 17, "sixteen": 16, "fifteen": 15}
+    tm = re.search(r'#[^\n]*?The ([a-z-]+) defects', t)
+    if tm:
+        want = words.get(tm.group(1))
+        if want is None:
+            errs.append(f"defects chapter: title count '{tm.group(1)}' not recognised")
+        elif want != len(fixed):
+            errs.append(f"defects chapter: title says {tm.group(1)} ({want}) defects, "
+                        f"the register marks {len(fixed)} attacks FIXED")
+    return errs
+
+
 def check_parti():
     """The module table: per-module findings must sum to the stated total."""
     t = _read("PART-I", "README.md")
@@ -89,7 +139,7 @@ def check_parti():
 
 
 def main():
-    errs = check_partiii() + check_parti()
+    errs = check_partiii() + check_parti() + check_defects_enumerated()
     if errs:
         print("AUDIT BOOK TABLE INCONSISTENCY:")
         for e in errs:

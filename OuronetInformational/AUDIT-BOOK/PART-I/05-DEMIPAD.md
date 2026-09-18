@@ -395,7 +395,7 @@ mis-derived number in place. Sixteen days later it was still lying to every prev
 The same session found **GS-08** in AQP: `AQP-RPS::URC_CollectClaimableRewards` had the identical
 counter-only sweep branch — and there, no `last-collected-round` stamp exists. A fully-exited account
 with zero weight collected the whole vault while the rightful sole claimant received `0.0`. Measured,
-on the deployed stack. See Chapter 6, §5.
+on the deployed stack. See {{ch:aqp}}, §5.
 
 Both are ports of the Stoa `coin` UrStoa vault, whose comments the code still carries (*"coin step
 1"*, *"coin step 2"*). `coin` is correct: its guard is `(and (= unclaimed-count 1) (> available 0.0))`,
@@ -533,5 +533,5 @@ not. See §4.5.
 
 ---
 
-*Next: Chapter 6 — AQP, the acquisition-pool family, and the largest single body of design work in
+*Next: {{ch:aqp}} — AQP, the acquisition-pool family, and the largest single body of design work in
 Part I.*

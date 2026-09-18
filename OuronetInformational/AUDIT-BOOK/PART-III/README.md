@@ -21,8 +21,12 @@ code reads like it would be. Every finding in this Part was reached by running s
 **38 attacks across 11 families. 20 found a defect. None succeeded.**
 
 "None succeeded" means no attack achieved its stated goal — no value was moved, no gate was bypassed,
-no privilege was escalated. It does **not** mean nothing was wrong: 19 of the 35 exposed a real
+no privilege was escalated. It does **not** mean nothing was wrong: **20 of the 38** exposed a real
 defect on the way to being refused, and those are the substance of this Part.
+
+*That sentence read "19 of the 35" for several days after the round grew to 38 attacks, while the
+bold headline directly above it already said 38 and 20. A summary line and the prose under it are
+maintained by different reflexes, and only one of them was in the checker's scope. Both are now.*
 
 | family | attacks | found a defect | refused cleanly |
 |---|---:|---:|---:|
@@ -40,7 +44,7 @@ defect on the way to being refused, and those are the substance of this Part.
 
 Two families were **invented during the round** rather than planned: **J** (does the protocol's own
 accounting balance?) and **K** (does the free preview agree with the charged execution?). K is the
-largest family in the round and every one of its seven attacks found something — which says more
+largest family in the round and every one of its eight attacks found something — which says more
 about where to look for defects in this kind of system than any of the planned families did.
 
 ## Coverage against the plan
@@ -50,7 +54,7 @@ actually received — stated as coverage, not as a claim of completeness.
 
 | planned surface | families | assessment |
 |---|---|---|
-| capability & auth bypass, composed caps | B, C, D, G | **the deepest** — plus the whole owner-gate programme, Chapter 2 |
+| capability & auth bypass, composed caps | B, C, D, G | **the deepest** — plus the whole owner-gate programme, {{ch:ownergates}} |
 | sentinel / collision | H, D | **good** — three input-domain defects, all fixed |
 | preview / execution divergence *(not on the plan)* | K | **the largest family; every one of its eight attacks found a defect** |
 | economic & MEV — front-run, sandwich, ratio extremes | A | **good** — the sandwich attack exists and the AMM's floor now has a witness |

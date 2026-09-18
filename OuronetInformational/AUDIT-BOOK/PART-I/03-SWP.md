@@ -5,7 +5,7 @@
 > Audit ran 2026-08-16 → 2026-08-29 on a dedicated `swp` branch, 103 commits. It is by a wide margin
 > the largest of the three Stage-1 trees. This chapter was written 2026-09-17.
 
-Evidence labels are the same as Chapters 1 and 2: **[V-cmd]**, **[V-read]**, **[INFERRED]**,
+Evidence labels are the same as Chapters {{n:dalos}} and {{n:ats}}: **[V-cmd]**, **[V-read]**, **[INFERRED]**,
 **[REPORTED]**. **No test was executed for this chapter.**
 
 ---

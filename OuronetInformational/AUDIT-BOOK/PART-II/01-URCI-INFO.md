@@ -23,7 +23,7 @@ wrapper over the operation's `URCi_`.
 The design decision is dated and recorded. **Option A, 2026-08-27**: leaves expose `URCi_`, the
 executor composes as before, and the preview concatenates the same leaf readers. Option B — billing
 *through* the composer — was rejected as a top-to-bottom rehaul. One rule came with it and is worth
-quoting because Chapter 3 turns on it:
+quoting because {{ch:splits}} turns on it:
 
 > A `URCi_` lives in the **same module as the function it prices**, never in a shared cost module.
 > If a module gets too big, split the module — do not exile its cost functions.
@@ -141,12 +141,12 @@ is the commit that produced 345/365/14/4, and it produced them by **auditing eve
 against the URCi-wrapper rule** and fixing the two that failed it. The figures were correct and
 hard-won. They then sat in the document while the DPNF/DPSF preview family was built out, and
 nothing re-derived them. *This is the same failure the pricing artefacts were given a gate check for
-in Chapter 2 — and §5 is outside that check's scope.*
+in {{ch:pricing}} — and §5 is outside that check's scope.*
 
 There is a third figure in the same paragraph worth flagging as **[INFERRED]**: §5 also says
 *"395 of 401 Talos client ops have an INFO preview."* But 401 is exactly the number
 `_info_measured.py` reports for **client-facing cost previews**, and the Talos client surface is
-**448 distinct entrypoints** (§5 of Chapter 4, independently reproduced). A preview count appears to
+**448 distinct entrypoints** (§5 of {{ch:suite}}, independently reproduced). A preview count appears to
 be wearing an operation count's label. Not asserted as an error — but a reader should not take
 "401 Talos client ops" as the size of the client surface, because it is not.
 
@@ -343,7 +343,7 @@ overstated its coverage by much — it is that:
 `STOAICO::INFO_Collect` appears in no `.repl` file in the suite, gated or otherwise. That is one
 unmeasured cost preview on a live citizen sale, and it will stay unmeasured for as long as the
 instrument's subject is a list rather than a search — because *a hardcoded list cannot report its
-own incompleteness.* Part III, Chapter 4 records the same failure mode in `_toolpaths.py` and the
+own incompleteness.* {{ch:instruments}} records the same failure mode in `_toolpaths.py` and the
 remedy that was applied there: make the checker **discover** its subject and report any directory
 its list does not cover. The same remedy fits here, and has not been applied.
 
@@ -362,5 +362,5 @@ own stated rule, written in `_gate.py`'s own comments, is not satisfied for its 
 > without anything going red."*
 
 **401/401 is a claim about 2026-09-15.** Deleting every `ignis-need` assertion from
-`launchpad-groundtruth.repl` tomorrow would turn nothing red in the gate. Chapter 4 returns to this,
+`launchpad-groundtruth.repl` tomorrow would turn nothing red in the gate. {{ch:suite}} returns to this,
 because the same is true of five other coverage instruments.

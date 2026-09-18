@@ -383,6 +383,18 @@ def main():
         print(_bt.stdout + _bt.stderr)
         sys.exit("GATE FAILED: an Audit Book table does not add up.")
 
+    # AUDIT BOOK ASSEMBLY -- the single-file book is a GENERATED artefact, and this is the same
+    # closed loop `_pricesync` enforces for the price sheet. Without it, the published .md silently
+    # becomes a snapshot of chapter sources that have since moved -- and since it is the artefact a
+    # reader actually receives, that drift is invisible to everyone except the person who rebuilds.
+    # It also fails on a stale CROSS-REFERENCE: chapter sources may not write "Chapter 17" literally,
+    # because consolidating per-part numbering into one volume already invalidated 45 of them once.
+    _ab = subprocess.run([sys.executable, "tools/_auditbook.py", "--check"],
+                         capture_output=True, text=True)
+    if _ab.returncode != 0:
+        print(_ab.stdout + _ab.stderr)
+        sys.exit("GATE FAILED: the assembled Audit Book is stale against its chapter sources.")
+
     # MODREF MEMBERS -- fatal only on LIVE class-B: a `(ref-X::member ...)` call where `member` is
     # defined NOWHERE in the module implementing X. Pact 5 resolves modref members DYNAMICALLY, so
     # such a call loads and runs, and only raises if that branch is ever taken -- invisible to every

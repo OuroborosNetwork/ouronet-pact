@@ -6,7 +6,7 @@
 > **gate-enforced**; §5 of this chapter explains that mechanism, which is one of the stronger
 > controls in the project.
 
-Chapter 1 built one cost reader per operation. This chapter is about what those readers were made to
+{{ch:previews}} built one cost reader per operation. This chapter is about what those readers were made to
 return.
 
 ---
@@ -329,7 +329,7 @@ the headline, as the authoritative document does twice, does not.
 | `REPL/Stage_02/[6.2.16]_AQP-PRICE-SWEEP.repl` | **42** | the AQP family |
 | | **181** | |
 
-Plus the measured preview-versus-charge proofs described in Chapter 1, which are balance deltas
+Plus the measured preview-versus-charge proofs described in {{ch:previews}}, which are balance deltas
 rather than table comparisons.
 
 ### Which of them run where, stated exactly
@@ -358,7 +358,7 @@ every leg-level one, are outside the fast path — and none of them are outside 
   caveat: it counts the core operation's own module-internal work, and *"cross-module callee
   internals are not re-summed, so delegating ops read a little low."* The `IG|WEIGHTS` primitives
   were calibrated against measured gas; the per-operation totals built from them were not
-  individually measured against a live charge. The preview-versus-charge work in Chapter 1 is what
+  individually measured against a live charge. The preview-versus-charge work in {{ch:previews}} is what
   measures live charges, and it measures **previews**, which is the same arithmetic but not the same
   claim.
 - **199 of 442 rows are floors, not prices.** A `COMPLEX` row publishes *"costs at least N"*, because

@@ -2,7 +2,7 @@
 
 An audit is only as good as the things it measures with. This chapter records the defects found in
 the **measuring tools** rather than in the contracts, and it is here for a specific reason: several
-of them were more consequential than the contract defects in Chapter 3, because a wrong instrument
+of them were more consequential than the contract defects in {{ch:defects}}, because a wrong instrument
 does not fail — **it reports.**
 
 Every item below was found during this round, and every one had been reporting confidently before it
@@ -27,7 +27,7 @@ one does not.
 
 `_ownerobs.py` spent days reporting *"39 of 112 ownership gates witnessed"*. The tree contains
 **185**. Seventy-three were outside the denominator, including the entire token-DEBIT layer — the
-gates that stop a stranger moving somebody else's tokens. Chapter 2 tells that story in full.
+gates that stop a stranger moving somebody else's tokens. {{ch:ownergates}} tells that story in full.
 
 The second time was subtler and is the one worth generalising. The tool's own documentation already
 catalogued this error **in other tools**. It recurred in the tool written to audit it.
@@ -106,7 +106,7 @@ under-enumeration. **It under-enumerated.**
 
 ## Three metrics that were wrong in the direction of a tidier number
 
-Chapter 2 records the binary → dilution → depth progression in full. The generalisable part:
+{{ch:ownergates}} records the binary → dilution → depth progression in full. The generalisable part:
 
 > **A single number chosen to summarise a distribution is a claim about that distribution.** The
 > binary scored "1 of 63" and read as *the observed column is worthless*; it was technically true and

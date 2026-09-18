@@ -92,13 +92,13 @@ with one command, and each is a different failure mode.
 distinct `URCi_` readers"* and *"335 distinct `INFO_` previews"*. The first is a count of distinct
 **names** (268 today) and undercounts implementations by 54, because names legitimately repeat
 across modules. The second matches nothing: the tree holds **426** implementations and **425**
-distinct names. *A correction notice is read with more trust than the thing it corrects.* Chapter 1.
+distinct names. *A correction notice is read with more trust than the thing it corrects.* {{ch:previews}}.
 
 **2. The designated authoritative pricing reference quotes a superseded census.**
 `IGNIS-PRICING/IGNIS-PRICING.md` §5 states *"345 of 365 INFO implementations are thin wrappers over
 a `URCi_` reader; 14 declare their op free, 4 are data views."* Those figures were exactly right on
 2026-09-06, when commit `6b7a85b` measured them and said so. The tree today is **346 / 426 / 20 / 1**,
-and the document's own three sub-counts sum to 363, not 365. Chapter 1.
+and the document's own three sub-counts sum to 363, not 365. {{ch:previews}}.
 
 **3. The generated price sheet publishes a total that omits eleven of its own rows.** The footer
 reads *"431 Talos client functions"*. The sheet contains **442** priced rows. The generator computes
@@ -107,7 +107,7 @@ STOA and not in IGNIS (branding upgrades, the PYTHIA tolls, the CODEX StoicTag f
 its own column and then dropped from the headline. This was recorded as an internal inconsistency in
 `DEFECT-LEDGER.md` §5 item 14 on 2026-09-15, at the then-current values of 420 and 430. It was not
 fixed; the numbers have since grown to 431 and 442. **And a control added the same week now requires
-the prose document to quote the wrong total, and fails the gate if it does not.** Chapter 2.
+the prose document to quote the wrong total, and fails the gate if it does not.** {{ch:pricing}}.
 
 > None of the three is a defect in the chain. All three are defects in what the project publishes
 > about itself, which is what an audit book is made of.
