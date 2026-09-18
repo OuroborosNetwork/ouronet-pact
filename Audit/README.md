@@ -15,6 +15,33 @@ python3 REPL/tools/_auditbook.py --docx
 
 The version number lives in `VERSION` at the top of `REPL/tools/_auditbook.py`.
 
+### Page layout
+
+The `.docx` is A4, **1.1 cm margins**, 10 pt body, with a running header and a **`Page N of M`**
+footer. Pandoc has no command-line flags for any of that — it all comes from a reference document,
+`book/reference.docx`, which is itself generated:
+
+```bash
+python3 REPL/tools/_docxref.py          # rebuild it
+python3 REPL/tools/_docxref.py --check  # gate-enforced
+```
+
+It is generated rather than committed-and-hand-edited for one reason: it is a 10 KB zip of XML, so
+`git diff` reports only `Binary files differ`. A layout nobody can read is a layout that drifts from
+whatever it is supposed to enforce. The decisions — margin width, page size, body point size — are
+constants at the top of that script.
+
+Measured effect, rendered to PDF both ways:
+
+| | pages |
+|---|---:|
+| pandoc default (no reference doc) | 384 |
+| **this layout** | **216** |
+
+Page size is pinned to A4 explicitly rather than left unset. Pandoc's default leaves it to the
+reader's locale — Letter in the US, A4 elsewhere — and a document that repaginates depending on who
+opens it cannot have a stable page count, which the footer prints.
+
 ## What is here
 
 | path | what it holds |

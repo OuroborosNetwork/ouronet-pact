@@ -395,6 +395,17 @@ def main():
         print(_ab.stdout + _ab.stderr)
         sys.exit("GATE FAILED: the assembled Audit Book is stale against its chapter sources.")
 
+    # DOCX REFERENCE -- the Audit Book's .docx page geometry, running header and page-number
+    # footer live in Audit/book/reference.docx, because pandoc has no flags for any of them. It is
+    # a 10 KB zip of XML: invisible to review, and `git diff` says only "Binary files differ". If
+    # it goes missing or is hand-edited, the next --docx build silently produces a document with
+    # pandoc's default geometry and NO page numbers, and nothing else would notice.
+    _dx = subprocess.run([sys.executable, "tools/_docxref.py", "--check"],
+                         capture_output=True, text=True)
+    if _dx.returncode != 0:
+        print(_dx.stdout + _dx.stderr)
+        sys.exit("GATE FAILED: the Audit Book's docx reference is missing or has drifted.")
+
     # TOOL INDEX -- TOOLS.md must list every tool on disk. It had drifted to 50 rows against 53
     # tools, and the three missing were _auditbook, _booktables and _modref: all GATE-FATAL. The
     # working agreement says to read TOOLS.md rather than run a tool to find out what it does, so a
