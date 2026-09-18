@@ -42,26 +42,57 @@ declarations (before the `(module …)` form, in this codebase's co-located inte
 implementations (after it). This is the same rule `REPL/tools/_scale_report.py` uses, so the numbers
 below agree with the project's own generated statistics.
 
-### `URCi_` — 313 implementations
+### `URCi_` — 322 implementations
 
 | | |
 |---|---:|
-| implementations, across **39** modules | **313** |
-| distinct names | 260 |
-| declared on an interface | **282** |
+| implementations, across **40** modules | **322** |
+| distinct names | 269 |
+| declared on an interface | **291** |
 
-> **CORRECTED 2026-09-17.** This chapter first published **322 / 269 / 291 / 31 across 40 modules**.
-> Re-derived: **595** `URCi_` defuns exist in total, partitioning exactly into **282** interface
-> declarations and **313** module implementations, over **39** modules and **260** distinct names.
-> The partition summing to the total is what makes it checkable — the superseded figures did not
-> (291 + 31 = 322, but 322 is not what the tree holds).
+> **THE CORRECTION THAT WAS ITSELF THE ERROR.** *(Retracted 2026-09-18.)*
 >
-> Method, so it can be re-derived: comments stripped; for each `(defun URCi_…`, compare the nearest
-> preceding `^(interface` against the nearest preceding `^(module` and attribute it to whichever is
-> closer. One file in the tree declares more than one module, which a simpler "everything after the
-> first `(module`" rule mis-attributes.
+> This chapter published the figures above, then on 2026-09-17 published a **correction** replacing
+> them with `313 / 260 / 282 across 39 modules`. **The correction was wrong and the original figures
+> were right.** They are restored above, and the episode is kept rather than quietly reversed,
+> because of what made it convincing.
+>
+> The correction rested on one sentence: *"**595** `URCi_` defuns exist in total, partitioning
+> exactly into 282 declarations and 313 implementations."* **Exact partition is a strong signal** —
+> it is the reason the correction was believed, and it is why the correction notice was trusted more
+> than the thing it corrected. 282 + 313 = 595, and a total that reconciles looks checked.
+>
+> But 595 is exactly what `grep -c '(defun URCi_'` returns, and that pattern **misses the 18 scoped
+> `ENTITY|URCi_*` defuns** — nine implementations and nine declarations. The tree holds **613**,
+> which partitions just as exactly into **291 + 322**. Both partitions reconcile; only one of them
+> is over the whole population.
+>
+> The sharpest detail is that this chapter had already warned about the scoped names **eleven lines
+> above the correction** — DALOS's nine cost readers live in IGNIS as `DALOS|URCi_*` precisely
+> *"because a naive `grep '(defun URCi_'` undercounts the surface by nine"*. The correction then
+> used the naive grep. Knowing about an exception in one paragraph does not stop you applying a rule
+> that ignores it in the next, and nothing in the process connected the two.
+>
+> Re-derive it:
+> ```bash
+> grep -rhc '(defun URCi_' --include=*.pact 1_SOVEREIGN 2_CITIZEN | paste -sd+ | bc      # 595
+> grep -rhoE '\(defun [A-Za-z0-9|_-]*URCi_' --include=*.pact 1_SOVEREIGN 2_CITIZEN | wc -l  # 613
+> grep -rhoE '\(defun [A-Za-z0-9|_-]+\|URCi_' --include=*.pact 1_SOVEREIGN 2_CITIZEN | wc -l # 18
+> ```
+> Independently corroborated by `_scale_report.py`, which reports `URCi_ 151 / 322`.
+>
+> Two things follow, and the second is the uncomfortable one. **A reconciling total is not evidence
+> the population was right** — it only proves the two halves were cut from the same cloth, however
+> wrong that cloth is. And **a correction notice is read with more trust than the text it corrects**,
+> so it needs *more* scrutiny than the original, not less. This book makes that claim elsewhere; here
+> is the instance where the claim is about itself.
 
-The gap between 313 and 260 is real and correct: `URCi_UpgradeBranding` is defined independently in
+Attribution method, so the figures can be re-derived: comments stripped; for each `URCi_`-prefixed
+`defun` — scoped or not — compare the nearest preceding `^(interface` against the nearest preceding
+`^(module` and attribute it to whichever is closer. One file in the tree declares more than one
+module, which a simpler "everything after the first `(module`" rule mis-attributes.
+
+The gap between 322 and 269 is real and correct: `URCi_UpgradeBranding` is defined independently in
 DPTF, DPOF, ATS, SWP, BRD, DPDC and others, because each module prices its own branding upgrade.
 Counting names rather than implementations is the mistake the roadmap's own correction notice makes.
 
@@ -133,8 +164,8 @@ report that cries wolf nine times is a coverage report nobody reads to the end."
 
 | source | says | tree says |
 |---|---|---|
-| `POST-AUDIT-MAIN-ROADMAP.md` dashboard banner (2026-09-17) | 267 `URCi_`, 335 `INFO_` | **313** and **426** implementations; 260 and 425 distinct names. *(Both the banner AND this chapter's first pass were wrong — the banner low on `INFO_` by 85 and high on `URCi_`, this chapter high on `URCi_` by 9. The roadmap banner has since been corrected to the sovereign-only scope it states.)* |
-| `IGNIS-PRICING.md` §5 | *"345 of 365 INFO implementations … 14 free … 4 data views"* | **346 / 426 / 20 / 1** |
+| `POST-AUDIT-MAIN-ROADMAP.md` dashboard banner (*as of 2026-09-17*) | 267 `URCi_`, 335 `INFO_` | **322** and **426** implementations; 269 and 425 distinct names. *(The banner was wrong in **both directions at once** — low on `INFO_` by 85, high on `URCi_` — which is how it survived: a reader spot-checking one of the two would find it plausible. It has since been corrected to the sovereign-only scope it states, and now reads 256 / 420. This chapter's own second pass was wrong too; see the retraction in §2.)* |
+| `IGNIS-PRICING.md` §5 (*as of 2026-09-06*) | *"345 of 365 INFO implementations … 14 free … 4 data views"* | **346 / 426 / 20 / 1**. *(§5 was re-measured on 2026-09-17 and now publishes {{fig:previews_declared}} declared / {{fig:previews_client}} client-facing / {{fig:previews_measured}} measured, quoting the old census as superseded. The row is kept because the discrepancy is what prompted the re-measure.)* |
 
 The second is worth being fair about. **[VERIFIED by command]** — `git show 6b7a85b` (2026-09-06)
 is the commit that produced 345/365/14/4, and it produced them by **auditing every INFO function
@@ -282,7 +313,23 @@ assertions.
 
 ---
 
-## 6. Coverage of the measurement — and what its denominator excludes
+## 6. Coverage of the measurement — and what its denominator excluded
+
+> **CLOSED 2026-09-17.** Both halves of this finding are repaired, and the section is kept as
+> written because the *shape* of the error is the reusable part.
+>
+> The instrument no longer enumerates its subject from a hardcoded three-file list: it discovers it,
+> globbing `1_SOVEREIGN/**` and `2_CITIZEN/**` for every `.pact` that defines a `ClientInfo`-returning
+> preview. The published figure moved from **401 of 401 with 0 gaps** to
+> **{{fig:previews_measured}} of {{fig:previews_client}} with {{fig:previews_unmeasured}} gaps**
+> ({{fig:previews_declared}} declared) — and note that the *old* figure also read "0 gaps". A tool
+> that defines its population to exclude the gaps will always report full coverage, and will report
+> it in exactly the same words as a tool that has genuinely closed them.
+>
+> The one preview the old denominator hid, `STOAICO::INFO_Collect`, is now measured. It became
+> red-team attack **`RT-K-008`** — found not by suspicion about that function but by counting the
+> population and subtracting, which is the only method that can find the case nobody suspected.
+> {{ch:register}} has it.
 
 This is the section that matters, because the project's headline claim for this phase is a coverage
 claim.

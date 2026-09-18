@@ -57,11 +57,11 @@ explanation*, because stating precisely what an assertion proved exposed that it
 | | |
 |---|---:|
 | **distinct assertions written** | **5,873** |
-| **assertions executed per full gate run** | **25,029** |
-| &nbsp;&nbsp;positive (`expect`) | 20,036 |
+| **assertions executed per full gate run** | **25,035** |
+| &nbsp;&nbsp;positive (`expect`) | 20,042 |
 | &nbsp;&nbsp;negative (`expect-failure`) | 4,993 |
 | gate entrypoints | **92** |
-| `.repl` files reachable from the gate | 306 |
+| `.repl` files reachable from the gate | 321 |
 | orphaned asserting files (written but never run) | **0** |
 
 **Quote 5,555 for "how many tests exist" and 22,454 for "how much ran".** They differ ~4x because

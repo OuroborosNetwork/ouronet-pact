@@ -138,8 +138,8 @@ so explicitly rather than reporting it missing.
 | id | summary | severity | verdict | evidence today |
 |---|---|---|---|---|
 | C1 `#1C` | DPMF has no `create-table` calls anywhere — every function fails | CRIT | **NOT A BUG** | Technical claim stands; DPMF is the retired MetaFungible module, kept for history. `2_Core/00_DPMF.pact` still present, still tableless. [V-cmd] |
-| C2 `#2C` | `DPOF::C_MoveCreateRole` never revoked the create role from the previous holder — every past holder kept mint access forever | CRIT | **FIXED** | `06_DPOF.pact:3076-3083` — `XI_SwitchCreateRole` now runs before `XI_UpdateVerum4`, with a comment naming #2C. **Witnessed**: `REPL/modules/DPOF.repl:239` `<<DPOF-MCR>>`, a two-move test whose third assertion is the revoke. [V-read] |
-| C3 `#3C` | No nonce-uniqueness check on DPOF batch ops — supply inflation *and* negative nonce supply | CRIT | **FIXED** | `06_DPOF.pact:908, 1046, 1080` — `ref-U\|LST::UEV_IzUnique` on `C>DEBIT`, `C>TRANSFER`, `C>BULK-TRANSFER` (the last against the flattened set). [V-read] **No witness found** — see §1.5. |
+| C2 `#2C` | `DPOF::C_MoveCreateRole` never revoked the create role from the previous holder — every past holder kept mint access forever | CRIT | **FIXED** | `06_DPOF.pact:3088-3095` — `XI_SwitchCreateRole` now runs before `XI_UpdateVerum4`, with a comment naming #2C. **Witnessed**: `REPL/modules/DPOF.repl:272` `<<DPOF-MCR>>`, a two-move test whose last assertion (`:329`) is the revoke. [V-read] |
+| C3 `#3C` | No nonce-uniqueness check on DPOF batch ops — supply inflation *and* negative nonce supply | CRIT | **FIXED** | `06_DPOF.pact:908, 1046, 1080` — `ref-U\|LST::UEV_IzUnique` on `C>DEBIT`, `C>TRANSFER`, `C>BULK-TRANSFER` (the last against the flattened set). [V-read] **Witnessed** since 2026-09-17: `REPL/modules/DPOF.repl:2394, :2398, :2402` `<<DPOF-G15>>` hands a duplicated nonce list to all three capabilities. See §1.5. |
 | C4 `#4C` | `VST::C_Unreserve` checks the issuer's ownership, not the reserver's — funds stuck | CRIT | **REFUTED** | Owner: Reserve/Unreserve is one-way escrow-for-purchase; the Token Manager is the intended sole collector. No code change. [REPORTED] |
 | C5 `#5C` | `DPOF\|INFO_UpgradeBranding` called `OI\|OI\|UDC_DynamicKadenaCost` — doubled prefix, unbound variable, every call crashed | CRIT | **FIXED** | **Fix site no longer exists.** `21_INFO-ONE+.pact` was retired (commit `42fb75d`); the successor `Z_Reads/02_INFO-ONE+.pact:1198 INFO_DPOF\|UpgradeBranding` is a full rewrite delegating to `DPOF::URCi_UpgradeBranding`. Zero `OI\|OI\|` occurrences tree-wide. [V-cmd] |
 | N1 | `DPOF::C_Transmit` completely non-functional for every caller — `C>TRANSMIT` read `"meta-data"`, schema field is `"meta-data-array"` | CRIT-equiv | **FIXED** | `06_DPOF.pact:1027` reads `"meta-data-array"`; the schema/constructor at `:1223` agrees. [V-read] `C_Transmit` is exercised by `modules/DPOF.repl` and `Stage_02/[6.1.6]_DPOF.repl`. [V-cmd] |
@@ -150,7 +150,7 @@ so explicitly rather than reporting it missing.
 |---|---|---|---|---|
 | H1 `#6H` | Four DALOS `XE_*` writers skip a `SECURE`/named-cap second gate | HIGH | **REFUTED** | `UEV_IMC` alone is equivalent to `require-capability (SECURE)`; the sibling wrapper protects a shared writer, not an authorisation boundary. [REPORTED] |
 | H2 `#7H` | `GLYPH\|UEV_MsDc`'s charset fold seeded `false`/`or` — returned true if *any* character matched | HIGH | **FIXED** | `1_Utilities/08_U_DALOS.pact:572` `(and acc checkup)`, seed `true`. [V-read] **Witnessed** and gate-run: `REPL/_scratch_udalos_h1_msdc.repl` (2 asserts), listed in `REPL/tools/_gate.py` `SCRATCH_PROOFS`. [V-cmd] |
-| H3 `#8H` | `IGNIS::C_Collect` had no per-leg zero filter — one legitimately-free leg aborted the whole bundle | HIGH | **FIXED** | `02_IGNIS.pact:1896-1901` — `(if (> amount 0.0) … (with-capability (IGNIS\|S>FREE) true))`, comment names #8H. [V-read] **No witness found** — see §1.5. |
+| H3 `#8H` | `IGNIS::C_Collect` had no per-leg zero filter — one legitimately-free leg aborted the whole bundle | HIGH | **FIXED** | `02_IGNIS.pact:1896-1901` — `(if (> amount 0.0) … (with-capability (IGNIS\|S>FREE) true))`, comment names #8H. [V-read] **Witnessed** since 2026-09-17: `REPL/modules/CUMULATOR.repl:139, :143, :147` `<<CUM-G8>>` — a free leg beside a billable one, with the `IGNIS\|S>FREE` event asserted. See §1.5. |
 | H4 `#9H` | `DPTF::C_ToggleBurnRole`/`C_ToggleMintRole`/`C_ToggleFeeExemptionRole` missing `(UEV_IMC)` — reachable bare, bypassing Talos, pause check and billing | HIGH | **FIXED** | `05_DPTF.pact:3051, 3073, 3096` — `(P\|UEV_IMC)` first statement on all three, matching the two siblings at `:3029, :3119`. [V-read] Partially witnessed by `modules/CONFORMANCE.repl` `<<CONF-01>>` for the sibling `C_DeployAccount`. [V-cmd] |
 | H5 `#10H` | A zero-amount leg aborts the entire Multi(Bulk)Transfer batch | HIGH | **REFUTED** | Owner: dying in place on an invalid amount is intended; silently skipping would hide the caller's mistake. [REPORTED] |
 | H6 `#11H` | `TFT::C_MultiBulkTransfer` refreshed the receiver's Elite tier but never the sender's — stale, over-generous OURO overdraft bound | HIGH | **FIXED** | `09_TFT.pact:1840` binds `contains-eazs`; `:1920-1923` refreshes the sender. Mirrors `C_MultiTransfer` at `:1781/:1820`. [V-read] |
@@ -159,11 +159,11 @@ so explicitly rather than reporting it missing.
 | H9 `#14H` | `U_VST::UEV_MilestoneWithTime` had no lower bound — a negative `duration` mints a lock already unlockable | HIGH | **FIXED** | `11_U_VST.pact:233-235` `(and (>= offset 0) (>= duration 0))`. [V-read] **Witnessed**: `REPL/modules/UTILITIES.repl` `<<UTIL-11>>`, both the negative-offset and negative-duration cases, by message. [V-read] |
 | H10 `#15H` | `ATS\|INFO_Coil`'s third leg built its cumulator from the wrong token with sender/receiver reversed | HIGH | **FIXED** | **Fix site no longer exists.** The successor `Z_Reads/02_INFO-ONE+.pact:2220 INFO_ATS\|Coil` no longer hand-assembles legs at all; it takes one `ref-ATSU::URCi_Coil` cumulator. The defect class is structurally gone. [V-read] |
 | H11 `#16H` | `ATS\|INFO_ColdRecovery` bound two locals both named `ifp3` — the Transfer leg's cost was computed then shadowed away | HIGH | **DEFERRED** → now moot | Deferred in 2026-08 to the INFO-function project. That project landed: `Z_Reads/02_INFO-ONE+.pact:2428` now derives cost from a single `ref-ATSU::URCi_ColdRecovery` call. No duplicate binding survives. [V-read] |
-| H12 `#17H` | `PYTHIA::A_UpdateDeployPrice`/`A_UpdateRenamePrice` never wired into Talos — unreachable even for the admin | HIGH | **FIXED** | `3_Talos/06_TS01-C4.pact:96-97` (interface), `:324, :335` (impl). [V-read] **Witnessed**: `REPL/modules/PYTHIA.repl:10` `<<PYTHIA-PRICE>>` — six assertions that the Talos wrapper *moves the value the readers return*, plus restore. [V-read] |
+| H12 `#17H` | `PYTHIA::A_UpdateDeployPrice`/`A_UpdateRenamePrice` never wired into Talos — unreachable even for the admin | HIGH | **FIXED** | `3_Talos/06_TS01-C4.pact:96-97` (interface), `:324, :335` (impl). [V-read] **Witnessed**: `REPL/modules/PYTHIA.repl:55` `<<PYTHIA-PRICE>>` — six assertions that the Talos wrapper *moves the value the readers return*, plus restore. [V-read] |
 | H13 `#18H` | `U_VST::UC_MakeVestingDateList` silently dropped `offset` when `milestones = 1` — a cliff vest releases early | HIGH | **FIXED** | `11_U_VST.pact:138` `[(add-time first-time duration)]`. [V-read] |
 | H14 `#19H` | The KDA/USD price oracle is a hardcoded stub, `1.0`, with the real call commented out | HIGH | **FIXED (interim)** | Renamed and re-denominated: `01_U_CT.pact:364 UR_STOA-PID\|Price` returns `0.1` with the `#19H` comment and the dia-oracle call still commented at `:365`. **Still a stub.** See §1.5. [V-read] |
 | H15 `#20H` | `U_DEC::UC_AddHybridArray` returns garbage on an empty column list and hard-crashes on an all-empty row list | HIGH | **FIXED** | `07_U_DEC.pact:141-146` — `(if (= maxl 0) [] …)` guard with a `#20H fix` comment; the original body is untouched inside. [V-read] |
-| H16 `#21H` | ~Half of `TalosStageOne_AdminV1`'s surface has zero REPL exercise; `[6.4]_Admin.repl` asserts nothing | HIGH | **DEFERRED** → largely closed | `[6.4]_Admin.repl` now has 3 assertions (was 0); `[6.12]_DALOS-ADMIN.repl` has 35 and is in the default `Stage01_Tester.repl` path; `modules/DALOS-ADMIN.repl` has 94. [V-cmd] Not formally re-closed in the audit tracker. |
+| H16 `#21H` | ~Half of `TalosStageOne_AdminV1`'s surface has zero REPL exercise; `[6.4]_Admin.repl` asserts nothing | HIGH | **DEFERRED** → largely closed | `[6.4]_Admin.repl` now has 3 assertions (was 0); `[6.12]_DALOS-ADMIN.repl` has 35 and is in the default `Stage01_Tester.repl` path; `modules/DALOS-ADMIN.repl` has 96 `(expect` openers. [V-cmd] (**Corrected 2026-09-18** — this said 94. The file has held 96 since commit `6f4175d` added the `<<DALOS-G7>>` block on 2026-09-17, the same day this chapter was written.) Not formally re-closed in the audit tracker. |
 | H17 `#22H` | `DemiourgosPactOrtoFungibleV2`/`TalosStageOne_ClientOneV2` cascaded locally but not deployed | HIGH | **FINALIZED (status note)** | Superseded — DPOF now ships `DemiourgosPactOrtoFungibleV2` and TS01-C1 `TalosStageOne_ClientOneV2` as the *live* versions; the redeploy phase absorbed it. [V-cmd] |
 | H18 `#23H` | `OUROBOROS::C_SublimateV2` is live and actively called but absent from `OuroborosV1` | HIGH | **FIXED** | `13_OUROBOROS.pact:72` declares it; `:791` implements it; `3_Talos/03_TS01-C2.pact:147/1816` and `04_TS01-C3.pact:875` call it. [V-read] |
 | H19 `#24H` | Four live `C_*` functions absent from `CodexV1`, which declared no `C_` at all | HIGH | **FIXED** | `2_Core/21_CODEX.pact:120-123` — all four declared. [V-read] |
@@ -176,9 +176,9 @@ so explicitly rather than reporting it missing.
 | M2 `#26M` | Smart-account deploy validation lived inside the `XI_*` writer, not the client cap | MED | **FIXED** | `01_DALOS.pact:847` — new `DALOS\|A>DEPLOY-SMART-OURONET-ACCOUNT` composes `GOV\|DALOS_ADMIN` + the shared validation cap; used at `:1727`. [V-read] |
 | M3 `#27M` | `GAS_PAYER`'s allowlist matches module names by string prefix, not identity | MED | **NOT A BUG** | Owner: intentional — every real Talos module is deliberately `TS`-prefixed. [REPORTED] |
 | M4 `#28M` | `TFT::C_ClearDispo` unconditionally force-unfroze the Elite-Auryn account even if pre-frozen for an unrelated reason | MED | **FIXED** | `09_TFT.pact:1655-1662` — `ico3` now carries `ico1`'s own `(if (not frozen-state) …)` guard. [V-read] |
-| M5 `#29M` | `dispo-data` snapshotted once before the multi-transfer fold and reused per leg — **real OURO-overdraft inflation** | MED (under-ranked) | **FIXED** | `09_TFT.pact:1797-1803` and `:1867-1869` — recomputed inside each leg's `let`, both functions, comments name #29M. [V-read] **No witness found for the staleness itself** — see §1.5. |
-| M6 `#30M` | `DPTF::UR_Hibernation`, an unprotected "read", performed a live table `update` | MED | **FIXED** | `05_DPTF.pact:1212-1229` — pure getter; the `#30M fix` comment records the live-chain check that made the backfill provably dead. [V-read] Companion `REPL/_scratch_dptf_m6_urhibernation_purefetch.repl` is a gate entrypoint but carries **0 assertions**. [V-cmd] |
-| M7 `#31M` | `DPOF::URC_Parent` contained a direct `enforce`, violating the `URC_` contract | MED | **FIXED, then partly self-defeated** | `06_DPOF.pact:1732` (now `URCv_Parent`) has no enforce; `:2038` in `UEV_ParentOwnership` has it. But the in-source note at `:2030-2037` records that the relocated enforce is now **shielded by an eager `let` that calls `URCv_Parent` first**, and is **UNPINNED**. [V-read] See §1.4. |
+| M5 `#29M` | `dispo-data` snapshotted once before the multi-transfer fold and reused per leg — **real OURO-overdraft inflation** | MED (under-ranked) | **FIXED** | `09_TFT.pact:1797-1803` and `:1867-1869` — recomputed inside each leg's `let`, both functions, comments name #29M. [V-read] **Witnessed** since 2026-09-17: `REPL/modules/DPTF.repl:3006` `<<DPTF-G14>>` — an EA-draining leg in front of the overdraft leg, against a control at `:2971` where the same overdraft alone succeeds. See §1.5. |
+| M6 `#30M` | `DPTF::UR_Hibernation`, an unprotected "read", performed a live table `update` | MED | **FIXED** | `05_DPTF.pact:1212-1229` — pure getter; the `#30M fix` comment records the live-chain check that made the backfill provably dead. [V-read] **Witnessed** since 2026-09-17: the companion gate entrypoint `REPL/_scratch_dptf_m6_urhibernation_purefetch.repl` now carries three `<<M6>>` assertions (`:49, :53, :56`) — the witness is **gas**, not the return value. See §1.5. |
+| M7 `#31M` | `DPOF::URC_Parent` contained a direct `enforce`, violating the `URC_` contract | MED | **FIXED, then hoisted clear** | `06_DPOF.pact:1732` (now `URCv_Parent`) has no enforce; `UEV_ParentOwnership` has it at `:2044`, **above** the `parent` binding. The in-source note at `:2025-2043` records that the shadow this chapter described was only **partial**, and that the guard is now pinned. [V-read] **Witnessed**: `REPL/modules/DPOF.repl:2441` `<<DPOF-G16>>`. See §1.4. |
 | M8 `#32M` | `DPOF::C_WipeHeavy` reaches a table-scanning `URDC_*` from a public `C_` without the HEAVY prefix | MED | **DEFERRED → closed** | The `CC_`/`AA_` HEAVY convention was applied by the StoicSyntax sweep; e.g. `10_ATSU.pact:81 CC_RemoveSecondary`, `:72 AA_RemoveSecondary`. [V-cmd] |
 | M9 `#33M` | `AHU`/`AUP_OrtoFungible*` authorise via a hardcoded account literal, not `GOV\|DPOF_ADMIN` | MED | **NOT A BUG** | Completed one-time DPMF→DPOF migration utility. Documented in place: `06_DPOF.pact:762-782`. [V-read] |
 | M10 `#34M` | Two dead capabilities in `TS01-A`, one the sole path to a governor slot registered on DALOS's own vault | MED | **DEFERRED to red-team** | **Still open.** `3_Talos/01_TS01-A.pact:147 P\|GOVERNING-SUMMONER` and `:151 P\|SECURE-SUMMONER` still have zero callers; `P\|TRG` at `:139` is composed only by the former and registered as a guard at `:242`. [V-cmd] |
@@ -188,14 +188,14 @@ so explicitly rather than reporting it missing.
 | M14 `#38M` | Elite-tier update functions run on nearly every transfer but are never asserted; BRD's admin path has zero exercise | MED | **DEFERRED to REPL phase** | Partly closed by the Part II module testers; not re-closed in the tracker. [INFERRED] |
 | M15 `#39M` | `DPTF\|INFO_ClearDispo` carries a raw enforce, undeclared, zero callers | MED | **DEFERRED to INFO project** | INFO project landed; the whole family was rewritten. Not re-closed per-finding. [INFERRED] |
 | M16 `#40M` | Six `LIQUID\|INFO_*`/`ORBR\|INFO_*` implemented but undeclared | MED | **DEFERRED to INFO project** | `Z_Reads/02_INFO-ONE+.pact` declares `INFO_LIQUID\|*`/`INFO_ORBR\|*` in its interface. [V-cmd] |
-| M17 `#41M` | Near-total absence of asserted returns across 93 INFO functions — root enabler of C5/H10/H11 | MED | **DEFERRED to REPL phase** | Closed: `REPL/modules/INFO-ONE.repl` exists, and per-module testers carry `INFO_*` "quote vs measured charge" blocks (e.g. `modules/ATS.repl:1955 ATS-I1`). [V-cmd] |
+| M17 `#41M` | Near-total absence of asserted returns across 93 INFO functions — root enabler of C5/H10/H11 | MED | **DEFERRED to REPL phase** | Closed: `REPL/modules/INFO-ONE.repl` exists, and per-module testers carry `INFO_*` "quote vs measured charge" blocks (e.g. `modules/ATS.repl:2066` `<<ATS-I1>>`). [V-cmd] |
 | M18 `#42M` | `U_RS::UEV_EnforceReserved` over-blocks legitimate non-principal names | MED | **NOT A BUG** | Verbatim port of Kadena's own `coin.pact`; zero callers here. Pinned anyway: `REPL/_scratch_urs_m18_overblock.repl`, a gate entrypoint. [V-cmd] |
 | M19 `#43M` | Several `U_LST`/`U_VST` `UC_*` functions perform `enforce` | MED | **DEFERRED to StoicSyntax sweep** | Sweep landed; the `v`-specialisation (`UCv_`/`URCv_`) now formalises the legitimate cases and renames the rest. [V-cmd] |
 | M20 `#44M` | `UC_IzUnique` can never return `false` — its own comment promises a two-valued predicate that never existed | MED | **FIXED** | `05_U_LST.pact:222 UEV_IzUnique`, doc rewritten to state the true contract. Zero `UC_IzUnique` code references remain. [V-cmd] **Witnessed**: `REPL/_scratch_ulst_m20_uev_izunique.repl`, a gate entrypoint. [V-cmd] |
 | M21 `#45M` | `UC_MaxInteger` crashes *uncatchably* on an empty list; reachable unguarded through a real `DPDC-S` client entrypoint | MED | **FIXED** | `06_U_INT.pact:193-194` — renamed `UEV_MaxInteger` with `(enforce (> (length lst) 0) …)` first. [V-read] **Witnessed**: `modules/UTILITIES.repl` `<<UTIL-11>>` asserts both the value and the refusal message. [V-read] |
 | M22 `#46M` | `UEV_ContainsAll` checks set membership, not multiset containment | MED | **NOT A BUG** | Sole live caller is DPMF, permanently out of scope. [REPORTED] |
 | M23 `#47M` | Zero `expect-failure` assertions anywhere in CODEX/PYTHIA suites | MED | **DEFERRED to REPL phase** | Closed: `modules/PYTHIA.repl`, `modules/CODEX.repl` exist with negative assertions. [V-cmd] |
-| M24 `#48M` | Both suites commented out of the default pipeline | MED | **DEFERRED to REPL phase** | Still commented in `Stage01_Tester.repl:52-54`, but both run under `ZALL.repl:41-42` and their own module testers. [V-cmd] |
+| M24 `#48M` | Both suites commented out of the default pipeline | MED | **DEFERRED to REPL phase** | Still commented in `Stage01_Tester.repl:62` and `:64`, but both run under `ZALL.repl:54-55` and their own module testers. [V-cmd] |
 | M25 `#49M` | The PYTHIA flush-gas-probe REPL is broken — batch sizes exceed the module's own cap | MED | **DEFERRED to REPL phase** | [INFERRED — not re-checked] |
 | M26 `#50M` | `INTERFACE_VERSIONING.md` doesn't document the additive/opt-in dual-implementation pattern | MED | **DEFERRED to StoicSyntax sweep** | [INFERRED] |
 | M27 `#51M` | `MODULE-INDEX.md`'s "latest: X" points at frozen, never-deployed interfaces | MED | **DEFERRED to StoicSyntax sweep** | Superseded — the frozen-interface convention was abandoned entirely; all three Stage-1 registry files now declare zero interfaces. [REPORTED — `DEFECT-LEDGER.md` §8.6] |
@@ -228,7 +228,7 @@ so explicitly rather than reporting it missing.
 | `#71L` | PYTHIA price-setters acquire `SECURE` inline | DEFERRED to sweep | [INFERRED] |
 | `#72L` | Stale header on `[6.10b]_PYTHIA-ledger-v2.repl` | **FIXED** | [REPORTED] |
 | `#73L` | Tautological `or` in `CT_DPTF-FeeLock` | **FIXED** | `01_U_CT.pact:244-247` — single named condition. [V-read] |
-| `#74L` | Typos in enforce messages | **FIXED (partial, by design)** | `11_U_VST.pact:170` tombstone. "succesfully" deliberately left — it is the codebase's consistent 119-occurrence spelling. [V-cmd] |
+| `#74L` | Typos in enforce messages | **FIXED (partial, by design)** | `11_U_VST.pact:170` tombstone. "succesfully" deliberately left — it is the codebase's consistent spelling: **133** occurrences in `STAGE_01/**/*.pact`, **156** across all production Pact. [V-cmd] (**Corrected 2026-09-18** — this said "119-occurrence" without naming a scope, and no scope reproduces 119.) |
 | `#75L` | `UEV_StringPresence`'s `[bar]` sentinel doesn't cover a real empty list | **FIXED** | `05_U_LST.pact:262` — `(and (!= item-lst [bar]) (UC_IsNotEmpty item-lst))`. **Witnessed**: `REPL/_scratch_ulst_75l_stringpresence_empty.repl`, gate entrypoint. [V-read] |
 | `#76L` | Self-referential module-ref style in `UC_NonceSplitter` | DEFERRED to sweep | [INFERRED] |
 | `#77L` | `UR\|KDA-PID` section-placement mismatch | DEFERRED to sweep | Now sits under `{5.3} Read` in `01_U_CT.pact:361-364`. [V-cmd] |
@@ -271,13 +271,14 @@ retains the role for an unrelated reason (`UR_R-Create` has an `account == owner
 that masks the result). It takes *two* consecutive moves, so that the second one's previous holder
 is a third party with nothing else granting them the role. The audit's own harness did exactly that
 — `emma` (owner) → `aoz`, then `aoz` → `patron` — and that structure is preserved in the live pin
-today, `REPL/modules/DPOF.repl:239`, which explains the reasoning in its own comment before making
+today, `REPL/modules/DPOF.repl:272`, which explains the reasoning in its own comment before making
 the assertion:
 
 > *"A single move cannot detect this — after one move the previous holder IS the owner, who keeps the
 > role for other reasons. It takes TWO consecutive moves…"*
 
-**The fix was a reorder of two lines.** `06_DPOF.pact:3081-3083`. [V-read]
+**The fix was a reorder of two lines.** `06_DPOF.pact:3093` and `:3095`, under the comment at
+`:3088-3092` that names #2C. [V-read]
 
 ### (b) N1 — the bug found while building the proof for a different bug
 
@@ -336,30 +337,36 @@ contractually never enforces, and this one made *every* caller pay for a rejecti
 needed. The fix relocated the enforce to `UEV_ParentOwnership`, the one caller whose own `@doc`
 already claimed it.
 
-That is where a normal audit entry would stop. This one does not. Read the current source at
-`06_DPOF.pact:2030-2042` [V-read]:
+That is where a normal audit entry would stop. This one did not. The enforce was moved *into* a
+function whose own `let` bound `parent` by calling `URCv_Parent` — the function it had just been
+moved *out of* — before the enforce could run, and the in-source note said exactly that, in those
+words, marking the guard **UNPINNED** and shielded.
 
-```pact
-(parent:string (URCv_Parent id))
-)
-;;#31M fix: moved here from URCv_Parent, which must never enforce - this is the only
-;;caller that actually needs this rejection (per this function's own @doc).
-;;UNPINNED, and the reason is worth stating because it partly defeats the #31M fix
-;;above: <parent> is bound EAGERLY in the same let, by calling URCv_Parent, which
-;;READS the properties table. So a sleeping-LP id that does not exist aborts in that
-;;read before this enforce runs -- the check was moved here to be reachable, and is
-;;now shielded by the very function it was extracted from.
-```
+> **CORRECTED 2026-09-18.** This section used to quote that note from `06_DPOF.pact:2030-2042` and
+> conclude that reaching the enforce "requires a real issued sleeping-LP token, which no suite
+> creates". The quote no longer resolves and the conclusion was too strong: the source was rewritten
+> on 2026-09-17 after measurement showed the shadow was **partial**, not total.
 
-The enforce was moved *into* a function whose own `let` calls the function it was moved *out of*,
-first. Reaching it now requires a real issued sleeping-LP token, which no suite creates. The
-comment names the remedy (bind `parent` lazily inside the `if`) and names the twin that got it right
-(`DPTF`'s `URCv_Parent`, pinned at `REPL/modules/DPTF.repl` `<<DPTF-G5>>`).
+The measurement is the part worth keeping. `URCv_Parent` reads the properties table only for ids
+prefixed `V|`, `Z|` or `H|`; every other shape falls through to its default with **no read at all**.
+So `Z|X|NOSUCH-…` did abort in that read exactly as the note claimed — while `ABC|NOSUCH-…` reached
+the enforce and produced its written message. Half the input space had always reached the guard, and
+nothing had ever tried it. An unreachability claim asserted from reading rather than from execution
+is the kind of claim that is wrong in one direction only: it stops anyone from writing the test.
 
-This is the eager-`let` pathology the book's Rule 1 exists for, appearing in a *fix* rather than in
-original code. It is also, as far as this chapter can determine, the single most honest artefact in
-the DALOS tree: the code documents the incompleteness of its own repair, at the site, in the place a
-future reader will actually look.
+`fourth` is a pure string slice of `id` and needs no table access, so the repair was to hoist the
+enforce above the binding. It is now the first form in the guard's `let` body, `06_DPOF.pact:2044`,
+sitting above the `let` that binds `parent`, under a note
+at `:2025-2043` that records the old claim and why it was half wrong. Both shapes are pinned by
+`REPL/modules/DPOF.repl:2441` `<<DPOF-G16>>` — asserted *separately*, because they used to differ:
+revert the hoist and the `Z|` assertion goes red while the other stays green, which localises the
+regression to the line that caused it. A third assertion (`:2451`) keeps the pair non-vacuous, an id
+that gets past this guard and fails later, elsewhere. [V-read]
+
+The general observation survives its own correction. This is the eager-`let` pathology the book's
+Rule 1 exists for, appearing in a *fix* rather than in original code; and the code documenting the
+incompleteness of its own repair, at the site, is what made the repair findable at all — the note is
+the only reason anyone went and measured it.
 
 ### (e) H14 — the stub that was fixed, then quietly re-denominated
 
@@ -380,8 +387,14 @@ But **the number did not change when the denomination did.** `0.1` was chosen, o
 quantities happen to coincide is not something this chapter can establish, and nothing in the tree
 asserts that they do. [INFERRED — the risk; V-read — the value and the label]
 
-The finding's substance is in any case still open: it is a stub, and `#L58` in the sibling SWP audit
-confirms the same value fans out to 308 call sites across 17 files. See §1.5.
+The finding's substance is in any case still open: it is a stub, and `#58L` in the sibling SWP audit
+recorded the same value fanning out to *"308 occurrences across 17 files"* at audit time, under the
+old `KDA-PID` name. After the rename the tree holds **41** references to `UR_STOA-PID|Price` in 11
+`.pact` files, and **120** `STOA-PID` tokens across 15; `KDA-PID` survives only in the
+non-production `0_Sample/` files. [V-cmd] See §1.5.
+
+> **Corrected 2026-09-18.** This wrote the id as `#L58` and quoted the 308/17 figure in the present
+> tense, as if it described the tree today. It describes the tree in 2026-08, before the rename.
 
 ### (f) H4 — the escape hatches were checked before "different from its siblings" became "bug"
 
@@ -433,33 +446,40 @@ rather than implying three live reproductions. [REPORTED]
   dead code by design, but it is *loadable* dead code sitting in the deploy order; the closure rests
   on the promise that it will never be upgraded.
 
-### Fixes that are present in source but have no witness that would go red if reverted
+### Seven fixes that were present in source with no witness — all seven now closed
 
-This is the book's Rule 2 applied to this chapter, and it is where the DALOS tree is weakest. The
-audit's proofs were built as `REPL/_scratch_*.repl` harnesses. **Six of them were later promoted to
-gate entrypoints**, listed by name in `REPL/tools/_gate.py`'s `SCRATCH_PROOFS` and in
+This is the book's Rule 2 applied to this chapter, and on 2026-09-17 it was where the DALOS tree was
+weakest. The audit's proofs were built as `REPL/_scratch_*.repl` harnesses. **Six of them were later
+promoted to gate entrypoints**, listed by name in `REPL/tools/_gate.py`'s `SCRATCH_PROOFS` and in
 `REPL/regressions/MANIFEST.md`. [V-cmd] The rest were moved to `REPL/archive/`, a directory whose own
 README states: *"Files here contain no assertions and are referenced by nothing… evidence of past
 investigation, not tests."* [V-cmd]
 
-Of the DALOS fixes, the following have **no assertion anywhere in the running suite** that would fail
-if the fix were reverted. Each was checked by searching `REPL/Stage_01`, `REPL/Stage_02`,
-`REPL/modules`, `REPL/RedTeam` and the gate's own entrypoint lists:
+Seven DALOS fixes were left with **no assertion anywhere in the running suite** that would fail if
+the fix were reverted — checked by searching `REPL/Stage_01`, `REPL/Stage_02`, `REPL/modules`,
+`REPL/RedTeam` and the gate's own entrypoint lists. Each now has one, named below.
 
-| fix | in source? | witness |
+> **CORRECTED 2026-09-18.** Every row of this table used to read *"None found"*, and the paragraph
+> under it called these seven *"the remainder"* of the failure mode. All seven were closed on
+> 2026-09-17, while this book was being assembled, together with four in {{ch:ats}};
+> `DEFECT-LEDGER.md` §8.26 records the set of eleven. What each witness had to do — and why a first
+> attempt passed while proving nothing in four of them — is set out in the Part I introduction.
+
+| fix | in source? | witness today |
 |---|---|---|
-| **C3 `#3C`** — DPOF nonce-uniqueness on `C>DEBIT`/`C>TRANSFER`/`C>BULK-TRANSFER` | Yes, `06_DPOF.pact:908, 1046, 1080` [V-read] | **None found.** `UEV_IzUnique`'s message `"Unique Items Required"` is asserted in `RedTeam/[RT-H]_InputDomain.repl:121` and `Stage_01/[6.3]_SWP.repl:4467` — but both are *other* call sites (swap input ids, pool tokens). No test passes a duplicated **nonce** list to any of the three DPOF capabilities. [V-cmd] |
-| **H3 `#8H`** — IGNIS `C_Collect` per-leg zero filter | Yes, `02_IGNIS.pact:1896-1901` [V-read] | **None found.** Zero occurrences of `IGNIS\|S>FREE` or any zero-priced-leg scenario in any `.repl` outside `archive/_scratch_ignis_h3_zeroleg.repl`, which is not run. [V-cmd] |
-| **M5 `#29M`** — per-leg `dispo-data` recomputation | Yes, `09_TFT.pact:1797, 1867` [V-read] | **None for the staleness.** `modules/DPTF.repl` `<<DPTF-G7>>` pins the OURO dispo *floor* on a wipe — a different guard. No test builds a batch combining an EA-reducing leg with an overdraft leg. [V-cmd] |
-| **M6 `#30M`** — `UR_Hibernation` as a pure getter | Yes, `05_DPTF.pact:1212` [V-read] | **Zero-assertion file.** `_scratch_dptf_m6_urhibernation_purefetch.repl` *is* a gate entrypoint, but `MANIFEST.md` records it as `0 +asserts / 0 -asserts`. It runs and proves nothing. [V-cmd] |
-| **M7 `#31M`** — relocated Sleeping-LP enforce | Yes, `06_DPOF.pact:2038` [V-read] | **None, and the source says so**: *"UNPINNED"*. See §1.4(d). [V-read] |
-| **N2** — `C_DeployAccount` ownership gate | Yes, `02_TS01-C1.pact:710` [V-read] | **Partial.** `modules/CONFORMANCE.repl` `<<CONF-01>>` asserts `DPTF::C_DeployAccount` is refused *from outside Talos* — that is `P\|UEV_IMC`, not the ownership gate. No test drives the Talos wrapper against an account the signer does not own. [V-cmd] |
-| **M1 `#25M`** — `C_RotateStoa` ledger cleanup | Yes, `01_DALOS.pact:1874` [V-read] | **None found.** `UR_StoaLedger` has zero references in any `.repl`. [V-cmd] |
+| **C3 `#3C`** — DPOF nonce-uniqueness on `C>DEBIT`/`C>TRANSFER`/`C>BULK-TRANSFER` | Yes, `06_DPOF.pact:908, 1046, 1080` [V-read] | `<<DPOF-G15>>`, `REPL/modules/DPOF.repl:2394, :2398, :2402` — a duplicated **nonce** list to each of the three capabilities separately. `UEV_IzUnique`'s message was already asserted at `RedTeam/[RT-H]_InputDomain.repl:138` and `Stage_01/[6.3]_SWP.repl:4767`, but both are *other* call sites (swap input ids, pool tokens): a message shared across call sites says nothing about the site you care about. [V-cmd] |
+| **H3 `#8H`** — IGNIS `C_Collect` per-leg zero filter | Yes, `02_IGNIS.pact:1896-1901` [V-read] | `<<CUM-G8>>`, `REPL/modules/CUMULATOR.repl:139, :143, :147` — a free leg beside a billable one; the bundle settles, `IGNIS\|S>FREE` is asserted to have fired, and the two legs are asserted **not** compressed into one. That last assertion is what makes it a test: two legs on one interactor merge, and the fix's branch never runs. [V-cmd] |
+| **M5 `#29M`** — per-leg `dispo-data` recomputation | Yes, `09_TFT.pact:1797, 1867` [V-read] | `<<DPTF-G14>>`, `REPL/modules/DPTF.repl:3006`, against a control at `:2971` — the same overdraft, with and without an Elite-Auryn-draining leg in front of it. The halves sit in **separate transactions** because `expect-failure` does not roll back REPL writes. `<<DPTF-G7>>` (`:1089`) pins the OURO dispo *floor* on a wipe, a different guard. [V-cmd] |
+| **M6 `#30M`** — `UR_Hibernation` as a pure getter | Yes, `05_DPTF.pact:1212` [V-read] | `<<M6>>`, `_scratch_dptf_m6_urhibernation_purefetch.repl:49, :53, :56` — the return value cannot change, so the witness is **gas**: the reader is measured against `UR_Sleeping`, its pure-read sibling on the same row, and a reinstated table write cannot fit inside the margin. [V-cmd] |
+| **M7 `#31M`** — relocated Sleeping-LP enforce | Yes, hoisted to `06_DPOF.pact:2044` [V-read] | `<<DPOF-G16>>`, `REPL/modules/DPOF.repl:2441, :2445, :2451`. The source's "UNPINNED and unreachable" note turned out to describe a **partial** shadow — see §1.4(d). [V-read] |
+| **N2** — `C_DeployAccount` ownership gate | Yes, `02_TS01-C1.pact:710` [V-read] | `<<DPTF-G12>>`, `REPL/modules/DPTF.repl:2895, :2910` — the **Talos wrapper**, driven by a payer who is not the named account, with the account holder's signature added back as the control. `modules/CONFORMANCE.repl` `<<CONF-01>>` pins `P\|UEV_IMC` on the *core* function and would have stayed green if the ownership line were deleted. [V-cmd] |
+| **M1 `#25M`** — `C_RotateStoa` ledger cleanup | Yes, `01_DALOS.pact:1874` [V-read] | `<<DALOS-G7>>`, `REPL/modules/DALOS-ADMIN.repl:1238-1251` — it reads `UR_StoaLedger`, which no `.repl` in the tree had ever read. The assertion that carries the fix is *gone from the old ledger*; *present in the new* holds with or without it. [V-cmd] |
 
-Conversely, the following **are** witnessed today, and this chapter names the assertion for each:
-C2 (`<<DPOF-MCR>>`), H2 (`_scratch_udalos_h1_msdc.repl`, gated), H9 and M21 and `#75L`
-(`<<UTIL-11>>`), H12 (`<<PYTHIA-PRICE>>`), M20 (`_scratch_ulst_m20_uev_izunique.repl`, gated), M18
-and N3 (gated scratch proofs), H4 partially (`<<CONF-01>>` on a sibling).
+The witnessed list from 2026-09-17 therefore grows by seven. Witnessed before that date, with the
+assertion named for each: C2 (`<<DPOF-MCR>>`), H2 (`_scratch_udalos_h1_msdc.repl`, gated), H9 and
+M21 and `#75L` (`<<UTIL-11>>`), H12 (`<<PYTHIA-PRICE>>`), M20
+(`_scratch_ulst_m20_uev_izunique.repl`, gated), M18 and N3 (gated scratch proofs), H4 partially
+(`<<CONF-01>>` on a sibling).
 
 `REPL/modules/PYTHIA.repl` states the general problem in its own header better than this chapter can:
 
@@ -467,8 +487,10 @@ and N3 (gated scratch proofs), H4 partially (`<<CONF-01>>` on a sibling).
 > `_scratch_pythia_h12_price_wiring.repl` — a file the gate does not run. **The ledger counted them as
 > exercised; nothing re-executed them.**"* [V-read]
 
-That is the failure mode, stated by the repository about itself. The seven rows above are the
-remainder of it.
+That is the failure mode, stated by the repository about itself. The seven rows above were the
+remainder of it in this tree. Closing them is worth reading as a set, because **not one was closed
+by simply calling the function** — each needed a specific input, fixture or measurement that tells
+the fixed code apart from the reverted code.
 
 ### Two fixes whose target no longer exists
 

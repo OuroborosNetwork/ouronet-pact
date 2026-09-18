@@ -191,7 +191,7 @@ Line numbers drift. Every citation below was resolved fresh on 2026-09-17.
 | **#41L** | Branding functions untested; stark SFT-vs-NFT test asymmetry | **⏸ DEFERRED** | Open. See §6. |
 | **#42L** | No negative-path coverage of the ownership gate on any of 12 role functions | **⏸ DEFERRED** | Partially closed later, not by this audit. See §5. |
 | **#43L** | `XI_RegisterCollectionElement` returns a display string instead of ending on a write | **⏸ DEFERRED** | Open. See §6. |
-| **#44L** | Dual `implements DpdcTransferV1 + V2` deviates from latest-version-only | **CLOSED** | Already self-documented as intentionally additive in `DpdcTransferV2`'s own `@doc`. |
+| **#44L** | Dual `implements DpdcTransferV1 + V2` deviates from latest-version-only | **CLOSED → since moot** | The dual implement is gone: `07_DPDC-T.pact:102` carries only `(implements DpdcTransferV2)`, and `DpdcTransferV1` has zero hits tree-wide. [VERIFIED by command] (**Corrected 2026-09-18** — this said the arrangement was *"already self-documented as intentionally additive in `DpdcTransferV2`'s own `@doc`"*. No such `@doc` exists, and the thing it described no longer does either.) |
 | **#45L** | `UDC_ScoreMetaData` is dead code | **FIXED by removal** | `01_DPDC-UDC.pact:276` and `:654` removal notes. Removed rather than rewired — wiring it in would have reset a real set-instance's composition. [VERIFIED by command] |
 | **#46L** | Constructors take 5-8 same-typed positional params in a row | **CLOSED — no live bug** | Every call site audited safe in Round I. |
 | **#47L** | `C_RepurposeCollectableFragments` Multi Mode has no `length > 0` guard | **FIXED** | `09_DPDC-F.pact:236` — `(enforce (and (= l1 l2) (> l1 0)) …)`. [VERIFIED by reading] |
@@ -336,12 +336,12 @@ sites (the removal), `02_SCORE.pact:2131-2134` (the consumer). [VERIFIED by read
 
 ### 4.5 #35M — removing the function was the fix, and the removal broke the launchpad
 
-`XB_DeployAccountSFT`/`NFT` associate an account with a collection, and never check the caller
+`XBv_DeployAccountSFT`/`NFT` associate an account with a collection, and never check the caller
 controls the target account. Any signer could force any account to associate with any collection.
 State-bloat griefing, not theft — the write is idempotent-safe.
 
 The obvious fix is an ownership check at the `XB_` layer. **That would have been wrong**, and the
-audit established why before doing anything: the same `XB_` is used for legitimate
+audit established why before doing anything: the same `XB` primitive is used for legitimate
 auto-associate-on-transfer, where the caller is by definition not the target. The fix that preserves
 the feature is to remove the *standalone entrypoints* — the Talos `DPSF|C_DeployAccount` /
 `DPNF|C_DeployAccount` wrappers and the orphaned `DPDC-I::C_DeployAccountSFT`/`NFT` — while leaving
@@ -349,7 +349,7 @@ the shared primitive alone. That is the #15H removal precedent applied a second 
 
 Then it broke. Every real caller was traced first, and one — `TS02-DPAD::A_RegisterAssetToLaunchpad`,
 DemiPad's launchpad registration — genuinely depended on the removed path. It was redirected to call
-`XB_DeployAccountSFT`/`NFT` directly, which required `TS02-DPAD`'s own guard to be registered as a
+`XBv_DeployAccountSFT`/`NFT` directly, which required `TS02-DPAD`'s own guard to be registered as a
 trusted DPDC IMC peer. **The redirect compiled cleanly and did not work.** It was caught by running
 the real end-to-end launchpad scenario, which is not in the default test profile.
 
@@ -361,8 +361,13 @@ ways.
 A handoff was drafted for DPTF/DPOF, where the identical shape was confirmed to exist.
 
 **Verified 2026-09-17:** `04_DPDC-I.pact:55/396`, `01_TS02-C1.pact:65/484`, and the DemiPad redirect
-documented at `05_TS02-DPAD.pact:207` and `:278`. No live definition of either function remains.
-[VERIFIED by command]
+documented at `05_TS02-DPAD.pact:207` and `:278`, with the live call at `:285-286`. No live
+definition of either removed function remains. [VERIFIED by command]
+
+> **Corrected 2026-09-18.** This section wrote the surviving primitive as `XB_DeployAccountSFT`/
+> `NFT` throughout. The `v`-marker sweep this chapter's own §7 describes renamed it:
+> `XBv_DeployAccountSFT` / `XBv_DeployAccountNFT` (`02_DPDC.pact:229`, `:1342`). The unprefixed
+> names have zero hits.
 
 ### 4.6 #19H — one check at the entry, not four checks in four branches
 
@@ -441,7 +446,7 @@ not wired to it.*
 
 Two more in the same family: `G-11` (`02_DPDC.pact` `UEV_Nonce`, all three predicates shadowed by
 `UR_NonceValue`), `G-12` (`08_DPDC-S.pact` `UEV_SetClass`, both enforces shadowed by `UR_Set`), and
-`G-10` (`06_DPDC-MNG.pact:287` `C>ADD-QUANTITY`'s `(> nonce 0)` — *partially* shadowed: nonce `0`
+`G-10` (`06_DPDC-MNG.pact:299` `C>ADD-QUANTITY`, the guard at `:307` — *partially* shadowed: nonce `0`
 aborted in the row read, but a *negative* nonce reached the guard, because the reader keys on
 `(abs nonce)` and found a real row. Mute for one input, live for another).
 
@@ -474,8 +479,9 @@ separate "the owner gate refused" from "the attacker's own signature was rejecte
 while proving the opposite.
 
 Two `DPDC-S|C>` set witnesses and two DPDC nonce-level witnesses were added in the same sweep;
-`[6.1.3]_DPDC-S.repl` has since grown from the audit's 40 assertions to a 67 KB suite carrying them
-(`TX-SET-013` is the collection-owner gate's first witness).
+`[6.1.3]_DPDC-S.repl` has since grown from the audit's 40 assertions to a 101-assertion, ~70 KiB
+suite carrying them (`TX-SET-013` is the collection-owner gate's first witness). [VERIFIED by
+command, 2026-09-18 — this said "67 KB"; the file is 71,491 bytes]
 
 **#42L is therefore partly closed, by a different programme, and its deferral stands for the rest.**
 
@@ -545,8 +551,10 @@ because the codebase has been through at least four substantial rewrites since t
   `URH_AccountNoncesWithSupplies` and `#55L`'s `URD_AS-Keys` → `URH_AS-Keys`. Both were briefly
   invisible to a grep on the audit's own wording, and both are correct. A fix verified by name is not
   verified;
-- `XI_CreditOrDebitCollectables` → `XIv_CreditOrDebitCollectables`, the `v` marker for an intrinsic
-  guard.
+- `XI_CreditOrDebitDPDC` → `XIv_CreditOrDebitDPDC` (`03_DPDC-C.pact:1068`), the `v` marker for an
+  intrinsic guard. (**Corrected 2026-09-18** — this named `XI_CreditOrDebitCollectables` as the
+  renamed function. That one is still called exactly that, at `03_DPDC-C.pact:798`; the rename
+  happened one layer down, to the per-nonce writer it dispatches into.)
 
 The reason the fixes are findable at all is a convention the audit adopted and stuck to: **35 of them
 left a source comment naming the finding.** Counted 2026-09-17 [VERIFIED by command]:
@@ -570,10 +578,17 @@ without one is indistinguishable from ordinary code the moment its line number m
 1. This chapter verified that each fix is **present**. It did not re-run the audit's proofs. Where
    the table says a fix is present, that is what was checked; where it says *live-proven*, that is the
    audit's claim, quoted.
-2. The audit's `Z.repl`-green gate is **weaker than it reads**. `Z.repl` skips `[6.1]_DPDC.repl`
-   entirely (`Stage02_Tester.repl:75`, and the header at line 8 names the skip). The three suites this
-   audit built are in the fast path; the pre-existing DPDC scenario suite is not. The gate that
-   actually covers this family is `python3 REPL/tools/_gate.py`.
+2. The audit's `Z.repl`-green gate is **weaker than it reads**, though less so than this chapter
+   said. The three suites this audit built are in the fast path, and so, now, is the pre-existing
+   DPDC scenario suite: `Stage02_Tester.repl:75` is an **uncommented** `(load
+   "Stage_02/[6.1]_DPDC.repl")`. The gate that actually covers this family is still
+   `python3 REPL/tools/_gate.py`, because `Z.repl` skips other things — `[5.3]_Launchpad.repl`
+   (`:73`) and `[6.3]_STOAICO.repl` (`:77`) are both still commented out.
+
+   > **Corrected 2026-09-18.** This read *"`Z.repl` skips `[6.1]_DPDC.repl` entirely"*. It does
+   > not. `Stage02_Tester.repl:8`'s header still lists *"[6.1] DPDC suite"* among the skips, which
+   > is where the claim came from and which is itself now stale — the same failure this chapter
+   > documents in code, in the comment that describes the code.
 
 ---
 

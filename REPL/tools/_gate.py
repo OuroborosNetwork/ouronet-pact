@@ -395,6 +395,17 @@ def main():
         print(_ab.stdout + _ab.stderr)
         sys.exit("GATE FAILED: the assembled Audit Book is stale against its chapter sources.")
 
+    # TOOL INDEX -- TOOLS.md must list every tool on disk. It had drifted to 50 rows against 53
+    # tools, and the three missing were _auditbook, _booktables and _modref: all GATE-FATAL. The
+    # working agreement says to read TOOLS.md rather than run a tool to find out what it does, so a
+    # missing row does not merely omit information -- it routes the reader into the hazard the rule
+    # exists to prevent.
+    _ti = subprocess.run([sys.executable, "tools/_toolindex.py", "--check"],
+                         capture_output=True, text=True)
+    if _ti.returncode != 0:
+        print(_ti.stdout + _ti.stderr)
+        sys.exit("GATE FAILED: TOOLS.md does not index every tool on disk.")
+
     # MODREF MEMBERS -- fatal only on LIVE class-B: a `(ref-X::member ...)` call where `member` is
     # defined NOWHERE in the module implementing X. Pact 5 resolves modref members DYNAMICALLY, so
     # such a call loads and runs, and only raises if that branch is ever taken -- invisible to every

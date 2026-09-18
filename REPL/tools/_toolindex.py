@@ -12,7 +12,7 @@ empty directory, and this script's failure mode is the dangerous one: it did not
 TOOLS.md containing ZERO rows and printed "indexed 0 tools". Caught only by diffing every tool's
 output across the move. A path that is right by coincidence of working directory is a latent break.
 """
-import ast, glob, os, re
+import ast, glob, os, re, sys
 HERE = os.path.dirname(os.path.abspath(__file__))           # REPL/tools
 REPL = os.path.dirname(HERE)                                # REPL
 rows=[]
@@ -43,5 +43,20 @@ hdr=open(_md,encoding='utf8').read().split("| script |")[0] if os.path.exists(_m
 # reads exactly as authoritative. Rewrite it from the same list that builds the table.
 hdr=re.sub(r'There are \d+ here', f'There are {len(rows)} here', hdr)
 body="| script | what it answers |\n|---|---|\n" + "\n".join(f"| `{f}` | {d} |" for f,d in rows)
-open(_md,"w",encoding='utf8').write(hdr+body+"\n")
+_out = hdr + body + "\n"
+
+# --check, added 2026-09-18. TOOLS.md had drifted to 50 rows against 53 tools on disk, and the
+# three missing ones -- _auditbook, _booktables, _modref -- are all GATE-FATAL. An index that omits
+# a mandatory check is worse than no index: CLAUDE.md tells a reader to consult TOOLS.md instead of
+# running a tool to find out what it does, so a missing row sends them to run it.
+if "--check" in sys.argv:
+    cur = open(_md, encoding='utf8').read() if os.path.exists(_md) else ""
+    if cur != _out:
+        print(f"TOOLS.md is STALE: {len(rows)} tools on disk, index does not match.")
+        print("Regenerate with: python3 REPL/tools/_toolindex.py")
+        sys.exit(1)
+    print(f"tool index: clean -- {len(rows)} tools, every one indexed")
+    sys.exit(0)
+
+open(_md,"w",encoding='utf8').write(_out)
 print(f"indexed {len(rows)} tools")

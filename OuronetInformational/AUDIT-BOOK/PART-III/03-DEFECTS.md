@@ -136,7 +136,7 @@ does not. Anything reading it as authoritative is reading a value that can be st
 **The largest family in the round: eight attacks, eight defects, on a surface nobody had swept.**
 
 Ouronet offers a free `INFO_` preview for every priced operation. Cost parity — *does the preview
-quote what the operation charges?* — was proven for all 401 previews. **Refusal parity — does the
+quote what the operation charges?* — was proven for all {{fig:previews_measured}} previews. **Refusal parity — does the
 preview refuse what the operation refuses? — was proven for none.**
 
 Where a preview re-derives state rather than sharing the execution path's readers, the two can

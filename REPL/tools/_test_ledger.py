@@ -9,7 +9,8 @@ has been tested, how many times, positively and adversarially, and from which te
 audit paper is written from evidence rather than from someone's memory of what got covered.
 
 ATTRIBUTION IS BY TRANSACTION BLOCK, and that is a deliberate, stated approximation. An assertion
-is credited to every client function invoked in the same (begin-tx ... commit-tx) block. A block
+is credited to every client function invoked in the same (begin-tx ... commit-tx/rollback-tx)
+block. A block
 that calls three ops and asserts once credits that assertion to all three. So the assertion
 columns measure "how well is this op's neighbourhood asserted", not a proof that the assertion
 tests that op specifically. Invocation counts are exact.
@@ -33,7 +34,17 @@ for f in TALOS:
             ENTRY.setdefault(n, f)
 
 # ---- walk every repl, block by block ----------------------------------------------------------
-BLOCK = re.compile(r'\(begin-tx.*?\(commit-tx', re.S)
+# A block ends at commit-tx OR rollback-tx. It used to match only `(commit-tx`, which had two
+# effects, both of them silent:
+#   1. Every block AFTER a file's last commit-tx was invisible. Measured 2026-09-18: 46 files,
+#      350 blocks, 898 `(expect…)` forms -- never scanned, so the ops they drive read as untested.
+#   2. An interior rollback-tx block was swallowed into the NEXT block, pooling both blocks'
+#      assertions onto both blocks' ops.
+# This is what made the ledger report `P|A_AddIMP` as never exercised while `modules/LAUNCHPAD.repl`
+# drives it bidirectionally in two blocks that end on `(rollback-tx)` -- and a rollback ending is
+# REQUIRED for a state-mutating negative test (RULE 9), so the blind spot fell hardest on exactly
+# the adversarial assertions this ledger exists to count.
+BLOCK = re.compile(r'\(begin-tx.*?\((?:commit|rollback)-tx', re.S)
 inv   = collections.Counter()                       # op -> invocations
 pos   = collections.Counter()                       # op -> positive assertions in its blocks
 neg   = collections.Counter()                       # op -> expect-failure in its blocks
@@ -132,7 +143,8 @@ print("This is the evidence base for the audit and documentation papers: every c
       "Ouronet exposes, how many times each is exercised, how many positive and adversarial "
       "assertions surround it, and which test files touch it.\n")
 print("> **How to read the assertion columns.** Assertions are attributed by TRANSACTION BLOCK: "
-      "an assertion is credited to every op invoked in the same `(begin-tx … commit-tx)`. A block "
+      "an assertion is credited to every op invoked in the same `(begin-tx … commit-tx)` or "
+      "`(begin-tx … rollback-tx)` block. A block "
       "that calls three ops and asserts once credits all three. So `+asserts` / `-asserts` measure "
       "how well an op's *neighbourhood* is asserted — they are NOT proof that an assertion targets "
       "that op. **Invocation counts are exact.** Treat a high invocation count with zero "

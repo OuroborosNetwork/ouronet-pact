@@ -1,7 +1,9 @@
 # Part I — The Module Audits
 
 > Six per-module audit rounds, run 2026-08 through 2026-09, before the main-work round of Part II.
-> Source material: the `…/Audit/*` trees, 31,225 lines.
+> Source material: the `…/Audit/*` trees, **31,438 lines across 50 files** (31,346 in the 49 `.md`
+> files). *Re-measured 2026-09-18; this read 31,225. Three commits on 2026-09-17 edited files inside
+> those trees, one of them the AQP design-document correction described below.*
 > **Every chapter carries a verification pass dated 2026-09-17** — each fix recorded as FIXED was
 > re-checked against *current* source, not taken from the audit's own word.
 
@@ -103,9 +105,15 @@ Three fixes were briefly invisible to a search on the audit's own wording becaus
 **renamed, not deleted**.
 
 The mechanism that made this checkable at all is a convention: fixes carry a source comment naming
-the finding (`DPDC Audit #NN`). There are 51 such markers in DPDC and 30 in AQP — and **zero** in one
-module, which is the one module where verification had to fall back to behaviour and where the single
+the finding (`DPDC Audit #NN`). There are **51** such markers in DPDC — and **zero** in one module,
+which is the one module where verification had to fall back to behaviour and where the single
 unresolved question remains.
+
+> **Corrected 2026-09-18.** This also said *"and 30 in AQP"*. The DPDC figure re-derives exactly;
+> the AQP one does not, under any marker convention found in the tree — there is no `AQP Audit #NN`
+> form, and a case-insensitive `audit` over `03_AQP/0*.pact` totals 25. The figure is withdrawn
+> rather than replaced, because what it was counting is not recoverable. AQP's fixes *are* annotated
+> (`audit finding #15M / M6`, `L7 #19`, and so on), just not to one pattern.
 
 ### One fix was genuinely gone
 
@@ -126,13 +134,18 @@ a restored archive cannot be both loadable and historical under this codebase's 
 
 ### And a class of fix that was present but unwitnessed
 
-Around ten fixes — including one **critical**-ranked finding — are present in source with **nothing
-in the running suite that would go red if they were reverted**. Their proofs were written into
-scratch harnesses that now sit in an archive directory the gate excludes by name.
+Eleven fixes — including **two** critical-ranked findings, ATS `C2` and DALOS `C3` — were present in
+source with **nothing in the running suite that would go red if they were reverted**. Their proofs
+were written into scratch harnesses that now sit in an archive directory the gate excludes by name.
 
-> SWP is the exception: all nine of its proof tags survive, **because they were written into the
-> canonical suite files rather than into scratch harnesses.** That is a filing decision, not a
-> rigour one, and it is the single largest difference in durability between these six rounds.
+> **Corrected 2026-09-18.** This said *"Around ten fixes — including one critical-ranked
+> finding"*, while the table below lists eleven rows and marks two of them critical.
+
+> SWP is the near-exception: eight of its nine proof tags survive, **because they were written into
+> the canonical suite files rather than into scratch harnesses.** That is a filing decision, not a
+> rigour one, and it is the single largest difference in durability between these six rounds. The
+> ninth, `SWP|TX 015b`, is the counter-example — it lives in a canonical suite file that
+> `_gate.py` excludes by name, so being filed well is necessary and not sufficient ({{ch:swp}}).
 
 **All eleven are now closed**, as this book was assembled:
 

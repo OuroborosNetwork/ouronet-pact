@@ -61,3 +61,23 @@ The keys are the first element of each `CHAPTERS` row: `front`, `system`, `part1
 `src/34-register.md` has no file on disk. It is emitted by `chapter_register()` from the
 `;;<<RT-*>>` headers in the attack `.repl` files themselves — the same text each attack carries in
 source. Editing an attack changes the book; there is no second copy to drift.
+
+## Live figures
+
+A chapter source may **not** hard-code a volatile number. Write `{{fig:assertions}}` and the
+assembler substitutes what it **measures at build time** by running the tool that owns that figure.
+
+```bash
+python3 REPL/tools/_auditbook.py --figures   # list every key and its current value
+```
+
+This exists because a re-derivation sweep on 2026-09-18 found **124 stale figures** in these
+chapters against ~516 that still held. None had been written carelessly; every one was correct when
+typed and the tree moved. Hand-correcting 124 numbers resets the clock and changes no mechanism.
+
+Rules:
+- An unknown `{{fig:key}}` is a **build error**, not a blank.
+- A figure the tool cannot produce is a **build error**, not a fallback to the last value. A default
+  would be a stale figure with extra steps — which is the thing this replaces.
+- Keep a literal only where the number is deliberately **historical** — "it rose from 22,939 to
+  `{{fig:assertions}}` during the round" is correct: the first is a fact about the past.

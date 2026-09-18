@@ -66,8 +66,9 @@ append-only record and a trap for a reader.
 ## 2. How it was audited, and what the tree does not contain
 
 The DEMIPAD audit is **792 lines across four files**. The DPDC tree is 5,093 and the AQP tree is
-4,112. This chapter is shorter than its neighbours because its source is, and padding it would
-misrepresent the coverage.
+4,233 across 14 files (it was 4,112 across 13 when this chapter was written — `RPS-SPLIT-SCOPING.md`
+landed 2026-09-17). This chapter is shorter than its neighbours because its source is, and padding
+it would misrepresent the coverage.
 
 ### What was run
 
@@ -146,12 +147,12 @@ All 17, in the audit's own ranking. Severity as recorded; evidence as verified 2
 
 | # | sev | module | summary | verdict | evidence today |
 |---|---|---|---|---|---|
-| **#1C** | CRITICAL | STOAICO | `C_Collect` is drainable — non-idempotent, and `unclaimed-count == 1` pays the whole vault | **FIXED** | `05_STOAICO.pact:153` `last-collected-round`, `:169` `distribution-round`, cap at `:243`, flush family at `:468`/`:687`/`:771`. [VERIFIED by reading] |
+| **#1C** | CRITICAL | STOAICO | `C_Collect` is drainable — non-idempotent, and `unclaimed-count == 1` pays the whole vault | **FIXED** | `05_STOAICO.pact:153` `last-collected-round`, `:169` `distribution-round`, cap at `:243`, flush family at `:468` (`URH_UncollectedAccounts`), `:1046` (`Ap_FlushUncollectedSlice`) and `:1069` (`AA_FlushUncollected`). [VERIFIED by reading] |
 | **#2H** | HIGH | Demipad | the `retrieval` toggle is dead state — the anti-rug lock is never enforced | **FIXED** | `00_Demipad.pact:412` `DEMIPAD|C>RETRIEVAL-GATE`, composed by all four `RETRIEVE-*` caps at `:477`, `:482`, `:487`, `:492`. [VERIFIED by reading] |
 | **#3H** | HIGH | Custodians | `C_Acquire` never opens `CUSTODIANS|ACQUIRE` — supply cap and policy caps dropped | **FIXED** | `03_Custodians.pact:496-499` — `with-capability (CUSTODIANS|ACQUIRE …)` with the `#3H` note. [VERIFIED by reading] |
 | **#4H** | HIGH | Custodians | calls a non-existent `GOV|LAUNCHPAD|SC_NAME` → runtime unbound variable | **FIXED** | `03_Custodians.pact:302-303` — `GOV|DEMIPAD|SC_NAME`, with the `#4H` note. [VERIFIED by reading] |
 | **#5M** | MEDIUM | STOAICO | `A_Inject` divides by `vault-score` with no zero guard | **FIXED** | `05_STOAICO.pact:170` `zombie-rewards` + `:393` reader — escrow-on-empty, so the division only runs when the divisor is positive. [VERIFIED by reading] |
-| **#6M** | MEDIUM | STOAICO | urSTOA double-credited across stake rounds — re-mints already-claimed urSTOA | **FIXED** | `05_STOAICO.pact:986` and `:1024` — `(if (= (UR_Global11) 0) (XI_UpdateUrstoaEarned …) true)`. [VERIFIED by reading] |
+| **#6M** | MEDIUM | STOAICO | urSTOA double-credited across stake rounds — re-mints already-claimed urSTOA | **FIXED** | `05_STOAICO.pact:996-997` and `:1034-1035` — `(if (= (UR_Global11) 0) (XI_UpdateUrstoaEarned …) true)`. [VERIFIED by reading] |
 | **#7M** | MEDIUM | Demipad | NF transmit guarded by the SF capability — NF assets cannot move, SF-as-NF type mismatch | **FIXED** | `00_Demipad.pact:1427-1439` — the 2×2 `son` branch wires `FUEL/RETRIEVE-NON-FUNGIBLE` (defined at `:470`, `:490`). [VERIFIED by reading] |
 | **#8M** | MEDIUM | Demipad | `direct-injection` credits withdrawable funds with no tokens in — phantom funds | **FIXED** | `00_Demipad.pact:1208` `UEV_DirectInjection` — unconditional hard block — composed at `:580`. [VERIFIED by reading] |
 | **#9M** | MEDIUM | Custodians | `UC_NonceQuintessence` is declared pure and enforces | **FIXED** | `03_Custodians.pact:271-274` — pure mapping, with the enforce relocated and documented. [VERIFIED by reading] |
@@ -448,13 +449,14 @@ the execution path's arithmetic guards. A guard in one of two paths is half a gu
 ### Two guard-reachability defects in the launchpad core
 
 `DEFECT-LEDGER.md` §1.2.1 records `G-05`, and calls it *"the clearest instance"* of the eager-`let`
-class in the codebase. `00_Demipad.pact:513` `C>DEPOSIT`'s message *"Asset … is not registered to the
-Demiourgos Lauchpad"* was unreachable: the caller got a raw Ledger table key instead. The fix was
+class in the codebase. The message *"Asset … is not registered to the Demiourgos Lauchpad"*
+(`00_Demipad.pact:550`, inside `C>DEPOSIT` at `:527`) was unreachable: the caller got a raw Ledger
+table key instead. The fix was
 already in the module three lines up — `UR_CheckRegistration` deliberately wraps its read in
 `(try false …)`, while its three **sibling** reads of the same row were bare. All three switched to
 `with-default-read`. Pinned by `<<TX-DEP-02>>` and `<<DEMIPAD-G2>>`.
 
-`G-32` is `00_Demipad.pact:575` `DEMIPAD|C>WITHDRAW`'s type enforce, and it is **provably dead**:
+`G-32` is `DEMIPAD|C>WITHDRAW`'s type enforce (`00_Demipad.pact:588`), and it is **provably dead**:
 `C_Withdraw` binds `(URv_Funds asset-id type)` before entering the capability, and that reader opens
 with the identical predicate. It was **ruled KEPT** rather than fixed, because `<retrieval-amount>` is
 a parameter of the `@event` capability and moving the read inside would change an event signature
@@ -511,19 +513,25 @@ not. See §4.5.
 **Three caveats a reader should hold against this chapter:**
 
 1. **The tree is the thinnest in Part I and the chapter reflects that.** There is no owner-feedback
-   file and no final report; the README's status boxes were never ticked. Fifteen of seventeen
-   findings carry a bidirectional REPL proof, which is a good rate, but the *consolidation* step the
-   sibling audits performed did not happen here.
+   file and no final report; the README's status boxes were never ticked. **Nine** of seventeen
+   findings carry a bidirectional REPL proof — eight fix entries, one covering two findings — which
+   is still a better rate than either neighbouring audit, but the *consolidation* step the sibling
+   audits performed did not happen here.
+
+   > **Corrected 2026-09-18.** This said *"Fifteen of seventeen"*, contradicting §2 of this same
+   > chapter, which counts the eight `Bug reproduced` / `Bug direction` entries in
+   > `ROUND-02-FIXES.md` and names the nine findings they cover. Fifteen is the **FIXED** count in
+   > `ISSUES-RANKED.md`, not the proof count.
 
 2. **Most of this audit's proofs are outside the default pipeline.** `[5.3]_Launchpad.repl` and
    `[6.3]_STOAICO.repl` are **both commented out in `Stage02_Tester.repl`** (lines 73 and 77), which
-   is what `Z.repl` loads [VERIFIED by command]. They run under `ZALL.repl` (lines 79 and 81), which
+   is what `Z.repl` loads [VERIFIED by command]. They run under `ZALL.repl` (lines 92 and 94), which
    `REPL/tools/_gate.py` executes, so they are gated — but a developer running the fast path sees
    **none** of the #1C, #2H, #3H/#4H, #5M, #6M, #7M, #8M, #9M or #10M proofs go green. This is the
    exact hazard `CLAUDE.md` names about `Z.repl`: *the fast path, not the gate.* The fix entry for
    #1C flagged the wiring gap as a follow-up at the time; it is still the case, by design, and the
    suites have since been joined by `modules/DEMIPAD.repl` (37 assertions), `modules/LAUNCHPAD.repl`
-   (40) and `modules/STOAICO.repl` (12), all globbed into the gate.
+   (39) and `modules/STOAICO.repl` (12), all globbed into the gate.
 
 3. **The audit's scope no longer matches its directory.** Five of six audited modules are citizen
    modules under `2_CITIZEN/7_Launchpad/`. The audit tree that describes them sits under

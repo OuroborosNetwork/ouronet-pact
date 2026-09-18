@@ -253,7 +253,20 @@ literal in every tool. Both are also fatal in the gate.
 
 ---
 
-## 6. The finding: a gate-enforced headline that is eleven operations short
+## 6. The finding: a gate-enforced headline that was eleven operations short
+
+> **CLOSED 2026-09-17.** Everything in this section describes a defect that is now repaired.
+> `_ignis_price_sheet.py` sums `nsimple + ncomplex + nstoaonly + nexempt` (line 743, having moved
+> from 730); the sheet's footer reads **442**; `IGNIS-PRICING.md` quotes 442 in both places; the
+> literal `431` appears nowhere. The section is kept unedited below, with the tense left as written,
+> because its subject is not the eleven rows.
+>
+> Its subject is this: a **generated** artefact published a wrong total for weeks while a gate check
+> enforced that the prose document agree with it. The control was not merely blind to the error — it
+> was **holding it in place**, because correcting the prose by hand would have failed the build. A
+> consistency check between two artefacts is evidence that they match. It is not evidence that
+> either is right, and where one is generated it can convert a generator bug into a mandatory
+> falsehood. That lesson survives the fix, which is why the section does.
 
 **[VERIFIED by command]**, counting the price sheet's own row markers:
 

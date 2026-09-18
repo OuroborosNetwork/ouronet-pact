@@ -117,8 +117,9 @@ an improvement; it only moves which column lies.**
 |---|---:|---:|
 | ownership-gated capabilities in the tree | 185 | 185 |
 | …reachable from a named client operation | 112 *(as then measured)* | **167** |
-| …with a test that caused them to refuse | 19 | **84** |
-| …attributed at depth 0 (the test targeted *this* gate) | — | **65** |
+| …never observed to refuse anybody | 93 | **{{fig:gates_never}}** |
+| …with a test that caused them to refuse | 19 | **{{fig:gates_observed}}** |
+| …attributed at depth 0 (the test targeted *this* gate) | — | **{{fig:gates_depth0}}** |
 | shadowed **and** never witnessed — **the worklist** | 23 | **0** |
 
 **The worklist is empty.** Four capabilities remain unwitnessed and all four are *structurally

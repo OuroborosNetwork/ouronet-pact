@@ -1,9 +1,10 @@
 # Chapter 6 — AQP, the acquisition pools
 
-> **Source tree:** `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/Audit/` (13 files, 4,112 lines)
+> **Source tree:** `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/Audit/` (14 files, 4,233 lines — it was 13
+> and 4,112 when this chapter was written; the corrections described in §6 grew it)
 > **Audited:** 2026-08-11 → 2026-08-24, with follow-on hardening to 2026-08-30
 > **Scope at the time:** 5 modules, ~15,300 lines — the largest core family in Ouronet
-> **Findings:** 33 tracked rows · **Design documents produced:** 8
+> **Findings:** 33 tracked rows · **Design documents produced:** 10
 > **Verification pass for this chapter:** 2026-09-17.
 
 ---
@@ -105,9 +106,16 @@ The feedback file closes with an owner note that is the most honest thing in the
 
 ### Round II — 25 numbered fixes, plus the design documents
 
-`ROUND-02-FIXES.md` is 1,057 lines and 25 entries. What distinguishes it from the DPDC tree is that
-**five findings were too large to fix and produced a specification instead**. Eight design documents
-live alongside the round files:
+`ROUND-02-FIXES.md` is 1,057 lines and carries **23** `## Fix #` headings (26 `##` headings in all).
+What distinguishes it from the DPDC tree is that **five findings were too large to fix and produced
+a specification instead**. **Ten** design documents live alongside the round files — the eight
+tabled below plus `DSA-DELEGATED-STAKING-DESIGN.md`, which this chapter's own §6 uses, and
+`RPS-SPLIT-SCOPING.md`, added 2026-09-17:
+
+> **Corrected 2026-09-18.** This said *"1,057 lines and 25 entries"* and *"Eight design
+> documents"*. 1,057 lines is exact; **no counting rule in the file reproduces 25**, so the two
+> mechanical counts are given instead. Eight was the count of the table, not of the directory.
+
 
 | document | what it specifies | landed? |
 |---|---|---|
@@ -125,9 +133,12 @@ which claims in those documents are still true.
 ### The proof standard
 
 The tree records green-gates at three levels: a **golden** triplet-collect suite, the fast `Z.repl`,
-and — unique to AQP — `bash REPL/run-aqp-audit.sh`, a six-suite comprehensive run (comprehensive,
-core-vct, deb-staleness-proof, sweep-cc, inject-cc, triplet-collect-golden) reported at **1,384
-assertions**.
+and — unique to AQP — `bash REPL/run-aqp-audit.sh`, a comprehensive multi-suite run. At the time it
+was six suites (comprehensive, core-vct, deb-staleness-proof, sweep-cc, inject-cc,
+triplet-collect-golden); it declares **15** today, the DSA and stream suites having been added
+since. The **1,384**-assertion figure is the audit's, and the tree's only source for it
+(`STREAMED-INJECT-DESIGN.md:4`) attributes it to **seven** suites, not six. [VERIFIED by command,
+2026-09-18]
 
 Running it surfaced three things worth keeping, all recorded in `README.md`:
 
@@ -315,7 +326,7 @@ recomputed live; singular scores and vault triplets already point-read maintaine
 - the per-member sum is **maintained** as `total-lane-weight` on the `ScoreEntityLink` row;
 - the **numerator** switches from live derivation to the stored `contrib-weight`;
 - the **divisor** switches from the scan to a point read of `total-lane-weight`;
-- a new `XI_SyncFarmTripletLaneWeights` at **phase 4.6** advances both by delta — placed after the
+- a new `XI_SyncTripletLaneWeights` at **phase 4.6** advances both by delta — placed after the
   existing phase-4.5 mirror sync, mirroring its read-old-at-2.3 / write-after-SCORE ordering.
 
 The conservation argument is structural rather than empirical: at stake, phase 2.3 banks the user's
@@ -327,8 +338,13 @@ pending at the **old** stored contribution and settles against the **old** store
 a real fix rather than a faster path: the scan cannot come back by accident.
 
 The proof asserts the invariant directly rather than a total: at `[6.4]_AQP-TRIPLET-COLLECT`
-`<<TX-AQP-CL04>>`, ANHD has `w-user = 10`, EMMA has `w-user = 4`, and the **maintained divisor reads
-14**.
+`<<TX-AQP-CL04>>` (`:365-370`), both stakers' `w-user` are asserted positive and the maintained
+divisor is asserted to equal their sum, within `1e-6`.
+
+> **Corrected 2026-09-18.** This said *"ANHD has `w-user = 10`, EMMA has `w-user = 4`, and the
+> maintained divisor reads 14"*. No such literals appear in the file. The pins are **relational**,
+> which is the stronger form — they hold at any reserve state, where literals would go red on the
+> next ordinary stake.
 
 The cost is honestly stated: the farm triplet now accepts the same **eventual consistency** as every
 other deb-based score — a user's weight is a snapshot from their last stake, stale until they restake.
@@ -370,7 +386,9 @@ behaviour rather than internal state.
 `#9` link lock — *"the sweep has already refreshed every affected holder, so no staleness remains"*.
 The decrement exists as `XE_UnbumpBoostClassScoreLinks`. [VERIFIED by reading]
 
-`ANCHOR-STALENESS-INVENTORY.md` still says **"NOT BUILT YET."** See §6.
+`ANCHOR-STALENESS-INVENTORY.md` said **"NOT BUILT YET."** It now carries a correction box at
+`:58-77` naming both Talos doors and the live decrement at `01_ANK.pact:2184`, written while this
+book was assembled. See §6.
 
 ### 4.5 L7 — the audit closed it as a misdiagnosis, and the close was the misdiagnosis
 
@@ -452,7 +470,7 @@ inject, a chunked fallback for spikes, and an IGNIS surcharge so a user who forc
 inject to fix their staleness pays for it.
 
 **Verified 2026-09-17:** the additive model is live at `02_SCORE.pact:2455-2471`, the five totals at
-`:411-413`. [VERIFIED by reading]
+`:409-413`. [VERIFIED by reading — `:411-413` holds three of the five]
 
 **And 2b was found defective by the audit itself, in writing.** `M3-DEB-DESIGN.md` records the
 collect-time backstop as *"WRITTEN, DEFECTIVE, REBUILDING"*: the refresh mutated SCORE's `deb-score`
@@ -569,7 +587,8 @@ three steps downstream.
 `(and (= gc 1) (> deb-user 0.0))` and `(fold (and) true [(= class 0) (= mc 1) (> deb-user 0.0)])`
 respectively, with a 25-line source comment carrying the measurement. `XI_1|BookCollectUnclaimed`
 additionally requires unsettled `pending`, and PHASE 3 was resequenced before PHASE 2 so that value is
-still readable. Pinned by `[6.4]_AQP-TRIPLET-COLLECT` `<<TX-AQP-CL04>>`, seven assertions — including
+still readable. Pinned by `[6.4]_AQP-TRIPLET-COLLECT` `<<TX-AQP-CL04>>`'s sweep-drain block
+(`:436-525`, eight assertions) — including
 the two a careless repair would break: the rightful claimant must still sweep, **and** the vault must
 still drain to 0. Returning `0.0` to everyone satisfies "the non-claimant gets nothing" while
 destroying the sweep. [VERIFIED by reading]
@@ -709,29 +728,40 @@ Each of these was checked against current source on 2026-09-17.
 | **Vacate v2** (`VACATE-V2-DESIGN.md`) | separate the cheap transfer work from the expensive accounting work; *"~95 % of each batch's per-position gas is reward overhead, not the transfer"*; 13k NFTs at 30/tx ≈ **433 transactions**, versus ~17 at the transfer floor | **PARTLY.** The parallel-safe `CCp_BatchVacate*` family is live (this is V4's fix) and the `vacate-generation` field the document specifies is implemented. Whether the full drain/finalize separation is complete was **not established by this chapter.** *(not verified)* |
 | **LP scoring** (`LP-SCORING-REDESIGN.md`) | two-level RPS | **Level 1 shipped** (Fix #7). The document's own §6 leaves `G1` (make Level 2 fully transient) and `G2` (split by whole-pool TVL vs staked value) open, and notes Vault/Treasury STOA-normalisation is deferred — *"LP-only for now"*. |
 | **M3-DEB** (`M3-DEB-DESIGN.md`) | the score model plus the deb-staleness subsystem | **SHIPPED, and the document says otherwise.** See below. |
-| **Anchor staleness** (`ANCHOR-STALENESS-INVENTORY.md`) | a map, not a build | Its `S2/H4` row is stale. See below. |
+| **Anchor staleness** (`ANCHOR-STALENESS-INVENTORY.md`) | a map, not a build | Its `S2/H4` row was stale; a correction box now sits above it. See below. |
 
-### Two design documents contradict the code, in the safe-looking direction
+### Two design documents contradicted the code — one of them, and only one, really did
 
-This is the only place where this chapter's verification disagrees with the audit tree, and in both
-cases the **document is behind the code**, not the other way round:
+This is the only place where this chapter's verification disagreed with the audit tree. Both
+documents now carry correction boxes; one of those boxes corrects **this chapter**.
 
-1. **`M3-DEB-DESIGN.md` §"Build order & STATUS"** marks `2b` as *"WRITTEN, DEFECTIVE, REBUILDING"* and
-   `2c` / `2d` / `2e` as **"⏸ NOT BUILT"**. The audit's own `README.md` tracker says the opposite —
-   *"#12 — Part 1 + 2a–2e all built + proven"* — and the code agrees with the tracker: `CC_Inject`
-   exists (`05_FVT.pact:2926`), `MTX-AQP` exists as its own module (`07_MTX-AQP.pact`), and the IGNIS
-   surcharge's `FVT|T|ForcedFixCount` table and `UCk_ForcedFixCount` key builder are live
-   (`05_FVT.pact:1444`). [VERIFIED by reading]
+1. **`ANCHOR-STALENESS-INVENTORY.md` §Status** said H4's half 2 was *"NOT BUILT YET"* and warned that
+   a linked boost-class locks its anchors **forever**. That had not been true since the sweep
+   shipped. The README tracker records *"half-2 sweep BUILT + PROVEN ✅ (phase 3 done)"* and the code
+   carries the full path. Corrected in place on 2026-09-17: the box at `:58-77` names both Talos
+   doors and the live `XE_UnbumpBoostClassScoreLinks` at `01_ANK.pact:2184`, and `§Status:87` now
+   defers to it. The original text is preserved below the box. [VERIFIED by reading]
 
-2. **`ANCHOR-STALENESS-INVENTORY.md` §Status** says H4's half 2 is *"NOT BUILT YET"* and warns that a
-   linked boost-class locks its anchors **forever**. That has not been true since the sweep shipped.
-   The README tracker records *"half-2 sweep BUILT + PROVEN ✅ (phase 3 done)"* and the code carries
-   the full path. [VERIFIED by reading]
+2. **`M3-DEB-DESIGN.md` §"Build order & STATUS"** marks `2c` / `2d` / `2e` as **"⏸ NOT BUILT"**, and
+   this chapter reported that the code disagreed. **It does not.** `M3-DEB-DESIGN.md:276-283` now
+   carries a *"PARTIALLY CORRECTED 2026-09-17"* box that settles it: `C_InjectChecked`,
+   `CC_InjectChecked` and `InjectSweep` all have **zero hits tree-wide**, so `2c` and `2d` are
+   correctly marked NOT BUILT. What shipped of `2e` is the **counter** — `FVT|T|ForcedFixCount`,
+   declared in `04_RPS.pact:393/551/5614`, with its key builder `UCk_ForcedFixCount`
+   (`05_FVT.pact:1444`) and the zeroing at collect — not the `forced-fix-count × RATE` surcharge.
+   [VERIFIED by command]
 
-Neither is a correctness problem. Both are the failure mode this book's third rule is about: **a true
-record whose coverage stopped.** A reader who trusts these two documents will believe two shipped
-subsystems do not exist, and — in the anchor case — will believe a permanent operational lock is in
-force when it is not.
+   > **CORRECTED 2026-09-18.** This chapter cited `CC_Inject` (`05_FVT.pact:2926`) as evidence that
+   > `2c` had shipped. `CC_Inject` is a different function from `CC_InjectChecked` — the *exact*
+   > near-miss the correction box names, and the same mistake the box records the first pass making
+   > against `ANCHOR-STALENESS-INVENTORY.md`. It also placed the `FVT|T|ForcedFixCount` table in
+   > `05_FVT.pact`; the table is declared in `04_RPS.pact`. **An identifier must be checked by exact
+   > name in the exact file, or a plausible neighbour will answer for it.**
+
+So one document was behind the code and one was not, and the chapter's own check was the thing that
+needed correcting on the second. The surviving finding is still the failure mode this book's third
+rule is about — **a true record whose coverage stopped** — and in the anchor case a reader who
+trusted the document would have planned around a permanent operational lock that does not exist.
 
 ### Genuinely open
 
@@ -741,8 +771,8 @@ force when it is not.
 | **LP Level-2 basis (`G2`)** | Whole-pool TVL or staked value. A design question, not a correctness one. |
 | **The AQP shared-reader question (G-37…G-41)** | **DECIDED 2026-09-17, and the decided remedy is not the one proposed.** Defaulting the shared `UR_SCR|Score*` readers changes nothing a caller sees — the caller never reaches those guards — while turning three *deliberate* pins in `[6.5]_AQP-INFO.repl` red. The caller-visible defect is real and sits at the **first raiser**, which was guessed wrong **three times in a row** from reading the call chain. *On an eager-`let` path, the first raiser is found by executing, not by reading.* Actionable, with the wrong remedy ruled out. |
 | **`INFO_AQP-ANK|RevokeAnchor` still quotes a revoke of an anchor that never existed** | Guarding it is two lines and it **breaks `[6.5]_AQP-INFO.repl`**, a *deliberately fixture-free* cost-shape suite that passes arbitrary ids to all **83** AQP readers on the sound principle that AQP prices are argument-independent. Making AQP previews validate ids needs anchor, score and boost-class fixtures for every one of the 83 — real work with a real design question inside it. |
-| **`04_RPS.pact:3876` `XE_XI_SettleScoreRps`** | The eager-fold-operand shape **inside an `if`**, so a settlement plan containing a `BAR` fvt-id would abort the **whole batch settle** instead of skipping that entry — the opposite of what the guard was written to do. **Latent only because the plan builder does not emit `BAR` today.** |
-| **`04_RPS.pact:3919` and `:3027`** | `G-27` and `G-24`: one remaining eager-fold read, and a *partial* shadow that survived the `G-16` repair. |
+| **`04_RPS.pact:3983-3995`, inside `XI_1\|SyncFarmGhostTvlForEmployedScores`** | The eager-fold-operand shape **inside an `if`**, so a settlement plan containing a `BAR` fvt-id would abort the **whole batch settle** instead of skipping that entry — the opposite of what the guard was written to do. **Latent only because the plan builder does not emit `BAR` today.** The source comment says so at the site and names its pin, `REPL/modules/AQP.repl` `<<AQP-G31>>` (`:2122`). (**Corrected 2026-09-18** — this cited `04_RPS.pact:3876 XE_XI_SettleScoreRps`. That name has **zero hits in any `.pact`**; it exists only in prose, and `:3876` is a phase comment.) |
+| **`04_RPS.pact:3983-3995` and `:3053`** | `G-27` and `G-24`: the remaining eager-fold read (the row above) and a *partial* shadow in `UEV_QualitySplitContext` that survived the `G-16` repair. (**Corrected 2026-09-18** — this cited `:3919` and `:3027`, both inherited from `DEFECT-LEDGER.md:1141/1144` and both stale: `:3919` is inside `XI_1\|EnsureScoreRewardRows` and `:3027` is a comment inside the neighbouring `UEV_AddRewardLinkContext`.) |
 | **The `M7` refutation's scope** | ATSU precision artefacts are by design, but the fix entry notes the interaction: M1's dust sweep cannot recover **sub-precision** triplet dust, because the ATS ladder cannot move it. Economically negligible, structurally permanent. |
 
 ### One accepted property that a reader should understand as a property, not a bug
@@ -767,8 +797,10 @@ C2's entire inject path into a different module and a different file.
 
 **Five things a reader should weigh against that result:**
 
-1. **Two of the audit's own design documents are stale in the direction of understating what
-   shipped** (§6). This chapter's most concrete finding is documentary, not technical.
+1. **One of the audit's own design documents was stale in the direction of understating what
+   shipped** (§6), and this chapter originally claimed two. Both now carry correction boxes; the
+   second box corrects this chapter, not the document. The most concrete finding here is still
+   documentary rather than technical — including the part of it that was wrong.
 
 2. **The audit's proof standard was high and its coverage question was left open by design.** Round III
    was specified, its regressions were enumerated fix by fix, and it was not run. Everything in the
@@ -783,7 +815,8 @@ C2's entire inject path into a different module and a different file.
 
 4. **The `Z.repl` numbers quoted throughout the tree are not the gate.** They range from 225 to 242
    assertions; `REPL/tools/_gate.py` — which globs `modules/*.repl`, `RedTeam/*` and `ZALL.repl` — runs
-   the order of 20,000. Where this chapter quotes a suite figure it is the audit's, from the time.
+   **25,035** (20,042 positive, 4,993 negative), as of the 2026-09-18 green gate. Where this
+   chapter quotes a suite figure it is the audit's, from the time.
 
 5. **`04_RPS.pact` is 304 KB and `05_FVT.pact` is 225 KB.** On 2026-09-15 five source-rewriting tools
    fired on a bare import and **silently deleted 111 lines of schemas from `05_FVT.pact`**; the tools

@@ -130,7 +130,7 @@ cross-references use whichever was to hand.
 |---|---|---|---|---|
 | `#1C` / C1 | `ATS\|GOV` is `(defcap () true)` and is the vault's governor guard — claimed forgeable, full drain | CRIT | **REFUTED** | Pact requires foreign module-admin first. The pattern is intact and still used: `08_ATS.pact` `ATS\|GOV`, plus `VST\|GOV`, `LIQUID\|GOV`, `ORBR\|GOV`, `SWP\|GOV`. [REPORTED + V-cmd] |
 | `#2C` / C2 | Reward-token remove-then-re-add corrupts every pre-existing position's token attribution — **three** sub-mechanisms: (a) cull pays the wrong token, (b) royalty permanently stranded, (c) cold recovery permanently unusable for existing accounts | CRIT | **FIXED** | (a)+(c): `1_Utilities/09_U_ATS.pact:394-404` — `UC_ReshapeUnstakeObject` now calls `UCv_SolidifyUnstakeObject` unconditionally, comment names `#1C / C2c`. (b): `2_Core/10_ATSU.pact:1530-1596` — `XI_RemoveSecondary` derives the account list on-chain via `URH_ExistingAutostakePairs` and migrates RUR bucket 3 (royalty) alongside 1 and 2. [V-read] **No witness in the running suite** — see §2.5. |
-| `#3C` / C3 | `ATSU::C_Redeem` passes a `:decimal` where Pact's `if` requires `:bool` — **every** call reverts; the only exit from hot recovery is permanently dead | CRIT | **FIXED** | `10_ATSU.pact:2117` — `(have-fee-rts:bool (!= are-fee-rts 0.0))`, with a comment naming `#3C / C3`; used at `:2131`. A second instance exists correctly at `:1162`. [V-read] **Witnessed**: `REPL/Stage_01/[6.6]_ATS.repl:483-484` (early redeem withheld a real fee — paid *strictly less* than full value) and `:565` (matured redeem paid *exactly* full value). [V-read] |
+| `#3C` / C3 | `ATSU::C_Redeem` passes a `:decimal` where Pact's `if` requires `:bool` — **every** call reverts; the only exit from hot recovery is permanently dead | CRIT | **FIXED** | `10_ATSU.pact:2117` — `(have-fee-rts:bool (!= are-fee-rts 0.0))`, with a comment naming `#3C / C3`; used at `:2131`. A second instance exists correctly at `:1162`. [V-read] **Witnessed**: `REPL/Stage_01/[6.6]_ATS.repl:524` (early redeem withheld a real fee — paid *strictly less* than full value) and `:611` (matured redeem paid *exactly* full value). [V-read] |
 | `#4C` / C4 | `syphon` floor has no monotonicity, lock or timelock — the owner can re-lower it and extract ~95%+ of pool backing in one call | CRIT | **NOT A BUG** | Owner: full at-will discretionary control (bounded `>= 0.1`) is intended; stakers trust the pool owner with this lever. Proposed ratchet explicitly rejected. [REPORTED] |
 | `#5C` / C5 | `C_HOT-RBT\|UpdatePendingBranding`/`UpgradeBranding` have **no** owner or entity-linkage check at all | CRIT | **FIXED** | `08_ATS.pact:736` — new unevented core `ATS\|C>HOT-RBT-BRD` resolves the owning pair from the hot-rbt id, `CAP_Owner`, then composes `ATS\|GOV`; `:746` and `:750` are the two `@event` leaves; used at `:2993` and `:3004`. [V-read] |
 
@@ -139,21 +139,21 @@ cross-references use whichever was to hand.
 | id | summary | severity | verdict | evidence today |
 |---|---|---|---|---|
 | `#6H` / H1 | Parameter-lock protects fee-schedule config but not royalty, syphon, hibernation fees, ownership rotation or the recovery switches | HIGH | **FIXED / CLOSED** (2 of 8 fields; 6 confirmed intentionally exempt) | `08_ATS.pact:638` and `:660` — `(UEV_ParameterLockState atspair false)` is now the first statement of `ATS\|S>SET-HIBERNATION-FEES` and `ATS\|S>ROYALTY`, each with a comment naming `#6H / H1`. [V-read] **No witness** — see §2.5. |
-| `#7H` / H2 | Royalty ceiling is 99.9%, applies instantly, no lock or delta cap | HIGH | **FIXED** | `08_ATS.pact:662` — `(enforce (<= royalty 500.0) "Royalty cannot exceed 500.0 promile (50%)")`, layered over the shared `UEV_Fee`. [V-read] **Witnessed**: `[6.6]_ATS.repl:3689` (999.0 rejected), `:3693` (500.0001 rejected), `:3702` (500.0 accepted), `:3711`/`:3717` (both off-sentinels still work). [V-read] |
+| `#7H` / H2 | Royalty ceiling is 99.9%, applies instantly, no lock or delta cap | HIGH | **FIXED** | `08_ATS.pact:662` — `(enforce (<= royalty 500.0) "Royalty cannot exceed 500.0 promile (50%)")`, layered over the shared `UEV_Fee`. [V-read] **Witnessed**: `[6.6]_ATS.repl:3965` (999.0 rejected), `:3969` (500.0001 rejected), `:3978` (500.0 accepted), `:3987`/`:3993` (both off-sentinels still work). [V-read] |
 | `#8H` / H3 | `URC_RBT`'s `abs()` masks the `-1.0` "uninitialised index" sentinel — Coil/Curl bypass KickStart, genesis inflation / zero-mint donation | HIGH | **NOT A BUG** (both scenarios) | Scenario 1: bare-Coil bootstrap is the intended alternative to KickStart. Scenario 2: refuted on tracing — `DPTF\|C>CREDIT`'s `UEV_Amount` reverts a `0.0` mint atomically, so no silent-donation window exists. [REPORTED] |
-| `#9H` / H4 | `UEV_ColdDurationParameters`' soft branch calls `enforce` with 3 arguments — soft cold-recovery duration can never be set post-genesis | HIGH | **FIXED** | `1_Utilities/09_U_ATS.pact:730-758` — one correctly-formed 2-arg enforce per branch; the `@doc` names both `#9H / H4` and `#16M / M7`. [V-read] **Witnessed**: `REPL/modules/UTILITIES.repl:119` `<<UTIL-03>>` — soft branch accepted with valid params, and refused with a message that *names the values*, asserted as a pair against the hard branch's anonymous message. [V-read] |
+| `#9H` / H4 | `UEV_ColdDurationParameters`' soft branch calls `enforce` with 3 arguments — soft cold-recovery duration can never be set post-genesis | HIGH | **FIXED** | `1_Utilities/09_U_ATS.pact:730-758` — one correctly-formed 2-arg enforce per branch; the `@doc` names both `#9H / H4` and `#16M / M7`. [V-read] **Witnessed**: `REPL/modules/UTILITIES.repl:158-163` `<<UTIL-03>>` — soft branch accepted with valid params, and refused with a message that *names the values*, asserted as a pair against the hard branch's anonymous message. [V-read] |
 
 ### MEDIUM
 
 | id | summary | severity | verdict | evidence today |
 |---|---|---|---|---|
-| `#10M` / M1 | `UEV_HibernationFees` has a malformed `(= () 0.0)` term — `C_SetHibernationFees` **always** fails | MED | **FIXED** | `09_U_ATS.pact:699-705` — the stray term is gone; the `@doc` records what it was (`()` is Pact's unit value; the comparison is always false, dragging the whole `(fold (and) …)` to false). [V-read] Indirectly witnessed: `modules/ATS.repl:2246 ATS-I5` executes `C_SetHibernationFees` through the real Talos path. [V-cmd] |
-| `#11M` / M2 | `C_KickStart` has no bound on the `rt-amounts : rbt-request-amount` ratio — vault inflation-attack setup | MED | **FIXED** | Layered per `StoicSyntax §14.7`: `10_ATSU.pact:370 ATSU\|C>X_KICKSTART` (shared core, `>= 0.1` floor), `:340 ATSU\|C>KICKSTART` (`@event` leaf, `CAP_Owner` + `<= 100.0` ceiling), `:359 ATSU\|C>ADMINISTRATIVE-KICKSTART` (`@event` leaf, `GOV\|ATSU_ADMIN`, floor only). New helper `09_U_ATS.pact:303 UC_KickStartIndex` returns `-1.0` on a non-positive divisor rather than crashing in a `let`. [V-read] **Witnessed**: `modules/ATS.repl:850` `<<ATS-G9>>` — *"an owner-path KickStart above index 100.0 is refused"*; `:602` `<<ATS-G5>>` covers the core's four sequential guards. [V-read] |
+| `#10M` / M1 | `UEV_HibernationFees` has a malformed `(= () 0.0)` term — `C_SetHibernationFees` **always** fails | MED | **FIXED** | `09_U_ATS.pact:699-705` — the stray term is gone; the `@doc` records what it was (`()` is Pact's unit value; the comparison is always false, dragging the whole `(fold (and) …)` to false). [V-read] Indirectly witnessed: `modules/ATS.repl:2361` `<<ATS-I5>>` executes `C_SetHibernationFees` through the real Talos path. [V-cmd] |
+| `#11M` / M2 | `C_KickStart` has no bound on the `rt-amounts : rbt-request-amount` ratio — vault inflation-attack setup | MED | **FIXED** | Layered per `StoicSyntax §14.7`: `10_ATSU.pact:370 ATSU\|C>X_KICKSTART` (shared core, `>= 0.1` floor), `:340 ATSU\|C>KICKSTART` (`@event` leaf, `CAP_Owner` + `<= 100.0` ceiling), `:359 ATSU\|C>ADMINISTRATIVE-KICKSTART` (`@event` leaf, `GOV\|ATSU_ADMIN`, floor only). New helper `09_U_ATS.pact:303 UC_KickStartIndex` returns `-1.0` on a non-positive divisor rather than crashing in a `let`. [V-read] **Witnessed**: `modules/ATS.repl:956` `<<ATS-G9>>` — *"an owner-path KickStart above index 100.0 is refused"*; `:679-694` `<<ATS-G5>>` covers the core's four sequential guards. [V-read] |
 | `#12M` / M3 | `XE_UpdateRUR` has no floor-at-zero on any of its three buckets | MED | **NOT A BUG** | `UDC_RT`'s constructor `enforce` fires during the `let`-binding phase, before any write — a complete atomic backstop, not partial defence. [REPORTED] |
 | `#13M` / M4 | `C_Fuel` doesn't gate on the lock-state flags `RemoveSecondary` requires | MED | **NOT A BUG** | Coil/Curl skip all four locks too; the locks exist to protect the RT-list reshape specifically. [REPORTED] |
 | `#14M` / M5 | Elite toggle switches the position-selection algorithm on already-populated ledger rows | MED | **NOT A BUG** | The toggle changes only the *search window* for new deposits; stored P1–P7 rows are always read literally. [REPORTED] |
-| `#15M` / M6 | `UEV_CRF\|FeeThresholds` never validates threshold *values* despite its `@doc` promising `[1,100]` | MED | **FIXED (doc-only)** | `09_U_ATS.pact:601-606` — `@doc` now says the bound is on the **count**, and says why values have no ceiling. [V-read] **Witnessed** for the count bound: `modules/UTILITIES.repl:350-355`. [V-read] |
-| `#16M` / M7 | Hard-branch cold-duration params never enforce `growth > 0` — a negative, evenly-dividing growth inverts the whole wait curve | MED | **FIXED** | `09_U_ATS.pact:745` and `:754` — `(> growth 0)` on both branches (soft had the identical gap). [V-read] **Witnessed**: `modules/UTILITIES.repl:142-144` — *"a zero growth is refused before it can divide by zero"*. [V-read] |
+| `#15M` / M6 | `UEV_CRF\|FeeThresholds` never validates threshold *values* despite its `@doc` promising `[1,100]` | MED | **FIXED (doc-only)** | `09_U_ATS.pact:601-606` — `@doc` now says the bound is on the **count**, and says why values have no ceiling. [V-read] **Witnessed** for the count bound: `modules/UTILITIES.repl:392` (a single-rung ladder is accepted — the minimum size) and `:394` (an empty one is refused by the size guard), both `<<UTIL-07>>`. [V-read] (**Corrected 2026-09-18** — this cited `:350-355`, which is `<<UTIL-06>>`, the atspair name-length guard.) |
+| `#16M` / M7 | Hard-branch cold-duration params never enforce `growth > 0` — a negative, evenly-dividing growth inverts the whole wait curve | MED | **FIXED** | `09_U_ATS.pact:745` and `:754` — `(> growth 0)` on both branches (soft had the identical gap). [V-read] **Witnessed**: `modules/UTILITIES.repl:167-169` `<<UTIL-03>>` — *"a zero growth is refused before it can divide by zero"*. [V-read] (**Corrected 2026-09-18** — this cited `:142-144`, which is the block's namespace/banner lines, and §2.6 attributed the assertion to `<<UTIL-02>>`.) |
 | `#17M` / M8 | `UC_SplitByIndexedRBT` has no zero-guard on `resident-sum` — reachable div-by-zero | MED | **NOT A BUG** | Proven from `URC_Index`'s own formula: `resident-sum = 0.0` is the *only* way `index` reads exactly `0.0`, so a strictly-positive index guarantees a nonzero divisor by construction. [REPORTED] |
 | `#18M` / M9 | `UC_SplitByIndexedRBT` trusts positional alignment of two arrays with no length-parity guard | MED | **NOT A BUG** | Both arrays are a 1:1 map over the same `reward-tokens` list; they cannot desync. [REPORTED] |
 
@@ -163,8 +163,8 @@ cross-references use whichever was to hand.
 |---|---|---|---|
 | `#19L` / L1 | `ATS\|F>OWNER` — dead capability, never composed | **FIXED** | Gone. Zero `F>OWNER` occurrences in `08_ATS.pact`; the sibling `DALOS\|F>OWNER` survives at `01_DALOS.pact:873` and is composed twice, confirming the pattern itself was fine. [V-cmd] |
 | `#20L` / L2 | `UR_P-KEYS`/`UR_KEYS` perform raw `keys` scans under a `UR_` prefix | **NOT A BUG (deferred)** | Repo-wide convention; folded into the post-audit sweep. [REPORTED] |
-| `#21L` / L3 | `can-upgrade` is permanently `true` with no setter — a V1→V2 vestige gating `C_Control` | **FIXED** | New setter: `08_ATS.pact:255` (interface), `:3202` (impl), plus cap and `XI_`; Talos wrapper `3_Talos/03_TS01-C2.pact:70`/`:614`. [V-read] **Witnessed**: `[6.6]_ATS.repl:2653` (*"can-upgrade is now false"*), `:2654` (`C_Control` then refused), `:2698` (restored). [V-read] |
-| `#22L` / L4 | Hot-RBT surface + ~12 config `C_*` functions have **zero** REPL coverage; the suite that exists isn't in the default pipeline | **FIXED** | `[6.6]_ATS.repl` now carries 45 `expect`/`expect-failure` forms across the twelve functions. [V-cmd] **But the pipeline half regressed** — see §2.5. |
+| `#21L` / L3 | `can-upgrade` is permanently `true` with no setter — a V1→V2 vestige gating `C_Control` | **FIXED** | New setter: `08_ATS.pact:255` (interface), `:3202` (impl), plus cap and `XI_`; Talos wrapper `3_Talos/03_TS01-C2.pact:70`/`:614`. [V-read] **Witnessed**: `[6.6]_ATS.repl:2835` (*"can-upgrade is now false"*), `:2836` (`C_Control` then refused), `:2886` (restored). [V-read] |
+| `#22L` / L4 | Hot-RBT surface + ~12 config `C_*` functions have **zero** REPL coverage; the suite that exists isn't in the default pipeline | **FIXED** | `[6.6]_ATS.repl` now carries **42** `expect`/`expect-failure` forms across the twelve functions. [V-cmd] (**Corrected twice on 2026-09-18.** It first said 45, which was wrong when written rather than drifted. The correction said 43, which came from `grep -o '(expect'` — a *substring* match that also catches `(expected-release-sum:decimal …)` at `:3889`, a `let` binding. Word-bounded, `\(expect(-failure)?\b`, the file holds 42. Two successive corrections of the same figure, each wrong in a different way, and the second was produced by the looser pattern of the two.) **But the pipeline half regressed** — see §2.5. |
 | `#23L` / L5 | Hibernation fee computed but never separately tracked, asymmetric vs royalty | **NOT A BUG** | Traced in `C_Brumate`: the full pre-fee amount is credited to resident while the coiler receives less RBT — the fee stays in the pool, raising the index for existing holders. [REPORTED] |
 | `#24L` / L6 | `URC_RewardBearingTokenAmounts` hardcodes `dayz=1` | **NOT A BUG** | `dayz` only matters when hibernation is on, and every caller of the plain variant is gated to hibernation-off by its own cap. [REPORTED] |
 | `#25L` / L7 | `XI_Normalize`'s 16-branch position reshuffle not hand-verified | **VERIFIED CORRECT** | Full trace of all 9 top-level branches + the `take`/`drop` slicing; occupied slots are never dropped or duplicated. No defect. [REPORTED] |
@@ -180,7 +180,7 @@ cross-references use whichever was to hand.
 | id | summary | severity | verdict | evidence today |
 |---|---|---|---|---|
 | `#32N` / N1 | `URC_MultiCull` returns a raw `[decimal]` on its "nothing cullable" branch but an object on the other — `XI_MultiCull`'s `:object` binding makes it a hard crash; reachable by **any** account with nothing currently ripe | — | **FIXED** | `10_ATSU.pact:641-681` — the empty branch now returns the same 4-key object shape (`after-cull` unchanged, two empty lists, `summed-culled-values: zr-output`). Talos reports it distinctly: `3_Talos/03_TS01-C2.pact:1030` *"Nothing to Cull just yet for ATS-Pair {} - no positions have reached their cull-time"*. [V-read] **No witness** — see §2.5. |
-| `#33N` / N2 | `C_WithdrawRoyalties` hands its full per-RT royalty vector to `TFT::C_MultiTransfer`, which debits every leg unconditionally — any `0.0` leg crashes the whole withdrawal | HIGH | **FIXED** | `10_ATSU.pact:1651` — `nonzero-idx` filters both lists before the multi-transfer; the RUR-reset loop still iterates every RT, so no accounting is skipped. The same filter is mirrored in the preview at `:766-777`. [V-read] **Witnessed**: `[6.6]_ATS.repl:3557` (royalty accrued, nonzero) and `:3563` (all buckets reset after withdrawal). [V-read] |
+| `#33N` / N2 | `C_WithdrawRoyalties` hands its full per-RT royalty vector to `TFT::C_MultiTransfer`, which debits every leg unconditionally — any `0.0` leg crashes the whole withdrawal | HIGH | **FIXED** | `10_ATSU.pact:1651` — `nonzero-idx` filters both lists before the multi-transfer; the RUR-reset loop still iterates every RT, so no accounting is skipped. The same filter is mirrored in the preview at `:766-777`. [V-read] **Witnessed**: `[6.6]_ATS.repl:3821` (royalty accrued, nonzero) and `:3827` (all buckets reset after withdrawal). [V-read] |
 | `#34N` / N3 | `P\|A_Define` in `01_TS01-A.pact` never registered `ATS` or `ATSU` as permitted Talos-admin callers — `ATS\|A_RemoveSecondary` and `ATS\|A_KickStart` were **unreachable, unconditionally, for any signer** | HIGH | **FIXED** | `3_Talos/01_TS01-A.pact:249-250` — `(ref-P\|ATS::P\|A_AddIMP mg)` and `(ref-P\|ATSU::P\|A_AddIMP mg)`, in the list alongside the eight that were already there; the missing `ref-P\|ATSU` binding is at `:234`. The in-source comment at `:219` records the history. [V-read] |
 | `#35N` / N4 | The audit added 5 new public functions across 5 interfaces with no version bump — 3 of them already live on mainnet under those exact names | — | **ONGOING (deployment prerequisite)** | **Resolved by the later redeploy phase.** All three required bumps are present: `UtilityAtsV2 → UtilityAtsV3` (`09_U_ATS.pact:2`), `AutostakeUsageV1 → AutostakeUsageV2` (`10_ATSU.pact:6`), `AutostakeV2 → AutostakeV3` (`08_ATS.pact:6`). [V-cmd] |
 
@@ -247,8 +247,17 @@ the production Talos owner path, then culled — with the actual DPTF balance de
 `PKOSON +12.080149529322803393554764`, `AKOSON +8.340265093244058451673906`, bit-for-bit matching the
 pre-cull stored amounts. [REPORTED]
 
-**And that proof no longer runs.** See §2.5. This is the single most important caveat in this
-chapter.
+**And that proof no longer runs.** It was written into `REPL/_audit_ats_baseline.repl`, which now
+sits in `REPL/archive/` and is excluded from the gate by name. On 2026-09-17 a replacement was
+written that does not depend on it: `REPL/modules/UTILITIES.repl:1081-1093` `<<UTIL-15>>` drives
+`UC_ReshapeUnstakeObject` on the **all-zero** object the removed gate rejects — asserting the
+rejection first, so the case is known to be the one the fix bought — and shows the array shrinks
+anyway, 3 slots to 2. Reinstating the gate turns it red. [V-cmd] See §2.5.
+
+> **CORRECTED 2026-09-18.** This paragraph ended *"See §2.5. This is the single most important
+> caveat in this chapter"*, and §2.5 listed C2 as unwitnessed. That was true when the chapter was
+> written on 2026-09-17 and was closed the same day; the caveat now applies to the archived proof,
+> not to the finding.
 
 ### (b) C3 — the function that had never once worked, and the fixture that nearly hid it
 
@@ -277,8 +286,8 @@ three escalating checks rather than accept either story:
 
 The fix is one added binding (`10_ATSU.pact:2117` [V-read]) and the dead test was **rewritten rather
 than patched around** — into two real assertion-backed branches. It is one of the few ATS proofs that
-is still live today: `[6.6]_ATS.repl:483-484` asserts the early redeem paid *strictly less* than full
-value (proving a real fee was withheld, not just "didn't crash"), and `:565` asserts the matured
+is still live today: `[6.6]_ATS.repl:524` asserts the early redeem paid *strictly less* than full
+value (proving a real fee was withheld, not just "didn't crash"), and `:611` asserts the matured
 redeem paid exactly full value. [V-read]
 
 ### (c) N3 — two admin functions that were dead on arrival, found only because someone wrote a test
@@ -341,7 +350,7 @@ through a brand-new virgin pool was out of scope (pair creation needs a separate
 registration flow), so the bound checks were driven via `test-capability` against the real deployed
 capabilities on an already-kickstarted pair, with real signatures — proving every bound exactly as it
 runs in production, with only the orthogonal virgin-pool gate inferred rather than re-demonstrated.
-[REPORTED] That coverage has since been replaced by real assertions: `modules/ATS.repl:850`
+[REPORTED] That coverage has since been replaced by real assertions: `modules/ATS.repl:956`
 `<<ATS-G9>>` refuses an owner-path KickStart above index 100.0. [V-read]
 
 ### (e) C5 — the owner worked out why the suspicious code was correct, and found the real gap underneath it
@@ -433,9 +442,9 @@ doesn't have any.
   `UC_SplitByIndexedRBT`'s chain checks `index > 0` before calling in. Safe by construction today;
   safe by a construction that has been wrong before.
 
-### Fixes present in source with no witness that would go red if reverted
+### Four fixes that were present in source with no witness — all four now closed
 
-This is where the ATS tree is in materially worse shape than it looks, and the cause is mechanical
+This is where the ATS tree was in materially worse shape than it looked, and the cause was mechanical
 rather than anyone's neglect.
 
 Most ATS Round-II proofs were appended to **`REPL/_audit_ats_baseline.repl`**. That file now lives in
@@ -447,22 +456,33 @@ Most ATS Round-II proofs were appended to **`REPL/_audit_ats_baseline.repl`**. T
 
 Thirty-two assertions that the audit trail treats as its proof of record do not execute and would not
 go red. Fix #15 (`#22L`) migrated *some* of them into the canonical `[6.6]_ATS.repl`, and the later
-Part II work added `REPL/modules/ATS.repl` (275 assertions) and `REPL/modules/UTILITIES.repl`, which
-between them re-cover several more. The following are what is left:
+Part II work added `REPL/modules/ATS.repl` (291 assertions) and `REPL/modules/UTILITIES.repl`, which
+between them re-cover several more. Four fixes were left with nothing in the running suite that
+would go red — and all four were closed on 2026-09-17, while this book was being assembled:
 
-| finding | fix present in source? | witness in the running suite |
+> **CORRECTED 2026-09-18.** Every row of the table below used to read *"None"* or *"Not found"*,
+> and this section was headed by the claim that ATS's evidence had rotted. All four were closed on
+> 2026-09-17, together with seven in {{ch:dalos}}; `DEFECT-LEDGER.md` §8.26 records the set of
+> eleven. Each needed a purpose-built fixture, not a test — see the Part I introduction for what
+> each one had to do.
+
+| finding | fix present in source? | witness in the running suite (all four added 2026-09-17) |
 |---|---|---|
-| **`#2C` / C2** — the audit's priority finding | Yes: `09_U_ATS.pact:394-404`, `10_ATSU.pact:1530-1596` [V-read] | **None.** `UC_ReshapeUnstakeObject` is referenced by exactly one `.repl` in the tree — `archive/_audit_ats_baseline.repl`, which does not run. `modules/UTILITIES.repl:213` `<<UTIL-05>>` tests `UCv_SolidifyUnstakeObject` **directly**, i.e. the inner function, bypassing the gate whose removal *was* the fix. Re-introducing `UC_IzUnstakeObjectValid` into `UC_ReshapeUnstakeObject` would leave `<<UTIL-05>>` green. And `UC_IzUnstakeObjectValid` still exists, with **zero callers** (`09_U_ATS.pact:47`, `:291`) — the exact artefact a future reader might helpfully re-wire. The royalty half (C2b) has no assertion either: `[6.6]_ATS.repl`'s `Secondary Remove 1\|5`–`5\|5` blocks (lines 1326-1620) contain **zero `expect` forms**. [V-cmd] |
-| **`#6H` / H1** — parameter-lock gate on royalty + hibernation fees | Yes: `08_ATS.pact:638`, `:660` [V-read] | **None.** `UEV_ParameterLockState`'s message *"Parameter-lock for ATS Pair {} must be set to {} for this operation"* (`08_ATS.pact:2388`) appears in **no** `.repl` file. `modules/ATS.repl:1284` `<<ATS-G16>>` tests the lock's own two-sided rule, not that the royalty setter is behind it. [V-cmd] |
-| **`#32N` / N1** — `URC_MultiCull` soft failure | Yes: `10_ATSU.pact:641-681`, `03_TS01-C2.pact:1030` [V-read] | **None.** The string *"Nothing to Cull"* appears only in `archive/_audit_ats_baseline.repl`. [V-cmd] |
-| **`#5C` / C5** — Hot-RBT branding ownership | Yes: `08_ATS.pact:736` [V-read] | **Not found.** `[6.6]_ATS.repl` exercises Hot-RBT branding on the happy path (`:3298`, `:3379`) but no assertion refuses a non-owner. The negative proof lived in the baseline. [V-cmd] |
+| **`#2C` / C2** — the audit's priority finding | Yes: `09_U_ATS.pact:394-404`, `10_ATSU.pact:1530-1596` [V-read] | `<<UTIL-15>>`, `REPL/modules/UTILITIES.repl:1081-1093`. It drives `UC_ReshapeUnstakeObject` itself — not the inner `UCv_SolidifyUnstakeObject` that `<<UTIL-05>>` (`:267-281`) exercises — on the **all-zero** object the removed gate rejects, asserting the rejection (`:1081`) before showing the reshape happens anyway (`:1086`). It also gives `UC_IzUnstakeObjectValid` (`09_U_ATS.pact:47`, `:291`) its first caller in the suite. The royalty half (C2b) is still unasserted: `[6.6]_ATS.repl`'s `Secondary Remove 1\|5`–`5\|5` blocks (`:1420`–`:1847`) contain **zero `expect` forms**. [V-cmd] |
+| **`#6H` / H1** — parameter-lock gate on royalty + hibernation fees | Yes: `08_ATS.pact:638`, `:660` [V-read] | `<<ATS-G28>>`, `REPL/modules/ATS.repl:4996` and `:4999` — the **same owner**, the same arguments, refused on both setters once the pair is locked, against a working unlocked call at `:4987`. `UEV_ParameterLockState`'s message (`08_ATS.pact:2388`) had appeared in no `.repl` at all; `<<ATS-G16>>` (`modules/ATS.repl:1395`) tests the lock's own two-sided rule, not that either setter sits behind it. [V-cmd] |
+| **`#32N` / N1** — `URC_MultiCull` soft failure | Yes: `10_ATSU.pact:641-681`, `03_TS01-C2.pact:1030` [V-read] | `<<ATS-G29>>`, `REPL/modules/ATS.repl:5052` — a cull from an account that has a ledger row in the pair but nothing ripe, which returns a sentence instead of crashing on the type. The account choice is the test: one with no row at all dies earlier, at a bare `read`. The string *"Nothing to Cull"* had appeared only in `archive/_audit_ats_baseline.repl`. [V-cmd] |
+| **`#5C` / C5** — Hot-RBT branding ownership | Yes: `08_ATS.pact:736` [V-read] | `<<ATS-G30>>`, `REPL/modules/ATS.repl:5101`, with the fixture asserted at `:5097` and the owner's identical call succeeding at `:5120`. None of the usual owner's pairs has a Hot-RBT, so the fixture is a third account's — which makes the refusal *more* legible, since the message names a key that is neither the attacker's nor the suite's usual owner. `[6.6]_ATS.repl` exercises branding on the happy path only (`:3539-3541`, `:3624-3625`). [V-cmd] |
 
-Conversely, and to be fair to the tree, these **are** witnessed today and this chapter names the
-assertion: C3 (`[6.6]_ATS.repl:483, 484, 565`), `#7H` (`:3689`–`:3717`), `#21L`
-(`:2653`, `:2654`, `:2698`), `#33N` (`:3557`, `:3563`), `#11M` (`modules/ATS.repl` `<<ATS-G9>>`,
-`<<ATS-G5>>`), `#9H` and `#16M` and `#15M` (`modules/UTILITIES.repl` `<<UTIL-03>>`, `<<UTIL-02>>`,
-`:350-355`), and `#34N` indirectly (the `A_KickStart`/`A_RemoveSecondary` blocks in `[6.6]` can only
-pass because the registration exists).
+The rest were already witnessed, and this chapter names the assertion for each: C3
+(`[6.6]_ATS.repl:523, :524, :611`), `#7H` (`:3965`–`:3993`), `#21L` (`:2835`, `:2836`, `:2886`),
+`#33N` (`:3821`, `:3827`), `#11M` (`modules/ATS.repl` `<<ATS-G9>>`, `<<ATS-G5>>`), `#9H` and `#16M`
+(`modules/UTILITIES.repl` `<<UTIL-03>>`) and `#15M` (`<<UTIL-07>>`), and `#34N` indirectly (the
+`A_KickStart`/`A_RemoveSecondary` blocks in `[6.6]` can only pass because the registration exists).
+
+> **Corrected 2026-09-18.** This list carried the pre-drift line numbers throughout, and attributed
+> `#16M` to `<<UTIL-02>>` and `#15M` to a bare `modules/UTILITIES.repl:350-355`, which is
+> `<<UTIL-06>>`, the atspair name-length guard. They are `<<UTIL-03>>` and `<<UTIL-07>>`
+> respectively; every number above was re-resolved against the current files.
 
 ### One regression in the audit's own fix
 
@@ -471,24 +491,28 @@ Fix #15's write-up states that it *"uncommented the `[6.5]_DPOF.repl`/`[6.6]_ATS
 of silent-revert data loss documented in the Claudstermind handoff, this time surviving the worktree
 transition undetected until this pass."*
 
-**They are commented out again today**: `REPL/Stage01_Tester.repl:48-49`. [V-cmd]
+**They are commented out again today**: `REPL/Stage01_Tester.repl:57-58`. [V-cmd]
 
 The reason given is legitimate and is not a revert of the fix's intent: a `#12a GUARD` comment
 explains that the Stage-2 AQP path self-loads `[6.5]_DPOF.repl`, so loading it in Stage 1 too
 re-issues a token and aborts on duplicate-insert. The coverage itself did **not** disappear —
-`[6.6]_ATS.repl` is loaded by `ZALL.repl:38` and by `REPL/modules/ATS.repl:6`, and `ZALL.repl` is
+`[6.6]_ATS.repl` is loaded by `ZALL.repl:51` and by `REPL/modules/ATS.repl:19`, and `ZALL.repl` is
 what the exhaustive path runs. [V-cmd]
 
-But the guard's own justification has gone stale in a way worth flagging:
+The guard's own justification had gone stale in a way worth flagging. It used to read:
 
 > *"ATS tests run via their own driver `_audit_ats_baseline.repl` (Stage-1-only, no double-load)."*
-> — `Stage01_Tester.repl:47` [V-read]
 
 `_audit_ats_baseline.repl` is in `archive/`, is excluded by the gate, and does not run to completion.
-The comment that tells a reader why it is safe to skip `[6.6]` points at a file that has not executed
-for weeks. The coverage is real; the reason written next to the exclusion is not. That is the
-documentation form of the same pathology this programme keeps finding in code — a statement that
+The comment that told a reader why it was safe to skip `[6.6]` pointed at a file that had not
+executed for weeks. The coverage is real; the reason written next to the exclusion was not. That is
+the documentation form of the same pathology this programme keeps finding in code — a statement that
 outlived the thing it described, and is indistinguishable from a true one from the outside.
+
+> **Corrected 2026-09-18.** This section quoted that justification from `Stage01_Tester.repl:47` in
+> the present tense. It no longer exists: `Stage01_Tester.repl:49-56` now carries a "CORRECTED
+> 2026-09-17" note retracting it in the same terms used here, and `DEFECT-LEDGER.md` §8.20 records
+> the fix. [V-read]
 
 ### Not re-verified for this chapter
 

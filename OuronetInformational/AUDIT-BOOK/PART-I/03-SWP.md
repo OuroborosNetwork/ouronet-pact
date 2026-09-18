@@ -149,9 +149,9 @@ The table below follows the ranked order. Severity is as recorded.
 | `#1C` / C10 | Asymmetric liquidity-add mints the naive LP amount, not the invariant-fair `taxd-lp` | **REFUTED** | The deficit *is* priced and charged, via an oracle-based IGNIS tax the caller cannot supply; the original walkthrough omitted that mandatory payment. Substance folded into H8. [REPORTED] |
 | `#2C` / C13 | `SWPLC::C_Fuel`'s indirect branch can credit unbacked reserves; sole gate is a trivially-true IMC cap | **REFUTED** | Self-caught via the audit's own REPL PoC: Pact 5 requires module-admin of the target module before `with-capability` grants its caps from outside. [REPORTED] |
 | `#3C` / C2 | Stable-pool Newton solver has no domain guard — oversized swaps converge to the wrong root, output can exceed pool balance | **FIXED** | `1_Utilities/12_U_SWP.pact:326-355` — `UC_ComputeY` reseeds from `D` (Curve-style reference), comment names the C2 fix at `:355`. Scope was narrowed to stable pools only — W/P are closed-form with no seed-dependent root. [V-read] **Witnessed**: `SWP\|TX 015` in `[6.3]_SWP.repl` + `[6.2+3]_DPTF-SWP_Issuance-Only.repl`. [V-cmd] |
-| `#72C` | `UC_ComputeInverseY` — C2's inverse-direction sibling, left explicitly open and never picked up: asking for ≥ the pool's own output reserve either crashed **uncatchably** (`div by zero, decimal`) at the ceiling or **silently returned a fabricated number** past it | **FIXED** | `12_U_SWP.pact:420-422` (now `UCv_ComputeInverseY`) — `(enforce (< output-amount xo) …)` placed *before* the invalid coefficients are computed, with 10 lines of `@doc` on why no seed choice can fix it. [V-read] **Witnessed**: `SWP\|TX 015b` in `[6.2+3]_DPTF-SWP_Issuance-Only.repl`. [V-cmd] |
+| `#72C` | `UC_ComputeInverseY` — C2's inverse-direction sibling, left explicitly open and never picked up: asking for ≥ the pool's own output reserve either crashed **uncatchably** (`div by zero, decimal`) at the ceiling or **silently returned a fabricated number** past it | **FIXED** | `12_U_SWP.pact:420-422` (now `UCv_ComputeInverseY`) — `(enforce (< output-amount xo) …)` placed *before* the invalid coefficients are computed, with 10 lines of `@doc` on why no seed choice can fix it. [V-read] **Witnessed**: `SWP\|TX 015b` in `[6.2+3]_DPTF-SWP_Issuance-Only.repl` — but that file is **excluded from the gate by name**, so this witness does not execute in the run that decides green. See §3.5. [V-cmd] |
 | `#73C` | `URC_WorthWSTOA` — **two** bugs: the OURO shortcut ignored the primordial pool's own weights; the general fallback simulated a swap of the *entire* reserve instead of pricing one unit and scaling | **FIXED** | `16_SWPI.pact:1797` — `URC_SingleOuroWorthWSTOA` now performs a real 1-unit weighted swap via `UC_ComputeWP`; the general fallback prices 1 unit and scales across all three `WorthWSTOA` variants. [V-read] **Witnessed**: `SWP\|TX 032z8e`, `SWP\|TX 032z6f`. [V-cmd] |
-| `#74` | `UEV_Issue` has no distinctness check on a caller's `pool-tokens` list | **VERIFIED SAFE, documented, no fix** | Rejected one layer down by `TFT::C_MultiTransfer`'s own `UEV_IzUnique`, reached because both issuance paths share `XE_IssueWrite`. `@doc` added recording where the protection lives. **Witnessed**: `[6.3]_SWP.repl:4405` `SWP\|TX 032o3`, which asserts the exact message `"Unique Items Required, duplicate item found: OURO-98c486052a51"`. [V-read] |
+| `#74` | `UEV_Issue` has no distinctness check on a caller's `pool-tokens` list | **VERIFIED SAFE, documented, no fix** | Rejected one layer down by `TFT::C_MultiTransfer`'s own `UEV_IzUnique`, reached because both issuance paths share `XE_IssueWrite`. `@doc` added recording where the protection lives. **Witnessed**: `[6.3]_SWP.repl:4703` `SWP\|TX 032o3`, whose assertion at `:4767` names the exact message `"Unique Items Required, duplicate item found: OURO-98c486052a51"`. [V-read] |
 | `#4C` / C12 | `C_ToggleSwapCapability` has no ownership check anywhere — free DoS on any pool | **REFUTED** | The original trace stopped at the first `with-capability` block and missed the second, which gates the actual write behind `SWP\|C>ADD-OR-SWAP` → `CAP_Owner`, unconditionally, on both toggle directions. [REPORTED] |
 | `#5C` / C11 | Slippage bound is checked against the fee-exclusive gross quote, never the net amount delivered | **DESIGN** | Feeless-vs-feeless comparison correctly protects against reserve/price movement; the residual fee-rate-change gap is answered by the `fee-lock` primitive. See §3.5. [REPORTED] |
 | `#6C` / C1 | `URC_BestEdge` picks the pool with the **least** output — argmin instead of argmax | **FIXED** | `16_SWPI.pact:1655` — comment: *"C1 fix: keep the index with the LARGER output (argmax), not smaller (argmin)"*. [V-read] |
@@ -190,9 +190,9 @@ The table below follows the ranked order. Severity is as recorded.
 | `#29M` / M8 | Draining LP supply to exactly zero re-triggers genesis-ratio pricing regardless of dust in tracked reserves | **REFUTED** | *"If dust is left, it hasn't been drained to zero."* Reserves and LP supply hit zero together by construction; the finding's premise is a state the code cannot produce. [REPORTED] |
 | `#30M` / M6 | `C_ChangeOwnership` is one-phase — a fat-fingered destination permanently strips the true owner | **DESIGN** | Mechanics confirmed; the mitigation (addresses are pasted or Stoic-tagged, and the UI previews the destination pre-sign) is client-side and complete for the threat. Consistent with every other one-shot transfer here. [REPORTED] |
 | `#31M` / M7 | `C_EnableFrozenLP`/`C_EnableSleepingLP` have **no** pool-owner authorisation at all | **FIXED** | `15_SWP.pact:762-778` — `CAP_Owner swpair` added to both defcaps, each with a comment naming the `#31M/M7` fix. [V-read] |
-| `#32M` / M11 | Permissioned pool issuance charges IGNIS+STOA **before** the admin gate that can reject it | **DESIGN → REOPENED → FIXED** | See §3.4(e). The design verdict rested on a premise retracted in 2026-08 and never revisited until 2026-09-17. Fixed today: `20_MTX-SWP.pact:1007-1027` hoists the whole `(if p …)` form into step 1, ahead of `UEV_Issue` and therefore ahead of all money. **Witnessed**: `RedTeam/[RT-F]_Griefing.repl:184` `<<RT-F-002>>`, with an attribution control. [V-read] |
+| `#32M` / M11 | Permissioned pool issuance charges IGNIS+STOA **before** the admin gate that can reject it | **DESIGN → REOPENED → FIXED** | See §3.4(e). The design verdict rested on a premise retracted in 2026-08 and never revisited until 2026-09-17. Fixed today: `20_MTX-SWP.pact:1007-1027` hoists the whole `(if p …)` form into step 1, ahead of `UEV_Issue` and therefore ahead of all money. **Witnessed**: `RedTeam/[RT-F]_Griefing.repl:244` `<<RT-F-002>>`, with an attribution control at `:252`. [V-read] |
 | `#33M` / M12 | Explicit rollback costs strictly more than silent abandonment; no TTL on open pacts | **DESIGN (split)** | Rollback-costs-more **verified and measured** in Part III: 53.00 IGNIS extra, nothing refunded. No-TTL correctly closed at `#68L`. [REPORTED — `DEFECT-LEDGER.md` §8.4] |
-| `#32bM` | **Off-cycle correction:** M11/M12's "MTX-SWP has zero Talos wiring, unreachable" premise is factually wrong — `TS01-CP` has wired it since the repo's first commit | — | Verdicts were **left as-is** and deferred. `3_Talos/05_TS01-P.pact:221-330` wires all six defpact starters. [V-cmd] Reopened and resolved 2026-09-17. |
+| `#32bM` | **Off-cycle correction:** M11/M12's "MTX-SWP has zero Talos wiring, unreachable" premise is factually wrong — `TS01-CP` has wired it since the repo's first commit | — | Verdicts were **left as-is** and deferred. `3_Talos/05_TS01-P.pact:221-330` wires **eight** starter wrappers over the four `MTX-SWP` defpacts (`ref-MTX-SWP::` at `:234, :245, :256, :270, :285, :300, :315, :330`). [V-cmd] Reopened and resolved 2026-09-17. |
 | `#34M` / M2 | BFS keeps only one chain per node; routing does zero cross-route value comparison — **and the worst-case gas crisis found while fixing it** | **FIXED (13 phases)** | Phase 1 (best-of-3 by actual payout) stays live as the self-searching fallback; Phases 6–10 built the bundle/dirty-read redesign. `16_SWPI.pact:868-980`, `14_SWPT.pact` `PathCache`. [V-cmd] |
 | `#34bM` | `UEV_Issue`'s Stable-pool anchoring allows *transitive* connectivity to `DLK` instead of requiring direct adjacency to any current principal | **FIXED** | `16_SWPI.pact` — rewritten to test the first token's direct neighbours against the full principal list; comment tag `#34bM` present. [V-cmd] Also repaired a test fixture that had been *relying on the bug* to build a long BFS chain. |
 | `#35M` / M1 | Stable-swap maths silently drops all but the first input position | **REFUTED** | `URC_Swap` and `UC_BareboneSwap` both independently enforce `length(input-amounts) == 1` for pool-type `"S"` before `UC_ComputeY` is reached. [REPORTED] |
@@ -240,7 +240,7 @@ The table below follows the ranked order. Severity is as recorded.
 | `#65hL` | Targeted/early-exit BFS | **FIXED** | `13_U_BFS.pact:274 UC_BFSTargeted`. Verified first that BFS as an algorithm *class* is optimal here (unweighted shortest path, no edge weights or admissible heuristic for Dijkstra/A* to exploit) — the gap was in the implementation. [V-read] |
 | `#66L` | Failure-branch `OutputCumulator` objects hand-built rather than via a `UDC_*` | **FIXED** | Confirmed byte-identical reproduction via a standalone REPL check before the change, not just a code trace. [REPORTED] |
 | `#67L` | `MTX\|C_AddSleepingLiquidity` burns a Step-0-cached nonce amount | **CONFIRMED SAFE, no change** | `DPOF::C_Burn` enforces live supply at execution time; a stale cache can only cause a revert, never an over-burn. This investigation is what surfaced `#32bM`. [REPORTED] |
-| `#68L` | No TTL/expiry on any of the 8 `defpact` flows | **DESIGN — structural limitation** | Pact has no scheduled execution; nothing can run against an abandoned pact without someone submitting a continuation. Not expressible as ordinary Pact logic. **Still open.** [REPORTED] |
+| `#68L` | No TTL/expiry on any of the 6 `defpact` flows | **DESIGN — structural limitation** | Pact has no scheduled execution; nothing can run against an abandoned pact without someone submitting a continuation. Not expressible as ordinary Pact logic. **Still open.** [REPORTED] |
 | `#69L` | `MTX-SWP\|S>ADD-LQ`'s doc implies a bounded `kda-pid` lock window | **CLOSED — premise doesn't hold** | The current `@doc` makes no such claim. [REPORTED] |
 | `#70L` | `SWP\|C_Fuel`/`SWP\|C_Firestarter` public on `TS01-C3` but undeclared on its interface | **FIXED** | `3_Talos/04_TS01-C3.pact:88-89` declares both; implementations at `:625`, `:827`. [V-read] |
 | `#71L` | `SWPU`/`SWPLC` call `SWP::C_ToggleAddOrSwap` directly rather than via an `XE_*` | **DESIGN — documented** | Rerouting to the existing `XE_CanAddOrSwapToggle` would silently strip real IGNIS billing, LP-role bootstrap, and **the only ownership check in the chain**. `15_SWP.pact:2165-2167` records why. [V-read] |
@@ -400,8 +400,15 @@ codebase — unreachable through the only supported client/gas-station path."*
 `#32bM`, marked as *"the one open item"* in `MERGE-HANDOFF.md` — and, per owner direction, the
 verdict was **left as-is** and deferred to a main-branch red-team pass rather than reopened.
 
-**2026-09-17.** The red-team pass reached it. `05_TS01-P.pact:221-330` wires **all six** defpact
-starters; the wrapper takes `p:bool` straight from the client and gates nothing but `P|TS`. [V-cmd]
+**2026-09-17.** The red-team pass reached it. `05_TS01-P.pact:221-330` wires **eight** starter
+wrappers over the four `MTX-SWP` defpacts (`:234, :245, :256, :270, :285, :300, :315, :330`); the
+wrapper takes `p:bool` straight from the client and gates nothing but `P|TS`. [V-cmd]
+
+> **Corrected 2026-09-18.** This said *"all six defpact starters"*, here and in `#32bM`'s row
+> above. Six is the number of `defpact`s in the whole tree — four in `20_MTX-SWP.pact`, two in
+> `07_MTX-AQP.pact` — which is the figure `#15H`'s row uses. The number of SWP starter wrappers on
+> `TS01-P` is eight, because three issue variants and five liquidity variants fan out over four
+> defpacts.
 And M11 was proven **by execution**, each step in its own committed transaction [REPORTED —
 `DEFECT-LEDGER.md` §8.4]:
 
@@ -437,11 +444,11 @@ comment is explicit about why:
 > and lock out every ordinary pool issuance. That is the exact mistake CLAUDE.md records a scripted
 > reorder making during the sweep."*
 
-Pinned by `RedTeam/[RT-F]_Griefing.repl:184` `<<RT-F-002>>` [V-read], with an attribution control the
+Pinned by `RedTeam/[RT-F]_Griefing.repl:244` `<<RT-F-002>>` [V-read], with an attribution control the
 block needs more than most: `PK_AncientHodler` is *both* an ordinary account key and a
 `DemiurgoiSithMasters` member in this fixture, so an ANHD-signed drive would pass the gate and prove
 nothing. The same call with the same signer and only `p` flipped must fail for a **different** reason
-— and does (`:231`).
+— and does (`:252`).
 
 **M12 splits the same way.** "Rollback costs more than abandonment" is now **verified and measured**
 (53.00 IGNIS extra, nothing refunded); "no TTL" remains correctly closed at `#68L`.
@@ -499,12 +506,12 @@ And the commit says the thing that makes this the most useful story in the chapt
 > oracle write, DEMIPAD launchpad payments and the Explorer moved not one test. **That is how the bug
 > shipped and how its repair could have regressed unnoticed.**"* [V-cmd — `git log 15dd7b7`]
 
-The witness added, `<<SWP-G27>>` (`REPL/modules/SWP.repl:5321` [V-read]), pins the **invariant**
+The witness added, `<<SWP-G27>>` (`REPL/modules/SWP.repl:5532` [V-read]), pins the **invariant**
 rather than a figure — OURO's price must equal what the generic weight-aware pricer returns for OURO
 — because a literal would pin today's reserves and go red on any ordinary trade, while the invariant
 only breaks if someone re-derives the price by hand again. And it carries its own counter-example:
 the *removed* formula is recomputed inline from the same shared core and asserted to **disagree**
-(`:5367`), so every run re-proves both that the guard discriminates rather than comparing something
+(`:5544`), so every run re-proves both that the guard discriminates rather than comparing something
 to itself, and that the original defect was real on live reserves.
 
 **One adjacent defect found in the same trace is still latent.**
@@ -525,7 +532,7 @@ matching order. [REPORTED — §8.1]
 | **`#7C` / C3, weighted half** — round-trip bias in weighted pools | **Accepted known limitation.** Documented in place at `12_U_SWP.pact:590-603`. [V-read] | `x^weight` is a genuine fractional power; Pact's native `^` drops to float64 and there is no exact-multiplication trick. A from-scratch high-precision power routine was assessed and declined as disproportionate: the bias is ~1e-16 *relative*, internally consistent, and usually swallowed by settlement rounding. **It is a real, permanent, bounded arbitrage against weighted-pool LPs.** |
 | **`#5C` / C11** — slippage compares fee-exclusive quotes | **Design.** | The feeless-vs-feeless comparison correctly catches reserve/price movement. The residual — a pool owner changing the *fee rate* between quote and execution — is answered by the `fee-lock` primitive, which is real, `enforce`d and publicly queryable. But **it is unlocked by default**, so the protection is opt-in by pool owner. An integrator quoting against an unlocked pool has no fee-rate guarantee. |
 | **`#25H` / H8** — asymmetric-deficit compensation is not returned to the diluted pool's LPs | **Design.** | It is captured protocol-wide (treasury, special targets, primordial-pool boost). LPs in a pool that receives a large asymmetric deposit are diluted and compensated *indirectly*, not directly. This is a legitimate design choice and it should be visible to anyone providing liquidity. |
-| **`#68L`** — no TTL on any of the 8 `defpact` flows | **Structural.** | Pact has no scheduled execution; nothing can force-expire an abandoned pact. Open pacts persist forever. `#15H` and `#28M`'s residual time-window exposure both ride on this, explicitly. |
+| **`#68L`** — no TTL on any of the 6 `defpact` flows | **Structural.** | Pact has no scheduled execution; nothing can force-expire an abandoned pact. Open pacts persist forever. `#15H` and `#28M`'s residual time-window exposure both ride on this, explicitly. |
 | **`#33M` / M12** — explicit rollback costs more than silent abandonment | **Design, now measured.** | 53.00 IGNIS extra, nothing refunded. For the AddLiquidity family this is a ruled anti-spam design; the `MTX\|C_Issue` instance has no such ruling but is small next to what M11 was charging. [REPORTED] |
 | **`#4C` / C4-equivalent trust levers** | — | `#30M` (one-phase ownership transfer), `#60L` (fee attribution), `#48L` (magic constants) are all closed as design with client-side or owner-side mitigations. None is a defect; all are trust assumptions a reader should be able to see. |
 
@@ -562,7 +569,7 @@ versions ahead of where the audit left it — `UtilitySwpV2`, `BreadthFirstSearc
 ### Fix presence, re-checked
 
 Part III re-verified all 42 SWP fixes against current source and found **41 present, 1 not found**
-(M14). [REPORTED — `DEFECT-LEDGER.md` §8.2] This chapter independently spot-checked **22** of them by
+(M14). [REPORTED — `DEFECT-LEDGER.md` §8.2] This chapter independently spot-checked **32** of them by
 locating the fixed construct in current source, and agrees on every one, including M14:
 
 > Present and read: `#3C`, `#72C`, `#73C`, `#74`, `#6C`, `#7C`, `#8C`, `#9C`, `#10C`, `#11C`,
@@ -570,13 +577,33 @@ locating the fixed construct in current source, and agrees on every one, includi
 > `#38M`, `#45L`, `#49L`, `#50L`, `#55L`, `#56L`, `#65eL`, `#65hL`, `#70L`, `#71L`. [V-read / V-cmd]
 > Absent: `#39M` / M14, by deliberate later decision. [V-cmd]
 
-**Proof tags survive.** All nine `SWP|TX` proof identifiers named in the fix write-ups still exist in
-the suite files — `015`, `015b`, `002`, `003b`, `016a`, `038c`, `032o3`, `032z6f`, `032z8e`.
-[V-cmd] They live in `[6.3]_SWP.repl` and `[6.2+3]_DPTF-SWP_Issuance-Only.repl`, which are
-alternatives to each other in `Stage01_Tester.repl` (issuance-only is the committed default) but
-**both** run under `ZALL.repl` and `REPL/modules/SWP.repl`. So unlike ATS, SWP's proofs did not rot:
-they were written into the canonical suite from the start rather than into scratch harnesses, and
-that single decision is why this tree's evidence is still alive and ATS's largely is not.
+> **Corrected 2026-09-18.** The sentence above said **22**, and the list under it has always
+> enumerated 32. The list is the evidence — every id in it carries a source citation in §3.3 — so
+> the number was the error, not the list.
+
+**Proof tags survive — eight of nine in a gated file.** All nine `SWP|TX` proof identifiers named in
+the fix write-ups still exist in the suite files — `015`, `015b`, `002`, `003b`, `016a`, `038c`,
+`032o3`, `032z6f`, `032z8e`. [V-cmd] Eight of them live in `[6.3]_SWP.repl`, which `ZALL.repl:43`
+and `REPL/modules/SWP.repl:20` both load.
+
+**`015b` does not.** It exists only in `[6.2+3]_DPTF-SWP_Issuance-Only.repl`, and that file is in
+`_gate.py`'s `EXCLUDED` list by name — *"ALTERNATIVE to [6.2]+[6.3], both of which ZALL runs"*
+(`_gate.py:160-161`). `Stage01_Tester.repl:42` loads it as the committed fast-path default, but the
+gate does not, so `#72C`'s only witness is not executed by the thing that decides whether the tree
+is green. [V-cmd]
+
+> **CORRECTED 2026-09-18.** This paragraph said both files *"run under `ZALL.repl` and
+> `REPL/modules/SWP.repl`"*, and concluded *"unlike ATS, SWP's proofs did not rot… that single
+> decision is why this tree's evidence is still alive and ATS's largely is not."* Neither half
+> holds. The issuance-only file is gate-excluded, so one of the nine tags is in exactly the
+> position the chapter was contrasting itself against; and ATS's four unwitnessed fixes were all
+> closed on 2026-09-17 (`<<UTIL-15>>`, `<<ATS-G28>>`, `<<ATS-G29>>`, `<<ATS-G30>>`,
+> `DEFECT-LEDGER.md` §8.26), so the comparison it drew is no longer true either.
+
+The point the paragraph was reaching for still stands, narrowed: writing proofs into the canonical
+suite rather than into scratch harnesses is why eight of the nine are alive. `015b` is the
+counter-example that shows the filing decision has to be re-checked, not assumed — a file can be a
+canonical suite file and still be outside the gate.
 
 ### Three ordering observations from the re-verify, still open
 

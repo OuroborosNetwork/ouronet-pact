@@ -115,20 +115,29 @@ refusal text into a sentence beginning **"Succesfully swapped"**, committed the 
 emitted a swap event. Zero in, zero out. The same defect — and the noisy one was the safe one.
 
 **A class of capability that was present, reached, and had never refused anybody.** This is the
-largest single thread in the round and has its own chapter. Of 167 ownership-gated capabilities
-reachable from a named client operation, **19 had never caused a refusal in any test** — not because
-they were absent, but because a business rule ran first and answered on their behalf. A gate in that
-position is indistinguishable from a deleted one, from the outside.
+largest single thread in the round and has its own chapter. Of the ownership-gated capabilities
+reachable from a named client operation, **only 19 had ever caused a refusal in any test when the
+round began** — not because the rest were absent, but because a business rule ran first and answered
+on their behalf. A gate in that position is indistinguishable from a deleted one, from the outside.
+By the round's end {{fig:gates_observed}} had been observed to refuse somebody and
+{{fig:gates_depth0}} of those refusals were attributed to the gate itself rather than to something
+it composes; {{fig:gates_never}} remain unobserved, and {{ch:ownergates}} is about why that is
+reported as a bound rather than closed.
+
+*This paragraph previously read "**19 had never caused a refusal**", which inverts the figure: 19 is
+the count that **had** one. The error survived because the sentence is true-sounding in either
+direction — a small number of gates in an alarming state is exactly what the passage is claiming —
+and nothing checked it against the table in {{ch:ownergates}} that it paraphrases.*
 
 ## Verification state
 
-At the time of writing, the full gate is **green at 25,029 assertions** (20,036 positive, 4,993
+At the time of writing, the full gate is **green at {{fig:assertions}} assertions** ({{fig:assertions_positive}} positive, {{fig:assertions_negative}}
 negative) across the whole system — every deploy stage, every scenario suite, every red-team attack,
 plus the static checks on generated artefacts, tool paths, prefix vocabulary, cross-module member
 resolution, assertion vacuity, eager-let shadows, and this book's own tables. Wall time ~5-7 minutes.
 Reproduction: Appendix 1.
 
-> **That number is a snapshot and will move.** It rose from 22,939 to 25,029 during the round
+> **That number is a snapshot and will move.** It rose from 22,939 to {{fig:assertions}} during the round
 > documented here. The canonical value is whatever `ARCHITECTURE/REPL_SUITE_STATS.md` holds, and
 > `_figuresync.py --check` now verifies that file **against the tree** — it previously verified only
 > that every document agreed with it, which is circular and was green while all of them were wrong
@@ -140,5 +149,5 @@ Reproduction: Appendix 1.
 |---|---|
 | `01-METHOD.md` | How an attack is built here, and the four ways one can be worthless while passing |
 | `02-OWNER-GATES.md` | The shadowed-gate programme: 167 gates, what it took to witness them |
-| `03-DEFECTS.md` | The 19 defects, by severity, each with the assertion that would go red |
+| `03-DEFECTS.md` | The twenty defects, by severity, each with the assertion that would go red |
 | `04-INSTRUMENTS.md` | The measuring tools — and the defects found *in them*, which were worse |

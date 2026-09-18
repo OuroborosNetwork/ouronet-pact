@@ -149,6 +149,14 @@ your total, the module is too big regardless of whether it fits"*, RPS at 5,621 
 62% size share by the document's own table. **[INFERRED]**, by interpolation in that table; not
 measured on chain.
 
+> **SUPERSEDED BY MEASUREMENT, 2026-09-18.** RPS's deploy gas has since been measured rather than
+> interpolated: **353,662 of 2,000,000 — 18% of a block**, not 62%. The worst module in the tree is
+> `02_INFO-ONE+` at 22%. The inference was wrong by more than a factor of three, and wrong in the
+> alarming direction, which is the direction that gets acted on. Lines are a proxy for deploy gas and
+> a poor one: a module of dense short `UR_` readers and a module of long arithmetic bodies do not
+> cost the same per line. The original text is kept, with its `[INFERRED]` label, because the label
+> did its job — it is what made the claim checkable, and it is why the measurement was taken.
+
 ### The band census today
 
 **[VERIFIED by command]** — `find 1_SOVEREIGN 2_CITIZEN -name '*.pact' -not -path '*/Audit/*' |
@@ -177,8 +185,8 @@ The roadmap lists three steps. **[VERIFIED by reading]** the tree, one is done a
 | step | status |
 |---|---|
 | **1.4.1.1** split `04_FVT.pact` along a capability seam | **done** — `04_RPS.pact` exists, the seam is a capability seam, the DAG is acyclic, the suite was green across the flip |
-| **1.4.1.2** re-audit POOL/SCORE/ANK/VCT once their `URCi_`s are in; **split any in Warning/Danger** | **not done** — `SCORE` is in Warning and `RPS` is in Danger; no further split has been designed |
-| **1.4.1.3** update `MODULE-SIZING.md`'s applicability table with post-`URCi` measurements | **not done** |
+| **1.4.1.2** re-audit POOL/SCORE/ANK/VCT once their `URCi_`s are in; **split any in Warning/Danger** | **closed 2026-09-18 by owner ruling** — *"I don't think we need any splitting of modules, we already did that before we started this, to get to the final pact code shape."* `MODULE-SIZING.md` now carries the ruling and demotes the line bands from a threshold to a review prompt. The measurement above is why the ruling is sound rather than merely authoritative: the worst module in the tree uses 22% of a block |
+| **1.4.1.3** update `MODULE-SIZING.md`'s applicability table with post-`URCi` measurements | **done** — the table now carries measured deploy gas, not interpolated line shares |
 
 The third is the one with a trap in it. `MODULE-SIZING.md`'s applicability note still reads:
 
@@ -213,7 +221,15 @@ A     2_CITIZEN/7_Launchpad/99_TS02-CPAD.pact
 **[VERIFIED by command]** — both files exist at those paths today, and no
 `2_CITIZEN/7_Launchpad/99_TS02-DPAD.pact` does.
 
-`CLAUDE.md` describes the outcome **twice, and the two descriptions disagree**:
+`CLAUDE.md` described the outcome **twice, and the two descriptions disagreed**:
+
+> **CLOSED 2026-09-17.** `CLAUDE.md` now carries an explicit retraction of the second description,
+> naming the one-letter C/D distinction that caused it. The cited line numbers are also stale — the
+> two rows are now at 127 and 140. The finding is kept because of the mechanism: the two sentences
+> differed by **a single letter** in a filename (`TS02-CPAD` against `TS02-DPAD`), and the wrong one
+> sat in the sentence that assigns the sovereign/citizen role. A one-character divergence between two
+> passages of the same document is invisible to a reader and to every diff that is not looking for
+> it.
 
 - Line 109 (the repository layout table) is **correct**: `99_TS02-CPAD.pact` is the *citizen*
   launchpad Talos; *"the **sovereign** launchpad Talos moved to

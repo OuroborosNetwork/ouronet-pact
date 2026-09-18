@@ -49,16 +49,16 @@ And what those deltas did to the two things a reader cares about — **[VERIFIED
 
 | | 2026-08-30 | 2026-09-14 | today (HEAD) |
 |---|---:|---:|---:|
-| Pact source files | 91 | 93 | 93 |
-| Pact source lines | 96,310 | 114,156 | 116,018 |
-| `.repl` files (excl. `archive/`) | 181 | 209 | 207 |
-| `.repl` lines | 68,435 | 120,603 | 128,567 |
-| distinct assertions written | **1,604** | **5,262** | **5,867** |
+| Pact source files | 91 | 93 | **{{fig:modules}}** |
+| Pact source lines | 96,310 | 114,156 | **{{fig:pact_lines}}** |
+| `.repl` files (excl. `archive/`) | 181 | 209 | **{{fig:repl_files}}** |
+| `.repl` lines | 68,435 | 120,603 | **{{fig:repl_lines}}** |
+| distinct assertions written | **1,604** | **5,262** | **{{fig:assertions_distinct}}** |
 
 > **These are a SNAPSHOT, and the book says so rather than implying permanence.** The distinct
 > count moved four times on 2026-09-17 alone as witnesses were added; it was **5,555** when the
 > figure-sync tool's own source of truth was found stale, **5,830** when that loop was closed, and
-> **5,867** at the time of writing. The canonical value is whatever `ARCHITECTURE/REPL_SUITE_STATS.md`
+> **{{fig:assertions_distinct}}**, measured when this book was built. The canonical value is whatever `ARCHITECTURE/REPL_SUITE_STATS.md`
 > holds, which `_figuresync.py --check` now verifies **against the tree** rather than against itself
 > — see DEFECT-LEDGER §8.22.
 
@@ -78,14 +78,26 @@ command is named in the chapter that owns it.
 | **1.2** `INFO_` preview rehaul | one free preview per client operation | **426** implementations across **10** modules: **346** wrap a `URCi_`, **59** delegate to a sibling preview, **20** declare the op free, **1** is a data view |
 | **1.3** IGNIS re-pricing | the whole cost model moved into four constant maps | `IG\|DETER` **54** keys · `IG\|COMPONENTS` **396** · `IG\|WEIGHTS` **14** · `IG\|LEGS` **22**; the generated price sheet carries **442** priced rows + **5** declared unpriced |
 | **1.4** module splits | `04_FVT.pact` cut below the deploy ceiling | `04_RPS.pact` **5,621** lines + `05_FVT.pact` **3,977**; **0 of 93** modules over the ~6,635-line cliff, **1 in the project's own "Danger" band** |
-| **1.5** REPL finalisation | a one-command gate over the whole suite | **92** gate entrypoints, **12** fatal static checks, **5,867** distinct assertions, orphaned asserting files **0** |
+| **1.5** REPL finalisation | a one-command gate over the whole suite | **{{fig:entrypoints}}** gate entrypoints, **14** fatal static checks, **{{fig:assertions_distinct}}** distinct assertions, orphaned asserting files **0** |
 
 ---
 
-## Three published figures that the tree does not support
+## Three published figures that the tree did not support
 
-Found while writing this Part. Each is a live discrepancy at the time of writing, each is verifiable
-with one command, and each is a different failure mode.
+Found while writing this Part. Each was a live discrepancy when written, each was verifiable with
+one command, and each was a different failure mode.
+
+> **ALL THREE ARE NOW CLOSED.** *(Verified 2026-09-18.)* They are kept in full, as they were
+> written, because the point of this section is the three failure modes and not the three numbers —
+> and because a finding deleted once it is fixed leaves a book that cannot show its own working. Each
+> carries a dated closure note below.
+>
+> That they were all fixed within days is worth one caution, though. These three were found by
+> re-deriving published figures from the tree. A staleness sweep of this book's own chapters on
+> 2026-09-18 found **124** stale figures against ~516 that still held — in a book whose third rule is
+> about counts. Finding three in someone else's documents is easy; the discipline is turning the same
+> instrument on your own, which is why the volatile figures in this book are now measured at build
+> time rather than typed. {{ch:repro}} says how.
 
 **1. The roadmap's own correction notice is itself wrong.** `POST-AUDIT-MAIN-ROADMAP.md` carries a
 2026-09-17 banner warning that its dashboard is stale, and supplies replacement figures: *"267
@@ -93,12 +105,22 @@ distinct `URCi_` readers"* and *"335 distinct `INFO_` previews"*. The first is a
 **names** (268 today) and undercounts implementations by 54, because names legitimately repeat
 across modules. The second matches nothing: the tree holds **426** implementations and **425**
 distinct names. *A correction notice is read with more trust than the thing it corrects.* {{ch:previews}}.
+>
+> **CLOSED 2026-09-18.** The banner now reads *"256 distinct `URCi_` readers (307 implementations)"*
+> and *"420 distinct `INFO_` previews"*, scoped to `1_SOVEREIGN/` as it always claimed to be. The
+> maxim in italics above went on to apply to this book: {{ch:previews}} §2 published a correction
+> that was itself wrong and reverted a correct figure, and it was believed precisely because
+> corrections are.
 
 **2. The designated authoritative pricing reference quotes a superseded census.**
 `IGNIS-PRICING/IGNIS-PRICING.md` §5 states *"345 of 365 INFO implementations are thin wrappers over
 a `URCi_` reader; 14 declare their op free, 4 are data views."* Those figures were exactly right on
 2026-09-06, when commit `6b7a85b` measured them and said so. The tree today is **346 / 426 / 20 / 1**,
 and the document's own three sub-counts sum to 363, not 365. {{ch:previews}}.
+>
+> **CLOSED 2026-09-17.** §5 was re-measured and now publishes {{fig:previews_declared}} declared /
+> {{fig:previews_client}} client-facing / {{fig:previews_measured}} measured, quoting the 345/365/14/4
+> census explicitly as superseded rather than replacing it silently.
 
 **3. The generated price sheet publishes a total that omits eleven of its own rows.** The footer
 reads *"431 Talos client functions"*. The sheet contains **442** priced rows. The generator computes
@@ -106,10 +128,17 @@ the total as `nsimple + ncomplex + nexempt` and omits `nstoaonly` — so every o
 STOA and not in IGNIS (branding upgrades, the PYTHIA tolls, the CODEX StoicTag family) is counted in
 its own column and then dropped from the headline. This was recorded as an internal inconsistency in
 `DEFECT-LEDGER.md` §5 item 14 on 2026-09-15, at the then-current values of 420 and 430. It was not
-fixed; the numbers have since grown to 431 and 442. **And a control added the same week now requires
-the prose document to quote the wrong total, and fails the gate if it does not.** {{ch:pricing}}.
+fixed; the numbers had since grown to 431 and 442. **And a control added the same week required the
+prose document to quote the wrong total, and failed the gate if it did not.** {{ch:pricing}}.
+>
+> **CLOSED 2026-09-17.** `_ignis_price_sheet.py` now sums `nsimple + ncomplex + nstoaonly + nexempt`;
+> the sheet's footer reads **442**, `IGNIS-PRICING.md` quotes 442, and the literal `431` no longer
+> appears anywhere. The fix was one identifier. What made it a finding worth a section was never the
+> eleven rows — it was that a **generated** artefact had been wrong for weeks while a gate check
+> enforced agreement with it, so the control was actively holding the error in place. A check that
+> enforces consistency between two things says nothing about whether either is right.
 
-> None of the three is a defect in the chain. All three are defects in what the project publishes
+> None of the three was a defect in the chain. All three were defects in what the project publishes
 > about itself, which is what an audit book is made of.
 
 ---

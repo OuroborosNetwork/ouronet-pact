@@ -55,7 +55,7 @@ instance looked different and none looked like a bug.
 |---|---|---|---|
 | path checker | 3 tool directories | a 4th, holding a tool that **rewrote contract sources by default** | `clean` |
 | owner-gate mapper | 4 of the 8 documented client prefixes | an entire batch-operation family | a shrinking worklist |
-| preview coverage | **3 hardcoded files** | 14 previews, one of them never tested at all | **401 of 401, 0 gaps** |
+| preview coverage | **3 hardcoded files** | 14 previews, one of them never tested at all | **{{fig:previews_measured}} of {{fig:previews_client}}, {{fig:previews_unmeasured}} gaps** |
 | stats generator | 2 log file *extensions* | a run written with a third | a report from **the previous day** |
 | attack register | one directory | an attack that had to live beside its fixtures | a total of 37 where 38 existed |
 
@@ -183,7 +183,65 @@ gated rather than remembered.
 
 > It also refutes a finding. A reviewer flagged a single instance of the *other* class — a member
 > that exists but is not declared on the interface — as a coupling defect. Counting the population
-> first showed **165 live instances**, one member accounting for 57. That is the convention, stated
+> first showed **{{fig:modref_undeclared}} live instances**, one member accounting for 57. That is the convention, stated
 > as such in the architecture documentation. **A single instance cannot tell you whether it is a
 > defect or a dialect.** Fixing it would have made the tree less consistent and reported a practice
 > as a bug.
+
+---
+
+## Turning the instrument on the book
+
+*(Added 2026-09-18, when this book was consolidated into a single volume.)*
+
+Every failure mode in this chapter is about a measurement that was wrong while looking right. The
+obvious next question is whether this book — which is nothing but measurements — has the same
+problem. It was asked directly: a full re-derivation pass over all nineteen chapter sources,
+checking every quantitative claim against the tree rather than against the other chapters.
+
+**Result: 124 stale figures, against roughly 516 that still held.**
+
+Not one had been written carelessly. Every one was correct on the day it was typed and the tree
+moved underneath it — the assertion total, the preview count, a dozen `file:NNN` citations whose
+line numbers had drifted, an entire section documenting a defect that had since been fixed. Two
+chapters came back completely clean.
+
+Three things follow, and they are the reason this section exists rather than a quiet round of edits.
+
+**A book about stale figures had 124 stale figures.** Knowing the failure mode confers no immunity
+from it. The chapters that were *most* careful — the ones that footnote their method and name their
+denominator — were not meaningfully less stale than the rest, because carefulness is a property of
+the moment of writing and staleness is a property of elapsed time.
+
+**Hand-correcting 124 numbers would have fixed nothing.** It resets the clock and changes no
+mechanism. So the volatile figures are no longer written in the chapters at all: a source now writes
+`{{fig:assertions}}` or `{{fig:previews_measured}}`, and the assembler substitutes the number it
+**measures at build time** by running the tool that owns it. About eight seconds per build. A figure
+that cannot be measured is a build failure rather than a fallback to the last known value — a
+default would be a stale figure with extra steps. Twenty-two figures are wired this way, and that
+class of drift is now closed rather than corrected.
+
+**One of the 124 was not stale, and how it failed is the chapter's own lesson.** The sweep reported
+that {{ch:swp}}'s closing claim was false: the chapter cites `SWP|TX 015b` as the live witness for
+finding `#72C`, and the file that holds it —
+`Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl` — is in `_gate.py`'s `EXCLUDED` list. The reasoning
+is sound and the premise is true. The conclusion is wrong.
+
+`EXCLUDED` is a list of files not run **as entrypoints**, for the stated reason that this one is an
+*alternative* to `[6.2]`+`[6.3]` and would duplicate their work. It says nothing about
+reachability. `Stage01_Tester.repl` loads the file at line 42, and thirteen files load
+`Stage01_Tester.repl`, of which eight are gate entrypoints. Running one of them and grepping the
+output settles it in two minutes:
+
+```
+"--- [SWP|TX 015b - #72C Regression: Stable-Swap Inverse Newton Domain Guard · 02 · let / invocation] ---"
+"Expect: success #72C regression — in-domain inverse quote (output=0.5x reserve) is positive"
+```
+
+The witness runs, several times per gate run. The chapter's claim stands.
+
+This is the book's own rule — **locate by execution, not by reading** — failing in the one place it
+would be most embarrassing: an audit *of* the book, by a reader who had the rule available and
+reached a confident, well-argued, false conclusion from a list. Exclusion is not unreachability. A
+name absent from a runner's entrypoints is not a name absent from the run, and only running it can
+tell you which.

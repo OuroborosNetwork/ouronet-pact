@@ -156,7 +156,8 @@ python3 REPL/tools/_ownerobs.py --selftest   # does the detector actually detect
 
 **Read `--census` before reading the headline.** The headline is conditioned on a capability being
 reachable from a named client operation, and a reader not told how many fail that condition cannot
-distinguish *"82 of 167 witnessed"* from *"82 of everything"*. That distinction is not academic —
+distinguish *"{{fig:gates_observed}} of 167 witnessed"* from *"{{fig:gates_observed}} of
+everything"*. That distinction is not academic —
 {{ch:ownergates}} records the days this instrument spent reporting a ratio whose denominator
 excluded a third of the tree, including the layer that stops token theft.
 
