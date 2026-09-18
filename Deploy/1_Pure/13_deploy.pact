@@ -1,0 +1,4309 @@
+;; ---------------------------------------------------------------------------
+;; OURONET DEPLOY -- file 13 of 19
+;; This is STEP 13 of 20 in the full sequence (see Deploy/MANIFEST.md).
+;; Steps 1-12 must have run first, including the init steps between deploys.
+;; 1 module(s), 229,502 gas measured in the REPL gas model, 222,237 bytes
+;;
+;; Modules in this transaction, IN ORDER (do not reorder):
+;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/02_SCORE.pact
+;;
+;; Paste this whole file as ONE transaction. It needs the Ouronet admin signature
+;; and the `ouronet-ns` namespace, which the first line sets.
+;; ---------------------------------------------------------------------------
+
+(namespace "ouronet-ns")
+
+;; ===== 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/02_SCORE.pact ============
+;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
+(interface AcquisitionScoresV3
+    @doc "Interface for the AQP scoring layer. Declares readers for score config/totals, \
+        \ per-(account,pool,score) user weights, SF nonce weights, and NF trait/class \
+        \ definitions with revision nonces; stake-weight URC_ deltas; XE_ hooks for \
+        \ aqpool/fvt links and applying stake deltas; and \
+        \ C_Issue/C_Control/C_CreateBoostLink/C_IssueTriplet/score-definition and \
+        \ score-model client entrypoints returning IGNIS OutputCumulators."
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables  ⟨cannot exist in an interface⟩
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables  ⟨cannot exist in an interface⟩
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+    ;;
+    (defun P|UEV_IMC ())
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
+    ;; [UC]  compute
+    (defun UCk_UserScore:string (ouronet-account:string pool-id:string score-id:string))
+    (defun UCk_SFScore:string (score-id:string dpsf-id:string nonce:integer))
+    (defun UCk_NFScore:string (score-id:string dpnf-id:string trait-key:string trait-value:string dpnf-nonce-class:integer))
+    (defun UCk_SFDefRevision:string (score-id:string dpsf-id:string))
+    (defun UCk_NFDefRevision:string (score-id:string dpnf-id:string))
+    (defun UCk_NFTraitKeys:string (score-id:string dpnf-id:string))
+    (defun UCk_Triplet:string (bronze-score-id:string silver-score-id:string golden-score-id:string))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;; [UR]  read
+    (defun UR_SCR|ScoreOwnerKonto:string (score-id:string))
+    (defun UR_SCR|ScoreCanUpgrade:bool (score-id:string))
+    (defun UR_SCR|ScoreCanChangeOwner:bool (score-id:string))
+    (defun UR_SCR|ScoreBoostClassLink:string (score-id:string))
+    (defun UR_SCR|ScoreBoostLink:string (score-id:string))
+    (defun UR_SCR|ScoreAqpoolLink:string (score-id:string))
+    (defun UR_SCR|ScoreFvtLink:string (score-id:string))
+    (defun UR_SCR|ScoreDebBoost:bool (score-id:string))
+    (defun UR_SCR|ScorePrecision:integer (score-id:string))
+    (defun UR_SCR|ScoreTotalBaseScore:decimal (score-id:string))
+    (defun UR_SCR|ScoreTotalBoostedScore:decimal (score-id:string))
+    (defun UR_SCR|ScoreTotalDebScore:decimal (score-id:string))
+    (defun UR_SCR|ScoreTotalBaseDebScore:decimal (score-id:string))
+    (defun UR_SCR|ScoreTotalBoostedDebScore:decimal (score-id:string))
+    (defun UR_SCR|ScoreNzsCount:integer (score-id:string))
+    (defun UR_SCR|ScoreVacateGeneration:integer (score-id:string))
+    (defun UR_SCR|ScoreClass:integer (score-id:string))
+    (defun UR_SCR|ScoreLpDenominator:string (score-id:string))
+    (defun UR_SCR|ScoreMxFrozen:decimal (score-id:string))
+    (defun UR_SCR|ScoreMxSleeping:decimal (score-id:string))
+    (defun UR_SCR|ScoreMxHibernated:decimal (score-id:string))
+    (defun UR_SCR|ScoreSftEquality:bool (score-id:string))
+    (defun UR_SCR|ScoreNftScoreModel:integer (score-id:string))
+    (defun UR_SCR|ScoreScoreId:string (score-id:string))
+    (defun UR_U-SCR|UserScoreBaseScore:decimal (ouronet-account:string pool-id:string score-id:string))
+    (defun UR_U-SCR|UserScoreBoostedScore:decimal (ouronet-account:string pool-id:string score-id:string))
+    (defun UR_U-SCR|UserScoreDebScore:decimal (ouronet-account:string pool-id:string score-id:string))
+    (defun UR_U-SCR|UserScoreBaseDebScore:decimal (ouronet-account:string pool-id:string score-id:string))
+    (defun UR_U-SCR|UserScoreBoostedDebScore:decimal (ouronet-account:string pool-id:string score-id:string))
+    (defun URC_U-SCR|UserScoreDebStale:bool (ouronet-account:string pool-id:string score-id:string))
+    (defun UR_U-SCR|UserScoreOuronetAccount:string (ouronet-account:string pool-id:string score-id:string))
+    (defun UR_U-SCR|UserScorePoolId:string (ouronet-account:string pool-id:string score-id:string))
+    (defun UR_U-SCR|UserScoreScoreId:string (ouronet-account:string pool-id:string score-id:string))
+    (defun UR_S-DEF|SFScoreNonceScoreValue:decimal (score-id:string dpsf-id:string nonce:integer))
+    (defun UR_S-DEF|SFScoreScoreId:string (score-id:string dpsf-id:string nonce:integer))
+    (defun UR_S-DEF|SFScoreDpsfId:string (score-id:string dpsf-id:string nonce:integer))
+    (defun UR_S-DEF|SFScoreNonce:integer (score-id:string dpsf-id:string nonce:integer))
+    (defun UR_N-DEF|NFTraitScoreTraitScoreValue:decimal (score-id:string dpnf-id:string trait-key:string trait-value:string))
+    (defun UR_N-DEF|NFTraitScoreScoreId:string (score-id:string dpnf-id:string trait-key:string trait-value:string))
+    (defun UR_N-DEF|NFTraitScoreDpnfId:string (score-id:string dpnf-id:string trait-key:string trait-value:string))
+    (defun UR_N-DEF|NFTraitScoreTraitKey:string (score-id:string dpnf-id:string trait-key:string trait-value:string))
+    (defun UR_N-DEF|NFTraitScoreTraitValue:string (score-id:string dpnf-id:string trait-key:string trait-value:string))
+    (defun UR_N-DEF|NFClassScoreTraitScoreValue:decimal (score-id:string dpnf-id:string dpnf-nonce-class:integer))
+    (defun UR_N-DEF|NFClassScoreScoreId:string (score-id:string dpnf-id:string dpnf-nonce-class:integer))
+    (defun UR_N-DEF|NFClassScoreDpnfId:string (score-id:string dpnf-id:string dpnf-nonce-class:integer))
+    (defun UR_N-DEF|NFClassScoreNonceClass:integer (score-id:string dpnf-id:string dpnf-nonce-class:integer))
+    (defun UR_S-DEF-REV|SFDefRevisionRevisionNonce:integer (score-id:string dpsf-id:string))
+    (defun UR_S-DEF-REV|SFDefRevisionScoreId:string (score-id:string dpsf-id:string))
+    (defun UR_S-DEF-REV|SFDefRevisionDpsfId:string (score-id:string dpsf-id:string))
+    (defun UR_N-DEF-REV|NFDefRevisionGlobalRevisionNonce:integer (score-id:string dpnf-id:string))
+    (defun UR_N-DEF-REV|NFDefRevisionTraitRevisionNonce:integer (score-id:string dpnf-id:string))
+    (defun UR_N-DEF-REV|NFDefRevisionClassRevisionNonce:integer (score-id:string dpnf-id:string))
+    (defun UR_N-DEF-REV|NFDefRevisionScoreId:string (score-id:string dpnf-id:string))
+    (defun UR_N-DEF-REV|NFDefRevisionDpnfId:string (score-id:string dpnf-id:string))
+    (defun UR_SCR|TripletBronzeScoreId:string (triplet-id:string))
+    (defun UR_SCR|TripletSilverScoreId:string (triplet-id:string))
+    (defun UR_SCR|TripletGoldenScoreId:string (triplet-id:string))
+    (defun UR_SCR|TripletCategory:string (triplet-id:string))
+    (defun UR_SCR|TripletId:string (triplet-id:string))
+    (defun UR_SCR|TripletTrueTriplet:bool (triplet-id:string))
+    (defun UR_SCR|ScoreTriplet:bool (score-id:string))
+    (defun UR_SCR|ScoreTripletId:string (score-id:string))
+    (defun URC_TripletExists:bool (triplet-id:string))
+    (defun URC_TripletCategoryMatchesFvtClass:bool (triplet-category:string fvt-class:integer))
+    (defun URC_SignedBaseDeltaForDpnfStake:decimal (score-id:string dpnf-id:string nonces:[integer] nonce-amounts:[integer] direction:bool))
+    (defun URC_IsTrueTriplet:bool (id0:string id1:string id2:string))
+    ;; [URH] heavy-read
+    ;;
+    (defun URH_SCR|AllScoreIds:[string] ())
+    ;;
+    ;; [URCi]   cost readers — single source for exec billing + INFO preview
+    (defun URCi_IssueScore:object{IgnisCollectorV3.OutputCumulator} (owner-konto:string output:[string]))
+    (defun URCi_IssueScoreStoa:decimal ())
+    (defun URCi_RotateOwnership:object{IgnisCollectorV3.OutputCumulator} (score-id:string))
+    (defun URCi_Control:object{IgnisCollectorV3.OutputCumulator} (score-id:string))
+    (defun URCi_CreateBoostClassLink:object{IgnisCollectorV3.OutputCumulator} (score-id:string))
+    (defun URCi_CreateBoostLink:object{IgnisCollectorV3.OutputCumulator} (score-id:string))
+    (defun URCi_EnableDebBoost:object{IgnisCollectorV3.OutputCumulator} (score-id:string))
+    (defun URCi_IssueTriplet:object{IgnisCollectorV3.OutputCumulator} (silver-score-id:string output:[string]))
+    (defun URCi_IssueSemiFungibleScoreDefinition:object{IgnisCollectorV3.OutputCumulator} (score-id:string nonces:[integer]))
+    (defun URCi_IssueNonFungibleScoreDefinition:object{IgnisCollectorV3.OutputCumulator} (score-id:string trait-keys:[string]))
+    (defun URCi_IssueNonFungibleSetScoreDefinition:object{IgnisCollectorV3.OutputCumulator} (score-id:string dpnf-nonce-classes:[integer]))
+    (defun URCi_IssueScoreModel:object{IgnisCollectorV3.OutputCumulator} (op-key:string patron:string output:[string]))
+    (defun URCi_CombineTripletModel:object{IgnisCollectorV3.OutputCumulator} (patron:string output:[string]))
+    ;;{5.4}  Validate [UEV/CAP]
+    ;; [UEV] enforce
+    (defun UEV_NonFungibleScoreDefinition
+        (score-id:string dpnf-id:string trait-score-values:[decimal] trait-keys:[string] trait-values:[string] dpnf-nonce-classes:[integer])
+    )
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;; [XE]
+    ;;
+    (defun XE_CreateAqpoolLink:string
+        (score-id:string pool-id:string)
+    )
+    (defun XE_RevokeAqpoolLink:string
+        (score-id:string pool-id:string)
+    )
+    (defun XE_CreateFvtLink:string
+        (score-id:string fvt-id:string)
+    )
+    (defun XE_ApplyTrueFungibleStakeDelta:object{IgnisCollectorV3.OutputCumulator}
+        (pool-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool employed-ids:[string] native-leg:bool)
+    )
+    (defun XE_RefreshUserScoreDeb:string (ouronet-account:string pool-id:string score-id:string))
+    (defun XE_NukeScoreForVacate:string (score-id:string))
+    (defun XE_ApplyOrtoFungibleStakeDelta:object{IgnisCollectorV3.OutputCumulator}
+        (pool-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool employed-ids:[string])
+    )
+    (defun XE_ApplyCollectableStakeDelta:object{IgnisCollectorV3.OutputCumulator}
+        (
+            pool-id:string
+            beneficiary-id:string
+            collectable-id:string
+            son:bool
+            nonces:[integer]
+            nonce-amounts:[integer]
+            direction:bool
+            employed-ids:[string]
+        )
+    )
+    ;;{5.7}  User [A/C]
+    ;; [C]   client
+    ;;
+    (defun C_IssueLiquidityScore:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string owner-konto:string score-name:string precision:integer lp-denominator:string mx-frozen:decimal mx-sleeping:decimal)
+    )
+    (defun C_IssueTrueFungibleScore:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string owner-konto:string score-name:string precision:integer mx-frozen:decimal)
+    )
+    (defun C_IssueOrtoFungibleScore:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string owner-konto:string score-name:string precision:integer mx-sleeping:decimal mx-hibernated:decimal)
+    )
+    (defun C_IssueSemiFungibleScore:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string owner-konto:string score-name:string precision:integer sft-equality:bool)
+    )
+    (defun C_IssueNonFungibleScore:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string owner-konto:string score-name:string precision:integer nft-score-model:integer)
+    )
+    (defun C_RotateOwnership:object{IgnisCollectorV3.OutputCumulator} (score-id:string new-owner-konto:string))
+    (defun C_Control:object{IgnisCollectorV3.OutputCumulator} (score-id:string new-can-upgrade:bool new-can-change-owner:bool))
+    (defun C_CreateBoostClassLink:object{IgnisCollectorV3.OutputCumulator} (score-id:string boost-class-id:string))
+    (defun C_CreateBoostLink:object{IgnisCollectorV3.OutputCumulator} (score-id:string boost-score-id:string))
+    (defun C_EnableDebBoost:object{IgnisCollectorV3.OutputCumulator} (score-id:string))
+    (defun C_IssueTriplet:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string bronze-score-id:string silver-score-id:string golden-score-id:string)
+    )
+    (defun C_IssueSemiFungibleScoreDefinition:object{IgnisCollectorV3.OutputCumulator}
+        (score-id:string dpsf-id:string nonces:[integer] nonce-score-values:[decimal])
+    )
+    (defun C_IssueNonFungibleScoreDefinition:object{IgnisCollectorV3.OutputCumulator}
+        (score-id:string dpnf-id:string trait-keys:[string] trait-values:[string] trait-score-values:[decimal])
+    )
+    (defun C_IssueNonFungibleSetScoreDefinition:object{IgnisCollectorV3.OutputCumulator}
+        (score-id:string dpnf-id:string dpnf-nonce-classes:[integer] class-score-values:[decimal])
+    )
+    (defun C_IssueSingleScoreModel:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string model-name:string score-class:integer collectable-id:string precision:integer nonces:[integer] nonce-score-values:[decimal])
+    )
+    (defun C_CombineTripletScoreModel:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string model-name:string bronze-model-id:string silver-model-id:string golden-model-id:string)
+    )
+    (defun C_IssueScoreFromModel:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string owner-konto:string model-id:string agency-name:string)
+    )
+
+)
+(module AQP-SCORE GOV
+    @doc "AQP-SCORE — sovereign acquisition scoring for AQP pools. Owns global score configuration and totals (SCR|T|Score), per (ouronet-account, pool-id, score-id) user triples (SCR|T|UserScore), semi-fungible nonce weights (SCR|T|SF|Score) and SF DefRevision, and non-fungible definitions on SCR|T|NF|TraitScore vs SCR|T|NF|ClassScore with NF DefRevision split into global-, trait-, and class-revision nonces so trackers and URCX stake math can gate expensive selects. \
+        \ Public surface: AcquisitionScoresV3 reads and stake-weight URC_*; Talos-facing C_* builds IGNIS (and STOA where applicable) and acquires client caps; XI_* performs table writes under require-capability (SECURE / SCR|XI>*); XE_* is for forward modules and likewise does not enforce — the guarding defcap or C_* owns validation and enforce. UCx_ / URCx_ helpers exist only as operands inside URC_* stake deltas. \
+        \ Implements OuronetPolicyV2 and AcquisitionScoresV3."
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
+    ;; REPL: REPL/Stage_02/[6.2.2]_AQP-SCORE.repl — intra-tx groups TX-SCORE-nn · mm in ;;==== … ==== lines (mm = 01.. within each begin-tx).
+    ;;
+    (implements OuronetPolicyV2)
+    (implements AcquisitionScoresV3)
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;(implements DemiourgosPactDigitalCollectibles-UtilityPrototype)
+    ;;
+    (defconst GOV|MD_AQP-SCORE                          (keyset-ref-guard (GOV|Demiurgoi)))
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    (defcap GOV ()                                      (compose-capability (GOV|AQP-SCORE_ADMIN)))
+    (defcap GOV|AQP-SCORE_ADMIN ()                      (enforce-guard GOV|MD_AQP-SCORE))
+    ;;{G5}  functions
+    (defun GOV|Demiurgoi ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::GOV|Demiurgoi)
+        )
+    )
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    (defconst P|I                                       (P|Info))
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;
+    (deftable P|T:{OuronetPolicyV2.P|S})
+    (deftable P|MT:{OuronetPolicyV2.P|MS})
+    ;;{P4}  capabilities
+    (defcap P|AQP-SCORE|CALLER ()
+        true
+    )
+    (defcap P|SECURE-CALLER ()
+        (compose-capability (P|AQP-SCORE|CALLER))
+        (compose-capability (SECURE))
+    )
+    ;;{P5}  functions
+    (defun P|Info ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::P|Info)
+        )
+    )
+    (defun P|UR:guard (policy-name:string)
+        (at "policy" (read P|T policy-name ["policy"]))
+    )
+    (defun P|UR_IMP:[guard] ()
+        ;;DEFAULT ADDED 2026-09-14 (owner ruling). This was a bare `read`, which RAISES
+        ;;`No value found in table <M>_P|MT for key: InterModulePolicies` when the row does not
+        ;;exist -- i.e. before ANY module has registered. P|UEV_IMC is built on this, so in that
+        ;;window the inter-module gate answered with a raw table error naming a row key instead of
+        ;;refusing cleanly. Surfaced by the X-01 repair, which removed the harness registration
+        ;;that had been creating the row as a side effect.
+        ;;
+        ;;The default is the module's OWN SECURE capability guard, which is exactly what
+        ;;P|A_AddIMP already seeds the row with. So reader and writer now agree on what an
+        ;;unregistered policy list contains, and the gate's answer is the same before and after
+        ;;the first registration: satisfiable only from inside this module.
+        (with-default-read P|MT P|I
+            {"m-policies" : [(create-capability-guard (SECURE))]}
+            {"m-policies" := mp}
+            mp
+        )
+    )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV2} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|AQP-SCORE_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        (with-capability (GOV|AQP-SCORE_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
+                    ;;
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        @doc "Post-deploy hook (AQP-BOOT Step 0). No cross-module IMP registration required — \
+            \ SCORE calls DALOS UR_*/CAP_*/UEV_* only (no DALOS P|UEV_IMC on those paths); client entry is Talos P|TALOS-SUMMONER."
+        true
+    )
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    (defconst BAR                                       (CT_Bar))
+    (defconst GAS|ISSUE-SCORE                       (let ((ref-IGNIS:module{IgnisCollectorV3} IGNIS)) (ref-IGNIS::UC_IgnisDeter "issue-score")))
+    (defconst GAS|ISSUE-TRIPLET                     (let ((ref-IGNIS:module{IgnisCollectorV3} IGNIS)) (ref-IGNIS::UC_IgnisDeter "issue-triplet")))
+    (defconst GAS|ISSUE-SCORE-MODEL                 (let ((ref-IGNIS:module{IgnisCollectorV3} IGNIS)) (ref-IGNIS::UC_IgnisDeter "issue-score-model")))
+    (defconst CT_SCORE_MODEL_SINGLE:integer             1)
+    (defconst CT_SCORE_MODEL_TRIPLET:integer            3)
+    (defconst EOC                                       (CT_EmptyCumulator))
+    (defconst AQP|SC_NAME                               (CT_AqpScName))
+    ;;{3.2}  schemas
+    ;;
+    ;;1] SCR|T|Score
+    (defschema SCR|Schema
+        @doc "General Score Definition \
+            \ [.]   = fixed, cannot be changed \
+            \ [..]  = Once linked, cannot be changed \
+            \ [.t]  = Once set to true, cannot be changed \
+            \ [M]   = mutable, can be modified  <owner-konto> \
+            \ [Mu]  = mutable via upgrade, can be modified via \
+            \        <owner-konto> and true <can-upgrade> \
+            \ \
+            \ Identity: No separate scr-asset on the score. Staking asset is \
+            \ defined on the AQP pool. Resolve Score -> aqpool-link -> Pool \
+            \ -> asset-id. FVT must only add ScoreLink when aqpool-link is \
+            \ set, so membership checks (e.g. farm common-denominator vs LP \
+            \ construction) use that chain. \
+            \ \
+            \ Class-0 LP: One score employed per pool aggregates all stake \
+            \ that pool allows. Multiple token ids (e.g. native LP, sleeping \
+            \ OF, frozen TF) may stake into the same pool when the protocol \
+            \ verifies they are the same LP family; trackers distinguish ids, \
+            \ but SCR|T|UserScore rows are per pool-id x score-id for \
+            \ beneficiaries. \
+            \ \
+            \ Immutability vs users: Per-user weights in SCR|T|UserScore are \
+            \ advanced on Stake/Unstake (and FVT Inject/Collect handle \
+            \ rewards), matching the UrStoa vault pattern; there is no \
+            \ practical global recomputation over all accounts. Do not change \
+            \ [.] semantic fields (score-class, multipliers, sft/nft models), \
+            \ links [..], or deb-boost [.t] after positions \
+            \ exist; that would leave existing rows wrong until users \
+            \ restake. Correct mistakes by issuing a new score-id, removing \
+            \ the old score from pool slots and FVT membership, then wiring \
+            \ the new score. \
+            \ \
+            \ [M] totals on this row are aggregate bookkeeping; they do not \
+            \ replace the rule that meaning-of-weight is fixed by [.] fields \
+            \ at issue."
+        ;;
+        ;;Management
+        owner-konto:string          ;;[Mu]  Stores the Score Owner.
+        can-upgrade:bool            ;;[Mu]  Defines if Score Settings can be upgraded
+        can-change-owner:bool       ;;[Mu]  Defines if the Owner can be changed
+        ;;
+        ;; Links
+        boost-class-link:string     ;;[..]  Specifies the BoostClass-ID for boosting. BAR if not in use.
+        ;; Foreign boost-link: promile uses linked score user base; UserScore boosted/deb may hold surplus only (README_SCORE.md). Never self: SCR|C>CREATE-BOOST-LINK-SCORE.
+        boost-link:string           ;;[..]  BAR = own base for promile; else other score-id (≠ this score-id per SCR|C>CREATE-BOOST-LINK-SCORE).
+        aqpool-link:string          ;;[..]  Specifies the Pool that employs the Score. BAR if not in use.
+        fvt-link:string             ;;[..]  Specifies the FVT the Score is part of. BAR if not in use.
+        triplet:bool                ;;[..]  false at issue; true once bundled in SCR|T|Triplet (immutable).
+        triplet-id:string           ;;[..]  BAR until triplet issue; then T|bronze|silver|golden (immutable).
+        ;;Score Information
+        deb-boost:bool              ;;[.t]  Specifies if DEB boosting occurs.
+        precision:integer           ;;[.]   Decimal places for per-user weights and aggregate total-* fields on this score; range enforced at issuance; forward writers must respect it.
+        total-base-score:decimal    ;;[M]   Sum of user base-scores; same decimal precision as precision field
+        total-boosted-score:decimal ;;[M]   Sum of user boosted-scores; same decimal precision as precision field
+        total-deb-score:decimal     ;;[M]   Sum of user deb-scores; same decimal precision as precision field
+        total-base-deb-score:decimal    ;;[M] M3: Σ user base-deb-scores (aggregate base×deb decomposition)
+        total-boosted-deb-score:decimal ;;[M] M3: Σ user boosted-deb-scores. total-base-deb + total-boosted-deb = total-deb-score.
+        nzs-count:integer           ;;[M]   Store the amount of Non-Zero-Scores
+        vacate-generation:integer   ;;[M]   Vacate-v2 lazy-invalidation counter (§5). Bumped once at fast-vacate
+        ;;                                  finalize (nuke). A SCR|T|UserScore row whose stamped-generation < this
+        ;;                                  reads as 0 (stale); re-stake stamps the current value. Default 0.
+        ;;
+        ;;Score Class
+        score-class:integer         ;;[.]   Defines the Score Class, there are 5
+        ;;                                  Class 0 = LP Score (LP - native|sleeping|freezing)
+        ;;                                  Class 1 = DPTF Score (non LP) 
+        ;;                                  Class 2 = DPOF Score (non LP)
+        ;;                                  Class 3 = DPSF Score (SFTs)
+        ;;                                  Class 4 = DPNF Score (NFTs)
+        ;;
+        ;;LP, DPTF, DPOF
+        lp-denominator:string       ;;[.]   Class-0 only: native DPTF token-id of the common pool leg (e.g. OURO-98c486052a51); BAR for classes 1-4.
+        mx-frozen:decimal           ;;[.]   Multiplier for Frozen Tokens (Default 2.0)
+        mx-sleeping:decimal         ;;[.]   Multiplier for Sleeping Tokens (Default 1.0)
+        mx-hibernated:decimal       ;;[.]   Multiplier for Hibernated Tokens (Default 1.0)
+        ;;
+        ;;DPSF
+        sft-equality:bool           ;;[.]   When true all SFTs are equal. When <false>, <nonce-score-value> is checked.
+        ;;
+        ;;DPNF
+        nft-score-model:integer     ;;[.]   Sets NFT Score Model; Only 3 Models Allowed [-1 0 1]
+        ;;                                  Model -1 = All NFTs are equal, and will have a score of 1
+        ;;                                  Model  0 = NFTs will be scored by their native Score Systems
+        ;;                                  Model  1 = NFTs scored from SCR|T|NF|TraitScore / SCR|T|NF|ClassScore rows
+        ;;
+        ;;Select Keys
+        score-id:string             ;;[.]   Stores the ID of the Score
+    )
+    ;;2] SCR|T|UserScore
+    (defschema SCR|UserSchema
+        @doc "Per account x pool x score. base-score, boosted-score, \
+            \ deb-score are updated on Stake/Unstake (and related paths), \
+            \ not by bulk recompute when SCR|Schema rules change; migrate \
+            \ via a new score-id."
+        base-score:decimal
+        boosted-score:decimal
+        deb-score:decimal
+        base-deb-score:decimal      ;;[M]  M3: base × deb (deb applied to the base part)
+        boosted-deb-score:decimal   ;;[M]  M3: boost × deb (deb applied to the boost part). base-deb + boosted-deb = deb-score.
+        stamped-generation:integer  ;;[M]  Vacate-v2 (§5): the SCR|Schema.vacate-generation this row was written under.
+        ;;                                 When < the score's current vacate-generation, readers treat this row as 0
+        ;;                                 (stale after a fast-vacate); a fresh stake re-stamps it live. Default 0.
+        ;;
+        ;;Select Keys
+        ouronet-account:string
+        pool-id:string
+        score-id:string
+    )
+    (defschema SCR|SingularUserScoreDelta
+        @doc "Result of applying one signed user-base delta at score precision: new user triple, nz-count delta, and deltas to SCR|T|Score aggregate totals \
+            \ (LP stake legs are one consumer; other forward paths can reuse the same derivation object). Aggregate totals are floored at the score precision field in XI."
+        new-user-base-score:decimal
+        new-user-boosted-score:decimal
+        new-user-deb-score:decimal
+        new-user-base-deb-score:decimal
+        new-user-boosted-deb-score:decimal
+        nz-delta:integer
+        delta-global-base-score:decimal
+        delta-global-boosted-score:decimal
+        delta-global-deb-score:decimal
+        delta-global-base-deb-score:decimal
+        delta-global-boosted-deb-score:decimal
+    )
+    ;;
+    ;;3] SCR|T|SF|Score
+    (defschema SCR|SF|Schema
+        @doc "Per (score-id, dpsf-id, nonce). Changing nonce-score-value \
+            \ changes weights for that nonce going forward; wholesale rule \
+            \ changes still favor a new score-id if fairness requires it."
+        nonce-score-value:decimal   ;;[M]   Score Value of DPSF Nonce
+        ;;
+        ;;Select Keys
+        score-id:string
+        dpsf-id:string
+        nonce:integer
+    )
+    ;;4] SCR|T|NF|TraitScore
+    (defschema SCR|NF|TraitSchema
+        @doc "Per (score-id, dpnf-id, trait-key, trait-value). trait-score-value is mutable."
+        trait-score-value:decimal   ;;[M]
+        ;;
+        ;;Select Keys
+        score-id:string
+        dpnf-id:string
+        trait-key:string
+        trait-value:string
+    )
+    ;;5] SCR|T|NF|ClassScore
+    (defschema SCR|NF|ClassSchema
+        @doc "Per (score-id, dpnf-id, dpnf-nonce-class). trait-score-value is mutable (set-mode class weights)."
+        trait-score-value:decimal   ;;[M]
+        ;;
+        ;;Select Keys
+        score-id:string
+        dpnf-id:string
+        dpnf-nonce-class:integer    ;;[.]   0 = all native NFTs in class model; >0 = specific set class (AQP-ANK DPNF anchors)
+    )
+    ;;
+    ;;Monotonic revision per (score-id, DPDC collection): bump only when a
+    ;;row in SCR|T|SF|Score or SCR|T|NF|TraitScore / SCR|T|NF|ClassScore changes for that pair. AQP
+    ;;trackers compare applied-def-revision-nonce to SCR|T|SF|DefRevision.revision-nonce /
+    ;;6] SCR|T|SF|DefRevision
+    (defschema SCR|SF|DefRevision
+        @doc "Per (score-id, dpsf-id). revision-nonce bumps on any add or \
+            \ update in SCR|T|SF|Score for that score-id and dpsf-id."
+        revision-nonce:integer      ;;[M]   Bump on SCR|T|SF|Score change
+        ;;
+        ;;Select Keys
+        score-id:string
+        dpsf-id:string
+    )
+    ;;7] SCR|T|NF|DefRevision
+    (defschema SCR|NF|DefRevision
+        @doc "Per (score-id, dpnf-id). global-revision-nonce bumps on any trait or class definition change; \
+            \ trait-revision-nonce only on SCR|T|NF|TraitScore change; class-revision-nonce only on SCR|T|NF|ClassScore change."
+        global-revision-nonce:integer   ;;[M]
+        trait-revision-nonce:integer    ;;[M]
+        class-revision-nonce:integer     ;;[M]
+        ;;
+        ;;Select Keys
+        score-id:string
+        dpnf-id:string
+    )
+    ;;7b] SCR|T|NF|TraitKeys — the DISTINCT trait-keys that have any definition for (score-id, dpnf-id).
+    ;; Segregated from SCR|NF|DefRevision so the hot revision-nonce reads stay lean; this row is read ONLY on the
+    ;; model-1 trait stake path, where it drives bounded point reads (kills the select). Bounded by the collection's
+    ;; trait schema (grows with distinct trait-keys, not nonces or values), so it stays small.
+    (defschema SCR|NF|TraitKeys
+        @doc "Per (score-id, dpnf-id): the DISTINCT trait-keys with any SCR|T|NF|TraitScore definition. Lets model-1 \
+            \ trait scoring point-read each defined key against a staked nonce's metadata instead of scanning."
+        trait-keys:[string]         ;;[M]   distinct defined trait-keys
+        ;;
+        ;;Select Keys
+        score-id:string
+        dpnf-id:string
+    )
+    ;;8] SCR|T|Triplet
+    (defschema SCR|Triplet
+        @doc "Key = T|<bronze-score-id>|<silver-score-id>|<golden-score-id>. Bundles three SCORE rows for FVT TripletLink membership. \
+            \ Positions bronze/silver/golden are id slots only (not boost roles). true-triplet when one score has BAR boost-link and the other two boost-link to it. \
+            \ Tags: [.] fixed at issue."
+        bronze-score-id:string                               ;;[.]   First score id slot
+        silver-score-id:string                               ;;[.]   Second score id slot
+        golden-score-id:string                               ;;[.]   Third score id slot
+        triplet-category:string                              ;;[.]   LP | VAULT_TF | TREASURY_SF_NF (from shared score-class)
+        triplet-id:string                                    ;;[.]   Select key T|bronze|silver|golden
+        true-triplet:bool                                    ;;[.]   Boost-anchored bundle (one BAR hub, two satellites)
+    )
+    (defschema SCR|ScoreEntityModel
+        @doc "Key = <Model-ID>. A reusable score-entity TEMPLATE so many entities issue IDENTICALLY (DSA: every \
+            \ agency scores the same). single (entity-type 1): the scoring spec — issue 1 score + its SF definition \
+            \ from it. triplet (entity-type 3): references three single model-ids — issue the 3 singles, then \
+            \ C_IssueTriplet. Tags: [.] fixed at define."
+        entity-type:integer                                  ;;[.]   CT_SCORE_MODEL_SINGLE (1) | CT_SCORE_MODEL_TRIPLET (3)
+        score-class:integer                                  ;;[.]   single: 3 = SemiFungible (DPSF), v1 SF only. triplet: 0.
+        collectable-id:string                                ;;[.]   single: the DPSF id the definition scores. triplet: BAR.
+        precision:integer                                    ;;[.]   single: score precision. triplet: 0.
+        nonces:[integer]                                     ;;[.]   single: SF definition nonces (incl. fragment negatives). triplet: [].
+        nonce-score-values:[decimal]                         ;;[.]   single: parallel values. triplet: [].
+        bronze-model-id:string                               ;;[.]   triplet: the 3 sub single-model ids. single: BAR.
+        silver-model-id:string
+        golden-model-id:string
+        ;;Select Keys
+        model-id:string                                      ;;[.]
+    )
+    ;;{3.3}  tables
+    ;;
+    (deftable SCR|T|Score:{SCR|Schema})                         ;;1] Key = <Score-ID>
+    (deftable SCR|T|UserScore:{SCR|UserSchema})                 ;;2] Key = <Ouronet-Account> | <Pool-ID> | <Score-ID>
+    (deftable SCR|T|SF|Score:{SCR|SF|Schema})                   ;;3] Key = <Score-ID> | <DPSF-ID> | <Nonce>
+    (deftable SCR|T|NF|TraitScore:{SCR|NF|TraitSchema})         ;;4] Key = <Score-ID> | <DPNF-ID> | <Trait-Key> | <Trait-Value>
+    (deftable SCR|T|NF|ClassScore:{SCR|NF|ClassSchema})         ;;5] Key = <Score-ID> | <DPNF-ID> | <DPNF-Nonce-Class>
+    (deftable SCR|T|SF|DefRevision:{SCR|SF|DefRevision})        ;;6] Key = <Score-ID> | <DPSF-ID>
+    (deftable SCR|T|NF|DefRevision:{SCR|NF|DefRevision})        ;;7] Key = <Score-ID> | <DPNF-ID>
+    (deftable SCR|T|NF|TraitKeys:{SCR|NF|TraitKeys})            ;;7b] Key = <Score-ID> | <DPNF-ID>
+    (deftable SCR|T|Triplet:{SCR|Triplet})                      ;;8] Key = <Triplet-ID>
+    (deftable SCR|T|ScoreEntityModel:{SCR|ScoreEntityModel})    ;;9] Key = <Model-ID>
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;
+    (defcap SECURE ()
+        true
+    )
+    (defcap SCR|XE>REFRESH-USER-SCORE-DEB (ouronet-account:string pool-id:string score-id:string)
+        @doc "Forward (AQP-FVT collect / inject sweep): recompute a user's stored deb-score at the current live \
+            \ Elite-DEB (M3 deb-staleness backstop). Benign — no fund movement, just a recompute; the CALLER must \
+            \ have settled the user's pending at the OLD deb-score first (RPS settle-before-weight-change). \
+            \ Composes SECURE."
+        (compose-capability (SECURE))
+    )
+    (defcap SCR|XE>NUKE-SCORE-FOR-VACATE (score-id:string)
+        @doc "Forward (AQP-VCT finalize): vacate-v2 §5 nuke of one employed score — bulk-zero the aggregate totals \
+            \ + nzs and bump vacate-generation (lazily invalidating every per-user row). Only reached from \
+            \ C_FinalizeVacate, which is pool-owner gated and requires nns==0 (the pool is verified empty and \
+            \ every beneficiary already settled during the drain). Composes SECURE."
+        (compose-capability (SECURE))
+    )
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    (defcap SCR|XI>ISSUE-SCORE
+        (
+            score-name:string
+            owner-konto:string
+            precision:integer
+            score-class:integer
+            lp-denominator:string
+            mx-frozen:decimal
+            mx-sleeping:decimal
+            mx-hibernated:decimal
+            nft-score-model:integer
+        )
+        @doc "Core issuance authorisation for SCR|T|Score: validates score-name, owner, class, lp-denominator, multipliers, \
+            \ nft-score-model. sft-equality is not a cap parameter (boolean; applied at insert only). score-id \
+            \ from score-name (UDC_Makeid); can-upgrade and can-change-owner default true at insert. Composed from \
+            \ each SCR|C>ISSUE-* client capability."
+        @event
+        (let
+            (
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
+                (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                ;;
+                (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+            )
+            ;;1]Validate <score-class>, <mx-frozen>, <mx-sleeping>, <mx-hibernated> and <nft-score-model>
+            (enforce
+                (fold (and) true
+                    [
+                        (>= score-class 0)
+                        (<= score-class 4)
+                        (>= precision 3)
+                        (<= precision 24)
+                        (> mx-frozen 0.0)
+                        (> mx-sleeping 0.0)
+                        (> mx-hibernated 0.0)
+                        (fold (or) false [(= nft-score-model -1) (= nft-score-model 0) (= nft-score-model 1)])
+                    ]
+                )
+                "Invalid precision, score-class, mx-frozen, mx-sleeping, mx-hibernated or nft-score-model"
+            )
+            ;;2]Validate <lp-denominator>: class 0 requires non-BAR native DPTF id; classes 1-4 require BAR
+            (enforce
+                (if (= score-class 0)
+                    (!= lp-denominator BAR)
+                    (= lp-denominator BAR)
+                )
+                "lp-denominator must be non-BAR for class 0 and BAR for classes 1-4"
+            )
+            ;;3]Validate <score-name>
+            (ref-U|ATS::UEV_AutostakeIndex score-name)
+            ;;4]Validate <owner-konto> Ownership and that is Standard Ouronet Account
+            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
+            (ref-DALOS::UEV_EnforceAccountType owner-konto false)
+            ;;5]Validate <mx-frozen>, <mx-sleeping>, <mx-hibernated> as fee decimals (DALOS UEV_Fee)
+            (ref-U|DALOS::UEV_Fee mx-frozen)
+            (ref-U|DALOS::UEV_Fee mx-sleeping)
+            (ref-U|DALOS::UEV_Fee mx-hibernated)
+            (if (= score-class 0)
+                (let
+                    (
+                        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    )
+                    (ref-DPTF::UEV_id lp-denominator)
+                )
+                true
+            )
+            (compose-capability (SECURE))
+        )
+    )
+    (defcap SCR|C>ISSUE-LIQUIDITY-SCORE
+        (owner-konto:string score-name:string precision:integer lp-denominator:string mx-frozen:decimal mx-sleeping:decimal)
+        @doc "Issue LP score (score-class 0). Caller supplies lp-denominator, mx-frozen and mx-sleeping; mx-hibernated 1.0, sft-equality true, nft-score-model -1."
+        @event
+        (compose-capability
+            (SCR|XI>ISSUE-SCORE score-name owner-konto precision 0 lp-denominator mx-frozen mx-sleeping 1.0 -1)
+        )
+    )
+    (defcap SCR|C>ISSUE-TRUE-FUNGIBLE-SCORE
+        (owner-konto:string score-name:string precision:integer mx-frozen:decimal)
+        @doc "Issue DPTF score (score-class 1). Caller supplies mx-frozen; mx-sleeping and mx-hibernated 1.0; sft-equality true; nft-score-model -1."
+        @event
+        (compose-capability
+            (SCR|XI>ISSUE-SCORE score-name owner-konto precision 1 BAR mx-frozen 1.0 1.0 -1)
+        )
+    )
+    (defcap SCR|C>ISSUE-ORTO-FUNGIBLE-SCORE
+        (owner-konto:string score-name:string precision:integer mx-sleeping:decimal mx-hibernated:decimal)
+        @doc "Issue DPOF score (score-class 2), including special-token variants. Caller supplies mx-sleeping and mx-hibernated; \
+            \ mx-frozen defaults 2.0; sft-equality true; nft-score-model -1."
+        @event
+        (compose-capability
+            (SCR|XI>ISSUE-SCORE score-name owner-konto precision 2 BAR 2.0 mx-sleeping mx-hibernated -1)
+        )
+    )
+    (defcap SCR|C>ISSUE-SEMI-FUNGIBLE-SCORE
+        (owner-konto:string score-name:string precision:integer sft-equality:bool)
+        @doc "Issue DPSF score (score-class 3). Caller supplies sft-equality; multipliers default 2.0 / 1.0 / 1.0; nft-score-model -1."
+        @event
+        (compose-capability
+            (SCR|XI>ISSUE-SCORE score-name owner-konto precision 3 BAR 2.0 1.0 1.0 -1)
+        )
+    )
+    (defcap SCR|C>ISSUE-NON-FUNGIBLE-SCORE
+        (owner-konto:string score-name:string precision:integer nft-score-model:integer)
+        @doc "Issue DPNF score (score-class 4). Caller supplies nft-score-model; multipliers default 2.0 / 1.0 / 1.0; sft-equality true."
+        @event
+        (compose-capability
+            (SCR|XI>ISSUE-SCORE score-name owner-konto precision 4 BAR 2.0 1.0 1.0 nft-score-model)
+        )
+    )
+    (defcap SCR|C>ROTATE-OWNERSHIP-SCORE (score-id:string new-owner-konto:string)
+        @doc "Rotate SCR|T|Score owner-konto: current-owner ownership, can-change-owner true, new owner standard account, \
+            \ new ≠ current. Composes SECURE for XI write; C_RotateOwnership builds IGNIS cumulator."
+        @event
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                ;;
+                (owner-now:string (UR_SCR|ScoreOwnerKonto score-id))
+                (can-change-owner:bool (UR_SCR|ScoreCanChangeOwner score-id))
+            )
+            (enforce
+                (and can-change-owner (!= new-owner-konto owner-now))
+                "Score owner rotation requires can-change-owner true and a distinct new owner-konto"
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership owner-now)
+            (ref-DALOS::UEV_EnforceAccountType new-owner-konto false)
+            (compose-capability (SECURE))
+        )
+    )
+    (defcap SCR|C>CONTROL-SCORE (score-id:string new-can-upgrade:bool new-can-change-owner:bool)
+        @doc "Update can-upgrade and can-change-owner: owner-konto ownership and current can-upgrade true. Composes SECURE for XI write; C_Control builds IGNIS cumulator."
+        @event
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                ;;
+                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
+                (can-upgrade:bool (UR_SCR|ScoreCanUpgrade score-id))
+            )
+            (enforce can-upgrade "Score control requires can-upgrade true")
+            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
+            (compose-capability (SECURE))
+        )
+    )
+    (defcap SCR|C>ENABLE-DEB-BOOST-SCORE (score-id:string)
+        @doc "One-time deb-boost: score owner, deb-boost currently false. Composes SECURE for XI write; C_EnableDebBoost builds IGNIS cumulator."
+        @event
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                ;;
+                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
+                (deb-boost:bool (UR_SCR|ScoreDebBoost score-id))
+            )
+            ;; M4 #13: only settable while the score is EMPTY (no stakers) — vacate to reconfigure a live score.
+            (enforce
+                (and (not deb-boost) (= (UR_SCR|ScoreNzsCount score-id) 0))
+                "Deb-boost must be off and the score must have no stakers (nzs-count = 0) — vacate to reconfigure"
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
+            (compose-capability (SECURE))
+        )
+    )
+    (defcap SCR|C>ISSUE-SF-SCORE-DEFINITION
+        (score-id:string dpsf-id:string nonces:[integer] nonce-score-values:[decimal])
+        @doc "Write SCR|T|SF|Score definitions for multiple nonces. Enforces score ownership, score exists, \
+            \ sft-equality false, nonce/value list shape, nonce existence (including fragmented negative nonces), \
+            \ and value precision from score precision. Composes SECURE for XI writes."
+        @event
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-U|INT:module{OuronetIntegersV2} U|INT)
+                (ref-DPDC:module{DpdcV2} DPDC)
+                ;;
+                (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
+                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
+                (score-row-id:string (UR_SCR|ScoreScoreId score-id))
+                (sft-equality:bool (UR_SCR|ScoreSftEquality score-id))
+                (precision:integer (UR_SCR|ScorePrecision score-id))
+                (l1:integer (length nonces))
+                (l2:integer (length nonce-score-values))
+                (max-input-nonce:integer (if (> l1 0) (ref-U|INT::UEV_MaxInteger nonces) 0))
+                (nonces-used:integer (ref-DPDC::UR_NoncesUsed dpsf-id true))
+            )
+            ;;PRODUCED-TRIAGED (_eagerlet --produced, 2026-09-16): this message claims EXISTENCE, and a
+            ;;hard read of the same subject raises before it can say so. Not actionable in isolation --
+            ;;it is one of SEVEN AQP guards sharing one root cause and one blocker: the readers are
+            ;;shared with the INFO_ previews, and `Stage_02/[6.5]_AQP-INFO.repl` is DELIBERATELY
+            ;;fixture-free (it passes "SCR-x"/"DPNF-x" to all 83 AQP readers because AQP prices are
+            ;;argument-independent) and PINS those aborts. Defaulting a shared reader turns a pinned
+            ;;expect-failure red. Full reasoning at 02_SCORE.pact's SCR|XI>X_ISSUE-NF-SCORE-DEFINITION
+            ;;and DEFECT-LEDGER G-37..G-41 + 7.2b; 7.3 records the same blocker for RT-K-007's preview half.
+            (enforce
+                (fold (and) true
+                    [
+                        (= score-row-id score-id)
+                        (not sft-equality)
+                        (> l1 0)
+                        (= l1 l2)
+                        (<= max-input-nonce nonces-used)
+                    ]
+                )
+                "Invalid score/dpsf inputs: score must exist, sft-equality false, nonce/value lists aligned, and max nonce <= DPDC nonces-used"
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
+            (map
+                (lambda
+                    (idx:integer)
+                    (let
+                        (
+                            (nonce:integer (at idx nonces))
+                            (abs-nonce:integer (abs nonce))
+                            (nonce-score-value:decimal (at idx nonce-score-values))
+                        )
+                        (ref-DPDC::UEV_Nonce dpsf-id true abs-nonce)
+                        (if (< nonce 0)
+                            (ref-DPDC-F::UEV_IzNonceFragmented dpsf-id true abs-nonce)
+                            true
+                        )
+                        (enforce
+                            ;; L7 #19: precision-conform AND non-negative — a negative SF nonce score mangles rewards.
+                            (and (= (floor nonce-score-value precision) nonce-score-value) (>= nonce-score-value 0.0))
+                            (format
+                                "Nonce score value {} must be non-negative and match score precision {}"
+                                [nonce-score-value precision]
+                            )
+                        )
+                    )
+                )
+                (enumerate 0 (- l1 1))
+            )
+            (compose-capability (SECURE))
+        )
+    )
+    (defcap SCR|C>ISSUE-NF-SCORE-DEFINITION
+        (score-id:string dpnf-id:string trait-keys:[string] trait-values:[string] trait-score-values:[decimal])
+        @doc "Trait-mode NF score definitions: delegates validation to UEV_NonFungibleScoreDefinition (empty dpnf-nonce-classes); \
+            \ composes SCR|XI>X_ISSUE-NF-SCORE-DEFINITION."
+        @event
+        (UEV_NonFungibleScoreDefinition score-id dpnf-id trait-score-values trait-keys trait-values [])
+        (compose-capability (SCR|XI>X_ISSUE-NF-SCORE-DEFINITION score-id dpnf-id))
+    )
+    (defcap SCR|C>ISSUE-NF-SET-SCORE-DEFINITION
+        (score-id:string dpnf-id:string dpnf-nonce-classes:[integer] class-score-values:[decimal])
+        @doc "Set-mode NF score definitions: delegates validation to UEV_NonFungibleScoreDefinition (empty trait keys/values); \
+            \ composes SCR|XI>X_ISSUE-NF-SCORE-DEFINITION."
+        @event
+        (UEV_NonFungibleScoreDefinition score-id dpnf-id class-score-values [] [] dpnf-nonce-classes)
+        (compose-capability (SCR|XI>X_ISSUE-NF-SCORE-DEFINITION score-id dpnf-id))
+    )
+    (defcap SCR|XI>X_ISSUE-NF-SCORE-DEFINITION
+        (score-id:string dpnf-id:string)
+        @doc "Common checks for NF score definition issuance: score owner, dpnf exists, score row id match, \
+            \ score-class 4 (DPNF). Composes SECURE for XI writes."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DPDC:module{DpdcV2} DPDC)
+                ;;
+                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
+                (score-row-id:string (UR_SCR|ScoreScoreId score-id))
+                (score-class:integer (UR_SCR|ScoreClass score-id))
+            )
+            ;;ONLY THE CLASS CONJUNCT IS LIVE. <score-row-id> is the row's OWN id field, read with
+            ;;<score-id> as the key -- so (= score-row-id score-id) is a tautology for every
+            ;;well-formed row, and for a MISSING row UR_SCR|ScoreScoreId has already aborted on
+            ;;"row not found" above. It can therefore never be false in practice, and the "must
+            ;;exist ... with matching score-id" half of the message can never be the reason a
+            ;;caller is rejected. Kept as a data-integrity assertion against a corrupt write
+            ;;(same disposition as DPDC-S::UEV_SetClass's (= set-class sc)); (= score-class 4)
+            ;;is the conjunct that actually rejects callers.
+            ;;EXAMINED under `_eagerlet --produced`, 2026-09-16. This message DOES claim existence
+            ;;("score must exist"), which is the signature the mode looks for -- but it is not
+            ;;actionable here, for two measured reasons:
+            ;;  1] THIS IS NOT THE FIRST RAISER. A caller never reaches this line with a missing
+            ;;     score: UEV_NonFungibleScoreDefinition runs first and opens with
+            ;;     (UR_SCR|ScorePrecision score-id), a bare read. Defaulting the reader beneath THIS
+            ;;     guard would change nothing any caller sees.
+            ;;  2] THE READER IS SHARED WITH THE PREVIEW, AND THE PREVIEW'S ABORT IS PINNED. Both
+            ;;     halves reach UR_SCR|ScoreOwnerKonto. `Stage_02/[6.5]_AQP-INFO.repl` pins the
+            ;;     preview aborting on an unknown score as a FINDING, and that suite is DELIBERATELY
+            ;;     fixture-free -- it passes "SCR-x"/"DPNF-x" to all 83 AQP readers on the principle
+            ;;     that AQP prices are argument-independent. Defaulting the shared reader turns that
+            ;;     pinned expect-failure red. Ledgered as G-38, with the class at G-37..G-41 / 7.2b;
+            ;;     7.3 records the same blocker for RT-K-007's preview half.
+            ;;Unlike RT-K-007 there is also no purpose-built guard being silenced: SCORE has no
+            ;;existence validator at all, and "must exist" is one conjunct of a compound message
+            ;;whose other half is the tautology documented immediately below.
+            ;;PRODUCED-TRIAGED: examined, not actionable -- reasons immediately above.
+            (enforce
+                (and (= score-row-id score-id) (= score-class 4))
+                "Invalid score/dpnf: score must exist as DPNF (class 4) with matching score-id"
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
+            (ref-DPDC::UEV_id dpnf-id false)
+            (compose-capability (SECURE))
+        )
+    )
+    (defcap SCR|C>CREATE-BOOST-CLASS-LINK-SCORE (score-id:string boost-class-id:string)
+        @doc "One-time boost-class-link on SCR|T|Score: slot BAR, score owner, boost-class-id not BAR, BoostClass exists and active in AQP-ANK. Composes SECURE."
+        @event
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+                ;;
+                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
+            )
+            ;; M4 #13: settable/re-settable only while the score is EMPTY (nzs-count = 0). One-time slot check
+            ;; dropped — reconfigure after a vacate; XI moves the class link-count (old class −1, new class +1).
+            (enforce
+                (and (!= boost-class-id BAR) (= (UR_SCR|ScoreNzsCount score-id) 0))
+                "boost-class-id must be non-BAR and the score must have no stakers (nzs-count = 0) — vacate to reconfigure"
+            )
+            (enforce (ref-ANK::UR_BC|Active boost-class-id) "BoostClass must be active")
+            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
+            (compose-capability (SECURE))
+        )
+    )
+    (defcap SCR|C>CREATE-BOOST-LINK-SCORE (score-id:string boost-score-id:string)
+        @doc "One-time boost-link: slot BAR, score owner, boost score exists, boost ≠ self, boost-id non-BAR. Composes SECURE."
+        @event
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                ;;
+                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
+                (boost-row-sid:string (UR_SCR|ScoreScoreId boost-score-id))
+            )
+            ;; M4 #13: re-settable only while the score is EMPTY (nzs-count = 0). One-time slot check dropped.
+            ;;PRODUCED-TRIAGED (_eagerlet --produced, 2026-09-16): this message claims EXISTENCE, and a
+            ;;hard read of the same subject raises before it can say so. Not actionable in isolation --
+            ;;it is one of SEVEN AQP guards sharing one root cause and one blocker: the readers are
+            ;;shared with the INFO_ previews, and `Stage_02/[6.5]_AQP-INFO.repl` is DELIBERATELY
+            ;;fixture-free (it passes "SCR-x"/"DPNF-x" to all 83 AQP readers because AQP prices are
+            ;;argument-independent) and PINS those aborts. Defaulting a shared reader turns a pinned
+            ;;expect-failure red. Full reasoning at 02_SCORE.pact's SCR|XI>X_ISSUE-NF-SCORE-DEFINITION
+            ;;and DEFECT-LEDGER G-37..G-41 + 7.2b; 7.3 records the same blocker for RT-K-007's preview half.
+            (enforce
+                (fold (and) true
+                    [
+                        (!= boost-score-id BAR)
+                        (!= boost-score-id score-id)
+                        (= boost-row-sid boost-score-id)
+                        (= (UR_SCR|ScoreNzsCount score-id) 0)
+                    ]
+                )
+                "SCR|C>CREATE-BOOST-LINK-SCORE: boost-score-id must exist, be non-BAR, not equal this score-id (no self-link); and the score must have no stakers (nzs-count = 0) — vacate to reconfigure"
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
+            (compose-capability (SECURE))
+        )
+    )
+    (defcap SCR|C>ISSUE-TRIPLET
+        (bronze-score-id:string silver-score-id:string golden-score-id:string)
+        @doc "Issue one immutable SCR|T|Triplet row T|bronze|silver|golden and mark all three scores triplet=true. \
+            \ Any three distinct scores of the same score-class and owner may bundle; boost topology is not required (true-triplet flag records boost-anchored shape). \
+            \ Duplicate combo fails at WI_Triplet insert; each score may belong to at most one triplet. Composes SECURE."
+        @event
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                ;;
+                (owner-konto:string (UR_SCR|ScoreOwnerKonto bronze-score-id))
+                (bronze-row-sid:string (UR_SCR|ScoreScoreId bronze-score-id))
+                (silver-row-sid:string (UR_SCR|ScoreScoreId silver-score-id))
+                (golden-row-sid:string (UR_SCR|ScoreScoreId golden-score-id))
+                (bronze-owner:string (UR_SCR|ScoreOwnerKonto bronze-score-id))
+                (silver-owner:string (UR_SCR|ScoreOwnerKonto silver-score-id))
+                (golden-owner:string (UR_SCR|ScoreOwnerKonto golden-score-id))
+                (class-b:integer (UR_SCR|ScoreClass bronze-score-id))
+                (class-s:integer (UR_SCR|ScoreClass silver-score-id))
+                (class-g:integer (UR_SCR|ScoreClass golden-score-id))
+                (cat:string (URC_TripletCategoryForClass class-b))
+            )
+            ;;PRODUCED-TRIAGED (_eagerlet --produced, 2026-09-16): this message claims EXISTENCE, and a
+            ;;hard read of the same subject raises before it can say so. Not actionable in isolation --
+            ;;it is one of SEVEN AQP guards sharing one root cause and one blocker: the readers are
+            ;;shared with the INFO_ previews, and `Stage_02/[6.5]_AQP-INFO.repl` is DELIBERATELY
+            ;;fixture-free (it passes "SCR-x"/"DPNF-x" to all 83 AQP readers because AQP prices are
+            ;;argument-independent) and PINS those aborts. Defaulting a shared reader turns a pinned
+            ;;expect-failure red. Full reasoning at 02_SCORE.pact's SCR|XI>X_ISSUE-NF-SCORE-DEFINITION
+            ;;and DEFECT-LEDGER G-37..G-41 + 7.2b; 7.3 records the same blocker for RT-K-007's preview half.
+            (enforce
+                (fold (and) true
+                    [
+                        (= bronze-row-sid bronze-score-id)
+                        (= silver-row-sid silver-score-id)
+                        (= golden-row-sid golden-score-id)
+                        (!= bronze-score-id silver-score-id)
+                        (!= bronze-score-id golden-score-id)
+                        (!= silver-score-id golden-score-id)
+                        (= bronze-owner owner-konto)
+                        (= silver-owner owner-konto)
+                        (= golden-owner owner-konto)
+                        (= class-b class-s)
+                        (= class-s class-g)
+                        (!= cat "INVALID")
+                        (not (UR_SCR|ScoreTriplet bronze-score-id))
+                        (not (UR_SCR|ScoreTriplet silver-score-id))
+                        (not (UR_SCR|ScoreTriplet golden-score-id))
+                    ]
+                )
+                "SCR|C>ISSUE-TRIPLET: scores must exist, be distinct, same owner and score-class, valid category, not already in a triplet"
+            )
+            (if (= class-b 0)
+                (enforce
+                    (and
+                        (= (UR_SCR|ScoreLpDenominator bronze-score-id)
+                           (UR_SCR|ScoreLpDenominator silver-score-id))
+                        (= (UR_SCR|ScoreLpDenominator silver-score-id)
+                           (UR_SCR|ScoreLpDenominator golden-score-id))
+                    )
+                    "LP triplet requires identical lp-denominator on all three scores"
+                )
+                true
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
+            (compose-capability (SECURE))
+        )
+    )
+    (defcap SCR|XE>CREATE-AQPOOL-LINK (score-id:string pool-id:string)
+        @doc "One-time aqpool-link: slot BAR, score owner, pool-id non-BAR. Pool/score pairing rules live in forward modules (e.g. AQP)."
+        @event
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                ;;
+                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
+                (aqpool-link:string (UR_SCR|ScoreAqpoolLink score-id))
+            )
+            ;;UNREACHABLE via its only caller. XE_CreateAqpoolLink is called from exactly one
+            ;;place -- AQP::C_AddScore -- and that body runs inside
+            ;;(with-capability (AQP|C>ADD-SCORE ...)), whose cap calls UEV_AddScorePoolAndScore
+            ;;FIRST. That validator already enforces (= aqpool-link BAR) and rejects with "Invalid
+            ;;score-id for pool assignment ...", pinned in REPL/modules/AQP.repl <<AQP-G19>>.
+            ;;Verified by calling C_AddScore on an already-linked score: the AQP message comes
+            ;;back, never this one. Kept as cross-module defence-in-depth -- SCORE must not trust
+            ;;a forward module -- but it is not coverage.
+            (enforce
+                (and (= aqpool-link BAR) (!= pool-id BAR))
+                "Aqpool link slot must be unset and pool-id must be non-BAR"
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
+            (compose-capability (SECURE))
+        )
+    )
+    (defcap SCR|XE>REVOKE-AQPOOL-LINK (score-id:string pool-id:string)
+        @doc "Clear aqpool-link: slot must equal pool-id, score owner. Pool revoke guards live in forward modules (e.g. AQP)."
+        @event
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                ;;
+                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
+                (aqpool-link:string (UR_SCR|ScoreAqpoolLink score-id))
+            )
+            ;;UNREACHABLE via its only caller, for the same reason as the CREATE twin above:
+            ;;AQP::C_RevokeScore validates through UEV_RevokeScorePoolAndScore inside
+            ;;(with-capability (AQP|C>REVOKE-SCORE ...)) before reaching XE_RevokeAqpoolLink, and
+            ;;answers with "score-id is not assigned to pool" -- pinned in <<AQP-G19>>.
+            (enforce
+                (and (= aqpool-link pool-id) (!= pool-id BAR))
+                "Aqpool link must match pool-id and pool-id must be non-BAR"
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
+            (compose-capability (SECURE))
+        )
+    )
+    (defcap SCR|XE>CREATE-FVT-LINK (score-id:string fvt-id:string)
+        @doc "One-time fvt-link: slot BAR, score owner, fvt-id non-BAR. FVT membership rules live in forward modules (e.g. FVT)."
+        @event
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                ;;
+                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
+                (fvt-link:string (UR_SCR|ScoreFvtLink score-id))
+            )
+            (enforce
+                (and (= fvt-link BAR) (!= fvt-id BAR))
+                "FVT link slot must be unset and fvt-id must be non-BAR"
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
+            (compose-capability (SECURE))
+        )
+    )
+    (defcap SCR|XE>UPDATE-LP-STAKE-DPTF-LP
+        (
+            ouronet-account:string
+            pool-id:string
+            score-id:string
+            lp-id:string
+            lp-amount:decimal
+            native-or-frozen:bool
+            direction:bool
+        )
+        @doc "Forward (AQP-POOL): class-0 LP stake/unstake via DPTF LP (native or frozen). Validates account, pool–score link, SWP pair vs lp-denominator, amount precision."
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+            )
+            (ref-DPTF::UEV_id lp-id)
+            (ref-DPTF::UEV_Amount lp-id lp-amount)
+            (UEV_LpStakeScoreContext ouronet-account pool-id score-id lp-id)
+        )
+        (compose-capability (SECURE))
+    )
+    (defcap SCR|XE>UPDATE-LP-STAKE-ORTO-LP
+        (
+            ouronet-account:string
+            pool-id:string
+            score-id:string
+            dpof-id:string
+            nonces:[integer]
+            nonce-amounts:[decimal]
+            direction:bool
+        )
+        @doc "Forward (AQP-POOL): class-0 LP stake/unstake via sleeping orto (Z|) DPOF LP. \
+            \ Validates account, pool–score link, SWP pair vs lp-denominator, whole-nonce amounts. \
+            \ dpof-id is the Z| sleeping orto collection; native LP resolved via URC_StakeLpTokenToNativeLpDptf in UEV_LpStakeScoreContext."
+        (let
+            (
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                ;;
+                (l1:integer (length nonces))
+                (l2:integer (length nonce-amounts))
+            )
+            (enforce
+                (fold (and) true
+                    [
+                        (= l1 l2)
+                        (> l1 0)
+                    ]
+                )
+                "orto LP stake score update: nonces and nonce-amounts must have equal positive length"
+            )
+            (ref-DPOF::UEV_id dpof-id)
+            (map
+                (lambda (idx:integer)
+                    (let
+                        (
+                            (n:integer (at idx nonces))
+                            (q:decimal (at idx nonce-amounts))
+                        )
+                        (ref-DPOF::UEV_Amount dpof-id q)
+                        ;;`nonce-amounts` is not a client argument. TS02-C3's CC_StakeOrtoFungible
+                        ;;derives it with `DPOF::UR_NoncesSupplies dpof-id nonces`, which folds
+                        ;;`UR_NonceSupply id element` -- the SAME reader this enforce compares against.
+                        ;;So through the only client, `q` IS `(UR_NonceSupply dpof-id n)` and this is
+                        ;;a self-comparison: true for every input.
+                        ;;CONTRAST with the DPNF twin at :1282, which looked identical and is NOT:
+                        ;;that client derives from `UR_AccountNoncesSupplies` (PER-ACCOUNT), so a
+                        ;;zero is constructible there. One word in the reader name is the whole
+                        ;;difference between a tautology and a live guard -- worth the care.
+                        ;;Kept as defence-in-depth for a future caller that supplies its own amounts.
+                        ;;Pinned by REPL/Stage_02/[6.5.1]_AQP-INFO-GROUNDTRUTH.repl <<TX-INFO-GT>>,
+                        ;;which asserts the tautology so this annotation cannot rot silently.
+                        ;;UNREACHABLE via its only caller, same category as :995, :1021 and :1282.
+                        (enforce (= q (ref-DPOF::UR_NonceSupply dpof-id n)) "orto LP stake requires whole nonce supply")
+                    )
+                )
+                (enumerate 0 (- l1 1))
+            )
+            (UEV_LpStakeScoreContext ouronet-account pool-id score-id dpof-id)
+        )
+        (compose-capability (SECURE))
+    )
+    (defcap SCR|XE>UPDATE-STAKE-DPTF
+        (
+            ouronet-account:string
+            pool-id:string
+            score-id:string
+            dptf-id:string
+            dptf-amount:decimal
+            native-or-frozen:bool
+            direction:bool
+        )
+        @doc "Forward (AQP-POOL): class-1 DPTF stake/unstake (non-LP). Validates account, pool–score link, score-class 1, DPTF id + amount. \
+            \ native-or-frozen selects multiplier 1.0 vs score mx-frozen (same convention as LP DPTF leg). \
+            \ Alignment of dptf-id with the pool's canonical asset-id is enforced by the composing AQP-POOL path before this cap is installed."
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+            )
+            (ref-DPTF::UEV_id dptf-id)
+            (ref-DPTF::UEV_Amount dptf-id dptf-amount)
+            (UEV_DptfStakeScoreContext ouronet-account pool-id score-id)
+        )
+        (compose-capability (SECURE))
+    )
+    (defcap SCR|XE>UPDATE-STAKE-DPOF
+        (
+            ouronet-account:string
+            pool-id:string
+            score-id:string
+            dpof-id:string
+            nonces:[integer]
+            nonce-amounts:[decimal]
+            direction:bool
+        )
+        @doc "Forward (AQP-POOL): class-2 DPOF stake/unstake (native circulating nonces). Sum of nonce amounts × 1.0 at score precision; pool asset vs dpof-id enforced upstream. \
+            \ Nonce custody validated in AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY before this cap (post-custody nonces sit on AQP|SC_NAME)."
+        (let
+            (
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                ;;
+                (l1:integer (length nonces))
+                (l2:integer (length nonce-amounts))
+            )
+            (enforce
+                (fold (and) true [(= l1 l2) (> l1 0)])
+                "DPOF stake score update: nonces and nonce-amounts must have equal positive length"
+            )
+            (ref-DPOF::UEV_id dpof-id)
+            (map
+                (lambda (idx:integer)
+                    (ref-DPOF::UEV_Amount dpof-id (at idx nonce-amounts))
+                )
+                (enumerate 0 (- l1 1))
+            )
+            (UEV_DpofStakeScoreContext ouronet-account pool-id score-id)
+        )
+        (compose-capability (SECURE))
+    )
+    (defcap SCR|XE>UPDATE-STAKE-DPOF-SPECIAL
+        (
+            ouronet-account:string
+            pool-id:string
+            score-id:string
+            dpof-id:string
+            nonces:[integer]
+            nonce-amounts:[decimal]
+            sleeping-or-hibernating:bool
+            direction:bool
+        )
+        @doc "Forward (AQP-POOL): class-2 special DPOF (sleeping vs hibernating multiplier on summed nonce amounts). sleeping-or-hibernating true → mx-sleeping; false → mx-hibernated. \
+            \ Nonce custody validated upstream in AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY."
+        (let
+            (
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                ;;
+                (l1:integer (length nonces))
+                (l2:integer (length nonce-amounts))
+            )
+            (enforce
+                (fold (and) true [(= l1 l2) (> l1 0)])
+                "special DPOF stake score update: nonces and nonce-amounts must have equal positive length"
+            )
+            (ref-DPOF::UEV_id dpof-id)
+            (map
+                (lambda (idx:integer)
+                    (ref-DPOF::UEV_Amount dpof-id (at idx nonce-amounts))
+                )
+                (enumerate 0 (- l1 1))
+            )
+            (UEV_DpofStakeScoreContext ouronet-account pool-id score-id)
+        )
+        (compose-capability (SECURE))
+    )
+    (defcap SCR|XE>UPDATE-STAKE-DPSF
+        (
+            ouronet-account:string
+            pool-id:string
+            score-id:string
+            dpsf-id:string
+            nonces:[integer]
+            nonce-amounts:[integer]
+            direction:bool
+        )
+        @doc "Forward (AQP-POOL): class-3 DPSF stake/unstake. Validates account, pool–score link, score-class 3, DPDC id + nonces (sleeping collection leg: second arg true to UEV_id / UEV_Nonce)."
+        (let
+            (
+                (ref-DPDC:module{DpdcV2} DPDC)
+                ;;
+                (l1:integer (length nonces))
+                (l2:integer (length nonce-amounts))
+            )
+            (enforce
+                (fold (and) true [(= l1 l2) (> l1 0)])
+                "DPSF stake score update: nonces and nonce-amounts must have equal positive length"
+            )
+            (ref-DPDC::UEV_id dpsf-id true)
+            (map
+                (lambda (idx:integer)
+                    (let
+                        (
+                            (n:integer (at idx nonces))
+                            (q:integer (at idx nonce-amounts))
+                        )
+                        (ref-DPDC::UEV_Nonce dpsf-id true n)
+                        (enforce (> q 0) "DPSF stake nonce amount must be positive")
+                    )
+                )
+                (enumerate 0 (- l1 1))
+            )
+            (UEV_DpsfStakeScoreContext ouronet-account pool-id score-id)
+        )
+        (compose-capability (SECURE))
+    )
+    (defcap SCR|XE>UPDATE-STAKE-DPNF
+        (
+            ouronet-account:string
+            pool-id:string
+            score-id:string
+            dpnf-id:string
+            nonces:[integer]
+            nonce-amounts:[integer]
+            direction:bool
+        )
+        @doc "Forward (AQP-POOL): class-4 DPNF stake/unstake (native collection). Validates account, pool–score link, score-class 4, DPDC nonces."
+        (let
+            (
+                (ref-DPDC:module{DpdcV2} DPDC)
+                ;;
+                (l1:integer (length nonces))
+                (l2:integer (length nonce-amounts))
+            )
+            (enforce
+                (fold (and) true [(= l1 l2) (> l1 0)])
+                "DPNF stake score update: nonces and nonce-amounts must have equal positive length"
+            )
+            (ref-DPDC::UEV_id dpnf-id false)
+            (map
+                (lambda (idx:integer)
+                    (let
+                        (
+                            (n:integer (at idx nonces))
+                            (q:integer (at idx nonce-amounts))
+                        )
+                        (ref-DPDC::UEV_Nonce dpnf-id false n)
+                        ;;`nonce-amounts` is not a client argument: TS02-C3's NFT stake derives it
+                        ;;from DPDC::UR_AccountNoncesSupplies, the owner's real holdings. For an NFT
+                        ;;that is 1 when held and 0 when not -- so the only way to reach a zero here
+                        ;;is for the owner not to hold the nonce, and DPDC::UEV_NonceQuantityInclusion
+                        ;;(02_DPDC.pact:1253) already checks the NFT's HOLDER IDENTITY upstream, which
+                        ;;for an NFT is the same fact. Measured: re-staking a just-staked nonce returns
+                        ;;DPDC's "doesnt hold NFT ..." and never this message.
+                        ;;Kept as cross-module defence-in-depth -- SCORE must not trust a forward
+                        ;;module -- and pinned by REPL/Stage_02/[6.4]_AQP-EXHAUSTIVE-DPNF.repl
+                        ;;<<TX-AQP-NF01>>, which goes red if that upstream check is ever relaxed.
+                        ;;UNREACHABLE via its only caller, same category as :995 and :1021 above.
+                        (enforce (> q 0) "DPNF stake nonce amount must be positive")
+                    )
+                )
+                (enumerate 0 (- l1 1))
+            )
+            (UEV_DpnfStakeScoreContext ouronet-account pool-id score-id)
+        )
+        (compose-capability (SECURE))
+    )
+    (defcap SCR|C>ISSUE-SINGLE-SCORE-MODEL
+        (patron:string model-name:string score-class:integer nonces:[integer] nonce-score-values:[decimal])
+        @doc "Define a SINGLE score-entity model. Enforces: patron account exists, the model-id (from model-name) \
+            \ is free, and nonces/values are the same NON-empty length. Composes SECURE for the model write."
+        @event
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+            )
+            (ref-DALOS::UEV_EnforceAccountExists patron)
+            (enforce (not (URC_ScoreEntityModelExists (ref-U|DALOS::UDC_Makeid model-name))) "Model id already exists")
+            (enforce (and (= (length nonces) (length nonce-score-values)) (> (length nonces) 0))
+                "nonces and nonce-score-values must be the same non-empty length")
+        )
+        (compose-capability (SECURE))
+    )
+    (defcap SCR|C>COMBINE-TRIPLET-SCORE-MODEL
+        (patron:string model-name:string bronze-model-id:string silver-model-id:string golden-model-id:string)
+        @doc "Combine three SINGLE models into a TRIPLET score-entity model. Enforces: patron exists, model-id \
+            \ free, the three sub-models all exist AND are single. Composes SECURE for the model write."
+        @event
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+            )
+            (ref-DALOS::UEV_EnforceAccountExists patron)
+            (enforce (not (URC_ScoreEntityModelExists (ref-U|DALOS::UDC_Makeid model-name))) "Model id already exists")
+            (enforce
+                (fold (and) true
+                    [(URC_ScoreEntityModelExists bronze-model-id)
+                     (URC_ScoreEntityModelExists silver-model-id)
+                     (URC_ScoreEntityModelExists golden-model-id)])
+                "The three sub-models must all exist")
+            (enforce
+                (fold (and) true
+                    [(= (UR_SCR|ModelEntityType bronze-model-id) CT_SCORE_MODEL_SINGLE)
+                     (= (UR_SCR|ModelEntityType silver-model-id) CT_SCORE_MODEL_SINGLE)
+                     (= (UR_SCR|ModelEntityType golden-model-id) CT_SCORE_MODEL_SINGLE)])
+                "The three sub-models must all be single")
+        )
+        (compose-capability (SECURE))
+    )
+    ;;
+    (defcap SCR|C>ISSUE-SCORE-FROM-MODEL (patron:string owner-konto:string model-id:string)
+        @doc "FACTORY authorisation: issue a score entity conforming to <model-id>, owned by owner-konto. Enforces \
+            \ the model exists; composes SECURE. The per-score SCR|XI>ISSUE-SCORE + the SCR|C>ISSUE-TRIPLET combine \
+            \ are acquired INLINE by the factory as it issues each score."
+        @event
+        (enforce (URC_ScoreEntityModelExists model-id) "Model must exist")
+        (compose-capability (SECURE))
+    )
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    (defun CT_Bar ()
+        @doc "Returns CT_BAR constant."
+        (let
+            (
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+            )
+            (ref-U|CT::CT_BAR)
+        )
+    )
+    (defun CT_EmptyCumulator ()
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+            )
+            (ref-IGNIS::UDC_EmptyOutputCumulatorV2)
+        )
+    )
+    (defun CT_AqpScName:string
+        ()
+        @doc "Resolves AQP|SC_NAME from canonical AQP-ANK via interface ref."
+        (let
+            (
+                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+            )
+            (ref-ANK::GOV|AQP|SC_NAME)
+        )
+    )
+    ;; [UDC] construct
+    ;;
+    ;; Early UDC: SCR|UserSchema constructor is required before UR_U-SCR|UserScore (with-default-read default object).
+    (defun UDC_SCR|UserSchema:object{SCR|UserSchema}
+        (a:decimal b:decimal c:decimal c1:decimal c2:decimal g:integer d:string e:string f:string)
+        @doc "Core constructor for object{SCR|UserSchema}. c1=base-deb-score, c2=boosted-deb-score (M3); \
+            \ g=stamped-generation (vacate-v2 §5)."
+        {"base-score"           : a
+        ,"boosted-score"        : b
+        ,"deb-score"            : c
+        ,"base-deb-score"       : c1
+        ,"boosted-deb-score"    : c2
+        ,"stamped-generation"   : g
+        ,"ouronet-account"      : d
+        ,"pool-id"              : e
+        ,"score-id"             : f}
+    )
+    (defun UDC_SCR|SingularUserScoreDelta:object{SCR|SingularUserScoreDelta}
+        (
+            new-user-base-score:decimal
+            new-user-boosted-score:decimal
+            new-user-deb-score:decimal
+            new-user-base-deb-score:decimal
+            new-user-boosted-deb-score:decimal
+            nz-delta:integer
+            delta-global-base-score:decimal
+            delta-global-boosted-score:decimal
+            delta-global-deb-score:decimal
+            delta-global-base-deb-score:decimal
+            delta-global-boosted-deb-score:decimal
+        )
+        @doc "Constructor for URC_SingularUserScoreDeltaFromSignedUserBase result (named user + aggregate deltas)."
+        {"new-user-base-score"              : new-user-base-score
+        ,"new-user-boosted-score"           : new-user-boosted-score
+        ,"new-user-deb-score"               : new-user-deb-score
+        ,"new-user-base-deb-score"          : new-user-base-deb-score
+        ,"new-user-boosted-deb-score"       : new-user-boosted-deb-score
+        ,"nz-delta"                         : nz-delta
+        ,"delta-global-base-score"          : delta-global-base-score
+        ,"delta-global-boosted-score"       : delta-global-boosted-score
+        ,"delta-global-deb-score"           : delta-global-deb-score
+        ,"delta-global-base-deb-score"      : delta-global-base-deb-score
+        ,"delta-global-boosted-deb-score"   : delta-global-boosted-deb-score}
+    )
+    ;;
+    (defun UDC_SCR|Schema:object{SCR|Schema}
+        (a:string b:bool c:bool d:string e:string f:string g:string v:bool w:string h:bool i:integer j:decimal k:decimal l:decimal l1:decimal l2:decimal m:integer m2:integer n:integer o:string p:decimal q:decimal r:decimal s:bool t:integer u:string)
+        @doc "Core constructor for object{SCR|Schema}: every schema field is an explicit argument (use for custom UDC wrappers). l1=total-base-deb-score, l2=total-boosted-deb-score (M3); m2=vacate-generation (vacate-v2 §5)."
+        {"owner-konto"          : a
+        ,"can-upgrade"          : b
+        ,"can-change-owner"     : c
+        ,"boost-class-link"     : d
+        ,"boost-link"           : e
+        ,"aqpool-link"          : f
+        ,"fvt-link"             : g
+        ,"triplet"              : v
+        ,"triplet-id"           : w
+        ,"deb-boost"            : h
+        ,"precision"            : i
+        ,"total-base-score"     : j
+        ,"total-boosted-score"  : k
+        ,"total-deb-score"      : l
+        ,"total-base-deb-score"    : l1
+        ,"total-boosted-deb-score" : l2
+        ,"nzs-count"            : m
+        ,"vacate-generation"    : m2
+        ,"score-class"          : n
+        ,"lp-denominator"       : o
+        ,"mx-frozen"            : p
+        ,"mx-sleeping"          : q
+        ,"mx-hibernated"        : r
+        ,"sft-equality"         : s
+        ,"nft-score-model"      : t
+        ,"score-id"             : u}
+    )
+    (defun UDC_SCR|SF|Schema:object{SCR|SF|Schema}
+        (a:decimal b:string c:string d:integer)
+        @doc "Core constructor for object{SCR|SF|Schema}."
+        {"nonce-score-value" : a
+        ,"score-id"          : b
+        ,"dpsf-id"           : c
+        ,"nonce"             : d}
+    )
+    (defun UDC_SCR|SF|DefRevision:object{SCR|SF|DefRevision}
+        (a:integer b:string c:string)
+        @doc "Core constructor for object{SCR|SF|DefRevision}."
+        {"revision-nonce" : a
+        ,"score-id"       : b
+        ,"dpsf-id"        : c}
+    )
+    (defun UDC_SCR|NF|TraitSchema:object{SCR|NF|TraitSchema}
+        (a:decimal b:string c:string d:string e:string)
+        @doc "Core constructor for object{SCR|NF|TraitSchema}: trait-score-value, score-id, dpnf-id, trait-key, trait-value."
+        {"trait-score-value" : a
+        ,"score-id"          : b
+        ,"dpnf-id"           : c
+        ,"trait-key"         : d
+        ,"trait-value"       : e}
+    )
+    (defun UDC_SCR|NF|ClassSchema:object{SCR|NF|ClassSchema}
+        (a:decimal b:string c:string d:integer)
+        @doc "Core constructor for object{SCR|NF|ClassSchema}: trait-score-value, score-id, dpnf-id, dpnf-nonce-class."
+        {"trait-score-value"  : a
+        ,"score-id"           : b
+        ,"dpnf-id"            : c
+        ,"dpnf-nonce-class"   : d}
+    )
+    (defun UDC_SCR|NF|DefRevision:object{SCR|NF|DefRevision}
+        (ga:integer tr:integer cl:integer score-id:string dpnf-id:string)
+        @doc "Core constructor for object{SCR|NF|DefRevision}: global, trait, class revision nonces plus keys."
+        {"global-revision-nonce" : ga
+        ,"trait-revision-nonce"  : tr
+        ,"class-revision-nonce"  : cl
+        ,"score-id"              : score-id
+        ,"dpnf-id"               : dpnf-id}
+    )
+    (defun UDC_SCR|Triplet:object{SCR|Triplet}
+        (bronze-score-id:string silver-score-id:string golden-score-id:string triplet-category:string triplet-id:string true-triplet:bool)
+        @doc "Core constructor for object{SCR|Triplet}."
+        {"bronze-score-id"  : bronze-score-id
+        ,"silver-score-id"  : silver-score-id
+        ,"golden-score-id"  : golden-score-id
+        ,"triplet-category" : triplet-category
+        ,"triplet-id"       : triplet-id
+        ,"true-triplet"     : true-triplet}
+    )
+    (defun UDC_SCR|ScoreEntityModel:object{SCR|ScoreEntityModel}
+        (entity-type:integer score-class:integer collectable-id:string precision:integer
+         nonces:[integer] nonce-score-values:[decimal]
+         bronze-model-id:string silver-model-id:string golden-model-id:string model-id:string)
+        @doc "Core constructor for object{SCR|ScoreEntityModel}."
+        {"entity-type"        : entity-type
+        ,"score-class"        : score-class
+        ,"collectable-id"     : collectable-id
+        ,"precision"          : precision
+        ,"nonces"             : nonces
+        ,"nonce-score-values" : nonce-score-values
+        ,"bronze-model-id"    : bronze-model-id
+        ,"silver-model-id"    : silver-model-id
+        ,"golden-model-id"    : golden-model-id
+        ,"model-id"           : model-id}
+    )
+    ;;{5.2}  Compute [UC]
+    ;; [UC]  compute
+    (defun UCk_UserScore:string (ouronet-account:string pool-id:string score-id:string)
+        @doc "Composite key for SCR|T|UserScore: account | pool | score."
+        (concat [ouronet-account BAR pool-id BAR score-id])
+    )
+    (defun UCk_SFScore:string (score-id:string dpsf-id:string nonce:integer)
+        @doc "Composite key for SCR|T|SF|Score: score-id | dpsf-id | nonce."
+        (concat [score-id BAR dpsf-id BAR (format "{}" [nonce])])
+    )
+    (defun UCk_NFScore:string (score-id:string dpnf-id:string trait-key:string trait-value:string dpnf-nonce-class:integer)
+        @doc "Legacy composite NF key: score-id | dpnf-id | trait-key | trait-value | dpnf-nonce-class (kept for interface compatibility)."
+        (concat [score-id BAR dpnf-id BAR trait-key BAR trait-value BAR (format "{}" [dpnf-nonce-class])])
+    )
+    (defun UCk_NFTraitScore:string (score-id:string dpnf-id:string trait-key:string trait-value:string)
+        @doc "Composite key for SCR|T|NF|TraitScore: score-id | dpnf-id | trait-key | trait-value."
+        (concat [score-id BAR dpnf-id BAR trait-key BAR trait-value])
+    )
+    (defun UCk_NFClassScore:string (score-id:string dpnf-id:string dpnf-nonce-class:integer)
+        @doc "Composite key for SCR|T|NF|ClassScore: score-id | dpnf-id | dpnf-nonce-class."
+        (concat [score-id BAR dpnf-id BAR (format "{}" [dpnf-nonce-class])])
+    )
+    (defun UCk_SFDefRevision:string (score-id:string dpsf-id:string)
+        @doc "Composite key for SCR|T|SF|DefRevision: score-id | dpsf-id."
+        (concat [score-id BAR dpsf-id])
+    )
+    (defun UCk_NFTraitKeys:string (score-id:string dpnf-id:string)
+        @doc "Composite key for SCR|T|NF|TraitKeys: score-id | dpnf-id."
+        (concat [score-id BAR dpnf-id])
+    )
+    (defun UCk_NFDefRevision:string (score-id:string dpnf-id:string)
+        @doc "Composite key for SCR|T|NF|DefRevision: score-id | dpnf-id."
+        (concat [score-id BAR dpnf-id])
+    )
+    (defun UCk_Triplet:string (bronze-score-id:string silver-score-id:string golden-score-id:string)
+        @doc "Composite key for SCR|T|Triplet: T | bronze | silver | golden."
+        (UC_ComputeTripletId bronze-score-id silver-score-id golden-score-id)
+    )
+    (defun UC_ComputeTripletId:string (bronze-score-id:string silver-score-id:string golden-score-id:string)
+        @doc "Pure: canonical triplet id T|bronze|silver|golden."
+        (concat ["T" BAR bronze-score-id BAR silver-score-id BAR golden-score-id])
+    )
+    ;;
+    ;; URH_NF|TraitRows / URH_NF|ClassRows (full SCR|T|NF|TraitScore / ClassScore selects) REMOVED (#FP0) — the
+    ;; model-1 stake-path weight now point-reads: class by the nonce's class, traits by the SCR|T|NF|TraitKeys
+    ;; aggregate. No scan on the execution path.
+    ;; URH_S-DEF|SFScoreRows (full SCR|T|SF|Score select) REMOVED — the stake-path SF definition weight now
+    ;; point-reads per staked nonce (URCx_SfStakeDefinitionWeightedRawWeight), so no scan sits on the execution path.
+    ;; URH_UserScoreStakerAccounts (farm-triplet Tier-2 denominator scan) RETIRED — audit H5/LP redesign.
+    ;; The farm-triplet Level-1 divisor is now a maintained snapshot aggregate (FVT ScoreEntityLink.total-lane-weight,
+    ;; point-read), so the O(stakers) select over SCR|T|UserScore is gone. No callers remain.
+    (defun UCx_StakeEqualNativeUnitRawWeight:decimal (nonces:[integer] nonce-amounts:[integer])
+        @doc "Shared SFT equal-weight (sft-equality true) and NFT model -1: sum_i amount_i × (1.0 if nonce_i ≥ 0 else 0.001)."
+        (let
+            (
+                (l1:integer (length nonces))
+            )
+            (fold
+                (lambda (acc:decimal idx:integer)
+                    (+ acc
+                        (*
+                            (dec (at idx nonce-amounts))
+                            (if (< (at idx nonces) 0)
+                                0.001
+                                1.0
+                            )
+                        )
+                    )
+                )
+                0.0
+                (enumerate 0 (- l1 1))
+            )
+        )
+    )
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;; [UR]  read
+    (defun URC_NFTraitKeysList:[string] (score-id:string dpnf-id:string)
+        @doc "The distinct defined trait-keys for (score-id, dpnf-id); [] when none defined. Point read \
+            \ (with-default-read) — the model-1 trait stake path reads this once, then point-reads each key's score."
+        (with-default-read SCR|T|NF|TraitKeys (UCk_NFTraitKeys score-id dpnf-id)
+            {"trait-keys" : []}
+            {"trait-keys" := tk}
+            tk)
+    )
+    (defun UR_SCR|Score:object{SCR|Schema} (score-id:string)
+        @doc "Reads full score definition row from SCR|T|Score."
+        (read SCR|T|Score score-id)
+    )
+    (defun UR_SCR|ScoreOwnerKonto:string (score-id:string)
+        @doc "Reads owner-konto from score row."
+        (at "owner-konto" (read SCR|T|Score score-id ["owner-konto"]))
+    )
+    (defun UR_SCR|ScoreCanUpgrade:bool (score-id:string)
+        @doc "Reads can-upgrade from score row."
+        (at "can-upgrade" (read SCR|T|Score score-id ["can-upgrade"]))
+    )
+    (defun UR_SCR|ScoreCanChangeOwner:bool (score-id:string)
+        @doc "Reads can-change-owner from score row."
+        (at "can-change-owner" (read SCR|T|Score score-id ["can-change-owner"]))
+    )
+    (defun UR_SCR|ScoreBoostClassLink:string (score-id:string)
+        @doc "Reads boost-class-link from score row."
+        (at "boost-class-link" (read SCR|T|Score score-id ["boost-class-link"]))
+    )
+    (defun UR_SCR|ScoreBoostLink:string (score-id:string)
+        @doc "Reads boost-link from score row."
+        (at "boost-link" (read SCR|T|Score score-id ["boost-link"]))
+    )
+    (defun UR_SCR|ScoreAqpoolLink:string (score-id:string)
+        @doc "Reads aqpool-link from score row."
+        (at "aqpool-link" (read SCR|T|Score score-id ["aqpool-link"]))
+    )
+    (defun UR_SCR|ScoreFvtLink:string (score-id:string)
+        @doc "Reads fvt-link from score row."
+        (at "fvt-link" (read SCR|T|Score score-id ["fvt-link"]))
+    )
+    (defun UR_SCR|ScoreTriplet:bool (score-id:string)
+        @doc "Reads triplet flag from score row."
+        (at "triplet" (read SCR|T|Score score-id ["triplet"]))
+    )
+    (defun UR_SCR|ScoreTripletId:string (score-id:string)
+        @doc "Reads triplet-id from score row; BAR when score is not in any triplet."
+        (at "triplet-id" (read SCR|T|Score score-id ["triplet-id"]))
+    )
+    (defun UR_SCR|ScoreDebBoost:bool (score-id:string)
+        @doc "Reads deb-boost from score row."
+        (at "deb-boost" (read SCR|T|Score score-id ["deb-boost"]))
+    )
+    (defun UR_SCR|ScorePrecision:integer (score-id:string)
+        @doc "Reads precision (decimal places for user score weights) from score row."
+        (at "precision" (read SCR|T|Score score-id ["precision"]))
+    )
+    (defun UR_SCR|ScoreTotalBaseScore:decimal (score-id:string)
+        @doc "Reads total-base-score from score row."
+        (at "total-base-score" (read SCR|T|Score score-id ["total-base-score"]))
+    )
+    (defun UR_SCR|ScoreTotalBoostedScore:decimal (score-id:string)
+        @doc "Reads total-boosted-score from score row."
+        (at "total-boosted-score" (read SCR|T|Score score-id ["total-boosted-score"]))
+    )
+    (defun UR_SCR|ScoreTotalDebScore:decimal (score-id:string)
+        @doc "Reads total-deb-score from score row."
+        (at "total-deb-score" (read SCR|T|Score score-id ["total-deb-score"]))
+    )
+    (defun UR_SCR|ScoreTotalBaseDebScore:decimal (score-id:string)
+        @doc "Reads total-base-deb-score (Σ base×deb) from score row (M3)."
+        (at "total-base-deb-score" (read SCR|T|Score score-id ["total-base-deb-score"]))
+    )
+    (defun UR_SCR|ScoreTotalBoostedDebScore:decimal (score-id:string)
+        @doc "Reads total-boosted-deb-score (Σ boost×deb) from score row (M3)."
+        (at "total-boosted-deb-score" (read SCR|T|Score score-id ["total-boosted-deb-score"]))
+    )
+    (defun UR_SCR|ScoreNzsCount:integer (score-id:string)
+        @doc "Reads nzs-count from score row."
+        (at "nzs-count" (read SCR|T|Score score-id ["nzs-count"]))
+    )
+    (defun UR_SCR|ScoreVacateGeneration:integer (score-id:string)
+        @doc "Reads vacate-generation from score row (vacate-v2 §5 lazy-invalidation counter)."
+        (at "vacate-generation" (read SCR|T|Score score-id ["vacate-generation"]))
+    )
+    (defun UR_SCR|ScoreClass:integer (score-id:string)
+        @doc "Reads score-class from score row."
+        (at "score-class" (read SCR|T|Score score-id ["score-class"]))
+    )
+    (defun UR_SCR|ScoreLpDenominator:string (score-id:string)
+        @doc "Reads lp-denominator from score row."
+        (at "lp-denominator" (read SCR|T|Score score-id ["lp-denominator"]))
+    )
+    (defun UR_SCR|ScoreMxFrozen:decimal (score-id:string)
+        @doc "Reads mx-frozen multiplier from score row."
+        (at "mx-frozen" (read SCR|T|Score score-id ["mx-frozen"]))
+    )
+    (defun UR_SCR|ScoreMxSleeping:decimal (score-id:string)
+        @doc "Reads mx-sleeping multiplier from score row."
+        (at "mx-sleeping" (read SCR|T|Score score-id ["mx-sleeping"]))
+    )
+    (defun UR_SCR|ScoreMxHibernated:decimal (score-id:string)
+        @doc "Reads mx-hibernated multiplier from score row."
+        (at "mx-hibernated" (read SCR|T|Score score-id ["mx-hibernated"]))
+    )
+    (defun UR_SCR|ScoreSftEquality:bool (score-id:string)
+        @doc "Reads sft-equality from score row."
+        (at "sft-equality" (read SCR|T|Score score-id ["sft-equality"]))
+    )
+    (defun UR_SCR|ScoreNftScoreModel:integer (score-id:string)
+        @doc "Reads nft-score-model from score row."
+        (at "nft-score-model" (read SCR|T|Score score-id ["nft-score-model"]))
+    )
+    (defun UR_SCR|ScoreScoreId:string (score-id:string)
+        @doc "Reads score-id field from score row (row key should match)."
+        (at "score-id" (read SCR|T|Score score-id ["score-id"]))
+    )
+    ;;
+    (defun UR_U-SCR|UserScore:object{SCR|UserSchema} (ouronet-account:string pool-id:string score-id:string)
+        @doc "Reads the EFFECTIVE full user score row from SCR|T|UserScore. Vacate-v2 §5 lazy invalidation: if \
+            \ the row's stamped-generation is behind the score's current vacate-generation (a fast-vacate has \
+            \ nuked this score since the row was written), the VALUE fields read as 0 (stale) while IDENTITY \
+            \ (account/pool/score) is preserved; a fresh stake re-stamps the row live. Absent rows read as \
+            \ zero via the UDC default. NOTE: honours vacate-generation via a second point read (SCR|T|Score) \
+            \ — the read+select is deliberate; kept UR-named as an extended staleness-default of the with- \
+            \ default-read. While no pool has been fast-vacated, stamped==current everywhere so this is inert."
+        ;; 1] the score's current generation (safe default 0 when the score row is somehow absent)
+        (let
+            ((score-gen:integer
+                (with-default-read SCR|T|Score score-id
+                    {"vacate-generation" : 0} {"vacate-generation" := vg} vg)))
+            (with-default-read SCR|T|UserScore (UCk_UserScore ouronet-account pool-id score-id)
+                ;; absent row: fresh zero stamped at the current generation (never stale)
+                (UDC_SCR|UserSchema 0.0 0.0 0.0 0.0 0.0 score-gen ouronet-account pool-id score-id)
+                {"base-score"        := b
+                ,"boosted-score"    := bb
+                ,"deb-score"        := d
+                ,"base-deb-score"   := bd
+                ,"boosted-deb-score" := bbd
+                ,"stamped-generation" := g
+                ,"ouronet-account"  := oa
+                ,"pool-id"          := pid
+                ,"score-id"         := sid}
+                ;; 2] stale (row-gen < score-gen) -> zeroed values, identity preserved, re-stamped to current gen
+                (if (< g score-gen)
+                    (UDC_SCR|UserSchema 0.0 0.0 0.0 0.0 0.0 score-gen oa pid sid)
+                    (UDC_SCR|UserSchema b bb d bd bbd g oa pid sid)))
+        )
+    )
+    (defun UR_U-SCR|UserScoreBaseScore:decimal (ouronet-account:string pool-id:string score-id:string)
+        @doc "Reads base-score from user score row."
+        (at "base-score" (UR_U-SCR|UserScore ouronet-account pool-id score-id))
+    )
+    (defun UR_U-SCR|UserScoreBoostedScore:decimal (ouronet-account:string pool-id:string score-id:string)
+        @doc "Reads boosted-score from user score row."
+        (at "boosted-score" (UR_U-SCR|UserScore ouronet-account pool-id score-id))
+    )
+    (defun UR_U-SCR|UserScoreDebScore:decimal (ouronet-account:string pool-id:string score-id:string)
+        @doc "Reads deb-score from user score row."
+        (at "deb-score" (UR_U-SCR|UserScore ouronet-account pool-id score-id))
+    )
+    (defun UR_U-SCR|UserScoreBaseDebScore:decimal (ouronet-account:string pool-id:string score-id:string)
+        @doc "Reads base-deb-score (base×deb) from user score row (M3)."
+        (at "base-deb-score" (UR_U-SCR|UserScore ouronet-account pool-id score-id))
+    )
+    (defun UR_U-SCR|UserScoreBoostedDebScore:decimal (ouronet-account:string pool-id:string score-id:string)
+        @doc "Reads boosted-deb-score (boost×deb) from user score row (M3)."
+        (at "boosted-deb-score" (UR_U-SCR|UserScore ouronet-account pool-id score-id))
+    )
+    (defun URC_U-SCR|UserScoreDebStale:bool (ouronet-account:string pool-id:string score-id:string)
+        @doc "M3 deb-staleness (Part 2): true when the stored deb-score no longer equals (base+boost)×live-Elite-DEB \
+            \ — i.e. the account's deb changed since this score was last checkpointed (stake/unstake/collect). Only \
+            \ deb-boost scores can go stale (deb doesn't apply otherwise). Point-read compare, no scan. May \
+            \ over-detect for the rare foreign-boost-link surplus row — harmless, a refresh just recomputes it."
+        (if (not (UR_SCR|ScoreDebBoost score-id))
+            false
+            (let
+                (
+                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (p:integer (UR_SCR|ScorePrecision score-id))
+                    (u:object{SCR|UserSchema} (UR_U-SCR|UserScore ouronet-account pool-id score-id))
+                )
+                (!= (at "deb-score" u)
+                    (floor (* (+ (at "base-score" u) (at "boosted-score" u))
+                              (ref-DALOS::UR_Elite-DEB ouronet-account)) p))
+            )
+        )
+    )
+    (defun UR_U-SCR|UserScoreOuronetAccount:string (ouronet-account:string pool-id:string score-id:string)
+        @doc "Reads ouronet-account from user score row."
+        (at "ouronet-account" (UR_U-SCR|UserScore ouronet-account pool-id score-id))
+    )
+    (defun UR_U-SCR|UserScorePoolId:string (ouronet-account:string pool-id:string score-id:string)
+        @doc "Reads pool-id from user score row."
+        (at "pool-id" (UR_U-SCR|UserScore ouronet-account pool-id score-id))
+    )
+    (defun UR_U-SCR|UserScoreScoreId:string (ouronet-account:string pool-id:string score-id:string)
+        @doc "Reads score-id from user score row."
+        (at "score-id" (UR_U-SCR|UserScore ouronet-account pool-id score-id))
+    )
+    ;;
+    (defun UR_S-DEF|SFScore:object{SCR|SF|Schema} (score-id:string dpsf-id:string nonce:integer)
+        @doc "Reads full DPSF nonce score definition row."
+        (read SCR|T|SF|Score (UCk_SFScore score-id dpsf-id nonce))
+    )
+    (defun UR_S-DEF|SFScoreNonceScoreValue:decimal (score-id:string dpsf-id:string nonce:integer)
+        @doc "Reads nonce-score-value from SF score row; returns 0.0 when the row is absent."
+        (with-default-read SCR|T|SF|Score (UCk_SFScore score-id dpsf-id nonce)
+            (UDC_SCR|SF|Schema 0.0 score-id dpsf-id nonce)
+            {"nonce-score-value" := nonce-score-value}
+            nonce-score-value
+        )
+    )
+    (defun UR_S-DEF|SFScoreScoreId:string (score-id:string dpsf-id:string nonce:integer)
+        @doc "Reads score-id from SF score row."
+        (at "score-id" (read SCR|T|SF|Score (UCk_SFScore score-id dpsf-id nonce) ["score-id"]))
+    )
+    (defun UR_S-DEF|SFScoreDpsfId:string (score-id:string dpsf-id:string nonce:integer)
+        @doc "Reads dpsf-id from SF score row."
+        (at "dpsf-id" (read SCR|T|SF|Score (UCk_SFScore score-id dpsf-id nonce) ["dpsf-id"]))
+    )
+    (defun UR_S-DEF|SFScoreNonce:integer (score-id:string dpsf-id:string nonce:integer)
+        @doc "Reads nonce key field from SF score row."
+        (at "nonce" (read SCR|T|SF|Score (UCk_SFScore score-id dpsf-id nonce) ["nonce"]))
+    )
+    ;;
+    (defun UR_N-DEF|NFTraitScore:object{SCR|NF|TraitSchema} (score-id:string dpnf-id:string trait-key:string trait-value:string)
+        @doc "Reads full trait-mode NF score definition row."
+        (read SCR|T|NF|TraitScore (UCk_NFTraitScore score-id dpnf-id trait-key trait-value))
+    )
+    (defun UR_N-DEF|NFTraitScoreTraitScoreValue:decimal (score-id:string dpnf-id:string trait-key:string trait-value:string)
+        @doc "Reads trait-score-value from SCR|T|NF|TraitScore row."
+        (at "trait-score-value" (UR_N-DEF|NFTraitScore score-id dpnf-id trait-key trait-value))
+    )
+    (defun UR_N-DEF|NFTraitScoreScoreId:string (score-id:string dpnf-id:string trait-key:string trait-value:string)
+        @doc "Reads score-id from SCR|T|NF|TraitScore row."
+        (at "score-id" (UR_N-DEF|NFTraitScore score-id dpnf-id trait-key trait-value))
+    )
+    (defun UR_N-DEF|NFTraitScoreDpnfId:string (score-id:string dpnf-id:string trait-key:string trait-value:string)
+        @doc "Reads dpnf-id from SCR|T|NF|TraitScore row."
+        (at "dpnf-id" (UR_N-DEF|NFTraitScore score-id dpnf-id trait-key trait-value))
+    )
+    (defun UR_N-DEF|NFTraitScoreTraitKey:string (score-id:string dpnf-id:string trait-key:string trait-value:string)
+        @doc "Reads trait-key from SCR|T|NF|TraitScore row."
+        (at "trait-key" (UR_N-DEF|NFTraitScore score-id dpnf-id trait-key trait-value))
+    )
+    (defun UR_N-DEF|NFTraitScoreTraitValue:string (score-id:string dpnf-id:string trait-key:string trait-value:string)
+        @doc "Reads trait-value from SCR|T|NF|TraitScore row."
+        (at "trait-value" (UR_N-DEF|NFTraitScore score-id dpnf-id trait-key trait-value))
+    )
+    ;;
+    (defun UR_N-DEF|NFClassScore:object{SCR|NF|ClassSchema} (score-id:string dpnf-id:string dpnf-nonce-class:integer)
+        @doc "Reads full class-mode NF score definition row."
+        (read SCR|T|NF|ClassScore (UCk_NFClassScore score-id dpnf-id dpnf-nonce-class))
+    )
+    (defun UR_N-DEF|NFClassScoreTraitScoreValue:decimal (score-id:string dpnf-id:string dpnf-nonce-class:integer)
+        @doc "Reads trait-score-value (class weight) from SCR|T|NF|ClassScore row."
+        (at "trait-score-value" (UR_N-DEF|NFClassScore score-id dpnf-id dpnf-nonce-class))
+    )
+    (defun UR_N-DEF|NFClassScoreScoreId:string (score-id:string dpnf-id:string dpnf-nonce-class:integer)
+        @doc "Reads score-id from SCR|T|NF|ClassScore row."
+        (at "score-id" (UR_N-DEF|NFClassScore score-id dpnf-id dpnf-nonce-class))
+    )
+    (defun UR_N-DEF|NFClassScoreDpnfId:string (score-id:string dpnf-id:string dpnf-nonce-class:integer)
+        @doc "Reads dpnf-id from SCR|T|NF|ClassScore row."
+        (at "dpnf-id" (UR_N-DEF|NFClassScore score-id dpnf-id dpnf-nonce-class))
+    )
+    (defun UR_N-DEF|NFClassScoreNonceClass:integer (score-id:string dpnf-id:string dpnf-nonce-class:integer)
+        @doc "Reads dpnf-nonce-class from SCR|T|NF|ClassScore row."
+        (at "dpnf-nonce-class" (UR_N-DEF|NFClassScore score-id dpnf-id dpnf-nonce-class))
+    )
+    ;;
+    (defun UR_S-DEF-REV|SFDefRevision:object{SCR|SF|DefRevision} (score-id:string dpsf-id:string)
+        @doc "Reads SF definition revision row for (score-id, dpsf-id)."
+        (read SCR|T|SF|DefRevision (UCk_SFDefRevision score-id dpsf-id))
+    )
+    (defun UR_S-DEF-REV|SFDefRevisionRevisionNonce:integer (score-id:string dpsf-id:string)
+        @doc "Reads revision-nonce from SF def-revision row; returns 0 when row is absent."
+        (with-default-read SCR|T|SF|DefRevision (UCk_SFDefRevision score-id dpsf-id)
+            (UDC_SCR|SF|DefRevision 0 score-id dpsf-id)
+            {"revision-nonce" := revision-nonce}
+            revision-nonce
+        )
+    )
+    (defun UR_S-DEF-REV|SFDefRevisionScoreId:string (score-id:string dpsf-id:string)
+        @doc "Reads score-id from SF def-revision row."
+        (at "score-id" (read SCR|T|SF|DefRevision (UCk_SFDefRevision score-id dpsf-id) ["score-id"]))
+    )
+    (defun UR_S-DEF-REV|SFDefRevisionDpsfId:string (score-id:string dpsf-id:string)
+        @doc "Reads dpsf-id from SF def-revision row."
+        (at "dpsf-id" (read SCR|T|SF|DefRevision (UCk_SFDefRevision score-id dpsf-id) ["dpsf-id"]))
+    )
+    ;;
+    (defun UR_N-DEF-REV|NFDefRevision:object{SCR|NF|DefRevision} (score-id:string dpnf-id:string)
+        @doc "Reads NF definition revision row for (score-id, dpnf-id)."
+        (read SCR|T|NF|DefRevision (UCk_NFDefRevision score-id dpnf-id))
+    )
+    (defun UR_N-DEF-REV|NFDefRevisionGlobalRevisionNonce:integer (score-id:string dpnf-id:string)
+        @doc "Reads global-revision-nonce; returns 0 when row is absent."
+        (with-default-read SCR|T|NF|DefRevision (UCk_NFDefRevision score-id dpnf-id)
+            (UDC_SCR|NF|DefRevision 0 0 0 score-id dpnf-id)
+            {"global-revision-nonce" := global-revision-nonce}
+            global-revision-nonce
+        )
+    )
+    (defun UR_N-DEF-REV|NFDefRevisionTraitRevisionNonce:integer (score-id:string dpnf-id:string)
+        @doc "Reads trait-revision-nonce; returns 0 when row is absent."
+        (with-default-read SCR|T|NF|DefRevision (UCk_NFDefRevision score-id dpnf-id)
+            (UDC_SCR|NF|DefRevision 0 0 0 score-id dpnf-id)
+            {"trait-revision-nonce" := trait-revision-nonce}
+            trait-revision-nonce
+        )
+    )
+    (defun UR_N-DEF-REV|NFDefRevisionClassRevisionNonce:integer (score-id:string dpnf-id:string)
+        @doc "Reads class-revision-nonce; returns 0 when row is absent."
+        (with-default-read SCR|T|NF|DefRevision (UCk_NFDefRevision score-id dpnf-id)
+            (UDC_SCR|NF|DefRevision 0 0 0 score-id dpnf-id)
+            {"class-revision-nonce" := class-revision-nonce}
+            class-revision-nonce
+        )
+    )
+    (defun UR_N-DEF-REV|NFDefRevisionScoreId:string (score-id:string dpnf-id:string)
+        @doc "Reads score-id from NF def-revision row."
+        (at "score-id" (read SCR|T|NF|DefRevision (UCk_NFDefRevision score-id dpnf-id) ["score-id"]))
+    )
+    (defun UR_N-DEF-REV|NFDefRevisionDpnfId:string (score-id:string dpnf-id:string)
+        @doc "Reads dpnf-id from NF def-revision row."
+        (at "dpnf-id" (read SCR|T|NF|DefRevision (UCk_NFDefRevision score-id dpnf-id) ["dpnf-id"]))
+    )
+    ;;
+    (defun UR_SCR|Triplet:object{SCR|Triplet} (triplet-id:string)
+        @doc "Reads full triplet bundle row."
+        (read SCR|T|Triplet triplet-id)
+    )
+    (defun UR_SCR|TripletBronzeScoreId:string (triplet-id:string)
+        @doc "Reads bronze-score-id from triplet row."
+        (at "bronze-score-id" (read SCR|T|Triplet triplet-id ["bronze-score-id"]))
+    )
+    (defun UR_SCR|TripletSilverScoreId:string (triplet-id:string)
+        @doc "Reads silver-score-id from triplet row."
+        (at "silver-score-id" (read SCR|T|Triplet triplet-id ["silver-score-id"]))
+    )
+    (defun UR_SCR|TripletGoldenScoreId:string (triplet-id:string)
+        @doc "Reads golden-score-id from triplet row."
+        (at "golden-score-id" (read SCR|T|Triplet triplet-id ["golden-score-id"]))
+    )
+    (defun UR_SCR|TripletCategory:string (triplet-id:string)
+        @doc "Reads triplet-category from triplet row."
+        (at "triplet-category" (read SCR|T|Triplet triplet-id ["triplet-category"]))
+    )
+    (defun UR_SCR|TripletId:string (triplet-id:string)
+        @doc "Reads triplet-id from triplet row (identity check)."
+        (at "triplet-id" (read SCR|T|Triplet triplet-id ["triplet-id"]))
+    )
+    (defun UR_SCR|TripletTrueTriplet:bool (triplet-id:string)
+        @doc "Reads true-triplet flag (boost-anchored bundle) from triplet row."
+        (at "true-triplet" (read SCR|T|Triplet triplet-id ["true-triplet"]))
+    )
+    (defun URC_TripletExists:bool (triplet-id:string)
+        @doc "True when SCR|T|Triplet row exists (with-default-read; no keys scan)."
+        (with-default-read SCR|T|Triplet triplet-id
+            (UDC_SCR|Triplet BAR BAR BAR BAR BAR false)
+            { "bronze-score-id" := bronze-score-id }
+            (!= bronze-score-id BAR)
+        )
+    )
+    (defun URC_TripletCategoryForClass:string (score-class:integer)
+        @doc "Maps score-class to triplet-category band: LP | VAULT_TF | TREASURY_SF_NF | INVALID."
+        (cond
+            ((= score-class 0) "LP")
+            ((or (= score-class 1) (= score-class 2)) "VAULT_TF")
+            ((or (= score-class 3) (= score-class 4)) "TREASURY_SF_NF")
+            "INVALID"
+        )
+    )
+    (defun URC_TripletCategoryMatchesFvtClass:bool (triplet-category:string fvt-class:integer)
+        @doc "FVT admission: LP↔0, VAULT_TF↔1, TREASURY_SF_NF↔2."
+        (or
+            (and (= triplet-category "LP") (= fvt-class 0))
+            (or
+                (and (= triplet-category "VAULT_TF") (= fvt-class 1))
+                (and (= triplet-category "TREASURY_SF_NF") (= fvt-class 2))
+            )
+        )
+    )
+    (defun URC_IsTrueTriplet:bool (id0:string id1:string id2:string)
+        @doc "True when exactly one score has BAR boost-link and the other two boost-link to that score id (boost-anchored / lane-ready bundle)."
+        (let
+            (
+                (boost0:string (UR_SCR|ScoreBoostLink id0))
+                (boost1:string (UR_SCR|ScoreBoostLink id1))
+                (boost2:string (UR_SCR|ScoreBoostLink id2))
+            )
+            (or
+                (and (= boost0 BAR) (and (= boost1 id0) (= boost2 id0)))
+                (or
+                    (and (= boost1 BAR) (and (= boost0 id1) (= boost2 id1)))
+                    (and (= boost2 BAR) (and (= boost0 id2) (= boost1 id2)))
+                )
+            )
+        )
+    )
+    (defun URCx_SfStakeDefinitionWeightedRawWeight:decimal
+        (score-id:string dpsf-id:string nonces:[integer] nonce-amounts:[integer])
+        @doc "SFT non-equal mode (POINT READS only — no stake-path scan): revision-nonce 0 => 0; else per staked \
+            \ nonce point-read its SF definition score via UR_S-DEF|SFScoreNonceScoreValue (0.0 when the nonce is \
+            \ undefined) x fragment scale (0.001 for negative/fragment nonces, else 1.0) x nonce-amount, summed. \
+            \ Auxiliary of URC_SignedBaseDeltaForDpsfStake; bounded by the staked-nonce count."
+        (let
+            (
+                (rev:integer (UR_S-DEF-REV|SFDefRevisionRevisionNonce score-id dpsf-id))
+            )
+            (if (= rev 0)
+                0.0
+                (fold
+                    (lambda (acc:decimal idx:integer)
+                        (let
+                            (
+                                (nonce:integer (at idx nonces))
+                                (nonce-amount:integer (at idx nonce-amounts))
+                            )
+                            (+ acc
+                                (*
+                                    (dec nonce-amount)
+                                    (*
+                                        (UR_S-DEF|SFScoreNonceScoreValue score-id dpsf-id nonce)
+                                        (if (< nonce 0) 0.001 1.0)
+                                    )
+                                )
+                            )
+                        )
+                    )
+                    0.0
+                    (enumerate 0 (- (length nonces) 1))
+                )
+            )
+        )
+    )
+    (defun URCx_DpnfModelZeroDpdcNativeRawWeight:decimal
+        (dpnf-id:string nonces:[integer] nonce-amounts:[integer])
+        @doc "NFT score model 0 only: sum_i amount_i × full nonce score. Uses DPDC-S URC_N|Score — the CANONICAL \
+            \ full score of a nonce, which already applies the Set-class score-multiplier (set nonces, DPDC #15H), \
+            \ the -1.0 unscored sentinel, and the fragment (/1000) scaling for negative nonces. Floored at 0 (L7 \
+            \ #19) as a backstop so an unscored/negative result never contributes negative stake weight. (A set \
+            \ nonce staked to a model-1/-1 score is unaffected — those never read the native score.)"
+        (let
+            (
+                (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+                ;;
+                (l1:integer (length nonces))
+            )
+            (fold
+                (lambda (acc:decimal idx:integer)
+                    (let
+                        (
+                            (n:integer (at idx nonces))
+                            (q:integer (at idx nonce-amounts))
+                            ;; DPDC #15H: URC_N|Score is the FULL score (raw × set-class multiplier, + sentinel +
+                            ;; fragment /1000), so a Set nonce is scored with its multiplier applied. L7 #19 floor:
+                            ;; clamp to 0 so an unscored/negative result never yields negative stake weight.
+                            (full-unit-score:decimal (ref-DPDC-S::URC_N|Score dpnf-id false n))
+                            (unit-score:decimal (if (< full-unit-score 0.0) 0.0 full-unit-score))
+                        )
+                        (+ acc (* (dec q) unit-score))
+                    )
+                )
+                0.0
+                (enumerate 0 (- l1 1))
+            )
+        )
+    )
+    (defun URCx_DpnfModelOneScrDefinitionRawWeight:decimal
+        (score-id:string dpnf-id:string nonces:[integer] nonce-amounts:[integer])
+        @doc "NFT model 1 (#FP0 — POINT READS only, no stake-path scan): global-revision-nonce 0 => 0. Else per \
+            \ staked nonce: class-part point-reads the nonce's class def (with-default-read => 0; 0 when class-rev 0); \
+            \ trait-part reads the (score,dpnf) TraitKeys aggregate once, then for each defined key the nonce carries \
+            \ point-reads its (key,value) trait def (with-default-read => 0; 0 when trait-rev 0). base = class + trait, \
+            \ fragment-scaled (/1000) on negative nonces, x amount. Bounded by staked-nonce count x distinct-trait-keys. \
+            \ Auxiliary of URC_SignedBaseDeltaForDpnfStake."
+        (let
+            (
+                (g:integer (UR_N-DEF-REV|NFDefRevisionGlobalRevisionNonce score-id dpnf-id))
+            )
+            (if (= g 0)
+                0.0
+                (let
+                    (
+                        (ref-DPDC:module{DpdcV2} DPDC)
+                        ;;
+                        (class-rev:integer (UR_N-DEF-REV|NFDefRevisionClassRevisionNonce score-id dpnf-id))
+                        (trait-rev:integer (UR_N-DEF-REV|NFDefRevisionTraitRevisionNonce score-id dpnf-id))
+                        (trait-keys:[string]
+                            (if (= trait-rev 0) [] (URC_NFTraitKeysList score-id dpnf-id))
+                        )
+                    )
+                    (fold
+                        (lambda (acc:decimal idx:integer)
+                            (let
+                                (
+                                    (n:integer (at idx nonces))
+                                    (q:integer (at idx nonce-amounts))
+                                    (class-nonce:integer (if (< n 0) (abs n) n))
+                                    (class-part:decimal
+                                        (if (= class-rev 0)
+                                            0.0
+                                            (with-default-read SCR|T|NF|ClassScore
+                                                (UCk_NFClassScore score-id dpnf-id
+                                                    (ref-DPDC::UR_NonceClass dpnf-id false class-nonce))
+                                                {"trait-score-value" : 0.0}
+                                                {"trait-score-value" := csv}
+                                                csv)
+                                        )
+                                    )
+                                    (nonce-meta:object
+                                        (ref-DPDC::UR_N|RawMetaData (ref-DPDC::UR_NonceData dpnf-id false n)))
+                                    (trait-part:decimal
+                                        (fold
+                                            (lambda (tacc:decimal k:string)
+                                                (if (contains k nonce-meta)
+                                                    (+ tacc
+                                                        (with-default-read SCR|T|NF|TraitScore
+                                                            (UCk_NFTraitScore score-id dpnf-id k (at k nonce-meta))
+                                                            {"trait-score-value" : 0.0}
+                                                            {"trait-score-value" := tsv}
+                                                            tsv))
+                                                    tacc))
+                                            0.0
+                                            trait-keys)
+                                    )
+                                    (base-score:decimal (+ class-part trait-part))
+                                    (unit-score:decimal
+                                        (if (< n 0) (/ base-score 1000.0) base-score))
+                                )
+                                (+ acc (* (dec q) unit-score))
+                            )
+                        )
+                        0.0
+                        (enumerate 0 (- (length nonces) 1))
+                    )
+                )
+            )
+        )
+    )
+    ;; RETIRED from the Level-1 base path (audit H1 / fix #7): LP score is now the stable LP AMOUNT, not this
+    ;; reserve-dependent value. No callers remain. Kept pending the Level-2 decision (LP-SCORING-REDESIGN.md §6.3
+    ;; G1): relocate to FVT inject-time valuation, or remove. Do NOT reintroduce it into per-user scoring.
+    (defun URC_LpAmountToLpDenominatorEquivalent:decimal
+        (lp-id:string lp-amount:decimal lp-denominator:string)
+        @doc "Class-0: maps staked LP amount into lp-denominator token units (e.g. OURO). \
+            \ Pro-rata break via SWPL against current SWP reserves for the pair behind native lp-id; \
+            \ F|/Z| stripped by URC_StakeLpTokenToNativeLpDptf. Pair must list lp-denominator (UEV_LpStakeScoreContext)."
+        (if (= lp-amount 0.0)
+            0.0
+            (let
+                (
+                    (ref-SWP:module{SwapperV4} SWP)
+                    (ref-SWPL:module{SwapperLiquidityV2} SWPL)
+                    ;;
+                    (native-lp:string (URC_StakeLpTokenToNativeLpDptf lp-id))
+                    (swpair:string (ref-SWP::UR_GetLpSwpair native-lp))
+                    (denom-pos:integer (ref-SWP::URv_PoolTokenPosition swpair lp-denominator))
+                    (break-amounts:[decimal] (ref-SWPL::URC_LpBreakAmounts swpair lp-amount))
+                )
+                (at denom-pos break-amounts)
+            )
+        )
+    )
+    (defun URC_StakeLpTokenToNativeLpDptf:string (lp-id:string)
+        @doc "SWP|LP rows use native LP DPTF ids. Strip leading F| (frozen LP) or Z| (sleeping orto LP); S|, W|, P| native LP prefixes pass through unchanged."
+        (let 
+            (
+                (p2:string (take 2 lp-id))
+            )
+            (if (fold (or) false [(= p2 "F|") (= p2 "Z|")])
+                (drop 2 lp-id)
+                lp-id
+            )
+        )
+    )
+    (defun URC_SignedBaseDeltaForDptfLpStake:decimal
+        (score-id:string lp-id:string lp-amount:decimal native-or-frozen:bool direction:bool)
+        @doc "Signed base delta (score precision) for one DPTF LP stake leg; shared by LP-stake cap and XE forwarder. \
+            \ Level-1 = LP AMOUNT x mx (audit H1 / fix #7): the user's score is the STABLE staked LP amount, NOT its \
+            \ fluctuating STOA value — so a full unstake reverses exactly and nets to 0 (no negative base, no clamp). \
+            \ STOA valuation happens only at FVT inject (Level-2), never stored here. lp-id kept for signature stability."
+        (let
+            (
+                (mxlp:decimal (if native-or-frozen 1.0 (UR_SCR|ScoreMxFrozen score-id)))
+                (raw-weight:decimal (* lp-amount mxlp))
+                (p:integer (UR_SCR|ScorePrecision score-id))
+            )
+            (floor (* raw-weight (if direction 1.0 -1.0)) p)
+        )
+    )
+    (defun URC_SignedBaseDeltaForOrtoLpStake:decimal
+        (score-id:string lp-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool)
+        @doc "Signed user-base delta for one sleeping-orto LP leg. Level-1 = LP AMOUNT x mx-sleeping (audit H1 / \
+            \ fix #7): stable staked amount, NOT STOA value — full unstake nets to 0. nonce-amounts summed for the \
+            \ staked amount; STOA valuation is Level-2 (FVT inject) only. lp-id kept for signature stability."
+        (let
+            (
+                (sum-amounts:decimal
+                    (fold
+                        (lambda (acc:decimal q:decimal) (+ acc q))
+                        0.0
+                        nonce-amounts
+                    )
+                )
+                (mxlp:decimal (UR_SCR|ScoreMxSleeping score-id))
+                (raw-weight:decimal (* sum-amounts mxlp))
+                (p:integer (UR_SCR|ScorePrecision score-id))
+            )
+            (floor (* raw-weight (if direction 1.0 -1.0)) p)
+        )
+    )
+    (defun URC_SignedBaseDeltaForDptfStake:decimal
+        (score-id:string dptf-id:string dptf-amount:decimal native-or-frozen:bool direction:bool)
+        @doc "Signed base delta (score precision) for one class-1 DPTF stake leg; same mx rule as URC_SignedBaseDeltaForDptfLpStake (native vs frozen). \
+            \ Shared by SCR|XE>UPDATE-STAKE-DPTF and XI_1|UpdateScoreDataForTrueFungible."
+        (let
+            (
+                (mx:decimal (if native-or-frozen 1.0 (UR_SCR|ScoreMxFrozen score-id)))
+                (raw-weight:decimal (* dptf-amount mx))
+                (p:integer (UR_SCR|ScorePrecision score-id))
+            )
+            (floor (* raw-weight (if direction 1.0 -1.0)) p)
+        )
+    )
+    (defun URC_SignedBaseDeltaForDpofStake:decimal
+        (score-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool)
+        @doc "Signed base delta for class-2 native DPOF leg: sum(nonce-amounts) × 1.0 at score precision. Shared by SCR|XE>UPDATE-STAKE-DPOF."
+        (let
+            (
+                (sum-amounts:decimal
+                    (fold
+                        (lambda (acc:decimal q:decimal) (+ acc q))
+                        0.0
+                        nonce-amounts
+                    )
+                )
+                (p:integer (UR_SCR|ScorePrecision score-id))
+            )
+            (floor (* sum-amounts (if direction 1.0 -1.0)) p)
+        )
+    )
+    (defun URC_SignedBaseDeltaForSpecialDpofStake:decimal
+        (
+            score-id:string
+            dpof-id:string
+            nonces:[integer]
+            nonce-amounts:[decimal]
+            sleeping-or-hibernating:bool
+            direction:bool
+        )
+        @doc "Signed base delta for class-2 special DPOF: sum(nonce-amounts) × mx-sleeping when sleeping-or-hibernating is true, else × mx-hibernated."
+        (let
+            (
+                (sum-amounts:decimal
+                    (fold
+                        (lambda (acc:decimal q:decimal) (+ acc q))
+                        0.0
+                        nonce-amounts
+                    )
+                )
+                (mx:decimal
+                    (if sleeping-or-hibernating
+                        (UR_SCR|ScoreMxSleeping score-id)
+                        (UR_SCR|ScoreMxHibernated score-id)
+                    )
+                )
+                (raw-weight:decimal (* sum-amounts mx))
+                (p:integer (UR_SCR|ScorePrecision score-id))
+            )
+            (floor (* raw-weight (if direction 1.0 -1.0)) p)
+        )
+    )
+    (defun URC_SignedBaseDeltaForDpsfStake:decimal
+        (score-id:string dpsf-id:string nonces:[integer] nonce-amounts:[integer] direction:bool)
+        @doc "Signed base delta for class-3 DPSF (score precision): sft-equality true uses UCx_StakeEqualNativeUnitRawWeight; \
+            \ false uses URCx_SfStakeDefinitionWeightedRawWeight (revision 0 => 0; else per-nonce point-read of the SF \
+            \ definition score, undefined nonce => 0). Both branches are point-read/compute only — statically light (URC), \
+            \ no stake-path scan."
+        (let
+            (
+                (sft-equality:bool (UR_SCR|ScoreSftEquality score-id))
+                (raw-weight:decimal
+                    (if sft-equality
+                        (UCx_StakeEqualNativeUnitRawWeight nonces nonce-amounts)
+                        (URCx_SfStakeDefinitionWeightedRawWeight score-id dpsf-id nonces nonce-amounts)
+                    )
+                )
+                (p:integer (UR_SCR|ScorePrecision score-id))
+            )
+            (floor (* raw-weight (if direction 1.0 -1.0)) p)
+        )
+    )
+    (defun URC_SignedBaseDeltaForDpnfStake:decimal
+        (score-id:string dpnf-id:string nonces:[integer] nonce-amounts:[integer] direction:bool)
+        @doc "Signed base delta for class-4 DPNF (score precision): model -1 uses UCx_StakeEqualNativeUnitRawWeight; \
+            \ model 0 uses URCx_DpnfModelZeroDpdcNativeRawWeight; model 1 uses URCx_DpnfModelOneScrDefinitionRawWeight. \
+            \ All three are point-read/compute only — statically light (URC), no stake-path scan (#FP0)."
+        (let
+            (
+                (model:integer (UR_SCR|ScoreNftScoreModel score-id))
+                (raw-weight:decimal
+                    (if (= model -1)
+                        (UCx_StakeEqualNativeUnitRawWeight nonces nonce-amounts)
+                        (if (= model 0)
+                            (URCx_DpnfModelZeroDpdcNativeRawWeight dpnf-id nonces nonce-amounts)
+                            (URCx_DpnfModelOneScrDefinitionRawWeight score-id dpnf-id nonces nonce-amounts)
+                        )
+                    )
+                )
+                (p:integer (UR_SCR|ScorePrecision score-id))
+            )
+            (floor (* raw-weight (if direction 1.0 -1.0)) p)
+        )
+    )
+    ;; URC_NFClassScoreFromRows / URC_NFTraitScoreFromRows (searched the selected def-row lists) REMOVED (#FP0) —
+    ;; the model-1 weight now point-reads class + trait scores directly, so there are no row-lists to search.
+    (defun URC_SingularUserScoreDeltaFromSignedUserBase:object{SCR|SingularUserScoreDelta}
+        (ouronet-account:string pool-id:string score-id:string signed-user-base-delta:decimal)
+        @doc "Core singular user-score step: from one signed user-base delta already at score precision (e.g. LP weight × mx after URC_SignedBaseDeltaForDptfLpStake / URC_SignedBaseDeltaForOrtoLpStake / URC_SignedBaseDeltaForDptfStake / DPOF|DPSF|DPNF stake URC_*), \
+            \ compute new user base/boosted/deb, nz-delta, and global deltas. When boost-link ≠ BAR and boost-class-link ≠ BAR (foreign anchor + ANK promile), \
+            \ user base-score is always 0: the foreign row owns canonical base; promile input is foreign user base + this signed delta; boosted/deb store surplus \
+            \ over foreign base only (README_SCORE.md). Otherwise user base is ob + signed. deb-boost applies to nominal boosted before foreign subtraction."
+        (let
+            (
+                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-U|DEC:module{OuronetDecimalsV2} U|DEC)
+                ;;
+                (scr:object{SCR|Schema} (UR_SCR|Score score-id))
+                (p:integer (at "precision" scr))
+                (bcl:string (at "boost-class-link" scr))
+                (bl:string (at "boost-link" scr))
+                (db-boost:bool (at "deb-boost" scr))
+                ;;
+                (old-u:object{SCR|UserSchema} (UR_U-SCR|UserScore ouronet-account pool-id score-id))
+                (ob:decimal (at "base-score" old-u))
+                (obb:decimal (at "boosted-score" old-u))
+                (od:decimal (at "deb-score" old-u))
+                (od-bd:decimal (at "base-deb-score" old-u))
+                (od-bbd:decimal (at "boosted-deb-score" old-u))
+                ;;
+                (local-base-raw:decimal (floor (+ ob signed-user-base-delta) p))
+                (foreign-boost-base:bool 
+                    ;; boost-link ≠ self: enforced at SCR|C>CREATE-BOOST-LINK-SCORE (boost-score-id must differ from score-id).
+                    (!= bl BAR)
+                )
+                (foreign-base-ref:decimal
+                    (if foreign-boost-base
+                        (UR_U-SCR|UserScoreBaseScore ouronet-account pool-id bl)
+                        0.0
+                    )
+                )
+                (apply-foreign-boost-surplus:bool (and foreign-boost-base (!= bcl BAR)))
+                (new-user-base-score:decimal
+                    (if apply-foreign-boost-surplus
+                        0.0
+                        local-base-raw
+                    )
+                )
+                (prom:decimal
+                    (if (= bcl BAR)
+                        0.0
+                        (ref-ANK::UR_UB|AggregatePromile ouronet-account bcl)
+                    )
+                )
+                (base-for-boost:decimal
+                    (if (= bl BAR)
+                        local-base-raw
+                        (if (= bcl BAR)
+                            local-base-raw
+                            (floor (+ foreign-base-ref signed-user-base-delta) p)
+                        )
+                    )
+                )
+                (nominal-boosted-score:decimal
+                    (if (= bcl BAR)
+                        local-base-raw
+                        (floor (* base-for-boost (/ prom 1000.0)) p)
+                    )
+                )
+                (nominal-deb-score:decimal
+                    (if db-boost
+                        (floor (* nominal-boosted-score (ref-DALOS::UR_Elite-DEB ouronet-account)) p)
+                        nominal-boosted-score
+                    )
+                )
+                ;; M3: boost is ADDITIVE. boosted-score is the boost PART (base×promile/1000), not a replacement
+                ;; of base; deb is the alpha-omega end multiplier on the (base + boost) sum. So the final weight is
+                ;; deb-score = (base + boost)×deb — base is never dropped. (Foreign boost-link surplus branch below
+                ;; is a separate mechanism and keeps the nominal-* surplus math unchanged.)
+                (boost-part:decimal
+                    (if (= bcl BAR)
+                        0.0
+                        (floor (* base-for-boost (/ prom 1000.0)) p)
+                    )
+                )
+                (normal-pre-deb:decimal (+ new-user-base-score boost-part))
+                (normal-deb:decimal
+                    (if db-boost
+                        (floor (* normal-pre-deb (ref-DALOS::UR_Elite-DEB ouronet-account)) p)
+                        normal-pre-deb
+                    )
+                )
+                (new-user-boosted-score:decimal
+                    (if apply-foreign-boost-surplus
+                        (ref-U|DEC::UC_Max
+                            0.0
+                            (floor (- nominal-boosted-score foreign-base-ref) p)
+                        )
+                        boost-part
+                    )
+                )
+                (new-user-deb-score:decimal
+                    (if apply-foreign-boost-surplus
+                        (ref-U|DEC::UC_Max
+                            0.0
+                            (floor (- nominal-deb-score foreign-base-ref) p)
+                        )
+                        normal-deb
+                    )
+                )
+                (was-nz:bool
+                    (fold (or) false [(> ob 0.0) (> obb 0.0) (> od 0.0)])
+                )
+                (is-nz:bool
+                    (fold (or) false
+                        [
+                            (> new-user-base-score 0.0)
+                            (> new-user-boosted-score 0.0)
+                            (> new-user-deb-score 0.0)
+                        ]
+                    )
+                )
+                (nz-delta:integer
+                    (if (and was-nz (not is-nz))
+                        -1
+                        (if (and (not was-nz) is-nz)
+                            1
+                            0
+                        )
+                    )
+                )
+                (delta-global-base-score:decimal (- new-user-base-score ob))
+                (delta-global-boosted-score:decimal (- new-user-boosted-score obb))
+                (delta-global-deb-score:decimal (- new-user-deb-score od))
+                ;; M3 decomposition: split the final deb-score into base×deb and boost×deb. boosted-deb absorbs
+                ;; the rounding so base-deb + boosted-deb == deb-score exactly (works for the foreign-surplus case
+                ;; too, where new-user-base-score = 0 ⇒ base-deb = 0, boosted-deb = the whole surplus deb-score).
+                (new-user-base-deb-score:decimal
+                    (if db-boost
+                        (floor (* new-user-base-score (ref-DALOS::UR_Elite-DEB ouronet-account)) p)
+                        new-user-base-score))
+                (new-user-boosted-deb-score:decimal (- new-user-deb-score new-user-base-deb-score))
+                (delta-global-base-deb-score:decimal (- new-user-base-deb-score od-bd))
+                (delta-global-boosted-deb-score:decimal (- new-user-boosted-deb-score od-bbd))
+            )
+            (UDC_SCR|SingularUserScoreDelta
+                ;; 1 — User base-score after update: 0 when foreign boost-link + boost-class (surplus-only row); else floor(ob + signed, p).
+                new-user-base-score
+                ;; 2 — User boosted (boost PART) after update, or surplus over foreign base in the foreign-boost case.
+                new-user-boosted-score
+                ;; 3 — User deb column (final = (base+boost)×deb), or surplus in the foreign-boost case.
+                new-user-deb-score
+                ;; 3b/3c — M3 decomposition of the deb column: base×deb and boost×deb (sum to deb-score).
+                new-user-base-deb-score
+                new-user-boosted-deb-score
+                ;; 4 — Change to SCR|T|Score.nzs-count: -1 if user went from any non-zero triple to all zeros, +1 if reverse, else 0.
+                nz-delta
+                ;; 5 — Amount to add to SCR|T|Score.total-base-score (new user base − previous user base), floored at score precision in XI.
+                delta-global-base-score
+                ;; 6 — Amount to add to SCR|T|Score.total-boosted-score (new user boosted − previous user boosted).
+                delta-global-boosted-score
+                ;; 7 — Amount to add to SCR|T|Score.total-deb-score (new user deb − previous user deb).
+                delta-global-deb-score
+                ;; 7b/7c — Amounts to add to SCR|T|Score.total-base-deb-score / total-boosted-deb-score.
+                delta-global-base-deb-score
+                delta-global-boosted-deb-score
+            )
+        )
+    )
+    (defun URC_StakeScoreDeltaIgnisUnit:decimal (score-id:string)
+        @doc "IGNIS for one score row update in stake phase 2.3]: flat ignis|biggest per score + surcharges: \
+            \ +ignis|biggest if deb-boost enabled; +ignis|biggest if boost-class-link ≠ BAR; +ignis|biggest if boost-link ≠ BAR; \
+            \ +2×ignis|biggest if score-class 0 (LP)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                ;;
+                (highest:decimal (ref-IGNIS::UC_IgnisLeg "tier-biggest"))
+                (c:integer (UR_SCR|ScoreClass score-id))
+                (bcc:string (UR_SCR|ScoreBoostClassLink score-id))
+                (bl:string (UR_SCR|ScoreBoostLink score-id))
+                (deb:bool (UR_SCR|ScoreDebBoost score-id))
+            )
+            (fold (+) 0.0
+                [
+                    highest
+                    (if deb highest 0.0)
+                    (if (!= bcc BAR) highest 0.0)
+                    (if (!= bl BAR) highest 0.0)
+                    (if (= c 0) (* 2.0 highest) 0.0)
+                ]
+            )
+        )
+    )
+    (defun URC_StakeScoreDeltaIgnisCumulator:object{IgnisCollectorV3.OutputCumulator}
+        (score-id:string)
+        @doc "Internal: TF stake ico4 — one employed score row IGNIS (URC_StakeScoreDeltaIgnisUnit). \
+            \ IGNIS interactor = AQP|SC_NAME (pool vault receiver)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                ;;
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (URC_StakeScoreDeltaIgnisUnit score-id)
+                AQP|SC_NAME
+                trigger
+                [score-id]
+            )
+        )
+    )
+    (defun URC_OrtoDpofIsSpecialLeg:bool (dpof-id:string)
+        @doc "True when dpof-id is sleeping (Z|) or hibernating (H|) orto leg — selects SCR|XE>UPDATE-STAKE-DPOF-SPECIAL vs native DPOF."
+        (contains (take 2 dpof-id) ["Z|" "H|"])
+    )
+    (defun URC_OrtoDpofUsesSleepingMultiplier:bool (dpof-id:string)
+        @doc "True for Z| legs (mx-sleeping); false for H| legs (mx-hibernated). Native dpof-id is unused on non-special path."
+        (not (= (take 2 dpof-id) "H|"))
+    )
+    ;;
+    (defun URC_ScoreEntityModelExists:bool (model-id:string)
+        @doc "True when a score-entity model row exists."
+        (with-default-read SCR|T|ScoreEntityModel model-id {"model-id" : BAR} {"model-id" := m} (!= m BAR))
+    )
+    (defun UR_SCR|ScoreEntityModel:object{SCR|ScoreEntityModel} (model-id:string)
+        @doc "Reads the full score-entity model row."
+        (read SCR|T|ScoreEntityModel model-id)
+    )
+    (defun UR_SCR|ModelEntityType:integer (model-id:string)
+        @doc "Reads a model's entity-type (single = 1 | triplet = 3)."
+        (at "entity-type" (read SCR|T|ScoreEntityModel model-id ["entity-type"]))
+    )
+    ;; [URH] heavy-read
+    ;;
+    ;;
+    ;; Reads follow schema order: (1) SCR|Schema (2) SCR|UserSchema (3) SCR|SF|Schema (4) SCR|NF|TraitSchema (5) SCR|NF|ClassSchema (6) SF DefRevision (7) NF DefRevision
+    ;;
+    (defun URH_SCR|AllScoreIds:[string] ()
+        @doc "Returns all row keys from SCR|T|Score."
+        (keys SCR|T|Score)
+    )
+    ;; [URCi]   cost readers — single source for exec billing + INFO preview
+    (defun URCi_IssueScore:object{IgnisCollectorV3.OutputCumulator} (owner-konto:string output:[string])
+        @doc "IGNIS cost for the 5 score-issue ops: the issue-score deterrence PLUS the op's \
+            \ component cost, konto = the new score's owner. One component key is EXACT here \
+            \ because all five (Liquidity/TrueFungible/OrtoFungible/SemiFungible/NonFungible) \
+            \ are 28.0; if they ever diverge this reader must take the op key, as the anchor \
+            \ reader does."
+        (let
+            (
+                (r:module{IgnisCollectorV3} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-SCR|C_IssueTrueFungibleScore" "issue-score")
+                owner-konto (r::URC_IsVirtualGasZero) output)
+        ))
+    (defun URCi_IssueScoreStoa:decimal ()
+        @doc "STOA cost for score-issue: the deterrence expressed in DOLLARS, converted at the live \
+            \ STOA price by UC_StoaPrice (issue-score = $10 => 100 STOA). Previously read the raw \
+            \ 'smart' usage price (0.02), a pre-rehaul STOA amount that was never \
+            \ dollar-denominated and so ignored the peg entirely."
+        (let
+            (
+                (r:module{IgnisCollectorV3} IGNIS)
+            )
+            (r::UC_StoaPrice "issue-score")
+        ))
+    (defun URCi_RotateOwnership:object{IgnisCollectorV3.OutputCumulator} (score-id:string)
+        @doc "Cost preview for AQP-SCR|C_RotateScoreOwnership on the (pre-rotate) score owner \
+            \ — deter(auth) + components, like every other module's RotateOwnership."
+        (let
+            (
+                (r:module{IgnisCollectorV3} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-SCR|C_RotateScoreOwnership" "auth")
+                (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])
+        ))
+    (defun URCi_Control:object{IgnisCollectorV3.OutputCumulator} (score-id:string)
+        @doc "Cost preview for AQP-SCR|C_ControlScore on the score owner — deter(setup) + \
+            \ components, like every other module's Control."
+        (let
+            (
+                (r:module{IgnisCollectorV3} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-SCR|C_ControlScore" "setup")
+                (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])
+        ))
+    (defun URCi_CreateBoostClassLink:object{IgnisCollectorV3.OutputCumulator} (score-id:string)
+        @doc "Cost preview for AQP-SCR|C_CreateScoreBoostClassLink — deter(setup) + components. \
+            \ SETUP tier: linking a score to a boost class is a configuration change. NOTE the \
+            \ asymmetry with revoke-boost (500, owner-priced) — if creating a link should carry \
+            \ its own deterrent, that is an owner call, not a convention one."
+        (let
+            (
+                (r:module{IgnisCollectorV3} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-SCR|C_CreateScoreBoostClassLink" "setup")
+                (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])
+        ))
+    (defun URCi_CreateBoostLink:object{IgnisCollectorV3.OutputCumulator} (score-id:string)
+        @doc "Cost preview for AQP-SCR|C_CreateScoreBoostLink — deter(setup) + components."
+        (let
+            (
+                (r:module{IgnisCollectorV3} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-SCR|C_CreateScoreBoostLink" "setup")
+                (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])
+        ))
+    (defun URCi_EnableDebBoost:object{IgnisCollectorV3.OutputCumulator} (score-id:string)
+        @doc "Cost preview for AQP-SCR|C_EnableDebBoost — deter(setup) + components."
+        (let
+            (
+                (r:module{IgnisCollectorV3} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-SCR|C_EnableDebBoost" "setup")
+                (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])
+        ))
+    (defun URCi_IssueTriplet:object{IgnisCollectorV3.OutputCumulator} (silver-score-id:string output:[string])
+        @doc "GAS|ISSUE-TRIPLET, konto = the silver score's owner."
+        (let
+            (
+                (r:module{IgnisCollectorV3} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-SCR|C_IssueTriplet" "issue-triplet")
+                (UR_SCR|ScoreOwnerKonto silver-score-id) (r::URC_IsVirtualGasZero) output)
+        ))
+    (defun URCi_IssueSemiFungibleScoreDefinition:object{IgnisCollectorV3.OutputCumulator} (score-id:string nonces:[integer])
+        @doc "IGNIS = |nonces| x UsagePrice('ignis|big'), konto = score owner."
+        (let
+            (
+                (r:module{IgnisCollectorV3} IGNIS)
+                (d:module{OuronetDalosV2} DALOS)
+            )
+            (r::UDC_ConstructOutputCumulator (* (dec (length nonces)) (r::UC_IgnisLeg "tier-big")) (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])
+        ))
+    (defun URCi_IssueNonFungibleScoreDefinition:object{IgnisCollectorV3.OutputCumulator} (score-id:string trait-keys:[string])
+        @doc "IGNIS = |trait-keys| x UsagePrice('ignis|biggest'), konto = score owner."
+        (let
+            (
+                (r:module{IgnisCollectorV3} IGNIS)
+                (d:module{OuronetDalosV2} DALOS)
+            )
+            (r::UDC_ConstructOutputCumulator (* (dec (length trait-keys)) (r::UC_IgnisLeg "tier-biggest")) (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])
+        ))
+    (defun URCi_IssueNonFungibleSetScoreDefinition:object{IgnisCollectorV3.OutputCumulator} (score-id:string dpnf-nonce-classes:[integer])
+        @doc "IGNIS = |nonce-classes| x UsagePrice('ignis|biggest'), konto = score owner."
+        (let
+            (
+                (r:module{IgnisCollectorV3} IGNIS)
+                (d:module{OuronetDalosV2} DALOS)
+            )
+            (r::UDC_ConstructOutputCumulator (* (dec (length dpnf-nonce-classes)) (r::UC_IgnisLeg "tier-biggest")) (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])
+        ))
+    (defun URCi_IssueScoreModel:object{IgnisCollectorV3.OutputCumulator}
+        (op-key:string patron:string output:[string])
+        @doc "Shared by IssueSingleScoreModel / IssueScoreFromModel: same issue-score-model \
+            \ deterrence, but their component costs DIFFER (16 vs 69), so the caller passes its \
+            \ TALOS OP KEY. CombineTripletScoreModel split off to URCi_CombineTripletModel \
+            \ (owner-priced 100, 2026-09-05)."
+        (let
+            (
+                (r:module{IgnisCollectorV3} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice op-key "issue-score-model")
+                patron (r::URC_IsVirtualGasZero) output)
+        ))
+    (defun URCi_CombineTripletModel:object{IgnisCollectorV3.OutputCumulator} (patron:string output:[string])
+        @doc "Owner-priced (2026-09-05) combine-triplet deter (100 ignis) via the central IGNIS \
+            \ IG|DETER map — split from URCi_IssueScoreModel so the shared 500 tier stays put."
+        (let
+            (
+                (r:module{IgnisCollectorV3} IGNIS)
+            )
+            (r::UDC_ConstructOutputCumulator
+                (r::UC_IgnisPrice "AQP-SCR|C_CombineTripletScoreModel" "combine-triplet")
+                patron (r::URC_IsVirtualGasZero) output)
+        ))
+    ;;{5.4}  Validate [UEV/CAP]
+    ;; [UEV] enforce
+    (defun UEV_LpStakeScoreContext
+        (ouronet-account:string pool-id:string score-id:string lp-id:string)
+        @doc "LP stake paths: standard account exists; score class 0; aqpool-link equals pool-id; native LP row whose pair lists lp-denominator."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-SWP:module{SwapperV4} SWP)
+                ;;
+                (native-lp:string (URC_StakeLpTokenToNativeLpDptf lp-id))
+                (lp-denom:string (UR_SCR|ScoreLpDenominator score-id))
+                (swpair:string (ref-SWP::UR_GetLpSwpair native-lp))
+                (pool-tokens:[string] (ref-SWP::UR_PoolTokens swpair))
+            )
+            (enforce
+                (fold (and) true
+                    [
+                        (= (UR_SCR|ScoreAqpoolLink score-id) pool-id)
+                        (= (UR_SCR|ScoreClass score-id) 0)
+                        (contains lp-denom pool-tokens)
+                    ]
+                )
+                "LP stake score context: pool-id, score-class, or LP pair vs lp-denominator mismatch"
+            )
+            (ref-DALOS::UEV_EnforceAccountExists ouronet-account)
+            (ref-DALOS::UEV_EnforceAccountType ouronet-account false)
+        )
+    )
+    (defun UEV_DptfStakeScoreContext
+        (ouronet-account:string pool-id:string score-id:string)
+        @doc "Class-1 DPTF (non-LP) stake paths: account exists and is non-principal; aqpool-link equals pool-id; score-class 1. \
+            \ Pool asset-id vs staked dptf-id is validated in AQP-POOL before composing this module's XE_* (see SCR|XE>UPDATE-STAKE-DPTF @doc)."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (enforce
+                (fold (and) true
+                    [
+                        (= (UR_SCR|ScoreAqpoolLink score-id) pool-id)
+                        (= (UR_SCR|ScoreClass score-id) 1)
+                    ]
+                )
+                "DPTF stake score context: pool-id must match aqpool-link and score-class must be 1 (true fungible score)"
+            )
+            (ref-DALOS::UEV_EnforceAccountExists ouronet-account)
+            (ref-DALOS::UEV_EnforceAccountType ouronet-account false)
+        )
+    )
+    (defun UEV_DpofStakeScoreContext
+        (ouronet-account:string pool-id:string score-id:string)
+        @doc "Class-2 DPOF (non-LP) stake paths: account exists and is non-principal; aqpool-link equals pool-id; score-class 2. \
+            \ Pool asset-id vs staked dpof-id is validated in AQP-POOL before composing this module's XE_* (see SCR|XE>UPDATE-STAKE-DPOF @doc)."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (enforce
+                (fold (and) true
+                    [
+                        (= (UR_SCR|ScoreAqpoolLink score-id) pool-id)
+                        (= (UR_SCR|ScoreClass score-id) 2)
+                    ]
+                )
+                "DPOF stake score context: pool-id must match aqpool-link and score-class must be 2 (orto fungible score)"
+            )
+            (ref-DALOS::UEV_EnforceAccountExists ouronet-account)
+            (ref-DALOS::UEV_EnforceAccountType ouronet-account false)
+        )
+    )
+    (defun UEV_DpsfStakeScoreContext
+        (ouronet-account:string pool-id:string score-id:string)
+        @doc "Class-3 DPSF (semi-fungible) stake paths: account exists and is non-principal; aqpool-link equals pool-id; score-class 3. \
+            \ Pool asset-id vs staked dpsf-id is validated in AQP-POOL before composing this module's XE_* (see SCR|XE>UPDATE-STAKE-DPSF @doc)."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (enforce
+                (fold (and) true
+                    [
+                        (= (UR_SCR|ScoreAqpoolLink score-id) pool-id)
+                        (= (UR_SCR|ScoreClass score-id) 3)
+                    ]
+                )
+                "DPSF stake score context: pool-id must match aqpool-link and score-class must be 3 (semi-fungible score)"
+            )
+            (ref-DALOS::UEV_EnforceAccountExists ouronet-account)
+            (ref-DALOS::UEV_EnforceAccountType ouronet-account false)
+        )
+    )
+    (defun UEV_DpnfStakeScoreContext
+        (ouronet-account:string pool-id:string score-id:string)
+        @doc "Class-4 DPNF (non-fungible) stake paths: account exists and is non-principal; aqpool-link equals pool-id; score-class 4. \
+            \ Pool asset-id vs staked dpnf-id is validated in AQP-POOL before composing this module's XE_* (see SCR|XE>UPDATE-STAKE-DPNF @doc)."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (enforce
+                (fold (and) true
+                    [
+                        (= (UR_SCR|ScoreAqpoolLink score-id) pool-id)
+                        (= (UR_SCR|ScoreClass score-id) 4)
+                    ]
+                )
+                "DPNF stake score context: pool-id must match aqpool-link and score-class must be 4 (non-fungible score)"
+            )
+            (ref-DALOS::UEV_EnforceAccountExists ouronet-account)
+            (ref-DALOS::UEV_EnforceAccountType ouronet-account false)
+        )
+    )
+    (defun UEV_NonFungibleScoreDefinition
+        (
+            score-id:string
+            dpnf-id:string
+            trait-score-values:[decimal]
+            trait-keys:[string]
+            trait-values:[string]
+            dpnf-nonce-classes:[integer]
+        )
+        @doc "Validates inputs for NF score definition issuance. Dispatches to UEV_NonFungibleScoreDefinitionTrait or \
+            \ UEV_NonFungibleScoreDefinitionSet after UEV_IzNonFungibleScoreDefinitionTraitBranch. score-id supplies precision."
+        (let
+            (
+                (precision:integer (UR_SCR|ScorePrecision score-id))
+                (trait-mode:bool (UEV_IzNonFungibleScoreDefinitionTraitBranch trait-keys dpnf-nonce-classes))
+            )
+            (if trait-mode
+                (UEV_NonFungibleScoreDefinitionTrait dpnf-id precision trait-keys trait-values trait-score-values)
+                (UEV_NonFungibleScoreDefinitionSet dpnf-id precision dpnf-nonce-classes trait-score-values)
+            )
+        )
+    )
+    (defun UEV_IzNonFungibleScoreDefinitionTraitBranch:bool
+        (trait-keys:[string] dpnf-nonce-classes:[integer])
+        @doc "True when caller selected trait-mode: non-empty trait-keys and empty dpnf-nonce-classes. \
+            \ Enforces exactly one active branch (trait xor set)."
+        (let
+            (
+                (l1:integer (length trait-keys))
+                (l2:integer (length dpnf-nonce-classes))
+            )
+            (enforce
+                (fold (or) false
+                    [
+                        (and (> l1 0) (= l2 0))
+                        (and (= l1 0) (> l2 0))
+                    ]
+                )
+                "NF score definition requires exactly one branch: non-empty trait-keys (trait) or non-empty dpnf-nonce-classes (set)"
+            )
+            (> l1 0)
+        )
+    )
+    (defun UEV_NonFungibleScoreDefinitionTrait
+        (dpnf-id:string precision:integer trait-keys:[string] trait-values:[string] trait-score-values:[decimal])
+        @doc "Trait-mode NF score definition validation: first-nonce metadata, list alignment, trait-value bounds, score precision."
+        (let
+            (
+                (ref-DPDC:module{DpdcV2} DPDC)
+                ;;
+                (l1:integer (length trait-keys))
+                (l2:integer (length trait-values))
+                (l3:integer (length trait-score-values))
+                (meta-data:object
+                    (ref-DPDC::UR_N|RawMetaData
+                        (ref-DPDC::UR_NativeNonceData dpnf-id false 1)
+                    )
+                )
+            )
+            (enforce
+                (fold (and) true
+                    [
+                        (> l1 0)
+                        (= l1 l2)
+                        (= l1 l3)
+                    ]
+                )
+                "Invalid trait definition inputs: trait key/value/score lists must be non-empty and aligned"
+            )
+            (map
+                (lambda
+                    (idx:integer)
+                    (let
+                        (
+                            (trait-key:string (at idx trait-keys))
+                            (trait-value:string (at idx trait-values))
+                            (trait-score-value:decimal (at idx trait-score-values))
+                            (l4:integer (length trait-value))
+                            (iz-key-present:bool (contains trait-key meta-data))
+                        )
+                        (enforce
+                            (fold (and) true
+                                [
+                                    iz-key-present
+                                    (>= l4 2)
+                                    (<= l4 256)
+                                    (= (floor trait-score-value precision) trait-score-value)
+                                    (>= trait-score-value 0.0)   ;; L7 #19: forbid negative NF trait scores (mangles rewards)
+                                ]
+                            )
+                            (format
+                                "Invalid DPNF trait definition (key={}, value={}, score={}, precision={})"
+                                [trait-key trait-value trait-score-value precision]
+                            )
+                        )
+                    )
+                )
+                (enumerate 0 (- l1 1))
+            )
+        )
+    )
+    (defun UEV_NonFungibleScoreDefinitionSet
+        (dpnf-id:string precision:integer dpnf-nonce-classes:[integer] class-score-values:[decimal])
+        @doc "Set-mode NF score definition validation: nonce-class list vs class-score-values alignment, bounds vs UR_SetClassesUsed, precision."
+        (let
+            (
+                (ref-DPDC:module{DpdcV2} DPDC)
+                ;;
+                (l1:integer (length dpnf-nonce-classes))
+                (l2:integer (length class-score-values))
+                (classes-used:integer (ref-DPDC::UR_SetClassesUsed dpnf-id false))
+            )
+            (enforce
+                (fold (and) true
+                    [
+                        (> l1 0)
+                        (= l1 l2)
+                    ]
+                )
+                "Invalid set NF score definition inputs: nonce-class and score value lists must be non-empty and aligned"
+            )
+            (map
+                (lambda
+                    (idx:integer)
+                    (let
+                        (
+                            (nc:integer (at idx dpnf-nonce-classes))
+                            (v:decimal (at idx class-score-values))
+                        )
+                        (enforce
+                            (fold (and) true
+                                [
+                                    (>= nc 0)
+                                    (<= nc classes-used)
+                                    (= (floor v precision) v)
+                                    (>= v 0.0)   ;; L7 #19: forbid negative NF set-class scores (mangles rewards)
+                                ]
+                            )
+                            (format
+                                "Invalid DPNF set score definition (nonce-class={}, value={}, precision={})"
+                                [nc v precision]
+                            )
+                        )
+                    )
+                )
+                (enumerate 0 (- l1 1))
+            )
+        )
+    )
+    ;;{5.5}  Write [W]
+    ;; [W]   write
+    ;; Nine blocks — one per deftable (table order). Within each block: WI → WW → WU → WU2+ (only when needed).
+    ;; WU lists every schema field: defun when used; comment when [.], select key, or mutates via WW_*.
+    ;;
+    (defun WI_Score:string
+        (score-id:string row:object{SCR|Schema})
+        @doc "Insert SCR|T|Score full row (issue only)."
+        (require-capability (SECURE))
+        (insert SCR|T|Score score-id row)
+    )
+    ;; WW_Score — not used: issue path is WI_Score; other paths use WU_*.
+    (defun WU_Score|OwnerKonto:string
+        (score-id:string owner-konto:string)
+        @doc "Update owner-konto on SCR|T|Score."
+        (require-capability (SECURE))
+        (update SCR|T|Score score-id {"owner-konto": owner-konto})
+    )
+    (defun WU2_Score|Control:string
+        (score-id:string can-upgrade:bool can-change-owner:bool)
+        @doc "Update can-upgrade and can-change-owner on SCR|T|Score."
+        (require-capability (SECURE))
+        (update SCR|T|Score score-id
+            {"can-upgrade": can-upgrade, "can-change-owner": can-change-owner}
+        )
+    )
+    (defun WU_Score|DebBoost:string
+        (score-id:string)
+        @doc "Set deb-boost true on SCR|T|Score (irreversible)."
+        (require-capability (SECURE))
+        (update SCR|T|Score score-id {"deb-boost": true})
+    )
+    (defun WU_Score|BoostClassLink:string
+        (score-id:string boost-class-id:string)
+        @doc "Set boost-class-link on SCR|T|Score."
+        (require-capability (SECURE))
+        (update SCR|T|Score score-id {"boost-class-link": boost-class-id})
+    )
+    (defun WU_Score|BoostLink:string
+        (score-id:string boost-score-id:string)
+        @doc "Set boost-link on SCR|T|Score."
+        (require-capability (SECURE))
+        (update SCR|T|Score score-id {"boost-link": boost-score-id})
+    )
+    (defun WU_Score|AqpoolLink:string
+        (score-id:string pool-id:string)
+        @doc "Set aqpool-link on SCR|T|Score."
+        (require-capability (SECURE))
+        (update SCR|T|Score score-id {"aqpool-link": pool-id})
+    )
+    (defun WU_Score|FvtLink:string
+        (score-id:string fvt-id:string)
+        @doc "Set fvt-link on SCR|T|Score."
+        (require-capability (SECURE))
+        (update SCR|T|Score score-id {"fvt-link": fvt-id})
+    )
+    (defun WU2_Score|TripletMembership:string
+        (score-id:string triplet-id:string)
+        @doc "Set triplet true and triplet-id on score (C_IssueTriplet only; immutable thereafter)."
+        (require-capability (SECURE))
+        (update SCR|T|Score score-id {"triplet": true, "triplet-id": triplet-id})
+    )
+    (defun WU3_Score|VaultTotals:string
+        (score-id:string scr:object{SCR|Schema} d:object{SCR|SingularUserScoreDelta})
+        @doc "Apply aggregate total-base/total-boosted/total-deb deltas on SCR|T|Score at score precision."
+        (require-capability (SECURE))
+        (let
+            (
+                (p:integer (at "precision" scr))
+                (fresh:object{SCR|Schema} (UR_SCR|Score score-id))
+                (old-tb:decimal (at "total-base-score" fresh))
+                (old-tbst:decimal (at "total-boosted-score" fresh))
+                (old-td:decimal (at "total-deb-score" fresh))
+                (old-tbd:decimal (at "total-base-deb-score" fresh))
+                (old-tbbd:decimal (at "total-boosted-deb-score" fresh))
+            )
+            (update SCR|T|Score score-id
+                {"total-base-score"         : (floor (+ old-tb (at "delta-global-base-score" d)) p)
+                ,"total-boosted-score"      : (floor (+ old-tbst (at "delta-global-boosted-score" d)) p)
+                ,"total-deb-score"          : (floor (+ old-td (at "delta-global-deb-score" d)) p)
+                ,"total-base-deb-score"     : (floor (+ old-tbd (at "delta-global-base-deb-score" d)) p)
+                ,"total-boosted-deb-score"  : (floor (+ old-tbbd (at "delta-global-boosted-deb-score" d)) p)}
+            )
+        )
+    )
+    (defun WU_Score|NzsCount:string
+        (score-id:string scr:object{SCR|Schema} d:object{SCR|SingularUserScoreDelta})
+        @doc "Apply nz-delta to SCR|T|Score.nzs-count."
+        (require-capability (SECURE))
+        (let
+            (
+                (old-nzs:integer (at "nzs-count" scr))
+                (new-nzs:integer (+ old-nzs (at "nz-delta" d)))
+            )
+            (update SCR|T|Score score-id {"nzs-count": new-nzs})
+        )
+    )
+    (defun WU_Score|Nuke:string
+        (score-id:string)
+        @doc "Vacate-v2 §5 finalize nuke: bulk-zero the score's aggregate totals (base/boosted/deb + M3 splits) \
+            \ and nzs-count, and bump vacate-generation (+1). The generation bump lazily invalidates EVERY \
+            \ per-user SCR|T|UserScore row for this score (they read as 0 until re-stake). One update; only the \
+            \ finalize reaches this, gated pool-side on nns==0."
+        (require-capability (SECURE))
+        (update SCR|T|Score score-id
+            {"total-base-score"         : 0.0
+            ,"total-boosted-score"      : 0.0
+            ,"total-deb-score"          : 0.0
+            ,"total-base-deb-score"     : 0.0
+            ,"total-boosted-deb-score"  : 0.0
+            ,"nzs-count"                : 0
+            ,"vacate-generation"        : (+ (at "vacate-generation" (read SCR|T|Score score-id ["vacate-generation"])) 1)})
+    )
+    ;; WU_Score|Triplet — not used at issue; set via WU2_Score|TripletMembership at C_IssueTriplet only.
+    ;; WU_Score|TripletId — mutates via WU2_Score|TripletMembership.
+    ;; WU_Score|Precision — not mutable [.]
+    ;; WU_Score|ScoreClass — not mutable [.]
+    ;; WU_Score|LpDenominator — not mutable [.]
+    ;; WU_Score|MxFrozen — not mutable [.]
+    ;; WU_Score|MxSleeping — not mutable [.]
+    ;; WU_Score|MxHibernated — not mutable [.]
+    ;; WU_Score|SftEquality — not mutable [.]
+    ;; WU_Score|NftScoreModel — not mutable [.]
+    ;; WU_Score|ScoreId — select key; WU not needed.
+    ;;
+    ;; WI_UserScore — not used: first row touch is WW_UserScore (upsert path).
+    (defun WW_UserScore:string
+        (ouronet-account:string pool-id:string score-id:string row:object{SCR|UserSchema})
+        @doc "Upsert full SCR|T|UserScore row for (account, pool, score)."
+        (require-capability (SECURE))
+        (write SCR|T|UserScore (UCk_UserScore ouronet-account pool-id score-id) row)
+    )
+    ;; WU_UserScore|BaseScore — not used: mutates via WW_UserScore (full row).
+    ;; WU_UserScore|BoostedScore — not used: mutates via WW_UserScore (full row).
+    ;; WU_UserScore|DebScore — not used: mutates via WW_UserScore (full row).
+    ;; WU_UserScore|OuronetAccount — select key; WU not needed.
+    ;; WU_UserScore|PoolId — select key; WU not needed.
+    ;; WU_UserScore|ScoreId — select key; WU not needed.
+    ;;
+    ;; WI_SFScore — not used: first row touch is WW_SFScore (upsert path).
+    (defun WW_SFScore:string
+        (score-id:string dpsf-id:string nonce:integer row:object{SCR|SF|Schema})
+        @doc "Upsert SCR|T|SF|Score nonce definition row."
+        (require-capability (SECURE))
+        (write SCR|T|SF|Score (UCk_SFScore score-id dpsf-id nonce) row)
+    )
+    ;; WU_SFScore|NonceScoreValue — not used: mutates via WW_SFScore (full row).
+    ;; WU_SFScore|ScoreId — select key; WU not needed.
+    ;; WU_SFScore|DpsfId — select key; WU not needed.
+    ;; WU_SFScore|Nonce — select key; WU not needed.
+    ;;
+    ;; WI_NFTraitScore — not used: first row touch is WW_NFTraitScore (upsert path).
+    (defun WW_NFTraitScore:string
+        (score-id:string dpnf-id:string trait-key:string trait-value:string row:object{SCR|NF|TraitSchema})
+        @doc "Upsert SCR|T|NF|TraitScore trait definition row."
+        (require-capability (SECURE))
+        (write SCR|T|NF|TraitScore (UCk_NFTraitScore score-id dpnf-id trait-key trait-value) row)
+    )
+    ;; WU_NFTraitScore|TraitScoreValue — not used: mutates via WW_NFTraitScore (full row).
+    ;; WU_NFTraitScore|ScoreId — select key; WU not needed.
+    ;; WU_NFTraitScore|DpnfId — select key; WU not needed.
+    ;; WU_NFTraitScore|TraitKey — select key; WU not needed.
+    ;; WU_NFTraitScore|TraitValue — select key; WU not needed.
+    ;;
+    ;; WI_NFClassScore — not used: first row touch is WW_NFClassScore (upsert path).
+    (defun WW_NFClassScore:string
+        (score-id:string dpnf-id:string dpnf-nonce-class:integer row:object{SCR|NF|ClassSchema})
+        @doc "Upsert SCR|T|NF|ClassScore class definition row."
+        (require-capability (SECURE))
+        (write SCR|T|NF|ClassScore (UCk_NFClassScore score-id dpnf-id dpnf-nonce-class) row)
+    )
+    ;; WU_NFClassScore|TraitScoreValue — not used: mutates via WW_NFClassScore (full row).
+    ;; WU_NFClassScore|ScoreId — select key; WU not needed.
+    ;; WU_NFClassScore|DpnfId — select key; WU not needed.
+    ;; WU_NFClassScore|NonceClass — select key; WU not needed.
+    ;;
+    ;; WI_SFDefRevision — not used: first row touch is WW_SFDefRevision (upsert path).
+    (defun WW_SFDefRevision:string
+        (score-id:string dpsf-id:string row:object{SCR|SF|DefRevision})
+        @doc "Upsert SCR|T|SF|DefRevision row."
+        (require-capability (SECURE))
+        (write SCR|T|SF|DefRevision (UCk_SFDefRevision score-id dpsf-id) row)
+    )
+    ;; WU_SFDefRevision|RevisionNonce — not used: mutates via WW_SFDefRevision (full row).
+    ;; WU_SFDefRevision|ScoreId — select key; WU not needed.
+    ;; WU_SFDefRevision|DpsfId — select key; WU not needed.
+    ;;
+    ;; WI_NFDefRevision — not used: first row touch is WW_NFDefRevision (upsert path).
+    (defun WW_NFDefRevision:string
+        (score-id:string dpnf-id:string row:object{SCR|NF|DefRevision})
+        @doc "Upsert SCR|T|NF|DefRevision row."
+        (require-capability (SECURE))
+        (write SCR|T|NF|DefRevision (UCk_NFDefRevision score-id dpnf-id) row)
+    )
+    (defun WW_NFTraitKeys:string
+        (score-id:string dpnf-id:string trait-keys:[string])
+        @doc "Upsert SCR|T|NF|TraitKeys with the DISTINCT defined trait-keys for (score-id, dpnf-id)."
+        (require-capability (SECURE))
+        (write SCR|T|NF|TraitKeys (UCk_NFTraitKeys score-id dpnf-id)
+            {"trait-keys" : trait-keys, "score-id" : score-id, "dpnf-id" : dpnf-id})
+    )
+    ;; WU_NFDefRevision|GlobalRevisionNonce — not used: mutates via WW_NFDefRevision (full row).
+    ;; WU_NFDefRevision|TraitRevisionNonce — not used: mutates via WW_NFDefRevision (full row).
+    ;; WU_NFDefRevision|ClassRevisionNonce — not used: mutates via WW_NFDefRevision (full row).
+    ;; WU_NFDefRevision|ScoreId — select key; WU not needed.
+    ;; WU_NFDefRevision|DpnfId — select key; WU not needed.
+    ;;
+    (defun WI_Triplet:string
+        (triplet-id:string row:object{SCR|Triplet})
+        @doc "Insert SCR|T|Triplet full row (C_IssueTriplet only)."
+        (require-capability (SECURE))
+        (insert SCR|T|Triplet triplet-id row)
+    )
+    (defun WI_ScoreEntityModel:string (model-id:string row:object{SCR|ScoreEntityModel})
+        @doc "Insert a score-entity model row. require SECURE."
+        (require-capability (SECURE))
+        (insert SCR|T|ScoreEntityModel model-id row)
+    )
+    ;;{5.6}  Aux/X
+    ;; [XI]
+    ;;
+    ;; Depth: C_* → XI_* (depth 0) → XI_1|* … ; XE_* / XB_* → XI_1|* (depth 1) → XI_2|* …
+    ;; Blocks follow map order (entry first, then children, then shared leaves).
+    ;;
+    ;; --- Block A · C_* lifecycle writers ---
+    ;;   C_Issue / C_RotateOwnership / C_Control / C_EnableDebBoost
+    ;;     └ XI_Issue / XI_RotateOwnership / XI_Control / XI_EnableDebBoost
+    ;;   C_IssueSemiFungibleScoreDefinition → XI_IssueSemiFungibleScoreDefinition
+    ;;   C_IssueNonFungible* → XI_IssueNonFungibleScoreDefinitionCore
+    ;;   C_CreateBoost* → XI_CreateBoostClassLink / XI_CreateBoostLink
+    ;;
+    ;;Protection: Class 3 — Custom: SCR|XI>ISSUE-SCORE
+    (defun XI_Issue:string
+        (
+            score-name:string
+            owner-konto:string
+            precision:integer
+            score-class:integer
+            lp-denominator:string
+            mx-frozen:decimal
+            mx-sleeping:decimal
+            mx-hibernated:decimal
+            sft-equality:bool
+            nft-score-model:integer
+        )
+        @doc "Inserts SCR|T|Score under SCR|XI>ISSUE-SCORE (cap omits sft-equality). score-id from UDC_Makeid(score-name); \
+            \ can-upgrade and can-change-owner true; links BAR; triplet false / triplet-id BAR; deb-boost false; totals zero. Write only — no OutputCumulator; C_Issue* builds IGNIS."
+        (require-capability
+            (SCR|XI>ISSUE-SCORE
+                score-name owner-konto precision score-class
+                lp-denominator mx-frozen mx-sleeping mx-hibernated nft-score-model
+            )
+        )
+        ;; SECURE: granted by WI_Score (underlying W_).
+        (let
+            (
+                (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                ;;
+                (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+            )
+            (WI_Score score-id
+                (UDC_SCR|Schema
+                    owner-konto true true
+                    BAR BAR BAR BAR
+                    false BAR
+                    false
+                    precision
+                    0.0 0.0 0.0 0.0 0.0 0 0
+                    score-class lp-denominator mx-frozen mx-sleeping mx-hibernated
+                    sft-equality nft-score-model
+                    score-id
+                )
+            )
+        )
+    )
+    ;;Protection: Class 1 — Innate protection offered by WU_Score|OwnerKonto
+    (defun XI_RotateOwnership:string
+        (score-id:string new-owner-konto:string)
+        @doc "Under SECURE (from SCR|C>ROTATE-OWNERSHIP-SCORE): update owner-konto only. Write only; C_RotateOwnership builds IGNIS cumulator."
+        ;; SECURE: granted by WU_Score|OwnerKonto (underlying W_).
+        (WU_Score|OwnerKonto score-id new-owner-konto)
+    )
+    ;;Protection: Class 1 — Innate protection offered by WU2_Score|Control
+    (defun XI_Control:string
+        (score-id:string new-can-upgrade:bool new-can-change-owner:bool)
+        @doc "Under SECURE (from SCR|C>CONTROL-SCORE): update can-upgrade and can-change-owner only. Write only; C_Control builds IGNIS cumulator."
+        ;; SECURE: granted by WU2_Score|Control (underlying W_).
+        (WU2_Score|Control score-id new-can-upgrade new-can-change-owner)
+    )
+    ;;Protection: Class 1 — Innate protection offered by WU_Score|DebBoost
+    (defun XI_EnableDebBoost:string
+        (score-id:string)
+        @doc "Under SECURE (from SCR|C>ENABLE-DEB-BOOST-SCORE): set deb-boost true only. Write only; C_EnableDebBoost builds IGNIS cumulator."
+        ;; SECURE: granted by WU_Score|DebBoost (underlying W_).
+        (WU_Score|DebBoost score-id)
+    )
+    ;;Protection: Class 3 — Custom: SCR|C>ISSUE-TRIPLET
+    (defun XI_IssueTriplet:string
+        (bronze-score-id:string silver-score-id:string golden-score-id:string)
+        @doc "Under SCR|C>ISSUE-TRIPLET: insert triplet row (true-triplet from boost topology) and mark all three scores triplet=true. Write only."
+        (require-capability (SCR|C>ISSUE-TRIPLET bronze-score-id silver-score-id golden-score-id))
+        (let
+            (
+                (class:integer (UR_SCR|ScoreClass bronze-score-id))
+                (cat:string (URC_TripletCategoryForClass class))
+                (triplet-id:string (UC_ComputeTripletId bronze-score-id silver-score-id golden-score-id))
+                (is-true:bool (URC_IsTrueTriplet bronze-score-id silver-score-id golden-score-id))
+            )
+            (WI_Triplet triplet-id
+                (UDC_SCR|Triplet bronze-score-id silver-score-id golden-score-id cat triplet-id is-true)
+            )
+            (WU2_Score|TripletMembership bronze-score-id triplet-id)
+            (WU2_Score|TripletMembership silver-score-id triplet-id)
+            (WU2_Score|TripletMembership golden-score-id triplet-id)
+            triplet-id
+        )
+    )
+    ;;Protection: Class 1 — Innate protection offered by WW_SFScore, WW_SFDefRevision
+    (defun XI_IssueSemiFungibleScoreDefinition:string
+        (score-id:string dpsf-id:string nonces:[integer] nonce-score-values:[decimal])
+        @doc "Under SECURE (from SCR|C>ISSUE-SF-SCORE-DEFINITION): write SCR|T|SF|Score rows and increment SF DefRevision once per call."
+        ;; SECURE: granted by WW_SFScore and WW_SFDefRevision (underlying W_).
+        (let
+            (
+                (revision-nonce:integer (UR_S-DEF-REV|SFDefRevisionRevisionNonce score-id dpsf-id))
+            )
+            (map
+                (lambda
+                    (idx:integer)
+                    (let
+                        (
+                            (nonce:integer (at idx nonces))
+                            (nonce-score-value:decimal (at idx nonce-score-values))
+                        )
+                        (WW_SFScore score-id dpsf-id nonce
+                            (UDC_SCR|SF|Schema nonce-score-value score-id dpsf-id nonce)
+                        )
+                    )
+                )
+                (enumerate 0 (- (length nonces) 1))
+            )
+            (WW_SFDefRevision score-id dpsf-id
+                (UDC_SCR|SF|DefRevision (+ revision-nonce 1) score-id dpsf-id)
+            )
+        )
+    )
+    ;;Protection: Class 1 — Innate protection offered by WW_NFTraitScore, WW_NFClassScore,
+    ;;Protection:          WW_NFTraitKeys, WW_NFDefRevision
+    (defun XI_IssueNonFungibleScoreDefinitionCore:string
+        (
+            score-id:string
+            dpnf-id:string
+            trait-mode:bool
+            trait-keys:[string]
+            trait-values:[string]
+            trait-score-values:[decimal]
+            dpnf-nonce-classes:[integer]
+            set-score-values:[decimal]
+        )
+        @doc "Under SECURE (from SCR|XI>X_ISSUE-NF-SCORE-DEFINITION): invoked from C_IssueNonFungibleScoreDefinition \
+            \ (trait-mode true) or C_IssueNonFungibleSetScoreDefinition (trait-mode false). Writes SCR|T|NF|TraitScore or SCR|T|NF|ClassScore rows \
+            \ and bumps NF DefRevision global plus trait-only or class-only counter."
+        ;; SECURE: granted by WW_NFTraitScore / WW_NFClassScore and WW_NFDefRevision (underlying W_).
+        (let
+            (
+                (g:integer (UR_N-DEF-REV|NFDefRevisionGlobalRevisionNonce score-id dpnf-id))
+                (tr:integer (UR_N-DEF-REV|NFDefRevisionTraitRevisionNonce score-id dpnf-id))
+                (cl:integer (UR_N-DEF-REV|NFDefRevisionClassRevisionNonce score-id dpnf-id))
+            )
+            (if trait-mode
+                (map
+                    (lambda
+                        (idx:integer)
+                        (let
+                            (
+                                (trait-key:string (at idx trait-keys))
+                                (trait-value:string (at idx trait-values))
+                                (trait-score-value:decimal (at idx trait-score-values))
+                            )
+                            (WW_NFTraitScore score-id dpnf-id trait-key trait-value
+                                (UDC_SCR|NF|TraitSchema trait-score-value score-id dpnf-id trait-key trait-value)
+                            )
+                        )
+                    )
+                    (enumerate 0 (- (length trait-keys) 1))
+                )
+                (map
+                    (lambda
+                        (idx:integer)
+                        (let
+                            (
+                                (nc:integer (at idx dpnf-nonce-classes))
+                                (trait-score-value:decimal (at idx set-score-values))
+                            )
+                            (WW_NFClassScore score-id dpnf-id nc
+                                (UDC_SCR|NF|ClassSchema trait-score-value score-id dpnf-id nc)
+                            )
+                        )
+                    )
+                    (enumerate 0 (- (length dpnf-nonce-classes) 1))
+                )
+            )
+            ;; #FP0: on trait defs, distinct-merge this batch's trait-keys into the SCR|T|NF|TraitKeys aggregate
+            ;; (off-path, cheap) so the model-1 stake path point-reads by these keys instead of scanning the def table.
+            (if trait-mode
+                (WW_NFTraitKeys score-id dpnf-id
+                    (distinct (+ (URC_NFTraitKeysList score-id dpnf-id) trait-keys))
+                )
+                "class-mode: no trait-keys aggregate update"
+            )
+            (WW_NFDefRevision score-id dpnf-id
+                (if trait-mode
+                    (UDC_SCR|NF|DefRevision (+ g 1) (+ tr 1) cl score-id dpnf-id)
+                    (UDC_SCR|NF|DefRevision (+ g 1) tr (+ cl 1) score-id dpnf-id)
+                )
+            )
+        )
+    )
+    ;; Link fields [..] on SCR|Schema: XI under SECURE from SCR|C>*; XE from forward modules (P|UEV_IMC + SCR|XE>*).
+    ;;Protection: Class 1 — Innate protection offered by XE_UnbumpBoostClassScoreLinks,
+    ;;Protection:          WU_Score|BoostClassLink, XE_BumpBoostClassScoreLinks
+    (defun XI_CreateBoostClassLink:string
+        (score-id:string boost-class-id:string)
+        @doc "Under SECURE: (re)set boost-class-link + move the ANK BoostClass score-link count (H4 #9 revoke lock). \
+            \ M4 #13: if re-pointing (the score already linked a DIFFERENT class), −1 the OLD class first so its \
+            \ revoke lock releases, then +1 the new. Only reachable when the score is empty (nzs-count = 0, enforced \
+            \ in the cap). Write only; C_CreateBoostClassLink builds IGNIS cumulator."
+        ;; SECURE: granted by WU_Score|BoostClassLink (underlying W_).
+        (let
+            (
+                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+                (old-class:string (UR_SCR|ScoreBoostClassLink score-id))
+            )
+            ;; #13: release the old class's count when re-pointing (−1 old, +1 new below). old == new ⇒ net 0;
+            ;; old == BAR ⇒ nothing to release. Always unbump a non-BAR old so the counter stays exact.
+            (if (!= old-class BAR)
+                (ref-ANK::XE_UnbumpBoostClassScoreLinks old-class score-id)
+                "no prior class link to release")
+            (WU_Score|BoostClassLink score-id boost-class-id)
+            ;; #9: register the (new) link so AQP-ANK locks revoke of the class's anchors while employed.
+            ;; Reverse index (sweep phase 1): the class's score-links set now includes score-id.
+            (ref-ANK::XE_BumpBoostClassScoreLinks boost-class-id score-id)
+        )
+    )
+    ;;Protection: Class 1 — Innate protection offered by WU_Score|BoostLink
+    (defun XI_CreateBoostLink:string
+        (score-id:string boost-score-id:string)
+        @doc "Under SECURE: set boost-link only. Write only; C_CreateBoostLink builds IGNIS cumulator."
+        ;; SECURE: granted by WU_Score|BoostLink (underlying W_).
+        (WU_Score|BoostLink score-id boost-score-id)
+    )
+    ;;Protection: Class 3 — Custom: SCR|XE>UPDATE-LP-STAKE-DPTF-LP
+    (defun XI_1|UpdateScoreDataForTrueFungibleLP:string
+        (
+            ouronet-account:string
+            pool-id:string
+            score-id:string
+            lp-id:string
+            lp-amount:decimal
+            native-or-frozen:bool
+            direction:bool
+        )
+        @doc "Internal (XE_ApplyTrueFungibleStakeDelta · depth 1]): class-0 LP stake/unstake write leg."
+        (with-capability
+            (SCR|XE>UPDATE-LP-STAKE-DPTF-LP
+                ouronet-account pool-id score-id lp-id lp-amount native-or-frozen direction
+            )
+            (XI_2|ApplySingularUserScoreDelta
+                ouronet-account
+                pool-id
+                score-id
+                (URC_SignedBaseDeltaForDptfLpStake score-id lp-id lp-amount native-or-frozen direction)
+            )
+        )
+    )
+    ;;Protection: Class 3 — Custom: SCR|XE>UPDATE-STAKE-DPTF
+    (defun XI_1|UpdateScoreDataForTrueFungible:string
+        (
+            ouronet-account:string
+            pool-id:string
+            score-id:string
+            dptf-id:string
+            dptf-amount:decimal
+            native-or-frozen:bool
+            direction:bool
+        )
+        @doc "Internal (XE_ApplyTrueFungibleStakeDelta · depth 1]): class-1 DPTF stake/unstake write leg."
+        (with-capability
+            (SCR|XE>UPDATE-STAKE-DPTF
+                ouronet-account pool-id score-id dptf-id dptf-amount native-or-frozen direction
+            )
+            (XI_2|ApplySingularUserScoreDelta
+                ouronet-account
+                pool-id
+                score-id
+                (URC_SignedBaseDeltaForDptfStake score-id dptf-id dptf-amount native-or-frozen direction)
+            )
+        )
+    )
+    ;;Protection: Class 3 — Custom: SCR|XE>UPDATE-LP-STAKE-ORTO-LP
+    (defun XI_1|UpdateScoreDataForOrtoFungibleLP:string
+        (
+            ouronet-account:string
+            pool-id:string
+            score-id:string
+            dpof-id:string
+            nonces:[integer]
+            nonce-amounts:[decimal]
+            direction:bool
+        )
+        @doc "Internal (future XE_* · depth 1]): sleeping orto LP (Z|) stake/unstake write leg."
+        (with-capability
+            (SCR|XE>UPDATE-LP-STAKE-ORTO-LP
+                ouronet-account pool-id score-id dpof-id nonces nonce-amounts direction
+            )
+            (XI_2|ApplySingularUserScoreDelta
+                ouronet-account
+                pool-id
+                score-id
+                (URC_SignedBaseDeltaForOrtoLpStake score-id dpof-id nonces nonce-amounts direction)
+            )
+        )
+    )
+    ;;Protection: Class 3 — Custom: SCR|XE>UPDATE-STAKE-DPOF
+    (defun XI_1|UpdateScoreDataForOrtoFungible:string
+        (
+            ouronet-account:string
+            pool-id:string
+            score-id:string
+            dpof-id:string
+            nonces:[integer]
+            nonce-amounts:[decimal]
+            direction:bool
+        )
+        @doc "Internal (future XE_* · depth 1]): class-2 DPOF stake/unstake write leg."
+        (with-capability
+            (SCR|XE>UPDATE-STAKE-DPOF
+                ouronet-account pool-id score-id dpof-id nonces nonce-amounts direction
+            )
+            (XI_2|ApplySingularUserScoreDelta
+                ouronet-account
+                pool-id
+                score-id
+                (URC_SignedBaseDeltaForDpofStake score-id dpof-id nonces nonce-amounts direction)
+            )
+        )
+    )
+    ;;Protection: Class 3 — Custom: SCR|XE>UPDATE-STAKE-DPOF-SPECIAL
+    (defun XI_1|UpdateScoreDataForSpecialOrtoFungible:string
+        (
+            ouronet-account:string
+            pool-id:string
+            score-id:string
+            dpof-id:string
+            nonces:[integer]
+            nonce-amounts:[decimal]
+            sleeping-or-hibernating:bool
+            direction:bool
+        )
+        @doc "Internal (future XE_* · depth 1]): class-2 special DPOF stake/unstake write leg."
+        (with-capability
+            (SCR|XE>UPDATE-STAKE-DPOF-SPECIAL
+                ouronet-account pool-id score-id dpof-id nonces nonce-amounts sleeping-or-hibernating direction
+            )
+            (XI_2|ApplySingularUserScoreDelta
+                ouronet-account
+                pool-id
+                score-id
+                (URC_SignedBaseDeltaForSpecialDpofStake
+                    score-id dpof-id nonces nonce-amounts sleeping-or-hibernating direction
+                )
+            )
+        )
+    )
+    ;;Protection: Class 3 — Custom: SCR|XE>UPDATE-STAKE-DPSF
+    (defun XI_1|UpdateScoreDataForSemiFungible:string
+        (
+            ouronet-account:string
+            pool-id:string
+            score-id:string
+            dpsf-id:string
+            nonces:[integer]
+            nonce-amounts:[integer]
+            direction:bool
+        )
+        @doc "Internal (future XE_* · depth 1]): class-3 DPSF stake/unstake write leg."
+        (with-capability
+            (SCR|XE>UPDATE-STAKE-DPSF
+                ouronet-account pool-id score-id dpsf-id nonces nonce-amounts direction
+            )
+            (XI_2|ApplySingularUserScoreDelta
+                ouronet-account
+                pool-id
+                score-id
+                (URC_SignedBaseDeltaForDpsfStake score-id dpsf-id nonces nonce-amounts direction)
+            )
+        )
+    )
+    ;;Protection: Class 3 — Custom: SCR|XE>UPDATE-STAKE-DPNF
+    (defun XI_1|UpdateScoreDataForNonFungible:string
+        (
+            ouronet-account:string
+            pool-id:string
+            score-id:string
+            dpnf-id:string
+            nonces:[integer]
+            nonce-amounts:[integer]
+            direction:bool
+        )
+        @doc "Internal (future XE_* · depth 1]): class-4 DPNF stake/unstake write leg."
+        (with-capability
+            (SCR|XE>UPDATE-STAKE-DPNF ouronet-account pool-id score-id dpnf-id nonces nonce-amounts direction)
+            (XI_2|ApplySingularUserScoreDelta
+                ouronet-account
+                pool-id
+                score-id
+                (URC_SignedBaseDeltaForDpnfStake score-id dpnf-id nonces nonce-amounts direction)
+            )
+        )
+    )
+    ;;Protection: Class 1 — Innate protection offered by WW_UserScore,
+    ;;Protection:          WU3_Score|VaultTotals, WU_Score|NzsCount
+    (defun XI_2|ApplySingularUserScoreDelta:string
+        (ouronet-account:string pool-id:string score-id:string signed-user-base-delta:decimal)
+        @doc "PHASE 4 orchestrator — UrStoa 2.2 + 2.3 NZS: 4.2 user → 4.1 vault → 4.3 nzs per score row."
+        ;; SECURE: granted by WW_UserScore, WU3_Score|VaultTotals, WU_Score|NzsCount (underlying W_).
+        (let
+            (
+                (scr:object{SCR|Schema} (UR_SCR|Score score-id))
+                (d:object{SCR|SingularUserScoreDelta}
+                    (URC_SingularUserScoreDeltaFromSignedUserBase ouronet-account pool-id score-id signed-user-base-delta)
+                )
+            )
+            (do
+                (WW_UserScore ouronet-account pool-id score-id
+                    (UDC_SCR|UserSchema
+                        (at "new-user-base-score" d)
+                        (at "new-user-boosted-score" d)
+                        (at "new-user-deb-score" d)
+                        (at "new-user-base-deb-score" d)
+                        (at "new-user-boosted-deb-score" d)
+                        ;; vacate-v2 §5: stamp the row with the score's current vacate-generation. A later
+                        ;; fast-vacate bumps the score's generation, lazily invalidating this row until re-stake.
+                        (at "vacate-generation" scr)
+                        ouronet-account
+                        pool-id
+                        score-id
+                    )
+                )
+                (WU3_Score|VaultTotals score-id scr d)
+                (WU_Score|NzsCount score-id scr d)
+            )
+        )
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_IssueOneFromModel:string (owner-konto:string single-model-id:string score-name:string)
+        @doc "Issue ONE SF score (class 3) named <score-name> + its SF definition from a SINGLE model, owned by \
+            \ owner-konto. Returns the score-id (UDC_Makeid score-name). require SECURE; acquires SCR|XI>ISSUE-SCORE \
+            \ for the score insert (the SF definition write runs under the already-granted SECURE)."
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                (m:object{SCR|ScoreEntityModel} (UR_SCR|ScoreEntityModel single-model-id))
+            )
+            (let
+                (
+                    (prec:integer (at "precision" m))
+                    (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+                )
+                (with-capability (SCR|XI>ISSUE-SCORE score-name owner-konto prec 3 BAR 2.0 1.0 1.0 -1)
+                    (XI_Issue score-name owner-konto prec 3 BAR 2.0 1.0 1.0 false -1))
+                (XI_IssueSemiFungibleScoreDefinition score-id (at "collectable-id" m) (at "nonces" m) (at "nonce-score-values" m))
+                score-id
+            )
+        )
+    )
+    ;; [XE]
+    ;;
+    ;; --- Block B · Stake user-score delta (UrStoa phases 4.1 + 4.2 + 4.3) ---
+    ;;   XE_ApplyTrueFungibleStakeDelta / XE_ApplyOrtoFungibleStakeDelta
+    ;;     └ XI_2|ApplySingularUserScoreDelta
+    ;;          ├ WW_UserScore                 UrStoa ≡ UpdateUserScore
+    ;;          ├ WU3_Score|VaultTotals        UrStoa ≡ UpdateVaultScore
+    ;;          └ WU_Score|NzsCount            UrStoa ≡ UpdateNZS
+    ;;
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
+    (defun XE_ApplyTrueFungibleStakeDelta:object{IgnisCollectorV3.OutputCumulator}
+        (pool-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool employed-ids:[string] native-leg:bool)
+        @doc "UrStoa phases 2.2.1 + 2.2.2 + 2.3.1 per employed score (TF). P|UEV_IMC only."
+        (P|UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                ;;
+                (score-ocs:[object{IgnisCollectorV3.OutputCumulator}]
+                    ;; map: employed pool scores (class 0 LP vs class 1 DPTF write leg per score)
+                    (map
+                        (lambda (score-id:string)
+                            (if (= (UR_SCR|ScoreClass score-id) 0)
+                                (do
+                                    (XI_1|UpdateScoreDataForTrueFungibleLP
+                                        beneficiary-id pool-id score-id dptf-id amount native-leg direction
+                                    )
+                                    (URC_StakeScoreDeltaIgnisCumulator score-id)
+                                )
+                                (do
+                                    (XI_1|UpdateScoreDataForTrueFungible
+                                        beneficiary-id pool-id score-id dptf-id amount native-leg direction
+                                    )
+                                    (URC_StakeScoreDeltaIgnisCumulator score-id)
+                                )
+                            )
+                        )
+                        employed-ids
+                    )
+                )
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators score-ocs [])
+        )
+    )
+    ;;Protection: Class 5 — IMC + Custom: SCR|XE>REFRESH-USER-SCORE-DEB
+    (defun XE_RefreshUserScoreDeb:string
+        (ouronet-account:string pool-id:string score-id:string)
+        @doc "Forward (AQP-FVT): M3 deb-staleness backstop. If this user's score deb is stale (Elite-DEB changed \
+            \ since the score was last checkpointed), refresh the stored deb-score to the CURRENT live deb and \
+            \ delta the score totals — done via a 0-base-delta apply (recompute at live deb/promile, no base \
+            \ change). No-op when already fresh. The CALLER (collect/inject) MUST have settled the user's pending \
+            \ at the OLD deb-score first. P|UEV_IMC + SCR|XE>REFRESH-USER-SCORE-DEB."
+        (P|UEV_IMC)
+        (if (URC_U-SCR|UserScoreDebStale ouronet-account pool-id score-id)
+            (with-capability (SCR|XE>REFRESH-USER-SCORE-DEB ouronet-account pool-id score-id)
+                (XI_2|ApplySingularUserScoreDelta ouronet-account pool-id score-id 0.0))
+            "score deb already fresh — no refresh"
+        )
+    )
+    ;;Protection: Class 5 — IMC + Custom: SCR|XE>NUKE-SCORE-FOR-VACATE
+    (defun XE_NukeScoreForVacate:string
+        (score-id:string)
+        @doc "Forward (AQP-VCT): vacate-v2 §5 finalize nuke of ONE employed score — bulk-zero the aggregates + \
+            \ nzs and bump vacate-generation (lazily invalidating all per-user rows). The CALLER (C_FinalizeVacate) \
+            \ has settled every beneficiary's rewards during the drain and verified nns==0 (pool empty), so there \
+            \ is nothing left to preserve. P|UEV_IMC + SCR|XE>NUKE-SCORE-FOR-VACATE."
+        (P|UEV_IMC)
+        (with-capability (SCR|XE>NUKE-SCORE-FOR-VACATE score-id)
+            (WU_Score|Nuke score-id))
+    )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
+    (defun XE_ApplyOrtoFungibleStakeDelta:object{IgnisCollectorV3.OutputCumulator}
+        (
+            pool-id:string
+            beneficiary-id:string
+            dpof-id:string
+            nonces:[integer]
+            nonce-amounts:[decimal]
+            direction:bool
+            employed-ids:[string]
+        )
+        @doc "UrStoa phases 2.2.1 + 2.2.2 + 2.3.1 per employed score (OF). P|UEV_IMC only."
+        (P|UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                ;;
+                (sleeping-or-hibernating:bool (URC_OrtoDpofUsesSleepingMultiplier dpof-id))
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                (score-ocs:[object{IgnisCollectorV3.OutputCumulator}]
+                    (map
+                        (lambda (score-id:string)
+                            (let
+                                (
+                                    (sc:integer (UR_SCR|ScoreClass score-id))
+                                )
+                                (if (= sc 0)
+                                    (do
+                                        (XI_1|UpdateScoreDataForOrtoFungibleLP
+                                            beneficiary-id pool-id score-id dpof-id nonces nonce-amounts direction
+                                        )
+                                        (URC_StakeScoreDeltaIgnisCumulator score-id)
+                                    )
+                                    (if (= sc 2)
+                                        (if (URC_OrtoDpofIsSpecialLeg dpof-id)
+                                            (do
+                                                (XI_1|UpdateScoreDataForSpecialOrtoFungible
+                                                    beneficiary-id pool-id score-id dpof-id nonces nonce-amounts
+                                                    sleeping-or-hibernating direction
+                                                )
+                                                (URC_StakeScoreDeltaIgnisCumulator score-id)
+                                            )
+                                            (do
+                                                (XI_1|UpdateScoreDataForOrtoFungible
+                                                    beneficiary-id pool-id score-id dpof-id nonces nonce-amounts direction
+                                                )
+                                                (URC_StakeScoreDeltaIgnisCumulator score-id)
+                                            )
+                                        )
+                                        (ref-IGNIS::UDC_ConstructOutputCumulator
+                                            0.0 AQP|SC_NAME trigger [score-id "of-skip"]
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                        employed-ids
+                    )
+                )
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators score-ocs [])
+        )
+    )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
+    (defun XE_ApplyCollectableStakeDelta:object{IgnisCollectorV3.OutputCumulator}
+        (
+            pool-id:string
+            beneficiary-id:string
+            collectable-id:string
+            son:bool
+            nonces:[integer]
+            nonce-amounts:[integer]
+            direction:bool
+            employed-ids:[string]
+        )
+        @doc "UrStoa SCORE triple per employed score (DPSF class-3 or DPNF class-4 per son). P|UEV_IMC only."
+        (P|UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                ;;
+                (target-class:integer (if son 3 4))
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                (score-ocs:[object{IgnisCollectorV3.OutputCumulator}]
+                    (map
+                        (lambda (score-id:string)
+                            (if (= (UR_SCR|ScoreClass score-id) target-class)
+                                (if son
+                                    (do
+                                        (XI_1|UpdateScoreDataForSemiFungible
+                                            beneficiary-id pool-id score-id collectable-id nonces nonce-amounts direction
+                                        )
+                                        (URC_StakeScoreDeltaIgnisCumulator score-id)
+                                    )
+                                    (do
+                                        (XI_1|UpdateScoreDataForNonFungible
+                                            beneficiary-id pool-id score-id collectable-id nonces nonce-amounts direction
+                                        )
+                                        (URC_StakeScoreDeltaIgnisCumulator score-id)
+                                    )
+                                )
+                                (ref-IGNIS::UDC_ConstructOutputCumulator
+                                    0.0 AQP|SC_NAME trigger [score-id "collectable-skip"]
+                                )
+                            )
+                        )
+                        employed-ids
+                    )
+                )
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators score-ocs [])
+        )
+    )
+    ;;
+    ;; --- Block C · Link-field XE (leaf writes · no XI children) ---
+    ;;   XE_CreateAqpoolLink / XE_RevokeAqpoolLink / XE_CreateFvtLink
+    ;;
+    ;;Protection: Class 5 — IMC + Custom: SCR|XE>CREATE-AQPOOL-LINK
+    (defun XE_CreateAqpoolLink:string
+        (score-id:string pool-id:string)
+        @doc "Forward entry (e.g. AQP-POOL): P|UEV_IMC; SCR|XE>CREATE-AQPOOL-LINK validates BAR + ownership; write aqpool-link only."
+        (P|UEV_IMC)
+        (with-capability (SCR|XE>CREATE-AQPOOL-LINK score-id pool-id)
+            (WU_Score|AqpoolLink score-id pool-id)
+        )
+        pool-id
+    )
+    ;;Protection: Class 5 — IMC + Custom: SCR|XE>REVOKE-AQPOOL-LINK
+    (defun XE_RevokeAqpoolLink:string
+        (score-id:string pool-id:string)
+        @doc "Forward entry (e.g. AQP-POOL): P|UEV_IMC; SCR|XE>REVOKE-AQPOOL-LINK validates aqpool-link = pool-id + ownership; clear to BAR."
+        (P|UEV_IMC)
+        (with-capability (SCR|XE>REVOKE-AQPOOL-LINK score-id pool-id)
+            (WU_Score|AqpoolLink score-id BAR)
+        )
+    )
+    ;;Protection: Class 5 — IMC + Custom: SCR|XE>CREATE-FVT-LINK
+    (defun XE_CreateFvtLink:string
+        (score-id:string fvt-id:string)
+        @doc "Forward entry (e.g. AQP-FVT): P|UEV_IMC; SCR|XE>CREATE-FVT-LINK validates BAR + ownership; write fvt-link only."
+        (P|UEV_IMC)
+        (with-capability (SCR|XE>CREATE-FVT-LINK score-id fvt-id)
+            (WU_Score|FvtLink score-id fvt-id)
+        )
+        fvt-id
+    )
+    ;;{5.7}  User [A/C]
+    ;;
+    ;; [C]   client
+    ;;
+    ;;Issue by score-class (SCR|T|Score / SCR|Schema)
+    (defun C_IssueLiquidityScore:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string owner-konto:string score-name:string precision:integer lp-denominator:string mx-frozen:decimal mx-sleeping:decimal)
+        @doc "Create score-class 0 (LP). Costs GAS|ISSUE-SCORE IGNIS and UR_UsagePrice \"smart\" STOA from patron."
+        (P|UEV_IMC)
+        (with-capability (SCR|C>ISSUE-LIQUIDITY-SCORE owner-konto score-name precision lp-denominator mx-frozen mx-sleeping)
+            (let
+                (
+                    (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    ;;
+                    (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                )
+                (ref-IGNIS::STOA|C_Collect patron (URCi_IssueScoreStoa))
+                (XI_Issue score-name owner-konto precision 0 lp-denominator mx-frozen mx-sleeping 1.0 true -1)
+                (URCi_IssueScore owner-konto [score-id])
+            )
+        )
+    )
+    (defun C_IssueTrueFungibleScore:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string owner-konto:string score-name:string precision:integer mx-frozen:decimal)
+        @doc "Create score-class 1 (DPTF). Costs GAS|ISSUE-SCORE IGNIS and UR_UsagePrice \"smart\" STOA from patron."
+        (P|UEV_IMC)
+        (with-capability (SCR|C>ISSUE-TRUE-FUNGIBLE-SCORE owner-konto score-name precision mx-frozen)
+            (let
+                (
+                    (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    ;;
+                    (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                )
+                (ref-IGNIS::STOA|C_Collect patron (URCi_IssueScoreStoa))
+                (XI_Issue score-name owner-konto precision 1 BAR mx-frozen 1.0 1.0 true -1)
+                (URCi_IssueScore owner-konto [score-id])
+            )
+        )
+    )
+    (defun C_IssueOrtoFungibleScore:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string owner-konto:string score-name:string precision:integer mx-sleeping:decimal mx-hibernated:decimal)
+        @doc "Create score-class 2 (DPOF, including special tokens). Caller sets mx-sleeping and mx-hibernated; mx-frozen defaults 2.0. \
+            \ Costs GAS|ISSUE-SCORE IGNIS and UR_UsagePrice \"smart\" STOA from patron."
+        (P|UEV_IMC)
+        (with-capability (SCR|C>ISSUE-ORTO-FUNGIBLE-SCORE owner-konto score-name precision mx-sleeping mx-hibernated)
+            (let
+                (
+                    (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    ;;
+                    (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                )
+                (ref-IGNIS::STOA|C_Collect patron (URCi_IssueScoreStoa))
+                (XI_Issue score-name owner-konto precision 2 BAR 2.0 mx-sleeping mx-hibernated true -1)
+                (URCi_IssueScore owner-konto [score-id])
+            )
+        )
+    )
+    (defun C_IssueSemiFungibleScore:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string owner-konto:string score-name:string precision:integer sft-equality:bool)
+        @doc "Create score-class 3 (DPSF). Costs GAS|ISSUE-SCORE IGNIS and UR_UsagePrice \"smart\" STOA from patron."
+        (P|UEV_IMC)
+        (with-capability (SCR|C>ISSUE-SEMI-FUNGIBLE-SCORE owner-konto score-name precision sft-equality)
+            (let
+                (
+                    (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    ;;
+                    (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                )
+                (ref-IGNIS::STOA|C_Collect patron (URCi_IssueScoreStoa))
+                (XI_Issue score-name owner-konto precision 3 BAR 2.0 1.0 1.0 sft-equality -1)
+                (URCi_IssueScore owner-konto [score-id])
+            )
+        )
+    )
+    (defun C_IssueNonFungibleScore:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string owner-konto:string score-name:string precision:integer nft-score-model:integer)
+        @doc "Create score-class 4 (DPNF). Costs GAS|ISSUE-SCORE IGNIS and UR_UsagePrice \"smart\" STOA from patron."
+        (P|UEV_IMC)
+        (with-capability (SCR|C>ISSUE-NON-FUNGIBLE-SCORE owner-konto score-name precision nft-score-model)
+            (let
+                (
+                    (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    ;;
+                    (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                )
+                (ref-IGNIS::STOA|C_Collect patron (URCi_IssueScoreStoa))
+                (XI_Issue score-name owner-konto precision 4 BAR 2.0 1.0 1.0 true nft-score-model)
+                (URCi_IssueScore owner-konto [score-id])
+            )
+        )
+    )
+    ;;Management (SCR|Schema)
+    (defun C_RotateOwnership:object{IgnisCollectorV3.OutputCumulator}
+        (score-id:string new-owner-konto:string)
+        @doc "Transfer score owner-konto. No native STOA; validation in SCR|C>ROTATE-OWNERSHIP-SCORE; XI writes only; medium IGNIS cumulator built here."
+        (P|UEV_IMC)
+        (let
+            (
+                (ico:object{IgnisCollectorV3.OutputCumulator} (URCi_RotateOwnership score-id))
+            )
+            (with-capability (SCR|C>ROTATE-OWNERSHIP-SCORE score-id new-owner-konto)
+                (XI_RotateOwnership score-id new-owner-konto)
+            )
+            ico
+        )
+    )
+    (defun C_Control:object{IgnisCollectorV3.OutputCumulator}
+        (score-id:string new-can-upgrade:bool new-can-change-owner:bool)
+        @doc "Set can-upgrade and can-change-owner. No native STOA; validation in SCR|C>CONTROL-SCORE; XI writes only; medium IGNIS cumulator built here."
+        (P|UEV_IMC)
+        (let
+            (
+                ;;
+                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
+            )
+            (with-capability (SCR|C>CONTROL-SCORE score-id new-can-upgrade new-can-change-owner)
+                (XI_Control score-id new-can-upgrade new-can-change-owner)
+            )
+            (URCi_Control score-id)
+        )
+    )
+    ;;Post-issuance: only C_EnableDebBoost (deb-boost defaults false). Multipliers, sft-equality, nft-score-model, links [..] set at issue.
+    (defun C_CreateBoostClassLink:object{IgnisCollectorV3.OutputCumulator}
+        (score-id:string boost-class-id:string)
+        @doc "Set boost-class-link once. No STOA; validation in SCR|C>CREATE-BOOST-CLASS-LINK-SCORE; XI writes only; biggest IGNIS cumulator built here."
+        (P|UEV_IMC)
+        (let
+            (
+                ;;
+                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
+            )
+            (with-capability (SCR|C>CREATE-BOOST-CLASS-LINK-SCORE score-id boost-class-id)
+                (XI_CreateBoostClassLink score-id boost-class-id)
+            )
+            (URCi_CreateBoostClassLink score-id)
+        )
+    )
+    (defun C_CreateBoostLink:object{IgnisCollectorV3.OutputCumulator}
+        (score-id:string boost-score-id:string)
+        @doc "Set boost-link once. No STOA; validation in SCR|C>CREATE-BOOST-LINK-SCORE; XI writes only; biggest IGNIS cumulator built here."
+        (P|UEV_IMC)
+        (let
+            (
+                ;;
+                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
+            )
+            (with-capability (SCR|C>CREATE-BOOST-LINK-SCORE score-id boost-score-id)
+                (XI_CreateBoostLink score-id boost-score-id)
+            )
+            (URCi_CreateBoostLink score-id)
+        )
+    )
+    (defun C_EnableDebBoost:object{IgnisCollectorV3.OutputCumulator}
+        (score-id:string)
+        @doc "Set deb-boost true once; irreversible. No native STOA; validation in SCR|C>ENABLE-DEB-BOOST-SCORE; XI write only; medium IGNIS cumulator."
+        (P|UEV_IMC)
+        (let
+            (
+                ;;
+                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
+            )
+            (with-capability (SCR|C>ENABLE-DEB-BOOST-SCORE score-id)
+                (XI_EnableDebBoost score-id)
+            )
+            (URCi_EnableDebBoost score-id)
+        )
+    )
+    (defun C_IssueTriplet:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string bronze-score-id:string silver-score-id:string golden-score-id:string)
+        @doc "Bundle three issued scores into one triplet T|bronze|silver|golden. Silver score owner; costs GAS|ISSUE-TRIPLET IGNIS."
+        (P|UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                ;;
+                (owner-konto:string (UR_SCR|ScoreOwnerKonto silver-score-id))
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+            )
+            (with-capability (SCR|C>ISSUE-TRIPLET bronze-score-id silver-score-id golden-score-id)
+                (XI_IssueTriplet bronze-score-id silver-score-id golden-score-id)
+            )
+            (URCi_IssueTriplet silver-score-id
+                [(UC_ComputeTripletId bronze-score-id silver-score-id golden-score-id)]
+            )
+        )
+    )
+    (defun C_IssueSemiFungibleScoreDefinition:object{IgnisCollectorV3.OutputCumulator}
+        (score-id:string dpsf-id:string nonces:[integer] nonce-score-values:[decimal])
+        @doc "Write SCR|T|SF|Score nonce-score-value for multiple nonces in one call; increments SF DefRevision revision-nonce once."
+        (P|UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                ;;
+                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
+                (big:decimal (ref-IGNIS::UC_IgnisLeg "tier-big"))
+                (how-many:decimal (dec (length nonces)))
+                (price:decimal (* how-many big))
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+            )
+            (with-capability (SCR|C>ISSUE-SF-SCORE-DEFINITION score-id dpsf-id nonces nonce-score-values)
+                (XI_IssueSemiFungibleScoreDefinition score-id dpsf-id nonces nonce-score-values)
+            )
+            (URCi_IssueSemiFungibleScoreDefinition score-id nonces)
+        )
+    )
+    (defun C_IssueNonFungibleScoreDefinition:object{IgnisCollectorV3.OutputCumulator}
+        (score-id:string dpnf-id:string trait-keys:[string] trait-values:[string] trait-score-values:[decimal])
+        @doc "Write SCR|T|NF|TraitScore trait-score-value rows for multiple trait key/value pairs in one call; bumps NF DefRevision global + trait counters."
+        (P|UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                ;;
+                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
+                (biggest:decimal (ref-IGNIS::UC_IgnisLeg "tier-biggest"))
+                (how-many:decimal (dec (length trait-keys)))
+                (price:decimal (* how-many biggest))
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+            )
+            (with-capability (SCR|C>ISSUE-NF-SCORE-DEFINITION score-id dpnf-id trait-keys trait-values trait-score-values)
+                (XI_IssueNonFungibleScoreDefinitionCore
+                    score-id dpnf-id true trait-keys trait-values trait-score-values [] []
+                )
+            )
+            (URCi_IssueNonFungibleScoreDefinition score-id trait-keys)
+        )
+    )
+    (defun C_IssueNonFungibleSetScoreDefinition:object{IgnisCollectorV3.OutputCumulator}
+        (score-id:string dpnf-id:string dpnf-nonce-classes:[integer] class-score-values:[decimal])
+        @doc "Write SCR|T|NF|ClassScore set-mode definitions (one row per dpnf-nonce-class); bumps NF DefRevision global + class counters."
+        (P|UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                ;;
+                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
+                (biggest:decimal (ref-IGNIS::UC_IgnisLeg "tier-biggest"))
+                (how-many:decimal (dec (length dpnf-nonce-classes)))
+                (price:decimal (* how-many biggest))
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+            )
+            (with-capability (SCR|C>ISSUE-NF-SET-SCORE-DEFINITION score-id dpnf-id dpnf-nonce-classes class-score-values)
+                (XI_IssueNonFungibleScoreDefinitionCore
+                    score-id dpnf-id false [] [] [] dpnf-nonce-classes class-score-values
+                )
+            )
+            (URCi_IssueNonFungibleSetScoreDefinition score-id dpnf-nonce-classes)
+        )
+    )
+    (defun C_IssueSingleScoreModel:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string model-name:string score-class:integer collectable-id:string precision:integer nonces:[integer] nonce-score-values:[decimal])
+        @doc "Define a SINGLE score-entity model (the scoring spec for one score + its SF definition). model-id \
+            \ from model-name (UDC_Makeid). P|UEV_IMC + SCR|C>ISSUE-SINGLE-SCORE-MODEL. Bills GAS|ISSUE-SCORE-MODEL."
+        (P|UEV_IMC)
+        (with-capability (SCR|C>ISSUE-SINGLE-SCORE-MODEL patron model-name score-class nonces nonce-score-values)
+            (let
+                (
+                    (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (model-id:string (ref-U|DALOS::UDC_Makeid model-name))
+                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                )
+                (WI_ScoreEntityModel model-id
+                    (UDC_SCR|ScoreEntityModel CT_SCORE_MODEL_SINGLE score-class collectable-id precision nonces nonce-score-values BAR BAR BAR model-id))
+                (URCi_IssueScoreModel "AQP-SCR|C_IssueSingleScoreModel" patron [model-id])
+            )
+        )
+    )
+    (defun C_CombineTripletScoreModel:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string model-name:string bronze-model-id:string silver-model-id:string golden-model-id:string)
+        @doc "Combine three SINGLE models into a TRIPLET score-entity model. model-id from model-name. \
+            \ P|UEV_IMC + SCR|C>COMBINE-TRIPLET-SCORE-MODEL. Bills GAS|ISSUE-SCORE-MODEL."
+        (P|UEV_IMC)
+        (with-capability (SCR|C>COMBINE-TRIPLET-SCORE-MODEL patron model-name bronze-model-id silver-model-id golden-model-id)
+            (let
+                (
+                    (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (model-id:string (ref-U|DALOS::UDC_Makeid model-name))
+                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                )
+                (WI_ScoreEntityModel model-id
+                    (UDC_SCR|ScoreEntityModel CT_SCORE_MODEL_TRIPLET 0 BAR 0 [] [] bronze-model-id silver-model-id golden-model-id model-id))
+                (URCi_CombineTripletModel patron [model-id])
+            )
+        )
+    )
+    (defun C_IssueScoreFromModel:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string owner-konto:string model-id:string agency-name:string)
+        @doc "FACTORY: issue a score entity conforming to <model-id>, owned by owner-konto, named <agency-name>. \
+            \ single → 1 SF score named agency-name + its definition; triplet → 3 sub-scores named \
+            \ agency-name+Bronze/Silver/Golden (from the sub single-models) + XI_IssueTriplet. agency-name must be a \
+            \ valid, globally-unique score-name (collision ⇒ rejected). Returns the (score | triplet) id in \
+            \ output[0]. P|UEV_IMC + SCR|C>ISSUE-SCORE-FROM-MODEL (composes SECURE). Bills GAS|ISSUE-SCORE-MODEL."
+        (P|UEV_IMC)
+        (with-capability (SCR|C>ISSUE-SCORE-FROM-MODEL patron owner-konto model-id)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                )
+                (let
+                    (
+                        (result-id:string
+                            (if (= (UR_SCR|ModelEntityType model-id) CT_SCORE_MODEL_SINGLE)
+                                (XI_IssueOneFromModel owner-konto model-id agency-name)
+                                (let
+                                    (
+                                        (m:object{SCR|ScoreEntityModel} (UR_SCR|ScoreEntityModel model-id))
+                                    )
+                                    (let
+                                        (
+                                            (b:string (XI_IssueOneFromModel owner-konto (at "bronze-model-id" m) (concat [agency-name "Bronze"])))
+                                            (s:string (XI_IssueOneFromModel owner-konto (at "silver-model-id" m) (concat [agency-name "Silver"])))
+                                            (g:string (XI_IssueOneFromModel owner-konto (at "golden-model-id" m) (concat [agency-name "Golden"])))
+                                        )
+                                        (with-capability (SCR|C>ISSUE-TRIPLET b s g)
+                                            (XI_IssueTriplet b s g))
+                                        (UC_ComputeTripletId b s g)
+                                    )
+                                )
+                            )
+                        )
+                    )
+                    (URCi_IssueScoreModel "AQP-SCR|C_IssueScoreFromModel" patron [result-id])
+                )
+            )
+        )
+    )
+
+)
+
+
+
+;;
+
+;; --- tables for 02_SCORE.pact (12 defined) ---
+;; UPGRADE MODE: this module is assumed already deployed, so its
+;; tables already exist and (create-table) would ABORT the whole
+;; transaction. They are listed here, commented, for reference.
+;; If any of these is NEW since the last deploy, uncomment JUST it.
+;; (create-table P|T)
+;; (create-table P|MT)
+;; (create-table SCR|T|Score)
+;; (create-table SCR|T|UserScore)
+;; (create-table SCR|T|SF|Score)
+;; (create-table SCR|T|NF|TraitScore)
+;; (create-table SCR|T|NF|ClassScore)
+;; (create-table SCR|T|SF|DefRevision)
+;; (create-table SCR|T|NF|DefRevision)
+;; (create-table SCR|T|NF|TraitKeys)
+;; (create-table SCR|T|Triplet)
+;; (create-table SCR|T|ScoreEntityModel)
+
