@@ -3957,3 +3957,38 @@ gate green at 25,029.
 > the wrong cause for a month.
 
 **The drift is gone**, and now a bare `--apply` really is a no-op.
+
+## 8.35 Module coverage of the red team — 88 of 88
+
+The roadmap specifies the round as *"fan out attackers per module / attack-surface"*. Measured at the
+close: of the tree's **88 modules, 85** had at least one of their symbols named inside an
+`expect-failure` somewhere in the suite.
+
+A cruder first cut — "is the module NAMED in a `RedTeam/` file?" — said **53 were not**, and that
+figure is worthless: an attack drives a Talos wrapper and reaches the core without naming it, and
+utilities have no client surface to attack. The measure that means something is whether any
+adversarial assertion anywhere lands on the module's own symbols.
+
+**The three that had none:** `INFO-ZERO` (1 definition), `U|BFS` (17), `U|DPTF` (8).
+
+**None of them has a refusal to witness**, and that is the finding rather than the excuse: all three
+are pure `UC_`/`UCx_`/`UDCx_` compute — no `enforce`, no table access, nothing that can turn a caller
+away. An `expect-failure` against them would be meaningless.
+
+What they do have is the question the audits actually asked of this family: **M3/#37M and M4/#38M
+were both empty-list crashes in exactly this code.** So the adversarial input is MALFORMED DATA, and
+`<<UTIL-16>>` pins it with *positive* assertions, because the claim is "it answers" and not "it
+refuses":
+
+| probe | result |
+|---|---|
+| BFS over an **empty graph** | answers with the BAR sentinel — no `(at 0 …)` fault |
+| **targeted** search, node absent | likewise (a second exit condition, a second chance to fault) |
+| 2-splitter at `0`, and at **`-5`** | conserves its input — floor division loses a unit if done naively |
+| 8-splitter on an input **smaller than its part count** | conserves |
+| volumetric tax, zero amount at zero precision | `0.0` |
+
+All hold. The M3/M4 repairs are still in place, and now something says so.
+
+**Module coverage is 88 of 88.** Combined with the worklists at §8.32, every axis the round can
+measure is closed.

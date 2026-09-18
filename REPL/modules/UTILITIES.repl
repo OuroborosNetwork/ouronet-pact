@@ -1098,3 +1098,53 @@
 (commit-tx)
 
 (print "=== END modules/UTILITIES.repl ===")
+
+;;|| NEXT >
+;;
+(begin-tx "UTIL-16 — the last three modules with no adversarial assertion")
+(print "")
+(print "=== UTIL-16 — U|BFS and U|DPTF under malformed input =======================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;FOUND BY MEASURING MODULE COVERAGE, at the close of the red-team round. Of the tree's 88 modules,
+;;**85** have at least one symbol named inside an `expect-failure` somewhere in the suite. Three did
+;;not: `INFO-ZERO` (one definition), `U|BFS` (17) and `U|DPTF` (8).
+;;
+;;THEY HAVE NO REFUSAL TO WITNESS, and that is the point rather than an excuse. Both are pure `UC_`/
+;;`UCx_`/`UDCx_` compute: no `enforce`, no table access, nothing to turn a caller away. An
+;;`expect-failure` against them would be meaningless. What they DO have is the question the audits
+;;actually asked of this family -- **M3/#37M and M4/#38M were both empty-list crashes in exactly this
+;;code** (`UC_MaxInteger` on an empty list, the graph-node filter). So the adversarial input here is
+;;MALFORMED DATA, and the assertions are positive because the claim is "it answers", not "it refuses".
+(let
+    (
+        (ref-BFS:module{BreadthFirstSearchV2} U|BFS)
+        (ref-UDPTF:module{UtilityDptfV2} U|DPTF)
+    )
+    (map print
+        [
+            ;;EMPTY GRAPH. The M4/#38M shape: a graph with no nodes, searched. It must answer with
+            ;;the BAR sentinel rather than raise on `(at 0 …)`.
+            (expect "<<UTIL-16>> BFS over an EMPTY graph answers with the BAR sentinel, not a crash"
+                [["|"]] (at "chains" (ref-BFS::UC_BFS [] "X")))
+            ;;A NODE THAT IS NOT IN THE GRAPH -- the other half, and the targeted variant, which has
+            ;;a second exit condition and so a second chance to fault.
+            (expect "<<UTIL-16>> ...and a TARGETED search for a node absent from an empty graph likewise"
+                [["|"]] (at "chains" (ref-BFS::UC_BFSTargeted [] "A" "B")))
+            ;;THE SPLITTERS, at the boundary and below it. The property that matters is not the
+            ;;shape but CONSERVATION: whatever goes in must come out across the parts, including for
+            ;;a negative input, where a naive floor-division loses a unit.
+            (expect "<<UTIL-16>> the 2-splitter conserves its input at zero"
+                0 (fold (+) 0 (ref-UDPTF::UC_TwoSplitter 0)))
+            (expect "<<UTIL-16>> ...and for a NEGATIVE input, where floor division can lose a unit"
+                (- 0 5) (fold (+) 0 (ref-UDPTF::UC_TwoSplitter (- 0 5))))
+            (expect "<<UTIL-16>> ...and the 8-splitter conserves an input smaller than its part count"
+                1 (fold (+) 0 (ref-UDPTF::UC_EightSplitter 1)))
+            ;;ZERO AMOUNT AT ZERO PRECISION -- the degenerate corner of the tax computation.
+            (expect "<<UTIL-16>> the volumetric tax is 0.0 on a zero amount at zero precision"
+                0.0 (ref-UDPTF::UC_VolumetricTax 0 0.0))
+        ]
+    )
+    ""
+)
+(commit-tx)
