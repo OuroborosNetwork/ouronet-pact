@@ -206,7 +206,7 @@
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
         (emma:string KST.EMMA)
@@ -304,7 +304,7 @@
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
         (emma:string KST.EMMA)
@@ -357,7 +357,7 @@
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
         (bj:string KC.BJ)

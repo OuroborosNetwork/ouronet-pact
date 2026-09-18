@@ -40,7 +40,7 @@
 (print "--- [TX-EQUITY-001 - Issue Shareholder Collection · 01 · let / invocation] ---")
 (let
     (
-        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (owner:string KST.ANHD)
         (dpsf-price:decimal

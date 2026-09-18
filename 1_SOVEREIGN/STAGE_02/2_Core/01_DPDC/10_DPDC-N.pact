@@ -46,8 +46,8 @@
     ;;
     ;;  [URCi]
     ;;
-    (defun URCi_UpdateNonces:object{IgnisCollectorV2.OutputCumulator} (account:string count:integer))
-    (defun URCi_UpdateNonceField:object{IgnisCollectorV2.OutputCumulator} (account:string))
+    (defun URCi_UpdateNonces:object{IgnisCollectorV3.OutputCumulator} (account:string count:integer))
+    (defun URCi_UpdateNonceField:object{IgnisCollectorV3.OutputCumulator} (account:string))
     ;;{5.4}  Validate [UEV/CAP]
     ;;
     ;; [UEV]
@@ -394,19 +394,19 @@
         )
     )
     ;;
-    (defun URCi_UpdateNonces:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_UpdateNonces:object{IgnisCollectorV3.OutputCumulator}
         (account:string count:integer)
         @doc "Cost preview for C_UpdateNonces (count * UsagePrice ignis|smallest; \
             \ construct with empty output list)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (price:decimal (* (dec count) (ref-IGNIS::UC_IgnisLeg "tier-smallest")))
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator price account (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_UpdateNonceField:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_UpdateNonceField:object{IgnisCollectorV3.OutputCumulator}
         (account:string)
         @doc "Cost preview for the single-field nonce updates (Royalty, IgnisRoyalty, Name, \
             \ Description, Score, MetaData, URI) — ONE uniform price for all ~20 C_UpdateNonce* \
@@ -416,7 +416,7 @@
             \ update is a config/property change per the IG|DETER rubric."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisPrice "DPNF|C_UpdateNonce" "setup")
@@ -685,7 +685,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (smallest:decimal (ref-IGNIS::UC_IgnisLeg "tier-smallest"))
                 (how-many:decimal (dec (length nosc)))
                 (price:decimal (* how-many smallest))

@@ -126,7 +126,7 @@
         ;;
         ;;
         ;;FUNCTION 1
-        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
         (ref-SWPL:module{SwapperLiquidityV2} SWPL)
         (current-pool-state:object{SwapperLiquidityV2.PoolState} (MTX-SWP.UR_PoolState swpair))
         (primary:decimal (at "primary-lp" yielded-clad))
@@ -254,7 +254,7 @@
                                         (
                                             (ref-U|DPTF:module{UtilityDptfV2} U|DPTF)
                                             (ref-DALOS:module{OuronetDalosV2} DALOS)
-                                            (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                                            (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                                         )
                                         (with-capability (DPTF.DPTF|C>BURN id-x account-x amount-x)
                                             (with-capability (DPTF.SECURE)
@@ -303,7 +303,7 @@
     (with-capability (SWPLC.SWPLC|C>REMOVE_LQ swpair lp-amount)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 (ref-SWPL:module{SwapperLiquidityV2} SWPL)
                 ;;
@@ -318,7 +318,7 @@
                 ;;
                 (flat-ignis-lq-rm-fee:decimal 1000.0)
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                (ico-flat:object{IgnisCollectorV2.OutputCumulator}
+                (ico-flat:object{IgnisCollectorV3.OutputCumulator}
                     (ref-IGNIS::UDC_ConstructOutputCumulator flat-ignis-lq-rm-fee SWP|SC_NAME trigger [])
                 )
             )

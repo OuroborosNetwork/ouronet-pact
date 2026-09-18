@@ -255,7 +255,7 @@
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-TFT:module{TrueFungibleTransferV2} TFT)
         (ref-DSP:module{Dispenser} DSP)

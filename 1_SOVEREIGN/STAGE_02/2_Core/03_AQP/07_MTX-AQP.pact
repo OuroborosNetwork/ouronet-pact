@@ -2,7 +2,7 @@
 ;; Holds ALL AQP multi-transaction (defpact) functions. M3 #12 (deb-staleness): the spike-fallback inject.
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface AqpMtxV2
+(interface AqpMtxV3
     @doc "Exposes AQP MultiStep (defpact) client functions. Currently: the tiered enforced-fresh FVT inject \
         \ (MTX|n|C_Inject) — the spike fallback for CC_Inject when the stale set exceeds one transaction."
 
@@ -62,7 +62,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements AqpMtxV2)
+    (implements AqpMtxV3)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -262,7 +262,7 @@
     (defun CT_EmptyCumulator ()
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UDC_EmptyOutputCumulatorV2)
         )
@@ -275,7 +275,7 @@
             \ recompute-set size. Read-only; sweep-in-progress keeps it fixed across defpact steps."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
             )
             (fold (+) 0
                 (map
@@ -299,7 +299,7 @@
                 (lambda (acc:object sid:string)
                     (let
                         (
-                            (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+                            (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
                             (seen-before:integer (at "seen" acc))
                             (fvt:string (ref-SCR::UR_SCR|ScoreFvtLink sid))
                             (member:string
@@ -379,7 +379,7 @@
                 (require-capability (MTX-AQP|C>INJECT patron fvt-id reward-dptf-id amount))
               (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (stale:[string] (RPS.URH_FvtStalePresentUsers fvt-id))
                 )
                 (if (<= (length stale) N_FIX)
@@ -413,7 +413,7 @@
                     (with-capability (MTX-AQP|C>INJECT patron fvt-id reward-dptf-id amount)
                         (let
                             (
-                                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                                 (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                                 (stale:[string] (RPS.URH_FvtStalePresentUsers fvt-id))
                             )
@@ -442,7 +442,7 @@
         (step
             (let
                 (
-                    (ref-ANK:module{AcquisitionAnchorsV2} AQP-ANK)
+                    (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
                 )
                 (require-capability (MTX-AQP|C>SWEEP-REVOKE patron anchor-id))

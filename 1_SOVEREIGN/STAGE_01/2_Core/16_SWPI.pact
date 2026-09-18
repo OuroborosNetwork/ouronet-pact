@@ -187,8 +187,8 @@
     (defun URC_IndirectRefillAmounts:[decimal] (X:[decimal] positions:[integer] amounts:[decimal]))
     (defun URC_TrimIdsWithZeroAmounts:[string] (swpair:string input-amounts:[decimal]))
     (defun URC_IssuePoolIgnis:decimal ())
-    (defun URCi_Issue:object{IgnisCollectorV2.OutputCumulator} (account:string pool-tokens:[object{SwapperV4.PoolTokens}]))
-    (defun URCi_IssuePool:object{IgnisCollectorV2.OutputCumulator} (account:string pool-tokens:[object{SwapperV4.PoolTokens}]))
+    (defun URCi_Issue:object{IgnisCollectorV3.OutputCumulator} (account:string pool-tokens:[object{SwapperV4.PoolTokens}]))
+    (defun URCi_IssuePool:object{IgnisCollectorV3.OutputCumulator} (account:string pool-tokens:[object{SwapperV4.PoolTokens}]))
     (defun URCi_IssueStoa:decimal ())
     ;;{5.4}  Validate [UEV/CAP]
     ;;
@@ -209,7 +209,7 @@
     ;;sequence — SWPI's own C_Issue and MTX-SWP::MTX|C_Issue's Step 3 both call this
     ;;instead of each independently reimplementing the same mint/transfer/tracker
     ;;writes. Returns [swpair token-lp ico-lp ico-transfer-in ico-mint ico-transfer-out]
-    ;;— a wider list, not an IgnisCollectorV2.OutputCumulator (matches this codebase's
+    ;;— a wider list, not an IgnisCollectorV3.OutputCumulator (matches this codebase's
     ;;XE_* convention: the forward module's own C_ composes IGNIS, not this function) —
     ;;so C_Issue can still aggregate every sub-call's own cumulator into its single
     ;;billed response exactly as before, while MTX|C_Issue (which already bills
@@ -221,7 +221,7 @@
     ;;  []C] Functions
     ;;
     ;;
-    (defun C_Issue:object{IgnisCollectorV2.OutputCumulator} (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool))
+    (defun C_Issue:object{IgnisCollectorV3.OutputCumulator} (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool))
 
 )
 ;;
@@ -2334,7 +2334,7 @@
             \ Pinned by `Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl <<SWP-ISSUE-INFO>>`."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UC_StoaPrice "issue-swp-pair")
         )
@@ -2347,7 +2347,7 @@
             \ ADDED 2026-09-14 with the GS-04 repair -- see URCi_IssuePool."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (fold (+) 0.0
                 [
@@ -2359,7 +2359,7 @@
             )
         )
     )
-    (defun URCi_IssuePool:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_IssuePool:object{IgnisCollectorV3.OutputCumulator}
         (account:string pool-tokens:[object{SwapperV4.PoolTokens}])
         @doc "Cost preview for the MULTI-STEP pool issuance -- MTX-SWP::MTX|C_Issue -- as opposed \
             \ to URCi_Issue below, which previews the SINGLE-TX SWPI::C_Issue. TWO legs, matching \
@@ -2375,7 +2375,7 @@
             \ Measured, not reasoned about, at modules/DEFPACT-BILLING.repl <<DPB-02>>."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 (ref-SWP:module{SwapperV4} SWP)
                 ;;
@@ -2395,7 +2395,7 @@
             )
         )
     )
-    (defun URCi_Issue:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_Issue:object{IgnisCollectorV3.OutputCumulator}
         (account:string pool-tokens:[object{SwapperV4.PoolTokens}])
         @doc "Cost preview for the SINGLE-TX C_Issue's IGNIS cumulator (the STOA dptf+swp usage prices are \
             \ billed separately). Five legs, matching C_Issue's concat: \
@@ -2414,7 +2414,7 @@
             \ Output ([swpair token-lp]) is empty here (write products)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 (ref-SWP:module{SwapperV4} SWP)
@@ -2660,7 +2660,7 @@
             \ module{SwapperIssueV4} ref) call this instead of each independently \
             \ reimplementing it. \
             \ Returns [swpair token-lp ico-lp ico-transfer-in ico-mint ico-transfer-out] — \
-            \ a wider list, not an IgnisCollectorV2.OutputCumulator (this codebase's XE_* \
+            \ a wider list, not an IgnisCollectorV3.OutputCumulator (this codebase's XE_* \
             \ convention: the forward module's own C_ composes IGNIS, not this function). \
             \ C_Issue aggregates all four sub-cumulators into its own single billed \
             \ response; MTX|C_Issue's Step 3 only needs swpair/token-lp (it already billed \
@@ -2678,7 +2678,7 @@
                     (pool-token-ids:[string] (ref-SWP::UC_ExtractTokens pool-tokens))
                     (pool-token-amounts:[decimal] (ref-SWP::UC_ExtractTokenSupplies pool-tokens))
                     (lp-name-ticker:[string] (ref-SWP::URC_LpComposer pool-tokens weights amp))
-                    (ico-lp:object{IgnisCollectorV2.OutputCumulator}
+                    (ico-lp:object{IgnisCollectorV3.OutputCumulator}
                         (ref-DPTF::XE_IssueLP (at 0 lp-name-ticker) (at 1 lp-name-ticker))
                     )
                     (token-lp:string (at 0 (at "output" ico-lp)))
@@ -2687,13 +2687,13 @@
                 (ref-BRD::XE_Issue swpair)
                 (let
                     (
-                        (ico-transfer-in:object{IgnisCollectorV2.OutputCumulator}
+                        (ico-transfer-in:object{IgnisCollectorV3.OutputCumulator}
                             (ref-TFT::C_MultiTransfer pool-token-ids account SWP|SC_NAME pool-token-amounts true)
                         )
-                        (ico-mint:object{IgnisCollectorV2.OutputCumulator}
+                        (ico-mint:object{IgnisCollectorV3.OutputCumulator}
                             (ref-DPTF::C_Mint token-lp SWP|SC_NAME GENESIS_LP_SUPPLY true)
                         )
-                        (ico-transfer-out:object{IgnisCollectorV2.OutputCumulator}
+                        (ico-transfer-out:object{IgnisCollectorV3.OutputCumulator}
                             (ref-TFT::C_Transfer token-lp SWP|SC_NAME account GENESIS_LP_SUPPLY true)
                         )
                     )
@@ -2740,7 +2740,7 @@
             )
         )
     )
-    (defun C_Issue:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_Issue:object{IgnisCollectorV3.OutputCumulator}
         (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool)
         @doc "Issues a new SWPair (Liquidty Pool). \
             \ #36M/M5 fix: the write sequence itself (mint/transfer/tracker) now lives in \
@@ -2752,7 +2752,7 @@
         (with-capability (SWPI|C>ISSUE account pool-tokens fee-lp weights amp p)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     ;;STOA leg of a swap-pair issue: the SAME DOLLAR VALUE as its IGNIS deter
                     ;;($50 => 500 STOA at the $0.10 peg), via UC_StoaPrice. Replaces the two
                     ;;legacy sub-cent UsagePrice legs ("dptf" + "swp").
@@ -2762,11 +2762,11 @@
                     (write-result:list (XE_IssueWrite account pool-tokens fee-lp weights amp p))
                     (swpair:string (at 0 write-result))
                     (token-lp:string (at 1 write-result))
-                    (ico1:object{IgnisCollectorV2.OutputCumulator} (at 2 write-result))
-                    (ico2:object{IgnisCollectorV2.OutputCumulator} (at 3 write-result))
-                    (ico3:object{IgnisCollectorV2.OutputCumulator} (at 4 write-result))
-                    (ico4:object{IgnisCollectorV2.OutputCumulator} (at 5 write-result))
-                    (ico5:object{IgnisCollectorV2.OutputCumulator}
+                    (ico1:object{IgnisCollectorV3.OutputCumulator} (at 2 write-result))
+                    (ico2:object{IgnisCollectorV3.OutputCumulator} (at 3 write-result))
+                    (ico3:object{IgnisCollectorV3.OutputCumulator} (at 4 write-result))
+                    (ico4:object{IgnisCollectorV3.OutputCumulator} (at 5 write-result))
+                    (ico5:object{IgnisCollectorV3.OutputCumulator}
                         (ref-IGNIS::UDC_ConstructOutputCumulator gas-swp-cost SWP|SC_NAME trigger [])
                     )
                 )

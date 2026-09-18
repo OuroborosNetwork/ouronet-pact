@@ -152,13 +152,13 @@
     ;;
     (defun URC_Prices:object{DEMIPAD|Prices} (asset-id:string amount-in-dollars:decimal type:integer))
     (defun URC_Acquire:[string] (buyer:string asset-id:string buy-amount-in-dollarz:decimal type:integer slippage:decimal))
-    (defun URCi_Deposit:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_Deposit:object{IgnisCollectorV3.OutputCumulator}
         (donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool)
     )
-    (defun URCi_TransmitSemiFungibles:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_TransmitSemiFungibles:object{IgnisCollectorV3.OutputCumulator}
         (client:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
     )
-    (defun URCi_TransmitNonFungibles:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_TransmitNonFungibles:object{IgnisCollectorV3.OutputCumulator}
         (client:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
     )
     ;;{5.4}  Validate [UEV/CAP]
@@ -185,7 +185,7 @@
     ;;
     ;;  [C]
     ;;
-    (defun C_Deposit:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_Deposit:object{IgnisCollectorV3.OutputCumulator}
         (donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal)
     )
     (defun C_Withdraw (patron:string asset-id:string type:integer destination:string)
@@ -193,10 +193,10 @@
     ;;
     (defun C_TransmitTrueFungible (patron:string client:string asset-id:string amount:decimal fuel-or-retrieve:bool))
     (defun C_TransmitOrtoFungible (patron:string client:string asset-id:string nonces:[integer] fuel-or-retrieve:bool))
-    (defun C_TransmitSemiFungibles:object{IgnisCollectorV2.OutputCumulator} 
+    (defun C_TransmitSemiFungibles:object{IgnisCollectorV3.OutputCumulator} 
         (client:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
     )
-    (defun C_TransmitNonFungibles:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_TransmitNonFungibles:object{IgnisCollectorV3.OutputCumulator}
         (client:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
     )
 
@@ -654,7 +654,7 @@
     (defun CT_EmptyCumulator ()
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UDC_EmptyOutputCumulatorV2)
         )
@@ -1062,7 +1062,7 @@
             )
         )
     )
-    (defun URCi_Deposit:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_Deposit:object{IgnisCollectorV3.OutputCumulator}
         (donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool)
         @doc "Cost preview for C_Deposit: (type 0) wrap-STOA of the non-environment amount, \
             \ (type 1) unwrap-STOA of the environment amount, and (unless direct-injection) the \
@@ -1073,7 +1073,7 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
                 ;;
@@ -1109,18 +1109,18 @@
             )
         )
     )
-    (defun URCi_TransmitSemiFungibles:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_TransmitSemiFungibles:object{IgnisCollectorV3.OutputCumulator}
         (client:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
         @doc "Cost preview for C_TransmitSemiFungibles: the single collectable multi-transfer \
             \ (client->launchpad on fuel, launchpad->client on retrieve), son=true."
         (URCi_TransmitCollectables client asset-id true nonces amounts fuel-or-retrieve)
     )
-    (defun URCi_TransmitNonFungibles:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_TransmitNonFungibles:object{IgnisCollectorV3.OutputCumulator}
         (client:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
         @doc "Cost preview for C_TransmitNonFungibles: as URCi_TransmitSemiFungibles with son=false."
         (URCi_TransmitCollectables client asset-id false nonces amounts fuel-or-retrieve)
     )
-    (defun URCi_TransmitCollectables:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_TransmitCollectables:object{IgnisCollectorV3.OutputCumulator}
         (client:string asset-id:string son:bool nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
         @doc "Shared cost preview for the collectable transmit legs (mirrors XI_TransmitCollectables): \
             \ one DPDC-T multi-transfer, sender/receiver flipped by fuel-or-retrieve."
@@ -1407,7 +1407,7 @@
     )
     ;;
     ;;Protection: Class 2 — SECURE
-    (defun XI_TransmitCollectables:object{IgnisCollectorV2.OutputCumulator}
+    (defun XI_TransmitCollectables:object{IgnisCollectorV3.OutputCumulator}
         (client:string asset-id:string son:bool nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
         (require-capability (SECURE))
         (let
@@ -1474,7 +1474,7 @@
             (format "Asset {} Retrieval succesfuly set to {}" [asset-id toggle])
         )
     )
-    (defun C_Deposit:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_Deposit:object{IgnisCollectorV3.OutputCumulator}
         (donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal)
         @doc "Deposits Funds into the Launchpad, for a registered Asset \
             \ Type 0 = Native Stoa \
@@ -1496,7 +1496,7 @@
             (let
                 (
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-TFT:module{TrueFungibleTransferV2} TFT)
                     (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
                     ;;
@@ -1516,19 +1516,19 @@
                     (rem:decimal (at "remainder-amount" prices))
                     (non-enviroment:decimal (+ cod rem))
                     ;;
-                    (ico1:object{IgnisCollectorV2.OutputCumulator}
+                    (ico1:object{IgnisCollectorV3.OutputCumulator}
                         (if (= type 0)
                             (ref-LIQUID::C_WrapStoa donor non-enviroment)
                             EOC
                         )
                     )
-                    (ico2:object{IgnisCollectorV2.OutputCumulator}
+                    (ico2:object{IgnisCollectorV3.OutputCumulator}
                         (if (= type 1)
                             (ref-LIQUID::C_UnwrapStoa donor env)
                             EOC
                         )
                     )
-                    (ico3:object{IgnisCollectorV2.OutputCumulator}
+                    (ico3:object{IgnisCollectorV3.OutputCumulator}
                         (if (not direct-injection)
                             (ref-TFT::C_Transfer working-id donor DEMIPAD|SC_NAME non-enviroment true)
                             EOC
@@ -1640,14 +1640,14 @@
             )
         )
     )
-    (defun C_TransmitSemiFungibles:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_TransmitSemiFungibles:object{IgnisCollectorV3.OutputCumulator}
         (client:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
         (P|UEV_IMC)
         (with-capability (P|SECURE-CALLER)
             (XI_TransmitCollectables client asset-id true nonces amounts fuel-or-retrieve)
         )
     )
-    (defun C_TransmitNonFungibles:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_TransmitNonFungibles:object{IgnisCollectorV3.OutputCumulator}
         (client:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
         (P|UEV_IMC)
         (with-capability (P|SECURE-CALLER)

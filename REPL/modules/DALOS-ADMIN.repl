@@ -82,7 +82,7 @@
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
     )
     (let ((p0:decimal (ref-DALOS::UR_UsagePrice "dptf")))

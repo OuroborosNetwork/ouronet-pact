@@ -57,9 +57,9 @@
     ;;
     ;;  [UDC]
     ;;
-    (defun URCi_MultiTransferCumulator:object{IgnisCollectorV2.OutputCumulator} (ids:[string] sons:[bool] sender:string receiver:string nonces-array:[[integer]] amounts-array:[[integer]]))
-    (defun URCi_RepurposeCollectable:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool amounts:[integer]))
-    (defun URCi_BulkTransferCumulator:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_MultiTransferCumulator:object{IgnisCollectorV3.OutputCumulator} (ids:[string] sons:[bool] sender:string receiver:string nonces-array:[[integer]] amounts-array:[[integer]]))
+    (defun URCi_RepurposeCollectable:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool amounts:[integer]))
+    (defun URCi_BulkTransferCumulator:object{IgnisCollectorV3.OutputCumulator}
         (id:string son:bool sender:string receiver-lst:[string] nonces-array:[[integer]] amounts-array:[[integer]])
     )
     ;;{5.4}  Validate [UEV/CAP]
@@ -75,12 +75,12 @@
     ;;
     ;;  [C]
     ;;
-    (defun C_RepurposeCollectable:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_RepurposeCollectable:object{IgnisCollectorV3.OutputCumulator}
         (id:string son:bool repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer])
     )
-    (defun C_Transfer:object{IgnisCollectorV2.OutputCumulator} (ids:[string] sons:[bool] sender:string receiver:string nonces-array:[[integer]] amounts-array:[[integer]] method:bool))
+    (defun C_Transfer:object{IgnisCollectorV3.OutputCumulator} (ids:[string] sons:[bool] sender:string receiver:string nonces-array:[[integer]] amounts-array:[[integer]] method:bool))
     (defun C_IgnisRoyaltyCollector:object{AggregatedRoyalties} (patron:string sender:string ids:[string] sons:[bool] nonces-array:[[integer]] amounts-array:[[integer]]))
-    (defun C_BulkTransfer:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_BulkTransfer:object{IgnisCollectorV3.OutputCumulator}
         (id:string son:bool nonces-array:[[integer]] amounts-array:[[integer]] sender:string receiver-lst:[string] method:bool)
     )
 
@@ -356,7 +356,7 @@
         @event
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (enforce (!= sender receiver) "Sender and Receiver must be different")
             ;;`ta` is not a client argument. The ONLY acquirer is C_IgnisRoyaltyCollector, which
@@ -540,7 +540,7 @@
         (id:string son:bool nonces:[integer] amounts:[integer])
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ft:string (take 2 id))
                 (sh:string "E|")
                 (sl:decimal (ref-IGNIS::UC_IgnisLeg "tier-smallest"))
@@ -580,11 +580,11 @@
             )
         )
     )
-    (defun URCi_MultiTransferCumulator:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_MultiTransferCumulator:object{IgnisCollectorV3.OutputCumulator}
         (ids:[string] sons:[bool] sender:string receiver:string nonces-array:[[integer]] amounts-array:[[integer]])
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (fold
@@ -600,12 +600,12 @@
             )
         )
     )
-    (defun URCi_BulkTransferCumulator:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_BulkTransferCumulator:object{IgnisCollectorV3.OutputCumulator}
         (id:string son:bool sender:string receiver-lst:[string] nonces-array:[[integer]] amounts-array:[[integer]])
         @doc "Single IGNIS output for bulk transfer — sum URC_TotalTransferPrice per receiver leg once."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 ;;
                 (l:integer (length receiver-lst))
                 ;;FIXED 2026-09-12: the fold is guarded on l=0.
@@ -659,13 +659,13 @@
     )
     ;;
     ;;  (URCi_MultiTransferCumulator / URCi_BulkTransferCumulator, below, cover the transfers.)
-    (defun URCi_RepurposeCollectable:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_RepurposeCollectable:object{IgnisCollectorV3.OutputCumulator}
         (id:string son:bool amounts:[integer])
         @doc "Cost preview for C_RepurposeCollectable: per-nonce construct priced \
             \ (if son small else medium) * (1 + sum amounts) on owner-konto, empty output."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
                 (owner:string (ref-DPDC::UR_OwnerKonto id son))
                 (p:decimal (if son (ref-IGNIS::UC_IgnisLeg "tier-small") (ref-IGNIS::UC_IgnisLeg "tier-medium")))
@@ -866,13 +866,13 @@
         )
     )
     ;;{5.7}  User [A/C]
-    (defun C_RepurposeCollectable:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_RepurposeCollectable:object{IgnisCollectorV3.OutputCumulator}
         (id:string son:bool repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer])
         (P|UEV_IMC)
         (with-capability (DPDC-T|C>REPURPOSE id son repurpose-from repurpose-to nonces amounts)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC:module{DpdcV2} DPDC)
                     (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
                     ;;
@@ -922,7 +922,7 @@
             )
         )
     )
-    (defun C_Transfer:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_Transfer:object{IgnisCollectorV3.OutputCumulator}
         (ids:[string] sons:[bool] sender:string receiver:string nonces-array:[[integer]] amounts-array:[[integer]] method:bool)
         (P|UEV_IMC)
         (with-capability (DPDC-T|C>TRANSFER ids sons sender receiver nonces-array amounts-array method)
@@ -936,7 +936,7 @@
             (URCi_MultiTransferCumulator ids sons sender receiver nonces-array amounts-array)
         )
     )
-    (defun C_BulkTransfer:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_BulkTransfer:object{IgnisCollectorV3.OutputCumulator}
         (id:string son:bool nonces-array:[[integer]] amounts-array:[[integer]] sender:string receiver-lst:[string] method:bool)
         @doc "Bulk collectable transfer: one id/son, one sender, many standard-account receivers (DpdcTransferV2). \
             \ Arg order mirrors C_Transfer: id/son, slice arrays, sender, receiver-lst, method."
@@ -966,7 +966,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
                 ;;
                 (ivgz:bool (ref-IGNIS::URC_IsVirtualGasZero))

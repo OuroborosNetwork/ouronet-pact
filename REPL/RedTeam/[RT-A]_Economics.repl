@@ -75,7 +75,7 @@
     (
         (ref-TS01-CP:module{TalosStageOne_ClientPactsV4} TS01-CP)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
         (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
         (patron:string KST.ANHD)
         ;;the same standard pool modules/SWP.repl measures the SINGLE-TX route on at <<SWP-I14>>,

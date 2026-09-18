@@ -214,7 +214,7 @@
                     (ref-P|FVT:module{OuronetPolicyV2} AQP-FVT)
                     (ref-P|VCT:module{OuronetPolicyV2} AQP-VCT)
                     (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-                    (ref-ANK:module{AcquisitionAnchorsV2} AQP-ANK)
+                    (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
                     ;;
                     (aqp-sc:string (ref-ANK::GOV|AQP|SC_NAME))
                 )

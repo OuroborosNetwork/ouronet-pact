@@ -144,7 +144,7 @@
     (defun CT_EmptyCumulator ()
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UDC_EmptyOutputCumulatorV2)
         )
@@ -164,7 +164,7 @@
     ;;
     ;;
     ;;  [DPDC roles/toggles] — DPDC-R (son = false for DPNF, true for DPSF)
-    (defun INFO_DPDC-R|Toggle:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string son:bool label:string ico:object{IgnisCollectorV2.OutputCumulator} toggle:bool)
+    (defun INFO_DPDC-R|Toggle:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string son:bool label:string ico:object{IgnisCollectorV3.OutputCumulator} toggle:bool)
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
@@ -297,7 +297,7 @@
         )
     )
     ;;  [DPDC role moves] — DPDC-R Move* (patron id new-account)
-    (defun INFO_DPDC-R|Move:object{OuronetInfoV2.ClientInfo} (patron:string id:string new-account:string son:bool label:string ico:object{IgnisCollectorV2.OutputCumulator})
+    (defun INFO_DPDC-R|Move:object{OuronetInfoV2.ClientInfo} (patron:string id:string new-account:string son:bool label:string ico:object{IgnisCollectorV3.OutputCumulator})
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
@@ -358,7 +358,7 @@
         )
     )
     ;;  [DPDC management] — DPDC-MNG Control / Pause / Respawn / AddQuantity
-    (defun INFO_DPDC-MNG|Simple:object{OuronetInfoV2.ClientInfo} (patron:string desc:string result:string ico:object{IgnisCollectorV2.OutputCumulator})
+    (defun INFO_DPDC-MNG|Simple:object{OuronetInfoV2.ClientInfo} (patron:string desc:string result:string ico:object{IgnisCollectorV3.OutputCumulator})
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
@@ -1138,7 +1138,7 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DPDC-I:module{DpdcIssueV2} DPDC-I)
                 (ref-EQUITY:module{EquityV2} EQUITY)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount creator-account))

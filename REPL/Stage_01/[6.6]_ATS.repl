@@ -1271,7 +1271,7 @@
         (atsc:string KST.ATSTK)
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
-        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
         (ref-U|ATS:module{UtilityAtsV3} U|ATS)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)

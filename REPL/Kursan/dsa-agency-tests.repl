@@ -100,7 +100,7 @@
     (
         (anhd:string KST.ANHD)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-DSA:module{DsaV2} AQP-DSA)
+        (ref-DSA:module{DsaV3} AQP-DSA)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
     )
     (let
@@ -157,7 +157,7 @@
     (
         (anhd:string KST.ANHD)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
     )
     (let

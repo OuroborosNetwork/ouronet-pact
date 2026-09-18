@@ -42,10 +42,10 @@
     ;;
     ;;  [URCi]
     ;;
-    (defun URCi_RepurposeCollectableFragments:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool fragment-amounts:[integer]))
-    (defun URCi_MakeFragments:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool))
-    (defun URCi_MergeFragments:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool))
-    (defun URCi_EnableNonceFragmentation:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool))
+    (defun URCi_RepurposeCollectableFragments:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool fragment-amounts:[integer]))
+    (defun URCi_MakeFragments:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
+    (defun URCi_MergeFragments:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
+    (defun URCi_EnableNonceFragmentation:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
     ;;{5.4}  Validate [UEV/CAP]
     ;;
     ;; [UEV]
@@ -58,12 +58,12 @@
     ;;
     ;; [C]
     ;;
-    (defun C_RepurposeCollectableFragments:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_RepurposeCollectableFragments:object{IgnisCollectorV3.OutputCumulator}
         (id:string son:bool repurpose-from:string repurpose-to:string fragment-nonces:[integer] fragment-amounts:[integer])
     )
-    (defun C_MakeFragments:object{IgnisCollectorV2.OutputCumulator} (account:string id:string son:bool nonce:integer amount:integer))
-    (defun C_MergeFragments:object{IgnisCollectorV2.OutputCumulator} (account:string id:string son:bool nonce:integer amount:integer))
-    (defun C_EnableNonceFragmentation:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_MakeFragments:object{IgnisCollectorV3.OutputCumulator} (account:string id:string son:bool nonce:integer amount:integer))
+    (defun C_MergeFragments:object{IgnisCollectorV3.OutputCumulator} (account:string id:string son:bool nonce:integer amount:integer))
+    (defun C_EnableNonceFragmentation:object{IgnisCollectorV3.OutputCumulator}
         (
             id:string son:bool nonce:integer
             fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData}
@@ -298,14 +298,14 @@
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
     ;;
-    (defun URCi_RepurposeCollectableFragments:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_RepurposeCollectableFragments:object{IgnisCollectorV3.OutputCumulator}
         (id:string son:bool fragment-amounts:[integer])
         @doc "Cost preview for C_RepurposeCollectableFragments: per-fragment construct \
             \ priced ((if son small else medium)/1000) * (1 + sum fragment-amounts), \
             \ empty output list."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
                 (owner:string (ref-DPDC::UR_OwnerKonto id son))
                 (s:decimal (ref-IGNIS::UC_IgnisLeg "tier-small"))
@@ -317,13 +317,13 @@
             (ref-IGNIS::UDC_ConstructOutputCumulator price owner (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_MakeFragments:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_MakeFragments:object{IgnisCollectorV3.OutputCumulator}
         (id:string son:bool)
         @doc "Cost preview for C_MakeFragments (Biggest on creator-konto; the internal \
             \ transfers are not separately billed)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
@@ -333,13 +333,13 @@
                 (ref-DPDC::UR_CreatorKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_MergeFragments:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_MergeFragments:object{IgnisCollectorV3.OutputCumulator}
         (id:string son:bool)
         @doc "Cost preview for C_MergeFragments (Biggest on creator-konto; the internal \
             \ transfers are not separately billed)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
@@ -351,7 +351,7 @@
                 (ref-DPDC::UR_CreatorKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_EnableNonceFragmentation:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_EnableNonceFragmentation:object{IgnisCollectorV3.OutputCumulator}
         (id:string son:bool)
         @doc "Cost preview for C_EnableNonceFragmentation — the ISSUE gate of the fragmentation \
             \ family (owner 2026-09-05: MakeFragments/MergeFragments are USAGE; THIS is the issue \
@@ -360,7 +360,7 @@
             \ IG|DETER frag-enable tier. Shared by exec and the INFO_* preview."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
@@ -423,13 +423,13 @@
         )
     )
     ;;{5.7}  User [A/C]
-    (defun C_RepurposeCollectableFragments:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_RepurposeCollectableFragments:object{IgnisCollectorV3.OutputCumulator}
         (id:string son:bool repurpose-from:string repurpose-to:string fragment-nonces:[integer] fragment-amounts:[integer])
         (P|UEV_IMC)
         (with-capability (DPDC-F|C>REPURPOSE id son repurpose-from repurpose-to fragment-nonces fragment-amounts)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC:module{DpdcV2} DPDC)
                     (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
                     ;;
@@ -479,7 +479,7 @@
             )
         )
     )
-    (defun C_MakeFragments:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_MakeFragments:object{IgnisCollectorV3.OutputCumulator}
         (account:string id:string son:bool nonce:integer amount:integer)
         (P|UEV_IMC)
         (with-capability (DPDC-F|C>NONCE id son nonce)
@@ -506,7 +506,7 @@
             )
         )
     )
-    (defun C_MergeFragments:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_MergeFragments:object{IgnisCollectorV3.OutputCumulator}
         (account:string id:string son:bool nonce:integer amount:integer)
         (P|UEV_IMC)
         (with-capability (DPDC-F|C>MERGE id son nonce amount)
@@ -533,7 +533,7 @@
             )
         )
     )
-    (defun C_EnableNonceFragmentation:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_EnableNonceFragmentation:object{IgnisCollectorV3.OutputCumulator}
         (
             id:string son:bool nonce:integer
             fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData}

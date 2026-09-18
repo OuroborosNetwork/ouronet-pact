@@ -337,7 +337,7 @@
     (defun CT_EmptyCumulator ()
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UDC_EmptyOutputCumulatorV2)
         )
@@ -893,7 +893,7 @@
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 ;;
                 (what-type:integer (at "type" (ref-TFT::URC_TransferClasses id sender receiver transfer-amount)))
-                (ico:object{IgnisCollectorV2.OutputCumulator}
+                (ico:object{IgnisCollectorV3.OutputCumulator}
                     (ref-TFT::URCi_TransferCumulator what-type id sender receiver)
                 )
                 (receiver-amount:decimal (ref-TFT::URC_ReceiverAmount id sender receiver transfer-amount))
@@ -941,7 +941,7 @@
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
-                (ico:object{IgnisCollectorV2.OutputCumulator}
+                (ico:object{IgnisCollectorV3.OutputCumulator}
                     (ref-TFT::URCi_MultiTransferCumulator id-lst sender receiver transfer-amount-lst)
                 )
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico))
@@ -986,7 +986,7 @@
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 ;;
-                (ico:object{IgnisCollectorV2.OutputCumulator}
+                (ico:object{IgnisCollectorV3.OutputCumulator}
                     (ref-TFT::URCi_BulkTransferCumulator id sender receiver-lst transfer-amount-lst)
                 )
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico))
@@ -1024,7 +1024,7 @@
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 ;;
-                (ico:object{IgnisCollectorV2.OutputCumulator}
+                (ico:object{IgnisCollectorV3.OutputCumulator}
                     (ref-TFT::URCi_MultiBulkTransferCumulator id-lst sender receiver-array transfer-amount-array)
                 )
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico))
@@ -2938,7 +2938,7 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-ATS:module{AutostakeV3} ATS)
                 (ref-ATSU:module{AutostakeUsageV2} ATSU)
                 (ref-VST:module{VestingV2} VST)
@@ -2946,7 +2946,7 @@
                 (coil-data:object{AutostakeV3.CoilData} (ref-ATS::URC_RewardBearingTokenAmounts ats coil-token amount))
                 (c-rbt:string (at "rbt-id" coil-data))
                 (c-rbt-amount:decimal (at "rbt-amount" coil-data))
-                (ico:object{IgnisCollectorV2.OutputCumulator}
+                (ico:object{IgnisCollectorV3.OutputCumulator}
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators
                         [ (ref-ATSU::URCi_Coil coiler-vester ats coil-token amount)
                           (ref-VST::URCi_Vest coiler-vester target-account c-rbt c-rbt-amount offset duration milestones) ] []))
@@ -2965,7 +2965,7 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-ATS:module{AutostakeV3} ATS)
                 (ref-ATSU:module{AutostakeUsageV2} ATSU)
                 (ref-VST:module{VestingV2} VST)
@@ -2974,7 +2974,7 @@
                 (coil2-data:object{AutostakeV3.CoilData} (ref-ATS::URC_RewardBearingTokenAmounts ats2 (at "rbt-id" coil1-data) (at "rbt-amount" coil1-data)))
                 (c-rbt2:string (at "rbt-id" coil2-data))
                 (c-rbt2-amount:decimal (at "rbt-amount" coil2-data))
-                (ico:object{IgnisCollectorV2.OutputCumulator}
+                (ico:object{IgnisCollectorV3.OutputCumulator}
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators
                         [ (ref-ATSU::URCi_Curl curler-vester ats1 ats2 curl-token amount)
                           (ref-VST::URCi_Vest curler-vester target-account c-rbt2 c-rbt2-amount offset duration milestones) ] []))
@@ -3325,7 +3325,7 @@
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (ref-SWP:module{SwapperV4} SWP)
                 ;;
@@ -3379,7 +3379,7 @@
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (ref-SWP:module{SwapperV4} SWP)
                 ;;
@@ -4023,7 +4023,7 @@
     (defun INFO_DALOS|ControlSmartAccount:object{OuronetInfoV2.ClientInfo} (patron:string account:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 ;;
                 (is-ignis-zero:bool (ref-IGNIS::URC_IsVirtualGasZero))
@@ -4042,7 +4042,7 @@
     (defun INFO_DALOS|DeploySmartAccount:object{OuronetInfoV2.ClientInfo} (account:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 ;;
                 (is-stoa-zero:bool (ref-IGNIS::URC_IsNativeGasZero))
@@ -4061,7 +4061,7 @@
     (defun INFO_DALOS|DeployStandardAccount:object{OuronetInfoV2.ClientInfo} (account:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 ;;
                 (is-stoa-zero:bool (ref-IGNIS::URC_IsNativeGasZero))
@@ -4080,7 +4080,7 @@
     (defun INFO_DALOS|RotateGovernor:object{OuronetInfoV2.ClientInfo} (patron:string account:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 ;;
                 (is-ignis-zero:bool (ref-IGNIS::URC_IsVirtualGasZero))
@@ -4099,7 +4099,7 @@
     (defun INFO_DALOS|RotateGuard:object{OuronetInfoV2.ClientInfo} (patron:string account:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 ;;
                 (is-ignis-zero:bool (ref-IGNIS::URC_IsVirtualGasZero))
@@ -4118,7 +4118,7 @@
     (defun INFO_DALOS|RotateStoa:object{OuronetInfoV2.ClientInfo} (patron:string account:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 ;;
                 (is-ignis-zero:bool (ref-IGNIS::URC_IsVirtualGasZero))
@@ -4137,7 +4137,7 @@
     (defun INFO_DALOS|RotateSovereign:object{OuronetInfoV2.ClientInfo} (patron:string account:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 ;;
                 (is-ignis-zero:bool (ref-IGNIS::URC_IsVirtualGasZero))
@@ -4156,7 +4156,7 @@
     (defun INFO_DALOS|UpdateEliteAccount:object{OuronetInfoV2.ClientInfo} (patron:string account:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 ;;
                 (is-ignis-zero:bool (ref-IGNIS::URC_IsVirtualGasZero))
@@ -4175,7 +4175,7 @@
     (defun INFO_DALOS|UpdateEliteAccountSquared:object{OuronetInfoV2.ClientInfo} (patron:string sender:string receiver:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 ;;
                 (is-ignis-zero:bool (ref-IGNIS::URC_IsVirtualGasZero))

@@ -47,7 +47,7 @@
     ;;  [URCi]
     ;;
     (defun URCi_RegisterCollectablesPrice:decimal (id:string son:bool amounts:[integer]))
-    (defun URCi_CreateNewNonces:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool amounts:[integer]))
+    (defun URCi_CreateNewNonces:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool amounts:[integer]))
     ;;{5.4}  Validate [UEV/CAP]
     ;;
     ;;  [UEV]
@@ -89,13 +89,13 @@
     ;;
     ;;  [C]
     ;;
-    (defun C_CreateNewNonce:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_CreateNewNonce:object{IgnisCollectorV3.OutputCumulator}
         (
             id:string son:bool nonce-class:integer amount:integer
             input-nonce-data:object{DpdcUdcV2.DPDC|NonceData} sft-set-mode:bool
         )
     )
-    (defun C_CreateNewNonces:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_CreateNewNonces:object{IgnisCollectorV3.OutputCumulator}
         (
             id:string son:bool amounts:[integer]
             input-nonce-datas:[object{DpdcUdcV2.DPDC|NonceData}]
@@ -500,7 +500,7 @@
             \ exec write and the INFO preview."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
                 (nu:integer (ref-DPDC::UR_NoncesUsed id son))
                 (s-amounts:integer (fold (+) 0 amounts))
@@ -514,14 +514,14 @@
             )
         )
     )
-    (defun URCi_CreateNewNonces:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_CreateNewNonces:object{IgnisCollectorV3.OutputCumulator}
         (id:string son:bool amounts:[integer])
         @doc "Cost preview for C_CreateNewNonce/C_CreateNewNonces: issue construct \
             \ priced via URCi_RegisterCollectablesPrice on the owner-konto payer, \
             \ empty output list (created collectable names are exec-only write products)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
@@ -897,14 +897,14 @@
     ;;Protection: Class 1 — Innate protection offered by XI_RegisterSingleNonce,
     ;;Protection:          XI_RegisterMultipleNonces, XB_CreditSFT-Nonce,
     ;;Protection:          XB_CreditNFT-Nonce, XB_CreditSFT-Nonces, XB_CreditNFT-Nonces
-    (defun XI_RegisterCollectables:object{IgnisCollectorV2.OutputCumulator}
+    (defun XI_RegisterCollectables:object{IgnisCollectorV3.OutputCumulator}
         (
             id:string son:bool nonce-classes:[integer] amounts:[integer]
             input-nonce-datas:[object{DpdcUdcV2.DPDC|NonceData}] sft-set-mode:bool
         )
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
                 (owner:string (ref-DPDC::UR_OwnerKonto id son))
                 ;;
@@ -1111,7 +1111,7 @@
         )
     )
     ;;{5.7}  User [A/C]
-    (defun C_CreateNewNonce:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_CreateNewNonce:object{IgnisCollectorV3.OutputCumulator}
         (
             id:string son:bool nonce-class:integer amount:integer
             input-nonce-data:object{DpdcUdcV2.DPDC|NonceData} sft-set-mode:bool
@@ -1121,7 +1121,7 @@
             (XI_RegisterCollectables id son [nonce-class] [amount] [input-nonce-data] sft-set-mode)
         )
     )
-    (defun C_CreateNewNonces:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_CreateNewNonces:object{IgnisCollectorV3.OutputCumulator}
         (
             id:string son:bool amounts:[integer]
             input-nonce-datas:[object{DpdcUdcV2.DPDC|NonceData}]

@@ -1,5 +1,5 @@
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface AcquisitionScoresV2
+(interface AcquisitionScoresV3
     @doc "Interface for the AQP scoring layer. Declares readers for score config/totals, \
         \ per-(account,pool,score) user weights, SF nonce weights, and NF trait/class \
         \ definitions with revision nonces; stake-weight URC_ deltas; XE_ hooks for \
@@ -123,19 +123,19 @@
     (defun URH_SCR|AllScoreIds:[string] ())
     ;;
     ;; [URCi]   cost readers — single source for exec billing + INFO preview
-    (defun URCi_IssueScore:object{IgnisCollectorV2.OutputCumulator} (owner-konto:string output:[string]))
+    (defun URCi_IssueScore:object{IgnisCollectorV3.OutputCumulator} (owner-konto:string output:[string]))
     (defun URCi_IssueScoreStoa:decimal ())
-    (defun URCi_RotateOwnership:object{IgnisCollectorV2.OutputCumulator} (score-id:string))
-    (defun URCi_Control:object{IgnisCollectorV2.OutputCumulator} (score-id:string))
-    (defun URCi_CreateBoostClassLink:object{IgnisCollectorV2.OutputCumulator} (score-id:string))
-    (defun URCi_CreateBoostLink:object{IgnisCollectorV2.OutputCumulator} (score-id:string))
-    (defun URCi_EnableDebBoost:object{IgnisCollectorV2.OutputCumulator} (score-id:string))
-    (defun URCi_IssueTriplet:object{IgnisCollectorV2.OutputCumulator} (silver-score-id:string output:[string]))
-    (defun URCi_IssueSemiFungibleScoreDefinition:object{IgnisCollectorV2.OutputCumulator} (score-id:string nonces:[integer]))
-    (defun URCi_IssueNonFungibleScoreDefinition:object{IgnisCollectorV2.OutputCumulator} (score-id:string trait-keys:[string]))
-    (defun URCi_IssueNonFungibleSetScoreDefinition:object{IgnisCollectorV2.OutputCumulator} (score-id:string dpnf-nonce-classes:[integer]))
-    (defun URCi_IssueScoreModel:object{IgnisCollectorV2.OutputCumulator} (op-key:string patron:string output:[string]))
-    (defun URCi_CombineTripletModel:object{IgnisCollectorV2.OutputCumulator} (patron:string output:[string]))
+    (defun URCi_RotateOwnership:object{IgnisCollectorV3.OutputCumulator} (score-id:string))
+    (defun URCi_Control:object{IgnisCollectorV3.OutputCumulator} (score-id:string))
+    (defun URCi_CreateBoostClassLink:object{IgnisCollectorV3.OutputCumulator} (score-id:string))
+    (defun URCi_CreateBoostLink:object{IgnisCollectorV3.OutputCumulator} (score-id:string))
+    (defun URCi_EnableDebBoost:object{IgnisCollectorV3.OutputCumulator} (score-id:string))
+    (defun URCi_IssueTriplet:object{IgnisCollectorV3.OutputCumulator} (silver-score-id:string output:[string]))
+    (defun URCi_IssueSemiFungibleScoreDefinition:object{IgnisCollectorV3.OutputCumulator} (score-id:string nonces:[integer]))
+    (defun URCi_IssueNonFungibleScoreDefinition:object{IgnisCollectorV3.OutputCumulator} (score-id:string trait-keys:[string]))
+    (defun URCi_IssueNonFungibleSetScoreDefinition:object{IgnisCollectorV3.OutputCumulator} (score-id:string dpnf-nonce-classes:[integer]))
+    (defun URCi_IssueScoreModel:object{IgnisCollectorV3.OutputCumulator} (op-key:string patron:string output:[string]))
+    (defun URCi_CombineTripletModel:object{IgnisCollectorV3.OutputCumulator} (patron:string output:[string]))
     ;;{5.4}  Validate [UEV/CAP]
     ;; [UEV] enforce
     (defun UEV_NonFungibleScoreDefinition
@@ -154,15 +154,15 @@
     (defun XE_CreateFvtLink:string
         (score-id:string fvt-id:string)
     )
-    (defun XE_ApplyTrueFungibleStakeDelta:object{IgnisCollectorV2.OutputCumulator}
+    (defun XE_ApplyTrueFungibleStakeDelta:object{IgnisCollectorV3.OutputCumulator}
         (pool-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool employed-ids:[string] native-leg:bool)
     )
     (defun XE_RefreshUserScoreDeb:string (ouronet-account:string pool-id:string score-id:string))
     (defun XE_NukeScoreForVacate:string (score-id:string))
-    (defun XE_ApplyOrtoFungibleStakeDelta:object{IgnisCollectorV2.OutputCumulator}
+    (defun XE_ApplyOrtoFungibleStakeDelta:object{IgnisCollectorV3.OutputCumulator}
         (pool-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool employed-ids:[string])
     )
-    (defun XE_ApplyCollectableStakeDelta:object{IgnisCollectorV2.OutputCumulator}
+    (defun XE_ApplyCollectableStakeDelta:object{IgnisCollectorV3.OutputCumulator}
         (
             pool-id:string
             beneficiary-id:string
@@ -177,60 +177,60 @@
     ;;{5.7}  User [A/C]
     ;; [C]   client
     ;;
-    (defun C_IssueLiquidityScore:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_IssueLiquidityScore:object{IgnisCollectorV3.OutputCumulator}
         (patron:string owner-konto:string score-name:string precision:integer lp-denominator:string mx-frozen:decimal mx-sleeping:decimal)
     )
-    (defun C_IssueTrueFungibleScore:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_IssueTrueFungibleScore:object{IgnisCollectorV3.OutputCumulator}
         (patron:string owner-konto:string score-name:string precision:integer mx-frozen:decimal)
     )
-    (defun C_IssueOrtoFungibleScore:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_IssueOrtoFungibleScore:object{IgnisCollectorV3.OutputCumulator}
         (patron:string owner-konto:string score-name:string precision:integer mx-sleeping:decimal mx-hibernated:decimal)
     )
-    (defun C_IssueSemiFungibleScore:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_IssueSemiFungibleScore:object{IgnisCollectorV3.OutputCumulator}
         (patron:string owner-konto:string score-name:string precision:integer sft-equality:bool)
     )
-    (defun C_IssueNonFungibleScore:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_IssueNonFungibleScore:object{IgnisCollectorV3.OutputCumulator}
         (patron:string owner-konto:string score-name:string precision:integer nft-score-model:integer)
     )
-    (defun C_RotateOwnership:object{IgnisCollectorV2.OutputCumulator} (score-id:string new-owner-konto:string))
-    (defun C_Control:object{IgnisCollectorV2.OutputCumulator} (score-id:string new-can-upgrade:bool new-can-change-owner:bool))
-    (defun C_CreateBoostClassLink:object{IgnisCollectorV2.OutputCumulator} (score-id:string boost-class-id:string))
-    (defun C_CreateBoostLink:object{IgnisCollectorV2.OutputCumulator} (score-id:string boost-score-id:string))
-    (defun C_EnableDebBoost:object{IgnisCollectorV2.OutputCumulator} (score-id:string))
-    (defun C_IssueTriplet:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_RotateOwnership:object{IgnisCollectorV3.OutputCumulator} (score-id:string new-owner-konto:string))
+    (defun C_Control:object{IgnisCollectorV3.OutputCumulator} (score-id:string new-can-upgrade:bool new-can-change-owner:bool))
+    (defun C_CreateBoostClassLink:object{IgnisCollectorV3.OutputCumulator} (score-id:string boost-class-id:string))
+    (defun C_CreateBoostLink:object{IgnisCollectorV3.OutputCumulator} (score-id:string boost-score-id:string))
+    (defun C_EnableDebBoost:object{IgnisCollectorV3.OutputCumulator} (score-id:string))
+    (defun C_IssueTriplet:object{IgnisCollectorV3.OutputCumulator}
         (patron:string bronze-score-id:string silver-score-id:string golden-score-id:string)
     )
-    (defun C_IssueSemiFungibleScoreDefinition:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_IssueSemiFungibleScoreDefinition:object{IgnisCollectorV3.OutputCumulator}
         (score-id:string dpsf-id:string nonces:[integer] nonce-score-values:[decimal])
     )
-    (defun C_IssueNonFungibleScoreDefinition:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_IssueNonFungibleScoreDefinition:object{IgnisCollectorV3.OutputCumulator}
         (score-id:string dpnf-id:string trait-keys:[string] trait-values:[string] trait-score-values:[decimal])
     )
-    (defun C_IssueNonFungibleSetScoreDefinition:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_IssueNonFungibleSetScoreDefinition:object{IgnisCollectorV3.OutputCumulator}
         (score-id:string dpnf-id:string dpnf-nonce-classes:[integer] class-score-values:[decimal])
     )
-    (defun C_IssueSingleScoreModel:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_IssueSingleScoreModel:object{IgnisCollectorV3.OutputCumulator}
         (patron:string model-name:string score-class:integer collectable-id:string precision:integer nonces:[integer] nonce-score-values:[decimal])
     )
-    (defun C_CombineTripletScoreModel:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_CombineTripletScoreModel:object{IgnisCollectorV3.OutputCumulator}
         (patron:string model-name:string bronze-model-id:string silver-model-id:string golden-model-id:string)
     )
-    (defun C_IssueScoreFromModel:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_IssueScoreFromModel:object{IgnisCollectorV3.OutputCumulator}
         (patron:string owner-konto:string model-id:string agency-name:string)
     )
 
 )
 (module AQP-SCORE GOV
     @doc "AQP-SCORE — sovereign acquisition scoring for AQP pools. Owns global score configuration and totals (SCR|T|Score), per (ouronet-account, pool-id, score-id) user triples (SCR|T|UserScore), semi-fungible nonce weights (SCR|T|SF|Score) and SF DefRevision, and non-fungible definitions on SCR|T|NF|TraitScore vs SCR|T|NF|ClassScore with NF DefRevision split into global-, trait-, and class-revision nonces so trackers and URCX stake math can gate expensive selects. \
-        \ Public surface: AcquisitionScoresV2 reads and stake-weight URC_*; Talos-facing C_* builds IGNIS (and STOA where applicable) and acquires client caps; XI_* performs table writes under require-capability (SECURE / SCR|XI>*); XE_* is for forward modules and likewise does not enforce — the guarding defcap or C_* owns validation and enforce. UCx_ / URCx_ helpers exist only as operands inside URC_* stake deltas. \
-        \ Implements OuronetPolicyV2 and AcquisitionScoresV2."
+        \ Public surface: AcquisitionScoresV3 reads and stake-weight URC_*; Talos-facing C_* builds IGNIS (and STOA where applicable) and acquires client caps; XI_* performs table writes under require-capability (SECURE / SCR|XI>*); XE_* is for forward modules and likewise does not enforce — the guarding defcap or C_* owns validation and enforce. UCx_ / URCx_ helpers exist only as operands inside URC_* stake deltas. \
+        \ Implements OuronetPolicyV2 and AcquisitionScoresV3."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;; REPL: REPL/Stage_02/[6.2.2]_AQP-SCORE.repl — intra-tx groups TX-SCORE-nn · mm in ;;==== … ==== lines (mm = 01.. within each begin-tx).
     ;;
     (implements OuronetPolicyV2)
-    (implements AcquisitionScoresV2)
+    (implements AcquisitionScoresV3)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -343,9 +343,9 @@
     ;;{3}  CST
     ;;{3.1}  constants
     (defconst BAR                                       (CT_Bar))
-    (defconst GAS|ISSUE-SCORE                       (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UC_IgnisDeter "issue-score")))
-    (defconst GAS|ISSUE-TRIPLET                     (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UC_IgnisDeter "issue-triplet")))
-    (defconst GAS|ISSUE-SCORE-MODEL                 (let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS)) (ref-IGNIS::UC_IgnisDeter "issue-score-model")))
+    (defconst GAS|ISSUE-SCORE                       (let ((ref-IGNIS:module{IgnisCollectorV3} IGNIS)) (ref-IGNIS::UC_IgnisDeter "issue-score")))
+    (defconst GAS|ISSUE-TRIPLET                     (let ((ref-IGNIS:module{IgnisCollectorV3} IGNIS)) (ref-IGNIS::UC_IgnisDeter "issue-triplet")))
+    (defconst GAS|ISSUE-SCORE-MODEL                 (let ((ref-IGNIS:module{IgnisCollectorV3} IGNIS)) (ref-IGNIS::UC_IgnisDeter "issue-score-model")))
     (defconst CT_SCORE_MODEL_SINGLE:integer             1)
     (defconst CT_SCORE_MODEL_TRIPLET:integer            3)
     (defconst EOC                                       (CT_EmptyCumulator))
@@ -922,7 +922,7 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-ANK:module{AcquisitionAnchorsV2} AQP-ANK)
+                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
                 ;;
                 (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
             )
@@ -1439,7 +1439,7 @@
     (defun CT_EmptyCumulator ()
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UDC_EmptyOutputCumulatorV2)
         )
@@ -1449,7 +1449,7 @@
         @doc "Resolves AQP|SC_NAME from canonical AQP-ANK via interface ref."
         (let
             (
-                (ref-ANK:module{AcquisitionAnchorsV2} AQP-ANK)
+                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
             )
             (ref-ANK::GOV|AQP|SC_NAME)
         )
@@ -2399,7 +2399,7 @@
             \ over foreign base only (README_SCORE.md). Otherwise user base is ob + signed. deb-boost applies to nominal boosted before foreign subtraction."
         (let
             (
-                (ref-ANK:module{AcquisitionAnchorsV2} AQP-ANK)
+                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-U|DEC:module{OuronetDecimalsV2} U|DEC)
                 ;;
@@ -2561,7 +2561,7 @@
             \ +2×ignis|biggest if score-class 0 (LP)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 ;;
                 (highest:decimal (ref-IGNIS::UC_IgnisLeg "tier-biggest"))
                 (c:integer (UR_SCR|ScoreClass score-id))
@@ -2580,13 +2580,13 @@
             )
         )
     )
-    (defun URC_StakeScoreDeltaIgnisCumulator:object{IgnisCollectorV2.OutputCumulator}
+    (defun URC_StakeScoreDeltaIgnisCumulator:object{IgnisCollectorV3.OutputCumulator}
         (score-id:string)
         @doc "Internal: TF stake ico4 — one employed score row IGNIS (URC_StakeScoreDeltaIgnisUnit). \
             \ IGNIS interactor = AQP|SC_NAME (pool vault receiver)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 ;;
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
             )
@@ -2629,7 +2629,7 @@
         (keys SCR|T|Score)
     )
     ;; [URCi]   cost readers — single source for exec billing + INFO preview
-    (defun URCi_IssueScore:object{IgnisCollectorV2.OutputCumulator} (owner-konto:string output:[string])
+    (defun URCi_IssueScore:object{IgnisCollectorV3.OutputCumulator} (owner-konto:string output:[string])
         @doc "IGNIS cost for the 5 score-issue ops: the issue-score deterrence PLUS the op's \
             \ component cost, konto = the new score's owner. One component key is EXACT here \
             \ because all five (Liquidity/TrueFungible/OrtoFungible/SemiFungible/NonFungible) \
@@ -2637,7 +2637,7 @@
             \ reader does."
         (let
             (
-                (r:module{IgnisCollectorV2} IGNIS)
+                (r:module{IgnisCollectorV3} IGNIS)
             )
             (r::UDC_ConstructOutputCumulator
                 (r::UC_IgnisPrice "AQP-SCR|C_IssueTrueFungibleScore" "issue-score")
@@ -2650,103 +2650,103 @@
             \ dollar-denominated and so ignored the peg entirely."
         (let
             (
-                (r:module{IgnisCollectorV2} IGNIS)
+                (r:module{IgnisCollectorV3} IGNIS)
             )
             (r::UC_StoaPrice "issue-score")
         ))
-    (defun URCi_RotateOwnership:object{IgnisCollectorV2.OutputCumulator} (score-id:string)
+    (defun URCi_RotateOwnership:object{IgnisCollectorV3.OutputCumulator} (score-id:string)
         @doc "Cost preview for AQP-SCR|C_RotateScoreOwnership on the (pre-rotate) score owner \
             \ — deter(auth) + components, like every other module's RotateOwnership."
         (let
             (
-                (r:module{IgnisCollectorV2} IGNIS)
+                (r:module{IgnisCollectorV3} IGNIS)
             )
             (r::UDC_ConstructOutputCumulator
                 (r::UC_IgnisPrice "AQP-SCR|C_RotateScoreOwnership" "auth")
                 (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])
         ))
-    (defun URCi_Control:object{IgnisCollectorV2.OutputCumulator} (score-id:string)
+    (defun URCi_Control:object{IgnisCollectorV3.OutputCumulator} (score-id:string)
         @doc "Cost preview for AQP-SCR|C_ControlScore on the score owner — deter(setup) + \
             \ components, like every other module's Control."
         (let
             (
-                (r:module{IgnisCollectorV2} IGNIS)
+                (r:module{IgnisCollectorV3} IGNIS)
             )
             (r::UDC_ConstructOutputCumulator
                 (r::UC_IgnisPrice "AQP-SCR|C_ControlScore" "setup")
                 (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])
         ))
-    (defun URCi_CreateBoostClassLink:object{IgnisCollectorV2.OutputCumulator} (score-id:string)
+    (defun URCi_CreateBoostClassLink:object{IgnisCollectorV3.OutputCumulator} (score-id:string)
         @doc "Cost preview for AQP-SCR|C_CreateScoreBoostClassLink — deter(setup) + components. \
             \ SETUP tier: linking a score to a boost class is a configuration change. NOTE the \
             \ asymmetry with revoke-boost (500, owner-priced) — if creating a link should carry \
             \ its own deterrent, that is an owner call, not a convention one."
         (let
             (
-                (r:module{IgnisCollectorV2} IGNIS)
+                (r:module{IgnisCollectorV3} IGNIS)
             )
             (r::UDC_ConstructOutputCumulator
                 (r::UC_IgnisPrice "AQP-SCR|C_CreateScoreBoostClassLink" "setup")
                 (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])
         ))
-    (defun URCi_CreateBoostLink:object{IgnisCollectorV2.OutputCumulator} (score-id:string)
+    (defun URCi_CreateBoostLink:object{IgnisCollectorV3.OutputCumulator} (score-id:string)
         @doc "Cost preview for AQP-SCR|C_CreateScoreBoostLink — deter(setup) + components."
         (let
             (
-                (r:module{IgnisCollectorV2} IGNIS)
+                (r:module{IgnisCollectorV3} IGNIS)
             )
             (r::UDC_ConstructOutputCumulator
                 (r::UC_IgnisPrice "AQP-SCR|C_CreateScoreBoostLink" "setup")
                 (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])
         ))
-    (defun URCi_EnableDebBoost:object{IgnisCollectorV2.OutputCumulator} (score-id:string)
+    (defun URCi_EnableDebBoost:object{IgnisCollectorV3.OutputCumulator} (score-id:string)
         @doc "Cost preview for AQP-SCR|C_EnableDebBoost — deter(setup) + components."
         (let
             (
-                (r:module{IgnisCollectorV2} IGNIS)
+                (r:module{IgnisCollectorV3} IGNIS)
             )
             (r::UDC_ConstructOutputCumulator
                 (r::UC_IgnisPrice "AQP-SCR|C_EnableDebBoost" "setup")
                 (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])
         ))
-    (defun URCi_IssueTriplet:object{IgnisCollectorV2.OutputCumulator} (silver-score-id:string output:[string])
+    (defun URCi_IssueTriplet:object{IgnisCollectorV3.OutputCumulator} (silver-score-id:string output:[string])
         @doc "GAS|ISSUE-TRIPLET, konto = the silver score's owner."
         (let
             (
-                (r:module{IgnisCollectorV2} IGNIS)
+                (r:module{IgnisCollectorV3} IGNIS)
             )
             (r::UDC_ConstructOutputCumulator
                 (r::UC_IgnisPrice "AQP-SCR|C_IssueTriplet" "issue-triplet")
                 (UR_SCR|ScoreOwnerKonto silver-score-id) (r::URC_IsVirtualGasZero) output)
         ))
-    (defun URCi_IssueSemiFungibleScoreDefinition:object{IgnisCollectorV2.OutputCumulator} (score-id:string nonces:[integer])
+    (defun URCi_IssueSemiFungibleScoreDefinition:object{IgnisCollectorV3.OutputCumulator} (score-id:string nonces:[integer])
         @doc "IGNIS = |nonces| x UsagePrice('ignis|big'), konto = score owner."
         (let
             (
-                (r:module{IgnisCollectorV2} IGNIS)
+                (r:module{IgnisCollectorV3} IGNIS)
                 (d:module{OuronetDalosV2} DALOS)
             )
             (r::UDC_ConstructOutputCumulator (* (dec (length nonces)) (r::UC_IgnisLeg "tier-big")) (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])
         ))
-    (defun URCi_IssueNonFungibleScoreDefinition:object{IgnisCollectorV2.OutputCumulator} (score-id:string trait-keys:[string])
+    (defun URCi_IssueNonFungibleScoreDefinition:object{IgnisCollectorV3.OutputCumulator} (score-id:string trait-keys:[string])
         @doc "IGNIS = |trait-keys| x UsagePrice('ignis|biggest'), konto = score owner."
         (let
             (
-                (r:module{IgnisCollectorV2} IGNIS)
+                (r:module{IgnisCollectorV3} IGNIS)
                 (d:module{OuronetDalosV2} DALOS)
             )
             (r::UDC_ConstructOutputCumulator (* (dec (length trait-keys)) (r::UC_IgnisLeg "tier-biggest")) (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])
         ))
-    (defun URCi_IssueNonFungibleSetScoreDefinition:object{IgnisCollectorV2.OutputCumulator} (score-id:string dpnf-nonce-classes:[integer])
+    (defun URCi_IssueNonFungibleSetScoreDefinition:object{IgnisCollectorV3.OutputCumulator} (score-id:string dpnf-nonce-classes:[integer])
         @doc "IGNIS = |nonce-classes| x UsagePrice('ignis|biggest'), konto = score owner."
         (let
             (
-                (r:module{IgnisCollectorV2} IGNIS)
+                (r:module{IgnisCollectorV3} IGNIS)
                 (d:module{OuronetDalosV2} DALOS)
             )
             (r::UDC_ConstructOutputCumulator (* (dec (length dpnf-nonce-classes)) (r::UC_IgnisLeg "tier-biggest")) (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])
         ))
-    (defun URCi_IssueScoreModel:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_IssueScoreModel:object{IgnisCollectorV3.OutputCumulator}
         (op-key:string patron:string output:[string])
         @doc "Shared by IssueSingleScoreModel / IssueScoreFromModel: same issue-score-model \
             \ deterrence, but their component costs DIFFER (16 vs 69), so the caller passes its \
@@ -2754,18 +2754,18 @@
             \ (owner-priced 100, 2026-09-05)."
         (let
             (
-                (r:module{IgnisCollectorV2} IGNIS)
+                (r:module{IgnisCollectorV3} IGNIS)
             )
             (r::UDC_ConstructOutputCumulator
                 (r::UC_IgnisPrice op-key "issue-score-model")
                 patron (r::URC_IsVirtualGasZero) output)
         ))
-    (defun URCi_CombineTripletModel:object{IgnisCollectorV2.OutputCumulator} (patron:string output:[string])
+    (defun URCi_CombineTripletModel:object{IgnisCollectorV3.OutputCumulator} (patron:string output:[string])
         @doc "Owner-priced (2026-09-05) combine-triplet deter (100 ignis) via the central IGNIS \
             \ IG|DETER map — split from URCi_IssueScoreModel so the shared 500 tier stays put."
         (let
             (
-                (r:module{IgnisCollectorV2} IGNIS)
+                (r:module{IgnisCollectorV3} IGNIS)
             )
             (r::UDC_ConstructOutputCumulator
                 (r::UC_IgnisPrice "AQP-SCR|C_CombineTripletScoreModel" "combine-triplet")
@@ -3463,7 +3463,7 @@
         ;; SECURE: granted by WU_Score|BoostClassLink (underlying W_).
         (let
             (
-                (ref-ANK:module{AcquisitionAnchorsV2} AQP-ANK)
+                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
                 (old-class:string (UR_SCR|ScoreBoostClassLink score-id))
             )
             ;; #13: release the old class's count when re-pointing (−1 old, +1 new below). old == new ⇒ net 0;
@@ -3720,15 +3720,15 @@
     ;;          └ WU_Score|NzsCount            UrStoa ≡ UpdateNZS
     ;;
     ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
-    (defun XE_ApplyTrueFungibleStakeDelta:object{IgnisCollectorV2.OutputCumulator}
+    (defun XE_ApplyTrueFungibleStakeDelta:object{IgnisCollectorV3.OutputCumulator}
         (pool-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool employed-ids:[string] native-leg:bool)
         @doc "UrStoa phases 2.2.1 + 2.2.2 + 2.3.1 per employed score (TF). P|UEV_IMC only."
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 ;;
-                (score-ocs:[object{IgnisCollectorV2.OutputCumulator}]
+                (score-ocs:[object{IgnisCollectorV3.OutputCumulator}]
                     ;; map: employed pool scores (class 0 LP vs class 1 DPTF write leg per score)
                     (map
                         (lambda (score-id:string)
@@ -3781,7 +3781,7 @@
             (WU_Score|Nuke score-id))
     )
     ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
-    (defun XE_ApplyOrtoFungibleStakeDelta:object{IgnisCollectorV2.OutputCumulator}
+    (defun XE_ApplyOrtoFungibleStakeDelta:object{IgnisCollectorV3.OutputCumulator}
         (
             pool-id:string
             beneficiary-id:string
@@ -3795,11 +3795,11 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 ;;
                 (sleeping-or-hibernating:bool (URC_OrtoDpofUsesSleepingMultiplier dpof-id))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                (score-ocs:[object{IgnisCollectorV2.OutputCumulator}]
+                (score-ocs:[object{IgnisCollectorV3.OutputCumulator}]
                     (map
                         (lambda (score-id:string)
                             (let
@@ -3844,7 +3844,7 @@
         )
     )
     ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
-    (defun XE_ApplyCollectableStakeDelta:object{IgnisCollectorV2.OutputCumulator}
+    (defun XE_ApplyCollectableStakeDelta:object{IgnisCollectorV3.OutputCumulator}
         (
             pool-id:string
             beneficiary-id:string
@@ -3859,11 +3859,11 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 ;;
                 (target-class:integer (if son 3 4))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                (score-ocs:[object{IgnisCollectorV2.OutputCumulator}]
+                (score-ocs:[object{IgnisCollectorV3.OutputCumulator}]
                     (map
                         (lambda (score-id:string)
                             (if (= (UR_SCR|ScoreClass score-id) target-class)
@@ -3931,7 +3931,7 @@
     ;; [C]   client
     ;;
     ;;Issue by score-class (SCR|T|Score / SCR|Schema)
-    (defun C_IssueLiquidityScore:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_IssueLiquidityScore:object{IgnisCollectorV3.OutputCumulator}
         (patron:string owner-konto:string score-name:string precision:integer lp-denominator:string mx-frozen:decimal mx-sleeping:decimal)
         @doc "Create score-class 0 (LP). Costs GAS|ISSUE-SCORE IGNIS and UR_UsagePrice \"smart\" STOA from patron."
         (P|UEV_IMC)
@@ -3939,7 +3939,7 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     ;;
                     (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
@@ -3950,7 +3950,7 @@
             )
         )
     )
-    (defun C_IssueTrueFungibleScore:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_IssueTrueFungibleScore:object{IgnisCollectorV3.OutputCumulator}
         (patron:string owner-konto:string score-name:string precision:integer mx-frozen:decimal)
         @doc "Create score-class 1 (DPTF). Costs GAS|ISSUE-SCORE IGNIS and UR_UsagePrice \"smart\" STOA from patron."
         (P|UEV_IMC)
@@ -3958,7 +3958,7 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     ;;
                     (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
@@ -3969,7 +3969,7 @@
             )
         )
     )
-    (defun C_IssueOrtoFungibleScore:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_IssueOrtoFungibleScore:object{IgnisCollectorV3.OutputCumulator}
         (patron:string owner-konto:string score-name:string precision:integer mx-sleeping:decimal mx-hibernated:decimal)
         @doc "Create score-class 2 (DPOF, including special tokens). Caller sets mx-sleeping and mx-hibernated; mx-frozen defaults 2.0. \
             \ Costs GAS|ISSUE-SCORE IGNIS and UR_UsagePrice \"smart\" STOA from patron."
@@ -3978,7 +3978,7 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     ;;
                     (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
@@ -3989,7 +3989,7 @@
             )
         )
     )
-    (defun C_IssueSemiFungibleScore:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_IssueSemiFungibleScore:object{IgnisCollectorV3.OutputCumulator}
         (patron:string owner-konto:string score-name:string precision:integer sft-equality:bool)
         @doc "Create score-class 3 (DPSF). Costs GAS|ISSUE-SCORE IGNIS and UR_UsagePrice \"smart\" STOA from patron."
         (P|UEV_IMC)
@@ -3997,7 +3997,7 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     ;;
                     (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
@@ -4008,7 +4008,7 @@
             )
         )
     )
-    (defun C_IssueNonFungibleScore:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_IssueNonFungibleScore:object{IgnisCollectorV3.OutputCumulator}
         (patron:string owner-konto:string score-name:string precision:integer nft-score-model:integer)
         @doc "Create score-class 4 (DPNF). Costs GAS|ISSUE-SCORE IGNIS and UR_UsagePrice \"smart\" STOA from patron."
         (P|UEV_IMC)
@@ -4016,7 +4016,7 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     ;;
                     (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
@@ -4028,13 +4028,13 @@
         )
     )
     ;;Management (SCR|Schema)
-    (defun C_RotateOwnership:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_RotateOwnership:object{IgnisCollectorV3.OutputCumulator}
         (score-id:string new-owner-konto:string)
         @doc "Transfer score owner-konto. No native STOA; validation in SCR|C>ROTATE-OWNERSHIP-SCORE; XI writes only; medium IGNIS cumulator built here."
         (P|UEV_IMC)
         (let
             (
-                (ico:object{IgnisCollectorV2.OutputCumulator} (URCi_RotateOwnership score-id))
+                (ico:object{IgnisCollectorV3.OutputCumulator} (URCi_RotateOwnership score-id))
             )
             (with-capability (SCR|C>ROTATE-OWNERSHIP-SCORE score-id new-owner-konto)
                 (XI_RotateOwnership score-id new-owner-konto)
@@ -4042,7 +4042,7 @@
             ico
         )
     )
-    (defun C_Control:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_Control:object{IgnisCollectorV3.OutputCumulator}
         (score-id:string new-can-upgrade:bool new-can-change-owner:bool)
         @doc "Set can-upgrade and can-change-owner. No native STOA; validation in SCR|C>CONTROL-SCORE; XI writes only; medium IGNIS cumulator built here."
         (P|UEV_IMC)
@@ -4058,7 +4058,7 @@
         )
     )
     ;;Post-issuance: only C_EnableDebBoost (deb-boost defaults false). Multipliers, sft-equality, nft-score-model, links [..] set at issue.
-    (defun C_CreateBoostClassLink:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_CreateBoostClassLink:object{IgnisCollectorV3.OutputCumulator}
         (score-id:string boost-class-id:string)
         @doc "Set boost-class-link once. No STOA; validation in SCR|C>CREATE-BOOST-CLASS-LINK-SCORE; XI writes only; biggest IGNIS cumulator built here."
         (P|UEV_IMC)
@@ -4073,7 +4073,7 @@
             (URCi_CreateBoostClassLink score-id)
         )
     )
-    (defun C_CreateBoostLink:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_CreateBoostLink:object{IgnisCollectorV3.OutputCumulator}
         (score-id:string boost-score-id:string)
         @doc "Set boost-link once. No STOA; validation in SCR|C>CREATE-BOOST-LINK-SCORE; XI writes only; biggest IGNIS cumulator built here."
         (P|UEV_IMC)
@@ -4088,7 +4088,7 @@
             (URCi_CreateBoostLink score-id)
         )
     )
-    (defun C_EnableDebBoost:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_EnableDebBoost:object{IgnisCollectorV3.OutputCumulator}
         (score-id:string)
         @doc "Set deb-boost true once; irreversible. No native STOA; validation in SCR|C>ENABLE-DEB-BOOST-SCORE; XI write only; medium IGNIS cumulator."
         (P|UEV_IMC)
@@ -4103,13 +4103,13 @@
             (URCi_EnableDebBoost score-id)
         )
     )
-    (defun C_IssueTriplet:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_IssueTriplet:object{IgnisCollectorV3.OutputCumulator}
         (patron:string bronze-score-id:string silver-score-id:string golden-score-id:string)
         @doc "Bundle three issued scores into one triplet T|bronze|silver|golden. Silver score owner; costs GAS|ISSUE-TRIPLET IGNIS."
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 ;;
                 (owner-konto:string (UR_SCR|ScoreOwnerKonto silver-score-id))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
@@ -4122,13 +4122,13 @@
             )
         )
     )
-    (defun C_IssueSemiFungibleScoreDefinition:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_IssueSemiFungibleScoreDefinition:object{IgnisCollectorV3.OutputCumulator}
         (score-id:string dpsf-id:string nonces:[integer] nonce-score-values:[decimal])
         @doc "Write SCR|T|SF|Score nonce-score-value for multiple nonces in one call; increments SF DefRevision revision-nonce once."
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 ;;
                 (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
                 (big:decimal (ref-IGNIS::UC_IgnisLeg "tier-big"))
@@ -4142,13 +4142,13 @@
             (URCi_IssueSemiFungibleScoreDefinition score-id nonces)
         )
     )
-    (defun C_IssueNonFungibleScoreDefinition:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_IssueNonFungibleScoreDefinition:object{IgnisCollectorV3.OutputCumulator}
         (score-id:string dpnf-id:string trait-keys:[string] trait-values:[string] trait-score-values:[decimal])
         @doc "Write SCR|T|NF|TraitScore trait-score-value rows for multiple trait key/value pairs in one call; bumps NF DefRevision global + trait counters."
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 ;;
                 (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
                 (biggest:decimal (ref-IGNIS::UC_IgnisLeg "tier-biggest"))
@@ -4164,13 +4164,13 @@
             (URCi_IssueNonFungibleScoreDefinition score-id trait-keys)
         )
     )
-    (defun C_IssueNonFungibleSetScoreDefinition:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_IssueNonFungibleSetScoreDefinition:object{IgnisCollectorV3.OutputCumulator}
         (score-id:string dpnf-id:string dpnf-nonce-classes:[integer] class-score-values:[decimal])
         @doc "Write SCR|T|NF|ClassScore set-mode definitions (one row per dpnf-nonce-class); bumps NF DefRevision global + class counters."
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 ;;
                 (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
                 (biggest:decimal (ref-IGNIS::UC_IgnisLeg "tier-biggest"))
@@ -4186,7 +4186,7 @@
             (URCi_IssueNonFungibleSetScoreDefinition score-id dpnf-nonce-classes)
         )
     )
-    (defun C_IssueSingleScoreModel:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_IssueSingleScoreModel:object{IgnisCollectorV3.OutputCumulator}
         (patron:string model-name:string score-class:integer collectable-id:string precision:integer nonces:[integer] nonce-score-values:[decimal])
         @doc "Define a SINGLE score-entity model (the scoring spec for one score + its SF definition). model-id \
             \ from model-name (UDC_Makeid). P|UEV_IMC + SCR|C>ISSUE-SINGLE-SCORE-MODEL. Bills GAS|ISSUE-SCORE-MODEL."
@@ -4195,7 +4195,7 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (model-id:string (ref-U|DALOS::UDC_Makeid model-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
@@ -4205,7 +4205,7 @@
             )
         )
     )
-    (defun C_CombineTripletScoreModel:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_CombineTripletScoreModel:object{IgnisCollectorV3.OutputCumulator}
         (patron:string model-name:string bronze-model-id:string silver-model-id:string golden-model-id:string)
         @doc "Combine three SINGLE models into a TRIPLET score-entity model. model-id from model-name. \
             \ P|UEV_IMC + SCR|C>COMBINE-TRIPLET-SCORE-MODEL. Bills GAS|ISSUE-SCORE-MODEL."
@@ -4214,7 +4214,7 @@
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (model-id:string (ref-U|DALOS::UDC_Makeid model-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
@@ -4224,7 +4224,7 @@
             )
         )
     )
-    (defun C_IssueScoreFromModel:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_IssueScoreFromModel:object{IgnisCollectorV3.OutputCumulator}
         (patron:string owner-konto:string model-id:string agency-name:string)
         @doc "FACTORY: issue a score entity conforming to <model-id>, owned by owner-konto, named <agency-name>. \
             \ single → 1 SF score named agency-name + its definition; triplet → 3 sub-scores named \
@@ -4235,7 +4235,7 @@
         (with-capability (SCR|C>ISSUE-SCORE-FROM-MODEL patron owner-konto model-id)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
                 (let

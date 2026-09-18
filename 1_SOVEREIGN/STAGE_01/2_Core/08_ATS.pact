@@ -159,26 +159,26 @@
     (defun URH_ExistingAutostakePairs:[string] (ats:string))
     (defun URH_OwnedAutostakePairs:[string] (account:string))
     ;;  [URCi] cost readers — single source per op (the C_ bills them, INFO previews from them)
-    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV2.OutputCumulator} (entity-id:string))
-    (defun URCi_RotateOwnership:object{IgnisCollectorV2.OutputCumulator} (atspair:string))
-    (defun URCi_Control:object{IgnisCollectorV2.OutputCumulator} (atspair:string))
-    (defun URCi_UpdateRoyalty:object{IgnisCollectorV2.OutputCumulator} (atspair:string))
-    (defun URCi_UpdateSyphon:object{IgnisCollectorV2.OutputCumulator} (atspair:string))
-    (defun URCi_SetHibernationFees:object{IgnisCollectorV2.OutputCumulator} (atspair:string))
-    (defun URCi_ControlColdRecoveryFees:object{IgnisCollectorV2.OutputCumulator} (atspair:string))
-    (defun URCi_SetColdRecoveryDuration:object{IgnisCollectorV2.OutputCumulator} (atspair:string))
-    (defun URCi_ToggleElite:object{IgnisCollectorV2.OutputCumulator} (atspair:string))
-    (defun URCi_ToggleUpgrade:object{IgnisCollectorV2.OutputCumulator} (atspair:string))
-    (defun URCi_SwitchColdRecovery:object{IgnisCollectorV2.OutputCumulator} (atspair:string))
-    (defun URCi_ControlHotRecoveryFee:object{IgnisCollectorV2.OutputCumulator} (atspair:string))
-    (defun URCi_SetHotRecoveryFees:object{IgnisCollectorV2.OutputCumulator} (atspair:string))
-    (defun URCi_SwitchHotRecovery:object{IgnisCollectorV2.OutputCumulator} (atspair:string))
-    (defun URCi_SetDirectRecoveryFee:object{IgnisCollectorV2.OutputCumulator} (atspair:string))
-    (defun URCi_SwitchDirectRecovery:object{IgnisCollectorV2.OutputCumulator} (atspair:string))
-    (defun URCi_AddSecondary:object{IgnisCollectorV2.OutputCumulator} ())
-    (defun URCi_AddHotRBT:object{IgnisCollectorV2.OutputCumulator} (atspair:string hot-rbt:string))
-    (defun URCi_SetColdRecoveryFees:object{IgnisCollectorV2.OutputCumulator} ())
-    (defun URCi_ToggleParameterLock:object{IgnisCollectorV2.OutputCumulator} (atspair:string toggle:bool))
+    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator} (entity-id:string))
+    (defun URCi_RotateOwnership:object{IgnisCollectorV3.OutputCumulator} (atspair:string))
+    (defun URCi_Control:object{IgnisCollectorV3.OutputCumulator} (atspair:string))
+    (defun URCi_UpdateRoyalty:object{IgnisCollectorV3.OutputCumulator} (atspair:string))
+    (defun URCi_UpdateSyphon:object{IgnisCollectorV3.OutputCumulator} (atspair:string))
+    (defun URCi_SetHibernationFees:object{IgnisCollectorV3.OutputCumulator} (atspair:string))
+    (defun URCi_ControlColdRecoveryFees:object{IgnisCollectorV3.OutputCumulator} (atspair:string))
+    (defun URCi_SetColdRecoveryDuration:object{IgnisCollectorV3.OutputCumulator} (atspair:string))
+    (defun URCi_ToggleElite:object{IgnisCollectorV3.OutputCumulator} (atspair:string))
+    (defun URCi_ToggleUpgrade:object{IgnisCollectorV3.OutputCumulator} (atspair:string))
+    (defun URCi_SwitchColdRecovery:object{IgnisCollectorV3.OutputCumulator} (atspair:string))
+    (defun URCi_ControlHotRecoveryFee:object{IgnisCollectorV3.OutputCumulator} (atspair:string))
+    (defun URCi_SetHotRecoveryFees:object{IgnisCollectorV3.OutputCumulator} (atspair:string))
+    (defun URCi_SwitchHotRecovery:object{IgnisCollectorV3.OutputCumulator} (atspair:string))
+    (defun URCi_SetDirectRecoveryFee:object{IgnisCollectorV3.OutputCumulator} (atspair:string))
+    (defun URCi_SwitchDirectRecovery:object{IgnisCollectorV3.OutputCumulator} (atspair:string))
+    (defun URCi_AddSecondary:object{IgnisCollectorV3.OutputCumulator} ())
+    (defun URCi_AddHotRBT:object{IgnisCollectorV3.OutputCumulator} (atspair:string hot-rbt:string))
+    (defun URCi_SetColdRecoveryFees:object{IgnisCollectorV3.OutputCumulator} ())
+    (defun URCi_ToggleParameterLock:object{IgnisCollectorV3.OutputCumulator} (atspair:string toggle:bool))
     (defun URCi_ToggleParameterLockStoa:decimal (atspair:string toggle:bool))
     (defun URCi_IssueGas:decimal (token-count:integer))
     (defun URCi_IssueStoa:decimal (token-count:integer))
@@ -223,11 +223,11 @@
     ;;
     ;;  [C]
     ;;
-    (defun HOT-RBT|C_UpdatePendingBranding:object{IgnisCollectorV2.OutputCumulator} (entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
+    (defun HOT-RBT|C_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator} (entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
     (defun HOT-RBT|C_UpgradeBranding (patron:string entity-id:string months:integer))
-    (defun HOT-RBT|C_Repurpose:object{IgnisCollectorV2.OutputCumulator} (hot-rbt:string nonce:integer repurpose-to:string))
+    (defun HOT-RBT|C_Repurpose:object{IgnisCollectorV3.OutputCumulator} (hot-rbt:string nonce:integer repurpose-to:string))
         ;;
-    (defun C_Issue:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_Issue:object{IgnisCollectorV3.OutputCumulator}
         (
             patron:string
             account:string
@@ -239,29 +239,29 @@
             rbt-nfr:[bool]
         )
     )
-    (defun C_RotateOwnership:object{IgnisCollectorV2.OutputCumulator} (atspair:string new-owner:string))
-    (defun C_Control:object{IgnisCollectorV2.OutputCumulator} (atspair:string can-change-owner:bool syphoning:bool hibernate:bool))
-    (defun C_UpdateRoyalty:object{IgnisCollectorV2.OutputCumulator} (atspair:string royalty:decimal))
-    (defun C_UpdateSyphon:object{IgnisCollectorV2.OutputCumulator} (atspair:string syphon:decimal))
-    (defun C_SetHibernationFees:object{IgnisCollectorV2.OutputCumulator} (atspair:string peak:decimal decay:decimal))
+    (defun C_RotateOwnership:object{IgnisCollectorV3.OutputCumulator} (atspair:string new-owner:string))
+    (defun C_Control:object{IgnisCollectorV3.OutputCumulator} (atspair:string can-change-owner:bool syphoning:bool hibernate:bool))
+    (defun C_UpdateRoyalty:object{IgnisCollectorV3.OutputCumulator} (atspair:string royalty:decimal))
+    (defun C_UpdateSyphon:object{IgnisCollectorV3.OutputCumulator} (atspair:string syphon:decimal))
+    (defun C_SetHibernationFees:object{IgnisCollectorV3.OutputCumulator} (atspair:string peak:decimal decay:decimal))
         ;;
-    (defun C_ToggleParameterLock:object{IgnisCollectorV2.OutputCumulator} (patron:string atspair:string toggle:bool))
-    (defun C_AddSecondary:object{IgnisCollectorV2.OutputCumulator} (atspair:string reward-token:string rt-nfr:bool))
+    (defun C_ToggleParameterLock:object{IgnisCollectorV3.OutputCumulator} (patron:string atspair:string toggle:bool))
+    (defun C_AddSecondary:object{IgnisCollectorV3.OutputCumulator} (atspair:string reward-token:string rt-nfr:bool))
         ;;
-    (defun C_ControlColdRecoveryFees:object{IgnisCollectorV2.OutputCumulator} (atspair:string c-nfr:bool c-fr:bool))
-    (defun C_SetColdRecoveryFees:object{IgnisCollectorV2.OutputCumulator} (atspair:string fee-positions:integer fee-thresholds:[decimal] fee-array:[[decimal]]))
-    (defun C_SetColdRecoveryDuration:object{IgnisCollectorV2.OutputCumulator} (atspair:string soft-or-hard:bool base:integer growth:integer))
-    (defun C_ToggleElite:object{IgnisCollectorV2.OutputCumulator} (atspair:string toggle:bool))
-    (defun C_ToggleUpgrade:object{IgnisCollectorV2.OutputCumulator} (atspair:string toggle:bool))
-    (defun C_SwitchColdRecovery:object{IgnisCollectorV2.OutputCumulator} (atspair:string toggle:bool))
+    (defun C_ControlColdRecoveryFees:object{IgnisCollectorV3.OutputCumulator} (atspair:string c-nfr:bool c-fr:bool))
+    (defun C_SetColdRecoveryFees:object{IgnisCollectorV3.OutputCumulator} (atspair:string fee-positions:integer fee-thresholds:[decimal] fee-array:[[decimal]]))
+    (defun C_SetColdRecoveryDuration:object{IgnisCollectorV3.OutputCumulator} (atspair:string soft-or-hard:bool base:integer growth:integer))
+    (defun C_ToggleElite:object{IgnisCollectorV3.OutputCumulator} (atspair:string toggle:bool))
+    (defun C_ToggleUpgrade:object{IgnisCollectorV3.OutputCumulator} (atspair:string toggle:bool))
+    (defun C_SwitchColdRecovery:object{IgnisCollectorV3.OutputCumulator} (atspair:string toggle:bool))
         ;;
-    (defun C_AddHotRBT:object{IgnisCollectorV2.OutputCumulator} (atspair:string hot-rbt:string))
-    (defun C_ControlHotRecoveryFee:object{IgnisCollectorV2.OutputCumulator} (atspair:string h-fr:bool))
-    (defun C_SetHotRecoveryFees:object{IgnisCollectorV2.OutputCumulator} (atspair:string promile:decimal decay:integer))
-    (defun C_SwitchHotRecovery:object{IgnisCollectorV2.OutputCumulator} (atspair:string toggle:bool))
+    (defun C_AddHotRBT:object{IgnisCollectorV3.OutputCumulator} (atspair:string hot-rbt:string))
+    (defun C_ControlHotRecoveryFee:object{IgnisCollectorV3.OutputCumulator} (atspair:string h-fr:bool))
+    (defun C_SetHotRecoveryFees:object{IgnisCollectorV3.OutputCumulator} (atspair:string promile:decimal decay:integer))
+    (defun C_SwitchHotRecovery:object{IgnisCollectorV3.OutputCumulator} (atspair:string toggle:bool))
         ;;
-    (defun C_SetDirectRecoveryFee:object{IgnisCollectorV2.OutputCumulator} (atspair:string promile:decimal))
-    (defun C_SwitchDirectRecovery:object{IgnisCollectorV2.OutputCumulator} (atspair:string toggle:bool))
+    (defun C_SetDirectRecoveryFee:object{IgnisCollectorV3.OutputCumulator} (atspair:string promile:decimal))
+    (defun C_SwitchDirectRecovery:object{IgnisCollectorV3.OutputCumulator} (atspair:string toggle:bool))
 
 )
 ;;
@@ -991,7 +991,7 @@
     (defun CT_EmptyCumulator ()
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UDC_EmptyOutputCumulatorV2)
         )
@@ -2062,160 +2062,160 @@
     ;;
     ;;[URCi] cost readers — single cost source per op. The C_ returns/bills its URCi; Phase 1.2 INFO
     ;;  previews from the same reader. (HOT-RBT branding/Repurpose forward DPOF costs — no own URCi.)
-    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV2.OutputCumulator} (entity-id:string)
+    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator} (entity-id:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UDC_BrandingCumulator (UR_OwnerKonto entity-id) 5.0)
         )
     )
-    (defun URCi_RotateOwnership:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
+    (defun URCi_RotateOwnership:object{IgnisCollectorV3.OutputCumulator} (atspair:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisPrice "ATS|C_RotateOwnership" "auth")
                 (UR_OwnerKonto atspair) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_Control:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
+    (defun URCi_Control:object{IgnisCollectorV3.OutputCumulator} (atspair:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisPrice "ATS|C_Control" "setup")
                 (UR_OwnerKonto atspair) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_UpdateRoyalty:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
+    (defun URCi_UpdateRoyalty:object{IgnisCollectorV3.OutputCumulator} (atspair:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisPrice "ATS|C_UpdateRoyalty" "fee")
                 (UR_OwnerKonto atspair) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_UpdateSyphon:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
+    (defun URCi_UpdateSyphon:object{IgnisCollectorV3.OutputCumulator} (atspair:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisPrice "ATS|C_UpdateSyphon" "usage")
                 (UR_OwnerKonto atspair) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_SetHibernationFees:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
+    (defun URCi_SetHibernationFees:object{IgnisCollectorV3.OutputCumulator} (atspair:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisPrice "ATS|C_SetHibernationFees" "fee")
                 (UR_OwnerKonto atspair) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_ControlColdRecoveryFees:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
+    (defun URCi_ControlColdRecoveryFees:object{IgnisCollectorV3.OutputCumulator} (atspair:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisPrice "ATS|C_ControlColdRecoveryFees" "fee")
                 (UR_OwnerKonto atspair) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_SetColdRecoveryDuration:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
+    (defun URCi_SetColdRecoveryDuration:object{IgnisCollectorV3.OutputCumulator} (atspair:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisPrice "ATS|C_SetColdRecoveryDuration" "setup")
                 (UR_OwnerKonto atspair) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_ToggleElite:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
+    (defun URCi_ToggleElite:object{IgnisCollectorV3.OutputCumulator} (atspair:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisPrice "ATS|C_ToggleElite" "setup")
                 (UR_OwnerKonto atspair) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_ToggleUpgrade:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
+    (defun URCi_ToggleUpgrade:object{IgnisCollectorV3.OutputCumulator} (atspair:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisPrice "ATS|C_ToggleUpgrade" "setup")
                 (UR_OwnerKonto atspair) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_SwitchColdRecovery:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
+    (defun URCi_SwitchColdRecovery:object{IgnisCollectorV3.OutputCumulator} (atspair:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisPrice "ATS|C_SwitchColdRecovery" "setup")
                 (UR_OwnerKonto atspair) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_ControlHotRecoveryFee:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
+    (defun URCi_ControlHotRecoveryFee:object{IgnisCollectorV3.OutputCumulator} (atspair:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisPrice "ATS|C_ControlHotRecoveryFee" "fee")
                 (UR_OwnerKonto atspair) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_SetHotRecoveryFees:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
+    (defun URCi_SetHotRecoveryFees:object{IgnisCollectorV3.OutputCumulator} (atspair:string)
         @doc "Cost preview for the ATS|C_SetHotRecoveryFee client (core fn is plural, the \
             \ Talos op is singular — billed under the TALOS name like every other key)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisPrice "ATS|C_SetHotRecoveryFee" "fee")
                 (UR_OwnerKonto atspair) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_SwitchHotRecovery:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
+    (defun URCi_SwitchHotRecovery:object{IgnisCollectorV3.OutputCumulator} (atspair:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisPrice "ATS|C_SwitchHotRecovery" "setup")
                 (UR_OwnerKonto atspair) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_SetDirectRecoveryFee:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
+    (defun URCi_SetDirectRecoveryFee:object{IgnisCollectorV3.OutputCumulator} (atspair:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisPrice "ATS|C_SetDirectRecoveryFee" "fee")
                 (UR_OwnerKonto atspair) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_SwitchDirectRecovery:object{IgnisCollectorV2.OutputCumulator} (atspair:string)
+    (defun URCi_SwitchDirectRecovery:object{IgnisCollectorV3.OutputCumulator} (atspair:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisPrice "ATS|C_SwitchDirectRecovery" "setup")
@@ -2223,21 +2223,21 @@
         )
     )
     ;;  Construct-with-price (pure): also reused for C_AddHotRBT's ico0 (identical token-issue construct).
-    (defun URCi_AddSecondary:object{IgnisCollectorV2.OutputCumulator} ()
+    (defun URCi_AddSecondary:object{IgnisCollectorV3.OutputCumulator} ()
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisPrice "ATS|C_AddSecondary" "ats-secondary") ATS|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_AddHotRBT:object{IgnisCollectorV2.OutputCumulator} (atspair:string hot-rbt:string)
+    (defun URCi_AddHotRBT:object{IgnisCollectorV3.OutputCumulator} (atspair:string hot-rbt:string)
         @doc "Cost preview for C_AddHotRBT — pure re-derivation of its 3-leg concat: an \
             \ AddSecondary leg + a conditional hot-rbt RotateOwnership (only when the hot-rbt \
             \ is not already owned by ATS|SC_NAME) + the hot-rbt Control lock."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                 (hot-rbt-owner:string (ref-DPOF::UR_Konto hot-rbt))
             )
@@ -2251,19 +2251,19 @@
             )
         )
     )
-    (defun URCi_SetColdRecoveryFees:object{IgnisCollectorV2.OutputCumulator} ()
+    (defun URCi_SetColdRecoveryFees:object{IgnisCollectorV3.OutputCumulator} ()
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator (* (ref-IGNIS::UC_IgnisLeg "tier-biggest") 20.0) ATS|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
     ;;  ToggleParameterLock: full cumulator re-derived from unlocks (read PRE-increment — see C_).
-    (defun URCi_ToggleParameterLock:object{IgnisCollectorV2.OutputCumulator} (atspair:string toggle:bool)
+    (defun URCi_ToggleParameterLock:object{IgnisCollectorV3.OutputCumulator} (atspair:string toggle:bool)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (unlock-costs:[decimal] (if toggle [0.0 0.0] (ref-IGNIS::UC_FeeUnlockPrice)))
                 (gas-costs:decimal (+ (ref-IGNIS::UC_IgnisLeg "tier-small") (at 0 unlock-costs)))
                 (output:bool (> (at 1 unlock-costs) 0.0))
@@ -2278,7 +2278,7 @@
             \ charge move as one. Mirrors DPTF's <URCi_ToggleFeeLockStoa>."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (if toggle 0.0 (at 1 (ref-IGNIS::UC_FeeUnlockPrice)))
         )
@@ -2290,7 +2290,7 @@
             \ Shared by the exec path and its INFO_* preview, so both move as one."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             ;;deterrence scales PER TOKEN; the op's own compute is charged ONCE
             (+ (* (dec token-count) (ref-IGNIS::UC_IgnisDeter "issue-ats-pair"))
@@ -2304,7 +2304,7 @@
             \ user pays does not. Shared by the exec path and its INFO_* preview."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (* (dec token-count) (ref-IGNIS::UC_StoaPrice "issue-ats-pair"))
         )
@@ -2628,7 +2628,7 @@
             [0.0 0.0]
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 )
                 (ref-IGNIS::UC_FeeUnlockPrice)
             )
@@ -2954,7 +2954,7 @@
             {"id"       : id}
         )
     )
-    (defun C_UpdatePendingBranding:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator}
         (entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
         (P|UEV_IMC)
         (let
@@ -2971,7 +2971,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-BRD:module{BrandingV2} BRD)
                 (owner:string (UR_OwnerKonto entity-id))
             )
@@ -2983,7 +2983,7 @@
         )
     )
     ;;Hot RBT Management
-    (defun HOT-RBT|C_UpdatePendingBranding:object{IgnisCollectorV2.OutputCumulator}
+    (defun HOT-RBT|C_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator}
         (entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
         (P|UEV_IMC)
         (let
@@ -3006,7 +3006,7 @@
             )
         )
     )
-    (defun HOT-RBT|C_Repurpose:object{IgnisCollectorV2.OutputCumulator}
+    (defun HOT-RBT|C_Repurpose:object{IgnisCollectorV3.OutputCumulator}
         (hot-rbt:string nonce:integer repurpose-to:string)
         @doc "Fix (audit finding #22L test-coverage sweep): UR_NonceMetaData was called \
             \ with zero arguments where it requires (id nonce) - an unconditional crash, \
@@ -3018,7 +3018,7 @@
         (with-capability (ATS|C>REPURPOSE-HOT-RBT hot-rbt)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                     ;;
                     (nonce-holder:string (ref-DPOF::UR_NonceHolder hot-rbt nonce))
@@ -3045,7 +3045,7 @@
         )
     )
     ;;
-    (defun C_Issue:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_Issue:object{IgnisCollectorV3.OutputCumulator}
         (
             patron:string
             account:string
@@ -3060,7 +3060,7 @@
         (with-capability (ATS|C>ISSUE account atspair index-decimals reward-token rt-nfr reward-bearing-token rbt-nfr)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (l1:integer (length atspair))
                     (gas-costs:decimal (URCi_IssueGas l1))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
@@ -3075,7 +3075,7 @@
             )
         )
     )
-    (defun C_RotateOwnership:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_RotateOwnership:object{IgnisCollectorV3.OutputCumulator}
         (atspair:string new-owner:string)
         (P|UEV_IMC)
         (with-capability (ATS|S>ROTATE_OWNERSHIP atspair new-owner)
@@ -3083,7 +3083,7 @@
             (URCi_RotateOwnership atspair)
         )
     )
-    (defun C_Control:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_Control:object{IgnisCollectorV3.OutputCumulator}
         (atspair:string can-change-owner:bool syphoning:bool hibernate:bool)
         (P|UEV_IMC)
         (with-capability (ATS|S>CONTROL atspair hibernate)
@@ -3091,7 +3091,7 @@
             (URCi_Control atspair)
         )
     )
-    (defun C_UpdateRoyalty:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_UpdateRoyalty:object{IgnisCollectorV3.OutputCumulator}
         (atspair:string royalty:decimal)
         (P|UEV_IMC)
         (with-capability (ATS|S>ROYALTY atspair royalty)
@@ -3099,7 +3099,7 @@
             (URCi_UpdateRoyalty atspair)
         )
     )
-    (defun C_UpdateSyphon:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_UpdateSyphon:object{IgnisCollectorV3.OutputCumulator}
         (atspair:string syphon:decimal)
         (P|UEV_IMC)
         (with-capability (ATS|S>SYPHON atspair syphon)
@@ -3108,7 +3108,7 @@
         )
     )
     ;;
-    (defun C_SetHibernationFees:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_SetHibernationFees:object{IgnisCollectorV3.OutputCumulator}
         (atspair:string peak:decimal decay:decimal)
         (P|UEV_IMC)
         (with-capability (ATS|S>SET-HIBERNATION-FEES atspair peak decay)
@@ -3117,17 +3117,17 @@
         )
     )
     ;;
-    (defun C_ToggleParameterLock:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_ToggleParameterLock:object{IgnisCollectorV3.OutputCumulator}
         (patron:string atspair:string toggle:bool)
         (P|UEV_IMC)
         (with-capability (ATS|C>TOGGLE-PARAMETER-LOCK atspair toggle)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (toggle-costs:[decimal] (XI_ToggleParameterLock atspair toggle))
                     (stoa-costs:decimal (at 1 toggle-costs))
                     ;;URCi computed HERE — reads unlocks BEFORE XI_IncrementParameterUnlocks below mutates it
-                    (cumulator:object{IgnisCollectorV2.OutputCumulator} (URCi_ToggleParameterLock atspair toggle))
+                    (cumulator:object{IgnisCollectorV3.OutputCumulator} (URCi_ToggleParameterLock atspair toggle))
                 )
                 (if (> stoa-costs 0.0)
                     (do
@@ -3140,12 +3140,12 @@
             )
         )
     )
-    (defun C_AddSecondary:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_AddSecondary:object{IgnisCollectorV3.OutputCumulator}
         (atspair:string reward-token:string rt-nfr:bool)
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 ;;
                 (price:decimal (ref-IGNIS::UC_IgnisPrice "ATS|C_AddSecondary" "ats-secondary"))
@@ -3160,7 +3160,7 @@
         )
     )
     ;;Cold Recovery Management
-    (defun C_ControlColdRecoveryFees:object{IgnisCollectorV2.OutputCumulator} 
+    (defun C_ControlColdRecoveryFees:object{IgnisCollectorV3.OutputCumulator} 
         (atspair:string c-nfr:bool c-fr:bool)
         (P|UEV_IMC)
         (with-capability (ATS|C>CONTROL-COLD-FEES atspair)
@@ -3168,12 +3168,12 @@
             (URCi_ControlColdRecoveryFees atspair)
         )
     )
-    (defun C_SetColdRecoveryFees:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_SetColdRecoveryFees:object{IgnisCollectorV3.OutputCumulator}
         (atspair:string fee-positions:integer fee-thresholds:[decimal] fee-array:[[decimal]])
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (gas-costs:decimal (* (ref-IGNIS::UC_IgnisLeg "tier-biggest") 20.0))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
             )
@@ -3183,7 +3183,7 @@
             )
         )
     )
-    (defun C_SetColdRecoveryDuration:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_SetColdRecoveryDuration:object{IgnisCollectorV3.OutputCumulator}
         (atspair:string soft-or-hard:bool base:integer growth:integer)
         (P|UEV_IMC)
         (with-capability (ATS|C>SET_COLD-DURATION atspair soft-or-hard base growth)
@@ -3191,7 +3191,7 @@
             (URCi_SetColdRecoveryDuration atspair)
         )
     )
-    (defun C_ToggleElite:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_ToggleElite:object{IgnisCollectorV3.OutputCumulator}
         (atspair:string toggle:bool)
         (P|UEV_IMC)
         (with-capability (ATS|C>TOGGLE_ELITE atspair toggle)
@@ -3199,7 +3199,7 @@
             (URCi_ToggleElite atspair)
         )
     )
-    (defun C_ToggleUpgrade:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_ToggleUpgrade:object{IgnisCollectorV3.OutputCumulator}
         (atspair:string toggle:bool)
         @doc "Fix (audit finding #21L / L3): sets can-upgrade, which was previously \
             \ permanently true with no setter. Gates C_Control (can-change-owner/ \
@@ -3210,7 +3210,7 @@
             (URCi_ToggleUpgrade atspair)
         )
     )
-    (defun C_SwitchColdRecovery:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_SwitchColdRecovery:object{IgnisCollectorV3.OutputCumulator}
         (atspair:string toggle:bool)
         (P|UEV_IMC)
         (with-capability (ATS|S>SWITCH-COLD-RECOVERY atspair toggle)
@@ -3220,30 +3220,30 @@
     )
     ;;Hot Recovery Management
     ;;Must be modified to either add a 0 supply Orto Fungible or Issue One
-    (defun C_AddHotRBT:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_AddHotRBT:object{IgnisCollectorV3.OutputCumulator}
         (atspair:string hot-rbt:string)
         (P|UEV_IMC)
         (with-capability (ATS|C>ADD-HOT-RBT atspair hot-rbt)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                     ;;
                     (price:decimal (ref-IGNIS::UC_IgnisPrice "ATS|C_AddHotRBT" "ats-secondary"))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                     (hot-rbt-owner:string (ref-DPOF::UR_Konto hot-rbt))
                     ;;
-                    (ico0:object{IgnisCollectorV2.OutputCumulator}
+                    (ico0:object{IgnisCollectorV3.OutputCumulator}
                         (URCi_AddSecondary)
                     )
-                    (ico1:object{IgnisCollectorV2.OutputCumulator}
+                    (ico1:object{IgnisCollectorV3.OutputCumulator}
                         ;;Change Ownership to ATS|SC_NAME if it is not
                         (if (!= hot-rbt-owner ATS|SC_NAME)
                             (ref-DPOF::C_RotateOwnership hot-rbt ATS|SC_NAME)
                             EOC
                         )
                     )
-                    (ico2:object{IgnisCollectorV2.OutputCumulator}
+                    (ico2:object{IgnisCollectorV3.OutputCumulator}
                         ;;Lock Properties   <cu>    <cco>   <casr>  <ctocr> <cf>    <cw>    <cp>    <sg> to
                         ;;                  <false> <false> <false> <false> <true>  <true>  <false> <false>
                         (ref-DPOF::C_Control hot-rbt false false false false true true false false)
@@ -3256,7 +3256,7 @@
             ) 
         )
     )
-    (defun C_ControlHotRecoveryFee:object{IgnisCollectorV2.OutputCumulator} 
+    (defun C_ControlHotRecoveryFee:object{IgnisCollectorV3.OutputCumulator} 
         (atspair:string h-fr:bool)
         (P|UEV_IMC)
         (with-capability (ATS|C>CONTROL-HOT-FEE atspair)
@@ -3264,7 +3264,7 @@
             (URCi_ControlHotRecoveryFee atspair)
         )
     )
-    (defun C_SetHotRecoveryFees:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_SetHotRecoveryFees:object{IgnisCollectorV3.OutputCumulator}
         (atspair:string promile:decimal decay:integer)
         (P|UEV_IMC)
         (with-capability (ATS|C>SET_HOT_FEES atspair promile decay)
@@ -3272,7 +3272,7 @@
             (URCi_SetHotRecoveryFees atspair)
         )
     )
-    (defun C_SwitchHotRecovery:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_SwitchHotRecovery:object{IgnisCollectorV3.OutputCumulator}
         (atspair:string toggle:bool)
         (P|UEV_IMC)
         (with-capability (ATS|S>SWITCH-HOT-RECOVERY atspair toggle)
@@ -3281,7 +3281,7 @@
         )
     )
     ;;Direct Recovery Management
-    (defun C_SetDirectRecoveryFee:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_SetDirectRecoveryFee:object{IgnisCollectorV3.OutputCumulator}
         (atspair:string promile:decimal)
         (P|UEV_IMC)
         (with-capability (ATS|C>SET_DIRECT_FEE atspair promile)
@@ -3289,7 +3289,7 @@
             (URCi_SetDirectRecoveryFee atspair)
         )
     )
-    (defun C_SwitchDirectRecovery:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_SwitchDirectRecovery:object{IgnisCollectorV3.OutputCumulator}
         (atspair:string toggle:bool)
         (P|UEV_IMC)
         (with-capability (ATS|S>SWITCH-DIRECT-RECOVERY atspair toggle)

@@ -176,7 +176,7 @@
     ;;{5.6}  Aux/X
     ;;
     (defun XB_DeployAccountWNE (id:string account:string))
-    (defun XB_IssueFree:object{IgnisCollectorV2.OutputCumulator} (account:string name:[string] ticker:[string] decimals:[integer] can-change-owner:[bool] can-upgrade:[bool] can-add-special-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool] can-transfer-nft-create-role:[bool] iz-special:[bool]))
+    (defun XB_IssueFree:object{IgnisCollectorV3.OutputCumulator} (account:string name:[string] ticker:[string] decimals:[integer] can-change-owner:[bool] can-upgrade:[bool] can-add-special-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool] can-transfer-nft-create-role:[bool] iz-special:[bool]))
     (defun XB_UpdateEliteSingle (id:string account:string))
     (defun XB_UpdateElite (id:string sender:string receiver:string))
     (defun XB_WriteRoles (id:string account:string rp:integer d:bool))
@@ -185,25 +185,25 @@
     (defun XE_ToggleAddQuantityRole (id:string account:string toggle:bool))
     (defun XE_ToggleBurnRole (id:string account:string toggle:bool))
     (defun XE_UpdateRewardBearingToken (atspair:string id:string))
-    (defun XE_UpdateSpecialMetaFungible:object{IgnisCollectorV2.OutputCumulator} (main-dptf:string secondary-dpmf:string vesting-or-sleeping:bool))
+    (defun XE_UpdateSpecialMetaFungible:object{IgnisCollectorV3.OutputCumulator} (main-dptf:string secondary-dpmf:string vesting-or-sleeping:bool))
     ;;{5.7}  User [A/C]
     ;;
-    (defun C_AddQuantity:object{IgnisCollectorV2.OutputCumulator} (id:string nonce:integer account:string amount:decimal))
-    (defun C_Burn:object{IgnisCollectorV2.OutputCumulator} (id:string nonce:integer account:string amount:decimal))
-    (defun C_Control:object{IgnisCollectorV2.OutputCumulator} (id:string cco:bool cu:bool casr:bool cf:bool cw:bool cp:bool ctncr:bool))
-    (defun C_Create:object{IgnisCollectorV2.OutputCumulator} (id:string account:string meta-data:[object]))
+    (defun C_AddQuantity:object{IgnisCollectorV3.OutputCumulator} (id:string nonce:integer account:string amount:decimal))
+    (defun C_Burn:object{IgnisCollectorV3.OutputCumulator} (id:string nonce:integer account:string amount:decimal))
+    (defun C_Control:object{IgnisCollectorV3.OutputCumulator} (id:string cco:bool cu:bool casr:bool cf:bool cw:bool cp:bool ctncr:bool))
+    (defun C_Create:object{IgnisCollectorV3.OutputCumulator} (id:string account:string meta-data:[object]))
     (defun C_DeployAccount (id:string account:string))
-    (defun C_Issue:object{IgnisCollectorV2.OutputCumulator} (patron:string account:string name:[string] ticker:[string] decimals:[integer] can-change-owner:[bool] can-upgrade:[bool] can-add-special-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool] can-transfer-nft-create-role:[bool]))
-    (defun C_Mint:object{IgnisCollectorV2.OutputCumulator} (id:string account:string amount:decimal meta-data:[object]))
-    (defun C_MultiBatchTransfer:object{IgnisCollectorV2.OutputCumulator} (id:string nonces:[integer] sender:string receiver:string method:bool))
-    (defun C_RotateOwnership:object{IgnisCollectorV2.OutputCumulator} (id:string new-owner:string))
-    (defun C_SingleBatchTransfer:object{IgnisCollectorV2.OutputCumulator} (id:string nonce:integer sender:string receiver:string method:bool))
-    (defun C_ToggleFreezeAccount:object{IgnisCollectorV2.OutputCumulator} (id:string account:string toggle:bool))
-    (defun C_TogglePause:object{IgnisCollectorV2.OutputCumulator} (id:string toggle:bool))
-    (defun C_ToggleTransferRole:object{IgnisCollectorV2.OutputCumulator} (id:string account:string toggle:bool))
-    (defun C_Transfer:object{IgnisCollectorV2.OutputCumulator} (id:string nonce:integer sender:string receiver:string transfer-amount:decimal method:bool))
-    (defun C_Wipe:object{IgnisCollectorV2.OutputCumulator} (id:string atbw:string))
-    (defun C_WipePartial:object{IgnisCollectorV2.OutputCumulator} (id:string atbw:string nonces:[integer]))
+    (defun C_Issue:object{IgnisCollectorV3.OutputCumulator} (patron:string account:string name:[string] ticker:[string] decimals:[integer] can-change-owner:[bool] can-upgrade:[bool] can-add-special-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool] can-transfer-nft-create-role:[bool]))
+    (defun C_Mint:object{IgnisCollectorV3.OutputCumulator} (id:string account:string amount:decimal meta-data:[object]))
+    (defun C_MultiBatchTransfer:object{IgnisCollectorV3.OutputCumulator} (id:string nonces:[integer] sender:string receiver:string method:bool))
+    (defun C_RotateOwnership:object{IgnisCollectorV3.OutputCumulator} (id:string new-owner:string))
+    (defun C_SingleBatchTransfer:object{IgnisCollectorV3.OutputCumulator} (id:string nonce:integer sender:string receiver:string method:bool))
+    (defun C_ToggleFreezeAccount:object{IgnisCollectorV3.OutputCumulator} (id:string account:string toggle:bool))
+    (defun C_TogglePause:object{IgnisCollectorV3.OutputCumulator} (id:string toggle:bool))
+    (defun C_ToggleTransferRole:object{IgnisCollectorV3.OutputCumulator} (id:string account:string toggle:bool))
+    (defun C_Transfer:object{IgnisCollectorV3.OutputCumulator} (id:string nonce:integer sender:string receiver:string transfer-amount:decimal method:bool))
+    (defun C_Wipe:object{IgnisCollectorV3.OutputCumulator} (id:string atbw:string))
+    (defun C_WipePartial:object{IgnisCollectorV3.OutputCumulator} (id:string atbw:string nonces:[integer]))
 
 )
 ;;
@@ -1389,7 +1389,7 @@
         )
     )
     ;;Protection: Class 5 — IMC + Custom: DPMF|C>ISSUE
-    (defun XB_IssueFree:object{IgnisCollectorV2.OutputCumulator}
+    (defun XB_IssueFree:object{IgnisCollectorV3.OutputCumulator}
         (
             account:string
             name:[string]
@@ -1408,7 +1408,7 @@
         (with-capability (DPMF|C>ISSUE account name ticker decimals can-change-owner can-upgrade can-add-special-role can-freeze can-wipe can-pause can-transfer-nft-create-role)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                     (ref-BRD:module{BrandingV2} BRD)
                     (ref-U|LST:module{StringProcessorV2} U|LST)
@@ -1610,13 +1610,13 @@
         )
     )
     ;;Protection: Class 5 — IMC + Custom: DPMF|C>UPDATE-SPECIAL
-    (defun XE_UpdateSpecialMetaFungible:object{IgnisCollectorV2.OutputCumulator}
+    (defun XE_UpdateSpecialMetaFungible:object{IgnisCollectorV3.OutputCumulator}
         (main-dptf:string secondary-dpmf:string vesting-or-sleeping:bool)
         (P|UEV_IMC)
         (with-capability (DPMF|C>UPDATE-SPECIAL main-dptf secondary-dpmf vesting-or-sleeping)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 )
                 (if vesting-or-sleeping
@@ -2061,12 +2061,12 @@
     )
     ;;{5.7}  User [A/C]
     ;;
-    (defun C_UpdatePendingBranding:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator}
         (entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-BRD:module{BrandingV2} BRD)
             )
             (with-capability (DPMF|C>UPDATE-BRD entity-id)
@@ -2099,12 +2099,12 @@
         )
     )
     ;;
-    (defun C_AddQuantity:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_AddQuantity:object{IgnisCollectorV3.OutputCumulator}
         (id:string nonce:integer account:string amount:decimal)
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (with-capability (DPMF|C>ADD-QTY id account amount)
                 (XI_AddQuantity id nonce account amount)
@@ -2112,12 +2112,12 @@
             )
         )
     )
-    (defun C_Burn:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_Burn:object{IgnisCollectorV3.OutputCumulator}
         (id:string nonce:integer account:string amount:decimal)
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (with-capability (DPMF|C>BURN id account amount)
                 (XI_Burn id nonce account amount)
@@ -2125,12 +2125,12 @@
             )
         )
     )
-    (defun C_Control:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_Control:object{IgnisCollectorV3.OutputCumulator}
         (id:string cco:bool cu:bool casr:bool cf:bool cw:bool cp:bool ctncr:bool)
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (with-capability (DPMF|S>CTRL id)
                 (XI_Control id cco cu casr cf cw cp ctncr)
@@ -2138,12 +2138,12 @@
             )
         )
     )
-    (defun C_Create:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_Create:object{IgnisCollectorV3.OutputCumulator}
         (id:string account:string meta-data:[object])
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (price:decimal (ref-DALOS::UR_UsagePrice "ignis|medium"))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
@@ -2193,7 +2193,7 @@
             )
         )
     )
-    (defun C_Issue:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_Issue:object{IgnisCollectorV3.OutputCumulator}
         (patron:string account:string name:[string] ticker:[string] decimals:[integer] can-change-owner:[bool] can-upgrade:[bool] can-add-special-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool] can-transfer-nft-create-role:[bool])
         (P|UEV_IMC)
         (let
@@ -2203,7 +2203,7 @@
                 (mf-cost:decimal (ref-DALOS::UR_UsagePrice "dpmf"))
                 (stoa-costs:decimal (* (dec l1) mf-cost))
                 (iz-special:[bool] (make-list l1 false))
-                (ico:object{IgnisCollectorV2.OutputCumulator}
+                (ico:object{IgnisCollectorV3.OutputCumulator}
                     (with-capability (SECURE)
                         (XB_IssueFree account name ticker decimals can-change-owner can-upgrade can-add-special-role can-freeze can-wipe can-pause can-transfer-nft-create-role iz-special)
                     )
@@ -2213,12 +2213,12 @@
             ico
         )
     )
-    (defun C_Mint:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_Mint:object{IgnisCollectorV3.OutputCumulator}
         (id:string account:string amount:decimal meta-data:[object])
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (new-nonce:integer
                     (with-capability (DPMF|C>MINT id account amount)
@@ -2233,18 +2233,18 @@
             (ref-IGNIS::UDC_ConstructOutputCumulator price (UR_Konto id) trigger [new-nonce])
         )
     )
-    (defun C_MultiBatchTransfer:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_MultiBatchTransfer:object{IgnisCollectorV3.OutputCumulator}
         (id:string nonces:[integer] sender:string receiver:string method:bool)
         (P|UEV_IMC)
         (with-capability (DPMF|S>MULTI-BATCH-TRANSFER id nonces sender)
             (let
                 (
                     (ref-U|LST:module{StringProcessorV2} U|LST)
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
-                    (folded-obj:[object{IgnisCollectorV2.OutputCumulator}]
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (folded-obj:[object{IgnisCollectorV3.OutputCumulator}]
                         (fold
                             (lambda
-                                (acc:[object{IgnisCollectorV2.OutputCumulator}] idx:integer)
+                                (acc:[object{IgnisCollectorV3.OutputCumulator}] idx:integer)
                                 (ref-U|LST::UC_AppL
                                     acc
                                     (C_SingleBatchTransfer id (at idx nonces) sender receiver method)
@@ -2259,12 +2259,12 @@
             )
         )
     )
-    (defun C_RotateOwnership:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_RotateOwnership:object{IgnisCollectorV3.OutputCumulator}
         (id:string new-owner:string)
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (with-capability (DPMF|S>RT_OWN id new-owner)
                 (XI_ChangeOwnership id new-owner)
@@ -2272,17 +2272,17 @@
             )
         )
     )
-    (defun C_SingleBatchTransfer:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_SingleBatchTransfer:object{IgnisCollectorV3.OutputCumulator}
         (id:string nonce:integer sender:string receiver:string method:bool)
         (P|UEV_IMC)
         (C_Transfer id nonce sender receiver (UR_AccountNonceBalance id nonce sender) method)
     )
-    (defun C_ToggleFreezeAccount:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_ToggleFreezeAccount:object{IgnisCollectorV3.OutputCumulator}
         (id:string account:string toggle:bool)
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (with-capability (DPMF|C>FRZ-ACC id account toggle)
                 (XI_ToggleFreezeAccount id account toggle)
@@ -2291,12 +2291,12 @@
             )
         )
     )
-    (defun C_TogglePause:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_TogglePause:object{IgnisCollectorV3.OutputCumulator}
         (id:string toggle:bool)
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (with-capability (DPMF|S>TG_PAUSE id toggle)
                 (XI_TogglePause id toggle)
@@ -2304,12 +2304,12 @@
             )
         )
     )
-    (defun C_ToggleTransferRole:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_ToggleTransferRole:object{IgnisCollectorV3.OutputCumulator}
         (id:string account:string toggle:bool)
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (with-capability (DPMF|C>TG_TRANSFER-R id account toggle)
                 (XB_DeployAccountWNE id account)
@@ -2320,12 +2320,12 @@
             )
         )
     )
-    (defun C_Transfer:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_Transfer:object{IgnisCollectorV3.OutputCumulator}
         (id:string nonce:integer sender:string receiver:string transfer-amount:decimal method:bool)
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (with-capability (DPMF|C>TRANSFER id sender receiver transfer-amount method)
                 (XI_Transfer id nonce sender receiver transfer-amount method)
@@ -2333,12 +2333,12 @@
             )
         )
     )
-    (defun C_Wipe:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_Wipe:object{IgnisCollectorV3.OutputCumulator}
         (id:string atbw:string)
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (with-capability (DPMF|C>TOTAL-WIPE id atbw)
                 (XI_Wipe id atbw)
@@ -2346,12 +2346,12 @@
             )
         )
     )
-    (defun C_WipePartial:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_WipePartial:object{IgnisCollectorV3.OutputCumulator}
         (id:string atbw:string nonces:[integer])
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (with-capability (DPMF|C>PARTIAL-WIPE id atbw nonces)
                 (XI_WipePartial id atbw nonces)

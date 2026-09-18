@@ -53,40 +53,40 @@
         (receiver:string KST.EMMA)
         (ats:string KST.ATSTK)
         (vst:string KST.VESTG)
-        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
 
-        (cum1:object{IgnisCollectorV2.ModularCumulator} (ref-IGNIS::UDC_MakeModularCumulator 5.0 patron false))
-        (cum2:object{IgnisCollectorV2.ModularCumulator} (ref-IGNIS::UDC_MakeModularCumulator 7.0 receiver false))
-        (cum3:object{IgnisCollectorV2.ModularCumulator} (ref-IGNIS::UDC_MakeModularCumulator 8.0 ats false))
-        (cum4:object{IgnisCollectorV2.ModularCumulator} (ref-IGNIS::UDC_MakeModularCumulator 5.0 ats false))
-        (cum5:object{IgnisCollectorV2.ModularCumulator} (ref-IGNIS::UDC_MakeModularCumulator 17.0 vst false))
-        (l1:[object{IgnisCollectorV2.ModularCumulator}] [cum3 cum4 cum1 cum2 cum5])
+        (cum1:object{IgnisCollectorV3.ModularCumulator} (ref-IGNIS::UDC_MakeModularCumulator 5.0 patron false))
+        (cum2:object{IgnisCollectorV3.ModularCumulator} (ref-IGNIS::UDC_MakeModularCumulator 7.0 receiver false))
+        (cum3:object{IgnisCollectorV3.ModularCumulator} (ref-IGNIS::UDC_MakeModularCumulator 8.0 ats false))
+        (cum4:object{IgnisCollectorV3.ModularCumulator} (ref-IGNIS::UDC_MakeModularCumulator 5.0 ats false))
+        (cum5:object{IgnisCollectorV3.ModularCumulator} (ref-IGNIS::UDC_MakeModularCumulator 17.0 vst false))
+        (l1:[object{IgnisCollectorV3.ModularCumulator}] [cum3 cum4 cum1 cum2 cum5])
         (lst:list ["coco" "poco" 1])
         (ignis-discount:decimal (ref-DALOS::URC_IgnisGasDiscount patron))
         ;;
-        (ocv2:object{IgnisCollectorV2.OutputCumulator}
+        (ocv2:object{IgnisCollectorV3.OutputCumulator}
             (ref-IGNIS::UDC_MakeOutputCumulator l1 lst)
         )
-        (ccv2:object{IgnisCollectorV2.CompressedCumulator}
+        (ccv2:object{IgnisCollectorV3.CompressedCumulator}
             (ref-IGNIS::UDC_CompressOutputCumulator ocv2)
         )
-        (pcv2:object{IgnisCollectorV2.PrimedCumulator}
+        (pcv2:object{IgnisCollectorV3.PrimedCumulator}
             (ref-IGNIS::UDC_PrimeIgnisCumulator patron ccv2)
         )
-        (oc1:object{IgnisCollectorV2.OutputCumulator} (ref-IGNIS::UDC_MakeOutputCumulator [cum1] []))
-        (oc2:object{IgnisCollectorV2.OutputCumulator} (ref-IGNIS::UDC_MakeOutputCumulator [cum2] []))
-        (oc3:object{IgnisCollectorV2.OutputCumulator} (ref-IGNIS::UDC_MakeOutputCumulator [cum3] []))
-        (oc4:object{IgnisCollectorV2.OutputCumulator} (ref-IGNIS::UDC_MakeOutputCumulator [cum4] []))
-        (oc5:object{IgnisCollectorV2.OutputCumulator} (ref-IGNIS::UDC_MakeOutputCumulator [cum5] []))
+        (oc1:object{IgnisCollectorV3.OutputCumulator} (ref-IGNIS::UDC_MakeOutputCumulator [cum1] []))
+        (oc2:object{IgnisCollectorV3.OutputCumulator} (ref-IGNIS::UDC_MakeOutputCumulator [cum2] []))
+        (oc3:object{IgnisCollectorV3.OutputCumulator} (ref-IGNIS::UDC_MakeOutputCumulator [cum3] []))
+        (oc4:object{IgnisCollectorV3.OutputCumulator} (ref-IGNIS::UDC_MakeOutputCumulator [cum4] []))
+        (oc5:object{IgnisCollectorV3.OutputCumulator} (ref-IGNIS::UDC_MakeOutputCumulator [cum5] []))
 
-        (try:object{IgnisCollectorV2.OutputCumulator} (ref-IGNIS::UDC_ConcatenateOutputCumulators [oc1 oc2 oc3 oc4 oc5] ["coco" "pisu"]))
-        (try2:object{IgnisCollectorV2.CompressedCumulator}
+        (try:object{IgnisCollectorV3.OutputCumulator} (ref-IGNIS::UDC_ConcatenateOutputCumulators [oc1 oc2 oc3 oc4 oc5] ["coco" "pisu"]))
+        (try2:object{IgnisCollectorV3.CompressedCumulator}
             (ref-IGNIS::UDC_CompressOutputCumulator try)
         )
-        (try3:object{IgnisCollectorV2.PrimedCumulator}
+        (try3:object{IgnisCollectorV3.PrimedCumulator}
             (ref-IGNIS::UDC_PrimeIgnisCumulator patron try2)
         )
     )
@@ -262,7 +262,7 @@
 (print "--- [TX-IGC-001 Central pricing constants · 01 · let / invocation] ---")
 (let
     (
-        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
     )
     (map (print)
         [
@@ -295,7 +295,7 @@
 (print "--- [TX-IGC-001 · 02 · price helpers] ---")
 (let
     (
-        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
     )
     (map (print)
         [
@@ -327,7 +327,7 @@
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
 (let
     (
-        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
         ;;snapshot the GLOBAL stoa switch: flipping ours must not disturb it, whatever it is
@@ -372,7 +372,7 @@
 (print "--- [TX-IGC-001 · 04 · issuance STOA legs] ---")
 (let
     (
-        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
@@ -415,7 +415,7 @@
 ;;If these drift, either a price moved without the table moving, or vice versa.
 (let*
     (
-        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-ATS:module{AutostakeV3} ATS)
@@ -449,7 +449,7 @@
 ;;reverted to a legacy flat tier — exactly one of these fails and names the op.
 (let
     (
-        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ouro:string (ref-DALOS::UR_OuroborosID))
@@ -526,7 +526,7 @@
 ;;price assertion catches that. Migrated != verified until a sweep like this exists.
 (let
     (
-        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-ATS:module{AutostakeV3} ATS)
@@ -608,7 +608,7 @@
 ;;longer allowed to be satisfied by a single fused leg.
 (let
     (
-        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-VST:module{VestingV2} VST)

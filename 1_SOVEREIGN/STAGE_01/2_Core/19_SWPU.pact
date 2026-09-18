@@ -134,10 +134,10 @@
     ;;#34 Phase 7: dedup + lookup helpers for the bundle's <stoa-paths>, built ahead of
     ;;Phase 8's actual wiring so that phase builds against a settled, tested shape.
     (defun URC_DedupFirstTokens:[string] (distinct-edges:[string]))
-    (defun URCi_ToggleSwapCapability:object{IgnisCollectorV2.OutputCumulator} (swpair:string toggle:bool))
-    (defun URCi_SmartSwap:object{IgnisCollectorV2.OutputCumulator} (account:string input-id:string input-amount:decimal output-id:string slippage:decimal slippage-bounds:object{Slippage}))
-    (defun URCi_SmartSwapWithBundle:object{IgnisCollectorV2.OutputCumulator} (account:string input-id:string input-amount:decimal output-id:string slippage:decimal slippage-bounds:object{Slippage} bundle:object{SmartSwapPathBundle}))
-    (defun URCi_Swap:object{IgnisCollectorV2.OutputCumulator} (account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage:decimal slippage-bounds:object{Slippage}))
+    (defun URCi_ToggleSwapCapability:object{IgnisCollectorV3.OutputCumulator} (swpair:string toggle:bool))
+    (defun URCi_SmartSwap:object{IgnisCollectorV3.OutputCumulator} (account:string input-id:string input-amount:decimal output-id:string slippage:decimal slippage-bounds:object{Slippage}))
+    (defun URCi_SmartSwapWithBundle:object{IgnisCollectorV3.OutputCumulator} (account:string input-id:string input-amount:decimal output-id:string slippage:decimal slippage-bounds:object{Slippage} bundle:object{SmartSwapPathBundle}))
+    (defun URCi_Swap:object{IgnisCollectorV3.OutputCumulator} (account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage:decimal slippage-bounds:object{Slippage}))
     ;;{5.4}  Validate [UEV/CAP]
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
@@ -147,8 +147,8 @@
     ;;  []C] Functions
     ;;
     ;;
-    (defun C_ToggleSwapCapability:object{IgnisCollectorV2.OutputCumulator} (swpair:string toggle:bool))
-    (defun CC_SmartSwap:object{IgnisCollectorV2.OutputCumulator} (account:string input-id:string input-amount:decimal output-id:string slippage:decimal stoa-pid:decimal slippage-bounds:object{Slippage}))
+    (defun C_ToggleSwapCapability:object{IgnisCollectorV3.OutputCumulator} (swpair:string toggle:bool))
+    (defun CC_SmartSwap:object{IgnisCollectorV3.OutputCumulator} (account:string input-id:string input-amount:decimal output-id:string slippage:decimal stoa-pid:decimal slippage-bounds:object{Slippage}))
     ;;#34 Phase 8: the bundle-based, dirty-read-injected SmartSwap — performs zero
     ;;internal searching (route, boost-path and stoa-paths are all supplied by the
     ;;caller, per SmartSwapPathBundle), built alongside CC_SmartSwap for direct gas
@@ -159,7 +159,7 @@
             stoa-pid:decimal slippage-bounds:object{Slippage} bundle:object{SmartSwapPathBundle}
         )
     )
-    (defun C_Swap:object{IgnisCollectorV2.OutputCumulator} (account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage:decimal stoa-pid:decimal slippage-bounds:object{Slippage}))
+    (defun C_Swap:object{IgnisCollectorV3.OutputCumulator} (account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage:decimal stoa-pid:decimal slippage-bounds:object{Slippage}))
 
 )
 ;;
@@ -620,7 +620,7 @@
     (defun CT_EmptyCumulator ()
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UDC_EmptyOutputCumulatorV2)
         )
@@ -939,7 +939,7 @@
         )
     )
     ;;
-    (defun URCi_ToggleSwapCapability:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_ToggleSwapCapability:object{IgnisCollectorV3.OutputCumulator}
         (swpair:string toggle:bool)
         @doc "Cost preview for C_ToggleSwapCapability: delegates to SWP's add-or-swap toggle \
             \ cost (add-or-swap = false)."
@@ -951,7 +951,7 @@
         )
     )
     (defun URCi_SmartSwapCore:list
-        (account:string input-amount:decimal ico-input:object{IgnisCollectorV2.OutputCumulator} nodes:[string] edges:[string] boost-path:object{SwapperUsageV3.CachedPathOrMiss})
+        (account:string input-amount:decimal ico-input:object{IgnisCollectorV3.OutputCumulator} nodes:[string] edges:[string] boost-path:object{SwapperUsageV3.CachedPathOrMiss})
         @doc "Exact cost of XI_SmartSwapCore's hop fold. Intermediate hops keep tokens inside \
             \ SWP and contribute only EOC; only the LAST hop emits the batched special-fee flush \
             \ (URCi_MultiBulkTransferCumulator over every earlier hop's targets), its own output \
@@ -977,7 +977,7 @@
                         (let*
                             (
                                 (current-input:decimal (at 0 acc))
-                                (acc-icos:[object{IgnisCollectorV2.OutputCumulator}] (at 1 acc))
+                                (acc-icos:[object{IgnisCollectorV3.OutputCumulator}] (at 1 acc))
                                 (carried-boost-in:decimal (at 2 acc))
                                 (sp-id-lst-in:[string] (at 3 acc))
                                 (sp-receiver-arr-in:[[string]] (at 4 acc))
@@ -1004,7 +1004,7 @@
                                 (o-id-liquid:decimal (at "o-id-liquid" dtso))
                                 (o-id-netto:decimal (at "o-id-netto" dtso))
                                 ;;
-                                (ico-fuel:object{IgnisCollectorV2.OutputCumulator}
+                                (ico-fuel:object{IgnisCollectorV3.OutputCumulator}
                                     (ref-SWPLC::URCi_Fuel account swpair lp-fuel false))
                                 (carried-boost-out:decimal
                                     (+
@@ -1035,11 +1035,11 @@
                                     (if (!= (length hop-f-targets) 0) (+ sp-receiver-arr-in [hop-f-targets]) sp-receiver-arr-in))
                                 (sp-amount-arr-out:[[decimal]]
                                     (if (!= (length hop-f-targets) 0) (+ sp-amount-arr-in [hop-f-amounts]) sp-amount-arr-in))
-                                (sp-flush:object{IgnisCollectorV2.OutputCumulator}
+                                (sp-flush:object{IgnisCollectorV3.OutputCumulator}
                                     (if (and iz-last (!= (length sp-id-lst-in) 0))
                                         (ref-TFT::URCi_MultiBulkTransferCumulator sp-id-lst-in SWP|SC_NAME sp-receiver-arr-in sp-amount-arr-in)
                                         EOC))
-                                (ico-special:object{IgnisCollectorV2.OutputCumulator}
+                                (ico-special:object{IgnisCollectorV3.OutputCumulator}
                                     (if iz-last
                                         (if (!= o-id-special 0.0)
                                             (let
@@ -1061,7 +1061,7 @@
                                             (ref-TFT::URCi_Transfer o-id SWP|SC_NAME account o-id-netto)
                                         )
                                         EOC))
-                                (boost:object{IgnisCollectorV2.OutputCumulator}
+                                (boost:object{IgnisCollectorV3.OutputCumulator}
                                     (if (and iz-last (!= carried-boost-out 0.0))
                                         (URCi_RawLiquidPump o-id carried-boost-out boost-path)
                                         EOC))
@@ -1082,13 +1082,13 @@
             )
         )
     )
-    (defun URCi_SmartSwapExec:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_SmartSwapExec:object{IgnisCollectorV3.OutputCumulator}
         (account:string input-id:string input-amount:decimal output-id:string nodes:[string] edges:[string] boost-path:object{SwapperUsageV3.CachedPathOrMiss})
         @doc "Exact cost of XI_SmartSwap: the user->SWP input transfer + the hop-fold cost + the \
             \ [final-netto hops pools distinct-edges] output. The STOA-pid OPU is a free write."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 (hop-result:list
                     (URCi_SmartSwapCore account input-amount
@@ -1101,14 +1101,14 @@
             )
         )
     )
-    (defun URCi_SmartSwap:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_SmartSwap:object{IgnisCollectorV3.OutputCumulator}
         (account:string input-id:string input-amount:decimal output-id:string slippage:decimal slippage-bounds:object{SwapperUsageV3.Slippage})
         @doc "Exact cost preview for CC_SmartSwap (self-searching). Traces the route read-only via \
             \ URC_HopperActive, applies the same fee-less-output slippage floor vs the client-supplied \
             \ bounds, then prices the hop fold with NO_PATH (the boost route is re-derived read-only)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-SWPI:module{SwapperIssueV4} SWPI)
                 (h-obj:object{SwapperIssueV4.Hopper} (ref-SWPI::URC_HopperActive input-id output-id input-amount))
             )
@@ -1121,7 +1121,7 @@
             )
         )
     )
-    (defun URCi_SmartSwapWithBundle:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_SmartSwapWithBundle:object{IgnisCollectorV3.OutputCumulator}
         (account:string input-id:string input-amount:decimal output-id:string slippage:decimal slippage-bounds:object{SwapperUsageV3.Slippage} bundle:object{SwapperUsageV3.SmartSwapPathBundle})
         @doc "Exact cost preview for C_SmartSwap (bundle-based). Uses the dirty-read bundle's own \
             \ swap-route + boost-path (fed identically to exec and preview), validates the fee-less \
@@ -1130,7 +1130,7 @@
             \ precompute, not a cumulator cost)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-SWPI:module{SwapperIssueV4} SWPI)
                 (nodes:[string] (at "nodes" (at "swap-route" bundle)))
                 (edges:[string] (at "edges" (at "swap-route" bundle)))
@@ -1144,7 +1144,7 @@
             )
         )
     )
-    (defun URCi_RawLiquidPump:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_RawLiquidPump:object{IgnisCollectorV3.OutputCumulator}
         (id:string amount:decimal boost-path:object{SwapperUsageV3.CachedPathOrMiss})
         @doc "Exact cost of XI_RawLiquidPump's boost leg. The whole boost — regardless of route \
             \ length — is ONE SSTOA burn on SWP (or EOC when there is no active route to SSTOA). \
@@ -1192,7 +1192,7 @@
             )
         )
     )
-    (defun URCi_SwapCore:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_SwapCore:object{IgnisCollectorV3.OutputCumulator}
         (account:string swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData} boost-path:object{SwapperUsageV3.CachedPathOrMiss})
         @doc "Exact cost of a single XI_Swap: input multi-transfer in + LP fuel (indirect => EOC) \
             \ + the output leg (special-fee bulk split or a plain netto transfer) + the liquid \
@@ -1201,7 +1201,7 @@
         (let
             (
                 (ref-U|SWP:module{UtilitySwpV2} U|SWP)
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 (ref-SWP:module{SwapperV4} SWP)
                 (ref-SWPI:module{SwapperIssueV4} SWPI)
@@ -1228,11 +1228,11 @@
                 (o-id-liquid:decimal (at "o-id-liquid" dtso))
                 (o-id-netto:decimal (at "o-id-netto" dtso))
                 ;;
-                (ico1:object{IgnisCollectorV2.OutputCumulator}
+                (ico1:object{IgnisCollectorV3.OutputCumulator}
                     (ref-TFT::URCi_MultiTransferCumulator input-ids account SWP|SC_NAME input-amounts))
-                (ico2:object{IgnisCollectorV2.OutputCumulator}
+                (ico2:object{IgnisCollectorV3.OutputCumulator}
                     (ref-SWPLC::URCi_Fuel account swpair lp-fuel false))
-                (ico3:object{IgnisCollectorV2.OutputCumulator}
+                (ico3:object{IgnisCollectorV3.OutputCumulator}
                     (if (!= o-id-special 0.0)
                         (let
                             (
@@ -1253,7 +1253,7 @@
                         (ref-TFT::URCi_Transfer output-id SWP|SC_NAME account o-id-netto)
                     )
                 )
-                (boost:object{IgnisCollectorV2.OutputCumulator}
+                (boost:object{IgnisCollectorV3.OutputCumulator}
                     (if (!= o-id-liquid 0.0)
                         (URCi_RawLiquidPump output-id o-id-liquid boost-path)
                         EOC
@@ -1263,7 +1263,7 @@
             (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3 boost] [o-id-netto])
         )
     )
-    (defun URCi_Swap:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_Swap:object{IgnisCollectorV3.OutputCumulator}
         (account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage:decimal slippage-bounds:object{SwapperUsageV3.Slippage})
         @doc "Exact cost preview for C_Swap (direct single/multi-pool swap; the STOA-pid OPU is a \
             \ free write). When slippage != -1.0, the read-only URCv_Swap actual output is checked \
@@ -1274,7 +1274,7 @@
         (let
             (
                 (ref-U|SWP:module{UtilitySwpV2} U|SWP)
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-SWPI:module{SwapperIssueV4} SWPI)
                 (dsid:object{UtilitySwpV2.DirectSwapInputData}
                     (ref-U|SWP::UDC_DirectSwapInputData input-ids input-amounts output-id))
@@ -1334,7 +1334,7 @@
         (require-capability (SECURE))
         (let*
             (
-                (ico:object{IgnisCollectorV2.OutputCumulator}
+                (ico:object{IgnisCollectorV3.OutputCumulator}
                     (XI_SmartSwapExplicitRoute account input-id input-amount output-id slippage stoa-pid slippage-bounds bundle)
                 )
                 (out:list (at "output" ico))
@@ -1358,7 +1358,7 @@
         )
     )
     ;;Protection: Class 2 — SECURE
-    (defun XI_SmartSwapRouter:object{IgnisCollectorV2.OutputCumulator}
+    (defun XI_SmartSwapRouter:object{IgnisCollectorV3.OutputCumulator}
         (
             account:string input-id:string input-amount:decimal output-id:string slippage:decimal
             stoa-pid:decimal slippage-bounds:object{SwapperUsageV3.Slippage} h-obj:object{SwapperIssueV4.Hopper}
@@ -1370,7 +1370,7 @@
         (require-capability (SECURE))
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (nodes:[string] (at "nodes" h-obj))
                 (edges:[string] (at "edges" h-obj))
                 (ovs:[decimal] (at "output-values" h-obj))
@@ -1411,7 +1411,7 @@
         )
     )
     ;;Protection: Class 2 — SECURE
-    (defun XI_SmartSwapExplicitRoute:object{IgnisCollectorV2.OutputCumulator}
+    (defun XI_SmartSwapExplicitRoute:object{IgnisCollectorV3.OutputCumulator}
         (
             account:string input-id:string input-amount:decimal output-id:string slippage:decimal
             stoa-pid:decimal slippage-bounds:object{SwapperUsageV3.Slippage} bundle:object{SwapperUsageV3.SmartSwapPathBundle}
@@ -1429,7 +1429,7 @@
         (let
             (
                 (ref-SWPI:module{SwapperIssueV4} SWPI)
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (nodes:[string] (at "nodes" (at "swap-route" bundle)))
                 (edges:[string] (at "edges" (at "swap-route" bundle)))
                 (h-obj:object{SwapperIssueV4.Hopper} (ref-SWPI::URC_HopperForKnownRoute nodes edges input-amount))
@@ -1573,7 +1573,7 @@
         )
     )
     ;;Protection: Class 2 — SECURE
-    (defun XI_SmartSwap:object{IgnisCollectorV2.OutputCumulator}
+    (defun XI_SmartSwap:object{IgnisCollectorV3.OutputCumulator}
         (
             account:string input-id:string input-amount:decimal output-id:string
             nodes:[string] edges:[string] stoa-pid:decimal boost-path:object{SwapperUsageV3.CachedPathOrMiss}
@@ -1588,22 +1588,22 @@
         (require-capability (SECURE))
         (let*
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 (ref-SWP:module{SwapperV4} SWP)
                 (pp:string (ref-SWP::UR_PrimordialPool))
-                (ico-input:object{IgnisCollectorV2.OutputCumulator}
+                (ico-input:object{IgnisCollectorV3.OutputCumulator}
                     (ref-TFT::C_Transfer input-id account SWP|SC_NAME input-amount true)
                 )
                 (hop-result:list
                     (XI_SmartSwapCore account input-amount ico-input nodes edges boost-path)
                 )
                 (final-netto:decimal (at 0 hop-result))
-                (all-icos:[object{IgnisCollectorV2.OutputCumulator}] (at 1 hop-result))
+                (all-icos:[object{IgnisCollectorV3.OutputCumulator}] (at 1 hop-result))
                 (hops:integer (length edges))
                 (distinct-edges:[string] (distinct edges))
                 (pools:integer (length distinct-edges))
-                (final-ico:object{IgnisCollectorV2.OutputCumulator}
+                (final-ico:object{IgnisCollectorV3.OutputCumulator}
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators all-icos [final-netto hops pools distinct-edges])
                 )
             )
@@ -1631,7 +1631,7 @@
     ;;Protection: Class 2 — SECURE
     (defun XI_SmartSwapCore:list
         (
-            account:string input-amount:decimal ico-input:object{IgnisCollectorV2.OutputCumulator}
+            account:string input-amount:decimal ico-input:object{IgnisCollectorV3.OutputCumulator}
             nodes:[string] edges:[string] boost-path:object{SwapperUsageV3.CachedPathOrMiss}
         )
         @doc "#34 Phase 8: <boost-path> — NO_PATH sentinel (self-searching caller, \
@@ -1681,7 +1681,7 @@
                     (let*
                         (
                             (current-input:decimal (at 0 acc))
-                            (acc-icos:[object{IgnisCollectorV2.OutputCumulator}] (at 1 acc))
+                            (acc-icos:[object{IgnisCollectorV3.OutputCumulator}] (at 1 acc))
                             (carried-boost-in:decimal (at 2 acc))
                             (sp-id-lst-in:[string] (at 3 acc))
                             (sp-receiver-arr-in:[[string]] (at 4 acc))
@@ -1710,7 +1710,7 @@
                             (o-id-liquid:decimal (at "o-id-liquid" dtso))
                             (o-id-netto:decimal (at "o-id-netto" dtso))
                             ;;
-                            (ico-fuel:object{IgnisCollectorV2.OutputCumulator}
+                            (ico-fuel:object{IgnisCollectorV3.OutputCumulator}
                                 (ref-SWPLC::C_Fuel account swpair lp-fuel false false)
                             )
                             (pt-amounts-after-fuel:[decimal] (ref-SWP::UR_PoolTokenSupplies swpair))
@@ -1776,7 +1776,7 @@
                             ;;whole reason for the accumulator above. <sp-id-lst-in> (not
                             ;;-out) is correct here: this hop's own targets, if any, are
                             ;;handled separately by <ico-special> below, never appended.
-                            (sp-flush:object{IgnisCollectorV2.OutputCumulator}
+                            (sp-flush:object{IgnisCollectorV3.OutputCumulator}
                                 (if (and iz-last (!= (length sp-id-lst-in) 0))
                                     (ref-TFT::C_MultiBulkTransfer sp-id-lst-in SWP|SC_NAME sp-receiver-arr-in sp-amount-arr-in)
                                     EOC
@@ -1786,7 +1786,7 @@
                             ;;and only on the last hop — unchanged from the pre-batching logic
                             ;;for that one case. Every non-last hop's targets are handled above
                             ;;instead (event now, payment deferred to <sp-flush>).
-                            (ico-special:object{IgnisCollectorV2.OutputCumulator}
+                            (ico-special:object{IgnisCollectorV3.OutputCumulator}
                                 (if iz-last
                                     (if (!= o-id-special 0.0)
                                         (let*
@@ -1851,7 +1851,7 @@
         )
     )
     ;;Protection: Class 1 — Innate protection offered by XI_Swap
-    (defun XI_STOA-PID|Swap:object{IgnisCollectorV2.OutputCumulator}
+    (defun XI_STOA-PID|Swap:object{IgnisCollectorV3.OutputCumulator}
         (
             account:string swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData}
             slippage:decimal stoa-pid:decimal slippage-bounds:object{SwapperUsageV3.Slippage}
@@ -1859,13 +1859,13 @@
         @doc "Swap with optional slippage. When slippage != -1.0, min/max are taken from client-supplied slippage-bounds (computed off-chain at quote time), so the check reflects pool state at execution time."
         (let
             (
-                (ico:object{IgnisCollectorV2.OutputCumulator}
+                (ico:object{IgnisCollectorV3.OutputCumulator}
                     (if (= slippage -1.0)
                         (XI_Swap account swpair dsid)
                         (let
                             (
                                 (ref-SWPI:module{SwapperIssueV4} SWPI)
-                                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                                 (max-toa:decimal
                                     ;; Actual output at execution time (pool may have changed since quote)
                                     (ref-SWPI::URCv_Swap swpair dsid true)
@@ -1930,7 +1930,7 @@
         )
     )
     ;;Protection: Class 3 — Custom: SWPU|X>SWAP
-    (defun XI_Swap:object{IgnisCollectorV2.OutputCumulator}
+    (defun XI_Swap:object{IgnisCollectorV3.OutputCumulator}
         (account:string swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData})
         (require-capability (SWPU|X>SWAP swpair dsid))
         (let
@@ -1941,7 +1941,7 @@
                 (output-id:string (at "output-id" dsid))
                 ;;
                 (ref-U|SWP:module{UtilitySwpV2} U|SWP)
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 (ref-SWP:module{SwapperV4} SWP)
                 (ref-SWPI:module{SwapperIssueV4} SWPI)
@@ -1967,10 +1967,10 @@
                 (o-id-liquid:decimal (at "o-id-liquid" dtso))
                 (o-id-netto:decimal (at "o-id-netto" dtso))
                 ;;
-                (ico1:object{IgnisCollectorV2.OutputCumulator}
+                (ico1:object{IgnisCollectorV3.OutputCumulator}
                     (ref-TFT::C_MultiTransfer input-ids account SWP|SC_NAME input-amounts true)
                 )
-                (ico2:object{IgnisCollectorV2.OutputCumulator}
+                (ico2:object{IgnisCollectorV3.OutputCumulator}
                     (ref-SWPLC::C_Fuel account swpair lp-fuel false false)
                 )
                 (pt-amounts-after-fuel-update:[decimal] (ref-SWP::UR_PoolTokenSupplies swpair))
@@ -1978,7 +1978,7 @@
                 (dra-o:[decimal] (ref-SWPI::URC_DirectRefillAmounts swpair [output-id] [(fold (+) 0.0 [o-id-special o-id-liquid o-id-netto])]))
                 (remaining-amounts-for-update:[decimal] (zip (-) (zip (-) dra lp-fuel) dra-o))
                 (new-balances:[decimal] (zip (+) pt-amounts-after-fuel-update remaining-amounts-for-update))
-                (ico3:object{IgnisCollectorV2.OutputCumulator}
+                (ico3:object{IgnisCollectorV3.OutputCumulator}
                     (if (!= o-id-special 0.0)
                         (let*
                             (
@@ -2032,7 +2032,7 @@
         )
     )
     ;;Protection: Class 2 — SECURE
-    (defun XI_LiquidIndexPump:object{IgnisCollectorV2.OutputCumulator}
+    (defun XI_LiquidIndexPump:object{IgnisCollectorV3.OutputCumulator}
         (id:string amount:decimal boost-path:object{SwapperUsageV3.CachedPathOrMiss})
         @doc "#34 Phase 8: <boost-path> passthrough — NO_PATH sentinel from the \
             \ self-searching caller, or a real bundle-supplied path from the new \
@@ -2040,7 +2040,7 @@
         (require-capability (SECURE))
         (let
             (
-                (ico:object{IgnisCollectorV2.OutputCumulator}
+                (ico:object{IgnisCollectorV3.OutputCumulator}
                     (XI_RawLiquidPump id amount boost-path)
                 )
                 (raw-liquid-pump-data:list (at "output" ico))
@@ -2067,7 +2067,7 @@
         )
     )
     ;;Protection: Class 2 — SECURE
-    (defun XI_RawLiquidPump:object{IgnisCollectorV2.OutputCumulator}
+    (defun XI_RawLiquidPump:object{IgnisCollectorV3.OutputCumulator}
         (id:string amount:decimal boost-path:object{SwapperUsageV3.CachedPathOrMiss})
         @doc "Operation that pumps LiquidIndex, returns the Pump Increment in the output object \
             \ Can be used for a Pool Token that already exists in the SWP|SC_NAME. \
@@ -2087,7 +2087,7 @@
         (require-capability (SECURE))
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (ref-ATS:module{AutostakeV3} ATS)
@@ -2161,7 +2161,7 @@
                         (let
                             (
                                 (final-boost-output:decimal (at 0 (take -1 ovs)))
-                                (ico:object{IgnisCollectorV2.OutputCumulator}
+                                (ico:object{IgnisCollectorV3.OutputCumulator}
                                     (ref-DPTF::C_Burn sstoa SWP|SC_NAME final-boost-output)
                                 )
                             )
@@ -2253,7 +2253,7 @@
         )
     )
     ;;{5.7}  User [A/C]
-    (defun C_ToggleSwapCapability:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_ToggleSwapCapability:object{IgnisCollectorV3.OutputCumulator}
         (swpair:string toggle:bool)
         (P|UEV_IMC)
         (let
@@ -2265,7 +2265,7 @@
             )
         )
     )
-    (defun CC_SmartSwap:object{IgnisCollectorV2.OutputCumulator}
+    (defun CC_SmartSwap:object{IgnisCollectorV3.OutputCumulator}
         (account:string input-id:string input-amount:decimal output-id:string slippage:decimal stoa-pid:decimal slippage-bounds:object{SwapperUsageV3.Slippage})
         @doc "Executes a Smart Swap from <input-id> to <output-id> across multiple pools using BFS path tracing. \
             \ Each hop executes a full swap with fees (LP, special, boost via Option B). \
@@ -2308,7 +2308,7 @@
             \ A/B gas comparison (P3.5.2) — same slippage/no-slippage split, same \
             \ IGNIS-billing shape at the Talos layer. \
             \ Returns [ico stoa-results] — a WIDER container, not a schema change to the \
-            \ shared IgnisCollectorV2.OutputCumulator (P3.10, settled 2026-08-21): <ico> \
+            \ shared IgnisCollectorV3.OutputCumulator (P3.10, settled 2026-08-21): <ico> \
             \ carries the same [final-netto hops pools distinct-edges] output shape \
             \ CC_SmartSwap already does (for like-for-like comparison), <stoa-results> is \
             \ the P3.4 dumb-writer's precomputed [{pool, stoa-value}, ...] list — Talos \
@@ -2340,7 +2340,7 @@
             )
         )
     )
-    (defun C_Swap:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_Swap:object{IgnisCollectorV3.OutputCumulator}
         (account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage:decimal stoa-pid:decimal slippage-bounds:object{SwapperUsageV3.Slippage})
         @doc "Execute swap. When slippage != -1.0, slippage-bounds must be the pre-computed slippage object from quote time (e.g. UDC_SlippageObject); when slippage == -1.0, pass a dummy object (e.g. UDC_Slippage 0.0 0 0.0)."
         (P|UEV_IMC)

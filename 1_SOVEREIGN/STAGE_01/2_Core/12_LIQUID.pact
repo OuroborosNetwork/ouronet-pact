@@ -48,10 +48,10 @@
     ;;  [UR]
     ;;
     (defun UR_IzOuronetAccountRegisteredForUrstoaHoldings:bool (ouronet-account:string))
-    (defun URCi_UnwrapStoa:object{IgnisCollectorV2.OutputCumulator} (unwrapper:string amount:decimal))
-    (defun URCi_WrapStoa:object{IgnisCollectorV2.OutputCumulator} (wrapper:string amount:decimal))
-    (defun URCi_UnwrapUrStoa:object{IgnisCollectorV2.OutputCumulator} (unwrapper:string amount:decimal))
-    (defun URCi_WrapUrStoa:object{IgnisCollectorV2.OutputCumulator} (wrapper:string amount:decimal))
+    (defun URCi_UnwrapStoa:object{IgnisCollectorV3.OutputCumulator} (unwrapper:string amount:decimal))
+    (defun URCi_WrapStoa:object{IgnisCollectorV3.OutputCumulator} (wrapper:string amount:decimal))
+    (defun URCi_UnwrapUrStoa:object{IgnisCollectorV3.OutputCumulator} (unwrapper:string amount:decimal))
+    (defun URCi_WrapUrStoa:object{IgnisCollectorV3.OutputCumulator} (wrapper:string amount:decimal))
     ;;{5.4}  Validate [UEV/CAP]
     ;;
     ;;  [UEV]
@@ -67,8 +67,8 @@
     ;;
     ;;  [C]
     ;;
-    (defun C_UnwrapStoa:object{IgnisCollectorV2.OutputCumulator} (unwrapper:string amount:decimal))
-    (defun C_WrapStoa:object{IgnisCollectorV2.OutputCumulator} (wrapper:string amount:decimal))
+    (defun C_UnwrapStoa:object{IgnisCollectorV3.OutputCumulator} (unwrapper:string amount:decimal))
+    (defun C_WrapStoa:object{IgnisCollectorV3.OutputCumulator} (wrapper:string amount:decimal))
     ;;
     ;;#13H fix: C_RegisterOuronetAccountForUrstoaHoldings removed (2026-08-27) - it took a
     ;;caller-supplied <guard> for an arbitrary <ouronet-account> with no ownership check
@@ -76,8 +76,8 @@
     ;;handled by UI-constructed Pact code using the real signer's own (read-keyset "ks"), the
     ;;same established pattern already used for native Stoa unwrap - see
     ;;OuronetInformational/memories/2026-08-27-urstoa-account-creation-is-ui-constructed.md.
-    (defun C_UnwrapUrStoa:object{IgnisCollectorV2.OutputCumulator} (unwrapper:string amount:decimal))
-    (defun C_WrapUrStoa:object{IgnisCollectorV2.OutputCumulator} (wrapper:string amount:decimal))
+    (defun C_UnwrapUrStoa:object{IgnisCollectorV3.OutputCumulator} (unwrapper:string amount:decimal))
+    (defun C_WrapUrStoa:object{IgnisCollectorV3.OutputCumulator} (wrapper:string amount:decimal))
 
 )
 ;;
@@ -358,13 +358,13 @@
             (if (= (typeof trial) "bool") false true)
         )
     )
-    (defun URCi_UnwrapStoa:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_UnwrapStoa:object{IgnisCollectorV3.OutputCumulator}
         (unwrapper:string amount:decimal)
         @doc "Cost preview for C_UnwrapStoa: unwrapper->LIQUID wrapped-STOA transfer + burn, \
             \ re-derived purely (the STOA fuel payout is a separate side effect)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
@@ -380,13 +380,13 @@
             )
         )
     )
-    (defun URCi_WrapStoa:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_WrapStoa:object{IgnisCollectorV3.OutputCumulator}
         (wrapper:string amount:decimal)
         @doc "Cost preview for C_WrapStoa: mint wrapped-STOA on LIQUID + LIQUID->wrapper \
             \ transfer, re-derived purely (the STOA fuel intake is a separate side effect)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
@@ -402,13 +402,13 @@
             )
         )
     )
-    (defun URCi_UnwrapUrStoa:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_UnwrapUrStoa:object{IgnisCollectorV3.OutputCumulator}
         (unwrapper:string amount:decimal)
         @doc "Cost preview for C_UnwrapUrStoa: unwrapper->LIQUID Ur-STOA transfer + burn, \
             \ re-derived purely (the Ur-STOA transmit payout is a separate side effect)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
@@ -424,13 +424,13 @@
             )
         )
     )
-    (defun URCi_WrapUrStoa:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_WrapUrStoa:object{IgnisCollectorV3.OutputCumulator}
         (wrapper:string amount:decimal)
         @doc "Cost preview for C_WrapUrStoa: mint Ur-STOA on LIQUID + LIQUID->wrapper transfer, \
             \ re-derived purely (the Ur-STOA intake is a separate side effect)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
@@ -495,7 +495,7 @@
                     ;;C_TransferDalosFuel lives in IGNIS, not DALOS — it was called through the
                     ;;DALOS ref, which DOES NOT have that member, so this admin migration path
                     ;;died on every call (modref members resolve at runtime, so it still loaded).
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (lq-stoa:string LIQUID|SC_STOA-NAME)
                     (present-stoa-balance:decimal (ref-coin::get-balance lq-stoa))
                 )
@@ -505,13 +505,13 @@
             )
         )
     )
-    (defun C_UnwrapStoa:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_UnwrapStoa:object{IgnisCollectorV3.OutputCumulator}
         (unwrapper:string amount:decimal)
         (P|UEV_IMC)
         (let
             (
                 (ref-coin:module{stoa-ns.fungible-v1} coin)
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
@@ -523,7 +523,7 @@
             (with-capability (LIQUID|C>UNWRAP unwrapper)
                 (let
                     (
-                        (output:object{IgnisCollectorV2.OutputCumulator}
+                        (output:object{IgnisCollectorV3.OutputCumulator}
                             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                                 [
                                     (ref-TFT::C_Transfer w-stoa-id unwrapper lq-sc amount true)
@@ -542,12 +542,12 @@
             )
         )
     )
-    (defun C_WrapStoa:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_WrapStoa:object{IgnisCollectorV3.OutputCumulator}
         (wrapper:string amount:decimal)
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
@@ -559,7 +559,7 @@
             (with-capability (LIQUID|C>WRAP wrapper)
                 (let
                     (
-                        (output:object{IgnisCollectorV2.OutputCumulator}
+                        (output:object{IgnisCollectorV3.OutputCumulator}
                             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                                 [
                                     (ref-DPTF::C_Mint w-stoa-id lq-sc amount false)
@@ -575,7 +575,7 @@
             )
         )
     )
-    (defun C_UnwrapUrStoa:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_UnwrapUrStoa:object{IgnisCollectorV3.OutputCumulator}
         (unwrapper:string amount:decimal)
         @doc "Unwrapper is the Ouronet Account doing the Unwrapping. \
             \ Its attached Stoa address k:xxx must be registered in the UrStoa Account Table for this to work. \
@@ -587,7 +587,7 @@
         (let
             (
                 (ref-ur-coin:module{stoa-ns.ur-stoic-fungible-v1} coin)
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
@@ -599,7 +599,7 @@
             (with-capability (LIQUID|C>UR-UNWRAP unwrapper)
                 (let
                     (
-                        (output:object{IgnisCollectorV2.OutputCumulator}
+                        (output:object{IgnisCollectorV3.OutputCumulator}
                             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                                 [
                                     (ref-TFT::C_Transfer w-ur-stoa-id unwrapper lq-sc amount true)
@@ -618,7 +618,7 @@
             )
         )
     )
-    (defun C_WrapUrStoa:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_WrapUrStoa:object{IgnisCollectorV3.OutputCumulator}
         (wrapper:string amount:decimal)
         @doc "Wrapper is the Ouronet Account doing the Wrapping. \
             \ Its attached Stoa address k:xxx must be registered in the UrStoa Account Table for this to work. \
@@ -630,7 +630,7 @@
         (let
             (
                 (ref-ur-coin:module{stoa-ns.ur-stoic-fungible-v1} coin)
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
@@ -642,7 +642,7 @@
             (with-capability (LIQUID|C>UR-WRAP wrapper)
                 (let
                     (
-                        (output:object{IgnisCollectorV2.OutputCumulator}
+                        (output:object{IgnisCollectorV3.OutputCumulator}
                             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                                 [
                                     (ref-DPTF::C_Mint w-ur-stoa-id lq-sc amount false)

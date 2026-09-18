@@ -63,8 +63,8 @@
     ;; consumed by BOTH the TS01-C4 exec collect and the INFO preview layer.
     (defun URCi_RegisterStoicTag:decimal (tag-name:string))
     (defun URCi_ReleaseStoicTag:decimal (tag-name:string))
-    (defun URCi_RotateCodexGuard:object{IgnisCollectorV2.OutputCumulator} (patron:string))
-    (defun URCi_RecordArweaveUpload:object{IgnisCollectorV2.OutputCumulator} (patron:string))
+    (defun URCi_RotateCodexGuard:object{IgnisCollectorV3.OutputCumulator} (patron:string))
+    (defun URCi_RecordArweaveUpload:object{IgnisCollectorV3.OutputCumulator} (patron:string))
     ;;
     ;; [UR] CODEX|S|Identity — field accessors + DataOrNull (UR_CIX|Data is module-only; schema not in interface)
     (defun UR_CIX|CodexIdStandard:string (codex-id:string))
@@ -655,27 +655,27 @@
             \ so this returns the pre-discount amount. Consumed by TS01-C4 exec + INFO."
         (UC_StoicTagStoaFee tag-name)
     )
-    (defun URCi_RotateCodexGuard:object{IgnisCollectorV2.OutputCumulator} (patron:string)
+    (defun URCi_RotateCodexGuard:object{IgnisCollectorV3.OutputCumulator} (patron:string)
         @doc "Cost single-source for CODEX|C_RotateCodexGuard — deter(usage) + components, on the \
             \ patron (the codex row carries no konto of its own). USAGE tier (deterrence 1x, owner \
             \ 2026-09-07): CODEX ops pay what they structurally cost and carry no deterrent premium. \
             \ Consumed by the TS01-C4 exec path + INFO, so the two cannot drift."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisPrice "CODEX|C_RotateCodexGuard" "usage")
                 patron (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_RecordArweaveUpload:object{IgnisCollectorV2.OutputCumulator} (patron:string)
+    (defun URCi_RecordArweaveUpload:object{IgnisCollectorV3.OutputCumulator} (patron:string)
         @doc "Cost single-source for CODEX|C_RecordArweaveUpload — deter(usage) + components, on \
             \ the patron. USAGE tier: recording an upload is routine activity, not a config \
             \ change. Consumed by the TS01-C4 exec path + INFO."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisPrice "CODEX|C_RecordArweaveUpload" "usage")
@@ -890,7 +890,7 @@
         @doc "ClientInfo preview for TS01-C4 CODEX|C_ReleaseStoicTag (IGNIS = UC_StoicTagStoaFee per glyph)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 ;;single-source: the SAME reader the TS01-C4 exec path collects from
                 (tag-fee:decimal (URCi_ReleaseStoicTag tag-name))

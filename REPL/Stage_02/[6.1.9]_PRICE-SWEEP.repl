@@ -33,7 +33,7 @@
 (print "--- [TX-DPP-001 - DPDC price sweep: observed IGNIS == deter + components · 02 · let / invocation] ---")
 (let
     (
-        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
         (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
         (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
         (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
@@ -208,7 +208,7 @@
 (print "--- [TX-OFP-001 - DPOF price sweep: observed IGNIS == deter + components · 02 · let / invocation] ---")
 (let
     (
-        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
         (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
         (of:string "COF-98c486052a51")
     )
@@ -287,7 +287,7 @@
 (print "--- [TX-SWPP-001 - SWP price sweep: observed IGNIS == deter + components · 02 · let / invocation] ---")
 (let
     (
-        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
         (ref-SWP:module{SwapperV4} SWP)
         (swpair:string (at 0 (ref-SWP::URC_Swpairs)))
     )

@@ -45,7 +45,7 @@
     ;;{5.6}  Aux/X
     ;;{5.7}  User [A/C]
     ;;
-    (defun C_UpdatePendingBrandingLPs:object{IgnisCollectorV2.OutputCumulator} (swpair:string entity-pos:integer logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
+    (defun C_UpdatePendingBrandingLPs:object{IgnisCollectorV3.OutputCumulator} (swpair:string entity-pos:integer logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
     (defun C_UpgradeBrandingLPs (patron:string swpair:string entity-pos:integer months:integer))
 
 )
@@ -93,21 +93,21 @@
     ;;  [URC] Functions
     ;;
     (defun URC_EntityPosToID:string (swpair:string entity-pos:integer))
-    (defun URCi_UpdatePendingBrandingLPs:object{IgnisCollectorV2.OutputCumulator} (swpair:string entity-pos:integer))
+    (defun URCi_UpdatePendingBrandingLPs:object{IgnisCollectorV3.OutputCumulator} (swpair:string entity-pos:integer))
     (defun URCi_UpgradeBrandingLPs:decimal (months:integer))
-    (defun URCi_ToggleAddLiquidity:object{IgnisCollectorV2.OutputCumulator} (swpair:string toggle:bool))
-    (defun URCi_Fuel:object{IgnisCollectorV2.OutputCumulator} (account:string swpair:string input-amounts:[decimal] direct-or-indirect:bool))
+    (defun URCi_ToggleAddLiquidity:object{IgnisCollectorV3.OutputCumulator} (swpair:string toggle:bool))
+    (defun URCi_Fuel:object{IgnisCollectorV3.OutputCumulator} (account:string swpair:string input-amounts:[decimal] direct-or-indirect:bool))
     (defun URCi_AddStandardLiquidityClad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
     (defun URCi_AddIcedLiquidityClad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
     (defun URCi_AddGlacialLiquidityClad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
     (defun URCi_AddFrozenLiquidityClad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData} (account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal))
     (defun URCi_AddSleepingLiquidityClad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData} (account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal))
-    (defun URCi_AddStandardLiquidity:object{IgnisCollectorV2.OutputCumulator} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
-    (defun URCi_AddIcedLiquidity:object{IgnisCollectorV2.OutputCumulator} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
-    (defun URCi_AddGlacialLiquidity:object{IgnisCollectorV2.OutputCumulator} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
-    (defun URCi_AddFrozenLiquidity:object{IgnisCollectorV2.OutputCumulator} (account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal))
-    (defun URCi_AddSleepingLiquidity:object{IgnisCollectorV2.OutputCumulator} (account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal))
-    (defun URCi_RemoveLiquidity:object{IgnisCollectorV2.OutputCumulator} (account:string swpair:string lp-amount:decimal))
+    (defun URCi_AddStandardLiquidity:object{IgnisCollectorV3.OutputCumulator} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
+    (defun URCi_AddIcedLiquidity:object{IgnisCollectorV3.OutputCumulator} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
+    (defun URCi_AddGlacialLiquidity:object{IgnisCollectorV3.OutputCumulator} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
+    (defun URCi_AddFrozenLiquidity:object{IgnisCollectorV3.OutputCumulator} (account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal))
+    (defun URCi_AddSleepingLiquidity:object{IgnisCollectorV3.OutputCumulator} (account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal))
+    (defun URCi_RemoveLiquidity:object{IgnisCollectorV3.OutputCumulator} (account:string swpair:string lp-amount:decimal))
     ;;{5.4}  Validate [UEV/CAP]
     ;;
     ;;
@@ -128,16 +128,16 @@
     ;;  []C] Functions
     ;;
     ;;
-    (defun C_ToggleAddLiquidity:object{IgnisCollectorV2.OutputCumulator} (swpair:string toggle:bool))
-    (defun C_Fuel:object{IgnisCollectorV2.OutputCumulator} (account:string swpair:string input-amounts:[decimal] direct-or-indirect:bool validation:bool))
+    (defun C_ToggleAddLiquidity:object{IgnisCollectorV3.OutputCumulator} (swpair:string toggle:bool))
+    (defun C_Fuel:object{IgnisCollectorV3.OutputCumulator} (account:string swpair:string input-amounts:[decimal] direct-or-indirect:bool validation:bool))
         ;;
-    (defun STOA-PID|C_AddStandardLiquidity:object{IgnisCollectorV2.OutputCumulator} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
-    (defun STOA-PID|C_AddIcedLiquidity:object{IgnisCollectorV2.OutputCumulator} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
-    (defun STOA-PID|C_AddGlacialLiquidity:object{IgnisCollectorV2.OutputCumulator} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
-    (defun STOA-PID|C_AddFrozenLiquidity:object{IgnisCollectorV2.OutputCumulator} (account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal))
-    (defun STOA-PID|C_AddSleepingLiquidity:object{IgnisCollectorV2.OutputCumulator} (account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal))
+    (defun STOA-PID|C_AddStandardLiquidity:object{IgnisCollectorV3.OutputCumulator} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
+    (defun STOA-PID|C_AddIcedLiquidity:object{IgnisCollectorV3.OutputCumulator} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
+    (defun STOA-PID|C_AddGlacialLiquidity:object{IgnisCollectorV3.OutputCumulator} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
+    (defun STOA-PID|C_AddFrozenLiquidity:object{IgnisCollectorV3.OutputCumulator} (account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal))
+    (defun STOA-PID|C_AddSleepingLiquidity:object{IgnisCollectorV3.OutputCumulator} (account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal))
         ;;
-    (defun C_RemoveLiquidity:object{IgnisCollectorV2.OutputCumulator} (account:string swpair:string lp-amount:decimal))
+    (defun C_RemoveLiquidity:object{IgnisCollectorV3.OutputCumulator} (account:string swpair:string lp-amount:decimal))
 
 )
 ;;
@@ -433,7 +433,7 @@
     (defun CT_EmptyCumulator ()
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UDC_EmptyOutputCumulatorV2)
         )
@@ -466,13 +466,13 @@
     )
     ;;
     ;;LP DPTF Branding
-    (defun URCi_UpdatePendingBrandingLPs:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_UpdatePendingBrandingLPs:object{IgnisCollectorV3.OutputCumulator}
         (swpair:string entity-pos:integer)
         @doc "Cost preview for C_UpdatePendingBrandingLPs: the fixed branding cumulator (2.0) \
             \ billed on the entity owner, re-derived purely."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                 (entity-id:string (URC_EntityPosToID swpair entity-pos))
@@ -497,7 +497,7 @@
         )
     )
     ;;LQ Functions
-    (defun URCi_ToggleAddLiquidity:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_ToggleAddLiquidity:object{IgnisCollectorV3.OutputCumulator}
         (swpair:string toggle:bool)
         @doc "Cost preview for C_ToggleAddLiquidity: delegates to SWP's add-or-swap toggle \
             \ cost (add-or-swap = true)."
@@ -508,7 +508,7 @@
             (ref-SWP::URCi_ToggleAddOrSwap swpair toggle true)
         )
     )
-    (defun URCi_Fuel:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_Fuel:object{IgnisCollectorV3.OutputCumulator}
         (account:string swpair:string input-amounts:[decimal] direct-or-indirect:bool)
         @doc "Cost preview for C_Fuel: a direct fuel bills the multi-transfer of the non-zero \
             \ input tokens into the pool; an indirect fuel only updates supplies (EOC). The \
@@ -631,14 +631,14 @@
                 true true stoa-pid)
         )
     )
-    (defun URCi_AddStandardLiquidity:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_AddStandardLiquidity:object{IgnisCollectorV3.OutputCumulator}
         (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
         @doc "Cost preview for STOA-PID|C_AddStandardLiquidity: the CLAD perfect-ignis-fee + the \
             \ SWP->account LP transfer. clad is a pure reader; the add-liquidity + autonomous- \
             \ swap-management writes are free."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 (ref-SWP:module{SwapperV4} SWP)
                 ;;
@@ -660,13 +660,13 @@
             )
         )
     )
-    (defun URCi_AddIcedLiquidity:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_AddIcedLiquidity:object{IgnisCollectorV3.OutputCumulator}
         (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
         @doc "Cost preview for STOA-PID|C_AddIcedLiquidity: CLAD fee + native-LP transfer + \
             \ freeze of the secondary (iced) LP to the account."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 (ref-VST:module{VestingV2} VST)
                 (ref-SWP:module{SwapperV4} SWP)
@@ -691,13 +691,13 @@
             )
         )
     )
-    (defun URCi_AddGlacialLiquidity:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_AddGlacialLiquidity:object{IgnisCollectorV3.OutputCumulator}
         (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
         @doc "Cost preview for STOA-PID|C_AddGlacialLiquidity: CLAD fee + (conditional) native-LP \
             \ transfer + freeze of the secondary (glacial) LP."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 (ref-VST:module{VestingV2} VST)
                 (ref-SWP:module{SwapperV4} SWP)
@@ -725,13 +725,13 @@
             )
         )
     )
-    (defun URCi_AddFrozenLiquidity:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_AddFrozenLiquidity:object{IgnisCollectorV3.OutputCumulator}
         (account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal)
         @doc "Cost preview for STOA-PID|C_AddFrozenLiquidity: move the frozen DPTF to VST + burn + \
             \ CLAD fee + re-freeze the resulting LP. Uses the frozen-token's underlying position."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 (ref-VST:module{VestingV2} VST)
@@ -759,14 +759,14 @@
             )
         )
     )
-    (defun URCi_AddSleepingLiquidity:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_AddSleepingLiquidity:object{IgnisCollectorV3.OutputCumulator}
         (account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal)
         @doc "Cost preview for STOA-PID|C_AddSleepingLiquidity: move the sleeping nonce to VST + \
             \ burn + IGNIS-tax transfer + CLAD fee + re-sleep the resulting LP over the remaining \
             \ lock. Uses the sleeping-token's underlying position."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 (ref-VST:module{VestingV2} VST)
@@ -800,7 +800,7 @@
         )
     )
     ;;
-    (defun URCi_RemoveLiquidity:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_RemoveLiquidity:object{IgnisCollectorV3.OutputCumulator}
         (account:string swpair:string lp-amount:decimal)
         @doc "Cost preview for C_RemoveLiquidity: the flat 10$ (1000 IGNIS) removal fee + the \
             \ account->SWP LP transfer + LP burn + SWP->account multi-transfer of the pool tokens \
@@ -808,7 +808,7 @@
             \ (the supply update + autonomous-swap-management writes carry no cumulator cost)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 (ref-SWP:module{SwapperV4} SWP)
@@ -983,12 +983,12 @@
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     ;;{5.7}  User [A/C]
-    (defun C_UpdatePendingBrandingLPs:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_UpdatePendingBrandingLPs:object{IgnisCollectorV3.OutputCumulator}
         (swpair:string entity-pos:integer logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-BRD:module{BrandingV2} BRD)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
@@ -1010,7 +1010,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-BRD:module{BrandingV2} BRD)
                 (ref-SWP:module{SwapperV4} SWP)
                 (owner:string (ref-SWP::UR_OwnerKonto swpair))
@@ -1024,7 +1024,7 @@
             (ref-IGNIS::STOA|C_CollectWT patron stoa-payment false)
         )
     )
-    (defun C_ToggleAddLiquidity:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_ToggleAddLiquidity:object{IgnisCollectorV3.OutputCumulator}
         (swpair:string toggle:bool)
         (P|UEV_IMC)
         (let
@@ -1036,7 +1036,7 @@
             )
         )
     )
-    (defun C_Fuel:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_Fuel:object{IgnisCollectorV3.OutputCumulator}
         (account:string swpair:string input-amounts:[decimal] direct-or-indirect:bool validation:bool)
         (P|UEV_IMC)
         (let
@@ -1081,7 +1081,7 @@
             )
         )
     )
-    (defun STOA-PID|C_AddStandardLiquidity:object{IgnisCollectorV2.OutputCumulator}
+    (defun STOA-PID|C_AddStandardLiquidity:object{IgnisCollectorV3.OutputCumulator}
         (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
         (P|UEV_IMC)
         (let
@@ -1094,7 +1094,7 @@
             (with-capability (SWPLC|C>ADD-STANDARD-LQ swpair ld)
                 (let
                     (
-                        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                         (ref-TFT:module{TrueFungibleTransferV2} TFT)
                         (ref-SWP:module{SwapperV4} SWP)
                         
@@ -1106,7 +1106,7 @@
                             (ref-SWPL::URC_STOA-PID|CLAD account swpair ld true true stoa-pid)
                         )
                         ;;
-                        (ico1:object{IgnisCollectorV2.OutputCumulator}
+                        (ico1:object{IgnisCollectorV3.OutputCumulator}
                             (at "perfect-ignis-fee" (at "clad-op" clad))
                         )
                         (native-lp-transfer-amount:decimal (at "primary-lp" clad))
@@ -1114,7 +1114,7 @@
                     (ref-SWPL::XE_STOA-PID|AddLiquidity account swpair true true stoa-pid ld clad)
                     (let
                         (
-                            (ico2:object{IgnisCollectorV2.OutputCumulator}
+                            (ico2:object{IgnisCollectorV3.OutputCumulator}
                                 (ref-TFT::C_Transfer lp-id SWP|SC_NAME account native-lp-transfer-amount true)
                             )
                         )
@@ -1134,7 +1134,7 @@
             )
         )
     )
-    (defun STOA-PID|C_AddIcedLiquidity:object{IgnisCollectorV2.OutputCumulator}
+    (defun STOA-PID|C_AddIcedLiquidity:object{IgnisCollectorV3.OutputCumulator}
         (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
         (P|UEV_IMC)
         (let
@@ -1147,7 +1147,7 @@
             (with-capability (SWPLC|C>ADD-ICED-LQ swpair ld)
                 (let
                     (
-                        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                         (ref-TFT:module{TrueFungibleTransferV2} TFT)
                         (ref-VST:module{VestingV2} VST)
                         (ref-SWP:module{SwapperV4} SWP)
@@ -1159,7 +1159,7 @@
                             (ref-SWPL::URC_STOA-PID|CLAD account swpair ld false true stoa-pid)
                         )
                         ;;
-                        (ico1:object{IgnisCollectorV2.OutputCumulator}
+                        (ico1:object{IgnisCollectorV3.OutputCumulator}
                             (at "perfect-ignis-fee" (at "clad-op" clad))
                             
                         )
@@ -1169,10 +1169,10 @@
                     (ref-SWPL::XE_STOA-PID|AddLiquidity account swpair false true stoa-pid ld clad)
                     (let
                         (
-                            (ico2:object{IgnisCollectorV2.OutputCumulator}
+                            (ico2:object{IgnisCollectorV3.OutputCumulator}
                                 (ref-TFT::C_Transfer lp-id SWP|SC_NAME account native-lp-transfer-amount true)
                             )
-                            (ico3:object{IgnisCollectorV2.OutputCumulator}
+                            (ico3:object{IgnisCollectorV3.OutputCumulator}
                                 (ref-VST::C_Freeze SWP|SC_NAME account lp-id frozen-lp-transfer-amount)
                             )
                         )
@@ -1192,7 +1192,7 @@
             )
         )
     )
-    (defun STOA-PID|C_AddGlacialLiquidity:object{IgnisCollectorV2.OutputCumulator}
+    (defun STOA-PID|C_AddGlacialLiquidity:object{IgnisCollectorV3.OutputCumulator}
         (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
         (P|UEV_IMC)
         (let
@@ -1205,7 +1205,7 @@
             (with-capability (SWPLC|C>ADD-GLACIAL-LQ swpair ld)
                 (let
                     (
-                        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                         (ref-TFT:module{TrueFungibleTransferV2} TFT)
                         (ref-VST:module{VestingV2} VST)
                         (ref-SWP:module{SwapperV4} SWP)
@@ -1217,7 +1217,7 @@
                             (ref-SWPL::URC_STOA-PID|CLAD account swpair ld false false stoa-pid)
                         )
                         ;;
-                        (ico1:object{IgnisCollectorV2.OutputCumulator}
+                        (ico1:object{IgnisCollectorV3.OutputCumulator}
                             (at "perfect-ignis-fee" (at "clad-op" clad))
                             
                         )
@@ -1227,13 +1227,13 @@
                     (ref-SWPL::XE_STOA-PID|AddLiquidity account swpair false false stoa-pid ld clad)
                     (let
                         (
-                            (ico2:object{IgnisCollectorV2.OutputCumulator}
+                            (ico2:object{IgnisCollectorV3.OutputCumulator}
                                 (if (!= native-lp-transfer-amount 0.0)
                                     (ref-TFT::C_Transfer lp-id SWP|SC_NAME account native-lp-transfer-amount true)
                                     EOC
                                 )
                             )
-                            (ico3:object{IgnisCollectorV2.OutputCumulator}
+                            (ico3:object{IgnisCollectorV3.OutputCumulator}
                                 (ref-VST::C_Freeze SWP|SC_NAME account lp-id frozen-lp-transfer-amount)
                             )
                         )
@@ -1253,7 +1253,7 @@
             )
         )
     )
-    (defun STOA-PID|C_AddFrozenLiquidity:object{IgnisCollectorV2.OutputCumulator}
+    (defun STOA-PID|C_AddFrozenLiquidity:object{IgnisCollectorV3.OutputCumulator}
         (account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal)
         (P|UEV_IMC)
         (let
@@ -1273,7 +1273,7 @@
             (with-capability (SWPLC|C>ADD-FROZEN-LQ swpair frozen-dptf ld)
                 (let
                     (
-                        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                         (ref-DALOS:module{OuronetDalosV2} DALOS)
                         (ref-TFT:module{TrueFungibleTransferV2} TFT)
                         (ref-VST:module{VestingV2} VST)
@@ -1283,10 +1283,10 @@
                         (lp-id:string (ref-SWP::UR_TokenLP swpair))
                         ;;
                         ;;Move F|DPTF to vst-sc and burn it
-                        (ico1:object{IgnisCollectorV2.OutputCumulator}
+                        (ico1:object{IgnisCollectorV3.OutputCumulator}
                             (ref-TFT::C_Transfer frozen-dptf account vst-sc input-amount true)
                         )
-                        (ico2:object{IgnisCollectorV2.OutputCumulator}
+                        (ico2:object{IgnisCollectorV3.OutputCumulator}
                             (ref-DPTF::C_Burn frozen-dptf vst-sc input-amount)
                         )
                         ;;
@@ -1295,7 +1295,7 @@
                             (ref-SWPL::URC_STOA-PID|CLAD vst-sc swpair ld false false stoa-pid)
                         )
                         ;;
-                        (ico3:object{IgnisCollectorV2.OutputCumulator}
+                        (ico3:object{IgnisCollectorV3.OutputCumulator}
                             (at "perfect-ignis-fee" (at "clad-op" clad))
                         )
                         (frozen-lp-transfer-amount:decimal (at "secondary-lp" clad))
@@ -1303,7 +1303,7 @@
                     (ref-SWPL::XE_STOA-PID|AddLiquidity vst-sc swpair false false stoa-pid ld clad)
                     (let
                         (
-                            (ico4:object{IgnisCollectorV2.OutputCumulator}
+                            (ico4:object{IgnisCollectorV3.OutputCumulator}
                                 (ref-VST::C_Freeze SWP|SC_NAME account lp-id frozen-lp-transfer-amount)
                             )
                         )
@@ -1323,7 +1323,7 @@
             )
         )
     )
-    (defun STOA-PID|C_AddSleepingLiquidity:object{IgnisCollectorV2.OutputCumulator}
+    (defun STOA-PID|C_AddSleepingLiquidity:object{IgnisCollectorV3.OutputCumulator}
         (account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal)
         (P|UEV_IMC)
         (let
@@ -1345,7 +1345,7 @@
             (with-capability (SWPLC|C>ADD-SLEEPING-LQ account swpair sleeping-dpof nonce ld)
                 (let
                     (
-                        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                         (ref-DALOS:module{OuronetDalosV2} DALOS)
                         (ref-VST:module{VestingV2} VST)
                         ;;
@@ -1360,10 +1360,10 @@
                         ;;
                         ;;
                         ;;Move the sleeping DPOF (Z| prefix) to vst-sc and burn it
-                        (ico1:object{IgnisCollectorV2.OutputCumulator}
+                        (ico1:object{IgnisCollectorV3.OutputCumulator}
                             (ref-DPOF::C_Transfer sleeping-dpof [nonce] account vst-sc true)
                         )
-                        (ico2:object{IgnisCollectorV2.OutputCumulator}
+                        (ico2:object{IgnisCollectorV3.OutputCumulator}
                             (ref-DPOF::C_Burn sleeping-dpof vst-sc nonce batch-amount)
                         )
                         ;;
@@ -1373,11 +1373,11 @@
                         )
                         ;;
                         ;;MOVE IGNIS to vst-sc, paying for the ignis-tax
-                        (ico3:object{IgnisCollectorV2.OutputCumulator}
+                        (ico3:object{IgnisCollectorV3.OutputCumulator}
                             (ref-TFT::C_Transfer ignis-id account vst-sc (at "total-ignis-tax-needed" clad) true)
                         )
                         ;;
-                        (ico4:object{IgnisCollectorV2.OutputCumulator}
+                        (ico4:object{IgnisCollectorV3.OutputCumulator}
                             (at "perfect-ignis-fee" (at "clad-op" clad))
                         )
                         (sleeping-lp-transfer-amount:decimal (at "primary-lp" clad))
@@ -1385,7 +1385,7 @@
                     (ref-SWPL::XE_STOA-PID|AddLiquidity vst-sc swpair true true stoa-pid ld clad)
                     (let
                         (
-                            (ico5:object{IgnisCollectorV2.OutputCumulator}
+                            (ico5:object{IgnisCollectorV3.OutputCumulator}
                                 (ref-VST::C_Sleep SWP|SC_NAME account lp-id sleeping-lp-transfer-amount dt)
                             )
                         )
@@ -1405,7 +1405,7 @@
             )
         )
     )
-    (defun C_RemoveLiquidity:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_RemoveLiquidity:object{IgnisCollectorV3.OutputCumulator}
         (account:string swpair:string lp-amount:decimal)
         @doc "Removes <swpair> Liquidity using <lp-amount> of LP Tokens \
             \ Always returns all Pool Tokens at current Pool Token Ratio"
@@ -1414,7 +1414,7 @@
         (with-capability (SWPLC|C>REMOVE_LQ swpair lp-amount)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                     (ref-TFT:module{TrueFungibleTransferV2} TFT)
                     (ref-SWP:module{SwapperV4} SWP)
@@ -1436,17 +1436,17 @@
                     (flat-ignis-lq-rm-fee:decimal
                         (ref-IGNIS::UC_IgnisPrice "SWP|C_RemoveLiquidity" "lp-churn"))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                    (ico-flat:object{IgnisCollectorV2.OutputCumulator}
+                    (ico-flat:object{IgnisCollectorV3.OutputCumulator}
                         (ref-IGNIS::UDC_ConstructOutputCumulator flat-ignis-lq-rm-fee SWP|SC_NAME trigger [])
                     )
                     ;;
-                    (ico1:object{IgnisCollectorV2.OutputCumulator}
+                    (ico1:object{IgnisCollectorV3.OutputCumulator}
                         (ref-TFT::C_Transfer lp-id account SWP|SC_NAME lp-amount true)
                     )
-                    (ico2:object{IgnisCollectorV2.OutputCumulator}
+                    (ico2:object{IgnisCollectorV3.OutputCumulator}
                         (ref-DPTF::C_Burn lp-id SWP|SC_NAME lp-amount)
                     )
-                    (ico3:object{IgnisCollectorV2.OutputCumulator}
+                    (ico3:object{IgnisCollectorV3.OutputCumulator}
                         (ref-TFT::C_MultiTransfer pool-token-ids SWP|SC_NAME account pt-output-amounts true)
                     )
                 )

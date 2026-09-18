@@ -206,7 +206,7 @@
 (print "--- [CONF-03 — IGNIS cannot be collected outside a Talos wrapper · 02 · let / invocation] ---")
 (let
     (
-        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (patron:string KST.ANHD)
@@ -240,7 +240,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (patron:string KST.ANHD)

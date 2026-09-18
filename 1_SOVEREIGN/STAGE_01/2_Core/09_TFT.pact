@@ -73,26 +73,26 @@
     (defun URC_IzTrueFungibleEliteAuryn:bool (id:string))
     (defun URC_IzTrueFungibleUnity:bool (id:string))
     (defun URC_AreTrueFungiblesEliteAurynz:bool (id:string))
-    (defun URCi_SmallTransmuteCumulator:object{IgnisCollectorV2.OutputCumulator} (id:string transmuter:string))
-    (defun URCi_LargeTransmuteCumulator:object{IgnisCollectorV2.OutputCumulator} (id:string transmuter:string))
-    (defun URCi_Transmute:object{IgnisCollectorV2.OutputCumulator} (id:string transmuter:string))
-    (defun URCi_ClearDispo:object{IgnisCollectorV2.OutputCumulator} (account:string))
-    (defun URCi_UnityTransferCumulator:object{IgnisCollectorV2.OutputCumulator} (sender:string receiver:string amount:decimal))
+    (defun URCi_SmallTransmuteCumulator:object{IgnisCollectorV3.OutputCumulator} (id:string transmuter:string))
+    (defun URCi_LargeTransmuteCumulator:object{IgnisCollectorV3.OutputCumulator} (id:string transmuter:string))
+    (defun URCi_Transmute:object{IgnisCollectorV3.OutputCumulator} (id:string transmuter:string))
+    (defun URCi_ClearDispo:object{IgnisCollectorV3.OutputCumulator} (account:string))
+    (defun URCi_UnityTransferCumulator:object{IgnisCollectorV3.OutputCumulator} (sender:string receiver:string amount:decimal))
         ;;
-    (defun URCi_TransferCumulator:object{IgnisCollectorV2.OutputCumulator} (type:integer id:string sender:string receiver:string))
-    (defun URCi_Transfer:object{IgnisCollectorV2.OutputCumulator} (id:string sender:string receiver:string transfer-amount:decimal))
-    (defun URCi_SmallTransferCumulator:object{IgnisCollectorV2.OutputCumulator} (id:string sender:string receiver:string))
-    (defun URCi_MediumTransferCumulator:object{IgnisCollectorV2.OutputCumulator} (id:string sender:string receiver:string))
-    (defun URCi_LargeTransferCumulator:object{IgnisCollectorV2.OutputCumulator} (sender:string receiver:string))
+    (defun URCi_TransferCumulator:object{IgnisCollectorV3.OutputCumulator} (type:integer id:string sender:string receiver:string))
+    (defun URCi_Transfer:object{IgnisCollectorV3.OutputCumulator} (id:string sender:string receiver:string transfer-amount:decimal))
+    (defun URCi_SmallTransferCumulator:object{IgnisCollectorV3.OutputCumulator} (id:string sender:string receiver:string))
+    (defun URCi_MediumTransferCumulator:object{IgnisCollectorV3.OutputCumulator} (id:string sender:string receiver:string))
+    (defun URCi_LargeTransferCumulator:object{IgnisCollectorV3.OutputCumulator} (sender:string receiver:string))
         ;;
-    (defun URCi_MultiTransferCumulator:object{IgnisCollectorV2.OutputCumulator} (id-lst:[string] sender:string receiver:string transfer-amount-lst:[decimal]))
+    (defun URCi_MultiTransferCumulator:object{IgnisCollectorV3.OutputCumulator} (id-lst:[string] sender:string receiver:string transfer-amount-lst:[decimal]))
         ;;
-    (defun URCi_MultiBulkTransferCumulator:object{IgnisCollectorV2.OutputCumulator} (id-lst:[string] sender:string receiver-array:[[string]] transfer-amount-array:[[decimal]]))
-    (defun URCi_BulkTransferCumulator:object{IgnisCollectorV2.OutputCumulator} (id:string sender:string receiver-lst:[string] transfer-amount-lst:[decimal]))
-    (defun URCi_UnityBulkTransferCumulator:object{IgnisCollectorV2.OutputCumulator} (sender:string receiver-lst:[string] transfer-amount-lst:[decimal]))
-    (defun URCi_SimpleBulkTransferCumulator:object{IgnisCollectorV2.OutputCumulator} (id:string sender:string size:integer))
-    (defun URCi_ComplexBulkTransferCumulator:object{IgnisCollectorV2.OutputCumulator} (id:string sender:string size:integer))
-    (defun URCi_EliteBulkTransferCumulator:object{IgnisCollectorV2.OutputCumulator} (id:string sender:string size:integer))
+    (defun URCi_MultiBulkTransferCumulator:object{IgnisCollectorV3.OutputCumulator} (id-lst:[string] sender:string receiver-array:[[string]] transfer-amount-array:[[decimal]]))
+    (defun URCi_BulkTransferCumulator:object{IgnisCollectorV3.OutputCumulator} (id:string sender:string receiver-lst:[string] transfer-amount-lst:[decimal]))
+    (defun URCi_UnityBulkTransferCumulator:object{IgnisCollectorV3.OutputCumulator} (sender:string receiver-lst:[string] transfer-amount-lst:[decimal]))
+    (defun URCi_SimpleBulkTransferCumulator:object{IgnisCollectorV3.OutputCumulator} (id:string sender:string size:integer))
+    (defun URCi_ComplexBulkTransferCumulator:object{IgnisCollectorV3.OutputCumulator} (id:string sender:string size:integer))
+    (defun URCi_EliteBulkTransferCumulator:object{IgnisCollectorV3.OutputCumulator} (id:string sender:string size:integer))
     ;;{5.4}  Validate [UEV/CAP]
     ;;
     ;;  [UEV]
@@ -107,11 +107,11 @@
     ;;
     ;;  [C]
     ;;
-    (defun C_ClearDispo:object{IgnisCollectorV2.OutputCumulator} (account:string))
-    (defun C_Transmute:object{IgnisCollectorV2.OutputCumulator} (id:string transmuter:string transmute-amount:decimal))
-    (defun C_Transfer:object{IgnisCollectorV2.OutputCumulator} (id:string sender:string receiver:string transfer-amount:decimal method:bool))
-    (defun C_MultiTransfer:object{IgnisCollectorV2.OutputCumulator} (id-lst:[string] sender:string receiver:string transfer-amount-lst:[decimal] method:bool))
-    (defun C_MultiBulkTransfer:object{IgnisCollectorV2.OutputCumulator} (id-lst:[string] sender:string receiver-array:[[string]] transfer-amount-array:[[decimal]]))
+    (defun C_ClearDispo:object{IgnisCollectorV3.OutputCumulator} (account:string))
+    (defun C_Transmute:object{IgnisCollectorV3.OutputCumulator} (id:string transmuter:string transmute-amount:decimal))
+    (defun C_Transfer:object{IgnisCollectorV3.OutputCumulator} (id:string sender:string receiver:string transfer-amount:decimal method:bool))
+    (defun C_MultiTransfer:object{IgnisCollectorV3.OutputCumulator} (id-lst:[string] sender:string receiver:string transfer-amount-lst:[decimal] method:bool))
+    (defun C_MultiBulkTransfer:object{IgnisCollectorV3.OutputCumulator} (id-lst:[string] sender:string receiver-array:[[string]] transfer-amount-array:[[decimal]]))
 
 )
 ;;
@@ -580,7 +580,7 @@
     (defun CT_EmptyCumulator ()
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UDC_EmptyOutputCumulatorV2)
         )
@@ -606,11 +606,11 @@
             ,"ouroboros-precision"  : (ref-DPTF::UR_Decimals ouro-id)}
         )
     )
-    (defun UDCx_BulkTransferCumulator:object{IgnisCollectorV2.OutputCumulator}
+    (defun UDCx_BulkTransferCumulator:object{IgnisCollectorV3.OutputCumulator}
         (id:string sender:string size:integer price:decimal)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (l-dec:decimal (dec size))
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
@@ -718,7 +718,7 @@
         @doc "UNITY will only be used with Complex Transfers, as it will have a VTT"
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (if (<= transfer-amount 10.0) (ref-IGNIS::UC_IgnisLeg "tier-small") 0.0)
         )
@@ -1000,11 +1000,11 @@
         )
     )
     ;;
-    (defun URCi_SmallTransmuteCumulator:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_SmallTransmuteCumulator:object{IgnisCollectorV3.OutputCumulator}
         (id:string transmuter:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisLeg "tier-small") transmuter
@@ -1012,11 +1012,11 @@
             )
         )
     )
-    (defun URCi_LargeTransmuteCumulator:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_LargeTransmuteCumulator:object{IgnisCollectorV3.OutputCumulator}
         (id:string transmuter:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisLeg "tier-medium") transmuter
@@ -1024,7 +1024,7 @@
             )
         )
     )
-    (defun URCi_Transmute:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_Transmute:object{IgnisCollectorV3.OutputCumulator}
         (id:string transmuter:string)
         @doc "Cost single-source for C_Transmute — the same class choice C_Transmute makes: \
             \ Elite-Auryn transmute bills the Large (ignis|medium) rail, else the Small \
@@ -1034,14 +1034,14 @@
             (URCi_SmallTransmuteCumulator id transmuter)
         )
     )
-    (defun URCi_ClearDispo:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_ClearDispo:object{IgnisCollectorV3.OutputCumulator}
         (account:string)
         @doc "Cost single-source for C_ClearDispo — pure re-derivation of the 5-leg concat: \
             \ (conditional EA freeze) + EA WipeSlim + (conditional EA unfreeze) + Auryn burn + \
             \ Ouroboros burn. Freeze legs are EOC when the EA account is already frozen."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 ;;
@@ -1050,7 +1050,7 @@
                 (ea-id:string (ref-DALOS::UR_EliteAurynID))
                 (ats-sc:string (ref-DALOS::GOV|ATS|SC_NAME))
                 (frozen-state:bool (ref-DPTF::UR_AccountFrozenState ea-id account))
-                (toggle-leg:object{IgnisCollectorV2.OutputCumulator}
+                (toggle-leg:object{IgnisCollectorV3.OutputCumulator}
                     (if (not frozen-state) (ref-DPTF::URCi_ToggleFreezeAccount ea-id) EOC)
                 )
             )
@@ -1067,11 +1067,11 @@
         )
     )
     ;;
-    (defun URCi_UnityTransferCumulator:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_UnityTransferCumulator:object{IgnisCollectorV3.OutputCumulator}
         (sender:string receiver:string amount:decimal)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (price:decimal
                     (if (< amount 10.0)
                         (ref-IGNIS::UC_IgnisLeg "tier-smallest")
@@ -1086,7 +1086,7 @@
         )
     )
     ;;
-    (defun URCi_Transfer:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_Transfer:object{IgnisCollectorV3.OutputCumulator}
         (id:string sender:string receiver:string transfer-amount:decimal)
         @doc "Pure cost of a single C_Transfer, keyed on the SAME inputs C_Transfer takes: \
             \ compute the transfer class then dispatch via URCi_TransferCumulator. Lets \
@@ -1097,7 +1097,7 @@
             id sender receiver
         )
     )
-    (defun URCi_TransferCumulator:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_TransferCumulator:object{IgnisCollectorV3.OutputCumulator}
         (type:integer id:string sender:string receiver:string)
         (cond
             ((contains type [1 2]) (URCi_SmallTransferCumulator id sender receiver))
@@ -1106,11 +1106,11 @@
             EOC
         )
     )
-    (defun URCi_SmallTransferCumulator:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_SmallTransferCumulator:object{IgnisCollectorV3.OutputCumulator}
         (id:string sender:string receiver:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisLeg "tier-smallest")  sender
@@ -1118,11 +1118,11 @@
             )
         )
     )
-    (defun URCi_MediumTransferCumulator:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_MediumTransferCumulator:object{IgnisCollectorV3.OutputCumulator}
         (id:string sender:string receiver:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisLeg "tier-small") sender
@@ -1130,11 +1130,11 @@
             )
         )
     )
-    (defun URCi_LargeTransferCumulator:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_LargeTransferCumulator:object{IgnisCollectorV3.OutputCumulator}
         (sender:string receiver:string)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-IGNIS::UC_IgnisLeg "tier-medium") sender
@@ -1143,23 +1143,23 @@
         )
     )
     ;;Multi
-    (defun URCi_MultiTransferCumulator:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_MultiTransferCumulator:object{IgnisCollectorV3.OutputCumulator}
         (id-lst:[string] sender:string receiver:string transfer-amount-lst:[decimal])
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (l:integer (length id-lst))
-                (folded-obj:[object{IgnisCollectorV2.OutputCumulator}]
+                (folded-obj:[object{IgnisCollectorV3.OutputCumulator}]
                     (fold
                         (lambda
-                            (acc:[object{IgnisCollectorV2.OutputCumulator}] idx:integer)
+                            (acc:[object{IgnisCollectorV3.OutputCumulator}] idx:integer)
                             (let
                                 (
                                     (id:string (at idx id-lst))
                                     (transfer-amount:decimal (at idx transfer-amount-lst))
                                     (what-type:integer (at "type" (URC_TransferClasses id sender receiver transfer-amount)))
-                                    (ico:object{IgnisCollectorV2.OutputCumulator}
+                                    (ico:object{IgnisCollectorV3.OutputCumulator}
                                         (URCi_TransferCumulator what-type id sender receiver)
                                     )
                                 )
@@ -1175,17 +1175,17 @@
         )
     )
     ;;Bulk
-    (defun URCi_MultiBulkTransferCumulator:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_MultiBulkTransferCumulator:object{IgnisCollectorV3.OutputCumulator}
         (id-lst:[string] sender:string receiver-array:[[string]] transfer-amount-array:[[decimal]])
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (l:integer (length id-lst))
-                (folded-obj:[object{IgnisCollectorV2.OutputCumulator}]
+                (folded-obj:[object{IgnisCollectorV3.OutputCumulator}]
                     (fold
                         (lambda
-                            (acc:[object{IgnisCollectorV2.OutputCumulator}] idx:integer)
+                            (acc:[object{IgnisCollectorV3.OutputCumulator}] idx:integer)
                             (ref-U|LST::UC_AppL acc
                                 (URCi_BulkTransferCumulator
                                     (at idx id-lst)
@@ -1203,7 +1203,7 @@
             (ref-IGNIS::UDC_ConcatenateOutputCumulators folded-obj [])
         )
     )
-    (defun URCi_BulkTransferCumulator:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_BulkTransferCumulator:object{IgnisCollectorV3.OutputCumulator}
         (id:string sender:string receiver-lst:[string] transfer-amount-lst:[decimal])
         (let
             (
@@ -1220,22 +1220,22 @@
         )
     )
     ;;
-    (defun URCi_UnityBulkTransferCumulator:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_UnityBulkTransferCumulator:object{IgnisCollectorV3.OutputCumulator}
         (sender:string receiver-lst:[string] transfer-amount-lst:[decimal])
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (l:integer (length receiver-lst))
-                (folded-obj:[object{IgnisCollectorV2.OutputCumulator}]
+                (folded-obj:[object{IgnisCollectorV3.OutputCumulator}]
                     (fold
                         (lambda
-                            (acc:[object{IgnisCollectorV2.OutputCumulator}] idx:integer)
+                            (acc:[object{IgnisCollectorV3.OutputCumulator}] idx:integer)
                             (let
                                 (
                                     (transfer-amount:decimal (at idx transfer-amount-lst))
                                     (receiver:string (at idx receiver-lst))
-                                    (ico:object{IgnisCollectorV2.OutputCumulator}
+                                    (ico:object{IgnisCollectorV3.OutputCumulator}
                                         (URCi_UnityTransferCumulator sender receiver transfer-amount)
                                     )
                                 )
@@ -1250,29 +1250,29 @@
             (ref-IGNIS::UDC_ConcatenateOutputCumulators folded-obj [])
         )
     )
-    (defun URCi_SimpleBulkTransferCumulator:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_SimpleBulkTransferCumulator:object{IgnisCollectorV3.OutputCumulator}
         (id:string sender:string size:integer)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (UDCx_BulkTransferCumulator id sender size (ref-IGNIS::UC_IgnisLeg "tier-smallest"))
         )
     )
-    (defun URCi_ComplexBulkTransferCumulator:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_ComplexBulkTransferCumulator:object{IgnisCollectorV3.OutputCumulator}
         (id:string sender:string size:integer)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (UDCx_BulkTransferCumulator id sender size (ref-IGNIS::UC_IgnisLeg "tier-small"))
         )
     )
-    (defun URCi_EliteBulkTransferCumulator:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_EliteBulkTransferCumulator:object{IgnisCollectorV3.OutputCumulator}
         (id:string sender:string size:integer)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (UDCx_BulkTransferCumulator id sender size (ref-IGNIS::UC_IgnisLeg "tier-medium"))
         )
@@ -1608,13 +1608,13 @@
     ;;{5.7}  User [A/C]
     ;;
     ;;Clear Dispo
-    (defun C_ClearDispo:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_ClearDispo:object{IgnisCollectorV3.OutputCumulator}
         (account:string)
         (P|UEV_IMC)
         (with-capability (DPTF|C>CLEAR-DISPO account)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                     (ref-ATS:module{AutostakeV3} ATS)
@@ -1642,28 +1642,28 @@
                     (ats-sc:string (ref-DALOS::GOV|ATS|SC_NAME))
                     ;;
                     ;;Ignis Cumulation
-                    (ico1:object{IgnisCollectorV2.OutputCumulator}
+                    (ico1:object{IgnisCollectorV3.OutputCumulator}
                         (if (not frozen-state)
                             (ref-DPTF::C_ToggleFreezeAccount ea-id account true)
                             EOC
                         )
                     )
-                    (ico2:object{IgnisCollectorV2.OutputCumulator}
+                    (ico2:object{IgnisCollectorV3.OutputCumulator}
                         (ref-DPTF::C_WipeSlim ea-id account total-ea)
                     )
                     ;;#28M fix: only unfreeze if this function was the one that froze it (mirrors
                     ;;ico1's own condition) - otherwise a pre-existing, unrelated freeze on this
                     ;;account gets silently lifted by ClearDispo.
-                    (ico3:object{IgnisCollectorV2.OutputCumulator}
+                    (ico3:object{IgnisCollectorV3.OutputCumulator}
                         (if (not frozen-state)
                             (ref-DPTF::C_ToggleFreezeAccount ea-id account false)
                             EOC
                         )
                     )
-                    (ico4:object{IgnisCollectorV2.OutputCumulator}
+                    (ico4:object{IgnisCollectorV3.OutputCumulator}
                         (ref-DPTF::C_Burn a-id ats-sc burn-auryn-amount)
                     )
-                    (ico5:object{IgnisCollectorV2.OutputCumulator}
+                    (ico5:object{IgnisCollectorV3.OutputCumulator}
                         (ref-DPTF::C_Burn ouro-id ats-sc ouro-amount)
                     )
                 )
@@ -1700,7 +1700,7 @@
         )
     )
     ;;Transmute
-    (defun C_Transmute:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_Transmute:object{IgnisCollectorV3.OutputCumulator}
         (id:string transmuter:string transmute-amount:decimal)
         (P|UEV_IMC)
         (let
@@ -1721,7 +1721,7 @@
         )
     )
     ;;Transfer
-    (defun C_Transfer:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_Transfer:object{IgnisCollectorV3.OutputCumulator}
         (id:string sender:string receiver:string transfer-amount:decimal method:bool)
         (P|UEV_IMC)
         (let
@@ -1769,28 +1769,28 @@
         )
     )
     ;;Multi Transfer
-    (defun C_MultiTransfer:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_MultiTransfer:object{IgnisCollectorV3.OutputCumulator}
         (id-lst:[string] sender:string receiver:string transfer-amount-lst:[decimal] method:bool)
         (P|UEV_IMC)
         (with-capability (DPTF|C>MULTI-TRANSFER id-lst sender receiver transfer-amount-lst method)
             (let
                 (
                     (ref-U|LST:module{StringProcessorV2} U|LST)
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                     (contains-eazs:bool (UC_ContainsEliteAurynz id-lst))
                     (l:integer (length id-lst))
-                    (folded-obj:[object{IgnisCollectorV2.OutputCumulator}]
+                    (folded-obj:[object{IgnisCollectorV3.OutputCumulator}]
                         (fold
                             (lambda
-                                (acc:[object{IgnisCollectorV2.OutputCumulator}] idx:integer)
+                                (acc:[object{IgnisCollectorV3.OutputCumulator}] idx:integer)
                                 (let
                                     (
                                         (id:string (at idx id-lst))
                                         (transfer-amount:decimal (at idx transfer-amount-lst))
                                         (what-type-obj:object{TrueFungibleTransferV2.TransferClass} (URC_TransferClasses id sender receiver transfer-amount))
                                         (what-type:integer (at "type" what-type-obj))
-                                        (ico:object{IgnisCollectorV2.OutputCumulator}
+                                        (ico:object{IgnisCollectorV3.OutputCumulator}
                                             (URCi_TransferCumulator what-type id sender receiver)
                                         )
                                         (iz-simple-transfer:bool (at "iz-it-simple" what-type-obj))
@@ -1829,20 +1829,20 @@
         )
     )
     ;;Bulk Transfer
-    (defun C_MultiBulkTransfer:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_MultiBulkTransfer:object{IgnisCollectorV3.OutputCumulator}
         (id-lst:[string] sender:string receiver-array:[[string]] transfer-amount-array:[[decimal]])
         (P|UEV_IMC)
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (contains-eazs:bool (UC_ContainsEliteAurynz id-lst))
                 (l:integer (length id-lst))
-                (folded-obj:[object{IgnisCollectorV2.OutputCumulator}]
+                (folded-obj:[object{IgnisCollectorV3.OutputCumulator}]
                     (fold
                         (lambda
-                            (acc:[object{IgnisCollectorV2.OutputCumulator}] idx:integer)
+                            (acc:[object{IgnisCollectorV3.OutputCumulator}] idx:integer)
                             (let
                                 (
                                     (id:string (at idx id-lst))
@@ -1855,7 +1855,7 @@
                                     (what-type:integer (at "type" what-type-obj))
                                     (iz-it-simple:bool (at "iz-it-simple" what-type-obj))
                                     (total-debit:decimal (fold (+) 0.0 transfer-amount-lst))
-                                    (ico:object{IgnisCollectorV2.OutputCumulator}
+                                    (ico:object{IgnisCollectorV3.OutputCumulator}
                                         (cond
                                             ((contains what-type [1 4 5]) (URCi_ComplexBulkTransferCumulator id sender size))
                                             ((= what-type 2) (URCi_UnityBulkTransferCumulator sender receiver-lst transfer-amount-lst))

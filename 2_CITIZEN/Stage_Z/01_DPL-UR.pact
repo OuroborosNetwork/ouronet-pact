@@ -2376,7 +2376,7 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 ;;
                 (public-key:string (try BAR (ref-DALOS::UR_AccountPublicKey selected-ouronet-account)))

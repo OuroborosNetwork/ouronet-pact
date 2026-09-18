@@ -99,7 +99,7 @@
         (elite-id:string "ELITEAURYN-98c486052a51")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
         (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)

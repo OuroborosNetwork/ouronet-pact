@@ -364,7 +364,7 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
                 (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
                 (asset:string (UR_AssetID))

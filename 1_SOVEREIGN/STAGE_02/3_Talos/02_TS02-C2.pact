@@ -368,7 +368,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC:module{DpdcV2} DPDC)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -404,10 +404,10 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
                     (l:integer (length input-nonce-data))
-                    (ico:object{IgnisCollectorV2.OutputCumulator}
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
                         (if (= l 1)
                             (ref-DPDC-C::C_CreateNewNonce
                                 id false 0 1 (at 0 input-nonce-data) false
@@ -441,10 +441,10 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-I:module{DpdcIssueV2} DPDC-I)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ico:object{IgnisCollectorV2.OutputCumulator}
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-DPDC-I::C_IssueDigitalCollection
                             patron false 
                             owner-account creator-account collection-name collection-ticker
@@ -468,7 +468,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -483,7 +483,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -498,7 +498,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -513,7 +513,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -528,7 +528,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -543,7 +543,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -558,7 +558,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -573,7 +573,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -589,7 +589,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -604,7 +604,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -621,7 +621,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
                 )
                 (ref-IGNIS::C_Collect patron
@@ -635,7 +635,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
                 )
                 (ref-IGNIS::C_Collect patron
@@ -649,7 +649,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
                 )
                 (ref-IGNIS::C_Collect patron
@@ -664,7 +664,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
                 )
                 (ref-IGNIS::C_Collect patron
@@ -679,7 +679,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
                 )
                 (ref-IGNIS::C_Collect patron
@@ -693,9 +693,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
-                    (ico:object{IgnisCollectorV2.OutputCumulator}
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-DPDC-MNG::CC_WipeHeavy account id false)
                     )
                     (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
@@ -713,9 +713,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
-                    (ico:object{IgnisCollectorV2.OutputCumulator}
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-DPDC-MNG::C_WipePure account id false removable-nonces-obj) 
                     )
                     (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
@@ -733,9 +733,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
-                    (ico:object{IgnisCollectorV2.OutputCumulator}
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-DPDC-MNG::C_WipeClean account id false nonces) 
                     )
                     (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
@@ -753,9 +753,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
-                    (ico:object{IgnisCollectorV2.OutputCumulator}
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-DPDC-MNG::C_WipeDirty account id false nonces)
                     )
                     (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
@@ -777,9 +777,9 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
-                    (ico:object{IgnisCollectorV2.OutputCumulator}
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-DPDC-MNG::Cp_WipeSlice account id false removable-nonces-obj)
                     )
                     (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
@@ -801,7 +801,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
                     (sf:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-from))
@@ -819,7 +819,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount sender))
@@ -849,7 +849,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount sender))
@@ -894,7 +894,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DPDC:module{DpdcV2} DPDC)
                     (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
@@ -914,7 +914,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DPDC:module{DpdcV2} DPDC)
                     (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
@@ -938,7 +938,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -958,7 +958,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -979,7 +979,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -998,7 +998,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -1013,7 +1013,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -1028,7 +1028,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -1046,7 +1046,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -1061,7 +1061,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -1076,7 +1076,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -1091,7 +1091,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -1106,7 +1106,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -1121,7 +1121,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -1136,7 +1136,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -1155,7 +1155,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -1173,7 +1173,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -1190,7 +1190,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
                     (sf:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-from))
@@ -1210,7 +1210,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -1225,7 +1225,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -1240,7 +1240,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -1259,7 +1259,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -1275,7 +1275,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -1291,7 +1291,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -1306,7 +1306,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -1321,7 +1321,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -1336,7 +1336,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -1351,7 +1351,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -1370,7 +1370,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -1388,7 +1388,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::C_Collect patron

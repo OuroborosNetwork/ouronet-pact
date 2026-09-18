@@ -44,7 +44,7 @@
     ;;{5.6}  Aux/X
     ;;{5.7}  User [A/C]
     ;;
-    (defun C_UpdatePendingBranding:object{IgnisCollectorV2.OutputCumulator} (entity-id:string son:bool logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
+    (defun C_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator} (entity-id:string son:bool logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
     (defun C_UpgradeBranding (patron:string entity-id:string son:bool months:integer))
 
 )
@@ -175,7 +175,7 @@
     (defun URH_AccountNoncesWithSupplies:[object] (account:string id:string son:bool))
     ;;
     ;;  [URCi]  Branding cost readers — single source for exec billing + INFO preview
-    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV2.OutputCumulator} (entity-id:string son:bool))
+    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator} (entity-id:string son:bool))
     (defun URCi_UpgradeBranding:decimal (months:integer))
     ;;{5.4}  Validate [UEV/CAP]
     ;;
@@ -913,12 +913,12 @@
         )
     )
     ;;
-    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator}
         (entity-id:string son:bool)
         @doc "Cost preview for C_UpdatePendingBranding (Branding tier; son->4.0 else 5.0)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (owner:string (UR_OwnerKonto entity-id son))
                 (multiplier:decimal (if son 4.0 5.0))
             )
@@ -1913,7 +1913,7 @@
             {"id"       : id}
         )
     )
-    (defun C_UpdatePendingBranding:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator}
         (entity-id:string son:bool logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
         (P|UEV_IMC)
         (let
@@ -1932,7 +1932,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-BRD:module{BrandingV2} BRD)
                 (owner:string (UR_OwnerKonto entity-id son))
                 (stoa-payment:decimal

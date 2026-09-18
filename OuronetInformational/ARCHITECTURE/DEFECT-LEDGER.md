@@ -3992,3 +3992,47 @@ All hold. The M3/M4 repairs are still in place, and now something says so.
 
 **Module coverage is 88 of 88.** Combined with the worklists at §8.32, every axis the round can
 measure is closed.
+
+## 8.36 Phase 1.7.1 — the interface bump, and the tool it broke
+
+**Scope, measured rather than assumed.** The roadmap frames this as *"BIG — whole codebase"*, and a
+first reading agreed: **50 of 87** interfaces are affected once the cascade is followed transitively,
+touching **69 of 93** files. That over-states the work, and the roadmap itself says why — *"bump per
+interface, ONCE here."* An interface already sitting at live+1 has **not been deployed at that
+version**, so it absorbs the cascade by rewiring its references without moving again.
+
+Comparing `LIVE-INTERFACE-VERSIONS.md` against the tree:
+
+| | count |
+|---|---:|
+| dev == live — **need a bump** | **7** |
+| already at live+1 | 56 |
+| ahead of live+1 (`DeployerReads` V8→V13, `SwapTracer` V1→V3) | 2 |
+| never deployed | 9 |
+
+So the work was **7 renames and 3,333 reference updates across 116 files**, not 50 renames.
+Collisions checked first: none of the seven target names existed anywhere.
+
+**A parsing error caught before it mattered.** The first bump map read `Autostake` as live at V3 and
+scheduled a V4 — because it took the highest version mentioned *anywhere* in the snapshot document,
+including prose. The table says V2, and `AutostakeV3` is already the bumped one. Parsing only the
+table's live column cut the list from 11 to 7. **A wrong bump map cascades**; it was worth the second
+look.
+
+### The bump exposed a hardcoded interface version in the pricing tool
+
+The gate failed with **0 suites broken** and only the price artefacts drifting — and the tally had
+*moved*: `199 floor / 50 exempt` → `200 / 49`. **An interface rename must not reclassify an
+operation's price.**
+
+Cause: `_ignis_price_sheet.py:165` matched `object\{IgnisCollectorV2\.OutputCumulator\}` with the
+version **hardcoded**. After the rename it stopped matching, one operation's cost legs became
+unresolvable, and it silently changed class. Made version-agnostic (`IgnisCollectorV\d+`); the tally
+returned to **182 / 199 / 11 / 50 / 442**, identical to pre-bump.
+
+> **That identity is the evidence the bump changed no pricing** — not the green gate, which the wrong
+> sheet would also have produced. A tool keyed to an interface *version* mis-prices on every future
+> bump and does it quietly: the sheet regenerates, the artefact check passes against the new file,
+> and only the tally moves.
+
+**Result: gate GREEN at 25,035 — the same assertion count as before the bump.**

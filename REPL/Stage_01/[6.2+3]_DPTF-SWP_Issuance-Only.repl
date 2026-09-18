@@ -671,7 +671,7 @@
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
         (ref-SWP:module{SwapperV4} SWP)
         (ref-SWPI:module{SwapperIssueV4} SWPI)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
@@ -696,7 +696,7 @@
                 (lp:string (ref-SWP::UR_TokenLP swpair))
                 (pt-ids:[string] (ref-SWP::UC_ExtractTokens pool-tokens))
                 (pt-amts:[decimal] (ref-SWP::UC_ExtractTokenSupplies pool-tokens))
-                (preview:object{IgnisCollectorV2.OutputCumulator}
+                (preview:object{IgnisCollectorV3.OutputCumulator}
                     (ref-SWPI::URCi_Issue KST.ANHD pool-tokens))
                     ;;GS-04 (2026-09-14): the dead `op-key` first argument was REMOVED from
                     ;;URCi_Issue. It had been in the signature and the interface since commit
@@ -712,7 +712,7 @@
             ;;smallest transfer + global trigger) against ground truth.
             (let
                 (
-                    (real:object{IgnisCollectorV2.OutputCumulator}
+                    (real:object{IgnisCollectorV3.OutputCumulator}
                         (ref-IGNIS::UDC_ConcatenateOutputCumulators
                             [
                                 (ref-IGNIS::UDC_ConstructOutputCumulator (ref-DPTF::URCi_IssueGas 1) swp-sc trigger [])

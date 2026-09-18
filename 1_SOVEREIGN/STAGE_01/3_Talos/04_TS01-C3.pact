@@ -296,7 +296,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-B|SWP:module{BrandingUsagePrimaryV2} SWP)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -326,7 +326,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-B|SWPLC:module{BrandingUsageSecondaryV2} SWPLC)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -353,7 +353,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SWP:module{SwapperV4} SWP)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -368,14 +368,14 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                     (ref-SWP:module{SwapperV4} SWP)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                     ;;
                     (lp-id:string (ref-SWP::UR_TokenLP swpair))
                     (current-frozen-link:string (ref-DPTF::UR_Frozen lp-id))
-                    (ico:object{IgnisCollectorV2.OutputCumulator}
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-SWP::C_EnableFrozenLP patron swpair)
                     )
                     (issued-frozen-lp-id:string (at 0 (at "output" ico)))
@@ -399,14 +399,14 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                     (ref-SWP:module{SwapperV4} SWP)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                     ;;
                     (lp-id:string (ref-SWP::UR_TokenLP swpair))
                     (current-sleeping-link:string (ref-DPTF::UR_Sleeping lp-id))
-                    (ico:object{IgnisCollectorV2.OutputCumulator}
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-SWP::C_EnableSleepingLP patron swpair)
                     )
                     (issued-sleeping-lp-id:string (at 0 (at "output" ico)))
@@ -434,11 +434,11 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SWPI:module{SwapperIssueV4} SWPI)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                     (weights:[decimal] (make-list (length pool-tokens) 1.0))
-                    (ico:object{IgnisCollectorV2.OutputCumulator}
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-SWPI::C_Issue patron account pool-tokens fee-lp weights amp p)
                     )
                 )
@@ -463,10 +463,10 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SWPI:module{SwapperIssueV4} SWPI)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ico:object{IgnisCollectorV2.OutputCumulator}
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-SWPI::C_Issue patron account pool-tokens fee-lp weights -1.0 p)
                     )
                 )
@@ -481,7 +481,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SWP:module{SwapperV4} SWP)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -496,7 +496,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SWP:module{SwapperV4} SWP)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -519,7 +519,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -539,7 +539,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SWPU:module{SwapperUsageV3} SWPU)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -555,10 +555,10 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SWP:module{SwapperV4} SWP)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ico:object{IgnisCollectorV2.OutputCumulator}
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-SWP::C_ToggleFeeLock patron swpair toggle)
                     )
                     (collect:bool (at 0 (at "output" ico)))
@@ -574,7 +574,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SWP:module{SwapperV4} SWP)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -596,7 +596,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SWP:module{SwapperV4} SWP)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -611,7 +611,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SWP:module{SwapperV4} SWP)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -630,7 +630,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
                     (ref-SWP:module{SwapperV4} SWP)
                     (ref-SWPI:module{SwapperIssueV4} SWPI)
@@ -661,12 +661,12 @@
             (let
                 (
                     (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
                     (ref-SWP:module{SwapperV4} SWP)
                     (ref-SWPI:module{SwapperIssueV4} SWPI)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
-                    (ico:object{IgnisCollectorV2.OutputCumulator}
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-SWPLC::STOA-PID|C_AddStandardLiquidity account swpair input-amounts stoa-pid)
                     )
                 )
@@ -694,12 +694,12 @@
             (let
                 (
                     (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
                     (ref-SWP:module{SwapperV4} SWP)
                     (ref-SWPI:module{SwapperIssueV4} SWPI)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
-                    (ico:object{IgnisCollectorV2.OutputCumulator}
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-SWPLC::STOA-PID|C_AddIcedLiquidity account swpair input-amounts stoa-pid)
                     )
                 )
@@ -725,12 +725,12 @@
             (let
                 (
                     (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
                     (ref-SWP:module{SwapperV4} SWP)
                     (ref-SWPI:module{SwapperIssueV4} SWPI)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
-                    (ico:object{IgnisCollectorV2.OutputCumulator}
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-SWPLC::STOA-PID|C_AddGlacialLiquidity account swpair input-amounts stoa-pid)
                     )
                 )
@@ -755,12 +755,12 @@
             (let
                 (
                     (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
                     (ref-SWP:module{SwapperV4} SWP)
                     (ref-SWPI:module{SwapperIssueV4} SWPI)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
-                    (ico:object{IgnisCollectorV2.OutputCumulator}
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-SWPLC::STOA-PID|C_AddFrozenLiquidity account swpair frozen-dptf input-amount stoa-pid)
                     )
                 )
@@ -785,12 +785,12 @@
             (let
                 (
                     (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
                     (ref-SWP:module{SwapperV4} SWP)
                     (ref-SWPI:module{SwapperIssueV4} SWPI)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
-                    (ico:object{IgnisCollectorV2.OutputCumulator}
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-SWPLC::STOA-PID|C_AddSleepingLiquidity account swpair sleeping-dpof nonce stoa-pid)
                     )
                 )
@@ -809,11 +809,11 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
                     (ref-SWP:module{SwapperV4} SWP)
                     (ref-SWPI:module{SwapperIssueV4} SWPI)
-                    (ico:object{IgnisCollectorV2.OutputCumulator}
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-SWPLC::C_RemoveLiquidity account swpair lp-amount)
                     )
                 )
@@ -858,20 +858,20 @@
                         (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                         (wstoa:string (ref-DALOS::UR_WrappedStoaID))
                         (ref-SWPI:module{SwapperIssueV4} SWPI)
-                        (ico1:object{IgnisCollectorV2.OutputCumulator}
+                        (ico1:object{IgnisCollectorV3.OutputCumulator}
                             (ref-LIQUID::C_WrapStoa fire-starter 10.0)
                         )
                         (slippage-bounds:object{SwapperUsageV3.Slippage}
                             (ref-SWPU::UDC_SpawnSlippageBounds primordial [wstoa] [10.0] ouro -1.0)
                         )
-                        (ico2:object{IgnisCollectorV2.OutputCumulator}
+                        (ico2:object{IgnisCollectorV3.OutputCumulator}
                             (ref-SWPU::C_Swap 
                                 fire-starter primordial [wstoa] [10.0] ouro 
                                 -1.0 stoa-pid slippage-bounds
                             )
                         )
                         (gained-ouro:decimal (at 0 (at "output" ico2)))
-                        (ico3:object{IgnisCollectorV2.OutputCumulator}
+                        (ico3:object{IgnisCollectorV3.OutputCumulator}
                             (ref-ORBR::C_SublimateV2 fire-starter fire-starter gained-ouro)
                         )
                     )
@@ -911,7 +911,7 @@
             (let
                 (
                     (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SWP:module{SwapperV4} SWP)
                     (ref-SWPI:module{SwapperIssueV4} SWPI)
                     (ref-SWPU:module{SwapperUsageV3} SWPU)
@@ -919,7 +919,7 @@
                     (ref-U|SWP:module{UtilitySwpV2} U|SWP)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                     (slippage:decimal (at "slippage-percent" slippage-bounds))
-                    (ico:object{IgnisCollectorV2.OutputCumulator}
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-SWPU::CC_SmartSwap
                             account input-id input-amount output-id
                             slippage stoa-pid slippage-bounds
@@ -987,7 +987,7 @@
             (let
                 (
                     (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SWP:module{SwapperV4} SWP)
                     (ref-SWPI:module{SwapperIssueV4} SWPI)
                     (ref-SWPU:module{SwapperUsageV3} SWPU)
@@ -997,7 +997,7 @@
                     (slippage-bounds:object{SwapperUsageV3.Slippage}
                         (ref-SWPU::UDC_SpawnSmartSwapSlippageBounds input-id input-amount output-id -1.0)
                     )
-                    (ico:object{IgnisCollectorV2.OutputCumulator}
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-SWPU::CC_SmartSwap
                             account input-id input-amount output-id
                             -1.0 stoa-pid slippage-bounds
@@ -1072,7 +1072,7 @@
             (let
                 (
                     (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SWP:module{SwapperV4} SWP)
                     (ref-SWPU:module{SwapperUsageV3} SWPU)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
@@ -1083,7 +1083,7 @@
                             slippage stoa-pid slippage-bounds bundle
                         )
                     )
-                    (ico:object{IgnisCollectorV2.OutputCumulator} (at 0 result))
+                    (ico:object{IgnisCollectorV3.OutputCumulator} (at 0 result))
                     (stoa-results:list (at 1 result))
                     (out:list (at "output" ico))
                 )
@@ -1117,7 +1117,7 @@
             (let
                 (
                     (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SWP:module{SwapperV4} SWP)
                     (ref-SWPU:module{SwapperUsageV3} SWPU)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
@@ -1128,7 +1128,7 @@
                             -1.0 stoa-pid slippage-bounds bundle
                         )
                     )
-                    (ico:object{IgnisCollectorV2.OutputCumulator} (at 0 result))
+                    (ico:object{IgnisCollectorV3.OutputCumulator} (at 0 result))
                     (stoa-results:list (at 1 result))
                     (out:list (at "output" ico))
                 )
@@ -1159,13 +1159,13 @@
             (let
                 (
                     (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SWP:module{SwapperV4} SWP)
                     (ref-SWPI:module{SwapperIssueV4} SWPI)
                     (ref-SWPU:module{SwapperUsageV3} SWPU)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                     (slippage:decimal (at "slippage-percent" slippage-bounds))
-                    (ico:object{IgnisCollectorV2.OutputCumulator}
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-SWPU::C_Swap 
                             account swpair [input-id] [input-amount] output-id 
                             slippage stoa-pid slippage-bounds
@@ -1201,7 +1201,7 @@
             (let
                 (
                     (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SWP:module{SwapperV4} SWP)
                     (ref-SWPI:module{SwapperIssueV4} SWPI)
                     (ref-SWPU:module{SwapperUsageV3} SWPU)
@@ -1209,7 +1209,7 @@
                     (slippage-bounds:object{SwapperUsageV3.Slippage}
                         (ref-SWPU::UDC_SpawnSlippageBounds swpair [input-id] [input-amount] output-id -1.0)
                     )
-                    (ico:object{IgnisCollectorV2.OutputCumulator}
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-SWPU::C_Swap 
                             account swpair [input-id] [input-amount] output-id 
                             -1.0 stoa-pid slippage-bounds
@@ -1237,13 +1237,13 @@
             (let
                 (
                     (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SWP:module{SwapperV4} SWP)
                     (ref-SWPI:module{SwapperIssueV4} SWPI)
                     (ref-SWPU:module{SwapperUsageV3} SWPU)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                     (slippage:decimal (at "slippage-percent" slippage-bounds))
-                    (ico:object{IgnisCollectorV2.OutputCumulator}
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-SWPU::C_Swap 
                             account swpair input-ids input-amounts output-id 
                             slippage stoa-pid slippage-bounds
@@ -1279,7 +1279,7 @@
             (let
                 (
                     (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SWP:module{SwapperV4} SWP)
                     (ref-SWPI:module{SwapperIssueV4} SWPI)
                     (ref-SWPU:module{SwapperUsageV3} SWPU)
@@ -1287,7 +1287,7 @@
                     (slippage-bounds:object{SwapperUsageV3.Slippage}
                         (ref-SWPU::UDC_SpawnSlippageBounds swpair input-ids input-amounts output-id -1.0)
                     )
-                    (ico:object{IgnisCollectorV2.OutputCumulator}
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-SWPU::C_Swap 
                             account swpair input-ids input-amounts output-id 
                             -1.0 stoa-pid slippage-bounds)

@@ -56,7 +56,7 @@
         )
     )
     (defun UC_ProbeSliceCount:integer (unit-count:integer vacate-kind:integer)
-        (let ((ref-VCT:module{AcquisitionVacateV2} AQP-VCT))
+        (let ((ref-VCT:module{AcquisitionVacateV3} AQP-VCT))
             (ref-VCT::UC_ComputeMinSliceCount unit-count vacate-kind)
         )
     )
@@ -110,7 +110,7 @@
         (let
             (
                 (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
-                (ref-VCT:module{AcquisitionVacateV2} AQP-VCT)
+                (ref-VCT:module{AcquisitionVacateV3} AQP-VCT)
                 (kind:integer (at "vacate-kind" payload))
                 (pool-id:string (at "pool-id" payload))
                 (asset-id:string (at "asset-id" payload))
@@ -181,7 +181,7 @@
             (
                 (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
                 (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
-                (ref-VCT:module{AcquisitionVacateV2} AQP-VCT)
+                (ref-VCT:module{AcquisitionVacateV3} AQP-VCT)
                 (nonce:integer 1)
             )
             (fold
@@ -240,7 +240,7 @@
             (
                 (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
                 (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
-                (ref-VCT:module{AcquisitionVacateV2} AQP-VCT)
+                (ref-VCT:module{AcquisitionVacateV3} AQP-VCT)
             )
             (fold
                 (lambda (acc:bool idx:integer)
@@ -299,7 +299,7 @@
                 (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
                 (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                (ref-VCT:module{AcquisitionVacateV2} AQP-VCT)
+                (ref-VCT:module{AcquisitionVacateV3} AQP-VCT)
             )
             (if (not (ref-DPOF::UR_R-AddQuantity dpof-id patron))
                 (ref-TS01-C1::DPOF|C_ToggleAddQuantityRole patron dpof-id patron true)
@@ -376,7 +376,7 @@
                 (ref-DPDC:module{DpdcV2} DPDC)
                 (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
                 (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
-                (ref-VCT:module{AcquisitionVacateV2} AQP-VCT)
+                (ref-VCT:module{AcquisitionVacateV3} AQP-VCT)
                 (source:string KST.EMMA)
                 (pre-count:integer (length (ref-DPDC::URH_AccountNonces source dpnf-id false)))
             )
@@ -444,7 +444,7 @@
         @doc "Offline plan slice-0 payload from live inventory (stateless Legs)."
         (let
             (
-                (ref-VCT:module{AcquisitionVacateV2} AQP-VCT)
+                (ref-VCT:module{AcquisitionVacateV3} AQP-VCT)
                 (unit-count:integer (ref-VCT::URHC_VacateUnitCountForKind pool-id asset-id vacate-kind))
                 (slice-count:integer (UC_ProbeSliceCount unit-count vacate-kind))
                 (plan:object (ref-VCT::URHC_BuildVacateSlicePlan pool-id asset-id vacate-kind slice-count))
@@ -651,7 +651,7 @@
         (let
             (
                 (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
-                (ref-VCT:module{AcquisitionVacateV2} AQP-VCT)
+                (ref-VCT:module{AcquisitionVacateV3} AQP-VCT)
                 (unit-total:integer (* owner-count nonces-per-owner))
             )
             (XI_OfEnsurePatronReady patron dpof-id)
@@ -1678,7 +1678,7 @@
         (patron:string KST.ANHD)
         (dpof-id:string "MVST-98c486052a51")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-VCT:module{AcquisitionVacateV2} AQP-VCT)
+        (ref-VCT:module{AcquisitionVacateV3} AQP-VCT)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "VctGas2mOf7x4"))
         (payload:object{VCTGAS.vacate-chunk-payload}
             (VCTGAS.XI_ChunkPayloadFromPool pool-id dpof-id AQP-VCT.VACATE-KIND-OF)
@@ -1755,7 +1755,7 @@
         (dpsf-id:string "DHCD-98c486052a51")
         (n:integer 29)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-VCT:module{AcquisitionVacateV2} AQP-VCT)
+        (ref-VCT:module{AcquisitionVacateV3} AQP-VCT)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "VctGas2mDpsf29"))
         (payload:object{VCTGAS.vacate-chunk-payload}
             (VCTGAS.XI_ChunkPayloadFromPool pool-id dpsf-id AQP-VCT.VACATE-KIND-DPSF)

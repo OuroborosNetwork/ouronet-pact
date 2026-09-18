@@ -31,9 +31,9 @@
 (print "--- [TX-AQPP-001 - AQP price sweep: observed IGNIS == deter + components · 02 · let / invocation] ---")
 (let
     (
-        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
         (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
         (score:string "TheCodingDivision-98c486052a51")
         (fvt:string (ref-U|DALOS::UDC_Makeid "TfStakeVault"))
@@ -66,7 +66,7 @@
 ;;— and it will make one of these assertions fail, which is the intended alarm.
 (let
     (
-        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (medium:decimal (ref-DALOS::UR_UsagePrice "ignis|medium"))
         (biggest:decimal (ref-DALOS::UR_UsagePrice "ignis|biggest"))
@@ -128,11 +128,11 @@
 (print "--- [TX-AQPP-002 - AQP component gap closed: every migrated reader bills deter + components · 02 · let / invocation] ---")
 (let
     (
-        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-ANK:module{AcquisitionAnchorsV2} AQP-ANK)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
-        (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
+        (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+        (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
         (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
         (score:string "TheCodingDivision-98c486052a51")

@@ -42,17 +42,17 @@
     ;;
     ;;  [URCi]
     ;;
-    (defun URCi_ToggleAddQuantityRole:object{IgnisCollectorV2.OutputCumulator} (id:string))
-    (defun URCi_ToggleFreezeAccount:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool))
-    (defun URCi_ToggleExemptionRole:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool))
-    (defun URCi_ToggleBurnRole:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool))
-    (defun URCi_ToggleUpdateRole:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool))
-    (defun URCi_ToggleModifyCreatorRole:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool))
-    (defun URCi_ToggleModifyRoyaltiesRole:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool))
-    (defun URCi_ToggleTransferRole:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool))
-    (defun URCi_MoveCreateRole:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool))
-    (defun URCi_MoveRecreateRole:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool))
-    (defun URCi_MoveSetUriRole:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool))
+    (defun URCi_ToggleAddQuantityRole:object{IgnisCollectorV3.OutputCumulator} (id:string))
+    (defun URCi_ToggleFreezeAccount:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
+    (defun URCi_ToggleExemptionRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
+    (defun URCi_ToggleBurnRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
+    (defun URCi_ToggleUpdateRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
+    (defun URCi_ToggleModifyCreatorRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
+    (defun URCi_ToggleModifyRoyaltiesRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
+    (defun URCi_ToggleTransferRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
+    (defun URCi_MoveCreateRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
+    (defun URCi_MoveRecreateRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
+    (defun URCi_MoveSetUriRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
     ;;{5.4}  Validate [UEV/CAP]
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
@@ -60,17 +60,17 @@
     ;;
     ;;  [C]
     ;;
-    (defun C_ToggleAddQuantityRole:object{IgnisCollectorV2.OutputCumulator} (id:string account:string toggle:bool))
-    (defun C_ToggleFreezeAccount:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool account:string toggle:bool))
-    (defun C_ToggleExemptionRole:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool account:string toggle:bool))
-    (defun C_ToggleBurnRole:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool account:string toggle:bool))
-    (defun C_ToggleUpdateRole:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool account:string toggle:bool))
-    (defun C_ToggleModifyCreatorRole:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool account:string toggle:bool))
-    (defun C_ToggleModifyRoyaltiesRole:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool account:string toggle:bool))
-    (defun C_ToggleTransferRole:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool account:string toggle:bool))
-    (defun C_MoveCreateRole:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool new-account:string))
-    (defun C_MoveRecreateRole:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool new-account:string))
-    (defun C_MoveSetUriRole:object{IgnisCollectorV2.OutputCumulator} (id:string son:bool new-account:string))
+    (defun C_ToggleAddQuantityRole:object{IgnisCollectorV3.OutputCumulator} (id:string account:string toggle:bool))
+    (defun C_ToggleFreezeAccount:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool account:string toggle:bool))
+    (defun C_ToggleExemptionRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool account:string toggle:bool))
+    (defun C_ToggleBurnRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool account:string toggle:bool))
+    (defun C_ToggleUpdateRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool account:string toggle:bool))
+    (defun C_ToggleModifyCreatorRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool account:string toggle:bool))
+    (defun C_ToggleModifyRoyaltiesRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool account:string toggle:bool))
+    (defun C_ToggleTransferRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool account:string toggle:bool))
+    (defun C_MoveCreateRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool new-account:string))
+    (defun C_MoveRecreateRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool new-account:string))
+    (defun C_MoveSetUriRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool new-account:string))
 
 )
 ;;
@@ -377,12 +377,12 @@
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
     ;;
-    (defun URCi_ToggleAddQuantityRole:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_ToggleAddQuantityRole:object{IgnisCollectorV3.OutputCumulator}
         (id:string)
         @doc "Cost preview for C_ToggleAddQuantityRole (Big tier on owner-konto)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
@@ -390,12 +390,12 @@
                 (ref-DPDC::UR_OwnerKonto id true) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_ToggleFreezeAccount:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_ToggleFreezeAccount:object{IgnisCollectorV3.OutputCumulator}
         (id:string son:bool)
         @doc "Cost preview for C_ToggleFreezeAccount (Biggest tier on owner-konto)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
@@ -404,12 +404,12 @@
                 (ref-DPDC::UR_OwnerKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_ToggleExemptionRole:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_ToggleExemptionRole:object{IgnisCollectorV3.OutputCumulator}
         (id:string son:bool)
         @doc "Cost preview for C_ToggleExemptionRole (Biggest tier on owner-konto)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
@@ -418,12 +418,12 @@
                 (ref-DPDC::UR_OwnerKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_ToggleBurnRole:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_ToggleBurnRole:object{IgnisCollectorV3.OutputCumulator}
         (id:string son:bool)
         @doc "Cost preview for C_ToggleBurnRole (Big tier on owner-konto)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
@@ -432,12 +432,12 @@
                 (ref-DPDC::UR_OwnerKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_ToggleUpdateRole:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_ToggleUpdateRole:object{IgnisCollectorV3.OutputCumulator}
         (id:string son:bool)
         @doc "Cost preview for C_ToggleUpdateRole (Big tier on owner-konto)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
@@ -446,12 +446,12 @@
                 (ref-DPDC::UR_OwnerKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_ToggleModifyCreatorRole:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_ToggleModifyCreatorRole:object{IgnisCollectorV3.OutputCumulator}
         (id:string son:bool)
         @doc "Cost preview for C_ToggleModifyCreatorRole (Big tier on owner-konto)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
@@ -460,12 +460,12 @@
                 (ref-DPDC::UR_OwnerKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_ToggleModifyRoyaltiesRole:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_ToggleModifyRoyaltiesRole:object{IgnisCollectorV3.OutputCumulator}
         (id:string son:bool)
         @doc "Cost preview for C_ToggleModifyRoyaltiesRole (Big tier on owner-konto)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
@@ -474,12 +474,12 @@
                 (ref-DPDC::UR_OwnerKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_ToggleTransferRole:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_ToggleTransferRole:object{IgnisCollectorV3.OutputCumulator}
         (id:string son:bool)
         @doc "Cost preview for C_ToggleTransferRole (Big tier on owner-konto)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
@@ -488,12 +488,12 @@
                 (ref-DPDC::UR_OwnerKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_MoveCreateRole:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_MoveCreateRole:object{IgnisCollectorV3.OutputCumulator}
         (id:string son:bool)
         @doc "Cost preview for C_MoveCreateRole (Biggest tier on owner-konto)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
@@ -502,12 +502,12 @@
                 (ref-DPDC::UR_OwnerKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_MoveRecreateRole:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_MoveRecreateRole:object{IgnisCollectorV3.OutputCumulator}
         (id:string son:bool)
         @doc "Cost preview for C_MoveRecreateRole (Biggest tier on owner-konto)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
@@ -516,12 +516,12 @@
                 (ref-DPDC::UR_OwnerKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    (defun URCi_MoveSetUriRole:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_MoveSetUriRole:object{IgnisCollectorV3.OutputCumulator}
         (id:string son:bool)
         @doc "Cost preview for C_MoveSetUriRole (Biggest tier on owner-konto)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
@@ -665,7 +665,7 @@
     )
     ;;{5.7}  User [A/C]
     ;;Role Toggling
-    (defun C_ToggleAddQuantityRole:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_ToggleAddQuantityRole:object{IgnisCollectorV3.OutputCumulator}
         (id:string account:string toggle:bool)
         (P|UEV_IMC)
         (let
@@ -679,7 +679,7 @@
             )
         )
     )
-    (defun C_ToggleFreezeAccount:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_ToggleFreezeAccount:object{IgnisCollectorV3.OutputCumulator}
         (id:string son:bool account:string toggle:bool)
         (P|UEV_IMC)
         (let
@@ -693,7 +693,7 @@
             )
         )
     )
-    (defun C_ToggleExemptionRole:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_ToggleExemptionRole:object{IgnisCollectorV3.OutputCumulator}
         (id:string son:bool account:string toggle:bool)
         (P|UEV_IMC)
         (let
@@ -707,7 +707,7 @@
             )
         )
     )
-    (defun C_ToggleBurnRole:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_ToggleBurnRole:object{IgnisCollectorV3.OutputCumulator}
         (id:string son:bool account:string toggle:bool)
         (P|UEV_IMC)
         (let
@@ -721,7 +721,7 @@
             )
         )
     )
-    (defun C_ToggleUpdateRole:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_ToggleUpdateRole:object{IgnisCollectorV3.OutputCumulator}
         (id:string son:bool account:string toggle:bool)
         (P|UEV_IMC)
         (let
@@ -735,7 +735,7 @@
             )
         )
     )
-    (defun C_ToggleModifyCreatorRole:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_ToggleModifyCreatorRole:object{IgnisCollectorV3.OutputCumulator}
         (id:string son:bool account:string toggle:bool)
         (P|UEV_IMC)
         (let
@@ -749,7 +749,7 @@
             )
         )
     )
-    (defun C_ToggleModifyRoyaltiesRole:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_ToggleModifyRoyaltiesRole:object{IgnisCollectorV3.OutputCumulator}
         (id:string son:bool account:string toggle:bool)
         (P|UEV_IMC)
         (let
@@ -763,7 +763,7 @@
             )
         )
     )
-    (defun C_ToggleTransferRole:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_ToggleTransferRole:object{IgnisCollectorV3.OutputCumulator}
         (id:string son:bool account:string toggle:bool)
         (P|UEV_IMC)
         (let
@@ -778,7 +778,7 @@
         )
     )
     ;;
-    (defun C_MoveCreateRole:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_MoveCreateRole:object{IgnisCollectorV3.OutputCumulator}
         (id:string son:bool new-account:string)
         (P|UEV_IMC)
         (let
@@ -793,7 +793,7 @@
             )
         )
     )
-    (defun C_MoveRecreateRole:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_MoveRecreateRole:object{IgnisCollectorV3.OutputCumulator}
         (id:string son:bool new-account:string)
         (P|UEV_IMC)
         (let
@@ -808,7 +808,7 @@
             )
         )
     )
-    (defun C_MoveSetUriRole:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_MoveSetUriRole:object{IgnisCollectorV3.OutputCumulator}
         (id:string son:bool new-account:string)
         (P|UEV_IMC)
         (let

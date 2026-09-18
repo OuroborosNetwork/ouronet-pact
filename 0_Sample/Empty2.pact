@@ -156,10 +156,10 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
-    (defun OI|UC_IfpFromOutputCumulator:decimal (input:object{IgnisCollectorV2.OutputCumulator})
+    (defun OI|UC_IfpFromOutputCumulator:decimal (input:object{IgnisCollectorV3.OutputCumulator})
         (let
             (
-                (cc:[object{IgnisCollectorV2.ModularCumulator}] (at "cumulator-chain" input))
+                (cc:[object{IgnisCollectorV3.ModularCumulator}] (at "cumulator-chain" input))
             )
             (fold
                 (lambda
@@ -410,7 +410,7 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 ;;
                 (is-ignis:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 (ifp:decimal (ref-DALOS::UR_UsagePrice "ignis|small"))
@@ -429,7 +429,7 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 ;;
                 (is-kadena:bool (ref-IGNIS::URC_IsNativeGasZero))
                 (kfp:decimal (ref-DALOS::UR_UsagePrice "smart"))
@@ -448,7 +448,7 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 ;;
                 (is-kadena:bool (ref-IGNIS::URC_IsNativeGasZero))
                 (kfp:decimal (ref-DALOS::UR_UsagePrice "standard"))
@@ -467,7 +467,7 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 ;;
                 (is-ignis:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 (ifp:decimal (ref-DALOS::UR_UsagePrice "ignis|small"))
@@ -486,7 +486,7 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 ;;
                 (is-ignis:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 (ifp:decimal (ref-DALOS::UR_UsagePrice "ignis|small"))
@@ -505,7 +505,7 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 ;;
                 (is-ignis:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 (ifp:decimal (ref-DALOS::UR_UsagePrice "ignis|small"))
@@ -524,7 +524,7 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 ;;
                 (is-ignis:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 (ifp:decimal (ref-DALOS::UR_UsagePrice "ignis|small"))
@@ -543,7 +543,7 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 ;;
                 (is-ignis:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 (ifp:decimal (ref-DALOS::UR_UsagePrice "ignis|small"))
@@ -562,7 +562,7 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 ;;
                 (is-ignis:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 (ifp:decimal (ref-DALOS::UR_UsagePrice "ignis|medium"))

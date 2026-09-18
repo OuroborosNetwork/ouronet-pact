@@ -322,7 +322,7 @@
         (patron:string KST.ANHD)
         (owner-konto:string KST.ANHD)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (pool-ouro-lp:string (ref-U|DALOS::UDC_Makeid "DHOuroLp"))
         (farm-skip:string
             (if (try false (!= (ref-AQP::UR_AQP|PoolAqpClass pool-ouro-lp) -1))
@@ -681,7 +681,7 @@
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
     )
     (let
         (

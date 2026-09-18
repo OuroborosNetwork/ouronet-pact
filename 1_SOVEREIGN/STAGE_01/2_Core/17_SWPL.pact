@@ -90,7 +90,7 @@
         clad-op:object{CladOperation}
     )
     (defschema CladOperation
-        perfect-ignis-fee:object{IgnisCollectorV2.OutputCumulator}   
+        perfect-ignis-fee:object{IgnisCollectorV3.OutputCumulator}   
                                     ;;Ignis Cumulator for the Operation
                                     ;;Can be used to Collect Fees in Advance
         mt-ids:[string]             ;;IDs the User Moves to swp-sc
@@ -154,7 +154,7 @@
             r:object{CladOperation}
         )
     )
-    (defun UDC_CladOperation:object{CladOperation} (a:object{IgnisCollectorV2.OutputCumulator} b:[string] c:[decimal] d:bool e:[string] f:[decimal] g:[decimal] h:[decimal]))
+    (defun UDC_CladOperation:object{CladOperation} (a:object{IgnisCollectorV3.OutputCumulator} b:[string] c:[decimal] d:bool e:[string] f:[decimal] g:[decimal] h:[decimal]))
     (defun UDC_PoolState:object{PoolState} (a:decimal b:object{UtilitySwpV2.SwapFeez} c:[decimal] d:[decimal] e:decimal f:[string] g:[decimal]))
     ;;{5.2}  Compute [UC]
     ;;
@@ -534,7 +534,7 @@
     (defun CT_EmptyCumulator ()
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UDC_EmptyOutputCumulatorV2)
         )
@@ -660,7 +660,7 @@
         ,"clad-op"                  : r}
     )
     (defun UDC_CladOperation:object{SwapperLiquidityV2.CladOperation}
-        (a:object{IgnisCollectorV2.OutputCumulator} b:[string] c:[decimal] d:bool e:[string] f:[decimal] g:[decimal] h:[decimal])
+        (a:object{IgnisCollectorV3.OutputCumulator} b:[string] c:[decimal] d:bool e:[string] f:[decimal] g:[decimal] h:[decimal])
         {"perfect-ignis-fee"        : a
         ;;
         ,"mt-ids"                   : b
@@ -798,7 +798,7 @@
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
@@ -816,7 +816,7 @@
                 ;;Create <ico-flat>
                 (flat-ignis-lq-fee:decimal 1000.0)
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                (ico-flat:object{IgnisCollectorV2.OutputCumulator}
+                (ico-flat:object{IgnisCollectorV3.OutputCumulator}
                     (ref-IGNIS::UDC_ConstructOutputCumulator flat-ignis-lq-fee SWP|SC_NAME trigger [])
                 )
                 ;;Initial Transfer IDs and Amounts
@@ -862,7 +862,7 @@
                                 0.0
                             )
                         )
-                        (ico-gaseous:object{IgnisCollectorV2.OutputCumulator}
+                        (ico-gaseous:object{IgnisCollectorV3.OutputCumulator}
                             (if gaseous-collection
                                 (ref-IGNIS::UDC_ConstructOutputCumulator gaseous-ignis-fee SWP|SC_NAME trigger [])
                                 EOC
@@ -937,11 +937,11 @@
                                 (ouro-id:string (ref-DALOS::UR_OuroborosID))
                                 (secondary-ids-for-transfer:[string] (ref-U|LST::UC_InsertFirst input-ids-for-transfer ignis-id))
                                 (secondary-amounts-for-transfer:[decimal] (ref-U|LST::UC_InsertFirst input-amounts-for-transfer ignis-swp))
-                                (ico1:object{IgnisCollectorV2.OutputCumulator}
+                                (ico1:object{IgnisCollectorV3.OutputCumulator}
                                     ;;For initial Transfer towards the SWP|SC_NAME of input tokens and ignis (removed Ignis additions as is always zero)
                                     (ref-TFT::URCi_MultiTransferCumulator input-ids-for-transfer account SWP|SC_NAME input-amounts-for-transfer)
                                 )
-                                (ico2:object{IgnisCollectorV2.OutputCumulator}
+                                (ico2:object{IgnisCollectorV3.OutputCumulator}
                                     ;;For LP Minting (2)
                                     (ref-IGNIS::UDC_LegCumulator "lp-mint" SWP|SC_NAME)
                                 )
@@ -959,7 +959,7 @@
                                     )
                                 )
                                 ;;Cumulator needed if Liquid Boost is enabled and executed
-                                (ico5:object{IgnisCollectorV2.OutputCumulator}
+                                (ico5:object{IgnisCollectorV3.OutputCumulator}
                                     ;;ico3 for IGNIS to special Targets is always zero: removed
                                     ;;Ico4 for IGNIS burn is always zero;removed
                                     ;;Used for the OURO Mint (2)
@@ -969,7 +969,7 @@
                                         (ref-IGNIS::URC_ZeroGAS ouro-id account) []
                                     )
                                 )
-                                (ico6:object{IgnisCollectorV2.OutputCumulator}
+                                (ico6:object{IgnisCollectorV3.OutputCumulator}
                                     ;;Used for SSTOA Burn (2)
                                     (ref-IGNIS::UDC_ConstructOutputCumulator 
                                         (ref-IGNIS::UC_IgnisLeg "tier-small") 
@@ -977,7 +977,7 @@
                                         (ref-IGNIS::URC_ZeroGAS sstoa-id account) []
                                     )
                                 )
-                                (ico56:object{IgnisCollectorV2.OutputCumulator}
+                                (ico56:object{IgnisCollectorV3.OutputCumulator}
                                     (if (= lqboost-ignis-tax 0.0)
                                         EOC
                                         (ref-IGNIS::UDC_ConcatenateOutputCumulators 
@@ -986,7 +986,7 @@
                                         )
                                     )
                                 )
-                                (s-ico1:object{IgnisCollectorV2.OutputCumulator}
+                                (s-ico1:object{IgnisCollectorV3.OutputCumulator}
                                     (ref-IGNIS::UDC_ConcatenateOutputCumulators 
                                         [ico-flat ico-gaseous ico1 ico2 ico56] 
                                         []

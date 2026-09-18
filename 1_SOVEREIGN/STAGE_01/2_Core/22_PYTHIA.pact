@@ -919,7 +919,7 @@
             \ the raw constants they replace). Governance may still override either in-table."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (with-default-read PYTHIA|T|Config PYTHIA|INFO
                 {"deploy-price" : (ref-IGNIS::UC_StoaPrice "pythia-deploy")
@@ -1233,7 +1233,7 @@
         @doc "ClientInfo for TS01-C4 PYTHIA|C_RevokeLink / A_RevokeLink (1 IGNIS)."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 ;;
                 (revoke-fee:decimal (UC_RevokeIgnisFee))

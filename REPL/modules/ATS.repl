@@ -592,7 +592,7 @@
     (
         (ref-ATS:module{AutostakeV3} ATS)
         (ref-BRD:module{BrandingV2} BRD)
-        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
         (ps:string "PlebeicStrength-98c486052a51")
     )
     (map print

@@ -389,7 +389,7 @@
     (defun CT_EmptyCumulator ()
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UDC_EmptyOutputCumulatorV2)
         )
@@ -500,7 +500,7 @@
             "SWP|C_AddGlacialLiquidity"
         )
     )
-    (defun URCi_AddLiquidityInitiation:object{IgnisCollectorV2.OutputCumulator} ()
+    (defun URCi_AddLiquidityInitiation:object{IgnisCollectorV3.OutputCumulator} ()
         @doc "The INITIATION slice every multi-step add-liquidity pays in step 0, before \
             \ anything is validated. Deliberately small: step 0 only QUOTES, and a quote \
             \ that a stranger's ordinary trade can invalidate must not cost the quoter the \
@@ -508,14 +508,14 @@
             \ the step that succeeds, so the TOTAL is unchanged."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 LQ|INITIATION-FEE SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []
             )
         )
     )
-    (defun URCi_AddLiquidityChurnRemainder:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_AddLiquidityChurnRemainder:object{IgnisCollectorV3.OutputCumulator}
         (op-key:string)
         @doc "The rest of OP-KEY's lp-churn deterrent, after the step-0 initiation slice. \
             \ Charged in the EXECUTION step, i.e. only once the pool state has been checked \
@@ -524,7 +524,7 @@
             \ a timing change, not a discount. Pinned by modules/SWP.repl <<SWPX-LQSPLIT>>."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (- (ref-IGNIS::UC_IgnisPrice op-key "lp-churn") LQ|INITIATION-FEE)
@@ -543,7 +543,7 @@
         (step
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SWPL:module{SwapperLiquidityV2} SWPL)
                     ;;
                     (pool-state:object{SwapperLiquidityV2.PoolState}
@@ -588,7 +588,7 @@
                 }
                 (let
                     (
-                        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                         (ref-SWPL:module{SwapperLiquidityV2} SWPL)
                         ;;
                         (current-pool-state:object{SwapperLiquidityV2.PoolState} (UR_PoolState swpair))
@@ -647,7 +647,7 @@
             )
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 )
                 (ref-IGNIS::C_Collect patron 
                     (ref-IGNIS::UDC_ConstructOutputCumulator
@@ -666,20 +666,20 @@
                 (with-capability (P|DT)
                     (let
                         (
-                            (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                            (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                             (ref-TFT:module{TrueFungibleTransferV2} TFT)
                             (ref-VST:module{VestingV2} VST)
                             (ref-SWP:module{SwapperV4} SWP)
                             (ref-SWPL:module{SwapperLiquidityV2} SWPL)
                             ;;
                             (lp-id:string (ref-SWP::UR_TokenLP swpair))
-                            (ico1:object{IgnisCollectorV2.OutputCumulator}
+                            (ico1:object{IgnisCollectorV3.OutputCumulator}
                                 (if (!= primary 0.0)
                                     (ref-TFT::C_Transfer lp-id SWP|SC_NAME account primary true)
                                     EOC
                                 )
                             )
-                            (ico2:object{IgnisCollectorV2.OutputCumulator}
+                            (ico2:object{IgnisCollectorV3.OutputCumulator}
                                 (if (not asymmetric-collection)
                                     (ref-VST::C_Freeze SWP|SC_NAME account lp-id secondary)
                                     EOC
@@ -713,7 +713,7 @@
             (let
                 (
                     (ref-U|SWP:module{UtilitySwpV2} U|SWP)
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                     (ref-SWP:module{SwapperV4} SWP)
                     (ref-SWPL:module{SwapperLiquidityV2} SWPL)
@@ -755,7 +755,7 @@
                 }
                 (let
                     (
-                        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                         ;;
                         (current-pool-state:object{SwapperLiquidityV2.PoolState} (UR_PoolState swpair))
                         (secondary:decimal (at "secondary-lp" clad))
@@ -774,13 +774,13 @@
                                 (vst-sc:string (ref-DALOS::GOV|VST|SC_NAME))
                                 ;;
                                 ;;Move F|DPTF to vst-sc and burn it
-                                (ico1:object{IgnisCollectorV2.OutputCumulator}
+                                (ico1:object{IgnisCollectorV3.OutputCumulator}
                                     (ref-TFT::C_Transfer frozen-dptf account vst-sc input-amount true)
                                 )
-                                (ico2:object{IgnisCollectorV2.OutputCumulator}
+                                (ico2:object{IgnisCollectorV3.OutputCumulator}
                                     (ref-DPTF::C_Burn frozen-dptf vst-sc input-amount)
                                 )
-                                (ico3:object{IgnisCollectorV2.OutputCumulator}
+                                (ico3:object{IgnisCollectorV3.OutputCumulator}
                                     (at "perfect-ignis-fee" (at "clad-op" clad))
                                 )
                             )
@@ -803,7 +803,7 @@
             )
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 )
                 (ref-IGNIS::C_Collect patron 
                     (ref-IGNIS::UDC_ConstructOutputCumulator
@@ -820,13 +820,13 @@
                 (with-capability (P|DT)
                     (let
                         (
-                            (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                            (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                             (ref-VST:module{VestingV2} VST)
                             (ref-SWP:module{SwapperV4} SWP)
                             (ref-SWPL:module{SwapperLiquidityV2} SWPL)
                             ;;
                             (lp-id:string (ref-SWP::UR_TokenLP swpair))
-                            (ico:object{IgnisCollectorV2.OutputCumulator}
+                            (ico:object{IgnisCollectorV3.OutputCumulator}
                                 (ref-VST::C_Freeze SWP|SC_NAME account lp-id secondary)
                             )
                         )
@@ -849,7 +849,7 @@
             (let
                 (
                     (ref-U|SWP:module{UtilitySwpV2} U|SWP)
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                     (ref-SWP:module{SwapperV4} SWP)
                     (ref-SWPL:module{SwapperLiquidityV2} SWPL)
@@ -894,7 +894,7 @@
                 }
                 (let
                     (
-                        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                         ;;
                         (current-pool-state:object{SwapperLiquidityV2.PoolState} (UR_PoolState swpair))
                         (primary:decimal (at "primary-lp" clad))
@@ -920,18 +920,18 @@
                                 (dt:integer (floor (diff-time release-date present-time)))
                                 ;;
                                 ;;Move Z|DPOF to vst-sc and burn it
-                                (ico1:object{IgnisCollectorV2.OutputCumulator}
+                                (ico1:object{IgnisCollectorV3.OutputCumulator}
                                     (ref-DPOF::C_Transfer sleeping-dpof [nonce] account vst-sc true)
                                 )
-                                (ico2:object{IgnisCollectorV2.OutputCumulator}
+                                (ico2:object{IgnisCollectorV3.OutputCumulator}
                                     (ref-DPOF::C_Burn sleeping-dpof vst-sc nonce batch-amount)
                                 )
-                                (ico3:object{IgnisCollectorV2.OutputCumulator}
+                                (ico3:object{IgnisCollectorV3.OutputCumulator}
                                     (at "perfect-ignis-fee" (at "clad-op" clad))
                                 )
                                 ;;
                                 ;;MOVE IGNIS to vst-sc, paying for the ignis-tax
-                                (ico4:object{IgnisCollectorV2.OutputCumulator}
+                                (ico4:object{IgnisCollectorV3.OutputCumulator}
                                     (ref-TFT::C_Transfer ignis-id account vst-sc (at "total-ignis-tax-needed" clad) true)
                                 )
                             )
@@ -955,7 +955,7 @@
             )
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 )
                 (ref-IGNIS::C_Collect patron 
                     (ref-IGNIS::UDC_ConstructOutputCumulator
@@ -973,13 +973,13 @@
                 (with-capability (P|DT)
                     (let
                         (
-                            (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                            (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                             (ref-VST:module{VestingV2} VST)
                             (ref-SWP:module{SwapperV4} SWP)
                             (ref-SWPL:module{SwapperLiquidityV2} SWPL)
                             ;;
                             (lp-id:string (ref-SWP::UR_TokenLP swpair))
-                            (ico:object{IgnisCollectorV2.OutputCumulator}
+                            (ico:object{IgnisCollectorV3.OutputCumulator}
                                 (ref-VST::C_Sleep SWP|SC_NAME account lp-id primary dt)
                             )
                         )
@@ -1032,7 +1032,7 @@
         (step-with-rollback
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                     (ref-SWPI:module{SwapperIssueV4} SWPI)
                     ;;GS-04 REPAIR (2026-09-14). This step used to build its own cumulator inline
@@ -1072,7 +1072,7 @@
             )
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 )
                 (ref-IGNIS::C_Collect patron 
                     (ref-IGNIS::UDC_ConstructOutputCumulator

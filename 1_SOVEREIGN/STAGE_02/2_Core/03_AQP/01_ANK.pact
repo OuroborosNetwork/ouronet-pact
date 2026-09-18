@@ -1,5 +1,5 @@
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface AcquisitionAnchorsV2
+(interface AcquisitionAnchorsV3
     @doc "Interface for the AQP anchor layer. Declares the public surface for \
         \ issuing/revoking anchors (per-user boost multipliers on DPTF/DPSF/DPNF holdings) \
         \ and heterogeneous BoostClasses that group up to 7 anchors for score boosting. \
@@ -103,10 +103,10 @@
     (defun URH_BC|AllBoostClassIds:[string] ())
     ;;
     ;; [URCi]   cost readers — single source for exec billing + INFO preview
-    (defun URCi_IssueAnchor:object{IgnisCollectorV2.OutputCumulator} (op-key:string output:[string]))
+    (defun URCi_IssueAnchor:object{IgnisCollectorV3.OutputCumulator} (op-key:string output:[string]))
     (defun URCi_IssueAnchorStoa:decimal (acnoi:bool))
-    (defun URCi_RevokeAnchor:object{IgnisCollectorV2.OutputCumulator} ())
-    (defun URCi_RevokeBoostClass:object{IgnisCollectorV2.OutputCumulator} ())
+    (defun URCi_RevokeAnchor:object{IgnisCollectorV3.OutputCumulator} ())
+    (defun URCi_RevokeBoostClass:object{IgnisCollectorV3.OutputCumulator} ())
     ;;{5.4}  Validate [UEV/CAP]
     ;; [UEV] enforce
     (defun UEV_AnkFungibility (asset-fungibility:[bool]))
@@ -118,7 +118,7 @@
     ;;{5.6}  Aux/X
     ;; [XE]
     ;;
-    (defun XE_UpdateTrueFungibleUserAnchorValues:object{IgnisCollectorV2.OutputCumulator}
+    (defun XE_UpdateTrueFungibleUserAnchorValues:object{IgnisCollectorV3.OutputCumulator}
         (account:string dptf-id:string total-dptf-amount:decimal)
     )
     (defun XE_UpdateSemiFungibleUserAnchorValues
@@ -131,31 +131,31 @@
     (defun XE_UnbumpBoostClassScoreLinks:string (boost-class-id:string score-id:string))
     (defun XE_RecomputeUserBoostAggregates:string (account:string boost-class-ids:[string]))
     (defun XE_SweepRevokeAnchor:string (anchor-id:string))
-    (defun XE_ResyncSemiFungibleUserAnchorValues:object{IgnisCollectorV2.OutputCumulator}
+    (defun XE_ResyncSemiFungibleUserAnchorValues:object{IgnisCollectorV3.OutputCumulator}
         (account:string dpsf-id:string nonces:[integer] nonce-amounts:[integer])
     )
-    (defun XE_ResyncNonFungibleUserAnchorValues:object{IgnisCollectorV2.OutputCumulator}
+    (defun XE_ResyncNonFungibleUserAnchorValues:object{IgnisCollectorV3.OutputCumulator}
         (account:string dpnf-id:string nonces:[integer])
     )
     ;;{5.7}  User [A/C]
     ;; [C]   client
     ;;
-    (defun C_RevokeBoostClass:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_RevokeBoostClass:object{IgnisCollectorV3.OutputCumulator}
         (boost-class-id:string)
     )
-    (defun C_IssueTrueFungibleAnchor:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_IssueTrueFungibleAnchor:object{IgnisCollectorV3.OutputCumulator}
         (patron:string anchor-name:string dptf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dptf-amount:decimal)
     )
-    (defun C_IssueSemiFungibleAnchor:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_IssueSemiFungibleAnchor:object{IgnisCollectorV3.OutputCumulator}
         (patron:string anchor-name:string dpsf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpsf-nonce:integer)
     )
-    (defun C_IssueNonFungibleAnchor:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_IssueNonFungibleAnchor:object{IgnisCollectorV3.OutputCumulator}
         (patron:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-trait-key:string dpnf-trait-value:string)
     )
-    (defun C_IssueNonFungibleSetAnchor:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_IssueNonFungibleSetAnchor:object{IgnisCollectorV3.OutputCumulator}
         (patron:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-nonce-class:integer)
     )
-    (defun C_RevokeAnchor:object{IgnisCollectorV2.OutputCumulator} (anchor-id:string))
+    (defun C_RevokeAnchor:object{IgnisCollectorV3.OutputCumulator} (anchor-id:string))
 
 )
 (module AQP-ANK GOV
@@ -171,7 +171,7 @@
     ;; REPL observability: REPL/Stage_02/[6.2.1]_AQP-ANK.repl tags each intra-tx group as TXnnn · mm · <slug> in ;;==== … ==== and (print "--- [TXnnn · mm · …] ---"); mm is 01.. within each begin-tx.
     ;;
     (implements OuronetPolicyV2)
-    (implements AcquisitionAnchorsV2)
+    (implements AcquisitionAnchorsV3)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -1458,7 +1458,7 @@
             0.0
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     ;;
                     (unit:decimal (ref-IGNIS::UC_IgnisLeg "tier-small"))
                 )
@@ -1561,7 +1561,7 @@
         (keys ANK|T|BoostClass)
     )
     ;; [URCi]   cost readers — single source for exec billing + INFO preview
-    (defun URCi_IssueAnchor:object{IgnisCollectorV2.OutputCumulator} (op-key:string output:[string])
+    (defun URCi_IssueAnchor:object{IgnisCollectorV3.OutputCumulator} (op-key:string output:[string])
         @doc "IGNIS cost for the 4 anchor-issue ops: a FLAT 500 deterrence for every anchor type \
             \ plus that op's own component cost (owner 2026-09-06). This supersedes the \
             \ 2026-09-05 rule of half the anchored asset's issuance price, which is why the \
@@ -1570,7 +1570,7 @@
             \ anchor-id[+boost-class-id]. Shared by exec and the INFO_* previews."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisPrice op-key "anchor") AQP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) output)
         ))
@@ -1581,25 +1581,25 @@
             \ dollar-denominated and so ignored the peg entirely. Doubled when <acnoi>."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (* (ref-IGNIS::UC_StoaPrice "anchor") (if acnoi 2.0 1.0))
         ))
-    (defun URCi_RevokeAnchor:object{IgnisCollectorV2.OutputCumulator} ()
+    (defun URCi_RevokeAnchor:object{IgnisCollectorV3.OutputCumulator} ()
         @doc "IGNIS cost for C_RevokeAnchor — owner-priced 100 deterrence + its component cost, via the central IG|DETER/IG|COMPONENTS \
             \ map. Shared by exec and the INFO_* preview."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisPrice "AQP-ANK|C_RevokeAnchor" "revoke-anchor") AQP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
         ))
-    (defun URCi_RevokeBoostClass:object{IgnisCollectorV2.OutputCumulator} ()
+    (defun URCi_RevokeBoostClass:object{IgnisCollectorV3.OutputCumulator} ()
         @doc "IGNIS cost for C_RevokeBoostClass — owner-priced 500 deterrence + its component cost, via the central IG|DETER/IG|COMPONENTS \
             \ map. Shared by exec and the INFO_* preview."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisPrice "AQP-ANK|C_RevokeBoostClass" "revoke-boost") AQP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
         ))
@@ -2208,7 +2208,7 @@
     ;;
     ;; --- Block C · TF user promile ---
     ;;Protection: Class 5 — IMC + Custom: ANK|C>UPDATE-DPTF
-    (defun XE_UpdateTrueFungibleUserAnchorValues:object{IgnisCollectorV2.OutputCumulator}
+    (defun XE_UpdateTrueFungibleUserAnchorValues:object{IgnisCollectorV3.OutputCumulator}
         (account:string dptf-id:string total-dptf-amount:decimal)
         @doc "Backward (FVT::XI_RefreshTrueFungibleStakeAnchors / C_Sync*): P|UEV_IMC + XI_1|UpdateTrueFungibleUserAnchorValues \
             \ when n_live > 0; IGNIS = ignis|small × n_live (live anchors on dptf-id). \
@@ -2216,7 +2216,7 @@
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 ;;
                 (aids:[string] (UR_ANK|AnchorsForAsset dptf-id))
                 (n-live:integer (length aids))
@@ -2261,13 +2261,13 @@
     ;;
     ;; --- Block D′ · SF resync (C_SyncCollectableAnchors · son=true) ---
     ;;Protection: Class 5 — IMC + Custom: ANK|C>UPDATE-DPSF
-    (defun XE_ResyncSemiFungibleUserAnchorValues:object{IgnisCollectorV2.OutputCumulator}
+    (defun XE_ResyncSemiFungibleUserAnchorValues:object{IgnisCollectorV3.OutputCumulator}
         (account:string dpsf-id:string nonces:[integer] nonce-amounts:[integer])
         @doc "Backward (AQP::C_SyncCollectableAnchors): rewrite SF promile from full rollup inventory; IGNIS per live anchor."
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 ;;
                 (aids:[string] (UR_ANK|AnchorsForAsset dpsf-id))
                 (n-live:integer (length aids))
@@ -2290,13 +2290,13 @@
     ;;
     ;; --- Block E′ · NF resync (C_SyncCollectableAnchors · son=false) ---
     ;;Protection: Class 5 — IMC + Custom: ANK|C>UPDATE-DPNF
-    (defun XE_ResyncNonFungibleUserAnchorValues:object{IgnisCollectorV2.OutputCumulator}
+    (defun XE_ResyncNonFungibleUserAnchorValues:object{IgnisCollectorV3.OutputCumulator}
         (account:string dpnf-id:string nonces:[integer])
         @doc "Backward (AQP::C_SyncCollectableAnchors): rewrite NF promile from full rollup inventory; IGNIS per live anchor."
         (P|UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 ;;
                 (aids:[string] (UR_ANK|AnchorsForAsset dpnf-id))
                 (n-live:integer (length aids))
@@ -2320,7 +2320,7 @@
     ;;
     ;; [C]   client
     ;;
-    (defun C_RevokeBoostClass:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_RevokeBoostClass:object{IgnisCollectorV3.OutputCumulator}
         (boost-class-id:string)
         @doc "Revokes an empty BoostClass."
         (P|UEV_IMC)
@@ -2329,7 +2329,7 @@
             (URCi_RevokeBoostClass)
         )
     )
-    (defun C_IssueTrueFungibleAnchor:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_IssueTrueFungibleAnchor:object{IgnisCollectorV3.OutputCumulator}
         (patron:string anchor-name:string dptf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dptf-amount:decimal)
         @doc "Issues a DPTF anchor. When acnoi=true creates a new BoostClass inline (2x STOA); when false links to existing (1x STOA). \
             \ IGNIS output list: [anchor-id] or [anchor-id boost-class-id] when acnoi."
@@ -2337,7 +2337,7 @@
         (with-capability (ANK|C>ISSUE-DPTF anchor-name dptf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dptf-amount)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     ;;
                     (boost-class-id:string (if acnoi (XI_IssueBoostClass boost-class-name-or-id) boost-class-name-or-id))
                     (fungibility:[bool] [true true])
@@ -2354,7 +2354,7 @@
             )
         )
     )
-    (defun C_IssueSemiFungibleAnchor:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_IssueSemiFungibleAnchor:object{IgnisCollectorV3.OutputCumulator}
         (patron:string anchor-name:string dpsf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpsf-nonce:integer)
         @doc "Issues a DPSF anchor. When acnoi=true creates a new BoostClass inline (2x STOA); when false links to existing (1x STOA). \
             \ IGNIS output list: [anchor-id] or [anchor-id boost-class-id] when acnoi."
@@ -2362,7 +2362,7 @@
         (with-capability (ANK|C>ISSUE-DPSF anchor-name dpsf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dpsf-nonce)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     ;;
                     (boost-class-id:string (if acnoi (XI_IssueBoostClass boost-class-name-or-id) boost-class-name-or-id))
                     (fungibility:[bool] [false true])
@@ -2379,7 +2379,7 @@
             )
         )
     )
-    (defun C_IssueNonFungibleAnchor:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_IssueNonFungibleAnchor:object{IgnisCollectorV3.OutputCumulator}
         (patron:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-trait-key:string dpnf-trait-value:string)
         @doc "Issues a DPNF trait-anchor. When acnoi=true creates a new BoostClass inline (2x STOA); when false links to existing (1x STOA). \
             \ IGNIS output list: [anchor-id] or [anchor-id boost-class-id] when acnoi."
@@ -2387,7 +2387,7 @@
         (with-capability (ANK|C>ISSUE-DPNF anchor-name dpnf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dpnf-trait-key dpnf-trait-value)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     ;;
                     (boost-class-id:string (if acnoi (XI_IssueBoostClass boost-class-name-or-id) boost-class-name-or-id))
                     (fungibility:[bool] [false false])
@@ -2404,7 +2404,7 @@
             )
         )
     )
-    (defun C_IssueNonFungibleSetAnchor:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_IssueNonFungibleSetAnchor:object{IgnisCollectorV3.OutputCumulator}
         (patron:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-nonce-class:integer)
         @doc "Issues a DPNF set-anchor. When acnoi=true creates a new BoostClass inline (2x STOA); when false links to existing (1x STOA). \
             \ IGNIS output list: [anchor-id] or [anchor-id boost-class-id] when acnoi."
@@ -2412,7 +2412,7 @@
         (with-capability (ANK|C>ISSUE-DPNF-SET anchor-name dpnf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dpnf-nonce-class)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     ;;
                     (boost-class-id:string (if acnoi (XI_IssueBoostClass boost-class-name-or-id) boost-class-name-or-id))
                     (fungibility:[bool] [false false])
@@ -2429,7 +2429,7 @@
             )
         )
     )
-    (defun C_RevokeAnchor:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_RevokeAnchor:object{IgnisCollectorV3.OutputCumulator}
         (anchor-id:string)
         @doc "Revokes an anchor and updates BoostClass and AssetAnchors bookkeeping."
         (P|UEV_IMC)

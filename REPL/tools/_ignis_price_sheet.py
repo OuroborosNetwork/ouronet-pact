@@ -162,7 +162,12 @@ def billing_text(src, name, depth=3):
         frontier = nxt
     return txt
 
-_OC_BIND = re.compile(r'\(([A-Za-z0-9|_-]+)\s*:\s*object\{IgnisCollectorV2\.OutputCumulator\}')
+# VERSION-AGNOSTIC (2026-09-18). This hardcoded `IgnisCollectorV2`, so the 2026-09-18 interface bump
+# to `IgnisCollectorV3` silently stopped it matching: one operation's cost legs became unresolvable
+# and it moved from `exempt` to `floor` in the published sheet. A pricing tool that keys off an
+# interface VERSION mis-prices on every future bump, and does it quietly -- the sheet regenerates,
+# the gate goes green on the new artefact, and only the tally moves.
+_OC_BIND = re.compile(r'\(([A-Za-z0-9|_-]+)\s*:\s*object\{IgnisCollectorV\d+\.OutputCumulator\}')
 def _discards_cumulators(body):
     """True when the wrapper binds OutputCumulators and hands none of them to a collector."""
     # COMMENTS TOO, not just strings. This blanked string literals and left `;;` comments intact

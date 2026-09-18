@@ -197,7 +197,7 @@
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
-        (ref-SCR:module{AcquisitionScoresV2} AQP-SCORE)
+        (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "CodingDivisionTreasury"))
     )
     (let

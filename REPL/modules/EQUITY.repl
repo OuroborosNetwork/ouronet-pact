@@ -212,7 +212,7 @@
 (print "--- [EQ-D1 - URCi_IssueShareholderCollection: the documented three-leg decomposition · 02 · let / invocation] ---")
 (let
     (
-        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
         (ref-DPDC:module{DpdcV2} DPDC)
         (ref-DPDC-I:module{DpdcIssueV2} DPDC-I)
         (ref-EQUITY:module{EquityV2} EQUITY)

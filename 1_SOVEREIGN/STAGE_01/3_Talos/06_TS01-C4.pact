@@ -349,7 +349,7 @@
             (let 
                 (
                     (ref-CODEX:module{CodexV2} CODEX)
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 )
                 (let ((msg:string (ref-CODEX::C_RotateCodexGuard codex-id new-codex-guard)))
                     (ref-IGNIS::C_Collect patron (ref-CODEX::URCi_RotateCodexGuard patron))
@@ -364,7 +364,7 @@
             (let 
                 (
                     (ref-CODEX:module{CodexV2} CODEX)
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 )
                 (let ((msg:string (ref-CODEX::C_RecordArweaveUpload codex-id arweave-tx-id uploaded-bytes)))
                     (ref-IGNIS::C_Collect patron (ref-CODEX::URCi_RecordArweaveUpload patron))
@@ -379,7 +379,7 @@
             (let
                 (
                     (ref-CODEX:module{CodexV2} CODEX)
-                    (ref-IGNIS|V2:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS|V2:module{IgnisCollectorV3} IGNIS)
                     (stoa-fee:decimal (ref-CODEX::URCi_RegisterStoicTag tag-name))
                     (msg:string
                         (ref-CODEX::C_RegisterStoicTag tag-name account-address)
@@ -396,7 +396,7 @@
             (let
                 (
                     (ref-CODEX:module{CodexV2} CODEX)
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (tag-fee:decimal (ref-CODEX::URCi_ReleaseStoicTag tag-name))
                     (msg:string (ref-CODEX::C_ReleaseStoicTag tag-name))
                 )
@@ -422,7 +422,7 @@
             (let
                 (
                     (ref-PYTHIA:module{PythiaV5} PYTHIA)
-                    (ref-IGNIS|V2:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS|V2:module{IgnisCollectorV3} IGNIS)
                     (deploy-fee:decimal (ref-PYTHIA::URCi_DeployApiKey))
                     (fee-anchor:string (ref-PYTHIA::UC_FeeDiscountAnchor))
                     (msg:string
@@ -445,7 +445,7 @@
             (let
                 (
                     (ref-PYTHIA:module{PythiaV5} PYTHIA)
-                    (ref-IGNIS|V2:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS|V2:module{IgnisCollectorV3} IGNIS)
                     (rename-fee:decimal (ref-PYTHIA::URCi_UpdateDualConsumerLane))
                     (fee-anchor:string (ref-PYTHIA::UC_FeeDiscountAnchor))
                     (msg:string
@@ -481,7 +481,7 @@
             (let
                 (
                     (ref-PYTHIA:module{PythiaV5} PYTHIA)
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (revoke-fee:decimal (ref-PYTHIA::URCi_RevokeLink))
                     (msg:string
                         (ref-PYTHIA::C_RevokeDualLink dual-link-key)

@@ -38,7 +38,7 @@
 (namespace "ouronet-ns")
 ;;==== AQP-INFO - confirm billing live · 02 · let / invocation ==== ===============================
 (print "--- [AQP-INFO - confirm billing live · 02 · let / invocation] ---")
-(let ((ref-IGNIS:module{IgnisCollectorV2} IGNIS))
+(let ((ref-IGNIS:module{IgnisCollectorV3} IGNIS))
     (expect "virtual IGNIS billing is live (costs are real, not subsidised)" false (ref-IGNIS::URC_IsVirtualGasZero)))
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -60,7 +60,7 @@
     (
         (anhd:string KST.ANHD)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
     )
     (let
         (

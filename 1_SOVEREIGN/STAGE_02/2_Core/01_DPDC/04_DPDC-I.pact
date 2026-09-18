@@ -44,7 +44,7 @@
     ;;
     (defun URCi_IssueCollectionPrice:decimal (son:bool))
     (defun URCi_IssueCollectionStoa:decimal (son:bool))
-    (defun URCi_IssueDigitalCollection:object{IgnisCollectorV2.OutputCumulator} (son:bool owner-account:string))
+    (defun URCi_IssueDigitalCollection:object{IgnisCollectorV3.OutputCumulator} (son:bool owner-account:string))
     ;;{5.4}  Validate [UEV/CAP]
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
@@ -56,7 +56,7 @@
     ;; Talos entrypoint with no ownership check, let any signer force any existing account to associate
     ;; with any collection. Real auto-association always calls DPDC::XBv_DeployAccountSFT/NFT directly,
     ;; module-to-module (see DPDC-C/DPDC-F/DPDC-R/DPDC-S and this module's own Issue flow below).
-    (defun C_IssueDigitalCollection:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_IssueDigitalCollection:object{IgnisCollectorV3.OutputCumulator}
         (
             patron:string son:bool
             owner-account:string creator-account:string collection-name:string collection-ticker:string
@@ -258,7 +258,7 @@
             \ Single source for the exec construct and the INFO preview."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_Issue" "issue-sft")
                     (ref-IGNIS::UC_IgnisPrice "DPNF|C_Issue" "issue-nft"))
@@ -270,12 +270,12 @@
             \ Single source for STOA|C_Collect and the INFO preview."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (if son (ref-IGNIS::UC_StoaPrice "issue-sft") (ref-IGNIS::UC_StoaPrice "issue-nft"))
         )
     )
-    (defun URCi_IssueDigitalCollection:object{IgnisCollectorV2.OutputCumulator}
+    (defun URCi_IssueDigitalCollection:object{IgnisCollectorV3.OutputCumulator}
         (son:bool owner-account:string)
         @doc "Cost preview for C_IssueDigitalCollection: IGNIS construct priced via \
             \ URCi_IssueCollectionPrice on the owner payer, empty output (the created \
@@ -283,7 +283,7 @@
             \ separately via URCi_IssueCollectionStoa."
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (URCi_IssueCollectionPrice son)
@@ -394,7 +394,7 @@
     )
     ;;{5.7}  User [A/C]
     ;; C_DeployAccountSFT/NFT removed — DPDC Audit #35M: see interface-side removal note above.
-    (defun C_IssueDigitalCollection:object{IgnisCollectorV2.OutputCumulator}
+    (defun C_IssueDigitalCollection:object{IgnisCollectorV3.OutputCumulator}
         (
             patron:string son:bool
             owner-account:string creator-account:string collection-name:string collection-ticker:string
@@ -406,7 +406,7 @@
         (with-capability (DPDC-I|C>ISSUE owner-account creator-account collection-name collection-ticker iz-special)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-BRD:module{BrandingV2} BRD)
                     (ref-DPDC:module{DpdcV2} DPDC)
                     ;;

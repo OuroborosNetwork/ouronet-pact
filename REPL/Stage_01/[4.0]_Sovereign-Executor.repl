@@ -229,7 +229,7 @@
         (ref-U|CT:module{OuronetConstantsV2} U|CT)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
-        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
         ;;
         (bar:string (ref-U|CT::CT_BAR))
@@ -1439,7 +1439,7 @@
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
         (split-stoa:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices
                 KST.ANHD

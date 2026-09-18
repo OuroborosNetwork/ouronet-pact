@@ -331,7 +331,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
                     (sd:string (ref-I|OURONET::OI|UC_ShortAccount donor))
@@ -397,7 +397,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
                     (c:string (ref-I|OURONET::OI|UC_ShortAccount client))
@@ -413,7 +413,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
                     (c:string (ref-I|OURONET::OI|UC_ShortAccount client))
@@ -450,7 +450,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
                     (c:string (ref-I|OURONET::OI|UC_ShortAccount client))
@@ -466,7 +466,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
                     (c:string (ref-I|OURONET::OI|UC_ShortAccount client))

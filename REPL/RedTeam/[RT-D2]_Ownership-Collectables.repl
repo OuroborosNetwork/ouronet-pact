@@ -521,9 +521,9 @@
 (let*
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-VCT:module{AcquisitionVacateV2} AQP-VCT)
+        (ref-VCT:module{AcquisitionVacateV3} AQP-VCT)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "TfStakePool"))
         (ouro-id:string "OURO-98c486052a51")
@@ -662,8 +662,8 @@
 (let*
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
-        (ref-VCT:module{AcquisitionVacateV2} AQP-VCT)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+        (ref-VCT:module{AcquisitionVacateV3} AQP-VCT)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "OfStakePool"))
         (mvst-id:string "MVST-98c486052a51")
@@ -780,8 +780,8 @@
 (let*
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
-        (ref-VCT:module{AcquisitionVacateV2} AQP-VCT)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+        (ref-VCT:module{AcquisitionVacateV3} AQP-VCT)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "NfSyncPool"))
         (dhb-id:string "DHB-98c486052a51")
@@ -834,8 +834,8 @@
 (let*
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-AQP:module{AcquisitionPoolsV2} AQP-POOL)
-        (ref-VCT:module{AcquisitionVacateV2} AQP-VCT)
+        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+        (ref-VCT:module{AcquisitionVacateV3} AQP-VCT)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "SfStakePool"))
         (dhcd-id:string "DHCD-98c486052a51")

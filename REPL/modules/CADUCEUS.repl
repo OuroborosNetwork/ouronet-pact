@@ -334,7 +334,7 @@
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-TFT:module{TrueFungibleTransferV2} TFT)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
         (mocka:string (ref-U|DALOS::UDC_Makeid "MOCKA"))
         (bridge:string (CADUCEUS.UR_BridgeAccount))
     )

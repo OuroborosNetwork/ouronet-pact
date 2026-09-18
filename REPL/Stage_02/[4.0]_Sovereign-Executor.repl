@@ -479,7 +479,7 @@
 (print "--- [TX-03 [4.3] - Issue Shareholders Collection · 01 · let / invocation] ---")
 (let
     (
-        (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (issuing-account:string KST.ANHD)
         (split-stoa:[decimal]

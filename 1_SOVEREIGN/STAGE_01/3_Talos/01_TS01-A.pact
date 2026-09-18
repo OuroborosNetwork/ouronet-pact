@@ -581,7 +581,7 @@
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
@@ -608,7 +608,7 @@
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
@@ -629,7 +629,7 @@
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-ATSU:module{AutostakeUsageV2} ATSU)
                 )
                 (ref-IGNIS::C_Collect patron
@@ -646,7 +646,7 @@
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV2} IGNIS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-ATSU:module{AutostakeUsageV2} ATSU)
                 )
                 (ref-IGNIS::C_Collect patron
