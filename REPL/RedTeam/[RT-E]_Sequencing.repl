@@ -92,7 +92,7 @@
 )
 (let
     (
-        (ref-CPAD:module{CitizenLaunchpadTalosV2} TS02-CPAD)
+        (ref-CPAD:module{CitizenLaunchpadTalosV1} TS02-CPAD)
         (patron:string KST.ANHD)
         (victim:string KST.LUMY)
         (newcomer:string KST.BYTA)

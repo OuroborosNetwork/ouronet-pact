@@ -494,7 +494,7 @@
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-CPAD:module{CitizenLaunchpadTalosV2} TS02-CPAD)
+        (ref-CPAD:module{CitizenLaunchpadTalosV1} TS02-CPAD)
         (emma:string KST.EMMA)
         (lumy:string KST.LUMY)
         (patron:string KST.ANHD)
@@ -586,7 +586,7 @@
     (
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
-        (ref-TS02-CPAD:module{CitizenLaunchpadTalosV2} TS02-CPAD)
+        (ref-TS02-CPAD:module{CitizenLaunchpadTalosV1} TS02-CPAD)
     )
     (let
         (

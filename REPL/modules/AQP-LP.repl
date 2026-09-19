@@ -144,7 +144,7 @@
     (
         (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
         (ref-SWP:module{SwapperV4} SWP)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
     )
     (env-module-admin SWP)
@@ -243,7 +243,7 @@
     (
         (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
         (ref-SWP:module{SwapperV4} SWP)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
     )
     (env-module-admin SWP)

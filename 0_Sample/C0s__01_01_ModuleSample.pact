@@ -156,7 +156,7 @@
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
         (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
         (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
+        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
         ;;
         (patron:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
         (lpad-sc:string (ref-DPAD::GOV|DEMIPAD|SC_NAME))
@@ -227,7 +227,7 @@
 (let
     (
         (ref-DEMIPAD-STOICPAY:module{StoicPayV3} DEMIPAD-STOICPAY)
-        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
+        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
         ;;
         (KpayID:string (ref-DEMIPAD-STOICPAY::UR_KpayID))
     )

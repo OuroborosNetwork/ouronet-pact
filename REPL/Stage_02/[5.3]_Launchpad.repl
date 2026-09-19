@@ -327,7 +327,7 @@
             (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
             (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
             (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
-            (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
+            (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
             (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
             (ref-SPARK:module{SparksV2} DEMIPAD-SPARK)
             (patron:string KST.ANHD)
@@ -390,7 +390,7 @@
 (print "--- [TX-2H - #2H retrieval-gate: admin locks retrieval · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
+        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
         (SparkID:string "SPARK-98c486052a51")
     )
     ;; admin locks retrieval (SparkID was enabled during setup)
@@ -447,7 +447,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 ;;==== TX-2H-d - unlock, then non-admin passes · 02 · let / invocation ==== =======================
 (print "--- [TX-2H-d - unlock, then non-admin passes · 02 · let / invocation] ---")
-(let ((ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD))
+(let ((ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD))
     (ref-TS02-DPAD::A_ToggleRetrieval "SPARK-98c486052a51" true))
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -488,7 +488,7 @@
 (print "--- [TX-01 - Initialise Shareholders · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
+        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
         (patron:string KST.ANHD)
         (shareholders-id "E|DH-98c486052a51")
         (s-key:string DEMIPAD-SNAKES.SNAKES|INFO)
@@ -545,7 +545,7 @@
 (print "--- [TX-01 - Initialise Custodians · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
+        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
         (patron:string KST.ANHD)
         (custodians-id "DHOC-98c486052a51")
         (s-key:string DEMIPAD-CUSTODIANS.CUSTODIANS|INFO)
@@ -967,7 +967,7 @@
             (ref-U|G:module{OuronetGuardsV2} U|G)
             (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
             (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-            (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
+            (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
             ;;
             ;;
             (mg:guard (create-capability-guard (TS02-DPAD.P|TALOS-SUMMONER)))
@@ -1081,7 +1081,7 @@
 (print "--- [TX-DEP-01 · 02 · let / invocation] ---")
 (let*
     (
-        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
+        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
         (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -1216,7 +1216,7 @@
 (print "--- [TX-DEP-02 - DEMIPAD|C_Withdraw: the seller takes the remainder · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
+        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
         (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
         (asset:string "DHOC-98c486052a51")
     )
@@ -1283,7 +1283,7 @@
 ;;the guard names.
 (let
     (
-        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
+        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
         (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
         (asset:string "DHOC-98c486052a51")
         ;;A DELIBERATELY NON-EXISTENT id, not a real-but-unregistered one. The first draft used
@@ -1348,7 +1348,7 @@
 (print "--- [TX-DEP-02 · 02 · the payout] ---")
 (let*
     (
-        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
+        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
         (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -1429,7 +1429,7 @@
     (
         (ref-DPDC:module{DpdcV2} DPDC)
         (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
+        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
         (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
         (owner:string KST.ANHD)
         (asset:string "DHOC-98c486052a51")
@@ -1571,7 +1571,7 @@
 ;;exactly zero places before this one.
 (let
     (
-        (ref-CPAD:module{CitizenLaunchpadTalosV2} TS02-CPAD)
+        (ref-CPAD:module{CitizenLaunchpadTalosV1} TS02-CPAD)
     )
     (map print
         [
@@ -1610,7 +1610,7 @@
     ])
 (let
     (
-        (ref-CPAD:module{CitizenLaunchpadTalosV2} TS02-CPAD)
+        (ref-CPAD:module{CitizenLaunchpadTalosV1} TS02-CPAD)
         (ref-DPDC:module{DpdcV2} DPDC)
         (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -1685,7 +1685,7 @@
 ;;the pad genuinely holds stock, re-run the cap at the boundary: one more than available.
 (let
     (
-        (ref-CPAD:module{CitizenLaunchpadTalosV2} TS02-CPAD)
+        (ref-CPAD:module{CitizenLaunchpadTalosV1} TS02-CPAD)
         (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
     )
     (let
@@ -1766,7 +1766,7 @@
 (let
     (
         (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
+        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
         (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
         (owner:string KST.ANHD)
         (asset:string "E|DH-98c486052a51")
@@ -1856,7 +1856,7 @@
     ])
 (let
     (
-        (ref-CPAD:module{CitizenLaunchpadTalosV2} TS02-CPAD)
+        (ref-CPAD:module{CitizenLaunchpadTalosV1} TS02-CPAD)
         (ref-DPDC:module{DpdcV2} DPDC)
         (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -1907,7 +1907,7 @@
 (print "--- [TX-ACQ-03b · 03 · the missing nonce guard] ---")
 (let
     (
-        (ref-CPAD:module{CitizenLaunchpadTalosV2} TS02-CPAD)
+        (ref-CPAD:module{CitizenLaunchpadTalosV1} TS02-CPAD)
         (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
         (asset:string "E|DH-98c486052a51")
     )
@@ -2010,7 +2010,7 @@
             (let
                 (
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                    (ref-CPAD:module{CitizenLaunchpadTalosV2} TS02-CPAD)
+                    (ref-CPAD:module{CitizenLaunchpadTalosV1} TS02-CPAD)
                     (pad:string DEMIPAD-SPARK.DEMIPAD|SC_NAME)
                 )
                 (let
@@ -2091,7 +2091,7 @@
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-SPARK:module{SparksV2} DEMIPAD-SPARK)
-        (ref-CPAD:module{CitizenLaunchpadTalosV2} TS02-CPAD)
+        (ref-CPAD:module{CitizenLaunchpadTalosV1} TS02-CPAD)
         (spark-id:string "SPARK-98c486052a51")
         (frozen:string "F|SPARK-98c486052a51")
         (pad:string DEMIPAD-SPARK.DEMIPAD|SC_NAME)
@@ -2163,7 +2163,7 @@
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-SPARK:module{SparksV2} DEMIPAD-SPARK)
-        (ref-CPAD:module{CitizenLaunchpadTalosV2} TS02-CPAD)
+        (ref-CPAD:module{CitizenLaunchpadTalosV1} TS02-CPAD)
         (spark-id:string "SPARK-98c486052a51")
         (frozen:string "F|SPARK-98c486052a51")
     )

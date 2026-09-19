@@ -45,7 +45,7 @@
     (
         (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
         (patron:string KST.ANHD)
         (tnf-id:string "TNF-98c486052a51")
         (type:object{DpdcUdcV2.URI|Type} (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))

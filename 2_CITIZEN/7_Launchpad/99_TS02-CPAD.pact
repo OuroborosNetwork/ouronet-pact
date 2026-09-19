@@ -8,7 +8,7 @@
 ;; would not have its gas paid.
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface CitizenLaunchpadTalosV2
+(interface CitizenLaunchpadTalosV1
     @doc "Exposes the Ouronet Stage Two CITIZEN launchpad user Client Functions (sole gas-funded path)."
 
     ;;<=========================================================================>
@@ -69,7 +69,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements CitizenLaunchpadTalosV2)
+    (implements CitizenLaunchpadTalosV1)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE

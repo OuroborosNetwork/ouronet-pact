@@ -44,7 +44,7 @@
         (anhd:string KST.ANHD)
         (cust:string "CUSTODIANS-98c486052a51")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
     )
     (let
         (
@@ -107,7 +107,7 @@
     (
         (anhd:string KST.ANHD)
         (cust:string "CUSTODIANS-98c486052a51")
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
     )
     (map print
         [
@@ -153,7 +153,7 @@
         (anhd:string KST.ANHD)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
     )
     (let
         (

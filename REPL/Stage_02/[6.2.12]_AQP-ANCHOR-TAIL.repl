@@ -29,7 +29,7 @@
         (auryn-id:string "AURYN-98c486052a51")
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
         (fvt-name:string "TailFarm")
         (fvt-class:integer 0)
         (split-stoa:[decimal]

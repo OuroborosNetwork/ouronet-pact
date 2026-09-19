@@ -104,7 +104,7 @@
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "DHWonderCoach"))
         (score-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryWonderCoach"))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))

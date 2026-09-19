@@ -79,7 +79,7 @@
 (print "--- [RT-K-006 - the launchpad quote, at an amount no sale can honour · 02 · let / invocation] ---")
 (let
     (
-        (r:module{CitizenLaunchpadTalosV2} TS02-CPAD)
+        (r:module{CitizenLaunchpadTalosV1} TS02-CPAD)
     )
     (map print
         [

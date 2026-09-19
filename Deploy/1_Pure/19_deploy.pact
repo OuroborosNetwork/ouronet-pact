@@ -22,7 +22,7 @@
 ;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/03_Talos.pact
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface TalosStageTwo_ClientThreeV2
+(interface TalosStageTwo_ClientThreeV1
     @doc "Exposes Stage Two Third Batch of Client Functions: \
         \ the AcquisitionPools Client Functions"
 
@@ -369,7 +369,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements TalosStageTwo_ClientThreeV2)
+    (implements TalosStageTwo_ClientThreeV1)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -2639,7 +2639,7 @@
 ;; -> citizen sales -> TS02-CPAD (citizen Talos).
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface TalosStageTwo_DemiPadV2
+(interface TalosStageTwo_DemiPadV1
     @doc "Exposes Ouronet Stage Two Demipad SOVEREIGN Client Functions"
 
     ;;<=========================================================================>
@@ -2712,7 +2712,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements TalosStageTwo_DemiPadV2)
+    (implements TalosStageTwo_DemiPadV1)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -3617,7 +3617,7 @@
             (let
                 (
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
+                    (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
                     (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
                     ;;
                     (asset:string (UR_AssetID))
@@ -4149,7 +4149,7 @@
             (let
                 (
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
+                    (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
                     (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
                     ;;
                     (asset:string (UR_AssetID))

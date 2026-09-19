@@ -158,7 +158,7 @@
         (ouro:string "OURO-98c486052a51")
         (ref-U|CT:module{OuronetConstantsV2} U|CT)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
     )
     (let
         (
@@ -225,7 +225,7 @@
         (dhoc:string "DHOC-98c486052a51")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
     )
     (let
         (
@@ -279,7 +279,7 @@
         (anhd:string KST.ANHD)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
     )
     (let
         (
@@ -332,7 +332,7 @@
         (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
         (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
     )
     (let
         (
@@ -394,7 +394,7 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
     )
     (let
         (
@@ -518,7 +518,7 @@
         (anhd:string KST.ANHD)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
     )
     (let
         (
@@ -571,7 +571,7 @@
         (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
     )
     (let
         (
@@ -620,7 +620,7 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
     )
     (let
         (
@@ -685,7 +685,7 @@
         (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
     )
     (let
         (
@@ -740,7 +740,7 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
     )
     (let
         (
@@ -796,7 +796,7 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
     )
     (let
         (
@@ -850,7 +850,7 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
     )
     (let
         (
@@ -901,7 +901,7 @@
     (
         (ouro:string "OURO-98c486052a51")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
     )
     (let ((fvt-id:string (ref-U|DALOS::UDC_Makeid "P3DelegationVault")))
         (map print
@@ -943,7 +943,7 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
     )
     (let
         (
@@ -993,7 +993,7 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
     )
     (let ((fvt-id:string (ref-U|DALOS::UDC_Makeid "P3DelegationVault")))
         (let
@@ -1060,7 +1060,7 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
     )
     (let
         (
@@ -1109,7 +1109,7 @@
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
         (ref-SWP:module{SwapperV4} SWP)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
     )
     (let ((fvt-id:string (ref-U|DALOS::UDC_Makeid "P3DelegationVault")))
         (let
@@ -1157,7 +1157,7 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
     )
     (let
@@ -1230,7 +1230,7 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
     )
     (let
         (
@@ -1274,7 +1274,7 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
     )
     (let
         (
@@ -1328,7 +1328,7 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
     )
     (let
         (
@@ -1380,7 +1380,7 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
     )
     (let ((fvt-id:string (ref-U|DALOS::UDC_Makeid "P3DelegationVault")))
         (let ((ouro-before:decimal (ref-DPTF::UR_AccountSupply ouro anhd)))

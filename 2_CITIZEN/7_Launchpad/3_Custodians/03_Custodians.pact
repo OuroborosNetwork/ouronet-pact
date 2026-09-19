@@ -500,7 +500,7 @@
             (let
                 (
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
+                    (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
                     (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
                     ;;
                     (asset:string (UR_AssetID))

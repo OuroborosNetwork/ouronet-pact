@@ -143,7 +143,7 @@
         ;; cleanup re-enable is unblocked (TfStakePool is left vacate-in-progress by the VCT suite).
         (pool-name:string "ResumeVacPool")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
     )
@@ -180,7 +180,7 @@
     (
         (patron:string KST.ANHD)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "ResumeVacPool"))
     )
     (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
@@ -210,7 +210,7 @@
         (pool-name:string "TfStakePool")
         (score-name:string "TfStakeScore")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
         (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
     )
@@ -290,7 +290,7 @@
         (active-bcs:[string]
             (filter (lambda (b:string) (ref-ANK::UR_BC|Active b)) (ref-ANK::URH_BC|AllBoostClassIds))
         )
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
         (anchor-id:string (ref-U|DALOS::UDC_Makeid "AurynRain"))
         (score-id:string (ref-U|DALOS::UDC_Makeid "ResumeVacScore"))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "ResumeVacVault"))
@@ -492,7 +492,7 @@
         (patron:string KST.ANHD)
         (dpnf-id:string "DHB-98c486052a51")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
         (score-id:string (ref-U|DALOS::UDC_Makeid "NfSyncScore"))
     )
     (map print
@@ -532,7 +532,7 @@
         (patron:string KST.ANHD)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
         (score-id:string (ref-U|DALOS::UDC_Makeid "TfStakeScore"))
     )
     (let

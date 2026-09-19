@@ -182,7 +182,7 @@
         (patron:string KST.ANHD)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
         (ref-SWP:module{SwapperV4} SWP)
         (split-smart:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices patron (* 8.0 (ref-DALOS::UR_UsagePrice "smart")))
@@ -266,7 +266,7 @@
         (patron:string KST.ANHD)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
         (split-smart:[decimal]
             (ref-DALOS::URC_SplitSTOAPrices patron (* 6.0 (ref-DALOS::UR_UsagePrice "smart")))
         )
@@ -1076,7 +1076,7 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
         (ref-SWP:module{SwapperV4} SWP)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
         (farm-id:string (ref-U|DALOS::UDC_Makeid "OuroLpFarm"))
         (members:[string] (ref-FVT::URH_FvtEnabledScoreEntityIdsForFvt farm-id))
         (m:string (at 0 members))
