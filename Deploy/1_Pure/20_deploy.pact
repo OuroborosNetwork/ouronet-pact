@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 20 of 20
 ;; This is STEP 20 of 21 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-19 must have run first, including the init steps between deploys.
-;; 1 module(s), 0 gas measured in the REPL gas model, 76,029 bytes
+;; 1 module(s), 0 gas measured in the REPL gas model, 76,904 bytes
 ;;
 ;; Modules in this transaction, IN ORDER (do not reorder):
 ;;   2_CITIZEN/5_VaultsMinter/04_AQP-BOOT.pact
@@ -133,7 +133,7 @@
         (patron:string owner-konto:string custodians-dpsf-id:string ouro-id:string multiplet-family-id:string)
     )
     (defun CC_Step14_OpenCustodiansAgency:string
-        (patron:string operator-konto:string agency-name:string custodians-dpsf-id:string stake-nonces:[integer] fee-per-mille:integer)
+        (patron:string agency-name:string custodians-dpsf-id:string stake-nonces:[integer] fee-per-mille:integer)
     )
     (defun C_IssueGenericEarningVault:string
         (patron:string owner-konto:string vault-name:string stake-dptf-id:string reward-dptf-id:string)
@@ -1096,7 +1096,7 @@
         )
     )
     (defun CC_Step14_OpenCustodiansAgency:string
-        (patron:string operator-konto:string agency-name:string custodians-dpsf-id:string stake-nonces:[integer] fee-per-mille:integer)
+        (patron:string agency-name:string custodians-dpsf-id:string stake-nonces:[integer] fee-per-mille:integer)
         @doc "Step 14 — open ONE Custodians agency: instantiate the triplet model for this operator, \
             \ HEAVY (CC_): reaches RPS::URH_FvtEnabledScoreEntityIdsForFvt through CC_OpenAgency's \
             \ stake leg, so its cost scales with the vault's score-entity count, not with a constant. \
@@ -1104,7 +1104,17 @@
             \ atomic Talos call. Run once per operator; the first run is the vault's first agency."
         ;;
         ;; INPUT
-        ;;   operator-konto — who runs the agency and takes the fee. Need NOT be the vault owner.
+        ;;   patron         — THE OPERATOR. There is deliberately no separate operator parameter:
+        ;;                    the operator is whoever calls. C_AdmitAgency admits with
+        ;;                    `XE_AdmitDelegationMember fvt-id score-entity-id PATRON`, and
+        ;;                    FVT|XE>ADMIT-DELEGATION then enforces `silver-owner == operator` plus
+        ;;                    that operator's account ownership -- while CC_OpenAgency stakes from
+        ;;                    patron too. An earlier draft took an `operator-konto` alongside
+        ;;                    `patron`; it could only ever be the same value, and passing anything
+        ;;                    else failed inside RPS with a message naming neither parameter. The
+        ;;                    test passed because both were KST.ANHD, which is exactly how a
+        ;;                    parameter that cannot vary looks like one that can.
+        ;;                    The operator need NOT be the vault owner -- only the caller.
         ;;   agency-name    — names the three scores <agency-name>Bronze/Silver/Golden, so it must be
         ;;                    unique per agency or the second one collides on the branding table.
         ;;   stake-nonces   — the operator's OWN opening stake, e.g. [-1 -2 -3] for fragments of all
@@ -1127,7 +1137,7 @@
                     (triplet-model-id:string (ref-U|DALOS::UDC_Makeid BOOT|MODEL_CUSTODIANS_TRIPLET))
                 )
                 ;; 1. the factory: 3 scores + their SF definitions + the triplet, in one call
-                (ref-TS02-C3::AQP-SCR|C_IssueScoreFromModel patron operator-konto triplet-model-id agency-name)
+                (ref-TS02-C3::AQP-SCR|C_IssueScoreFromModel patron patron triplet-model-id agency-name)
                 (let
                     (
                         (bronze-id:string (ref-U|DALOS::UDC_Makeid (concat [agency-name "Bronze"])))
@@ -1146,7 +1156,7 @@
                         [
                             agency-name
                             (ref-SCR::UC_ComputeTripletId bronze-id silver-id golden-id)
-                            operator-konto fee-per-mille bronze-id silver-id golden-id
+                            patron fee-per-mille bronze-id silver-id golden-id
                         ]
                     )
                 )

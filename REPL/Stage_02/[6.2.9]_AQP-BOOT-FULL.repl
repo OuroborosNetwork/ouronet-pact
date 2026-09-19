@@ -686,7 +686,7 @@
     ;;==== TX-BOOT-1314 · 02 · Step 14 — open the first agency ====
     (print "--- [TX-BOOT-1314 · 02 · Step 14 open the first agency] ---")
     (print (format "<(AQP-BOOT.CC_Step14_OpenCustodiansAgency)> => \"{}\""
-        [(AQP-BOOT.CC_Step14_OpenCustodiansAgency patron patron "OuronetPrime" dhoc-id [3] 100)]))
+        [(AQP-BOOT.CC_Step14_OpenCustodiansAgency patron "OuronetPrime" dhoc-id [3] 100)]))
     ;;==== TX-BOOT-1314 · 03 · assertions ====
     (print "--- [TX-BOOT-1314 · 03 · assertions] ---")
     (let
