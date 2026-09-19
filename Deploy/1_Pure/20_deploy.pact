@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 20 of 20
 ;; This is STEP 20 of 21 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-19 must have run first, including the init steps between deploys.
-;; 1 module(s), 0 gas measured in the REPL gas model, 59,275 bytes
+;; 1 module(s), 0 gas measured in the REPL gas model, 61,676 bytes
 ;;
 ;; Modules in this transaction, IN ORDER (do not reorder):
 ;;   2_CITIZEN/5_VaultsMinter/04_AQP-BOOT.pact
@@ -118,7 +118,7 @@
         (patron:string owner-konto:string lp-denominator:string)
     )
     (defun C_Step9_AddFvtScoreEntities:string
-        (patron:string sub-treasury-id:string coding-treasury-id:string snakes-treasury-id:string shares-treasury-id:string subsidiary-score-ids:[string] coding-score-id:string snakes-score-id:string shares-score-id:string)
+        (patron:string sub-treasury-id:string coding-treasury-id:string snakes-treasury-id:string shares-treasury-id:string bloodshed-treasury-id:string subsidiary-score-ids:[string] coding-score-id:string snakes-score-id:string shares-score-id:string bloodshed-score-id:string)
     )
     (defun C_Step10_IssueMultipletFamily:string
         (patron:string ouro-id:string auryn-id:string elite-auryn-id:string ats-0-1-id:string ats-1-2-id:string)
@@ -127,7 +127,7 @@
         (patron:string farm-id:string bronze-score-id:string silver-score-id:string golden-score-id:string ouro-id:string multiplet-family-id:string)
     )
     (defun C_Step12_AddFvtRewardLinks:string
-        (patron:string sub-treasury-id:string coding-treasury-id:string snakes-treasury-id:string shares-treasury-id:string reward-auryn-id:string reward-ouroboros-id:string reward-wstoa-id:string)
+        (patron:string sub-treasury-id:string coding-treasury-id:string snakes-treasury-id:string shares-treasury-id:string bloodshed-treasury-id:string reward-auryn-id:string reward-ouroboros-id:string reward-wstoa-id:string)
     )
     (defun C_IssueGenericEarningVault:string
         (patron:string owner-konto:string vault-name:string stake-dptf-id:string reward-dptf-id:string)
@@ -190,6 +190,14 @@
     (defconst BOOT|FVT_CODING_TREASURY:string "CodingDivisionTreasury")
     (defconst BOOT|FVT_SNAKES_TREASURY:string "SnakesTreasury")
     (defconst BOOT|FVT_SHARES_TREASURY:string "CompanySharesTreasury")
+    ;;ADDED 2026-09-19. The fifth treasury. C_Step4 creates FOUR core scores and three of them
+    ;;had a treasury of their own -- TheCodingDivision, DemiourgosSnakes, DemiourgosShareholder --
+    ;;while `Bloodshed` had none, even though C_Step7 attaches it to DHBloodshed and so makes it
+    ;;EMPLOYED. An employed score with no FVT link and no reward DPTF aborts every stake at
+    ;;05_FVT.pact:1031. Owner ruling 2026-09-19: "staking bloodshed assets determines the pure
+    ;;bloodshed score, and we need to be able to earn stuff via that score alone" -- so it earns,
+    ;;and it earns through its own class-2 Treasury (the score is NF, and treasuries take SF/NF).
+    (defconst BOOT|FVT_BLOODSHED_TREASURY:string "BloodshedTreasury")
     (defconst BOOT|TREASURY_COMMON:string               "|")
     (defconst BOOT|SCORE_ENTITY_SCORE:integer 1)
     (defconst BOOT|SCORE_ENTITY_TRIPLET:integer 3)
@@ -775,7 +783,7 @@
         ;; INPUT
         ;;   patron, owner-konto — FVT owner (REPL: KST.ANHD)
         ;;   lp-denominator — full OURO DPTF id for OuroLpFarm; pass \"\" to skip farm (vault-only bootstrap)
-        ;; OUTPUT — fvt-ids ×5 (farm skipped → echo farm=skipped)
+        ;; OUTPUT — fvt-ids ×6 (farm skipped → echo farm=skipped)
         ;; REPL: see 2_CITIZEN/Stage_02/README_AQP_BOOT.md § Steps 8–12
         (with-capability (GOV|AQP_BOOT_ADMIN)
             (let
@@ -787,6 +795,7 @@
                     (coding-treasury-id:string (ref-U|DALOS::UDC_Makeid BOOT|FVT_CODING_TREASURY))
                     (snakes-treasury-id:string (ref-U|DALOS::UDC_Makeid BOOT|FVT_SNAKES_TREASURY))
                     (shares-treasury-id:string (ref-U|DALOS::UDC_Makeid BOOT|FVT_SHARES_TREASURY))
+                    (bloodshed-treasury-id:string (ref-U|DALOS::UDC_Makeid BOOT|FVT_BLOODSHED_TREASURY))
                 )
                 (if (!= lp-denominator "")
                     (ref-TS02-C3::AQP-FVT|C_Issue patron BOOT|FVT_OURO_LP_FARM owner-konto 0 lp-denominator)
@@ -796,21 +805,24 @@
                 (ref-TS02-C3::AQP-FVT|C_Issue patron BOOT|FVT_CODING_TREASURY owner-konto 2 BOOT|TREASURY_COMMON)
                 (ref-TS02-C3::AQP-FVT|C_Issue patron BOOT|FVT_SNAKES_TREASURY owner-konto 2 BOOT|TREASURY_COMMON)
                 (ref-TS02-C3::AQP-FVT|C_Issue patron BOOT|FVT_SHARES_TREASURY owner-konto 2 BOOT|TREASURY_COMMON)
-                (format "AQP-BOOT Step 8 done. fvt-ids=[farm={} sub-treasury={} coding-treasury={} snakes-treasury={} shares-treasury={}]. NEXT=Step9:C_AddScoreEntity."
+                (ref-TS02-C3::AQP-FVT|C_Issue patron BOOT|FVT_BLOODSHED_TREASURY owner-konto 2 BOOT|TREASURY_COMMON)
+                (format "AQP-BOOT Step 8 done. fvt-ids=[farm={} sub-treasury={} coding-treasury={} snakes-treasury={} shares-treasury={} bloodshed-treasury={}]. NEXT=Step9:C_AddScoreEntity."
                     [
                         (if (!= lp-denominator "") farm-id "skipped")
                         sub-treasury-id coding-treasury-id snakes-treasury-id shares-treasury-id
+                        bloodshed-treasury-id
                     ]
                 )
             )
         )
     )
     (defun C_Step9_AddFvtScoreEntities:string
-        (patron:string sub-treasury-id:string coding-treasury-id:string snakes-treasury-id:string shares-treasury-id:string subsidiary-score-ids:[string] coding-score-id:string snakes-score-id:string shares-score-id:string)
+        (patron:string sub-treasury-id:string coding-treasury-id:string snakes-treasury-id:string shares-treasury-id:string bloodshed-treasury-id:string subsidiary-score-ids:[string] coding-score-id:string snakes-score-id:string shares-score-id:string bloodshed-score-id:string)
         @doc "Step 9 — Admit score entities (type 1) on vault/treasury FVT entities only. \
             \ SubsidiaryTreasury: five subsidiary scores. \
             \ CodingDivisionTreasury: TheCodingDivision. SnakesTreasury: DemiourgosSnakes. \
-            \ CompanySharesTreasury: DemiourgosShareholder. \
+            \ CompanySharesTreasury: DemiourgosShareholder. BloodshedTreasury: Bloodshed \
+            \ (the PURE score from Step 4, not the subsidiary -- that one is in the five). \
             \ Farm OURO LP triplet is wired in Step 11."
         ;;
         ;; INPUT — fvt-ids from Step 8 output; score ids from Steps 4–5
@@ -830,6 +842,7 @@
                 (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron coding-treasury-id BOOT|SCORE_ENTITY_SCORE coding-score-id)
                 (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron snakes-treasury-id BOOT|SCORE_ENTITY_SCORE snakes-score-id)
                 (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron shares-treasury-id BOOT|SCORE_ENTITY_SCORE shares-score-id)
+                (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron bloodshed-treasury-id BOOT|SCORE_ENTITY_SCORE bloodshed-score-id)
                 (format "AQP-BOOT Step 9 done. score-entities=[sub=5 coding=1 snakes=1 shares=1]. fvt-ids=[sub-treasury={} coding-treasury={} snakes-treasury={} shares-treasury={}]. NEXT=Step10:C_IssueMultipletFamily."
                     [
                         sub-treasury-id coding-treasury-id snakes-treasury-id shares-treasury-id
@@ -899,10 +912,11 @@
         )
     )
     (defun C_Step12_AddFvtRewardLinks:string
-        (patron:string sub-treasury-id:string coding-treasury-id:string snakes-treasury-id:string shares-treasury-id:string reward-auryn-id:string reward-ouroboros-id:string reward-wstoa-id:string)
+        (patron:string sub-treasury-id:string coding-treasury-id:string snakes-treasury-id:string shares-treasury-id:string bloodshed-treasury-id:string reward-auryn-id:string reward-ouroboros-id:string reward-wstoa-id:string)
         @doc "Step 12 — Register reward tokens on treasury FVT entities via C_AddRewardLink (multiplet-family-id BAR). \
             \ SubsidiaryTreasury, SnakesTreasury → Auryn. CodingDivisionTreasury → Wstoa. \
-            \ CompanySharesTreasury → Ouroboros. Farm OURO + family is Step 11."
+            \ CompanySharesTreasury → Ouroboros. BloodshedTreasury → Auryn AND Wstoa (the only \
+            \ multi-reward FVT here). Farm OURO + family is Step 11."
         ;;
         ;; INPUT — fvt-ids from Step 8; reward DPTF ids from live chain
         ;; REPL: AURYN-98c486052a51, DALOS::UR_OuroborosID, DALOS::UR_WrappedStoaID
@@ -917,6 +931,15 @@
                 (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron coding-treasury-id reward-wstoa-id false bar)
                 (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron snakes-treasury-id reward-auryn-id false bar)
                 (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron shares-treasury-id reward-ouroboros-id false bar)
+                ;;BloodshedTreasury earns TWO tokens -- owner ruling 2026-09-19: "add wstoa and
+                ;;auryn for now on the pure bloodshed score vault". It is the only FVT here with
+                ;;more than one reward; the other four take a single token each.
+                ;;
+                ;;This is supported by construction, not a workaround: FVT|T|RPS|Global is keyed
+                ;;`fvt-id | dptf-id` (RPS::UCk_RpsGlobal), so reward state is per (FVT, token) and
+                ;;UR_FVT|EnabledRewardCount exists to count them. Two links are two rows.
+                (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron bloodshed-treasury-id reward-auryn-id false bar)
+                (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron bloodshed-treasury-id reward-wstoa-id false bar)
                 ;;LABELLING FIXED 2026-09-18. This read
                 ;;  reward-links=[sub={} coding={} snakes={} shares={}]
                 ;;fed with the REWARD TOKEN ids, so `sub=<auryn-id>` looked like it was naming the
@@ -924,9 +947,10 @@
                 ;;same three reward ids were then printed again under `rewards=`. Arity was always
                 ;;correct; the labels were not, and the treasury ids the links actually attach to
                 ;;did not appear at all. Now each link is printed as the PAIR it is.
-                (format "AQP-BOOT Step 12 done. reward-links=[{}<-auryn {}<-wstoa {}<-auryn {}<-ouroboros]. rewards=[auryn={} wstoa={} ouroboros={}]. Bootstrap complete — ready for inject/stake/collect."
+                (format "AQP-BOOT Step 12 done. reward-links=[{}<-auryn {}<-wstoa {}<-auryn {}<-ouroboros {}<-auryn+wstoa]. rewards=[auryn={} wstoa={} ouroboros={}]. Bootstrap complete — ready for inject/stake/collect."
                     [
                         sub-treasury-id coding-treasury-id snakes-treasury-id shares-treasury-id
+                        bloodshed-treasury-id
                         reward-auryn-id reward-wstoa-id reward-ouroboros-id
                     ]
                 )

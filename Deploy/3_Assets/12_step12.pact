@@ -67,11 +67,12 @@
 
 (AQP-BOOT.C_Step12_AddFvtRewardLinks
     PATRON_KONTO
-    "TX8_SUB_TREASURY_ID"            ;; <- the four treasury ids from transaction 8, by label
+    "TX8_SUB_TREASURY_ID"            ;; <- the FIVE treasury ids from transaction 8, by label
     "TX8_CODING_TREASURY_ID"
     "TX8_SNAKES_TREASURY_ID"
     "TX8_SHARES_TREASURY_ID"
-    "AURYN-8Nh-JO8JO4F5"             ;; <- reward-auryn-id   (used by sub AND snakes treasuries)
+    "TX8_BLOODSHED_TREASURY_ID"      ;; <- ADDED 2026-09-19 with BloodshedTreasury
+    "AURYN-8Nh-JO8JO4F5"             ;; <- reward-auryn-id (sub, snakes AND bloodshed treasuries)
     "OUROBOROS_DPTF_ID"              ;; <- reward-ouroboros-id -- live id needed
-    "WSTOA_DPTF_ID"                  ;; <- reward-wstoa-id     -- live id needed
+    "WSTOA-8Nh-JO8JO4F5"             ;; <- reward-wstoa-id (coding AND bloodshed treasuries)
 )

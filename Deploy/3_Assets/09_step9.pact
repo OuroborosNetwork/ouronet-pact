@@ -66,10 +66,14 @@
 ;;         4's output labels them (`coding=`, `company-snakes=`, `company-share=`); match by
 ;;         label, not by position.
 ;;
-;;         NOTE the fourth core score from transaction 4 -- `Bloodshed` -- has no slot here.
-;;         That is issue (1) above, not an omission in this file.
+;;      <- THE PURE `Bloodshed` SCORE from transaction 4, and its own treasury id from
+;;         transaction 8. ADDED 2026-09-19. Until then the fourth core score had no slot here at
+;;         all: transaction 7 attaches it to DHBloodshed, which makes it EMPLOYED, and an employed
+;;         score with no FVT link and no reward DPTF aborts EVERY stake on that pool at
+;;         `05_FVT.pact:1031`. It now has a class-2 BloodshedTreasury of its own, admitted here
+;;         and reward-linked (Auryn) in transaction 12.
 ;;
-;; OUT  -> "AQP-BOOT Step 9 done. score-entities=[sub=5 coding=1 snakes=1 shares=1].
+;; OUT  -> "AQP-BOOT Step 9 done. score-entities=[sub=5 coding=1 snakes=1 shares=1 bloodshed=1].
 ;;          fvt-ids=[…]. NEXT=Step10:C_IssueMultipletFamily."
 ;;         Echoes the four treasury ids back; creates no new id. Nothing downstream needs this
 ;;         output that transaction 8's did not already give you.
@@ -87,13 +91,15 @@
 
 (AQP-BOOT.C_Step9_AddFvtScoreEntities
     PATRON_KONTO
-    "TX8_SUB_TREASURY_ID"        ;; <- the four treasury ids from transaction 8, by label
+    "TX8_SUB_TREASURY_ID"        ;; <- the FIVE treasury ids from transaction 8, by label
     "TX8_CODING_TREASURY_ID"
     "TX8_SNAKES_TREASURY_ID"
     "TX8_SHARES_TREASURY_ID"
+    "TX8_BLOODSHED_TREASURY_ID"  ;; <- ADDED 2026-09-19
     ;; five subsidiary scores from transaction 5 -- count guarded, order free
     ["TX5_SUB_CODING" "TX5_SUB_WONDERCOACH" "TX5_SUB_BLOODSHED" "TX5_SUB_NOSFERATU" "TX5_SUB_BUNNIES"]
-    "TX4_CODING"                 ;; <- these three are order-SENSITIVE: different treasuries
+    "TX4_CODING"                 ;; <- these four are order-SENSITIVE: different treasuries
     "TX4_SNAKES"
     "TX4_SHARE"
+    "TX4_BLOODSHED"              ;; <- the PURE Bloodshed score, NOT TX5_SUB_BLOODSHED above
 )

@@ -49,7 +49,51 @@ Module: `04_AQP-BOOT.pact` | Interface: `AcquisitionPoolBootV1`
 | `CodingDivisionTreasury` | 2 treasury | Step 9: TheCodingDivision | Step 12: Wstoa (`DALOS::UR_WrappedStoaID`) |
 | `SnakesTreasury` | 2 treasury | Step 9: DemiourgosSnakes | Step 12: Auryn |
 | `CompanySharesTreasury` | 2 treasury | Step 9: DemiourgosShareholder | Step 12: Ouroboros (`DALOS::UR_OuroborosID`) |
-| **`Bloodshed` (pure score)** | **— none —** | **NOT ADMITTED ANYWHERE** | **none** |
+| `BloodshedTreasury` | 2 treasury | Step 9: Bloodshed (the PURE score from Step 4) | Step 12: **Auryn AND Wstoa** — the only multi-reward FVT here |
+
+> **Why a fifth treasury and not a looser guard.** The alternative was to relax
+> `05_FVT.pact:1031` from *"every employed score on the pool has a reward pipeline"* to *"at least
+> one does"* — `DHBloodshed` already carries `SubsidiaryBloodshed`, which is in `SubsidiaryTreasury`
+> earning Auryn, so the pool could already pay. That was rejected: it changes sovereign semantics
+> for every pool in the system to accommodate one asset, and it would let a score be employed and
+> silently unrewarded anywhere else. Adding the treasury is additive and leaves the guard meaning
+> what it says.
+>
+> **Two reward tokens, by owner ruling (2026-09-19):** *"add wstoa and auryn for now on the pure
+> bloodshed score vault."* This is the only FVT in the boot tree carrying more than one. It is
+> supported by construction rather than as a workaround — `FVT|T|RPS|Global` is keyed
+> `fvt-id | dptf-id` (`RPS::UCk_RpsGlobal`), so reward state is per (FVT, token), and
+> `UR_FVT|EnabledRewardCount` exists to count them. Two links are two rows.
+>
+> Pinned by `<<TX-BOOT-12-REWARDS>>` in `[6.2.9]_AQP-BOOT-FULL.repl`, which reads the count back
+> out of RPS: 2 for BloodshedTreasury, 1 for each of the other four. Step 12 formats its own echo
+> string, so a link that silently failed to register would still have printed.
+
+
+Farm `common-denominator` at issue = `lp-denominator` (full OURO DPTF id, same as Step 6). Vault entities use `"|"` at issue. **CORRECTED 2026-09-19 (owner ruling).** This used to read *"Product UX names these vaults
+'Treasury'; FVT class 2 remains OF-only per `URC_ScoreClassMatchesFvtClass`"* — it was describing the
+INVERTED admission rule. The classes are: **0 Farm** takes LPs, **1 Vault** takes TF and OF,
+**2 Treasury** takes SFTs and NFTs. The four entities below are genuine **class-2 Treasuries** and
+are issued as such; they are not class-1 vaults wearing the name.
+
+**RESOLVED 2026-09-19 — `BloodshedTreasury` added.** `C_Step4` creates four core scores and only
+three had a treasury: TheCodingDivision, DemiourgosSnakes, DemiourgosShareholder. `Bloodshed` had
+none, while `C_Step7` attaches it to `DHBloodshed` and so makes it EMPLOYED — and an employed score
+with no FVT link and no reward DPTF aborts every stake at `05_FVT.pact:1031`. Owner ruling: *"staking
+bloodshed assets determines the pure bloodshed score, and we need to be able to earn stuff via that
+score alone."* So it earns, through its own **class-2 Treasury** (the score is NF; treasuries take
+SF/NF). Steps 8, 9 and 12 each gained it; Step 9 and Step 12 changed signature.
+
+### Steps 8–12 FVT map (triplet architecture)
+
+| FVT name | Class | Score / triplet admission | Reward token |
+|----------|-------|---------------------------|--------------|
+| `OuroLpFarm` | 0 farm | **Step 11:** `TripletLink` | **Step 11:** `C_AddRewardLink(OURO, F\|…)` — one global for score + triplet |
+| `SubsidiaryTreasury` | 2 treasury | Step 9: five subsidiary scores | Step 12: Auryn |
+| `CodingDivisionTreasury` | 2 treasury | Step 9: TheCodingDivision | Step 12: Wstoa (`DALOS::UR_WrappedStoaID`) |
+| `SnakesTreasury` | 2 treasury | Step 9: DemiourgosSnakes | Step 12: Auryn |
+| `CompanySharesTreasury` | 2 treasury | Step 9: DemiourgosShareholder | Step 12: Ouroboros (`DALOS::UR_OuroborosID`) |
+| `BloodshedTreasury` | 2 treasury | Step 9: Bloodshed (the PURE score from Step 4) | Step 12: **Auryn AND Wstoa** — the only multi-reward FVT here |
 
 > **Open decision for `Bloodshed`.** Two readings, and they wire mainnet differently:
 > **(a) it should earn.** Add a fifth class-2 `BloodshedTreasury` in Step 8, admit the score in

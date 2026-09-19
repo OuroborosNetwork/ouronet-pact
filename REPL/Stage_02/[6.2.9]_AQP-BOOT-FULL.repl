@@ -295,23 +295,17 @@
         ]
     )
     (ref-TS02-C3::AQP-POOL|C_Issue patron "DHBloodshed" "DHB-98c486052a51" 4)
-    ;;!! THIS BLOCK DISAGREES WITH C_Step7, DELIBERATELY AND TEMPORARILY (2026-09-19).
-    ;;C_Step7 attaches BOTH Bloodshed scores to DHBloodshed -- the pure one and the subsidiary --
-    ;;and the owner confirmed that is correct ("bloodshed would have two scores"). This hand-rolled
-    ;;fixture attaches only the subsidiary. Adding the missing line was TRIED and it fails, for a
-    ;;real reason that is not this file's to fix:
+    ;;BOTH Bloodshed scores, matching C_Step7 exactly. Owner ruling 2026-09-19: "bloodshed would
+    ;;have two scores" and "staking bloodshed assets determines the pure bloodshed score, and we
+    ;;need to be able to earn stuff via that score alone."
     ;;
-    ;;    Invalid FVT reward pipeline: employed score missing enabled FVT ScoreEntityLink or
-    ;;    reward DPTF          05_FVT.pact:1031, staking a DHBloodshed nonce
-    ;;
-    ;;Attaching `Bloodshed` makes it EMPLOYED, and C_Step9 admits it to no FVT -- Coding, Snakes
-    ;;and Shares each get a treasury, Bloodshed gets none. So the gap is in the asset tree, not in
-    ;;the test. Options and their consequences are written up in
-    ;;2_CITIZEN/5_VaultsMinter/README_AQP_BOOT.md, under the Steps 8-12 FVT map.
-    ;;
-    ;;Restore the line below the moment that is settled -- a fixture that does not match the
-    ;;deployment function is exactly how this gap stayed hidden in the first place.
-    ;;(ref-TS02-C3::AQP-POOL|C_AddScore patron pool-bloodshed score-bloodshed)
+    ;;This block hand-rolls what C_Step7 does and had DRIFTED from it, attaching only the
+    ;;subsidiary -- so every downstream assertion ran against a DHBloodshed pool that deployment
+    ;;would not produce. Restoring the line exposed the real gap it had been hiding: attaching
+    ;;`Bloodshed` makes it EMPLOYED, and Step 9 admitted it to no FVT, so every stake aborted at
+    ;;05_FVT.pact:1031. Fixed properly by giving it the treasury it never had -- see
+    ;;BOOT|FVT_BLOODSHED_TREASURY in 04_AQP-BOOT.pact.
+    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-bloodshed score-bloodshed)
     (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-bloodshed score-sub-bloodshed)
     (ref-TS02-C3::AQP-POOL|C_Issue patron "DHNosferatu" "DHN-98c486052a51" 4)
     (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-nosferatu score-sub-nosferatu)
@@ -348,7 +342,7 @@
             )
         )
         (split-smart:[decimal]
-            (DALOS.URC_SplitSTOAPrices patron (* 5.0 (DALOS.UR_UsagePrice "smart")))
+            (DALOS.URC_SplitSTOAPrices patron (* 6.0 (DALOS.UR_UsagePrice "smart")))
         )
     )
     (env-sigs
@@ -440,8 +434,10 @@
         (coding-score-id:string (ref-U|DALOS::UDC_Makeid "TheCodingDivision"))
         (snakes-score-id:string (ref-U|DALOS::UDC_Makeid "DemiourgosSnakes"))
         (shares-score-id:string (ref-U|DALOS::UDC_Makeid "DemiourgosShareholder"))
+        (bloodshed-treasury-id:string (ref-U|DALOS::UDC_Makeid "BloodshedTreasury"))
+        (bloodshed-score-id:string (ref-U|DALOS::UDC_Makeid "Bloodshed"))
         (split-smart:[decimal]
-            (DALOS.URC_SplitSTOAPrices patron (* 5.0 (DALOS.UR_UsagePrice "smart")))
+            (DALOS.URC_SplitSTOAPrices patron (* 6.0 (DALOS.UR_UsagePrice "smart")))
         )
     )
     (env-sigs
@@ -458,7 +454,7 @@
             }
         ]
     )
-    (print (format "<(AQP-BOOT.C_Step9_AddFvtScoreEntities)> => \"{}\"" [(AQP-BOOT.C_Step9_AddFvtScoreEntities patron sub-treasury-id coding-treasury-id snakes-treasury-id shares-treasury-id subsidiary-score-ids coding-score-id snakes-score-id shares-score-id)]))
+    (print (format "<(AQP-BOOT.C_Step9_AddFvtScoreEntities)> => \"{}\"" [(AQP-BOOT.C_Step9_AddFvtScoreEntities patron sub-treasury-id coding-treasury-id snakes-treasury-id shares-treasury-id bloodshed-treasury-id subsidiary-score-ids coding-score-id snakes-score-id shares-score-id bloodshed-score-id)]))
 )
 (env-sigs [])
 (commit-tx)
@@ -583,11 +579,12 @@
         (coding-treasury-id:string (ref-U|DALOS::UDC_Makeid "CodingDivisionTreasury"))
         (snakes-treasury-id:string (ref-U|DALOS::UDC_Makeid "SnakesTreasury"))
         (shares-treasury-id:string (ref-U|DALOS::UDC_Makeid "CompanySharesTreasury"))
+        (bloodshed-treasury-id:string (ref-U|DALOS::UDC_Makeid "BloodshedTreasury"))
         (auryn-id:string "AURYN-98c486052a51")
         (ouroboros-id:string (ref-DALOS::UR_OuroborosID))
         (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
         (split-smart:[decimal]
-            (DALOS.URC_SplitSTOAPrices patron (* 5.0 (DALOS.UR_UsagePrice "smart")))
+            (DALOS.URC_SplitSTOAPrices patron (* 7.0 (DALOS.UR_UsagePrice "smart")))
         )
     )
     (env-sigs
@@ -604,7 +601,24 @@
             }
         ]
     )
-    (print (format "<(AQP-BOOT.C_Step12_AddFvtRewardLinks)> => \"{}\"" [(AQP-BOOT.C_Step12_AddFvtRewardLinks patron sub-treasury-id coding-treasury-id snakes-treasury-id shares-treasury-id auryn-id ouroboros-id wstoa-id)]))
+    (print (format "<(AQP-BOOT.C_Step12_AddFvtRewardLinks)> => \"{}\"" [(AQP-BOOT.C_Step12_AddFvtRewardLinks patron sub-treasury-id coding-treasury-id snakes-treasury-id shares-treasury-id bloodshed-treasury-id auryn-id ouroboros-id wstoa-id)]))
+    ;;<<TX-BOOT-12-REWARDS>> pins the reward SHAPE, not just that Step 12 ran. Owner ruling
+    ;;2026-09-19: the pure Bloodshed score earns wSTOA AND Auryn, and it is the ONLY FVT in the
+    ;;boot tree with more than one reward token. An echo string cannot prove that -- Step 12
+    ;;formats its own output, so a link that silently failed to register would still print. These
+    ;;read the RPS reward state back.
+    (map print
+        [
+        (expect "<<TX-BOOT-12-REWARDS>> BloodshedTreasury carries TWO reward tokens (auryn + wstoa)"
+            2 (RPS.UR_FVT|EnabledRewardCount bloodshed-treasury-id))
+        (expect "<<TX-BOOT-12-REWARDS>> ...and the four single-token treasuries still carry exactly one"
+            [1 1 1 1]
+            [(RPS.UR_FVT|EnabledRewardCount sub-treasury-id)
+             (RPS.UR_FVT|EnabledRewardCount coding-treasury-id)
+             (RPS.UR_FVT|EnabledRewardCount snakes-treasury-id)
+             (RPS.UR_FVT|EnabledRewardCount shares-treasury-id)])
+        ]
+    )
 )
 (env-sigs [])
 (commit-tx)
@@ -757,10 +771,16 @@
                 ;;the guard is live for its real case and unhelpful for the case a caller is most
                 ;;likely to hit. Pinned AS IT BEHAVES, so that fixing it (bind the swpair lazily,
                 ;;or hoist the link check above the let) has to update this line deliberately.
+                ;;REPOINTED 2026-09-19. This used the `Bloodshed` score precisely BECAUSE it was
+                ;;pool-less -- which it only was through a fixture bug: this file hand-rolled
+                ;;C_Step7 and omitted the Bloodshed->DHBloodshed link that C_Step7 makes. With
+                ;;that fixed, every created score is employed, so the probe needs an id that was
+                ;;never created at all. That is a better premise anyway: it depends on a score
+                ;;being absent by construction rather than on another block's omission.
                 (expect-failure "<<TX-BOOT-G1>> FINDING: a pool-less score aborts in a table read, not its own guard"
                     "No value found in table"
                     (AQP-FVT.UEV_AddScoreEntityScoreContext
-                        farm (ref-U|DALOS::UDC_Makeid "Bloodshed") "OURO-98c486052a51" 1.0))
+                        farm (ref-U|DALOS::UDC_Makeid "NeverIssuedProbeScore") "OURO-98c486052a51" 1.0))
                 ;;--- NOT PINNED, recorded rather than left silent:
                 ;;  "Score owner must match FVT owner" / "...Non-mosaic FVT locked to score
                 ;;      membership only" — every FVT in this suite is mosaic and owned by the same

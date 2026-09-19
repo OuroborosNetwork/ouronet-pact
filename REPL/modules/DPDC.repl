@@ -1341,7 +1341,7 @@
                 (AQP-BOOT.C_Step7_CreatePoolsAndScores p a6 x a9 ["s" "b" "g" "h"]))
             (expect-failure "<<DPDC-G10>> step 9 wants exactly five subsidiary scores"
                 "Step 9 expects subsidiary-score-ids×5."
-                (AQP-BOOT.C_Step9_AddFvtScoreEntities p x x x x ["1" "2" "3" "4" "5" "6"] x x x))
+                (AQP-BOOT.C_Step9_AddFvtScoreEntities p x x x x x ["1" "2" "3" "4" "5" "6"] x x x x))
         ]
     )
     (print "--- [DPDC-G10 · 02 · FIXED: steps 6 and 7 now answer for a SHORT list too] ---")
@@ -1382,7 +1382,7 @@
             ;;is already demonstrated in place, and nothing about step 6/7 forces their ordering.
             (expect-failure "<<DPDC-G10>> ...while step 9, which enforces FIRST, speaks for a short list too"
                 "Step 9 expects subsidiary-score-ids×5."
-                (AQP-BOOT.C_Step9_AddFvtScoreEntities p x x x x ["1" "2"] x x x))
+                (AQP-BOOT.C_Step9_AddFvtScoreEntities p x x x x x ["1" "2"] x x x x))
         ]
     )
     ""
