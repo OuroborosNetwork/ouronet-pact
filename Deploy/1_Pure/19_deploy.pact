@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 19 of 19
 ;; This is STEP 19 of 20 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-18 must have run first, including the init steps between deploys.
-;; 6 module(s), 385,493 gas measured in the REPL gas model, 307,595 bytes
+;; 6 module(s), 385,493 gas measured in the REPL gas model, 309,738 bytes
 ;;
 ;; Modules in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact
@@ -5233,7 +5233,19 @@
 ;;     into the NEXT step's arguments when steps run on separate txs.
 ;;   • Functions that WIRE existing entities take explicit id lists (Step 7) so mainnet
 ;;     ids from prior txs are passed in; REPL uses the same shape with REPL chain ids.
-;;   • UDC_Makeid("<Name>") ids are deterministic from names (pool/score/anchor names).
+;;   • UDC_Makeid("<Name>") is NOT deterministic from the name alone.
+;;     CORRECTED 2026-09-18 -- this line used to read "ids are deterministic from names", and
+;;     that is wrong in the dangerous direction. `UDC_Makeid ticker` returns
+;;     `<ticker>-<first 12 chars of prev-block-hash>`, so the SAME ticker in a DIFFERENT BLOCK
+;;     yields a DIFFERENT id.
+;;     THE REPL CANNOT SHOW THIS: the whole suite runs under one `prev-block-hash`, so all 194
+;;     fixture ids share a single suffix and recomputing an id in a later tx always matches.
+;;     On mainnet, where every transaction is in its own block, it never will.
+;;     CONSEQUENCE FOR DEPLOYMENT: an id for an entity created in an EARLIER transaction must be
+;;     CARRIED FORWARD from that transaction's output string. Recomputing it with UDC_Makeid is
+;;     a silent mis-wiring that no test in this repository can catch. Recomputing is only safe
+;;     for an entity created in the SAME transaction (which is why Step 7's pool ids are fine
+;;     but its score ids, from Steps 4-6, are arguments).
 ;;   • Collection asset ids (DHCD-…, DHB-…, OURO-…, LP native ids) are ALWAYS inputs —
 ;;     never embedded in code; REPL examples live in ;; blocks only.
 ;;   • Full step chain table: 2_CITIZEN/Stage_02/README_AQP_BOOT.md
@@ -5490,10 +5502,11 @@
         ;;   kbn-id — from Step 1 output
         ;; OUTPUT (return string)
         ;;   anchor-ids[4]       — OuroborosRain, AurynRain, EliteAurynRain, LegendarySnakeTokenRain
-        ;;   boost-class-ids[3]  — BronzeSnakePower, SilverSnakePower, GoldenSnakePower (UDC_Makeid order in format)
+        ;;   boost-class-ids[3]  — emitted ONCE, in Step 6 order: silver, bronze, golden
         ;; NEXT
-        ;;   Step 6: boost-class-ids arg = [SilverSnakePower-id BronzeSnakePower-id GoldenSnakePower-id]
-        ;;           i.e. indices [1 0 2] from this step's boost-class-ids list
+        ;;   Step 6: paste the bracketed list at the end of the output string directly into the
+        ;;           `boost-class-ids` argument. It is already in Step 6 order (silver, bronze,
+        ;;           golden) and already quoted. No reordering, no re-quoting.
         ;; REPL: (AQP-BOOT.C_Step2_CreateSnakePowerAnchorClasses KST.ANHD "KBN-98c486052a51")
         (with-capability (GOV|AQP_BOOT_ADMIN)
             (let
@@ -5514,11 +5527,28 @@
                 (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "AurynRain" kbn-id true "SilverSnakePower" 3 100.0 "Background" "Auryn Rain")
                 (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "EliteAurynRain" kbn-id true "GoldenSnakePower" 3 200.0 "Background" "Elite-Auryn Rain")
                 (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "LegendarySnakeTokenRain" kbn-id false golden-boost-class-id 3 400.0 "Rarity" "Legendary")
-                (format "AQP-BOOT Step 2 done. kbn-id={}. anchor-ids=[{} {} {} {}]. boost-class-ids=[bronze={} silver={} golden={}]. NEXT=Step6:boost-class-ids=[{} {} {}]."
+                ;;OUTPUT SHAPE CHANGED 2026-09-18, for deployment use.
+                ;;
+                ;;It used to print the three boost classes TWICE, in two different orders: first
+                ;;`boost-class-ids=[bronze silver golden]` (creation order) and then
+                ;;`NEXT=Step6:[silver bronze golden]` (consumption order). An operator copying the
+                ;;first list into Step 6 would wire the 50.0-weight class where the 100.0 belongs,
+                ;;and NOTHING WOULD ERROR -- the pools would simply pay the wrong boosts forever.
+                ;;
+                ;;Now it prints them ONCE, in Step 6's order, as a QUOTED PACT LIST that can be
+                ;;pasted straight into the `boost-class-ids` argument with no reordering and no
+                ;;re-quoting. A format an operator has to transform is a format that will
+                ;;eventually be transformed wrongly.
+                ;;
+                ;;No test asserts on this string -- both call sites are `print` -- so the change
+                ;;breaks nothing. Verified before editing.
+                (format "AQP-BOOT Step 2 done. kbn-id={}. anchors issued=[{} {} {} {}]. \
+                        \ PASTE INTO Step6 boost-class-ids (silver bronze golden, already ordered): \
+                        \ [\"{}\" \"{}\" \"{}\"]"
                     [
                         kbn-id
-                        anchor-ouroboros-rain-id anchor-auryn-rain-id anchor-elite-auryn-rain-id anchor-legendary-snake-token-rain-id
-                        bronze-boost-class-id silver-boost-class-id golden-boost-class-id
+                        anchor-ouroboros-rain-id anchor-auryn-rain-id
+                        anchor-elite-auryn-rain-id anchor-legendary-snake-token-rain-id
                         silver-boost-class-id bronze-boost-class-id golden-boost-class-id
                     ]
                 )

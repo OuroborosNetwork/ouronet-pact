@@ -1328,16 +1328,17 @@
             ;;and three of the four messages would never be exercised.
             (expect-failure "<<DPDC-G10>> step 7 names the six DH assets"
                 "Step 7 expects dh-asset-ids=[coding bloodshed company wondercoach nosferatu bunnies]."
-                (AQP-BOOT.C_Step7_CreatePoolsAndScores p (+ a6 ["g"]) x a6 x a9 ["s" "b" "g"]))
-            (expect-failure "<<DPDC-G10>> ...the six DH pools"
-                "Step 7 expects dh-pool-ids=[pool-coding pool-bloodshed pool-company pool-wondercoach pool-nosferatu pool-bunnies]."
-                (AQP-BOOT.C_Step7_CreatePoolsAndScores p a6 x (+ a6 ["g"]) x a9 ["s" "b" "g"]))
+                (AQP-BOOT.C_Step7_CreatePoolsAndScores p (+ a6 ["g"]) x a9 ["s" "b" "g"]))
+            ;;REMOVED 2026-09-18. `dh-pool-ids` is no longer an argument: Step 7 mints those
+            ;;seven pools itself, from the same name literals its C_Issue calls use, so it now
+            ;;derives their ids in its own `let`. There is no length guard left to probe, because
+            ;;there is no list left for a caller to get wrong.
             (expect-failure "<<DPDC-G10>> ...the nine DH scores"
                 "Step 7 expects dh-score-ids=[coding sub-coding bloodshed sub-bloodshed company-share company-snakes sub-wondercoach sub-nosferatu sub-bunnies]."
-                (AQP-BOOT.C_Step7_CreatePoolsAndScores p a6 x a6 x (+ a9 ["10"]) ["s" "b" "g"]))
+                (AQP-BOOT.C_Step7_CreatePoolsAndScores p a6 x (+ a9 ["10"]) ["s" "b" "g"]))
             (expect-failure "<<DPDC-G10>> ...and the three OURO triplet scores"
                 "Step 7 expects ouro-triplet-score-ids=[silver bronze golden]."
-                (AQP-BOOT.C_Step7_CreatePoolsAndScores p a6 x a6 x a9 ["s" "b" "g" "h"]))
+                (AQP-BOOT.C_Step7_CreatePoolsAndScores p a6 x a9 ["s" "b" "g" "h"]))
             (expect-failure "<<DPDC-G10>> step 9 wants exactly five subsidiary scores"
                 "Step 9 expects subsidiary-score-ids×5."
                 (AQP-BOOT.C_Step9_AddFvtScoreEntities p x x x x ["1" "2" "3" "4" "5" "6"] x x x))
@@ -1368,10 +1369,10 @@
                 (AQP-BOOT.C_Step6_CreateOuroLpTriplet p p x ["a" "b"]))
             (expect-failure "<<DPDC-G10>> ...and so does step 7, on its nine-score list"
                 "Step 7 expects dh-score-ids="
-                (AQP-BOOT.C_Step7_CreatePoolsAndScores p a6 x a6 x ["1" "2"] ["s" "b" "g"]))
+                (AQP-BOOT.C_Step7_CreatePoolsAndScores p a6 x ["1" "2"] ["s" "b" "g"]))
             (expect-failure "<<DPDC-G10>> ...and on its asset list, which is a DIFFERENT message"
                 "Step 7 expects dh-asset-ids="
-                (AQP-BOOT.C_Step7_CreatePoolsAndScores p ["a"] x a6 x a9 ["s" "b" "g"]))
+                (AQP-BOOT.C_Step7_CreatePoolsAndScores p ["a"] x a9 ["s" "b" "g"]))
             ;;THE SAME INPUTS, TOO LONG, still reach the same messages -- section 01 above drives
             ;;those. So the hoist made the short case speak without changing the long one, which is
             ;;the property that makes it a repair rather than a rewrite.

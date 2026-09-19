@@ -827,3 +827,56 @@
 (print "")
 (print "===^^^===")
 (commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-BOOT-GV - C_IssueGenericEarningVault, one-call vault, proven then rolled back")
+(print "")
+(print "=== TX-BOOT-GV — generic earning vault (stake TF, earn TF) ======================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;ADDED 2026-09-19 with C_IssueGenericEarningVault.
+;;
+;;The function does in one call what a Vault needs: score (class 1), pool (aqp-class 1), pool-score
+;;link, FVT (fvt-class 1), score admission, reward link. Six operations, four class constants, and
+;;every one of them silent to get wrong -- which is the whole reason it exists.
+;;
+;;Rolled back: it mints three entities and this suite's later blocks must not see them.
+(let
+    (
+        (patron:string KST.ANHD)
+        (split-smart:[decimal]
+            (DALOS.URC_SplitSTOAPrices patron (* 8.0 (DALOS.UR_UsagePrice "smart")))
+        )
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-smart))
+                ]
+            }
+        ]
+    )
+    (map print
+        [
+        (expect
+            "<<AQP-BOOT-GV1>> C_IssueGenericEarningVault completes in one call"
+            true
+            (!= "" (AQP-BOOT.C_IssueGenericEarningVault
+                        KST.ANHD KST.ANHD "TestVault"
+                        "OURO-98c486052a51" "AURYN-98c486052a51"))
+        )
+        ]
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)

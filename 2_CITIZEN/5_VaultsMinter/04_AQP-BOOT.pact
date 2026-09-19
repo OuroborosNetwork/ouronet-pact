@@ -7,7 +7,19 @@
 ;;     into the NEXT step's arguments when steps run on separate txs.
 ;;   • Functions that WIRE existing entities take explicit id lists (Step 7) so mainnet
 ;;     ids from prior txs are passed in; REPL uses the same shape with REPL chain ids.
-;;   • UDC_Makeid("<Name>") ids are deterministic from names (pool/score/anchor names).
+;;   • UDC_Makeid("<Name>") is NOT deterministic from the name alone.
+;;     CORRECTED 2026-09-18 -- this line used to read "ids are deterministic from names", and
+;;     that is wrong in the dangerous direction. `UDC_Makeid ticker` returns
+;;     `<ticker>-<first 12 chars of prev-block-hash>`, so the SAME ticker in a DIFFERENT BLOCK
+;;     yields a DIFFERENT id.
+;;     THE REPL CANNOT SHOW THIS: the whole suite runs under one `prev-block-hash`, so all 194
+;;     fixture ids share a single suffix and recomputing an id in a later tx always matches.
+;;     On mainnet, where every transaction is in its own block, it never will.
+;;     CONSEQUENCE FOR DEPLOYMENT: an id for an entity created in an EARLIER transaction must be
+;;     CARRIED FORWARD from that transaction's output string. Recomputing it with UDC_Makeid is
+;;     a silent mis-wiring that no test in this repository can catch. Recomputing is only safe
+;;     for an entity created in the SAME transaction (which is why Step 7's pool ids are fine
+;;     but its score ids, from Steps 4-6, are arguments).
 ;;   • Collection asset ids (DHCD-…, DHB-…, OURO-…, LP native ids) are ALWAYS inputs —
 ;;     never embedded in code; REPL examples live in ;; blocks only.
 ;;   • Full step chain table: 2_CITIZEN/Stage_02/README_AQP_BOOT.md
@@ -84,7 +96,7 @@
         (patron:string owner-konto:string lp-denominator:string boost-class-ids:[string])
     )
     (defun C_Step7_CreatePoolsAndScores:string
-        (patron:string dh-asset-ids:[string] ouro-lp-asset-id:string dh-pool-ids:[string] ouro-lp-pool-id:string dh-score-ids:[string] ouro-triplet-score-ids:[string])
+        (patron:string dh-asset-ids:[string] ouro-lp-asset-id:string dh-score-ids:[string] ouro-triplet-score-ids:[string])
     )
     (defun C_Step8_IssueFvtEntities:string
         (patron:string owner-konto:string lp-denominator:string)
@@ -100,6 +112,9 @@
     )
     (defun C_Step12_AddFvtRewardLinks:string
         (patron:string sub-treasury-id:string coding-treasury-id:string snakes-treasury-id:string shares-treasury-id:string reward-auryn-id:string reward-ouroboros-id:string reward-wstoa-id:string)
+    )
+    (defun C_IssueGenericEarningVault:string
+        (patron:string owner-konto:string vault-name:string stake-dptf-id:string reward-dptf-id:string)
     )
 
 )
@@ -264,10 +279,11 @@
         ;;   kbn-id — from Step 1 output
         ;; OUTPUT (return string)
         ;;   anchor-ids[4]       — OuroborosRain, AurynRain, EliteAurynRain, LegendarySnakeTokenRain
-        ;;   boost-class-ids[3]  — BronzeSnakePower, SilverSnakePower, GoldenSnakePower (UDC_Makeid order in format)
+        ;;   boost-class-ids[3]  — emitted ONCE, in Step 6 order: silver, bronze, golden
         ;; NEXT
-        ;;   Step 6: boost-class-ids arg = [SilverSnakePower-id BronzeSnakePower-id GoldenSnakePower-id]
-        ;;           i.e. indices [1 0 2] from this step's boost-class-ids list
+        ;;   Step 6: paste the bracketed list at the end of the output string directly into the
+        ;;           `boost-class-ids` argument. It is already in Step 6 order (silver, bronze,
+        ;;           golden) and already quoted. No reordering, no re-quoting.
         ;; REPL: (AQP-BOOT.C_Step2_CreateSnakePowerAnchorClasses KST.ANHD "KBN-98c486052a51")
         (with-capability (GOV|AQP_BOOT_ADMIN)
             (let
@@ -288,11 +304,28 @@
                 (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "AurynRain" kbn-id true "SilverSnakePower" 3 100.0 "Background" "Auryn Rain")
                 (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "EliteAurynRain" kbn-id true "GoldenSnakePower" 3 200.0 "Background" "Elite-Auryn Rain")
                 (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "LegendarySnakeTokenRain" kbn-id false golden-boost-class-id 3 400.0 "Rarity" "Legendary")
-                (format "AQP-BOOT Step 2 done. kbn-id={}. anchor-ids=[{} {} {} {}]. boost-class-ids=[bronze={} silver={} golden={}]. NEXT=Step6:boost-class-ids=[{} {} {}]."
+                ;;OUTPUT SHAPE CHANGED 2026-09-18, for deployment use.
+                ;;
+                ;;It used to print the three boost classes TWICE, in two different orders: first
+                ;;`boost-class-ids=[bronze silver golden]` (creation order) and then
+                ;;`NEXT=Step6:[silver bronze golden]` (consumption order). An operator copying the
+                ;;first list into Step 6 would wire the 50.0-weight class where the 100.0 belongs,
+                ;;and NOTHING WOULD ERROR -- the pools would simply pay the wrong boosts forever.
+                ;;
+                ;;Now it prints them ONCE, in Step 6's order, as a QUOTED PACT LIST that can be
+                ;;pasted straight into the `boost-class-ids` argument with no reordering and no
+                ;;re-quoting. A format an operator has to transform is a format that will
+                ;;eventually be transformed wrongly.
+                ;;
+                ;;No test asserts on this string -- both call sites are `print` -- so the change
+                ;;breaks nothing. Verified before editing.
+                (format "AQP-BOOT Step 2 done. kbn-id={}. anchors issued=[{} {} {} {}]. \
+                        \ PASTE INTO Step6 boost-class-ids (silver bronze golden, already ordered): \
+                        \ [\"{}\" \"{}\" \"{}\"]"
                     [
                         kbn-id
-                        anchor-ouroboros-rain-id anchor-auryn-rain-id anchor-elite-auryn-rain-id anchor-legendary-snake-token-rain-id
-                        bronze-boost-class-id silver-boost-class-id golden-boost-class-id
+                        anchor-ouroboros-rain-id anchor-auryn-rain-id
+                        anchor-elite-auryn-rain-id anchor-legendary-snake-token-rain-id
                         silver-boost-class-id bronze-boost-class-id golden-boost-class-id
                     ]
                 )
@@ -418,10 +451,22 @@
                 (ref-TS02-C3::AQP-SCR|C_EnableDebBoost patron score-sub-bloodshed)
                 (ref-TS02-C3::AQP-SCR|C_EnableDebBoost patron score-sub-nosferatu)
                 (ref-TS02-C3::AQP-SCR|C_EnableDebBoost patron score-sub-bunnies)
-                (format "AQP-BOOT Step 5 done. score-ids=[sub-coding={} sub-wondercoach={} sub-bloodshed={} sub-nosferatu={} sub-bunnies={}] deb-boost=enabled×5. NEXT=Step7:dh-score-ids[1,3,6,7,8]=[{} {} {} {} {}]."
+                ;;ORDERING BUG FIXED 2026-09-18. The `NEXT=Step7:dh-score-ids[1,3,6,7,8]` list used
+                ;;to be emitted in CREATION order -- coding, wondercoach, bloodshed, nosferatu,
+                ;;bunnies -- while slots [1,3,6,7,8] are coding, BLOODSHED, WONDERCOACH, nosferatu,
+                ;;bunnies. Positions 2 and 3 were transposed against the slots the same string
+                ;;names. An operator pasting it into Step 7 would put SubsidiaryWonderCoach in slot
+                ;;3 and SubsidiaryBloodshed in slot 6, so DHBloodshed would carry the WonderCoach
+                ;;subsidiary score and DHWonderCoach the Bloodshed one -- PERMANENTLY, and WITHOUT
+                ;;ERRORING, because both are valid score ids.
+                ;;Now emitted in slot order, and as a quoted pasteable list. Same defect class as
+                ;;Step 2's boost-class ordering, fixed the same day.
+                (format "AQP-BOOT Step 5 done. score-ids=[sub-coding={} sub-wondercoach={} sub-bloodshed={} sub-nosferatu={} sub-bunnies={}] deb-boost=enabled×5. \
+                        \ PASTE INTO Step7 dh-score-ids slots [1,3,6,7,8] IN THIS ORDER: \
+                        \ [\"{}\" \"{}\" \"{}\" \"{}\" \"{}\"]"
                     [
                         score-sub-coding score-sub-wondercoach score-sub-bloodshed score-sub-nosferatu score-sub-bunnies
-                        score-sub-coding score-sub-wondercoach score-sub-bloodshed score-sub-nosferatu score-sub-bunnies
+                        score-sub-coding score-sub-bloodshed score-sub-wondercoach score-sub-nosferatu score-sub-bunnies
                     ]
                 )
             )
@@ -443,7 +488,16 @@
         ;;   REPL example: "OURO-98c486052a51"
         ;;   Must match the Farm FVT common-denominator when scores are later admitted to a farm.
         ;;
-        ;; boost-class-ids[0..2] — from Step 2 (SnakePower anchor classes), same tx or prior:
+        ;; boost-class-ids[0..2] — from Step 2 (SnakePower anchor classes).
+        ;;
+        ;; !! MAINNET: PASTE THESE FROM STEP 2's OUTPUT. DO NOT RECOMPUTE THEM.
+        ;; The `UDC_Makeid` forms shown below are the REPL shape, and they are correct ONLY when
+        ;; Step 2 ran in the same block -- which is true in the REPL (one prev-block-hash for the
+        ;; whole suite) and false on mainnet, where Step 2 is its own transaction. Recomputing here
+        ;; yields three ids that do not exist, the triplet wires to nothing, and no test can catch
+        ;; it. Step 2's output ends with a ready-to-paste `["silver" "bronze" "golden"]` list for
+        ;; exactly this argument.
+        ;;
         ;;   0 silver-boost-class-id  e.g. (U|DALOS.UDC_Makeid "SilverSnakePower")
         ;;   1 bronze-boost-class-id  e.g. (U|DALOS.UDC_Makeid "BronzeSnakePower")
         ;;   2 golden-boost-class-id  e.g. (U|DALOS.UDC_Makeid "GoldenSnakePower")
@@ -511,7 +565,10 @@
                 (ref-TS02-C3::AQP-SCR|C_CreateScoreBoostClassLink patron golden-id golden-boost-class-id)
                 (ref-TS02-C3::AQP-SCR|C_CreateScoreBoostLink patron golden-id silver-id)
                 ;;
-                (format "AQP-BOOT Step 6 done. lp-denominator={}. score-ids=[silver={} bronze={} golden={}]. boost-class-ids=[{} {} {}]. boost-links=[{}->{} {}->{}]. NEXT=Step7:ouro-triplet-score-ids=[{} {} {}]. NEXT=Step11:C_IssueTriplet+AddTriplet."
+                (format "AQP-BOOT Step 6 done. lp-denominator={}. score-ids=[silver={} bronze={} golden={}]. \
+                        \ boost-class-ids-IN=[{} {} {}]. boost-links=[{}->{} {}->{}]. \
+                        \ PASTE INTO Step7 ouro-triplet-score-ids (these are the SCORES made here, \
+                        \ NOT the Step 2 boost classes of the same name): [\"{}\" \"{}\" \"{}\"]."
                     [
                         lp-denominator
                         silver-id bronze-id golden-id
@@ -524,7 +581,7 @@
         )
     )
     (defun C_Step7_CreatePoolsAndScores:string
-        (patron:string dh-asset-ids:[string] ouro-lp-asset-id:string dh-pool-ids:[string] ouro-lp-pool-id:string dh-score-ids:[string] ouro-triplet-score-ids:[string])
+        (patron:string dh-asset-ids:[string] ouro-lp-asset-id:string dh-score-ids:[string] ouro-triplet-score-ids:[string])
         @doc "Step 7 — Issue six DH pools (class 3 or 4 by entity) plus one class-0 OURO LP pool and assign existing scores. \
             \ All ids are caller-supplied so this step can run after Steps 4–6 in separate transactions. \
             \ Pool aqp-class is fixed per entity (see ;; block). This step does not create FVT links."
@@ -553,7 +610,20 @@
         ;;    (U|DALOS.UDC_Makeid "DHWonderCoach") (U|DALOS.UDC_Makeid "DHNosferatu") (U|DALOS.UDC_Makeid "DHBunnies")]
         ;; ouro-lp-pool-id — (U|DALOS.UDC_Makeid "DHOuroLp")
         ;;
-        ;; dh-score-ids[0..8] — from Steps 4–5 (UDC_Makeid of score names):
+        ;; !! MAINNET, AND THE TWO HALVES OF THIS STEP BEHAVE DIFFERENTLY:
+        ;;
+        ;;   dh-pool-ids / ouro-lp-pool-id  -- SAFE to recompute with UDC_Makeid. This step CREATES
+        ;;      those pools, in this transaction, so the id it derives is the id it makes. The
+        ;;      `UDC_Makeid "DHCodingDivision"` forms above are correct on mainnet.
+        ;;
+        ;;   dh-score-ids / ouro-triplet-score-ids  -- MUST BE PASTED FROM EARLIER OUTPUTS. The
+        ;;      nine scores are created in Steps 4 and 5, the three triplet scores in Step 2, all
+        ;;      in their own transactions and therefore their own blocks. The `UDC_Makeid` forms
+        ;;      below are the REPL shape and are WRONG on mainnet. They look right, they typecheck,
+        ;;      and the suite passes -- because the REPL runs every step under one prev-block-hash.
+        ;;      Take these ids from the return strings of Steps 2, 4 and 5.
+        ;;
+        ;; dh-score-ids[0..8] — from Steps 4–5 (REPL shape below; on mainnet paste from output):
         ;;   [TheCodingDivision SubsidiaryCodingDivision Bloodshed SubsidiaryBloodshed
         ;;    DemiourgosShareholder DemiourgosSnakes SubsidiaryWonderCoach SubsidiaryNosferatu SubsidiaryBunnies]
         ;; ouro-triplet-score-ids[0..2] — from Step 6:
@@ -584,12 +654,12 @@
             ;;the parameters, so they run before anything is derived.
             ;;Pinned by REPL/modules/DPDC.repl <<DPDC-G10>>.
                 (enforce (= (length dh-asset-ids) 6) "Step 7 expects dh-asset-ids=[coding bloodshed company wondercoach nosferatu bunnies].")
-                (enforce (= (length dh-pool-ids) 6) "Step 7 expects dh-pool-ids=[pool-coding pool-bloodshed pool-company pool-wondercoach pool-nosferatu pool-bunnies].")
                 (enforce (= (length dh-score-ids) 9) "Step 7 expects dh-score-ids=[coding sub-coding bloodshed sub-bloodshed company-share company-snakes sub-wondercoach sub-nosferatu sub-bunnies].")
                 (enforce (= (length ouro-triplet-score-ids) 3) "Step 7 expects ouro-triplet-score-ids=[silver bronze golden].")
             (let
                 (
                     (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+                    (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
                     ;;
                     (asset-coding:string (at 0 dh-asset-ids))
                     (asset-bloodshed:string (at 1 dh-asset-ids))
@@ -598,13 +668,25 @@
                     (asset-nosferatu:string (at 4 dh-asset-ids))
                     (asset-bunnies:string (at 5 dh-asset-ids))
                     ;;
-                    (pool-coding:string (at 0 dh-pool-ids))
-                    (pool-bloodshed:string (at 1 dh-pool-ids))
-                    (pool-company:string (at 2 dh-pool-ids))
-                    (pool-wondercoach:string (at 3 dh-pool-ids))
-                    (pool-nosferatu:string (at 4 dh-pool-ids))
-                    (pool-bunnies:string (at 5 dh-pool-ids))
-                    (pool-ouro-lp:string ouro-lp-pool-id)
+                    ;;POOL IDS ARE DERIVED HERE, NOT PASSED IN. Changed 2026-09-18.
+                    ;;They used to be two arguments -- `dh-pool-ids` (6) and `ouro-lp-pool-id` --
+                    ;;which the caller had to supply. But this step MINTS these seven pools, from
+                    ;;the very name literals used in the C_Issue calls below, in this transaction.
+                    ;;`UDC_Makeid` on the same literal in the same transaction therefore returns
+                    ;;exactly the id C_Issue is about to create. Passing them in could only ever
+                    ;;match or be wrong; it could never be MORE right.
+                    ;;
+                    ;;Removing them takes seven values off the caller, removes one of the four
+                    ;;length guards, and removes an entire class of operator error on mainnet.
+                    ;;What remains as arguments is precisely what this step CANNOT know: the six
+                    ;;live collection assets, and the twelve scores created in earlier blocks.
+                    (pool-coding:string (ref-U|DALOS::UDC_Makeid "DHCodingDivision"))
+                    (pool-bloodshed:string (ref-U|DALOS::UDC_Makeid "DHBloodshed"))
+                    (pool-company:string (ref-U|DALOS::UDC_Makeid "DHCompany"))
+                    (pool-wondercoach:string (ref-U|DALOS::UDC_Makeid "DHWonderCoach"))
+                    (pool-nosferatu:string (ref-U|DALOS::UDC_Makeid "DHNosferatu"))
+                    (pool-bunnies:string (ref-U|DALOS::UDC_Makeid "DHBunnies"))
+                    (pool-ouro-lp:string (ref-U|DALOS::UDC_Makeid "DHOuroLp"))
                     ;;
                     (score-coding:string (at 0 dh-score-ids))
                     (score-sub-coding:string (at 1 dh-score-ids))
@@ -661,7 +743,17 @@
         @doc "Step 8 — Issue five production FVT entities (C_Issue only). \
             \ OuroLpFarm class 0 when lp-denominator non-empty (same OURO DPTF id as Step 6). \
             \ Four class-1 vault treasuries with common-denominator '|'. \
-            \ Product names say Treasury; class 1 vault admits TF/SF/NF. Class 2 is OF-only. \
+            \ Product names say Treasury; they are issued at fvt-class 1. \
+            \ !! 2026-09-19: TWO SOVEREIGN ADMISSION RULES DISAGREE ABOUT WHAT CLASS 1 MEANS. \
+            \ URC_ScoreClassMatchesFvtClass (05_FVT.pact) says vault(1) admits score-class 1/3/4 \
+            \ = TF/SF/NF and treasury(2) admits 2 = OF. URC_TripletCategoryMatchesFvtClass \
+            \ (02_SCORE.pact) says VAULT_TF<->1 and TREASURY_SF_NF<->2, i.e. vault = TF only and \
+            \ treasury = SF/NF. The schema comment at 05_FVT.pact:580 reads 0=Farm 1=Vault \
+            \ 2=Treasury. Owner intent (2026-09-19): vaults take TF and OF, treasuries take SF \
+            \ and NF -- which the TRIPLET rule matches and the SCORE rule does not. \
+            \ This step issues four entities NAMED Treasury at class 1, and Step 9 links SF/NF \
+            \ subsidiary scores to them; that passes only because the score rule permits 3/4 at \
+            \ class 1. UNRESOLVED -- do not treat either rule as authoritative until ruled on. \
             \ NEXT=Step9 vault score links, Steps 10–11 farm triplet — pass fvt-ids from this output."
         ;;
         ;; INPUT
@@ -809,10 +901,93 @@
                 (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron coding-treasury-id reward-wstoa-id false bar)
                 (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron snakes-treasury-id reward-auryn-id false bar)
                 (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron shares-treasury-id reward-ouroboros-id false bar)
-                (format "AQP-BOOT Step 12 done. reward-links=[sub={} coding={} snakes={} shares={}]. rewards=[auryn={} wstoa={} ouroboros={}]. Bootstrap complete — ready for inject/stake/collect."
+                ;;LABELLING FIXED 2026-09-18. This read
+                ;;  reward-links=[sub={} coding={} snakes={} shares={}]
+                ;;fed with the REWARD TOKEN ids, so `sub=<auryn-id>` looked like it was naming the
+                ;;sub-treasury when it was naming what the sub-treasury was linked TO -- and the
+                ;;same three reward ids were then printed again under `rewards=`. Arity was always
+                ;;correct; the labels were not, and the treasury ids the links actually attach to
+                ;;did not appear at all. Now each link is printed as the PAIR it is.
+                (format "AQP-BOOT Step 12 done. reward-links=[{}<-auryn {}<-wstoa {}<-auryn {}<-ouroboros]. rewards=[auryn={} wstoa={} ouroboros={}]. Bootstrap complete — ready for inject/stake/collect."
                     [
-                        reward-auryn-id reward-wstoa-id reward-auryn-id reward-ouroboros-id
+                        sub-treasury-id coding-treasury-id snakes-treasury-id shares-treasury-id
                         reward-auryn-id reward-wstoa-id reward-ouroboros-id
+                    ]
+                )
+            )
+        )
+    )
+
+    (defun C_IssueGenericEarningVault:string
+        (patron:string owner-konto:string vault-name:string stake-dptf-id:string reward-dptf-id:string)
+        @doc "Issue a complete, working single-asset earning Vault in ONE call: stake a true \
+            \ fungible, earn another true fungible. Does the six steps a Vault needs -- score, \
+            \ pool, pool-score link, FVT entity, score admission, reward link -- with generic \
+            \ defaults, so a caller does not need to know the class rules to get a correct Vault."
+        ;; WHY THIS EXISTS
+        ;;   Building a Vault by hand means knowing that a DPTF score is score-class 1, that its
+        ;;   pool is aqp-class 1 (0 is reserved for LP), that the FVT is fvt-class 1, that the
+        ;;   score must be linked to BOTH the pool and the FVT, and that without a reward link the
+        ;;   FVT reward pipeline refuses every stake. Six calls and four class constants, any of
+        ;;   which is silent to get wrong. This does all of it.
+        ;;
+        ;; WHY IT IS SAFE DESPITE THE UNRESOLVED CLASS QUESTION
+        ;;   Two sovereign admission rules disagree about fvt-class for SF/NF (see the note at the
+        ;;   top of this module). They AGREE for true fungibles: URC_ScoreClassMatchesFvtClass
+        ;;   admits score-class 1 at fvt-class 1, and URC_TripletCategoryMatchesFvtClass maps
+        ;;   VAULT_TF to 1. A TF-in / TF-out vault is exactly the case both rules describe the same
+        ;;   way, so this function is unaffected by that dispute.
+        ;;
+        ;; NAMING -- three entities, three DISTINCT names, deliberately
+        ;;   `UDC_Makeid` is `<name>-<block-hash>`, and ids collide across families because
+        ;;   BRD|BrandingTable is shared (DPDC audit #33M). Giving the score, pool and FVT the same
+        ;;   name would mint three byte-identical ids in one transaction and the second would abort
+        ;;   on a raw table-insert collision. So the caller passes ONE vault-name and this derives:
+        ;;     <vault-name>Score   <vault-name>Pool   <vault-name>Vault
+        ;;
+        ;; INPUT
+        ;;   vault-name      — base name, e.g. "Stoicism". Must be unused.
+        ;;   stake-dptf-id   — the true fungible users stake (full id, not a ticker)
+        ;;   reward-dptf-id  — the true fungible they earn (full id)
+        ;; OUTPUT — the three ids, and the three names they came from.
+        (with-capability (GOV|AQP_BOOT_ADMIN)
+            (let*
+                (
+                    (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+                    ;;
+                    (score-name:string (concat [vault-name "Score"]))
+                    (pool-name:string (concat [vault-name "Pool"]))
+                    (fvt-name:string (concat [vault-name "Vault"]))
+                    ;;
+                    (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+                    (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+                    (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
+                )
+                ;;1] the score: DPTF, score-class 1
+                (ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore
+                    patron owner-konto score-name BOOT|PRECISION BOOT|MX_FROZEN)
+                ;;2] the pool the asset is staked into: aqp-class 1 (non-LP true fungible)
+                (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name stake-dptf-id 1)
+                ;;3] employ the score on its pool -- without this the pool scores nothing
+                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+                ;;4] the FVT entity: fvt-class 1 (Vault), common denominator BAR
+                (ref-TS02-C3::AQP-FVT|C_Issue
+                    patron fvt-name owner-konto 1 BOOT|TREASURY_COMMON)
+                ;;5] admit the score to the vault
+                (ref-TS02-C3::AQP-FVT|C_AddScoreEntity
+                    patron fvt-id BOOT|SCORE_ENTITY_SCORE score-id)
+                ;;6] the reward. NOT optional: an employed score with no reward link makes every
+                ;;   stake abort in the FVT pipeline (05_FVT.pact:1210). multiplet-family-id is
+                ;;   BAR because a generic vault pays a plain token, not a laddered family.
+                (ref-TS02-C3::AQP-FVT|C_AddRewardLink
+                    patron fvt-id reward-dptf-id false BOOT|TREASURY_COMMON)
+                (format "AQP-BOOT GenericEarningVault done. names=[score={} pool={} fvt={}]. \
+                        \ ids=[score={} pool={} fvt={}]. staked={} reward={}. Ready for stake/collect."
+                    [
+                        score-name pool-name fvt-name
+                        score-id pool-id fvt-id
+                        stake-dptf-id reward-dptf-id
                     ]
                 )
             )
