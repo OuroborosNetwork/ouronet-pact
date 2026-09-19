@@ -417,6 +417,18 @@ def main():
         print(_ti.stdout + _ti.stderr)
         sys.exit("GATE FAILED: TOOLS.md does not index every tool on disk.")
 
+    # DEPLOY PIPELINE -- Deploy/ is GENERATED from the sovereign sources, and until 2026-09-19
+    # nothing checked that it had been regenerated after a source change. Every other generated
+    # artefact here is diffed by this gate (price sheet, suite stats, audit book, TOOLS.md); this
+    # one was not, purely because it arrived later. The failure mode is specific and bad: edit a
+    # module, gate green, and ship a Deploy/ file that no longer matches the module it claims to
+    # deploy. Caught real drift the hour it was added -- two batches stale from a function reorder.
+    _db = subprocess.run([sys.executable, "tools/_deploybundle.py", "--check"],
+                         capture_output=True, text=True)
+    if _db.returncode != 0:
+        print(_db.stdout + _db.stderr)
+        sys.exit("GATE FAILED: Deploy/ does not match the sovereign sources byte for byte.")
+
     # MODREF MEMBERS -- fatal only on LIVE class-B: a `(ref-X::member ...)` call where `member` is
     # defined NOWHERE in the module implementing X. Pact 5 resolves modref members DYNAMICALLY, so
     # such a call loads and runs, and only raises if that branch is ever taken -- invisible to every

@@ -176,6 +176,51 @@ def _expand(path):
         yield (ap, i, ln.rstrip("\n"))
 
 
+# ---------------------------------------------------------------------------------------------
+# EMIT SINK. Every file this tool produces goes through emit(), so `--check` can capture the
+# bytes instead of writing them and compare against the committed tree.
+#
+# WHY THIS EXISTS. Deploy/ is GENERATED from the sovereign sources, but nothing enforced that it
+# was regenerated after a source change -- so a module could be edited, gated green, and shipped
+# from a stale Deploy/ file that no longer matches it. Every other generated artefact in this
+# repo (IGNIS-PRICE-SHEET, REPL_SUITE_STATS, the audit book, TOOLS.md) is diffed by the gate;
+# this one was not, purely because it came later. `--check` closes that, and _gate.py runs it.
+# ---------------------------------------------------------------------------------------------
+CHECK = "--check" in sys.argv
+EMITTED = {}
+
+
+def emit(path, text):
+    if CHECK:
+        EMITTED[path] = text
+        return
+    open(path, "w", encoding="utf8").write(text)
+
+
+def check_report():
+    """Compare captured output against the tree. Returns a list of human-readable drifts."""
+    bad = []
+    for path, want in sorted(EMITTED.items()):
+        if not os.path.exists(path):
+            bad.append(f"MISSING  {os.path.relpath(path, ROOT)}")
+            continue
+        have = open(path, encoding="utf8").read()
+        if have != want:
+            hl, wl = have.count("\n"), want.count("\n")
+            bad.append(f"STALE    {os.path.relpath(path, ROOT)}  "
+                       f"(on disk {hl} lines, regenerated {wl})")
+    # a file in Deploy/1_Pure or 2_Init that the generator no longer produces
+    for d in (PURE, INIT):
+        if not os.path.isdir(d):
+            continue
+        for f in sorted(os.listdir(d)):
+            fp = os.path.join(d, f)
+            if os.path.isfile(fp) and fp not in EMITTED and f != "README.md":
+                bad.append(f"ORPHAN   {os.path.relpath(fp, ROOT)}  "
+                           f"(not produced by this round -- delete it or fix the round)")
+    return bad
+
+
 def parse_chain():
     """Ordered transaction blocks across the deploy chain."""
     blocks, cur = [], None
@@ -373,8 +418,17 @@ def main():
         mode = "existing"
     print(f"  table mode                 : {mode}"
           + (f" ({len(existing)} known-existing)" if existing else ""))
-    if "--write" in sys.argv:
+    if "--write" in sys.argv or CHECK:
         write(steps, budget, maxbytes, mode, existing)
+    if CHECK:
+        bad = check_report()
+        if bad:
+            print("\nDEPLOY PIPELINE STALE -- Deploy/ does not match the sovereign sources:")
+            for b in bad:
+                print("   " + b)
+            print("\nRegenerate with:  python3 REPL/tools/_deploybundle.py --write")
+            return 1
+        print("deploy pipeline: clean -- Deploy/ matches the sources byte for byte")
     return 0
 
 
@@ -616,7 +670,7 @@ def write(steps, budget, maxbytes, mode="upgrade", existing=frozenset()):
                 for t in tables:
                     body.append((";; " if t not in want else "") + f"(create-table {t})")
             body.append("")
-        open(os.path.join(PURE, fn), "w", encoding="utf8").write("\n".join(body) + "\n")
+        emit(os.path.join(PURE, fn), "\n".join(body) + "\n")
         manifest.append((seq, dep, "DEPLOY", ", ".join(names), s["gas"], s["pacts"], fn, 0))
     write_manifest(manifest, steps, budget, maxbytes, mode)
     write_tables(inventory, mode, existing)
@@ -625,7 +679,7 @@ def write(steps, budget, maxbytes, mode="upgrade", existing=frozenset()):
     # that will be replaced wholesale once the Bloodshed/FVT question is settled.
     tpl = os.path.join(ROOT, "REPL", "tools", "_assets_readme.md")
     if os.path.exists(tpl):
-        open(os.path.join(ASSETS, "README.md"), "w", encoding="utf8").write(
+        emit(os.path.join(ASSETS, "README.md"), 
             open(tpl, encoding="utf8").read())
     print(f"\nwrote {os.path.relpath(OUT, ROOT)}/ -- "
           f"{sum(1 for m in manifest if m[2] == 'DEPLOY')} deploy files + MANIFEST.md")
@@ -678,7 +732,7 @@ def emit_init(seq, step):
             L.append(f";; {os.path.basename(step['file'])}:{ln}")
             L.append(f)
             L.append("")
-    open(os.path.join(INIT, fn), "w", encoding="utf8").write("\n".join(L) + "\n")
+    emit(os.path.join(INIT, fn), "\n".join(L) + "\n")
     INIT_SEQ.append((n, seq, label, len(body), bool(fixture), step["file"], step["line"]))
 
 
@@ -703,7 +757,7 @@ def write_init_readme():
     nfix = sum(1 for x in INIT_SEQ if x[4])
     L.append(f"\n**{len(INIT_SEQ)} steps** · {nfix} flagged as possible fixtures · "
              f"{nempty} carry no deployable forms (pure REPL scaffolding).\n")
-    open(os.path.join(INIT, "README.md"), "w", encoding="utf8").write("\n".join(L) + "\n")
+    emit(os.path.join(INIT, "README.md"), "\n".join(L) + "\n")
 
 
 def write_tables(inventory, mode, existing):
@@ -731,7 +785,7 @@ def write_tables(inventory, mode, existing):
     for rel, tables in inventory:
         L.append(f"| `{os.path.basename(rel)}` | " +
                  (", ".join(f"`{t}`" for t in tables) if tables else "*none*") + " |")
-    open(os.path.join(OUT, "TABLES.md"), "w", encoding="utf8").write("\n".join(L) + "\n")
+    emit(os.path.join(OUT, "TABLES.md"), "\n".join(L) + "\n")
 
 
 def write_manifest(manifest, steps, budget, maxbytes, mode="upgrade"):
@@ -890,7 +944,7 @@ def write_manifest(manifest, steps, budget, maxbytes, mode="upgrade"):
                      f"`Deploy/1_Pure/{fn}` |")
         else:
             L.append(f"| {seq} | — | *init* — {what} | — | `Deploy/2_Init/` · `{fn}:{line}` |")
-    open(os.path.join(OUT, "MANIFEST.md"), "w", encoding="utf8").write("\n".join(L) + "\n")
+    emit(os.path.join(OUT, "MANIFEST.md"), "\n".join(L) + "\n")
 
 
 if __name__ == "__main__":

@@ -113,6 +113,16 @@ and `IGNIS-DETER-WORKSHEET.md` are regenerated and diffed by `REPL/tools/_prices
 fatal inside `_gate.py`. Edit the **generator**, never the artefact; `--write` to refresh both.
 The sibling check for `ARCHITECTURE/*.md` is `_figuresync.py`.
 
+**`Deploy/` is gate-enforced too, since 2026-09-19.** `Deploy/` is GENERATED from the sovereign
+sources by `REPL/tools/_deploybundle.py`, and until that date nothing checked it had been
+regenerated after a source change — it was the ONE generated artefact the gate did not diff, purely
+because it arrived later than the others. The failure mode is specific: edit a module, gate green,
+and ship a `Deploy/` batch that no longer matches the module it claims to deploy. `--check`
+regenerates into memory and reports STALE / MISSING / ORPHAN files; fatal inside `_gate.py`.
+It caught real drift the hour it was added — two batches stale from a function reorder. So the rule
+"every source change must be carried into the deploy pipeline byte for byte" is now mechanical
+rather than remembered; `--write` to refresh.
+
 **Tool paths are gate-enforced too.** `REPL/tools/_toolpaths.py --check` statically resolves every
 hard-coded path literal in every tool. If you move a tool, this is what tells you what you broke —
 the 2026-09-14 move killed eleven tools that died at *import*, so nothing that diffed their output

@@ -4849,7 +4849,7 @@ And what those deltas did to the two things a reader cares about — **[VERIFIED
 | | 2026-08-30 | 2026-09-14 | today (HEAD) |
 |---|---:|---:|---:|
 | Pact source files | 91 | 93 | **94** |
-| Pact source lines | 96,310 | 114,156 | **116,166** |
+| Pact source lines | 96,310 | 114,156 | **116,177** |
 | `.repl` files (excl. `archive/`) | 181 | 209 | **207** |
 | `.repl` lines | 68,435 | 120,603 | **138,033** |
 | distinct assertions written | **1,604** | **5,262** | **5,886** |

@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 17 of 20
 ;; This is STEP 17 of 21 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-16 must have run first, including the init steps between deploys.
-;; 3 module(s), 392,563 gas measured in the REPL gas model, 250,129 bytes
+;; 3 module(s), 392,563 gas measured in the REPL gas model, 250,789 bytes
 ;;
 ;; Modules in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/06_VCT.pact
@@ -4656,7 +4656,14 @@
     (defun UEV_OpenGate:bool (fvt-id:string score-entity-id:string)
         @doc "Terminal open gate — after the operator's initial stake, the agency quintessence must clear \
             \ unit-score/2. The Talos AQP-DSA|CC_OpenAgency flow calls this at the END of the atomic open (admit → \
-            \ stake → THIS); a short operator stake fails here and rolls the whole open back. Unprotected read+enforce."
+            \ stake → THIS); a short operator stake fails here and rolls the whole open back. Unprotected read+enforce. \
+            \ \
+            \ THE HALF IS FIXED BY DESIGN — owner ruling 2026-09-19, recorded because it LOOKS like a \
+            \ missing knob. Opening an agency costs exactly half of one earning unit; the module implies \
+            \ that ratio everywhere and it is deliberately not configurable. A second DSA|Template field \
+            \ was considered and REJECTED: flexibility is not wanted at this variable, and a settable gate \
+            \ could be raised above unit-score, which would make agencies unopenable while looking valid. \
+            \ So `unit-score 20000` publishes BOTH thresholds — 20000 per earning unit, 10000 to open."
         (enforce (>= (URC_AgencyQuintessence score-entity-id) (/ (dec (UR_DSA-TMP|UnitScore fvt-id)) 2.0))
             "Open gate: operator must stake quintessence >= unit-score/2 to open")
     )

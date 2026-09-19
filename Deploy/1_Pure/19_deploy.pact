@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 19 of 20
 ;; This is STEP 19 of 21 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-18 must have run first, including the init steps between deploys.
-;; 5 module(s), 385,493 gas measured in the REPL gas model, 267,001 bytes
+;; 5 module(s), 385,493 gas measured in the REPL gas model, 267,277 bytes
 ;;
 ;; Modules in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact
@@ -60,6 +60,9 @@
     ;;{5.1}  Construct [CT/UDC]
     ;;{5.2}  Compute [UC]
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    (defun URCi_IssueGenericEarningVault:object{IgnisCollectorV3.OutputCumulator}
+        (owner-konto:string vault-name:string stake-dptf-id:string reward-dptf-id:string)
+    )
     ;;{5.4}  Validate [UEV/CAP]
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
@@ -263,12 +266,6 @@
     (defun AQP-FVT|C_AddRewardLink:string
         (patron:string fvt-id:string reward-dptf-id:string segmentation:bool multiplet-family-id:string)
     )
-    (defun AQP-FVT|C_IssueGenericEarningVault:string
-        (patron:string owner-konto:string vault-name:string stake-dptf-id:string reward-dptf-id:string)
-    )
-    (defun URCi_IssueGenericEarningVault:object{IgnisCollectorV3.OutputCumulator}
-        (owner-konto:string vault-name:string stake-dptf-id:string reward-dptf-id:string)
-    )
     (defun AQP-FVT|C_ToggleScoreEntityLink:string
         (patron:string fvt-id:string score-entity-type:integer score-entity-id:string enabled:bool)
     )
@@ -292,6 +289,9 @@
     )
     (defun AQP-FVT|C_SetSplitMode:string
         (patron:string fvt-id:string split-mode:string)
+    )
+    (defun AQP-FVT|C_IssueGenericEarningVault:string
+        (patron:string owner-konto:string vault-name:string stake-dptf-id:string reward-dptf-id:string)
     )
     (defun AQP-FVT|CC_InjectStream:string
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
@@ -754,6 +754,70 @@
         )
     )
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;ADDED 2026-09-19. The generic-vault cost reader. It lives HERE, under {5.3} Read, and not
+    ;;beside the client function it prices: URCi_ is a reader, and the canonical section order
+    ;;puts every UR/URC/URH/URCi/INFO in this block regardless of what consumes it.
+    (defun URCi_IssueGenericEarningVault:object{IgnisCollectorV3.OutputCumulator}
+        (owner-konto:string vault-name:string stake-dptf-id:string reward-dptf-id:string)
+        @doc "Cost reader for AQP-FVT|C_IssueGenericEarningVault: the six component cumulators, \
+            \ concatenated exactly as the operation concatenates them."
+        ;;WHY IT COMPOSES RATHER THAN NAMING A PRICE. The operation is six core calls; its cost is
+        ;;whatever those six cost. Writing a standalone price here would be a SECOND definition of
+        ;;the same number, free to drift from the first -- the failure this codebase has found in
+        ;;its own artefacts repeatedly. Concatenating the same six readers the operation's own
+        ;;cumulators come from means the preview cannot disagree with the charge by construction.
+        ;;
+        ;;The component readers live in four different modules, and two of them are on RPS rather
+        ;;than FVT (AddScoreEntity, AddRewardLink) -- which is worth knowing, because looking for
+        ;;them on FVT beside the ops they price finds nothing.
+        (let*
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                ;;
+                (score-name:string (concat [vault-name "Score"]))
+                (pool-name:string (concat [vault-name "Pool"]))
+                (fvt-name:string (concat [vault-name "Vault"]))
+                (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+                (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+                (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (ref-SCR::URCi_IssueScore owner-konto [score-id])
+                    (ref-AQP::URCi_Issue [pool-id])
+                    (ref-AQP::URCi_AddScore [pool-id score-id])
+                    (ref-FVT::URCi_Issue owner-konto [fvt-id])
+                    ;;THE LAST TWO ARE BUILT HERE RATHER THAN CALLED, and the reason is specific.
+                    ;;RPS::URCi_AddScoreEntity and URCi_AddRewardLink resolve their active-account
+                    ;;with `UR_FVT|OwnerKonto fvt-id` -- a READ of the FVT row. For a PREVIEW of a
+                    ;;vault that does not exist yet, that row is absent and the reader aborts:
+                    ;;  No value found in table RPS_FVT|T|RewardAggregate for key: <name>Vault-...
+                    ;;A cost preview for a CREATION operation cannot depend on reading the thing it
+                    ;;is about to create. (Found by running it; the RT-K family is about exactly
+                    ;;this class of preview/exec divergence.)
+                    ;;
+                    ;;The PRICE is not the problem -- it is static, from the same price-table keys
+                    ;;below. Only the active-account came from the row, and here it is `owner-konto`,
+                    ;;which the caller supplies. So these two use the identical UC_IgnisPrice keys
+                    ;;and substitute the account. No price is restated; nothing can drift.
+                    (ref-IGNIS::UDC_ConstructOutputCumulator
+                        (ref-IGNIS::UC_IgnisPrice "AQP-FVT|C_AddScoreEntity" "add-score-entity")
+                        owner-konto (ref-IGNIS::URC_IsVirtualGasZero) [fvt-id score-id])
+                    (ref-IGNIS::UDC_ConstructOutputCumulator
+                        (ref-IGNIS::UC_IgnisPrice "AQP-FVT|C_AddRewardLink" "add-reward-link")
+                        owner-konto (ref-IGNIS::URC_IsVirtualGasZero)
+                        [fvt-id reward-dptf-id GV|COMMON_BAR])
+                ]
+                []
+            )
+        )
+    )
+
+
     ;;{5.4}  Validate [UEV/CAP]
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
@@ -2162,6 +2226,87 @@
             )
         )
     )
+    (defun AQP-FVT|C_IssueGenericEarningVault:string
+        (patron:string owner-konto:string vault-name:string stake-dptf-id:string reward-dptf-id:string)
+        @doc "Stand up a complete single-asset earning Vault in ONE transaction and ONE IGNIS \
+            \ collection: stake a true fungible, earn another true fungible. Composes the six core \
+            \ operations a Vault needs and concatenates their cumulators, so the caller pays once \
+            \ rather than six times."
+        ;; WHY THIS IS A TALOS ORCHESTRATOR AND NOT A CITIZEN HELPER
+        ;;   The same six steps written in a citizen module would call the six TS02-C3 wrappers,
+        ;;   and EVERY ONE OF THOSE COLLECTS IGNIS ON ITS OWN -- six collections for one logical
+        ;;   operation. Composing the CORE C_ functions here and concatenating their cumulators
+        ;;   collects once, which is the entire reason this belongs in Talos.
+        ;;
+        ;; WHAT A VAULT ACTUALLY NEEDS -- six operations, four class constants
+        ;;   1 score for the staked DPTF   score-class 1
+        ;;   2 pool it is staked into      aqp-class 1   (0 is reserved for LP)
+        ;;   3 score -> pool link          without it the pool scores nothing
+        ;;   4 the FVT entity              fvt-class 1 (Vault)
+        ;;   5 score admitted to the FVT   score-entity type 1
+        ;;   6 reward token registered     multiplet-family-id BAR (plain, not a laddered family)
+        ;;
+        ;;   Step 6 is not optional: an EMPLOYED score with no reward link makes every stake abort
+        ;;   in the FVT pipeline (05_FVT.pact:1210). Doing 1-5 without 6 builds a vault nobody can
+        ;;   use, which is a state this function makes unreachable.
+        ;;
+        ;; CLASS SAFETY
+        ;;   Two sovereign admission rules disagree about fvt-class for SF/NF
+        ;;   (URC_ScoreClassMatchesFvtClass vs URC_TripletCategoryMatchesFvtClass). They AGREE for
+        ;;   true fungibles: score-class 1 is admitted at fvt-class 1 by the first, and VAULT_TF
+        ;;   maps to 1 in the second. A TF-in/TF-out vault is the case both describe identically,
+        ;;   so this function does not depend on how that dispute is settled.
+        ;;
+        ;; NAMING -- one name in, three derived, and they MUST differ
+        ;;   UDC_Makeid is <name>-<block-hash> and ids collide across families because
+        ;;   BRD|BrandingTable is shared (DPDC audit #33M). Three entities minted from one name in
+        ;;   one transaction would produce three byte-identical ids and the second insert would
+        ;;   hard-abort. Hence <name>Score / <name>Pool / <name>Vault.
+        (with-capability (P|TS)
+            (let*
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                    (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    ;;
+                    (score-name:string (concat [vault-name "Score"]))
+                    (pool-name:string (concat [vault-name "Pool"]))
+                    (fvt-name:string (concat [vault-name "Vault"]))
+                    ;;ids are derived in THIS transaction for entities minted in THIS transaction,
+                    ;;so UDC_Makeid returns exactly what the C_Issue calls below are about to make.
+                    (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+                    (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+                    (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                        [
+                            (ref-SCR::C_IssueTrueFungibleScore
+                                patron owner-konto score-name GV|PRECISION GV|MX_FROZEN)
+                            (ref-AQP::C_Issue patron pool-name stake-dptf-id GV|POOL_CLASS_TF)
+                            (ref-AQP::C_AddScore patron pool-id score-id)
+                            (ref-FVT::C_Issue
+                                patron fvt-name owner-konto GV|FVT_CLASS_VAULT GV|COMMON_BAR)
+                            (ref-FVT::C_AddScoreEntity
+                                patron fvt-id GV|SCORE_ENTITY_SCORE score-id)
+                            (ref-FVT::C_AddRewardLink
+                                patron fvt-id reward-dptf-id false GV|COMMON_BAR)
+                        ]
+                        []
+                    )
+                )
+                (ref-TS01-A::XB_DynamicFuelSTOA)
+                (format
+                    "Successfully issued Generic Earning Vault {}: stake {} earn {}. score={} pool={} fvt={}."
+                    [vault-name stake-dptf-id reward-dptf-id score-id pool-id fvt-id]
+                )
+            )
+        )
+    )
+
     (defun AQP-FVT|CC_InjectStream:string
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
         @doc "Injects reward DPTF as a TIME-STREAM (linear vesting over `duration` seconds, 1h..365d) into fvt-id \
@@ -2469,147 +2614,6 @@
                 )
                 (ref-IGNIS::C_Collect patron ico)
                 (format "Capture recomputed for agency {} on FVT {}." [score-entity-id fvt-id])
-            )
-        )
-    )
-
-    (defun AQP-FVT|C_IssueGenericEarningVault:string
-        (patron:string owner-konto:string vault-name:string stake-dptf-id:string reward-dptf-id:string)
-        @doc "Stand up a complete single-asset earning Vault in ONE transaction and ONE IGNIS \
-            \ collection: stake a true fungible, earn another true fungible. Composes the six core \
-            \ operations a Vault needs and concatenates their cumulators, so the caller pays once \
-            \ rather than six times."
-        ;; WHY THIS IS A TALOS ORCHESTRATOR AND NOT A CITIZEN HELPER
-        ;;   The same six steps written in a citizen module would call the six TS02-C3 wrappers,
-        ;;   and EVERY ONE OF THOSE COLLECTS IGNIS ON ITS OWN -- six collections for one logical
-        ;;   operation. Composing the CORE C_ functions here and concatenating their cumulators
-        ;;   collects once, which is the entire reason this belongs in Talos.
-        ;;
-        ;; WHAT A VAULT ACTUALLY NEEDS -- six operations, four class constants
-        ;;   1 score for the staked DPTF   score-class 1
-        ;;   2 pool it is staked into      aqp-class 1   (0 is reserved for LP)
-        ;;   3 score -> pool link          without it the pool scores nothing
-        ;;   4 the FVT entity              fvt-class 1 (Vault)
-        ;;   5 score admitted to the FVT   score-entity type 1
-        ;;   6 reward token registered     multiplet-family-id BAR (plain, not a laddered family)
-        ;;
-        ;;   Step 6 is not optional: an EMPLOYED score with no reward link makes every stake abort
-        ;;   in the FVT pipeline (05_FVT.pact:1210). Doing 1-5 without 6 builds a vault nobody can
-        ;;   use, which is a state this function makes unreachable.
-        ;;
-        ;; CLASS SAFETY
-        ;;   Two sovereign admission rules disagree about fvt-class for SF/NF
-        ;;   (URC_ScoreClassMatchesFvtClass vs URC_TripletCategoryMatchesFvtClass). They AGREE for
-        ;;   true fungibles: score-class 1 is admitted at fvt-class 1 by the first, and VAULT_TF
-        ;;   maps to 1 in the second. A TF-in/TF-out vault is the case both describe identically,
-        ;;   so this function does not depend on how that dispute is settled.
-        ;;
-        ;; NAMING -- one name in, three derived, and they MUST differ
-        ;;   UDC_Makeid is <name>-<block-hash> and ids collide across families because
-        ;;   BRD|BrandingTable is shared (DPDC audit #33M). Three entities minted from one name in
-        ;;   one transaction would produce three byte-identical ids and the second insert would
-        ;;   hard-abort. Hence <name>Score / <name>Pool / <name>Vault.
-        (with-capability (P|TS)
-            (let*
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                    ;;
-                    (score-name:string (concat [vault-name "Score"]))
-                    (pool-name:string (concat [vault-name "Pool"]))
-                    (fvt-name:string (concat [vault-name "Vault"]))
-                    ;;ids are derived in THIS transaction for entities minted in THIS transaction,
-                    ;;so UDC_Makeid returns exactly what the C_Issue calls below are about to make.
-                    (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
-                    (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
-                    (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
-                )
-                (ref-IGNIS::C_Collect patron
-                    (ref-IGNIS::UDC_ConcatenateOutputCumulators
-                        [
-                            (ref-SCR::C_IssueTrueFungibleScore
-                                patron owner-konto score-name GV|PRECISION GV|MX_FROZEN)
-                            (ref-AQP::C_Issue patron pool-name stake-dptf-id GV|POOL_CLASS_TF)
-                            (ref-AQP::C_AddScore patron pool-id score-id)
-                            (ref-FVT::C_Issue
-                                patron fvt-name owner-konto GV|FVT_CLASS_VAULT GV|COMMON_BAR)
-                            (ref-FVT::C_AddScoreEntity
-                                patron fvt-id GV|SCORE_ENTITY_SCORE score-id)
-                            (ref-FVT::C_AddRewardLink
-                                patron fvt-id reward-dptf-id false GV|COMMON_BAR)
-                        ]
-                        []
-                    )
-                )
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                (format
-                    "Successfully issued Generic Earning Vault {}: stake {} earn {}. score={} pool={} fvt={}."
-                    [vault-name stake-dptf-id reward-dptf-id score-id pool-id fvt-id]
-                )
-            )
-        )
-    )
-
-    (defun URCi_IssueGenericEarningVault:object{IgnisCollectorV3.OutputCumulator}
-        (owner-konto:string vault-name:string stake-dptf-id:string reward-dptf-id:string)
-        @doc "Cost reader for AQP-FVT|C_IssueGenericEarningVault: the six component cumulators, \
-            \ concatenated exactly as the operation concatenates them."
-        ;;WHY IT COMPOSES RATHER THAN NAMING A PRICE. The operation is six core calls; its cost is
-        ;;whatever those six cost. Writing a standalone price here would be a SECOND definition of
-        ;;the same number, free to drift from the first -- the failure this codebase has found in
-        ;;its own artefacts repeatedly. Concatenating the same six readers the operation's own
-        ;;cumulators come from means the preview cannot disagree with the charge by construction.
-        ;;
-        ;;The component readers live in four different modules, and two of them are on RPS rather
-        ;;than FVT (AddScoreEntity, AddRewardLink) -- which is worth knowing, because looking for
-        ;;them on FVT beside the ops they price finds nothing.
-        (let*
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                ;;
-                (score-name:string (concat [vault-name "Score"]))
-                (pool-name:string (concat [vault-name "Pool"]))
-                (fvt-name:string (concat [vault-name "Vault"]))
-                (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
-                (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
-                (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
-            )
-            (ref-IGNIS::UDC_ConcatenateOutputCumulators
-                [
-                    (ref-SCR::URCi_IssueScore owner-konto [score-id])
-                    (ref-AQP::URCi_Issue [pool-id])
-                    (ref-AQP::URCi_AddScore [pool-id score-id])
-                    (ref-FVT::URCi_Issue owner-konto [fvt-id])
-                    ;;THE LAST TWO ARE BUILT HERE RATHER THAN CALLED, and the reason is specific.
-                    ;;RPS::URCi_AddScoreEntity and URCi_AddRewardLink resolve their active-account
-                    ;;with `UR_FVT|OwnerKonto fvt-id` -- a READ of the FVT row. For a PREVIEW of a
-                    ;;vault that does not exist yet, that row is absent and the reader aborts:
-                    ;;  No value found in table RPS_FVT|T|RewardAggregate for key: <name>Vault-...
-                    ;;A cost preview for a CREATION operation cannot depend on reading the thing it
-                    ;;is about to create. (Found by running it; the RT-K family is about exactly
-                    ;;this class of preview/exec divergence.)
-                    ;;
-                    ;;The PRICE is not the problem -- it is static, from the same price-table keys
-                    ;;below. Only the active-account came from the row, and here it is `owner-konto`,
-                    ;;which the caller supplies. So these two use the identical UC_IgnisPrice keys
-                    ;;and substitute the account. No price is restated; nothing can drift.
-                    (ref-IGNIS::UDC_ConstructOutputCumulator
-                        (ref-IGNIS::UC_IgnisPrice "AQP-FVT|C_AddScoreEntity" "add-score-entity")
-                        owner-konto (ref-IGNIS::URC_IsVirtualGasZero) [fvt-id score-id])
-                    (ref-IGNIS::UDC_ConstructOutputCumulator
-                        (ref-IGNIS::UC_IgnisPrice "AQP-FVT|C_AddRewardLink" "add-reward-link")
-                        owner-konto (ref-IGNIS::URC_IsVirtualGasZero)
-                        [fvt-id reward-dptf-id GV|COMMON_BAR])
-                ]
-                []
             )
         )
     )
