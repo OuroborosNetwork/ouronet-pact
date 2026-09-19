@@ -719,8 +719,15 @@
             ;;correctly. 100 golden units x 100.0 = 10000 = exactly unit-score/2, the open gate.
             (expect "<<TX-BOOT-14>> the first agency's operator is recorded"
                 KST.ANHD (AQP-DSA.UR_DSA-AGN|Operator fvt-id triplet-id))
-            (expect "<<TX-BOOT-14>> 100 WHOLE golden Custodians = 10000 quintessence (exactly the gate)"
-                10000.0 (AQP-DSA.URC_AgencyQuintessence triplet-id))
+            ;;100 whole golden x 100 000 = 10 000 000 quintessence = 500 capture units at
+            ;;unit-score 20000. Whole nonces are staked deliberately: every DSA fixture in
+            ;;Kursan/ stakes fragment negatives only, and a fragment-only model scores a whole
+            ;;nonce ZERO with nothing to catch it.
+            (expect "<<TX-BOOT-14>> 100 WHOLE golden Custodians = 10,000,000 quintessence"
+                10000000.0 (AQP-DSA.URC_AgencyQuintessence triplet-id))
+            (expect "<<TX-BOOT-14>> the OG boost class exists and the golden score links to it"
+                (AQP-SCORE.UR_SCR|ScoreBoostClassLink (U|DALOS.UDC_Makeid "OuronetPrimeGolden"))
+                (U|DALOS.UDC_Makeid "CustodiansOgBoost"))
             ]
         )
     )
@@ -735,6 +742,162 @@
 (print "")
 (print "")
 ;;
+(begin-tx "TX-BOOT-15-DSA - second agency, inject, collect: does the Custodians vault actually pay?")
+(print "")
+(print "=== TX-BOOT-15-DSA — a SECOND agency, an inject, and two collects ================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 200000000)(env-gas 0)
+;;ADDED 2026-09-19. The point of this block is stated plainly: everything before it proves the
+;;Custodians vault was BUILT correctly (rows exist, classes are right, splits are registered).
+;;None of that proves it PAYS. This runs the economic loop end to end on the code that is
+;;actually going to be deployed:
+;;
+;;    a second agency, by a DIFFERENT operator, through the PUBLIC path
+;;    -> an oracle write that turns quintessence into capture
+;;    -> an inject
+;;    -> a collect by each operator
+;;
+;;WHY THE SECOND AGENCY USES THE PUBLIC PATH AND NOT CC_Step14. CC_Step14 is
+;;GOV|AQP_BOOT_ADMIN-gated, which is correct for the FIRST agency and wrong for every other
+;;one -- real operators must never hold that key. So EMMA opens hers the way a real operator
+;;will: C_IssueScoreFromModel against the SAME triplet model, three boost-class links, three
+;;C_AddScore, then AQP-DSA|CC_OpenAgency. If that sequence works here, the documented
+;;instruction in Deploy/3_Assets/15 is true; if it does not, that instruction is a lie.
+;;
+;;WHY CAPTURE MUST BE ORACLED FIRST. capture-units = min(floor(Q / unit-score), NODES), and
+;;`nodes` starts at 0 -- so an agency with millions of quintessence earns NOTHING until an
+;;oracle reports node count. That is the single most surprising property of this vault and the
+;;most likely operational mistake, so it is exercised rather than described.
+(env-data { "dsa-oracle": { "keys": ["dsa-oracle-key"], "pred": "keys-all" } })
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (dhoc-id:string "DHOC-98c486052a51")
+        (split-smart:[decimal]
+            (DALOS.URC_SplitSTOAPrices patron (* 12.0 (DALOS.UR_UsagePrice "smart")))
+        )
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "PK_Emma", "caps": [] }
+            { "key": "dsa-oracle-key", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-smart))
+                ]
+            }
+        ]
+    )
+    ;;==== TX-BOOT-15-DSA · 01 · fund EMMA with bronze Custodians ====
+    (print "--- [TX-BOOT-15-DSA · 01 · fund EMMA] ---")
+    (print (format "<(transfer 20 whole bronze to EMMA)> => \"{}\""
+        [(TS02-C1.DPSF|C_TransferNonce patron dhoc-id patron KST.EMMA 1 20 false)]))
+    ;;==== TX-BOOT-15-DSA · 02 · EMMA opens agency #2 via the PUBLIC path ====
+    (print "--- [TX-BOOT-15-DSA · 02 · EMMA opens agency 2, public path] ---")
+    (let
+        (
+            (emma:string KST.EMMA)
+            (fvt-id:string (ref-U|DALOS::UDC_Makeid "CustodiansVault"))
+            (pool-id:string (ref-U|DALOS::UDC_Makeid "CustodiansPool"))
+            (model-id:string (ref-U|DALOS::UDC_Makeid "CustodiansQuintessenceTriplet"))
+            (og-class:string (ref-U|DALOS::UDC_Makeid "CustodiansOgBoost"))
+        )
+        (print (format "<(EMMA C_IssueScoreFromModel)> => \"{}\""
+            [(TS02-C3.AQP-SCR|C_IssueScoreFromModel emma emma model-id "EmmaAgency")]))
+        (let
+            (
+                (eb:string (ref-U|DALOS::UDC_Makeid "EmmaAgencyBronze"))
+                (es:string (ref-U|DALOS::UDC_Makeid "EmmaAgencySilver"))
+                (eg:string (ref-U|DALOS::UDC_Makeid "EmmaAgencyGolden"))
+            )
+            (TS02-C3.AQP-SCR|C_CreateScoreBoostClassLink emma eb og-class)
+            (TS02-C3.AQP-SCR|C_CreateScoreBoostClassLink emma es og-class)
+            (TS02-C3.AQP-SCR|C_CreateScoreBoostClassLink emma eg og-class)
+            (TS02-C3.AQP-POOL|C_AddScore emma pool-id eb)
+            (TS02-C3.AQP-POOL|C_AddScore emma pool-id es)
+            (TS02-C3.AQP-POOL|C_AddScore emma pool-id eg)
+            ;;20 whole bronze x 1000 = 20 000 quintessence -- twice the 10 000 gate.
+            (print (format "<(EMMA CC_OpenAgency, stake 20 whole bronze)> => \"{}\""
+                [(TS02-C3.AQP-DSA|CC_OpenAgency emma fvt-id pool-id
+                    (AQP-SCORE.UC_ComputeTripletId eb es eg) 100 dhoc-id [1])]))
+            (print (format "<(EMMA agency quintessence)> => {}"
+                [(AQP-DSA.URC_AgencyQuintessence (AQP-SCORE.UC_ComputeTripletId eb es eg))]))
+            ;;==== TX-BOOT-15-DSA · 03 · oracle: quintessence becomes CAPTURE ====
+            (print "--- [TX-BOOT-15-DSA · 03 · oracle] ---")
+            (let
+                (
+                    (anhd-triplet:string (AQP-SCORE.UC_ComputeTripletId
+                        (ref-U|DALOS::UDC_Makeid "OuronetPrimeBronze")
+                        (ref-U|DALOS::UDC_Makeid "OuronetPrimeSilver")
+                        (ref-U|DALOS::UDC_Makeid "OuronetPrimeGolden")))
+                    (emma-triplet:string (AQP-SCORE.UC_ComputeTripletId eb es eg))
+                )
+                ;;capture BEFORE any oracle write -- this is the operational trap, proven not told
+                (print (format "<(capture before oracle)> anhd={} emma={}"
+                    [(AQP-DSA.URC_CaptureUnits fvt-id anhd-triplet)
+                     (AQP-DSA.URC_CaptureUnits fvt-id emma-triplet)]))
+                (TS02-C3.AQP-DSA|C_SetOracleAuth patron fvt-id (read-keyset "dsa-oracle"))
+                ;;ANHD holds 10,000,000 q = 500 units of capacity but is capped by nodes=2.
+                ;;EMMA holds 20,000 q = 1 unit and runs 1 node. So the CAP binds for ANHD and
+                ;;the STAKE binds for EMMA -- both sides of min(floor(Q/unit), nodes) exercised.
+                (TS02-C3.AQP-DSA|C_OracleWrite patron fvt-id anhd-triplet 2 1000)
+                (TS02-C3.AQP-DSA|C_OracleWrite patron fvt-id emma-triplet 1 1000)
+                (print (format "<(capture after oracle)> anhd={} emma={}"
+                    [(AQP-DSA.URC_CaptureUnits fvt-id anhd-triplet)
+                     (AQP-DSA.URC_CaptureUnits fvt-id emma-triplet)]))
+                ;;==== TX-BOOT-15-DSA · 04 · inject, then both operators collect ====
+                (print "--- [TX-BOOT-15-DSA · 04 · inject and collect] ---")
+                (let
+                    (
+                        (ouro:string "OURO-98c486052a51")
+                        (auryn:string (ref-DALOS::UR_AurynID))
+                        (elite:string (ref-DALOS::UR_EliteAurynID))
+                    )
+                    ;;DIAGNOSTIC: the triplet LANES, which is what the quality split actually
+                    ;;routes on. Printed before the inject so the payout can be read against them.
+                    (print (format "<(lanes ANHD)> => {}"
+                        [(RPS.URC_ComputeTripletLanes patron pool-id anhd-triplet)]))
+                    (print (format "<(lanes EMMA)> => {}"
+                        [(RPS.URC_ComputeTripletLanes KST.EMMA pool-id emma-triplet)]))
+                    (print (format "<(inject 3000 OURO)> => \"{}\""
+                        [(TS02-C3.AQP-FVT|CC_Inject patron fvt-id ouro 3000.0)]))
+                    (let
+                        (
+                            (a0:decimal (DPTF.UR_AccountSupply ouro patron))
+                            (e0:decimal (DPTF.UR_AccountSupply ouro KST.EMMA))
+                            (a0a:decimal (DPTF.UR_AccountSupply auryn patron))
+                            (e0a:decimal (DPTF.UR_AccountSupply auryn KST.EMMA))
+                            (a0e:decimal (DPTF.UR_AccountSupply elite patron))
+                            (e0e:decimal (DPTF.UR_AccountSupply elite KST.EMMA))
+                        )
+                        (print (format "<(ANHD collect)> => \"{}\""
+                            [(TS02-C3.AQP-FVT|CC_Collect patron fvt-id 3 anhd-triplet ouro)]))
+                        (print (format "<(EMMA collect)> => \"{}\""
+                            [(TS02-C3.AQP-FVT|CC_Collect KST.EMMA fvt-id 3 emma-triplet ouro)]))
+                        (print (format "<(ANHD gained)> ouro={} auryn={} elite={}"
+                            [(- (DPTF.UR_AccountSupply ouro patron) a0)
+                             (- (DPTF.UR_AccountSupply auryn patron) a0a)
+                             (- (DPTF.UR_AccountSupply elite patron) a0e)]))
+                        (print (format "<(EMMA gained)> ouro={} auryn={} elite={}"
+                            [(- (DPTF.UR_AccountSupply ouro KST.EMMA) e0)
+                             (- (DPTF.UR_AccountSupply auryn KST.EMMA) e0a)
+                             (- (DPTF.UR_AccountSupply elite KST.EMMA) e0e)]))
+                    )
+                )
+            )
+        )
+    )
+)
+(commit-tx)
+(env-sigs [])
+
 (begin-tx "TX-BOOT-13-SPLIT - dual reward-split ECONOMIC flip on OuroLpFarm (task #89 / D1-G2)")
 (print "")
 (print "=== TX-BOOT-13-SPLIT — the SAME member's W_i flips STAKED<->TVL on the real LP farm ==")

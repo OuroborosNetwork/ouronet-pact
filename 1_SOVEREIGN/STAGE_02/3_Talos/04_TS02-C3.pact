@@ -95,7 +95,7 @@
         (patron:string bronze-score-id:string silver-score-id:string golden-score-id:string)
     )
     (defun AQP-SCR|C_IssueSingleScoreModel:string
-        (patron:string model-name:string score-class:integer collectable-id:string precision:integer nonces:[integer] nonce-score-values:[decimal])
+        (patron:string model-name:string score-class:integer collectable-id:string precision:integer nonces:[integer] nonce-score-values:[decimal] boost-class-id:string)
     )
     (defun AQP-SCR|C_CombineTripletScoreModel:string
         (patron:string model-name:string bronze-model-id:string silver-model-id:string golden-model-id:string)
@@ -1321,7 +1321,7 @@
         )
     )
     (defun AQP-SCR|C_IssueSingleScoreModel:string
-        (patron:string model-name:string score-class:integer collectable-id:string precision:integer nonces:[integer] nonce-score-values:[decimal])
+        (patron:string model-name:string score-class:integer collectable-id:string precision:integer nonces:[integer] nonce-score-values:[decimal] boost-class-id:string)
         @doc "Defines a SINGLE score-entity model in AQP-SCORE and collects IGNIS on patron. Returns the model-id."
         (with-capability (P|TS)
             (let
@@ -1329,7 +1329,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-SCR::C_IssueSingleScoreModel patron model-name score-class collectable-id precision nonces nonce-score-values)
+                        (ref-SCR::C_IssueSingleScoreModel patron model-name score-class collectable-id precision nonces nonce-score-values boost-class-id)
                     )
                     (model-id:string (at 0 (at "output" ico)))
                 )

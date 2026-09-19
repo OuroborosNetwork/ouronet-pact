@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 19 of 20
 ;; This is STEP 19 of 21 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-18 must have run first, including the init steps between deploys.
-;; 5 module(s), 385,493 gas measured in the REPL gas model, 267,277 bytes
+;; 5 module(s), 385,493 gas measured in the REPL gas model, 267,336 bytes
 ;;
 ;; Modules in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact
@@ -115,7 +115,7 @@
         (patron:string bronze-score-id:string silver-score-id:string golden-score-id:string)
     )
     (defun AQP-SCR|C_IssueSingleScoreModel:string
-        (patron:string model-name:string score-class:integer collectable-id:string precision:integer nonces:[integer] nonce-score-values:[decimal])
+        (patron:string model-name:string score-class:integer collectable-id:string precision:integer nonces:[integer] nonce-score-values:[decimal] boost-class-id:string)
     )
     (defun AQP-SCR|C_CombineTripletScoreModel:string
         (patron:string model-name:string bronze-model-id:string silver-model-id:string golden-model-id:string)
@@ -1341,7 +1341,7 @@
         )
     )
     (defun AQP-SCR|C_IssueSingleScoreModel:string
-        (patron:string model-name:string score-class:integer collectable-id:string precision:integer nonces:[integer] nonce-score-values:[decimal])
+        (patron:string model-name:string score-class:integer collectable-id:string precision:integer nonces:[integer] nonce-score-values:[decimal] boost-class-id:string)
         @doc "Defines a SINGLE score-entity model in AQP-SCORE and collects IGNIS on patron. Returns the model-id."
         (with-capability (P|TS)
             (let
@@ -1349,7 +1349,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-SCR::C_IssueSingleScoreModel patron model-name score-class collectable-id precision nonces nonce-score-values)
+                        (ref-SCR::C_IssueSingleScoreModel patron model-name score-class collectable-id precision nonces nonce-score-values boost-class-id)
                     )
                     (model-id:string (at 0 (at "output" ico)))
                 )

@@ -173,9 +173,9 @@
             (family-id:string (concat ["F" "|" ouro "|" (ref-DALOS::UR_AurynID) "|" (ref-DALOS::UR_EliteAurynID)]))
         )
         ;; 1) three single score models (bronze/silver/gold) over the custodian frag nonces -> combine into a triplet
-        (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "GtBronzeModel" 3 dhoc 24 [-1] [1.0])
-        (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "GtSilverModel" 3 dhoc 24 [-2] [10.0])
-        (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "GtGoldModel"   3 dhoc 24 [-3] [100.0])
+        (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "GtBronzeModel" 3 dhoc 24 [-1] [1.0] "|")
+        (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "GtSilverModel" 3 dhoc 24 [-2] [10.0] "|")
+        (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "GtGoldModel"   3 dhoc 24 [-3] [100.0] "|")
         (ref-TS02-C3::AQP-SCR|C_CombineTripletScoreModel anhd "GtTripletModel" bmid smid gmid)
         ;; 2) issue the OPERATOR's triplet score from the model
         (ref-TS02-C3::AQP-SCR|C_IssueScoreFromModel anhd anhd model-id "GtAgency")

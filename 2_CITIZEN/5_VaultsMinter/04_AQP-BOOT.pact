@@ -176,10 +176,10 @@
     (defconst BOOT|MX_FROZEN:decimal                    2.0)
     (defconst BOOT|MX_SLEEPING:decimal                  2.0)
     (defconst BOOT|FVT_OURO_LP_FARM:string              "OuroLpFarm")
-    (defconst BOOT|FVT_SUBSIDIARY_TREASURY:string "SubsidiaryTreasury")
-    (defconst BOOT|FVT_CODING_TREASURY:string "CodingDivisionTreasury")
-    (defconst BOOT|FVT_SNAKES_TREASURY:string "SnakesTreasury")
-    (defconst BOOT|FVT_SHARES_TREASURY:string "CompanySharesTreasury")
+    (defconst BOOT|FVT_SUBSIDIARY_TREASURY:string       "SubsidiaryTreasury")
+    (defconst BOOT|FVT_CODING_TREASURY:string           "CodingDivisionTreasury")
+    (defconst BOOT|FVT_SNAKES_TREASURY:string           "SnakesTreasury")
+    (defconst BOOT|FVT_SHARES_TREASURY:string           "CompanySharesTreasury")
     ;;ADDED 2026-09-19. The fifth treasury. C_Step4 creates FOUR core scores and three of them
     ;;had a treasury of their own -- TheCodingDivision, DemiourgosSnakes, DemiourgosShareholder --
     ;;while `Bloodshed` had none, even though C_Step7 attaches it to DHBloodshed and so makes it
@@ -228,18 +228,47 @@
     (defconst BOOT|CUSTODIANS_SPLIT_SILVER:[integer]    [400 300 300])
     (defconst BOOT|CUSTODIANS_SPLIT_GOLDEN:[integer]    [600 200 200])
 
-    ;; Quintessence per unit of each Custodians tier. Each model lists the WHOLE nonce and its
-    ;; FRAGMENT negative with the SAME value, which is what makes the two dimensionally equal:
-    ;; URCx_SfStakeDefinitionWeightedRawWeight scales a negative nonce by 0.001 and a whole by
-    ;; 1.0, and one whole fragments into exactly 1000 pieces -- so 1 whole and 1000 fragments
-    ;; both yield V. Listing only the negatives (as the DSA test fixtures do) would make a
-    ;; whole nonce score ZERO, which is a silent wrong answer rather than a failure.
+    ;; QUINTESSENCE PER CUSTODIANS UNIT — owner values, 2026-09-19.
+    ;;     nonce 1 Bronze   1 000 whole   ·  1  per fragment
+    ;;     nonce 2 Silver  10 000 whole   ·  10 per fragment
+    ;;     nonce 3 Golden 100 000 whole   ·  100 per fragment
+    ;;     nonce 4 OG      1 000, GOLDEN type, NOT fragmentable — plus a 5% anchor boost (below)
+    ;;
+    ;; WHY WHOLE AND FRAGMENT CARRY THE SAME NUMBER. URCx_SfStakeDefinitionWeightedRawWeight
+    ;; scales a NEGATIVE (fragment) nonce by 0.001 and a whole by 1.0, and one whole splits into
+    ;; exactly 1000 fragments. So a single value per tier expresses both:
+    ;;     1 whole bronze      = 1000 x 1.000 x 1    = 1000
+    ;;     1000 bronze frags   = 1000 x 0.001 x 1000 = 1000
+    ;;     1 bronze fragment   = 1000 x 0.001 x 1    = 1
+    ;; Listing only the negatives (as the Kursan DSA fixtures do) would make a WHOLE nonce score
+    ;; ZERO. <<TX-BOOT-14>> stakes whole nonces precisely to keep that path honest.
+    ;;
+    ;; CORRECTED 2026-09-19: these were 1.0 / 10.0 / 100.0 — the right RATIO but 1000x too small,
+    ;; taken from the collection's "a third of ownership over 10000/1000/100 units" description
+    ;; rather than from the quintessence schedule. The ratio held, so every test still passed;
+    ;; only the absolute scale was wrong, which is the kind of error a ratio-preserving fixture
+    ;; cannot see. It matters: the whole collection is 30,000,000 quintessence, not 30,000, so at
+    ;; unit-score 20000 it supports ~1500 capture units rather than one.
     (defconst BOOT|CUSTODIANS_NONCES_BRONZE:[integer]   [1 -1])
     (defconst BOOT|CUSTODIANS_NONCES_SILVER:[integer]   [2 -2])
-    (defconst BOOT|CUSTODIANS_NONCES_GOLDEN:[integer]   [3 -3])
-    (defconst BOOT|CUSTODIANS_VALUE_BRONZE:[decimal]    [1.0 1.0])
-    (defconst BOOT|CUSTODIANS_VALUE_SILVER:[decimal]    [10.0 10.0])
-    (defconst BOOT|CUSTODIANS_VALUE_GOLDEN:[decimal]    [100.0 100.0])
+    (defconst BOOT|CUSTODIANS_NONCES_GOLDEN:[integer]   [3 -3 4])
+    (defconst BOOT|CUSTODIANS_VALUE_BRONZE:[decimal]    [1000.0 1000.0])
+    (defconst BOOT|CUSTODIANS_VALUE_SILVER:[decimal]    [10000.0 10000.0])
+    ;; Golden carries nonce 4 as a THIRD entry: the OG Founder SFT scores 1000 of the golden
+    ;; type. It has no fragment negative because nonce 4 is not fragmentable.
+    (defconst BOOT|CUSTODIANS_VALUE_GOLDEN:[decimal]    [100000.0 100000.0 1000.0])
+
+    ;; NONCE 4 IS ALSO AN ANCHOR — +5% on the staked quintessence, owner ruling 2026-09-19.
+    ;; ank-promile is per-mille and the boost is ADDITIVE (02_SCORE.pact: boosted = base x
+    ;; promile/1000, stored as the boost PART, not a replacement), so 5% is 50.0.
+    ;; The anchor is issued ONCE with the vault (Step 13); each agency's three scores link to
+    ;; the class in Step 14, which is why the boost lands on the user's WHOLE staked
+    ;; quintessence and not just the golden lane.
+    (defconst BOOT|CUSTODIANS_OG_ANCHOR:string          "CustodiansOgFounder")
+    (defconst BOOT|CUSTODIANS_OG_BOOST_CLASS:string     "CustodiansOgBoost")
+    (defconst BOOT|CUSTODIANS_OG_PROMILE:decimal        50.0)
+    (defconst BOOT|CUSTODIANS_OG_NONCE:integer          4)
+    (defconst BOOT|CUSTODIANS_ANK_PRECISION:integer     3)
     (defconst BOOT|CUSTODIANS_PRECISION:integer         24)
     ;;Mirrors AQP-FVT/RPS CT_REWARD_MODE_HETEROGENEOUS. Restated rather than referenced because a
     ;;defconst is not reachable through a module reference -- (ref-FVT::CT_...) is "Cannot apply
@@ -247,8 +276,8 @@
     ;;back out of RPS after Step 13 writes it, so a drift in either spelling fails the suite.
     (defconst BOOT|REWARD_MODE_HETEROGENEOUS:string     "HETEROGENEOUS")
     (defconst BOOT|TREASURY_COMMON:string               "|")
-    (defconst BOOT|SCORE_ENTITY_SCORE:integer 1)
-    (defconst BOOT|SCORE_ENTITY_TRIPLET:integer 3)
+    (defconst BOOT|SCORE_ENTITY_SCORE:integer           1)
+    (defconst BOOT|SCORE_ENTITY_TRIPLET:integer         3)
     ;;{3.2}  schemas
     ;;{3.3}  tables
 
@@ -1041,38 +1070,50 @@
                     (silver-model-id:string (ref-U|DALOS::UDC_Makeid BOOT|MODEL_CUSTODIANS_SILVER))
                     (golden-model-id:string (ref-U|DALOS::UDC_Makeid BOOT|MODEL_CUSTODIANS_GOLDEN))
                     (triplet-model-id:string (ref-U|DALOS::UDC_Makeid BOOT|MODEL_CUSTODIANS_TRIPLET))
+                    (og-boost-class-id:string (ref-U|DALOS::UDC_Makeid BOOT|CUSTODIANS_OG_BOOST_CLASS))
                 )
-                ;; 1. the three single models — score-class 3 (SemiFungible); v1 models are SF-only
+                ;; 1. the OG-Founder ANCHOR (+5%) and the boost class it creates. `acnoi` true means
+                ;;    the next argument is a NAME to create rather than an existing class id.
+                ;;    Issued once, here: the class is shared by every agency's scores (Step 14
+                ;;    links them), which is what makes the 5% apply to a user's WHOLE staked
+                ;;    quintessence rather than only the golden lane.
+                (ref-TS02-C3::AQP-ANK|C_IssueSemiFungibleAnchor patron BOOT|CUSTODIANS_OG_ANCHOR
+                    custodians-dpsf-id true BOOT|CUSTODIANS_OG_BOOST_CLASS
+                    BOOT|CUSTODIANS_ANK_PRECISION BOOT|CUSTODIANS_OG_PROMILE BOOT|CUSTODIANS_OG_NONCE)
+                ;; 2. the three single models — score-class 3 (SemiFungible); v1 models are SF-only.
+                ;;    Each carries og-boost-class-id, so every score minted from them is boost-linked
+                ;;    AT ISSUE by the vault's rule. The agency never chooses.
                 (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel patron BOOT|MODEL_CUSTODIANS_BRONZE
                     3 custodians-dpsf-id BOOT|CUSTODIANS_PRECISION
-                    BOOT|CUSTODIANS_NONCES_BRONZE BOOT|CUSTODIANS_VALUE_BRONZE)
+                    BOOT|CUSTODIANS_NONCES_BRONZE BOOT|CUSTODIANS_VALUE_BRONZE og-boost-class-id)
                 (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel patron BOOT|MODEL_CUSTODIANS_SILVER
                     3 custodians-dpsf-id BOOT|CUSTODIANS_PRECISION
-                    BOOT|CUSTODIANS_NONCES_SILVER BOOT|CUSTODIANS_VALUE_SILVER)
+                    BOOT|CUSTODIANS_NONCES_SILVER BOOT|CUSTODIANS_VALUE_SILVER og-boost-class-id)
                 (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel patron BOOT|MODEL_CUSTODIANS_GOLDEN
                     3 custodians-dpsf-id BOOT|CUSTODIANS_PRECISION
-                    BOOT|CUSTODIANS_NONCES_GOLDEN BOOT|CUSTODIANS_VALUE_GOLDEN)
-                ;; 2. the triplet model — what every agency instantiates, so all agencies score alike
+                    BOOT|CUSTODIANS_NONCES_GOLDEN BOOT|CUSTODIANS_VALUE_GOLDEN og-boost-class-id)
+                ;; 3. the triplet model — what every agency instantiates, so all agencies score alike
                 (ref-TS02-C3::AQP-SCR|C_CombineTripletScoreModel patron BOOT|MODEL_CUSTODIANS_TRIPLET
                     bronze-model-id silver-model-id golden-model-id)
-                ;; 3. the class-0 FVT. common-denominator is a REAL DPTF here, not BAR: DSA capture
+                ;; 4. the class-0 FVT. common-denominator is a REAL DPTF here, not BAR: DSA capture
                 ;;    arithmetic is denominated in it, which is the whole reason class 1/2 is refused.
                 (ref-TS02-C3::AQP-FVT|C_Issue patron BOOT|FVT_CUSTODIANS_VAULT owner-konto 0 ouro-id)
-                ;; 4. MULTIPLET_BASE reward — the family id is what makes it so
+                ;; 5. MULTIPLET_BASE reward — the family id is what makes it so
                 (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron fvt-id ouro-id false multiplet-family-id)
-                ;; 5. the heterogeneous split across the OURO|AURYN|ELITEAURYN ladder
+                ;; 6. the heterogeneous split across the OURO|AURYN|ELITEAURYN ladder
                 (ref-TS02-C3::AQP-FVT|C_SetQualitySplit patron fvt-id ouro-id
                     BOOT|REWARD_MODE_HETEROGENEOUS
                     BOOT|CUSTODIANS_SPLIT_BRONZE BOOT|CUSTODIANS_SPLIT_SILVER BOOT|CUSTODIANS_SPLIT_GOLDEN)
-                ;; 6. the DSA template — unit-score sets the node bar AND, at half, the agency bar
+                ;; 7. the DSA template — unit-score sets the node bar AND, at half, the agency bar
                 (ref-TS02-C3::AQP-DSA|C_DefineDelegationVault patron fvt-id triplet-model-id
                     BOOT|CUSTODIANS_UNIT_SCORE)
-                ;; 7. the pool the Custodians SFT stakes into — aqp-class 3 (DPSF)
+                ;; 8. the pool the Custodians SFT stakes into — aqp-class 3 (DPSF)
                 (ref-TS02-C3::AQP-POOL|C_Issue patron BOOT|POOL_CUSTODIANS custodians-dpsf-id 3)
-                (format "AQP-BOOT Step 13 done. fvt={} pool={} triplet-model={} models=[bronze={} silver={} golden={}] unit-score={} (agency gate {}). NEXT=Step14:CC_Step14_OpenCustodiansAgency triplet-model-id."
+                (format "AQP-BOOT Step 13 done. fvt={} pool={} triplet-model={} models=[bronze={} silver={} golden={}] og-boost-class={} (+5%% on nonce 4) unit-score={} (agency gate {}). NEXT=Step14:CC_Step14_OpenCustodiansAgency."
                     [
                         fvt-id pool-id triplet-model-id
                         bronze-model-id silver-model-id golden-model-id
+                        (ref-U|DALOS::UDC_Makeid BOOT|CUSTODIANS_OG_BOOST_CLASS)
                         BOOT|CUSTODIANS_UNIT_SCORE (/ (dec BOOT|CUSTODIANS_UNIT_SCORE) 2.0)
                     ]
                 )
@@ -1119,6 +1160,7 @@
                     (fvt-id:string (ref-U|DALOS::UDC_Makeid BOOT|FVT_CUSTODIANS_VAULT))
                     (pool-id:string (ref-U|DALOS::UDC_Makeid BOOT|POOL_CUSTODIANS))
                     (triplet-model-id:string (ref-U|DALOS::UDC_Makeid BOOT|MODEL_CUSTODIANS_TRIPLET))
+                    (og-boost-class-id:string (ref-U|DALOS::UDC_Makeid BOOT|CUSTODIANS_OG_BOOST_CLASS))
                 )
                 ;; 1. the factory: 3 scores + their SF definitions + the triplet, in one call
                 (ref-TS02-C3::AQP-SCR|C_IssueScoreFromModel patron patron triplet-model-id agency-name)
@@ -1128,7 +1170,13 @@
                         (silver-id:string (ref-U|DALOS::UDC_Makeid (concat [agency-name "Silver"])))
                         (golden-id:string (ref-U|DALOS::UDC_Makeid (concat [agency-name "Golden"])))
                     )
-                    ;; 2. employ all three in the Custodians pool (silver's link is the one admission reads)
+                    ;; 2. employ all three in the Custodians pool (silver's link is the one admission reads).
+                    ;;    NOTE what is NOT here: boost-class links. Those used to be three explicit
+                    ;;    C_CreateScoreBoostClassLink calls at this point, which was the defect --
+                    ;;    they were made by the AGENCY, so an agency could decline the vault's anchor
+                    ;;    or point at another class. The class now rides on the MODEL and is applied
+                    ;;    by XI_IssueOneFromModel at issue, so step 1 above already linked all three.
+                    ;;    The vault admin defines how a score behaves; the agency just opens.
                     (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id bronze-id)
                     (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id silver-id)
                     (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id golden-id)

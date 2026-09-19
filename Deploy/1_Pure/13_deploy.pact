@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 13 of 20
 ;; This is STEP 13 of 21 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-12 must have run first, including the init steps between deploys.
-;; 1 module(s), 229,502 gas measured in the REPL gas model, 210,542 bytes
+;; 1 module(s), 229,502 gas measured in the REPL gas model, 211,527 bytes
 ;;
 ;; Modules in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/02_SCORE.pact
@@ -226,7 +226,7 @@
         (score-id:string dpnf-id:string dpnf-nonce-classes:[integer] class-score-values:[decimal])
     )
     (defun C_IssueSingleScoreModel:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string model-name:string score-class:integer collectable-id:string precision:integer nonces:[integer] nonce-score-values:[decimal])
+        (patron:string model-name:string score-class:integer collectable-id:string precision:integer nonces:[integer] nonce-score-values:[decimal] boost-class-id:string)
     )
     (defun C_CombineTripletScoreModel:object{IgnisCollectorV3.OutputCumulator}
         (patron:string model-name:string bronze-model-id:string silver-model-id:string golden-model-id:string)
@@ -1388,7 +1388,7 @@
     )
     (defun UDC_SCR|ScoreEntityModel:object{AcquisitionSchemasV1.SCR|ScoreEntityModel}
         (entity-type:integer score-class:integer collectable-id:string precision:integer
-         nonces:[integer] nonce-score-values:[decimal]
+         nonces:[integer] nonce-score-values:[decimal] boost-class-id:string
          bronze-model-id:string silver-model-id:string golden-model-id:string model-id:string)
         @doc "Core constructor for object{AcquisitionSchemasV1.SCR|ScoreEntityModel}."
         {"entity-type"        : entity-type
@@ -1397,6 +1397,7 @@
         ,"precision"          : precision
         ,"nonces"             : nonces
         ,"nonce-score-values" : nonce-score-values
+        ,"boost-class-id"     : boost-class-id
         ,"bronze-model-id"    : bronze-model-id
         ,"silver-model-id"    : silver-model-id
         ,"golden-model-id"    : golden-model-id
@@ -3512,6 +3513,16 @@
                 (with-capability (SCR|XI>ISSUE-SCORE score-name owner-konto prec 3 BAR 2.0 1.0 1.0 -1)
                     (XI_Issue score-name owner-konto prec 3 BAR 2.0 1.0 1.0 false -1))
                 (XI_IssueSemiFungibleScoreDefinition score-id (at "collectable-id" m) (at "nonces" m) (at "nonce-score-values" m))
+                ;;ANCHORS IN DELEGATION VAULTS (2026-09-19). The model's boost class is applied HERE,
+                ;;at issue, so every score minted from it carries the vault's rule. Before this, the
+                ;;link could only be set afterwards by the score's OWNER -- the agency operator --
+                ;;which meant a delegation vault could not guarantee its own scoring: an agency was
+                ;;free to skip the anchor or point somewhere else, and two agencies on one vault
+                ;;could score by different rules. The vault admin defines behaviour; the agency
+                ;;opens under it. BAR = no boost class, which is what every pre-existing model has.
+                (if (!= (at "boost-class-id" m) BAR)
+                    (WU_Score|BoostClassLink score-id (at "boost-class-id" m))
+                    true)
                 score-id
             )
         )
@@ -3993,7 +4004,7 @@
         )
     )
     (defun C_IssueSingleScoreModel:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string model-name:string score-class:integer collectable-id:string precision:integer nonces:[integer] nonce-score-values:[decimal])
+        (patron:string model-name:string score-class:integer collectable-id:string precision:integer nonces:[integer] nonce-score-values:[decimal] boost-class-id:string)
         @doc "Define a SINGLE score-entity model (the scoring spec for one score + its SF definition). model-id \
             \ from model-name (UDC_Makeid). P|UEV_IMC + SCR|C>ISSUE-SINGLE-SCORE-MODEL. Bills GAS|ISSUE-SCORE-MODEL."
         (P|UEV_IMC)
@@ -4006,7 +4017,7 @@
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
                 (WI_ScoreEntityModel model-id
-                    (UDC_SCR|ScoreEntityModel CT_SCORE_MODEL_SINGLE score-class collectable-id precision nonces nonce-score-values BAR BAR BAR model-id))
+                    (UDC_SCR|ScoreEntityModel CT_SCORE_MODEL_SINGLE score-class collectable-id precision nonces nonce-score-values boost-class-id BAR BAR BAR model-id))
                 (URCi_IssueScoreModel "AQP-SCR|C_IssueSingleScoreModel" patron [model-id])
             )
         )
@@ -4025,7 +4036,7 @@
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
                 (WI_ScoreEntityModel model-id
-                    (UDC_SCR|ScoreEntityModel CT_SCORE_MODEL_TRIPLET 0 BAR 0 [] [] bronze-model-id silver-model-id golden-model-id model-id))
+                    (UDC_SCR|ScoreEntityModel CT_SCORE_MODEL_TRIPLET 0 BAR 0 [] [] BAR bronze-model-id silver-model-id golden-model-id model-id))
                 (URCi_CombineTripletModel patron [model-id])
             )
         )

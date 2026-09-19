@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 12 of 20
 ;; This is STEP 12 of 21 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-11 must have run first, including the init steps between deploys.
-;; 2 module(s), 151,366 gas measured in the REPL gas model, 169,250 bytes
+;; 2 module(s), 151,366 gas measured in the REPL gas model, 170,178 bytes
 ;;
 ;; Modules in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/00_AQP-SCHEMAS.pact
@@ -357,6 +357,15 @@
         precision:integer                                    ;;[.]   single: score precision. triplet: 0.
         nonces:[integer]                                     ;;[.]   single: SF definition nonces (incl. fragment negatives). triplet: [].
         nonce-score-values:[decimal]                         ;;[.]   single: parallel values. triplet: [].
+        ;;ADDED 2026-09-19 — ANCHORS IN DELEGATION VAULTS. A score's boost-class link used to be
+        ;;settable only AFTER issue, by whoever owns the score — which in a delegation vault is the
+        ;;AGENCY OPERATOR, not the vault admin. That inverted the intended authority: an agency
+        ;;could decline the vault's anchor, or point at a different class, and every agency on one
+        ;;vault could score by different rules. Carrying it on the MODEL puts the decision where it
+        ;;belongs: the vault admin defines how a score behaves, the agency merely opens under those
+        ;;rules. XI_IssueOneFromModel applies it at issue; BAR means "no boost class", which is the
+        ;;pre-existing behaviour and what every model written before this field defaulted to.
+        boost-class-id:string                                ;;[.]   single: ANK boost class applied at issue (BAR = none). triplet: BAR.
         bronze-model-id:string                               ;;[.]   triplet: the 3 sub single-model ids. single: BAR.
         silver-model-id:string
         golden-model-id:string
