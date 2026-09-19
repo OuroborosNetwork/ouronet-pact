@@ -1,6 +1,6 @@
 ;; ---------------------------------------------------------------------------
-;; OURONET DEPLOY -- file 4 of 19
-;; This is STEP 4 of 20 in the full sequence (see Deploy/MANIFEST.md).
+;; OURONET DEPLOY -- file 4 of 20
+;; This is STEP 4 of 21 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-3 must have run first, including the init steps between deploys.
 ;; 4 module(s), 397,481 gas measured in the REPL gas model, 298,916 bytes
 ;;

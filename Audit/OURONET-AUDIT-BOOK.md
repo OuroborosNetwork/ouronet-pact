@@ -4849,15 +4849,15 @@ And what those deltas did to the two things a reader cares about — **[VERIFIED
 | | 2026-08-30 | 2026-09-14 | today (HEAD) |
 |---|---:|---:|---:|
 | Pact source files | 91 | 93 | **93** |
-| Pact source lines | 96,310 | 114,156 | **116,215** |
+| Pact source lines | 96,310 | 114,156 | **116,334** |
 | `.repl` files (excl. `archive/`) | 181 | 209 | **207** |
-| `.repl` lines | 68,435 | 120,603 | **137,787** |
-| distinct assertions written | **1,604** | **5,262** | **5,873** |
+| `.repl` lines | 68,435 | 120,603 | **137,844** |
+| distinct assertions written | **1,604** | **5,262** | **5,876** |
 
 > **These are a SNAPSHOT, and the book says so rather than implying permanence.** The distinct
 > count moved four times on 2026-09-17 alone as witnesses were added; it was **5,555** when the
 > figure-sync tool's own source of truth was found stale, **5,830** when that loop was closed, and
-> **5,873**, measured when this book was built. The canonical value is whatever `ARCHITECTURE/REPL_SUITE_STATS.md`
+> **5,876**, measured when this book was built. The canonical value is whatever `ARCHITECTURE/REPL_SUITE_STATS.md`
 > holds, which `_figuresync.py --check` now verifies **against the tree** rather than against itself
 > — see DEFECT-LEDGER §8.22.
 
@@ -4877,7 +4877,7 @@ command is named in the chapter that owns it.
 | **1.2** `INFO_` preview rehaul | one free preview per client operation | **426** implementations across **10** modules: **346** wrap a `URCi_`, **59** delegate to a sibling preview, **20** declare the op free, **1** is a data view |
 | **1.3** IGNIS re-pricing | the whole cost model moved into four constant maps | `IG\|DETER` **54** keys · `IG\|COMPONENTS` **396** · `IG\|WEIGHTS` **14** · `IG\|LEGS` **22**; the generated price sheet carries **442** priced rows + **5** declared unpriced |
 | **1.4** module splits | `04_FVT.pact` cut below the deploy ceiling | `04_RPS.pact` **5,621** lines + `05_FVT.pact` **3,977**; **0 of 93** modules over the ~6,635-line cliff, **1 in the project's own "Danger" band** |
-| **1.5** REPL finalisation | a one-command gate over the whole suite | **92** gate entrypoints, **14** fatal static checks, **5,873** distinct assertions, orphaned asserting files **0** |
+| **1.5** REPL finalisation | a one-command gate over the whole suite | **92** gate entrypoints, **14** fatal static checks, **5,876** distinct assertions, orphaned asserting files **0** |
 
 ---
 
@@ -4966,8 +4966,8 @@ a `URCi_` reader; 14 declare their op free, 4 are data views."* Those figures we
 2026-09-06, when commit `6b7a85b` measured them and said so. The tree today is **346 / 426 / 20 / 1**,
 and the document's own three sub-counts sum to 363, not 365. Chapter 12.
 >
-> **CLOSED 2026-09-17.** §5 was re-measured and now publishes 423 declared /
-> 414 client-facing / 414 measured, quoting the 345/365/14/4
+> **CLOSED 2026-09-17.** §5 was re-measured and now publishes 424 declared /
+> 415 client-facing / 415 measured, quoting the 345/365/14/4
 > census explicitly as superseded rather than replacing it silently.
 
 **3. The generated price sheet publishes a total that omits eleven of its own rows.** The footer
@@ -5219,7 +5219,7 @@ report that cries wolf nine times is a coverage report nobody reads to the end."
 | source | says | tree says |
 |---|---|---|
 | `POST-AUDIT-MAIN-ROADMAP.md` dashboard banner (*as of 2026-09-17*) | 267 `URCi_`, 335 `INFO_` | **322** and **426** implementations; 269 and 425 distinct names. *(The banner was wrong in **both directions at once** — low on `INFO_` by 85, high on `URCi_` — which is how it survived: a reader spot-checking one of the two would find it plausible. It has since been corrected to the sovereign-only scope it states, and now reads 256 / 420. This chapter's own second pass was wrong too; see the retraction in §2.)* |
-| `IGNIS-PRICING.md` §5 (*as of 2026-09-06*) | *"345 of 365 INFO implementations … 14 free … 4 data views"* | **346 / 426 / 20 / 1**. *(§5 was re-measured on 2026-09-17 and now publishes 423 declared / 414 client-facing / 414 measured, quoting the old census as superseded. The row is kept because the discrepancy is what prompted the re-measure.)* |
+| `IGNIS-PRICING.md` §5 (*as of 2026-09-06*) | *"345 of 365 INFO implementations … 14 free … 4 data views"* | **346 / 426 / 20 / 1**. *(§5 was re-measured on 2026-09-17 and now publishes 424 declared / 415 client-facing / 415 measured, quoting the old census as superseded. The row is kept because the discrepancy is what prompted the re-measure.)* |
 
 The second is worth being fair about. **[VERIFIED by command]** — `git show 6b7a85b` (2026-09-06)
 is the commit that produced 345/365/14/4, and it produced them by **auditing every INFO function
@@ -5375,8 +5375,8 @@ assertions.
 > The instrument no longer enumerates its subject from a hardcoded three-file list: it discovers it,
 > globbing `1_SOVEREIGN/**` and `2_CITIZEN/**` for every `.pact` that defines a `ClientInfo`-returning
 > preview. The published figure moved from **401 of 401 with 0 gaps** to
-> **414 of 414 with 0 gaps**
-> (423 declared) — and note that the *old* figure also read "0 gaps". A tool
+> **415 of 415 with 0 gaps**
+> (424 declared) — and note that the *old* figure also read "0 gaps". A tool
 > that defines its population to exclude the gaps will always report full coverage, and will report
 > it in exactly the same words as a tool that has genuinely closed them.
 >
@@ -6185,8 +6185,8 @@ that, and rebuilt the runner architecture around the result.
 | | 2026-08-30 | 2026-09-04 | 2026-09-09 | 2026-09-14 | 2026-09-16 | HEAD |
 |---|---:|---:|---:|---:|---:|---:|
 | `.repl` files (excl. `archive/`) | 181 | — | — | 209 | — | **207** |
-| `.repl` lines (excl. `archive/`) | 68,435 | — | — | 120,603 | — | **137,787** |
-| distinct assertions | **1,604** | 1,663 | 2,431 | **5,262** | 5,555 | **5,873** |
+| `.repl` lines (excl. `archive/`) | 68,435 | — | — | 120,603 | — | **137,844** |
+| distinct assertions | **1,604** | 1,663 | 2,431 | **5,262** | 5,555 | **5,876** |
 
 <sub>CORRECTED 2026-09-18 — the HEAD column was written as literals and had rotted. It published
 **128,567** `.repl` lines, which was true around 2026-09-17 and is roughly nine thousand short
@@ -6396,7 +6396,7 @@ runner, and intersecting it with the set of `.repl` files that contain assertion
 | distinct assertions in the suite | **5,804** |
 | …inside `ZALL.repl`'s closure | **1,437 (25%)** |
 
-<sub>The 5,804 here excludes `archive/`; §1's 5,873 is the project's own `_suite_stats.py` rule, which
+<sub>The 5,804 here excludes `archive/`; §1's 5,876 is the project's own `_suite_stats.py` rule, which
 walks all of `REPL/` including the 68 archived files. Same corpus, two denominators — quoted
 separately rather than reconciled, because each is the right one for its own question.
 CORRECTED 2026-09-18: these four rows read **148 / 34 / 5,747 / 1,434 (25%)** when the chapter was
@@ -6632,7 +6632,7 @@ they have no `--check` to run:
 |---|---|---|
 | `_scale_report.py` | G6 function reach (84%, 699 unreached) | **no** |
 | `_enforce_coverage.py` | G2 guard pinning (live unpinned = 0) | **no** |
-| `_info_measured.py` | the Phase-1.2 headline (414 / 414) | **no** |
+| `_info_measured.py` | the Phase-1.2 headline (415 / 415) | **no** |
 | `_expectfail.py` | assertion strength (1,296 of 1,297 sites message-checked) | **no** |
 | `_docclaims.py` | G5 documented claims | **no** |
 | `_cheapseam.py` | the zero-fixture guard seam (exhausted) | **no** |
@@ -6661,7 +6661,7 @@ own comments, is **not satisfied for any of the six coverage gates**:
 once someone noticed their zeros were hand-measured. The same argument applies unchanged to the eight
 above. **Deleting every `ignis-need` assertion from `launchpad-groundtruth.repl` tomorrow would turn
 nothing red**, and the published figure would still read
-414 / 414.
+415 / 415.
 
 ### 7.2 `_figuresync` locks the narrative to the stats file, not to the tree
 
@@ -6679,8 +6679,8 @@ this chapter first measured and at the tree today:
 | | |
 |---|---:|
 | distinct assertions at `1821d73` (2026-09-16, the stats commit this chapter measured) | **5,555** — exactly what the file published then |
-| distinct assertions the stats file publishes now (`fb58cba`, 2026-09-18) | **5,873** |
-| distinct assertions counted from the tree now | **5,873** |
+| distinct assertions the stats file publishes now (`fb58cba`, 2026-09-18) | **5,876** |
+| distinct assertions counted from the tree now | **5,876** |
 
 <sub>CORRECTED 2026-09-18. This table stopped at two rows and the section concluded that **the
 generated statistics are 261 assertions stale today, and nothing is red.** They are not stale today.
@@ -6731,7 +6731,7 @@ to `:331` above; the write moved, the absence of a flag did not.</sub>
 
 | step, and what it asked for | measured position |
 |---|---|
-| **1.5.1.1** CI-gate the ground-truth harness; extend it to cover **every** INFO function | the harnesses exist and **are** gate entrypoints (`launchpad-groundtruth.repl`, `triplet-collect-golden.repl`, `modules/DEFPACT-BILLING.repl`, the `deb-staleness-*` drivers), and 414 of 414 client-facing previews are measured, none unmeasured. **The coverage instrument that says so is still not gated** — re-checked 2026-09-18: `_info_measured.py` has no `--check` and `_gate.py` does not run it. The *denominator* half of this row has closed: the tool used to enumerate its subject from a hardcoded three-file list, which omitted 14 previews of which one was genuinely unmeasured; it now discovers every `ClientInfo`-returning `INFO_` preview across `1_SOVEREIGN/` and `2_CITIZEN/`, and that one preview is measured (Chapter 12 §6) |
+| **1.5.1.1** CI-gate the ground-truth harness; extend it to cover **every** INFO function | the harnesses exist and **are** gate entrypoints (`launchpad-groundtruth.repl`, `triplet-collect-golden.repl`, `modules/DEFPACT-BILLING.repl`, the `deb-staleness-*` drivers), and 415 of 415 client-facing previews are measured, none unmeasured. **The coverage instrument that says so is still not gated** — re-checked 2026-09-18: `_info_measured.py` has no `--check` and `_gate.py` does not run it. The *denominator* half of this row has closed: the tool used to enumerate its subject from a hardcoded three-file list, which omitted 14 previews of which one was genuinely unmeasured; it now discovers every `ClientInfo`-returning `INFO_` preview across `1_SOVEREIGN/` and `2_CITIZEN/`, and that one preview is measured (Chapter 12 §6) |
 | **1.5.1.2** repo-wide REPL coverage completion | **substantially done** — G1 at 448 of 448 entrypoints exercised, and since 2026-09-18 the ledger can demonstrate all 448 (§5); zero entrypoints reachable only from an ungated file; **G2's live unpinned worklist now at 0**; G5 closed. **G6 open at 84%, 699 functions unreached** |
 | **1.5.1.3** single comprehensive run, one boot, all Pact code | **met by a different mechanism.** The one-boot runner carries 25% of the distinct assertions; the comprehensive run is the 92-way parallel gate |
 
@@ -6774,7 +6774,7 @@ Deliberately **not** written as "four of 18": the register marks `RT-H-001`
 FIXED rather than REFUSED, because the same attack also found a real defect, so the four are not a
 subset of the refused count and quoting them as a fraction of it would be false.</sub>
 
-> The suite's 25,042 executed assertions — measured at build time; this book
+> The suite's 25,044 executed assertions — measured at build time; this book
 > did not run the gate — establish that the system behaves as documented. They do
 > not establish
 > that it is defended for the reasons the documentation implies. Those are different claims, and only
@@ -6947,13 +6947,13 @@ and nothing checked it against the table in Chapter 19 that it paraphrases.*
 
 ## Verification state
 
-At the time of writing, the full gate is **green at 25,042 assertions** (20,050 positive, 4,992
+At the time of writing, the full gate is **green at 25,044 assertions** (20,052 positive, 4,992
 negative) across the whole system — every deploy stage, every scenario suite, every red-team attack,
 plus the static checks on generated artefacts, tool paths, prefix vocabulary, cross-module member
 resolution, assertion vacuity, eager-let shadows, and this book's own tables. Wall time ~5-7 minutes.
 Reproduction: Appendix 1.
 
-> **That number is a snapshot and will move.** It rose from 22,939 to 25,042 during the round
+> **That number is a snapshot and will move.** It rose from 22,939 to 25,044 during the round
 > documented here. The canonical value is whatever `ARCHITECTURE/REPL_SUITE_STATS.md` holds, and
 > `_figuresync.py --check` now verifies that file **against the tree** — it previously verified only
 > that every document agreed with it, which is circular and was green while all of them were wrong
@@ -7651,7 +7651,7 @@ does not. Anything reading it as authoritative is reading a value that can be st
 **The largest family in the round: eight attacks, eight defects, on a surface nobody had swept.**
 
 Ouronet offers a free `INFO_` preview for every priced operation. Cost parity — *does the preview
-quote what the operation charges?* — was proven for all 414 previews. **Refusal parity — does the
+quote what the operation charges?* — was proven for all 415 previews. **Refusal parity — does the
 preview refuse what the operation refuses? — was proven for none.**
 
 Where a preview re-derives state rather than sharing the execution path's readers, the two can
@@ -8269,7 +8269,7 @@ instance looked different and none looked like a bug.
 |---|---|---|---|
 | path checker | 3 tool directories | a 4th, holding a tool that **rewrote contract sources by default** | `clean` |
 | owner-gate mapper | 4 of the 8 documented client prefixes | an entire batch-operation family | a shrinking worklist |
-| preview coverage | **3 hardcoded files** | 14 previews, one of them never tested at all | **414 of 414, 0 gaps** |
+| preview coverage | **3 hardcoded files** | 14 previews, one of them never tested at all | **415 of 415, 0 gaps** |
 | stats generator | 2 log file *extensions* | a run written with a third | a report from **the previous day** |
 | attack register | one directory | an attack that had to live beside its fixtures | a total of 37 where 38 existed |
 
@@ -8429,7 +8429,7 @@ the moment of writing and staleness is a property of elapsed time.
 
 **Hand-correcting 124 numbers would have fixed nothing.** It resets the clock and changes no
 mechanism. So the volatile figures are no longer written in the chapters at all: a source now writes
-`25,042` or `414`, and the assembler substitutes the number it
+`25,044` or `415`, and the assembler substitutes the number it
 **measures at build time** by running the tool that owns it. About eight seconds per build. A figure
 that cannot be measured is a build failure rather than a fallback to the last known value — a
 default would be a stale figure with extra steps. Twenty-two figures are wired this way, and that

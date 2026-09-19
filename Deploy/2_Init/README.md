@@ -8,7 +8,7 @@ Each file carries the real forms from its source block with the REPL scaffolding
 
 | file | step | forms | label | flag |
 |---:|---:|---:|---|---|
-| `01_init.pact` | 20 | 1 | deploy-stage02 · AQP-BOOT Step0 WireImcAndGovernor |  |
+| `01_init.pact` | 21 | 1 | deploy-stage02 · AQP-BOOT Step0 WireImcAndGovernor |  |
 
 **1 steps** · 0 flagged as possible fixtures · 0 carry no deployable forms (pure REPL scaffolding).
 

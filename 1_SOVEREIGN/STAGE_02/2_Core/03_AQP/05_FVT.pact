@@ -3666,92 +3666,6 @@
     )
     )
 
-    ;;<=========================================================================>
-    ;;{6}  REPL
-    ;; [REPL] dry-run helpers (not on the interface)
-    ;;
-    ;; --- REPL dry-run (GOV|FVT_ADMIN; not on AcquisitionFarmsVaultsTreasuriesV2) ---
-    ;; Until C_Issue / C_AddScoreEntity / C_AddRewardLink are implemented.
-    (defun REPL_BootstrapVault:string
-        (fvt-id:string owner-konto:string score-id:string reward-dptf-id:string)
-        @doc "REPL-only: insert class-1 vault + enabled ScoreEntityLink (type 1) + reward-enabled RPS|Global."
-        (let
-            (
-                (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
-            )
-            (with-capability (GOV|FVT_ADMIN)
-            (let
-                (
-                    (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
-                )
-                (with-capability (SECURE)
-                    (WI_Fvt fvt-id
-                        (UDC_FVT|Schema true true "|" false fvt-id)
-                    )
-                    (ref-RPS::XE_WI_FvtRewardAggregate fvt-id
-                        (UDC_FVT|RewardAggregate 1 owner-konto true CT_MEMBERSHIP_MODE_BAR CT_SPLIT_MODE_NA 0.0 0.0 0.0 0.0 0 1 1 fvt-id)
-                    )
-                    (ref-RPS::XE_WI_ScoreEntityLink fvt-id score-id
-                        (UDC_FVT|ScoreEntityLink CT_SCORE_ENTITY_SCORE true "|" 0.0 0.0 false 0.0 0.0 STREAM_EPOCH fvt-id score-id)
-                    )
-                    (ref-RPS::XE_WI_RpsGlobal fvt-id reward-dptf-id
-                        (UDC_FVT|RPS|Global true 0.0 0.0 0 0.0 false CT_REWARD_KIND_PLAIN BAR 0 STREAM_EPOCH 0.0 0.0 fvt-id reward-dptf-id)
-                    )
-                    (ref-SCR::XE_CreateFvtLink score-id fvt-id)
-                )
-                ;;UNREACHABLE BY A NEGATIVE TEST: this is a POST-CONDITION self-check, not an
-                ;;input guard. It asserts that XE_CreateFvtLink on the line above actually wrote
-                ;;the link, so the only way to trip it is to break XE_CreateFvtLink itself -- no
-                ;;argument to this helper can do it. Worth keeping (a silent no-op write here
-                ;;would produce a vault that looks bootstrapped and is not), but it is not
-                ;;coverage, and this helper is REPL-only in any case.
-                (enforce (= (ref-SCR::UR_SCR|ScoreFvtLink score-id) fvt-id)
-                    "REPL_BootstrapVault: SCR fvt-link not set after XE_CreateFvtLink")
-            )
-        )
-        fvt-id
-    )
-    )
-    (defun REPL_BootstrapTreasury:string
-        (fvt-id:string owner-konto:string score-id:string reward-dptf-id:string)
-        @doc "REPL-only: insert class-2 treasury + enabled ScoreEntityLink (type 1) + reward-enabled RPS|Global."
-        (let
-            (
-                (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
-            )
-            (with-capability (GOV|FVT_ADMIN)
-            (let
-                (
-                    (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
-                )
-                (with-capability (SECURE)
-                    (WI_Fvt fvt-id
-                        (UDC_FVT|Schema true true "|" false fvt-id)
-                    )
-                    (ref-RPS::XE_WI_FvtRewardAggregate fvt-id
-                        (UDC_FVT|RewardAggregate 2 owner-konto true CT_MEMBERSHIP_MODE_BAR CT_SPLIT_MODE_NA 0.0 0.0 0.0 0.0 0 1 1 fvt-id)
-                    )
-                    (ref-RPS::XE_WI_ScoreEntityLink fvt-id score-id
-                        (UDC_FVT|ScoreEntityLink CT_SCORE_ENTITY_SCORE true "|" 0.0 0.0 false 0.0 0.0 STREAM_EPOCH fvt-id score-id)
-                    )
-                    (ref-RPS::XE_WI_RpsGlobal fvt-id reward-dptf-id
-                        (UDC_FVT|RPS|Global true 0.0 0.0 0 0.0 false CT_REWARD_KIND_PLAIN BAR 0 STREAM_EPOCH 0.0 0.0 fvt-id reward-dptf-id)
-                    )
-                    (ref-SCR::XE_CreateFvtLink score-id fvt-id)
-                )
-                ;;UNREACHABLE BY A NEGATIVE TEST: this is a POST-CONDITION self-check, not an
-                ;;input guard. It asserts that XE_CreateFvtLink on the line above actually wrote
-                ;;the link, so the only way to trip it is to break XE_CreateFvtLink itself -- no
-                ;;argument to this helper can do it. Worth keeping (a silent no-op write here
-                ;;would produce a vault that looks bootstrapped and is not), but it is not
-                ;;coverage, and this helper is REPL-only in any case.
-                (enforce (= (ref-SCR::UR_SCR|ScoreFvtLink score-id) fvt-id)
-                    "REPL_BootstrapTreasury: SCR fvt-link not set after XE_CreateFvtLink")
-            )
-        )
-        fvt-id
-    )
-    )
 
 
     ;;<=====================================================================>
@@ -3967,6 +3881,93 @@
     (defun UR_OracleValidity:integer ()
         @doc "Facade: delegates to the RPS reward engine (post-#75 split)."
         (RPS.UR_OracleValidity)
+    )
+
+    ;;<=========================================================================>
+    ;;{6}  REPL
+    ;; [REPL] dry-run helpers (not on the interface)
+    ;;
+    ;; --- REPL dry-run (GOV|FVT_ADMIN; not on AcquisitionFarmsVaultsTreasuriesV2) ---
+    ;; Until C_Issue / C_AddScoreEntity / C_AddRewardLink are implemented.
+    (defun REPL_BootstrapVault:string
+        (fvt-id:string owner-konto:string score-id:string reward-dptf-id:string)
+        @doc "REPL-only: insert class-1 vault + enabled ScoreEntityLink (type 1) + reward-enabled RPS|Global."
+        (let
+            (
+                (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
+            )
+            (with-capability (GOV|FVT_ADMIN)
+            (let
+                (
+                    (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+                )
+                (with-capability (SECURE)
+                    (WI_Fvt fvt-id
+                        (UDC_FVT|Schema true true "|" false fvt-id)
+                    )
+                    (ref-RPS::XE_WI_FvtRewardAggregate fvt-id
+                        (UDC_FVT|RewardAggregate 1 owner-konto true CT_MEMBERSHIP_MODE_BAR CT_SPLIT_MODE_NA 0.0 0.0 0.0 0.0 0 1 1 fvt-id)
+                    )
+                    (ref-RPS::XE_WI_ScoreEntityLink fvt-id score-id
+                        (UDC_FVT|ScoreEntityLink CT_SCORE_ENTITY_SCORE true "|" 0.0 0.0 false 0.0 0.0 STREAM_EPOCH fvt-id score-id)
+                    )
+                    (ref-RPS::XE_WI_RpsGlobal fvt-id reward-dptf-id
+                        (UDC_FVT|RPS|Global true 0.0 0.0 0 0.0 false CT_REWARD_KIND_PLAIN BAR 0 STREAM_EPOCH 0.0 0.0 fvt-id reward-dptf-id)
+                    )
+                    (ref-SCR::XE_CreateFvtLink score-id fvt-id)
+                )
+                ;;UNREACHABLE BY A NEGATIVE TEST: this is a POST-CONDITION self-check, not an
+                ;;input guard. It asserts that XE_CreateFvtLink on the line above actually wrote
+                ;;the link, so the only way to trip it is to break XE_CreateFvtLink itself -- no
+                ;;argument to this helper can do it. Worth keeping (a silent no-op write here
+                ;;would produce a vault that looks bootstrapped and is not), but it is not
+                ;;coverage, and this helper is REPL-only in any case.
+                (enforce (= (ref-SCR::UR_SCR|ScoreFvtLink score-id) fvt-id)
+                    "REPL_BootstrapVault: SCR fvt-link not set after XE_CreateFvtLink")
+            )
+        )
+        fvt-id
+    )
+    )
+    (defun REPL_BootstrapTreasury:string
+        (fvt-id:string owner-konto:string score-id:string reward-dptf-id:string)
+        @doc "REPL-only: insert class-2 treasury + enabled ScoreEntityLink (type 1) + reward-enabled RPS|Global."
+        (let
+            (
+                (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
+            )
+            (with-capability (GOV|FVT_ADMIN)
+            (let
+                (
+                    (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+                )
+                (with-capability (SECURE)
+                    (WI_Fvt fvt-id
+                        (UDC_FVT|Schema true true "|" false fvt-id)
+                    )
+                    (ref-RPS::XE_WI_FvtRewardAggregate fvt-id
+                        (UDC_FVT|RewardAggregate 2 owner-konto true CT_MEMBERSHIP_MODE_BAR CT_SPLIT_MODE_NA 0.0 0.0 0.0 0.0 0 1 1 fvt-id)
+                    )
+                    (ref-RPS::XE_WI_ScoreEntityLink fvt-id score-id
+                        (UDC_FVT|ScoreEntityLink CT_SCORE_ENTITY_SCORE true "|" 0.0 0.0 false 0.0 0.0 STREAM_EPOCH fvt-id score-id)
+                    )
+                    (ref-RPS::XE_WI_RpsGlobal fvt-id reward-dptf-id
+                        (UDC_FVT|RPS|Global true 0.0 0.0 0 0.0 false CT_REWARD_KIND_PLAIN BAR 0 STREAM_EPOCH 0.0 0.0 fvt-id reward-dptf-id)
+                    )
+                    (ref-SCR::XE_CreateFvtLink score-id fvt-id)
+                )
+                ;;UNREACHABLE BY A NEGATIVE TEST: this is a POST-CONDITION self-check, not an
+                ;;input guard. It asserts that XE_CreateFvtLink on the line above actually wrote
+                ;;the link, so the only way to trip it is to break XE_CreateFvtLink itself -- no
+                ;;argument to this helper can do it. Worth keeping (a silent no-op write here
+                ;;would produce a vault that looks bootstrapped and is not), but it is not
+                ;;coverage, and this helper is REPL-only in any case.
+                (enforce (= (ref-SCR::UR_SCR|ScoreFvtLink score-id) fvt-id)
+                    "REPL_BootstrapTreasury: SCR fvt-link not set after XE_CreateFvtLink")
+            )
+        )
+        fvt-id
+    )
     )
 )
 

@@ -3,7 +3,7 @@
 **Generated** by `python3 REPL/tools/_deploybundle.py --write`. Do not hand-edit; regenerate.
 
 - per-transaction gas budget: **1,700,000** (StoaChain block limit 2,000,000)
-- module-deploy transactions: **19**
+- module-deploy transactions: **20**
 - modules deployed: **52**
 - measured module gas: **5,753,676**
 
@@ -90,7 +90,7 @@ All six `Step7` sites are in `modules/DPDC.repl` and all six are `expect-failure
 
 ## The sequence
 
-Read top to bottom. **`step`** is the position in the full sequence; **`file`** is the deploy file to paste, numbered `01`..`19` in the order you use them. Init steps have no file -- their source is given instead.
+Read top to bottom. **`step`** is the position in the full sequence; **`file`** is the deploy file to paste, numbered `01`..`20` in the order you use them. Init steps have no file -- their source is given instead.
 
 | step | file | what | gas | source |
 |---:|:---:|---|---:|---|
@@ -112,5 +112,6 @@ Read top to bottom. **`step`** is the position in the full sequence; **`file`** 
 | 16 | **16** | DEPLOY 1 modules: 05_FVT | 252,465 | `Deploy/1_Pure/16_deploy.pact` |
 | 17 | **17** | DEPLOY 3 modules: 06_VCT, 07_MTX-AQP, 08_DSA | 392,563 | `Deploy/1_Pure/17_deploy.pact` |
 | 18 | **18** | DEPLOY 3 modules: 09_AQP-INFO, 01_TS02-C1, 02_TS02-C2 | 221,896 | `Deploy/1_Pure/18_deploy.pact` |
-| 19 | **19** | DEPLOY 6 modules: 04_TS02-C3, 05_TS02-DPAD, 02_Snakes, 03_Custodians, 01_INFO-TWO, 04_AQP-BOOT | 385,493 | `Deploy/1_Pure/19_deploy.pact` |
-| 20 | — | *init* — deploy-stage02 · AQP-BOOT Step0 WireImcAndGovernor | — | `Deploy/2_Init/` · `REPL/deploy-stage02.repl:63` |
+| 19 | **19** | DEPLOY 5 modules: 04_TS02-C3, 05_TS02-DPAD, 02_Snakes, 03_Custodians, 01_INFO-TWO | 385,493 | `Deploy/1_Pure/19_deploy.pact` |
+| 20 | **20** | DEPLOY 1 modules: 04_AQP-BOOT | 0 | `Deploy/1_Pure/20_deploy.pact` |
+| 21 | — | *init* — deploy-stage02 · AQP-BOOT Step0 WireImcAndGovernor | — | `Deploy/2_Init/` · `REPL/deploy-stage02.repl:63` |

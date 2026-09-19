@@ -69,6 +69,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_AddScoreEntity` | `C_AddScoreEntity` | SETUP | **539** | — | $5.39 | deter:add-score-entity 500 + components:AQP-FVT|C_AddScoreEntity 39 |
 | `C_Control` | `C_Control` | SETUP | **13** | — | $0.13 | deter:setup 5 + components:AQP-FVT|C_Control 8 |
 | `C_Issue` | `C_Issue` | ISSUE | **≥ 1019** | 100 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-fvt 1000 + components:AQP-FVT|C_Issue 19 | STOA: stoa:issue-fvt 100 |
+| `C_IssueGenericEarningVault` | `C_IssueTrueFungibleScore` ×6 | ISSUE | **≥ 1028** | 100 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:issue-score 1000 + components:AQP-SCR|C_IssueTrueFungibleScore 28 | STOA: stoa:issue-score 100 |
 | `C_IssueMultipletFamily` | `C_IssueMultipletFamily` | ISSUE | **509** | — | $5.09 | deter:issue-multiplet 500 + components:AQP-FVT|C_IssueMultipletFamily 9 |
 | `C_RotateOwnership` | `C_RotateOwnership` | AUTH | **17** | — | $0.17 | deter:auth 10 + components:AQP-FVT|C_RotateOwnership 7 |
 | `C_SetCommonDenominator` | `C_SetCommonDenominator` | SETUP | **110** | — | $1.10 | deter:fvt-split-setup 100 + components:AQP-FVT|C_SetCommonDenominator 10 |
@@ -633,7 +634,7 @@ another Talos wrapper, not a core op) or admin entrypoints that are exempt by ru
 | P\|A_AddIMP | admin entrypoint -- IGNIS + STOA free by owner rule, nothing to price |
 
 ---
-182 simple (exact price) · 199 complex (floor price) · 11 STOA-only · 50 exempt · 0 unresolved · 5 unpriced · 442 Talos client functions
+182 simple (exact price) · 200 complex (floor price) · 11 STOA-only · 50 exempt · 0 unresolved · 5 unpriced · 443 Talos client functions
 
 `×N` on a core op = the wrapper drives N priced core ops in a FIXED composition (still exactly knowable).
 

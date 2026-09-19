@@ -1041,6 +1041,29 @@
                 [])
         )
     )
+    (defun INFO_AQP-FVT|IssueGenericEarningVault:object{OuronetInfoV2.ClientInfo}
+        (patron:string owner-konto:string vault-name:string stake-dptf-id:string reward-dptf-id:string)
+        @doc "Cost preview for AQP-FVT|C_IssueGenericEarningVault -- the whole six-operation vault \
+            \ as ONE charge. IGNIS only; no STOA."
+        ;;The cost comes from TS02-C3.URCi_IssueGenericEarningVault, which concatenates the SAME six
+        ;;component readers the operation's own cumulators come from. Preview and charge therefore
+        ;;agree by construction rather than by a number kept in step by hand.
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Stand up a complete earning Vault in one transaction -- score, pool, pool-score link, FVT entity, score admission and reward link."
+                 "Executes via TS02-C3.AQP-FVT|C_IssueGenericEarningVault."]
+                [(format "Vault {}: stake {} to earn {}. Creates {}Score, {}Pool, {}Vault."
+                    [vault-name stake-dptf-id reward-dptf-id vault-name vault-name vault-name])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (ref-I|OURONET::OI|UC_IfpFromOutputCumulator
+                        (TS02-C3.URCi_IssueGenericEarningVault owner-konto vault-name stake-dptf-id reward-dptf-id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
+        )
+    )
     (defun INFO_AQP-FVT|AddRewardLink:object{OuronetInfoV2.ClientInfo}
         (patron:string fvt-id:string reward-dptf-id:string segmentation:bool multiplet-family-id:string)
         @doc "Cost preview for AQP-FVT|C_AddRewardLink. IGNIS GAS|ADD-REWARD-LINK; no STOA."

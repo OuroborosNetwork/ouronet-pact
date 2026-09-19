@@ -1,3 +1,19 @@
+;; ---------------------------------------------------------------------------
+;; OURONET DEPLOY -- file 20 of 20
+;; This is STEP 20 of 21 in the full sequence (see Deploy/MANIFEST.md).
+;; Steps 1-19 must have run first, including the init steps between deploys.
+;; 1 module(s), 0 gas measured in the REPL gas model, 59,275 bytes
+;;
+;; Modules in this transaction, IN ORDER (do not reorder):
+;;   2_CITIZEN/5_VaultsMinter/04_AQP-BOOT.pact
+;;
+;; Paste this whole file as ONE transaction. It needs the Ouronet admin signature
+;; and the `ouronet-ns` namespace, which the first line sets.
+;; ---------------------------------------------------------------------------
+
+(namespace "ouronet-ns")
+
+;; ===== 2_CITIZEN/5_VaultsMinter/04_AQP-BOOT.pact ===================
 ;; AQP-BOOT — live-chain AQP provisioning helpers.
 ;; Purpose: one-shot bootstrap writers for score/anchor/pool/fvt infra.
 ;;
@@ -933,3 +949,4 @@
     )
 
 )
+

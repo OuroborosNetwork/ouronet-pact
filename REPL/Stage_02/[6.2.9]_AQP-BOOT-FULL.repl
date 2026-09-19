@@ -468,7 +468,7 @@
         (ats-0-1-id:string "Auryndex-98c486052a51")
         (ats-1-2-id:string "EliteAuryndex-98c486052a51")
         (split-smart:[decimal]
-            (DALOS.URC_SplitSTOAPrices patron (* 3.0 (DALOS.UR_UsagePrice "smart")))
+            (DALOS.URC_SplitSTOAPrices patron (* 6.0 (DALOS.UR_UsagePrice "smart")))
         )
     )
     (env-sigs
@@ -848,7 +848,7 @@
     (
         (patron:string KST.ANHD)
         (split-smart:[decimal]
-            (DALOS.URC_SplitSTOAPrices patron (* 8.0 (DALOS.UR_UsagePrice "smart")))
+            (DALOS.URC_SplitSTOAPrices patron (* 6.0 (DALOS.UR_UsagePrice "smart")))
         )
     )
     (env-sigs
@@ -867,11 +867,22 @@
     )
     (map print
         [
+        ;;GV1 drives the TALOS entrypoint -- the one Deploy/3_Assets/13 actually sends, and the
+        ;;one a user would call. GV2 drives the AQP-BOOT delegate, so the forwarding path cannot
+        ;;rot unnoticed. Two vaults, two names: the three entities each mints share a branding
+        ;;table, so reusing a name would collide on the second insert.
         (expect
-            "<<AQP-BOOT-GV1>> C_IssueGenericEarningVault completes in one call"
+            "<<AQP-BOOT-GV1>> TS02-C3 AQP-FVT|C_IssueGenericEarningVault completes in one call"
+            true
+            (!= "" (TS02-C3.AQP-FVT|C_IssueGenericEarningVault
+                        KST.ANHD KST.ANHD "TestVault"
+                        "OURO-98c486052a51" "AURYN-98c486052a51"))
+        )
+        (expect
+            "<<AQP-BOOT-GV2>> the AQP-BOOT delegate still forwards to it"
             true
             (!= "" (AQP-BOOT.C_IssueGenericEarningVault
-                        KST.ANHD KST.ANHD "TestVault"
+                        KST.ANHD KST.ANHD "TestVaultB"
                         "OURO-98c486052a51" "AURYN-98c486052a51"))
         )
         ]

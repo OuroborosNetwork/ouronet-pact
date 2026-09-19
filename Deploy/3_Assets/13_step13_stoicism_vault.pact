@@ -75,10 +75,36 @@
 
 (namespace "ouronet-ns")
 
-(AQP-BOOT.C_IssueGenericEarningVault
+;; SIGNING -- measured, not assumed (2026-09-19).
+;;   The vault deploys exactly THREE smart accounts: one for the score, one for the pool, one
+;;   for the FVT. The patron must therefore sign `coin.TRANSFER` managed caps covering
+;;       (DALOS.URC_SplitSTOAPrices patron (* 3.0 (DALOS.UR_UsagePrice "smart")))
+;;   which is a FOUR-WAY split -- two `k:` recipients and two `c:` module-guard accounts. All four
+;;   caps must be signed; the split is not one transfer.
+;;
+;;   3.0 is the MINIMUM and it is exact. Verified by bisection against the live suite:
+;;   1.0 FAILS, 2.0 FAILS, 3.0 PASSES. The fixture originally signed 8.0 -- a blanket I picked
+;;   when writing the test, i.e. a 2.7x over-authorisation. It has been tightened to 3.0, so
+;;   <<AQP-BOOT-GV1>> now proves the bound rather than merely clearing it. Do not pad this number
+;;   on mainnet: a managed cap is an approval, and the surplus is approved STOA.
+
+(TS02-C3.AQP-FVT|C_IssueGenericEarningVault
     PATRON_KONTO
-    OWNER_KONTO                  ;; <- owner of the score and the FVT
-    "Stoicism"                   ;; <- base name -> StoicismScore / StoicismPool / StoicismVault
-    "STOICISM_DPTF_ID"           ;; <- the live Stoicism token, FULL id. What users stake.
-    "WSTOA_DPTF_ID"              ;; <- wSTOA, FULL id. What they earn.
+    OWNER_KONTO                          ;; <- owner of the score and the FVT
+    "Stoicism"                           ;; <- base name -> StoicismScore / StoicismPool / StoicismVault
+    "STOICISM-hCNmIIxczuBs"              ;; <- live Stoicism DPTF. What users stake.
+    "WSTOA-8Nh-JO8JO4F5"                 ;; <- live wSTOA DPTF. What they earn.
 )
+
+;; WHY TALOS AND NOT AQP-BOOT
+;;   `AQP-BOOT.C_IssueGenericEarningVault` still exists, but it is now a thin delegate to the line
+;;   above and is gated on `GOV|AQP_BOOT_ADMIN`. The Talos entrypoint is the supported client path,
+;;   needs no admin key, and is the one a user would call -- so it is the one this deployment
+;;   exercises. Calling the delegate instead works and costs the same; it just adds a hop and an
+;;   admin requirement this transaction does not need.
+
+;; COST PREVIEW (check before sending)
+;;   (AQP-INFO.INFO_AQP-FVT|IssueGenericEarningVault
+;;       PATRON_KONTO OWNER_KONTO "Stoicism" "STOICISM-hCNmIIxczuBs" "WSTOA-8Nh-JO8JO4F5")
+;;   Pinned by <<AQP-INFO-GV1>>: 4360.0 IGNIS full, 2310.8 after the 47% patron discount.
+;;   Gas measured in the REPL table model: 70,917 (~3.5% of a 2M block).

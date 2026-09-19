@@ -412,6 +412,103 @@ def extract_init(block):
     return body, sigs
 
 
+# ---------------------------------------------------------------------------------------------
+# STRIP TEST HARNESSES FROM THE DEPLOYED CODE.
+#
+# Some modules carry REPL-only helpers -- `REPL_BootstrapVault` and `REPL_BootstrapTreasury` on
+# AQP-FVT and TS02-C3 -- that write FVT rows and reward aggregates DIRECTLY, bypassing C_Issue,
+# the class checks, the pool link and the billing. They exist so fixtures can fabricate a vault in
+# one write. They are admin-gated, so shipping them is not an open hole; but it would put two
+# functions on mainnet that conjure entities outside the normal path, which is precisely the kind
+# of unnecessary admin surface this project's own audit argues against.
+#
+# They stay in source -- the fixtures need them. Producing deploy code free of them is the reason
+# this folder exists.
+#
+# BOTH HALVES MUST GO. Interfaces are embedded in the same .pact file here, and these helpers are
+# DECLARED on the interface as well as defined in the module. Stripping only the body leaves a
+# module that no longer implements its own interface and will not load.
+# ---------------------------------------------------------------------------------------------
+REPL_DEFUN = re.compile(r'^(\s*)\(defun\s+[A-Za-z0-9|_+-]*REPL_', re.M)
+
+
+def strip_repl(src, path):
+    """Remove every `REPL_*` defun -- interface declaration and module body alike."""
+    out, removed = src, []
+    while True:
+        m = REPL_DEFUN.search(out)
+        if not m:
+            break
+        start = m.start()
+        # consume the balanced form, string-aware
+        i, depth, instr = m.start(1) + len(m.group(1)), 0, False
+        while i < len(out):
+            c = out[i]
+            if instr:
+                if c == "\\":
+                    i += 2; continue
+                if c == '"':
+                    instr = False
+            elif c == '"':
+                instr = True
+            elif c == ";":
+                j = out.find("\n", i)
+                i = len(out) if j < 0 else j
+                continue
+            elif c == "(":
+                depth += 1
+            elif c == ")":
+                depth -= 1
+                if depth == 0:
+                    i += 1
+                    break
+            i += 1
+        name = re.match(r'\s*\(defun\s+(\S+)', out[start:i])
+        removed.append(name.group(1) if name else "?")
+        # also swallow a trailing newline so we do not leave a blank gap
+        end = i + 1 if i < len(out) and out[i] == "\n" else i
+        out = out[:start] + out[end:]
+    if removed:
+        STRIPPED.append((os.path.relpath(path, ROOT), removed))
+        out = drop_empty_repl_section(out)
+    return out
+
+
+# A stripped module can be left with a `;;{N}  REPL` section banner and nothing under it but the
+# comment that DESCRIBED the functions just removed -- which then names, in shipped mainnet code,
+# a function that is not there. That is the doc-drift class this project keeps finding the hard
+# way, so the banner goes when its section empties. Only when it EMPTIES: a REPL section that
+# still holds code keeps its banner, because then the banner is true.
+REPL_BANNER = re.compile(r'^[ \t]*;;\{\d+\}[ \t]+REPL[ \t]*$', re.M)
+
+
+def drop_empty_repl_section(src):
+    lines = src.split("\n")
+    for i, ln in enumerate(lines):
+        if not REPL_BANNER.match(ln):
+            continue
+        # Everything after the banner, up to the module-closing paren, must be blank or comment.
+        j, close = i + 1, None
+        while j < len(lines):
+            t = lines[j].strip()
+            if t == ")" and not lines[j].startswith(" "):
+                close = j
+                break
+            if t and not t.startswith(";;"):
+                break                      # real code still lives here -- banner stays
+            j += 1
+        if close is None:
+            continue
+        start = i
+        # swallow the `;;<====>` bar above the banner, and any blank line above that
+        while start > 0 and lines[start - 1].strip().startswith(";;"):
+            start -= 1
+        while start > 0 and not lines[start - 1].strip():
+            start -= 1
+        return "\n".join(lines[:start] + lines[close:])
+    return src
+
+
 def split_tables(src):
     """(module-code, [table names]) -- top-level create-table calls stripped off the end."""
     tables = TABLE_RE.findall(src)
@@ -464,7 +561,7 @@ def write(steps, budget, maxbytes, mode="upgrade", existing=frozenset()):
         ]
         for p in s["pacts"]:
             rel = os.path.relpath(p, ROOT)
-            src = open(p, encoding="utf8", errors="replace").read()
+            src = strip_repl(open(p, encoding="utf8", errors="replace").read(), p)
             code, tables = split_tables(src)
             is_new = any(k in rel.replace(os.sep, "/") for k in NEW_KEYS)
             inventory.append((rel, tables))
@@ -506,6 +603,7 @@ def write(steps, budget, maxbytes, mode="upgrade", existing=frozenset()):
 
 
 INIT_SEQ = []
+STRIPPED = []
 ORPHANS = []
 NEW_KEYS = []
 

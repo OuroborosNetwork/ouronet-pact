@@ -1,8 +1,8 @@
 ;; ---------------------------------------------------------------------------
-;; OURONET DEPLOY -- file 18 of 19
-;; This is STEP 18 of 20 in the full sequence (see Deploy/MANIFEST.md).
+;; OURONET DEPLOY -- file 18 of 20
+;; This is STEP 18 of 21 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-17 must have run first, including the init steps between deploys.
-;; 3 module(s), 221,896 gas measured in the REPL gas model, 229,365 bytes
+;; 3 module(s), 221,896 gas measured in the REPL gas model, 230,889 bytes
 ;;
 ;; Modules in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact
@@ -1055,6 +1055,29 @@
                 ["Operation: Issue a chain-wide MultipletFamily reward ladder." "Executes via TS02-C3.AQP-FVT|C_IssueMultipletFamily."]
                 [(format "MultipletFamily issued: {} -> {} -> {}." [token-0-id token-1-id token-2-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-FVT.URCi_IssueMultipletFamily patron [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
+        )
+    )
+    (defun INFO_AQP-FVT|IssueGenericEarningVault:object{OuronetInfoV2.ClientInfo}
+        (patron:string owner-konto:string vault-name:string stake-dptf-id:string reward-dptf-id:string)
+        @doc "Cost preview for AQP-FVT|C_IssueGenericEarningVault -- the whole six-operation vault \
+            \ as ONE charge. IGNIS only; no STOA."
+        ;;The cost comes from TS02-C3.URCi_IssueGenericEarningVault, which concatenates the SAME six
+        ;;component readers the operation's own cumulators come from. Preview and charge therefore
+        ;;agree by construction rather than by a number kept in step by hand.
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Stand up a complete earning Vault in one transaction -- score, pool, pool-score link, FVT entity, score admission and reward link."
+                 "Executes via TS02-C3.AQP-FVT|C_IssueGenericEarningVault."]
+                [(format "Vault {}: stake {} to earn {}. Creates {}Score, {}Pool, {}Vault."
+                    [vault-name stake-dptf-id reward-dptf-id vault-name vault-name vault-name])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (ref-I|OURONET::OI|UC_IfpFromOutputCumulator
+                        (TS02-C3.URCi_IssueGenericEarningVault owner-konto vault-name stake-dptf-id reward-dptf-id)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [])
         )

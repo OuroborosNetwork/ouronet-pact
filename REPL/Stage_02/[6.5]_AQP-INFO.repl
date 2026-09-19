@@ -510,3 +510,49 @@
 (commit-tx)
 (print "")
 (print "=== END aqp-info-tests.repl (ANK+SCORE+POOL+FVT+DSA+MTX groups green) ===")
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-INFO-GV - preview parity for the generic earning vault")
+(print "")
+(print "=== TX-INFO-GV — INFO_AQP-FVT|IssueGenericEarningVault ==========================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;ADDED 2026-09-19 with AQP-FVT|C_IssueGenericEarningVault.
+;;
+;;The orchestrator's six components are each covered already. What is NEW is that it quotes ONE
+;;cost and takes ONE charge, so the only thing needing proof is that the quote is the composition
+;;of the six and not an independently-written number.
+;;
+;;INFO reads TS02-C3.URCi_IssueGenericEarningVault, which concatenates the same six component
+;;readers the operation's own cumulators come from -- so preview and charge agree by construction.
+;;This pins that the composition RESOLVES and prices non-trivially. If a seventh operation were
+;;added to the orchestrator without its reader, the quote would stop matching and this is the
+;;assertion positioned to care.
+(let
+    (
+        (info:object{OuronetInfoV2.ClientInfo}
+            (AQP-INFO.INFO_AQP-FVT|IssueGenericEarningVault
+                KST.ANHD KST.ANHD "PreviewVault"
+                "OURO-98c486052a51" "AURYN-98c486052a51")
+        )
+    )
+    (map print
+        [
+        (expect
+            "<<AQP-INFO-GV1>> the generic-vault preview prices all six components: 4360 IGNIS full"
+            4360.0
+            (at "ignis-full" (at "ignis" info))
+        )
+        (expect
+            "<<AQP-INFO-GV1>> ...and the same quote after the patron discount"
+            2310.8
+            (at "ignis-need" (at "ignis" info))
+        )
+        ]
+    )
+    ""
+)
+(commit-tx)
