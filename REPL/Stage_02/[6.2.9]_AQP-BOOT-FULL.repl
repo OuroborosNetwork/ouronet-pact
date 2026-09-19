@@ -784,6 +784,19 @@
             { "key": "PK_AncientHodler", "caps": [] }
             { "key": "PK_Emma", "caps": [] }
             { "key": "dsa-oracle-key", "caps": [] }
+            ;;EMMA's OWN gas-station caps. Without these the hijack probe below dies in
+            ;;coin.TRANSFER -- BEFORE the ownership check it is supposed to exercise -- and would
+            ;;have "passed" as an expect-failure while proving nothing about the guard. The whole
+            ;;point of that probe is that it must fail at the RIGHT enforce.
+            { "key": "ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48",
+              "caps":
+                [
+                    (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+                    (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+                    (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+                    (coin.TRANSFER "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0)
+                ]
+            }
             { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
               "caps":
                 [
@@ -860,6 +873,143 @@
                         (auryn:string (ref-DALOS::UR_AurynID))
                         (elite:string (ref-DALOS::UR_EliteAurynID))
                     )
+                    ;;==== TX-BOOT-15-DSA · 03b · THE OG ANCHOR: nonce 4 = 1000 golden + 5% on ALL ====
+                    ;;The end functionality being proven, in one place: staking Custodians nonce 4
+                    ;;must (a) add 1000 quintessence of the GOLDEN type and (b) boost the user's
+                    ;;bronze, silver AND golden scores by 5%. Nothing extra is defined for this --
+                    ;;ONE anchor in ONE boost class, with all three scores linked to that class by
+                    ;;the MODEL. Three anchors are NOT needed: a boost class aggregates the promile
+                    ;;of every anchor in it, and a score linked to the class picks up that
+                    ;;aggregate, so one anchor reaches all three scores.
+                    (print "--- [TX-BOOT-15-DSA · 03b · OG anchor] ---")
+                    (let
+                        (
+                            (og-class:string (ref-U|DALOS::UDC_Makeid "CustodiansOgBoost"))
+                            (q-before:decimal (AQP-DSA.URC_AgencyQuintessence emma-triplet))
+                        )
+                        (print (format "<(EMMA promile BEFORE nonce-4 stake)> => {}"
+                            [(AQP-ANK.UR_UB|AggregatePromile KST.EMMA og-class)]))
+                        ;;ONE unit, so the assertion below pins the CONFIGURED rate exactly:
+                        ;;BOOT|CUSTODIANS_OG_PROMILE = 50.0 promile = 5%. Staking two gave 100.0
+                        ;;(10%) on an earlier run -- SF anchor promile is
+                        ;;`conform-amount x ank-promile` (01_ANK.pact URC_SemiFungibleAnchorPromile),
+                        ;;i.e. it SCALES PER UNIT HELD and is not a flat per-holder grant.
+                        (TS02-C1.DPSF|C_TransferNonce patron dhoc-id patron KST.EMMA 4 1 false)
+                        (print (format "<(EMMA stakes 1x nonce 4)> => \"{}\""
+                            [(TS02-C3.AQP-POOL|CC_StakeSemiFungibleCollectable KST.EMMA pool-id KST.EMMA KST.EMMA dhoc-id [4])]))
+                        (print (format "<(EMMA promile AFTER)> => {}   <(q before)> => {}   <(q after)> => {}"
+                            [(AQP-ANK.UR_UB|AggregatePromile KST.EMMA og-class)
+                             q-before
+                             (AQP-DSA.URC_AgencyQuintessence emma-triplet)]))
+                        (print (format "<(EMMA boosted scores)> bronze={} silver={} golden={}"
+                            [(AQP-SCORE.UR_U-SCR|UserScoreBoostedScore KST.EMMA pool-id eb)
+                             (AQP-SCORE.UR_U-SCR|UserScoreBoostedScore KST.EMMA pool-id es)
+                             (AQP-SCORE.UR_U-SCR|UserScoreBoostedScore KST.EMMA pool-id eg)]))
+                        (print (format "<(EMMA base scores)> bronze={} silver={} golden={}"
+                            [(AQP-SCORE.UR_U-SCR|UserScoreBaseScore KST.EMMA pool-id eb)
+                             (AQP-SCORE.UR_U-SCR|UserScoreBaseScore KST.EMMA pool-id es)
+                             (AQP-SCORE.UR_U-SCR|UserScoreBaseScore KST.EMMA pool-id eg)]))
+                        (map print
+                            [
+                            ;;The end functionality, asserted rather than eyeballed. EMMA never
+                            ;;called C_CreateScoreBoostClassLink -- she opened through the PUBLIC
+                            ;;path. The boost reaches her scores because the VAULT's model carries
+                            ;;the class, which is the whole point of the 2026-09-19 change.
+                            (expect "<<TX-BOOT-OG1>> staking ONE nonce 4 grants exactly 5% (50 promile)"
+                                50.0 (AQP-ANK.UR_UB|AggregatePromile KST.EMMA og-class))
+                            (expect "<<TX-BOOT-OG2>> nonce 4 also adds 1000 GOLDEN quintessence"
+                                1000.0 (- (AQP-DSA.URC_AgencyQuintessence emma-triplet) q-before))
+                            ;;5% of the 20000 bronze base -- proving the boost reaches a lane the
+                            ;;anchored nonce does not itself score into.
+                            (expect "<<TX-BOOT-OG3>> the BRONZE score is boosted 5%, from an anchor on a GOLDEN nonce"
+                                1000.0 (AQP-SCORE.UR_U-SCR|UserScoreBoostedScore KST.EMMA pool-id eb))
+                            ]
+                        )
+                    )
+                    ;;==== TX-BOOT-15-DSA · 03c · ONE anchor, TWO different triplets ====
+                    ;;THE QUESTION: with N agencies each holding its OWN triplet id, does a single
+                    ;;anchor definition reach all of them, or does each agency need its own?
+                    ;;
+                    ;;EMMA's boost above landed on HER triplet. ANHD runs a DIFFERENT agency with a
+                    ;;DIFFERENT triplet id and different score ids. If one anchor serves both, the
+                    ;;same nonce-4 stake must boost his scores too -- with no second anchor, no
+                    ;;second boost class, and nothing defined per agency.
+                    (print "--- [TX-BOOT-15-DSA · 03c · one anchor, two triplets] ---")
+                    (let
+                        (
+                            (og-class:string (ref-U|DALOS::UDC_Makeid "CustodiansOgBoost"))
+                            (ag:string (ref-U|DALOS::UDC_Makeid "OuronetPrimeGolden"))
+                            (ab:string (ref-U|DALOS::UDC_Makeid "OuronetPrimeBronze"))
+                        )
+                        (print (format "<(ANHD promile BEFORE)> => {}"
+                            [(AQP-ANK.UR_UB|AggregatePromile patron og-class)]))
+                        (print (format "<(ANHD stakes 1x nonce 4)> => \"{}\""
+                            [(TS02-C3.AQP-POOL|CC_StakeSemiFungibleCollectable patron pool-id patron patron dhoc-id [4])]))
+                        (map print
+                            [
+                            ;;ANSWERED: ONE anchor definition reaches EVERY agency. ANHD's triplet
+                            ;;is a different id with different score ids from EMMA's, and neither
+                            ;;the anchor nor the boost class was touched between them. No per-agency
+                            ;;anchor, no per-triplet class -- the link rides on the vault's MODEL,
+                            ;;so every score any agency ever mints carries it.
+                            ;;
+                            ;;5200 rather than 50 is CORRECT AND INTENDED. SF anchor promile is
+                            ;;`units x ank-promile` (01_ANK.pact URC_SemiFungibleAnchorPromile), and
+                            ;;more units SHOULD mean more boost -- that is what an anchor is for.
+                            ;;There is deliberately no per-user cap. ANHD holds 104 OG SFTs because
+                            ;;he holds the whole collection in this fixture; in practice a holder
+                            ;;has 2 or 3, i.e. 10-15%. Pinned at the real number so a change in the
+                            ;;promile MODEL shows up here as a failure rather than as drift.
+                            (expect "<<TX-BOOT-OG4>> the SAME anchor reaches a SECOND agency's triplet -- no per-agency definition"
+                                5200.0 (AQP-ANK.UR_UB|AggregatePromile patron og-class))
+                            (expect "<<TX-BOOT-OG5>> ...boost = units x promile, UNCAPPED: 104 OG SFTs = 520% of base"
+                                52540800.0 (AQP-SCORE.UR_U-SCR|UserScoreBoostedScore patron pool-id ag))
+                            ]
+                        )
+                        (print (format "<(ANHD boosted)> golden={} bronze={}   <(EMMA boosted bronze)> => {}"
+                            [(AQP-SCORE.UR_U-SCR|UserScoreBoostedScore patron pool-id ag)
+                             (AQP-SCORE.UR_U-SCR|UserScoreBoostedScore patron pool-id ab)
+                             (AQP-SCORE.UR_U-SCR|UserScoreBoostedScore KST.EMMA pool-id eb)]))
+                    )
+                    ;;==== TX-BOOT-15-DSA · 03d · the boost class is now OWNED ====
+                    ;;THE HOLE THIS CLOSES. Issuing an anchor is gated on CAP_OwnerOrCreator of the
+                    ;;ANCHORED ASSET -- but when attaching to an EXISTING class that is the
+                    ;;attacker's OWN asset, so it gated nothing about the class being joined. A
+                    ;;BoostClass had no owner field at all, so anyone holding any anchorable asset
+                    ;;could attach it to CustodiansOgBoost and hand THEIR holders a boost inside
+                    ;;THIS vault's scoring. Seven slots, one used: six free grants.
+                    ;;
+                    ;;EMMA owns a DPSF collection of her own here, so she is a realistic attacker
+                    ;;rather than a strawman: the only thing that stops her is the new owner check.
+                    (print "--- [TX-BOOT-15-DSA · 03d · boost class ownership] ---")
+                    (env-sigs [])
+                    (map print
+                        [
+                        (expect "<<TX-BOOT-OG6>> the OG boost class records ANHD as its owner"
+                            patron (at "class-owner" (AQP-ANK.UR_BC|Data (ref-U|DALOS::UDC_Makeid "CustodiansOgBoost"))))
+                        ;;OG7 probes UEV_IssueAnchor DIRECTLY rather than through
+                        ;;C_IssueSemiFungibleAnchor, and that is deliberate. Going through the
+                        ;;client would reach CAP_OwnerOrCreator(dhoc) FIRST -- EMMA does not own the
+                        ;;Custodians collection, so she would be refused by the OLD guard and the
+                        ;;test would prove nothing about the new one. Two guards that both refuse
+                        ;;her are indistinguishable from the outside.
+                        ;;
+                        ;;UEV_IssueAnchor is unprotected and carries ONLY the class checks, so
+                        ;;calling it isolates the ownership enforce added on 2026-09-19. The class
+                        ;;is owned by ANHD; this runs where ANHD has not signed, so it must refuse.
+                        ;;A first attempt at this test PASSED FOR THE WRONG REASON TWICE -- once
+                        ;;dying in coin.TRANSFER before reaching any guard, once SUCCEEDING because
+                        ;;ANHD's key happened to be in env-sigs for the enclosing transaction.
+                        ;;The message names the CLASS OWNER's keyset (PK_AncientHodler), which is
+                        ;;what makes this specific: it is ANHD's guard being demanded, not a generic
+                        ;;refusal. That string is the evidence the right enforce fired.
+                        (expect-failure "<<TX-BOOT-OG7>> attaching to a boost class you do not own is refused"
+                            "Keyset failure (keys-all): [PK_Ancie"
+                            (AQP-ANK.UEV_IssueAnchor dhoc-id (ref-U|DALOS::UDC_Makeid "CustodiansOgBoost")))
+                        ]
+                    )
+                    ;;ANHD back in scope for the inject/collect below.
+                    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
                     ;;DIAGNOSTIC: the triplet LANES, which is what the quality split actually
                     ;;routes on. Printed before the inject so the payout can be read against them.
                     (print (format "<(lanes ANHD)> => {}"
@@ -895,7 +1045,16 @@
         )
     )
 )
-(commit-tx)
+;;ROLLED BACK, not committed. Everything above is an ECONOMIC EXPERIMENT -- a second agency,
+;;an oracle write, a 3000 OURO inject and two collects -- and its whole purpose is to answer
+;;"does this pay?", not to seed state. Committing it changed the chain for every suite that
+;;loads this file: Kursan/dsa-grand-tour.repl's GT-09 royalty probe, which expects disposal to
+;;fail with "dispo capabilities exceeded!" because its vault never funded custody, started
+;;SUCCEEDING -- the inject here had funded the shared custody it draws from. That is a real
+;;property worth knowing (royalty disposal is not isolated per vault), and it is exactly why an
+;;experiment of this size must not persist. Steps 13/14 in TX-BOOT-1314 above DO commit: they
+;;are the vault itself, which downstream suites are entitled to see.
+(rollback-tx)
 (env-sigs [])
 
 (begin-tx "TX-BOOT-13-SPLIT - dual reward-split ECONOMIC flip on OuroLpFarm (task #89 / D1-G2)")

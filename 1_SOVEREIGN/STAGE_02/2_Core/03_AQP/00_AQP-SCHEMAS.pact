@@ -71,6 +71,14 @@
         ;;
         anchors:integer             ;;[M]   Count of active anchors (0-7)
         class-active:bool           ;;[M]   Active flag
+        ;;ADDED 2026-09-19. A BoostClass had NO owner at all, so attaching an anchor to an existing
+        ;;class (acnoi=false) validated only "class active" and "a slot is free (max 7)". Issuing
+        ;;the anchor itself is gated on CAP_OwnerOrCreator of the ANCHORED ASSET -- but that is the
+        ;;attacker's own asset. So anyone owning any anchorable asset could anchor it into someone
+        ;;else's class and hand their holders a boost inside that vault's scoring. Six free slots on
+        ;;a 7-slot class is six such grants. The class now carries its creator, and the
+        ;;acnoi=false path enforces it.
+        class-owner:string          ;;[.]   Ouronet account that created the class; only it may attach anchors
         ;;
         ;;Select Keys
         boost-class-id:string       ;;[.]   Self-referential ID

@@ -2398,6 +2398,13 @@
 ;;test would pass for an entirely different reason.
 ;;==== AQP-G25 — UEV_IssueAnchor: a REVOKED boost class cannot take new anchors · 02 · let / invocation ==== 
 (print "--- [AQP-G25 — UEV_IssueAnchor: a REVOKED boost class cannot take new anchors · 02 · let / invocation] ---")
+;;SIGNED AS THE CLASS OWNER, added 2026-09-19 with the boost-class ownership field. UEV_IssueAnchor
+;;now enforces class ownership BEFORE the class-active check, per CLAUDE.md's "authorisation
+;;precedes validation" ruling. Unsigned, this block refused with "Keyset failure" and the
+;;active-check below became unreachable -- the test would have kept passing while proving nothing
+;;about revocation. The remedy is the one that ruling prescribes: a FIXTURE that satisfies the
+;;first guard, so BOTH are exercised, rather than reordering the enforces.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
         (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)

@@ -645,8 +645,8 @@
         ,"anchor-id"            : l}
     )
     (defun UDC_BoostClass:object{AcquisitionSchemasV1.ANK|BoostClass}
-        (a:string b:string c:string d:string e:string f:string g:string h:integer i:bool j:string)
-        @doc "Constructs BoostClass object."
+        (a:string b:string c:string d:string e:string f:string g:string h:integer i:bool j:string k:string)
+        @doc "Constructs BoostClass object. `k` is the class-owner (creator); only it may attach anchors."
         {"anchor-primary"       : a
         ,"anchor-secondary"     : b
         ,"anchor-tertiary"      : c
@@ -656,7 +656,8 @@
         ,"anchor-septenary"     : g
         ,"anchors"              : h
         ,"class-active"         : i
-        ,"boost-class-id"       : j}
+        ,"boost-class-id"       : j
+        ,"class-owner"          : k}
     )
     (defun UDC_EmptyInternalGroup:object{AcquisitionSchemasV1.ANK|InternalGroup} ()
         @doc "Constructs empty InternalGroup (all BAR, anchors=0)."
@@ -751,16 +752,18 @@
                 (a7:string (at "anchor-septenary" bc))
                 (n:integer (at "anchors" bc))
                 (ca:bool (at "class-active" bc))
+                (co:string (at "class-owner" bc))
+                (co:string (at "class-owner" bc))
                 (bcid:string (at "boost-class-id" bc))
             )
             (cond
-                ((= a1 BAR) (UDC_BoostClass new-anchor-id a2 a3 a4 a5 a6 a7 (+ n 1) ca bcid))
-                ((= a2 BAR) (UDC_BoostClass a1 new-anchor-id a3 a4 a5 a6 a7 (+ n 1) ca bcid))
-                ((= a3 BAR) (UDC_BoostClass a1 a2 new-anchor-id a4 a5 a6 a7 (+ n 1) ca bcid))
-                ((= a4 BAR) (UDC_BoostClass a1 a2 a3 new-anchor-id a5 a6 a7 (+ n 1) ca bcid))
-                ((= a5 BAR) (UDC_BoostClass a1 a2 a3 a4 new-anchor-id a6 a7 (+ n 1) ca bcid))
-                ((= a6 BAR) (UDC_BoostClass a1 a2 a3 a4 a5 new-anchor-id a7 (+ n 1) ca bcid))
-                ((= a7 BAR) (UDC_BoostClass a1 a2 a3 a4 a5 a6 new-anchor-id (+ n 1) ca bcid))
+                ((= a1 BAR) (UDC_BoostClass new-anchor-id a2 a3 a4 a5 a6 a7 (+ n 1) ca bcid co))
+                ((= a2 BAR) (UDC_BoostClass a1 new-anchor-id a3 a4 a5 a6 a7 (+ n 1) ca bcid co))
+                ((= a3 BAR) (UDC_BoostClass a1 a2 new-anchor-id a4 a5 a6 a7 (+ n 1) ca bcid co))
+                ((= a4 BAR) (UDC_BoostClass a1 a2 a3 new-anchor-id a5 a6 a7 (+ n 1) ca bcid co))
+                ((= a5 BAR) (UDC_BoostClass a1 a2 a3 a4 new-anchor-id a6 a7 (+ n 1) ca bcid co))
+                ((= a6 BAR) (UDC_BoostClass a1 a2 a3 a4 a5 new-anchor-id a7 (+ n 1) ca bcid co))
+                ((= a7 BAR) (UDC_BoostClass a1 a2 a3 a4 a5 a6 new-anchor-id (+ n 1) ca bcid co))
                 bc
             )
         )
@@ -797,10 +800,11 @@
                 (lst-v2 (ref-U|LST::UC_AppL lst-v1 BAR))
                 (n:integer (at "anchors" bc))
                 (ca:bool (at "class-active" bc))
+                (co:string (at "class-owner" bc))
                 (bcid:string (at "boost-class-id" bc))
             )
             (UDC_BoostClass (at 0 lst-v2) (at 1 lst-v2) (at 2 lst-v2) (at 3 lst-v2)
-                (at 4 lst-v2) (at 5 lst-v2) (at 6 lst-v2) (- n 1) ca bcid
+                (at 4 lst-v2) (at 5 lst-v2) (at 6 lst-v2) (- n 1) ca bcid co
             )
         )
     )
@@ -1529,12 +1533,22 @@
         )
     )
     (defun UEV_IssueAnchor (ank-asset:string boost-class-id:string)
-        @doc "Validates BoostClass exists, is active, and has a free slot; also validates asset 49-anchor cap. Used when acnoi=false."
+        @doc "Validates BoostClass exists, is active, has a free slot, and IS OWNED BY THE CALLER; also \
+            \ validates asset 49-anchor cap. Used when acnoi=false (attaching to an EXISTING class)."
+        ;;OWNERSHIP ADDED 2026-09-19. Issuing an anchor is gated on CAP_OwnerOrCreator of the
+        ;;ANCHORED ASSET -- but on this path that is the caller's OWN asset, which gates nothing
+        ;;about the class being joined. A BoostClass had no owner at all, so anyone holding any
+        ;;anchorable asset could attach it to someone else's class and hand their holders a boost
+        ;;inside that vault's scoring; a 7-slot class with one anchor used offered six such grants.
+        ;;Enforced via account ownership rather than a passed patron so no defcap signature moves:
+        ;;CAP_EnforceAccountOwnership checks the transaction is signed by that account's guard.
         (let
             (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (bc:object{AcquisitionSchemasV1.ANK|BoostClass} (UR_BC|Data boost-class-id))
                 (aa:object{AcquisitionSchemasV1.ANK|AssetAnchors} (UR_AA|Data ank-asset))
             )
+            (ref-DALOS::CAP_EnforceAccountOwnership (at "class-owner" bc))
             (enforce (at "class-active" bc) (format "{} BoostClass {} must be active" [E-ANK boost-class-id]))
             (enforce (< (at "anchors" bc) 7) (format "{} BoostClass {} full (7 anchors)" [E-ANK boost-class-id]))
             (enforce (< (at "anchors-active" aa) 49) (format "{} Asset {} at 49-anchor cap" [E-ANK ank-asset]))
@@ -1763,8 +1777,9 @@
     ;;
     ;;Protection: Class 1 — Innate protection offered by WI_BoostClass
     (defun XI_IssueBoostClass:string
-        (boost-class-name:string)
-        @doc "Internal (C_Issue*Anchor · depth 0]): create BoostClass inline when acnoi; returns boost-class-id."
+        (boost-class-name:string class-owner:string)
+        @doc "Internal (C_Issue*Anchor · depth 0]): create BoostClass inline when acnoi; returns boost-class-id. \
+            \ `class-owner` is recorded so only the creator may later attach anchors (2026-09-19)."
         ;; SECURE: granted by WI_BoostClass (underlying W_).
         (let
             (
@@ -1773,7 +1788,7 @@
                 (boost-class-id:string (ref-U|DALOS::UDC_Makeid boost-class-name))
             )
             (WI_BoostClass boost-class-id
-                (UDC_BoostClass BAR BAR BAR BAR BAR BAR BAR 0 true boost-class-id)
+                (UDC_BoostClass BAR BAR BAR BAR BAR BAR BAR 0 true boost-class-id class-owner)
             )
             boost-class-id
         )
@@ -2238,7 +2253,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     ;;
-                    (boost-class-id:string (if acnoi (XI_IssueBoostClass boost-class-name-or-id) boost-class-name-or-id))
+                    (boost-class-id:string (if acnoi (XI_IssueBoostClass boost-class-name-or-id patron) boost-class-name-or-id))
                     (fungibility:[bool] [true true])
                     (anchor-id:string
                         (XI_IssueAnchor 
@@ -2263,7 +2278,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     ;;
-                    (boost-class-id:string (if acnoi (XI_IssueBoostClass boost-class-name-or-id) boost-class-name-or-id))
+                    (boost-class-id:string (if acnoi (XI_IssueBoostClass boost-class-name-or-id patron) boost-class-name-or-id))
                     (fungibility:[bool] [false true])
                     (anchor-id:string
                         (XI_IssueAnchor 
@@ -2288,7 +2303,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     ;;
-                    (boost-class-id:string (if acnoi (XI_IssueBoostClass boost-class-name-or-id) boost-class-name-or-id))
+                    (boost-class-id:string (if acnoi (XI_IssueBoostClass boost-class-name-or-id patron) boost-class-name-or-id))
                     (fungibility:[bool] [false false])
                     (anchor-id:string
                         (XI_IssueAnchor
@@ -2313,7 +2328,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     ;;
-                    (boost-class-id:string (if acnoi (XI_IssueBoostClass boost-class-name-or-id) boost-class-name-or-id))
+                    (boost-class-id:string (if acnoi (XI_IssueBoostClass boost-class-name-or-id patron) boost-class-name-or-id))
                     (fungibility:[bool] [false false])
                     (anchor-id:string
                         (XI_IssueAnchor
