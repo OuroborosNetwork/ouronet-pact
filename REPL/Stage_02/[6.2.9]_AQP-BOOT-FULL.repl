@@ -622,6 +622,113 @@
 )
 (env-sigs [])
 (commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
+;;
+(begin-tx "TX-BOOT-1314 - Custodians delegated-staking vault + its first agency")
+(print "")
+(print "=== TX-BOOT-1314 — Steps 13+14: the Custodians DSA vault, opened end to end ======")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+;;ADDED 2026-09-19 with C_Step13_CreateCustodiansVault / CC_Step14_OpenCustodiansAgency.
+;;
+;;WHY THIS RUNS THE REAL FUNCTIONS AND DOES NOT HAND-ROLL THEM. TX-BOOT-07/07b hand-rolled
+;;C_Step7 and drifted from it, which is how the missing Bloodshed link survived for months.
+;;These two steps are driven through their actual entrypoints, so the suite cannot diverge
+;;from what deployment does.
+;;
+;;THE COLLECTION IS REAL, not a fixture invention: [4.0]_Sovereign-Executor issues
+;;"OuronetCustodians" (DHOC) with nonce 1 Bronze / 2 Silver / 3 Golden / 4 OG Founder, and its
+;;own descriptions say each of the first three is "a third of Ouronet Financial Ownership"
+;;spread over 10000 / 1000 / 100 units. That is a 1:10:100 per-unit ratio, which is exactly
+;;what BOOT|CUSTODIANS_VALUE_* encode -- so each tier is worth 10000 quintessence and the whole
+;;collection 30000.
+;;
+;;THE OPERATOR STAKES WHOLE GOLDEN NONCE 3 -- 100 units x 100.0 = 10000 quintessence, which is
+;;exactly unit-score/2 and therefore exactly the open gate. Staking whole (not fragment) nonces
+;;is the point: it proves BOOT|CUSTODIANS_NONCES_* listing the positive nonce alongside its
+;;negative actually works. The DSA fixtures in Kursan/ only ever stake fragments, so a
+;;whole-nonce stake would score ZERO under their model shape and no test would notice.
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (dhoc-id:string "DHOC-98c486052a51")
+        (ouro-id:string "OURO-98c486052a51")
+        (split-smart:[decimal]
+            (DALOS.URC_SplitSTOAPrices patron (* 12.0 (DALOS.UR_UsagePrice "smart")))
+        )
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-smart))
+                ]
+            }
+        ]
+    )
+    ;;==== TX-BOOT-1314 · 01 · Step 13 — build the vault ====
+    (print "--- [TX-BOOT-1314 · 01 · Step 13 build the vault] ---")
+    (print (format "<(AQP-BOOT.C_Step13_CreateCustodiansVault)> => \"{}\""
+        [(AQP-BOOT.C_Step13_CreateCustodiansVault patron patron dhoc-id ouro-id
+            (concat ["F" "|" ouro-id "|" (ref-DALOS::UR_AurynID) "|" (ref-DALOS::UR_EliteAurynID)]))]))
+    ;;==== TX-BOOT-1314 · 02 · Step 14 — open the first agency ====
+    (print "--- [TX-BOOT-1314 · 02 · Step 14 open the first agency] ---")
+    (print (format "<(AQP-BOOT.CC_Step14_OpenCustodiansAgency)> => \"{}\""
+        [(AQP-BOOT.CC_Step14_OpenCustodiansAgency patron patron "OuronetPrime" dhoc-id [3] 100)]))
+    ;;==== TX-BOOT-1314 · 03 · assertions ====
+    (print "--- [TX-BOOT-1314 · 03 · assertions] ---")
+    (let
+        (
+            (fvt-id:string (ref-U|DALOS::UDC_Makeid "CustodiansVault"))
+            (triplet-id:string
+                (AQP-SCORE.UC_ComputeTripletId
+                    (ref-U|DALOS::UDC_Makeid "OuronetPrimeBronze")
+                    (ref-U|DALOS::UDC_Makeid "OuronetPrimeSilver")
+                    (ref-U|DALOS::UDC_Makeid "OuronetPrimeGolden")))
+        )
+        (map print
+            [
+            (expect "<<TX-BOOT-13>> the Custodians vault is a class-0 FVT (DSA refuses anything else)"
+                0 (RPS.UR_FVT|FvtClass fvt-id))
+            (expect "<<TX-BOOT-13>> unit-score is 20000, so the agency gate is 10000"
+                20000 (AQP-DSA.UR_DSA-TMP|UnitScore fvt-id))
+            (expect "<<TX-BOOT-13>> the DSA template is active"
+                true (AQP-DSA.UR_DSA-TMP|Active fvt-id))
+            ;;The split is the economic heart of this vault: bronze 20/40/40, silver 40/30/30,
+            ;;golden 60/20/20 across the OURO|AURYN|ELITEAURYN ladder. Read back from RPS, not
+            ;;trusted from Step 13's echo -- the echo is formatted by the same call that wrote it.
+            (expect "<<TX-BOOT-13>> HETEROGENEOUS quality split is registered"
+                "HETEROGENEOUS" (RPS.UR_FVT-QS|Mode fvt-id ouro-id))
+            (expect "<<TX-BOOT-13>> bronze lane splits 20% OURO / 40% Auryn / 40% Elite-Auryn"
+                [200 400 400] (RPS.UR_FVT-QS|BronzeSplit fvt-id ouro-id))
+            (expect "<<TX-BOOT-13>> golden lane splits 60% / 20% / 20%"
+                [600 200 200] (RPS.UR_FVT-QS|GoldSplit fvt-id ouro-id))
+            ;;Step 14: the agency exists, and its quintessence is the WHOLE-nonce stake scoring
+            ;;correctly. 100 golden units x 100.0 = 10000 = exactly unit-score/2, the open gate.
+            (expect "<<TX-BOOT-14>> the first agency's operator is recorded"
+                KST.ANHD (AQP-DSA.UR_DSA-AGN|Operator fvt-id triplet-id))
+            (expect "<<TX-BOOT-14>> 100 WHOLE golden Custodians = 10000 quintessence (exactly the gate)"
+                10000.0 (AQP-DSA.URC_AgencyQuintessence triplet-id))
+            ]
+        )
+    )
+    ""
+)
+(commit-tx)
+(env-sigs [])
+
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>

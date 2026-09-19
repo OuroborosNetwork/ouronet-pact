@@ -4849,15 +4849,15 @@ And what those deltas did to the two things a reader cares about — **[VERIFIED
 | | 2026-08-30 | 2026-09-14 | today (HEAD) |
 |---|---:|---:|---:|
 | Pact source files | 91 | 93 | **94** |
-| Pact source lines | 96,310 | 114,156 | **115,971** |
+| Pact source lines | 96,310 | 114,156 | **116,166** |
 | `.repl` files (excl. `archive/`) | 181 | 209 | **207** |
-| `.repl` lines | 68,435 | 120,603 | **137,926** |
-| distinct assertions written | **1,604** | **5,262** | **5,878** |
+| `.repl` lines | 68,435 | 120,603 | **138,033** |
+| distinct assertions written | **1,604** | **5,262** | **5,886** |
 
 > **These are a SNAPSHOT, and the book says so rather than implying permanence.** The distinct
 > count moved four times on 2026-09-17 alone as witnesses were added; it was **5,555** when the
 > figure-sync tool's own source of truth was found stale, **5,830** when that loop was closed, and
-> **5,878**, measured when this book was built. The canonical value is whatever `ARCHITECTURE/REPL_SUITE_STATS.md`
+> **5,886**, measured when this book was built. The canonical value is whatever `ARCHITECTURE/REPL_SUITE_STATS.md`
 > holds, which `_figuresync.py --check` now verifies **against the tree** rather than against itself
 > — see DEFECT-LEDGER §8.22.
 
@@ -4877,7 +4877,7 @@ command is named in the chapter that owns it.
 | **1.2** `INFO_` preview rehaul | one free preview per client operation | **426** implementations across **10** modules: **346** wrap a `URCi_`, **59** delegate to a sibling preview, **20** declare the op free, **1** is a data view |
 | **1.3** IGNIS re-pricing | the whole cost model moved into four constant maps | `IG\|DETER` **54** keys · `IG\|COMPONENTS` **396** · `IG\|WEIGHTS` **14** · `IG\|LEGS` **22**; the generated price sheet carries **442** priced rows + **5** declared unpriced |
 | **1.4** module splits | `04_FVT.pact` cut below the deploy ceiling | `04_RPS.pact` **5,621** lines + `05_FVT.pact` **3,977**; **0 of 93** modules over the ~6,635-line cliff, **1 in the project's own "Danger" band** |
-| **1.5** REPL finalisation | a one-command gate over the whole suite | **92** gate entrypoints, **14** fatal static checks, **5,878** distinct assertions, orphaned asserting files **0** |
+| **1.5** REPL finalisation | a one-command gate over the whole suite | **92** gate entrypoints, **14** fatal static checks, **5,886** distinct assertions, orphaned asserting files **0** |
 
 ---
 
@@ -6185,8 +6185,8 @@ that, and rebuilt the runner architecture around the result.
 | | 2026-08-30 | 2026-09-04 | 2026-09-09 | 2026-09-14 | 2026-09-16 | HEAD |
 |---|---:|---:|---:|---:|---:|---:|
 | `.repl` files (excl. `archive/`) | 181 | — | — | 209 | — | **207** |
-| `.repl` lines (excl. `archive/`) | 68,435 | — | — | 120,603 | — | **137,926** |
-| distinct assertions | **1,604** | 1,663 | 2,431 | **5,262** | 5,555 | **5,878** |
+| `.repl` lines (excl. `archive/`) | 68,435 | — | — | 120,603 | — | **138,033** |
+| distinct assertions | **1,604** | 1,663 | 2,431 | **5,262** | 5,555 | **5,886** |
 
 <sub>CORRECTED 2026-09-18 — the HEAD column was written as literals and had rotted. It published
 **128,567** `.repl` lines, which was true around 2026-09-17 and is roughly nine thousand short
@@ -6396,7 +6396,7 @@ runner, and intersecting it with the set of `.repl` files that contain assertion
 | distinct assertions in the suite | **5,804** |
 | …inside `ZALL.repl`'s closure | **1,437 (25%)** |
 
-<sub>The 5,804 here excludes `archive/`; §1's 5,878 is the project's own `_suite_stats.py` rule, which
+<sub>The 5,804 here excludes `archive/`; §1's 5,886 is the project's own `_suite_stats.py` rule, which
 walks all of `REPL/` including the 68 archived files. Same corpus, two denominators — quoted
 separately rather than reconciled, because each is the right one for its own question.
 CORRECTED 2026-09-18: these four rows read **148 / 34 / 5,747 / 1,434 (25%)** when the chapter was
@@ -6679,8 +6679,8 @@ this chapter first measured and at the tree today:
 | | |
 |---|---:|
 | distinct assertions at `1821d73` (2026-09-16, the stats commit this chapter measured) | **5,555** — exactly what the file published then |
-| distinct assertions the stats file publishes now (`fb58cba`, 2026-09-18) | **5,878** |
-| distinct assertions counted from the tree now | **5,878** |
+| distinct assertions the stats file publishes now (`fb58cba`, 2026-09-18) | **5,886** |
+| distinct assertions counted from the tree now | **5,886** |
 
 <sub>CORRECTED 2026-09-18. This table stopped at two rows and the section concluded that **the
 generated statistics are 261 assertions stale today, and nothing is red.** They are not stale today.
@@ -6774,7 +6774,7 @@ Deliberately **not** written as "four of 18": the register marks `RT-H-001`
 FIXED rather than REFUSED, because the same attack also found a real defect, so the four are not a
 subset of the refused count and quoting them as a fraction of it would be false.</sub>
 
-> The suite's 25,056 executed assertions — measured at build time; this book
+> The suite's 25,068 executed assertions — measured at build time; this book
 > did not run the gate — establish that the system behaves as documented. They do
 > not establish
 > that it is defended for the reasons the documentation implies. Those are different claims, and only
@@ -6947,13 +6947,13 @@ and nothing checked it against the table in Chapter 19 that it paraphrases.*
 
 ## Verification state
 
-At the time of writing, the full gate is **green at 25,056 assertions** (20,064 positive, 4,992
+At the time of writing, the full gate is **green at 25,068 assertions** (20,076 positive, 4,992
 negative) across the whole system — every deploy stage, every scenario suite, every red-team attack,
 plus the static checks on generated artefacts, tool paths, prefix vocabulary, cross-module member
 resolution, assertion vacuity, eager-let shadows, and this book's own tables. Wall time ~5-7 minutes.
 Reproduction: Appendix 1.
 
-> **That number is a snapshot and will move.** It rose from 22,939 to 25,056 during the round
+> **That number is a snapshot and will move.** It rose from 22,939 to 25,068 during the round
 > documented here. The canonical value is whatever `ARCHITECTURE/REPL_SUITE_STATS.md` holds, and
 > `_figuresync.py --check` now verifies that file **against the tree** — it previously verified only
 > that every document agreed with it, which is circular and was green while all of them were wrong
@@ -8397,7 +8397,7 @@ gated rather than remembered.
 
 > It also refutes a finding. A reviewer flagged a single instance of the *other* class — a member
 > that exists but is not declared on the interface — as a coupling defect. Counting the population
-> first showed **166 live instances**, one member accounting for 57. That is the convention, stated
+> first showed **168 live instances**, one member accounting for 57. That is the convention, stated
 > as such in the architecture documentation. **A single instance cannot tell you whether it is a
 > defect or a dialect.** Fixing it would have made the tree less consistent and reported a practice
 > as a bug.
@@ -8429,7 +8429,7 @@ the moment of writing and staleness is a property of elapsed time.
 
 **Hand-correcting 124 numbers would have fixed nothing.** It resets the clock and changes no
 mechanism. So the volatile figures are no longer written in the chapters at all: a source now writes
-`25,056` or `415`, and the assembler substitutes the number it
+`25,068` or `415`, and the assembler substitutes the number it
 **measures at build time** by running the tool that owns it. About eight seconds per build. A figure
 that cannot be measured is a build failure rather than a fallback to the last known value — a
 default would be a stale figure with extra steps. Twenty-two figures are wired this way, and that

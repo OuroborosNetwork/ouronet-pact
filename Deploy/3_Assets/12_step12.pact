@@ -73,6 +73,6 @@
     "TX8_SHARES_TREASURY_ID"
     "TX8_BLOODSHED_TREASURY_ID"      ;; <- ADDED 2026-09-19 with BloodshedTreasury
     "AURYN-8Nh-JO8JO4F5"             ;; <- reward-auryn-id (sub, snakes AND bloodshed treasuries)
-    "OUROBOROS_DPTF_ID"              ;; <- reward-ouroboros-id -- live id needed
+    "OURO-8Nh-JO8JO4F5"              ;; <- reward-ouroboros-id (Ouroboros IS the OURO DPTF)
     "WSTOA-8Nh-JO8JO4F5"             ;; <- reward-wstoa-id (coding AND bloodshed treasuries)
 )

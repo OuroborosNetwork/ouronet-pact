@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 20 of 20
 ;; This is STEP 20 of 21 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-19 must have run first, including the init steps between deploys.
-;; 1 module(s), 0 gas measured in the REPL gas model, 61,676 bytes
+;; 1 module(s), 0 gas measured in the REPL gas model, 76,029 bytes
 ;;
 ;; Modules in this transaction, IN ORDER (do not reorder):
 ;;   2_CITIZEN/5_VaultsMinter/04_AQP-BOOT.pact
@@ -129,6 +129,12 @@
     (defun C_Step12_AddFvtRewardLinks:string
         (patron:string sub-treasury-id:string coding-treasury-id:string snakes-treasury-id:string shares-treasury-id:string bloodshed-treasury-id:string reward-auryn-id:string reward-ouroboros-id:string reward-wstoa-id:string)
     )
+    (defun C_Step13_CreateCustodiansVault:string
+        (patron:string owner-konto:string custodians-dpsf-id:string ouro-id:string multiplet-family-id:string)
+    )
+    (defun CC_Step14_OpenCustodiansAgency:string
+        (patron:string operator-konto:string agency-name:string custodians-dpsf-id:string stake-nonces:[integer] fee-per-mille:integer)
+    )
     (defun C_IssueGenericEarningVault:string
         (patron:string owner-konto:string vault-name:string stake-dptf-id:string reward-dptf-id:string)
     )
@@ -198,6 +204,64 @@
     ;;bloodshed score, and we need to be able to earn stuff via that score alone" -- so it earns,
     ;;and it earns through its own class-2 Treasury (the score is NF, and treasuries take SF/NF).
     (defconst BOOT|FVT_BLOODSHED_TREASURY:string "BloodshedTreasury")
+
+    ;;<---------------------------------------------------------------------->
+    ;; CUSTODIANS DELEGATED-STAKING VAULT (Steps 13-14). Added 2026-09-19.
+    ;;
+    ;; WHY THIS IS A CLASS-0 FVT AND NOT A TREASURY. It was specified as "a DSA Treasury",
+    ;; and it behaves like one -- users stake an SFT collection, no LP is involved. But
+    ;; 08_DSA.pact:292 refuses anything else outright:
+    ;;     (enforce (= (RPS.UR_FVT|FvtClass fvt-id) 0) "DSA vault must be a class-0 FVT")
+    ;; and AQP.repl <<AQP-G20b>> pins that refusal for a class-1 vault. The reason is in that
+    ;; test's own note: capture arithmetic is denominated in an LP denominator, which classes
+    ;; 1 and 2 do not have. Delegation members are then admitted through
+    ;; RPS::XE_AdmitDelegationMember with swpair "|" and ghost-tvl 0.0, which SKIPS every LP
+    ;; rule and the triplet-category<->fvt-class check. So class 0 is the container; the
+    ;; behaviour is vault-like. Same shape as OuroLpFarm, which is the working precedent for
+    ;; triplet + MULTIPLET_BASE + quality split.
+    (defconst BOOT|FVT_CUSTODIANS_VAULT:string          "CustodiansVault")
+    (defconst BOOT|POOL_CUSTODIANS:string               "CustodiansPool")
+    (defconst BOOT|MODEL_CUSTODIANS_BRONZE:string       "CustodiansBronzeQuintessence")
+    (defconst BOOT|MODEL_CUSTODIANS_SILVER:string       "CustodiansSilverQuintessence")
+    (defconst BOOT|MODEL_CUSTODIANS_GOLDEN:string       "CustodiansGoldenQuintessence")
+    (defconst BOOT|MODEL_CUSTODIANS_TRIPLET:string      "CustodiansQuintessenceTriplet")
+
+    ;; ONE number sets both published thresholds. `unit-score` is quintessence per capture
+    ;; unit -- "1 staking unit = 1 node" -- and UEV_OpenGate (08_DSA.pact:672) requires only
+    ;; HALF of it to open an agency:
+    ;;     (enforce (>= (URC_AgencyQuintessence score-entity-id) (/ (dec unit-score) 2.0)))
+    ;; So 20000 => a node at 20000 and an agency at 10000. Do not add a second constant for
+    ;; the agency gate; there is no second knob, and inventing one would let the two drift.
+    (defconst BOOT|CUSTODIANS_UNIT_SCORE:integer        20000)
+
+    ;; HETEROGENEOUS quality split, per-mille, each row summing to 1000. Rows are read as
+    ;; [to-t0 to-t1 to-t2] against the MULTIPLET ladder, which for this vault is the
+    ;; OURO|AURYN|ELITEAURYN family from Step 10 -- so t0=OURO, t1=Auryn, t2=Elite-Auryn.
+    ;;   bronze  20% OURO / 40% Auryn / 40% Elite-Auryn
+    ;;   silver  40% / 30% / 30%
+    ;;   golden  60% / 20% / 20%
+    (defconst BOOT|CUSTODIANS_SPLIT_BRONZE:[integer]    [200 400 400])
+    (defconst BOOT|CUSTODIANS_SPLIT_SILVER:[integer]    [400 300 300])
+    (defconst BOOT|CUSTODIANS_SPLIT_GOLDEN:[integer]    [600 200 200])
+
+    ;; Quintessence per unit of each Custodians tier. Each model lists the WHOLE nonce and its
+    ;; FRAGMENT negative with the SAME value, which is what makes the two dimensionally equal:
+    ;; URCx_SfStakeDefinitionWeightedRawWeight scales a negative nonce by 0.001 and a whole by
+    ;; 1.0, and one whole fragments into exactly 1000 pieces -- so 1 whole and 1000 fragments
+    ;; both yield V. Listing only the negatives (as the DSA test fixtures do) would make a
+    ;; whole nonce score ZERO, which is a silent wrong answer rather than a failure.
+    (defconst BOOT|CUSTODIANS_NONCES_BRONZE:[integer]   [1 -1])
+    (defconst BOOT|CUSTODIANS_NONCES_SILVER:[integer]   [2 -2])
+    (defconst BOOT|CUSTODIANS_NONCES_GOLDEN:[integer]   [3 -3])
+    (defconst BOOT|CUSTODIANS_VALUE_BRONZE:[decimal]    [1.0 1.0])
+    (defconst BOOT|CUSTODIANS_VALUE_SILVER:[decimal]    [10.0 10.0])
+    (defconst BOOT|CUSTODIANS_VALUE_GOLDEN:[decimal]    [100.0 100.0])
+    (defconst BOOT|CUSTODIANS_PRECISION:integer         24)
+    ;;Mirrors AQP-FVT/RPS CT_REWARD_MODE_HETEROGENEOUS. Restated rather than referenced because a
+    ;;defconst is not reachable through a module reference -- (ref-FVT::CT_...) is "Cannot apply
+    ;;value to non-closure". Pinned against the real thing by <<TX-BOOT-13>>, which reads the mode
+    ;;back out of RPS after Step 13 writes it, so a drift in either spelling fails the suite.
+    (defconst BOOT|REWARD_MODE_HETEROGENEOUS:string     "HETEROGENEOUS")
     (defconst BOOT|TREASURY_COMMON:string               "|")
     (defconst BOOT|SCORE_ENTITY_SCORE:integer 1)
     (defconst BOOT|SCORE_ENTITY_TRIPLET:integer 3)
@@ -958,6 +1022,137 @@
         )
     )
 
+    (defun C_Step13_CreateCustodiansVault:string
+        (patron:string owner-konto:string custodians-dpsf-id:string ouro-id:string multiplet-family-id:string)
+        @doc "Step 13 — stand up the Custodians DELEGATED-STAKING vault: three quintessence score \
+            \ MODELS (bronze/silver/golden) + the triplet model every agency instantiates, a class-0 \
+            \ FVT, a MULTIPLET_BASE OURO reward on the Step-10 ladder, the HETEROGENEOUS quality \
+            \ split, the DSA template, and the pool the Custodians SFT stakes into. \
+            \ Issues NO agency — that is Step 14, once per operator."
+        ;;
+        ;; INPUT
+        ;;   custodians-dpsf-id  — the live Custodians DPSF collection id (REPL: DHOC-98c486052a51)
+        ;;   ouro-id             — OURO DPTF id; BOTH the FVT common-denominator and the reward token
+        ;;   multiplet-family-id — from Step 10. MUST be the OURO|AURYN|ELITEAURYN family: the
+        ;;                         quality split routes per-mille across t0/t1/t2 OF THIS LADDER, so
+        ;;                         a different family silently redirects every payout.
+        ;; OUTPUT — fvt-id, pool-id, the four model ids. Step 14 needs the triplet model id.
+        ;;
+        ;; ORDER IS FORCED, not stylistic:
+        ;;   * C_SetQualitySplit's own guard (04_RPS.pact UEV_QualitySplitContext) demands the reward
+        ;;     link already exist, BE MULTIPLET_BASE, and carry an ACTIVE family. A reward link is
+        ;;     MULTIPLET_BASE precisely when C_AddRewardLink is passed a family id instead of BAR.
+        ;;     So: family (Step 10) -> reward link -> split. It cannot be reordered.
+        ;;   * C_DefineDelegationVault requires the FVT to exist and be class 0, owned by patron.
+        ;;   * The pool is issued here but its scores are added in Step 14 — they do not exist until
+        ;;     an agency instantiates the model.
+        (with-capability (GOV|AQP_BOOT_ADMIN)
+            (let
+                (
+                    (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+                    (fvt-id:string (ref-U|DALOS::UDC_Makeid BOOT|FVT_CUSTODIANS_VAULT))
+                    (pool-id:string (ref-U|DALOS::UDC_Makeid BOOT|POOL_CUSTODIANS))
+                    (bronze-model-id:string (ref-U|DALOS::UDC_Makeid BOOT|MODEL_CUSTODIANS_BRONZE))
+                    (silver-model-id:string (ref-U|DALOS::UDC_Makeid BOOT|MODEL_CUSTODIANS_SILVER))
+                    (golden-model-id:string (ref-U|DALOS::UDC_Makeid BOOT|MODEL_CUSTODIANS_GOLDEN))
+                    (triplet-model-id:string (ref-U|DALOS::UDC_Makeid BOOT|MODEL_CUSTODIANS_TRIPLET))
+                )
+                ;; 1. the three single models — score-class 3 (SemiFungible); v1 models are SF-only
+                (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel patron BOOT|MODEL_CUSTODIANS_BRONZE
+                    3 custodians-dpsf-id BOOT|CUSTODIANS_PRECISION
+                    BOOT|CUSTODIANS_NONCES_BRONZE BOOT|CUSTODIANS_VALUE_BRONZE)
+                (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel patron BOOT|MODEL_CUSTODIANS_SILVER
+                    3 custodians-dpsf-id BOOT|CUSTODIANS_PRECISION
+                    BOOT|CUSTODIANS_NONCES_SILVER BOOT|CUSTODIANS_VALUE_SILVER)
+                (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel patron BOOT|MODEL_CUSTODIANS_GOLDEN
+                    3 custodians-dpsf-id BOOT|CUSTODIANS_PRECISION
+                    BOOT|CUSTODIANS_NONCES_GOLDEN BOOT|CUSTODIANS_VALUE_GOLDEN)
+                ;; 2. the triplet model — what every agency instantiates, so all agencies score alike
+                (ref-TS02-C3::AQP-SCR|C_CombineTripletScoreModel patron BOOT|MODEL_CUSTODIANS_TRIPLET
+                    bronze-model-id silver-model-id golden-model-id)
+                ;; 3. the class-0 FVT. common-denominator is a REAL DPTF here, not BAR: DSA capture
+                ;;    arithmetic is denominated in it, which is the whole reason class 1/2 is refused.
+                (ref-TS02-C3::AQP-FVT|C_Issue patron BOOT|FVT_CUSTODIANS_VAULT owner-konto 0 ouro-id)
+                ;; 4. MULTIPLET_BASE reward — the family id is what makes it so
+                (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron fvt-id ouro-id false multiplet-family-id)
+                ;; 5. the heterogeneous split across the OURO|AURYN|ELITEAURYN ladder
+                (ref-TS02-C3::AQP-FVT|C_SetQualitySplit patron fvt-id ouro-id
+                    BOOT|REWARD_MODE_HETEROGENEOUS
+                    BOOT|CUSTODIANS_SPLIT_BRONZE BOOT|CUSTODIANS_SPLIT_SILVER BOOT|CUSTODIANS_SPLIT_GOLDEN)
+                ;; 6. the DSA template — unit-score sets the node bar AND, at half, the agency bar
+                (ref-TS02-C3::AQP-DSA|C_DefineDelegationVault patron fvt-id triplet-model-id
+                    BOOT|CUSTODIANS_UNIT_SCORE)
+                ;; 7. the pool the Custodians SFT stakes into — aqp-class 3 (DPSF)
+                (ref-TS02-C3::AQP-POOL|C_Issue patron BOOT|POOL_CUSTODIANS custodians-dpsf-id 3)
+                (format "AQP-BOOT Step 13 done. fvt={} pool={} triplet-model={} models=[bronze={} silver={} golden={}] unit-score={} (agency gate {}). NEXT=Step14:CC_Step14_OpenCustodiansAgency triplet-model-id."
+                    [
+                        fvt-id pool-id triplet-model-id
+                        bronze-model-id silver-model-id golden-model-id
+                        BOOT|CUSTODIANS_UNIT_SCORE (/ (dec BOOT|CUSTODIANS_UNIT_SCORE) 2.0)
+                    ]
+                )
+            )
+        )
+    )
+    (defun CC_Step14_OpenCustodiansAgency:string
+        (patron:string operator-konto:string agency-name:string custodians-dpsf-id:string stake-nonces:[integer] fee-per-mille:integer)
+        @doc "Step 14 — open ONE Custodians agency: instantiate the triplet model for this operator, \
+            \ HEAVY (CC_): reaches RPS::URH_FvtEnabledScoreEntityIdsForFvt through CC_OpenAgency's \
+            \ stake leg, so its cost scales with the vault's score-entity count, not with a constant. \
+            \ employ its three scores in the Custodians pool, then open the agency and stake in one \
+            \ atomic Talos call. Run once per operator; the first run is the vault's first agency."
+        ;;
+        ;; INPUT
+        ;;   operator-konto — who runs the agency and takes the fee. Need NOT be the vault owner.
+        ;;   agency-name    — names the three scores <agency-name>Bronze/Silver/Golden, so it must be
+        ;;                    unique per agency or the second one collides on the branding table.
+        ;;   stake-nonces   — the operator's OWN opening stake, e.g. [-1 -2 -3] for fragments of all
+        ;;                    three tiers. This is not optional: UEV_OpenGate is TERMINAL inside
+        ;;                    CC_OpenAgency, so a stake too small to reach unit-score/2 reverts the
+        ;;                    whole open rather than leaving a half-built agency.
+        ;;   fee-per-mille  — 10..500 (1%..50%), skimmed from DELEGATORS only, never the operator.
+        ;;
+        ;; WHY THE POOL LINKS HAPPEN HERE AND NOT IN STEP 13: the scores do not exist until this
+        ;; call mints them, and RPS's FVT|XE>ADMIT-DELEGATION requires the SILVER score to carry a
+        ;; pool link before it will admit the triplet. Employ-then-open, per agency.
+        (with-capability (GOV|AQP_BOOT_ADMIN)
+            (let
+                (
+                    (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (fvt-id:string (ref-U|DALOS::UDC_Makeid BOOT|FVT_CUSTODIANS_VAULT))
+                    (pool-id:string (ref-U|DALOS::UDC_Makeid BOOT|POOL_CUSTODIANS))
+                    (triplet-model-id:string (ref-U|DALOS::UDC_Makeid BOOT|MODEL_CUSTODIANS_TRIPLET))
+                )
+                ;; 1. the factory: 3 scores + their SF definitions + the triplet, in one call
+                (ref-TS02-C3::AQP-SCR|C_IssueScoreFromModel patron operator-konto triplet-model-id agency-name)
+                (let
+                    (
+                        (bronze-id:string (ref-U|DALOS::UDC_Makeid (concat [agency-name "Bronze"])))
+                        (silver-id:string (ref-U|DALOS::UDC_Makeid (concat [agency-name "Silver"])))
+                        (golden-id:string (ref-U|DALOS::UDC_Makeid (concat [agency-name "Golden"])))
+                    )
+                    ;; 2. employ all three in the Custodians pool (silver's link is the one admission reads)
+                    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id bronze-id)
+                    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id silver-id)
+                    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id golden-id)
+                    ;; 3. admit + stake + gate, atomically
+                    (ref-TS02-C3::AQP-DSA|CC_OpenAgency patron fvt-id pool-id
+                        (ref-SCR::UC_ComputeTripletId bronze-id silver-id golden-id)
+                        fee-per-mille custodians-dpsf-id stake-nonces)
+                    (format "AQP-BOOT Step 14 done. agency={} triplet={} operator={} fee={}/1000 scores=[bronze={} silver={} golden={}]. NEXT: C_SetOracleAuth then C_OracleWrite — capture stays 0 until an oracle reports nodes."
+                        [
+                            agency-name
+                            (ref-SCR::UC_ComputeTripletId bronze-id silver-id golden-id)
+                            operator-konto fee-per-mille bronze-id silver-id golden-id
+                        ]
+                    )
+                )
+            )
+        )
+    )
     (defun C_IssueGenericEarningVault:string
         (patron:string owner-konto:string vault-name:string stake-dptf-id:string reward-dptf-id:string)
         @doc "Thin delegate to TS02-C3.AQP-FVT|C_IssueGenericEarningVault. Kept so existing callers \
