@@ -588,8 +588,15 @@ def main():
         if not os.path.exists(OUT_MD):
             print("audit book: not built"); return 1
         cur = open(OUT_MD, encoding="utf-8").read()
-        # the build date changes daily; compare everything else
-        strip = lambda s: re.sub(r'· built \d{4}-\d{2}-\d{2} ', '', s)
+        # PROVENANCE IS NOT CONTENT. The build date changes daily and the commit hash changes on
+        # every commit -- including the commit that stores this very file. Left in the comparison,
+        # the hash makes the book SELF-INVALIDATING: commit it, HEAD moves, the book is stale,
+        # rebuilding needs another commit, forever. (Observed immediately on introducing it.) Both
+        # are stripped so `--check` answers the question it exists to answer: does the book match
+        # its CHAPTER SOURCES? The hash still appears in the published file, which is where a
+        # reader holding a PDF needs it.
+        strip = lambda s: re.sub(r'· commit `[^`]*` ', '',
+                                 re.sub(r'· built \d{4}-\d{2}-\d{2} ', '', s))
         if strip(cur) != strip(text):
             print("audit book: OURONET-AUDIT-BOOK.md is STALE against its chapter sources.")
             print("Rebuild with: python3 REPL/tools/_auditbook.py --docx")
