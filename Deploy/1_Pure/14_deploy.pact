@@ -15,7 +15,7 @@
 
 ;; ===== 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/03_AQP.pact ==============
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface AcquisitionPoolsV3
+(interface AcquisitionPoolsV1
     @doc "Interface for AQP acquisition pools and staking. Declares tracker key builders and \
         \ readers for pool config, per-(pool,asset,owner,beneficiary) stake trackers \
         \ (DPTF/DPOF/DPSF/DPNF), and per-beneficiary rollups/anchor-sync state; URC_ \
@@ -288,7 +288,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements AcquisitionPoolsV3)
+    (implements AcquisitionPoolsV1)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -752,7 +752,7 @@
         @doc "Resolves AQP|SC_NAME from canonical AQP-ANK via interface ref."
         (let
             (
-                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
             )
             (ref-ANK::GOV|AQP|SC_NAME)
         )
@@ -890,7 +890,7 @@
         ;;
         ;;NO BLAST RADIUS, which is why this is a repair rather than a deletion: its only caller is
         ;;`UDC_AQP|SchemaWithScoreAtSlot` directly below, and THAT has no callers anywhere in the
-        ;;codebase. Neither is on the AcquisitionPoolsV3 interface, so no cascade. The live slot
+        ;;codebase. Neither is on the AcquisitionPoolsV1 interface, so no cascade. The live slot
         ;;writer is a different mechanism entirely -- `UC_PoolScoreSlotPatch` builds a PARTIAL update
         ;;map consumed by `WU_Pool|ScoreSlot`, which is correct and unaffected.
         ;;Pinned slot-by-slot by REPL/modules/AQP.repl <<AQP-F10>>.
@@ -1113,7 +1113,7 @@
             \ than were applied at last sync — UI signal for C_SyncTrueFungibleAnchors."
         (let
             (
-                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                 ;;
                 (total:decimal (UR_AQP|BenDptfTotalBalance beneficiary-id dptf-id))
                 (last-sync:integer (UR_AQP|BenDptfLastAnkSyncCount beneficiary-id dptf-id))
@@ -1169,7 +1169,7 @@
         @doc "True when beneficiary has active DPSF stake and ANK has more live anchors on dpsf-id than at last sync."
         (let
             (
-                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                 ;;
                 (last-sync:integer (UR_AQP|BenDpsfLastAnkSyncCount beneficiary-id dpsf-id))
                 (live-count:integer (ref-ANK::UR_AA|AnchorsActive dpsf-id))
@@ -1224,7 +1224,7 @@
         @doc "True when beneficiary has active DPNF stake and ANK has more live anchors on dpnf-id than at last sync."
         (let
             (
-                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                 ;;
                 (last-sync:integer (UR_AQP|BenDpnfLastAnkSyncCount beneficiary-id dpnf-id))
                 (live-count:integer (ref-ANK::UR_AA|AnchorsActive dpnf-id))
@@ -1506,7 +1506,7 @@
         @doc "True when no other employed pool score has boost-link pointing at score-id (triplet hub protection)."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 ;;
                 (active-ids:[string] (URC_PoolActiveScoreIds pool-id))
             )
@@ -2047,7 +2047,7 @@
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                 ;;
                 (n-live:integer (length (ref-ANK::UR_ANK|AnchorsForAsset dptf-id)))
             )
@@ -2072,7 +2072,7 @@
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                 ;;
                 (n-live:integer (length (ref-ANK::UR_ANK|AnchorsForAsset collectable-id)))
             )
@@ -2177,7 +2177,7 @@
             \ score exists with BAR aqpool-link; score-class matches pool; class-0 lp-denominator fits pool LP pair."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 (ref-SWP:module{SwapperV4} SWP)
                 ;;
                 (aqp-class:integer (UR_AQP|PoolAqpClass pool-id))
@@ -2233,7 +2233,7 @@
             \ and no employed peer has boost-link = score-id (revoke dependents before hub)."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
             )
             (enforce (!= slot-index -1) "score-id is not assigned to pool")
             (enforce
@@ -3127,7 +3127,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                     ;;
                     (row:object{AcquisitionSchemasV1.AQP|BenDptfTotal} (UR_AQP|BenDptfTotal beneficiary-id dptf-id))
                     (live-count:integer (ref-ANK::UR_AA|AnchorsActive dptf-id))
@@ -3148,7 +3148,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                     ;;
                     (live-count:integer (ref-ANK::UR_AA|AnchorsActive collectable-id))
                 )
@@ -3211,7 +3211,7 @@
             (with-capability (AQP|C>ADD-SCORE pool-id score-id slot-index)
                 (let
                     (
-                        (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+                        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                         (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                         ;;
                         (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
@@ -3236,7 +3236,7 @@
             (with-capability (AQP|C>REVOKE-SCORE pool-id score-id slot-index)
                 (let
                     (
-                        (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+                        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                         (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                         ;;
                         (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
@@ -3288,7 +3288,7 @@
         (with-capability (AQP|C>SYNC-TF-ANCHORS patron beneficiary-id dptf-id)
             (let
                 (
-                    (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     ;;
                     (total:decimal (UR_AQP|BenDptfTotalBalance beneficiary-id dptf-id))
@@ -3325,7 +3325,7 @@
             (with-capability (AQP|C>SYNC-COLLECTABLE-ANCHORS patron beneficiary-id collectable-id son)
                 (let
                     (
-                        (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+                        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                         (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                         ;;
                         (nonces:[integer] (map (at "nonce") supplies))

@@ -1,5 +1,5 @@
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface AcquisitionScoresV3
+(interface AcquisitionScoresV1
     @doc "Interface for the AQP scoring layer. Declares readers for score config/totals, \
         \ per-(account,pool,score) user weights, SF nonce weights, and NF trait/class \
         \ definitions with revision nonces; stake-weight URC_ deltas; XE_ hooks for \
@@ -222,15 +222,15 @@
 )
 (module AQP-SCORE GOV
     @doc "AQP-SCORE — sovereign acquisition scoring for AQP pools. Owns global score configuration and totals (SCR|T|Score), per (ouronet-account, pool-id, score-id) user triples (SCR|T|UserScore), semi-fungible nonce weights (SCR|T|SF|Score) and SF DefRevision, and non-fungible definitions on SCR|T|NF|TraitScore vs SCR|T|NF|ClassScore with NF DefRevision split into global-, trait-, and class-revision nonces so trackers and URCX stake math can gate expensive selects. \
-        \ Public surface: AcquisitionScoresV3 reads and stake-weight URC_*; Talos-facing C_* builds IGNIS (and STOA where applicable) and acquires client caps; XI_* performs table writes under require-capability (SECURE / SCR|XI>*); XE_* is for forward modules and likewise does not enforce — the guarding defcap or C_* owns validation and enforce. UCx_ / URCx_ helpers exist only as operands inside URC_* stake deltas. \
-        \ Implements OuronetPolicyV2 and AcquisitionScoresV3."
+        \ Public surface: AcquisitionScoresV1 reads and stake-weight URC_*; Talos-facing C_* builds IGNIS (and STOA where applicable) and acquires client caps; XI_* performs table writes under require-capability (SECURE / SCR|XI>*); XE_* is for forward modules and likewise does not enforce — the guarding defcap or C_* owns validation and enforce. UCx_ / URCx_ helpers exist only as operands inside URC_* stake deltas. \
+        \ Implements OuronetPolicyV2 and AcquisitionScoresV1."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;; REPL: REPL/Stage_02/[6.2.2]_AQP-SCORE.repl — intra-tx groups TX-SCORE-nn · mm in ;;==== … ==== lines (mm = 01.. within each begin-tx).
     ;;
     (implements OuronetPolicyV2)
-    (implements AcquisitionScoresV3)
+    (implements AcquisitionScoresV1)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -712,7 +712,7 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                 ;;
                 (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
             )
@@ -1239,7 +1239,7 @@
         @doc "Resolves AQP|SC_NAME from canonical AQP-ANK via interface ref."
         (let
             (
-                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
             )
             (ref-ANK::GOV|AQP|SC_NAME)
         )
@@ -2189,7 +2189,7 @@
             \ over foreign base only (README_SCORE.md). Otherwise user base is ob + signed. deb-boost applies to nominal boosted before foreign subtraction."
         (let
             (
-                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-U|DEC:module{OuronetDecimalsV2} U|DEC)
                 ;;
@@ -3253,7 +3253,7 @@
         ;; SECURE: granted by WU_Score|BoostClassLink (underlying W_).
         (let
             (
-                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                 (old-class:string (UR_SCR|ScoreBoostClassLink score-id))
             )
             ;; #13: release the old class's count when re-pointing (−1 old, +1 new below). old == new ⇒ net 0;

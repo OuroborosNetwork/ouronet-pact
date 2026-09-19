@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 16 of 20
 ;; This is STEP 16 of 21 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-15 must have run first, including the init steps between deploys.
-;; 1 module(s), 252,465 gas measured in the REPL gas model, 212,206 bytes
+;; 1 module(s), 252,465 gas measured in the REPL gas model, 198,322 bytes
 ;;
 ;; Modules in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/05_FVT.pact
@@ -15,7 +15,7 @@
 
 ;; ===== 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/05_FVT.pact ==============
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface AcquisitionFarmsVaultsTreasuriesV2
+(interface AcquisitionFarmsVaultsTreasuriesV1
     @doc "Interface for the AQP reward-distribution layer (Farms/Vaults/Treasuries). \
         \ Declares readers for FVT config, member score-entity links, RPS (reward-per-share) \
         \ global/member/user/stream accumulators, and per-user presence/weight state; UC_ \
@@ -268,7 +268,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements AcquisitionFarmsVaultsTreasuriesV2)
+    (implements AcquisitionFarmsVaultsTreasuriesV1)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -498,7 +498,7 @@
     (defconst CT_MEMBERSHIP_MODE_TRUE_TRIPLET           "TRUE-TRIPLET")
     (defconst CT_MEMBERSHIP_MODE_STANDARD_TRIPLET       "STANDARD-TRIPLET")
     ;; Farm reward-split modes (D1-G2). Level-2 W_i source at inject; per-farm, freely mutable.
-    (defconst CT_SPLIT_MODE_STAKED                      "SPLIT|STAKED") ;; Variant 1 — participation (farm default): W_i = member STAKED value (URC_MemberStakedStoaValue)
+    (defconst CT_SPLIT_MODE_STAKED                      "SPLIT|STAKED") ;; Variant 1 — participation (farm default): W_i = member STAKED value (RPS.URC_MemberStakedStoaValue)
     (defconst CT_SPLIT_MODE_TVL                         "SPLIT|TVL")    ;; Variant 2 — pool-size: W_i = whole swpair TVL (UR_StoaValue)
     (defconst CT_SPLIT_MODE_NA                          "|")            ;; sentinel — split-mode is farm-only; vaults/treasuries store this and never consult it
     ;;{3.2}  schemas
@@ -888,7 +888,7 @@
             )
             (let
             (
-                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 ;;
                 (pool-class-ok:bool (ref-AQP::URC_StakeTrueFungiblePoolClassOk pool-id))
                 (stake-admission-ok:bool (if direction (ref-AQP::URC_PoolStakeAdmissionOk pool-id) (ref-AQP::URC_PoolUnstakeAdmissionOk pool-id)))
@@ -965,7 +965,7 @@
             )
             (let
             (
-                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 ;;
                 (stake-admission-ok:bool (if direction (ref-AQP::URC_PoolStakeAdmissionOk pool-id) (ref-AQP::URC_PoolUnstakeAdmissionOk pool-id)))
                 (fvt-ready:bool (if direction (ref-RPS::URC_PoolEmployedScoresFvtStakeReady pool-id) true))
@@ -1024,7 +1024,7 @@
             )
             (let
             (
-                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 ;;
                 (stake-admission-ok:bool (if direction (ref-AQP::URC_PoolStakeAdmissionOk pool-id) (ref-AQP::URC_PoolUnstakeAdmissionOk pool-id)))
                 (fvt-ready:bool (if direction (ref-RPS::URC_PoolEmployedScoresFvtStakeReady pool-id) true))
@@ -1073,7 +1073,7 @@
         @doc "Resolves AQP|SC_NAME from canonical AQP-ANK via interface ref."
         (let
             (
-                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
             )
             (ref-ANK::GOV|AQP|SC_NAME)
         )
@@ -1130,107 +1130,24 @@
         ,"member-link-count"        : member-link-count
         ,"fvt-id"                   : fvt-id}
     )
-    (defun UDC_FVT|ScoreEntityLink:object{AcquisitionSchemasV1.FVT|ScoreEntityLink}
-        (
-            score-entity-type:integer
-            enabled:bool
-            swpair:string
-            ghost-tvl-weight:decimal
-            total-lane-weight:decimal
-            delegation:bool
-            capture-units:decimal
-            capture-weight:decimal
-            oracle-ts:time
-            fvt-id:string
-            score-entity-id:string
-        )
-        @doc "Core constructor for object{AcquisitionSchemasV1.FVT|ScoreEntityLink}. DSA fields (delegation / capture-units / \
-            \ capture-weight / oracle-ts) pass through faithfully — a normal member passes \
-            \ false / 0.0 / 0.0 / STREAM_EPOCH; DSA passes an agency's live capture."
-        {"score-entity-type"        : score-entity-type
-        ,"enabled"                  : enabled
-        ,"swpair"                   : swpair
-        ,"ghost-tvl-weight"         : ghost-tvl-weight
-        ,"total-lane-weight"        : total-lane-weight
-        ,"delegation"               : delegation
-        ,"capture-units"            : capture-units
-        ,"capture-weight"           : capture-weight
-        ,"oracle-ts"                : oracle-ts
-        ,"fvt-id"                   : fvt-id
-        ,"score-entity-id"          : score-entity-id}
-    )
-    (defun UDC_FVT|RPS|Global:object{AcquisitionSchemasV1.FVT|RPS|Global}
-        (
-            reward-enabled:bool
-            current-rps:decimal
-            available-rewards:decimal
-            unclaimed-count:integer
-            zombie-rewards:decimal
-            segmentation:bool
-            reward-kind:string
-            multiplet-family-id:string
-            stream-count:integer
-            stream-last-release:time
-            stream-unreleased:decimal
-            royalty-rewards:decimal
-            fvt-id:string
-            dptf-id:string
-        )
-        @doc "Core constructor for object{AcquisitionSchemasV1.FVT|RPS|Global}. Stream-ledger fields (stream-count / \
-            \ stream-last-release / stream-unreleased) + the DSA royalty-rewards pool pass through faithfully; \
-            \ true inserts seed them 0 / STREAM_EPOCH / 0.0 / 0.0 (a fresh lane has no stream, no royalty)."
-        {"reward-enabled"       : reward-enabled
-        ,"current-rps"          : current-rps
-        ,"available-rewards"    : available-rewards
-        ,"unclaimed-count"      : unclaimed-count
-        ,"zombie-rewards"       : zombie-rewards
-        ,"segmentation"         : segmentation
-        ,"reward-kind"          : reward-kind
-        ,"multiplet-family-id"    : multiplet-family-id
-        ,"stream-count"         : stream-count
-        ,"stream-last-release"  : stream-last-release
-        ,"stream-unreleased"    : stream-unreleased
-        ,"royalty-rewards"      : royalty-rewards
-        ,"fvt-id"               : fvt-id
-        ,"dptf-id"              : dptf-id}
-    )
     ;; --- Phase 2.1 settle · ephemeral (no deftable / no UR) ---
     ;;{5.2}  Compute [UC]
     ;; [UC]  compute
     (defun UCk_ScoreEntityLink:string (fvt-id:string score-entity-id:string)
-        @doc "Composite key for FVT|T|ScoreEntityLink: fvt-id | score-entity-id."
-        (concat [fvt-id BAR score-entity-id])
+        @doc "Facade: delegates to the RPS reward engine (post-#75 split)."
+        (RPS.UCk_ScoreEntityLink fvt-id score-entity-id)
     )
     (defun UCk_RpsGlobal:string (fvt-id:string dptf-id:string)
-        @doc "Composite key for FVT|T|RPS|Global: fvt-id | dptf-id."
-        (concat [fvt-id BAR dptf-id])
+        @doc "Facade: delegates to the RPS reward engine (post-#75 split)."
+        (RPS.UCk_RpsGlobal fvt-id dptf-id)
     )
     (defun UCk_RpsMember:string (fvt-id:string score-entity-id:string dptf-id:string)
-        @doc "Composite key for FVT|T|RPS|Member: fvt-id | score-entity-id | dptf-id."
-        (concat [fvt-id BAR score-entity-id BAR dptf-id])
+        @doc "Facade: delegates to the RPS reward engine (post-#75 split)."
+        (RPS.UCk_RpsMember fvt-id score-entity-id dptf-id)
     )
     (defun UCk_RpsUser:string (user-id:string fvt-id:string score-entity-id:string dptf-id:string)
-        @doc "Composite key for FVT|T|RPS|User: user-id | fvt-id | score-entity-id | dptf-id."
-        (concat [user-id BAR fvt-id BAR score-entity-id BAR dptf-id])
-    )
-    (defun UCk_MemberUserWeight:string (user-id:string fvt-id:string score-entity-id:string)
-        @doc "Composite key for FVT|T|MemberUserWeight: user-id | fvt-id | score-entity-id."
-        (concat [user-id BAR fvt-id BAR score-entity-id])
-    )
-    (defun UCk_ForcedFixCount:string (fvt-id:string dptf-id:string user-id:string)
-        @doc "Composite key for FVT|T|ForcedFixCount: fvt-id | dptf-id | user-id."
-        (concat [fvt-id BAR dptf-id BAR user-id])
-    )
-    (defun UCk_RpsStream:string (fvt-id:string dptf-id:string position:integer)
-        @doc "Composite key for FVT|T|RPS|Stream: fvt-id | dptf-id | position."
-        (concat [fvt-id BAR dptf-id BAR (int-to-str 10 position)])
-    )
-    (defun UC_ComputeInjectGainedRps:decimal (reward-amount:decimal denominator:decimal)
-        @doc "Pure: Tier-2 G increment for one inject — floor(R / S, CT_FVT_RPS_PREC). UrStoa ≡ floor(stoa/S, STOA_PREC)."
-        (if (<= denominator 0.0)
-            0.0
-            (floor (/ reward-amount denominator) CT_FVT_RPS_PREC)
-        )
+        @doc "Facade: delegates to the RPS reward engine (post-#75 split)."
+        (RPS.UCk_RpsUser user-id fvt-id score-entity-id dptf-id)
     )
     (defun UC_EmptyOc:object{IgnisCollectorV3.OutputCumulator} ()
         @doc "Empty OutputCumulator for write-only inject/collect phase slots."
@@ -1312,25 +1229,8 @@
     ;; URC_FvtVaultDebDenominator (vault inject divisor via keys-scan) RETIRED — M2/#11. The divisor is now the
     ;; maintained total-deb-score mirror (incrementally kept at stake/toggle/add, point-read at inject). No scan.
     (defun URC_MaxStreamLanes:integer (account:string)
-        @doc "Max concurrent streamed injects the FVT owner konto may run, by Elite tier (snapshot at inject, D5). \
-            \ Smart accounts have no Elite level, so they resolve to their sovereign standard account. \
-            \ slots = max(1, (major-1)*7 + minor): everyone gets >= 1, capped at STREAM_MAX_LANES (49 at tier 7.7)."
-        (let*
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                ;; 1. smart account → its controlling sovereign (standard) account; standard account → itself
-                (tier-acct:string
-                    (if (ref-DALOS::UR_AccountType account)
-                        (ref-DALOS::UR_AccountSovereign account)
-                        account))
-                ;; 2. the stored Elite tier of that account, as major.minor integers
-                (major:integer (ref-DALOS::UR_Elite-Tier-Major tier-acct))
-                (minor:integer (ref-DALOS::UR_Elite-Tier-Minor tier-acct))
-                ;; 3. tier → slot count; NOVICE (major 0) underflows to <1 and is floored to the guaranteed 1
-                (slots:integer (+ (* (- major 1) 7) minor))
-            )
-            (if (< slots 1) 1 slots)
-        )
+        @doc "Facade: delegates to the RPS reward engine (post-#75 split)."
+        (RPS.URC_MaxStreamLanes account)
     )
     (defun URC_ScoreClassMatchesFvtClass:bool (fvt-class:integer score-class:integer)
         @doc "Admission rule: farm↔LP(0), vault↔TF/SF/NF(1/3/4), treasury↔OF(2)."
@@ -1352,8 +1252,8 @@
         @doc "Farm class-0: SWP pair from native LP (score) or silver-score pool (triplet); vault/treasury |."
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
-                (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 (ref-SWP:module{SwapperV4} SWP)
                 (sentinel:string "|")
                 (pool-score-id:string
@@ -1375,147 +1275,16 @@
             )
         )
     )
-    (defun URC_MemberStakedStoaValue:decimal
-        (score-entity-type:integer score-entity-id:string swpair:string)
-        @doc "Level-2 farm member weight = the member's STAKED value in wrapped-STOA (audit LP redesign / G2): \
-            \ staked LP amount (SCORE total-base) x per-LP STOA value (stoa-value / LP-supply). Uses the \
-            \ SWP-maintained stoa-value (cheap point read, refreshed by Talos on every SWP op). 0.0 until users stake. \
-            \ Triplet: SUM the three scores' total-base — the hub (boost-link BAR) carries the LP base, the two \
-            \ satellites are surplus-only (base 0), so the sum equals the single underlying LP position (mirrors \
-            \ URC_ScoreEntityMemberDebWeight's triplet handling; the hub is not necessarily the silver slot)."
-        (let
-            (
-                (ref-SWP:module{SwapperV4} SWP)
-                (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
-                ;;
-                (staked-amount:decimal
-                    (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET)
-                        (+
-                            (ref-SCR::UR_SCR|ScoreTotalBaseScore (ref-SCR::UR_SCR|TripletBronzeScoreId score-entity-id))
-                            (+
-                                (ref-SCR::UR_SCR|ScoreTotalBaseScore (ref-SCR::UR_SCR|TripletSilverScoreId score-entity-id))
-                                (ref-SCR::UR_SCR|ScoreTotalBaseScore (ref-SCR::UR_SCR|TripletGoldenScoreId score-entity-id))
-                            )
-                        )
-                        (ref-SCR::UR_SCR|ScoreTotalBaseScore score-entity-id)
-                    )
-                )
-                (lp-supply:decimal (ref-SWP::URC_LpCapacity swpair))
-                (per-lp:decimal
-                    (if (<= lp-supply 0.0)
-                        0.0
-                        (/ (ref-SWP::UR_StoaValue swpair) lp-supply)
-                    )
-                )
-            )
-            (floor (* staked-amount per-lp) CT_FVT_RPS_PREC)
-        )
-    )
     ;; NOTE (audit LP redesign): URC_MemberStakedStoaValue above is the correct Level-2 primitive (staked value),
     ;; but it CANNOT be cached via this resolver + the ghost-TVL sync — staked value is base-dependent and the
     ;; sync runs at stake phase 2.1 (before the base updates at phase 4), while the inject defcap checks the
     ;; stale cached S. It must be computed FRESH at inject (split-at-inject, Stage 2). This resolver stays on the
     ;; old whole-pool value until then, so the accumulator/defcap keep working.
-    (defun URC_ResolveScoreEntityGhostWeight:decimal
-        (score-entity-type:integer score-entity-id:string fvt-class:integer swpair:string)
-        @doc "Farm admission: W_i from SWP::UR_StoaValue(swpair); vault/treasury 0.0."
-        (let
-            (
-                (ref-SWP:module{SwapperV4} SWP)
-            )
-            (if (= fvt-class 0)
-                (ref-SWP::UR_StoaValue swpair)
-                0.0
-            )
-        )
-    )
-    (defun URC_ScoreEntityMemberDebWeight:decimal
-        (score-entity-type:integer score-entity-id:string)
-        @doc "Vault/treasury Tier-2 member weight: score total-deb or sum of triplet score totals."
-        (let
-            (
-                (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
-            )
-            (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET)
-                (let
-                    (
-                        (bronze-id:string (ref-SCR::UR_SCR|TripletBronzeScoreId score-entity-id))
-                        (silver-id:string (ref-SCR::UR_SCR|TripletSilverScoreId score-entity-id))
-                        (golden-id:string (ref-SCR::UR_SCR|TripletGoldenScoreId score-entity-id))
-                    )
-                    (+
-                        (ref-SCR::UR_SCR|ScoreTotalDebScore bronze-id)
-                        (+
-                            (ref-SCR::UR_SCR|ScoreTotalDebScore silver-id)
-                            (ref-SCR::UR_SCR|ScoreTotalDebScore golden-id)
-                        )
-                    )
-                )
-                (ref-SCR::UR_SCR|ScoreTotalDebScore score-entity-id)
-            )
-        )
-    )
-    (defun URC_ComputeTripletLanes:object
-        (user-id:string pool-id:string triplet-id:string)
-        @doc "Lane weights from silver base-score × ANK promiles on bronze/silver/golden boost-class-links."
-        (let
-            (
-                (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
-                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (silver-id:string (ref-SCR::UR_SCR|TripletSilverScoreId triplet-id))
-                (bronze-id:string (ref-SCR::UR_SCR|TripletBronzeScoreId triplet-id))
-                (golden-id:string (ref-SCR::UR_SCR|TripletGoldenScoreId triplet-id))
-                (base:decimal (ref-SCR::UR_U-SCR|UserScoreBaseScore user-id pool-id silver-id))
-                ;; Lane flooring precision is class-agnostic: LP scores use the pool leg's decimals; non-LP
-                ;; (vault/treasury true triplets, lp-denominator BAR) use the score's own precision.
-                (lp-denom:string (ref-SCR::UR_SCR|ScoreLpDenominator silver-id))
-                (p:integer
-                    (if (= lp-denom BAR)
-                        (ref-SCR::UR_SCR|ScorePrecision silver-id)
-                        (ref-DPTF::UR_Decimals lp-denom)))
-                (prom-b:decimal (ref-ANK::UR_UB|AggregatePromile user-id (ref-SCR::UR_SCR|ScoreBoostClassLink bronze-id)))
-                (prom-s:decimal (ref-ANK::UR_UB|AggregatePromile user-id (ref-SCR::UR_SCR|ScoreBoostClassLink silver-id)))
-                (prom-g:decimal (ref-ANK::UR_UB|AggregatePromile user-id (ref-SCR::UR_SCR|ScoreBoostClassLink golden-id)))
-                (lane-b:decimal (floor (* base (/ prom-b 1000.0)) p))
-                (lane-s:decimal (floor (* base (/ prom-s 1000.0)) p))
-                (lane-g:decimal (floor (* base (/ prom-g 1000.0)) p))
-            )
-            {"lane-b" : lane-b, "lane-s" : lane-s, "lane-g" : lane-g
-            ,"w-user" : (+ lane-b (+ lane-s lane-g))}
-        )
-    )
-    (defun URC_TripletUserLaneWeightLive:decimal
-        (user-id:string pool-id:string triplet-id:string)
-        @doc "Live w-user for a TRUE triplet (Σ lanes = silver base × Σ promiles). Used ONLY to (re)snapshot the \
-            \ stored contrib-weight at stake/unstake (phase 4.6); banking reads the snapshot, not this."
-        (at "w-user" (URC_ComputeTripletLanes user-id pool-id triplet-id))
-    )
-    (defun URC_TripletUserDebSum:decimal
-        (user-id:string triplet-id:string)
-        @doc "Non-true triplet user weight: Σ of the user's deb-score across the 3 bundled scores, each read at \
-            \ its own aqpool-link. Matches the non-true divisor (Σ of the 3 scores' total-deb) → conservation."
-        (let
-            (
-                (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
-                (bronze-id:string (ref-SCR::UR_SCR|TripletBronzeScoreId triplet-id))
-                (silver-id:string (ref-SCR::UR_SCR|TripletSilverScoreId triplet-id))
-                (golden-id:string (ref-SCR::UR_SCR|TripletGoldenScoreId triplet-id))
-            )
-            (+
-                (ref-SCR::UR_U-SCR|UserScoreDebScore user-id (ref-SCR::UR_SCR|ScoreAqpoolLink bronze-id) bronze-id)
-                (+
-                    (ref-SCR::UR_U-SCR|UserScoreDebScore user-id (ref-SCR::UR_SCR|ScoreAqpoolLink silver-id) silver-id)
-                    (ref-SCR::UR_U-SCR|UserScoreDebScore user-id (ref-SCR::UR_SCR|ScoreAqpoolLink golden-id) golden-id)
-                )
-            )
-        )
-    )
     (defun URC_ResolvePoolScoreId:string (score-entity-type:integer score-entity-id:string)
         @doc "Pool id for collect/settle SCR reads: score pool or triplet silver pool."
         (let 
             (
-                (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
             )
             (if (= score-entity-type CT_SCORE_ENTITY_SCORE)
                 (ref-SCR::UR_SCR|ScoreAqpoolLink score-entity-id)
@@ -1529,26 +1298,6 @@
     ;; --- Phase 2.35 unclaimed · IGNIS ---
     ;; --- Phase 2.4 checkpoint · IGNIS ---
     ;; --- Shared deb-staleness SCAN predicates (M3 #12 — scan + fix use the SAME predicate, cannot diverge) ---
-    (defun URC_FvtMemberDebNeedsFix:bool
-        (fvt-id:string user-id:string score-entity-type:integer score-entity-id:string)
-        @doc "True iff (user, member) is deb-based (singular / NON-true triplet) AND deb-stale — the exact condition \
-            \ XI_FixUserMemberDeb acts on. Shared by the sweep scan so scan and fix never disagree. True triplets \
-            \ (deb-independent lanes) → always false."
-        (let
-            (
-                (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
-                (triplet:bool (= score-entity-type CT_SCORE_ENTITY_TRIPLET))
-                (deb-based:bool (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET) (not (ref-SCR::UR_SCR|TripletTrueTriplet score-entity-id)) true))
-            )
-            (and deb-based
-                (if triplet
-                    (fold (or) false
-                        [ (ref-SCR::URC_U-SCR|UserScoreDebStale user-id (ref-SCR::UR_SCR|ScoreAqpoolLink (ref-SCR::UR_SCR|TripletBronzeScoreId score-entity-id)) (ref-SCR::UR_SCR|TripletBronzeScoreId score-entity-id))
-                          (ref-SCR::URC_U-SCR|UserScoreDebStale user-id (ref-SCR::UR_SCR|ScoreAqpoolLink (ref-SCR::UR_SCR|TripletSilverScoreId score-entity-id)) (ref-SCR::UR_SCR|TripletSilverScoreId score-entity-id))
-                          (ref-SCR::URC_U-SCR|UserScoreDebStale user-id (ref-SCR::UR_SCR|ScoreAqpoolLink (ref-SCR::UR_SCR|TripletGoldenScoreId score-entity-id)) (ref-SCR::UR_SCR|TripletGoldenScoreId score-entity-id)) ])
-                    (ref-SCR::URC_U-SCR|UserScoreDebStale user-id (ref-SCR::UR_SCR|ScoreAqpoolLink score-entity-id) score-entity-id)))
-        )
-    )
     ;; FVT|T|AgencyFee  Key = <FVT-ID> | <Score-Entity-ID>  (DSA operator-fee mirror; Phase 5b)
     ;; FVT|T|QualitySplit  Key = <FVT-ID> | <DPTF-ID>  (DSA Round B heterogeneous split matrix)
     ;; [URH] heavy-read
@@ -1654,7 +1403,7 @@
             )
             (let
             (
-                (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (fvt-owner:string (ref-RPS::UR_FVT|OwnerKonto fvt-id))
                 (fvt-class:integer (ref-RPS::UR_FVT|FvtClass fvt-id))
@@ -1713,7 +1462,7 @@
         ;;eagerly, so a triplet that does not exist aborted on "row not found" and the guard was
         ;;unreachable for EVERY input. URC_TripletExists is a with-default-read written precisely
         ;;to answer for a missing row -- it simply never got the chance. Hoisted here.
-        (let ((ref-SCR:module{AcquisitionScoresV3} AQP-SCORE))
+        (let ((ref-SCR:module{AcquisitionScoresV1} AQP-SCORE))
             (enforce (ref-SCR::URC_TripletExists triplet-id) "Triplet must be issued in AQP-SCORE"))
         (let
             (
@@ -1721,7 +1470,7 @@
             )
             (let
             (
-                (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (fvt-owner:string (ref-RPS::UR_FVT|OwnerKonto fvt-id))
                 (fvt-class:integer (ref-RPS::UR_FVT|FvtClass fvt-id))
@@ -1892,8 +1641,8 @@
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
-                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 (reward-kind:string (ref-RPS::UR_FVT-RG|RewardKind fvt-id reward-dptf-id))
                 ;; the score's employing pool (triplet ⇒ silver leg's pool — mirrors CC_Collect's resolution)
                 (pool-id:string
@@ -2143,8 +1892,8 @@
         (require-capability (SECURE))
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
-                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 ;;
                 (total-dptf-amount:decimal (ref-AQP::UR_AQP|BenDptfTotalBalance beneficiary-id dptf-id))
@@ -2178,8 +1927,8 @@
         (require-capability (SECURE))
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
-                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
             )
             (if son
@@ -2218,9 +1967,9 @@
         (with-capability (FVT|XE>SWEEP-BRACKET anchor-id)
             (let
                 (
-                    (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
-                    (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
-                    (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                     (score-ids:[string]
                         (ref-ANK::UR_BC|ScoreLinks (ref-ANK::UR_ANK|BoostClassId anchor-id)))
                 )
@@ -2241,9 +1990,9 @@
         (with-capability (FVT|XE>SWEEP-BRACKET anchor-id)
             (let
                 (
-                    (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
-                    (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
-                    (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                     (score-ids:[string]
                         (ref-ANK::UR_BC|ScoreLinks (ref-ANK::UR_ANK|BoostClassId anchor-id)))
                 )
@@ -2464,12 +2213,12 @@
             (P|UEV_IMC)
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (fvt-class:integer (ref-RPS::UR_FVT|FvtClass fvt-id))
                 (owner-konto:string (ref-RPS::UR_FVT|OwnerKonto fvt-id))
                 (swpair:string (URC_ResolveScoreEntitySwpair score-entity-type score-entity-id fvt-class))
-                (ghost-weight:decimal (URC_ResolveScoreEntityGhostWeight score-entity-type score-entity-id fvt-class swpair))
+                (ghost-weight:decimal (RPS.URC_ResolveScoreEntityGhostWeight score-entity-type score-entity-id fvt-class swpair))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
             )
             (with-capability (FVT|C>ADD-SCORE-ENTITY fvt-id score-entity-type score-entity-id swpair ghost-weight)
@@ -2884,9 +2633,9 @@
         (with-capability (FVT|C>SWEEP-REVOKE patron anchor-id)
             (let
                 (
-                    (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
-                    (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
-                    (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                     ;;
                     (boost-class-id:string (ref-ANK::UR_ANK|BoostClassId anchor-id))
                     (score-ids:[string] (ref-ANK::UR_BC|ScoreLinks boost-class-id))
@@ -2931,9 +2680,9 @@
             (enforce (not (UR_FVT|SweepActive anchor-id)) "A sweep is already in progress for this anchor")
             (let
                 (
-                    (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
-                    (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
-                    (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                     ;;
                     (boost-class-id:string (ref-ANK::UR_ANK|BoostClassId anchor-id))
                 )
@@ -2974,9 +2723,9 @@
         (with-capability (FVT|C>SWEEP-DRAIN patron anchor-id chunk)
             (let
                 (
-                    (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
-                    (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
-                    (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                     ;;
                     (cursor:object{AcquisitionSchemasV1.FVT|SweepProgress} (UR_FVT|SweepProgress anchor-id))
                     (boost-class-id:string (ref-ANK::UR_ANK|BoostClassId anchor-id))
@@ -3061,7 +2810,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                     ;;
                     (pool-id:string
                         (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET)
@@ -3226,8 +2975,8 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
-                    (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                     ;;
                     (settle-bundle:object{AcquisitionSchemasV1.FVT|StakeSettleBundle}
                         (ref-RPS::URHC_BuildStakeSettleBundle pool-id beneficiary-id)
@@ -3298,8 +3047,8 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
-                    (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                     ;;
                     ;; M5: beneficiary-id is authoritative BOTH directions (stake and unstake). The caller supplies
                     ;; the real beneficiary on unstake too, so the exact (owner, beneficiary) tracker row is settled —
@@ -3381,8 +3130,8 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
-                    (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                     ;;
                     ;; M5: beneficiary-id is authoritative BOTH directions (see CC_OrtoFungibleStakeFlow). The caller
                     ;; supplies the real beneficiary on unstake, so the exact (owner, beneficiary) tracker + Ben rollup

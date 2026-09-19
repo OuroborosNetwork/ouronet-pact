@@ -1212,7 +1212,7 @@
     (
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
         (patron:string KST.ANHD)
         (ouro-id:string "OURO-98c486052a51")
         (gas-id:string "GAS-98c486052a51")
@@ -1290,7 +1290,7 @@
     (
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
         (patron:string KST.ANHD)
         (pool-id:string "InfoGtOfDrPool-98c486052a51")
         (gas-id:string "GAS-98c486052a51")
@@ -1364,7 +1364,7 @@
     (
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-VCT:module{AcquisitionVacateV3} AQP-VCT)
+        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
         (patron:string KST.ANHD)
         (pool-id:string "InfoGtSfDrPool-98c486052a51")
         (gas-id:string "GAS-98c486052a51")
@@ -1433,7 +1433,7 @@
     (
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-        (ref-VCT:module{AcquisitionVacateV3} AQP-VCT)
+        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
         (patron:string KST.ANHD)
         (pool-id:string "InfoGtTfDrPool-98c486052a51")
         (gas-id:string "GAS-98c486052a51")
@@ -2020,7 +2020,7 @@
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (patron:string KST.ANHD)
         (gas-id:string "GAS-98c486052a51")

@@ -322,7 +322,7 @@
         (patron:string KST.ANHD)
         (owner-konto:string KST.ANHD)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
         (pool-ouro-lp:string (ref-U|DALOS::UDC_Makeid "DHOuroLp"))
         (farm-skip:string
             (if (try false (!= (ref-AQP::UR_AQP|PoolAqpClass pool-ouro-lp) -1))
@@ -506,7 +506,7 @@
     (
         (patron:string KST.ANHD)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
         (farm-id:string
             (let ((fid:string (ref-U|DALOS::UDC_Makeid "OuroLpFarm")))
                 (if (try false (= (ref-FVT::UR_FVT|FvtClass fid) 0)) fid "skipped")
@@ -614,7 +614,7 @@
     (
         (patron:string KST.ANHD)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
         (ref-SWP:module{SwapperV4} SWP)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (farm-id:string (ref-U|DALOS::UDC_Makeid "OuroLpFarm"))
@@ -681,7 +681,7 @@
     (
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
-        (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
     )
     (let
         (

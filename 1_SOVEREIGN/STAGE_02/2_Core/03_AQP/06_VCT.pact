@@ -1,5 +1,5 @@
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface AcquisitionVacateV3
+(interface AcquisitionVacateV1
     @doc "Interface for the AQP pool-vacate subsystem. Declares UC_ helpers for slice \
         \ sizing, URC_/URH_ readers for vacate progress, per-asset inventory and gas-bounded \
         \ owner-array checks, URHC_ slice-plan builders, per-fungibility XB_Vacate leg \
@@ -135,7 +135,7 @@
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     (implements OuronetPolicyV2)
-    (implements AcquisitionVacateV3)
+    (implements AcquisitionVacateV1)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -321,7 +321,7 @@
             \ not reserved, and composes the P|VCT|RECIPE recipe capability for the XB write."
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 ;;
                 (class-ok:bool (ref-AQP::URC_StakeTrueFungiblePoolClassOk pool-id))
                 (asset-ok:bool (ref-AQP::URC_StakeTrueFungibleDptfMatchesPool pool-id dptf-id))
@@ -351,7 +351,7 @@
             \ the P|VCT|RECIPE recipe capability for the XB write."
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 ;;
                 (asset-ok:bool (ref-AQP::URC_StakeOrtoFungibleDpofMatchesPool pool-id dpof-id))
                 (gas-ok:bool (URC_BatchOwnerArraysGasOk owner-ids beneficiary-ids nonces-array VACATE-GAS-MAX-OF))
@@ -380,7 +380,7 @@
             \ pool-owner ownership and composes the P|VCT|RECIPE recipe capability for the XB write."
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 ;;
                 (class-ok:bool (ref-AQP::URC_StakeCollectablePoolClassOk pool-id son))
                 (asset-ok:bool (ref-AQP::URC_StakeCollectableMatchesPool pool-id collectable-id))
@@ -469,7 +469,7 @@
         (CAP_VctVacatePoolOwner pool-id)
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
             )
             (enforce (ref-AQP::UR_AQP|PoolVacateInProgress pool-id) "Finalize: no vacate in progress on this pool")
             (enforce (URC_PoolFullyVacated pool-id) "Finalize: pool not fully drained (nns != 0)")
@@ -486,7 +486,7 @@
         (CAP_VctVacatePoolOwner pool-id)
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
             )
             (enforce (contains (ref-AQP::UR_AQP|PoolAqpClass pool-id) [0 1 2 3 4])
                 "VCT|C>VACATE: unknown aqp-class")
@@ -510,7 +510,7 @@
     (defun CT_AqpScName:string ()
         (let
             (
-                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
             )
             (ref-ANK::GOV|AQP|SC_NAME)
         )
@@ -1426,7 +1426,7 @@
             \ OF (dpof match), DPSF/DPNF (collectable pool class + asset match); unknown kind returns false."
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
             )
             (if (= vacate-kind VACATE-KIND-TF)
                 (fold
@@ -1492,7 +1492,7 @@
             \ exists (DPTF::UR_Frozen → BAR if never frozen → dropped). Same existence-filter idea as the OF variant."
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (asset-id:string (ref-AQP::UR_AQP|PoolAssetId pool-id))
             )
@@ -1513,7 +1513,7 @@
             \ DPTF asset-id (class 0/1 asset-id is a DPTF); BAR (not linked) dropped."
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (c:integer (ref-AQP::UR_AQP|PoolAqpClass pool-id))
                 (asset-id:string (ref-AQP::UR_AQP|PoolAssetId pool-id))
@@ -1534,7 +1534,7 @@
         @doc "The pool's collectable vacate-lane id: the single collection = the pool asset-id."
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
             )
             [(ref-AQP::UR_AQP|PoolAssetId pool-id)]
         )
@@ -1555,7 +1555,7 @@
         ;;guard is the repair rather than mapping over one of them.
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
             )
             (if (= (length owner-ids) 0)
                 []
@@ -1582,7 +1582,7 @@
         (pool-id:string)
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
             )
             (ref-AQP::UR_AQP|PoolVacateSession pool-id)
         )
@@ -1603,7 +1603,7 @@
         ;;it. Pinned in REPL/modules/AQP.repl <<AQP-F15>>.
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 (l:integer (length nonces))
             )
             (fold
@@ -1631,7 +1631,7 @@
         @doc "Vacate: each DPOF nonce amount must equal full tracker row (no partial vacate)."
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 (l:integer (length nonces))
             )
             (fold
@@ -1660,7 +1660,7 @@
         @doc "Vacate: amount must equal full DPTFTracker row (no partial vacate); rollup must cover amount."
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 (staked-bal:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id dptf-id owner-id beneficiary-id))
                 (rollup-bal:decimal (ref-AQP::UR_AQP|BenDptfTotalBalance beneficiary-id dptf-id))
             )
@@ -1709,7 +1709,7 @@
         ;;the thing standing between a caller and someone else's rollup.
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 (l:integer (length nonces))
             )
             (fold
@@ -1740,7 +1740,7 @@
         @doc "Vacate: each nonce amount must equal full DPSF/DPNF tracker row (no partial vacate)."
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 (l:integer (length nonces))
             )
             (fold
@@ -1772,7 +1772,7 @@
         @doc "Vacate: each nonce has cross-pool Ben* nonce rollup amount ≥ vacate amount."
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 (l:integer (length nonces))
             )
             (fold
@@ -1898,8 +1898,8 @@
             \ so a vacate can't finalize while ghost stake remains. Bounded point reads, no scan. Gates finalize."
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
-                (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 ;;
                 (nns:integer (ref-AQP::UR_AQP|PoolNns pool-id))
             )
@@ -2075,7 +2075,7 @@
             \ partial vacate naturally returns the outstanding remains (the UI's 'construct remains' is implicit)."
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
             )
             (UDC_VacateTfInventory
                 (map
@@ -2091,7 +2091,7 @@
         @doc "Live per-nonce OF vacate rows for <pool-id>/<dpof-id> from the active DPOF tracker."
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
             )
             (map
                 (lambda (row:object)
@@ -2119,7 +2119,7 @@
             \ DPNF active tracker)."
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
             )
             (map
                 (lambda (row:object)
@@ -2159,7 +2159,7 @@
         @doc "Vacate operations require tx sender ownership of the pool's canonical owner konto."
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership (ref-AQP::URC_AqpOwnerKonto pool-id))
@@ -2188,9 +2188,9 @@
         ;; SECURE: granted by master vacate caps.
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
-                (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 (fvt-ids:[string]
                     (distinct
                         (filter
@@ -2220,7 +2220,7 @@
         ;; SECURE: granted by master vacate caps.
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
             )
             (if (UR_VacateInProgress pool-id)
                 "already-begun"
@@ -2243,7 +2243,7 @@
         ;; SECURE: granted by VCT|C>ABORT-VACATE-POOL / finalize path.
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
             )
             (ref-AQP::XE_SetVacateJobState pool-id false)
             (XI_SetPoolFvtsVacateFrozen pool-id false)
@@ -2267,7 +2267,7 @@
         (if (and finalize (URC_PoolFullyVacated pool-id))
             (let
                 (
-                    (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 )
                 (ref-AQP::XE_SetVacateJobState pool-id false)
                 (ref-AQP::XB_SetPoolStakeEnabled pool-id true)
@@ -2341,9 +2341,9 @@
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
-                (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 ;;
                 (settle-bundle:object
                     (RPS.URHC_BuildStakeSettleBundle pool-id beneficiary-id)
@@ -2375,7 +2375,7 @@
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 ;;
                 (unique-beneficiaries:[string] (UC_VacateUniqueBeneficiariesFromLegs legs))
                 (tracker-ocs:[object{IgnisCollectorV3.OutputCumulator}]
@@ -2455,8 +2455,8 @@
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 (unique-beneficiaries:[string] (UC_VacateUniqueBeneficiariesFromLegs legs))
             )
             ;; Phase A — per-leg tracker-zero (nns--/unn--) + cross-pool rollup decrement (side effects first)
@@ -2655,8 +2655,8 @@
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
-                (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 ;;
                 (settle-bundle:object
                     (RPS.URHC_BuildStakeSettleBundle pool-id beneficiary-id)
@@ -2694,9 +2694,9 @@
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
-                (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 ;;
                 (settle-bundle:object
                     (RPS.URHC_BuildStakeSettleBundle pool-id beneficiary-id)
@@ -2732,7 +2732,7 @@
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 ;;
                 (L:integer (length owner-ids))
                 (unique-beneficiaries:[string] (UC_VacateUniqueBeneficiaries beneficiary-ids))
@@ -2797,7 +2797,7 @@
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 ;;
                 (L:integer (length owner-ids))
                 (unique-beneficiaries:[string] (UC_VacateUniqueBeneficiaries beneficiary-ids))
@@ -2951,7 +2951,7 @@
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 (L:integer (length owner-ids))
                 (unique-beneficiaries:[string] (UC_VacateUniqueBeneficiaries beneficiary-ids))
             )
@@ -3038,8 +3038,8 @@
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 (L:integer (length owner-ids))
                 (unique-beneficiaries:[string] (UC_VacateUniqueBeneficiaries beneficiary-ids))
             )
@@ -3196,7 +3196,7 @@
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 (c:integer (ref-AQP::UR_AQP|PoolAqpClass pool-id))
                 (son:bool (= c 3))
             )
@@ -3425,8 +3425,8 @@
         (with-capability (VCT|C>FINALIZE-VACATE pool-id)
             (let
                 (
-                    (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
-                    (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 )
                 ;; 1] nuke each employed score: bulk-zero aggregates + bump vacate-generation (≤7 point writes)
                 (map

@@ -32,7 +32,7 @@
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
         (farm-name:string "SplitModeFarm")
         (farm-id:string (ref-U|DALOS::UDC_Makeid "SplitModeFarm"))
         ;; a class-0 farm's common-denominator must be a real DPTF (FVT|C>ISSUE-FVT runs UEV_id);
@@ -108,7 +108,7 @@
         (patron:string KST.ANHD)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
         (farm-id:string (ref-U|DALOS::UDC_Makeid "SplitModeFarm"))
     )
     ;;==== TX-SPLIT-02 · 01 · switch to SPLIT|TVL ====

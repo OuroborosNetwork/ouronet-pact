@@ -7,7 +7,7 @@
 ;;   agency open (Phase 2); capture recompute + delegated oracle (Phase 3); royalty disposal + collect (later).
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface DsaV3
+(interface DsaV1
     @doc "Delegated Staking Agencies — client/reader surface (v1; grows as the module is built)."
 
     ;;<=========================================================================>
@@ -103,7 +103,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements DsaV3)
+    (implements DsaV1)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -531,7 +531,7 @@
             \ the model's nonce values). The open gate + the capture divisor read this."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
             )
             (+ (ref-SCR::UR_SCR|ScoreTotalBaseScore (ref-SCR::UR_SCR|TripletBronzeScoreId score-entity-id))
                (+ (ref-SCR::UR_SCR|ScoreTotalBaseScore (ref-SCR::UR_SCR|TripletSilverScoreId score-entity-id))
@@ -748,7 +748,7 @@
         (with-capability (DSA|C>SET-ORACLE-AUTH patron fvt-id)
             (let
                 (
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )

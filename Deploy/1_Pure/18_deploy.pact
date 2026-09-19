@@ -110,7 +110,7 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Issue a True-Fungible (DPTF) anchor for pool boosting."
@@ -129,7 +129,7 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Issue a Semi-Fungible (DPSF) anchor for pool boosting."
@@ -148,7 +148,7 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Issue a Non-Fungible (DPNF) trait-anchor for pool boosting."
@@ -167,7 +167,7 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Issue a Non-Fungible (DPNF) set-anchor (by nonce-class) for pool boosting."
@@ -186,7 +186,7 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Revoke an anchor and update its BoostClass bookkeeping."
@@ -204,7 +204,7 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Revoke an empty BoostClass."

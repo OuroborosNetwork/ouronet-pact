@@ -766,7 +766,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV3} AQP-VCT)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
                 (ref-IGNIS::C_Collect patron (ref-VCT::XB_VacateTrueFungible pool-id))
                 (format "Successfully vacated the TrueFungible leg of Pool {}." [pool-id])
@@ -782,7 +782,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV3} AQP-VCT)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
                 (ref-IGNIS::C_Collect patron (ref-VCT::XB_VacateOrtoFungible pool-id dpof-id))
                 (format "Successfully vacated OrtoFungible {} of Pool {}." [dpof-id pool-id])
@@ -798,7 +798,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV3} AQP-VCT)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
                 (ref-IGNIS::C_Collect patron (ref-VCT::XB_VacateSemiFungible pool-id dpsf-id))
                 (format "Successfully vacated SemiFungible {} of Pool {}." [dpsf-id pool-id])
@@ -814,7 +814,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV3} AQP-VCT)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
                 (ref-IGNIS::C_Collect patron (ref-VCT::XB_VacateNonFungible pool-id dpnf-id))
                 (format "Successfully vacated NonFungible {} of Pool {}." [dpnf-id pool-id])
@@ -830,7 +830,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DSA:module{DsaV3} AQP-DSA)
+                    (ref-DSA:module{DsaV1} AQP-DSA)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-DSA::C_DefineDelegationVault patron fvt-id model-id unit-score)
                     )
@@ -848,7 +848,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DSA:module{DsaV3} AQP-DSA)
+                    (ref-DSA:module{DsaV1} AQP-DSA)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-DSA::C_SetOracleAuth patron fvt-id oracle-guard)
                     )
@@ -866,7 +866,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DSA:module{DsaV3} AQP-DSA)
+                    (ref-DSA:module{DsaV1} AQP-DSA)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-DSA::C_OracleWrite patron fvt-id score-entity-id nodes uptime)
                     )
@@ -884,7 +884,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DSA:module{DsaV3} AQP-DSA)
+                    (ref-DSA:module{DsaV1} AQP-DSA)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-DSA::C_WithdrawRoyalty patron fvt-id reward-dptf-id)
                     )
@@ -902,7 +902,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DSA:module{DsaV3} AQP-DSA)
+                    (ref-DSA:module{DsaV1} AQP-DSA)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-DSA::C_BurnRoyalty patron fvt-id reward-dptf-id)
                     )
@@ -920,7 +920,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DSA:module{DsaV3} AQP-DSA)
+                    (ref-DSA:module{DsaV1} AQP-DSA)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-DSA::C_FuelRoyalty patron fvt-id reward-dptf-id swpair)
                     )
@@ -938,7 +938,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DSA:module{DsaV3} AQP-DSA)
+                    (ref-DSA:module{DsaV1} AQP-DSA)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-DSA::C_SetAgencyFee patron fvt-id score-entity-id fee-per-mille)
                     )
@@ -954,7 +954,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-DSA:module{DsaV3} AQP-DSA)
+                    (ref-DSA:module{DsaV1} AQP-DSA)
                 )
                 (ref-DSA::A_ToggleExternalOracle on)
                 (format "Global external-oracle switch set to {}." [on])
@@ -967,7 +967,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-DSA:module{DsaV3} AQP-DSA)
+                    (ref-DSA:module{DsaV1} AQP-DSA)
                 )
                 (ref-DSA::A_SetOracleValidity seconds)
                 (format "Global oracle-validity window set to {} seconds." [seconds])
@@ -982,7 +982,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-ANK::C_RevokeBoostClass boost-class-id)
@@ -999,7 +999,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-ANK::C_IssueTrueFungibleAnchor 
                             patron anchor-name dptf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dptf-amount
@@ -1025,7 +1025,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-ANK::C_IssueSemiFungibleAnchor 
                             patron anchor-name dpsf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dpsf-nonce
@@ -1051,7 +1051,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-ANK::C_IssueNonFungibleAnchor 
                             patron anchor-name dpnf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dpnf-trait-key dpnf-trait-value
@@ -1077,7 +1077,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-ANK::C_IssueNonFungibleSetAnchor
                             patron anchor-name dpnf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dpnf-nonce-class
@@ -1101,7 +1101,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                 )
                 (ref-IGNIS::C_Collect patron 
                     (ref-ANK::C_RevokeAnchor anchor-id)
@@ -1117,7 +1117,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-SCR::C_IssueLiquidityScore patron owner-konto score-name precision lp-denominator mx-frozen mx-sleeping)
@@ -1133,7 +1133,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-SCR::C_IssueTrueFungibleScore patron owner-konto score-name precision mx-frozen)
@@ -1149,7 +1149,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-SCR::C_IssueOrtoFungibleScore patron owner-konto score-name precision mx-sleeping mx-hibernated)
@@ -1165,7 +1165,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-SCR::C_IssueSemiFungibleScore patron owner-konto score-name precision sft-equality)
@@ -1181,7 +1181,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-SCR::C_IssueNonFungibleScore patron owner-konto score-name precision nft-score-model)
@@ -1196,7 +1196,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 )
                 (ref-IGNIS::C_Collect patron (ref-SCR::C_RotateOwnership score-id new-owner-konto))
                 (format "Successfully rotated ownership for score {} to {}." [score-id new-owner-konto])
@@ -1209,7 +1209,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-SCR::C_Control score-id new-can-upgrade new-can-change-owner)
@@ -1224,7 +1224,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 )
                 (ref-IGNIS::C_Collect patron (ref-SCR::C_CreateBoostClassLink score-id boost-class-id))
                 (format "Successfully linked score {} to BoostClass {}." [score-id boost-class-id])
@@ -1237,7 +1237,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 )
                 (ref-IGNIS::C_Collect patron (ref-SCR::C_CreateBoostLink score-id boost-score-id))
                 (format "Successfully linked score {} to boost score {}." [score-id boost-score-id])
@@ -1250,7 +1250,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 )
                 (ref-IGNIS::C_Collect patron (ref-SCR::C_EnableDebBoost score-id))
                 (format "Successfully enabled DEB boost for score {}." [score-id])
@@ -1264,7 +1264,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-SCR::C_IssueTriplet patron bronze-score-id silver-score-id golden-score-id)
                     )
@@ -1283,7 +1283,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-SCR::C_IssueSingleScoreModel patron model-name score-class collectable-id precision nonces nonce-score-values)
                     )
@@ -1301,7 +1301,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-SCR::C_CombineTripletScoreModel patron model-name bronze-model-id silver-model-id golden-model-id)
                     )
@@ -1319,7 +1319,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-SCR::C_IssueScoreFromModel patron owner-konto model-id agency-name)
                     )
@@ -1337,7 +1337,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-SCR::C_IssueSemiFungibleScoreDefinition score-id dpsf-id nonces nonce-score-values)
@@ -1353,7 +1353,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-SCR::C_IssueNonFungibleScoreDefinition score-id dpnf-id trait-keys trait-values trait-score-values)
@@ -1369,7 +1369,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-SCR::C_IssueNonFungibleSetScoreDefinition score-id dpnf-id dpnf-nonce-classes class-score-values)
@@ -1386,7 +1386,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-AQP::C_Issue patron pool-name asset-id aqp-class)
                     )
@@ -1407,7 +1407,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-AQP::C_AddScore patron pool-id score-id)
@@ -1425,7 +1425,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-AQP::C_RevokeScore patron pool-id score-id)
@@ -1443,7 +1443,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-AQP::C_DisablePoolStake patron pool-id)
@@ -1461,7 +1461,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-AQP::C_EnablePoolStake patron pool-id)
@@ -1479,7 +1479,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-FVT::CC_TrueFungibleStakeFlow pool-id owner-id beneficiary-id dptf-id amount true)
@@ -1495,7 +1495,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-FVT::CC_TrueFungibleStakeFlow pool-id owner-id beneficiary-id dptf-id amount false)
@@ -1525,7 +1525,7 @@
                 (let
                     (
                         (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                     )
                     (ref-IGNIS::C_Collect patron
                         (ref-FVT::CC_OrtoFungibleStakeFlow
@@ -1560,7 +1560,7 @@
                 (let
                     (
                         (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                     )
                     (ref-IGNIS::C_Collect patron
                         (ref-FVT::CC_OrtoFungibleStakeFlow
@@ -1597,7 +1597,7 @@
                 (let
                     (
                         (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                     )
                     (ref-IGNIS::C_Collect patron
                         (ref-FVT::CC_CollectableStakeFlow
@@ -1634,7 +1634,7 @@
                 (let
                     (
                         (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                     )
                     (ref-IGNIS::C_Collect patron
                         (ref-FVT::CC_CollectableStakeFlow
@@ -1670,7 +1670,7 @@
                 (let
                     (
                         (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                     )
                     (ref-IGNIS::C_Collect patron
                         (ref-FVT::CC_CollectableStakeFlow
@@ -1707,7 +1707,7 @@
                 (let
                     (
                         (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                     )
                     (ref-IGNIS::C_Collect patron
                         (ref-FVT::CC_CollectableStakeFlow
@@ -1729,7 +1729,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV3} AQP-VCT)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-VCT::C_AbortVacate pool-id)
@@ -1750,7 +1750,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV3} AQP-VCT)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
                 (ref-IGNIS::C_Collect patron (ref-VCT::C_FinalizeVacate pool-id))
                 (format "Successfully finalized vacate on Pool {} — scores nuked, stake re-enabled." [pool-id])
@@ -1766,7 +1766,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV3} AQP-VCT)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
                 (ref-IGNIS::C_Collect patron (ref-VCT::CC_FullVacate pool-id))
                 (format "Successfully full-vacated Pool {} (all asset types)." [pool-id])
@@ -1781,7 +1781,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV3} AQP-VCT)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-VCT::CCp_BatchVacateTrueFungible pool-id dptf-id owner-ids beneficiary-ids amounts))
@@ -1800,7 +1800,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV3} AQP-VCT)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-VCT::CCp_BatchDrainTrueFungible pool-id dptf-id owner-ids beneficiary-ids amounts))
@@ -1819,7 +1819,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV3} AQP-VCT)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-VCT::CCp_BatchDrainOrtoFungible pool-id dpof-id owner-ids beneficiary-ids nonces-array))
@@ -1838,7 +1838,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV3} AQP-VCT)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-VCT::CCp_BatchDrainCollectable pool-id collectable-id son owner-ids beneficiary-ids nonces-array amounts-array))
@@ -1855,7 +1855,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV3} AQP-VCT)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-VCT::CCp_BatchVacateOrtoFungible pool-id dpof-id owner-ids beneficiary-ids nonces-array))
@@ -1871,7 +1871,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV3} AQP-VCT)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-VCT::CCp_BatchVacateCollectables pool-id collectable-id son owner-ids beneficiary-ids nonces-array amounts-array))
@@ -1887,7 +1887,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-AQP::C_SyncTrueFungibleAnchors patron beneficiary-id dptf-id)
@@ -1905,7 +1905,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-AQP::C_SyncCollectableAnchors patron beneficiary-id dpsf-id true)
@@ -1923,7 +1923,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-AQP::C_SyncCollectableAnchors patron beneficiary-id dpnf-id false)
@@ -1944,7 +1944,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-FVT::C_Issue patron fvt-name owner-konto fvt-class common-denominator)
                     )
@@ -1972,7 +1972,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-FVT::C_IssueMultipletFamily
                             patron token-0-id token-1-id token-2-id ats-0-1-id ats-1-2-id
@@ -1995,7 +1995,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-FVT::C_AddScoreEntity patron fvt-id score-entity-type score-entity-id)
@@ -2015,7 +2015,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-FVT::C_AddRewardLink patron fvt-id reward-dptf-id segmentation multiplet-family-id)
@@ -2034,7 +2034,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-FVT::C_ToggleScoreEntityLink patron fvt-id score-entity-type score-entity-id enabled)
@@ -2052,7 +2052,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-FVT::C_ToggleRewardLink patron fvt-id reward-dptf-id enabled)
@@ -2070,7 +2070,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-FVT::C_SetQualitySplit patron fvt-id reward-dptf-id mode bronze-split silver-split gold-split)
@@ -2086,7 +2086,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-FVT::C_Control patron fvt-id new-can-upgrade new-can-change-owner)
@@ -2102,7 +2102,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-FVT::C_RotateOwnership patron fvt-id new-owner-konto)
@@ -2119,7 +2119,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-FVT::C_SetCommonDenominator patron fvt-id common-denominator)
@@ -2136,7 +2136,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-FVT::C_SetMosaic patron fvt-id mosaic)
@@ -2153,7 +2153,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-FVT::C_SetSplitMode patron fvt-id split-mode)
@@ -2173,7 +2173,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-FVT::CC_InjectStream patron fvt-id reward-dptf-id amount duration)
@@ -2194,7 +2194,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-FVT::CC_Inject patron fvt-id reward-dptf-id amount)
@@ -2213,7 +2213,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
                 (let
@@ -2236,7 +2236,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-FVT::CC_InjectFinalize patron fvt-id reward-dptf-id amount)
@@ -2256,7 +2256,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
                 (let
@@ -2277,7 +2277,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-MTX-AQP:module{AqpMtxV3} MTX-AQP)
+                    (ref-MTX-AQP:module{AqpMtxV1} MTX-AQP)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
                 (let
@@ -2299,7 +2299,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-MTX-AQP:module{AqpMtxV3} MTX-AQP)
+                    (ref-MTX-AQP:module{AqpMtxV1} MTX-AQP)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
                 (let
@@ -2320,7 +2320,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
                 (let
@@ -2341,7 +2341,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
                 (let
@@ -2362,7 +2362,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
                 (let
@@ -2386,7 +2386,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-FVT::CC_UnstaleMyScores patron fvt-ids)
@@ -2404,7 +2404,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                     (bal-before:decimal (ref-DPTF::UR_AccountSupply reward-dptf-id patron))
                 )
@@ -2437,8 +2437,8 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC:module{DpdcV2} DPDC)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
-                    (ref-DSA:module{DsaV3} AQP-DSA)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    (ref-DSA:module{DsaV1} AQP-DSA)
                 )
                 ;; (1) admit the blank triplet (fvt-links must be BAR) + record the agency
                 (ref-IGNIS::C_Collect patron
@@ -2462,7 +2462,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DSA:module{DsaV3} AQP-DSA)
+                    (ref-DSA:module{DsaV1} AQP-DSA)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-DSA::C_RecomputeCapture patron fvt-id score-entity-id)
                     )
@@ -2515,9 +2515,9 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
-                    (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                     ;;
                     (score-name:string (concat [vault-name "Score"]))
                     (pool-name:string (concat [vault-name "Pool"]))
@@ -2571,9 +2571,9 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
-                (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 ;;
                 (score-name:string (concat [vault-name "Score"]))
                 (pool-name:string (concat [vault-name "Pool"]))

@@ -4849,9 +4849,9 @@ And what those deltas did to the two things a reader cares about — **[VERIFIED
 | | 2026-08-30 | 2026-09-14 | today (HEAD) |
 |---|---:|---:|---:|
 | Pact source files | 91 | 93 | **94** |
-| Pact source lines | 96,310 | 114,156 | **116,193** |
+| Pact source lines | 96,310 | 114,156 | **115,942** |
 | `.repl` files (excl. `archive/`) | 181 | 209 | **207** |
-| `.repl` lines | 68,435 | 120,603 | **137,844** |
+| `.repl` lines | 68,435 | 120,603 | **137,846** |
 | distinct assertions written | **1,604** | **5,262** | **5,876** |
 
 > **These are a SNAPSHOT, and the book says so rather than implying permanence.** The distinct
@@ -6185,7 +6185,7 @@ that, and rebuilt the runner architecture around the result.
 | | 2026-08-30 | 2026-09-04 | 2026-09-09 | 2026-09-14 | 2026-09-16 | HEAD |
 |---|---:|---:|---:|---:|---:|---:|
 | `.repl` files (excl. `archive/`) | 181 | — | — | 209 | — | **207** |
-| `.repl` lines (excl. `archive/`) | 68,435 | — | — | 120,603 | — | **137,844** |
+| `.repl` lines (excl. `archive/`) | 68,435 | — | — | 120,603 | — | **137,846** |
 | distinct assertions | **1,604** | 1,663 | 2,431 | **5,262** | 5,555 | **5,876** |
 
 <sub>CORRECTED 2026-09-18 — the HEAD column was written as literals and had rotted. It published
@@ -6774,7 +6774,7 @@ Deliberately **not** written as "four of 18": the register marks `RT-H-001`
 FIXED rather than REFUSED, because the same attack also found a real defect, so the four are not a
 subset of the refused count and quoting them as a fraction of it would be false.</sub>
 
-> The suite's 25,044 executed assertions — measured at build time; this book
+> The suite's 25,052 executed assertions — measured at build time; this book
 > did not run the gate — establish that the system behaves as documented. They do
 > not establish
 > that it is defended for the reasons the documentation implies. Those are different claims, and only
@@ -6947,13 +6947,13 @@ and nothing checked it against the table in Chapter 19 that it paraphrases.*
 
 ## Verification state
 
-At the time of writing, the full gate is **green at 25,044 assertions** (20,052 positive, 4,992
+At the time of writing, the full gate is **green at 25,052 assertions** (20,060 positive, 4,992
 negative) across the whole system — every deploy stage, every scenario suite, every red-team attack,
 plus the static checks on generated artefacts, tool paths, prefix vocabulary, cross-module member
 resolution, assertion vacuity, eager-let shadows, and this book's own tables. Wall time ~5-7 minutes.
 Reproduction: Appendix 1.
 
-> **That number is a snapshot and will move.** It rose from 22,939 to 25,044 during the round
+> **That number is a snapshot and will move.** It rose from 22,939 to 25,052 during the round
 > documented here. The canonical value is whatever `ARCHITECTURE/REPL_SUITE_STATS.md` holds, and
 > `_figuresync.py --check` now verifies that file **against the tree** — it previously verified only
 > that every document agreed with it, which is circular and was green while all of them were wrong
@@ -8429,7 +8429,7 @@ the moment of writing and staleness is a property of elapsed time.
 
 **Hand-correcting 124 numbers would have fixed nothing.** It resets the clock and changes no
 mechanism. So the volatile figures are no longer written in the chapters at all: a source now writes
-`25,044` or `415`, and the assembler substitutes the number it
+`25,052` or `415`, and the assembler substitutes the number it
 **measures at build time** by running the tool that owns it. About eight seconds per build. A figure
 that cannot be measured is a build failure rather than a fallback to the last known value — a
 default would be a stale figure with extra steps. Twenty-two figures are wired this way, and that

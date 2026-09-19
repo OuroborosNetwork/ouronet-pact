@@ -53,7 +53,7 @@
 (let
     (
         (ref-SWP:module{SwapperV4} SWP)
-        (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
         (lp:string (at 0 (keys SWP.SWP|LP)))
         (sc:string "DhbVacateScore-98c486052a51")
         (pool:string "DhbVacatePool-98c486052a51")
@@ -142,7 +142,7 @@
 (print "--- [AQPLP-G2 — a CLASS-0 liquidity score, and the guards that needed one · 02 · let / invocation] ---")
 (let
     (
-        (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
         (ref-SWP:module{SwapperV4} SWP)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -241,7 +241,7 @@
 (print "--- [AQPLP-G3 — the class-0 pool rule, reached by building the pool the suite never had · 02 · let / invocation] ---")
 (let
     (
-        (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
         (ref-SWP:module{SwapperV4} SWP)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)

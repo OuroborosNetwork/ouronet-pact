@@ -96,22 +96,31 @@ V2 baseline that #85 established is an **owner call** for the redeploy — recor
 | Module | Interface(s) in code | Note |
 |--------|----------------------|------|
 | `RPS` (04_RPS) | `AcquisitionRewardPerShareV1` | **new** interface from the #75 FVT→RPS split; only RPS implements it, only AQP-FVT names it |
-| `AQP-ANK` | `AcquisitionAnchorsV2` | AQP earning-pools family (new since last deploy) |
-| `AQP-SCORE` | `AcquisitionScoresV2` | |
-| `AQP-POOL` | `AcquisitionPoolsV2` | |
-| `AQP-FVT` (05_FVT) | `AcquisitionFarmsVaultsTreasuriesV2` | content changed by #75 split (facade re-exports) — stayed on V2 (pre-deploy edit) |
-| `AQP-VCT` | `AcquisitionVacateV2` | |
-| `MTX-AQP` | `AqpMtxV2` | |
-| `DSA` | `DsaV2` | |
+| `AQP-ANK` | `AcquisitionAnchorsV1` | AQP earning-pools family (new since last deploy) |
+| `AQP-SCORE` | `AcquisitionScoresV1` | |
+| `AQP-POOL` | `AcquisitionPoolsV1` | |
+| `AQP-FVT` (05_FVT) | `AcquisitionFarmsVaultsTreasuriesV1` | content changed by #75 split (facade re-exports) — stayed on V2 (pre-deploy edit) |
+| `AQP-VCT` | `AcquisitionVacateV1` | |
+| `MTX-AQP` | `AqpMtxV1` | |
+| `DSA` | `DsaV1` | |
 | `AQP-INFO` | (reads only) | |
 
 **This session's interface-content changes (all pre-deploy, kept on existing suffixes):**
-- #75 split: `AcquisitionFarmsVaultsTreasuriesV2` slimmed + facade re-exports; new `AcquisitionRewardPerShareV1`.
+- #75 split: `AcquisitionFarmsVaultsTreasuriesV1` slimmed + facade re-exports; new `AcquisitionRewardPerShareV1`.
 - #104 Talos scope-first rename: member *names* changed in the Talos client interfaces
   (`TalosStageOne_*`, `TalosStageTwo_*`) + `AutostakeV3`/`SwapperLiquidityClientV2` (HOT-RBT/STOA-PID
   core client fns) — all edited in place on their current suffixes; the whole codebase loads green
   (cascade-coherent), so no re-bump was triggered pre-deploy.
 
-**Open decision for the redeploy (Phase 1.7):** confirm whether the never-live AQP family + RPS deploy
+**RESOLVED 2026-09-19 — owner call: the never-live AQP family deploys on V1.** The table above is
+updated to match the tree. What made this worth recording rather than just doing: the 2026-09-18 pass
+bumped six AQP interfaces V2 -> V3 as "live + 1" when **none of them is live** — they are listed in
+this very section as never deployed. That is exactly the misreading this file's own header warns
+about (taking a version from the wrong part of the document), and it happened anyway. Only
+`IgnisCollector` was a real bump: `IGNIS` IS live at V2, so V3 is correct and the 51-module
+OutputCumulator cascade stands. The AQP six, plus `AcquisitionFarmsVaultsTreasuries`,
+`AcquisitionPoolBoot` and the new `AcquisitionSchemas`, are all **V1**.
+
+**Superseded question (kept for the reasoning):** confirm whether the never-live AQP family + RPS deploy
 at V1 (strict "new work → V1") or stay at the current V2 baseline; and whether any live-and-changed
 interface needs an explicit live+1 bump beyond what #85 already applied.

@@ -77,9 +77,17 @@ ROUNDS = {
         # seven core modules. It is listed here for two reasons -- every AQP module now names it,
         # and the file DECLARING it contains its own name, so the cascade scan picks up the
         # interface file itself and ships it ahead of 01_ANK.
-        "interfaces": ["IgnisCollectorV3", "AcquisitionPoolsV3", "AcquisitionScoresV3",
-                       "AcquisitionAnchorsV3", "AcquisitionVacateV3", "AqpMtxV3", "DsaV3",
-                       "AcquisitionSchemasV1"],
+        # CORRECTED 2026-09-19. Only IgnisCollector is a genuine BUMP: IGNIS is live at
+        # IgnisCollectorV2, so live+1 = V3 and the 51-module cascade off OutputCumulator stands.
+        # The six AQP interfaces were bumped V2->V3 by the 2026-09-18 pass as though they were
+        # live too -- they never were. LIVE-INTERFACE-VERSIONS.md lists the whole AQP family under
+        # "not in the on-chain snapshot ... never deployed live", and the policy for never-live
+        # code is V1. Owner call 2026-09-19: they are V1. (This is the very misreading that file
+        # warns about in its own header -- taking a version from the wrong section.)
+        "interfaces": ["IgnisCollectorV3", "AcquisitionPoolsV1", "AcquisitionScoresV1",
+                       "AcquisitionAnchorsV1", "AcquisitionVacateV1", "AqpMtxV1", "DsaV1",
+                       "AcquisitionSchemasV1", "AcquisitionFarmsVaultsTreasuriesV1",
+                       "AcquisitionRewardPerShareV1", "AcquisitionPoolBootV1"],
         # init this round needs -- matched against the block label, case-insensitive
         "init": ["AQP-BOOT"],
         # Modules that are NEW on chain this round. Owner confirmed 2026-09-18: none of the AQP

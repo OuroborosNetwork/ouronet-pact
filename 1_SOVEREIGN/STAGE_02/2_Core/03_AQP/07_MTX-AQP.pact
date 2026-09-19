@@ -2,7 +2,7 @@
 ;; Holds ALL AQP multi-transaction (defpact) functions. M3 #12 (deb-staleness): the spike-fallback inject.
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface AqpMtxV3
+(interface AqpMtxV1
     @doc "Exposes AQP MultiStep (defpact) client functions. Currently: the tiered enforced-fresh FVT inject \
         \ (MTX|n|C_Inject) — the spike fallback for CC_Inject when the stale set exceeds one transaction."
 
@@ -62,7 +62,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements AqpMtxV3)
+    (implements AqpMtxV1)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -275,7 +275,7 @@
             \ recompute-set size. Read-only; sweep-in-progress keeps it fixed across defpact steps."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
             )
             (fold (+) 0
                 (map
@@ -299,7 +299,7 @@
                 (lambda (acc:object sid:string)
                     (let
                         (
-                            (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+                            (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                             (seen-before:integer (at "seen" acc))
                             (fvt:string (ref-SCR::UR_SCR|ScoreFvtLink sid))
                             (member:string
@@ -374,7 +374,7 @@
         (step
             (let
                 (
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (require-capability (MTX-AQP|C>INJECT patron fvt-id reward-dptf-id amount))
               (let
@@ -414,7 +414,7 @@
                         (let
                             (
                                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+                                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                                 (stale:[string] (RPS.URH_FvtStalePresentUsers fvt-id))
                             )
                             (RPS.XE_FvtFixUserChunk fvt-id reward-dptf-id stale)
@@ -442,8 +442,8 @@
         (step
             (let
                 (
-                    (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (require-capability (MTX-AQP|C>SWEEP-REVOKE patron anchor-id))
                 (let
@@ -489,7 +489,7 @@
                     (with-capability (MTX-AQP|C>SWEEP-REVOKE patron anchor-id)
                         (let
                             (
-                                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+                                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                                 (total:integer (URC_SweepTotalPresent score-ids))
                             )
                             (let

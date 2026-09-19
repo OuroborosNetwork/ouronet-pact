@@ -1,5 +1,5 @@
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface AcquisitionAnchorsV3
+(interface AcquisitionAnchorsV1
     @doc "Interface for the AQP anchor layer. Declares the public surface for \
         \ issuing/revoking anchors (per-user boost multipliers on DPTF/DPSF/DPNF holdings) \
         \ and heterogeneous BoostClasses that group up to 7 anchors for score boosting. \
@@ -171,7 +171,7 @@
     ;; REPL observability: REPL/Stage_02/[6.2.1]_AQP-ANK.repl tags each intra-tx group as TXnnn · mm · <slug> in ;;==== … ==== and (print "--- [TXnnn · mm · …] ---"); mm is 01.. within each begin-tx.
     ;;
     (implements OuronetPolicyV2)
-    (implements AcquisitionAnchorsV3)
+    (implements AcquisitionAnchorsV1)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE

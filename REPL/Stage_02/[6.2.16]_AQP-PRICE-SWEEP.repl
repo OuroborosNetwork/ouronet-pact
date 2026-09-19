@@ -33,7 +33,7 @@
     (
         (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
         (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
         (score:string "TheCodingDivision-98c486052a51")
         (fvt:string (ref-U|DALOS::UDC_Makeid "TfStakeVault"))
@@ -130,10 +130,10 @@
     (
         (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-        (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
-        (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
-        (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV2} AQP-FVT)
+        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
         (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
         (score:string "TheCodingDivision-98c486052a51")
         (fvt:string (ref-U|DALOS::UDC_Makeid "TfStakeVault"))

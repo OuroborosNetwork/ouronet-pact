@@ -45,7 +45,7 @@
 ;;   Step 0 — after sovereign AQP modules (ANK, SCR, AQP-POOL, FVT) are deployed: IMC + vault governor.
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface AcquisitionPoolBootV2
+(interface AcquisitionPoolBootV1
 
 
 
@@ -145,7 +145,7 @@
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
-    (implements AcquisitionPoolBootV2)
+    (implements AcquisitionPoolBootV1)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -245,7 +245,7 @@
                     (ref-P|FVT:module{OuronetPolicyV2} AQP-FVT)
                     (ref-P|VCT:module{OuronetPolicyV2} AQP-VCT)
                     (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-                    (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
+                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                     ;;
                     (aqp-sc:string (ref-ANK::GOV|AQP|SC_NAME))
                 )
