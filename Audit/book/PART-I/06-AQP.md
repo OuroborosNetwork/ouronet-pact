@@ -178,6 +178,30 @@ audit, so the audit's own file references no longer resolve.
 | **H5** | Triplet Tier-2 divisor runs an unbounded `select` on the hot path — O(stakers) per stake/collect/inject | **FIXED** | `04_RPS.pact:431` `total-lane-weight` (the maintained divisor) and `:386` `contrib-weight` (the matching per-user snapshot); `URD_UserScoreStakerAccounts` deleted from SCORE. [VERIFIED by reading] |
 | **S4** | *(surfaced by H5)* triplet reward math branches on **FVT class** instead of the true-triplet flag → numerator/divisor basis mismatch | **FIXED** | Branches on `UR_SCR|TripletTrueTriplet` (any class): true → lanes, non-true → Σ-deb. |
 
+### The 2026-09-19 round — found by MAKING THE MONEY MOVE (6)
+
+These came from a different method than everything above, and the difference is the point. The
+earlier rounds were found by READING. These were found by building the Custodians delegation vault
+end to end and then *running the economics* — open a second agency through the public path, oracle
+it, inject, collect. Every structural assertion in the suite was green throughout: class, unit-score,
+template active, split rows registered. **Checking that rows exist is not checking that value moves.**
+
+| id | summary | verdict | evidence today |
+|---|---|---|---|
+| **N1** | `ANK\|BoostClass` has **no owner field at all** — attaching an anchor to an EXISTING class validates only *active* and *a slot is free*. Anyone holding any anchorable asset could attach it to another vault's class and grant their own holders a boost inside that vault's scoring. Six free slots per class | **FIXED** | `00_AQP-SCHEMAS.pact` `ANK\|BoostClass.class-owner`; enforced in `01_ANK.pact` `UEV_IssueAnchor` via `CAP_EnforceAccountOwnership`, so no defcap signature moved. Pinned by `<<TX-BOOT-OG7>>`, which refuses with the class owner's keyset **by name** |
+| **N2** | The FVT admission rule was **INVERTED** — vault admitted SF/NF, treasury admitted OF. It contradicted `URC_TripletCategoryMatchesFvtClass`, which was right. Nothing caught it because `C_Step8` issued four Treasury-NAMED entities at class 1, which worked *only because* the rule was inverted | **FIXED** | `05_FVT.pact` `URC_ScoreClassMatchesFvtClass` → vault=TF/OF (1,2), treasury=SF/NF (3,4); Step 8 issues class 2. Four fixtures encoded the inversion and were corrected |
+| **N3** | The pure `Bloodshed` score is employed by its pool but admitted to **no FVT**, so every stake on DHBloodshed aborts at `05_FVT.pact:1031`. Three of Step 4's four core scores had a treasury; this one had none | **FIXED** | Fifth treasury `BloodshedTreasury` added across Steps 8/9/12. `<<TX-BOOT-12-REWARDS>>` reads the reward count back out of RPS: 2 for Bloodshed, `[1 1 1 1]` for the rest |
+| **N4** | A delegation vault could not guarantee its own scoring: a score's boost class was settable only AFTER issue, by the score's owner — **the agency operator**. An agency could decline the vault's anchor or point at another class | **FIXED** | The class now rides on `SCR\|ScoreEntityModel.boost-class-id` and is applied by `XI_IssueOneFromModel` at issue. `<<TX-BOOT-OG3>>` proves it on an agency opened through the PUBLIC path that never linked anything |
+| **N5** | Quality-split **LANES read the SILVER score's base only**, so a staker in any other tier produces zero lane weight and a heterogeneous split routes everyone on one row | **OPEN** | `04_RPS.pact` `URC_ComputeTripletLanes`. Measured: `lane-b/s/g = 0` for both agencies while both were paid. Two resolutions, both with real economic consequence — recorded, not chosen |
+| **N6** | **Royalty disposal is not isolated per vault** — an inject into one vault funded another vault's disposal | **OPEN** | Found when the inject added to `[6.2.9]` flipped `dsa-grand-tour` GT-09 from `expect-failure "dispo capabilities exceeded!"` to success. The experiment now rolls back; the property is real and unfixed |
+
+**Three of these were nearly missed by tests that passed for the wrong reason.** `<<TX-BOOT-OG7>>`
+took three attempts: it first died in `coin.TRANSFER` before reaching any guard (an `expect-failure`
+that "passed" proving nothing), then the hijack **succeeded** because the admin key happened to be in
+`env-sigs` for the enclosing transaction. It only became evidence once it failed with the class
+owner's keyset named in the message. `<<AQP-G25>>` was **shadowed** by N1's new enforce and would
+have kept passing while never reaching the revocation check it exists to test.
+
 ### MEDIUM (7)
 
 | id | summary | verdict | evidence today |
