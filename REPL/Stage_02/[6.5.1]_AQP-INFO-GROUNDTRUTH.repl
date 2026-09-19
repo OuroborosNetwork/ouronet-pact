@@ -3767,6 +3767,46 @@
 
 ;;|| NEXT >
 ;;
+(begin-tx "TX-INFO-GT-FVTSEADD-SETUP — issue the probe's own class-1 vault")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-INFO-GT-FVTSEADD-SETUP · 01 · a VAULT for the TF probe] ---")
+;;ADDED 2026-09-19 with the FVT class correction. The probe below admits a TRUE FUNGIBLE score,
+;;and a TF score belongs in a VAULT (fvt-class 1). It used to borrow `CodingDivisionTreasury`,
+;;which worked only because the admission rule was inverted -- vault admitted TF/SF/NF and
+;;treasury admitted OF. With the rule corrected (vault=TF/OF, treasury=SF/NF) that entity is a
+;;class-2 treasury and refuses a TF score, correctly.
+;;
+;;WHY THIS IS ITS OWN TRANSACTION, and not another line in the one below: that transaction
+;;MEASURES gas to compare the INFO quote against the real charge, and its own comment says the
+;;setup "closes before `pre-gas` is read". An extra issuance inside that window would land in the
+;;measured delta and silently corrupt the comparison the test exists to make. A blanket allowance
+;;is fine here precisely BECAUSE nothing is being measured -- same pattern as
+;;`Kursan/AQP-stream-tests.repl` T-STREAM-FIXTURE.
+(env-sigs
+    [ { "key": "PK_AncientHodler", "caps": [] }
+      { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+      , "caps":
+        [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+          (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+          (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+          (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ]
+)
+(let
+    (
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
+        (patron:string KST.ANHD)
+    )
+    (print (format "<(issue GtSeAddScoreVault, fvt-class 1)> => \"{}\""
+        [(ref-TS02-C3::AQP-FVT|C_Issue patron "GtSeAddScoreVault" patron 1 "|")]))
+)
+(commit-tx)
+(env-sigs [])
+
+;;|| NEXT >
+;;||
+;;||
+
 (begin-tx "TX-INFO-GT-FVTSEADD — INFO_AQP-FVT|AddScoreEntity quote vs measured charge")
 (env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
 (namespace "ouronet-ns")
@@ -3804,7 +3844,7 @@
         (patron:string KST.ANHD)
         (flrn:string KST.FLRN)
         (gas-id:string "GAS-98c486052a51")
-        (fvt:string "CodingDivisionTreasury-98c486052a51")
+        (fvt:string "GtSeAddScoreVault-98c486052a51")
         (ouro-id:string "OURO-98c486052a51")
     )
     ;;SETUP — a VIRGIN score. Every standing score here is already employed by a pool or linked

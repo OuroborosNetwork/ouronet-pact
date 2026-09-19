@@ -295,6 +295,23 @@
         ]
     )
     (ref-TS02-C3::AQP-POOL|C_Issue patron "DHBloodshed" "DHB-98c486052a51" 4)
+    ;;!! THIS BLOCK DISAGREES WITH C_Step7, DELIBERATELY AND TEMPORARILY (2026-09-19).
+    ;;C_Step7 attaches BOTH Bloodshed scores to DHBloodshed -- the pure one and the subsidiary --
+    ;;and the owner confirmed that is correct ("bloodshed would have two scores"). This hand-rolled
+    ;;fixture attaches only the subsidiary. Adding the missing line was TRIED and it fails, for a
+    ;;real reason that is not this file's to fix:
+    ;;
+    ;;    Invalid FVT reward pipeline: employed score missing enabled FVT ScoreEntityLink or
+    ;;    reward DPTF          05_FVT.pact:1031, staking a DHBloodshed nonce
+    ;;
+    ;;Attaching `Bloodshed` makes it EMPLOYED, and C_Step9 admits it to no FVT -- Coding, Snakes
+    ;;and Shares each get a treasury, Bloodshed gets none. So the gap is in the asset tree, not in
+    ;;the test. Options and their consequences are written up in
+    ;;2_CITIZEN/5_VaultsMinter/README_AQP_BOOT.md, under the Steps 8-12 FVT map.
+    ;;
+    ;;Restore the line below the moment that is settled -- a fixture that does not match the
+    ;;deployment function is exactly how this gap stayed hidden in the first place.
+    ;;(ref-TS02-C3::AQP-POOL|C_AddScore patron pool-bloodshed score-bloodshed)
     (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-bloodshed score-sub-bloodshed)
     (ref-TS02-C3::AQP-POOL|C_Issue patron "DHNosferatu" "DHN-98c486052a51" 4)
     (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-nosferatu score-sub-nosferatu)
@@ -701,8 +718,11 @@
                 ;;as passes.
                 (expect "<<TX-BOOT-G1>> OuroLpFarm is a class-0 FARM"
                     0 (ref-RPS::UR_FVT|FvtClass farm))
-                (expect "<<TX-BOOT-G1>> CodingDivisionTreasury is a class-1 VAULT/TREASURY"
-                    1 (ref-RPS::UR_FVT|FvtClass treasury))
+                ;;class 2 = TREASURY. CORRECTED 2026-09-19 with the admission-rule fix: this
+                ;;read 1 because Step8 issued the four Treasury-named entities at fvt-class 1,
+                ;;which only worked because the rule was inverted (vault admitted SF/NF).
+                (expect "<<TX-BOOT-G1>> CodingDivisionTreasury is a class-2 TREASURY"
+                    2 (ref-RPS::UR_FVT|FvtClass treasury))
                 (expect "<<TX-BOOT-G1>> the boot triplet exists and is categorised LP"
                     ["LP" true]
                     [(ref-SCR::UR_SCR|TripletCategory triplet) (ref-SCR::URC_TripletExists triplet)])

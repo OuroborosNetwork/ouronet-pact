@@ -39,7 +39,7 @@
     )
     (map print
         [
-            (expect (format "<<TX-AQP-C01>> coding vault class=1 got={}" [(ref-FVT::UR_FVT|FvtClass coding-treasury-id)]) 1 (ref-FVT::UR_FVT|FvtClass coding-treasury-id))
+            (expect (format "<<TX-AQP-C01>> coding TREASURY class=2 got={}" [(ref-FVT::UR_FVT|FvtClass coding-treasury-id)]) 2 (ref-FVT::UR_FVT|FvtClass coding-treasury-id))
             (expect (format "<<TX-AQP-C01>> coding score fvt-link got={} expected={}" [(ref-SCR::UR_SCR|ScoreFvtLink coding-score-id) coding-treasury-id]) coding-treasury-id (ref-SCR::UR_SCR|ScoreFvtLink coding-score-id))
             (expect (format "<<TX-AQP-C01>> snakes score fvt-link got={} expected={}" [(ref-SCR::UR_SCR|ScoreFvtLink snakes-score-id) snakes-treasury-id]) snakes-treasury-id (ref-SCR::UR_SCR|ScoreFvtLink snakes-score-id))
             (expect (format "<<TX-AQP-C01>> shares score fvt-link got={} expected={}" [(ref-SCR::UR_SCR|ScoreFvtLink shares-score-id) shares-treasury-id]) shares-treasury-id (ref-SCR::UR_SCR|ScoreFvtLink shares-score-id))

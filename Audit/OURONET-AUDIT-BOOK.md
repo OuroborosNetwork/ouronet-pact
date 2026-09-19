@@ -4849,9 +4849,9 @@ And what those deltas did to the two things a reader cares about — **[VERIFIED
 | | 2026-08-30 | 2026-09-14 | today (HEAD) |
 |---|---:|---:|---:|
 | Pact source files | 91 | 93 | **94** |
-| Pact source lines | 96,310 | 114,156 | **115,942** |
+| Pact source lines | 96,310 | 114,156 | **115,947** |
 | `.repl` files (excl. `archive/`) | 181 | 209 | **207** |
-| `.repl` lines | 68,435 | 120,603 | **137,846** |
+| `.repl` lines | 68,435 | 120,603 | **137,906** |
 | distinct assertions written | **1,604** | **5,262** | **5,876** |
 
 > **These are a SNAPSHOT, and the book says so rather than implying permanence.** The distinct
@@ -6185,7 +6185,7 @@ that, and rebuilt the runner architecture around the result.
 | | 2026-08-30 | 2026-09-04 | 2026-09-09 | 2026-09-14 | 2026-09-16 | HEAD |
 |---|---:|---:|---:|---:|---:|---:|
 | `.repl` files (excl. `archive/`) | 181 | — | — | 209 | — | **207** |
-| `.repl` lines (excl. `archive/`) | 68,435 | — | — | 120,603 | — | **137,846** |
+| `.repl` lines (excl. `archive/`) | 68,435 | — | — | 120,603 | — | **137,906** |
 | distinct assertions | **1,604** | 1,663 | 2,431 | **5,262** | 5,555 | **5,876** |
 
 <sub>CORRECTED 2026-09-18 — the HEAD column was written as literals and had rotted. It published

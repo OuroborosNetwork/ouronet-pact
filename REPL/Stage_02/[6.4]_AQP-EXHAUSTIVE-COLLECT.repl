@@ -33,7 +33,7 @@
         (deb-user:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore patron pool-id score-id))
     )
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-    (enforce (= fvt-class 1) "CodingDivisionTreasury must be vault class 1")
+    (enforce (= fvt-class 2) "CodingDivisionTreasury must be treasury class 2")
     (enforce (> deb-user 0.0) "CL01 needs Coding Division deb — run RPS TX-AQP-R01 or stake DHCD")
     (print (format "<(C_Inject Wstoa {})> => \"{}\"" [inject-amt
         (ref-TS02-C3::AQP-FVT|CC_Inject patron fvt-id wstoa-id inject-amt)
@@ -104,7 +104,7 @@
         (dhwc-nonces:[integer] (ref-DPDC::URH_AccountNonces owner-id dhwc-id true))
     )
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-    (enforce (= fvt-class 1) "SubsidiaryTreasury must be vault/treasury class 1")
+    (enforce (= fvt-class 2) "SubsidiaryTreasury must be treasury class 2")
     (enforce (> (length dhwc-nonces) 0) "CL02 needs DHWC nonces for WonderCoach stake")
     (print (format "<(C_StakeSemiFungible DHWC)> => \"{}\"" [
         (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable

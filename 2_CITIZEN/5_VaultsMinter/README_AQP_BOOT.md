@@ -45,12 +45,36 @@ Module: `04_AQP-BOOT.pact` | Interface: `AcquisitionPoolBootV1`
 | FVT name | Class | Score / triplet admission | Reward token |
 |----------|-------|---------------------------|--------------|
 | `OuroLpFarm` | 0 farm | **Step 11:** `TripletLink` | **Step 11:** `C_AddRewardLink(OURO, F\|…)` — one global for score + triplet |
-| `SubsidiaryTreasury` | 1 vault | Step 9: five subsidiary scores | Step 12: Auryn |
-| `CodingDivisionTreasury` | 1 vault | Step 9: TheCodingDivision | Step 12: Wstoa (`DALOS::UR_WrappedStoaID`) |
-| `SnakesTreasury` | 1 vault | Step 9: DemiourgosSnakes | Step 12: Auryn |
-| `CompanySharesTreasury` | 1 vault | Step 9: DemiourgosShareholder | Step 12: Ouroboros (`DALOS::UR_OuroborosID`) |
+| `SubsidiaryTreasury` | 2 treasury | Step 9: five subsidiary scores | Step 12: Auryn |
+| `CodingDivisionTreasury` | 2 treasury | Step 9: TheCodingDivision | Step 12: Wstoa (`DALOS::UR_WrappedStoaID`) |
+| `SnakesTreasury` | 2 treasury | Step 9: DemiourgosSnakes | Step 12: Auryn |
+| `CompanySharesTreasury` | 2 treasury | Step 9: DemiourgosShareholder | Step 12: Ouroboros (`DALOS::UR_OuroborosID`) |
+| **`Bloodshed` (pure score)** | **— none —** | **NOT ADMITTED ANYWHERE** | **none** |
 
-Farm `common-denominator` at issue = `lp-denominator` (full OURO DPTF id, same as Step 6). Vault entities use `"|"` at issue. Product UX names these vaults “Treasury”; FVT class 2 remains OF-only per `URC_ScoreClassMatchesFvtClass`.
+> **Open decision for `Bloodshed`.** Two readings, and they wire mainnet differently:
+> **(a) it should earn.** Add a fifth class-2 `BloodshedTreasury` in Step 8, admit the score in
+> Step 9, reward-link it in Step 12. Symmetric with Coding / Snakes / Shares, and needs a reward
+> token chosen for it (the existing three are wSTOA, Auryn ×2, Ouroboros).
+> **(b) it should not earn.** The owner described it as *"the pure bloodshed score given by its
+> internal scores as NFTs"* — a measurement, not a reward channel. Then the guard at
+> `05_FVT.pact:1031` is too strict: `DHBloodshed` already carries `SubsidiaryBloodshed`, which IS
+> in `SubsidiaryTreasury` earning Auryn, so the pool can pay. The guard would become "at least one
+> employed score on the pool has a reward pipeline" rather than "every one does".
+>
+> (b) is a sovereign semantics change affecting every pool; (a) is additive. Not chosen here.
+
+Farm `common-denominator` at issue = `lp-denominator` (full OURO DPTF id, same as Step 6). Vault entities use `"|"` at issue. **CORRECTED 2026-09-19 (owner ruling).** This used to read *"Product UX names these vaults
+'Treasury'; FVT class 2 remains OF-only per `URC_ScoreClassMatchesFvtClass`"* — it was describing the
+INVERTED admission rule. The classes are: **0 Farm** takes LPs, **1 Vault** takes TF and OF,
+**2 Treasury** takes SFTs and NFTs. The four entities below are genuine **class-2 Treasuries** and
+are issued as such; they are not class-1 vaults wearing the name.
+
+**KNOWN GAP — the pure `Bloodshed` score has no FVT.** `C_Step4` creates four core scores and
+`C_Step7` attaches `Bloodshed` to `DHBloodshed`, which makes it *employed*. The table below lists
+four treasuries, and none of them admits it — `C_Step9` takes five subsidiary ids plus coding,
+snakes and shares. An employed score with no enabled ScoreEntityLink and no reward DPTF aborts
+every stake at `05_FVT.pact:1031`. Coding, Snakes and Shares each have their own treasury;
+`Bloodshed` alone does not. Unresolved: see the note under the table.
 
 ### Step 9 `subsidiary-score-ids` (recommended order)
 

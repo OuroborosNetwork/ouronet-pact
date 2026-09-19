@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 16 of 20
 ;; This is STEP 16 of 21 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-15 must have run first, including the init steps between deploys.
-;; 1 module(s), 252,465 gas measured in the REPL gas model, 198,322 bytes
+;; 1 module(s), 252,465 gas measured in the REPL gas model, 198,923 bytes
 ;;
 ;; Modules in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/05_FVT.pact
@@ -1233,15 +1233,20 @@
         (RPS.URC_MaxStreamLanes account)
     )
     (defun URC_ScoreClassMatchesFvtClass:bool (fvt-class:integer score-class:integer)
-        @doc "Admission rule: farm↔LP(0), vault↔TF/SF/NF(1/3/4), treasury↔OF(2)."
+        @doc "Admission rule: farm↔LP(0), vault↔TF/OF(1/2), treasury↔SF/NF(3/4). \
+            \ Score classes are 0=LP 1=DPTF 2=DPOF 3=DPSF 4=DPNF; FVT classes 0=Farm \
+            \ 1=Vault 2=Treasury. CORRECTED 2026-09-19 (owner ruling): this used to read \
+            \ vault↔1/3/4 and treasury↔2, i.e. it admitted COLLECTABLES into the vault and \
+            \ sent ORTOFUNGIBLES to the treasury -- the two swapped. It disagreed with \
+            \ URC_TripletCategoryMatchesFvtClass (VAULT_TF↔1, TREASURY_SF_NF↔2), which was \
+            \ right, and nothing caught it because AQP-BOOT Step8 issued its four entities \
+            \ NAMED Treasury at class 1, so the broken rule was exactly what let them work."
         (if (= fvt-class 0)
             (= score-class 0)
             (if (= fvt-class 1)
-                (fold (or) false
-                    [(= score-class 1) (= score-class 3) (= score-class 4)]
-                )
+                (or (= score-class 1) (= score-class 2))
                 (if (= fvt-class 2)
-                    (= score-class 2)
+                    (or (= score-class 3) (= score-class 4))
                     false
                 )
             )
