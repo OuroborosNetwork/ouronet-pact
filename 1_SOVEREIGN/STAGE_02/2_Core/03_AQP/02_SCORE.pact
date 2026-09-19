@@ -353,244 +353,34 @@
     ;;{3.2}  schemas
     ;;
     ;;1] SCR|T|Score
-    (defschema SCR|Schema
-        @doc "General Score Definition \
-            \ [.]   = fixed, cannot be changed \
-            \ [..]  = Once linked, cannot be changed \
-            \ [.t]  = Once set to true, cannot be changed \
-            \ [M]   = mutable, can be modified  <owner-konto> \
-            \ [Mu]  = mutable via upgrade, can be modified via \
-            \        <owner-konto> and true <can-upgrade> \
-            \ \
-            \ Identity: No separate scr-asset on the score. Staking asset is \
-            \ defined on the AQP pool. Resolve Score -> aqpool-link -> Pool \
-            \ -> asset-id. FVT must only add ScoreLink when aqpool-link is \
-            \ set, so membership checks (e.g. farm common-denominator vs LP \
-            \ construction) use that chain. \
-            \ \
-            \ Class-0 LP: One score employed per pool aggregates all stake \
-            \ that pool allows. Multiple token ids (e.g. native LP, sleeping \
-            \ OF, frozen TF) may stake into the same pool when the protocol \
-            \ verifies they are the same LP family; trackers distinguish ids, \
-            \ but SCR|T|UserScore rows are per pool-id x score-id for \
-            \ beneficiaries. \
-            \ \
-            \ Immutability vs users: Per-user weights in SCR|T|UserScore are \
-            \ advanced on Stake/Unstake (and FVT Inject/Collect handle \
-            \ rewards), matching the UrStoa vault pattern; there is no \
-            \ practical global recomputation over all accounts. Do not change \
-            \ [.] semantic fields (score-class, multipliers, sft/nft models), \
-            \ links [..], or deb-boost [.t] after positions \
-            \ exist; that would leave existing rows wrong until users \
-            \ restake. Correct mistakes by issuing a new score-id, removing \
-            \ the old score from pool slots and FVT membership, then wiring \
-            \ the new score. \
-            \ \
-            \ [M] totals on this row are aggregate bookkeeping; they do not \
-            \ replace the rule that meaning-of-weight is fixed by [.] fields \
-            \ at issue."
-        ;;
-        ;;Management
-        owner-konto:string          ;;[Mu]  Stores the Score Owner.
-        can-upgrade:bool            ;;[Mu]  Defines if Score Settings can be upgraded
-        can-change-owner:bool       ;;[Mu]  Defines if the Owner can be changed
-        ;;
-        ;; Links
-        boost-class-link:string     ;;[..]  Specifies the BoostClass-ID for boosting. BAR if not in use.
-        ;; Foreign boost-link: promile uses linked score user base; UserScore boosted/deb may hold surplus only (README_SCORE.md). Never self: SCR|C>CREATE-BOOST-LINK-SCORE.
-        boost-link:string           ;;[..]  BAR = own base for promile; else other score-id (≠ this score-id per SCR|C>CREATE-BOOST-LINK-SCORE).
-        aqpool-link:string          ;;[..]  Specifies the Pool that employs the Score. BAR if not in use.
-        fvt-link:string             ;;[..]  Specifies the FVT the Score is part of. BAR if not in use.
-        triplet:bool                ;;[..]  false at issue; true once bundled in SCR|T|Triplet (immutable).
-        triplet-id:string           ;;[..]  BAR until triplet issue; then T|bronze|silver|golden (immutable).
-        ;;Score Information
-        deb-boost:bool              ;;[.t]  Specifies if DEB boosting occurs.
-        precision:integer           ;;[.]   Decimal places for per-user weights and aggregate total-* fields on this score; range enforced at issuance; forward writers must respect it.
-        total-base-score:decimal    ;;[M]   Sum of user base-scores; same decimal precision as precision field
-        total-boosted-score:decimal ;;[M]   Sum of user boosted-scores; same decimal precision as precision field
-        total-deb-score:decimal     ;;[M]   Sum of user deb-scores; same decimal precision as precision field
-        total-base-deb-score:decimal    ;;[M] M3: Σ user base-deb-scores (aggregate base×deb decomposition)
-        total-boosted-deb-score:decimal ;;[M] M3: Σ user boosted-deb-scores. total-base-deb + total-boosted-deb = total-deb-score.
-        nzs-count:integer           ;;[M]   Store the amount of Non-Zero-Scores
-        vacate-generation:integer   ;;[M]   Vacate-v2 lazy-invalidation counter (§5). Bumped once at fast-vacate
-        ;;                                  finalize (nuke). A SCR|T|UserScore row whose stamped-generation < this
-        ;;                                  reads as 0 (stale); re-stake stamps the current value. Default 0.
-        ;;
-        ;;Score Class
-        score-class:integer         ;;[.]   Defines the Score Class, there are 5
-        ;;                                  Class 0 = LP Score (LP - native|sleeping|freezing)
-        ;;                                  Class 1 = DPTF Score (non LP) 
-        ;;                                  Class 2 = DPOF Score (non LP)
-        ;;                                  Class 3 = DPSF Score (SFTs)
-        ;;                                  Class 4 = DPNF Score (NFTs)
-        ;;
-        ;;LP, DPTF, DPOF
-        lp-denominator:string       ;;[.]   Class-0 only: native DPTF token-id of the common pool leg (e.g. OURO-98c486052a51); BAR for classes 1-4.
-        mx-frozen:decimal           ;;[.]   Multiplier for Frozen Tokens (Default 2.0)
-        mx-sleeping:decimal         ;;[.]   Multiplier for Sleeping Tokens (Default 1.0)
-        mx-hibernated:decimal       ;;[.]   Multiplier for Hibernated Tokens (Default 1.0)
-        ;;
-        ;;DPSF
-        sft-equality:bool           ;;[.]   When true all SFTs are equal. When <false>, <nonce-score-value> is checked.
-        ;;
-        ;;DPNF
-        nft-score-model:integer     ;;[.]   Sets NFT Score Model; Only 3 Models Allowed [-1 0 1]
-        ;;                                  Model -1 = All NFTs are equal, and will have a score of 1
-        ;;                                  Model  0 = NFTs will be scored by their native Score Systems
-        ;;                                  Model  1 = NFTs scored from SCR|T|NF|TraitScore / SCR|T|NF|ClassScore rows
-        ;;
-        ;;Select Keys
-        score-id:string             ;;[.]   Stores the ID of the Score
-    )
     ;;2] SCR|T|UserScore
-    (defschema SCR|UserSchema
-        @doc "Per account x pool x score. base-score, boosted-score, \
-            \ deb-score are updated on Stake/Unstake (and related paths), \
-            \ not by bulk recompute when SCR|Schema rules change; migrate \
-            \ via a new score-id."
-        base-score:decimal
-        boosted-score:decimal
-        deb-score:decimal
-        base-deb-score:decimal      ;;[M]  M3: base × deb (deb applied to the base part)
-        boosted-deb-score:decimal   ;;[M]  M3: boost × deb (deb applied to the boost part). base-deb + boosted-deb = deb-score.
-        stamped-generation:integer  ;;[M]  Vacate-v2 (§5): the SCR|Schema.vacate-generation this row was written under.
-        ;;                                 When < the score's current vacate-generation, readers treat this row as 0
-        ;;                                 (stale after a fast-vacate); a fresh stake re-stamps it live. Default 0.
-        ;;
-        ;;Select Keys
-        ouronet-account:string
-        pool-id:string
-        score-id:string
-    )
-    (defschema SCR|SingularUserScoreDelta
-        @doc "Result of applying one signed user-base delta at score precision: new user triple, nz-count delta, and deltas to SCR|T|Score aggregate totals \
-            \ (LP stake legs are one consumer; other forward paths can reuse the same derivation object). Aggregate totals are floored at the score precision field in XI."
-        new-user-base-score:decimal
-        new-user-boosted-score:decimal
-        new-user-deb-score:decimal
-        new-user-base-deb-score:decimal
-        new-user-boosted-deb-score:decimal
-        nz-delta:integer
-        delta-global-base-score:decimal
-        delta-global-boosted-score:decimal
-        delta-global-deb-score:decimal
-        delta-global-base-deb-score:decimal
-        delta-global-boosted-deb-score:decimal
-    )
     ;;
     ;;3] SCR|T|SF|Score
-    (defschema SCR|SF|Schema
-        @doc "Per (score-id, dpsf-id, nonce). Changing nonce-score-value \
-            \ changes weights for that nonce going forward; wholesale rule \
-            \ changes still favor a new score-id if fairness requires it."
-        nonce-score-value:decimal   ;;[M]   Score Value of DPSF Nonce
-        ;;
-        ;;Select Keys
-        score-id:string
-        dpsf-id:string
-        nonce:integer
-    )
     ;;4] SCR|T|NF|TraitScore
-    (defschema SCR|NF|TraitSchema
-        @doc "Per (score-id, dpnf-id, trait-key, trait-value). trait-score-value is mutable."
-        trait-score-value:decimal   ;;[M]
-        ;;
-        ;;Select Keys
-        score-id:string
-        dpnf-id:string
-        trait-key:string
-        trait-value:string
-    )
     ;;5] SCR|T|NF|ClassScore
-    (defschema SCR|NF|ClassSchema
-        @doc "Per (score-id, dpnf-id, dpnf-nonce-class). trait-score-value is mutable (set-mode class weights)."
-        trait-score-value:decimal   ;;[M]
-        ;;
-        ;;Select Keys
-        score-id:string
-        dpnf-id:string
-        dpnf-nonce-class:integer    ;;[.]   0 = all native NFTs in class model; >0 = specific set class (AQP-ANK DPNF anchors)
-    )
     ;;
     ;;Monotonic revision per (score-id, DPDC collection): bump only when a
     ;;row in SCR|T|SF|Score or SCR|T|NF|TraitScore / SCR|T|NF|ClassScore changes for that pair. AQP
     ;;trackers compare applied-def-revision-nonce to SCR|T|SF|DefRevision.revision-nonce /
     ;;6] SCR|T|SF|DefRevision
-    (defschema SCR|SF|DefRevision
-        @doc "Per (score-id, dpsf-id). revision-nonce bumps on any add or \
-            \ update in SCR|T|SF|Score for that score-id and dpsf-id."
-        revision-nonce:integer      ;;[M]   Bump on SCR|T|SF|Score change
-        ;;
-        ;;Select Keys
-        score-id:string
-        dpsf-id:string
-    )
     ;;7] SCR|T|NF|DefRevision
-    (defschema SCR|NF|DefRevision
-        @doc "Per (score-id, dpnf-id). global-revision-nonce bumps on any trait or class definition change; \
-            \ trait-revision-nonce only on SCR|T|NF|TraitScore change; class-revision-nonce only on SCR|T|NF|ClassScore change."
-        global-revision-nonce:integer   ;;[M]
-        trait-revision-nonce:integer    ;;[M]
-        class-revision-nonce:integer     ;;[M]
-        ;;
-        ;;Select Keys
-        score-id:string
-        dpnf-id:string
-    )
     ;;7b] SCR|T|NF|TraitKeys — the DISTINCT trait-keys that have any definition for (score-id, dpnf-id).
     ;; Segregated from SCR|NF|DefRevision so the hot revision-nonce reads stay lean; this row is read ONLY on the
     ;; model-1 trait stake path, where it drives bounded point reads (kills the select). Bounded by the collection's
     ;; trait schema (grows with distinct trait-keys, not nonces or values), so it stays small.
-    (defschema SCR|NF|TraitKeys
-        @doc "Per (score-id, dpnf-id): the DISTINCT trait-keys with any SCR|T|NF|TraitScore definition. Lets model-1 \
-            \ trait scoring point-read each defined key against a staked nonce's metadata instead of scanning."
-        trait-keys:[string]         ;;[M]   distinct defined trait-keys
-        ;;
-        ;;Select Keys
-        score-id:string
-        dpnf-id:string
-    )
     ;;8] SCR|T|Triplet
-    (defschema SCR|Triplet
-        @doc "Key = T|<bronze-score-id>|<silver-score-id>|<golden-score-id>. Bundles three SCORE rows for FVT TripletLink membership. \
-            \ Positions bronze/silver/golden are id slots only (not boost roles). true-triplet when one score has BAR boost-link and the other two boost-link to it. \
-            \ Tags: [.] fixed at issue."
-        bronze-score-id:string                               ;;[.]   First score id slot
-        silver-score-id:string                               ;;[.]   Second score id slot
-        golden-score-id:string                               ;;[.]   Third score id slot
-        triplet-category:string                              ;;[.]   LP | VAULT_TF | TREASURY_SF_NF (from shared score-class)
-        triplet-id:string                                    ;;[.]   Select key T|bronze|silver|golden
-        true-triplet:bool                                    ;;[.]   Boost-anchored bundle (one BAR hub, two satellites)
-    )
-    (defschema SCR|ScoreEntityModel
-        @doc "Key = <Model-ID>. A reusable score-entity TEMPLATE so many entities issue IDENTICALLY (DSA: every \
-            \ agency scores the same). single (entity-type 1): the scoring spec — issue 1 score + its SF definition \
-            \ from it. triplet (entity-type 3): references three single model-ids — issue the 3 singles, then \
-            \ C_IssueTriplet. Tags: [.] fixed at define."
-        entity-type:integer                                  ;;[.]   CT_SCORE_MODEL_SINGLE (1) | CT_SCORE_MODEL_TRIPLET (3)
-        score-class:integer                                  ;;[.]   single: 3 = SemiFungible (DPSF), v1 SF only. triplet: 0.
-        collectable-id:string                                ;;[.]   single: the DPSF id the definition scores. triplet: BAR.
-        precision:integer                                    ;;[.]   single: score precision. triplet: 0.
-        nonces:[integer]                                     ;;[.]   single: SF definition nonces (incl. fragment negatives). triplet: [].
-        nonce-score-values:[decimal]                         ;;[.]   single: parallel values. triplet: [].
-        bronze-model-id:string                               ;;[.]   triplet: the 3 sub single-model ids. single: BAR.
-        silver-model-id:string
-        golden-model-id:string
-        ;;Select Keys
-        model-id:string                                      ;;[.]
-    )
     ;;{3.3}  tables
     ;;
-    (deftable SCR|T|Score:{SCR|Schema})                         ;;1] Key = <Score-ID>
-    (deftable SCR|T|UserScore:{SCR|UserSchema})                 ;;2] Key = <Ouronet-Account> | <Pool-ID> | <Score-ID>
-    (deftable SCR|T|SF|Score:{SCR|SF|Schema})                   ;;3] Key = <Score-ID> | <DPSF-ID> | <Nonce>
-    (deftable SCR|T|NF|TraitScore:{SCR|NF|TraitSchema})         ;;4] Key = <Score-ID> | <DPNF-ID> | <Trait-Key> | <Trait-Value>
-    (deftable SCR|T|NF|ClassScore:{SCR|NF|ClassSchema})         ;;5] Key = <Score-ID> | <DPNF-ID> | <DPNF-Nonce-Class>
-    (deftable SCR|T|SF|DefRevision:{SCR|SF|DefRevision})        ;;6] Key = <Score-ID> | <DPSF-ID>
-    (deftable SCR|T|NF|DefRevision:{SCR|NF|DefRevision})        ;;7] Key = <Score-ID> | <DPNF-ID>
-    (deftable SCR|T|NF|TraitKeys:{SCR|NF|TraitKeys})            ;;7b] Key = <Score-ID> | <DPNF-ID>
-    (deftable SCR|T|Triplet:{SCR|Triplet})                      ;;8] Key = <Triplet-ID>
-    (deftable SCR|T|ScoreEntityModel:{SCR|ScoreEntityModel})    ;;9] Key = <Model-ID>
+    (deftable SCR|T|Score:{AcquisitionSchemasV1.SCR|Schema})                         ;;1] Key = <Score-ID>
+    (deftable SCR|T|UserScore:{AcquisitionSchemasV1.SCR|UserSchema})                 ;;2] Key = <Ouronet-Account> | <Pool-ID> | <Score-ID>
+    (deftable SCR|T|SF|Score:{AcquisitionSchemasV1.SCR|SF|Schema})                   ;;3] Key = <Score-ID> | <DPSF-ID> | <Nonce>
+    (deftable SCR|T|NF|TraitScore:{AcquisitionSchemasV1.SCR|NF|TraitSchema})         ;;4] Key = <Score-ID> | <DPNF-ID> | <Trait-Key> | <Trait-Value>
+    (deftable SCR|T|NF|ClassScore:{AcquisitionSchemasV1.SCR|NF|ClassSchema})         ;;5] Key = <Score-ID> | <DPNF-ID> | <DPNF-Nonce-Class>
+    (deftable SCR|T|SF|DefRevision:{AcquisitionSchemasV1.SCR|SF|DefRevision})        ;;6] Key = <Score-ID> | <DPSF-ID>
+    (deftable SCR|T|NF|DefRevision:{AcquisitionSchemasV1.SCR|NF|DefRevision})        ;;7] Key = <Score-ID> | <DPNF-ID>
+    (deftable SCR|T|NF|TraitKeys:{AcquisitionSchemasV1.SCR|NF|TraitKeys})            ;;7b] Key = <Score-ID> | <DPNF-ID>
+    (deftable SCR|T|Triplet:{AcquisitionSchemasV1.SCR|Triplet})                      ;;8] Key = <Triplet-ID>
+    (deftable SCR|T|ScoreEntityModel:{AcquisitionSchemasV1.SCR|ScoreEntityModel})    ;;9] Key = <Model-ID>
 
     ;;<=========================================================================>
     ;;{4}  CAPABILITIES
@@ -1457,9 +1247,9 @@
     ;; [UDC] construct
     ;;
     ;; Early UDC: SCR|UserSchema constructor is required before UR_U-SCR|UserScore (with-default-read default object).
-    (defun UDC_SCR|UserSchema:object{SCR|UserSchema}
+    (defun UDC_SCR|UserSchema:object{AcquisitionSchemasV1.SCR|UserSchema}
         (a:decimal b:decimal c:decimal c1:decimal c2:decimal g:integer d:string e:string f:string)
-        @doc "Core constructor for object{SCR|UserSchema}. c1=base-deb-score, c2=boosted-deb-score (M3); \
+        @doc "Core constructor for object{AcquisitionSchemasV1.SCR|UserSchema}. c1=base-deb-score, c2=boosted-deb-score (M3); \
             \ g=stamped-generation (vacate-v2 §5)."
         {"base-score"           : a
         ,"boosted-score"        : b
@@ -1471,7 +1261,7 @@
         ,"pool-id"              : e
         ,"score-id"             : f}
     )
-    (defun UDC_SCR|SingularUserScoreDelta:object{SCR|SingularUserScoreDelta}
+    (defun UDC_SCR|SingularUserScoreDelta:object{AcquisitionSchemasV1.SCR|SingularUserScoreDelta}
         (
             new-user-base-score:decimal
             new-user-boosted-score:decimal
@@ -1499,9 +1289,9 @@
         ,"delta-global-boosted-deb-score"   : delta-global-boosted-deb-score}
     )
     ;;
-    (defun UDC_SCR|Schema:object{SCR|Schema}
+    (defun UDC_SCR|Schema:object{AcquisitionSchemasV1.SCR|Schema}
         (a:string b:bool c:bool d:string e:string f:string g:string v:bool w:string h:bool i:integer j:decimal k:decimal l:decimal l1:decimal l2:decimal m:integer m2:integer n:integer o:string p:decimal q:decimal r:decimal s:bool t:integer u:string)
-        @doc "Core constructor for object{SCR|Schema}: every schema field is an explicit argument (use for custom UDC wrappers). l1=total-base-deb-score, l2=total-boosted-deb-score (M3); m2=vacate-generation (vacate-v2 §5)."
+        @doc "Core constructor for object{AcquisitionSchemasV1.SCR|Schema}: every schema field is an explicit argument (use for custom UDC wrappers). l1=total-base-deb-score, l2=total-boosted-deb-score (M3); m2=vacate-generation (vacate-v2 §5)."
         {"owner-konto"          : a
         ,"can-upgrade"          : b
         ,"can-change-owner"     : c
@@ -1529,50 +1319,50 @@
         ,"nft-score-model"      : t
         ,"score-id"             : u}
     )
-    (defun UDC_SCR|SF|Schema:object{SCR|SF|Schema}
+    (defun UDC_SCR|SF|Schema:object{AcquisitionSchemasV1.SCR|SF|Schema}
         (a:decimal b:string c:string d:integer)
-        @doc "Core constructor for object{SCR|SF|Schema}."
+        @doc "Core constructor for object{AcquisitionSchemasV1.SCR|SF|Schema}."
         {"nonce-score-value" : a
         ,"score-id"          : b
         ,"dpsf-id"           : c
         ,"nonce"             : d}
     )
-    (defun UDC_SCR|SF|DefRevision:object{SCR|SF|DefRevision}
+    (defun UDC_SCR|SF|DefRevision:object{AcquisitionSchemasV1.SCR|SF|DefRevision}
         (a:integer b:string c:string)
-        @doc "Core constructor for object{SCR|SF|DefRevision}."
+        @doc "Core constructor for object{AcquisitionSchemasV1.SCR|SF|DefRevision}."
         {"revision-nonce" : a
         ,"score-id"       : b
         ,"dpsf-id"        : c}
     )
-    (defun UDC_SCR|NF|TraitSchema:object{SCR|NF|TraitSchema}
+    (defun UDC_SCR|NF|TraitSchema:object{AcquisitionSchemasV1.SCR|NF|TraitSchema}
         (a:decimal b:string c:string d:string e:string)
-        @doc "Core constructor for object{SCR|NF|TraitSchema}: trait-score-value, score-id, dpnf-id, trait-key, trait-value."
+        @doc "Core constructor for object{AcquisitionSchemasV1.SCR|NF|TraitSchema}: trait-score-value, score-id, dpnf-id, trait-key, trait-value."
         {"trait-score-value" : a
         ,"score-id"          : b
         ,"dpnf-id"           : c
         ,"trait-key"         : d
         ,"trait-value"       : e}
     )
-    (defun UDC_SCR|NF|ClassSchema:object{SCR|NF|ClassSchema}
+    (defun UDC_SCR|NF|ClassSchema:object{AcquisitionSchemasV1.SCR|NF|ClassSchema}
         (a:decimal b:string c:string d:integer)
-        @doc "Core constructor for object{SCR|NF|ClassSchema}: trait-score-value, score-id, dpnf-id, dpnf-nonce-class."
+        @doc "Core constructor for object{AcquisitionSchemasV1.SCR|NF|ClassSchema}: trait-score-value, score-id, dpnf-id, dpnf-nonce-class."
         {"trait-score-value"  : a
         ,"score-id"           : b
         ,"dpnf-id"            : c
         ,"dpnf-nonce-class"   : d}
     )
-    (defun UDC_SCR|NF|DefRevision:object{SCR|NF|DefRevision}
+    (defun UDC_SCR|NF|DefRevision:object{AcquisitionSchemasV1.SCR|NF|DefRevision}
         (ga:integer tr:integer cl:integer score-id:string dpnf-id:string)
-        @doc "Core constructor for object{SCR|NF|DefRevision}: global, trait, class revision nonces plus keys."
+        @doc "Core constructor for object{AcquisitionSchemasV1.SCR|NF|DefRevision}: global, trait, class revision nonces plus keys."
         {"global-revision-nonce" : ga
         ,"trait-revision-nonce"  : tr
         ,"class-revision-nonce"  : cl
         ,"score-id"              : score-id
         ,"dpnf-id"               : dpnf-id}
     )
-    (defun UDC_SCR|Triplet:object{SCR|Triplet}
+    (defun UDC_SCR|Triplet:object{AcquisitionSchemasV1.SCR|Triplet}
         (bronze-score-id:string silver-score-id:string golden-score-id:string triplet-category:string triplet-id:string true-triplet:bool)
-        @doc "Core constructor for object{SCR|Triplet}."
+        @doc "Core constructor for object{AcquisitionSchemasV1.SCR|Triplet}."
         {"bronze-score-id"  : bronze-score-id
         ,"silver-score-id"  : silver-score-id
         ,"golden-score-id"  : golden-score-id
@@ -1580,11 +1370,11 @@
         ,"triplet-id"       : triplet-id
         ,"true-triplet"     : true-triplet}
     )
-    (defun UDC_SCR|ScoreEntityModel:object{SCR|ScoreEntityModel}
+    (defun UDC_SCR|ScoreEntityModel:object{AcquisitionSchemasV1.SCR|ScoreEntityModel}
         (entity-type:integer score-class:integer collectable-id:string precision:integer
          nonces:[integer] nonce-score-values:[decimal]
          bronze-model-id:string silver-model-id:string golden-model-id:string model-id:string)
-        @doc "Core constructor for object{SCR|ScoreEntityModel}."
+        @doc "Core constructor for object{AcquisitionSchemasV1.SCR|ScoreEntityModel}."
         {"entity-type"        : entity-type
         ,"score-class"        : score-class
         ,"collectable-id"     : collectable-id
@@ -1680,7 +1470,7 @@
             {"trait-keys" := tk}
             tk)
     )
-    (defun UR_SCR|Score:object{SCR|Schema} (score-id:string)
+    (defun UR_SCR|Score:object{AcquisitionSchemasV1.SCR|Schema} (score-id:string)
         @doc "Reads full score definition row from SCR|T|Score."
         (read SCR|T|Score score-id)
     )
@@ -1789,7 +1579,7 @@
         (at "score-id" (read SCR|T|Score score-id ["score-id"]))
     )
     ;;
-    (defun UR_U-SCR|UserScore:object{SCR|UserSchema} (ouronet-account:string pool-id:string score-id:string)
+    (defun UR_U-SCR|UserScore:object{AcquisitionSchemasV1.SCR|UserSchema} (ouronet-account:string pool-id:string score-id:string)
         @doc "Reads the EFFECTIVE full user score row from SCR|T|UserScore. Vacate-v2 §5 lazy invalidation: if \
             \ the row's stamped-generation is behind the score's current vacate-generation (a fast-vacate has \
             \ nuked this score since the row was written), the VALUE fields read as 0 (stale) while IDENTITY \
@@ -1851,7 +1641,7 @@
                 (
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                     (p:integer (UR_SCR|ScorePrecision score-id))
-                    (u:object{SCR|UserSchema} (UR_U-SCR|UserScore ouronet-account pool-id score-id))
+                    (u:object{AcquisitionSchemasV1.SCR|UserSchema} (UR_U-SCR|UserScore ouronet-account pool-id score-id))
                 )
                 (!= (at "deb-score" u)
                     (floor (* (+ (at "base-score" u) (at "boosted-score" u))
@@ -1872,7 +1662,7 @@
         (at "score-id" (UR_U-SCR|UserScore ouronet-account pool-id score-id))
     )
     ;;
-    (defun UR_S-DEF|SFScore:object{SCR|SF|Schema} (score-id:string dpsf-id:string nonce:integer)
+    (defun UR_S-DEF|SFScore:object{AcquisitionSchemasV1.SCR|SF|Schema} (score-id:string dpsf-id:string nonce:integer)
         @doc "Reads full DPSF nonce score definition row."
         (read SCR|T|SF|Score (UCk_SFScore score-id dpsf-id nonce))
     )
@@ -1897,7 +1687,7 @@
         (at "nonce" (read SCR|T|SF|Score (UCk_SFScore score-id dpsf-id nonce) ["nonce"]))
     )
     ;;
-    (defun UR_N-DEF|NFTraitScore:object{SCR|NF|TraitSchema} (score-id:string dpnf-id:string trait-key:string trait-value:string)
+    (defun UR_N-DEF|NFTraitScore:object{AcquisitionSchemasV1.SCR|NF|TraitSchema} (score-id:string dpnf-id:string trait-key:string trait-value:string)
         @doc "Reads full trait-mode NF score definition row."
         (read SCR|T|NF|TraitScore (UCk_NFTraitScore score-id dpnf-id trait-key trait-value))
     )
@@ -1922,7 +1712,7 @@
         (at "trait-value" (UR_N-DEF|NFTraitScore score-id dpnf-id trait-key trait-value))
     )
     ;;
-    (defun UR_N-DEF|NFClassScore:object{SCR|NF|ClassSchema} (score-id:string dpnf-id:string dpnf-nonce-class:integer)
+    (defun UR_N-DEF|NFClassScore:object{AcquisitionSchemasV1.SCR|NF|ClassSchema} (score-id:string dpnf-id:string dpnf-nonce-class:integer)
         @doc "Reads full class-mode NF score definition row."
         (read SCR|T|NF|ClassScore (UCk_NFClassScore score-id dpnf-id dpnf-nonce-class))
     )
@@ -1943,7 +1733,7 @@
         (at "dpnf-nonce-class" (UR_N-DEF|NFClassScore score-id dpnf-id dpnf-nonce-class))
     )
     ;;
-    (defun UR_S-DEF-REV|SFDefRevision:object{SCR|SF|DefRevision} (score-id:string dpsf-id:string)
+    (defun UR_S-DEF-REV|SFDefRevision:object{AcquisitionSchemasV1.SCR|SF|DefRevision} (score-id:string dpsf-id:string)
         @doc "Reads SF definition revision row for (score-id, dpsf-id)."
         (read SCR|T|SF|DefRevision (UCk_SFDefRevision score-id dpsf-id))
     )
@@ -1964,7 +1754,7 @@
         (at "dpsf-id" (read SCR|T|SF|DefRevision (UCk_SFDefRevision score-id dpsf-id) ["dpsf-id"]))
     )
     ;;
-    (defun UR_N-DEF-REV|NFDefRevision:object{SCR|NF|DefRevision} (score-id:string dpnf-id:string)
+    (defun UR_N-DEF-REV|NFDefRevision:object{AcquisitionSchemasV1.SCR|NF|DefRevision} (score-id:string dpnf-id:string)
         @doc "Reads NF definition revision row for (score-id, dpnf-id)."
         (read SCR|T|NF|DefRevision (UCk_NFDefRevision score-id dpnf-id))
     )
@@ -2001,7 +1791,7 @@
         (at "dpnf-id" (read SCR|T|NF|DefRevision (UCk_NFDefRevision score-id dpnf-id) ["dpnf-id"]))
     )
     ;;
-    (defun UR_SCR|Triplet:object{SCR|Triplet} (triplet-id:string)
+    (defun UR_SCR|Triplet:object{AcquisitionSchemasV1.SCR|Triplet} (triplet-id:string)
         @doc "Reads full triplet bundle row."
         (read SCR|T|Triplet triplet-id)
     )
@@ -2391,7 +2181,7 @@
     )
     ;; URC_NFClassScoreFromRows / URC_NFTraitScoreFromRows (searched the selected def-row lists) REMOVED (#FP0) —
     ;; the model-1 weight now point-reads class + trait scores directly, so there are no row-lists to search.
-    (defun URC_SingularUserScoreDeltaFromSignedUserBase:object{SCR|SingularUserScoreDelta}
+    (defun URC_SingularUserScoreDeltaFromSignedUserBase:object{AcquisitionSchemasV1.SCR|SingularUserScoreDelta}
         (ouronet-account:string pool-id:string score-id:string signed-user-base-delta:decimal)
         @doc "Core singular user-score step: from one signed user-base delta already at score precision (e.g. LP weight × mx after URC_SignedBaseDeltaForDptfLpStake / URC_SignedBaseDeltaForOrtoLpStake / URC_SignedBaseDeltaForDptfStake / DPOF|DPSF|DPNF stake URC_*), \
             \ compute new user base/boosted/deb, nz-delta, and global deltas. When boost-link ≠ BAR and boost-class-link ≠ BAR (foreign anchor + ANK promile), \
@@ -2403,13 +2193,13 @@
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-U|DEC:module{OuronetDecimalsV2} U|DEC)
                 ;;
-                (scr:object{SCR|Schema} (UR_SCR|Score score-id))
+                (scr:object{AcquisitionSchemasV1.SCR|Schema} (UR_SCR|Score score-id))
                 (p:integer (at "precision" scr))
                 (bcl:string (at "boost-class-link" scr))
                 (bl:string (at "boost-link" scr))
                 (db-boost:bool (at "deb-boost" scr))
                 ;;
-                (old-u:object{SCR|UserSchema} (UR_U-SCR|UserScore ouronet-account pool-id score-id))
+                (old-u:object{AcquisitionSchemasV1.SCR|UserSchema} (UR_U-SCR|UserScore ouronet-account pool-id score-id))
                 (ob:decimal (at "base-score" old-u))
                 (obb:decimal (at "boosted-score" old-u))
                 (od:decimal (at "deb-score" old-u))
@@ -2611,7 +2401,7 @@
         @doc "True when a score-entity model row exists."
         (with-default-read SCR|T|ScoreEntityModel model-id {"model-id" : BAR} {"model-id" := m} (!= m BAR))
     )
-    (defun UR_SCR|ScoreEntityModel:object{SCR|ScoreEntityModel} (model-id:string)
+    (defun UR_SCR|ScoreEntityModel:object{AcquisitionSchemasV1.SCR|ScoreEntityModel} (model-id:string)
         @doc "Reads the full score-entity model row."
         (read SCR|T|ScoreEntityModel model-id)
     )
@@ -3039,7 +2829,7 @@
     ;; WU lists every schema field: defun when used; comment when [.], select key, or mutates via WW_*.
     ;;
     (defun WI_Score:string
-        (score-id:string row:object{SCR|Schema})
+        (score-id:string row:object{AcquisitionSchemasV1.SCR|Schema})
         @doc "Insert SCR|T|Score full row (issue only)."
         (require-capability (SECURE))
         (insert SCR|T|Score score-id row)
@@ -3096,13 +2886,13 @@
         (update SCR|T|Score score-id {"triplet": true, "triplet-id": triplet-id})
     )
     (defun WU3_Score|VaultTotals:string
-        (score-id:string scr:object{SCR|Schema} d:object{SCR|SingularUserScoreDelta})
+        (score-id:string scr:object{AcquisitionSchemasV1.SCR|Schema} d:object{AcquisitionSchemasV1.SCR|SingularUserScoreDelta})
         @doc "Apply aggregate total-base/total-boosted/total-deb deltas on SCR|T|Score at score precision."
         (require-capability (SECURE))
         (let
             (
                 (p:integer (at "precision" scr))
-                (fresh:object{SCR|Schema} (UR_SCR|Score score-id))
+                (fresh:object{AcquisitionSchemasV1.SCR|Schema} (UR_SCR|Score score-id))
                 (old-tb:decimal (at "total-base-score" fresh))
                 (old-tbst:decimal (at "total-boosted-score" fresh))
                 (old-td:decimal (at "total-deb-score" fresh))
@@ -3119,7 +2909,7 @@
         )
     )
     (defun WU_Score|NzsCount:string
-        (score-id:string scr:object{SCR|Schema} d:object{SCR|SingularUserScoreDelta})
+        (score-id:string scr:object{AcquisitionSchemasV1.SCR|Schema} d:object{AcquisitionSchemasV1.SCR|SingularUserScoreDelta})
         @doc "Apply nz-delta to SCR|T|Score.nzs-count."
         (require-capability (SECURE))
         (let
@@ -3160,7 +2950,7 @@
     ;;
     ;; WI_UserScore — not used: first row touch is WW_UserScore (upsert path).
     (defun WW_UserScore:string
-        (ouronet-account:string pool-id:string score-id:string row:object{SCR|UserSchema})
+        (ouronet-account:string pool-id:string score-id:string row:object{AcquisitionSchemasV1.SCR|UserSchema})
         @doc "Upsert full SCR|T|UserScore row for (account, pool, score)."
         (require-capability (SECURE))
         (write SCR|T|UserScore (UCk_UserScore ouronet-account pool-id score-id) row)
@@ -3174,7 +2964,7 @@
     ;;
     ;; WI_SFScore — not used: first row touch is WW_SFScore (upsert path).
     (defun WW_SFScore:string
-        (score-id:string dpsf-id:string nonce:integer row:object{SCR|SF|Schema})
+        (score-id:string dpsf-id:string nonce:integer row:object{AcquisitionSchemasV1.SCR|SF|Schema})
         @doc "Upsert SCR|T|SF|Score nonce definition row."
         (require-capability (SECURE))
         (write SCR|T|SF|Score (UCk_SFScore score-id dpsf-id nonce) row)
@@ -3186,7 +2976,7 @@
     ;;
     ;; WI_NFTraitScore — not used: first row touch is WW_NFTraitScore (upsert path).
     (defun WW_NFTraitScore:string
-        (score-id:string dpnf-id:string trait-key:string trait-value:string row:object{SCR|NF|TraitSchema})
+        (score-id:string dpnf-id:string trait-key:string trait-value:string row:object{AcquisitionSchemasV1.SCR|NF|TraitSchema})
         @doc "Upsert SCR|T|NF|TraitScore trait definition row."
         (require-capability (SECURE))
         (write SCR|T|NF|TraitScore (UCk_NFTraitScore score-id dpnf-id trait-key trait-value) row)
@@ -3199,7 +2989,7 @@
     ;;
     ;; WI_NFClassScore — not used: first row touch is WW_NFClassScore (upsert path).
     (defun WW_NFClassScore:string
-        (score-id:string dpnf-id:string dpnf-nonce-class:integer row:object{SCR|NF|ClassSchema})
+        (score-id:string dpnf-id:string dpnf-nonce-class:integer row:object{AcquisitionSchemasV1.SCR|NF|ClassSchema})
         @doc "Upsert SCR|T|NF|ClassScore class definition row."
         (require-capability (SECURE))
         (write SCR|T|NF|ClassScore (UCk_NFClassScore score-id dpnf-id dpnf-nonce-class) row)
@@ -3211,7 +3001,7 @@
     ;;
     ;; WI_SFDefRevision — not used: first row touch is WW_SFDefRevision (upsert path).
     (defun WW_SFDefRevision:string
-        (score-id:string dpsf-id:string row:object{SCR|SF|DefRevision})
+        (score-id:string dpsf-id:string row:object{AcquisitionSchemasV1.SCR|SF|DefRevision})
         @doc "Upsert SCR|T|SF|DefRevision row."
         (require-capability (SECURE))
         (write SCR|T|SF|DefRevision (UCk_SFDefRevision score-id dpsf-id) row)
@@ -3222,7 +3012,7 @@
     ;;
     ;; WI_NFDefRevision — not used: first row touch is WW_NFDefRevision (upsert path).
     (defun WW_NFDefRevision:string
-        (score-id:string dpnf-id:string row:object{SCR|NF|DefRevision})
+        (score-id:string dpnf-id:string row:object{AcquisitionSchemasV1.SCR|NF|DefRevision})
         @doc "Upsert SCR|T|NF|DefRevision row."
         (require-capability (SECURE))
         (write SCR|T|NF|DefRevision (UCk_NFDefRevision score-id dpnf-id) row)
@@ -3241,12 +3031,12 @@
     ;; WU_NFDefRevision|DpnfId — select key; WU not needed.
     ;;
     (defun WI_Triplet:string
-        (triplet-id:string row:object{SCR|Triplet})
+        (triplet-id:string row:object{AcquisitionSchemasV1.SCR|Triplet})
         @doc "Insert SCR|T|Triplet full row (C_IssueTriplet only)."
         (require-capability (SECURE))
         (insert SCR|T|Triplet triplet-id row)
     )
-    (defun WI_ScoreEntityModel:string (model-id:string row:object{SCR|ScoreEntityModel})
+    (defun WI_ScoreEntityModel:string (model-id:string row:object{AcquisitionSchemasV1.SCR|ScoreEntityModel})
         @doc "Insert a score-entity model row. require SECURE."
         (require-capability (SECURE))
         (insert SCR|T|ScoreEntityModel model-id row)
@@ -3661,8 +3451,8 @@
         ;; SECURE: granted by WW_UserScore, WU3_Score|VaultTotals, WU_Score|NzsCount (underlying W_).
         (let
             (
-                (scr:object{SCR|Schema} (UR_SCR|Score score-id))
-                (d:object{SCR|SingularUserScoreDelta}
+                (scr:object{AcquisitionSchemasV1.SCR|Schema} (UR_SCR|Score score-id))
+                (d:object{AcquisitionSchemasV1.SCR|SingularUserScoreDelta}
                     (URC_SingularUserScoreDeltaFromSignedUserBase ouronet-account pool-id score-id signed-user-base-delta)
                 )
             )
@@ -3696,7 +3486,7 @@
         (let
             (
                 (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                (m:object{SCR|ScoreEntityModel} (UR_SCR|ScoreEntityModel single-model-id))
+                (m:object{AcquisitionSchemasV1.SCR|ScoreEntityModel} (UR_SCR|ScoreEntityModel single-model-id))
             )
             (let
                 (
@@ -4245,7 +4035,7 @@
                                 (XI_IssueOneFromModel owner-konto model-id agency-name)
                                 (let
                                     (
-                                        (m:object{SCR|ScoreEntityModel} (UR_SCR|ScoreEntityModel model-id))
+                                        (m:object{AcquisitionSchemasV1.SCR|ScoreEntityModel} (UR_SCR|ScoreEntityModel model-id))
                                     )
                                     (let
                                         (

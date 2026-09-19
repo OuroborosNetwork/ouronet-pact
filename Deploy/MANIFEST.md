@@ -4,7 +4,7 @@
 
 - per-transaction gas budget: **1,700,000** (StoaChain block limit 2,000,000)
 - module-deploy transactions: **20**
-- modules deployed: **52**
+- modules deployed: **53**
 - measured module gas: **5,753,676**
 
 ## Read this before deploying
@@ -105,7 +105,7 @@ Read top to bottom. **`step`** is the position in the full sequence; **`file`** 
 | 9 | **09** | DEPLOY 1 modules: 02_INFO-ONE+ | 436,246 | `Deploy/1_Pure/09_deploy.pact` |
 | 10 | **10** | DEPLOY 6 modules: 02_DPDC, 03_DPDC-C, 04_DPDC-I, 05_DPDC-R, 06_DPDC-MNG, 07_DPDC-T | 411,410 | `Deploy/1_Pure/10_deploy.pact` |
 | 11 | **11** | DEPLOY 5 modules: 08_DPDC-S, 09_DPDC-F, 10_DPDC-N, 11_EQUITY+, 00_Demipad | 358,069 | `Deploy/1_Pure/11_deploy.pact` |
-| 12 | **12** | DEPLOY 1 modules: 01_ANK | 151,366 | `Deploy/1_Pure/12_deploy.pact` |
+| 12 | **12** | DEPLOY 2 modules: 00_AQP-SCHEMAS, 01_ANK | 151,366 | `Deploy/1_Pure/12_deploy.pact` |
 | 13 | **13** | DEPLOY 1 modules: 02_SCORE | 229,502 | `Deploy/1_Pure/13_deploy.pact` |
 | 14 | **14** | DEPLOY 1 modules: 03_AQP | 203,548 | `Deploy/1_Pure/14_deploy.pact` |
 | 15 | **15** | DEPLOY 1 modules: 04_RPS | 353,658 | `Deploy/1_Pure/15_deploy.pact` |

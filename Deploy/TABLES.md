@@ -278,6 +278,7 @@ It returns a row per table that exists and errors on the first that does not, so
 | `10_DPDC-N.pact` | `P|T`, `P|MT` |
 | `11_EQUITY+.pact` | `P|T`, `P|MT` |
 | `00_Demipad.pact` | `P|T`, `P|MT`, `DEMIPAD|T|Ledger`, `DEMIPAD|T|Properties` |
+| `00_AQP-SCHEMAS.pact` | *none* |
 | `01_ANK.pact` | `P|T`, `P|MT`, `ANK|T|Anchor`, `ANK|T|BoostClass`, `ANK|T|AssetAnchors`, `ANK|T|BoostClassScoreLinks`, `ANK|T|Anchors`, `ANK|T|UserBoost` |
 | `02_SCORE.pact` | `P|T`, `P|MT`, `SCR|T|Score`, `SCR|T|UserScore`, `SCR|T|SF|Score`, `SCR|T|NF|TraitScore`, `SCR|T|NF|ClassScore`, `SCR|T|SF|DefRevision`, `SCR|T|NF|DefRevision`, `SCR|T|NF|TraitKeys`, `SCR|T|Triplet`, `SCR|T|ScoreEntityModel` |
 | `03_AQP.pact` | `P|T`, `P|MT`, `AQP|T|Pool`, `AQP|T|DPTFTracker`, `AQP|T|DPOFTracker`, `AQP|T|DPSFTracker`, `AQP|T|DPNFTracker`, `AQP|T|BenDptfTotal`, `AQP|T|BenDpsfNonceTotal`, `AQP|T|BenDpnfNonceTotal`, `AQP|T|BenDpsfAnkMeta`, `AQP|T|BenDpnfAnkMeta`, `AQP|T|UserOccupancy` |

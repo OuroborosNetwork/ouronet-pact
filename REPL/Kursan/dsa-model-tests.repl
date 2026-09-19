@@ -61,8 +61,8 @@
         (print (format "<(combine)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_CombineTripletScoreModel anhd "DsaCustModel" bronze-id silver-id gold-id)]))
         (let
             (
-                (bronze:object{AQP-SCORE.SCR|ScoreEntityModel} (AQP-SCORE.UR_SCR|ScoreEntityModel bronze-id))
-                (triplet:object{AQP-SCORE.SCR|ScoreEntityModel} (AQP-SCORE.UR_SCR|ScoreEntityModel model-id))
+                (bronze:object{AcquisitionSchemasV1.SCR|ScoreEntityModel} (AQP-SCORE.UR_SCR|ScoreEntityModel bronze-id))
+                (triplet:object{AcquisitionSchemasV1.SCR|ScoreEntityModel} (AQP-SCORE.UR_SCR|ScoreEntityModel model-id))
             )
             (map print
                 [

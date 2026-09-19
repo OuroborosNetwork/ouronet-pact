@@ -432,7 +432,7 @@
         )
         (let
             (
-                (legs:[object{AQP-VCT.VCT|VacateTfLeg}]
+                (legs:[object{AcquisitionSchemasV1.VCT|VacateTfLeg}]
                     (AQP-VCT.UC_TfLegsFromParallelArrays [owner-id] [beneficiary-id] [staked-bal]))
             )
         (let
@@ -488,12 +488,12 @@
     ;; PHASE-1 dirty-read scan: the exact lane plan the exec consumes, fed to BOTH INFO and exec.
     (let
         (
-            (lane:object{AQP-VCT.VCT|VacateNonceLane} (at 0 (AQP-VCT.URH_VacateOrtoFungiblePoolLegs pool-id)))
+            (lane:object{AcquisitionSchemasV1.VCT|VacateNonceLane} (at 0 (AQP-VCT.URH_VacateOrtoFungiblePoolLegs pool-id)))
         )
         (let
             (
                 (dpof-id:string (at "asset-id" lane))
-                (legs:[object{AQP-VCT.VCT|VacateNonceLeg}] (at "legs" lane))
+                (legs:[object{AcquisitionSchemasV1.VCT|VacateNonceLeg}] (at "legs" lane))
             )
             (let
                 (
@@ -507,9 +507,9 @@
                 (print (format "<(TS02-C3.AQP-POOL|CCp_BatchVacateOrtoFungible)> => \"{}\""
                     [(ref-TS02-C3::AQP-POOL|CCp_BatchVacateOrtoFungible
                         patron pool-id dpof-id
-                        (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg}) (at "owner-id" l)) legs)
-                        (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs)
-                        (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg}) (at "nonces" l)) legs))]))
+                        (map (lambda (l:object{AcquisitionSchemasV1.VCT|VacateNonceLeg}) (at "owner-id" l)) legs)
+                        (map (lambda (l:object{AcquisitionSchemasV1.VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs)
+                        (map (lambda (l:object{AcquisitionSchemasV1.VCT|VacateNonceLeg}) (at "nonces" l)) legs))]))
                 (let ((post-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron)))
                     (print (format "<(post-gas)> = {} ; actual delta = {}" [post-gas (- pre-gas post-gas)]))
                     (map print
@@ -549,12 +549,12 @@
     )
     (let
         (
-            (lane:object{AQP-VCT.VCT|VacateNonceLane} (at 0 (AQP-VCT.URH_VacateCollectablesPoolLegs pool-id son)))
+            (lane:object{AcquisitionSchemasV1.VCT|VacateNonceLane} (at 0 (AQP-VCT.URH_VacateCollectablesPoolLegs pool-id son)))
         )
         (let
             (
                 (dpsf-id:string (at "asset-id" lane))
-                (legs:[object{AQP-VCT.VCT|VacateNonceLeg}] (at "legs" lane))
+                (legs:[object{AcquisitionSchemasV1.VCT|VacateNonceLeg}] (at "legs" lane))
             )
             (let
                 (
@@ -568,10 +568,10 @@
                 (print (format "<(TS02-C3.AQP-POOL|CCp_BatchVacateCollectables)> => \"{}\""
                     [(ref-TS02-C3::AQP-POOL|CCp_BatchVacateCollectables
                         patron pool-id dpsf-id son
-                        (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg}) (at "owner-id" l)) legs)
-                        (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs)
-                        (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg}) (at "nonces" l)) legs)
-                        (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg}) (map (lambda (q:decimal) (floor q)) (at "amounts" l))) legs))]))
+                        (map (lambda (l:object{AcquisitionSchemasV1.VCT|VacateNonceLeg}) (at "owner-id" l)) legs)
+                        (map (lambda (l:object{AcquisitionSchemasV1.VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs)
+                        (map (lambda (l:object{AcquisitionSchemasV1.VCT|VacateNonceLeg}) (at "nonces" l)) legs)
+                        (map (lambda (l:object{AcquisitionSchemasV1.VCT|VacateNonceLeg}) (map (lambda (q:decimal) (floor q)) (at "amounts" l))) legs))]))
                 (let ((post-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron)))
                     (print (format "<(post-gas)> = {} ; actual delta = {}" [post-gas (- pre-gas post-gas)]))
                     (map print
@@ -684,12 +684,12 @@
     ;; PHASE-1 dirty-read scan: the exact TF lane plan, fed to BOTH INFO and exec.
     (let
         (
-            (lane:object{AQP-VCT.VCT|VacateTfLane} (at 0 (AQP-VCT.URH_VacateTrueFungiblePoolLegs pool-id)))
+            (lane:object{AcquisitionSchemasV1.VCT|VacateTfLane} (at 0 (AQP-VCT.URH_VacateTrueFungiblePoolLegs pool-id)))
         )
         (let
             (
                 (dptf-id:string (at "asset-id" lane))
-                (legs:[object{AQP-VCT.VCT|VacateTfLeg}] (at "legs" lane))
+                (legs:[object{AcquisitionSchemasV1.VCT|VacateTfLeg}] (at "legs" lane))
             )
             (let
                 (
@@ -703,9 +703,9 @@
                 (print (format "<(TS02-C3.AQP-POOL|CCp_BatchDrainTrueFungible)> => \"{}\""
                     [(ref-TS02-C3::AQP-POOL|CCp_BatchDrainTrueFungible
                         patron pool-id dptf-id
-                        (map (lambda (l:object{AQP-VCT.VCT|VacateTfLeg}) (at "owner-id" l)) legs)
-                        (map (lambda (l:object{AQP-VCT.VCT|VacateTfLeg}) (at "beneficiary-id" l)) legs)
-                        (map (lambda (l:object{AQP-VCT.VCT|VacateTfLeg}) (at "balance" l)) legs))]))
+                        (map (lambda (l:object{AcquisitionSchemasV1.VCT|VacateTfLeg}) (at "owner-id" l)) legs)
+                        (map (lambda (l:object{AcquisitionSchemasV1.VCT|VacateTfLeg}) (at "beneficiary-id" l)) legs)
+                        (map (lambda (l:object{AcquisitionSchemasV1.VCT|VacateTfLeg}) (at "balance" l)) legs))]))
                 (let ((post-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron)))
                     (print (format "<(post-gas)> = {} ; actual delta = {}" [post-gas (- pre-gas post-gas)]))
                     (map print
@@ -819,11 +819,11 @@
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "InfoGtOfDrPool"))
     )
-    (let ((lane:object{AQP-VCT.VCT|VacateNonceLane} (at 0 (AQP-VCT.URH_VacateOrtoFungiblePoolLegs pool-id))))
+    (let ((lane:object{AcquisitionSchemasV1.VCT|VacateNonceLane} (at 0 (AQP-VCT.URH_VacateOrtoFungiblePoolLegs pool-id))))
         (let
             (
                 (dpof-id:string (at "asset-id" lane))
-                (legs:[object{AQP-VCT.VCT|VacateNonceLeg}] (at "legs" lane))
+                (legs:[object{AcquisitionSchemasV1.VCT|VacateNonceLeg}] (at "legs" lane))
             )
             (let
                 (
@@ -837,9 +837,9 @@
                 (print (format "<(CCp_BatchDrainOrtoFungible)> => \"{}\""
                     [(ref-TS02-C3::AQP-POOL|CCp_BatchDrainOrtoFungible
                         patron pool-id dpof-id
-                        (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg}) (at "owner-id" l)) legs)
-                        (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs)
-                        (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg}) (at "nonces" l)) legs))]))
+                        (map (lambda (l:object{AcquisitionSchemasV1.VCT|VacateNonceLeg}) (at "owner-id" l)) legs)
+                        (map (lambda (l:object{AcquisitionSchemasV1.VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs)
+                        (map (lambda (l:object{AcquisitionSchemasV1.VCT|VacateNonceLeg}) (at "nonces" l)) legs))]))
                 (let ((post-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron)))
                     (print (format "<(post-gas)> = {} ; actual delta = {}" [post-gas (- pre-gas post-gas)]))
                     (map print
@@ -949,11 +949,11 @@
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV2} TS02-C3)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "InfoGtSfDrPool"))
     )
-    (let ((lane:object{AQP-VCT.VCT|VacateNonceLane} (at 0 (AQP-VCT.URH_VacateCollectablesPoolLegs pool-id son))))
+    (let ((lane:object{AcquisitionSchemasV1.VCT|VacateNonceLane} (at 0 (AQP-VCT.URH_VacateCollectablesPoolLegs pool-id son))))
         (let
             (
                 (coll-id:string (at "asset-id" lane))
-                (legs:[object{AQP-VCT.VCT|VacateNonceLeg}] (at "legs" lane))
+                (legs:[object{AcquisitionSchemasV1.VCT|VacateNonceLeg}] (at "legs" lane))
             )
             (let
                 (
@@ -967,10 +967,10 @@
                 (print (format "<(CCp_BatchDrainCollectable)> => \"{}\""
                     [(ref-TS02-C3::AQP-POOL|CCp_BatchDrainCollectable
                         patron pool-id coll-id son
-                        (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg}) (at "owner-id" l)) legs)
-                        (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs)
-                        (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg}) (at "nonces" l)) legs)
-                        (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg})
+                        (map (lambda (l:object{AcquisitionSchemasV1.VCT|VacateNonceLeg}) (at "owner-id" l)) legs)
+                        (map (lambda (l:object{AcquisitionSchemasV1.VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs)
+                        (map (lambda (l:object{AcquisitionSchemasV1.VCT|VacateNonceLeg}) (at "nonces" l)) legs)
+                        (map (lambda (l:object{AcquisitionSchemasV1.VCT|VacateNonceLeg})
                                 (map (lambda (q:decimal) (floor q)) (at "amounts" l))) legs))]))
                 (let ((post-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron)))
                     (print (format "<(post-gas)> = {} ; actual delta = {}" [post-gas (- pre-gas post-gas)]))
@@ -1081,9 +1081,9 @@
     ;; CC_FullVacate scans TF + OF satellite lanes ONLY (never collectables), so coll-lanes = [].
     (let
         (
-            (tf-lanes:[object{AQP-VCT.VCT|VacateTfLane}] (AQP-VCT.URH_VacateTrueFungiblePoolLegs pool-id))
-            (of-lanes:[object{AQP-VCT.VCT|VacateNonceLane}] (AQP-VCT.URH_VacateOrtoFungiblePoolLegs pool-id))
-            (coll-lanes:[object{AQP-VCT.VCT|VacateNonceLane}] [])
+            (tf-lanes:[object{AcquisitionSchemasV1.VCT|VacateTfLane}] (AQP-VCT.URH_VacateTrueFungiblePoolLegs pool-id))
+            (of-lanes:[object{AcquisitionSchemasV1.VCT|VacateNonceLane}] (AQP-VCT.URH_VacateOrtoFungiblePoolLegs pool-id))
+            (coll-lanes:[object{AcquisitionSchemasV1.VCT|VacateNonceLane}] [])
         )
         (let
             (

@@ -43,6 +43,8 @@
 (print "--- [TX-01 [2] - ANK Module · 02 · load module] ---")
 ;;==== TX-01 [2] - ANK Module · 02 · load module ==== =============================================
 (print "--- [TX-01 [2] - ANK Module · 02 · load module] ---")
+(print "--- [TX-01 [2] - AQP SCHEMAS interface · 01 · load] ---")
+(load "../../1_SOVEREIGN/STAGE_02/2_Core/03_AQP/00_AQP-SCHEMAS.pact")
 (load "../../1_SOVEREIGN/STAGE_02/2_Core/03_AQP/01_ANK.pact")
 ;;==== TX-01 [2] - ANK Module · 03 · gas echo ==== ================================================
 (print "--- [TX-01 [2] - ANK Module · 03 · gas echo] ---")

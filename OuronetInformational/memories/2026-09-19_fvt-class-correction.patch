@@ -1,0 +1,85 @@
+diff --git a/1_SOVEREIGN/STAGE_02/2_Core/03_AQP/05_FVT.pact b/1_SOVEREIGN/STAGE_02/2_Core/03_AQP/05_FVT.pact
+index daba07e..5ca52e0 100755
+--- a/1_SOVEREIGN/STAGE_02/2_Core/03_AQP/05_FVT.pact
++++ b/1_SOVEREIGN/STAGE_02/2_Core/03_AQP/05_FVT.pact
+@@ -1557,15 +1557,13 @@
+         )
+     )
+     (defun URC_ScoreClassMatchesFvtClass:bool (fvt-class:integer score-class:integer)
+-        @doc "Admission rule: farm↔LP(0), vault↔TF/SF/NF(1/3/4), treasury↔OF(2)."
++        @doc "Admission rule: farm↔LP(0), vault↔TF/OF(1/2), treasury↔SF/NF(3/4)."
+         (if (= fvt-class 0)
+             (= score-class 0)
+             (if (= fvt-class 1)
+-                (fold (or) false
+-                    [(= score-class 1) (= score-class 3) (= score-class 4)]
+-                )
++                (or (= score-class 1) (= score-class 2))
+                 (if (= fvt-class 2)
+-                    (= score-class 2)
++                    (or (= score-class 3) (= score-class 4))
+                     false
+                 )
+             )
+diff --git a/2_CITIZEN/5_VaultsMinter/04_AQP-BOOT.pact b/2_CITIZEN/5_VaultsMinter/04_AQP-BOOT.pact
+index 38bd1fa..553855a 100755
+--- a/2_CITIZEN/5_VaultsMinter/04_AQP-BOOT.pact
++++ b/2_CITIZEN/5_VaultsMinter/04_AQP-BOOT.pact
+@@ -776,10 +776,10 @@
+                     (ref-TS02-C3::AQP-FVT|C_Issue patron BOOT|FVT_OURO_LP_FARM owner-konto 0 lp-denominator)
+                     true
+                 )
+-                (ref-TS02-C3::AQP-FVT|C_Issue patron BOOT|FVT_SUBSIDIARY_TREASURY owner-konto 1 BOOT|TREASURY_COMMON)
+-                (ref-TS02-C3::AQP-FVT|C_Issue patron BOOT|FVT_CODING_TREASURY owner-konto 1 BOOT|TREASURY_COMMON)
+-                (ref-TS02-C3::AQP-FVT|C_Issue patron BOOT|FVT_SNAKES_TREASURY owner-konto 1 BOOT|TREASURY_COMMON)
+-                (ref-TS02-C3::AQP-FVT|C_Issue patron BOOT|FVT_SHARES_TREASURY owner-konto 1 BOOT|TREASURY_COMMON)
++                (ref-TS02-C3::AQP-FVT|C_Issue patron BOOT|FVT_SUBSIDIARY_TREASURY owner-konto 2 BOOT|TREASURY_COMMON)
++                (ref-TS02-C3::AQP-FVT|C_Issue patron BOOT|FVT_CODING_TREASURY owner-konto 2 BOOT|TREASURY_COMMON)
++                (ref-TS02-C3::AQP-FVT|C_Issue patron BOOT|FVT_SNAKES_TREASURY owner-konto 2 BOOT|TREASURY_COMMON)
++                (ref-TS02-C3::AQP-FVT|C_Issue patron BOOT|FVT_SHARES_TREASURY owner-konto 2 BOOT|TREASURY_COMMON)
+                 (format "AQP-BOOT Step 8 done. fvt-ids=[farm={} sub-treasury={} coding-treasury={} snakes-treasury={} shares-treasury={}]. NEXT=Step9:C_AddScoreEntity."
+                     [
+                         (if (!= lp-denominator "") farm-id "skipped")
+diff --git a/REPL/Stage_02/[6.4]_AQP-EXHAUSTIVE-COLLECT.repl b/REPL/Stage_02/[6.4]_AQP-EXHAUSTIVE-COLLECT.repl
+index cc174d8..7d6c043 100644
+--- a/REPL/Stage_02/[6.4]_AQP-EXHAUSTIVE-COLLECT.repl
++++ b/REPL/Stage_02/[6.4]_AQP-EXHAUSTIVE-COLLECT.repl
+@@ -33,7 +33,7 @@
+         (deb-user:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore patron pool-id score-id))
+     )
+     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+-    (enforce (= fvt-class 1) "CodingDivisionTreasury must be vault class 1")
++    (enforce (= fvt-class 2) "CodingDivisionTreasury must be treasury class 2")
+     (enforce (> deb-user 0.0) "CL01 needs Coding Division deb — run RPS TX-AQP-R01 or stake DHCD")
+     (print (format "<(C_Inject Wstoa {})> => \"{}\"" [inject-amt
+         (ref-TS02-C3::AQP-FVT|CC_Inject patron fvt-id wstoa-id inject-amt)
+@@ -104,7 +104,7 @@
+         (dhwc-nonces:[integer] (ref-DPDC::URH_AccountNonces owner-id dhwc-id true))
+     )
+     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+-    (enforce (= fvt-class 1) "SubsidiaryTreasury must be vault/treasury class 1")
++    (enforce (= fvt-class 2) "SubsidiaryTreasury must be treasury class 2")
+     (enforce (> (length dhwc-nonces) 0) "CL02 needs DHWC nonces for WonderCoach stake")
+     (print (format "<(C_StakeSemiFungible DHWC)> => \"{}\"" [
+         (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable
+diff --git a/REPL/Stage_02/[6.5.1]_AQP-INFO-GROUNDTRUTH.repl b/REPL/Stage_02/[6.5.1]_AQP-INFO-GROUNDTRUTH.repl
+index 80a029d..9c0a3a8 100644
+--- a/REPL/Stage_02/[6.5.1]_AQP-INFO-GROUNDTRUTH.repl
++++ b/REPL/Stage_02/[6.5.1]_AQP-INFO-GROUNDTRUTH.repl
+@@ -3725,9 +3725,15 @@
+         (patron:string KST.ANHD)
+         (flrn:string KST.FLRN)
+         (gas-id:string "GAS-98c486052a51")
+-        (fvt:string "CodingDivisionTreasury-98c486052a51")
++        (fvt:string (ref-U|DALOS::UDC_Makeid "GtSeAddScoreVault"))
+         (ouro-id:string "OURO-98c486052a51")
+     )
++    ;;CORRECTED 2026-09-19: this used to borrow CodingDivisionTreasury. That entity was issued at
++    ;;fvt-class 1 under an admission rule that wrongly put SF/NF in the vault and OF in the
++    ;;treasury; it is now class 2, and a TF score cannot enter a treasury. The probe needs a
++    ;;class-1 VAULT, so it issues its own rather than borrowing a production entity.
++    (print (format "<(setup issue the probe vault)> => \"{}\""
++        [(ref-TS02-C3::AQP-FVT|C_Issue patron "GtSeAddScoreVault" patron 1 "|")]))
+     ;;SETUP — a VIRGIN score. Every standing score here is already employed by a pool or linked
+     ;;to an FVT, and the ops below refuse an entity that is. The issue is a billed STOA op
+     ;;(measured at <<TX-INFO-GT-SCOREISSUE>>) and closes before `pre-gas` is read.

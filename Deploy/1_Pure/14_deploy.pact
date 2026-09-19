@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 14 of 20
 ;; This is STEP 14 of 21 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-13 must have run first, including the init steps between deploys.
-;; 1 module(s), 203,548 gas measured in the REPL gas model, 179,521 bytes
+;; 1 module(s), 203,548 gas measured in the REPL gas model, 169,718 bytes
 ;;
 ;; Modules in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/03_AQP.pact
@@ -430,192 +430,40 @@
     ;;{3.2}  schemas
     ;;
     ;; [1] AQP|T|Pool
-    (defschema AQP|Schema
-        @doc "One aqp-class and one canonical asset-id per pool; employed \
-            \ scores must match that class. Staking asset identity is \
-            \ authoritative here (SCORE: Score -> aqpool-link -> this pool \
-            \ -> asset-id). Class 0: asset-id is the primary LP key; stake \
-            \ paths may accept additional linked LP token ids (native / \
-            \ sleeping OF / frozen TF) when verified as the same LP family; \
-            \ all credit the same pool score slots. Fix wrong pool economics \
-            \ by issuing a new pool and new scores, not by mutating class or \
-            \ primary asset-id after stake exists."
-        ;;
-        aqp-class:integer                                       ;;Defines the Pool Class, there are 5
-        ;;                                                        Class 0 = LP family pool (issue native LP; stake native|F||Z| LP)
-        ;;                                                        Class 1 = DPTF family pool (issue native DPTF; stake native|F| + linked sleep/hib DPOF)
-        ;;                                                        Class 2 = standalone DPOF (issue one dpof; no sleep/hib satellites — use class 0/1)
-        ;;                                                        Class 3 = DPSF collection pool
-        ;;                                                        Class 4 = DPNF collection pool
-        asset-id:string                                         ;;ID of the Asset that is allowed to be staked in the Pool.
-        ;;                                                        This must be in accordance with the <aqp-class> and together with it
-        ;;                                                        Defines which assets can be staked in the Pool
-        ;;
-        ;;Score - Links
-        score-primary:string
-        score-secondary:string
-        score-tertiary:string
-        score-quaternary:string
-        score-quinary:string
-        score-senary:string
-        score-septenary:string
-        ;;
-        stake-enabled:bool                                      ;;[M]   Gates new stakes when false; default true at issue. Unstake/vacate ignore.
-        vacate-in-progress:bool                                 ;;[M]   True while AQP-VCT session active on this pool.
-        sweep-in-progress:bool                                  ;;[M]   True while a re-score sweep (anchor retire/re-price) runs; blocks stake + collect (D3).
-        nns:integer                                             ;;[M]   #FP1: number of OCCUPIED nonce positions in the pool tracker (occupancy oracle,
-        ;;                                                        counts ghost nonces that nzs misses). -1 for amount-based pools (class 0/1, N/A);
-        ;;                                                        0 at issue for nonce-based pools (class 2/3/4). +1 on a position going empty->occupied,
-        ;;                                                        -1 on occupied->empty (last amount removed). Finalize uses nns==0 for nonce pools.
-        ;;
-        ;;Select Keys
-        aqp-id:string
-    )
     ;;
     ;; [2] AQP|T|DPTFTracker
-    (defschema AQP|TrueFungibleTracker
-        balance:decimal                                         ;;Store DPTF Balance Amount
-        ;;
-        ;;Select Keys
-        pool-id:string                                          ;;Pool-ID
-        dptf-id:string                                          ;;DPTF-ID
-        owner-id:string                                         ;;Owner-ID
-        beneficiary-id:string                                   ;;Beneficiary-ID
-    )
     ;;
     ;; [3] AQP|T|DPOFTracker
-    (defschema AQP|OrtoFungibleTracker
-        balance:decimal                                         ;;Staked DPOF amount for this nonce slot
-        ;;
-        ;;Select Keys
-        pool-id:string                                          ;;Pool-ID
-        dpof-id:string                                          ;;DPOF-ID
-        owner-id:string                                         ;;Owner-ID
-        beneficiary-id:string                                   ;;Beneficiary-ID
-        nonce:integer                                           ;;Nonce-Value
-    )
     ;;
     ;; [4] AQP|T|DPSFTracker
-    (defschema AQP|SemiFungibleTracker
-        @doc "DPSF custody: staked balance per pool, collection, owner, beneficiary, nonce."
-        balance:decimal                                         ;;Stores DPSF Balance
-        ;;
-        ;;Select Keys
-        pool-id:string                                          ;;Pool-ID
-        dpsf-id:string                                          ;;DPSF-ID
-        owner-id:string                                         ;;Owner-ID
-        beneficiary-id:string                                   ;;Beneficiary-ID
-        nonce:integer                                           ;;Nonce-Value
-    )
     ;;
     ;; [5] AQP|T|DPNFTracker
-    (defschema AQP|NonFungibleTracker
-        @doc "DPNF custody: staked balance per pool, collection, owner, beneficiary, nonce."
-        balance:decimal                                         ;;Stores DPNF Balance
-        ;;
-        ;;Select Keys
-        pool-id:string                                          ;;Pool-ID
-        dpnf-id:string                                          ;;DPNF-ID
-        owner-id:string                                         ;;Owner-ID
-        beneficiary-id:string                                   ;;Beneficiary-ID
-        nonce:integer                                           ;;Nonce-Value
-    )
     ;;
     ;; [8] AQP|T|BenDptfTotal
     ;;Ben × asset rollups (pool-agnostic totals for ANK sync — see README_AQP.md § Anchor sync)
-    (defschema AQP|BenDptfTotal
-        @doc "Cross-pool rollup: total DPTF staked by one beneficiary on one exact dptf-id leg \
-            \ (native X and F|X are separate rows). Maintained on every TF stake/unstake POOL leg \
-            \ (FVT::CC_TrueFungibleStakeFlow → XE_TrueFungible* legs → XI bump). Input to \
-            \ ANK::XE_UpdateTrueFungibleUserAnchorValues without scanning AQP|T|DPTFTracker keys. \
-            \ last-ank-sync-count stores AQP-ANK::UR_AA|AnchorsActive(dptf-id) after the last successful \
-            \ anchor refresh; URC_BenDptfAnchorsNeedSync compares it to the live count so the UI can \
-            \ prompt C_SyncTrueFungibleAnchors when new anchors are issued after stake. Per-pool detail \
-            \ remains in AQP|T|DPTFTracker; this row is the single O(1) read for anchor promile."
-        total-balance:decimal                                           ;;[M] Sum of tracker balances for (beneficiary, dptf-id) across all pools
-        last-ank-sync-count:integer                                     ;;[M] ANK AssetAnchors.anchors-active at last C_Sync* / stake ANK leg (0 = never synced)
-        ;;
-        ;;Select Keys
-        beneficiary-id:string                                           ;;[.] Beneficiary (SCORE/ANK ouronet-account)
-        dptf-id:string                                                  ;;[.] Exact DPTF id leg (native or F|); must match ANK ank-asset for sync call
-    )
     ;;
     ;; [9] AQP|T|BenDpsfNonceTotal
-    (defschema AQP|BenDpsfNonceTotal
-        @doc "Cross-pool per-nonce DPSF rollup for one beneficiary. Separate table from DPNF so SELECT inventory \
-            \ does not scan NFT rows. Maintained on DPSF stake/unstake POOL legs (phase 1.3, planned). amount is \
-            \ integer supply staked on that nonce across all pools; 0 means fully unstaked (row may remain)."
-        amount:integer                                                  ;;[M] Staked supply on this nonce (0 = no active stake)
-        ;;
-        ;;Select Keys
-        beneficiary-id:string                                           ;;[.] Beneficiary (SCORE/ANK ouronet-account)
-        dpsf-id:string                                                  ;;[.] DPSF collection id (ANK ank-asset for SF sync)
-        nonce:integer                                                   ;;[.] DPSF nonce
-    )
     ;;
     ;; [10] AQP|T|BenDpnfNonceTotal
-    (defschema AQP|BenDpnfNonceTotal
-        @doc "Cross-pool per-nonce DPNF rollup for one beneficiary. Separate table from DPSF — same id string may \
-            \ exist on both collections when minted in one tx, but rows live in disjoint tables. Maintained on DPNF \
-            \ stake/unstake POOL legs (phase 1.3, planned)."
-        amount:integer                                                  ;;[M] Staked supply on this nonce (0 = no active stake)
-        ;;
-        ;;Select Keys
-        beneficiary-id:string                                           ;;[.]
-        dpnf-id:string                                                  ;;[.] DPNF collection id
-        nonce:integer                                                   ;;[.] DPNF nonce
-    )
     ;;
     ;; [11] AQP|T|BenDpsfAnkMeta
-    (defschema AQP|BenDpsfAnkMeta
-        @doc "Per (beneficiary, dpsf-id) ANK sync metadata. last-ank-sync-count is leg-wide, not per nonce — \
-            \ mirrors AQP|BenDptfTotal for TF. active-nonce-count is O(1) has-stake for defcaps (no select). \
-            \ Bumped when BenDpsfNonceTotal crosses 0↔positive; preserved on sync stamp."
-        last-ank-sync-count:integer                                     ;;[M] ANK AssetAnchors.anchors-active at last sync (0 = never)
-        active-nonce-count:integer                                      ;;[M] Count of BenDpsfNonceTotal rows with amount > 0
-        ;;
-        ;;Select Keys
-        beneficiary-id:string                                           ;;[.]
-        dpsf-id:string                                                  ;;[.]
-    )
     ;;
     ;; [12] AQP|T|BenDpnfAnkMeta
-    (defschema AQP|BenDpnfAnkMeta
-        @doc "Per (beneficiary, dpnf-id) ANK sync metadata — DPNF counterpart of AQP|BenDpsfAnkMeta."
-        last-ank-sync-count:integer                                     ;;[M] ANK AssetAnchors.anchors-active at last sync (0 = never)
-        active-nonce-count:integer                                      ;;[M] Count of BenDpnfNonceTotal rows with amount > 0
-        ;;
-        ;;Select Keys
-        beneficiary-id:string                                           ;;[.]
-        dpnf-id:string                                                  ;;[.]
-    )
     ;;
     ;; [13] AQP|T|UserOccupancy
-    (defschema AQP|UserOccupancy
-        @doc "Vacate-v2 §4: per (pool, beneficiary) occupancy — the count of this beneficiary's OCCUPIED \
-            \ tracker positions in the pool (nonce rows for class 2/3/4; the single TF leg contributes 1 for \
-            \ class 1). Maintained alongside the pool nns on every tracker 0<->occupied transition (stake / \
-            \ unstake / vacate-drain). The fast-vacate drain settles a beneficiary exactly once, the moment \
-            \ this hits 0 (their last position drained). Point-readable so the drain never scans tracker keys."
-        unn:integer                                                     ;;[M] User-Nonces-in-pool: occupied tracker positions for this beneficiary
-        ;;
-        ;;Select Keys
-        pool-id:string                                                  ;;[.] Pool
-        beneficiary-id:string                                           ;;[.] Beneficiary (SCORE / reward recipient)
-    )
     ;;{3.3}  tables
     ;;
-    (deftable AQP|T|Pool:{AQP|Schema})                                  ;;1] Key = <Pool-ID>
-    (deftable AQP|T|DPTFTracker:{AQP|TrueFungibleTracker})              ;;2] Key = <Pool-ID> | <DPTF-ID> | <Owner-ID> | <Beneficiary-ID>
-    (deftable AQP|T|DPOFTracker:{AQP|OrtoFungibleTracker})              ;;3] Key = <Pool-ID> | <DPOF-ID> | <Owner-ID> | <Beneficiary-ID> | <Nonce>
-    (deftable AQP|T|DPSFTracker:{AQP|SemiFungibleTracker})              ;;4] Key = <Pool-ID> | <DPSF-ID> | <Owner-ID> | <Beneficiary-ID> | <Nonce>
-    (deftable AQP|T|DPNFTracker:{AQP|NonFungibleTracker})               ;;5] Key = <Pool-ID> | <DPNF-ID> | <Owner-ID> | <Beneficiary-ID> | <Nonce>
-    (deftable AQP|T|BenDptfTotal:{AQP|BenDptfTotal})                    ;;8] Key = <Beneficiary-ID> | <DPTF-ID>
-    (deftable AQP|T|BenDpsfNonceTotal:{AQP|BenDpsfNonceTotal})          ;;9] Key = <Beneficiary-ID> | <DPSF-ID> | <Nonce>
-    (deftable AQP|T|BenDpnfNonceTotal:{AQP|BenDpnfNonceTotal})          ;;10] Key = <Beneficiary-ID> | <DPNF-ID> | <Nonce>
-    (deftable AQP|T|BenDpsfAnkMeta:{AQP|BenDpsfAnkMeta})                ;;11] Key = <Beneficiary-ID> | <DPSF-ID>
-    (deftable AQP|T|BenDpnfAnkMeta:{AQP|BenDpnfAnkMeta})                ;;12] Key = <Beneficiary-ID> | <DPNF-ID>
-    (deftable AQP|T|UserOccupancy:{AQP|UserOccupancy})                  ;;13] Key = <Pool-ID> | <Beneficiary-ID>
+    (deftable AQP|T|Pool:{AcquisitionSchemasV1.AQP|Schema})                                  ;;1] Key = <Pool-ID>
+    (deftable AQP|T|DPTFTracker:{AcquisitionSchemasV1.AQP|TrueFungibleTracker})              ;;2] Key = <Pool-ID> | <DPTF-ID> | <Owner-ID> | <Beneficiary-ID>
+    (deftable AQP|T|DPOFTracker:{AcquisitionSchemasV1.AQP|OrtoFungibleTracker})              ;;3] Key = <Pool-ID> | <DPOF-ID> | <Owner-ID> | <Beneficiary-ID> | <Nonce>
+    (deftable AQP|T|DPSFTracker:{AcquisitionSchemasV1.AQP|SemiFungibleTracker})              ;;4] Key = <Pool-ID> | <DPSF-ID> | <Owner-ID> | <Beneficiary-ID> | <Nonce>
+    (deftable AQP|T|DPNFTracker:{AcquisitionSchemasV1.AQP|NonFungibleTracker})               ;;5] Key = <Pool-ID> | <DPNF-ID> | <Owner-ID> | <Beneficiary-ID> | <Nonce>
+    (deftable AQP|T|BenDptfTotal:{AcquisitionSchemasV1.AQP|BenDptfTotal})                    ;;8] Key = <Beneficiary-ID> | <DPTF-ID>
+    (deftable AQP|T|BenDpsfNonceTotal:{AcquisitionSchemasV1.AQP|BenDpsfNonceTotal})          ;;9] Key = <Beneficiary-ID> | <DPSF-ID> | <Nonce>
+    (deftable AQP|T|BenDpnfNonceTotal:{AcquisitionSchemasV1.AQP|BenDpnfNonceTotal})          ;;10] Key = <Beneficiary-ID> | <DPNF-ID> | <Nonce>
+    (deftable AQP|T|BenDpsfAnkMeta:{AcquisitionSchemasV1.AQP|BenDpsfAnkMeta})                ;;11] Key = <Beneficiary-ID> | <DPSF-ID>
+    (deftable AQP|T|BenDpnfAnkMeta:{AcquisitionSchemasV1.AQP|BenDpnfAnkMeta})                ;;12] Key = <Beneficiary-ID> | <DPNF-ID>
+    (deftable AQP|T|UserOccupancy:{AcquisitionSchemasV1.AQP|UserOccupancy})                  ;;13] Key = <Pool-ID> | <Beneficiary-ID>
 
     ;;<=========================================================================>
     ;;{4}  CAPABILITIES
@@ -913,7 +761,7 @@
     ;; [UDC] construct
     ;;
     ;; Default tracker and attribution rows for UR with-default-read.
-    (defun UDC_AQP|TrueFungibleTracker:object{AQP|TrueFungibleTracker}
+    (defun UDC_AQP|TrueFungibleTracker:object{AcquisitionSchemasV1.AQP|TrueFungibleTracker}
         (bal:decimal pool-id:string dptf-id:string owner-id:string beneficiary-id:string)
         @doc "Default DPTF tracker row (zero balance, key fields from arguments)."
         {"balance"          : bal
@@ -922,7 +770,7 @@
         ,"owner-id"         : owner-id
         ,"beneficiary-id"   : beneficiary-id}
     )
-    (defun UDC_AQP|OrtoFungibleTracker:object{AQP|OrtoFungibleTracker}
+    (defun UDC_AQP|OrtoFungibleTracker:object{AcquisitionSchemasV1.AQP|OrtoFungibleTracker}
         (bal:decimal pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer)
         @doc "Default DPOF tracker row (zero balance, key fields from arguments)."
         {"balance"          : bal
@@ -932,7 +780,7 @@
         ,"beneficiary-id"   : beneficiary-id
         ,"nonce"            : nonce}
     )
-    (defun UDC_AQP|SemiFungibleTracker:object{AQP|SemiFungibleTracker}
+    (defun UDC_AQP|SemiFungibleTracker:object{AcquisitionSchemasV1.AQP|SemiFungibleTracker}
         (bal:decimal pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer)
         @doc "Default DPSF tracker row (zero balance, key fields from arguments)."
         {"balance"          : bal
@@ -942,7 +790,7 @@
         ,"beneficiary-id"   : beneficiary-id
         ,"nonce"            : nonce}
     )
-    (defun UDC_AQP|NonFungibleTracker:object{AQP|NonFungibleTracker}
+    (defun UDC_AQP|NonFungibleTracker:object{AcquisitionSchemasV1.AQP|NonFungibleTracker}
         (bal:decimal pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer)
         @doc "Default DPNF tracker row (zero balance, key fields from arguments)."
         {"balance"          : bal
@@ -952,7 +800,7 @@
         ,"beneficiary-id"   : beneficiary-id
         ,"nonce"            : nonce}
     )
-    (defun UDC_AQP|BenDptfTotal:object{AQP|BenDptfTotal}
+    (defun UDC_AQP|BenDptfTotal:object{AcquisitionSchemasV1.AQP|BenDptfTotal}
         (total:decimal sync-count:integer beneficiary-id:string dptf-id:string)
         @doc "Default beneficiary DPTF rollup row (zero total, never synced)."
         {"total-balance"        : total
@@ -960,7 +808,7 @@
         ,"beneficiary-id"       : beneficiary-id
         ,"dptf-id"              : dptf-id}
     )
-    (defun UDC_AQP|BenDpsfNonceTotal:object{AQP|BenDpsfNonceTotal}
+    (defun UDC_AQP|BenDpsfNonceTotal:object{AcquisitionSchemasV1.AQP|BenDpsfNonceTotal}
         (amount:integer beneficiary-id:string dpsf-id:string nonce:integer)
         @doc "Default DPSF per-nonce rollup row (zero amount)."
         {"amount"           : amount
@@ -968,7 +816,7 @@
         ,"dpsf-id"          : dpsf-id
         ,"nonce"            : nonce}
     )
-    (defun UDC_AQP|BenDpnfNonceTotal:object{AQP|BenDpnfNonceTotal}
+    (defun UDC_AQP|BenDpnfNonceTotal:object{AcquisitionSchemasV1.AQP|BenDpnfNonceTotal}
         (amount:integer beneficiary-id:string dpnf-id:string nonce:integer)
         @doc "Default DPNF per-nonce rollup row (zero amount)."
         {"amount"           : amount
@@ -976,7 +824,7 @@
         ,"dpnf-id"          : dpnf-id
         ,"nonce"            : nonce}
     )
-    (defun UDC_AQP|BenDpsfAnkMeta:object{AQP|BenDpsfAnkMeta}
+    (defun UDC_AQP|BenDpsfAnkMeta:object{AcquisitionSchemasV1.AQP|BenDpsfAnkMeta}
         (sync-count:integer active-nonce-count:integer beneficiary-id:string dpsf-id:string)
         @doc "Default DPSF ANK meta row (never synced, no active nonces)."
         {"last-ank-sync-count"  : sync-count
@@ -984,7 +832,7 @@
         ,"beneficiary-id"       : beneficiary-id
         ,"dpsf-id"              : dpsf-id}
     )
-    (defun UDC_AQP|BenDpnfAnkMeta:object{AQP|BenDpnfAnkMeta}
+    (defun UDC_AQP|BenDpnfAnkMeta:object{AcquisitionSchemasV1.AQP|BenDpnfAnkMeta}
         (sync-count:integer active-nonce-count:integer beneficiary-id:string dpnf-id:string)
         @doc "Default DPNF ANK meta row (never synced, no active nonces)."
         {"last-ank-sync-count"  : sync-count
@@ -992,14 +840,14 @@
         ,"beneficiary-id"       : beneficiary-id
         ,"dpnf-id"              : dpnf-id}
     )
-    (defun UDC_AQP|UserOccupancy:object{AQP|UserOccupancy}
+    (defun UDC_AQP|UserOccupancy:object{AcquisitionSchemasV1.AQP|UserOccupancy}
         (unn:integer pool-id:string beneficiary-id:string)
         @doc "Vacate-v2 §4: default per (pool, beneficiary) occupancy row (unn = 0 when absent)."
         {"unn"                  : unn
         ,"pool-id"              : pool-id
         ,"beneficiary-id"       : beneficiary-id}
     )
-    (defun UDC_AQP|Schema:object{AQP|Schema}
+    (defun UDC_AQP|Schema:object{AcquisitionSchemasV1.AQP|Schema}
         (aqp-class:integer asset-id:string aqp-id:string)
         @doc "Default new pool row: all seven score slots BAR; aqp-id equals pool-id (table key). #FP1 universal \
             \ nns: starts -1 only for LP pools (class 0, complex multi-leg — still nzs-based finalize) and 0 for \
@@ -1019,8 +867,8 @@
         ,"nns"                  : (if (< aqp-class 1) -1 0)
         ,"aqp-id"               : aqp-id}
     )
-    (defun UDC_AQP|SchemaWithScoreSlots:object{AQP|Schema}
-        (pool:object{AQP|Schema}
+    (defun UDC_AQP|SchemaWithScoreSlots:object{AcquisitionSchemasV1.AQP|Schema}
+        (pool:object{AcquisitionSchemasV1.AQP|Schema}
             score-primary:string
             score-secondary:string
             score-tertiary:string
@@ -1056,8 +904,8 @@
             pool
         )
     )
-    (defun UDC_AQP|SchemaWithScoreAtSlot:object{AQP|Schema}
-        (pool:object{AQP|Schema} slot-index:integer score-id:string)
+    (defun UDC_AQP|SchemaWithScoreAtSlot:object{AcquisitionSchemasV1.AQP|Schema}
+        (pool:object{AcquisitionSchemasV1.AQP|Schema} slot-index:integer score-id:string)
         @doc "Returns pool row with score-id written into slot-index (0=primary .. 6=septenary)."
         (UDC_AQP|SchemaWithScoreSlots pool
             (if (= slot-index 0) score-id (at "score-primary" pool))
@@ -1136,7 +984,7 @@
     )
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;; [UR]  read
-    (defun UR_AQP|Pool:object{AQP|Schema} (pool-id:string)
+    (defun UR_AQP|Pool:object{AcquisitionSchemasV1.AQP|Schema} (pool-id:string)
         @doc "Reads full pool definition row from AQP|T|Pool."
         (read AQP|T|Pool pool-id)
     )
@@ -1206,7 +1054,7 @@
         (at "sweep-in-progress" (read AQP|T|Pool pool-id ["sweep-in-progress"]))
     )
     ;;
-    (defun UR_AQP|DPTFTracker:object{AQP|TrueFungibleTracker}
+    (defun UR_AQP|DPTFTracker:object{AcquisitionSchemasV1.AQP|TrueFungibleTracker}
         (pool-id:string dptf-id:string owner-id:string beneficiary-id:string)
         @doc "Reads DPTF tracker row; absent rows read as zero balance via default object."
         (with-default-read AQP|T|DPTFTracker (UCk_DPTFTracker pool-id dptf-id owner-id beneficiary-id)
@@ -1240,7 +1088,7 @@
         (at "beneficiary-id" (UR_AQP|DPTFTracker pool-id dptf-id owner-id beneficiary-id))
     )
     ;;
-    (defun UR_AQP|BenDptfTotal:object{AQP|BenDptfTotal}
+    (defun UR_AQP|BenDptfTotal:object{AcquisitionSchemasV1.AQP|BenDptfTotal}
         (beneficiary-id:string dptf-id:string)
         @doc "Reads cross-pool DPTF stake rollup for beneficiary × dptf-id; absent row reads as zero total."
         (with-default-read AQP|T|BenDptfTotal (UCk_BenDptfTotal beneficiary-id dptf-id)
@@ -1275,7 +1123,7 @@
         )
     )
     ;;
-    (defun UR_AQP|BenDpsfNonceTotal:object{AQP|BenDpsfNonceTotal}
+    (defun UR_AQP|BenDpsfNonceTotal:object{AcquisitionSchemasV1.AQP|BenDpsfNonceTotal}
         (beneficiary-id:string dpsf-id:string nonce:integer)
         @doc "Reads cross-pool per-nonce DPSF rollup; absent row reads as zero amount."
         (with-default-read AQP|T|BenDpsfNonceTotal
@@ -1292,7 +1140,7 @@
         @doc "Staked integer supply on one DPSF nonce across all pools for (beneficiary, dpsf-id)."
         (at "amount" (UR_AQP|BenDpsfNonceTotal beneficiary-id dpsf-id nonce))
     )
-    (defun UR_AQP|BenDpsfAnkMeta:object{AQP|BenDpsfAnkMeta}
+    (defun UR_AQP|BenDpsfAnkMeta:object{AcquisitionSchemasV1.AQP|BenDpsfAnkMeta}
         (beneficiary-id:string dpsf-id:string)
         @doc "Reads ANK sync metadata for one DPSF leg; absent row reads as never synced / no active nonces."
         (with-default-read AQP|T|BenDpsfAnkMeta
@@ -1330,7 +1178,7 @@
         )
     )
     ;;
-    (defun UR_AQP|BenDpnfNonceTotal:object{AQP|BenDpnfNonceTotal}
+    (defun UR_AQP|BenDpnfNonceTotal:object{AcquisitionSchemasV1.AQP|BenDpnfNonceTotal}
         (beneficiary-id:string dpnf-id:string nonce:integer)
         @doc "Reads cross-pool per-nonce DPNF rollup; absent row reads as zero amount."
         (with-default-read AQP|T|BenDpnfNonceTotal
@@ -1347,7 +1195,7 @@
         @doc "Staked integer supply on one DPNF nonce across all pools for (beneficiary, dpnf-id)."
         (at "amount" (UR_AQP|BenDpnfNonceTotal beneficiary-id dpnf-id nonce))
     )
-    (defun UR_AQP|BenDpnfAnkMeta:object{AQP|BenDpnfAnkMeta}
+    (defun UR_AQP|BenDpnfAnkMeta:object{AcquisitionSchemasV1.AQP|BenDpnfAnkMeta}
         (beneficiary-id:string dpnf-id:string)
         @doc "Reads ANK sync metadata for one DPNF leg; absent row reads as never synced / no active nonces."
         (with-default-read AQP|T|BenDpnfAnkMeta
@@ -1385,7 +1233,7 @@
         )
     )
     ;;
-    (defun UR_AQP|DPOFTracker:object{AQP|OrtoFungibleTracker}
+    (defun UR_AQP|DPOFTracker:object{AcquisitionSchemasV1.AQP|OrtoFungibleTracker}
         (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer)
         @doc "Reads DPOF tracker row; absent rows read as zero balance via default object."
         (with-default-read AQP|T|DPOFTracker (UCk_DPOFTracker pool-id dpof-id owner-id beneficiary-id nonce)
@@ -1424,7 +1272,7 @@
         (at "nonce" (UR_AQP|DPOFTracker pool-id dpof-id owner-id beneficiary-id nonce))
     )
     ;;
-    (defun UR_AQP|DPSFTracker:object{AQP|SemiFungibleTracker}
+    (defun UR_AQP|DPSFTracker:object{AcquisitionSchemasV1.AQP|SemiFungibleTracker}
         (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer)
         @doc "Reads DPSF tracker row; absent rows read as zero balance via default object."
         (with-default-read AQP|T|DPSFTracker (UCk_DPSFTracker pool-id dpsf-id owner-id beneficiary-id nonce)
@@ -1463,7 +1311,7 @@
         (at "nonce" (UR_AQP|DPSFTracker pool-id dpsf-id owner-id beneficiary-id nonce))
     )
     ;;
-    (defun UR_AQP|DPNFTracker:object{AQP|NonFungibleTracker}
+    (defun UR_AQP|DPNFTracker:object{AcquisitionSchemasV1.AQP|NonFungibleTracker}
         (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer)
         @doc "Reads DPNF tracker row; absent rows read as zero balance via default object."
         (with-default-read AQP|T|DPNFTracker (UCk_DPNFTracker pool-id dpnf-id owner-id beneficiary-id nonce)
@@ -2479,7 +2327,7 @@
     ;; WU lists every schema field: defun when used; comment when [.], select key, or mutates via WW_*.
     ;;
     (defun WI_Pool:string
-        (pool-id:string row:object{AQP|Schema})
+        (pool-id:string row:object{AcquisitionSchemasV1.AQP|Schema})
         @doc "Insert AQP|T|Pool full row (issue only)."
         (require-capability (SECURE))
         (insert AQP|T|Pool pool-id row)
@@ -2586,7 +2434,7 @@
     ;;
     ;; WI_DPTFTracker — not used: first row touch is WW_DPTFTracker (upsert path).
     (defun WW_DPTFTracker:string
-        (pool-id:string dptf-id:string owner-id:string beneficiary-id:string row:object{AQP|TrueFungibleTracker})
+        (pool-id:string dptf-id:string owner-id:string beneficiary-id:string row:object{AcquisitionSchemasV1.AQP|TrueFungibleTracker})
         @doc "Upsert full AQP|T|DPTFTracker row for (pool, dptf, owner, beneficiary)."
         (require-capability (SECURE))
         (write AQP|T|DPTFTracker (UCk_DPTFTracker pool-id dptf-id owner-id beneficiary-id) row)
@@ -2599,7 +2447,7 @@
     ;;
     ;; WI_DPOFTracker — not used: first row touch is WW_DPOFTracker (upsert path).
     (defun WW_DPOFTracker:string
-        (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer row:object{AQP|OrtoFungibleTracker})
+        (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer row:object{AcquisitionSchemasV1.AQP|OrtoFungibleTracker})
         @doc "Upsert full AQP|T|DPOFTracker row for (pool, dpof, owner, beneficiary, nonce)."
         (require-capability (SECURE))
         (write AQP|T|DPOFTracker (UCk_DPOFTracker pool-id dpof-id owner-id beneficiary-id nonce) row)
@@ -2613,7 +2461,7 @@
     ;;
     ;; WI_DPSFTracker — not used: first row touch is WW_DPSFTracker (upsert path).
     (defun WW_DPSFTracker:string
-        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer row:object{AQP|SemiFungibleTracker})
+        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer row:object{AcquisitionSchemasV1.AQP|SemiFungibleTracker})
         @doc "Upsert full AQP|T|DPSFTracker row for (pool, dpsf, owner, beneficiary, nonce)."
         (require-capability (SECURE))
         (write AQP|T|DPSFTracker (UCk_DPSFTracker pool-id dpsf-id owner-id beneficiary-id nonce) row)
@@ -2627,7 +2475,7 @@
     ;;
     ;; WI_DPNFTracker — not used: first row touch is WW_DPNFTracker (upsert path).
     (defun WW_DPNFTracker:string
-        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer row:object{AQP|NonFungibleTracker})
+        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer row:object{AcquisitionSchemasV1.AQP|NonFungibleTracker})
         @doc "Upsert full AQP|T|DPNFTracker row for (pool, dpnf, owner, beneficiary, nonce)."
         (require-capability (SECURE))
         (write AQP|T|DPNFTracker (UCk_DPNFTracker pool-id dpnf-id owner-id beneficiary-id nonce) row)
@@ -2641,13 +2489,13 @@
     ;;
     ;; WI_BenDptfTotal — not used: first row touch is WW_BenDptfTotal (upsert path).
     (defun WW_BenDptfTotal:string
-        (beneficiary-id:string dptf-id:string row:object{AQP|BenDptfTotal})
+        (beneficiary-id:string dptf-id:string row:object{AcquisitionSchemasV1.AQP|BenDptfTotal})
         @doc "Upsert full AQP|T|BenDptfTotal row for (beneficiary, dptf-id)."
         (require-capability (SECURE))
         (write AQP|T|BenDptfTotal (UCk_BenDptfTotal beneficiary-id dptf-id) row)
     )
     (defun WU_BenDptfTotal|LastAnkSyncCount:string
-        (beneficiary-id:string dptf-id:string row:object{AQP|BenDptfTotal} sync-count:integer)
+        (beneficiary-id:string dptf-id:string row:object{AcquisitionSchemasV1.AQP|BenDptfTotal} sync-count:integer)
         @doc "Update last-ank-sync-count on AQP|T|BenDptfTotal; preserve other fields. \
             \ <row> kept for call-site symmetry with collectable meta WU_*; write uses update (not object-+ merge)."
         (require-capability (SECURE))
@@ -2661,7 +2509,7 @@
     ;;
     ;; WI_BenDpsfNonceTotal — not used: first row touch is WW_BenDpsfNonceTotal (upsert path).
     (defun WW_BenDpsfNonceTotal:string
-        (beneficiary-id:string dpsf-id:string nonce:integer row:object{AQP|BenDpsfNonceTotal})
+        (beneficiary-id:string dpsf-id:string nonce:integer row:object{AcquisitionSchemasV1.AQP|BenDpsfNonceTotal})
         @doc "Upsert full AQP|T|BenDpsfNonceTotal row for (beneficiary, dpsf-id, nonce)."
         (require-capability (SECURE))
         (write AQP|T|BenDpsfNonceTotal (UCk_BenDpsfNonceTotal beneficiary-id dpsf-id nonce) row)
@@ -2673,7 +2521,7 @@
     ;;
     ;; WI_BenDpnfNonceTotal — not used: first row touch is WW_BenDpnfNonceTotal (upsert path).
     (defun WW_BenDpnfNonceTotal:string
-        (beneficiary-id:string dpnf-id:string nonce:integer row:object{AQP|BenDpnfNonceTotal})
+        (beneficiary-id:string dpnf-id:string nonce:integer row:object{AcquisitionSchemasV1.AQP|BenDpnfNonceTotal})
         @doc "Upsert full AQP|T|BenDpnfNonceTotal row for (beneficiary, dpnf-id, nonce)."
         (require-capability (SECURE))
         (write AQP|T|BenDpnfNonceTotal (UCk_BenDpnfNonceTotal beneficiary-id dpnf-id nonce) row)
@@ -2685,13 +2533,13 @@
     ;;
     ;; WI_BenDpsfAnkMeta — not used: first row touch is WW_BenDpsfAnkMeta (upsert path).
     (defun WW_BenDpsfAnkMeta:string
-        (beneficiary-id:string dpsf-id:string row:object{AQP|BenDpsfAnkMeta})
+        (beneficiary-id:string dpsf-id:string row:object{AcquisitionSchemasV1.AQP|BenDpsfAnkMeta})
         @doc "Upsert full AQP|T|BenDpsfAnkMeta row for (beneficiary, dpsf-id)."
         (require-capability (SECURE))
         (write AQP|T|BenDpsfAnkMeta (UCk_BenDpsfAnkMeta beneficiary-id dpsf-id) row)
     )
     (defun WU_BenDpsfAnkMeta|LastAnkSyncCount:string
-        (beneficiary-id:string dpsf-id:string row:object{AQP|BenDpsfAnkMeta} sync-count:integer)
+        (beneficiary-id:string dpsf-id:string row:object{AcquisitionSchemasV1.AQP|BenDpsfAnkMeta} sync-count:integer)
         @doc "Update last-ank-sync-count; preserve active-nonce-count from <row>."
         (require-capability (SECURE))
         (write AQP|T|BenDpsfAnkMeta (UCk_BenDpsfAnkMeta beneficiary-id dpsf-id)
@@ -2703,13 +2551,13 @@
     ;;
     ;; WI_BenDpnfAnkMeta — not used: first row touch is WW_BenDpnfAnkMeta (upsert path).
     (defun WW_BenDpnfAnkMeta:string
-        (beneficiary-id:string dpnf-id:string row:object{AQP|BenDpnfAnkMeta})
+        (beneficiary-id:string dpnf-id:string row:object{AcquisitionSchemasV1.AQP|BenDpnfAnkMeta})
         @doc "Upsert full AQP|T|BenDpnfAnkMeta row for (beneficiary, dpnf-id)."
         (require-capability (SECURE))
         (write AQP|T|BenDpnfAnkMeta (UCk_BenDpnfAnkMeta beneficiary-id dpnf-id) row)
     )
     (defun WU_BenDpnfAnkMeta|LastAnkSyncCount:string
-        (beneficiary-id:string dpnf-id:string row:object{AQP|BenDpnfAnkMeta} sync-count:integer)
+        (beneficiary-id:string dpnf-id:string row:object{AcquisitionSchemasV1.AQP|BenDpnfAnkMeta} sync-count:integer)
         @doc "Update last-ank-sync-count; preserve active-nonce-count from <row>."
         (require-capability (SECURE))
         (write AQP|T|BenDpnfAnkMeta (UCk_BenDpnfAnkMeta beneficiary-id dpnf-id)
@@ -2843,7 +2691,7 @@
                 (amt:integer (UR_AQP|BenDpsfNonceAmount beneficiary-id dpsf-id nonce))
                 (delta:integer (if direction amount (- amount)))
                 (new-amt:integer (+ amt delta))
-                (meta:object{AQP|BenDpsfAnkMeta} (UR_AQP|BenDpsfAnkMeta beneficiary-id dpsf-id))
+                (meta:object{AcquisitionSchemasV1.AQP|BenDpsfAnkMeta} (UR_AQP|BenDpsfAnkMeta beneficiary-id dpsf-id))
                 (sc:integer (at "last-ank-sync-count" meta))
                 (anc:integer (at "active-nonce-count" meta))
                 (new-anc:integer
@@ -2882,7 +2730,7 @@
                 (amt:integer (UR_AQP|BenDpnfNonceAmount beneficiary-id dpnf-id nonce))
                 (delta:integer (if direction amount (- amount)))
                 (new-amt:integer (+ amt delta))
-                (meta:object{AQP|BenDpnfAnkMeta} (UR_AQP|BenDpnfAnkMeta beneficiary-id dpnf-id))
+                (meta:object{AcquisitionSchemasV1.AQP|BenDpnfAnkMeta} (UR_AQP|BenDpnfAnkMeta beneficiary-id dpnf-id))
                 (sc:integer (at "last-ank-sync-count" meta))
                 (anc:integer (at "active-nonce-count" meta))
                 (new-anc:integer
@@ -3281,7 +3129,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-ANK:module{AcquisitionAnchorsV3} AQP-ANK)
                     ;;
-                    (row:object{AQP|BenDptfTotal} (UR_AQP|BenDptfTotal beneficiary-id dptf-id))
+                    (row:object{AcquisitionSchemasV1.AQP|BenDptfTotal} (UR_AQP|BenDptfTotal beneficiary-id dptf-id))
                     (live-count:integer (ref-ANK::UR_AA|AnchorsActive dptf-id))
                 )
                 ;; SECURE: granted by WU_BenDptfTotal|LastAnkSyncCount (underlying W_).
@@ -3307,14 +3155,14 @@
                 (if son
                     (let
                         (
-                            (row:object{AQP|BenDpsfAnkMeta} (UR_AQP|BenDpsfAnkMeta beneficiary-id collectable-id))
+                            (row:object{AcquisitionSchemasV1.AQP|BenDpsfAnkMeta} (UR_AQP|BenDpsfAnkMeta beneficiary-id collectable-id))
                         )
                         ;; SECURE: granted by WU_BenDpsfAnkMeta|LastAnkSyncCount (underlying W_).
                         (WU_BenDpsfAnkMeta|LastAnkSyncCount beneficiary-id collectable-id row live-count)
                     )
                     (let
                         (
-                            (row:object{AQP|BenDpnfAnkMeta} (UR_AQP|BenDpnfAnkMeta beneficiary-id collectable-id))
+                            (row:object{AcquisitionSchemasV1.AQP|BenDpnfAnkMeta} (UR_AQP|BenDpnfAnkMeta beneficiary-id collectable-id))
                         )
                         ;; SECURE: granted by WU_BenDpnfAnkMeta|LastAnkSyncCount (underlying W_).
                         (WU_BenDpnfAnkMeta|LastAnkSyncCount beneficiary-id collectable-id row live-count)

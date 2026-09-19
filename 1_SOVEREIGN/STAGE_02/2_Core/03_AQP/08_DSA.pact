@@ -265,39 +265,10 @@
     (defconst DSA_UPTIME_MIN:integer 0)
     ;;{3.2}  schemas
     ;;
-    (defschema DSA|Template
-        @doc "Key = <FVT-ID>. Per DSA vault: binds a class-0 FVT to the score-entity MODEL every agency \
-            \ instantiates (SCR|ScoreEntityModel) + the unit-score (1 staking unit = 1 node; open gate = \
-            \ unit-score/2). The model fixes the scoring (Custodians nonce→quintessence) so all agencies are comparable."
-        model-id:string                                         ;;[.]   the SCR|ScoreEntityModel agencies instantiate (SCORE)
-        unit-score:integer                                      ;;[.]   quintessence per capture unit (e.g. 20000)
-        active:bool                                             ;;[M]
-        ;;Select Keys
-        fvt-id:string
-    )
-    (defschema DSA|Agency
-        @doc "Key = <FVT-ID> | <Score-Entity-ID>. One agency = one FVT member (its triplet). Operator is an \
-            \ ownership role independent of stake; fee is skimmed from delegators only. nodes + uptime are the \
-            \ oracle inputs to the capture transform (the derived capture-units/weight live on the FVT member)."
-        operator-konto:string                                   ;;[..]  the agency operator (runs nodes, takes the fee)
-        fee-per-mille:integer                                   ;;[M]   flat fee 10..500 (= 1%..50%) on delegators
-        nodes:integer                                           ;;[M]   oracle: nodes the operator runs (capture cap)
-        uptime:integer                                          ;;[M]   oracle: promile 1..1000 (1000 = full)
-        ;;Select Keys
-        fvt-id:string
-        score-entity-id:string
-    )
-    (defschema DSA|OracleAuth
-        @doc "Key = <FVT-ID>. The FVT-owner-delegated key allowed to write the daily {nodes, uptime} oracle values \
-            \ for every agency on this vault."
-        oracle-guard:guard                                      ;;[M]
-        ;;Select Keys
-        fvt-id:string
-    )
     ;;{3.3}  tables
-    (deftable DSA|T|Template:{DSA|Template})                    ;; Key = <FVT-ID>
-    (deftable DSA|T|Agency:{DSA|Agency})                        ;; Key = <FVT-ID> | <Score-Entity-ID>
-    (deftable DSA|T|OracleAuth:{DSA|OracleAuth})                ;; Key = <FVT-ID>
+    (deftable DSA|T|Template:{AcquisitionSchemasV1.DSA|Template})                    ;; Key = <FVT-ID>
+    (deftable DSA|T|Agency:{AcquisitionSchemasV1.DSA|Agency})                        ;; Key = <FVT-ID> | <Score-Entity-ID>
+    (deftable DSA|T|OracleAuth:{AcquisitionSchemasV1.DSA|OracleAuth})                ;; Key = <FVT-ID>
 
     ;;<=========================================================================>
     ;;{4}  CAPABILITIES
@@ -465,17 +436,17 @@
     )
     ;;
     ;; [UDC] construct
-    (defun UDC_DSA|Template:object{DSA|Template}
+    (defun UDC_DSA|Template:object{AcquisitionSchemasV1.DSA|Template}
         (model-id:string unit-score:integer active:bool fvt-id:string)
-        @doc "Core constructor for object{DSA|Template}."
+        @doc "Core constructor for object{AcquisitionSchemasV1.DSA|Template}."
         {"model-id"            : model-id
         ,"unit-score"          : unit-score
         ,"active"              : active
         ,"fvt-id"              : fvt-id}
     )
-    (defun UDC_DSA|Agency:object{DSA|Agency}
+    (defun UDC_DSA|Agency:object{AcquisitionSchemasV1.DSA|Agency}
         (operator-konto:string fee-per-mille:integer nodes:integer uptime:integer fvt-id:string score-entity-id:string)
-        @doc "Core constructor for object{DSA|Agency}."
+        @doc "Core constructor for object{AcquisitionSchemasV1.DSA|Agency}."
         {"operator-konto" : operator-konto
         ,"fee-per-mille"  : fee-per-mille
         ,"nodes"          : nodes
@@ -483,9 +454,9 @@
         ,"fvt-id"         : fvt-id
         ,"score-entity-id": score-entity-id}
     )
-    (defun UDC_DSA|OracleAuth:object{DSA|OracleAuth}
+    (defun UDC_DSA|OracleAuth:object{AcquisitionSchemasV1.DSA|OracleAuth}
         (oracle-guard:guard fvt-id:string)
-        @doc "Core constructor for object{DSA|OracleAuth}."
+        @doc "Core constructor for object{AcquisitionSchemasV1.DSA|OracleAuth}."
         {"oracle-guard" : oracle-guard
         ,"fvt-id"       : fvt-id}
     )
@@ -502,7 +473,7 @@
     )
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;; [UR]  read
-    (defun UR_DSA-TMP|Template:object{DSA|Template} (fvt-id:string)
+    (defun UR_DSA-TMP|Template:object{AcquisitionSchemasV1.DSA|Template} (fvt-id:string)
         @doc "Reads the full DSA template row for a vault."
         (read DSA|T|Template fvt-id)
     )
@@ -518,7 +489,7 @@
         @doc "Reads whether a DSA vault template is active."
         (at "active" (read DSA|T|Template fvt-id ["active"]))
     )
-    (defun UR_DSA-AGN|Agency:object{DSA|Agency} (fvt-id:string score-entity-id:string)
+    (defun UR_DSA-AGN|Agency:object{AcquisitionSchemasV1.DSA|Agency} (fvt-id:string score-entity-id:string)
         @doc "Reads the full agency row (absent ⇒ defaults: no operator, min fee, no nodes, full uptime)."
         (with-default-read DSA|T|Agency (UCk_Agency fvt-id score-entity-id)
             {"operator-konto": "", "fee-per-mille": DSA_FEE_MIN, "nodes": 0, "uptime": DSA_UPTIME_FULL
@@ -707,12 +678,12 @@
     )
     ;;{5.5}  Write [W]
     ;; [W]   write
-    (defun WI_Template:string (fvt-id:string row:object{DSA|Template})
+    (defun WI_Template:string (fvt-id:string row:object{AcquisitionSchemasV1.DSA|Template})
         @doc "Insert a DSA vault template row. require SECURE."
         (require-capability (SECURE))
         (insert DSA|T|Template fvt-id row)
     )
-    (defun WI_Agency:string (fvt-id:string score-entity-id:string row:object{DSA|Agency})
+    (defun WI_Agency:string (fvt-id:string score-entity-id:string row:object{AcquisitionSchemasV1.DSA|Agency})
         @doc "Insert a DSA agency row. require SECURE."
         (require-capability (SECURE))
         (insert DSA|T|Agency (UCk_Agency fvt-id score-entity-id) row)
@@ -727,7 +698,7 @@
         (require-capability (SECURE))
         (update DSA|T|Agency (UCk_Agency fvt-id score-entity-id) {"fee-per-mille" : fee-per-mille})
     )
-    (defun WI_OracleAuth:string (fvt-id:string row:object{DSA|OracleAuth})
+    (defun WI_OracleAuth:string (fvt-id:string row:object{AcquisitionSchemasV1.DSA|OracleAuth})
         @doc "Write (set / rotate) a DSA vault's oracle authority row. require SECURE."
         (require-capability (SECURE))
         (write DSA|T|OracleAuth fvt-id row)

@@ -73,8 +73,13 @@ FIXTURE_HINTS = ("alice", "bob", "Testing", "Fuel", "test account", "sandbox",
 ROUNDS = {
     "2026-09-aqp": {
         "why": "the 7-interface bump of 2026-09-18 (AQP family + IgnisCollector)",
+        # AcquisitionSchemasV1 is NEW (2026-09-19): the 63 AQP row shapes hoisted out of the
+        # seven core modules. It is listed here for two reasons -- every AQP module now names it,
+        # and the file DECLARING it contains its own name, so the cascade scan picks up the
+        # interface file itself and ships it ahead of 01_ANK.
         "interfaces": ["IgnisCollectorV3", "AcquisitionPoolsV3", "AcquisitionScoresV3",
-                       "AcquisitionAnchorsV3", "AcquisitionVacateV3", "AqpMtxV3", "DsaV3"],
+                       "AcquisitionAnchorsV3", "AcquisitionVacateV3", "AqpMtxV3", "DsaV3",
+                       "AcquisitionSchemasV1"],
         # init this round needs -- matched against the block label, case-insensitive
         "init": ["AQP-BOOT"],
         # Modules that are NEW on chain this round. Owner confirmed 2026-09-18: none of the AQP
@@ -305,6 +310,22 @@ def main():
         # A module that must redeploy but appears in no deploy chain would be silently dropped --
         # the exact omission this tool is supposed to make impossible.
         planned = {x for b in blocks for x in b["pacts"]}
+        # The mirror hazard, and the one that actually bit on 2026-09-19: a file the deploy CHAIN
+        # loads but the round filter drops, because it names no bumped interface. A brand-new
+        # interface is exactly that shape -- 00_AQP-SCHEMAS.pact declares AcquisitionSchemasV1 and
+        # references nothing, so it was excluded and the whole AQP family would have been sent
+        # referencing a type that was never deployed. The orphan check below could not see it:
+        # that one asks "is everything that MUST redeploy planned?", and this file did not have to.
+        chain_all = {x for b in attach_gas(parse_chain()) for x in b["pacts"]}
+        dropped = sorted(chain_all - keep)
+        if dropped:
+            print(f"\n  note: {len(dropped)} file(s) in the deploy chain are NOT in this round")
+            for d in dropped[:8]:
+                print(f"     {os.path.relpath(d, ROOT)}")
+            if len(dropped) > 8:
+                print(f"     ... and {len(dropped) - 8} more")
+            print("     (expected for modules this round does not touch -- but if one of these is"
+                  " NEW, add it to the round's `interfaces` or `extra`.)")
         orphan = sorted(keep - planned)
         if orphan:
             print(f"\n  !! {len(orphan)} module(s) MUST redeploy this round but are in NO deploy "

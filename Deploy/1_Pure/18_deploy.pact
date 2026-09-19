@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 18 of 20
 ;; This is STEP 18 of 21 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-17 must have run first, including the init steps between deploys.
-;; 3 module(s), 221,896 gas measured in the REPL gas model, 230,889 bytes
+;; 3 module(s), 221,896 gas measured in the REPL gas model, 231,006 bytes
 ;;
 ;; Modules in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact
@@ -752,7 +752,7 @@
     )
     ;;<---- vacate lifecycle (fixed-cost endpoints) ---->
     (defun INFO_AQP-POOL|BatchVacateTrueFungible:object{OuronetInfoV2.ClientInfo}
-        (patron:string pool-id:string dptf-id:string legs:[object{AQP-VCT.VCT|VacateTfLeg}])
+        (patron:string pool-id:string dptf-id:string legs:[object{AcquisitionSchemasV1.VCT|VacateTfLeg}])
         @doc "Cost preview for AQP-POOL|CCp_BatchVacateTrueFungible. Multi-leg IGNIS (per-leg \
             \ tracker-zero + per-beneficiary unwind + one bulk transfer); no STOA. Fed the same \
             \ dirty-read <legs> slice the exec is fed."
@@ -771,7 +771,7 @@
         )
     )
     (defun INFO_AQP-POOL|BatchVacateOrtoFungible:object{OuronetInfoV2.ClientInfo}
-        (patron:string pool-id:string dpof-id:string legs:[object{AQP-VCT.VCT|VacateNonceLeg}])
+        (patron:string pool-id:string dpof-id:string legs:[object{AcquisitionSchemasV1.VCT|VacateNonceLeg}])
         @doc "Cost preview for AQP-POOL|CCp_BatchVacateOrtoFungible. Multi-leg IGNIS (bulk DPOF \
             \ transfer + per-nonce tracker + per-beneficiary score unwind); no STOA. Fed the same \
             \ dirty-read nonce <legs> slice the exec is fed."
@@ -790,7 +790,7 @@
         )
     )
     (defun INFO_AQP-POOL|BatchVacateCollectables:object{OuronetInfoV2.ClientInfo}
-        (patron:string pool-id:string collectable-id:string son:bool legs:[object{AQP-VCT.VCT|VacateNonceLeg}])
+        (patron:string pool-id:string collectable-id:string son:bool legs:[object{AcquisitionSchemasV1.VCT|VacateNonceLeg}])
         @doc "Cost preview for AQP-POOL|CCp_BatchVacateCollectables (son=DPSF true / DPNF false). \
             \ Multi-leg IGNIS (bulk transfer + per-nonce tracker + rollup + flat anchor + per- \
             \ beneficiary class-matched score unwind); no STOA. Fed the dirty-read nonce <legs>."
@@ -809,7 +809,7 @@
         )
     )
     (defun INFO_AQP-POOL|BatchDrainTrueFungible:object{OuronetInfoV2.ClientInfo}
-        (patron:string pool-id:string dptf-id:string legs:[object{AQP-VCT.VCT|VacateTfLeg}])
+        (patron:string pool-id:string dptf-id:string legs:[object{AcquisitionSchemasV1.VCT|VacateTfLeg}])
         @doc "Cost preview for AQP-POOL|CCp_BatchDrainTrueFungible. Score-free drain: per-leg \
             \ tracker-zero + rollup, settle-on-last-drain only for beneficiaries fully drained \
             \ this round (live UserUnn), then one bulk transfer; no STOA. Fed the dirty-read legs."
@@ -828,7 +828,7 @@
         )
     )
     (defun INFO_AQP-POOL|BatchDrainOrtoFungible:object{OuronetInfoV2.ClientInfo}
-        (patron:string pool-id:string dpof-id:string legs:[object{AQP-VCT.VCT|VacateNonceLeg}])
+        (patron:string pool-id:string dpof-id:string legs:[object{AcquisitionSchemasV1.VCT|VacateNonceLeg}])
         @doc "Cost preview for AQP-POOL|CCp_BatchDrainOrtoFungible. Score-free drain: bulk DPOF \
             \ transfer + per-nonce tracker + settle-on-last-drain (no anchor); no STOA. Fed the legs."
         (let
@@ -846,7 +846,7 @@
         )
     )
     (defun INFO_AQP-POOL|BatchDrainCollectable:object{OuronetInfoV2.ClientInfo}
-        (patron:string pool-id:string collectable-id:string son:bool legs:[object{AQP-VCT.VCT|VacateNonceLeg}])
+        (patron:string pool-id:string collectable-id:string son:bool legs:[object{AcquisitionSchemasV1.VCT|VacateNonceLeg}])
         @doc "Cost preview for AQP-POOL|CCp_BatchDrainCollectable (son=DPSF true / DPNF false). \
             \ Score-free drain: bulk transfer + per-leg tracker + rollup + flat anchor + settle- \
             \ on-last-drain; no STOA. Fed the dirty-read nonce <legs>."
@@ -866,9 +866,9 @@
     )
     (defun INFO_AQP-POOL|FullVacate:object{OuronetInfoV2.ClientInfo}
         (patron:string pool-id:string
-         tf-lanes:[object{AQP-VCT.VCT|VacateTfLane}]
-         of-lanes:[object{AQP-VCT.VCT|VacateNonceLane}]
-         coll-lanes:[object{AQP-VCT.VCT|VacateNonceLane}]
+         tf-lanes:[object{AcquisitionSchemasV1.VCT|VacateTfLane}]
+         of-lanes:[object{AcquisitionSchemasV1.VCT|VacateNonceLane}]
+         coll-lanes:[object{AcquisitionSchemasV1.VCT|VacateNonceLane}]
          coll-son:bool)
         @doc "Cost preview for AQP-POOL|CC_FullVacate — the single-tx whole-pool vacate. Sums the \
             \ per-asset vacate cost across every dirty-read lane (TF + OF satellites + collectables); \

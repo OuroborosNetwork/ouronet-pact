@@ -318,120 +318,19 @@
     ;;{3.2}  schemas
     ;;
     ;;1]General Anchor Definition
-    (defschema ANK|Schema
-        @doc "General Anchor Definition \
-            \ Each Anchor is defined via a so called Anchored-Asset \
-            \ This may be a DPTF, DPSF or DPNF; It designation is stored here; \
-            \ Along with the Anchor Precision and the Anchor ID itself \
-            \ [.]   = fixed, cannot be changed \
-            \ [M]   = mutable, can be modified via <CAP_Owner>"
-        ank-asset:string            ;;[.]   ID of the the Anchored Asset
-        ank-fungibility:[bool]      ;;[.]   Stores the fungibility of the Asset the Anchor is based on.
-        boost-class-id:string       ;;[.]   BoostClass this anchor belongs to
-        ank-precision:integer       ;;[.]   Precision of the Anchor Variable [min 2 - max 8]
-        ank-active:bool             ;;[M]   Stores if the Anchor is active or not. It can be inactivated by revoking it
-        ank-promile:decimal         ;;[.]   Promile-value of Anchor
-        ;;
-        ;;DPTF Anchor ONLY
-        dptf-amount:decimal         ;;[.]   DPTF Amount for the defined <promile> [0.0 when not DPTF Anchor]
-        ;;
-        ;;DPSF Anchor ONLY
-        dpsf-nonce:integer          ;;[.]   DPSF Nonce for the defined <promile> [0 when not DPSF Anchor]
-        ;;
-        ;;DPNF Anchor ONLY
-        dpnf-trait-key:string       ;;[.]   DPNF Trait-Key for the defined <promile> [BAR when not DPNF Anchor]
-        dpnf-trait-value:string     ;;[.]   DPNF Trait-Value for the defined <promile> [BAR when not DPNF Anchor]
-        dpnf-nonce-class:integer    ;;[.]   DPNF Nonce-Class for set anchors [-1 when trait mode, 0 all native NFTs, >0 specific set class]
-        ;;
-        ;;Select Keys
-        anchor-id:string
-    )
     ;;2]BoostClass Definition
-    (defschema ANK|BoostClass
-        @doc "Heterogeneous anchor grouping for score boosting. \
-            \ Not tied to any asset-id. Up to 7 anchor slots from different asset types."
-        anchor-primary:string       ;;[M]   1st anchor slot
-        anchor-secondary:string     ;;[M]   2nd anchor slot
-        anchor-tertiary:string      ;;[M]   3rd anchor slot
-        anchor-quaternary:string    ;;[M]   4th anchor slot
-        anchor-quinary:string       ;;[M]   5th anchor slot
-        anchor-senary:string        ;;[M]   6th anchor slot
-        anchor-septenary:string     ;;[M]   7th anchor slot
-        ;;
-        anchors:integer             ;;[M]   Count of active anchors (0-7)
-        class-active:bool           ;;[M]   Active flag
-        ;;
-        ;;Select Keys
-        boost-class-id:string       ;;[.]   Self-referential ID
-    )
     ;;3]Per-Asset Bookkeeping
-    (defschema ANK|AssetAnchors
-        @doc "Tracks all anchors for one asset-id. 7 internal groups x 7 slots = 49 cap. \
-            \ Single read gives all anchor-ids for an asset."
-        group-primary:object{ANK|InternalGroup}
-        group-secondary:object{ANK|InternalGroup}
-        group-tertiary:object{ANK|InternalGroup}
-        group-quaternary:object{ANK|InternalGroup}
-        group-quinary:object{ANK|InternalGroup}
-        group-senary:object{ANK|InternalGroup}
-        group-septenary:object{ANK|InternalGroup}
-        ;;
-        groups-active:integer       ;;[M]   Groups in use (0-7)
-        anchors-active:integer      ;;[M]   Total anchors across all groups (0-49)
-        ;;
-        ;;Select Keys
-        asset-id:string             ;;[.]   Self-referential asset-id
-    )
-    (defschema ANK|InternalGroup
-        @doc "Nested schema for ANK|AssetAnchors group slots (not a table). Up to 7 anchor slots per group."
-        anchor-primary:string
-        anchor-secondary:string
-        anchor-tertiary:string
-        anchor-quaternary:string
-        anchor-quinary:string
-        anchor-senary:string
-        anchor-septenary:string
-        anchors:integer             ;;Count within this group (0-7)
-    )
     ;;4]User Anchor Values
-    (defschema ANK|UserSchema
-        @doc "Stores the cumulate promile of a given <ouronet-account> for a given <anchor-id> \
-            \ [.]   = fixed, cannot be changed \
-            \ [M]   = mutable, can be modified via <ouronet-account> Ownership"
-        promile:decimal             ;;[M]   Promile of User with Anchor
-        ;;
-        ;;Select Keys
-        ouronet-account:string      ;;[.]   Stores the Ouronet Account for which the Anchor Value is saved
-        anchor-id:string            ;;[.]   Stores the Anchor-ID
-    )
     ;;5]Per-User Per-BoostClass Aggregate
-    (defschema ANK|UserBoostSchema
-        @doc "Aggregate promile for one user across all anchors in one BoostClass. \
-            \ Eagerly updated whenever any member anchor promile changes for this user."
-        aggregate-promile:decimal   ;;[M]   Sum of user promiles across member anchors
-        ;;
-        ;;Select Keys
-        ouronet-account:string      ;;[.]   User account
-        boost-class-id:string       ;;[.]   BoostClass reference
-    )
-    (defschema ANK|BoostClassScoreLinks
-        @doc "Key = <Boost-Class-ID>. The SET of SCORE ids whose boost-class-link references this class — the H4 \
-            \ REVERSE INDEX (sweep phase 1): enumerable (the re-score sweep walks it to find every score/position \
-            \ an anchor change touches) AND the #9 revoke lock (the class's anchors are locked while the set is \
-            \ non-empty). AQP-SCORE maintains it in XI_CreateBoostClassLink: add on link, remove on re-point/unlink. \
-            \ The lock count = (length score-links) — this set is the single source of truth."
-        score-links:[string]
-        boost-class-id:string
-    )
     ;;{3.3}  tables
     ;;
-    (deftable ANK|T|Anchor:{ANK|Schema})                        ;;Key = <Anchor-ID>
-    (deftable ANK|T|BoostClass:{ANK|BoostClass})                ;;Key = <Boost-Class-ID>
-    (deftable ANK|T|AssetAnchors:{ANK|AssetAnchors})            ;;Key = <Asset-ID>
-    (deftable ANK|T|BoostClassScoreLinks:{ANK|BoostClassScoreLinks}) ;;Key = <Boost-Class-ID>
+    (deftable ANK|T|Anchor:{AcquisitionSchemasV1.ANK|Schema})                        ;;Key = <Anchor-ID>
+    (deftable ANK|T|BoostClass:{AcquisitionSchemasV1.ANK|BoostClass})                ;;Key = <Boost-Class-ID>
+    (deftable ANK|T|AssetAnchors:{AcquisitionSchemasV1.ANK|AssetAnchors})            ;;Key = <Asset-ID>
+    (deftable ANK|T|BoostClassScoreLinks:{AcquisitionSchemasV1.ANK|BoostClassScoreLinks}) ;;Key = <Boost-Class-ID>
     ;;
-    (deftable ANK|T|Anchors:{ANK|UserSchema})                   ;;Key = <Ouronet-Account> | <Anchor-ID>
-    (deftable ANK|T|UserBoost:{ANK|UserBoostSchema})            ;;Key = <Ouronet-Account> | <Boost-Class-ID>
+    (deftable ANK|T|Anchors:{AcquisitionSchemasV1.ANK|UserSchema})                   ;;Key = <Ouronet-Account> | <Anchor-ID>
+    (deftable ANK|T|UserBoost:{AcquisitionSchemasV1.ANK|UserBoostSchema})            ;;Key = <Ouronet-Account> | <Boost-Class-ID>
 
     ;;<=========================================================================>
     ;;{4}  CAPABILITIES
@@ -523,7 +422,7 @@
         @event
         (let
             (
-                (bc:object{ANK|BoostClass} (UR_BC|Data boost-class-id))
+                (bc:object{AcquisitionSchemasV1.ANK|BoostClass} (UR_BC|Data boost-class-id))
             )
             (enforce (= (at "anchors" bc) 0) (format "{} BoostClass {} not empty" [E-ANK boost-class-id]))
             (enforce (at "class-active" bc) (format "{} BoostClass {} already inactive" [E-ANK boost-class-id]))
@@ -729,7 +628,7 @@
     )
     ;;
     ;; [UDC] construct
-    (defun UDC_ANK|Schema:object{ANK|Schema}
+    (defun UDC_ANK|Schema:object{AcquisitionSchemasV1.ANK|Schema}
         (a:string b:[bool] c:string d:integer e:bool f:decimal g:decimal h:integer i:string j:string k:integer l:string)
         @doc "Constructs anchor definition row for ANK|T|Anchor."
         {"ank-asset"            : a
@@ -745,7 +644,7 @@
         ,"dpnf-nonce-class"     : k
         ,"anchor-id"            : l}
     )
-    (defun UDC_BoostClass:object{ANK|BoostClass}
+    (defun UDC_BoostClass:object{AcquisitionSchemasV1.ANK|BoostClass}
         (a:string b:string c:string d:string e:string f:string g:string h:integer i:bool j:string)
         @doc "Constructs BoostClass object."
         {"anchor-primary"       : a
@@ -759,7 +658,7 @@
         ,"class-active"         : i
         ,"boost-class-id"       : j}
     )
-    (defun UDC_EmptyInternalGroup:object{ANK|InternalGroup} ()
+    (defun UDC_EmptyInternalGroup:object{AcquisitionSchemasV1.ANK|InternalGroup} ()
         @doc "Constructs empty InternalGroup (all BAR, anchors=0)."
         {"anchor-primary"       : BAR
         ,"anchor-secondary"     : BAR
@@ -770,8 +669,8 @@
         ,"anchor-septenary"     : BAR
         ,"anchors"              : 0}
     )
-    (defun UDC_IG|WithAddedAnchor:object{ANK|InternalGroup}
-        (ig:object{ANK|InternalGroup} new-anchor-id:string)
+    (defun UDC_IG|WithAddedAnchor:object{AcquisitionSchemasV1.ANK|InternalGroup}
+        (ig:object{AcquisitionSchemasV1.ANK|InternalGroup} new-anchor-id:string)
         @doc "Adds anchor-id to first free slot in an InternalGroup."
         (let
             (
@@ -796,8 +695,8 @@
             )
         )
     )
-    (defun UDC_IG|WithRemovedAnchor:object{ANK|InternalGroup}
-        (ig:object{ANK|InternalGroup} revoked-anchor-id:string)
+    (defun UDC_IG|WithRemovedAnchor:object{AcquisitionSchemasV1.ANK|InternalGroup}
+        (ig:object{AcquisitionSchemasV1.ANK|InternalGroup} revoked-anchor-id:string)
         @doc "Removes anchor-id from group, compacts slots."
         (let
             (
@@ -838,8 +737,8 @@
             ,"anchors"          : (- n 1)}
         )
     )
-    (defun UDC_BC|WithAddedAnchor:object{ANK|BoostClass}
-        (bc:object{ANK|BoostClass} new-anchor-id:string)
+    (defun UDC_BC|WithAddedAnchor:object{AcquisitionSchemasV1.ANK|BoostClass}
+        (bc:object{AcquisitionSchemasV1.ANK|BoostClass} new-anchor-id:string)
         @doc "Adds anchor-id to first free slot in a BoostClass."
         (let
             (
@@ -866,8 +765,8 @@
             )
         )
     )
-    (defun UDC_BC|WithRemovedAnchor:object{ANK|BoostClass}
-        (bc:object{ANK|BoostClass} revoked-anchor-id:string)
+    (defun UDC_BC|WithRemovedAnchor:object{AcquisitionSchemasV1.ANK|BoostClass}
+        (bc:object{AcquisitionSchemasV1.ANK|BoostClass} revoked-anchor-id:string)
         @doc "Removes anchor-id from BoostClass, compacts slots."
         (let
             (
@@ -905,8 +804,8 @@
             )
         )
     )
-    (defun UDC_AA|PlaceAnchor:object{ANK|AssetAnchors}
-        (aa:object{ANK|AssetAnchors} new-anchor-id:string)
+    (defun UDC_AA|PlaceAnchor:object{AcquisitionSchemasV1.ANK|AssetAnchors}
+        (aa:object{AcquisitionSchemasV1.ANK|AssetAnchors} new-anchor-id:string)
         @doc "Places anchor in first group with a free slot; creates new group if needed. \
             \ Pure constructor — no enforce. Caller (issue caps via UEV_*) must ensure \
             \ anchors-active < 49 (implies a free group slot exists under 7×7)."
@@ -925,7 +824,7 @@
                                     acc
                                     (let
                                         (
-                                            (grp:object{ANK|InternalGroup} (URC_AA|GroupAtSlot aa gi))
+                                            (grp:object{AcquisitionSchemasV1.ANK|InternalGroup} (URC_AA|GroupAtSlot aa gi))
                                             (gn:integer (at "anchors" grp))
                                         )
                                         (if (< gn 7)
@@ -944,9 +843,9 @@
                 (if (= placed 1)
                     (let
                         (
-                            (updated-grp:object{ANK|InternalGroup} (at 0 result))
+                            (updated-grp:object{AcquisitionSchemasV1.ANK|InternalGroup} (at 0 result))
                             (slot:integer (at 2 result))
-                            (prev-grp:object{ANK|InternalGroup} (URC_AA|GroupAtSlot aa slot))
+                            (prev-grp:object{AcquisitionSchemasV1.ANK|InternalGroup} (URC_AA|GroupAtSlot aa slot))
                             (new-ga:integer
                                 (if (and (= (at "anchors" prev-grp) 0) (> (at "anchors" updated-grp) 0))
                                     (if (> ga (+ slot 1)) ga (+ slot 1))
@@ -958,7 +857,7 @@
                     )
                     (let
                         (
-                            (new-grp:object{ANK|InternalGroup} (UDC_IG|WithAddedAnchor (UDC_EmptyInternalGroup) new-anchor-id))
+                            (new-grp:object{AcquisitionSchemasV1.ANK|InternalGroup} (UDC_IG|WithAddedAnchor (UDC_EmptyInternalGroup) new-anchor-id))
                         )
                         (URC_AA|SetGroupAtSlot aa new-grp ga (+ ta 1) ga true)
                     )
@@ -966,8 +865,8 @@
             )
         )
     )
-    (defun UDC_AA|RemoveAnchor:object{ANK|AssetAnchors}
-        (aa:object{ANK|AssetAnchors} revoked-anchor-id:string)
+    (defun UDC_AA|RemoveAnchor:object{AcquisitionSchemasV1.ANK|AssetAnchors}
+        (aa:object{AcquisitionSchemasV1.ANK|AssetAnchors} revoked-anchor-id:string)
         @doc "Removes anchor from its group in AssetAnchors."
         (let
             (
@@ -976,15 +875,15 @@
                 (aid:string (at "asset-id" aa))
             )
             (fold
-                (lambda (acc:object{ANK|AssetAnchors} gi:integer)
+                (lambda (acc:object{AcquisitionSchemasV1.ANK|AssetAnchors} gi:integer)
                     (let
                         (
-                            (grp:object{ANK|InternalGroup} (URC_AA|GroupAtSlot acc gi))
+                            (grp:object{AcquisitionSchemasV1.ANK|InternalGroup} (URC_AA|GroupAtSlot acc gi))
                         )
                         (if (URC_IG|ContainsAnchor grp revoked-anchor-id)
                             (let
                                 (
-                                    (updated-grp:object{ANK|InternalGroup} (UDC_IG|WithRemovedAnchor grp revoked-anchor-id))
+                                    (updated-grp:object{AcquisitionSchemasV1.ANK|InternalGroup} (UDC_IG|WithRemovedAnchor grp revoked-anchor-id))
                                     (was-ga:integer (at "groups-active" acc))
                                     (was-ta:integer (at "anchors-active" acc))
                                     (grp-now-empty:bool (= (at "anchors" updated-grp) 0))
@@ -1000,14 +899,14 @@
             )
         )
     )
-    (defun UDC_AccountAnchor:object{ANK|UserSchema}
+    (defun UDC_AccountAnchor:object{AcquisitionSchemasV1.ANK|UserSchema}
         (a:decimal b:string c:string)
         @doc "Constructs user-anchor contribution object."
         {"promile"              : a
         ,"ouronet-account"      : b
         ,"anchor-id"            : c}
     )
-    (defun UDC_UserBoost:object{ANK|UserBoostSchema}
+    (defun UDC_UserBoost:object{AcquisitionSchemasV1.ANK|UserBoostSchema}
         (aggregate-promile:decimal ouronet-account:string boost-class-id:string)
         @doc "Constructs user-boost aggregate row for ANK|T|UserBoost."
         {"aggregate-promile"   : aggregate-promile
@@ -1032,7 +931,7 @@
     ;; Policy P|T, P|MT — not ANK rows; use P|Info, P|UR, P|UR_IMP above.
     ;;
     ;; Core row: UR_ANK|Data
-    (defun UR_ANK|Data:object{ANK|Schema} (anchor-id:string)
+    (defun UR_ANK|Data:object{AcquisitionSchemasV1.ANK|Schema} (anchor-id:string)
         @doc "Reads full anchor definition row from ANK|T|Anchor."
         (read ANK|T|Anchor anchor-id)
     )
@@ -1099,7 +998,7 @@
         (at "anchor-id" (UR_ANK|Data anchor-id))
     )
     ;;
-    (defun UR_BC|Data:object{ANK|BoostClass} (boost-class-id:string)
+    (defun UR_BC|Data:object{AcquisitionSchemasV1.ANK|BoostClass} (boost-class-id:string)
         @doc "Reads full BoostClass row."
         (read ANK|T|BoostClass boost-class-id)
     )
@@ -1130,11 +1029,11 @@
         (at "boost-class-id" (read ANK|T|BoostClass boost-class-id ["boost-class-id"]))
     )
     ;;
-    (defun UR_AA|Data:object{ANK|AssetAnchors} (asset-id:string)
+    (defun UR_AA|Data:object{AcquisitionSchemasV1.ANK|AssetAnchors} (asset-id:string)
         @doc "Reads full per-asset bookkeeping row (with-default-read when absent)."
         (let
             (
-                (eg:object{ANK|InternalGroup} (UDC_EmptyInternalGroup))
+                (eg:object{AcquisitionSchemasV1.ANK|InternalGroup} (UDC_EmptyInternalGroup))
             )
             (with-default-read ANK|T|AssetAnchors asset-id
                 {"group-primary"     : eg
@@ -1183,7 +1082,7 @@
             \ iterates all groups and slots, collects non-BAR active anchors."
         (let
             (
-                (aa:object{ANK|AssetAnchors} (UR_AA|Data asset-id))
+                (aa:object{AcquisitionSchemasV1.ANK|AssetAnchors} (UR_AA|Data asset-id))
                 (ga:integer (at "groups-active" aa))
             )
             (if (<= ga 0)
@@ -1192,7 +1091,7 @@
                     (lambda (acc:[string] gi:integer)
                         (let
                             (
-                                (grp:object{ANK|InternalGroup} (URC_AA|GroupAtSlot aa gi))
+                                (grp:object{AcquisitionSchemasV1.ANK|InternalGroup} (URC_AA|GroupAtSlot aa gi))
                                 (q:integer (at "anchors" grp))
                             )
                             (if (<= q 0)
@@ -1223,7 +1122,7 @@
     )
     ;;
     ;; Core row: UR_ANK-U|Data
-    (defun UR_ANK-U|Data:object{ANK|UserSchema} (account:string anchor-id:string)
+    (defun UR_ANK-U|Data:object{AcquisitionSchemasV1.ANK|UserSchema} (account:string anchor-id:string)
         @doc "Core read: user cumulative promile row for account x anchor."
         (with-default-read ANK|T|Anchors (UCk_Anchors account anchor-id)
             (UDC_AccountAnchor 0.0 account anchor-id)
@@ -1246,7 +1145,7 @@
         (at "anchor-id" (UR_ANK-U|Data account anchor-id))
     )
     ;;
-    (defun UR_UB|Data:object{ANK|UserBoostSchema} (account:string boost-class-id:string)
+    (defun UR_UB|Data:object{AcquisitionSchemasV1.ANK|UserBoostSchema} (account:string boost-class-id:string)
         @doc "Reads user-boost aggregate row (with-default-read when absent)."
         (with-default-read ANK|T|UserBoost (UCk_UserBoost account boost-class-id)
             (UDC_UserBoost 0.0 account boost-class-id)
@@ -1467,7 +1366,7 @@
         )
     )
     ;; --- AssetAnchors / BoostClass slot helpers (in-memory; UDC_AA|* and XI_2|Recompute*) ---
-    (defun URC_BC|AnchorIdAtSlot:string (bc:object{ANK|BoostClass} idx:integer)
+    (defun URC_BC|AnchorIdAtSlot:string (bc:object{AcquisitionSchemasV1.ANK|BoostClass} idx:integer)
         @doc "URC: reads anchor-id at slot idx (0..6) from a BoostClass object (in-memory)."
         (cond
             ((= idx 0) (at "anchor-primary" bc))
@@ -1480,7 +1379,7 @@
             BAR
         )
     )
-    (defun URC_AA|GroupAtSlot:object{ANK|InternalGroup} (aa:object{ANK|AssetAnchors} idx:integer)
+    (defun URC_AA|GroupAtSlot:object{AcquisitionSchemasV1.ANK|InternalGroup} (aa:object{AcquisitionSchemasV1.ANK|AssetAnchors} idx:integer)
         @doc "URC: reads internal group at slot idx (0..6) from an AssetAnchors object (in-memory)."
         (cond
             ((= idx 0) (at "group-primary" aa))
@@ -1493,7 +1392,7 @@
             (UDC_EmptyInternalGroup)
         )
     )
-    (defun URC_IG|AnchorIdAtSlot:string (ig:object{ANK|InternalGroup} idx:integer)
+    (defun URC_IG|AnchorIdAtSlot:string (ig:object{AcquisitionSchemasV1.ANK|InternalGroup} idx:integer)
         @doc "URC: reads anchor-id at slot idx (0..6) from an InternalGroup object (in-memory)."
         (cond
             ((= idx 0) (at "anchor-primary" ig))
@@ -1506,7 +1405,7 @@
             BAR
         )
     )
-    (defun URC_IG|ContainsAnchor:bool (ig:object{ANK|InternalGroup} anchor-id:string)
+    (defun URC_IG|ContainsAnchor:bool (ig:object{AcquisitionSchemasV1.ANK|InternalGroup} anchor-id:string)
         @doc "URC: true when InternalGroup contains anchor-id (in-memory scan of seven slots)."
         (or (= anchor-id (at "anchor-primary" ig))
         (or (= anchor-id (at "anchor-secondary" ig))
@@ -1516,18 +1415,18 @@
         (or (= anchor-id (at "anchor-senary" ig))
             (= anchor-id (at "anchor-septenary" ig))))))))
     )
-    (defun URC_AA|SetGroupAtSlot:object{ANK|AssetAnchors}
-        (aa:object{ANK|AssetAnchors} grp:object{ANK|InternalGroup} slot:integer ta:integer ga:integer adjust-ga:bool)
+    (defun URC_AA|SetGroupAtSlot:object{AcquisitionSchemasV1.ANK|AssetAnchors}
+        (aa:object{AcquisitionSchemasV1.ANK|AssetAnchors} grp:object{AcquisitionSchemasV1.ANK|InternalGroup} slot:integer ta:integer ga:integer adjust-ga:bool)
         @doc "URC: returns updated AssetAnchors with group replaced at slot (in-memory; used by UDC_AA|PlaceAnchor / RemoveAnchor)."
         (let
             (
-                (g1:object{ANK|InternalGroup} (if (= slot 0) grp (at "group-primary" aa)))
-                (g2:object{ANK|InternalGroup} (if (= slot 1) grp (at "group-secondary" aa)))
-                (g3:object{ANK|InternalGroup} (if (= slot 2) grp (at "group-tertiary" aa)))
-                (g4:object{ANK|InternalGroup} (if (= slot 3) grp (at "group-quaternary" aa)))
-                (g5:object{ANK|InternalGroup} (if (= slot 4) grp (at "group-quinary" aa)))
-                (g6:object{ANK|InternalGroup} (if (= slot 5) grp (at "group-senary" aa)))
-                (g7:object{ANK|InternalGroup} (if (= slot 6) grp (at "group-septenary" aa)))
+                (g1:object{AcquisitionSchemasV1.ANK|InternalGroup} (if (= slot 0) grp (at "group-primary" aa)))
+                (g2:object{AcquisitionSchemasV1.ANK|InternalGroup} (if (= slot 1) grp (at "group-secondary" aa)))
+                (g3:object{AcquisitionSchemasV1.ANK|InternalGroup} (if (= slot 2) grp (at "group-tertiary" aa)))
+                (g4:object{AcquisitionSchemasV1.ANK|InternalGroup} (if (= slot 3) grp (at "group-quaternary" aa)))
+                (g5:object{AcquisitionSchemasV1.ANK|InternalGroup} (if (= slot 4) grp (at "group-quinary" aa)))
+                (g6:object{AcquisitionSchemasV1.ANK|InternalGroup} (if (= slot 5) grp (at "group-senary" aa)))
+                (g7:object{AcquisitionSchemasV1.ANK|InternalGroup} (if (= slot 6) grp (at "group-septenary" aa)))
                 (new-ta:integer ta)
                 (new-ga:integer
                     (if adjust-ga
@@ -1633,8 +1532,8 @@
         @doc "Validates BoostClass exists, is active, and has a free slot; also validates asset 49-anchor cap. Used when acnoi=false."
         (let
             (
-                (bc:object{ANK|BoostClass} (UR_BC|Data boost-class-id))
-                (aa:object{ANK|AssetAnchors} (UR_AA|Data ank-asset))
+                (bc:object{AcquisitionSchemasV1.ANK|BoostClass} (UR_BC|Data boost-class-id))
+                (aa:object{AcquisitionSchemasV1.ANK|AssetAnchors} (UR_AA|Data ank-asset))
             )
             (enforce (at "class-active" bc) (format "{} BoostClass {} must be active" [E-ANK boost-class-id]))
             (enforce (< (at "anchors" bc) 7) (format "{} BoostClass {} full (7 anchors)" [E-ANK boost-class-id]))
@@ -1645,7 +1544,7 @@
         @doc "Validates asset 49-anchor cap. Used when acnoi=true (BoostClass is new)."
         (let
             (
-                (aa:object{ANK|AssetAnchors} (UR_AA|Data ank-asset))
+                (aa:object{AcquisitionSchemasV1.ANK|AssetAnchors} (UR_AA|Data ank-asset))
             )
             (enforce (< (at "anchors-active" aa) 49) (format "{} Asset {} at 49-anchor cap" [E-ANK ank-asset]))
         )
@@ -1716,7 +1615,7 @@
     ;; WU lists every schema field: defun when used; comment when [.], select key, or mutates via WW_*.
     ;;
     (defun WI_Anchor:string
-        (anchor-id:string row:object{ANK|Schema})
+        (anchor-id:string row:object{AcquisitionSchemasV1.ANK|Schema})
         @doc "Insert ANK|T|Anchor full row (issue only)."
         (require-capability (SECURE))
         (insert ANK|T|Anchor anchor-id row)
@@ -1764,13 +1663,13 @@
     ;; WU_Anchor|ID — select key; WU not needed.
     ;;
     (defun WI_BoostClass:string
-        (boost-class-id:string row:object{ANK|BoostClass})
+        (boost-class-id:string row:object{AcquisitionSchemasV1.ANK|BoostClass})
         @doc "Insert ANK|T|BoostClass full row (inline issue when acnoi)."
         (require-capability (SECURE))
         (insert ANK|T|BoostClass boost-class-id row)
     )
     (defun WW_BoostClass:string
-        (boost-class-id:string row:object{ANK|BoostClass})
+        (boost-class-id:string row:object{AcquisitionSchemasV1.ANK|BoostClass})
         @doc "Upsert full ANK|T|BoostClass row (bookkeeping add/remove anchor slots)."
         (require-capability (SECURE))
         (write ANK|T|BoostClass boost-class-id row)
@@ -1793,7 +1692,7 @@
     ;;
     ;; WI_AssetAnchors — not used: first row touch is WW_AssetAnchors (upsert path).
     (defun WW_AssetAnchors:string
-        (asset-id:string row:object{ANK|AssetAnchors})
+        (asset-id:string row:object{AcquisitionSchemasV1.ANK|AssetAnchors})
         @doc "Upsert full ANK|T|AssetAnchors row (place/remove anchor in groups)."
         (require-capability (SECURE))
         (write ANK|T|AssetAnchors asset-id row)
@@ -1908,8 +1807,8 @@
         ;; SECURE: granted by WW_BoostClass and WW_AssetAnchors (underlying W_).
         (let
             (
-                (bc:object{ANK|BoostClass} (UR_BC|Data boost-class-id))
-                (aa:object{ANK|AssetAnchors} (UR_AA|Data asset-id))
+                (bc:object{AcquisitionSchemasV1.ANK|BoostClass} (UR_BC|Data boost-class-id))
+                (aa:object{AcquisitionSchemasV1.ANK|AssetAnchors} (UR_AA|Data asset-id))
             )
             (WW_BoostClass boost-class-id (UDC_BC|WithAddedAnchor bc anchor-id))
             (WW_AssetAnchors asset-id (UDC_AA|PlaceAnchor aa anchor-id))
@@ -1926,8 +1825,8 @@
             (
                 (ank-asset:string (UR_ANK|AnchoredAsset anchor-id))
                 (boost-class-id:string (UR_ANK|BoostClassId anchor-id))
-                (bc:object{ANK|BoostClass} (UR_BC|Data boost-class-id))
-                (aa:object{ANK|AssetAnchors} (UR_AA|Data ank-asset))
+                (bc:object{AcquisitionSchemasV1.ANK|BoostClass} (UR_BC|Data boost-class-id))
+                (aa:object{AcquisitionSchemasV1.ANK|AssetAnchors} (UR_AA|Data ank-asset))
             )
             (WW_BoostClass boost-class-id (UDC_BC|WithRemovedAnchor bc anchor-id))
             (WW_AssetAnchors ank-asset (UDC_AA|RemoveAnchor aa anchor-id))
@@ -2116,7 +2015,7 @@
             (lambda (bcid:string)
                 (let
                     (
-                        (bc:object{ANK|BoostClass} (UR_BC|Data bcid))
+                        (bc:object{AcquisitionSchemasV1.ANK|BoostClass} (UR_BC|Data bcid))
                         (n:integer (at "anchors" bc))
                     )
                     (if (<= n 0)

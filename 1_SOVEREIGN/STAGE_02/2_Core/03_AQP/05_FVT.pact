@@ -487,189 +487,10 @@
     (defconst CT_SPLIT_MODE_NA                          "|")            ;; sentinel — split-mode is farm-only; vaults/treasuries store this and never consult it
     ;;{3.2}  schemas
     ;;
-    (defschema FVT|Schema
-        @doc "Key = <FVT-ID>. One farm, vault, or treasury (FVT) entity: class, owner, enabled-reward-count, SCORE aggregate mirrors. \
-            \ Farm (fvt-class 0): common-denominator + total-ghost-tvl-weight S is inject denominator. \
-            \ Vault/Treasury: total-deb-score mirror for inject; common-denominator sentinel \"|\"; total-ghost-tvl-weight 0.0. \
-            \ UrStoa analogue: vault header (urstoa-supply on SCORE side; S or total-deb here is FVT-side denominator). \
-            \ Field tags: [.] fixed at issue; [..] fixed once set; [M] mutable; [Mu] mutable only under owner + can-upgrade."
-        can-upgrade:bool
-        can-change-owner:bool
-        common-denominator:string                               ;;[Mu]  unsafe to change after ScoreEntityLinks
-        oracle-on:bool                                          ;;[M]   DSA: node/uptime oracle governs capture. Default false.
-        ;; fvt-class, owner-konto, mosaic, membership-mode, split-mode + the reward aggregates
-        ;; live in FVT|RewardAggregate (#75 B' Stage 1/2) — the reward engine reads/owns them.
-        ;;Select Keys
-        fvt-id:string
-    )
     ;; duplicate copies of moved schemas (structural types referenced by staying FVT — #75 B' Stage 3)
-    (defschema FVT|RPS|Global
-        @doc "Key = <FVT-ID> | <DPTF-ID>. One registered reward DPTF on this FVT."
-        reward-enabled:bool
-        current-rps:decimal
-        available-rewards:decimal
-        unclaimed-count:integer
-        ;; Escrow-on-empty (zombie/limbo): reward tokens injected while the inject denominator is 0 (no stakers)
-        ;; are held here — physically in AQP|SC_NAME custody, counted, but NOT yet routed into G / available-rewards.
-        ;; The next inject at a NON-zero denominator adds this on top of its amount, distributes the sum to whoever
-        ;; is staked at that instant (pro-rata via G / farm-split), and zeroes it. Kept OUT of available-rewards so
-        ;; the M1 last-claimant dust sweep can never pay a prior cohort the pending escrow. No owner reclaim: it
-        ;; stays until a normal non-zero inject flushes it.
-        zombie-rewards:decimal
-        segmentation:bool
-        reward-kind:string                                      ;;[.]   PLAIN | MULTIPLET_BASE
-        multiplet-family-id:string                              ;;[.]   BAR or F|t0|t1|t2
-        ;; Time-streamed inject (linear vesting) — the lane's active-stream ledger cursor. stream-count = live
-        ;; stream positions (0 = none; the drip fast-returns). stream-last-release = shared lane checkpoint (every
-        ;; active stream's start <= this, since a new stream is only added AFTER a drip). stream-unreleased =
-        ;; custodied-but-not-yet-dripped total (held in AQP|SC_NAME, kept OUT of available-rewards / the M1 sweep
-        ;; until the drip releases it). See Audit/STREAMED-INJECT-DESIGN.md.
-        stream-count:integer
-        stream-last-release:time
-        stream-unreleased:decimal
-        ;; DSA royalty pool: the uptime-shortfall slice of a delegation inject that no agency captured
-        ;; (Σ capture-units − Σ effective capture-weight, worth A×that/Σunits). Custodied in AQP|SC_NAME, kept
-        ;; OUT of available-rewards / G / the M1 sweep until the owner disposes it (withdraw / burn / fuel).
-        ;; Always 0.0 on a non-delegation lane (Σ capture-weight == Σ capture-units ⇒ no shortfall).
-        royalty-rewards:decimal
-        ;;
-        ;;Select Keys
-        fvt-id:string
-        dptf-id:string
-    )
-    (defschema FVT|RPS|Member
-        @doc "Key = <FVT-ID> | <Score-Entity-ID> | <DPTF-ID>. Member reward line per score-entity × reward DPTF."
-        last-farm-rps-g:decimal
-        member-deb-rps:decimal
-        pending-member-rewards:decimal
-        ;;
-        ;;Select Keys
-        fvt-id:string
-        score-entity-id:string
-        dptf-id:string
-    )
-    (defschema FVT|RPS|Stream
-        @doc "Key = <FVT-ID> | <DPTF-ID> | <position 1..49>. One live linear-release stream on a reward lane. \
-            \ Positions are kept COMPACT (occupied = 1..stream-count); a finished stream is pruned and later \
-            \ positions shift down. UI renders position n as tier-style major.minor (major = ceil(n/7), \
-            \ minor = ((n-1) mod 7) + 1). rate = amount/duration (token-per-second, high precision); finish = \
-            \ block-time the stream stops; amount = original streamed amount; released = cumulative released so \
-            \ far, so the finish drip flushes (amount - released) and per-stream conservation is exact."
-        rate:decimal
-        finish:time
-        amount:decimal
-        released:decimal
-        ;;
-        ;;Select Keys
-        fvt-id:string
-        dptf-id:string
-        position:integer
-    )
-    (defschema FVT|RPS|User
-        @doc "Key = <User-ID> | <FVT-ID> | <Score-Entity-ID> | <DPTF-ID>. Per-staker row."
-        last-rps:decimal
-        pending-rewards:decimal
-        user-id:string
-        fvt-id:string
-        score-entity-id:string
-        dptf-id:string
-    )
-    (defschema FVT|RewardAggregate
-        @doc "Key = <FVT-ID>. Reward-computation aggregates split out of FVT|Schema (#75 B' Stage 1) so \
-            \ the reward orchestration owns them; identity/config stays in FVT|Schema."
-        fvt-class:integer                                       ;;[.]   0=Farm · 1=Vault · 2=Treasury (moved here #75 B' Stage 2)
-        owner-konto:string                                      ;;      entity owner (moved #75 B' Stage 2b)
-        mosaic:bool                                             ;;[Mu]  mix score + triplet entities when true
-        membership-mode:string                                  ;;[Mu]  BAR | SCORE | TRUE-TRIPLET | STANDARD-TRIPLET
-        split-mode:string                                       ;;[M]   Farm reward-split: SPLIT|STAKED | SPLIT|TVL
-        total-ghost-tvl-weight:decimal                          ;;[M]   Farm S = sum enabled ScoreEntityLink W_i
-        total-base-score:decimal
-        total-boosted-score:decimal
-        total-deb-score:decimal
-        total-nzs-count:integer
-        enabled-reward-count:integer
-        member-link-count:integer                               ;;[M]   ScoreEntityLink rows (gates C_SetMosaic)
-        ;;Select Keys
-        fvt-id:string
-    )
-    (defschema FVT|ScoreEntityLink
-        @doc "Key = <FVT-ID> | <Score-Entity-ID>. Unified membership — score (type 1) or triplet (type 3)."
-        score-entity-type:integer                               ;;[.]   CT_SCORE_ENTITY_SCORE=1, CT_SCORE_ENTITY_TRIPLET=3
-        enabled:bool                                            ;;[M]
-        swpair:string                                           ;;[..]
-        ghost-tvl-weight:decimal                                ;;[M]   Level-2 W_i (SWP staked value)
-        total-lane-weight:decimal                               ;;[M]   Farm-triplet Level-1 divisor Σ w-user;
-        ;;                                                              snapshot-maintained at stake/unstake (phase 4.6),
-        ;;                                                              point-read as the L_i divisor (no staker scan).
-        ;; DSA (Delegated Staking Agencies) — set only for a delegation member (= an agency); default
-        ;; false/0.0/0.0/EPOCH for every normal member. DSA maintains them (delegator stake/unstake + the daily
-        ;; oracle) via an XE_; FVT only ever READS its own fields at inject (dependency DSA -> FVT). See
-        ;; Audit/DSA-DELEGATED-STAKING-DESIGN.md §3.
-        delegation:bool                                         ;;[M]   is this member a DSA agency?
-        capture-units:decimal                                   ;;[M]   ideal capacity = min(floor(Q/unit-score), nodes) — the IDEAL denominator term
-        capture-weight:decimal                                  ;;[M]   actual = capture-units × uptime/1000 — the inject NUMERATOR
-        oracle-ts:time                                          ;;[M]   timestamp of the last oracle write (now − ts > 25h ⇒ effective capture 0)
-        ;;
-        ;;Select Keys
-        fvt-id:string                                           ;;[.]
-        score-entity-id:string                                  ;;[.]   score-id or triplet-id T|…
-    )
-    (defschema FVT|SettleFvtRewards
-        @doc "One distinct FVT row in URH_FVT|SettleFvtRewardBundle."
-        fvt-id:string
-        reward-dptf-ids:[string]
-    )
-    (defschema FVT|SettleScorePlan
-        @doc "One score-entity row in URC_SettleScorePlanRows — entity + fvt + reward list."
-        score-entity-type:integer
-        score-entity-id:string
-        fvt-id:string
-        reward-dptf-ids:[string]
-    )
-    (defschema FVT|ScorePreNzFlag
-        @doc "Pre-SCORE snapshot for one employed score."
-        score-id:string
-        was-nz:bool
-    )
-    (defschema FVT|MemberPreDeb
-        @doc "Pre-SCORE live deb-weight snapshot for one settled member (M2/#11 incremental total-deb mirror). \
-            \ Self-describing (carries its keys) so no positional alignment with settle-plans is needed."
-        fvt-id:string
-        score-entity-type:integer
-        score-entity-id:string
-        pre-deb:decimal
-    )
-    (defschema FVT|StakeSettleBundle
-        @doc "Precomputed stake/unstake settle scope."
-        settle-scores:[string]
-        distinct-fvts:[string]
-        settle-plans:[object{FVT|SettleScorePlan}]
-        pre-nz-flags:[object{FVT|ScorePreNzFlag}]
-        pre-member-debs:[object{FVT|MemberPreDeb}]
-    )
-    (defschema FVT|VacateFreeze
-        @doc "Key = <FVT-ID>. True while a pool this FVT serves is mid-vacate — blocks collect + inject on the FVT \
-            \ so the owner-forced vacate is not interfered with (stake/unstake are frozen pool-side via \
-            \ PoolVacateInProgress). Set by AQP-VCT begin (XI_EnsureVacateBegun) on each of the vacating pool's \
-            \ employed-score FVTs; cleared by VCT finalize. Read via UR_FVT|VacateFrozen (with-default-read false)."
-        frozen:bool
-    )
-    (defschema FVT|SweepProgress
-        @doc "Key = <Anchor-ID>. Cursor for the paginated defun+gate re-score sweep (CC_SweepBegin → \
-            \ CCp_SweepRecomputeChunk*), the scalable twin of the fixed 2-step MTX|2|C_SweepRevokeAnchor defpact. \
-            \ `total` = the recompute-set size captured at BEGIN (sweep-in-progress freeze holds URH_FvtPresentUsers \
-            \ fixed across the batch's separate txs); `offset` = holders recomputed so far over the GLOBAL flattened \
-            \ present set (present users concatenated across the boost-class's score-ids in order); `active` = a \
-            \ sweep is open. The finalizing chunk (win-hi reaches total) unfreezes every affected pool + clears \
-            \ active — completeness is ENFORCED (pools cannot unfreeze until offset reaches total). Read via \
-            \ UR_FVT|SweepProgress / UR_FVT|SweepActive (with-default-read inactive)."
-        total:integer
-        offset:integer
-        active:bool
-    )
     ;;{3.3}  tables
     ;;
-    (deftable FVT|T:{FVT|Schema})                               ;; Key = <FVT-ID>
+    (deftable FVT|T:{AcquisitionSchemasV1.FVT|Schema})                               ;; Key = <FVT-ID>
       ;; Key = <FVT-ID>  (#75 B' Stage 1)
       ;; Key = <FVT-ID> | <Score-Entity-ID>
       ;; Key = <Multiplet-Family-ID>
@@ -681,8 +502,8 @@
               ;; Key = <FVT-ID> | <Score-Entity-ID> | <DPTF-ID>
             ;; Key = <FVT-ID> | <Ouronet-ID>
         ;; Key = <FVT-ID> | <DPTF-ID> | <User-ID>
-    (deftable FVT|T|VacateFreeze:{FVT|VacateFreeze})            ;; Key = <FVT-ID>
-    (deftable FVT|T|SweepProgress:{FVT|SweepProgress})          ;; Key = <Anchor-ID>
+    (deftable FVT|T|VacateFreeze:{AcquisitionSchemasV1.FVT|VacateFreeze})            ;; Key = <FVT-ID>
+    (deftable FVT|T|SweepProgress:{AcquisitionSchemasV1.FVT|SweepProgress})          ;; Key = <Anchor-ID>
       ;; Key = FVT|DSA-ORACLE-KEY (single global row)
                   ;; Key = <FVT-ID> | <Score-Entity-ID>
             ;; Key = <FVT-ID> | <DPTF-ID>
@@ -1246,7 +1067,7 @@
     ;;
     ;;
     ;; Early UDC: constructors required before UR_* with-default-read default objects.
-    (defun UDC_FVT|Schema:object{FVT|Schema}
+    (defun UDC_FVT|Schema:object{AcquisitionSchemasV1.FVT|Schema}
         (
             can-upgrade:bool
             can-change-owner:bool
@@ -1254,7 +1075,7 @@
             oracle-on:bool
             fvt-id:string
         )
-        @doc "Core constructor for object{FVT|Schema} (identity/config). oracle-on (DSA toggle) passes through. \
+        @doc "Core constructor for object{AcquisitionSchemasV1.FVT|Schema} (identity/config). oracle-on (DSA toggle) passes through. \
             \ owner-konto/mosaic/membership-mode/split-mode moved to FVT|RewardAggregate (#75 B' Stage 2b)."
         {"can-upgrade"              : can-upgrade
         ,"can-change-owner"         : can-change-owner
@@ -1262,7 +1083,7 @@
         ,"oracle-on"                : oracle-on
         ,"fvt-id"                   : fvt-id}
     )
-    (defun UDC_FVT|RewardAggregate:object{FVT|RewardAggregate}
+    (defun UDC_FVT|RewardAggregate:object{AcquisitionSchemasV1.FVT|RewardAggregate}
         (
             fvt-class:integer
             owner-konto:string
@@ -1278,7 +1099,7 @@
             member-link-count:integer
             fvt-id:string
         )
-        @doc "Constructor for object{FVT|RewardAggregate} — fvt-class + entity config the reward engine owns + reward aggregates (#75 B' Stage 1/2)."
+        @doc "Constructor for object{AcquisitionSchemasV1.FVT|RewardAggregate} — fvt-class + entity config the reward engine owns + reward aggregates (#75 B' Stage 1/2)."
         {"fvt-class"                : fvt-class
         ,"owner-konto"              : owner-konto
         ,"mosaic"                   : mosaic
@@ -1293,7 +1114,7 @@
         ,"member-link-count"        : member-link-count
         ,"fvt-id"                   : fvt-id}
     )
-    (defun UDC_FVT|ScoreEntityLink:object{FVT|ScoreEntityLink}
+    (defun UDC_FVT|ScoreEntityLink:object{AcquisitionSchemasV1.FVT|ScoreEntityLink}
         (
             score-entity-type:integer
             enabled:bool
@@ -1307,7 +1128,7 @@
             fvt-id:string
             score-entity-id:string
         )
-        @doc "Core constructor for object{FVT|ScoreEntityLink}. DSA fields (delegation / capture-units / \
+        @doc "Core constructor for object{AcquisitionSchemasV1.FVT|ScoreEntityLink}. DSA fields (delegation / capture-units / \
             \ capture-weight / oracle-ts) pass through faithfully — a normal member passes \
             \ false / 0.0 / 0.0 / STREAM_EPOCH; DSA passes an agency's live capture."
         {"score-entity-type"        : score-entity-type
@@ -1322,7 +1143,7 @@
         ,"fvt-id"                   : fvt-id
         ,"score-entity-id"          : score-entity-id}
     )
-    (defun UDC_FVT|RPS|Global:object{FVT|RPS|Global}
+    (defun UDC_FVT|RPS|Global:object{AcquisitionSchemasV1.FVT|RPS|Global}
         (
             reward-enabled:bool
             current-rps:decimal
@@ -1339,7 +1160,7 @@
             fvt-id:string
             dptf-id:string
         )
-        @doc "Core constructor for object{FVT|RPS|Global}. Stream-ledger fields (stream-count / \
+        @doc "Core constructor for object{AcquisitionSchemasV1.FVT|RPS|Global}. Stream-ledger fields (stream-count / \
             \ stream-last-release / stream-unreleased) + the DSA royalty-rewards pool pass through faithfully; \
             \ true inserts seed them 0 / STREAM_EPOCH / 0.0 / 0.0 (a fresh lane has no stream, no royalty)."
         {"reward-enabled"       : reward-enabled
@@ -1357,68 +1178,7 @@
         ,"fvt-id"               : fvt-id
         ,"dptf-id"              : dptf-id}
     )
-    (defun UDC_FVT|RPS|Stream:object{FVT|RPS|Stream}
-        (
-            rate:decimal
-            finish:time
-            amount:decimal
-            released:decimal
-            fvt-id:string
-            dptf-id:string
-            position:integer
-        )
-        @doc "Core constructor for object{FVT|RPS|Stream} — one active linear-release stream position."
-        {"rate"             : rate
-        ,"finish"           : finish
-        ,"amount"           : amount
-        ,"released"         : released
-        ,"fvt-id"           : fvt-id
-        ,"dptf-id"          : dptf-id
-        ,"position"         : position}
-    )
-    (defun UDC_FVT|RPS|Member:object{FVT|RPS|Member}
-        (
-            last-farm-rps-g:decimal
-            member-deb-rps:decimal
-            pending-member-rewards:decimal
-            fvt-id:string
-            score-entity-id:string
-            dptf-id:string
-        )
-        @doc "Core constructor for object{FVT|RPS|Member}."
-        {"last-farm-rps-g"          : last-farm-rps-g
-        ,"member-deb-rps"           : member-deb-rps
-        ,"pending-member-rewards"   : pending-member-rewards
-        ,"fvt-id"                   : fvt-id
-        ,"score-entity-id"          : score-entity-id
-        ,"dptf-id"                  : dptf-id}
-    )
-    (defun UDC_FVT|RPS|User:object{FVT|RPS|User}
-        (
-            last-rps:decimal
-            pending-rewards:decimal
-            user-id:string
-            fvt-id:string
-            score-entity-id:string
-            dptf-id:string
-        )
-        @doc "Core constructor for object{FVT|RPS|User}."
-        {"last-rps"         : last-rps
-        ,"pending-rewards"  : pending-rewards
-        ,"user-id"          : user-id
-        ,"fvt-id"           : fvt-id
-        ,"score-entity-id"  : score-entity-id
-        ,"dptf-id"          : dptf-id}
-    )
     ;; --- Phase 2.1 settle · ephemeral (no deftable / no UR) ---
-    (defun UDC_FVT|SettleScorePlan:object{FVT|SettleScorePlan}
-        (score-entity-type:integer score-entity-id:string fvt-id:string reward-dptf-ids:[string])
-        @doc "Constructor for object{FVT|SettleScorePlan} — one URC_SettleScorePlanRows entry."
-        {"score-entity-type" : score-entity-type
-        ,"score-entity-id"   : score-entity-id
-        ,"fvt-id"            : fvt-id
-        ,"reward-dptf-ids"   : reward-dptf-ids}
-    )
     ;;{5.2}  Compute [UC]
     ;; [UC]  compute
     (defun UCk_ScoreEntityLink:string (fvt-id:string score-entity-id:string)
@@ -1478,7 +1238,7 @@
     ;;
     ;; Reads follow schema order: (1) FVT|Schema (2) ScoreEntityLink (3) MultipletFamily (4) RPS|Global (5) RPS|Member (6) RPS|User
     ;;
-    (defun UR_FVT|Fvt:object{FVT|Schema} (fvt-id:string)
+    (defun UR_FVT|Fvt:object{AcquisitionSchemasV1.FVT|Schema} (fvt-id:string)
         @doc "Reads full FVT definition row from FVT|T."
         (read FVT|T fvt-id)
     )
@@ -1498,7 +1258,7 @@
             frozen
         )
     )
-    (defun UR_FVT|SweepProgress:object{FVT|SweepProgress} (anchor-id:string)
+    (defun UR_FVT|SweepProgress:object{AcquisitionSchemasV1.FVT|SweepProgress} (anchor-id:string)
         @doc "The paginated re-score sweep cursor for anchor-id; defaults to an inactive empty cursor when no \
             \ sweep is open. Module-only (returns a module schema)."
         (with-default-read FVT|T|SweepProgress anchor-id
@@ -2194,7 +1954,7 @@
     ;; WU lists every schema field: defun when used; comment when [.], select key, or mutates via WW_*.
     ;;
     (defun WI_Fvt:string
-        (fvt-id:string row:object{FVT|Schema})
+        (fvt-id:string row:object{AcquisitionSchemasV1.FVT|Schema})
         @doc "Insert FVT|T full row (issue only)."
         (require-capability (SECURE))
         (insert FVT|T fvt-id row)
@@ -3202,7 +2962,7 @@
                     (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
                     (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
                     ;;
-                    (cursor:object{FVT|SweepProgress} (UR_FVT|SweepProgress anchor-id))
+                    (cursor:object{AcquisitionSchemasV1.FVT|SweepProgress} (UR_FVT|SweepProgress anchor-id))
                     (boost-class-id:string (ref-ANK::UR_ANK|BoostClassId anchor-id))
                 )
                 (let
@@ -3453,7 +3213,7 @@
                     (ref-AQP:module{AcquisitionPoolsV3} AQP-POOL)
                     (ref-SCR:module{AcquisitionScoresV3} AQP-SCORE)
                     ;;
-                    (settle-bundle:object{FVT|StakeSettleBundle}
+                    (settle-bundle:object{AcquisitionSchemasV1.FVT|StakeSettleBundle}
                         (ref-RPS::URHC_BuildStakeSettleBundle pool-id beneficiary-id)
                     )
                 )
@@ -3529,7 +3289,7 @@
                     ;; the real beneficiary on unstake too, so the exact (owner, beneficiary) tracker row is settled —
                     ;; no self-key derivation (which stranded non-self stakes). Sufficiency is enforced in the cap.
                     (settle-beneficiary:string beneficiary-id)
-                    (settle-bundle:object{FVT|StakeSettleBundle}
+                    (settle-bundle:object{AcquisitionSchemasV1.FVT|StakeSettleBundle}
                         (ref-RPS::URHC_BuildStakeSettleBundle pool-id settle-beneficiary)
                     )
                 )
@@ -3612,7 +3372,7 @@
                     ;; supplies the real beneficiary on unstake, so the exact (owner, beneficiary) tracker + Ben rollup
                     ;; rows are settled — no self-key derivation. Sufficiency is enforced in the cap.
                     (settle-beneficiary:string beneficiary-id)
-                    (settle-bundle:object{FVT|StakeSettleBundle}
+                    (settle-bundle:object{AcquisitionSchemasV1.FVT|StakeSettleBundle}
                         (ref-RPS::URHC_BuildStakeSettleBundle pool-id settle-beneficiary)
                     )
                 )
