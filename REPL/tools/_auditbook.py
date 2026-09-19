@@ -598,20 +598,32 @@ def _changelog_md():
     return "\n".join(out) + "\n"
 
 
+_COMMIT_CACHE = []
+
+
 def _commit():
-    """Short hash of the commit the book was built from, or 'uncommitted' if the tree is dirty.
+    """Short hash of the commit the book was built from, or '<hash>+dirty' if the tree is dirty.
+
+    COMPUTED ONCE PER RUN AND CACHED, which is not an optimisation. The release card is written
+    AFTER the book .md, so on the second call the tree is dirty FROM WRITING THE BOOK -- the two
+    artefacts of a single build then disagreed, the book citing a clean hash and the card citing
+    `+dirty`. The publisher refuses on `+dirty`, so this generator was blocking its own release.
+    One snapshot, taken before anything is written, is what makes them agree.
 
     A version number says WHICH edition; the commit says exactly WHAT it was built from. Without
     it a reader holding a PDF cannot tell whether their copy predates a given fix -- and this book
     exists to be read away from the repository.
     """
+    if _COMMIT_CACHE:
+        return _COMMIT_CACHE[0]
     try:
         import subprocess
         h = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT,
                            capture_output=True, text=True).stdout.strip()
         d = subprocess.run(["git", "status", "--porcelain"], cwd=ROOT,
                            capture_output=True, text=True).stdout.strip()
-        return (h + "+dirty") if d else (h or "unknown")
+        _COMMIT_CACHE.append((h + "+dirty") if d else (h or "unknown"))
+        return _COMMIT_CACHE[0]
     except Exception:
         return "unknown"
 
