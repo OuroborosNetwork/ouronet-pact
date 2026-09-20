@@ -4,8 +4,12 @@
 > the tooling, the worklist, the protocol, and the reference implementation. Nothing else needs to
 > be reconstructed from conversation.
 
-**Status at time of writing (2026-09-20):** preparation complete, sweep NOT started.
-**81 done · 719 remaining · 46 modules.**
+**PROGRESS IS TRACKED IN §4's TABLE.** Tick `[ ]` → `[x]` as part of each module's commit. A cold
+session must be able to see what is done by reading this file, without reconstructing it from
+`git log`. If the table and `_executorplan.py` disagree, **the tool is right** — regenerate.
+
+**Status:** preparation complete, sweep starting at `01_DALOS`.
+**81 done · 719 remaining · 46 modules · 0 modules swept.**
 
 ---
 
@@ -117,55 +121,55 @@ done in previous runs, nothing to do here"* and move on.
 
 R = rename · A = add executor · P = add patron
 
-| # | module | R | A | P | total | interface(s) to update |
+| done · # | module | R | A | P | total | interface(s) to update |
 |---|---|---:|---:|---:|---:|---|
-| 1 | `01_DALOS.pact` | 0 | 0 | 18 | **18** | `OuronetDalosV2`, `OuronetPolicyV2` |
-| 2 | `02_IGNIS.pact` | 0 | 1 | 5 | **6** | `IgnisCollectorV3` |
-| 3 | `04_BRD.pact` | 0 | 0 | 2 | **2** | `BrandingV2` |
-| 4 | `05_DPTF.pact` | 0 | 2 | 22 | **24** | `BrandingUsagePrimaryV2`, `DemiourgosPactTrueFungibleV2` |
-| 5 | `00_DPMF.pact` | 0 | 1 | 16 | **17** | `DemiourgosPactMetaFungibleV7` |
-| 6 | `06_DPOF.pact` | 0 | 1 | 20 | **21** | `DemiourgosPactOrtoFungibleV2`, `DpofUdcV2` |
-| 7 | `08_ATS.pact` | 0 | 3 | 21 | **24** | `AutostakeV3` |
-| 8 | `09_TFT.pact` | 0 | 0 | 5 | **5** | `TrueFungibleTransferV2` |
-| 9 | `10_ATSU.pact` | 0 | 0 | 14 | **14** | `AutostakeUsageV2` |
-| 10 | `11_VST.pact` | 0 | 5 | 24 | **29** | `VestingV2` |
-| 11 | `12_LIQUID.pact` | 0 | 0 | 5 | **5** | `StoaLiquidStakingV2` |
-| 12 | `13_OUROBOROS.pact` | 0 | 0 | 5 | **5** | `OuroborosV2` |
-| 13 | `15_SWP.pact` | 0 | 4 | 14 | **18** | `SwapperV4` |
-| 14 | `16_SWPI.pact` | 0 | 0 | 1 | **1** | — |
-| 15 | `18_SWPLC.pact` | 0 | 1 | 9 | **10** | `BrandingUsageSecondaryV2`, `SwapperLiquidityClientV2` |
-| 16 | `19_SWPU.pact` | 0 | 0 | 4 | **4** | `SwapperUsageV3` |
-| — | `20_MTX-SWP.pact` | — | — | — | — | *nothing to do* |
-| 17 | `21_CODEX.pact` | 0 | 0 | 5 | **5** | `CodexV2` |
-| 18 | `22_PYTHIA.pact` | 0 | 0 | 9 | **9** | `PythiaLedgerV3`, `PythiaV5` |
-| 19 | `01_TS01-A.pact` | 0 | 27 | 0 | **27** | `TalosStageOne_AdminV2` |
-| 20 | `02_TS01-C1.pact` | 10 | 49 | 2 | **61** | `TalosStageOne_ClientOneV2` |
-| 21 | `03_TS01-C2.pact` | 18 | 56 | 3 | **77** | `TalosStageOne_ClientTwoV2` |
-| 22 | `04_TS01-C3.pact` | 18 | 15 | 1 | **34** | `TalosStageOne_ClientThreeV4` |
-| 23 | `06_TS01-C4.pact` | 1 | 12 | 1 | **14** | `TalosStageOne_ClientFourV8` |
-| 24 | `05_TS01-P.pact` | 8 | 0 | 0 | **8** | `TalosStageOne_ClientPactsV4` |
-| 25 | `02_DPDC.pact` | 0 | 1 | 1 | **2** | `BrandingUsageTertiaryV2` |
-| 26 | `03_DPDC-C.pact` | 0 | 0 | 2 | **2** | `DpdcCreateV2` |
-| 27 | `04_DPDC-I.pact` | 0 | 1 | 0 | **1** | `DpdcIssueV2` |
-| 28 | `05_DPDC-R.pact` | 0 | 0 | 11 | **11** | `DpdcRolesV2` |
-| 29 | `06_DPDC-MNG.pact` | 0 | 0 | 12 | **12** | `DpdcManagementV2` |
-| 30 | `07_DPDC-T.pact` | 1 | 0 | 3 | **4** | `DpdcTransferV2` |
-| 31 | `08_DPDC-S.pact` | 0 | 0 | 10 | **10** | `DpdcSetsV2` |
-| 32 | `09_DPDC-F.pact` | 0 | 0 | 4 | **4** | `DpdcFragmentsV2` |
-| 33 | `10_DPDC-N.pact` | 0 | 0 | 8 | **8** | `DpdcNonceV2` |
-| 34 | `11_EQUITY+.pact` | 1 | 0 | 1 | **2** | `EquityV2` |
-| 35 | `00_Demipad.pact` | 2 | 2 | 6 | **10** | `DemiourgosLaunchpadV2` |
-| 36 | `01_ANK.pact` | 0 | 0 | 2 | **2** | `AcquisitionAnchorsV1` |
-| 37 | `02_SCORE.pact` | 6 | 0 | 8 | **14** | `AcquisitionScoresV1` |
-| 38 | `03_AQP.pact` | 2 | 0 | 0 | **2** | `AcquisitionPoolsV1` |
-| 39 | `05_FVT.pact` | 4 | 2 | 3 | **9** | `AcquisitionFarmsVaultsTreasuriesV1` |
-| 40 | `06_VCT.pact` | 0 | 0 | 3 | **3** | `AcquisitionVacateV1` |
-| 41 | `07_MTX-AQP.pact` | 1 | 0 | 0 | **1** | `AqpMtxV1` |
-| 42 | `08_DSA.pact` | 0 | 2 | 2 | **4** | `DsaV1` |
-| 43 | `01_TS02-C1.pact` | 11 | 54 | 0 | **65** | `TalosStageTwo_ClientOneV2` |
-| 44 | `02_TS02-C2.pact` | 9 | 50 | 0 | **59** | `TalosStageTwo_ClientTwoV2` |
-| 45 | `04_TS02-C3.pact` | 15 | 27 | 0 | **42** | `TalosStageTwo_ClientThreeV1` |
-| 46 | `05_TS02-DPAD.pact` | 8 | 6 | 0 | **14** | `TalosStageTwo_DemiPadV1` |
+| [ ] 1 | `01_DALOS.pact` | 0 | 0 | 18 | **18** | `OuronetDalosV2`, `OuronetPolicyV2` |
+| [ ] 2 | `02_IGNIS.pact` | 0 | 1 | 5 | **6** | `IgnisCollectorV3` |
+| [ ] 3 | `04_BRD.pact` | 0 | 0 | 2 | **2** | `BrandingV2` |
+| [ ] 4 | `05_DPTF.pact` | 0 | 2 | 22 | **24** | `BrandingUsagePrimaryV2`, `DemiourgosPactTrueFungibleV2` |
+| [ ] 5 | `00_DPMF.pact` | 0 | 1 | 16 | **17** | `DemiourgosPactMetaFungibleV7` |
+| [ ] 6 | `06_DPOF.pact` | 0 | 1 | 20 | **21** | `DemiourgosPactOrtoFungibleV2`, `DpofUdcV2` |
+| [ ] 7 | `08_ATS.pact` | 0 | 3 | 21 | **24** | `AutostakeV3` |
+| [ ] 8 | `09_TFT.pact` | 0 | 0 | 5 | **5** | `TrueFungibleTransferV2` |
+| [ ] 9 | `10_ATSU.pact` | 0 | 0 | 14 | **14** | `AutostakeUsageV2` |
+| [ ] 10 | `11_VST.pact` | 0 | 5 | 24 | **29** | `VestingV2` |
+| [ ] 11 | `12_LIQUID.pact` | 0 | 0 | 5 | **5** | `StoaLiquidStakingV2` |
+| [ ] 12 | `13_OUROBOROS.pact` | 0 | 0 | 5 | **5** | `OuroborosV2` |
+| [ ] 13 | `15_SWP.pact` | 0 | 4 | 14 | **18** | `SwapperV4` |
+| [ ] 14 | `16_SWPI.pact` | 0 | 0 | 1 | **1** | — |
+| [ ] 15 | `18_SWPLC.pact` | 0 | 1 | 9 | **10** | `BrandingUsageSecondaryV2`, `SwapperLiquidityClientV2` |
+| [ ] 16 | `19_SWPU.pact` | 0 | 0 | 4 | **4** | `SwapperUsageV3` |
+| [x] — | `20_MTX-SWP.pact` | — | — | — | — | *nothing to do* |
+| [ ] 17 | `21_CODEX.pact` | 0 | 0 | 5 | **5** | `CodexV2` |
+| [ ] 18 | `22_PYTHIA.pact` | 0 | 0 | 9 | **9** | `PythiaLedgerV3`, `PythiaV5` |
+| [ ] 19 | `01_TS01-A.pact` | 0 | 27 | 0 | **27** | `TalosStageOne_AdminV2` |
+| [ ] 20 | `02_TS01-C1.pact` | 10 | 49 | 2 | **61** | `TalosStageOne_ClientOneV2` |
+| [ ] 21 | `03_TS01-C2.pact` | 18 | 56 | 3 | **77** | `TalosStageOne_ClientTwoV2` |
+| [ ] 22 | `04_TS01-C3.pact` | 18 | 15 | 1 | **34** | `TalosStageOne_ClientThreeV4` |
+| [ ] 23 | `06_TS01-C4.pact` | 1 | 12 | 1 | **14** | `TalosStageOne_ClientFourV8` |
+| [ ] 24 | `05_TS01-P.pact` | 8 | 0 | 0 | **8** | `TalosStageOne_ClientPactsV4` |
+| [ ] 25 | `02_DPDC.pact` | 0 | 1 | 1 | **2** | `BrandingUsageTertiaryV2` |
+| [ ] 26 | `03_DPDC-C.pact` | 0 | 0 | 2 | **2** | `DpdcCreateV2` |
+| [ ] 27 | `04_DPDC-I.pact` | 0 | 1 | 0 | **1** | `DpdcIssueV2` |
+| [ ] 28 | `05_DPDC-R.pact` | 0 | 0 | 11 | **11** | `DpdcRolesV2` |
+| [ ] 29 | `06_DPDC-MNG.pact` | 0 | 0 | 12 | **12** | `DpdcManagementV2` |
+| [ ] 30 | `07_DPDC-T.pact` | 1 | 0 | 3 | **4** | `DpdcTransferV2` |
+| [ ] 31 | `08_DPDC-S.pact` | 0 | 0 | 10 | **10** | `DpdcSetsV2` |
+| [ ] 32 | `09_DPDC-F.pact` | 0 | 0 | 4 | **4** | `DpdcFragmentsV2` |
+| [ ] 33 | `10_DPDC-N.pact` | 0 | 0 | 8 | **8** | `DpdcNonceV2` |
+| [ ] 34 | `11_EQUITY+.pact` | 1 | 0 | 1 | **2** | `EquityV2` |
+| [ ] 35 | `00_Demipad.pact` | 2 | 2 | 6 | **10** | `DemiourgosLaunchpadV2` |
+| [ ] 36 | `01_ANK.pact` | 0 | 0 | 2 | **2** | `AcquisitionAnchorsV1` |
+| [ ] 37 | `02_SCORE.pact` | 6 | 0 | 8 | **14** | `AcquisitionScoresV1` |
+| [ ] 38 | `03_AQP.pact` | 2 | 0 | 0 | **2** | `AcquisitionPoolsV1` |
+| [ ] 39 | `05_FVT.pact` | 4 | 2 | 3 | **9** | `AcquisitionFarmsVaultsTreasuriesV1` |
+| [ ] 40 | `06_VCT.pact` | 0 | 0 | 3 | **3** | `AcquisitionVacateV1` |
+| [ ] 41 | `07_MTX-AQP.pact` | 1 | 0 | 0 | **1** | `AqpMtxV1` |
+| [ ] 42 | `08_DSA.pact` | 0 | 2 | 2 | **4** | `DsaV1` |
+| [ ] 43 | `01_TS02-C1.pact` | 11 | 54 | 0 | **65** | `TalosStageTwo_ClientOneV2` |
+| [ ] 44 | `02_TS02-C2.pact` | 9 | 50 | 0 | **59** | `TalosStageTwo_ClientTwoV2` |
+| [ ] 45 | `04_TS02-C3.pact` | 15 | 27 | 0 | **42** | `TalosStageTwo_ClientThreeV1` |
+| [ ] 46 | `05_TS02-DPAD.pact` | 8 | 6 | 0 | **14** | `TalosStageTwo_DemiPadV1` |
 
 **Interfaces get CONTENT updates, not necessarily VERSION bumps** — most are already ahead of
 mainnet. This is what dissolved the "48-interface cascade" that blocked the first attempt.
@@ -186,7 +190,9 @@ Per module, in order:
 8. Full gate: `python3 REPL/tools/_gate.py`. Artefact chain if it complains:
    `_suite_stats.py` → `_figuresync.py --write` → `_auditbook.py --docx`.
 9. **Commit per module.**
-10. **Report to the owner**: *"processed module X, modified these functions, N in total, done,
+10. **Tick the module in §4's table** — `[ ]` → `[x]`, in the same commit. The plan IS the
+    progress tracker: a cold session must be able to see what is done without reading git log.
+11. **Report to the owner**: *"processed module X, modified these functions, N in total, done,
     moving to next."*
 
 ### Rules that cost time when ignored
