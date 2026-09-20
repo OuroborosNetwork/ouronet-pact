@@ -188,6 +188,18 @@
             [
                 (format "<<SCALE-INJ-R1>> gas={} stale-remaining={} fits-2M={}" [g remain (<= g 2000000)])
                 (expect (format "<<SCALE-INJ-R1>> round fits 2M gas={}" [g]) true (<= g 2000000))
+                ;;THE SLOPE, PINNED (2026-09-20). "Fits 2M" caught the original quadratic scan --
+                ;;3.96M per round -- but it would sail straight past a 2x regression, because
+                ;;558k still fits. The per-user cost is what the STAGE TWO EMISSION's ceiling is
+                ;;computed from: this round fixes 15 users, and (279,084 - 226,301)/10 = 5,278 gas
+                ;;per stale user is the number that says the daily emission stops fitting a block
+                ;;at ~52 stale stakers per vault. If that coefficient moves, the emission's
+                ;;headroom moves with it and nothing else would notice.
+                ;;A BAND, not an exact pin: chain state shifts these figures a few percent, the
+                ;;same reason <<TX-BOOT-S2GAS>> is a band. The LOWER bound matters as much as the
+                ;;upper -- a round that suddenly costs far less has probably stopped fixing.
+                (expect (format "<<SCALE-INJ-R1>> 15-user round stays in band gas={}" [g])
+                    true (and (> g 200000) (< g 400000)))
                 (expect (format "<<SCALE-INJ-R1>> stale-remaining={}" [remain]) 35 remain)
             ]
         )
