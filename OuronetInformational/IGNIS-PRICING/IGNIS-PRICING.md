@@ -290,13 +290,14 @@ STOA; the constants-only conversion (65 table reads lifted); the `define-set` / 
 
 ## What is open
 
-**443** Talos client functions carry a price; **5** carry no row, and the sheet now says which:
+**443** Talos client functions carry a price; **7** carry no row, and the sheet now says which:
 
 ```
-187 exact  ·  134 floor  ·  2 STOA-only  ·  120 exempt  ·  0 unresolved  ·  5 unpriced
+187 exact  ·  134 floor  ·  2 STOA-only  ·  120 exempt  ·  0 unresolved  ·  7 unpriced
 ```
 
-Of the 5: **3 are admin entrypoints** (`ORBR|A_Fuel`, `P|A_Add`, `P|A_AddIMP`) — IGNIS and
+Of the 7: **5 are admin entrypoints** (`ORBR|A_Fuel`, `P|A_Add`, `P|A_AddIMP`, and — new on
+2026-09-20 — `P|A_RemoveIMP` and `P|A_SetIMP`, the guard-chain revoke and replace) — IGNIS and
 STOA free by owner rule, so there is nothing to price. The other **2 are billing shape B**
 (`DALOS|C_UpdateEliteAccount` and its `Squared` twin): the Talos wrapper builds the cumulator from a
 `URCi_` reader and collects it itself, so there is no core op for this sheet's row model to key on.

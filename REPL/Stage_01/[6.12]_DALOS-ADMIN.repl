@@ -557,4 +557,120 @@
 (env-sigs [])
 (commit-tx)
 
+
+;;|| NEXT >
+;;
+(begin-tx "TX-DA-005 - the IMP guard chain: idempotent add, revoke, replace")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;<<TX-DA-005>> THE GUARD CHAIN IS THE ONE PIECE OF POLICY STATE THAT CAN ONLY GROW WRONG.
+;;
+;;Until 2026-09-20 `P|A_AddIMP` was a blind append -- `UC_AppL` = `(+ in [item])` -- with no way
+;;to remove anything. Two consequences, and the second is the one that bites in production:
+;;
+;;  1. Replaying a module's `P|A_Define` DUPLICATED every guard it registers. Measured on IGNIS:
+;;     16 entries became 17 from a single replay. `P|UEV_IMC` -> `U|G::UEV_Any` maps `UC_Try`
+;;     over the WHOLE chain with no short-circuit, so each duplicate costs gas on every
+;;     IMC-gated call, forever, and nothing anywhere reports it.
+;;  2. A retired or compromised peer could not be revoked by any means short of a module upgrade.
+;;
+;;This block pins all three repaired behaviours on the LIVE DALOS chain, and restores the state it
+;;found, so it is safe in the shared pipeline. Each assertion is written so it would FAIL if the
+;;repair were reverted -- the add case checks the LENGTH, which is the only thing a blind append
+;;would change.
+;;==== TX-DA-005 - the IMP guard chain · 01 · env-sigs (caps) ==== ================================
+(print "--- [TX-DA-005 - the IMP guard chain · 01 · env-sigs (caps)] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-DA-005 - the IMP guard chain · 02 · let / invocation ==== ===============================
+(print "--- [TX-DA-005 - the IMP guard chain · 02 · let / invocation] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        ;;An outsider guard. CODEX's *SECURE* -- not its `P|CODEX|CALLER`, which IS already in
+        ;;DALOS's chain: the first draft of this test used that one, and [2] failed because adding
+        ;;an already-present guard is exactly the no-op [1] just proved. The absence is asserted
+        ;;below rather than assumed, so this cannot go wrong quietly a second time.
+        (outsider:guard (create-capability-guard (CODEX.SECURE)))
+        (seed:guard (create-capability-guard (DALOS.SECURE)))
+    )
+    (let
+        (
+            (n0:integer (length (ref-DALOS::P|UR_IMP)))
+        )
+        (map print
+            [
+                ;;non-vacuity: the chain really is populated, so the counts below mean something.
+                (expect "<<TX-DA-005>> DALOS's guard chain is populated to begin with"
+                    true (> n0 20))
+                ;;...and it carries NO duplicates today. This is the regression line: it fails the
+                ;;moment a blind append is reintroduced anywhere that writes this table.
+                (expect "<<TX-DA-005>> ...and holds no duplicate guards"
+                    n0 (length (distinct (ref-DALOS::P|UR_IMP))))
+                ;;non-vacuity for [2]: the outsider really is absent, so the length change below
+                ;;is caused by the add and not by a guard that was already there.
+                (expect "<<TX-DA-005>> ...and the outsider guard is NOT in it yet"
+                    false (contains outsider (ref-DALOS::P|UR_IMP)))
+            ]
+        )
+        ;;[1] ADD is IDEMPOTENT. Re-adding a guard already present must not grow the chain.
+        (DALOS.P|A_AddIMP (create-capability-guard (DPTF.P|DPTF|CALLER)))
+        (map print
+            [
+                (expect "<<TX-DA-005>> re-adding an EXISTING guard is a no-op, not an append"
+                    n0 (length (ref-DALOS::P|UR_IMP)))
+            ]
+        )
+        ;;[2] ADD of something genuinely new still works -- otherwise [1] could pass by the
+        ;;function being broken outright rather than idempotent.
+        (DALOS.P|A_AddIMP outsider)
+        (map print
+            [
+                (expect "<<TX-DA-005>> ...but a genuinely NEW guard is still added"
+                    (+ n0 1) (length (ref-DALOS::P|UR_IMP)))
+                (expect "<<TX-DA-005>> ...and it is really in the chain"
+                    true (contains outsider (ref-DALOS::P|UR_IMP)))
+            ]
+        )
+        ;;[3] REMOVE -- the capability that did not exist at all before this repair.
+        (DALOS.P|A_RemoveIMP outsider)
+        (map print
+            [
+                (expect "<<TX-DA-005>> a guard can be REVOKED, restoring the original length"
+                    n0 (length (ref-DALOS::P|UR_IMP)))
+                (expect "<<TX-DA-005>> ...and it is gone from the chain"
+                    false (contains outsider (ref-DALOS::P|UR_IMP)))
+            ]
+        )
+        ;;[4] THE SEED IS PROTECTED. A module's own SECURE guard is how it reaches its OWN
+        ;;P|UEV_IMC-gated functions; dropping it would wall DALOS off from itself.
+        (map print
+            [
+                (expect-failure "<<TX-DA-005>> the module's own SECURE seed cannot be revoked"
+                    "The module's own SECURE seed cannot be revoked"
+                    (DALOS.P|A_RemoveIMP seed))
+                (expect-failure "<<TX-DA-005>> ...nor dropped by a wholesale replace"
+                    "The module's own SECURE seed must be present"
+                    (DALOS.P|A_SetIMP [outsider]))
+            ]
+        )
+        ;;[5] SET replaces wholesale AND deduplicates -- fed a list with the seed twice, the chain
+        ;;that lands holds it once.
+        (DALOS.P|A_SetIMP [seed outsider seed])
+        (map print
+            [
+                (expect "<<TX-DA-005>> SetIMP replaces the chain and deduplicates its input"
+                    2 (length (ref-DALOS::P|UR_IMP)))
+            ]
+        )
+        ""
+    )
+)
+(print "")
+(print "===^^^===")
+(env-sigs [])
+;;ROLLBACK, NOT COMMIT. [5] deliberately truncates DALOS's guard chain to two entries, which would
+;;break every inter-module call into DALOS for the rest of the pipeline. The rollback is the point:
+;;it lets the destructive case be tested for real rather than approximated.
+(rollback-tx)
+
 (print "=== END FILE [6.12]_DALOS-ADMIN.repl (4 admin toggles + P|A_Add named-policy lane) ===")

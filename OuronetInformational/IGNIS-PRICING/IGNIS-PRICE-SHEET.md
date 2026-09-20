@@ -632,9 +632,11 @@ another Talos wrapper, not a core op) or admin entrypoints that are exempt by ru
 | ORBR\|A_Fuel | admin entrypoint -- IGNIS + STOA free by owner rule, nothing to price |
 | P\|A_Add | admin entrypoint -- IGNIS + STOA free by owner rule, nothing to price |
 | P\|A_AddIMP | admin entrypoint -- IGNIS + STOA free by owner rule, nothing to price |
+| P\|A_RemoveIMP | admin entrypoint -- IGNIS + STOA free by owner rule, nothing to price |
+| P\|A_SetIMP | admin entrypoint -- IGNIS + STOA free by owner rule, nothing to price |
 
 ---
-187 simple (exact price) · 134 complex (floor price) · 2 STOA-only · 120 exempt · 0 unresolved · 5 unpriced · 443 Talos client functions
+187 simple (exact price) · 134 complex (floor price) · 2 STOA-only · 120 exempt · 0 unresolved · 7 unpriced · 443 Talos client functions
 
 `×N` on a core op = the wrapper drives N priced core ops in a FIXED composition (still exactly knowable).
 

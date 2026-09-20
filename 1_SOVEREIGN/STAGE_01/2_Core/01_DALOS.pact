@@ -19,6 +19,44 @@
     ;;{P1}  constants
     ;;{P2}  schemas
     ;;
+    ;;TWO TABLES, AND THEY ARE NOT TWO SHAPES OF THE SAME THING.
+    ;;
+    ;;`P|S` backs a KEYED table: one named guard per row, answering "give me THE guard called X".
+    ;;Every entry in the tree is a `<MODULE>|Remote<Target>Gov`, read by name at SETUP time to
+    ;;COMPOSE account governors -- `(UEV_GuardOfAny [(create-capability-guard (DPDC.DPDC|GOV))
+    ;;(P|UR "DPDC-S|RemoteDpdcGov") ...])`. Two read sites in the whole codebase, both cold.
+    ;;
+    ;;`P|MS` backs a SINGLE row holding a LIST, answering "is ANY of my registered peers in scope
+    ;;right now?". Hot path: every `P|UEV_IMC` on every protected call.
+    ;;
+    ;;THE LIST SHAPE IS FORCED, NOT CHOSEN. `P|UEV_IMC` takes NO ARGUMENTS, and Pact has no
+    ;;`msg.sender` -- a callee cannot learn who called it. So it cannot do a keyed lookup; the only
+    ;;question it can ask is set-membership-by-proof, which is inherently O(N). The O(1)
+    ;;alternative would be making every caller name itself, i.e. a new parameter on several hundred
+    ;;protected signatures. And one row holding a list is ONE read, where a row-per-guard table
+    ;;would need `keys`/`select` -- a full scan plus N reads. The list is the cheap variant.
+    ;;
+    ;;THE COST, MEASURED 2026-09-20 rather than guessed. `P|UEV_IMC` = `8 + 8.1*N` gas:
+    ;;    N= 16 -> 138      N= 64 ->  527      N=256 -> 2082
+    ;;Dead linear, no short-circuit (`UEV_Any` maps `UC_Try` over the whole chain). Against a
+    ;;2,000,000 block limit the real chains are nothing: 46 tables, mean 7.1 guards, max 29
+    ;;(DALOS -- every module calls it; IGNIS is second at 25 because every module bills). The
+    ;;chain length IS the dependency graph, so legitimate growth was never the threat.
+    ;;
+    ;;THE THREAT WAS UNBOUNDED DUPLICATE GROWTH. `P|A_AddIMP` used to be a blind append: replaying
+    ;;one module's `P|A_Define` took IGNIS from 16 entries to 17, and every duplicate taxes every
+    ;;IMC-gated call on the chain forever while nothing reports it. `P|A_AddIMP` is now idempotent,
+    ;;which makes `P|A_Define` safe to replay and retires the hazard instead of routing around it.
+    ;;`P|A_RemoveIMP` and `P|A_SetIMP` close the other half: until 2026-09-20 there was NO WAY to
+    ;;revoke a retired or compromised peer short of upgrading the module.
+    ;;
+    ;;THE SEED. Every chain begins with the module's OWN `(create-capability-guard (SECURE))`,
+    ;;written in by `P|A_AddIMP`'s `with-default-read` default. That is how a module reaches its
+    ;;own `P|UEV_IMC`-gated functions, so `P|A_RemoveIMP` refuses to drop it and `P|A_SetIMP`
+    ;;refuses a list without it. Losing it walls a module off from itself.
+    ;;
+    ;;Composition is auditable at any time: `REPL/tools/_impdiff.py` derives the intended chain
+    ;;from every module's `P|A_Define` and diffs it against a live snapshot.
     (defschema P|S
         policy:guard
     )
@@ -38,7 +76,16 @@
         @doc "Adds a Policy in the local module Policy Table"
     )
     (defun P|A_AddIMP (policy-guard:guard)
-        @doc "Add a Policy in the local Policy Guard Chain"
+        @doc "Add a Policy in the local Policy Guard Chain. IDEMPOTENT: adding a guard that is \
+            \ already present is a no-op, so `P|A_Define` is safe to replay."
+    )
+    (defun P|A_RemoveIMP (policy-guard:guard)
+        @doc "Revoke a Policy from the local Policy Guard Chain. Removes every occurrence, and \
+            \ refuses to drop the module's own SECURE seed."
+    )
+    (defun P|A_SetIMP (policy-guards:[guard])
+        @doc "Replace the whole local Policy Guard Chain. Deduplicates; enforces that the \
+            \ module's own SECURE seed is present."
     )
     (defun P|A_Define ()
         @doc "Defines in each module the policies that are needed for intermodule communication"
@@ -624,18 +671,65 @@
         )
     )
     (defun P|A_AddIMP (policy-guard:guard)
+        @doc "Registers <policy-guard> as a trusted inter-module caller of this module. \
+            \ IDEMPOTENT: a guard already in the chain is left alone rather than appended \
+            \ a second time. See OuronetPolicyV2 for why that is load-bearing."
         (with-capability (GOV|DALOS_ADMIN)
             (let
                 (
                     (ref-U|LST:module{StringProcessorV2} U|LST)
+                    ;;
                     (dg:guard (create-capability-guard (SECURE)))
                 )
                 (with-default-read P|MT P|I
                     {"m-policies" : [dg]}
                     {"m-policies" := mp}
                     (write P|MT P|I
-                       {"m-policies" : (ref-U|LST::UC_AppL mp policy-guard)}
+                        {"m-policies" :
+                            (if (contains policy-guard mp)
+                                mp
+                                (ref-U|LST::UC_AppL mp policy-guard)
+                            )
+                        }
                     )
+                )
+            )
+        )
+    )
+    (defun P|A_RemoveIMP (policy-guard:guard)
+        @doc "Revokes <policy-guard> from this module's guard chain. Removes EVERY occurrence, so \
+            \ it doubles as the cleanup for duplicates left behind by the pre-idempotence append. \
+            \ Refuses to drop this module's own SECURE seed -- see OuronetPolicyV2."
+        (with-capability (GOV|DALOS_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
+                    ;;
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (enforce (!= policy-guard dg) "The module's own SECURE seed cannot be revoked")
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_RemoveItem mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_SetIMP (policy-guards:[guard])
+        @doc "Replaces this module's whole guard chain in one write -- the recovery hatch. \
+            \ Deduplicates, and enforces that the module's own SECURE seed survives: without it \
+            \ the module can no longer reach its own P|UEV_IMC-gated functions."
+        (with-capability (GOV|DALOS_ADMIN)
+            (let
+                (
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (enforce (contains dg policy-guards) "The module's own SECURE seed must be present")
+                (write P|MT P|I
+                    {"m-policies" : (distinct policy-guards)}
                 )
             )
         )
