@@ -365,7 +365,7 @@
     ;;
     (defun C_Issue:object{IgnisCollectorV3.OutputCumulator}
         (
-            patron:string account:string 
+            patron:string executor:string 
             name:[string] ticker:[string] decimals:[integer]
             can-upgrade:[bool] can-change-owner:[bool] can-add-special-role:[bool] can-transfer-oft-create-role:[bool]
             can-freeze:[bool] can-wipe:[bool] can-pause:[bool]
@@ -2921,7 +2921,7 @@
     ;;
     (defun C_Issue:object{IgnisCollectorV3.OutputCumulator}
         (
-            patron:string account:string 
+            patron:string executor:string 
             name:[string] ticker:[string] decimals:[integer]
             can-upgrade:[bool] can-change-owner:[bool] can-add-special-role:[bool] can-transfer-oft-create-role:[bool]
             can-freeze:[bool] can-wipe:[bool] can-pause:[bool]
@@ -2936,7 +2936,7 @@
                 (ico:object{IgnisCollectorV3.OutputCumulator}
                     (with-capability (SECURE)
                         (XB_IssueFree 
-                            account name ticker decimals 
+                            executor name ticker decimals 
                             can-upgrade can-change-owner can-add-special-role can-transfer-oft-create-role
                             can-freeze can-wipe can-pause iz-special
                         )

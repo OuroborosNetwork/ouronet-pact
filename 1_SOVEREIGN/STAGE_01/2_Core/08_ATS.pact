@@ -230,7 +230,7 @@
     (defun C_Issue:object{IgnisCollectorV3.OutputCumulator}
         (
             patron:string
-            account:string
+            executor:string
             atspair:[string]
             index-decimals:[integer]
             reward-token:[string]
@@ -3048,7 +3048,7 @@
     (defun C_Issue:object{IgnisCollectorV3.OutputCumulator}
         (
             patron:string
-            account:string
+            executor:string
             atspair:[string]
             index-decimals:[integer]
             reward-token:[string]
@@ -3057,7 +3057,7 @@
             rbt-nfr:[bool]
         )
         (P|UEV_IMC)
-        (with-capability (ATS|C>ISSUE account atspair index-decimals reward-token rt-nfr reward-bearing-token rbt-nfr)
+        (with-capability (ATS|C>ISSUE executor atspair index-decimals reward-token rt-nfr reward-bearing-token rbt-nfr)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
@@ -3066,7 +3066,7 @@
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                     (stoa-costs:decimal (URCi_IssueStoa l1))
                     (ats-ids:[string]
-                        (XI_FoldedIssue account atspair index-decimals reward-token rt-nfr reward-bearing-token rbt-nfr)
+                        (XI_FoldedIssue executor atspair index-decimals reward-token rt-nfr reward-bearing-token rbt-nfr)
                     )
                 )
                 (ref-IGNIS::STOA|C_Collect patron stoa-costs)

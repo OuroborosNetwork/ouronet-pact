@@ -313,3 +313,81 @@ diff per `module::entrypoint`.
 
 This comparison was only possible because Step 0 was committed SEPARATELY. Folding the instrument
 into the same commit as the change it validates would have left no boundary to measure across.
+
+---
+
+## BAND 2 — DONE for the 13 that could be licensed (2026-09-20)
+
+**Band 2 turned out to be three different things wearing one label**, and the label was the
+dangerous part: its prescribed action is a *no-op rename*, so anything misfiled into it gets marked
+done without ever gaining an executor.
+
+### The classifier was wrong twice before any code was touched
+
+**(a) It read the BODY, not the signature.** Membership was decided by matching an account-name
+regex against `b[:400]` — the first 400 characters of the function body. Seven functions qualified
+on the strength of a **let binding**:
+
+```pact
+(defun C_UpgradeBranding (patron:string entity-id:string months:integer)   ;; no account param
+  (let ((parent-owner:string (UR_Konto parent)))                            ;; <-- this matched
+```
+
+`C_UpgradeBranding` × 6 (`DPMF`/`DPTF`/`DPOF`/`ATS`/`SWP`/`DPDC`) + `C_UpgradeBrandingLPs`
+(`SWPLC`). Their owner is **derived from the entity** — they are Band 1. Fixed by reading the
+paren-balanced parameter list and nothing else. Totals held at 89 (no function entered or left the
+refactor); `band 1: 51 → 58`, `band 2: 37 → 30`.
+
+**(b) It could not tell "already compliant" from "unverifiable".** Band 2's licence to rename rests
+on the account parameter *being* the enforced ownership target. For 21 of 30 rows it is not, for
+**three unrelated reasons that produce one identical symptom** (`targets = []`):
+
+| row | why the walker sees nothing | real status |
+|---|---|---|
+| `DPTF`/`DPMF`/`DPOF`/`ATS`/`SWPI` `C_Issue` | the core enforces nothing; **Talos does** (`AUTH-SURFACE` line 382 shows `TS01-C1::DPTF\|C_Issue` reaching `account`) | correct by architecture — Talos is the auth boundary |
+| `MTX-SWP` × 8 | delegates into the `MTX\|C_AddLiquidity` **defpact**; auth is in the steps | fine |
+| `FVT::CC_Inject` / `CC_Collect` family | ownership is enforced one layer **down**, in `ref-TFT::C_Transfer` → `CAP_EnforceAccountOwnership sender` | already done in Band 3 |
+
+The walker follows capability chains, not defun bodies or defpact steps, so it cannot see any of
+the three. It now reports them as `??` instead of picking a band. **A classifier that cannot tell
+these apart must not pretend to.**
+
+### The one that would have been an active mistake
+
+```pact
+(defun C_RotateOwnership (patron:string fvt-id:string new-owner-konto:string))
+```
+
+Band 2 says "rename the account parameter to `executor`". The account parameter here is
+`new-owner-konto` — the **recipient**. The executor is `owner-now`, derived inside the defcap via
+`ref-RPS::UR_FVT|OwnerKonto`. Renaming would have named the *incoming* owner as the actor, under a
+banner that reads "no behaviour change". **It is Band 1.**
+
+(Noted in passing: `FVT|C>ROTATE-OWNERSHIP-FVT` also has the 2026-09-14 ordering problem — the
+`can-change-owner` business `enforce` runs *before* `CAP_EnforceAccountOwnership owner-now`.)
+
+### What was actually renamed, and the principle used
+
+**Rename only where the existing name is silent about the axis.** `account` says nothing about who
+pays versus who acts, so `account → executor` **loses no information and gains the axis**. By the
+same test `owner-konto`, `sender`, `injector` and `collector` all already name a real role — the
+user's own acceptance of `injector`/`collector` in Band 3 establishes that a domain-specific
+executor name is canon. Renaming those would *remove* meaning to buy uniformity.
+
+**13 renamed** — `C_Issue` in `00_DPMF`, `05_DPTF`, `06_DPOF`, `08_ATS`, `16_SWPI`; and all 8
+`20_MTX-SWP` pool/liquidity entrypoints. 2 forms each (interface declaration + module defun),
+3–4 occurrences, **zero call sites — Pact has no named arguments**, which is what makes Band 2
+cheap in a way Band 1 will not be.
+
+**Left alone, deliberately:** the 6 `02_SCORE` + `FVT::C_Issue` (`owner-konto` — meaningful),
+`DPDC-T::C_IgnisRoyaltyCollector` (`sender` — matches the transfer idiom), the 4 inject/collect
+(done in Band 3).
+
+### Still open out of Band 2
+
+- `05_FVT::C_RotateOwnership` → move to Band 1.
+- `11_EQUITY+::C_IssueShareholderCollection` — `creator-account`, no reachable enforce; unreviewed.
+- `03_AQP::C_SyncTrueFungibleAnchors` / `C_SyncCollectableAnchors` — `beneficiary-id` is an account
+  and no ownership enforce is reachable. These are **repair** functions, so permissionless may well
+  be intended (a stranger paying to fix your anchors harms nobody) — but that is a ruling, not a
+  reading, and it has not been made.

@@ -286,7 +286,7 @@
     ;;
     (defun C_Issue:object{IgnisCollectorV3.OutputCumulator}
         (
-            patron:string account:string 
+            patron:string executor:string 
             name:[string] ticker:[string] decimals:[integer] 
             can-upgrade:[bool] can-change-owner:[bool] can-add-special-role:[bool] 
             can-freeze:[bool] can-wipe:[bool] can-pause:[bool]
@@ -2889,7 +2889,7 @@
     )
     ;;
     (defun C_Issue:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string account:string name:[string] ticker:[string] decimals:[integer] can-upgrade:[bool] can-change-owner:[bool] can-add-special-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool])
+        (patron:string executor:string name:[string] ticker:[string] decimals:[integer] can-upgrade:[bool] can-change-owner:[bool] can-add-special-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool])
         (P|UEV_IMC)
         (let
             (
@@ -2899,7 +2899,7 @@
                 (stoa-costs:decimal (URCi_IssueStoa l1))
                 (ico:object{IgnisCollectorV3.OutputCumulator}
                     (with-capability (SECURE)
-                        (XB_IssueFree account name ticker decimals can-upgrade can-change-owner can-add-special-role can-freeze can-wipe can-pause tl)
+                        (XB_IssueFree executor name ticker decimals can-upgrade can-change-owner can-add-special-role can-freeze can-wipe can-pause tl)
                     )
                 )
             )

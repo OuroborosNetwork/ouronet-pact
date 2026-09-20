@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 7 of 20
 ;; This is STEP 7 of 21 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-6 must have run first, including the init steps between deploys.
-;; 5 module(s), 321,972 gas measured in the REPL gas model, 275,705 bytes
+;; 5 module(s), 321,972 gas measured in the REPL gas model, 275,729 bytes
 ;;
 ;; Modules in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/20_MTX-SWP.pact
@@ -69,15 +69,15 @@
     ;;  []C] Functions
     ;;
     ;;
-    (defun C_IssueStablePool (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal amp:decimal p:bool))
-    (defun C_IssueWeightedPool (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool))
-    (defun C_IssueStandardPool (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal p:bool))
+    (defun C_IssueStablePool (patron:string executor:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal amp:decimal p:bool))
+    (defun C_IssueWeightedPool (patron:string executor:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool))
+    (defun C_IssueStandardPool (patron:string executor:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal p:bool))
     ;;
-    (defun C_AddStandardLiquidity (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
-    (defun C_AddIcedLiquidity (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
-    (defun C_AddGlacialLiquidity (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
-    (defun C_AddFrozenLiquidity (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal))
-    (defun C_AddSleepingLiquidity (patron:string account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal))
+    (defun C_AddStandardLiquidity (patron:string executor:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
+    (defun C_AddIcedLiquidity (patron:string executor:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
+    (defun C_AddGlacialLiquidity (patron:string executor:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
+    (defun C_AddFrozenLiquidity (patron:string executor:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal))
+    (defun C_AddSleepingLiquidity (patron:string executor:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal))
 
 )
 ;;
@@ -441,33 +441,33 @@
     ;;{5.7}  User [A/C]
     ;;
     (defun C_IssueStablePool
-        (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal amp:decimal p:bool)
+        (patron:string executor:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal amp:decimal p:bool)
         (P|UEV_IMC)
         (with-capability (MTX-SWP|C>ISSUE-S-POOL pool-tokens)
             (MTX|C_Issue
-                patron account pool-tokens fee-lp
+                patron executor pool-tokens fee-lp
                 (make-list (length pool-tokens) 1.0)
                 amp p
             )
         )
     )
     (defun C_IssueWeightedPool
-        (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool)
+        (patron:string executor:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool)
         (P|UEV_IMC)
         (with-capability (MTX-SWP|C>ISSUE-W-POOL pool-tokens)
             (MTX|C_Issue
-                patron account pool-tokens fee-lp
+                patron executor pool-tokens fee-lp
                 weights
                 -1.0 p
             )
         )
     )
     (defun C_IssueStandardPool
-        (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal p:bool)
+        (patron:string executor:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal p:bool)
         (P|UEV_IMC)
         (with-capability (MTX-SWP|C>ISSUE-P-POOL pool-tokens)
             (MTX|C_Issue
-                patron account pool-tokens fee-lp
+                patron executor pool-tokens fee-lp
                 (make-list (length pool-tokens) 1.0)
                 -1.0 p
             )
@@ -475,38 +475,38 @@
     )
     ;;
     (defun C_AddStandardLiquidity
-        (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
+        (patron:string executor:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
         (P|UEV_IMC)
         (with-capability (MTX-SWP|S>ADD-LQ stoa-pid)
-            (MTX|C_AddLiquidity patron account swpair input-amounts true true stoa-pid)
+            (MTX|C_AddLiquidity patron executor swpair input-amounts true true stoa-pid)
         )
     )
     (defun C_AddIcedLiquidity
-        (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
+        (patron:string executor:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
         (P|UEV_IMC)
         (with-capability (MTX-SWP|S>ADD-LQ stoa-pid)
-            (MTX|C_AddLiquidity patron account swpair input-amounts false true stoa-pid)
+            (MTX|C_AddLiquidity patron executor swpair input-amounts false true stoa-pid)
         )
     )
     (defun C_AddGlacialLiquidity
-        (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
+        (patron:string executor:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
         (P|UEV_IMC)
         (with-capability (MTX-SWP|S>ADD-LQ stoa-pid)
-            (MTX|C_AddLiquidity patron account swpair input-amounts false false stoa-pid)
+            (MTX|C_AddLiquidity patron executor swpair input-amounts false false stoa-pid)
         )
     )
     (defun C_AddFrozenLiquidity
-        (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal)
+        (patron:string executor:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal)
         (P|UEV_IMC)
         (with-capability (MTX-SWP|S>ADD-LQ stoa-pid)
-            (MTX|C_AddFrozenLiquidity patron account swpair frozen-dptf input-amount stoa-pid)
+            (MTX|C_AddFrozenLiquidity patron executor swpair frozen-dptf input-amount stoa-pid)
         )
     )
     (defun C_AddSleepingLiquidity
-        (patron:string account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal)
+        (patron:string executor:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal)
         (P|UEV_IMC)
         (with-capability (MTX-SWP|S>ADD-LQ stoa-pid)
-            (MTX|C_AddSleepingLiquidity patron account swpair sleeping-dpof nonce stoa-pid)
+            (MTX|C_AddSleepingLiquidity patron executor swpair sleeping-dpof nonce stoa-pid)
         )
     )
     (defun UC_AddLiquidityChurnKey:string (asymmetric-collection:bool gaseous-collection:bool)

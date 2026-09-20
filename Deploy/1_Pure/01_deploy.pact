@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 1 of 20
 ;; This is STEP 1 of 21 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-0 must have run first, including the init steps between deploys.
-;; 2 module(s), 234,294 gas measured in the REPL gas model, 225,046 bytes
+;; 2 module(s), 234,294 gas measured in the REPL gas model, 225,049 bytes
 ;;
 ;; Modules in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/02_IGNIS.pact
@@ -2297,7 +2297,7 @@
     ;;
     (defun C_Issue:object{IgnisCollectorV3.OutputCumulator}
         (
-            patron:string account:string 
+            patron:string executor:string 
             name:[string] ticker:[string] decimals:[integer] 
             can-upgrade:[bool] can-change-owner:[bool] can-add-special-role:[bool] 
             can-freeze:[bool] can-wipe:[bool] can-pause:[bool]
@@ -4900,7 +4900,7 @@
     )
     ;;
     (defun C_Issue:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string account:string name:[string] ticker:[string] decimals:[integer] can-upgrade:[bool] can-change-owner:[bool] can-add-special-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool])
+        (patron:string executor:string name:[string] ticker:[string] decimals:[integer] can-upgrade:[bool] can-change-owner:[bool] can-add-special-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool])
         (P|UEV_IMC)
         (let
             (
@@ -4910,7 +4910,7 @@
                 (stoa-costs:decimal (URCi_IssueStoa l1))
                 (ico:object{IgnisCollectorV3.OutputCumulator}
                     (with-capability (SECURE)
-                        (XB_IssueFree account name ticker decimals can-upgrade can-change-owner can-add-special-role can-freeze can-wipe can-pause tl)
+                        (XB_IssueFree executor name ticker decimals can-upgrade can-change-owner can-add-special-role can-freeze can-wipe can-pause tl)
                     )
                 )
             )

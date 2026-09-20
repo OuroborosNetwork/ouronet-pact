@@ -140,13 +140,29 @@ def plan():
             if c in caps:
                 walk(caps[c])
         targets = sorted(set(owns))
+        # Is the account-ish PARAMETER the thing whose ownership is actually enforced? Band 2's
+        # licence to rename rests entirely on "yes". When the answer is no, the row is NOT safely
+        # renameable and the tool must say so rather than pick a band:
+        #   * C_RotateOwnership  -- the param is `new-owner-konto`, the RECIPIENT; the executor is
+        #     `owner-now`, derived. Renaming the recipient to `executor` would name the incoming
+        #     owner as the actor. Band 2's own "no behaviour change" framing would wave it through.
+        #   * CC_Inject / CC_Collect -- already done; the executor's ownership is enforced one
+        #     layer DOWN, in ref-TFT::C_Transfer (`CAP_EnforceAccountOwnership sender`), which this
+        #     walker does not follow because it walks capability chains, not defun bodies.
+        #   * DPTF/DPMF/DPOF C_Issue -- the core enforces nothing; the Talos wrapper does. That is
+        #     architecturally correct (Talos is the auth boundary) and invisible from here.
+        # Three different reasons, one symptom. A classifier that cannot tell them apart must not
+        # pretend to -- `verified` is reported, never silently folded into a band.
+        acct_params = {q for q in re.findall(r'([A-Za-z0-9|_-]+):', sig)
+                       if ACCT.search(q + ':string')}
+        verified = bool(acct_params & set(targets))
         if ACCT.search(sig):
             band = 2
         elif targets and all(o == 'patron' for o in targets):
             band = 3
         else:
             band = 1
-        rows.append((f, n, band, targets))
+        rows.append((f, n, band, targets, verified))
     return rows
 
 
@@ -154,24 +170,32 @@ def main():
     rows = plan()
     if "--band" in sys.argv:
         want = int(sys.argv[sys.argv.index("--band") + 1])
-        for f, n, b, t in rows:
+        for f, n, b, t, v in rows:
             if b == want:
-                print(f"{f:26s} {n:42s} {t or '(derived, unnamed)'}")
+                flag = "    " if v or b != 2 else " ?? "
+                print(f"{flag}{f:26s} {n:42s} {t or '(derived, unnamed)'}")
         return 0
     if "--module" in sys.argv:
         want = sys.argv[sys.argv.index("--module") + 1]
-        for f, n, b, t in rows:
+        for f, n, b, t, v in rows:
             if f == want:
-                print(f"  B{b}  {n:42s} {t or '(derived, unnamed)'}")
+                flag = "?" if (b == 2 and not v) else " "
+                print(f"  B{b}{flag} {n:42s} {t or '(derived, unnamed)'}")
         return 0
-    c = collections.Counter(b for _, _, b, _ in rows)
+    c = collections.Counter(b for _, _, b, _, _ in rows)
     print(f"patron-taking C_/A_ entrypoints: {len(rows)}")
     for b, label in [(1, "add executor"), (2, "rename only"), (3, "patron IS executor")]:
         print(f"   band {b}  {label:22s} {c[b]}")
     print("\nBand 1 worklist, smallest module first (gate after EVERY module, never batch):")
-    per = collections.Counter(f for f, _, b, _ in rows if b == 1)
+    per = collections.Counter(f for f, _, b, _, _ in rows if b == 1)
     for f, k in sorted(per.items(), key=lambda x: x[1]):
         print(f"   {f:26s} {k}")
+    unver = [(f, n) for f, n, b, t, v in rows if b == 2 and not v]
+    if unver:
+        print(f"\nBand 2 rows the walker CANNOT license for rename ({len(unver)}) -- the account\n"
+              f"parameter is not the enforced ownership target. Read each before touching it:")
+        for f, n in unver:
+            print(f"   ?? {f:26s} {n}")
     return 0
 
 

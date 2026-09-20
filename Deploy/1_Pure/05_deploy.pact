@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 5 of 20
 ;; This is STEP 5 of 21 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-4 must have run first, including the init steps between deploys.
-;; 2 module(s), 254,885 gas measured in the REPL gas model, 246,028 bytes
+;; 2 module(s), 254,885 gas measured in the REPL gas model, 246,032 bytes
 ;;
 ;; Modules in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact
@@ -2557,7 +2557,7 @@
     ;;  []C] Functions
     ;;
     ;;
-    (defun C_Issue:object{IgnisCollectorV3.OutputCumulator} (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool))
+    (defun C_Issue:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool))
 
 )
 ;;
@@ -5077,7 +5077,7 @@
         )
     )
     (defun C_Issue:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool)
+        (patron:string executor:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool)
         @doc "Issues a new SWPair (Liquidty Pool). \
             \ #36M/M5 fix: the write sequence itself (mint/transfer/tracker) now lives in \
             \ the shared XE_IssueWrite — MTX-SWP::MTX|C_Issue's own Step 3 calls the same \
@@ -5085,7 +5085,7 @@
             \ owns all of ITS OWN IGNIS billing/aggregation (MTX|C_Issue bills separately, \
             \ in its own Step 2, before Step 3 ever runs)."
         (P|UEV_IMC)
-        (with-capability (SWPI|C>ISSUE account pool-tokens fee-lp weights amp p)
+        (with-capability (SWPI|C>ISSUE executor pool-tokens fee-lp weights amp p)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
@@ -5095,7 +5095,7 @@
                     (stoa-costs:decimal (ref-IGNIS::UC_StoaPrice "issue-swp-pair"))
                     (gas-swp-cost:decimal (ref-IGNIS::UC_IgnisDeter "issue-swp-pair"))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                    (write-result:list (XE_IssueWrite account pool-tokens fee-lp weights amp p))
+                    (write-result:list (XE_IssueWrite executor pool-tokens fee-lp weights amp p))
                     (swpair:string (at 0 write-result))
                     (token-lp:string (at 1 write-result))
                     (ico1:object{IgnisCollectorV3.OutputCumulator} (at 2 write-result))

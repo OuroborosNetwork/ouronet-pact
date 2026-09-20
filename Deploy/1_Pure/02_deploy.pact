@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 2 of 20
 ;; This is STEP 2 of 21 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-1 must have run first, including the init steps between deploys.
-;; 2 module(s), 289,772 gas measured in the REPL gas model, 236,848 bytes
+;; 2 module(s), 289,772 gas measured in the REPL gas model, 236,854 bytes
 ;;
 ;; Modules in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/00_DPMF.pact
@@ -210,7 +210,7 @@
     (defun C_Control:object{IgnisCollectorV3.OutputCumulator} (id:string cco:bool cu:bool casr:bool cf:bool cw:bool cp:bool ctncr:bool))
     (defun C_Create:object{IgnisCollectorV3.OutputCumulator} (id:string account:string meta-data:[object]))
     (defun C_DeployAccount (id:string account:string))
-    (defun C_Issue:object{IgnisCollectorV3.OutputCumulator} (patron:string account:string name:[string] ticker:[string] decimals:[integer] can-change-owner:[bool] can-upgrade:[bool] can-add-special-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool] can-transfer-nft-create-role:[bool]))
+    (defun C_Issue:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string name:[string] ticker:[string] decimals:[integer] can-change-owner:[bool] can-upgrade:[bool] can-add-special-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool] can-transfer-nft-create-role:[bool]))
     (defun C_Mint:object{IgnisCollectorV3.OutputCumulator} (id:string account:string amount:decimal meta-data:[object]))
     (defun C_MultiBatchTransfer:object{IgnisCollectorV3.OutputCumulator} (id:string nonces:[integer] sender:string receiver:string method:bool))
     (defun C_RotateOwnership:object{IgnisCollectorV3.OutputCumulator} (id:string new-owner:string))
@@ -2211,7 +2211,7 @@
         )
     )
     (defun C_Issue:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string account:string name:[string] ticker:[string] decimals:[integer] can-change-owner:[bool] can-upgrade:[bool] can-add-special-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool] can-transfer-nft-create-role:[bool])
+        (patron:string executor:string name:[string] ticker:[string] decimals:[integer] can-change-owner:[bool] can-upgrade:[bool] can-add-special-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool] can-transfer-nft-create-role:[bool])
         (P|UEV_IMC)
         (let
             (
@@ -2222,7 +2222,7 @@
                 (iz-special:[bool] (make-list l1 false))
                 (ico:object{IgnisCollectorV3.OutputCumulator}
                     (with-capability (SECURE)
-                        (XB_IssueFree account name ticker decimals can-change-owner can-upgrade can-add-special-role can-freeze can-wipe can-pause can-transfer-nft-create-role iz-special)
+                        (XB_IssueFree executor name ticker decimals can-change-owner can-upgrade can-add-special-role can-freeze can-wipe can-pause can-transfer-nft-create-role iz-special)
                     )
                 )
             )
@@ -2747,7 +2747,7 @@
     ;;
     (defun C_Issue:object{IgnisCollectorV3.OutputCumulator}
         (
-            patron:string account:string 
+            patron:string executor:string 
             name:[string] ticker:[string] decimals:[integer]
             can-upgrade:[bool] can-change-owner:[bool] can-add-special-role:[bool] can-transfer-oft-create-role:[bool]
             can-freeze:[bool] can-wipe:[bool] can-pause:[bool]
@@ -5303,7 +5303,7 @@
     ;;
     (defun C_Issue:object{IgnisCollectorV3.OutputCumulator}
         (
-            patron:string account:string 
+            patron:string executor:string 
             name:[string] ticker:[string] decimals:[integer]
             can-upgrade:[bool] can-change-owner:[bool] can-add-special-role:[bool] can-transfer-oft-create-role:[bool]
             can-freeze:[bool] can-wipe:[bool] can-pause:[bool]
@@ -5318,7 +5318,7 @@
                 (ico:object{IgnisCollectorV3.OutputCumulator}
                     (with-capability (SECURE)
                         (XB_IssueFree 
-                            account name ticker decimals 
+                            executor name ticker decimals 
                             can-upgrade can-change-owner can-add-special-role can-transfer-oft-create-role
                             can-freeze can-wipe can-pause iz-special
                         )

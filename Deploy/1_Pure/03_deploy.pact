@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 3 of 20
 ;; This is STEP 3 of 21 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-2 must have run first, including the init steps between deploys.
-;; 2 module(s), 285,032 gas measured in the REPL gas model, 224,714 bytes
+;; 2 module(s), 285,032 gas measured in the REPL gas model, 224,718 bytes
 ;;
 ;; Modules in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/08_ATS.pact
@@ -247,7 +247,7 @@
     (defun C_Issue:object{IgnisCollectorV3.OutputCumulator}
         (
             patron:string
-            account:string
+            executor:string
             atspair:[string]
             index-decimals:[integer]
             reward-token:[string]
@@ -3065,7 +3065,7 @@
     (defun C_Issue:object{IgnisCollectorV3.OutputCumulator}
         (
             patron:string
-            account:string
+            executor:string
             atspair:[string]
             index-decimals:[integer]
             reward-token:[string]
@@ -3074,7 +3074,7 @@
             rbt-nfr:[bool]
         )
         (P|UEV_IMC)
-        (with-capability (ATS|C>ISSUE account atspair index-decimals reward-token rt-nfr reward-bearing-token rbt-nfr)
+        (with-capability (ATS|C>ISSUE executor atspair index-decimals reward-token rt-nfr reward-bearing-token rbt-nfr)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
@@ -3083,7 +3083,7 @@
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                     (stoa-costs:decimal (URCi_IssueStoa l1))
                     (ats-ids:[string]
-                        (XI_FoldedIssue account atspair index-decimals reward-token rt-nfr reward-bearing-token rbt-nfr)
+                        (XI_FoldedIssue executor atspair index-decimals reward-token rt-nfr reward-bearing-token rbt-nfr)
                     )
                 )
                 (ref-IGNIS::STOA|C_Collect patron stoa-costs)
