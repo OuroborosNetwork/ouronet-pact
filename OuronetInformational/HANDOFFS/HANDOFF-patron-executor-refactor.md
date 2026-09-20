@@ -989,3 +989,60 @@ for that enforce; none of them is on this path.
 
 What it does close: the emission still fits a block, still costs ~47% of one, and the `<<TX-BOOT-S2GAS>>`
 band still holds at both ends after the largest change this codebase has had in one day.
+
+---
+
+## THE EMISSION'S CEILING, MEASURED (2026-09-20) — it is ~52 stale stakers per vault
+
+The warning in `AA_OuroMinterStageTwo`'s `@doc` was qualitative: *"cost scales with STAKER COUNT"*.
+A warning without a number cannot be acted on, so here is the number, derived from
+`Kursan/AQP-scale-inject.repl` — a harness that already existed and that once caught a quadratic
+scan in this very path.
+
+### Measured
+
+`CCp_InjectFixChunk` paging 50 stale users in chunks of 15:
+
+| round | users fixed | gas |
+|---|---|---|
+| R1 | 15 | 279,084 |
+| R2 | 15 | 279,089 |
+| R3 | 15 | 279,088 |
+| R4 | 5 | 226,301 |
+| finalize | — | 146,578 |
+
+Two points, one line:
+
+```
+per STALE user :   5,278 gas
+fixed base     : 199,910 gas   (the scan itself)
+```
+
+The base dominates at small N, which is why the emission looks cheap today.
+
+### The ceiling
+
+```
+Stage Two today                      911,547 gas
+headroom to a 2M block             1,088,453
+four CC_Inject legs, N stale each   21,113 gas per N
+N at which the emission stops fitting        52
+```
+
+**~52 stale stakers per vault.** Not 52 stakers — 52 *stale* ones. Staleness is the driver, and it
+arises when debs move, so a quiet vault with hundreds of stakers can stay cheap while a busy one
+with fifty cannot.
+
+Two caveats the number does not carry on its own:
+- the four legs hit **four different FVTs with independent staker sets**, so the real bound is the
+  WORST vault, not the average;
+- the `<<TX-BOOT-S2GAS>>` **floor** (>500k) is unaffected — cost only rises, so the floor keeps
+  doing its job of catching legs that silently stop running.
+
+### What this makes decidable
+
+The fallback exists and now works (`MTX|n|C_Inject`, fixed 2026-09-20 — it was fiction before).
+The open question is no longer *whether* the daily emission needs to become a sequence but *when*,
+and "when" now has a trigger that can be watched rather than guessed: **the Custodians vault
+passing ~50 stale stakers**. That is a threshold a monitor can assert on, long before a daily
+emission fails on-chain.
