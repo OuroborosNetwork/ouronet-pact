@@ -128,6 +128,23 @@ hard-coded path literal in every tool. If you move a tool, this is what tells yo
 the 2026-09-14 move killed eleven tools that died at *import*, so nothing that diffed their output
 could see it.
 
+## ACTIVE LONG-RUN WORK — the patron/executor/executee canon sweep
+
+**If a session starts mid-sweep, read
+[`OuronetInformational/HANDOFFS/HANDOFF-executor-canon-sweep.md`](OuronetInformational/HANDOFFS/HANDOFF-executor-canon-sweep.md)
+before anything else.** It carries the canon, the tooling, the 46-module worklist and the
+per-module protocol. The canon itself lives in `StoicSyntax-Prefixes.md` §2.2.
+
+One line of it matters more than the rest: **every `A_`/`C_` entrypoint takes `patron` 1st,
+`executor` 2nd, `executee` 3rd when one exists** — position is canon, `P|` policy functions are
+exempt, and a Talos `A_` wrapper takes no patron because the blessed path supplies
+`GASLESS-PATRON` itself.
+
+Ground truth for what remains is `python3 REPL/tools/_executorplan.py`, never a remembered number.
+The first attempt at this refactor was scoped against `_bandplan.py`, whose entrypoint filter was
+blind to **every Talos function** — it reported 89 entrypoints where there are 482, and Talos is
+the only client-facing path in the system. Trust the tool, and check the tool.
+
 ## Repository layout
 
 | Path | Role |
