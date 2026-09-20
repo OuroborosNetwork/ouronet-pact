@@ -1904,6 +1904,9 @@ single site it found. All seven are annotated `;;PRODUCED-TRIAGED` at source; th
 RT-G-001 and RT-G-002 tested the two doors a hostile citizen module would knock on: a direct call to
 a sovereign `C_` (refused by `P|UEV_IMC`) and `IGNIS::C_TransferDalosFuel`, the one client entrypoint
 of 290 without an IMC gate (refused three times). Both REFUSED, and family G has found no defect.
+*(2026-09-20: the second door was closed at the source — that function is now `XB_MoveDalosFuel`
+behind `P|UEV_IMC`. RT-G-002 was rewritten to attack `coin.transfer` directly for the lower-layer
+proof, so the property this entry rests on is still exercised rather than shadowed.)*
 
 The door neither attack tried is the one Pact opens that most languages do not: **a modref is CODE**.
 A function taking `module{SomeIface}` as a **parameter** is an entrypoint that executes

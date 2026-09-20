@@ -308,6 +308,7 @@
                 (ref-P|DPDC-T:module{OuronetPolicyV2} DPDC-T)
                 (ref-P|DPDC-F:module{OuronetPolicyV2} DPDC-F)
                 (ref-P|DPDC-S:module{OuronetPolicyV2} DPDC-S)
+                (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
                 (mg:guard (create-capability-guard (P|TALOS-SUMMONER)))
             )
             (ref-P|TS01-A::P|A_AddIMP mg)
@@ -320,6 +321,10 @@
             (ref-P|DPDC-F::P|A_AddIMP mg)
             (ref-P|DPDC-S::P|A_AddIMP mg)
             (ref-P|DPDC-N::P|A_AddIMP mg)
+            ;;IGNIS RESTRUCTURE 2026-09-20: the collectors became protected X_ functions
+            ;;behind `P|UEV_IMC`, so every module that bills must be a registered IMP peer
+            ;;of IGNIS or the fee call dies with "None of the guards passed".
+            (ref-P|IGNIS::P|A_AddIMP mg)
         )
     )
 
@@ -371,7 +376,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC:module{DpdcV2} DPDC)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC::C_UpdatePendingBranding entity-id false logo description website social)
                 )
             )
@@ -418,7 +423,7 @@
                         )
                     )
                 )
-                (ref-IGNIS::C_Collect patron ico)
+                (ref-IGNIS::XE_CollectIgnis patron ico)
                 (format "Created {} Clas 0 NonFungible(s) within the {} DPNF Collection"
                     [(at "output" ico) id]
                 )
@@ -454,7 +459,7 @@
                         )
                     )
                 )
-                (ref-IGNIS::C_Collect patron ico)
+                (ref-IGNIS::XE_CollectIgnis patron ico)
                 (ref-TS01-A::XB_DynamicFuelSTOA)
                 (at 0 (at "output" ico))
             )
@@ -471,7 +476,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-R::C_ToggleFreezeAccount id false account toggle)
                 )
             )
@@ -486,7 +491,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-R::C_ToggleExemptionRole id false account toggle)
                 )
             )
@@ -501,7 +506,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-R::C_ToggleBurnRole id false account toggle)
                 )
             )
@@ -516,7 +521,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-R::C_ToggleUpdateRole id false account toggle)
                 )
             )
@@ -531,7 +536,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-R::C_ToggleModifyCreatorRole id false account toggle)
                 )
             )
@@ -546,7 +551,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-R::C_ToggleModifyRoyaltiesRole id false account toggle)
                 )
             )
@@ -561,7 +566,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-R::C_ToggleTransferRole id false account toggle)
                 )
             )
@@ -576,7 +581,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-R::C_MoveCreateRole id false new-account)
                 )
             )
@@ -592,7 +597,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-R::C_MoveRecreateRole id false new-account)
                 )
             )
@@ -607,7 +612,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-R::C_MoveSetUriRole id false new-account)
                 )
             )
@@ -624,7 +629,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-MNG::C_Control id false cu cco ccc casr ctncr cf cw cp)
                 )
             )
@@ -638,7 +643,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-MNG::C_TogglePause id false toggle)
                 )
             )
@@ -652,7 +657,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-MNG::C_RespawnNFT account id nonce)
                 )
                 (format "Succesfuly respawned NFT {} Nonce {} on Account {}" [id nonce (UC_ShortAccount account)])
@@ -667,7 +672,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-MNG::C_BurnNFT account id nonce)
                 )
                 (format "Succesfuly burned NFT {} Nonce {} on Account {}" [id nonce (UC_ShortAccount account)])
@@ -682,7 +687,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-MNG::C_WipeNonce account id false nonce)
                 )
                 (format "Succesfuly wiped NFT {} Nonce {} from Account {}" [id nonce (UC_ShortAccount account)])
@@ -701,7 +706,7 @@
                     (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
                     (total-nonces-supplies:integer (fold (+) 0 (at "r-amounts" (at 0 (at "output" ico)))))
                 )
-                (ref-IGNIS::C_Collect patron ico)
+                (ref-IGNIS::XE_CollectIgnis patron ico)
                 (format 
                     "Succesfuly executed Heavy Wipe of NFT {} on Account {}, wiping {} Nonces With a Total Supply of {}" 
                     [id (UC_ShortAccount account) no-of-nonces total-nonces-supplies]
@@ -721,7 +726,7 @@
                     (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
                     (total-nonces-supplies:integer (fold (+) 0 (at "r-amounts" (at 0 (at "output" ico)))))
                 )
-                (ref-IGNIS::C_Collect patron ico)
+                (ref-IGNIS::XE_CollectIgnis patron ico)
                 (format 
                     "Succesfuly executed Pure Wipe of NFT {} on Account {}, wiping {} Nonces With a Total Supply of {}" 
                     [id (UC_ShortAccount account) no-of-nonces total-nonces-supplies]
@@ -741,7 +746,7 @@
                     (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
                     (total-nonces-supplies:integer (fold (+) 0 (at "r-amounts" (at 0 (at "output" ico)))))
                 )
-                (ref-IGNIS::C_Collect patron ico)
+                (ref-IGNIS::XE_CollectIgnis patron ico)
                 (format 
                     "Succesfuly executed Clean Wipe of NFT {} on Account {}, wiping {} Nonces With a Total Supply of {}" 
                     [id (UC_ShortAccount account) no-of-nonces total-nonces-supplies]
@@ -761,7 +766,7 @@
                     (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
                     (total-nonces-supplies:integer (fold (+) 0 (at "r-amounts" (at 0 (at "output" ico)))))
                 )
-                (ref-IGNIS::C_Collect patron ico)
+                (ref-IGNIS::XE_CollectIgnis patron ico)
                 (format
                     "Succesfuly executed Dirty Wipe of NFT {} on Account {}, wiping {} Nonces With a Total Supply of {}"
                     [id (UC_ShortAccount account) no-of-nonces total-nonces-supplies]
@@ -785,7 +790,7 @@
                     (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
                     (total-nonces-supplies:integer (fold (+) 0 (at "r-amounts" (at 0 (at "output" ico)))))
                 )
-                (ref-IGNIS::C_Collect patron ico)
+                (ref-IGNIS::XE_CollectIgnis patron ico)
                 (format
                     "Succesfuly executed Hydra Wipe Slice of NFT {} on Account {}, wiping {} Nonces With a Total Supply of {}"
                     [id (UC_ShortAccount account) no-of-nonces total-nonces-supplies]
@@ -807,7 +812,7 @@
                     (sf:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-from))
                     (st:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-T::C_RepurposeCollectable id false repurpose-from repurpose-to nonces amounts)
                 )
                 (format "Successfully repurposed NFT {} Nonces {} with Amounts {} from {} to {}" [id nonces amounts sf st])
@@ -831,7 +836,7 @@
                     (r:[decimal] (at "ignis-royalties" irs))
                     (s:decimal (fold (+) 0.0 r))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-T::C_Transfer [id] [false] sender receiver [[nonce]] [[amount]] method)
                 )
                 [
@@ -862,7 +867,7 @@
                     (r:[decimal] (at "ignis-royalties" irs))
                     (s:decimal (fold (+) 0.0 r))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-T::C_Transfer [id] [false] sender receiver [nonces] [amounts] method)
                 )
                 [
@@ -901,7 +906,7 @@
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                     (nonce:integer (+ 1 (ref-DPDC::UR_NoncesUsed id false)))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-S::C_MakeNonFungibleSet account id nonces set-class)
                 )
                 (format "Successfully generated Class {} Set (Nonce {}) of NFT Collection {} on Account {}" [set-class nonce id sa])
@@ -921,7 +926,7 @@
                     (set-class:integer (ref-DPDC::UR_NonceClass id false nonce))
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-S::C_BreakNonFungibleSet account id nonce)
                 )
                 (format "Successfully broken Class {} Set (Nonce {}) of NFT Collection {} on Account {}" [set-class nonce id sa])
@@ -941,7 +946,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-S::C_DefinePrimordialSet id false set-name score-multiplier set-definition ind)
                 )
                 (format "Primordial Set <{}> for NFT Collection {} defined succesfully" [set-name id])
@@ -961,7 +966,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-S::C_DefineCompositeSet id false set-name score-multiplier set-definition ind)
                 )
                 (format "Composite Set <{}> for NFT Collection {} defined succesfully" [set-name id])
@@ -982,7 +987,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-S::C_DefineHybridSet id false set-name score-multiplier primordial-sd composite-sd ind)
                 )
                 (format "Hybrid Set <{}> for NFT Collection {} defined succesfully" [set-name id])
@@ -1001,7 +1006,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-S::C_EnableSetClassFragmentation id false set-class fragmentation-ind)
                 )
                 (format "Set Class {} for NFT {} succesfully fragmented" [set-class id])
@@ -1016,7 +1021,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-S::C_ToggleSet id false set-class toggle)
                 )
                 (format "NFT {} Set Class {} succesfully turned {}" [id set-class (if toggle "ON" "OFF")])
@@ -1031,7 +1036,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-S::C_RenameSet id false set-class new-name)
                 )
                 (format "NFT {} Set Class {} succesfuly renamed to <{}>" [id set-class new-name])
@@ -1049,7 +1054,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonces id false account [set-class] nos false [new-nonce-data])
                 )
             )
@@ -1064,7 +1069,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonces id false account set-classes nos false new-nonces-data)
                 )
             )
@@ -1079,7 +1084,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceRoyalty id false account set-class nos false royalty-value)
                 )
             )
@@ -1094,7 +1099,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceIgnisRoyalty id false account set-class nos false royalty-value)
                 )
             )
@@ -1109,7 +1114,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceName id false account set-class nos false name)
                 )
             )
@@ -1124,7 +1129,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceDescription id false account set-class nos false description)
                 )
             )
@@ -1139,7 +1144,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceScore id false account set-class nos false score)
                 )
             )
@@ -1158,7 +1163,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceMetaData id false account set-class nos false meta-data)
                 )
             )
@@ -1176,7 +1181,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceURI id false account set-class nos false ay u1 u2 u3)
                 )
             )
@@ -1196,7 +1201,7 @@
                     (sf:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-from))
                     (st:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     ;; #79: this is the NFT (C_DPNF|) wrapper — son MUST be false. Was hardcoded `true`
                     ;; (SFT), so it read CNF from the DPSF table and failed. Never caught: no test coverage.
                     (ref-DPDC-F::C_RepurposeCollectableFragments id false repurpose-from repurpose-to nonces amounts)
@@ -1213,7 +1218,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-F::C_MakeFragments account id false nonce amount)
                 )
                 (format "Succesfuly Fragmented {} NFT(s) {} of Nonce {}" [amount id nonce])
@@ -1228,7 +1233,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-F::C_MergeFragments account id false nonce amount)
                 )
                 (format "Succesfuly merged {} {} NFT(s) Fragments of Nonce {}" [amount id nonce])
@@ -1243,7 +1248,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-F::C_EnableNonceFragmentation id false nonce fragmentation-ind)
                 )
                 (format "Fragmentation for NFT {} Nonce {} enabled succesfully" [id nonce])
@@ -1262,7 +1267,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonces id false account [nonce] nos true [new-nonce-data])
                 )
                 (format "Nonce {} updated successfully!" [nonce])
@@ -1278,7 +1283,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonces id false account nonces nos true new-nonces-data)
                 )
                 (format "Nonces {} updated successfully!" [nonces])
@@ -1294,7 +1299,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceRoyalty id false account nonce nos true royalty-value)
                 )
             )
@@ -1309,7 +1314,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceIgnisRoyalty id false account nonce nos true royalty-value)
                 )
             )
@@ -1324,7 +1329,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceName id false account nonce nos true name)
                 )
             )
@@ -1339,7 +1344,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceDescription id false account nonce nos true description)
                 )
             )
@@ -1354,7 +1359,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceScore id false account nonce nos true score)
                 )
             )
@@ -1373,7 +1378,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceMetaData id false account nonce nos true meta-data)
                 )
             )
@@ -1391,7 +1396,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceURI id false account nonce nos true ay u1 u2 u3)
                 )
             )

@@ -196,7 +196,7 @@
 (namespace "ouronet-ns")
 (print "--- [CONF-03 · 01 · the billing boundary] ---")
 ;;CLAIM (CLAUDE.md): "Talos is the only place that collects IGNIS (virtual-chain gas) after a
-;;`C_`." If IGNIS::C_Collect were reachable directly, a caller could bill THEMSELVES an arbitrary
+;;`C_`." If IGNIS::XE_CollectIgnis were reachable directly, a caller could bill THEMSELVES an arbitrary
 ;;amount -- or, worse, bill someone else -- so this is the other half of CONF-01: one proves you
 ;;cannot skip the toll booth, this proves you cannot operate it.
 ;;==== CONF-03 — IGNIS cannot be collected outside a Talos wrapper · 01 · env-sigs (caps) ==== ====
@@ -217,9 +217,22 @@
         )
         (map print
             [
-                (expect-failure "<<CONF-03>> IGNIS::C_Collect is refused for an ordinary signer"
+                ;;GATE 1 -- the IMC. Since 2026-09-20 XE_CollectIgnis is an X_ function reachable
+                ;;only by a module registered in IGNIS's inter-module policy. A REPL form has no
+                ;;calling module, so it does not get in at all. Asserted FIRST and WITHOUT the
+                ;;stand-in capability, because after the grant below this refusal disappears.
+                (expect-failure "<<CONF-03>> XE_CollectIgnis is unreachable without a registered calling module"
+                    "None of the guards passed"
+                    (ref-IGNIS::XE_CollectIgnis patron
+                        (ref-IGNIS::UDC_ConstructOutputCumulator 1.0 patron false [])))
+                ;;GATE 2 -- the payer's own ownership. Reached only once GATE 1 is satisfied, so
+                ;;the test stands in for a registered module to get there. Without this the
+                ;;keyset check below would be SHADOWED and could be deleted with every assertion
+                ;;in this file still green.
+                (test-capability (DPTF.P|DPTF|CALLER))
+                (expect-failure "<<CONF-03>> IGNIS::XE_CollectIgnis is refused for an ordinary signer"
                     "Keyset failure"
-                    (ref-IGNIS::C_Collect patron
+                    (ref-IGNIS::XE_CollectIgnis patron
                         (ref-IGNIS::UDC_ConstructOutputCumulator 1.0 patron false [])))
                 ;;...and the fabricated charge never landed.
                 (expect "<<CONF-03>> the patron's gas balance is untouched"
@@ -255,8 +268,9 @@
                 (e0:decimal (ref-DPTF::UR_AccountSupply gas-id emma))
                 (p0:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
             )
-            (print (format "<<CONF-03>> admin-signed C_Collect on a THIRD PARTY => {}"
-                [(try "REFUSED" (ref-IGNIS::C_Collect emma
+            (test-capability (DPTF.P|DPTF|CALLER))
+            (print (format "<<CONF-03>> admin-signed XE_CollectIgnis on a THIRD PARTY => {}"
+                [(try "REFUSED" (ref-IGNIS::XE_CollectIgnis emma
                     (ref-IGNIS::UDC_ConstructOutputCumulator 1.0 emma false [])))]))
             (map print
                 [
@@ -265,13 +279,13 @@
                     ;;below if it happened to charge zero.
                     ;;
                     ;;AND THE MECHANISM IS THE ANSWER: the refusal is "Keyset failure … [PK_Emma]"
-                    ;;-- C_Collect enforces the PAYER's own account ownership, so the payer must
+                    ;;-- XE_CollectIgnis enforces the PAYER's own account ownership, so the payer must
                     ;;sign their own billing. That is what stops the master key here and does not
                     ;;stop it in CONF-01: skipping your OWN toll needs no third party's signature,
                     ;;charging someone else's does. The boundary holds exactly where it matters.
                     (expect-failure "<<CONF-03>> the master key CANNOT bill a third party -- the PAYER must sign"
                         "Keyset failure (keys-all): [PK_Emma...]"
-                        (ref-IGNIS::C_Collect emma
+                        (ref-IGNIS::XE_CollectIgnis emma
                             (ref-IGNIS::UDC_ConstructOutputCumulator 1.0 emma false [])))
                 ]
             )

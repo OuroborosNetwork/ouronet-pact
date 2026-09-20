@@ -420,14 +420,29 @@
                         )
                         "Ouronet GasStation Case 2 Enforcement Fail!"
                     )
-                    ;; Case 3: three top-level forms — namespace + IGNIS.C_Collect + (let ...)
+                    ;; Case 3: three+ top-level forms — namespace + IGNIS DONATION + (let ...)
+                    ;;
+                    ;;THE SPONSORED-LET PRODUCT, and it is a PRODUCT, not a leak. The caller pays
+                    ;;IGNIS through form 1 and the station funds form 2 -- an arbitrary `let` block
+                    ;;of any size -- plus anything appended after it. Forms beyond index 2 are
+                    ;;deliberately NOT inspected: they are what the payment BUYS. Rationed
+                    ;;execution, with the ration priced at the door.
+                    ;;
+                    ;;THE DOOR MOVED, 2026-09-20. It used to be a direct
+                    ;;`IGNIS.XE_CollectIgnis(... UDC_CustomCodeCumulator)`. That call no longer
+                    ;;exists as a client entrypoint: the collectors became IMC-gated X_ functions,
+                    ;;so exec-code -- which has no calling module -- cannot reach them. The door is
+                    ;;now a TRANSMUTE of the IGNIS DPTF through Talos, which is the IGNIS donation
+                    ;;(see TFT::C_Transmute's @doc). It carries a 25-IGNIS floor for exactly this
+                    ;;reason: the transmute itself is ignis-free and the station pays the STOA, so
+                    ;;without a floor a 0.001 transmute would be a free sponsored transaction,
+                    ;;repeatable until the station drained.
                     (enforce
                         (fold (and) true
                             [
-                                (enforce (>= n 3) "Three+ lines only for namespace+IGNIS+let pattern")
+                                (enforce (>= n 3) "Three+ lines only for namespace+donation+let pattern")
                                 (enforce (= "(namespace \"ouronet-ns\")" (at 0 exec-lines)) "Namespace entry must be (namespace \"ouronet-ns\")")
-                                (enforce (= "(IGNIS.C_Collect \"Ѻ." (take 20 (at 1 exec-lines))) "Second form must be IGNIS.C_Collect with UDC")
-                                (enforce (= "(IGNIS.UDC_CustomCodeCumulator))" (take -32 (at 1 exec-lines))) "Second form must end with CustomCodeCumulator")
+                                (enforce (= "(TS01-C1.DPTF|C_Transmute" (take 25 (at 1 exec-lines))) "Second form must be the Talos IGNIS donation TS01-C1.DPTF|C_Transmute")
                                 (enforce (= "(let" (take 4 (at 2 exec-lines))) "Third form must start with (let")
                             ]
                         )
@@ -1072,7 +1087,7 @@
         (at 3 (UR_AccountProperties account))
     )
     (defun UR_AccountNonce:integer (account:string)
-        @doc "Patron transaction counter on DALOS|AccountTable (incremented by IGNIS C_Collect when virtual gas is charged)."
+        @doc "Patron transaction counter on DALOS|AccountTable (incremented by IGNIS XE_CollectIgnis when virtual gas is charged)."
         (with-default-read DALOS|AccountTable account
             { "nonce" : 0 }
             { "nonce" := n }
@@ -1606,7 +1621,7 @@
             )
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: SECURE
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XB_UpdateBalance (account:string snake-or-gas:bool new-balance:decimal)
         (P|UEV_IMC)
         (with-capability (SECURE)
@@ -1630,7 +1645,7 @@
             )
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: SECURE
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_UpdateFreeze (account:string snake-or-gas:bool new-freeze:bool)
         (P|UEV_IMC)
         (with-capability (SECURE)
@@ -1642,7 +1657,7 @@
             )
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: SECURE
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_UpdateBurnRole (account:string snake-or-gas:bool new-burn:bool)
         (P|UEV_IMC)
         (with-capability (SECURE)
@@ -1654,7 +1669,7 @@
             )
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: SECURE
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_UpdateMintRole (account:string snake-or-gas:bool new-mint:bool)
         (P|UEV_IMC)
         (with-capability (SECURE)
@@ -1666,7 +1681,7 @@
             )
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: SECURE
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_UpdateFeeExemptionRole (account:string snake-or-gas:bool new-fee-exemption:bool)
         (P|UEV_IMC)
         (with-capability (SECURE)
@@ -1678,7 +1693,7 @@
             )
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: SECURE
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_UpdateTransferRole (account:string snake-or-gas:bool new-transfer:bool)
         (P|UEV_IMC)
         (with-capability (SECURE)
@@ -1788,7 +1803,7 @@
     )
     ;;#53L fix: added a non-negative bound check on <new-price> - defense-in-depth for an
     ;;admin-only fat-finger, not a security gate (GOV|DALOS_ADMIN already fully trusted). A
-    ;;stray 0/negative price here was flagged as a contributing cause of #8H (IGNIS C_Collect's
+    ;;stray 0/negative price here was flagged as a contributing cause of #8H (IGNIS XE_CollectIgnis's
     ;;since-fixed zero-leg abort) - purely additive, no change to the existing valid-price path.
     (defun A_UpdateUsagePrice (patron:string executor:string action:string new-price:decimal)
         (P|UEV_IMC)

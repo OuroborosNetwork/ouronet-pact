@@ -1,8 +1,8 @@
 ;; ---------------------------------------------------------------------------
 ;; OURONET DEPLOY -- file 4 of 20
-;; This is STEP 4 of 21 in the full sequence (see Deploy/MANIFEST.md).
+;; This is STEP 4 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-3 must have run first, including the init steps between deploys.
-;; 4 module(s), 397,481 gas measured in the REPL gas model, 298,932 bytes
+;; 4 module(s), 397,481 gas measured in the REPL gas model, 299,129 bytes
 ;;
 ;; Modules in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/10_ATSU.pact
@@ -2570,6 +2570,7 @@
                 (ref-P|ATS:module{OuronetPolicyV2} ATS)
                 (ref-P|TFT:module{OuronetPolicyV2} TFT)
                 (ref-P|ATSU:module{OuronetPolicyV2} ATSU)
+                (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
                 (mg:guard (create-capability-guard (P|VST|CALLER)))
             )
             (ref-P|ATS::P|A_Add
@@ -2583,6 +2584,7 @@
             (ref-P|ATS::P|A_AddIMP mg)
             (ref-P|TFT::P|A_AddIMP mg)
             (ref-P|ATSU::P|A_AddIMP mg)
+            (ref-P|IGNIS::P|A_AddIMP mg)
         )
     )
 
@@ -3192,7 +3194,7 @@
     )
     (defun URCi_CreateSpecialTrueFungibleLinkStoa:decimal ()
         @doc "STOA leg of C_CreateFrozenLink / C_CreateReservationLink. Read-only twin of the \
-            \ <stoa-costs> that XI_CreateSpecialTrueFungibleLink hands to STOA|C_Collect, so the \
+            \ <stoa-costs> that XI_CreateSpecialTrueFungibleLink hands to XE_CollectStoa, so the \
             \ INFO_ preview and the charge are sourced from one place and cannot drift."
         (let
             (
@@ -3204,7 +3206,7 @@
     (defun URCi_CreateSpecialOrtoFungibleLinkStoa:decimal ()
         @doc "STOA leg of C_CreateVestingLink / C_CreateSleepingLink / C_CreateHibernatingLink. \
             \ Read-only twin of the <stoa-costs> that XI_CreateSpecialOrtoFungibleLink hands to \
-            \ STOA|C_Collect. Note the key is \"dpmf\", not \"dpof\" -- the usage-price table \
+            \ XE_CollectStoa. Note the key is \"dpmf\", not \"dpof\" -- the usage-price table \
             \ still carries the pre-rename name."
         (let
             (
@@ -3869,7 +3871,7 @@
             )
             ;;Create DPTF Account
             (ref-DPTF::C_DeployAccount dptf VST|SC_NAME)
-            (ref-IGNIS::STOA|C_Collect patron stoa-costs)
+            (ref-IGNIS::XE_CollectStoa patron stoa-costs)
             (ref-IGNIS::UDC_ConcatenateOutputCumulators 
                 [
                     ;;MISSING DETERRENCE FIXED (2026-09-14). Creating a special link is priced as a
@@ -3942,7 +3944,7 @@
             )
             ;;Create DPTF Account 
             (ref-DPTF::C_DeployAccount dptf VST|SC_NAME)
-            (ref-IGNIS::STOA|C_Collect patron stoa-costs)
+            (ref-IGNIS::XE_CollectStoa patron stoa-costs)
             (ref-IGNIS::UDC_ConcatenateOutputCumulators 
                 [
                     ;;MISSING DETERRENCE FIXED (2026-09-14) -- see the true-fungible twin above.
@@ -4970,6 +4972,7 @@
                 (ref-P|TFT:module{OuronetPolicyV2} TFT)
                 (ref-P|ATSU:module{OuronetPolicyV2} ATSU)
                 (ref-P|VST:module{OuronetPolicyV2} VST)
+                (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
                 (mg:guard (create-capability-guard (P|LQD|CALLER)))
             )
             (ref-P|DALOS::P|A_AddIMP mg)
@@ -4980,6 +4983,7 @@
             (ref-P|TFT::P|A_AddIMP mg)
             (ref-P|ATSU::P|A_AddIMP mg)
             (ref-P|VST::P|A_AddIMP mg)
+            (ref-P|IGNIS::P|A_AddIMP mg)
         )
     )
 
@@ -5214,7 +5218,7 @@
             (let
                 (
                     (ref-coin:module{stoa-ns.fungible-v1} coin)    
-                    ;;C_TransferDalosFuel lives in IGNIS, not DALOS — it was called through the
+                    ;;XB_MoveDalosFuel lives in IGNIS, not DALOS — it was called through the
                     ;;DALOS ref, which DOES NOT have that member, so this admin migration path
                     ;;died on every call (modref members resolve at runtime, so it still loaded).
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
@@ -5222,7 +5226,7 @@
                     (present-stoa-balance:decimal (ref-coin::get-balance lq-stoa))
                 )
                 (install-capability (ref-coin::TRANSFER lq-stoa migration-target-stoa-account present-stoa-balance))
-                (ref-IGNIS::C_TransferDalosFuel lq-stoa migration-target-stoa-account present-stoa-balance)
+                (ref-IGNIS::XB_MoveDalosFuel lq-stoa migration-target-stoa-account present-stoa-balance)
                 present-stoa-balance
             )
         )
@@ -5258,7 +5262,7 @@
                     )
                     ;;(install-capability (ref-coin::TRANSFER lq-stoa stoa-patron amount))
                     ;;Capability is added instead in the JavaCode
-                    (ref-IGNIS::C_TransferDalosFuel lq-stoa stoa-patron amount)
+                    (ref-IGNIS::XB_MoveDalosFuel lq-stoa stoa-patron amount)
                     output
                 )
             )
@@ -5291,7 +5295,7 @@
                             )
                         )
                     )
-                    (ref-IGNIS::C_TransferDalosFuel stoa-patron lq-stoa amount)
+                    (ref-IGNIS::XB_MoveDalosFuel stoa-patron lq-stoa amount)
                     output
                 )
             )
@@ -6036,7 +6040,7 @@
     )
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
-    ;;Protection: Class 5 — IMC + Custom: IGNIS|XB>COMPRESS
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XB_Compress:object{IgnisCollectorV3.OutputCumulator}
         (client:string ignis-amount:decimal)
         @doc "SC-account-tolerant IGNIS→OURO compress for INTERNAL module callers (registered OUROBOROS IMC). Same \

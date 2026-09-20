@@ -227,7 +227,7 @@
         ;;out to be a defect several times tonight (`INFO_SWP|ToggleFeeLock`, `INFO_ATS|ToggleParameterLock`,
         ;;`INFO_EQUITY|IssueCompany`, `INFO_VST|Create*Link` each claimed a currency was free while
         ;;their op collected it). Here it is believed CORRECT — `AQP-FVT|CC_SweepRevokeAnchor`
-        ;;(`04_TS02-C3.pact:2265`) carries no `IGNIS::C_Collect patron` and no `STOA|C_Collect`, so the
+        ;;(`04_TS02-C3.pact:2265`) carries no `IGNIS::XE_CollectIgnis patron` and no `XE_CollectStoa`, so the
         ;;op is gas-station subsidised. Believed is not measured, which is the whole point of the block.
         ;;
         ;;A ZERO-VS-ZERO EQUALITY IS VACUOUS ON ITS OWN — it passes just as well against an op that did

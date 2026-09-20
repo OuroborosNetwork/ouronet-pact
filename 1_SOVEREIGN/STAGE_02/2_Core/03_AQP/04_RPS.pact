@@ -4863,7 +4863,8 @@
         )
     )
 
-    ;;Protection: Class 5 — IMC + Custom: FVT|XE>SWEEP-FIX
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          FVT|XE>SWEEP-FIX
     (defun XE_FvtFixUserChunk:object{IgnisCollectorV3.OutputCumulator}
         (fvt-id:string reward-dptf-id:string users:[string])
         @doc "Forward (MTX-AQP defpact step): FIX a chunk of stale stakers in the FVT (settle + refresh + \
@@ -4886,7 +4887,8 @@
         )
     )
 
-    ;;Protection: Class 5 — IMC + Custom: FVT|XE>SWEEP-FIX
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          FVT|XE>SWEEP-FIX
     (defun XE_SweepSyncTripletLaneWeights:object{IgnisCollectorV3.OutputCumulator}
         (beneficiary-id:string fvt-id:string score-entity-id:string)
         @doc "Forward (re-score sweep): re-snapshot a TRUE-triplet member's Level-1 lane weight for this holder at \
@@ -4903,7 +4905,8 @@
         )
     )
 
-    ;;Protection: Class 5 — IMC + Custom: FVT|XE>SWEEP-FIX
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          FVT|XE>SWEEP-FIX
     (defun XE_FvtSweepRecomputeChunk:object{IgnisCollectorV3.OutputCumulator}
         (fvt-id:string score-entity-id:string swept-boost-class-id:string users:[string])
         @doc "Forward (re-score sweep defpact — cross-module): recompute a CHUNK of holders on one (fvt, member). \
@@ -4915,7 +4918,7 @@
         )
     )
 
-    ;;Protection: Class 5 — IMC + Custom: SECURE
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_SetExternalOracle:string (on:bool)
         @doc "DSA (module admin): set the GLOBAL external-oracle switch. Preserves the current oracle-validity. \
             \ P|UEV_IMC + SECURE."
@@ -4928,7 +4931,7 @@
         )
     )
 
-    ;;Protection: Class 5 — IMC + Custom: SECURE
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_SetOracleValidity:string (seconds:integer)
         @doc "DSA (module admin): set the GLOBAL oracle-validity window (seconds). Preserves the current \
             \ external-oracle switch. P|UEV_IMC + SECURE."
@@ -4941,7 +4944,7 @@
         )
     )
 
-    ;;Protection: Class 5 — IMC + Custom: SECURE
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_SetAgencyFee:string (fvt-id:string score-entity-id:string operator-konto:string fee-per-mille:integer)
         @doc "DSA: set/update a delegation member's operator + fee (mirrored from DSA|Agency so the inject settle \
             \ reads it locally). Set at open + on a fee change. P|UEV_IMC + SECURE."
@@ -4951,7 +4954,7 @@
         )
     )
 
-    ;;Protection: Class 5 — IMC + Custom: SECURE
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_SetMemberDelegation:string (fvt-id:string score-entity-id:string delegation:bool)
         @doc "DSA: flip a member to (or from) a delegation agency. P|UEV_IMC + SECURE."
         (P|UEV_IMC)
@@ -4960,7 +4963,7 @@
         )
     )
 
-    ;;Protection: Class 5 — IMC + Custom: SECURE
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_SetMemberCapture:string (fvt-id:string score-entity-id:string capture-units:decimal capture-weight:decimal oracle-ts:time)
         @doc "DSA: set an agency's capture fields — the values the inject reads (numerator = capture-weight, \
             \ denominator term = capture-units, 25h expiry = oracle-ts). Recomputed by DSA on delegator \
@@ -4971,7 +4974,8 @@
         )
     )
 
-    ;;Protection: Class 5 — IMC + Custom: FVT|XE>ADMIT-DELEGATION
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          FVT|XE>ADMIT-DELEGATION
     (defun XE_AdmitDelegationMember:string (fvt-id:string triplet-id:string operator:string)
         @doc "DSA: admit an OPERATOR-owned triplet as a delegation agency member on a class-0 DSA vault FVT — \
             \ vault-like (swpair \"|\", ghost 0; inject weight = capture). Creates the three SCR fvt-links + inserts \
@@ -4992,7 +4996,8 @@
         )
     )
 
-    ;;Protection: Class 5 — IMC + Custom: FVT|XE>DISPOSE-ROYALTY
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          FVT|XE>DISPOSE-ROYALTY
     (defun XE_WithdrawRoyalty:object{IgnisCollectorV3.OutputCumulator}
         (fvt-id:string reward-dptf-id:string destination:string)
         @doc "DSA royalty disposal (WITHDRAW): zero the royalty pool (reward-dptf) of <fvt-id>, IGNIS-normalize it \
@@ -5022,7 +5027,8 @@
         )
     )
 
-    ;;Protection: Class 5 — IMC + Custom: FVT|XE>DISPOSE-ROYALTY
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          FVT|XE>DISPOSE-ROYALTY
     (defun XE_BurnRoyalty:object{IgnisCollectorV3.OutputCumulator}
         (fvt-id:string reward-dptf-id:string)
         @doc "DSA royalty disposal (BURN): zero the royalty pool (reward-dptf) of <fvt-id>, IGNIS-normalize it to \
@@ -5051,7 +5057,8 @@
         )
     )
 
-    ;;Protection: Class 5 — IMC + Custom: FVT|XE>DISPOSE-ROYALTY
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          FVT|XE>DISPOSE-ROYALTY
     (defun XE_FuelRoyalty:object{IgnisCollectorV3.OutputCumulator}
         (fvt-id:string reward-dptf-id:string swpair:string)
         @doc "DSA royalty disposal (FUEL): zero the royalty pool (reward-dptf) of <fvt-id>, IGNIS-normalize it to \
@@ -5087,7 +5094,7 @@
         )
     )
 
-    ;;Protection: Class 5 — IMC + Custom: SECURE
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_BankScorePendingRewards:object{IgnisCollectorV3.OutputCumulator}
         (beneficiary-id:string pool-id:string plan:object)
         @doc "Forward (stake/unstake/collect flow): bank the beneficiary's pending per-score rewards for \
@@ -5101,7 +5108,7 @@
         )
     )
 
-    ;;Protection: Class 5 — IMC + Custom: SECURE
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_BookStakeUnclaimedCounts:object{IgnisCollectorV3.OutputCumulator}
         (beneficiary-id:string pool-id:string settle-bundle:object)
         @doc "Forward (stake/unstake/collect flow): book the beneficiary's unclaimed-reward counts for \
@@ -5112,7 +5119,7 @@
         )
     )
 
-    ;;Protection: Class 5 — IMC + Custom: SECURE
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_CheckpointStakeRps:object{IgnisCollectorV3.OutputCumulator}
         (beneficiary-id:string pool-id:string settle-bundle:object)
         @doc "Forward (stake/unstake/collect flow): checkpoint the beneficiary's reward-per-share (RPS) baseline \
@@ -5123,161 +5130,184 @@
         )
     )
     ;;{5-XE}  FORWARD ENTRYPOINTS (writer wrappers for FVT)
-    ;;Protection: Class 5 — IMC + Custom: RPS|XE>WRITE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
     (defun XE_WI_FvtRewardAggregate:string (fvt-id:string row:object{AcquisitionSchemasV1.FVT|RewardAggregate})
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (WI_FvtRewardAggregate fvt-id row)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: RPS|XE>WRITE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
     (defun XE_WI_QualitySplit:string (fvt-id:string dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer])
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (WI_QualitySplit fvt-id dptf-id mode bronze-split silver-split gold-split)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: RPS|XE>WRITE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
     (defun XE_WI_RpsGlobal:string (fvt-id:string dptf-id:string row:object{AcquisitionSchemasV1.FVT|RPS|Global})
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (WI_RpsGlobal fvt-id dptf-id row)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: RPS|XE>WRITE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
     (defun XE_WI_ScoreEntityLink:string (fvt-id:string score-entity-id:string row:object{AcquisitionSchemasV1.FVT|ScoreEntityLink})
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (WI_ScoreEntityLink fvt-id score-entity-id row)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: RPS|XE>WRITE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
     (defun XE_WU_FvtForcedFixCount|Zero:string (fvt-id:string dptf-id:string user-id:string)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (WU_FvtForcedFixCount|Zero fvt-id dptf-id user-id)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: RPS|XE>WRITE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
     (defun XE_WU_MemberVault|AvailableRewards:string (fvt-id:string score-entity-id:string dptf-id:string available-rewards:decimal)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (WU_MemberVault|AvailableRewards fvt-id score-entity-id dptf-id available-rewards)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: RPS|XE>WRITE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
     (defun XE_WU_RpsGlobal|AvailableRewards:string (fvt-id:string dptf-id:string available-rewards:decimal)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (WU_RpsGlobal|AvailableRewards fvt-id dptf-id available-rewards)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: RPS|XE>WRITE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
     (defun XE_WU_RpsUser|LastRps:string (user-id:string fvt-id:string score-entity-id:string dptf-id:string last-rps:decimal)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (WU_RpsUser|LastRps user-id fvt-id score-entity-id dptf-id last-rps)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: RPS|XE>WRITE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
     (defun XE_WU_RpsUser|PendingRewards:string (user-id:string fvt-id:string score-entity-id:string dptf-id:string pending-rewards:decimal)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (WU_RpsUser|PendingRewards user-id fvt-id score-entity-id dptf-id pending-rewards)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: RPS|XE>WRITE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
     (defun XE_XI_2|SettleMemberTier2:object{IgnisCollectorV3.OutputCumulator} (fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (XI_2|SettleMemberTier2 fvt-id score-entity-type score-entity-id reward-dptf-id)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: RPS|XE>WRITE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
     (defun XE_XI_AddRewardLink:string (fvt-id:string reward-dptf-id:string segmentation:bool reward-kind:string multiplet-family-id:string)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (XI_AddRewardLink fvt-id reward-dptf-id segmentation reward-kind multiplet-family-id)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: RPS|XE>WRITE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
     (defun XE_XI_AddScoreEntity:string (fvt-id:string score-entity-type:integer score-entity-id:string swpair:string ghost-weight:decimal)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (XI_AddScoreEntity fvt-id score-entity-type score-entity-id swpair ghost-weight)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: RPS|XE>WRITE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
     (defun XE_XI_BookCollectUnclaimed:object{IgnisCollectorV3.OutputCumulator} (patron:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (XI_BookCollectUnclaimed patron pool-id fvt-id score-entity-type score-entity-id reward-dptf-id)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: RPS|XE>WRITE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
     (defun XE_XI_BookStakeUnclaimedCounts:object{IgnisCollectorV3.OutputCumulator} (beneficiary-id:string pool-id:string settle-bundle:object{AcquisitionSchemasV1.FVT|StakeSettleBundle})
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (XI_BookStakeUnclaimedCounts beneficiary-id pool-id settle-bundle)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: RPS|XE>WRITE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
     (defun XE_XI_CheckpointStakeRps:object{IgnisCollectorV3.OutputCumulator} (beneficiary-id:string pool-id:string settle-bundle:object{AcquisitionSchemasV1.FVT|StakeSettleBundle})
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (XI_CheckpointStakeRps beneficiary-id pool-id settle-bundle)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: RPS|XE>WRITE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
     (defun XE_XI_FixUserFvtDeb:object{IgnisCollectorV3.OutputCumulator} (user-id:string fvt-id:string)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (XI_FixUserFvtDeb user-id fvt-id)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: RPS|XE>WRITE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
     (defun XE_XI_FixUserFvtDebPenalizedIn:object{IgnisCollectorV3.OutputCumulator} (fvt-id:string reward-dptf-id:string user-id:string members:[string] reward-rows:[string])
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (XI_FixUserFvtDebPenalizedIn fvt-id reward-dptf-id user-id members reward-rows)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: RPS|XE>WRITE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
     (defun XE_XI_FixUserMemberDeb:object{IgnisCollectorV3.OutputCumulator} (user-id:string fvt-id:string score-entity-type:integer score-entity-id:string)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (XI_FixUserMemberDeb user-id fvt-id score-entity-type score-entity-id)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: RPS|XE>WRITE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
     (defun XE_XI_FvtAddStream:object{IgnisCollectorV3.OutputCumulator} (op-key:string patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (XIv_FvtAddStream op-key patron injector fvt-id reward-dptf-id amount duration)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: RPS|XE>WRITE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
     (defun XE_XI_FvtInjectCore:object{IgnisCollectorV3.OutputCumulator} (op-key:string patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (XI_FvtInjectCore op-key patron injector fvt-id reward-dptf-id amount)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: RPS|XE>WRITE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
     (defun XE_XI_FvtSweepRecomputeChunk:object{IgnisCollectorV3.OutputCumulator} (fvt-id:string score-entity-id:string swept-boost-class-id:string users:[string])
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (XI_FvtSweepRecomputeChunk fvt-id score-entity-id swept-boost-class-id users)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: RPS|XE>WRITE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
     (defun XE_XI_FvtSweepRecomputeWindow:integer (score-ids:[string] boost-class-id:string win-lo:integer win-hi:integer)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (XI_FvtSweepRecomputeWindow score-ids boost-class-id win-lo win-hi)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: RPS|XE>WRITE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
     (defun XE_XI_IssueMultipletFamily:string (token-0-id:string
             token-1-id:string
             token-2-id:string
@@ -5288,77 +5318,88 @@
             (XI_IssueMultipletFamily token-0-id token-1-id token-2-id ats-0-1-id ats-1-2-id)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: RPS|XE>WRITE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
     (defun XE_XI_ReleaseStream:object{IgnisCollectorV3.OutputCumulator} (fvt-id:string reward-dptf-id:string)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (XI_ReleaseStream fvt-id reward-dptf-id)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: RPS|XE>WRITE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
     (defun XE_XI_RotateOwnership:string (fvt-id:string new-owner-konto:string)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (XI_RotateOwnership fvt-id new-owner-konto)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: RPS|XE>WRITE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
     (defun XE_XI_RpsPreScore:object{IgnisCollectorV3.OutputCumulator} (beneficiary-id:string pool-id:string settle-bundle:object{AcquisitionSchemasV1.FVT|StakeSettleBundle})
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (XI_RpsPreScore beneficiary-id pool-id settle-bundle)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: RPS|XE>WRITE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
     (defun XE_XI_SetMosaic:string (fvt-id:string mosaic:bool)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (XI_SetMosaic fvt-id mosaic)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: RPS|XE>WRITE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
     (defun XE_XI_SetSplitMode:string (fvt-id:string split-mode:string)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (XI_SetSplitMode fvt-id split-mode)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: RPS|XE>WRITE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
     (defun XE_XI_SyncFvtPresence:object{IgnisCollectorV3.OutputCumulator} (beneficiary-id:string distinct-fvts:[string] direction:bool)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (XI_SyncFvtPresence beneficiary-id distinct-fvts direction)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: RPS|XE>WRITE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
     (defun XE_XI_SyncFvtTotalDebMirrors:object{IgnisCollectorV3.OutputCumulator} (pre-member-debs:[object{AcquisitionSchemasV1.FVT|MemberPreDeb}])
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (XI_SyncFvtTotalDebMirrors pre-member-debs)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: RPS|XE>WRITE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
     (defun XE_XI_SyncTripletLaneWeights:object{IgnisCollectorV3.OutputCumulator} (beneficiary-id:string settle-plans:[object{AcquisitionSchemasV1.FVT|SettleScorePlan}])
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (XI_SyncTripletLaneWeights beneficiary-id settle-plans)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: RPS|XE>WRITE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
     (defun XE_XI_ToggleRewardLink:string (fvt-id:string reward-dptf-id:string enabled:bool)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (XI_ToggleRewardLink fvt-id reward-dptf-id enabled)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: RPS|XE>WRITE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
     (defun XE_XI_ToggleScoreEntityLink:string (fvt-id:string score-entity-id:string enabled:bool)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
             (XI_ToggleScoreEntityLink fvt-id score-entity-id enabled)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: RPS|XE>WRITE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          RPS|XE>WRITE
     (defun XE_XI_TransferRewardDptfFromVault:object{IgnisCollectorV3.OutputCumulator} (patron:string collector:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)

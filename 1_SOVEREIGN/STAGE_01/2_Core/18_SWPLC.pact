@@ -299,6 +299,7 @@
                 (ref-P|VST:module{OuronetPolicyV2} VST)
                 (ref-P|SWP:module{OuronetPolicyV2} SWP)
                 (ref-P|SWPL:module{OuronetPolicyV2} SWPL)
+                (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
                 (mg:guard (create-capability-guard (P|SWPLC|CALLER)))
             )
             (ref-P|VST::P|A_Add
@@ -317,6 +318,7 @@
             (ref-P|VST::P|A_AddIMP mg)
             (ref-P|SWP::P|A_AddIMP mg)
             (ref-P|SWPL::P|A_AddIMP mg)
+            (ref-P|IGNIS::P|A_AddIMP mg)
         )
     )
 
@@ -1021,7 +1023,7 @@
                     )
                 )
             )
-            (ref-IGNIS::STOA|C_CollectWT patron stoa-payment false)
+            (ref-IGNIS::XB_CollectStoaWithTrigger patron stoa-payment false)
         )
     )
     (defun C_ToggleAddLiquidity:object{IgnisCollectorV3.OutputCumulator}

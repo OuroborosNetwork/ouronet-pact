@@ -1116,8 +1116,8 @@
         ;;MISSING STOA LEG FIXED (2026-09-14). This reported `OI|UDC_NoStoaCosts` -- a LITERAL ZERO,
         ;;rendered to the client as "Operation is free of native Stoa (STOA)". It is not free. The
         ;;exec charges TWO currencies (`01_TS02-C1.pact:1556-1560`):
-        ;;    (ref-IGNIS::C_Collect patron ico)
-        ;;    (ref-IGNIS::STOA|C_Collect patron (ref-IGNIS::UC_StoaPrice "issue-shareholder"))
+        ;;    (ref-IGNIS::XE_CollectIgnis patron ico)
+        ;;    (ref-IGNIS::XE_CollectStoa patron (ref-IGNIS::UC_StoaPrice "issue-shareholder"))
         ;;with the source comment "Issuing a COMPANY is $100 in IGNIS deter and $100 in STOA (spec)".
         ;;
         ;;MEASURED, not inferred: a live `DPSF|C_IssueCompany` charged **918.0 STOA** while this
@@ -1128,7 +1128,7 @@
         ;;
         ;;THE CHARGE HAS TWO LEGS, which is why a first repair reporting only the premium still came
         ;;up short (765 quoted vs 918 charged). `DPDC-I::C_IssueDigitalCollection` runs its OWN
-        ;;`STOA|C_Collect patron (URCi_IssueCollectionStoa son)` at `04_DPDC-I.pact:502`, nested
+        ;;`XE_CollectStoa patron (URCi_IssueCollectionStoa son)` at `04_DPDC-I.pact:502`, nested
         ;;inside `C_IssueShareholderCollection`, and the Talos wrapper then adds the equity premium
         ;;on top. `11_EQUITY+.pact:385` already said so -- "the collection-issue STOA price previews
         ;;SEPARATELY via DPDC-I::URCi_IssueCollectionStoa" -- but nothing ever added the two together

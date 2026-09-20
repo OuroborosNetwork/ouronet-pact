@@ -334,9 +334,21 @@
         )
     )
     (defun P|A_Define ()
-        @doc "Post-deploy hook (AQP-BOOT Step 0). No cross-module IMP registration required — \
-            \ SCORE calls DALOS UR_*/CAP_*/UEV_* only (no DALOS P|UEV_IMC on those paths); client entry is Talos P|TALOS-SUMMONER."
-        true
+        @doc "Post-deploy hook (AQP-BOOT Step 0). Registers SCORE's caller guard into IGNIS's IMP, \
+            \ which became REQUIRED on 2026-09-20 when the STOA collectors were reclassified from \
+            \ C_ to IMC-gated X_ functions. SCORE calls XE_CollectStoa on its issuance paths, so \
+            \ without this line every one of them fails at P|UEV_IMC. \
+            \ \
+            \ This @doc used to read 'No cross-module IMP registration required'. That was true \
+            \ when the collector was an ungated C_; it stopped being true the moment the collector \
+            \ was protected, which is exactly the kind of statement that rots silently."
+        (let
+            (
+                (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
+                (mg:guard (create-capability-guard (P|AQP-SCORE|CALLER)))
+            )
+            (ref-P|IGNIS::P|A_AddIMP mg)
+        )
     )
 
     ;;<=========================================================================>
@@ -3558,7 +3570,7 @@
             (ref-IGNIS::UDC_ConcatenateOutputCumulators score-ocs [])
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: SCR|XE>REFRESH-USER-SCORE-DEB
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_RefreshUserScoreDeb:string
         (ouronet-account:string pool-id:string score-id:string)
         @doc "Forward (AQP-FVT): M3 deb-staleness backstop. If this user's score deb is stale (Elite-DEB changed \
@@ -3573,7 +3585,8 @@
             "score deb already fresh — no refresh"
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: SCR|XE>NUKE-SCORE-FOR-VACATE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          SCR|XE>NUKE-SCORE-FOR-VACATE
     (defun XE_NukeScoreForVacate:string
         (score-id:string)
         @doc "Forward (AQP-VCT): vacate-v2 §5 finalize nuke of ONE employed score — bulk-zero the aggregates + \
@@ -3701,7 +3714,8 @@
     ;; --- Block C · Link-field XE (leaf writes · no XI children) ---
     ;;   XE_CreateAqpoolLink / XE_RevokeAqpoolLink / XE_CreateFvtLink
     ;;
-    ;;Protection: Class 5 — IMC + Custom: SCR|XE>CREATE-AQPOOL-LINK
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          SCR|XE>CREATE-AQPOOL-LINK
     (defun XE_CreateAqpoolLink:string
         (score-id:string pool-id:string)
         @doc "Forward entry (e.g. AQP-POOL): P|UEV_IMC; SCR|XE>CREATE-AQPOOL-LINK validates BAR + ownership; write aqpool-link only."
@@ -3711,7 +3725,8 @@
         )
         pool-id
     )
-    ;;Protection: Class 5 — IMC + Custom: SCR|XE>REVOKE-AQPOOL-LINK
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          SCR|XE>REVOKE-AQPOOL-LINK
     (defun XE_RevokeAqpoolLink:string
         (score-id:string pool-id:string)
         @doc "Forward entry (e.g. AQP-POOL): P|UEV_IMC; SCR|XE>REVOKE-AQPOOL-LINK validates aqpool-link = pool-id + ownership; clear to BAR."
@@ -3720,7 +3735,8 @@
             (WU_Score|AqpoolLink score-id BAR)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: SCR|XE>CREATE-FVT-LINK
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          SCR|XE>CREATE-FVT-LINK
     (defun XE_CreateFvtLink:string
         (score-id:string fvt-id:string)
         @doc "Forward entry (e.g. AQP-FVT): P|UEV_IMC; SCR|XE>CREATE-FVT-LINK validates BAR + ownership; write fvt-link only."
@@ -3748,7 +3764,7 @@
                     (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
-                (ref-IGNIS::STOA|C_Collect patron (URCi_IssueScoreStoa))
+                (ref-IGNIS::XE_CollectStoa patron (URCi_IssueScoreStoa))
                 (XI_Issue score-name owner-konto precision 0 lp-denominator mx-frozen mx-sleeping 1.0 true -1)
                 (URCi_IssueScore owner-konto [score-id])
             )
@@ -3767,7 +3783,7 @@
                     (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
-                (ref-IGNIS::STOA|C_Collect patron (URCi_IssueScoreStoa))
+                (ref-IGNIS::XE_CollectStoa patron (URCi_IssueScoreStoa))
                 (XI_Issue score-name owner-konto precision 1 BAR mx-frozen 1.0 1.0 true -1)
                 (URCi_IssueScore owner-konto [score-id])
             )
@@ -3787,7 +3803,7 @@
                     (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
-                (ref-IGNIS::STOA|C_Collect patron (URCi_IssueScoreStoa))
+                (ref-IGNIS::XE_CollectStoa patron (URCi_IssueScoreStoa))
                 (XI_Issue score-name owner-konto precision 2 BAR 2.0 mx-sleeping mx-hibernated true -1)
                 (URCi_IssueScore owner-konto [score-id])
             )
@@ -3806,7 +3822,7 @@
                     (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
-                (ref-IGNIS::STOA|C_Collect patron (URCi_IssueScoreStoa))
+                (ref-IGNIS::XE_CollectStoa patron (URCi_IssueScoreStoa))
                 (XI_Issue score-name owner-konto precision 3 BAR 2.0 1.0 1.0 sft-equality -1)
                 (URCi_IssueScore owner-konto [score-id])
             )
@@ -3825,7 +3841,7 @@
                     (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
-                (ref-IGNIS::STOA|C_Collect patron (URCi_IssueScoreStoa))
+                (ref-IGNIS::XE_CollectStoa patron (URCi_IssueScoreStoa))
                 (XI_Issue score-name owner-konto precision 4 BAR 2.0 1.0 1.0 true nft-score-model)
                 (URCi_IssueScore owner-konto [score-id])
             )

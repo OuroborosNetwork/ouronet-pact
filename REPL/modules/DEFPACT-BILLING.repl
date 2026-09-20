@@ -556,7 +556,7 @@
                     true (ref-IGNIS::URC_IsVirtualGasZero))
                 ;;THE OWNER'S FIRST RULE, UNDER THE SWITCH. This is what the `trigger` field
                 ;;actually governs: UDC_MakeModularCumulator reports {"ignis": 0.0} when it is true,
-                ;;so the PREVIEW reads zero. The EXEC is zero for a different reason -- C_Collect
+                ;;so the PREVIEW reads zero. The EXEC is zero for a different reason -- XE_CollectIgnis
                 ;;gates on UR_VirtualToggle itself. A hardcoded `false` therefore makes the preview
                 ;;quote a cost the chain will not charge.
                 (expect "<<DPB-05>> with collection off the PREVIEW also quotes zero, matching the charge"

@@ -3134,7 +3134,8 @@
     ;;   XB_Vacate{TF,OF,SF,NF}  — external per-kind wrappers over the same XI cores.
     ;;   (multistep defpact + OF/SF/NF dispatch land in later steps of this phase.)
     ;; ═══════════════════════════════════════════════════════════════════════════
-    ;;Protection: Class 5 — IMC + Custom: VCT|C>VACATE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          VCT|C>VACATE
     (defun XB_VacateTrueFungible:object{IgnisCollectorV3.OutputCumulator}
         (pool-id:string)
         @doc "Vacate rehaul — external per-kind TF vacate for a whole pool (both internal + external, hence XB). \
@@ -3146,7 +3147,8 @@
             (XI_VacateTrueFungiblePoolLegs pool-id (URH_VacateTrueFungiblePoolLegs pool-id))
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: VCT|C>VACATE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          VCT|C>VACATE
     (defun XB_VacateOrtoFungible:object{IgnisCollectorV3.OutputCumulator}
         (pool-id:string dpof-id:string)
         @doc "Vacate rehaul — external per-kind OF vacate for ONE OF asset of a pool (both internal + external). \
@@ -3158,7 +3160,8 @@
                 (URHC_VacateNonceOwnerRowsRaw pool-id dpof-id VACATE-KIND-OF))
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: VCT|C>VACATE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          VCT|C>VACATE
     (defun XB_VacateSemiFungible:object{IgnisCollectorV3.OutputCumulator}
         (pool-id:string dpsf-id:string)
         @doc "Vacate rehaul — external per-kind DPSF (semi-fungible collection) vacate for ONE collectable of a \
@@ -3170,7 +3173,8 @@
                 (URHC_VacateNonceOwnerRowsRaw pool-id dpsf-id VACATE-KIND-DPSF))
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: VCT|C>VACATE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          VCT|C>VACATE
     (defun XB_VacateNonFungible:object{IgnisCollectorV3.OutputCumulator}
         (pool-id:string dpnf-id:string)
         @doc "Vacate rehaul — external per-kind DPNF (non-fungible collection) vacate for ONE collectable of a \

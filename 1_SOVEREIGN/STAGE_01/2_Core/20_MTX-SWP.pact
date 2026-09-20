@@ -145,6 +145,17 @@
     (deftable P|MT:{OuronetPolicyV2.P|MS})                      ;;Key = P|I (module-identity singleton constant)
     ;;{P4}  capabilities
     (defcap P|MTX-SWP|CALLER ()
+        @doc "This module's identity as an inter-module caller: the guard registered into other \
+        \ modules' IMPs by <P|A_Define> is `(create-capability-guard (P|MTX-SWP|CALLER))`, so \
+        \ `P|UEV_IMC` over there passes exactly when THIS is in scope over here. \
+        \ \
+        \ IT IS ACQUIRED DIRECTLY AT EVERY BILLING SITE IN THIS MODULE, and that is not \
+        \ redundancy. The IGNIS collectors became `P|UEV_IMC`-protected on 2026-09-20. On the \
+        \ ordinary path nothing has to do this: Talos acquires <P|TALOS-SUMMONER> at the top, \
+        \ `P|UEV_IMC` is depth-invariant, and every nested core call inherits it. A DEFPACT \
+        \ STEP INHERITS NOTHING -- it arrives in its own transaction through <continue-pact> \
+        \ with an empty capability scope -- and this module is almost entirely defpacts that \
+        \ bill. Hence the explicit acquire, scoped to the collect call and nothing wider."
         true
     )
     (defcap P|MTX-SWP|REMOTE-GOV ()
@@ -237,6 +248,7 @@
                 ;;as an approved IMC caller on SWPI too — same as every other module
                 ;;it already calls into below.
                 (ref-P|SWPI:module{OuronetPolicyV2} SWPI)
+                (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
                 (mg:guard (create-capability-guard (P|MTX-SWP|CALLER)))
             )
             (ref-P|VST::P|A_Add
@@ -257,6 +269,7 @@
             (ref-P|SWP::P|A_AddIMP mg)
             (ref-P|SWPL::P|A_AddIMP mg)
             (ref-P|SWPI::P|A_AddIMP mg)
+            (ref-P|IGNIS::P|A_AddIMP mg)
         )
     )
 
@@ -574,7 +587,9 @@
                 ;;18_SWPLC.pact only, and nothing compared the two modules afterwards: each route
                 ;;was measured against ITS OWN preview and both agreed with themselves.
                 ;;Measured, exploit-first, at RedTeam/[RT-A]_Economics.repl <<RT-A-001>>.
-                (ref-IGNIS::C_Collect patron (URCi_AddLiquidityInitiation))
+                (with-capability (P|MTX-SWP|CALLER)
+                    (ref-IGNIS::XE_CollectIgnis patron (URCi_AddLiquidityInitiation))
+                )
                 (format "MTX LqAdd. computed succesfully and collected {} IGNIS before discounts; 1|3"
                     [LQ|INITIATION-FEE])
             )
@@ -608,12 +623,14 @@
                     ;;operation may happen at all -- so any stranger's ordinary swap moved the
                     ;;pool, failed this enforce, and destroyed the quoter's entire fee with no
                     ;;refund. Measured, exploit-first, at RedTeam/[RT-F]_Griefing.repl <<RT-F-001>>.
-                    (ref-IGNIS::C_Collect patron
-                        (ref-IGNIS::UDC_ConcatenateOutputCumulators
-                            [(URCi_AddLiquidityChurnRemainder
-                                (UC_AddLiquidityChurnKey asymmetric-collection gaseous-collection))
-                             (at "perfect-ignis-fee" (at "clad-op" clad))]
-                            []
+                    (with-capability (P|MTX-SWP|CALLER)
+                        (ref-IGNIS::XE_CollectIgnis patron
+                            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                                [(URCi_AddLiquidityChurnRemainder
+                                    (UC_AddLiquidityChurnKey asymmetric-collection gaseous-collection))
+                                 (at "perfect-ignis-fee" (at "clad-op" clad))]
+                                []
+                            )
                         )
                     )
                     (if (and asymmetric-collection gaseous-collection)
@@ -649,9 +666,11 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 )
-                (ref-IGNIS::C_Collect patron 
-                    (ref-IGNIS::UDC_ConstructOutputCumulator
-                        LQ|INITIATION-FEE SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []
+                (with-capability (P|MTX-SWP|CALLER)
+                    (ref-IGNIS::XE_CollectIgnis patron 
+                        (ref-IGNIS::UDC_ConstructOutputCumulator
+                            LQ|INITIATION-FEE SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []
+                        )
                     )
                 )
                 (format "Inconsistent Pool State detected: Adding Liquidity not allowed; Stepped rolled back; 2|3" [swpair])
@@ -689,11 +708,13 @@
                         ;;Autonomous Swap Mangement
                         (ref-SWPL::XE_AutonomousSwapManagement swpair)
                         ;;Collect Last Gas
-                        (ref-IGNIS::C_Collect patron 
-                            (ref-IGNIS::UDC_ConcatenateOutputCumulators 
-                                [ico1 ico2] 
-                                []
-                            ) 
+                        (with-capability (P|MTX-SWP|CALLER)
+                            (ref-IGNIS::XE_CollectIgnis patron 
+                                (ref-IGNIS::UDC_ConcatenateOutputCumulators 
+                                    [ico1 ico2] 
+                                    []
+                                ) 
+                            )
                         )
                         (if (not asymmetric-collection)
                             (format "Succesfully moved {} Native LP and {} Frozen LP to client; 3|3" [primary secondary])
@@ -741,7 +762,9 @@
                 ;;LP-CHURN REPAIR (2026-09-14) -- same defect as MTX|C_AddLiquidity's step 0
                 ;;above, in this variant. The single-tx twin bills UC_IgnisPrice
                 ;;"SWP|C_AddFrozenLiquidity" "lp-churn"; this billed a flat literal.
-                (ref-IGNIS::C_Collect patron (URCi_AddLiquidityInitiation))
+                (with-capability (P|MTX-SWP|CALLER)
+                    (ref-IGNIS::XE_CollectIgnis patron (URCi_AddLiquidityInitiation))
+                )
                 (format "MTX Frozen LqAdd. computed succesfully and collected {} IGNIS before discounts; 1|3"
                     [LQ|INITIATION-FEE])
             )
@@ -786,10 +809,12 @@
                             )
                             ;;lp-churn REMAINDER taken here, after validation -- see the twin
                             ;;comment in MTX|C_AddLiquidity's execution step.
-                            (ref-IGNIS::C_Collect patron 
-                                (ref-IGNIS::UDC_ConcatenateOutputCumulators 
-                                    [(URCi_AddLiquidityChurnRemainder "SWP|C_AddFrozenLiquidity")
-                                     ico1 ico2 ico3] []
+                            (with-capability (P|MTX-SWP|CALLER)
+                                (ref-IGNIS::XE_CollectIgnis patron 
+                                    (ref-IGNIS::UDC_ConcatenateOutputCumulators 
+                                        [(URCi_AddLiquidityChurnRemainder "SWP|C_AddFrozenLiquidity")
+                                         ico1 ico2 ico3] []
+                                    )
                                 )
                             )
                             (ref-SWPL::XE_STOA-PID|AddLiquidity vst-sc swpair false false stoa-pid ld clad)
@@ -805,9 +830,11 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 )
-                (ref-IGNIS::C_Collect patron 
-                    (ref-IGNIS::UDC_ConstructOutputCumulator
-                        LQ|INITIATION-FEE SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []
+                (with-capability (P|MTX-SWP|CALLER)
+                    (ref-IGNIS::XE_CollectIgnis patron 
+                        (ref-IGNIS::UDC_ConstructOutputCumulator
+                            LQ|INITIATION-FEE SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []
+                        )
                     )
                 )
                 (format "Inconsistent Pool State detected: Adding Liquidity not allowed; 2|3" [swpair])
@@ -833,7 +860,9 @@
                         ;;Autonomous Swap Mangement
                         (ref-SWPL::XE_AutonomousSwapManagement swpair)
                         ;;Collect Last Gas
-                        (ref-IGNIS::C_Collect patron ico)
+                        (with-capability (P|MTX-SWP|CALLER)
+                            (ref-IGNIS::XE_CollectIgnis patron ico)
+                        )
                         (format "Succesfuly frozen {} LP to Client; 3|3" [secondary])
                     )
                 )
@@ -879,7 +908,9 @@
                 ;;LP-CHURN REPAIR (2026-09-14) -- same defect as MTX|C_AddLiquidity's step 0
                 ;;above, in this variant. The single-tx twin bills UC_IgnisPrice
                 ;;"SWP|C_AddSleepingLiquidity" "lp-churn"; this billed a flat literal.
-                (ref-IGNIS::C_Collect patron (URCi_AddLiquidityInitiation))
+                (with-capability (P|MTX-SWP|CALLER)
+                    (ref-IGNIS::XE_CollectIgnis patron (URCi_AddLiquidityInitiation))
+                )
                 (format "MTX Sleeping LqAdd. computed succesfully and collected {} IGNIS before discounts; 1|3"
                     [LQ|INITIATION-FEE])
             )
@@ -937,10 +968,12 @@
                             )
                             ;;lp-churn REMAINDER taken here, after validation -- see the twin
                             ;;comment in MTX|C_AddLiquidity's execution step.
-                            (ref-IGNIS::C_Collect patron 
-                                (ref-IGNIS::UDC_ConcatenateOutputCumulators 
-                                    [(URCi_AddLiquidityChurnRemainder "SWP|C_AddSleepingLiquidity")
-                                     ico1 ico2 ico3 ico4] []
+                            (with-capability (P|MTX-SWP|CALLER)
+                                (ref-IGNIS::XE_CollectIgnis patron 
+                                    (ref-IGNIS::UDC_ConcatenateOutputCumulators 
+                                        [(URCi_AddLiquidityChurnRemainder "SWP|C_AddSleepingLiquidity")
+                                         ico1 ico2 ico3 ico4] []
+                                    )
                                 )
                             )
                             (ref-SWPL::XE_STOA-PID|AddLiquidity vst-sc swpair true true stoa-pid ld clad)
@@ -957,9 +990,11 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 )
-                (ref-IGNIS::C_Collect patron 
-                    (ref-IGNIS::UDC_ConstructOutputCumulator
-                        LQ|INITIATION-FEE SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []
+                (with-capability (P|MTX-SWP|CALLER)
+                    (ref-IGNIS::XE_CollectIgnis patron 
+                        (ref-IGNIS::UDC_ConstructOutputCumulator
+                            LQ|INITIATION-FEE SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []
+                        )
                     )
                 )
                 (format "Inconsistent Pool State detected: Adding Liquidity not allowed; Stepped rolled back; 2|3" [swpair])
@@ -986,7 +1021,9 @@
                         ;;Autonomous Swap Mangement
                         (ref-SWPL::XE_AutonomousSwapManagement swpair)
                         ;;Collect Last Gas
-                        (ref-IGNIS::C_Collect patron ico)
+                        (with-capability (P|MTX-SWP|CALLER)
+                            (ref-IGNIS::XE_CollectIgnis patron ico)
+                        )
                         (format "Succesfuly put to sleep {} LP to Client; 3|3" [primary])
                     )
                 )
@@ -1050,10 +1087,23 @@
                         )
                     )
                 )
-                ;;Collect IGNIS for Issuance
-                (ref-IGNIS::C_Collect patron (ref-SWPI::URCi_IssuePool account pool-tokens))
-                ;;Collect STOA for Issuance
-                (ref-IGNIS::STOA|C_Collect patron stoa-costs)
+                ;;Collect IGNIS and STOA for Issuance.
+                ;;
+                ;;THE <with-capability> IS LORD-BEARING, NOT DECORATION. The IGNIS collectors
+                ;;became `P|UEV_IMC`-protected on 2026-09-20, and that gate passes only when one
+                ;;of IGNIS' registered capability guards is IN SCOPE. For the ordinary path that
+                ;;is automatic -- Talos acquires <P|TALOS-SUMMONER> at the top and `P|UEV_IMC` is
+                ;;depth-invariant, so every nested core call inherits it. A DEFPACT STEP INHERITS
+                ;;NOTHING: step 2 arrives in its own transaction via <continue-pact>, with an
+                ;;empty capability scope, so the guard this module registered in IGNIS' IMP
+                ;;(<P|MTX-SWP|CALLER>) has to be acquired here or billing dies with "None of the
+                ;;guards passed". Step 3 already does the same thing for SWPI::XE_IssueWrite,
+                ;;via <MTX-SWP|C>ISSUE> -> <P|DT> -> <P|MTX-SWP|CALLER>; this is that, scoped to
+                ;;the two calls that need it rather than borrowing the governance composite.
+                (with-capability (P|MTX-SWP|CALLER)
+                    (ref-IGNIS::XE_CollectIgnis patron (ref-SWPI::URCi_IssuePool account pool-tokens))
+                    (ref-IGNIS::XE_CollectStoa patron stoa-costs)
+                )
                 (let
                     (
                         (ref-ORBR:module{OuroborosV2} OUROBOROS)
@@ -1074,9 +1124,13 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 )
-                (ref-IGNIS::C_Collect patron 
-                    (ref-IGNIS::UDC_ConstructOutputCumulator
-                        100.0 SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []
+                ;;Same reason as the step body above: the rollback runs in its own transaction
+                ;;with an empty capability scope, and it bills.
+                (with-capability (P|MTX-SWP|CALLER)
+                    (ref-IGNIS::XE_CollectIgnis patron 
+                        (ref-IGNIS::UDC_ConstructOutputCumulator
+                            100.0 SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []
+                        )
                     )
                 )
                 (format "Insufficient IGNIS and STOA for Collection; Stepped rolled back{} 2|3" [";"])

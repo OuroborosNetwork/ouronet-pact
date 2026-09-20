@@ -2091,7 +2091,7 @@
 ;;  3] `INFO_X.ignis-need == what executing X actually charges` -- THE ONLY ONE WITH AN INDEPENDENT
 ;;     ORACLE, and the owner's spec. That is what this does.
 ;;
-;;THE MEASUREMENT. `IGNIS::C_Collect` debits the patron, so the real cost is the patron's IGNIS
+;;THE MEASUREMENT. `IGNIS::XE_CollectIgnis` debits the patron, so the real cost is the patron's IGNIS
 ;;balance before minus after, around a live execution with the SAME arguments the preview was given.
 ;;`ClientInfo` carries both currencies -- `ignis.ignis-need` and `stoa.stoa-need` -- so both are
 ;;measured: IGNIS from `DALOS::UR_TF_AccountSupply <patron> false`, STOA from `coin.get-balance`.
@@ -2170,7 +2170,7 @@
 ;;
 ;;DEFECT (found by this spec, fixed in `08_ATS.pact` + `02_INFO-ONE+.pact`):
 ;;`INFO_ATS|ToggleParameterLock` returned `OI|UDC_NoStoaCosts` UNCONDITIONALLY, but
-;;`ATS::C_ToggleParameterLock` hands `XI_ToggleParameterLock`'s STOA leg to `STOA|C_Collect` — zero on
+;;`ATS::C_ToggleParameterLock` hands `XI_ToggleParameterLock`'s STOA leg to `XE_CollectStoa` — zero on
 ;;LOCK, `UC_FeeUnlockPrice` on UNLOCK. So unlocking was quoted as free. Identical to the SWP defect
 ;;in `modules/SWP.repl <<SWP-I1>>`; the fix ports DPTF's read-only `URCi_*Stoa` twin to both.
 ;;
@@ -2226,7 +2226,7 @@
             "already locked"
         )
         ;;SETUP 2 — the unlock gate demands every recovery OFF. None of these three charge STOA
-        ;;(verified: no STOA|C_Collect anywhere in C_Switch*Recovery), so they cannot pollute the
+        ;;(verified: no XE_CollectStoa anywhere in C_Switch*Recovery), so they cannot pollute the
         ;;measurement either.
         (if (ref-ATS::UR_ToggleColdRecovery ps)
             (ref-TS01-C2::ATS|C_SwitchColdRecovery patron ps false) "cold already off")

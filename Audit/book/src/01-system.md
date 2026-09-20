@@ -279,7 +279,8 @@ shapes:
 | **E** | **defpact step** — the `C_` is only a starter; a later step bills | the 8 `MTX-SWP` pool/liquidity ops |
 | **F** | **nested Talos** — the core calls another Talos client that collects | `DEMIPAD::C_Transmit*` → `DPTF\|C_Transfer` |
 
-Plus the **primitives** — `IGNIS::C_TransferDalosFuel` and the `STOA|C_Collect*` family — which
+Plus the **primitives** — the IGNIS collectors, `XB_MoveDalosFuel` / `XB_Collect*` /
+`XE_Collect*` (until 2026-09-20 `C_TransferDalosFuel` and the `STOA|C_Collect*` family) — which
 *are* the collectors and cannot collect from themselves. The practical rule that falls out, and
 which cost two rounds of wrong conclusions before it was written down: **to decide whether an op
 charges, follow the Talos wrapper's `IGNIS::C_Collect` argument, never the core `C_`'s return

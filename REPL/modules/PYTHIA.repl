@@ -117,7 +117,7 @@
 ;;CONFORMANCE OBSERVATION `C-without-cumulator`, settled by execution.
 ;;
 ;;`TS01-C4::PYTHIA|C_Link` is the ONLY `C_` wrapper in that Talos file with no `patron` parameter
-;;and no collect of any kind -- no `IGNIS::C_Collect`, no `STOA|C_Collect*`, no `URCi_`. Its three
+;;and no collect of any kind -- no `IGNIS::XE_CollectIgnis`, no `XE_CollectStoa*`, no `URCi_`. Its three
 ;;siblings all charge: `C_DeployApiKey` takes 500 native STOA, `C_UpdateDualConsumerLane` a rename
 ;;fee, `C_RevokeLink` an IGNIS fee. So it is an operation that performs two writes
 ;;(`XI_ApplyDualCounterparts` + `WI_DualLink`) and bills nothing, reachable through the gas station.

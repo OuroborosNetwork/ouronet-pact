@@ -619,7 +619,7 @@
         ;;report the same cost the op actually charges. Template: `modules/ATS.repl <<ATS-I1>>`.
         ;;
         ;;This preview quotes "Costs you nothing" — `OI|UDC_NoIgnisCosts` + `OI|UDC_NoStoaCosts` — even
-        ;;though the Talos op DOES run `IGNIS::C_Collect patron (VCT::C_AbortVacate pool-id)`. That is
+        ;;though the Talos op DOES run `IGNIS::XE_CollectIgnis patron (VCT::C_AbortVacate pool-id)`. That is
         ;;correct rather than a defect, because `C_AbortVacate` returns `UC_EmptyOc`, and collecting an
         ;;empty cumulator collects nothing. But "correct" was, until now, an unverified claim about a
         ;;code path that visibly calls the collector — so it is measured here.
@@ -651,7 +651,7 @@
                     [
                         ;;`INFO_AQP-POOL|AbortVacate` quotes "Costs you nothing". This is the half of
                         ;;that claim which can be checked here: the op really charges nothing, even
-                        ;;though it visibly calls `IGNIS::C_Collect` — because `C_AbortVacate` returns
+                        ;;though it visibly calls `IGNIS::XE_CollectIgnis` — because `C_AbortVacate` returns
                         ;;`UC_EmptyOc`, and collecting an empty cumulator collects nothing.
                         (expect "<<TX-VCT-L03>> C_AbortVacate charges no IGNIS: collecting an empty cumulator collects nothing"
                             0.0 real-ignis)

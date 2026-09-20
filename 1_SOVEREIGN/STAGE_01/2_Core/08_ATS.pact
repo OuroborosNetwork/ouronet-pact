@@ -486,12 +486,14 @@
                 (ref-P|BRD:module{OuronetPolicyV2} BRD)
                 (ref-P|DPTF:module{OuronetPolicyV2} DPTF)
                 (ref-P|DPOF:module{OuronetPolicyV2} DPOF)
+                (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
                 (mg:guard (create-capability-guard (P|ATS|CALLER)))
             )
             (ref-P|DALOS::P|A_AddIMP mg)
             (ref-P|BRD::P|A_AddIMP mg)
             (ref-P|DPTF::P|A_AddIMP mg)
             (ref-P|DPOF::P|A_AddIMP mg)
+            (ref-P|IGNIS::P|A_AddIMP mg)
         )
     )
 
@@ -2274,7 +2276,7 @@
     (defun URCi_ToggleParameterLockStoa:decimal (atspair:string toggle:bool)
         @doc "STOA leg of a parameter-lock toggle: locking is free, unlocking costs the \
             \ fee-unlock price. Read-only twin of the <XI_ToggleParameterLock> return that \
-            \ <C_ToggleParameterLock> hands to <STOA|C_Collect>, so the INFO_ preview and the \
+            \ <C_ToggleParameterLock> hands to <XE_CollectStoa>, so the INFO_ preview and the \
             \ charge move as one. Mirrors DPTF's <URCi_ToggleFeeLockStoa>."
         (let
             (
@@ -2979,7 +2981,7 @@
             (with-capability (ATS|C>UPGRADE-BRD entity-id)
                 (ref-BRD::XE_UpgradeBranding entity-id owner months)
             )
-            (ref-IGNIS::STOA|C_CollectWT patron (URCi_UpgradeBranding months) false)
+            (ref-IGNIS::XB_CollectStoaWithTrigger patron (URCi_UpgradeBranding months) false)
         )
     )
     ;;Hot RBT Management
@@ -3069,7 +3071,7 @@
                         (XI_FoldedIssue executor atspair index-decimals reward-token rt-nfr reward-bearing-token rbt-nfr)
                     )
                 )
-                (ref-IGNIS::STOA|C_Collect patron stoa-costs)
+                (ref-IGNIS::XE_CollectStoa patron stoa-costs)
                 (ref-IGNIS::UDC_ConstructOutputCumulator gas-costs ATS|SC_NAME trigger ats-ids)
                 
             )
@@ -3132,7 +3134,7 @@
                 (if (> stoa-costs 0.0)
                     (do
                         (XI_IncrementParameterUnlocks atspair)
-                        (ref-IGNIS::STOA|C_Collect patron stoa-costs)
+                        (ref-IGNIS::XE_CollectStoa patron stoa-costs)
                     )
                     true
                 )

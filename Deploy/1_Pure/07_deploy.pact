@@ -1,8 +1,8 @@
 ;; ---------------------------------------------------------------------------
 ;; OURONET DEPLOY -- file 7 of 20
-;; This is STEP 7 of 21 in the full sequence (see Deploy/MANIFEST.md).
+;; This is STEP 7 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-6 must have run first, including the init steps between deploys.
-;; 5 module(s), 321,972 gas measured in the REPL gas model, 276,537 bytes
+;; 5 module(s), 321,972 gas measured in the REPL gas model, 280,585 bytes
 ;;
 ;; Modules in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/20_MTX-SWP.pact
@@ -165,6 +165,17 @@
     (deftable P|MT:{OuronetPolicyV2.P|MS})                      ;;Key = P|I (module-identity singleton constant)
     ;;{P4}  capabilities
     (defcap P|MTX-SWP|CALLER ()
+        @doc "This module's identity as an inter-module caller: the guard registered into other \
+        \ modules' IMPs by <P|A_Define> is `(create-capability-guard (P|MTX-SWP|CALLER))`, so \
+        \ `P|UEV_IMC` over there passes exactly when THIS is in scope over here. \
+        \ \
+        \ IT IS ACQUIRED DIRECTLY AT EVERY BILLING SITE IN THIS MODULE, and that is not \
+        \ redundancy. The IGNIS collectors became `P|UEV_IMC`-protected on 2026-09-20. On the \
+        \ ordinary path nothing has to do this: Talos acquires <P|TALOS-SUMMONER> at the top, \
+        \ `P|UEV_IMC` is depth-invariant, and every nested core call inherits it. A DEFPACT \
+        \ STEP INHERITS NOTHING -- it arrives in its own transaction through <continue-pact> \
+        \ with an empty capability scope -- and this module is almost entirely defpacts that \
+        \ bill. Hence the explicit acquire, scoped to the collect call and nothing wider."
         true
     )
     (defcap P|MTX-SWP|REMOTE-GOV ()
@@ -257,6 +268,7 @@
                 ;;as an approved IMC caller on SWPI too — same as every other module
                 ;;it already calls into below.
                 (ref-P|SWPI:module{OuronetPolicyV2} SWPI)
+                (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
                 (mg:guard (create-capability-guard (P|MTX-SWP|CALLER)))
             )
             (ref-P|VST::P|A_Add
@@ -277,6 +289,7 @@
             (ref-P|SWP::P|A_AddIMP mg)
             (ref-P|SWPL::P|A_AddIMP mg)
             (ref-P|SWPI::P|A_AddIMP mg)
+            (ref-P|IGNIS::P|A_AddIMP mg)
         )
     )
 
@@ -594,7 +607,9 @@
                 ;;18_SWPLC.pact only, and nothing compared the two modules afterwards: each route
                 ;;was measured against ITS OWN preview and both agreed with themselves.
                 ;;Measured, exploit-first, at RedTeam/[RT-A]_Economics.repl <<RT-A-001>>.
-                (ref-IGNIS::C_Collect patron (URCi_AddLiquidityInitiation))
+                (with-capability (P|MTX-SWP|CALLER)
+                    (ref-IGNIS::XE_CollectIgnis patron (URCi_AddLiquidityInitiation))
+                )
                 (format "MTX LqAdd. computed succesfully and collected {} IGNIS before discounts; 1|3"
                     [LQ|INITIATION-FEE])
             )
@@ -628,12 +643,14 @@
                     ;;operation may happen at all -- so any stranger's ordinary swap moved the
                     ;;pool, failed this enforce, and destroyed the quoter's entire fee with no
                     ;;refund. Measured, exploit-first, at RedTeam/[RT-F]_Griefing.repl <<RT-F-001>>.
-                    (ref-IGNIS::C_Collect patron
-                        (ref-IGNIS::UDC_ConcatenateOutputCumulators
-                            [(URCi_AddLiquidityChurnRemainder
-                                (UC_AddLiquidityChurnKey asymmetric-collection gaseous-collection))
-                             (at "perfect-ignis-fee" (at "clad-op" clad))]
-                            []
+                    (with-capability (P|MTX-SWP|CALLER)
+                        (ref-IGNIS::XE_CollectIgnis patron
+                            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                                [(URCi_AddLiquidityChurnRemainder
+                                    (UC_AddLiquidityChurnKey asymmetric-collection gaseous-collection))
+                                 (at "perfect-ignis-fee" (at "clad-op" clad))]
+                                []
+                            )
                         )
                     )
                     (if (and asymmetric-collection gaseous-collection)
@@ -669,9 +686,11 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 )
-                (ref-IGNIS::C_Collect patron 
-                    (ref-IGNIS::UDC_ConstructOutputCumulator
-                        LQ|INITIATION-FEE SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []
+                (with-capability (P|MTX-SWP|CALLER)
+                    (ref-IGNIS::XE_CollectIgnis patron 
+                        (ref-IGNIS::UDC_ConstructOutputCumulator
+                            LQ|INITIATION-FEE SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []
+                        )
                     )
                 )
                 (format "Inconsistent Pool State detected: Adding Liquidity not allowed; Stepped rolled back; 2|3" [swpair])
@@ -709,11 +728,13 @@
                         ;;Autonomous Swap Mangement
                         (ref-SWPL::XE_AutonomousSwapManagement swpair)
                         ;;Collect Last Gas
-                        (ref-IGNIS::C_Collect patron 
-                            (ref-IGNIS::UDC_ConcatenateOutputCumulators 
-                                [ico1 ico2] 
-                                []
-                            ) 
+                        (with-capability (P|MTX-SWP|CALLER)
+                            (ref-IGNIS::XE_CollectIgnis patron 
+                                (ref-IGNIS::UDC_ConcatenateOutputCumulators 
+                                    [ico1 ico2] 
+                                    []
+                                ) 
+                            )
                         )
                         (if (not asymmetric-collection)
                             (format "Succesfully moved {} Native LP and {} Frozen LP to client; 3|3" [primary secondary])
@@ -761,7 +782,9 @@
                 ;;LP-CHURN REPAIR (2026-09-14) -- same defect as MTX|C_AddLiquidity's step 0
                 ;;above, in this variant. The single-tx twin bills UC_IgnisPrice
                 ;;"SWP|C_AddFrozenLiquidity" "lp-churn"; this billed a flat literal.
-                (ref-IGNIS::C_Collect patron (URCi_AddLiquidityInitiation))
+                (with-capability (P|MTX-SWP|CALLER)
+                    (ref-IGNIS::XE_CollectIgnis patron (URCi_AddLiquidityInitiation))
+                )
                 (format "MTX Frozen LqAdd. computed succesfully and collected {} IGNIS before discounts; 1|3"
                     [LQ|INITIATION-FEE])
             )
@@ -806,10 +829,12 @@
                             )
                             ;;lp-churn REMAINDER taken here, after validation -- see the twin
                             ;;comment in MTX|C_AddLiquidity's execution step.
-                            (ref-IGNIS::C_Collect patron 
-                                (ref-IGNIS::UDC_ConcatenateOutputCumulators 
-                                    [(URCi_AddLiquidityChurnRemainder "SWP|C_AddFrozenLiquidity")
-                                     ico1 ico2 ico3] []
+                            (with-capability (P|MTX-SWP|CALLER)
+                                (ref-IGNIS::XE_CollectIgnis patron 
+                                    (ref-IGNIS::UDC_ConcatenateOutputCumulators 
+                                        [(URCi_AddLiquidityChurnRemainder "SWP|C_AddFrozenLiquidity")
+                                         ico1 ico2 ico3] []
+                                    )
                                 )
                             )
                             (ref-SWPL::XE_STOA-PID|AddLiquidity vst-sc swpair false false stoa-pid ld clad)
@@ -825,9 +850,11 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 )
-                (ref-IGNIS::C_Collect patron 
-                    (ref-IGNIS::UDC_ConstructOutputCumulator
-                        LQ|INITIATION-FEE SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []
+                (with-capability (P|MTX-SWP|CALLER)
+                    (ref-IGNIS::XE_CollectIgnis patron 
+                        (ref-IGNIS::UDC_ConstructOutputCumulator
+                            LQ|INITIATION-FEE SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []
+                        )
                     )
                 )
                 (format "Inconsistent Pool State detected: Adding Liquidity not allowed; 2|3" [swpair])
@@ -853,7 +880,9 @@
                         ;;Autonomous Swap Mangement
                         (ref-SWPL::XE_AutonomousSwapManagement swpair)
                         ;;Collect Last Gas
-                        (ref-IGNIS::C_Collect patron ico)
+                        (with-capability (P|MTX-SWP|CALLER)
+                            (ref-IGNIS::XE_CollectIgnis patron ico)
+                        )
                         (format "Succesfuly frozen {} LP to Client; 3|3" [secondary])
                     )
                 )
@@ -899,7 +928,9 @@
                 ;;LP-CHURN REPAIR (2026-09-14) -- same defect as MTX|C_AddLiquidity's step 0
                 ;;above, in this variant. The single-tx twin bills UC_IgnisPrice
                 ;;"SWP|C_AddSleepingLiquidity" "lp-churn"; this billed a flat literal.
-                (ref-IGNIS::C_Collect patron (URCi_AddLiquidityInitiation))
+                (with-capability (P|MTX-SWP|CALLER)
+                    (ref-IGNIS::XE_CollectIgnis patron (URCi_AddLiquidityInitiation))
+                )
                 (format "MTX Sleeping LqAdd. computed succesfully and collected {} IGNIS before discounts; 1|3"
                     [LQ|INITIATION-FEE])
             )
@@ -957,10 +988,12 @@
                             )
                             ;;lp-churn REMAINDER taken here, after validation -- see the twin
                             ;;comment in MTX|C_AddLiquidity's execution step.
-                            (ref-IGNIS::C_Collect patron 
-                                (ref-IGNIS::UDC_ConcatenateOutputCumulators 
-                                    [(URCi_AddLiquidityChurnRemainder "SWP|C_AddSleepingLiquidity")
-                                     ico1 ico2 ico3 ico4] []
+                            (with-capability (P|MTX-SWP|CALLER)
+                                (ref-IGNIS::XE_CollectIgnis patron 
+                                    (ref-IGNIS::UDC_ConcatenateOutputCumulators 
+                                        [(URCi_AddLiquidityChurnRemainder "SWP|C_AddSleepingLiquidity")
+                                         ico1 ico2 ico3 ico4] []
+                                    )
                                 )
                             )
                             (ref-SWPL::XE_STOA-PID|AddLiquidity vst-sc swpair true true stoa-pid ld clad)
@@ -977,9 +1010,11 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 )
-                (ref-IGNIS::C_Collect patron 
-                    (ref-IGNIS::UDC_ConstructOutputCumulator
-                        LQ|INITIATION-FEE SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []
+                (with-capability (P|MTX-SWP|CALLER)
+                    (ref-IGNIS::XE_CollectIgnis patron 
+                        (ref-IGNIS::UDC_ConstructOutputCumulator
+                            LQ|INITIATION-FEE SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []
+                        )
                     )
                 )
                 (format "Inconsistent Pool State detected: Adding Liquidity not allowed; Stepped rolled back; 2|3" [swpair])
@@ -1006,7 +1041,9 @@
                         ;;Autonomous Swap Mangement
                         (ref-SWPL::XE_AutonomousSwapManagement swpair)
                         ;;Collect Last Gas
-                        (ref-IGNIS::C_Collect patron ico)
+                        (with-capability (P|MTX-SWP|CALLER)
+                            (ref-IGNIS::XE_CollectIgnis patron ico)
+                        )
                         (format "Succesfuly put to sleep {} LP to Client; 3|3" [primary])
                     )
                 )
@@ -1070,10 +1107,23 @@
                         )
                     )
                 )
-                ;;Collect IGNIS for Issuance
-                (ref-IGNIS::C_Collect patron (ref-SWPI::URCi_IssuePool account pool-tokens))
-                ;;Collect STOA for Issuance
-                (ref-IGNIS::STOA|C_Collect patron stoa-costs)
+                ;;Collect IGNIS and STOA for Issuance.
+                ;;
+                ;;THE <with-capability> IS LORD-BEARING, NOT DECORATION. The IGNIS collectors
+                ;;became `P|UEV_IMC`-protected on 2026-09-20, and that gate passes only when one
+                ;;of IGNIS' registered capability guards is IN SCOPE. For the ordinary path that
+                ;;is automatic -- Talos acquires <P|TALOS-SUMMONER> at the top and `P|UEV_IMC` is
+                ;;depth-invariant, so every nested core call inherits it. A DEFPACT STEP INHERITS
+                ;;NOTHING: step 2 arrives in its own transaction via <continue-pact>, with an
+                ;;empty capability scope, so the guard this module registered in IGNIS' IMP
+                ;;(<P|MTX-SWP|CALLER>) has to be acquired here or billing dies with "None of the
+                ;;guards passed". Step 3 already does the same thing for SWPI::XE_IssueWrite,
+                ;;via <MTX-SWP|C>ISSUE> -> <P|DT> -> <P|MTX-SWP|CALLER>; this is that, scoped to
+                ;;the two calls that need it rather than borrowing the governance composite.
+                (with-capability (P|MTX-SWP|CALLER)
+                    (ref-IGNIS::XE_CollectIgnis patron (ref-SWPI::URCi_IssuePool account pool-tokens))
+                    (ref-IGNIS::XE_CollectStoa patron stoa-costs)
+                )
                 (let
                     (
                         (ref-ORBR:module{OuroborosV2} OUROBOROS)
@@ -1094,9 +1144,13 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 )
-                (ref-IGNIS::C_Collect patron 
-                    (ref-IGNIS::UDC_ConstructOutputCumulator
-                        100.0 SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []
+                ;;Same reason as the step body above: the rollback runs in its own transaction
+                ;;with an empty capability scope, and it bills.
+                (with-capability (P|MTX-SWP|CALLER)
+                    (ref-IGNIS::XE_CollectIgnis patron 
+                        (ref-IGNIS::UDC_ConstructOutputCumulator
+                            100.0 SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []
+                        )
                     )
                 )
                 (format "Insufficient IGNIS and STOA for Collection; Stepped rolled back{} 2|3" [";"])
@@ -1821,7 +1875,7 @@
     )
     (defun URCi_ReleaseStoicTag:decimal (tag-name:string)
         @doc "Cost single-source for CODEX|C_ReleaseStoicTag — flat IGNIS toll (1/glyph), \
-            \ collected via IGNIS::C_Collect in TS01-C4. Consumed by exec + INFO."
+            \ collected via IGNIS::XE_CollectIgnis in TS01-C4. Consumed by exec + INFO."
         (UC_StoicTagStoaFee tag-name)
     )
     ;;
@@ -3034,7 +3088,7 @@
     )
     (defun URCi_RevokeLink:decimal ()
         @doc "Cost single-source for PYTHIA|C_RevokeLink — flat IGNIS toll \
-            \ (UC_RevokeIgnisFee), collected via IGNIS::C_Collect in TS01-C4. \
+            \ (UC_RevokeIgnisFee), collected via IGNIS::XE_CollectIgnis in TS01-C4. \
             \ Consumed by exec + INFO."
         (UC_RevokeIgnisFee)
     )
@@ -4295,7 +4349,7 @@
     ;;{5.6}  Aux/X
     ;;
     ;;  [Fueling Functions]
-    ;;Protection: Class 5 — IMC + Custom: SECURE
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XB_DynamicFuelSTOA ()
         (P|UEV_IMC)
         (let
@@ -4311,7 +4365,7 @@
         )
     )
     ;;
-    ;;Protection: Class 5 — IMC + Custom: SECURE
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_ConditionalFuelSTOA (condition:bool)
         (P|UEV_IMC)
         (if condition
@@ -4591,7 +4645,7 @@
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
                 (ref-DPTF::C_DeployAccount id account)
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     ;;charge through the SAME reader the client twin uses, so the admin variant
                     ;;cannot drift from DPTF|C_DeployAccount's price
                     (ref-DPTF::URCi_DeployAccount account)
@@ -4618,7 +4672,7 @@
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
                 (ref-DPOF::C_DeployAccount id account)
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     ;;charge through the SAME reader the client twin uses, so the admin variant
                     ;;cannot drift from DPOF|C_DeployAccount's price
                     (ref-DPOF::URCi_DeployAccount account)
@@ -4636,7 +4690,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-ATSU:module{AutostakeUsageV2} ATSU)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-ATSU::AA_RemoveSecondary remover ats reward-token accounts-with-ats-data)
                 )
             )
@@ -4654,9 +4708,9 @@
                     (ref-ATSU:module{AutostakeUsageV2} ATSU)
                 )
                 ;;A_ on the blessed path: the collection runs EXACTLY as any C_'s does -- it is
-                ;;simply served by GASLESS-PATRON, the one account IGNIS::C_Collect exempts. The
+                ;;simply served by GASLESS-PATRON, the one account IGNIS::XE_CollectIgnis exempts. The
                 ;;path is preserved, not skipped; that is what makes an A_ gasless.
-                (ref-IGNIS::C_Collect GASLESS-PATRON
+                (ref-IGNIS::XE_CollectIgnis GASLESS-PATRON
                     (ref-ATSU::A_KickStart GASLESS-PATRON executor ats rt-amounts rbt-request-amount)
                 )
             )
@@ -5117,7 +5171,7 @@
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                 )
                 (ref-DALOS::C_ControlSmartAccount patron executor payable-as-smart-contract payable-by-smart-contract payable-by-method)
-                (ref-IGNIS::C_Collect patron (ref-IGNIS::DALOS|URCi_ControlSmartAccount executor))
+                (ref-IGNIS::XE_CollectIgnis patron (ref-IGNIS::DALOS|URCi_ControlSmartAccount executor))
                 (format "Smart Ouronet Account {} controlled succesfully" [executor])
             )
         )
@@ -5134,7 +5188,7 @@
                 (ref-DALOS::C_DeploySmartAccount executor guard stoa sovereign public)
                 ;;Collecting IGNIS is moved from DALOS here, due to IGNIS existing after DALOS
                 (if (not (ref-IGNIS::URC_IsNativeGasZero))
-                    (ref-IGNIS::STOA|C_Collect executor (ref-IGNIS::DALOS|URCi_DeploySmartAccount))
+                    (ref-IGNIS::XE_CollectStoa executor (ref-IGNIS::DALOS|URCi_DeploySmartAccount))
                     true
                 )
                 (ref-TS01-A::XB_DynamicFuelSTOA)
@@ -5154,7 +5208,7 @@
                 (ref-DALOS::C_DeployStandardAccount executor guard stoa public)
                 ;;Collecting IGNIS is moved from DALOS here, due to IGNIS existing after DALOS
                 (if (not (ref-IGNIS::URC_IsNativeGasZero))
-                    (ref-IGNIS::STOA|C_Collect executor (ref-IGNIS::DALOS|URCi_DeployStandardAccount))
+                    (ref-IGNIS::XE_CollectStoa executor (ref-IGNIS::DALOS|URCi_DeployStandardAccount))
                     true
                 )
                 (ref-TS01-A::XB_DynamicFuelSTOA)
@@ -5172,7 +5226,7 @@
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                 )
                 (ref-DALOS::C_RotateGovernor patron executor governor)
-                (ref-IGNIS::C_Collect patron (ref-IGNIS::DALOS|URCi_RotateGovernor executor))
+                (ref-IGNIS::XE_CollectIgnis patron (ref-IGNIS::DALOS|URCi_RotateGovernor executor))
                 (format "Ouronet Account {} Governor-Guard rotated succesfully!" [executor])
             )
         )
@@ -5186,7 +5240,7 @@
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                 )
                 (ref-DALOS::C_RotateGuard patron executor new-guard safe)
-                (ref-IGNIS::C_Collect patron (ref-IGNIS::DALOS|URCi_RotateGuard executor))
+                (ref-IGNIS::XE_CollectIgnis patron (ref-IGNIS::DALOS|URCi_RotateGuard executor))
                 (format "Ouronet Account {} Primary-Guard rotated succesfully!" [executor])
             )
         )
@@ -5201,7 +5255,7 @@
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                 )
                 (ref-DALOS::C_RotateStoa patron executor stoa)
-                (ref-IGNIS::C_Collect patron (ref-IGNIS::DALOS|URCi_RotateStoa executor))
+                (ref-IGNIS::XE_CollectIgnis patron (ref-IGNIS::DALOS|URCi_RotateStoa executor))
                 (format "Ouronet Account {} Attached Stoa-Address rotated succesfully!" [executor])
             )
         )
@@ -5216,7 +5270,7 @@
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                 )
                 (ref-DALOS::C_RotateSovereign patron executor new-sovereign)
-                (ref-IGNIS::C_Collect patron (ref-IGNIS::DALOS|URCi_RotateSovereign executor))
+                (ref-IGNIS::XE_CollectIgnis patron (ref-IGNIS::DALOS|URCi_RotateSovereign executor))
                 (format "Smart Ouronet Account {} Sovereign rotated succesfully!" [executor])
             )
         )
@@ -5233,7 +5287,7 @@
                     (ea-id:string (ref-DALOS::UR_EliteAurynID))
                 )
                 (ref-ELITE::XE_UpdateEliteSingle ea-id account)
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-IGNIS::DALOS|URCi_UpdateEliteAccount patron)
                 )
                 (format "Elite Account Data for {} updated succesfully!" [account])
@@ -5252,7 +5306,7 @@
                     (ea-id:string (ref-DALOS::UR_EliteAurynID))
                 )
                 (ref-ELITE::XE_UpdateElite ea-id sender receiver)
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-IGNIS::DALOS|URCi_UpdateEliteAccountSquared patron)
                 )
                 (format "Elite Account Data for {} and {} updated succesfully!" [sender receiver])
@@ -5268,7 +5322,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-B|DPTF:module{BrandingUsagePrimaryV2} DPTF)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-B|DPTF::C_UpdatePendingBranding entity-id logo description website social)
                 )
                 (format "Pending Branding for DPTF {} updated succesfully" [entity-id])
@@ -5304,7 +5358,7 @@
                         (ref-DPTF::C_Issue patron account name ticker decimals can-change-owner can-upgrade can-add-special-role can-freeze can-wipe can-pause)
                     )
                 )
-                (ref-IGNIS::C_Collect patron ico)
+                (ref-IGNIS::XE_CollectIgnis patron ico)
                 (ref-TS01-A::XB_DynamicFuelSTOA)
                 (at "output" ico)
             )
@@ -5320,7 +5374,7 @@
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount new-owner))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_RotateOwnership id new-owner)
                 )
                 (format "ID {} Ownership succesfully set to {}" [id sa])
@@ -5336,7 +5390,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_Control id cu cco casr cf cw cp)
                 )
                 (format "Succesfully controlled Properties of {}" [id])
@@ -5351,7 +5405,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_TogglePause id toggle)
                 )
                 (if toggle
@@ -5369,7 +5423,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_ToggleReservation id toggle)
                 )
                 (if toggle
@@ -5389,7 +5443,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_ToggleFee id toggle)
                 )
                 (if toggle
@@ -5407,7 +5461,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_SetMinMove id min-move-value)
                 )
                 (format "MinMove Value succesfully set for {} to {}" [id min-move-value])
@@ -5422,7 +5476,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_SetFee id fee)
                 )
                 (format "Fee Promille succesfully set to {} Promille for {}" [fee id])
@@ -5439,7 +5493,7 @@
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount target))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_SetFeeTarget id target)
                 )
                 (format "Fee Target succesfully set for {} to {}" [id sa])
@@ -5458,7 +5512,7 @@
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount (ref-DALOS::GOV|DALOS|SC_NAME)))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_SetFeeTarget id (ref-DALOS::GOV|DALOS|SC_NAME))
                 )
                 (format "Fee Collection succesfully set to {}" [sa])
@@ -5477,7 +5531,7 @@
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount (ref-DALOS::GOV|OUROBOROS|SC_NAME)))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_SetFeeTarget id (ref-DALOS::GOV|OUROBOROS|SC_NAME))
                 )
                 (format "Fee Collection succesfully set to {}" [sa])
@@ -5497,7 +5551,7 @@
                     )
                     (collect:bool (at 0 (at "output" ico)))
                 )
-                (ref-IGNIS::C_Collect patron ico)
+                (ref-IGNIS::XE_CollectIgnis patron ico)
                 (ref-TS01-A::XE_ConditionalFuelSTOA collect)
                 (if toggle
                     (format "Fee Settings succesfully locked for {}" [id])
@@ -5523,7 +5577,7 @@
                 )
                 (ref-DALOS::CAP_EnforceAccountOwnership account)
                 (ref-DPTF::C_DeployAccount id account)
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::URCi_DeployAccount account)
                 )
                 (format "DPTF {} added to {} Ouronet Account succesfully!" [id sa])
@@ -5540,7 +5594,7 @@
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_ToggleFreezeAccount id account toggle)
                 )
                 (if toggle
@@ -5558,7 +5612,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_ToggleBurnRole id account toggle)
                 )
             )
@@ -5572,7 +5626,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_ToggleMintRole id account toggle)
                 )
             )
@@ -5586,7 +5640,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_ToggleFeeExemptionRole id account toggle)
                 )
             )
@@ -5602,7 +5656,7 @@
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_ToggleTransferRole id account toggle)
                 )
                 (if toggle
@@ -5621,7 +5675,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-TFT::C_ClearDispo account)
                 )
             )
@@ -5637,7 +5691,7 @@
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_Burn id account amount)
                 )
                 (format "Succesfully burned {} {} on Account {}" [amount id sa])
@@ -5654,7 +5708,7 @@
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_Mint id account amount origin)
                 )
                 (if origin
@@ -5675,7 +5729,7 @@
                     (ref-ELITE:module{EliteV2} ELITE)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount atbw))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_WipeSlim id atbw amtbw)
                 )
                 ;;Update Elite Account
@@ -5696,7 +5750,7 @@
                     (ref-ELITE:module{EliteV2} ELITE)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount atbw))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_Wipe id atbw)
                 )
                 ;;Update Elite Account
@@ -5722,7 +5776,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-TFT::C_Transmute id transmuter transmute-amount)
                 )
             )
@@ -5751,7 +5805,7 @@
                     (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount sender))
                     (sa-r:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-TFT::C_Transfer id sender receiver transfer-amount method)
                 )
                 (if (= receiver-amount transfer-amount)
@@ -5774,7 +5828,7 @@
                     (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount sender))
                     (sa-r:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-TFT::C_MultiTransfer id-lst sender receiver transfer-amount-lst method)
                 )
                 (format "Succesfully multi-transfered {} DPTFs from {} to {}" [(length id-lst) sa-s sa-r])
@@ -5807,7 +5861,7 @@
                     (ref-TFT:module{TrueFungibleTransferV2} TFT)
                     (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount sender))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-TFT::C_MultiBulkTransfer [id] sender [receiver-lst] [transfer-amount-lst])
                 )
                 (format "Succesfully bulk-transfered {} DPTF from {} to {} Receivers" [id sa-s (length receiver-lst)])
@@ -5824,7 +5878,7 @@
                     (ref-TFT:module{TrueFungibleTransferV2} TFT)
                     (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount sender))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-TFT::C_MultiBulkTransfer id sender receiver-array transfer-amount-array)
                 )
                 (format "Succesfully multi-bulk-transfered {} DPTFs from Sender {} to {} Individual Receiver Lists" [(length id) sa-s (length receiver-array)])
@@ -5840,7 +5894,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-B|DPOF:module{BrandingUsagePrimaryV2} DPOF)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-B|DPOF::C_UpdatePendingBranding entity-id logo description website social)
                 )
                 (format "Pending Branding for DPOF {} updated succesfully" [entity-id])
@@ -5874,7 +5928,7 @@
                         (ref-DPOF::C_Issue patron account name ticker decimals can-upgrade can-change-owner can-add-special-role can-transfer-oft-create-role can-freeze can-wipe can-pause)
                     )
                 )
-                (ref-IGNIS::C_Collect patron ico)
+                (ref-IGNIS::XE_CollectIgnis patron ico)
                 (ref-TS01-A::XB_DynamicFuelSTOA)
                 (at "output" ico)
             )
@@ -5888,7 +5942,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_RotateOwnership id new-owner)
                 )
             )
@@ -5902,7 +5956,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_Control id cu cco casr ctocr cf cw cp sg)
                 )
                 (format "Succesfully controlled DPOF {} Boolean Properties" [id])
@@ -5919,7 +5973,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_TogglePause id toggle)
                 )
                 (if toggle
@@ -5946,7 +6000,7 @@
                 )
                 (ref-DALOS::CAP_EnforceAccountOwnership account)
                 (ref-DPOF::C_DeployAccount id account)
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::URCi_DeployAccount account)
                 )
                 (format "Succesfully deployed a New DPOF Account for DPOF {} on Ouronet Account {}" [id sa])
@@ -5965,7 +6019,7 @@
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_ToggleFreezeAccount id account toggle)
                 )
                 (if toggle
@@ -5983,7 +6037,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_ToggleAddQuantityRole id account toggle)
                 )
             )
@@ -5997,7 +6051,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_ToggleBurnRole id account toggle)
                 )
             )
@@ -6012,7 +6066,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_MoveCreateRole id receiver)
                 )
             )
@@ -6026,7 +6080,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_ToggleTransferRole id account toggle)
                 )
             )
@@ -6043,7 +6097,7 @@
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_AddQuantity id account nonce amount)
                 )
                 (format "Succesfully increased DPOF {} nonce {} quantity on Account {} by {}" [id nonce sa amount])
@@ -6060,7 +6114,7 @@
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_Burn id account nonce amount)
                 )
                 (format "Succesfully burned {} Units of DPOF {} Nonce {} on Account {}" [amount id nonce sa])
@@ -6083,7 +6137,7 @@
                     )
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
-                (ref-IGNIS::C_Collect patron ico)
+                (ref-IGNIS::XE_CollectIgnis patron ico)
                 (format "Succesfully minted {} {} on Account {}, on the new Nonce {}" [amount id sa (at 0 (at "output" ico))])
             )
         )
@@ -6099,7 +6153,7 @@
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                     (ref-ELITE:module{EliteV2} ELITE)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_WipeSlim id account nonce amount)
                 )
                 ;;Update Elite Account
@@ -6120,7 +6174,7 @@
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                     (ref-ELITE:module{EliteV2} ELITE)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::CC_WipeHeavy id account)
                 )
                 ;;Update Elite Account
@@ -6144,7 +6198,7 @@
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                     (ref-ELITE:module{EliteV2} ELITE)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_WipePure id account removable-nonces-obj)
                 )
                 ;;Update Elite Account
@@ -6161,7 +6215,7 @@
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                     (ref-ELITE:module{EliteV2} ELITE)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_WipeClean id account nonces)
                 )
                 ;;Update Elite Account
@@ -6182,7 +6236,7 @@
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                     (ref-ELITE:module{EliteV2} ELITE)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::Cp_WipeSlice id account removable-nonces-obj)
                 )
                 ;;Update Elite Account
@@ -6207,7 +6261,7 @@
                     (ss:string (ref-I|OURONET::OI|UC_ShortAccount sender))
                     (sr:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_Transmit id nonces amounts sender receiver method)
                 )
                 (ref-ELITE::XE_UpdateElite id sender receiver)
@@ -6230,7 +6284,7 @@
                     (ss:string (ref-I|OURONET::OI|UC_ShortAccount sender))
                     (sr:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_Transfer id nonces sender receiver method)
                 )
                 (ref-ELITE::XE_UpdateElite id sender receiver)
@@ -6254,7 +6308,7 @@
                     (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount sender))
                     (l:integer (length receiver-lst))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_BulkTransfer id nonces-array sender receiver-lst method)
                 )
                 (map

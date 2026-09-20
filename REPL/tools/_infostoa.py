@@ -60,7 +60,7 @@ def strip_prose(s):
     """Remove ;; comments and "..." strings (incl. @doc) BEFORE searching for calls.
 
     Lesson, learned the hard way: the first version matched `STOA|C_Collect` inside
-    IGNIS::C_TransferDalosFuel's own @doc -- "Guarding here covers every STOA|C_Collect*
+    IGNIS::XB_MoveDalosFuel's own @doc -- "Guarding here covers every STOA|C_Collect*
     path at once" -- and reported five previews as reaching a collector through a function
     that only transfers coin. A detector that matches PROSE invents call paths, and an
     invented path is worse than no tool at all, because it reads like evidence.

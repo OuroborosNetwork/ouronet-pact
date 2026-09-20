@@ -1,6 +1,6 @@
 ;; ---------------------------------------------------------------------------
 ;; OURONET DEPLOY -- file 9 of 20
-;; This is STEP 9 of 21 in the full sequence (see Deploy/MANIFEST.md).
+;; This is STEP 9 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-8 must have run first, including the init steps between deploys.
 ;; 1 module(s), 436,246 gas measured in the REPL gas model, 243,448 bytes
 ;;
@@ -1761,7 +1761,7 @@
     ;;The comment conflates two different things. The PROTOCOL auto-fuel (TS01-A::XB_DynamicFuelSTOA)
     ;;really is not a patron charge -- and is inert anyway while <native-gas-pump> is false. But
     ;;XI_CreateSpecialTrueFungibleLink (11_VST.pact:1489) and XI_CreateSpecialOrtoFungibleLink
-    ;;(11_VST.pact:1553) each run `(ref-IGNIS::STOA|C_Collect patron stoa-costs)` -- a direct,
+    ;;(11_VST.pact:1553) each run `(ref-IGNIS::XE_CollectStoa patron stoa-costs)` -- a direct,
     ;;discounted charge to the patron of UR_UsagePrice "dptf"/"dpmf". So all five ops DO cost STOA,
     ;;and every one of them was previewed as free. `REPL/modules/VST.repl` proved it the whole time:
     ;;VST-02 cannot run without signing four managed coin.TRANSFER caps built from
@@ -2676,7 +2676,7 @@
                 [(if toggle (format "Parameters of ATS-Pair {} succesfully locked" [ats]) (format "Parameters of ATS-Pair {} succesfully unlocked" [ats]))]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_ToggleParameterLock ats toggle)))
                 ;;UNLOCKING is not free: ATS::C_ToggleParameterLock hands XI_ToggleParameterLock's
-                ;;STOA leg to STOA|C_Collect. Previously hardcoded NoStoaCosts.
+                ;;STOA leg to XE_CollectStoa. Previously hardcoded NoStoaCosts.
                 (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-ATS::URCi_ToggleParameterLockStoa ats toggle)) [toggle])
         ))
     (defun INFO_ATS|AddSecondary:object{OuronetInfoV2.ClientInfo} (patron:string ats:string reward-token:string rt-nfr:bool)
@@ -3490,7 +3490,7 @@
                 [(if toggle (format "Fee Settings of SWP-Pair {} succesfully locked" [swpair]) (format "Fee Settings of SWP-Pair {} succesfully unlocked" [swpair]))]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWP::URCi_ToggleFeeLock swpair toggle)))
                 ;;UNLOCKING is not free: SWP::C_ToggleFeeLock hands XI_ToggleFeeLock's STOA leg to
-                ;;STOA|C_Collect. Previously hardcoded NoStoaCosts, which quoted the unlock as free.
+                ;;XE_CollectStoa. Previously hardcoded NoStoaCosts, which quoted the unlock as free.
                 (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-SWP::URCi_ToggleFeeLockStoa swpair toggle)) [toggle])
         ))
     (defun INFO_SWP|UpdatePendingBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string)

@@ -363,6 +363,7 @@
                 (ref-P|ORBR:module{OuronetPolicyV2} OUROBOROS)
                 (ref-P|SWP:module{OuronetPolicyV2} SWP)
                 (ref-P|SWPT:module{OuronetPolicyV2} SWPT)
+                (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
                 (mg:guard (create-capability-guard (P|SWPI|CALLER)))
             )
             (ref-P|SWP::P|A_Add
@@ -376,6 +377,7 @@
             (ref-P|ORBR::P|A_AddIMP mg)
             (ref-P|SWP::P|A_AddIMP mg)
             (ref-P|SWPT::P|A_AddIMP mg)
+            (ref-P|IGNIS::P|A_AddIMP mg)
         )
     )
 
@@ -2324,7 +2326,7 @@
     )
     (defun URCi_IssueStoa:decimal ()
         @doc "STOA leg of a SINGLE-TX swap-pair issue. Read-only twin of the <stoa-costs> that \
-            \ C_Issue hands to STOA|C_Collect, so the exec and its INFO_ previews are sourced from \
+            \ C_Issue hands to XE_CollectStoa, so the exec and its INFO_ previews are sourced from \
             \ one place and cannot drift. \
             \ NOTE this is deliberately NOT the same figure as the DEFPACT pool-issue path: \
             \ MTX-SWP charges (+ UsagePrice \"dptf\" \"swp\") while this charges \
@@ -2649,7 +2651,8 @@
     )
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
-    ;;Protection: Class 5 — IMC + Custom: SWPI|XE>ISSUE-WRITE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          SWPI|XE>ISSUE-WRITE
     (defun XE_IssueWrite:list
         (account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool)
         @doc "#36M/M5 fix: forward-module entrypoint holding the ONE shared pool-issuance \
@@ -2770,7 +2773,7 @@
                         (ref-IGNIS::UDC_ConstructOutputCumulator gas-swp-cost SWP|SC_NAME trigger [])
                     )
                 )
-                (ref-IGNIS::STOA|C_Collect patron stoa-costs)
+                (ref-IGNIS::XE_CollectStoa patron stoa-costs)
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3 ico4 ico5] [swpair token-lp])
             )
         )

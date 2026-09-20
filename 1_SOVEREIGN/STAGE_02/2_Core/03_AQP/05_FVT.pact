@@ -380,6 +380,7 @@
                 (ref-P|ATSU:module{OuronetPolicyV2} ATSU)
                 ;;
                 (dg:guard (create-capability-guard (SECURE)))
+                (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
                 (mg:guard (create-capability-guard (P|FVT|CALLER)))
                 (rg:guard (create-capability-guard (P|FVT|REMOTE-GOV)))
             )
@@ -398,6 +399,7 @@
             ;; OUROBOROS: FVT normalizes an IGNIS royalty leg to OURO (XB_Compress) before disposal.
             (ref-P|ORBR::P|A_AddIMP mg)
             (ref-P|ATSU::P|A_AddIMP mg)
+            (ref-P|IGNIS::P|A_AddIMP mg)
         )
     )
 
@@ -1991,7 +1993,8 @@
     ;;   XI_CheckpointStakeRps — nested map (score plan × reward line); no child XI_*.
     ;;
     ;; [XE]
-    ;;Protection: Class 5 — IMC + Custom: FVT|XE>SWEEP-BRACKET
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          FVT|XE>SWEEP-BRACKET
     (defun XE_SweepBegin:string (anchor-id:string)
         @doc "Sweep bracket BEGIN (paginated MTX|n|C_SweepRevokeAnchor): freeze every affected pool (stake + collect \
             \ blocked) then remove the anchor globally (swept-revoke — skips the #9 score-link lock). Mirrors steps \
@@ -2014,7 +2017,8 @@
             )
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: FVT|XE>SWEEP-BRACKET
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          FVT|XE>SWEEP-BRACKET
     (defun XE_SweepEnd:string (anchor-id:string)
         @doc "Sweep bracket END (paginated MTX|n|C_SweepRevokeAnchor terminal step): unfreeze every affected pool. \
             \ The anchor was already swept-revoked in XE_SweepBegin; the reverse index is unchanged so score-ids \
@@ -2036,7 +2040,7 @@
     )
     ;;
     ;; --- XE forwarders (AQP-VCT TF vacate composes stake/RPS primitives via IMC) ---
-    ;;Protection: Class 5 — IMC + Custom: SECURE
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_SetFvtVacateFrozen:string (fvt-id:string frozen:bool)
         @doc "AQP-VCT begin/finalize: set this FVT's vacate-frozen flag (blocks collect + inject during a pool \
             \ vacate). Called once per the vacating pool's employed-score FVTs. P|UEV_IMC + SECURE."
@@ -2045,7 +2049,7 @@
             (WU_FvtVacateFreeze fvt-id frozen)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: SECURE
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_SetFvtOracleOn:string (fvt-id:string oracle-on:bool)
         @doc "DSA: toggle this FVT's node/uptime oracle (off ⇒ capture = units, uptime ≡ 1000, no expiry). P|UEV_IMC + SECURE."
         (P|UEV_IMC)
@@ -2053,7 +2057,7 @@
             (WU_Fvt|OracleOn fvt-id oracle-on)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: SECURE
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_RefreshTrueFungibleStakeAnchors:object{IgnisCollectorV3.OutputCumulator}
         (beneficiary-id:string dptf-id:string)
         @doc "Forward (stake/unstake flow): recompute the beneficiary's true-fungible stake-anchor values for \
@@ -2063,7 +2067,7 @@
             (XI_RefreshTrueFungibleStakeAnchors beneficiary-id dptf-id)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: SECURE
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_RefreshCollectableStakeAnchors:object{IgnisCollectorV3.OutputCumulator}
         (
             beneficiary-id:string
@@ -2084,7 +2088,8 @@
         )
     )
     ;; [XB]
-    ;;Protection: Class 5 — IMC + Custom: FVT|C>INJECT
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          FVT|C>INJECT
     (defun XB_FvtInject:object{IgnisCollectorV3.OutputCumulator}
         (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "THE single authorized inject entry — usable BOTH internally (C_Inject delegates here) and externally \
@@ -2121,7 +2126,7 @@
                     (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
-                (ref-IGNIS::STOA|C_Collect patron (URCi_IssueStoa))
+                (ref-IGNIS::XE_CollectStoa patron (URCi_IssueStoa))
                 (XI_IssueFvt fvt-id fvt-class owner-konto common-denominator)
                 (URCi_Issue owner-konto [fvt-id])
             )

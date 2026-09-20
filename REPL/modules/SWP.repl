@@ -3234,7 +3234,7 @@
 ;;    (toggle-costs:[decimal] (XI_ToggleFeeLock swpair toggle))   ;; [0.0 0.0] on LOCK,
 ;;    (stoa-costs:decimal (at 1 toggle-costs))                    ;; UC_FeeUnlockPrice on UNLOCK
 ;;    (if (> stoa-costs 0.0) (do (XI_IncrementFeeUnlocks swpair)
-;;                               (ref-IGNIS::STOA|C_Collect patron stoa-costs)) true)
+;;                               (ref-IGNIS::XE_CollectStoa patron stoa-costs)) true)
 ;;
 ;;so UNLOCKING is billed and the preview said it was free. LOCKING really is free, which is why a
 ;;half-tested preview looks right: the zero is correct for one of the two directions.
@@ -3989,7 +3989,7 @@
 ;;addition that list carries the IGNIS token itself:
 ;;    mt-ids = [GAS DLK OURO DWK]      mt-amt = [200.0 10.0 10.0 10.0]
 ;;That 200 is the ASYMMETRY TAX (gaseous + deficit + special legs of the CLAD), and it leaves the
-;;account as PRINCIPAL through `XI_AddLiqSendAndMint`, not as gas through `IGNIS::C_Collect`. It lands
+;;account as PRINCIPAL through `XI_AddLiqSendAndMint`, not as gas through `IGNIS::XE_CollectIgnis`. It lands
 ;;in the same balance the meter reads, so it counterfeits a preview defect.
 ;;
 ;;This is the hazard already written down for `AQP-FVT|Inject` ("never measure GAS on an op whose
@@ -5364,7 +5364,7 @@
 ;;|| SWPX-14 — the FIRESTARTER positive path: the one op the price sheet publishes as FREE.
 ;;
 ;;GS-15 (2026-09-15). SWP|C_Firestarter let-binds three cumulators -- C_WrapStoa, C_Swap,
-;;C_SublimateV2 -- reads `gained-ouro` out of one, and contains NO C_Collect at all. Its own
+;;C_SublimateV2 -- reads `gained-ouro` out of one, and contains NO XE_CollectIgnis at all. Its own
 ;;message is "Used 10 native STOA to generate {} IGNIS with no IGNIS Costs!", and
 ;;INFO_SWP|Firestarter quotes OI|UDC_NoIgnisCosts. The price sheet nevertheless published >= 93,
 ;;because the generator's free-by-design rule fired only when the static walk had ALSO failed to

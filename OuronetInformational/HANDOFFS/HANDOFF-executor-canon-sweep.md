@@ -119,6 +119,39 @@ repeatedly.
 A module already conforming is **not skipped silently** — report *"looked it up, this module was
 done in previous runs, nothing to do here"* and move on.
 
+### 4a. LESSON FROM MODULE 2 — PROTECTING A FUNCTION HAS A CALL-SITE TAIL
+
+Recorded 2026-09-20, because it cost most of the IGNIS module's time and it will recur in every
+module where this sweep promotes a `C_` to an `X_`.
+
+Turning `IGNIS::C_Collect` / `STOA|C_Collect*` into `XE_CollectIgnis` / `XE_CollectStoa` /
+`XB_Collect*` behind `P|UEV_IMC` is a one-line change *in IGNIS* and a three-part change
+everywhere else. Do all three or the tree loads and then dies at the first fee:
+
+1. **Registration.** Every module that bills must add `(ref-P|IGNIS::P|A_AddIMP mg)` to its own
+   `P|A_Define`. Grep for callers and check each one — four were missed on the first pass
+   (`MTX-AQP`, `TS02-C2`, `TS02-C3`, `TS02-DPAD`) and four more matched only in `@doc` prose
+   (`DALOS`, `CODEX`, `PYTHIA`, `DSP+`), so a grep count is not an answer.
+
+2. **Acquisition — and this is the part that is easy to miss.** `P|UEV_IMC` passes when one of
+   the registered capability guards is IN SCOPE. On the ordinary path that is free: Talos
+   acquires `P|TALOS-SUMMONER` at the top, the gate is **depth-invariant**, and every nested
+   core call inherits it. **A defpact step inherits nothing** — it arrives in its own
+   transaction through `continue-pact` with an empty capability scope. Every billing site inside
+   a defpact step needs an explicit `(with-capability (P|MOD|CALLER) …)`. `MTX-SWP` alone had
+   fourteen. The modules with defpacts that bill: `MTX-SWP`, `MTX-AQP`, `FVT`, `SWPI`, `ANK`,
+   `TS02-C3`, `DSP+`.
+
+3. **The deploy pipeline.** `P|A_Define` is a *function*. Upgrading a module does not re-run it,
+   so on an upgrade round the new IMP entry never lands — no deploy error, then "None of the
+   guards passed" at the first collection. The fix is not a hand-written file in `Deploy/`
+   (`Deploy/` is generated and the gate diffs it): add the init block's label to the round's
+   `"init"` list in `REPL/tools/_deploybundle.py` so the step is *emitted* from the REPL chain.
+
+Tooling: `/tmp/wrapbill.py` (paren-aware wrapper for part 2) — regenerate it from this note if
+lost; a line-oriented regex silently skips the multi-line call forms, which is the same failure
+`_executormigrate.py` already records.
+
 R = rename · A = add executor · P = add patron
 
 | done · # | module | R | A | P | total | interface(s) to update |

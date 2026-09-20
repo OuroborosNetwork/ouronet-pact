@@ -684,7 +684,7 @@
     )
     (defun URCi_ReleaseStoicTag:decimal (tag-name:string)
         @doc "Cost single-source for CODEX|C_ReleaseStoicTag — flat IGNIS toll (1/glyph), \
-            \ collected via IGNIS::C_Collect in TS01-C4. Consumed by exec + INFO."
+            \ collected via IGNIS::XE_CollectIgnis in TS01-C4. Consumed by exec + INFO."
         (UC_StoicTagStoaFee tag-name)
     )
     ;;

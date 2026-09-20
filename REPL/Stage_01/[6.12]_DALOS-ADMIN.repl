@@ -191,7 +191,7 @@
 ;; means the IGNIS billing leg on all three had never executed once:
 ;;
 ;;      (ref-DALOS::C_RotateStoa account stoa)
-;;      (ref-IGNIS::C_Collect patron (ref-IGNIS::DALOS|URCi_RotateStoa account))   <-- never run
+;;      (ref-IGNIS::XE_CollectIgnis patron (ref-IGNIS::DALOS|URCi_RotateStoa account))   <-- never run
 ;;
 ;; Billing is the entire reason the Talos layer exists, so "the core function works" is not the
 ;; same claim as "the client path works". Each rotation below asserts BOTH: the state change,
@@ -245,7 +245,7 @@
                         ;;    URCi_ quote     = the RAW cost definition            (34.0 here)
                         ;;    charged         = raw x URC_IgnisGasDiscount(patron) (18.02 here)
                         ;;
-                        ;;UDC_PrimeIgnisCumulator applies the patron discount inside C_Collect.
+                        ;;UDC_PrimeIgnisCumulator applies the patron discount inside XE_CollectIgnis.
                         ;;My first version of this assertion compared the charge to the RAW quote
                         ;;and failed; I briefly wrote that up as a client-facing defect before
                         ;;checking the presentation layer, which turns out to model it correctly:

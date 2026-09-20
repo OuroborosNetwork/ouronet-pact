@@ -98,6 +98,7 @@
     ;;  [UEV]
     ;;
     (defun UEV_MinimumMapperForBulk (id:string transfer-amount-lst:[decimal]))
+    (defun UEV_IgnisTransmuteMinimum (id:string amount:decimal))
     (defun UEV_Minimum (id:string amount:decimal))
     (defun UEV_DispoLocker (id:string account:string))
     (defun UEV_MoveRoleCheck (id:string sender:string receiver:string))
@@ -267,6 +268,15 @@
     (defconst BAR                                       (CT_Bar))
     (defconst EOC                                       (CT_EmptyCumulator))
     (defconst TF                                        (at 0 ["True-Fungible"]))
+    ;;THE GAS-STATION FLOOR. Transmuting the IGNIS DPTF is deliberately IGNIS-FREE
+    ;;(URC_IsVirtualGasZeroAbsolutely zeroes the leg when id = gas-id) and its STOA gas is paid by
+    ;;the Ouronet gas station. Free + sponsored + NO MINIMUM = a free sponsored transaction for a
+    ;;0.001 transmute, repeatable until the station is drained. The 1000 min-move that guards
+    ;;TRANSFERS does not apply, because transmute is not a transfer and never calls UEV_Minimum --
+    ;;measured 2026-09-20: a 25.0 transmute moved exactly 25.0 against a min-move of 1000.0.
+    ;;This floor closes that, and 25 is also what the sponsored-let form charges: same number,
+    ;;on purpose.
+    (defconst CT_IGNIS_TRANSMUTE_MINIMUM:decimal 25.0)
     (defconst DALOS|SC_NAME
         (let
             (
@@ -348,10 +358,15 @@
             ;;1]Ownership (included in the <XB_DebitTrueFungible>)
             ;;2]Transferability (not needed for transmute)
             ;;3];;3]<id> Pause State and <sender> Frozen State
+            (UEV_IgnisTransmuteMinimum id amount)
             (ref-DPTF::UEV_PauseState id false)
             (ref-DPTF::UEV_AccountFreezeState id transmuter false)
-            ;;4]Only Standard Ouronet Account can transmute, 
-            ;;Amount is not subject to <min-move> amount, and transfer-role restrictions
+            ;;4]Only Standard Ouronet Account can transmute,
+            ;;Amount is not subject to <min-move> amount, and transfer-role restrictions --
+            ;;EXCEPT for the IGNIS DPTF, which carries its own floor (see
+            ;;UEV_IgnisTransmuteMinimum above). That exception exists because an IGNIS transmute
+            ;;is BOTH ignis-free and gas-station-sponsored, so without a floor it is a free
+            ;;transaction pump.
             (ref-DALOS::UEV_EnforceAccountType transmuter false)
             (compose-capability (P|SECURE-CALLER))
         )
@@ -1289,6 +1304,21 @@
             (enumerate 0 (- (length transfer-amount-lst) 1))
         )
     )
+    (defun UEV_IgnisTransmuteMinimum (id:string amount:decimal)
+        @doc "Floor for transmuting the IGNIS DPTF: at least CT_IGNIS_TRANSMUTE_MINIMUM. Applies \
+            \ ONLY to the gas id -- every other DPTF transmutes as before. See the constant for \
+            \ why an operation that costs nothing still needs a minimum."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (if (= id (ref-DALOS::UR_IgnisID))
+                (enforce (>= amount CT_IGNIS_TRANSMUTE_MINIMUM)
+                    (format "Transmuting IGNIS requires at least {} -- it is gas-station sponsored and costs no IGNIS, so a floor is what stops it being a free transaction pump" [CT_IGNIS_TRANSMUTE_MINIMUM]))
+                true
+            )
+        )
+    )
     (defun UEV_Minimum (id:string amount:decimal)
         (let
             (
@@ -1702,6 +1732,28 @@
     ;;Transmute
     (defun C_Transmute:object{IgnisCollectorV3.OutputCumulator}
         (id:string transmuter:string transmute-amount:decimal)
+        @doc "Convert <transmute-amount> of <id> out of <transmuter>'s balance and into the \
+            \ protocol's primary fee pool -- a DEBIT plus XI_CreditPrimaryFee, which is exactly \
+            \ what a collected fee does. That equivalence is the point: transmuting is how a \
+            \ holder gives value to the protocol voluntarily. \
+            \ \
+            \ TRANSMUTING THE IGNIS DPTF IS THE IGNIS DONATION, and it has three properties that \
+            \ only make sense read together -- they live in three different files, so this \
+            \ paragraph is where they are written down as one thing: \
+            \ \
+            \   1. it costs NO IGNIS. URC_IsVirtualGasZeroAbsolutely zeroes the leg when the id \
+            \      IS the gas id, so the 101-IGNIS price on DPTF|C_Transmute does not apply. \
+            \      Charging IGNIS to donate IGNIS would be absurd. \
+            \   2. its minimum is 25, not the 1000 min-move. Transmute is not a transfer and \
+            \      never calls UEV_Minimum; the floor is UEV_IgnisTransmuteMinimum, and it exists \
+            \      BECAUSE of (1) -- free plus gas-station-sponsored plus no minimum is a free \
+            \      transaction pump. \
+            \   3. the Ouronet gas station whitelists this call as the paid door to a SPONSORED \
+            \      ARBITRARY LET BLOCK. Pay 25 IGNIS here, and the station funds whatever the \
+            \      appended form does. That is the product, not a leak. \
+            \ \
+            \ Anyone tightening UEV_Minimum, repricing DPTF|C_Transmute, or editing the gas \
+            \ station's form list is touching one leg of that tripod. All three legs are needed."
         (P|UEV_IMC)
         (let
             (

@@ -517,10 +517,12 @@
             (
                 (ref-P|DALOS:module{OuronetPolicyV2} DALOS)
                 (ref-P|BRD:module{OuronetPolicyV2} BRD)
+                (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
                 (mg:guard (create-capability-guard (P|DPTF|CALLER)))
             )
             (ref-P|DALOS::P|A_AddIMP mg)
             (ref-P|BRD::P|A_AddIMP mg)
+            (ref-P|IGNIS::P|A_AddIMP mg)
         )
     )
 
@@ -2145,7 +2147,7 @@
         )
     )
     ;;{5.6}  Aux/X
-    ;;Protection: Class 5 — IMC + Custom: SECURE
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_IssueLP:object{IgnisCollectorV3.OutputCumulator}
         (name:string ticker:string)
         @doc "Issues a DPTF Token as a Liquidity Pool Token. A LP DPTF follows specific rules in naming."
@@ -2160,7 +2162,8 @@
             )
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: DPTF|C>ISSUE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          DPTF|C>ISSUE
     (defun XB_IssueFree:object{IgnisCollectorV3.OutputCumulator}
         (
             account:string
@@ -2573,7 +2576,8 @@
             { "reservation" : toggle}
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: DPTF|C>UPDATE-SPECIAL
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          DPTF|C>UPDATE-SPECIAL
     (defun XE_UpdateSpecialTrueFungible:object{IgnisCollectorV3.OutputCumulator}
         (main-dptf:string secondary-dptf:string fr-tag:integer)
         (P|UEV_IMC)
@@ -2720,7 +2724,8 @@
     )
     ;;
     ;;
-    ;;Protection: Class 5 — IMC + Custom: DPTF|C>DEBIT
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          DPTF|C>DEBIT
     (defun XB_DebitTrueFungible (id:string account:string amount:decimal dispo-data:object{UtilityDptfV2.DispoData} wipe-mode:bool)
         @doc "Debit DPTF <id> on <account> with <amount> \
             \ Ouronet Account <account> must exist \
@@ -2736,7 +2741,8 @@
             )
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: DPTF|C>CREDIT
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          DPTF|C>CREDIT
     (defun XB_CreditTrueFungible (id:string account:string amount:decimal)
         @doc "Debit DPTF <id> on <account> with <amount> \
             \ Ouronet Account <account> must exist \
@@ -2884,7 +2890,7 @@
             (with-capability (DPTF|C>UPGRADE-BRD entity-id)
                 (ref-BRD::XE_UpgradeBranding entity-id parent-owner months)
             )
-            (ref-IGNIS::STOA|C_CollectWT patron (URCi_UpgradeBranding months) false)
+            (ref-IGNIS::XB_CollectStoaWithTrigger patron (URCi_UpgradeBranding months) false)
         )
     )
     ;;
@@ -2903,7 +2909,7 @@
                     )
                 )
             )
-            (ref-IGNIS::STOA|C_Collect patron stoa-costs)
+            (ref-IGNIS::XE_CollectStoa patron stoa-costs)
             ico
         )
     )
@@ -2987,7 +2993,7 @@
                 (if (> stoa-costs 0.0)
                     (do
                         (XIv_IncrementFeeUnlocks id)
-                        (ref-IGNIS::STOA|C_Collect patron stoa-costs)
+                        (ref-IGNIS::XE_CollectStoa patron stoa-costs)
                     )
                     true
                 )

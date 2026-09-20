@@ -845,7 +845,7 @@
     )
     (defun URCi_RevokeLink:decimal ()
         @doc "Cost single-source for PYTHIA|C_RevokeLink — flat IGNIS toll \
-            \ (UC_RevokeIgnisFee), collected via IGNIS::C_Collect in TS01-C4. \
+            \ (UC_RevokeIgnisFee), collected via IGNIS::XE_CollectIgnis in TS01-C4. \
             \ Consumed by exec + INFO."
         (UC_RevokeIgnisFee)
     )

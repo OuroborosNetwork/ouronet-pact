@@ -89,7 +89,7 @@
     ;;two call sites where a mistake could hide.
     ;;
     ;;This op is the interesting case in the family: PYTHIA fees are NON-discountable by spec, so the
-    ;;exec calls `STOA|C_CollectFull patron deploy-fee false` (not the discounted `STOA|C_Collect`),
+    ;;exec calls `XB_CollectStoaFull patron deploy-fee false` (not the discounted `XE_CollectStoa`),
     ;;and the preview correspondingly anchors to `UC_FeeDiscountAnchor` rather than to the patron. If
     ;;either side ever moves to the ordinary discounted path alone, the two figures separate and this
     ;;fails — which is the only thing that would catch it, since a discount is silent by nature.

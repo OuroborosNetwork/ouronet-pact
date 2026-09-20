@@ -459,7 +459,7 @@
 ;;
 ;;     This is not an end-of-ICO edge case. It is every account, every round after the first, and
 ;;     it is a DEADLOCK rather than a nuisance:
-;;       * C_Collect aborts, so the account cannot self-collect;
+;;       * XE_CollectIgnis aborts, so the account cannot self-collect;
 ;;       * AA_FlushUncollected shares XI_CollectFor, so the admin cannot push-collect either;
 ;;       * A_Inject is barred while unclaimed-count != 0, so no new round can open.
 ;;     The vault stops paying and cannot be restarted from any entrypoint.

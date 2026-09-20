@@ -49,11 +49,34 @@
 ;;            chainweb supplies it during buy-gas -- the idiom modules/DALOS-ADMIN.repl
 ;;            <<DALOS-G2a>> establishes. ONE TRANSACTION PER CASE, because `test-capability` grants
 ;;            the cap for the remainder of the transaction. Then PRICE the door by measuring a real
-;;            `IGNIS::C_Collect` of `UDC_CustomCodeCumulator`, for a standard patron and for a
+;;            `IGNIS::XE_CollectIgnis` of `UDC_CustomCodeCumulator`, for a standard patron and for a
 ;;            gassless one.
 ;;
-;;RESULT: SUCCEEDED -- and after the owner stated the intended design (2026-09-15) the finding
-;;        SHARPENED from an economics question into a plain DESIGN-INTENT VIOLATION.
+;;RESULT: BOTH FINDINGS ARE NOW CLOSED (2026-09-20). This block used to read "SUCCEEDED ... a
+;;        plain DESIGN-INTENT VIOLATION". That verdict covered TWO separate things, and they were
+;;        resolved separately -- one by a code fix, one by the owner stating that it was never a
+;;        finding at all. Leaving the old verdict in place would have this file asserting two
+;;        vulnerabilities the system no longer has.
+;;
+;;        [1] THE GASLESS-PATRON EXEMPTION -- WAS REAL, IS FIXED.
+;;            The owner's rule: only ONE hardcoded smart account may be a gasless payer. The code
+;;            at the time read `iz-gassles-patron` off the `smart-contract` flag, which
+;;            XI_DeploySmartAccount sets unconditionally -- so EVERY smart account was exempt.
+;;            02_IGNIS.pact:1901 now reads:
+;;                (iz-gassles-patron:bool (= patron (ref-DALOS::GOV|DALOS|SC_NAME)))
+;;            -- a single hardcoded account, exactly as specified. The narrowing was measured
+;;            first: all 37 genuine patron slots that pass a smart-account constant are in
+;;            03_DSP+.pact, so nothing outside the daily minter relied on the wide exemption.
+;;
+;;        [2] CASE 3's UNINSPECTED FOURTH FORM -- WAS NEVER A VIOLATION.
+;;            Owner, 2026-09-20: this is the PRODUCT. The caller pays 25 IGNIS and the gas station
+;;            sponsors a custom `let` block of arbitrary size. The whitelist inspects forms 0-2
+;;            and deliberately does not read the fourth, because the fourth is what the 25 IGNIS
+;;            BUYS. It is rationed execution, not free execution -- the door has a price.
+;;            The paid door is now `DPTF|C_Transmute` of the IGNIS DPTF (see that function's @doc
+;;            for why 25, and why it costs no IGNIS), NOT a direct XE_CollectIgnis call: the
+;;            collector became an IMC-gated X_ function in the same pass and can no longer be
+;;            reached from exec-code at all.
 ;;
 ;;        OWNER: "an IGNIS gas payer account can only be a STANDARD account. A smart account
 ;;        can never be a gassless payer, EXCEPT one single account HARDCODED into the code,
@@ -82,7 +105,7 @@
 ;;  3. Form 2 need only START with "(let" -- its body is unread.              [RT-I-001e]
 ;;  4. The door is priced at a FLAT (* 5.0 tier-biggest): 25 raw, 13.25 after
 ;;     a top-tier discount -- independent of what the tail does.              [RT-I-001f]
-;;  5. A GASSLESS (smart) account pays 0.0. `IGNIS::C_Collect` collects only
+;;  5. A GASSLESS (smart) account pays 0.0. `IGNIS::XE_CollectIgnis` collects only
 ;;     `(if (and (!= ignis-sum 0.0) (not iz-gassles-patron)) ...)`.           [RT-I-001g]
 ;;  6. Smart accounts are PERMISSIONLESS: `DALOS|C_DeploySmartAccount` is a CLIENT wrapper on
 ;;     TS01-C1:311, not an admin one, priced in STOA at `acct-smart` 1000 deter = 100 STOA (~$10)
@@ -90,7 +113,7 @@
 ;;     account-creation toggle is off.
 ;;
 ;;  So: pay once (or nothing), then submit unlimited transactions of the shape
-;;  `namespace + IGNIS.C_Collect(CustomCodeCumulator) + (let ...) + <arbitrary code>`, paying NO
+;;  `namespace + IGNIS.XE_CollectIgnis(CustomCodeCumulator) + (let ...) + <arbitrary code>`, paying NO
 ;;  IGNIS, with the gas station funding up to DALOS|GAS-BUDGET = 2,000,000 gas units of NATIVE STOA
 ;;  each time. (There is no gas station for IGNIS -- only for native STOA.)
 ;;
@@ -118,7 +141,7 @@
 (print "--- [RT-I-001a - BASELINE: the intended Case 3 shape is funded · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (env-data { "exec-code": ["(namespace \"ouronet-ns\")"
-                   "(IGNIS.C_Collect \"Ѻ.attacker\" (IGNIS.UDC_CustomCodeCumulator))"
+                   "(TS01-C1.DPTF|C_Transmute \"Ѻ.attacker\" \"GAS-98c486052a51\" \"Ѻ.attacker\" 25.0)"
                    "(let ((x 1)) x)"] })
 (print
     (expect "<<RT-I-001>> BASELINE: the intended three-form Case 3 shape is funded"
@@ -162,7 +185,7 @@
 (print "--- [RT-I-001c - ATTACK: a fourth, unvalidated form · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (env-data { "exec-code": ["(namespace \"ouronet-ns\")"
-                   "(IGNIS.C_Collect \"Ѻ.attacker\" (IGNIS.UDC_CustomCodeCumulator))"
+                   "(TS01-C1.DPTF|C_Transmute \"Ѻ.attacker\" \"GAS-98c486052a51\" \"Ѻ.attacker\" 25.0)"
                    "(let ((x 1)) x)"
                    "(bogus.thing)"] })
 (print
@@ -185,7 +208,7 @@
 (print "--- [RT-I-001d - ATTACK: the appended count is unbounded · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (env-data { "exec-code": ["(namespace \"ouronet-ns\")"
-                   "(IGNIS.C_Collect \"Ѻ.attacker\" (IGNIS.UDC_CustomCodeCumulator))"
+                   "(TS01-C1.DPTF|C_Transmute \"Ѻ.attacker\" \"GAS-98c486052a51\" \"Ѻ.attacker\" 25.0)"
                    "(let ((x 1)) x)"
                    "(bogus.one)" "(bogus.two)" "(bogus.three)"] })
 (print
@@ -209,7 +232,7 @@
 (print "--- [RT-I-001e - ATTACK: form 2's body is unread · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (env-data { "exec-code": ["(namespace \"ouronet-ns\")"
-                   "(IGNIS.C_Collect \"Ѻ.attacker\" (IGNIS.UDC_CustomCodeCumulator))"
+                   "(TS01-C1.DPTF|C_Transmute \"Ѻ.attacker\" \"GAS-98c486052a51\" \"Ѻ.attacker\" 25.0)"
                    "(let ((y 0)) (bogus.thing))"] })
 (print
     (expect "<<RT-I-001>> ATTACK: form 2 need only START with (let -- its body is unread"
@@ -227,7 +250,7 @@
 (print "--- [RT-I-001f · the price of the custom-code door] ---")
 ;;THE ECONOMICS, WHICH DECIDE WHETHER THE HOLE MATTERS. Case 3 is not an oversight in shape: it is
 ;;the CUSTOM CODE door, and it obliges the caller to run
-;;`(IGNIS.C_Collect "Ѻ.…" (IGNIS.UDC_CustomCodeCumulator))` as form 1. That cumulator is
+;;`(IGNIS.XE_CollectIgnis "Ѻ.…" (IGNIS.UDC_CustomCodeCumulator))` as form 1. That cumulator is
 ;;`(* 5.0 (UC_IgnisLeg "tier-biggest"))` -- a FLAT fee, independent of how much work the appended
 ;;forms do, while the gas Ouronet subsidises is bounded only by DALOS|GAS-BUDGET (2,000,000 units at
 ;;the protocol floor, per UEV_enforce-notional-at-floor).
@@ -250,7 +273,8 @@
         (
             (b0:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
         )
-        (ref-IGNIS::C_Collect patron (ref-IGNIS::UDC_CustomCodeCumulator))
+        (test-capability (DPTF.P|DPTF|CALLER))
+        (ref-IGNIS::XE_CollectIgnis patron (ref-IGNIS::UDC_CustomCodeCumulator))
         (let
             (
                 (paid:decimal (- b0 (ref-DALOS::UR_TF_AccountSupply patron false)))
@@ -289,7 +313,7 @@
 ;;        (ref-DALOS::CAP_EnforceAccountOwnership patron))
 ;;
 ;;BUT IT WAS UNREACHABLE FOR THE ACCOUNTS IT IS ABOUT. `UEV_Patron` runs inside
-;;`IGNIS|C>COLLECT`, and `C_Collect` acquires that capability only when it actually collects:
+;;`IGNIS|C>COLLECT`, and `XE_CollectIgnis` acquires that capability only when it actually collects:
 ;;
 ;;    (if (and (!= ignis-sum 0.0) (not iz-gassles-patron)) (with-capability (IGNIS|C>DC patron) ...))
 ;;
@@ -313,6 +337,10 @@
         (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
         (smart:string KC.BJ)
     )
+    ;;XE_CollectIgnis is now P|UEV_IMC-protected, so a bare REPL call cannot reach the billing
+    ;;path at all. Grant the stand-in caller capability FIRST -- otherwise the refusal below
+    ;;would be the IMC gate, not the patron guard, and the test would prove the wrong thing.
+    (test-capability (DPTF.P|DPTF|CALLER))
     (map print
         [
             ;;non-vacuity: the fixture really is the gassless KIND, so the refusal below is about
@@ -324,7 +352,7 @@
             ;;reaches the guard that was always there, and the message proves WHICH guard refused.
             (expect-failure "<<RT-I-001>> FIXED: a non-designated smart patron is refused BY NAME"
                 "Only the DALOS Account can be a Smart Patron"
-                (ref-IGNIS::C_Collect smart (ref-IGNIS::UDC_CustomCodeCumulator)))
+                (ref-IGNIS::XE_CollectIgnis smart (ref-IGNIS::UDC_CustomCodeCumulator)))
         ])
 )
 (print "===^^^===")
@@ -348,7 +376,7 @@
 ;;sets that flag to `true` UNCONDITIONALLY for every account deployed through it, and BOTH
 ;;`DALOS|A_DeploySmartAccount` (admin) and `DALOS|C_DeploySmartAccount` (CLIENT, TS01-C1:311,
 ;;permissionless, STOA-priced) route there. There is NO hardcoded account: "gassles" appears exactly
-;;twice in all of 1_SOVEREIGN, and both are the two lines in IGNIS::C_Collect.
+;;twice in all of 1_SOVEREIGN, and both are the two lines in IGNIS::XE_CollectIgnis.
 ;;
 ;;So the exemption's population is "every smart account", not "one". This block states that as a
 ;;measurement on a specific, ordinary user account.
@@ -392,7 +420,7 @@
 ;;Ouroboros and Koson minters passes exactly that.
 ;;
 ;;BUT IT IS A CALLER-SIDE CONVENTION, NOT AN ENFORCEMENT. DSP *chooses* to pass one account;
-;;`IGNIS::C_Collect` still exempts ANY smart patron. That is RT-C-001's lesson in a new place: a
+;;`IGNIS::XE_CollectIgnis` still exempts ANY smart patron. That is RT-C-001's lesson in a new place: a
 ;;convention that is honoured is indistinguishable from a rule that is enforced, until someone does
 ;;not honour it -- and the Case 3 door lets an attacker write the patron into their own transaction
 ;;text, where DSP's discipline has no reach at all.

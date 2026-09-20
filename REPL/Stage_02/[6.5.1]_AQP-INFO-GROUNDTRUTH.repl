@@ -1361,7 +1361,7 @@
 ;;compared in one place.
 ;;
 ;;THE ASSERTION IS A ZERO, AND THAT NEEDS CARE. `INFO_AQP-POOL|AbortVacate` quotes "Costs you
-;;nothing" for an op that visibly calls `IGNIS::C_Collect` — the exact shape that WAS a defect in
+;;nothing" for an op that visibly calls `IGNIS::XE_CollectIgnis` — the exact shape that WAS a defect in
 ;;INFO_EQUITY|IssueCompany, INFO_SWP|ToggleFeeLock and INFO_ATS|ToggleParameterLock. It is correct
 ;;here only because `C_AbortVacate` returns `UC_EmptyOc`, and collecting an empty cumulator collects
 ;;nothing. The `(> real 0.0)` guard every other block in this family carries cannot apply, so what

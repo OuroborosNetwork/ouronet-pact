@@ -1587,7 +1587,7 @@
 ;;`modules/ATS.repl <<ATS-I1>>`.
 ;;
 ;;WHY THIS OP SPECIFICALLY. It is the only one in the whole DPTF/DPOF family whose STOA collect is
-;;UNCONDITIONAL: `05_DPTF.pact:2854` calls `STOA|C_CollectWT patron (URCi_UpgradeBranding months)
+;;UNCONDITIONAL: `05_DPTF.pact:2854` calls `XB_CollectStoaWithTrigger patron (URCi_UpgradeBranding months)
 ;;false` — the trigger is the hardcoded literal `false`, not `(URC_IsNativeGasZero)` as in
 ;;`C_Issue` and `C_ToggleFeeLock`. So this charge cannot be switched off by protocol state, which
 ;;makes it the one place a wrong STOA quote would reach every client unconditionally.

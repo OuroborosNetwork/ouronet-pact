@@ -187,10 +187,12 @@
             (
                 (ref-P|BRD:module{OuronetPolicyV2} BRD)
                 (ref-P|DPDC:module{OuronetPolicyV2} DPDC)
+                (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
                 (mg:guard (create-capability-guard (P|DPDC-I|CALLER)))
             )
             (ref-P|BRD::P|A_AddIMP mg)
             (ref-P|DPDC::P|A_AddIMP mg)
+            (ref-P|IGNIS::P|A_AddIMP mg)
         )
     )
 
@@ -267,7 +269,7 @@
     (defun URCi_IssueCollectionStoa:decimal
         (son:bool)
         @doc "STOA side-cost for a digital-collection issue (dpsf for SFT, dpnf for NFT). \
-            \ Single source for STOA|C_Collect and the INFO preview."
+            \ Single source for XE_CollectStoa and the INFO preview."
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
@@ -514,7 +516,7 @@
                         )
                     )
                 )
-                (ref-IGNIS::STOA|C_Collect patron stoa-cost)
+                (ref-IGNIS::XE_CollectStoa patron stoa-cost)
                 (ref-IGNIS::UDC_ConstructOutputCumulator ignis-price owner-account trigger [id])
             )
         )

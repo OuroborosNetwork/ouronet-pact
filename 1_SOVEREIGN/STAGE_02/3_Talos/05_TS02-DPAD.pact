@@ -199,6 +199,7 @@
                 (ref-P|TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 (ref-P|DPAD:module{OuronetPolicyV2} DEMIPAD)
                 (ref-P|DPDC:module{OuronetPolicyV2} DPDC)
+                (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
                 (mg:guard (create-capability-guard (P|TALOS-SUMMONER)))
             )
             (ref-P|TS01-A::P|A_AddIMP mg)
@@ -208,6 +209,10 @@
             ;;own registered guard through the call chain instead) -- register this module's own guard
             ;;as a trusted DPDC peer so P|UEV_IMC recognizes the direct call.
             (ref-P|DPDC::P|A_AddIMP mg)
+            ;;IGNIS RESTRUCTURE 2026-09-20: the collectors became protected X_ functions
+            ;;behind `P|UEV_IMC`, so every module that bills must be a registered IMP peer
+            ;;of IGNIS or the fee call dies with "None of the guards passed".
+            (ref-P|IGNIS::P|A_AddIMP mg)
         )
     )
 
@@ -336,7 +341,7 @@
                     (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
                     (sd:string (ref-I|OURONET::OI|UC_ShortAccount donor))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DEMIPAD::C_Deposit donor asset-id amount-in-dollars type direct-injection max-cost)
                 )
                 (format "Succesfuly deposited {} $ worth against {} into Demipad from {}." [amount-in-dollars asset-id sd])
@@ -402,7 +407,7 @@
                     (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
                     (c:string (ref-I|OURONET::OI|UC_ShortAccount client))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DEMIPAD::C_TransmitSemiFungibles client asset-id nonces amounts true)
                 )
                 (format "Succesfuly fueled {} Nonces {} with Amounts {} to Demiourgos Launchpad from Account {}" [asset-id nonces amounts c])
@@ -418,7 +423,7 @@
                     (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
                     (c:string (ref-I|OURONET::OI|UC_ShortAccount client))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DEMIPAD::C_TransmitNonFungibles client asset-id nonces amounts true)
                 )
                 (format "Succesfuly fueled {} Nonces {} with Amounts {} to Demiourgos Launchpad from Account {}" [asset-id nonces amounts c])
@@ -455,7 +460,7 @@
                     (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
                     (c:string (ref-I|OURONET::OI|UC_ShortAccount client))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DEMIPAD::C_TransmitSemiFungibles client asset-id nonces amounts false)
                 )
                 (format "Succesfuly retrieved {} Nonces {} with Amounts {} from Demiourgos Launchpad to Account {}" [asset-id nonces amounts c])
@@ -471,7 +476,7 @@
                     (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
                     (c:string (ref-I|OURONET::OI|UC_ShortAccount client))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DEMIPAD::C_TransmitNonFungibles client asset-id nonces amounts false)
                 )
                 (format "Succesfuly retrieved {} Nonces {} with Amounts {} from Demiourgos Launchpad to Account {}" [asset-id nonces amounts c])

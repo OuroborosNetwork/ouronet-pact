@@ -1,8 +1,8 @@
 ;; ---------------------------------------------------------------------------
 ;; OURONET DEPLOY -- file 17 of 20
-;; This is STEP 17 of 21 in the full sequence (see Deploy/MANIFEST.md).
-;; Steps 1-16 must have run first, including the init steps between deploys.
-;; 3 module(s), 849,276 gas measured in the REPL gas model, 251,710 bytes
+;; This is STEP 18 of 23 in the full sequence (see Deploy/MANIFEST.md).
+;; Steps 1-17 must have run first, including the init steps between deploys.
+;; 3 module(s), 849,276 gas measured in the REPL gas model, 252,377 bytes
 ;;
 ;; Modules in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/06_VCT.pact
@@ -3152,7 +3152,8 @@
     ;;   XB_Vacate{TF,OF,SF,NF}  — external per-kind wrappers over the same XI cores.
     ;;   (multistep defpact + OF/SF/NF dispatch land in later steps of this phase.)
     ;; ═══════════════════════════════════════════════════════════════════════════
-    ;;Protection: Class 5 — IMC + Custom: VCT|C>VACATE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          VCT|C>VACATE
     (defun XB_VacateTrueFungible:object{IgnisCollectorV3.OutputCumulator}
         (pool-id:string)
         @doc "Vacate rehaul — external per-kind TF vacate for a whole pool (both internal + external, hence XB). \
@@ -3164,7 +3165,8 @@
             (XI_VacateTrueFungiblePoolLegs pool-id (URH_VacateTrueFungiblePoolLegs pool-id))
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: VCT|C>VACATE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          VCT|C>VACATE
     (defun XB_VacateOrtoFungible:object{IgnisCollectorV3.OutputCumulator}
         (pool-id:string dpof-id:string)
         @doc "Vacate rehaul — external per-kind OF vacate for ONE OF asset of a pool (both internal + external). \
@@ -3176,7 +3178,8 @@
                 (URHC_VacateNonceOwnerRowsRaw pool-id dpof-id VACATE-KIND-OF))
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: VCT|C>VACATE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          VCT|C>VACATE
     (defun XB_VacateSemiFungible:object{IgnisCollectorV3.OutputCumulator}
         (pool-id:string dpsf-id:string)
         @doc "Vacate rehaul — external per-kind DPSF (semi-fungible collection) vacate for ONE collectable of a \
@@ -3188,7 +3191,8 @@
                 (URHC_VacateNonceOwnerRowsRaw pool-id dpsf-id VACATE-KIND-DPSF))
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: VCT|C>VACATE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          VCT|C>VACATE
     (defun XB_VacateNonFungible:object{IgnisCollectorV3.OutputCumulator}
         (pool-id:string dpnf-id:string)
         @doc "Vacate rehaul — external per-kind DPNF (non-fungible collection) vacate for ONE collectable of a \
@@ -3662,6 +3666,7 @@
             (
                 (ref-P|FVT:module{OuronetPolicyV2} AQP-FVT)
                 (ref-P|RPS:module{OuronetPolicyV2} RPS)
+                (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
                 (mg:guard (create-capability-guard (P|MTX-AQP|CALLER)))
             )
             ;; MTX-AQP calls AQP-FVT's XE_ building blocks (P|UEV_IMC) — register as an allowed IMC caller.
@@ -3671,6 +3676,10 @@
             ;; #75 B': the deb-fix + re-score defpacts now drive RPS::XE_FvtFixUserChunk /
             ;; XE_FvtSweepRecomputeChunk (moved to the RPS reward engine) — register on RPS IMP too.
             (ref-P|RPS::P|A_AddIMP mg)
+            ;;IGNIS RESTRUCTURE 2026-09-20: the collectors became protected X_ functions
+            ;;behind `P|UEV_IMC`, so every module that bills must be a registered IMP peer
+            ;;of IGNIS or the fee call dies with "None of the guards passed".
+            (ref-P|IGNIS::P|A_AddIMP mg)
         )
     )
 
@@ -3866,7 +3875,7 @@
                             (n:integer (length stale))
                         )
                         (RPS.XE_FvtFixUserChunk fvt-id reward-dptf-id stale)
-                        (ref-IGNIS::C_Collect patron (ref-FVT::XB_FvtInject patron injector fvt-id reward-dptf-id amount))
+                        (ref-IGNIS::XE_CollectIgnis patron (ref-FVT::XB_FvtInject patron injector fvt-id reward-dptf-id amount))
                         (yield {"injected" : true})
                         (format "MTX Inject 1|2: fixed {} stale staker(s) and INJECTED {} {} (terminal)." [n amount reward-dptf-id])
                     )
@@ -3896,7 +3905,7 @@
                                 (stale:[string] (RPS.URH_FvtStalePresentUsers fvt-id))
                             )
                             (RPS.XE_FvtFixUserChunk fvt-id reward-dptf-id stale)
-                            (ref-IGNIS::C_Collect patron (ref-FVT::XB_FvtInject patron injector fvt-id reward-dptf-id amount))
+                            (ref-IGNIS::XE_CollectIgnis patron (ref-FVT::XB_FvtInject patron injector fvt-id reward-dptf-id amount))
                             (format "MTX Inject 2|2: fixed {} remaining stale staker(s) and INJECTED {} {}." [(length stale) amount reward-dptf-id])
                         )
                     )

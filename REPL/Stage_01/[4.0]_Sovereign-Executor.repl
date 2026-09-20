@@ -1691,24 +1691,24 @@
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
-(begin-tx "TX-02 [4.1.2] - Dalos INIT [02]: Define IMC Policies")
+(begin-tx "TX-20 [4.1.20] - Dalos INIT [20]: Pension, Liquid Wrap and ATS Fixtures")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
-;;==== TX-02 [4.1.2] - Dalos INIT [02]: Define IMC Policies · 01 · env-sigs (caps) ==== ===========
-(print "--- [TX-02 [4.1.2] - Dalos INIT [02]: Define IMC Policies · 01 · env-sigs (caps)] ---")
-;;==== TX-02 [4.1.2] - Dalos INIT [02]: Define IMC Policies · 01 · env-sigs (caps) ==== ===========
-(print "--- [TX-02 [4.1.2] - Dalos INIT [02]: Define IMC Policies · 01 · env-sigs (caps)] ---")
+;;==== TX-20 [4.1.20] - Dalos INIT [20]: Pension, Liquid Wrap and ATS Fixtures · 01 · env-sigs (caps) ==== ===========
+(print "--- [TX-20 [4.1.20] - Dalos INIT [20]: Pension, Liquid Wrap and ATS Fixtures · 01 · env-sigs (caps)] ---")
+;;==== TX-20 [4.1.20] - Dalos INIT [20]: Pension, Liquid Wrap and ATS Fixtures · 01 · env-sigs (caps) ==== ===========
+(print "--- [TX-20 [4.1.20] - Dalos INIT [20]: Pension, Liquid Wrap and ATS Fixtures · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
         ;{ "key": "PK_Emma", "caps": [] }
     ]
 )
-;;==== TX-02 [4.1.2] - Dalos INIT [02]: Define IMC Policies · 02 · let / invocation ==== ==========
-(print "--- [TX-02 [4.1.2] - Dalos INIT [02]: Define IMC Policies · 02 · let / invocation] ---")
-;;==== TX-02 [4.1.2] - Dalos INIT [02]: Define IMC Policies · 02 · let / invocation ==== ==========
-(print "--- [TX-02 [4.1.2] - Dalos INIT [02]: Define IMC Policies · 02 · let / invocation] ---")
+;;==== TX-20 [4.1.20] - Dalos INIT [20]: Pension, Liquid Wrap and ATS Fixtures · 02 · let / invocation ==== ==========
+(print "--- [TX-20 [4.1.20] - Dalos INIT [20]: Pension, Liquid Wrap and ATS Fixtures · 02 · let / invocation] ---")
+;;==== TX-20 [4.1.20] - Dalos INIT [20]: Pension, Liquid Wrap and ATS Fixtures · 02 · let / invocation ==== ==========
+(print "--- [TX-20 [4.1.20] - Dalos INIT [20]: Pension, Liquid Wrap and ATS Fixtures · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -1857,8 +1857,8 @@
 )
 
 
-;;==== TX-02 [4.1.2] - Dalos INIT [02]: Define IMC Policies · 03 · gas echo ==== ==================
-(print "--- [TX-02 [4.1.2] - Dalos INIT [02]: Define IMC Policies · 03 · gas echo] ---")
+;;==== TX-20 [4.1.20] - Dalos INIT [20]: Pension, Liquid Wrap and ATS Fixtures · 03 · gas echo ==== ==================
+(print "--- [TX-20 [4.1.20] - Dalos INIT [20]: Pension, Liquid Wrap and ATS Fixtures · 03 · gas echo] ---")
 (print (format "<<<<<<<Migrate DPMF [01] Costs {} GAS>>>>>>>" [(env-gas)]))
 (print "")
 (commit-tx)

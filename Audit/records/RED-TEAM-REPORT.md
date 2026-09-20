@@ -388,43 +388,51 @@ capabilities that **only the owning module's own code can bring into scope**, an
 cannot acquire another module's capability in Pact. Registration is closed as well:
 `DALOS::P|A_AddIMP` requires `GOV|DALOS_ADMIN`.
 
-**Whole-surface scan, not two samples.** Of the **290** `C_`/`CC_` implementations across the
-sovereign core, **289 carry `P|UEV_IMC`**. The single exception is `IGNIS::C_TransferDalosFuel`,
-attacked separately below rather than taken on trust.
+**Whole-surface scan, not two samples.** **Every** `C_`/`CC_` implementation across the sovereign
+core carries `P|UEV_IMC`. UPDATED 2026-09-20 — this read **289 / 290**, the exception being
+`IGNIS::C_TransferDalosFuel`, safe by *delegation* to Stoa's coin rather than by a gate. The IGNIS
+restructure reclassified that function as `XB_MoveDalosFuel`, a protected `XB_`, so the exception no
+longer exists. It is still attacked below, and the attack now proves **two** layers rather than
+leaning on the lower one.
 
 The block carries a non-vacuity assertion that matters more than usual here: the hostile module
 **can** read the sovereign core. Without it the refusals would only prove that cross-namespace calls
 fail, not that the gate works.
 
-### RT-G-002 — draining the gas station through the one ungated entrypoint *(REFUSED)*
+### RT-G-002 — draining the gas station through the STOA-moving primitive *(REFUSED)*
 
-**Hypothesis.** `C_TransferDalosFuel` has no `P|UEV_IMC` and its body is a bare `coin::transfer`
-with the sender taken straight from the argument. If the coin layer can be satisfied, a foreign
-module moves native STOA out of any account it names — including the **Ouronet gas station**, which
-would stop the chain paying for anything.
+**Hypothesis.** `IGNIS::XB_MoveDalosFuel` is the primitive every STOA-collection path funnels
+through, and its body is a bare `coin::transfer` with the sender taken straight from the argument.
+If it can be reached and the coin layer satisfied, a foreign module moves native STOA out of any
+account it names — including the **Ouronet gas station**, which would stop the chain paying for
+anything.
 
-**Three escalating attempts, each pushing one layer further:**
+**Two independent layers, attacked separately on purpose:**
 
 | # | attempt | refusal |
 |---|---|---|
-| 1 | call it cold | `Managed capability not installed` |
-| 2 | **sign and install** `coin.TRANSFER` naming the station as sender | `Capability not acquired: CapabilityGuard {name: ouronet-ns.DALOS.DALOS\|NATIVE-AUTOMATIC}` |
+| 1 | call it from the hostile module — where a real adversary stands | `None of the guards passed` (`P|UEV_IMC`) |
+| 2 | drop to `coin.transfer` **directly**, signing and installing `coin.TRANSFER` with the station as sender | `Capability not acquired: CapabilityGuard {name: ouronet-ns.DALOS.DALOS\|NATIVE-AUTOMATIC}` |
 | 3 | confirm the refusal names DALOS's own capability | same, and the balance is untouched |
 
-**Attempt 1's refusal is not the defence, and saying so is the point.** It sounds like one, but an
-attacker removes it themselves — signing a capability for an account you do not control is *allowed*
-and installs the managed cap. Attempt 2 does exactly that.
+**Why attempts 2 and 3 no longer go through the hostile module.** Until 2026-09-20 this entrypoint
+had no gate, and attempt 1 failed on `Managed capability not installed` — which sounded like a
+defence and was not, since an attacker installs the cap themselves. The IGNIS restructure put
+`P|UEV_IMC` in front, and a guard that runs first hides every guard behind it. **A hidden guard is
+indistinguishable from a deleted one** (CLAUDE.md's shadowing ruling), so the lower-layer attack was
+re-aimed straight at `coin.transfer`. That is not a weaker attack — it is a *stronger position for
+the adversary*: no sovereign module in the path at all, the managed capability installed, and the
+raw coin contract asked to move the funds.
 
-**What actually holds is attempt 2's failure.** The gas station's STOA account is a **`c:` principal**
+**What holds at that layer, on its own.** The gas station's STOA account is a **`c:` principal**
 whose guard is `(create-capability-guard (DALOS|NATIVE-AUTOMATIC))`, so `coin.pact:144`'s
 `(enforce-guard (UR_Guard sender))` demands a **capability in scope, not a signature**.
 
 > **An attacker holding every private key in the system still cannot move the gas station's funds.**
 
-That is a stronger property than "the entrypoint is gated" — it is not gated. Its authorisation is
-*delegated* to a guard that is unsatisfiable from outside the owning module. Why the entrypoint has
-no gate is also defensible: it is a **primitive** through which every `STOA|C_Collect*` path funnels,
-so gating it with `P|UEV_IMC` would gate the collector against itself.
+The entrypoint is now gated *and* its authorisation is delegated to a guard unsatisfiable from
+outside the owning module. Either alone refuses; the old report argued the second because the first
+did not exist yet.
 
 The signed account literals are pinned against the derived accounts, so if the fixture ever moves,
 the attack fails loudly at the assertion rather than silently aiming somewhere harmless.
@@ -436,8 +444,8 @@ The inter-module boundary is the **best-defended surface tested so far**:
 | property | status |
 |---|---|
 | `ouronet-ns` closed to deployment | verified |
-| core client entrypoints gated | **289 / 290** |
-| the 290th | safe by delegation to an unsatisfiable guard |
+| core client entrypoints gated | **all of them** (was 289 / 290 before 2026-09-20) |
+| the former 290th | reclassified `C_TransferDalosFuel` → `XB_MoveDalosFuel`; gated **and** delegated |
 | policy registration | `GOV|DALOS_ADMIN` only |
 | a real deployed adversary | refused by the intended guard, message checked |
 

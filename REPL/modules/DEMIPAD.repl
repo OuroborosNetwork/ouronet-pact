@@ -208,7 +208,7 @@
 ;;them in the same block puts any copied quote side by side with the charge that contradicts it.
 ;;
 ;;NOTE for the TrueFungible and OrtoFungible pairs specifically: the Talos wrapper does NOT call
-;;`IGNIS::C_Collect` itself — the billing happens one layer down, inside `TS01-C1::DPTF|C_Transfer` /
+;;`IGNIS::XE_CollectIgnis` itself — the billing happens one layer down, inside `TS01-C1::DPTF|C_Transfer` /
 ;;`DPOF|C_Transfer`, against the same patron. So the collector is absent from the function this block
 ;;names, and the charge still lands. Do not read that absence as "this op is free".
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
@@ -273,7 +273,7 @@
 ;;them in the same block puts any copied quote side by side with the charge that contradicts it.
 ;;
 ;;NOTE for the TrueFungible and OrtoFungible pairs specifically: the Talos wrapper does NOT call
-;;`IGNIS::C_Collect` itself — the billing happens one layer down, inside `TS01-C1::DPTF|C_Transfer` /
+;;`IGNIS::XE_CollectIgnis` itself — the billing happens one layer down, inside `TS01-C1::DPTF|C_Transfer` /
 ;;`DPOF|C_Transfer`, against the same patron. So the collector is absent from the function this block
 ;;names, and the charge still lands. Do not read that absence as "this op is free".
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])

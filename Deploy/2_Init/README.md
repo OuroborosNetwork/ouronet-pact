@@ -1,6 +1,6 @@
 # Init steps
 
-1 init/config steps, in sequence order. **These are extracted, not generated.**
+3 init/config steps, in sequence order. **These are extracted, not generated.**
 
 Each file carries the real forms from its source block with the REPL scaffolding (`print`, `expect`, `env-*`) stripped, plus the signer keys that block used. The `env-sigs` keys are REPL names -- translate them to the real signers your pipeline uses.
 
@@ -8,7 +8,9 @@ Each file carries the real forms from its source block with the REPL scaffolding
 
 | file | step | forms | label | flag |
 |---:|---:|---:|---|---|
-| `01_init.pact` | 21 | 1 | deploy-stage02 · AQP-BOOT Step0 WireImcAndGovernor |  |
+| `01_init.pact` | 10 | 1 | TX-02 [4.1.2] - Dalos INIT [02]: Define IMC Policies |  |
+| `02_init.pact` | 21 | 1 | TX-01 [4.1] - DPDC INIT [01]: Define IMC Policies | **fixture?** |
+| `03_init.pact` | 23 | 1 | deploy-stage02 · AQP-BOOT Step0 WireImcAndGovernor |  |
 
-**1 steps** · 0 flagged as possible fixtures · 0 carry no deployable forms (pure REPL scaffolding).
+**3 steps** · 1 flagged as possible fixtures · 0 carry no deployable forms (pure REPL scaffolding).
 

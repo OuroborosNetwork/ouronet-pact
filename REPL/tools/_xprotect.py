@@ -10,10 +10,15 @@ all of them, without exception. An `X_` function AGGREGATES writes with custom l
 called by `C_`/`A_`. Every `X_` must therefore be protected, and exactly one of five ways:
 
     Class 1  innate    — protected by something it composes; NAME the 1-hop protectors
-    Class 2  SECURE    — require/with-capability (SECURE)
+    Class 2  SECURE    — require-capability (SECURE). NOTE: `with-capability (SECURE)` is NOT
+                         protection -- SECURE is `(defcap SECURE () true)` in every module, so
+                         acquiring it asserts nothing and turns nobody away (canon §2.15).
     Class 3  custom    — a purpose-built capability
     Class 4  IMC       — P|UEV_IMC (which itself composes SECURE, so it can be called from within)
-    Class 5  IMC+custom— P|UEV_IMC followed by (with-capability (CUSTOM) ...)
+    Class 5  IMC+custom— P|UEV_IMC (THE GATE) followed by (with-capability (CUSTOM) ...). The
+                         custom capabilities are ACQUIRED AFTER the gate has already passed, so
+                         they are validation, not protection -- the annotation names them so an
+                         auditor knows what else runs, NOT as a second lock (canon §2.15).
 
 CLASS 1 IS A LINKED LIST, NOT A CLAIM. The annotation names only the ONE-HOP protectors. An
 auditor reading it walks to that function and reads ITS line, and so on; the chain terminates at
@@ -131,6 +136,24 @@ def resolve(caller_file, refvar, dotted, callee):
     fs = BY_NAME.get(callee)
     return (fs[0], callee) if fs and len(fs) == 1 else None
 
+TRIVIAL_CAPS = {"SECURE"}
+
+
+def adjacent_withcap(body):
+    """The capability of a `with-capability` that IMMEDIATELY follows `(P|UEV_IMC)`, if any.
+
+    `immediately` is structural, not textual: the next non-blank, non-comment form. A
+    `with-capability` reached through a `let`, an `if`, or any other wrapper is not the
+    function's gate -- it is something the function does once the gate has let it in.
+    Returns None for trivial capabilities (SECURE is `(defcap SECURE () true)` everywhere).
+    """
+    m = re.search(r'\(P\|UEV_IMC\)\s*((?:;;[^\n]*\n\s*)*)\(with-capability\s+\(([^\s()]+)', body)
+    if not m:
+        return None
+    cap = m.group(2)
+    return None if cap in TRIVIAL_CAPS else cap
+
+
 def direct_class(key):
     """Class 2-5 if the function protects itself; (None, []) otherwise. key = (file, name)."""
     if key not in MEM: return None, []
@@ -139,7 +162,15 @@ def direct_class(key):
     req = sorted(set(re.findall(r'\(require-capability\s+\(([^\s()]+)', body)))
     wit = sorted(set(re.findall(r'\(with-capability\s+\(([^\s()]+)', body)))
     imc = bool(GATE.search(body))
-    if imc and wit: return 5, ["P|UEV_IMC"] + wit
+    # CLASS 5 REQUIRES ADJACENCY AND SUBSTANCE (owner ruling, 2026-09-20).
+    # It is `P|UEV_IMC` followed DIRECTLY by `(with-capability (CAP) ...)` wrapping the body,
+    # where CAP is not a trivial `true` capability. Presence-anywhere is not enough:
+    # XE_CollectIgnis has `(P|UEV_IMC)` then a `(let ...)`, and its capabilities sit inside
+    # nested `if` branches that MAY NOT RUN AT ALL. Naming those as protection described a
+    # conditional as a gate. That function is Class 4 -- the IMC is its whole lock.
+    adj = adjacent_withcap(body)
+    if imc and adj: return 5, ["P|UEV_IMC", adj]
+    if imc and wit: return 4, ["P|UEV_IMC"]
     if imc:         return 4, ["P|UEV_IMC"]
     for s in (req, wit):
         if s: return (2, ["SECURE"]) if any("SECURE" in x for x in s) else (3, s)
@@ -190,7 +221,8 @@ def line_for(k, why):
     if k == 2: return  ";;Protection: Class 2 — SECURE"
     if k == 3: return f";;Protection: Class 3 — Custom: {', '.join(why)}"
     if k == 4: return  ";;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)"
-    if k == 5: return f";;Protection: Class 5 — IMC + Custom: {', '.join(why[1:])}"
+    if k == 5: return (f";;Protection: Class 5 — IMC is the gate; also acquires (validation, "
+                       f"not protection): {', '.join(why[1:])}")
     return ";;Protection: !! UNCLASSIFIED — no protection found"
 
 

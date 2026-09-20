@@ -291,6 +291,7 @@
                 (ref-P|ATS:module{OuronetPolicyV2} ATS)
                 (ref-P|TFT:module{OuronetPolicyV2} TFT)
                 (ref-P|ATSU:module{OuronetPolicyV2} ATSU)
+                (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
                 (mg:guard (create-capability-guard (P|VST|CALLER)))
             )
             (ref-P|ATS::P|A_Add
@@ -304,6 +305,7 @@
             (ref-P|ATS::P|A_AddIMP mg)
             (ref-P|TFT::P|A_AddIMP mg)
             (ref-P|ATSU::P|A_AddIMP mg)
+            (ref-P|IGNIS::P|A_AddIMP mg)
         )
     )
 
@@ -913,7 +915,7 @@
     )
     (defun URCi_CreateSpecialTrueFungibleLinkStoa:decimal ()
         @doc "STOA leg of C_CreateFrozenLink / C_CreateReservationLink. Read-only twin of the \
-            \ <stoa-costs> that XI_CreateSpecialTrueFungibleLink hands to STOA|C_Collect, so the \
+            \ <stoa-costs> that XI_CreateSpecialTrueFungibleLink hands to XE_CollectStoa, so the \
             \ INFO_ preview and the charge are sourced from one place and cannot drift."
         (let
             (
@@ -925,7 +927,7 @@
     (defun URCi_CreateSpecialOrtoFungibleLinkStoa:decimal ()
         @doc "STOA leg of C_CreateVestingLink / C_CreateSleepingLink / C_CreateHibernatingLink. \
             \ Read-only twin of the <stoa-costs> that XI_CreateSpecialOrtoFungibleLink hands to \
-            \ STOA|C_Collect. Note the key is \"dpmf\", not \"dpof\" -- the usage-price table \
+            \ XE_CollectStoa. Note the key is \"dpmf\", not \"dpof\" -- the usage-price table \
             \ still carries the pre-rename name."
         (let
             (
@@ -1590,7 +1592,7 @@
             )
             ;;Create DPTF Account
             (ref-DPTF::C_DeployAccount dptf VST|SC_NAME)
-            (ref-IGNIS::STOA|C_Collect patron stoa-costs)
+            (ref-IGNIS::XE_CollectStoa patron stoa-costs)
             (ref-IGNIS::UDC_ConcatenateOutputCumulators 
                 [
                     ;;MISSING DETERRENCE FIXED (2026-09-14). Creating a special link is priced as a
@@ -1663,7 +1665,7 @@
             )
             ;;Create DPTF Account 
             (ref-DPTF::C_DeployAccount dptf VST|SC_NAME)
-            (ref-IGNIS::STOA|C_Collect patron stoa-costs)
+            (ref-IGNIS::XE_CollectStoa patron stoa-costs)
             (ref-IGNIS::UDC_ConcatenateOutputCumulators 
                 [
                     ;;MISSING DETERRENCE FIXED (2026-09-14) -- see the true-fungible twin above.

@@ -412,10 +412,12 @@
             (
                 (ref-P|DALOS:module{OuronetPolicyV2} DALOS)
                 (ref-P|BRD:module{OuronetPolicyV2} BRD)
+                (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
                 (mg:guard (create-capability-guard (P|DPDC|CALLER)))
             )
             (ref-P|DALOS::P|A_AddIMP mg)
             (ref-P|BRD::P|A_AddIMP mg)
+            (ref-P|IGNIS::P|A_AddIMP mg)
         )
     )
 
@@ -1624,7 +1626,7 @@
     ;;
     ;;  [Indirect Writings]
     ;;
-    ;;Protection: Class 5 — IMC + Custom: SECURE
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_U|Frozen (id:string son:bool account:string toggle:bool)
         (P|UEV_IMC)
         (with-capability (SECURE) 
@@ -1636,7 +1638,7 @@
             )
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: SECURE
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_U|Exemption (id:string son:bool account:string toggle:bool)
         (P|UEV_IMC)
         (with-capability (SECURE) 
@@ -1648,7 +1650,7 @@
             )
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: SECURE
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_U|Burn (id:string son:bool account:string toggle:bool)
         (P|UEV_IMC)
         (with-capability (SECURE) 
@@ -1660,7 +1662,7 @@
             )
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: SECURE
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_U|Create (id:string son:bool account:string toggle:bool)
         (P|UEV_IMC)
         (with-capability (SECURE) 
@@ -1672,7 +1674,7 @@
             )
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: SECURE
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_U|Recreate (id:string son:bool account:string toggle:bool)
         (P|UEV_IMC)
         (with-capability (SECURE) 
@@ -1684,7 +1686,7 @@
             )
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: SECURE
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_U|Update (id:string son:bool account:string toggle:bool)
         (P|UEV_IMC)
         (with-capability (SECURE) 
@@ -1696,7 +1698,7 @@
             )
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: SECURE
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_U|ModifyCreator (id:string son:bool account:string toggle:bool)
         (P|UEV_IMC)
         (with-capability (SECURE) 
@@ -1708,7 +1710,7 @@
             )
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: SECURE
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_U|ModifyRoyalties (id:string son:bool account:string toggle:bool)
         (P|UEV_IMC)
         (with-capability (SECURE) 
@@ -1720,7 +1722,7 @@
             )
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: SECURE
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_U|SetNewUri (id:string son:bool account:string toggle:bool)
         (P|UEV_IMC)
         (with-capability (SECURE) 
@@ -1732,7 +1734,7 @@
             )
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: SECURE
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_U|Transfer (id:string son:bool account:string toggle:bool)
         (P|UEV_IMC)
         (with-capability (SECURE) 
@@ -1744,7 +1746,7 @@
             )
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: SECURE
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_U|VerumRoles (id:string son:bool rp:integer aor:bool account:string)
         (P|UEV_IMC)
         (if (contains rp [5 6 10])
@@ -1941,7 +1943,7 @@
                     )
                 )
             )
-            (ref-IGNIS::STOA|C_CollectWT patron stoa-payment false)
+            (ref-IGNIS::XB_CollectStoaWithTrigger patron stoa-payment false)
         )
     )
 

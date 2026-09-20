@@ -353,8 +353,8 @@
 ;;Template: `modules/ATS.repl <<ATS-I1>>`.
 ;;
 ;;THIS OP CHARGES TWO CURRENCIES. `TS02-C1.pact:1556-1560`:
-;;    (ref-IGNIS::C_Collect patron ico)
-;;    (ref-IGNIS::STOA|C_Collect patron (ref-IGNIS::UC_StoaPrice "issue-shareholder"))
+;;    (ref-IGNIS::XE_CollectIgnis patron ico)
+;;    (ref-IGNIS::XE_CollectStoa patron (ref-IGNIS::UC_StoaPrice "issue-shareholder"))
 ;;with the source comment "Issuing a COMPANY is $100 in IGNIS deter and $100 in STOA (spec)".
 ;;So both `ignis-need` and `stoa-need` must be checked; checking only IGNIS would miss half the bill.
 ;;STOA is native coin, debited from `DALOS::UR_AccountStoa <patron>`, so it is measured with

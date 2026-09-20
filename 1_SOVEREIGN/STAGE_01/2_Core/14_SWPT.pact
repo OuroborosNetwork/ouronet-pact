@@ -1155,7 +1155,7 @@
     ;;{5.4}  Validate [UEV/CAP]
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
-    ;;Protection: Class 5 — IMC + Custom: SECURE
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_UpdateGraph (swpair:string)
         @doc "Records <swpair> in the adjacency graph: every token in <swpair> gets \
             \ every OTHER token in <swpair> appended to its neighbour list (idempotent \
@@ -1294,7 +1294,7 @@
             )
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: SECURE, SWPT.SECURE
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_RegisterPath (token-a:string token-b:string nodes:[string] edges:[string])
         @doc "#34 Phase 8: forward-module entrypoint for XI_RegisterPath, mirroring \
             \ XE_UpdateGraph exactly — P|UEV_IMC gate, then internal SECURE composition. \

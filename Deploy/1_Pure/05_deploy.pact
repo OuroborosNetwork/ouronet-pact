@@ -1,8 +1,8 @@
 ;; ---------------------------------------------------------------------------
 ;; OURONET DEPLOY -- file 5 of 20
-;; This is STEP 5 of 21 in the full sequence (see Deploy/MANIFEST.md).
+;; This is STEP 5 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-4 must have run first, including the init steps between deploys.
-;; 2 module(s), 254,885 gas measured in the REPL gas model, 246,032 bytes
+;; 2 module(s), 254,885 gas measured in the REPL gas model, 246,479 bytes
 ;;
 ;; Modules in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact
@@ -352,6 +352,7 @@
                 (ref-P|LIQUID:module{OuronetPolicyV2} LIQUID)
                 (ref-P|ORBR:module{OuronetPolicyV2} OUROBOROS)
                 (ref-P|SWPT:module{OuronetPolicyV2} SWPT)
+                (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
                 (mg:guard (create-capability-guard (P|SWP|CALLER)))
             )
             (ref-P|DALOS::P|A_AddIMP mg)
@@ -365,6 +366,7 @@
             (ref-P|LIQUID::P|A_AddIMP mg)
             (ref-P|ORBR::P|A_AddIMP mg)
             (ref-P|SWPT::P|A_AddIMP mg)
+            (ref-P|IGNIS::P|A_AddIMP mg)
         )
     )
 
@@ -1357,7 +1359,7 @@
     (defun URCi_ToggleFeeLockStoa:decimal (swpair:string toggle:bool)
         @doc "STOA leg of a fee-lock toggle: locking is free, unlocking costs the fee-unlock \
             \ price. Read-only twin of the <XI_ToggleFeeLock> return that <C_ToggleFeeLock> \
-            \ hands to <STOA|C_Collect>, so the INFO_ preview and the charge move as one. \
+            \ hands to <XE_CollectStoa>, so the INFO_ preview and the charge move as one. \
             \ Mirrors DPTF's <URCi_ToggleFeeLockStoa>."
         (let
             (
@@ -1656,7 +1658,8 @@
     )
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
-    ;;Protection: Class 5 — IMC + Custom: SWP|S>WEIGHTS
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          SWP|S>WEIGHTS
     (defun XB_ModifyWeights (swpair:string new-weights:[decimal])
         (P|UEV_IMC)
         (with-capability (SWP|S>WEIGHTS swpair new-weights)
@@ -1666,7 +1669,8 @@
         )
     )
     ;;
-    ;;Protection: Class 5 — IMC + Custom: SWP|S>UPDATE-SUPPLIES
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          SWP|S>UPDATE-SUPPLIES
     (defun XE_UpdateSupplies (swpair:string new-supplies:[decimal])
         (P|UEV_IMC)
         (with-capability (SWP|S>UPDATE-SUPPLIES swpair new-supplies)
@@ -1683,7 +1687,7 @@
             )
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: SWP|S>UPDATE-SUPPLY
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_UpdateSupply (swpair:string id:string new-supply:decimal)
         (P|UEV_IMC)
         (let
@@ -1709,7 +1713,7 @@
             {"stoa-value" : new-stoa-value}
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: P|SECURE-CALLER
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_Issue:string (account:string pool-tokens:[object{SwapperV4.PoolTokens}] token-lp:string fee-lp:decimal weights:[decimal] amp:decimal p:bool)
         @doc "Forward writer: inserts the new SWP|Pairs row, registers the LP tracker \
             \ (C9 fix), saves the pool, and deploys token accounts. \
@@ -2092,7 +2096,7 @@
             (with-capability (SWP|C>UPGRADE-BRD entity-id)
                 (ref-BRD::XE_UpgradeBranding entity-id owner months)
             )
-            (ref-IGNIS::STOA|C_CollectWT patron (URCi_UpgradeBranding months) false)
+            (ref-IGNIS::XB_CollectStoaWithTrigger patron (URCi_UpgradeBranding months) false)
         )
     )
     ;;
@@ -2273,7 +2277,7 @@
                 (if (> stoa-costs 0.0)
                     (do
                         (XI_IncrementFeeUnlocks swpair)
-                        (ref-IGNIS::STOA|C_Collect patron stoa-costs)
+                        (ref-IGNIS::XE_CollectStoa patron stoa-costs)
                     )
                     true
                 )
@@ -2699,6 +2703,7 @@
                 (ref-P|ORBR:module{OuronetPolicyV2} OUROBOROS)
                 (ref-P|SWP:module{OuronetPolicyV2} SWP)
                 (ref-P|SWPT:module{OuronetPolicyV2} SWPT)
+                (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
                 (mg:guard (create-capability-guard (P|SWPI|CALLER)))
             )
             (ref-P|SWP::P|A_Add
@@ -2712,6 +2717,7 @@
             (ref-P|ORBR::P|A_AddIMP mg)
             (ref-P|SWP::P|A_AddIMP mg)
             (ref-P|SWPT::P|A_AddIMP mg)
+            (ref-P|IGNIS::P|A_AddIMP mg)
         )
     )
 
@@ -4660,7 +4666,7 @@
     )
     (defun URCi_IssueStoa:decimal ()
         @doc "STOA leg of a SINGLE-TX swap-pair issue. Read-only twin of the <stoa-costs> that \
-            \ C_Issue hands to STOA|C_Collect, so the exec and its INFO_ previews are sourced from \
+            \ C_Issue hands to XE_CollectStoa, so the exec and its INFO_ previews are sourced from \
             \ one place and cannot drift. \
             \ NOTE this is deliberately NOT the same figure as the DEFPACT pool-issue path: \
             \ MTX-SWP charges (+ UsagePrice \"dptf\" \"swp\") while this charges \
@@ -4985,7 +4991,8 @@
     )
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
-    ;;Protection: Class 5 — IMC + Custom: SWPI|XE>ISSUE-WRITE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          SWPI|XE>ISSUE-WRITE
     (defun XE_IssueWrite:list
         (account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool)
         @doc "#36M/M5 fix: forward-module entrypoint holding the ONE shared pool-issuance \
@@ -5106,7 +5113,7 @@
                         (ref-IGNIS::UDC_ConstructOutputCumulator gas-swp-cost SWP|SC_NAME trigger [])
                     )
                 )
-                (ref-IGNIS::STOA|C_Collect patron stoa-costs)
+                (ref-IGNIS::XE_CollectStoa patron stoa-costs)
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3 ico4 ico5] [swpair token-lp])
             )
         )

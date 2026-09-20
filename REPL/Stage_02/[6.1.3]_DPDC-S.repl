@@ -1208,7 +1208,7 @@
             (print "--- [TX-SET-012 · 04 · non-vacuity: the rightful owner succeeds] ---")
             ;;Byte-identical to the GATE line above; only the signature and the patron change.
             (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-            ;;The return value is deliberately NOT pinned: this wrapper hands back IGNIS::C_Collect's
+            ;;The return value is deliberately NOT pinned: this wrapper hands back IGNIS::XE_CollectIgnis's
             ;;raw "Write succeeded" rather than the `format` sentence CLAUDE.md requires of a Talos
             ;;`C_*`. That is a reportable deviation, and pinning it would make its repair red.
             ;;The STATE change is the assertion.
@@ -1375,7 +1375,7 @@
     ;;==== TX-SET-013 · 05 · non-vacuity: the rightful owner succeeds ====
     (print "--- [TX-SET-013 · 05 · non-vacuity: the rightful owner succeeds] ---")
     ;;Byte-identical to the GATE line in group 03; only the signature and the patron change. The
-    ;;return value is NOT pinned -- this wrapper hands back IGNIS::C_Collect's raw "Write succeeded"
+    ;;return value is NOT pinned -- this wrapper hands back IGNIS::XE_CollectIgnis's raw "Write succeeded"
     ;;instead of a `format` sentence, and pinning that would make its repair red. The FLAG is the
     ;;assertion.
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])

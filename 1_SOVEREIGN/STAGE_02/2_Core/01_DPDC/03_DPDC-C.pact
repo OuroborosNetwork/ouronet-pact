@@ -611,28 +611,32 @@
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     ;;T3x20
-    ;;Protection: Class 5 — IMC + Custom: DPSF|C>CREDIT-FRAGMENT-NONCE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          DPSF|C>CREDIT-FRAGMENT-NONCE
     (defun XE_CreditSFT-FragmentNonce (account:string id:string nonce:integer amount:integer)
         (P|UEV_IMC)
         (with-capability (DPSF|C>CREDIT-FRAGMENT-NONCE id nonce)
             (XI_CreditSFT account id [nonce] [amount])
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: DPNF|C>CREDIT-FRAGMENT-NONCE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          DPNF|C>CREDIT-FRAGMENT-NONCE
     (defun XE_CreditNFT-FragmentNonce (account:string id:string nonce:integer amount:integer)
         (P|UEV_IMC)
         (with-capability (DPNF|C>CREDIT-FRAGMENT-NONCE id nonce amount)
             (XI_CreditNFT account id [nonce] [amount])
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: DPSF|C>DEBIT-FRAGMENT-NONCE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          DPSF|C>DEBIT-FRAGMENT-NONCE
     (defun XE_DebitSFT-FragmentNonce (account:string id:string nonce:integer amount:integer wipe-mode:bool)
         (P|UEV_IMC)
         (with-capability (DPSF|C>DEBIT-FRAGMENT-NONCE account id nonce amount wipe-mode)
             (XI_DebitSFT account id [nonce] [amount] wipe-mode)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: DPNF|C>DEBIT-FRAGMENT-NONCE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          DPNF|C>DEBIT-FRAGMENT-NONCE
     (defun XE_DebitNFT-FragmentNonce (account:string id:string nonce:integer amount:integer wipe-mode:bool)
         (P|UEV_IMC)
         (with-capability (DPNF|C>DEBIT-FRAGMENT-NONCE account id nonce amount wipe-mode)
@@ -640,28 +644,32 @@
         )
     )
     ;;
-    ;;Protection: Class 5 — IMC + Custom: DPSF|C>CREDIT-NONCE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          DPSF|C>CREDIT-NONCE
     (defun XB_CreditSFT-Nonce (account:string id:string nonce:integer amount:integer)
         (P|UEV_IMC)
         (with-capability (DPSF|C>CREDIT-NONCE id nonce)
             (XI_CreditSFT account id [nonce] [amount])
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: DPNF|C>CREDIT-NONCE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          DPNF|C>CREDIT-NONCE
     (defun XB_CreditNFT-Nonce (account:string id:string nonce:integer amount:integer)
         (P|UEV_IMC)
         (with-capability (DPNF|C>CREDIT-NONCE id nonce amount)
             (XI_CreditNFT account id [nonce] [amount])
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: DPSF|C>DEBIT-NONCE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          DPSF|C>DEBIT-NONCE
     (defun XE_DebitSFT-Nonce (account:string id:string nonce:integer amount:integer wipe-mode:bool)
         (P|UEV_IMC)
         (with-capability (DPSF|C>DEBIT-NONCE account id nonce amount wipe-mode)
             (XI_DebitSFT account id [nonce] [amount] wipe-mode)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: DPNF|C>DEBIT-NONCE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          DPNF|C>DEBIT-NONCE
     (defun XE_DebitNFT-Nonce (account:string id:string nonce:integer amount:integer wipe-mode:bool)
         (P|UEV_IMC)
         (with-capability (DPNF|C>DEBIT-NONCE account id nonce amount wipe-mode)
@@ -669,28 +677,32 @@
         )
     )
     ;;
-    ;;Protection: Class 5 — IMC + Custom: DPSF|C>CREDIT-FRAGMENT-NONCES
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          DPSF|C>CREDIT-FRAGMENT-NONCES
     (defun XE_CreditSFT-FragmentNonces (account:string id:string nonces:[integer] amounts:[integer])
         (P|UEV_IMC)
         (with-capability (DPSF|C>CREDIT-FRAGMENT-NONCES id nonces amounts)
             (XI_CreditSFT account id nonces amounts)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: DPNF|C>CREDIT-FRAGMENT-NONCES
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          DPNF|C>CREDIT-FRAGMENT-NONCES
     (defun XE_CreditNFT-FragmentNonces (account:string id:string nonces:[integer] amounts:[integer])
         (P|UEV_IMC)
         (with-capability (DPNF|C>CREDIT-FRAGMENT-NONCES id nonces amounts)
             (XI_CreditNFT account id nonces amounts)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: DPSF|C>DEBIT-FRAGMENT-NONCES
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          DPSF|C>DEBIT-FRAGMENT-NONCES
     (defun XE_DebitSFT-FragmentNonces (account:string id:string nonces:[integer] amounts:[integer] wipe-mode:bool)
         (P|UEV_IMC)
         (with-capability (DPSF|C>DEBIT-FRAGMENT-NONCES account id nonces amounts wipe-mode)
             (XI_DebitSFT account id nonces amounts wipe-mode)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: DPNF|C>DEBIT-FRAGMENT-NONCES
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          DPNF|C>DEBIT-FRAGMENT-NONCES
     (defun XE_DebitNFT-FragmentNonces (account:string id:string nonces:[integer] amounts:[integer] wipe-mode:bool)
         (P|UEV_IMC)
         (with-capability (DPNF|C>DEBIT-FRAGMENT-NONCES account id nonces amounts wipe-mode)
@@ -698,28 +710,32 @@
         )
     )
     ;;
-    ;;Protection: Class 5 — IMC + Custom: DPSF|C>CREDIT-NONCES
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          DPSF|C>CREDIT-NONCES
     (defun XB_CreditSFT-Nonces (account:string id:string nonces:[integer] amounts:[integer])
         (P|UEV_IMC)
         (with-capability (DPSF|C>CREDIT-NONCES id nonces amounts)
             (XI_CreditSFT account id nonces amounts)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: DPNF|C>CREDIT-NONCES
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          DPNF|C>CREDIT-NONCES
     (defun XB_CreditNFT-Nonces (account:string id:string nonces:[integer] amounts:[integer])
         (P|UEV_IMC)
         (with-capability (DPNF|C>CREDIT-NONCES id nonces amounts)
             (XI_CreditNFT account id nonces amounts)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: DPSF|C>DEBIT-NONCES
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          DPSF|C>DEBIT-NONCES
     (defun XE_DebitSFT-Nonces (account:string id:string nonces:[integer] amounts:[integer] wipe-mode:bool)
         (P|UEV_IMC)
         (with-capability (DPSF|C>DEBIT-NONCES account id nonces amounts wipe-mode)
             (XI_DebitSFT account id nonces amounts wipe-mode)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: DPNF|C>DEBIT-NONCES
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          DPNF|C>DEBIT-NONCES
     (defun XE_DebitNFT-Nonces (account:string id:string nonces:[integer] amounts:[integer] wipe-mode:bool)
         (P|UEV_IMC)
         (with-capability (DPNF|C>DEBIT-NONCES account id nonces amounts wipe-mode)
@@ -727,28 +743,32 @@
         )
     )
     ;;
-    ;;Protection: Class 5 — IMC + Custom: DPSF|C>CREDIT-HYBRID-NONCES
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          DPSF|C>CREDIT-HYBRID-NONCES
     (defun XE_CreditSFT-HybridNonces (account:string id:string nonces:[integer] amounts:[integer])
         (P|UEV_IMC)
         (with-capability (DPSF|C>CREDIT-HYBRID-NONCES id nonces amounts)
             (XI_CreditSFT account id nonces amounts)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: DPNF|C>CREDIT-HYBRID-NONCES
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          DPNF|C>CREDIT-HYBRID-NONCES
     (defun XE_CreditNFT-HybridNonces (account:string id:string nonces:[integer] amounts:[integer])
         (P|UEV_IMC)
         (with-capability (DPNF|C>CREDIT-HYBRID-NONCES id nonces amounts)
             (XI_CreditNFT account id nonces amounts)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: DPSF|C>DEBIT-HYBRID-NONCES
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          DPSF|C>DEBIT-HYBRID-NONCES
     (defun XE_DebitSFT-HybridNonces (account:string id:string nonces:[integer] amounts:[integer])
         (P|UEV_IMC)
         (with-capability (DPSF|C>DEBIT-HYBRID-NONCES account id nonces amounts)
             (XI_DebitSFT account id nonces amounts false)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: DPNF|C>DEBIT-HYBRID-NONCES
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          DPNF|C>DEBIT-HYBRID-NONCES
     (defun XE_DebitNFT-HybridNonces (account:string id:string nonces:[integer] amounts:[integer])
         (P|UEV_IMC)
         (with-capability (DPNF|C>DEBIT-HYBRID-NONCES account id nonces amounts)

@@ -62,9 +62,11 @@
       "UNBILLED MINT WENT THROUGH"))
   (defun read-supply:decimal (id:string account:string)
     (ouronet-ns.DPTF.UR_AccountSupply id account))
-  ;;the ONE sovereign client entrypoint that carries no P|UEV_IMC -- see <<RT-G-002>>
-  (defun call-fuel (sender:string receiver:string amount:decimal)
-    (ouronet-ns.IGNIS.C_TransferDalosFuel sender receiver amount))
+  ;;the STOA-moving primitive. UPDATED 2026-09-20: this used to be `IGNIS::C_TransferDalosFuel`,
+  ;;the one sovereign client entrypoint of 290 that carried no `P|UEV_IMC`. The IGNIS restructure
+  ;;renamed it `XB_MoveDalosFuel` and put it behind the gate -- see <<RT-G-002>>.
+  (defun call-fuel (executor:string executee:string amount:decimal)
+    (ouronet-ns.IGNIS.XB_MoveDalosFuel executor executee amount))
 )
 (commit-tx)
 
@@ -91,11 +93,12 @@
 ;;Registration itself is closed too: `DALOS::P|A_AddIMP` requires `GOV|DALOS_ADMIN`, so an attacker
 ;;cannot add their own guard to the list.
 ;;
-;;A WHOLE-SURFACE SCAN BACKS THIS UP rather than leaving it at two samples. Of the 290 `C_`/`CC_`
-;;implementations across the sovereign core, 289 carry `P|UEV_IMC`. The single exception is
-;;`IGNIS::C_TransferDalosFuel`, and it is safe by DELEGATION rather than by a gate: its body is a
-;;`coin::transfer`, and Stoa's coin requires the SENDER's own managed TRANSFER capability. That is
-;;attacked separately at <<RT-G-002>> rather than taken on trust.
+;;A WHOLE-SURFACE SCAN BACKS THIS UP rather than leaving it at two samples. Every `C_`/`CC_`
+;;implementation across the sovereign core carries `P|UEV_IMC`. UPDATED 2026-09-20: this used to
+;;read "289 of 290", with `IGNIS::C_TransferDalosFuel` as the single exception -- safe by
+;;DELEGATION to Stoa's coin rather than by a gate. The IGNIS restructure removed the exception:
+;;that function is now `XB_MoveDalosFuel`, a gated `XB_`, so the surface has no hole to argue
+;;about. <<RT-G-002>> is kept, and now proves BOTH layers instead of relying on the lower one.
 ;;==== RT-G-001b - the adversary attacks the sovereign core · 01 · env-sigs (caps) ==== ===========
 (print "--- [RT-G-001b - the adversary attacks the sovereign core · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] } { "key": "PK_AncientHodler", "caps": [] }])
@@ -145,45 +148,53 @@
 
 ;;|| NEXT >
 ;;
-(begin-tx "RT-G-002 - drain the gas station through the one ungated entrypoint")
+(begin-tx "RT-G-002 - drain the gas station through the STOA-moving primitive")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 ;;==== RT-G-002 · 01 · no capability installed ====
 (print "--- [RT-G-002 · 01 · no capability installed] ---")
 ;;<<RT-G-002>> FAMILY: G | STATUS: REFUSED
-;;HYPOTHESIS: `IGNIS::C_TransferDalosFuel` is the ONE sovereign client entrypoint of 290 with no
-;;            `P|UEV_IMC`. Its body is a bare `coin::transfer sender receiver amount` with the
-;;            sender taken straight from the argument. If the coin layer can be satisfied, a
-;;            foreign module can move native STOA out of any account it names -- including the
-;;            Ouronet gas station, which would stop the chain paying for anything.
-;;METHOD:     three escalating attempts from the hostile module, each pushing one layer further:
-;;            (1) call it cold; (2) SIGN AND INSTALL the coin.TRANSFER capability for an account
-;;            the attacker does not own, and drain the gas station; (3) the same against an
-;;            ordinary user's account. Messages checked at every step.
-;;RESULT:     refused three times, and the second refusal is the one that matters -- see below.
+;;HYPOTHESIS: `IGNIS::XB_MoveDalosFuel` is the primitive every STOA-collection path funnels
+;;            through. Its body is a bare `coin::transfer executor executee amount` with the
+;;            sender taken straight from the argument. If it can be reached and the coin layer
+;;            satisfied, a foreign module moves native STOA out of any account it names --
+;;            including the Ouronet gas station, which would stop the chain paying for anything.
+;;METHOD:     push through BOTH layers in turn. (1) call it from the hostile module, which is
+;;            where a real adversary stands; then, to prove the lower layer independently rather
+;;            than leave it shadowed, (2) drop to the coin contract DIRECTLY -- signing and
+;;            installing `coin.TRANSFER` for an account the attacker does not own -- and (3) the
+;;            same against an ordinary user's account. Messages checked at every step.
+;;RESULT:     refused at every step, by two INDEPENDENT layers, either of which suffices.
 ;;
-;;WHY THIS ENTRYPOINT HAS NO GATE, and why that is defensible. It is a PRIMITIVE: every
-;;`STOA|C_Collect*` path funnels through it, so gating it with `P|UEV_IMC` would gate the collector
-;;against itself. CLAUDE.md classes it with the `STOA|C_Collect*` family for exactly this reason.
-;;Its authorisation is DELEGATED one layer down to Stoa's coin contract instead of being restated.
+;;THIS ENTRYPOINT USED TO HAVE NO GATE, and the argument for that was reasonable: it is a
+;;PRIMITIVE, every `XE_CollectStoa*` path funnels through it, and gating it looked like gating the
+;;collector against itself. The IGNIS restructure of 2026-09-20 showed that was a false choice --
+;;the collectors compose `P|MOD|CALLER` on the way in, so the primitive can carry `P|UEV_IMC` and
+;;still be reachable by the code that legitimately needs it. Attempt (1) is now refused there,
+;;before the coin layer is ever consulted.
 ;;
-;;THE LAYER THAT ACTUALLY HOLDS, and it is not the one people assume. Attempt (1) fails on
-;;`Managed capability not installed`, which sounds like the defence but is not: an attacker simply
-;;installs it, and attempt (2) does. What stops (2) is that the gas station's STOA account is a
-;;`c:` PRINCIPAL whose guard is `(create-capability-guard (DALOS|NATIVE-AUTOMATIC))`, and
-;;`coin.pact:144`'s `(enforce-guard (UR_Guard sender))` therefore demands a CAPABILITY, not a
-;;signature. No key can satisfy it; only DALOS's own code bringing that capability into scope can.
+;;WHICH IS EXACTLY WHY ATTEMPTS (2) AND (3) NO LONGER GO THROUGH THE HOSTILE MODULE. A guard that
+;;runs first hides every guard behind it, and a hidden guard is indistinguishable from a deleted
+;;one -- CLAUDE.md's shadowing ruling. Routing the lower-layer attack straight at `coin.transfer`
+;;keeps the sovereign-account property under test instead of accidentally retiring it.
+;;
+;;THE LOWER LAYER, ON ITS OWN. `Managed capability not installed` sounds like a defence and is
+;;not: an attacker simply installs it, and attempt (2) does. What stops (2) is that the gas
+;;station's STOA account is a `c:` PRINCIPAL whose guard is
+;;`(create-capability-guard (DALOS|NATIVE-AUTOMATIC))`, and `coin.pact:144`'s
+;;`(enforce-guard (UR_Guard sender))` therefore demands a CAPABILITY, not a signature. No key can
+;;satisfy it; only DALOS's own code bringing that capability into scope can.
 ;;
 ;;    Capability not acquired: CapabilityGuard {name: ouronet-ns.DALOS.DALOS|NATIVE-AUTOMATIC ...}
 ;;
 ;;That is the property worth publishing: the sovereign smart accounts are not protected by secrecy
 ;;or by a signature that could leak, but by a guard that is unsatisfiable from outside the module.
 ;;An attacker holding EVERY private key in the system still cannot move the gas station's funds.
-;;==== RT-G-002 - drain the gas station through the one ungated entrypoint · 01 · env-sigs (caps) ==== 
-(print "--- [RT-G-002 - drain the gas station through the one ungated entrypoint · 01 · env-sigs (caps)] ---")
+;;==== RT-G-002 - drain the gas station through the STOA-moving primitive · 01 · env-sigs (caps) ==== 
+(print "--- [RT-G-002 - drain the gas station through the STOA-moving primitive · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
-;;==== RT-G-002 - drain the gas station through the one ungated entrypoint · 02 · let / invocation ==== 
-(print "--- [RT-G-002 - drain the gas station through the one ungated entrypoint · 02 · let / invocation] ---")
+;;==== RT-G-002 - drain the gas station through the STOA-moving primitive · 02 · let / invocation ==== 
+(print "--- [RT-G-002 - drain the gas station through the STOA-moving primitive · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -207,9 +218,11 @@
                     "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" attacker-stoa)
                 (expect "<<RT-G-002>> ...and the station is holding real funds worth stealing"
                     true (> (coin.get-balance gas-stoa) 0.0))
-                ;;ATTEMPT 1 -- cold. Refused, but NOT by the defence that matters.
-                (expect-failure "<<RT-G-002>> cold call refused: no managed capability installed"
-                    "Managed capability not installed"
+                ;;ATTEMPT 1 -- from where a real adversary stands. Refused by `P|UEV_IMC`,
+                ;;which is the gate this primitive gained on 2026-09-20; the hostile module
+                ;;cannot acquire any sovereign module's capability, so it can never pass.
+                (expect-failure "<<RT-G-002>> a foreign module is refused by P|UEV_IMC, before the coin layer"
+                    "None of the guards passed"
                     (user.HOSTILE.call-fuel gas-stoa attacker-stoa 1.0))
             ]
         )
@@ -251,17 +264,21 @@
             )
             (map print
                 [
-                    ;;ATTEMPT 2 -- THE REAL ONE. The managed capability is installed, so the failure
-                    ;;this time is the guard itself, and it is a CAPABILITY guard: unsatisfiable by
-                    ;;any signature, from any key, forever.
+                    ;;ATTEMPT 2 -- THE SECOND LAYER, ON ITS OWN. Aimed DIRECTLY at `coin.transfer`
+                    ;;rather than through the hostile module, because `P|UEV_IMC` now answers first
+                    ;;and would hide this. That is not a weaker attack: it is a STRONGER position
+                    ;;for the adversary -- no sovereign module in the path at all, the managed
+                    ;;capability installed, and the raw coin contract asked to move the funds. The
+                    ;;failure is therefore the guard itself, and it is a CAPABILITY guard:
+                    ;;unsatisfiable by any signature, from any key, forever.
                     (expect-failure "<<RT-G-002>> ATTACK REFUSED: the station's guard is a CAPABILITY, not a keyset"
                         "Capability not acquired: CapabilityGuard"
-                        (user.HOSTILE.call-fuel gas-stoa attacker-stoa 1.0))
+                        (coin.transfer gas-stoa attacker-stoa 1.0))
                     ;;...and the refusal names DALOS's own capability, so it is the sovereign guard
                     ;;that answered and not some unrelated one.
                     (expect-failure "<<RT-G-002>> ...and it is DALOS|NATIVE-AUTOMATIC that refuses"
                         "DALOS|NATIVE-AUTOMATIC"
-                        (user.HOSTILE.call-fuel gas-stoa attacker-stoa 1.0))
+                        (coin.transfer gas-stoa attacker-stoa 1.0))
                     ;;...and not one STOA left the station.
                     (expect "<<RT-G-002>> ...and the gas station's balance is untouched"
                         before (coin.get-balance gas-stoa))

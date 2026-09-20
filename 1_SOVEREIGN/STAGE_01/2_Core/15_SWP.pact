@@ -335,6 +335,7 @@
                 (ref-P|LIQUID:module{OuronetPolicyV2} LIQUID)
                 (ref-P|ORBR:module{OuronetPolicyV2} OUROBOROS)
                 (ref-P|SWPT:module{OuronetPolicyV2} SWPT)
+                (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
                 (mg:guard (create-capability-guard (P|SWP|CALLER)))
             )
             (ref-P|DALOS::P|A_AddIMP mg)
@@ -348,6 +349,7 @@
             (ref-P|LIQUID::P|A_AddIMP mg)
             (ref-P|ORBR::P|A_AddIMP mg)
             (ref-P|SWPT::P|A_AddIMP mg)
+            (ref-P|IGNIS::P|A_AddIMP mg)
         )
     )
 
@@ -1340,7 +1342,7 @@
     (defun URCi_ToggleFeeLockStoa:decimal (swpair:string toggle:bool)
         @doc "STOA leg of a fee-lock toggle: locking is free, unlocking costs the fee-unlock \
             \ price. Read-only twin of the <XI_ToggleFeeLock> return that <C_ToggleFeeLock> \
-            \ hands to <STOA|C_Collect>, so the INFO_ preview and the charge move as one. \
+            \ hands to <XE_CollectStoa>, so the INFO_ preview and the charge move as one. \
             \ Mirrors DPTF's <URCi_ToggleFeeLockStoa>."
         (let
             (
@@ -1639,7 +1641,8 @@
     )
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
-    ;;Protection: Class 5 — IMC + Custom: SWP|S>WEIGHTS
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          SWP|S>WEIGHTS
     (defun XB_ModifyWeights (swpair:string new-weights:[decimal])
         (P|UEV_IMC)
         (with-capability (SWP|S>WEIGHTS swpair new-weights)
@@ -1649,7 +1652,8 @@
         )
     )
     ;;
-    ;;Protection: Class 5 — IMC + Custom: SWP|S>UPDATE-SUPPLIES
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          SWP|S>UPDATE-SUPPLIES
     (defun XE_UpdateSupplies (swpair:string new-supplies:[decimal])
         (P|UEV_IMC)
         (with-capability (SWP|S>UPDATE-SUPPLIES swpair new-supplies)
@@ -1666,7 +1670,7 @@
             )
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: SWP|S>UPDATE-SUPPLY
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_UpdateSupply (swpair:string id:string new-supply:decimal)
         (P|UEV_IMC)
         (let
@@ -1692,7 +1696,7 @@
             {"stoa-value" : new-stoa-value}
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: P|SECURE-CALLER
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_Issue:string (account:string pool-tokens:[object{SwapperV4.PoolTokens}] token-lp:string fee-lp:decimal weights:[decimal] amp:decimal p:bool)
         @doc "Forward writer: inserts the new SWP|Pairs row, registers the LP tracker \
             \ (C9 fix), saves the pool, and deploys token accounts. \
@@ -2075,7 +2079,7 @@
             (with-capability (SWP|C>UPGRADE-BRD entity-id)
                 (ref-BRD::XE_UpgradeBranding entity-id owner months)
             )
-            (ref-IGNIS::STOA|C_CollectWT patron (URCi_UpgradeBranding months) false)
+            (ref-IGNIS::XB_CollectStoaWithTrigger patron (URCi_UpgradeBranding months) false)
         )
     )
     ;;
@@ -2256,7 +2260,7 @@
                 (if (> stoa-costs 0.0)
                     (do
                         (XI_IncrementFeeUnlocks swpair)
-                        (ref-IGNIS::STOA|C_Collect patron stoa-costs)
+                        (ref-IGNIS::XE_CollectStoa patron stoa-costs)
                     )
                     true
                 )

@@ -272,6 +272,61 @@ are applied.
 
 ---
 
+## 2.15 WHAT "PROTECTED" MEANS (owner ruling, 2026-09-20)
+
+**Protection means LOCKING OUT.** A function is protected when something must have been *granted
+above it* for it to run at all. Everything else is validation, and validation is not protection.
+
+| form | what it does | protection? |
+|---|---|---|
+| `(require-capability (C))` | refuses unless a caller already granted `C` | **YES** — this is the only shape that locks out |
+| `(P\|UEV_IMC)` | enforces the tx satisfies a registered inter-module guard | **YES** — an enforce that refuses |
+| `(with-capability (C) …)` | ACQUIRES `C`, running its body as validation | **no** — nobody is turned away |
+| `(with-capability (SECURE) …)` | acquires a capability whose body is literally `true` | **no, and not even validation** |
+
+`SECURE` is `(defcap SECURE () true)` in every module. Verified 2026-09-20 across IGNIS, DALOS,
+TFT and DPTF. Acquiring it asserts nothing.
+
+### The five protection classes, stated precisely (owner refinement, 2026-09-20)
+
+| class | shape |
+|---|---|
+| 1 | **innate** — protected by something it composes; the annotation NAMES the one-hop protectors |
+| 2 | **SECURE** — `require-capability (SECURE)`. *Not* the `with-capability` form |
+| 3 | **custom** — a purpose-built `require-capability` |
+| 4 | **IMC** — `P\|UEV_IMC`, and that is the whole lock |
+| 5 | **IMC + custom** — `P\|UEV_IMC` followed **DIRECTLY** by `(with-capability (CAP) …)` wrapping the body, where `CAP` is **not** a trivial `true` capability |
+
+**"Directly" is structural, not textual.** The `with-capability` must be the next form. One reached
+through a `let`, an `if`, or any other wrapper is not the function's gate — it is something the
+function *does* once the gate has already let it in.
+
+`XE_CollectIgnis` is the worked example. It is `(P|UEV_IMC)` then a `(let …)`, and its capabilities
+sit inside nested `if` branches that **may not run at all**. It was annotated Class 5 naming three
+of them; it is **Class 4**, and the IMC is its entire lock. Describing a conditional as a gate is
+the same error as describing an acquisition as a lock.
+
+**Applying the precise definition reclassified 50 functions** from Class 5 to Class 4 — from
+157/60 to 107/110. None of them lost protection; they never had the second lock the annotation
+claimed.
+
+### Why this matters more than it sounds
+
+A `with-capability (SOME_CAP)` *does* run that capability's logic, so it can be doing real
+validation work. The error is calling it protection: the caller was never refused entry, it just
+had its arguments checked on the way past. Write it down as validation and the next reader knows
+which question it answers.
+
+**Consequence for the `;;Protection:` annotations.** A Class 5 line reading
+*"IMC + Custom: IGNIS|C>COLLECT, IGNIS|C>DC"* overstates: the IMC is the gate, and those two are
+acquired *after* it has already passed. They are part of the function's behaviour, not its lock.
+The annotation is generated, so the wording is fixed in `_xprotect.py` rather than by hand.
+
+**Measured, so the scale is known rather than feared:** 141 `X_`/`W_` functions use
+`require-capability (SECURE)` — a genuine lock. 40 use the `with-capability` form, and **every one
+of those also carries an IMC gate or another `require-capability`**. The number relying *solely*
+on the no-op form is **0**. The codebase was sound; the vocabulary was not.
+
 ## 2.2 THE PATRON / EXECUTOR / EXECUTEE CANON (owner ruling, 2026-09-20)
 
 **Every `A_`, `AA_`, `C_` and `CC_` function takes `patron:string executor:string` as its first

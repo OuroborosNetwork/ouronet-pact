@@ -982,11 +982,13 @@ MODULE_DOC = {
         "deleting it is not a prefix decision. Reported, not counted.",
     "self-C-call":
         "`C_*` — **Cannot be invoked from its own module**; clients reach it via Talos. "
-        "(CLAUDE.md) — CROSS-CHECKED: every sovereign hit targets `C_DeployAccount` or "
-        "`C_TransferDalosFuel`, and BOTH are cumulator-free (see C-without-cumulator). So the "
-        "true, sharper statement is: **no BILLING client `C_` is ever invoked from inside its "
-        "own module.** The rule holds where it matters; these two carry the `C_` prefix without "
-        "the `C_` contract.",
+        "(CLAUDE.md) — CROSS-CHECKED: every sovereign hit targets `C_DeployAccount`, which is "
+        "cumulator-free (see C-without-cumulator). So the true, sharper statement is: **no "
+        "BILLING client `C_` is ever invoked from inside its own module.** The rule holds where "
+        "it matters; that one carries the `C_` prefix without the `C_` contract. NARROWED "
+        "2026-09-20: this used to name `IGNIS::C_TransferDalosFuel` too. The IGNIS restructure "
+        "reclassified it as `XB_MoveDalosFuel` — it was never a client function, and giving it "
+        "the right prefix removed the exception rather than excusing it.",
     "self-C-call-citizen":
         "RESOLVED 2026-09-13 — OBSERVATION, not a violation, and the reason is that THE DIRECTION "
         "IS INVERTED relative to the sovereign rule. CLAUDE.md blocks a sovereign `C_` from "
@@ -1022,8 +1024,9 @@ MODULE_DOC = {
         "MTX-SWP pool/liquidity ops); "
         "(F) NESTED-TALOS — the core calls another Talos client (`TS01-C1::DPTF|C_Transfer patron`) "
         "which collects (all 3 DEMIPAD transmit/withdraw); plus "
-        "(G) PRIMITIVE — `IGNIS::C_TransferDalosFuel` and the `STOA|C_Collect*` family ARE the "
-        "collectors and cannot collect from themselves. "
+        "(G) PRIMITIVE — the IGNIS collectors (`XB_MoveDalosFuel`, `XB_Collect*`, `XE_Collect*`) "
+        "ARE the collectors and cannot collect from themselves. Reclassified out of the `C_` band "
+        "entirely on 2026-09-20, so this shape no longer produces sovereign hits. "
         "ONE genuinely unbilled op was found and RULED NOT A DEFECT: `TS01-C4::PYTHIA|C_Link` takes "
         "no `patron` and collects nothing, while its three siblings all charge. It is deliberate "
         "(both @docs say \"(no fee)\") and, more to the point, economically bounded: linking needs "
@@ -1062,9 +1065,9 @@ DEAD_MODULES = {
 # something changed, whereas a predicate notices WHAT changed and re-opens on the right grounds.
 ACCEPTED_BY_TARGET = {
     "self-C-call": (
-        {"C_DeployAccount", "C_TransferDalosFuel"},
-        "cross-checked, not asserted: every sovereign hit targets one of these two, and BOTH are "
-        "cumulator-free (they appear in C-without-cumulator). So the sharper TRUE statement is "
+        {"C_DeployAccount"},
+        "cross-checked, not asserted: every sovereign hit targets this one, and it is "
+        "cumulator-free (it appears in C-without-cumulator). So the sharper TRUE statement is "
         "'no BILLING client C_ is ever invoked from inside its own module' -- the rule holds "
         "where it matters, and these two carry the C_ prefix without the C_ contract. The "
         "acceptance is bound to that CUMULATOR-FREE fact and is re-verified below every run: if "

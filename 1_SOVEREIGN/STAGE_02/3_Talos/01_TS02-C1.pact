@@ -326,6 +326,7 @@
                 (ref-P|DPDC-S:module{OuronetPolicyV2} DPDC-S)
                 (ref-P|DPDC-N:module{OuronetPolicyV2} DPDC-N)
                 (ref-P|EQUITY:module{OuronetPolicyV2} EQUITY)
+                (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
                 (mg:guard (create-capability-guard (P|TALOS-SUMMONER)))
             )
             (ref-P|TS01-A::P|A_AddIMP mg)
@@ -339,6 +340,7 @@
             (ref-P|DPDC-S::P|A_AddIMP mg)
             (ref-P|DPDC-N::P|A_AddIMP mg)
             (ref-P|EQUITY::P|A_AddIMP mg)
+            (ref-P|IGNIS::P|A_AddIMP mg)
         )
     )
 
@@ -402,7 +404,7 @@
                     (s:decimal (fold (+) 0.0 r))
                     (l:integer (length c))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-T::C_Transfer ids sons sender receiver nonces-array amounts-array method)
                 )
                 [
@@ -423,7 +425,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC:module{DpdcV2} DPDC)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC::C_UpdatePendingBranding entity-id true logo description website social)
                 )
             )
@@ -471,7 +473,7 @@
                         )
                     )
                 )
-                (ref-IGNIS::C_Collect patron ico)
+                (ref-IGNIS::XE_CollectIgnis patron ico)
                 (format "Created {} Clas 0 SemiFungible(s) within the {} DPSF Collection"
                     [(at "output" ico) id]
                 )
@@ -507,7 +509,7 @@
                         )
                     )
                 )
-                (ref-IGNIS::C_Collect patron ico)
+                (ref-IGNIS::XE_CollectIgnis patron ico)
                 (ref-TS01-A::XB_DynamicFuelSTOA)
                 (at 0 (at "output" ico))
             )
@@ -524,7 +526,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-R::C_ToggleAddQuantityRole id account toggle)
                 )
             )
@@ -538,7 +540,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-R::C_ToggleFreezeAccount id true account toggle)
                 )
             )
@@ -553,7 +555,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-R::C_ToggleExemptionRole id true account toggle)
                 )
             )
@@ -568,7 +570,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-R::C_ToggleBurnRole id true account toggle)
                 )
             )
@@ -583,7 +585,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-R::C_ToggleUpdateRole id true account toggle)
                 )
             )
@@ -598,7 +600,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-R::C_ToggleModifyCreatorRole id true account toggle)
                 )
             )
@@ -613,7 +615,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-R::C_ToggleModifyRoyaltiesRole id true account toggle)
                 )
             )
@@ -628,7 +630,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-R::C_ToggleTransferRole id true account toggle)
                 )
             )
@@ -643,7 +645,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-R::C_MoveCreateRole id true new-account)
                 )
             )
@@ -659,7 +661,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-R::C_MoveRecreateRole id true new-account)
                 )
             )
@@ -674,7 +676,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-R::C_MoveSetUriRole id true new-account)
                 )
             )
@@ -691,7 +693,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-MNG::C_Control id true cu cco ccc casr ctncr cf cw cp)
                 )
             )
@@ -705,7 +707,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-MNG::C_TogglePause id true toggle)
                 )
             )
@@ -719,7 +721,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-MNG::C_AddQuantity account id nonce amount)
                 )
                 (format "Successfully added {} Units for SFT {} Nonce {} on Account {}" [amount id nonce (UC_ShortAccount account)])
@@ -734,7 +736,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-MNG::C_BurnSFT account id nonce amount)
                 )
                 (format "Successfully burned {} Units for SFT {} Nonce {} on Account {}" [amount id nonce (UC_ShortAccount account)])
@@ -749,7 +751,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-MNG::C_WipeSlim account id nonce amount)
                 )
                 (format "Successfully wiped {} Units for SFT {} Nonce {} from Account {}" [amount id nonce (UC_ShortAccount account)])
@@ -764,7 +766,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-MNG::C_WipeNonce account id true nonce)
                 )
                 (format "Successfully wiped SFT {} Nonce {} from Account {}" [id nonce (UC_ShortAccount account)])
@@ -783,7 +785,7 @@
                     (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
                     (total-nonces-supplies:integer (fold (+) 0 (at "r-amounts" (at 0 (at "output" ico)))))
                 )
-                (ref-IGNIS::C_Collect patron ico)
+                (ref-IGNIS::XE_CollectIgnis patron ico)
                 (format 
                     "Successfully executed Heavy Wipe of SFT {} on Account {}, wiping {} Nonces With a Total Supply of {}" 
                     [id (UC_ShortAccount account) no-of-nonces total-nonces-supplies]
@@ -803,7 +805,7 @@
                     (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
                     (total-nonces-supplies:integer (fold (+) 0 (at "r-amounts" (at 0 (at "output" ico)))))
                 )
-                (ref-IGNIS::C_Collect patron ico)
+                (ref-IGNIS::XE_CollectIgnis patron ico)
                 (format 
                     "Successfully executed Pure Wipe of SFT {} on Account {}, wiping {} Nonces With a Total Supply of {}" 
                     [id (UC_ShortAccount account) no-of-nonces total-nonces-supplies]
@@ -823,7 +825,7 @@
                     (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
                     (total-nonces-supplies:integer (fold (+) 0 (at "r-amounts" (at 0 (at "output" ico)))))
                 )
-                (ref-IGNIS::C_Collect patron ico)
+                (ref-IGNIS::XE_CollectIgnis patron ico)
                 (format 
                     "Successfully executed Clean Wipe of SFT {} on Account {}, wiping {} Nonces With a Total Supply of {}" 
                     [id (UC_ShortAccount account) no-of-nonces total-nonces-supplies]
@@ -843,7 +845,7 @@
                     (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
                     (total-nonces-supplies:integer (fold (+) 0 (at "r-amounts" (at 0 (at "output" ico)))))
                 )
-                (ref-IGNIS::C_Collect patron ico)
+                (ref-IGNIS::XE_CollectIgnis patron ico)
                 (format
                     "Successfully executed Dirty Wipe of SFT {} on Account {}, wiping {} Nonces With a Total Supply of {}"
                     [id (UC_ShortAccount account) no-of-nonces total-nonces-supplies]
@@ -867,7 +869,7 @@
                     (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
                     (total-nonces-supplies:integer (fold (+) 0 (at "r-amounts" (at 0 (at "output" ico)))))
                 )
-                (ref-IGNIS::C_Collect patron ico)
+                (ref-IGNIS::XE_CollectIgnis patron ico)
                 (format
                     "Successfully executed Hydra Wipe Slice of SFT {} on Account {}, wiping {} Nonces With a Total Supply of {}"
                     [id (UC_ShortAccount account) no-of-nonces total-nonces-supplies]
@@ -889,7 +891,7 @@
                     (sf:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-from))
                     (st:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-T::C_RepurposeCollectable id true repurpose-from repurpose-to nonces amounts)
                 )
                 (format "Successfully repurposed SFT {} Nonces {} with Amounts {} from {} to {}" [id nonces amounts sf st])
@@ -913,7 +915,7 @@
                     (r:[decimal] (at "ignis-royalties" irs))
                     (s:decimal (fold (+) 0.0 r))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-T::C_Transfer [id] [true] sender receiver [[nonce]] [[amount]] method)
                 )
                 [
@@ -944,7 +946,7 @@
                     (r:[decimal] (at "ignis-royalties" irs))
                     (s:decimal (fold (+) 0.0 r))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-T::C_Transfer [id] [true] sender receiver [nonces] [amounts] method)
                 )
                 [
@@ -1010,7 +1012,7 @@
                     (r:[decimal] (at "ignis-royalties" irs))
                     (s:decimal (fold (+) 0.0 r))
                 )
-                (ref-IGNIS::C_Collect patron core-ico)
+                (ref-IGNIS::XE_CollectIgnis patron core-ico)
                 [
                     (format "Successfully bulk-transferred collectable {} from {} to {} receivers" [id sa l])
                     (if (= s 0.0)
@@ -1049,7 +1051,7 @@
                 ;;Reading it AFTER the core call is value-identical: "nonce-of-set" is written once,
                 ;;when the set-class is DEFINED, and never updated by a make. Inlined rather than
                 ;;re-bound because it is used exactly once (CLAUDE.md let-vs-inline rule).
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-S::C_MakeSemiFungibleSet account id nonces set-class how-many-sets)
                 )
                 (format "Successfully generated {} Class {} Sets (Nonce {}) of SFT Collection {} on Account {}"
@@ -1070,7 +1072,7 @@
                     (set-class:integer (ref-DPDC::UR_NonceClass id true nonce))
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-S::CC_BreakSemiFungibleSet account id nonce how-many-sets)
                 )
                 (format "Successfully broken {} Class {} Sets (Nonce {}) of SFT Collection {} on Account {}" [how-many-sets set-class nonce id sa])
@@ -1090,7 +1092,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-S::C_DefinePrimordialSet id true set-name score-multiplier set-definition ind)
                 )
                 (format "Primordial Set <{}> for SFT Collection {} defined succesfully" [set-name id])
@@ -1110,7 +1112,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-S::C_DefineCompositeSet id true set-name score-multiplier set-definition ind)
                 )
                 (format "Composite Set <{}> for SFT Collection {} defined succesfully" [set-name id])
@@ -1131,7 +1133,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-S::C_DefineHybridSet id true set-name score-multiplier primordial-sd composite-sd ind)
                 )
                 (format "Hybrid Set <{}> for SFT Collection {} defined succesfully" [set-name id])
@@ -1150,7 +1152,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-S::C_EnableSetClassFragmentation id true set-class fragmentation-ind)
                 )
                 (format "Set Class {} for SFT {} succesfully fragmented" [set-class id])
@@ -1165,7 +1167,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-S::C_ToggleSet id true set-class toggle)
                 )
                 (format "SFT {} Set Class {} succesfully turned {}" [id set-class (if toggle "ON" "OFF")])
@@ -1180,7 +1182,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-S::C_RenameSet id true set-class new-name)
                 )
                 (format "SFT {} Set Class {} succesfuly renamed to <{}>" [id set-class new-name])
@@ -1198,7 +1200,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonces id true account [set-class] nos false [new-nonce-data])
                 )
             )
@@ -1213,7 +1215,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonces id true account set-classes nos false new-nonces-data)
                 )
             )
@@ -1228,7 +1230,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceRoyalty id true account set-class nos false royalty-value)
                 )
             )
@@ -1243,7 +1245,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceIgnisRoyalty id true account set-class nos false royalty-value)
                 )
             )
@@ -1258,7 +1260,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceName id true account set-class nos false name)
                 )
             )
@@ -1273,7 +1275,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceDescription id true account set-class nos false description)
                 )
             )
@@ -1288,7 +1290,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceScore id true account set-class nos false score)
                 )
             )
@@ -1307,7 +1309,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceMetaData id true account set-class nos false meta-data)
                 )
             )
@@ -1325,7 +1327,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceURI id true account set-class nos false ay u1 u2 u3)
                 )
             )
@@ -1345,7 +1347,7 @@
                     (sf:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-from))
                     (st:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-F::C_RepurposeCollectableFragments id true repurpose-from repurpose-to nonces amounts)
                 )
                 (format "Successfully repurposed SFT {} Fragment-Nonces {} with Amounts {} from {} to {}" [id nonces amounts sf st])
@@ -1360,7 +1362,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-F::C_MakeFragments account id true nonce amount)
                 )
                 (format "Successfully Fragmented {} SFT(s) {} of Nonce {}" [amount id nonce])
@@ -1375,7 +1377,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-F::C_MergeFragments account id true nonce amount)
                 )
                 (format "Successfully merged {} {} SFT(s) Fragments of Nonce {}" [amount id nonce])
@@ -1390,7 +1392,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-F::C_EnableNonceFragmentation id true nonce fragmentation-ind)
                 )
                 (format "Fragmentation for SFT {} Nonce {} enabled succesfully" [id nonce])
@@ -1409,7 +1411,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonces id true account [nonce] nos true [new-nonce-data])
                 )
             )
@@ -1424,7 +1426,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonces id true account nonces nos true new-nonces-data)
                 )
             )
@@ -1439,7 +1441,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceRoyalty id true account nonce nos true royalty-value)
                 )
             )
@@ -1454,7 +1456,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceIgnisRoyalty id true account nonce nos true royalty-value)
                 )
             )
@@ -1469,7 +1471,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceName id true account nonce nos true name)
                 )
             )
@@ -1484,7 +1486,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceDescription id true account nonce nos true description)
                 )
             )
@@ -1499,7 +1501,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceScore id true account nonce nos true score)
                 )
             )
@@ -1518,7 +1520,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceMetaData id true account nonce nos true meta-data)
                 )
             )
@@ -1536,7 +1538,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPDC-N::C_UpdateNonceURI id true account nonce nos true ay u1 u2 u3)
                 )
             )
@@ -1577,11 +1579,11 @@
                         )
                     )
                 )
-                (ref-IGNIS::C_Collect patron ico)
+                (ref-IGNIS::XE_CollectIgnis patron ico)
                 ;;Issuing a COMPANY is $100 in IGNIS deter and $100 in STOA (spec): the equity
                 ;;premium leg. The underlying SFT collection issue carries its own cost on top,
                 ;;in both currencies — same composition rule as the VST links.
-                (ref-IGNIS::STOA|C_Collect patron (ref-IGNIS::UC_StoaPrice "issue-shareholder"))
+                (ref-IGNIS::XE_CollectStoa patron (ref-IGNIS::UC_StoaPrice "issue-shareholder"))
                 (ref-TS01-A::XB_DynamicFuelSTOA)
                 (at 0 (at "output" ico))
             )
@@ -1616,7 +1618,7 @@
                     (r:[decimal] (at "ignis-royalties" irs))
                     (s:decimal (fold (+) 0.0 r))
                 )
-                (ref-IGNIS::C_Collect patron ico)
+                (ref-IGNIS::XE_CollectIgnis patron ico)
                 (if (= input-nonce 1)
                     [
                         ;;Make Package Shares

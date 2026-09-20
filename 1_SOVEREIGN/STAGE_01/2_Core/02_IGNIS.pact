@@ -5,7 +5,7 @@
         \ and collection API. Declares the cumulator schemas \
         \ (OutputCumulator/ModularCumulator per-interactor legs, plus Compressed and Primed \
         \ forms), UDC cumulator constructors and tier presets, URC zero-gas readers, DALOS \
-        \ cost readers, and the C_Collect / STOA-collect entrypoints that every core C_ \
+        \ cost readers, and the XE_CollectIgnis / STOA-collect entrypoints that every core C_ \
         \ returns and Talos uses to bill gas."
 
     ;;<=========================================================================>
@@ -117,12 +117,14 @@
     ;;
     ;;  [C]
     ;;
-    (defun C_TransferDalosFuel (executor:string executee:string amount:decimal))
-    (defun C_Collect                                    (patron:string input-output-cumulator:object{OutputCumulator}))
-    (defun STOA|C_Collect (patron:string amount:decimal))
-    (defun STOA|C_CollectWT (patron:string amount:decimal trigger:bool))
-    (defun STOA|C_CollectWTEx (patron:string discount-account:string amount:decimal trigger:bool))
-    (defun STOA|C_CollectFull (patron:string amount:decimal trigger:bool))
+    (defun XE_CollectIgnis (patron:string input-output-cumulator:object{OutputCumulator}))
+    (defun XB_MoveDalosFuel (executor:string executee:string amount:decimal))
+    (defun XB_CollectDalosFuel (patron:string amount:decimal))
+    (defun XB_CollectStoaDiscountedFrom (patron:string discount-account:string amount:decimal trigger:bool))
+    (defun XB_CollectStoaFull (patron:string amount:decimal trigger:bool))
+    (defun XB_CollectStoaWithTrigger (patron:string amount:decimal trigger:bool))
+    (defun XE_CollectStoa (patron:string amount:decimal))
+    (defun C_DonateStoa (executor:string amount:decimal))
 
 )
 
@@ -229,7 +231,7 @@
     @doc "IGNIS — the virtual-chain gas collector, implementing IgnisCollectorV3 and \
         \ OuronetInfoV2. It compresses and primes OutputCumulators into per-interactor \
         \ charges, splitting a GAS_QUARTER cut between smart-account interactors and the \
-        \ principal; C_Collect debits the patron and credits collectors via DALOS balance \
+        \ principal; XE_CollectIgnis debits the patron and credits collectors via DALOS balance \
         \ updates, while STOA collection splits native STOA 10/20/30/40 across \
         \ Demiourgos/Dalos/maintenance/Ouroboros. Also hosts shared cost/format helpers and \
         \ the DALOS per-op tier cost readers."
@@ -517,7 +519,7 @@
         ;;BRD::URCi_UpgradeBranding = months x 250 STOA at the $0.10 peg.
         ,"branding-blue"     : 2500.0
         ;;PYTHIA tolls carry NO IGNIS charge — dollar basis for their STOA leg only, and they
-        ;;are NON-DISCOUNTABLE (collected with STOA|C_CollectFull). $50 deploy / $10 rename
+        ;;are NON-DISCOUNTABLE (collected with XB_CollectStoaFull). $50 deploy / $10 rename
         ;;(owner 2026-09-07) = 500 / 100 STOA at the $0.10 peg, i.e. exactly today's amounts.
         ;;Defining a collectable SET is NOT an issuance (no STOA leg) -- it only carries its
         ;;own IGNIS deterrence of $5 (owner 2026-09-07). The collectable itself is taxed on
@@ -1024,7 +1026,7 @@
             ;;    (interactor (if (DALOS::UR_AccountType active-account) active-account BAR))
             ;;so a SMART account passes through as itself and everything else becomes BAR -- exactly
             ;;the two branches this enforce-one accepts. A triggered (free) leg is BAR regardless.
-            ;;Measured: handing C_Collect a hand-built cumulator naming a STANDARD account succeeds,
+            ;;Measured: handing XE_CollectIgnis a hand-built cumulator naming a STANDARD account succeeds,
             ;;because the constructor sanitised it on the way in.
             ;;Kept as a fail-closed backstop for a future builder that does not normalise.
             ;;Pinned by REPL/modules/CUMULATOR.repl <<CUM-G1>>, which drives the normalisation itself
@@ -1807,15 +1809,25 @@
             )
         )
     )
-    ;;{5.7}  User [A/C]
-    ;;
-    ;;
-    (defun C_TransferDalosFuel (executor:string executee:string amount:decimal)
-        @doc "Move native STOA. A ZERO amount is a NO-OP, not a transfer: Stoa's coin enforces \
-            \ (> amount 0.0), so passing 0.0 aborts the whole transaction. Zero legs are now \
-            \ normal — the account-creation STOA switch prices onboarding at 0.0 while it is \
-            \ OFF, and a small dollar-pegged amount can round one of the four split legs to \
-            \ zero. Guarding here covers every STOA|C_Collect* path at once."
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
+    (defun XB_MoveDalosFuel (executor:string executee:string amount:decimal)
+        @doc "Move native STOA fuel in a SINGLE PASS, from one account to another. A ZERO amount is a NO-OP, not a transfer: Stoa's coin \
+            \ enforces (> amount 0.0), so passing 0.0 aborts the whole transaction. Zero legs are \
+            \ NORMAL -- the account-creation STOA switch prices onboarding at 0.0 while it is OFF, \
+            \ and a small dollar-pegged amount can round one of the four legs to zero. This guard \
+            \ is why neither the fee path nor LIQUID can call coin.transfer directly. \
+            \ \
+            \ MOVE vs COLLECT: this moves fuel BETWEEN two accounts (LIQUID's migrate / wrap / \
+            \ unwrap). XB_CollectDalosFuel takes a SPLIT and fans one payment out to the four \
+            \ protocol accounts. Same zero-guard underneath, two different jobs, two names. \
+            \ \
+            \ THIS IS THE PROTECTION POINT FOR THE WHOLE STOA PATH. Every collector -- full, \
+            \ discounted, triggered -- funnels its four legs through here, so gating HERE gates \
+            \ all of them. P|UEV_IMC checks the transaction's signatures against the registered \
+            \ inter-module guards, which is depth-invariant: it gives the same answer at any \
+            \ call depth, so repeating it at every level above would be identical work for an \
+            \ identical answer."
+        (P|UEV_IMC)
         (if (> amount 0.0)
             (let
                 (
@@ -1823,11 +1835,86 @@
                 )
                 (ref-coin::transfer executor executee amount)
             )
-            "Zero STOA leg — nothing transferred"
+            "Zero STOA leg -- nothing transferred"
         )
     )
-    (defun C_Collect
+    ;;Protection: Class 1 — Innate protection offered by XB_MoveDalosFuel
+    (defun XB_CollectDalosFuel (patron:string amount:decimal)
+        @doc "COLLECT native STOA fuel from <patron>'s Stoa account and fan it out over the \
+            \ protocol's INNATE 10/20/30/40 split -- 10% Demiourgos.Holdings, 30% Ouronet \
+            \ Maintenance, 40% STOA-Ouroboros, 20% STOA-Dalos (the gas station). \
+            \ \
+            \ THE SPLIT IS NOT A PARAMETER, deliberately. It used to be, and that let a caller \
+            \ hand this function any four numbers -- including four that do not sum to the \
+            \ amount, or that pay the wrong accounts. There is no legitimate second split, so \
+            \ taking one as input could only ever be a way to get it wrong. \
+            \ \
+            \ MOVE vs COLLECT: XB_MoveDalosFuel moves fuel BETWEEN two accounts (LIQUID's \
+            \ migrate / wrap / unwrap). This one collects it TO the protocol."
+            (let
+                (
+                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (demiurgoi:[string] (ref-DALOS::UR_DemiurgoiID))
+                    (stoa-sender:string (ref-DALOS::UR_AccountStoa patron))
+                    (split:[decimal] (ref-DALOS::URC_SplitSTOAPricesFull amount))
+                )
+                (do
+                    (XB_MoveDalosFuel stoa-sender (ref-DALOS::UR_AccountStoa (at 2 demiurgoi)) (at 0 split))
+                    (XB_MoveDalosFuel stoa-sender (ref-DALOS::UR_AccountStoa (at 1 demiurgoi)) (at 2 split))
+                    (XB_MoveDalosFuel stoa-sender (ref-DALOS::UR_AccountStoa OUROBOROS|SC_NAME) (at 3 split))
+                    (XB_MoveDalosFuel stoa-sender (ref-DALOS::UR_AccountStoa DALOS|SC_NAME) (at 1 split))
+                )
+            )
+    )
+    ;;Protection: Class 1 — Innate protection offered by XB_CollectStoaFull
+    (defun XB_CollectStoaDiscountedFrom (patron:string discount-account:string amount:decimal trigger:bool)
+        @doc "Discounted STOA collection: the FULL collector applied to an amount that has first \
+            \ been clamped by <discount-account>'s Elite discount. \
+            \ \
+            \ That is the whole difference, and it is worth stating because it used to be a \
+            \ SECOND 25-line copy of the collector that differed from the full one in a single \
+            \ expression. The discount applies to the TOTAL before the split -- \
+            \ URC_SplitSTOAPrices is literally UC_TenTwentyThirtyFourtySplit of (discount x \
+            \ price) -- so discounting the amount and collecting in full is not an approximation \
+            \ of the old behaviour, it IS the old behaviour. \
+            \ \
+            \ <discount-account> is usually the patron; it differs only where the spec says the \
+            \ discount follows the asset rather than the payer."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (XB_CollectStoaFull patron
+                (* (ref-DALOS::URC_StoaGasDiscount discount-account) amount) trigger)
+        )
+    )
+    ;;Protection: Class 1 — Innate protection offered by XB_CollectDalosFuel
+    (defun XB_CollectStoaFull (patron:string amount:decimal trigger:bool)
+        @doc "THE STOA COLLECTOR -- charges <amount> in full, no Elite discount. Every other STOA \
+            \ entrypoint in this module is a wrapper on it. <trigger> true means collection is \
+            \ switched OFF and the call is a documented no-op."
+        (if (not trigger)
+            (XB_CollectDalosFuel patron amount)
+            (format "While Stoa Collection is {}, the {} STOA could not be collected" [trigger amount])
+        )
+    )
+    ;;Protection: Class 1 — Innate protection offered by XB_CollectStoaDiscountedFrom
+    (defun XB_CollectStoaWithTrigger (patron:string amount:decimal trigger:bool)
+        @doc "Discounted STOA collection with an EXPLICIT trigger. Discount is read from the \
+            \ patron's own account."
+        (XB_CollectStoaDiscountedFrom patron patron amount trigger)
+    )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
+    (defun XE_CollectStoa (patron:string amount:decimal)
+        @doc "Discounted STOA collection, trigger read from the live native-gas switch. The \
+            \ ordinary entrypoint: 28 call sites across 17 modules use this one."
+        (P|UEV_IMC)
+        (XB_CollectStoaWithTrigger patron amount (URC_IsNativeGasZero))
+    )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
+    (defun XE_CollectIgnis
         (patron:string input-output-cumulator:object{IgnisCollectorV3.OutputCumulator})
+        (P|UEV_IMC)
         (let
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -1916,70 +2003,26 @@
             )
         )
     )
-    (defun STOA|C_Collect (patron:string amount:decimal)
-        (STOA|C_CollectWT patron amount (URC_IsNativeGasZero))
+    ;;{5.7}  User [A/C]
+    (defun C_DonateStoa (executor:string amount:decimal)
+        @doc "DONATE native STOA to the protocol -- the ONE legitimate standalone use of the \
+            \ collection machinery, and the reason that machinery is otherwise protected. \
+            \ \
+            \ Every other collector here runs as part of an operation that is CHARGING a fee; none \
+            \ may be called on its own, which is why they are X_ and IMC-gated. A donation is the \
+            \ inverse: nobody is being charged, someone is giving. That makes it a true client \
+            \ function. \
+            \ \
+            \ PATRONLESS by design: you cannot ask an account donating STOA to also pay IGNIS for \
+            \ the privilege of donating. The donor is the EXECUTOR -- their own STOA, their own \
+            \ initiative. \
+            \ \
+            \ Collected in FULL, no Elite discount: a discount on a voluntary gift is meaningless. \
+            \ The same four-way split (10/30/40/20) applies as to any fee."
+        (XB_CollectStoaFull executor amount false)
     )
-    (defun STOA|C_CollectWT (patron:string amount:decimal trigger:bool)
-        (STOA|C_CollectWTEx patron patron amount trigger)
-    )
-    (defun STOA|C_CollectFull (patron:string amount:decimal trigger:bool)
-        @doc "Collect native STOA taxed in FULL — no Elite discount. The pricing spec marks a \
-            \ few costs as non-discountable (PYTHIA's fees, some asymmetric-liquidity legs); \
-            \ everything else must keep using STOA|C_Collect* so the discount applies."
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (split-full:[decimal] (ref-DALOS::URC_SplitSTOAPricesFull amount))
-                (am0:decimal (at 0 split-full))
-                (am1:decimal (at 1 split-full))
-                (am2:decimal (at 2 split-full))
-                (am3:decimal (at 3 split-full))
-                (stoa-sender:string (ref-DALOS::UR_AccountStoa patron))
-                (demiurgoi:[string] (ref-DALOS::UR_DemiurgoiID))
-                (stoa-cto:string (ref-DALOS::UR_AccountStoa (at 1 demiurgoi)))
-                (stoa-hov:string (ref-DALOS::UR_AccountStoa (at 2 demiurgoi)))
-                (stoa-ouroboros:string (ref-DALOS::UR_AccountStoa OUROBOROS|SC_NAME))
-                (stoa-dalos:string (ref-DALOS::UR_AccountStoa DALOS|SC_NAME))
-            )
-            (if (not trigger)
-                (do
-                    (C_TransferDalosFuel stoa-sender stoa-hov am0)          ;;10% to Demiourgos.Holdings
-                    (C_TransferDalosFuel stoa-sender stoa-cto am2)          ;;30% to Ouronet Maintenance
-                    (C_TransferDalosFuel stoa-sender stoa-ouroboros am3)    ;;40% to STOA-Ouroboros
-                    (C_TransferDalosFuel stoa-sender stoa-dalos am1)        ;;20% to STOA-Dalos (Gas Station)
-                )
-                (format "While Stoa Collection is {}, the {} STOA could not be collected" [trigger amount])
-            )
-        )
-    )
-    (defun STOA|C_CollectWTEx (patron:string discount-account:string amount:decimal trigger:bool)
-        @doc "Collect native STOA from patron Stoa account; Elite split from discount-account."
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (split-discounted-stoa:[decimal] (ref-DALOS::URC_SplitSTOAPrices discount-account amount))
-                (am0:decimal (at 0 split-discounted-stoa))
-                (am1:decimal (at 1 split-discounted-stoa))
-                (am2:decimal (at 2 split-discounted-stoa))
-                (am3:decimal (at 3 split-discounted-stoa))
-                (stoa-sender:string (ref-DALOS::UR_AccountStoa patron))
-                (demiurgoi:[string] (ref-DALOS::UR_DemiurgoiID))
-                (stoa-cto:string (ref-DALOS::UR_AccountStoa (at 1 demiurgoi)))
-                (stoa-hov:string (ref-DALOS::UR_AccountStoa (at 2 demiurgoi)))
-                (stoa-ouroboros:string (ref-DALOS::UR_AccountStoa OUROBOROS|SC_NAME))
-                (stoa-dalos:string (ref-DALOS::UR_AccountStoa DALOS|SC_NAME))
-            )
-            (if (not trigger)
-                (do
-                    (C_TransferDalosFuel stoa-sender stoa-hov am0)          ;;10% to Demiourgos.Holdings
-                    (C_TransferDalosFuel stoa-sender stoa-cto am2)          ;;30% to Ouronet Maintenance
-                    (C_TransferDalosFuel stoa-sender stoa-ouroboros am3)    ;;40% to STOA-Ouroboros (as Pitstop for LiquidStoaIndex fueling)
-                    (C_TransferDalosFuel stoa-sender stoa-dalos am1)        ;;20% to STOA-Dalos (Ouronet Gas Station)
-                )
-                (format "While Stoa Collection is {}, the {} STOA could not be collected" [trigger amount])
-            )
-        )
-    )
+    ;;
+    ;;
 
 )
 

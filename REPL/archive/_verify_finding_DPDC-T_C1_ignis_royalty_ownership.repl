@@ -65,7 +65,7 @@
 ;; `patron` for a further transfer LUMY signs and directs to himself — attempting to make EMMA (not LUMY)
 ;; pay the real, nonzero royalty this transfer would owe. Submitted as its own real, uncaught transaction
 ;; (no expect-failure — matching how an attacker would actually submit it). EXPECTED: hard rejection now,
-;; at CAP_EnforceAccountOwnership inside IGNIS|C>DEBIT — reached before C_Collect's own patron check even
+;; at CAP_EnforceAccountOwnership inside IGNIS|C>DEBIT — reached before XE_CollectIgnis's own patron check even
 ;; runs, since royalty collection happens earlier in the same call.
 (begin-tx "PROBE-C2 - illegitimate patron, submitted as a real uncaught transaction")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)

@@ -87,7 +87,7 @@
         ;;to be a defect three times (`INFO_SWP|ToggleFeeLock`, `INFO_ATS|ToggleParameterLock`,
         ;;`INFO_EQUITY|IssueCompany` each claimed a currency was free while their op collected it). Here it
         ;;is believed CORRECT — `AQP-FVT|CC_SweepBegin` (`04_TS02-C3.pact:2301`) carries no
-        ;;`IGNIS::C_Collect patron` at all, so the op is gas-station subsidised. Believed is not measured.
+        ;;`IGNIS::XE_CollectIgnis patron` at all, so the op is gas-station subsidised. Believed is not measured.
         ;;
         ;;A ZERO-VS-ZERO EQUALITY IS VACUOUS ON ITS OWN — it passes just as well against an op that did
         ;;nothing. The surrounding assertions are the non-vacuity guard: this same transaction already

@@ -301,7 +301,7 @@
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     ;;
-    ;;Protection: Class 5 — IMC + Custom: P|ELITE|CALLER
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_UpdateEliteSingle (id:string account:string)
         (P|UEV_IMC)
         (let
@@ -321,7 +321,7 @@
             )
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: P|ELITE|CALLER
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_UpdateElite (id:string sender:string receiver:string)
         (P|UEV_IMC)
         (let

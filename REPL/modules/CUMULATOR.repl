@@ -43,7 +43,7 @@
 ;;
 ;;MEASURED, NOT ARGUED, and cheaply: the constructor is a public `UDC_`, so the normalisation is
 ;;pure compute with no fixture. The first attempt here tried to DRIVE the guard by handing
-;;`C_Collect` a cumulator naming a standard account; it succeeded instead of failing, which is what
+;;`XE_CollectIgnis` a cumulator naming a standard account; it succeeded instead of failing, which is what
 ;;exposed the normalisation. Worth keeping as a lesson: a hand-built input does not bypass a
 ;;constructor that sanitises.
 ;;==== CUM-G1 - why IGNIS|C>COLLECT's interactor rule cannot fire · 02 · let / invocation ==== ====
@@ -92,7 +92,7 @@
 (print "=== CUM-G8 — one free leg no longer aborts a billable bundle ================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
-;;H3 / #8H: `IGNIS::C_Collect` had no per-leg zero filter, so ONE legitimately-free leg hit
+;;H3 / #8H: `IGNIS::XE_CollectIgnis` had no per-leg zero filter, so ONE legitimately-free leg hit
 ;;`IGNIS|C>TRANSFER`'s unconditional `(> ta 0.0)` enforce and aborted the WHOLE bundle. The fix
 ;;(`02_IGNIS.pact:1896-1901`) routes a zero leg to `(with-capability (IGNIS|S>FREE) true)` instead,
 ;;so the free leg is skipped, the billable legs still settle, and the free one stays observable
@@ -124,7 +124,13 @@
         (
             (before:decimal (ref-DALOS::UR_TF_AccountSupply KST.EMMA false))
         )
-        (ref-IGNIS::C_Collect KST.EMMA
+        ;;XE_CollectIgnis is IMC-gated (2026-09-20): it is an X_ function, reachable only by a
+        ;;module registered in IGNIS's inter-module policy. A REPL form has no calling module, so
+        ;;the test STANDS IN FOR ONE explicitly -- DPTF, which is registered. That is more honest
+        ;;than routing through a Talos op that happens to build a similar cumulator: this test is
+        ;;about the COLLECTOR's leg handling, and it still drives the collector directly.
+        (test-capability (DPTF.P|DPTF|CALLER))
+        (ref-IGNIS::XE_CollectIgnis KST.EMMA
             { "cumulator-chain":
                 [ {"ignis": 0.0, "interactor": zero-interactor}
                   {"ignis": 5.0, "interactor": real-interactor} ]

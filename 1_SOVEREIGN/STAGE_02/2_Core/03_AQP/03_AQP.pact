@@ -387,6 +387,7 @@
                 (ref-P|DPOF:module{OuronetPolicyV2} DPOF)
                 (ref-P|DPDC-T:module{OuronetPolicyV2} DPDC-T)
                 ;;
+                (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
                 (mg:guard (create-capability-guard (P|AQP|CALLER)))
             )
             ;; AQP-POOL → TFT: XE_TrueFungibleTransfer calls TFT::C_Transfer; TFT P|UEV_IMC requires this guard.
@@ -395,6 +396,7 @@
             (ref-P|DPOF::P|A_AddIMP mg)
             ;; AQP-POOL → DPDC-T: XE_CollectableTransfer calls DPDC-T::C_Transfer; vacate batch is AQP-VCT → DPDC-T::C_BulkTransfer.
             (ref-P|DPDC-T::P|A_AddIMP mg)
+            (ref-P|IGNIS::P|A_AddIMP mg)
             true
         )
     )
@@ -2856,7 +2858,8 @@
         )
     )
     ;; [XE]
-    ;;Protection: Class 5 — IMC + Custom: P|SECURE-CALLER
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          P|SECURE-CALLER
     (defun XE_SetVacateJobState:string
         (pool-id:string vacate-in-progress:bool)
         @doc "Write vacate-in-progress on AQP|T|Pool. P|UEV_IMC gates AQP-VCT caller."
@@ -2867,7 +2870,8 @@
         )
         pool-id
     )
-    ;;Protection: Class 5 — IMC + Custom: P|SECURE-CALLER
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          P|SECURE-CALLER
     (defun XE_SetSweepInProgress:string
         (pool-id:string flag:bool)
         @doc "Forward (re-score sweep · MTX-AQP): freeze/unfreeze a pool for a sweep — blocks new stakes AND collect \
@@ -2886,7 +2890,8 @@
     ;;   1.2 Pool tracker      UrStoa ≡ (implicit in vault accounting)
     ;;   1.3 Beneficiary rollup UrStoa ≡ N/A (TF cross-pool O(1) for ANK)
     ;;
-    ;;Protection: Class 5 — IMC + Custom: AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY
     (defun XE_TrueFungibleTransfer:object{IgnisCollectorV3.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
         @doc "Phase 1.1 — UrStoa ≡ X_UR|Transfer. TFT::C_Transfer owner↔AQP|SC_NAME. Composes custody cap (validation once per tx)."
@@ -2905,7 +2910,8 @@
             )
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: P|SECURE-CALLER
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          P|SECURE-CALLER
     (defun XE_TrueFungiblePoolTracker:object{IgnisCollectorV3.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
         @doc "Phase 1.2 — per-pool AQP|T|DPTFTracker row. UrStoa: N/A. P|SECURE-CALLER (no custody re-validation)."
@@ -2914,7 +2920,8 @@
             (XI_1|WriteDptfTrackerSlot pool-id owner-id beneficiary-id dptf-id amount direction)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: P|SECURE-CALLER
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          P|SECURE-CALLER
     (defun XE_ZeroDptfTrackerSlot:object{IgnisCollectorV3.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string)
         @doc "IMC: zero one AQP|T|DPTFTracker row (write-only). Called from AQP-VCT vacate."
@@ -2923,7 +2930,8 @@
             (XI_1|ZeroDptfTrackerSlot pool-id owner-id beneficiary-id dptf-id)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: P|SECURE-CALLER
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          P|SECURE-CALLER
     (defun XE_TrueFungibleBeneficiaryRollup:object{IgnisCollectorV3.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
         @doc "Phase 1.3 — cross-pool AQP|T|BenDptfTotal. UrStoa ≡ N/A. P|SECURE-CALLER."
@@ -2932,7 +2940,8 @@
             (XI_1|BumpBenDptfTotalSlot pool-id owner-id beneficiary-id dptf-id amount direction)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY
     (defun XE_OrtoFungibleTransfer:object{IgnisCollectorV3.OutputCumulator}
         (
             pool-id:string
@@ -2958,7 +2967,8 @@
             )
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: P|SECURE-CALLER
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          P|SECURE-CALLER
     (defun XE_OrtoFungiblePoolTracker:object{IgnisCollectorV3.OutputCumulator}
         (
             pool-id:string
@@ -2994,7 +3004,8 @@
             )
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: AQP|XE>COLLECTABLE-POOL-CUSTODY
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          AQP|XE>COLLECTABLE-POOL-CUSTODY
     (defun XE_CollectableTransfer:object{IgnisCollectorV3.OutputCumulator}
         (
             pool-id:string
@@ -3024,7 +3035,8 @@
             )
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: P|SECURE-CALLER
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          P|SECURE-CALLER
     (defun XE_CollectablePoolTracker:object{IgnisCollectorV3.OutputCumulator}
         (
             pool-id:string
@@ -3061,7 +3073,8 @@
             )
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: P|SECURE-CALLER
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          P|SECURE-CALLER
     (defun XE_CollectableBeneficiaryRollup:object{IgnisCollectorV3.OutputCumulator}
         (
             pool-id:string
@@ -3108,7 +3121,8 @@
     ;;   C_RevokeScore → XI_RevokeScoreFromPool
     ;;   C_DisablePoolStake / C_EnablePoolStake → XB_SetPoolStakeEnabled (also AQP-VCT vacate via IMC)
     ;;
-    ;;Protection: Class 5 — IMC + Custom: P|SECURE-CALLER
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          P|SECURE-CALLER
     (defun XB_SetPoolStakeEnabled:string
         (pool-id:string enabled:bool)
         @doc "Write stake-enabled on AQP|T|Pool. P|UEV_IMC gates cross-module callers (e.g. AQP-VCT vacate). \
@@ -3124,7 +3138,8 @@
     ;; --- Block C · TF stake phase 2.2 (FVT::XI_RefreshTrueFungibleStakeAnchors backward) ---
     ;;   XB_SetBenDptfAnkSyncCount
     ;;
-    ;;Protection: Class 5 — IMC + Custom: AQP|XE>SET-BENEFICIARY-DPTF-ANK-SYNC
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          AQP|XE>SET-BENEFICIARY-DPTF-ANK-SYNC
     (defun XB_SetBenDptfAnkSyncCount:object{IgnisCollectorV3.OutputCumulator}
         (beneficiary-id:string dptf-id:string)
         @doc "Backward (FVT::CC_TrueFungibleStakeFlow phase 2.2]): set last-ank-sync-count on BenDptfTotal \
@@ -3146,7 +3161,8 @@
             )
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: AQP|XE>SET-BEN-COLLECTABLE-ANK-SYNC
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          AQP|XE>SET-BEN-COLLECTABLE-ANK-SYNC
     (defun XB_SetBenCollectableAnkSyncCount:object{IgnisCollectorV3.OutputCumulator}
         (beneficiary-id:string collectable-id:string son:bool)
         @doc "Backward (FVT collectable stake phase 3 / C_SyncCollectableAnchors): stamp last-ank-sync-count \
@@ -3199,7 +3215,7 @@
                     (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
-                (ref-IGNIS::STOA|C_Collect patron (URCi_IssueStoa))
+                (ref-IGNIS::XE_CollectStoa patron (URCi_IssueStoa))
                 (XI_IssuePool pool-id aqp-class asset-id)
                 (URCi_Issue [pool-id])
             )

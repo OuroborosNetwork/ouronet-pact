@@ -63,7 +63,10 @@ PATRONLESS = {
     "C_DeployStandardAccount", "A_DeployStandardAccount",
     "DALOS|C_DeploySmartAccount", "DALOS|A_DeploySmartAccount",
     "DALOS|C_DeployStandardAccount", "DALOS|A_DeployStandardAccount",
-    "C_TransferDalosFuel",
+    # RECLASSIFIED 2026-09-20: `C_TransferDalosFuel` is now `XB_MoveDalosFuel`, out of the `C_`
+    # band entirely, so it is out of this sweep's scope and no longer needs an entry here. Kept as
+    # a comment because the NAME is what future greps will look for.
+    "C_DonateStoa",
 }
 
 # EXECUTORLESS -- distinct from PATRONLESS, and the distinction matters. These functions ARE the

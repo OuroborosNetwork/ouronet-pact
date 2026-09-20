@@ -89,7 +89,22 @@ ROUNDS = {
                        "AcquisitionSchemasV1", "AcquisitionFarmsVaultsTreasuriesV1",
                        "AcquisitionRewardPerShareV1", "AcquisitionPoolBootV1"],
         # init this round needs -- matched against the block label, case-insensitive
-        "init": ["AQP-BOOT"],
+        #
+        # "Define IMC Policies" ADDED 2026-09-20, and it is the kind of step that is invisible
+        # until the day it bites. The IGNIS restructure turned the collectors into protected
+        # X_ functions behind `P|UEV_IMC`, and paid for that by adding an IGNIS entry to the
+        # IMP list that 17 modules register in their own `P|A_Define`. On a FRESH chain that
+        # is automatic. On an UPGRADE round it is not: `P|A_Define` is a function, upgrading
+        # the module does not re-run it, and the new IMP entry simply never lands. The failure
+        # is silent at deploy and loud at the first fee collection -- "None of the guards
+        # passed" -- which is the worst possible place to discover it.
+        #
+        # Note the sibling defect this exposed: TWO blocks in [4.0] carried the label
+        # "Dalos INIT [02]: Define IMC Policies", and the second one wraps STOA and issues
+        # pension/ATS fixtures (its own gas echo says "Migrate DPMF [01]"). A label match
+        # would have shipped a test fixture as an init step. Relabelled to [4.1.20] the same
+        # day. Label matching is only as safe as the labels.
+        "init": ["AQP-BOOT", "Define IMC Policies"],
         # Modules that are NEW on chain this round. Owner confirmed 2026-09-18: none of the AQP
         # family is live -- this round deploys it for the first time. New modules get their
         # `(create-table ...)` calls ACTIVE; everything else in the round is an upgrade of a live

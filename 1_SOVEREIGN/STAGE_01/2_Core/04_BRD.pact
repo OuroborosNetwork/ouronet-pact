@@ -437,7 +437,7 @@
             )
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: SECURE
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_UpdatePendingBranding (entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
         @doc "Updates <pending-branding> with new branding data. \
             \ This is done by <entity-id> owners to brand their <entity-id> \
@@ -457,7 +457,8 @@
             )
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: BRD|C>UPGRADE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          BRD|C>UPGRADE
     (defun XE_UpgradeBranding:decimal (entity-id:string entity-owner-account:string months:integer)
         @doc "Upgrades Branding for <entity-id> to Blue Flag; Initial Cost set at 25 STOA per Month \
             \ STOA Cost may be adjusted in the future reflecting STOA Value \

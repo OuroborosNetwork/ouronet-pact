@@ -100,7 +100,7 @@
     ;;under a header comment claiming "IGNIS only; STOA auto-fuel is protocol, not a patron charge".
     ;;That conflated two different things: the protocol auto-fuel really is not a patron charge (and
     ;;is inert while <native-gas-pump> is false), but `XI_CreateSpecialTrueFungibleLink` runs
-    ;;`(ref-IGNIS::STOA|C_Collect patron stoa-costs)` directly — a real, discounted charge to the
+    ;;`(ref-IGNIS::XE_CollectStoa patron stoa-costs)` directly — a real, discounted charge to the
     ;;patron. So all five ops cost STOA and all five were previewed as free.
     ;;
     ;;THE EVIDENCE WAS ALREADY IN THIS FILE. The four managed `coin.TRANSFER` caps signed just above

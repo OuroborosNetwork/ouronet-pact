@@ -352,7 +352,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 )
                 (let ((msg:string (ref-CODEX::C_RotateCodexGuard codex-id new-codex-guard)))
-                    (ref-IGNIS::C_Collect patron (ref-CODEX::URCi_RotateCodexGuard patron))
+                    (ref-IGNIS::XE_CollectIgnis patron (ref-CODEX::URCi_RotateCodexGuard patron))
                     msg
                 )
             )
@@ -367,14 +367,14 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 )
                 (let ((msg:string (ref-CODEX::C_RecordArweaveUpload codex-id arweave-tx-id uploaded-bytes)))
-                    (ref-IGNIS::C_Collect patron (ref-CODEX::URCi_RecordArweaveUpload patron))
+                    (ref-IGNIS::XE_CollectIgnis patron (ref-CODEX::URCi_RecordArweaveUpload patron))
                     msg
                 )
             )
         )
     )
     (defun CODEX|C_RegisterStoicTag:string (patron:string tag-name:string account-address:string)
-        @doc "Register StoicTag; STOA from patron Stoa, Elite discount from account-address (STOA|C_CollectWTEx trigger false)."
+        @doc "Register StoicTag; STOA from patron Stoa, Elite discount from account-address (XB_CollectStoaDiscountedFrom trigger false)."
         (with-capability (P|TS)
             (let
                 (
@@ -385,7 +385,7 @@
                         (ref-CODEX::C_RegisterStoicTag tag-name account-address)
                     )
                 )
-                (ref-IGNIS|V2::STOA|C_CollectWTEx patron account-address stoa-fee false)
+                (ref-IGNIS|V2::XB_CollectStoaDiscountedFrom patron account-address stoa-fee false)
                 msg
             )
         )
@@ -400,7 +400,7 @@
                     (tag-fee:decimal (ref-CODEX::URCi_ReleaseStoicTag tag-name))
                     (msg:string (ref-CODEX::C_ReleaseStoicTag tag-name))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-IGNIS::UDC_ConstructOutputCumulator
                         tag-fee
                         patron
@@ -431,7 +431,7 @@
                         )
                     )
                 )
-                (ref-IGNIS|V2::STOA|C_CollectFull patron deploy-fee false)   ;;PYTHIA fees are NON-discountable (spec)
+                (ref-IGNIS|V2::XB_CollectStoaFull patron deploy-fee false)   ;;PYTHIA fees are NON-discountable (spec)
                 msg
             )
         )
@@ -454,7 +454,7 @@
                         )
                     )
                 )
-                (ref-IGNIS|V2::STOA|C_CollectFull patron rename-fee false)   ;;PYTHIA fees are NON-discountable (spec)
+                (ref-IGNIS|V2::XB_CollectStoaFull patron rename-fee false)   ;;PYTHIA fees are NON-discountable (spec)
                 msg
             )
         )
@@ -487,7 +487,7 @@
                         (ref-PYTHIA::C_RevokeDualLink dual-link-key)
                     )
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-IGNIS::UDC_ConstructOutputCumulator
                         revoke-fee
                         patron

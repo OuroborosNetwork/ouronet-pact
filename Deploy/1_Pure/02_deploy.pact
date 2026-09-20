@@ -1,8 +1,8 @@
 ;; ---------------------------------------------------------------------------
 ;; OURONET DEPLOY -- file 2 of 20
-;; This is STEP 2 of 21 in the full sequence (see Deploy/MANIFEST.md).
+;; This is STEP 2 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-1 must have run first, including the init steps between deploys.
-;; 2 module(s), 289,772 gas measured in the REPL gas model, 236,854 bytes
+;; 2 module(s), 289,772 gas measured in the REPL gas model, 237,626 bytes
 ;;
 ;; Modules in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/00_DPMF.pact
@@ -35,7 +35,7 @@
 ;;      are @doc prose only.
 ;;    * It carries 13 DEAD MODULE-REFERENCE CALLS (`_audit_modref_calls.py`): eleven
 ;;      `UDC_<tier>Cumulator` refs that no longer exist on IGNIS, plus
-;;      `ref-DALOS::STOA|C_CollectWT` and `ref-DALOS::STOA|C_Collect` — members that live on
+;;      `ref-DALOS::XB_CollectStoaWithTrigger` and `ref-DALOS::XE_CollectStoa` — members that live on
 ;;      IGNIS, not DALOS. `OuronetDalosV2` declares no `STOA|*` members at all. They would abort
 ;;      if reached; they cannot be reached.
 ;;    * 95,601 bytes — about 64% of a ~150k deploy slot, in a system whose deploy-size cap
@@ -345,11 +345,13 @@
                 (ref-P|DALOS:module{OuronetPolicyV2} DALOS)
                 (ref-P|BRD:module{OuronetPolicyV2} BRD)
                 (ref-P|DPTF:module{OuronetPolicyV2} DPTF)
+                (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
                 (mg:guard (create-capability-guard (P|DPMF|CALLER)))
             )
             (ref-P|DALOS::P|A_AddIMP mg)
             (ref-P|BRD::P|A_AddIMP mg)
             (ref-P|DPTF::P|A_AddIMP mg)
+            (ref-P|IGNIS::P|A_AddIMP mg)
         )
     )
 
@@ -1405,7 +1407,8 @@
             )
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: DPMF|C>ISSUE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          DPMF|C>ISSUE
     (defun XB_IssueFree:object{IgnisCollectorV3.OutputCumulator}
         (
             account:string
@@ -1468,7 +1471,7 @@
             )
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: P|DPMF|CALLER
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XB_UpdateEliteSingle (id:string account:string)
         (P|UEV_IMC)
         (let
@@ -1488,7 +1491,7 @@
             )
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: P|DPMF|CALLER
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XB_UpdateElite (id:string sender:string receiver:string)
         (P|UEV_IMC)
         (let
@@ -1513,7 +1516,7 @@
             )
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: BASIS|C>X_WRITE-ROLES
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XB_WriteRoles (id:string account:string rp:integer d:bool)
         (P|UEV_IMC)
         (let
@@ -1580,7 +1583,8 @@
         )
     )
     ;;
-    ;;Protection: Class 5 — IMC + Custom: DPMF|S>MOVE_CREATE-R
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          DPMF|S>MOVE_CREATE-R
     (defun XE_MoveCreateRole (id:string receiver:string)
         (P|UEV_IMC)
         (with-capability (DPMF|S>MOVE_CREATE-R id receiver)
@@ -1600,7 +1604,8 @@
             )
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: DPMF|S>TG_ADD-QTY-R
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          DPMF|S>TG_ADD-QTY-R
     (defun XE_ToggleAddQuantityRole (id:string account:string toggle:bool)
         (P|UEV_IMC)
         (with-capability (DPMF|S>TG_ADD-QTY-R id account toggle)
@@ -1609,7 +1614,8 @@
             )
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: DPMF|S>TG_BURN-R
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          DPMF|S>TG_BURN-R
     (defun XE_ToggleBurnRole (id:string account:string toggle:bool)
         (P|UEV_IMC)
         (with-capability (DPMF|S>TG_BURN-R id account toggle)
@@ -1626,7 +1632,8 @@
             {"reward-bearing-token" : atspair}
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: DPMF|C>UPDATE-SPECIAL
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          DPMF|C>UPDATE-SPECIAL
     (defun XE_UpdateSpecialMetaFungible:object{IgnisCollectorV3.OutputCumulator}
         (main-dptf:string secondary-dpmf:string vesting-or-sleeping:bool)
         (P|UEV_IMC)
@@ -2112,7 +2119,7 @@
                     )
                 )
             )
-            (ref-DALOS::STOA|C_CollectWT patron stoa-payment false)
+            (ref-DALOS::XB_CollectStoaWithTrigger patron stoa-payment false)
         )
     )
     ;;
@@ -2226,7 +2233,7 @@
                     )
                 )
             )
-            (ref-DALOS::STOA|C_Collect patron stoa-costs)
+            (ref-DALOS::XE_CollectStoa patron stoa-costs)
             ico
         )
     )
@@ -2904,11 +2911,13 @@
                 (ref-P|DALOS:module{OuronetPolicyV2} DALOS)
                 (ref-P|BRD:module{OuronetPolicyV2} BRD)
                 (ref-P|DPTF:module{OuronetPolicyV2} DPTF)
+                (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
                 (mg:guard (create-capability-guard (P|DPOF|CALLER)))
             )
             (ref-P|DALOS::P|A_AddIMP mg)
             (ref-P|BRD::P|A_AddIMP mg)
             (ref-P|DPTF::P|A_AddIMP mg)
+            (ref-P|IGNIS::P|A_AddIMP mg)
         )
     )
 
@@ -4697,7 +4706,8 @@
             )
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: DPOF|C>ISSUE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          DPOF|C>ISSUE
     (defun XB_IssueFree:object{IgnisCollectorV3.OutputCumulator}
         (
             account:string
@@ -5069,7 +5079,8 @@
             {"hibernation-link" : dptf}
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: DPOF|C>UPDATE-SPECIAL
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          DPOF|C>UPDATE-SPECIAL
     (defun XE_UpdateSpecialOrtoFungible:object{IgnisCollectorV3.OutputCumulator}
         (main-dptf:string secondary-dpof:string vzh-tag:integer)
         (P|UEV_IMC)
@@ -5297,7 +5308,7 @@
             (with-capability (DPOF|C>UPGRADE-BRD entity-id)
                 (ref-BRD::XE_UpgradeBranding entity-id parent-owner months)
             )
-            (ref-IGNIS::STOA|C_CollectWT patron (URCi_UpgradeBranding months) false)
+            (ref-IGNIS::XB_CollectStoaWithTrigger patron (URCi_UpgradeBranding months) false)
         )
     )
     ;;
@@ -5325,7 +5336,7 @@
                     )
                 )
             )
-            (ref-IGNIS::STOA|C_Collect patron stoa-costs)
+            (ref-IGNIS::XE_CollectStoa patron stoa-costs)
             ico
         )
     )

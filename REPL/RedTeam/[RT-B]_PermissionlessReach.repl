@@ -76,7 +76,7 @@
 ;;
 ;;WHAT THIS BLOCK ASSERTS NOW: the attack, re-run, and refused. The bound the original finding
 ;;established still holds and is still worth stating -- the same key could never operate the
-;;collector against a third party, because `IGNIS::C_Collect` enforces the payer's own ownership.
+;;collector against a third party, because `IGNIS::XE_CollectIgnis` enforces the payer's own ownership.
 ;;*Skipping your own toll needs nobody else's signature; charging someone else's does.* The reachable
 ;;damage was unbilled ADMIN activity, never drained users. Now it is neither.
 ;;==== RT-B-001 - reach a sovereign admin op without Talos, and pay nothing · 01 · env-sigs (caps) ==== 

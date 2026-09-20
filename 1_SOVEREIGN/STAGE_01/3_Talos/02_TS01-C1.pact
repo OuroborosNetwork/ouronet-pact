@@ -303,7 +303,7 @@
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                 )
                 (ref-DALOS::C_ControlSmartAccount patron executor payable-as-smart-contract payable-by-smart-contract payable-by-method)
-                (ref-IGNIS::C_Collect patron (ref-IGNIS::DALOS|URCi_ControlSmartAccount executor))
+                (ref-IGNIS::XE_CollectIgnis patron (ref-IGNIS::DALOS|URCi_ControlSmartAccount executor))
                 (format "Smart Ouronet Account {} controlled succesfully" [executor])
             )
         )
@@ -320,7 +320,7 @@
                 (ref-DALOS::C_DeploySmartAccount executor guard stoa sovereign public)
                 ;;Collecting IGNIS is moved from DALOS here, due to IGNIS existing after DALOS
                 (if (not (ref-IGNIS::URC_IsNativeGasZero))
-                    (ref-IGNIS::STOA|C_Collect executor (ref-IGNIS::DALOS|URCi_DeploySmartAccount))
+                    (ref-IGNIS::XE_CollectStoa executor (ref-IGNIS::DALOS|URCi_DeploySmartAccount))
                     true
                 )
                 (ref-TS01-A::XB_DynamicFuelSTOA)
@@ -340,7 +340,7 @@
                 (ref-DALOS::C_DeployStandardAccount executor guard stoa public)
                 ;;Collecting IGNIS is moved from DALOS here, due to IGNIS existing after DALOS
                 (if (not (ref-IGNIS::URC_IsNativeGasZero))
-                    (ref-IGNIS::STOA|C_Collect executor (ref-IGNIS::DALOS|URCi_DeployStandardAccount))
+                    (ref-IGNIS::XE_CollectStoa executor (ref-IGNIS::DALOS|URCi_DeployStandardAccount))
                     true
                 )
                 (ref-TS01-A::XB_DynamicFuelSTOA)
@@ -358,7 +358,7 @@
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                 )
                 (ref-DALOS::C_RotateGovernor patron executor governor)
-                (ref-IGNIS::C_Collect patron (ref-IGNIS::DALOS|URCi_RotateGovernor executor))
+                (ref-IGNIS::XE_CollectIgnis patron (ref-IGNIS::DALOS|URCi_RotateGovernor executor))
                 (format "Ouronet Account {} Governor-Guard rotated succesfully!" [executor])
             )
         )
@@ -372,7 +372,7 @@
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                 )
                 (ref-DALOS::C_RotateGuard patron executor new-guard safe)
-                (ref-IGNIS::C_Collect patron (ref-IGNIS::DALOS|URCi_RotateGuard executor))
+                (ref-IGNIS::XE_CollectIgnis patron (ref-IGNIS::DALOS|URCi_RotateGuard executor))
                 (format "Ouronet Account {} Primary-Guard rotated succesfully!" [executor])
             )
         )
@@ -387,7 +387,7 @@
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                 )
                 (ref-DALOS::C_RotateStoa patron executor stoa)
-                (ref-IGNIS::C_Collect patron (ref-IGNIS::DALOS|URCi_RotateStoa executor))
+                (ref-IGNIS::XE_CollectIgnis patron (ref-IGNIS::DALOS|URCi_RotateStoa executor))
                 (format "Ouronet Account {} Attached Stoa-Address rotated succesfully!" [executor])
             )
         )
@@ -402,7 +402,7 @@
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                 )
                 (ref-DALOS::C_RotateSovereign patron executor new-sovereign)
-                (ref-IGNIS::C_Collect patron (ref-IGNIS::DALOS|URCi_RotateSovereign executor))
+                (ref-IGNIS::XE_CollectIgnis patron (ref-IGNIS::DALOS|URCi_RotateSovereign executor))
                 (format "Smart Ouronet Account {} Sovereign rotated succesfully!" [executor])
             )
         )
@@ -419,7 +419,7 @@
                     (ea-id:string (ref-DALOS::UR_EliteAurynID))
                 )
                 (ref-ELITE::XE_UpdateEliteSingle ea-id account)
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-IGNIS::DALOS|URCi_UpdateEliteAccount patron)
                 )
                 (format "Elite Account Data for {} updated succesfully!" [account])
@@ -438,7 +438,7 @@
                     (ea-id:string (ref-DALOS::UR_EliteAurynID))
                 )
                 (ref-ELITE::XE_UpdateElite ea-id sender receiver)
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-IGNIS::DALOS|URCi_UpdateEliteAccountSquared patron)
                 )
                 (format "Elite Account Data for {} and {} updated succesfully!" [sender receiver])
@@ -454,7 +454,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-B|DPTF:module{BrandingUsagePrimaryV2} DPTF)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-B|DPTF::C_UpdatePendingBranding entity-id logo description website social)
                 )
                 (format "Pending Branding for DPTF {} updated succesfully" [entity-id])
@@ -490,7 +490,7 @@
                         (ref-DPTF::C_Issue patron account name ticker decimals can-change-owner can-upgrade can-add-special-role can-freeze can-wipe can-pause)
                     )
                 )
-                (ref-IGNIS::C_Collect patron ico)
+                (ref-IGNIS::XE_CollectIgnis patron ico)
                 (ref-TS01-A::XB_DynamicFuelSTOA)
                 (at "output" ico)
             )
@@ -506,7 +506,7 @@
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount new-owner))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_RotateOwnership id new-owner)
                 )
                 (format "ID {} Ownership succesfully set to {}" [id sa])
@@ -522,7 +522,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_Control id cu cco casr cf cw cp)
                 )
                 (format "Succesfully controlled Properties of {}" [id])
@@ -537,7 +537,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_TogglePause id toggle)
                 )
                 (if toggle
@@ -555,7 +555,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_ToggleReservation id toggle)
                 )
                 (if toggle
@@ -575,7 +575,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_ToggleFee id toggle)
                 )
                 (if toggle
@@ -593,7 +593,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_SetMinMove id min-move-value)
                 )
                 (format "MinMove Value succesfully set for {} to {}" [id min-move-value])
@@ -608,7 +608,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_SetFee id fee)
                 )
                 (format "Fee Promille succesfully set to {} Promille for {}" [fee id])
@@ -625,7 +625,7 @@
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount target))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_SetFeeTarget id target)
                 )
                 (format "Fee Target succesfully set for {} to {}" [id sa])
@@ -644,7 +644,7 @@
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount (ref-DALOS::GOV|DALOS|SC_NAME)))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_SetFeeTarget id (ref-DALOS::GOV|DALOS|SC_NAME))
                 )
                 (format "Fee Collection succesfully set to {}" [sa])
@@ -663,7 +663,7 @@
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount (ref-DALOS::GOV|OUROBOROS|SC_NAME)))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_SetFeeTarget id (ref-DALOS::GOV|OUROBOROS|SC_NAME))
                 )
                 (format "Fee Collection succesfully set to {}" [sa])
@@ -683,7 +683,7 @@
                     )
                     (collect:bool (at 0 (at "output" ico)))
                 )
-                (ref-IGNIS::C_Collect patron ico)
+                (ref-IGNIS::XE_CollectIgnis patron ico)
                 (ref-TS01-A::XE_ConditionalFuelSTOA collect)
                 (if toggle
                     (format "Fee Settings succesfully locked for {}" [id])
@@ -709,7 +709,7 @@
                 )
                 (ref-DALOS::CAP_EnforceAccountOwnership account)
                 (ref-DPTF::C_DeployAccount id account)
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::URCi_DeployAccount account)
                 )
                 (format "DPTF {} added to {} Ouronet Account succesfully!" [id sa])
@@ -726,7 +726,7 @@
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_ToggleFreezeAccount id account toggle)
                 )
                 (if toggle
@@ -744,7 +744,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_ToggleBurnRole id account toggle)
                 )
             )
@@ -758,7 +758,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_ToggleMintRole id account toggle)
                 )
             )
@@ -772,7 +772,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_ToggleFeeExemptionRole id account toggle)
                 )
             )
@@ -788,7 +788,7 @@
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_ToggleTransferRole id account toggle)
                 )
                 (if toggle
@@ -807,7 +807,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-TFT::C_ClearDispo account)
                 )
             )
@@ -823,7 +823,7 @@
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_Burn id account amount)
                 )
                 (format "Succesfully burned {} {} on Account {}" [amount id sa])
@@ -840,7 +840,7 @@
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_Mint id account amount origin)
                 )
                 (if origin
@@ -861,7 +861,7 @@
                     (ref-ELITE:module{EliteV2} ELITE)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount atbw))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_WipeSlim id atbw amtbw)
                 )
                 ;;Update Elite Account
@@ -882,7 +882,7 @@
                     (ref-ELITE:module{EliteV2} ELITE)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount atbw))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::C_Wipe id atbw)
                 )
                 ;;Update Elite Account
@@ -908,7 +908,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-TFT::C_Transmute id transmuter transmute-amount)
                 )
             )
@@ -937,7 +937,7 @@
                     (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount sender))
                     (sa-r:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-TFT::C_Transfer id sender receiver transfer-amount method)
                 )
                 (if (= receiver-amount transfer-amount)
@@ -960,7 +960,7 @@
                     (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount sender))
                     (sa-r:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-TFT::C_MultiTransfer id-lst sender receiver transfer-amount-lst method)
                 )
                 (format "Succesfully multi-transfered {} DPTFs from {} to {}" [(length id-lst) sa-s sa-r])
@@ -993,7 +993,7 @@
                     (ref-TFT:module{TrueFungibleTransferV2} TFT)
                     (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount sender))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-TFT::C_MultiBulkTransfer [id] sender [receiver-lst] [transfer-amount-lst])
                 )
                 (format "Succesfully bulk-transfered {} DPTF from {} to {} Receivers" [id sa-s (length receiver-lst)])
@@ -1010,7 +1010,7 @@
                     (ref-TFT:module{TrueFungibleTransferV2} TFT)
                     (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount sender))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-TFT::C_MultiBulkTransfer id sender receiver-array transfer-amount-array)
                 )
                 (format "Succesfully multi-bulk-transfered {} DPTFs from Sender {} to {} Individual Receiver Lists" [(length id) sa-s (length receiver-array)])
@@ -1026,7 +1026,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-B|DPOF:module{BrandingUsagePrimaryV2} DPOF)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-B|DPOF::C_UpdatePendingBranding entity-id logo description website social)
                 )
                 (format "Pending Branding for DPOF {} updated succesfully" [entity-id])
@@ -1060,7 +1060,7 @@
                         (ref-DPOF::C_Issue patron account name ticker decimals can-upgrade can-change-owner can-add-special-role can-transfer-oft-create-role can-freeze can-wipe can-pause)
                     )
                 )
-                (ref-IGNIS::C_Collect patron ico)
+                (ref-IGNIS::XE_CollectIgnis patron ico)
                 (ref-TS01-A::XB_DynamicFuelSTOA)
                 (at "output" ico)
             )
@@ -1074,7 +1074,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_RotateOwnership id new-owner)
                 )
             )
@@ -1088,7 +1088,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_Control id cu cco casr ctocr cf cw cp sg)
                 )
                 (format "Succesfully controlled DPOF {} Boolean Properties" [id])
@@ -1105,7 +1105,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_TogglePause id toggle)
                 )
                 (if toggle
@@ -1132,7 +1132,7 @@
                 )
                 (ref-DALOS::CAP_EnforceAccountOwnership account)
                 (ref-DPOF::C_DeployAccount id account)
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::URCi_DeployAccount account)
                 )
                 (format "Succesfully deployed a New DPOF Account for DPOF {} on Ouronet Account {}" [id sa])
@@ -1151,7 +1151,7 @@
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_ToggleFreezeAccount id account toggle)
                 )
                 (if toggle
@@ -1169,7 +1169,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_ToggleAddQuantityRole id account toggle)
                 )
             )
@@ -1183,7 +1183,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_ToggleBurnRole id account toggle)
                 )
             )
@@ -1198,7 +1198,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_MoveCreateRole id receiver)
                 )
             )
@@ -1212,7 +1212,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_ToggleTransferRole id account toggle)
                 )
             )
@@ -1229,7 +1229,7 @@
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_AddQuantity id account nonce amount)
                 )
                 (format "Succesfully increased DPOF {} nonce {} quantity on Account {} by {}" [id nonce sa amount])
@@ -1246,7 +1246,7 @@
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_Burn id account nonce amount)
                 )
                 (format "Succesfully burned {} Units of DPOF {} Nonce {} on Account {}" [amount id nonce sa])
@@ -1269,7 +1269,7 @@
                     )
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
-                (ref-IGNIS::C_Collect patron ico)
+                (ref-IGNIS::XE_CollectIgnis patron ico)
                 (format "Succesfully minted {} {} on Account {}, on the new Nonce {}" [amount id sa (at 0 (at "output" ico))])
             )
         )
@@ -1285,7 +1285,7 @@
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                     (ref-ELITE:module{EliteV2} ELITE)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_WipeSlim id account nonce amount)
                 )
                 ;;Update Elite Account
@@ -1306,7 +1306,7 @@
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                     (ref-ELITE:module{EliteV2} ELITE)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::CC_WipeHeavy id account)
                 )
                 ;;Update Elite Account
@@ -1330,7 +1330,7 @@
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                     (ref-ELITE:module{EliteV2} ELITE)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_WipePure id account removable-nonces-obj)
                 )
                 ;;Update Elite Account
@@ -1347,7 +1347,7 @@
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                     (ref-ELITE:module{EliteV2} ELITE)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_WipeClean id account nonces)
                 )
                 ;;Update Elite Account
@@ -1368,7 +1368,7 @@
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                     (ref-ELITE:module{EliteV2} ELITE)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::Cp_WipeSlice id account removable-nonces-obj)
                 )
                 ;;Update Elite Account
@@ -1393,7 +1393,7 @@
                     (ss:string (ref-I|OURONET::OI|UC_ShortAccount sender))
                     (sr:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_Transmit id nonces amounts sender receiver method)
                 )
                 (ref-ELITE::XE_UpdateElite id sender receiver)
@@ -1416,7 +1416,7 @@
                     (ss:string (ref-I|OURONET::OI|UC_ShortAccount sender))
                     (sr:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_Transfer id nonces sender receiver method)
                 )
                 (ref-ELITE::XE_UpdateElite id sender receiver)
@@ -1440,7 +1440,7 @@
                     (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount sender))
                     (l:integer (length receiver-lst))
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::C_BulkTransfer id nonces-array sender receiver-lst method)
                 )
                 (map

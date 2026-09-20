@@ -291,7 +291,7 @@
     ;;{5.6}  Aux/X
     ;;
     ;;  [Fueling Functions]
-    ;;Protection: Class 5 — IMC + Custom: SECURE
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XB_DynamicFuelSTOA ()
         (P|UEV_IMC)
         (let
@@ -307,7 +307,7 @@
         )
     )
     ;;
-    ;;Protection: Class 5 — IMC + Custom: SECURE
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_ConditionalFuelSTOA (condition:bool)
         (P|UEV_IMC)
         (if condition
@@ -587,7 +587,7 @@
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
                 (ref-DPTF::C_DeployAccount id account)
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     ;;charge through the SAME reader the client twin uses, so the admin variant
                     ;;cannot drift from DPTF|C_DeployAccount's price
                     (ref-DPTF::URCi_DeployAccount account)
@@ -614,7 +614,7 @@
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
                 (ref-DPOF::C_DeployAccount id account)
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     ;;charge through the SAME reader the client twin uses, so the admin variant
                     ;;cannot drift from DPOF|C_DeployAccount's price
                     (ref-DPOF::URCi_DeployAccount account)
@@ -632,7 +632,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-ATSU:module{AutostakeUsageV2} ATSU)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-ATSU::AA_RemoveSecondary remover ats reward-token accounts-with-ats-data)
                 )
             )
@@ -650,9 +650,9 @@
                     (ref-ATSU:module{AutostakeUsageV2} ATSU)
                 )
                 ;;A_ on the blessed path: the collection runs EXACTLY as any C_'s does -- it is
-                ;;simply served by GASLESS-PATRON, the one account IGNIS::C_Collect exempts. The
+                ;;simply served by GASLESS-PATRON, the one account IGNIS::XE_CollectIgnis exempts. The
                 ;;path is preserved, not skipped; that is what makes an A_ gasless.
-                (ref-IGNIS::C_Collect GASLESS-PATRON
+                (ref-IGNIS::XE_CollectIgnis GASLESS-PATRON
                     (ref-ATSU::A_KickStart GASLESS-PATRON executor ats rt-amounts rbt-request-amount)
                 )
             )

@@ -341,7 +341,7 @@
         (
             ;;FUNCTION COVERAGE (G6) — `INFO_CODEX|RegisterStoicTag`, per the owner's spec.
             ;;Template: `modules/ATS.repl <<ATS-I1>>`. This is the STOA member of the CODEX family
-            ;;(1 STOA per glyph via `STOA|C_CollectWTEx`, with the Elite discount taken from
+            ;;(1 STOA per glyph via `XB_CollectStoaDiscountedFrom`, with the Elite discount taken from
             ;;`account-address` rather than from the patron) — so the quote must track BOTH a
             ;;length-dependent price AND a discount read off a different account than the payer.
             ;;The managed coin.TRANSFER caps installed just above are what let the charge land.

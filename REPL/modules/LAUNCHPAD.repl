@@ -682,7 +682,7 @@
 ;;this function had NEVER been executed, "broken outright" was a live possibility rather than a
 ;;rhetorical one. Only the signer set changes.
 ;;
-;;The return is `IGNIS::C_Collect`'s raw "Write succeeded" rather than a sentence; that is the §8.15
+;;The return is `IGNIS::XE_CollectIgnis`'s raw "Write succeeded" rather than a sentence; that is the §8.15
 ;;F1 shape and is deliberately NOT pinned here -- pinning it would make its repair red. The
 ;;assertion is that the call completes.
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Florin", "caps": [] }])

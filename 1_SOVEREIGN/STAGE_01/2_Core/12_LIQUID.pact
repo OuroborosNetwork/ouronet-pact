@@ -248,6 +248,7 @@
                 (ref-P|TFT:module{OuronetPolicyV2} TFT)
                 (ref-P|ATSU:module{OuronetPolicyV2} ATSU)
                 (ref-P|VST:module{OuronetPolicyV2} VST)
+                (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
                 (mg:guard (create-capability-guard (P|LQD|CALLER)))
             )
             (ref-P|DALOS::P|A_AddIMP mg)
@@ -258,6 +259,7 @@
             (ref-P|TFT::P|A_AddIMP mg)
             (ref-P|ATSU::P|A_AddIMP mg)
             (ref-P|VST::P|A_AddIMP mg)
+            (ref-P|IGNIS::P|A_AddIMP mg)
         )
     )
 
@@ -492,7 +494,7 @@
             (let
                 (
                     (ref-coin:module{stoa-ns.fungible-v1} coin)    
-                    ;;C_TransferDalosFuel lives in IGNIS, not DALOS — it was called through the
+                    ;;XB_MoveDalosFuel lives in IGNIS, not DALOS — it was called through the
                     ;;DALOS ref, which DOES NOT have that member, so this admin migration path
                     ;;died on every call (modref members resolve at runtime, so it still loaded).
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
@@ -500,7 +502,7 @@
                     (present-stoa-balance:decimal (ref-coin::get-balance lq-stoa))
                 )
                 (install-capability (ref-coin::TRANSFER lq-stoa migration-target-stoa-account present-stoa-balance))
-                (ref-IGNIS::C_TransferDalosFuel lq-stoa migration-target-stoa-account present-stoa-balance)
+                (ref-IGNIS::XB_MoveDalosFuel lq-stoa migration-target-stoa-account present-stoa-balance)
                 present-stoa-balance
             )
         )
@@ -536,7 +538,7 @@
                     )
                     ;;(install-capability (ref-coin::TRANSFER lq-stoa stoa-patron amount))
                     ;;Capability is added instead in the JavaCode
-                    (ref-IGNIS::C_TransferDalosFuel lq-stoa stoa-patron amount)
+                    (ref-IGNIS::XB_MoveDalosFuel lq-stoa stoa-patron amount)
                     output
                 )
             )
@@ -569,7 +571,7 @@
                             )
                         )
                     )
-                    (ref-IGNIS::C_TransferDalosFuel stoa-patron lq-stoa amount)
+                    (ref-IGNIS::XB_MoveDalosFuel stoa-patron lq-stoa amount)
                     output
                 )
             )

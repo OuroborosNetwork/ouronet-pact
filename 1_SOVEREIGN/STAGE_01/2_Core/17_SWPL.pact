@@ -1865,12 +1865,7 @@
     ;;{5.6}  Aux/X
     ;;
     ;;
-    ;;Protection: Class 5 — IMC + Custom: SECURE, SWPL|S>ADD_ASYMMETRIC-LQ,
-    ;;Protection:          SWPL|S>ADD_BALANCED-LQ, SWPL|S>ASYMMETRIC-LQ-DEFICIT-TAX,
-    ;;Protection:          SWPL|S>ASYMMETRIC-LQ-FUELING-TAX,
-    ;;Protection:          SWPL|S>ASYMMETRIC-LQ-GASEOUS-TAX,
-    ;;Protection:          SWPL|S>ASYMMETRIC-LQ-LQBOOST-TAX,
-    ;;Protection:          SWPL|S>ASYMMETRIC-LQ-SPECIAL-TAX
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_STOA-PID|AddLiquidity
         (
             account:string swpair:string asymmetric-collection:bool gaseous-collection:bool stoa-pid:decimal
@@ -2028,7 +2023,7 @@
             (ref-DPTF::C_Mint lp-id SWP|SC_NAME lp-amount false)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: P|SWPL|CALLER
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_AutonomousSwapManagement (swpair:string)
         (P|UEV_IMC)
         (let

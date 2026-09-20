@@ -6,9 +6,9 @@
 
 | metric | value |
 |---|---|
-| entrypoints scanned | 1104 |
-| reaching at least one ownership enforce | 813 |
-| reaching NONE | 291 |
+| entrypoints scanned | 1099 |
+| reaching at least one ownership enforce | 829 |
+| reaching NONE | 270 |
 
 ## Per entrypoint
 
@@ -37,15 +37,15 @@
 | `00_DPMF` | `P|A_Define` | — |
 | `01_DALOS` | `A_DeploySmartAccount` | — |
 | `01_DALOS` | `A_DeployStandardAccount` | — |
-| `01_DALOS` | `A_MigrateLiquidFunds` | — |
-| `01_DALOS` | `A_SetAutoFueling` | — |
-| `01_DALOS` | `A_SetIgnisSourcePrice` | — |
-| `01_DALOS` | `A_ToggleAccountCreationStoa` | — |
-| `01_DALOS` | `A_ToggleGAP` | — |
-| `01_DALOS` | `A_ToggleGasCollection` | — |
-| `01_DALOS` | `A_ToggleOAPU` | — |
+| `01_DALOS` | `A_MigrateLiquidFunds` | `account:string`, `executor` |
+| `01_DALOS` | `A_SetAutoFueling` | `account:string`, `executor` |
+| `01_DALOS` | `A_SetIgnisSourcePrice` | `account:string`, `executor` |
+| `01_DALOS` | `A_ToggleAccountCreationStoa` | `account:string`, `executor` |
+| `01_DALOS` | `A_ToggleGAP` | `account:string`, `executor` |
+| `01_DALOS` | `A_ToggleGasCollection` | `account:string`, `executor` |
+| `01_DALOS` | `A_ToggleOAPU` | `account:string`, `executor` |
 | `01_DALOS` | `A_UpdatePublicKey` | — |
-| `01_DALOS` | `A_UpdateUsagePrice` | — |
+| `01_DALOS` | `A_UpdateUsagePrice` | `account:string`, `executor` |
 | `01_DALOS` | `C_ControlSmartAccount` | `account`, `account:string` |
 | `01_DALOS` | `C_DeploySmartAccount` | — |
 | `01_DALOS` | `C_DeployStandardAccount` | — |
@@ -56,15 +56,10 @@
 | `01_DALOS` | `P|A_Add` | — |
 | `01_DALOS` | `P|A_AddIMP` | — |
 | `01_DALOS` | `P|A_Define` | — |
-| `02_IGNIS` | `C_Collect` | `DALOS|SC_NAME`, `account:string`, `patron` |
-| `02_IGNIS` | `C_TransferDalosFuel` | — |
+| `02_IGNIS` | `C_DonateStoa` | — |
 | `02_IGNIS` | `P|A_Add` | — |
 | `02_IGNIS` | `P|A_AddIMP` | — |
 | `02_IGNIS` | `P|A_Define` | — |
-| `02_IGNIS` | `STOA|C_Collect` | — |
-| `02_IGNIS` | `STOA|C_CollectFull` | — |
-| `02_IGNIS` | `STOA|C_CollectWT` | — |
-| `02_IGNIS` | `STOA|C_CollectWTEx` | — |
 | `04_BRD` | `A_Live` | — |
 | `04_BRD` | `A_SetFlag` | — |
 | `04_BRD` | `P|A_Add` | — |
@@ -315,17 +310,17 @@
 | `01_TS01-A` | `ATS|A_KickStart` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `patron`, `receiver`, `sender` |
 | `01_TS01-A` | `BRD|A_Live` | — |
 | `01_TS01-A` | `BRD|A_SetFlag` | — |
-| `01_TS01-A` | `DALOS|A_AccountCreationStoaToggle` | — |
+| `01_TS01-A` | `DALOS|A_AccountCreationStoaToggle` | `account:string`, `executor` |
 | `01_TS01-A` | `DALOS|A_DeploySmartAccount` | — |
 | `01_TS01-A` | `DALOS|A_DeployStandardAccount` | — |
-| `01_TS01-A` | `DALOS|A_IgnisToggle` | — |
-| `01_TS01-A` | `DALOS|A_MigrateLiquidFunds` | — |
-| `01_TS01-A` | `DALOS|A_SetAutoFueling` | — |
-| `01_TS01-A` | `DALOS|A_SetIgnisSourcePrice` | — |
-| `01_TS01-A` | `DALOS|A_ToggleGAP` | — |
-| `01_TS01-A` | `DALOS|A_ToggleOAPU` | — |
+| `01_TS01-A` | `DALOS|A_IgnisToggle` | `account:string`, `executor` |
+| `01_TS01-A` | `DALOS|A_MigrateLiquidFunds` | `account:string`, `executor` |
+| `01_TS01-A` | `DALOS|A_SetAutoFueling` | `account:string`, `executor` |
+| `01_TS01-A` | `DALOS|A_SetIgnisSourcePrice` | `account:string`, `executor` |
+| `01_TS01-A` | `DALOS|A_ToggleGAP` | `account:string`, `executor` |
+| `01_TS01-A` | `DALOS|A_ToggleOAPU` | `account:string`, `executor` |
 | `01_TS01-A` | `DALOS|A_UpdatePublicKey` | — |
-| `01_TS01-A` | `DALOS|A_UpdateUsagePrice` | — |
+| `01_TS01-A` | `DALOS|A_UpdateUsagePrice` | `account:string`, `executor` |
 | `01_TS01-A` | `DPOF|A_DeployAccount` | `DALOS|SC_NAME`, `account:string`, `patron` |
 | `01_TS01-A` | `DPTF|A_DeployAccount` | `DALOS|SC_NAME`, `account:string`, `patron` |
 | `01_TS01-A` | `DPTF|A_UpdateTreasuryDispoParameters` | — |
@@ -650,8 +645,8 @@
 | `00_Demipad` | `P|A_Add` | — |
 | `00_Demipad` | `P|A_AddIMP` | — |
 | `00_Demipad` | `P|A_Define` | — |
-| `01_ANK` | `C_IssueNonFungibleAnchor` | `account:string`, `at` |
-| `01_ANK` | `C_IssueNonFungibleSetAnchor` | `account:string`, `at` |
+| `01_ANK` | `C_IssueNonFungibleAnchor` | `UR_CreatorKonto`, `UR_OwnerKonto`, `account:string`, `at`, `id`, `id:string` |
+| `01_ANK` | `C_IssueNonFungibleSetAnchor` | `UR_CreatorKonto`, `UR_OwnerKonto`, `account:string`, `at`, `id`, `id:string` |
 | `01_ANK` | `C_IssueSemiFungibleAnchor` | `UR_CreatorKonto`, `UR_OwnerKonto`, `account:string`, `at`, `id`, `id:string` |
 | `01_ANK` | `C_IssueTrueFungibleAnchor` | `account:string`, `at`, `dptf-id`, `dptf-id:string`, `owner` |
 | `01_ANK` | `C_RevokeAnchor` | `UR_CreatorKonto`, `UR_OwnerKonto`, `account:string`, `anchor-id`, `anchor-id:string`, `ank-asset`, `dptf-id:string`, `id`, `id:string`, `owner` |
@@ -706,7 +701,7 @@
 | `05_FVT` | `C_AddScoreEntity` | `account:string`, `fvt-owner`, `owner-konto` |
 | `05_FVT` | `C_Control` | `account:string`, `owner-konto` |
 | `05_FVT` | `C_Issue` | `account:string`, `owner-konto` |
-| `05_FVT` | `C_IssueMultipletFamily` | — |
+| `05_FVT` | `C_IssueMultipletFamily` | `account:string`, `executor` |
 | `05_FVT` | `C_RotateOwnership` | `account:string`, `owner-now` |
 | `05_FVT` | `C_SetCommonDenominator` | `account:string`, `owner-konto` |
 | `05_FVT` | `C_SetMosaic` | `account:string`, `owner-konto` |
@@ -872,8 +867,8 @@
 | `02_TS02-C2` | `P|A_Add` | — |
 | `02_TS02-C2` | `P|A_AddIMP` | — |
 | `02_TS02-C2` | `P|A_Define` | — |
-| `04_TS02-C3` | `AQP-ANK|C_IssueNonFungibleAnchor` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `at`, `client`, `id`, `id:string`, `patron`, `receiver`, `sender` |
-| `04_TS02-C3` | `AQP-ANK|C_IssueNonFungibleSetAnchor` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `at`, `client`, `id`, `id:string`, `patron`, `receiver`, `sender` |
+| `04_TS02-C3` | `AQP-ANK|C_IssueNonFungibleAnchor` | `DALOS|SC_NAME`, `UR_CreatorKonto`, `UR_Konto`, `UR_OwnerKonto`, `account`, `account:string`, `at`, `client`, `id`, `id:string`, `patron`, `receiver`, `sender` |
+| `04_TS02-C3` | `AQP-ANK|C_IssueNonFungibleSetAnchor` | `DALOS|SC_NAME`, `UR_CreatorKonto`, `UR_Konto`, `UR_OwnerKonto`, `account`, `account:string`, `at`, `client`, `id`, `id:string`, `patron`, `receiver`, `sender` |
 | `04_TS02-C3` | `AQP-ANK|C_IssueSemiFungibleAnchor` | `DALOS|SC_NAME`, `UR_CreatorKonto`, `UR_Konto`, `UR_OwnerKonto`, `account`, `account:string`, `at`, `client`, `id`, `id:string`, `patron`, `receiver`, `sender` |
 | `04_TS02-C3` | `AQP-ANK|C_IssueTrueFungibleAnchor` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `at`, `client`, `dptf-id`, `dptf-id:string`, `id`, `id:string`, `owner`, `patron`, `receiver`, `sender` |
 | `04_TS02-C3` | `AQP-ANK|C_RevokeAnchor` | `DALOS|SC_NAME`, `UR_CreatorKonto`, `UR_OwnerKonto`, `account:string`, `anchor-id`, `anchor-id:string`, `ank-asset`, `dptf-id:string`, `id`, `id:string`, `owner`, `patron` |
@@ -901,7 +896,7 @@
 | `04_TS02-C3` | `AQP-FVT|C_Control` | `DALOS|SC_NAME`, `account:string`, `owner-konto`, `patron` |
 | `04_TS02-C3` | `AQP-FVT|C_Issue` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `owner-konto`, `patron`, `receiver`, `sender` |
 | `04_TS02-C3` | `AQP-FVT|C_IssueGenericEarningVault` | `DALOS|SC_NAME`, `URC_AqpOwnerKonto`, `URC_AqpOwnerKontoFromClassAndAsset`, `UR_Konto`, `account`, `account:string`, `aqp-class`, `aqp-class:integer`, `client`, `fvt-owner`, `id`, `id:string`, `owner-konto`, `patron`, `pool-id`, `pool-id:string`, `receiver`, `sender` |
-| `04_TS02-C3` | `AQP-FVT|C_IssueMultipletFamily` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `patron`, `receiver`, `sender` |
+| `04_TS02-C3` | `AQP-FVT|C_IssueMultipletFamily` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `client`, `executor`, `id`, `id:string`, `patron`, `receiver`, `sender` |
 | `04_TS02-C3` | `AQP-FVT|C_RotateOwnership` | `DALOS|SC_NAME`, `account:string`, `owner-now`, `patron` |
 | `04_TS02-C3` | `AQP-FVT|C_SetCommonDenominator` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `owner-konto`, `patron`, `receiver`, `sender` |
 | `04_TS02-C3` | `AQP-FVT|C_SetMosaic` | `DALOS|SC_NAME`, `account:string`, `owner-konto`, `patron` |
@@ -1048,13 +1043,13 @@
 | `04_AQP-BOOT` | `CC_Step14_OpenCustodiansAgency` | `DALOS|SC_NAME`, `URC_AqpOwnerKonto`, `UR_Konto`, `UR_OwnerKonto`, `account`, `account:string`, `client`, `id`, `id:string`, `operator`, `owner-id`, `owner-id:string`, `owner-konto`, `patron`, `pool-id`, `pool-id:string`, `receiver`, `sender` |
 | `04_AQP-BOOT` | `C_IssueGenericEarningVault` | `DALOS|SC_NAME`, `URC_AqpOwnerKonto`, `URC_AqpOwnerKontoFromClassAndAsset`, `UR_Konto`, `account`, `account:string`, `aqp-class`, `aqp-class:integer`, `client`, `fvt-owner`, `id`, `id:string`, `owner-konto`, `patron`, `pool-id`, `pool-id:string`, `receiver`, `sender` |
 | `04_AQP-BOOT` | `C_Step0_WireImcAndGovernor` | `DALOS|SC_NAME`, `account`, `account:string`, `patron` |
-| `04_AQP-BOOT` | `C_Step10_IssueMultipletFamily` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `patron`, `receiver`, `sender` |
+| `04_AQP-BOOT` | `C_Step10_IssueMultipletFamily` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `client`, `executor`, `id`, `id:string`, `patron`, `receiver`, `sender` |
 | `04_AQP-BOOT` | `C_Step11_WireFarmTriplet` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `client`, `fvt-owner`, `id`, `id:string`, `owner-konto`, `patron`, `receiver`, `sender` |
 | `04_AQP-BOOT` | `C_Step12_AddFvtRewardLinks` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `owner-konto`, `patron`, `receiver`, `sender` |
 | `04_AQP-BOOT` | `C_Step13_CreateCustodiansVault` | `DALOS|SC_NAME`, `URC_AqpOwnerKontoFromClassAndAsset`, `UR_CreatorKonto`, `UR_Konto`, `UR_OwnerKonto`, `account`, `account:string`, `aqp-class`, `aqp-class:integer`, `at`, `client`, `executor`, `fvt-owner`, `id`, `id:string`, `owner-konto`, `patron`, `receiver`, `sender` |
 | `04_AQP-BOOT` | `C_Step1_CreateBunnySet` | — |
-| `04_AQP-BOOT` | `C_Step2_CreateSnakePowerAnchorClasses` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `at`, `client`, `id`, `id:string`, `patron`, `receiver`, `sender` |
-| `04_AQP-BOOT` | `C_Step3_CreateBoosterAnchorClasses` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `at`, `client`, `id`, `id:string`, `patron`, `receiver`, `sender` |
+| `04_AQP-BOOT` | `C_Step2_CreateSnakePowerAnchorClasses` | `DALOS|SC_NAME`, `UR_CreatorKonto`, `UR_Konto`, `UR_OwnerKonto`, `account`, `account:string`, `at`, `client`, `id`, `id:string`, `patron`, `receiver`, `sender` |
+| `04_AQP-BOOT` | `C_Step3_CreateBoosterAnchorClasses` | `DALOS|SC_NAME`, `UR_CreatorKonto`, `UR_Konto`, `UR_OwnerKonto`, `account`, `account:string`, `at`, `client`, `id`, `id:string`, `patron`, `receiver`, `sender` |
 | `04_AQP-BOOT` | `C_Step4_CreateCoreScores` | `DALOS|SC_NAME`, `account:string`, `owner-konto`, `patron` |
 | `04_AQP-BOOT` | `C_Step5_CreateSubsidiaryScores` | `DALOS|SC_NAME`, `account:string`, `owner-konto`, `patron` |
 | `04_AQP-BOOT` | `C_Step6_CreateOuroLpTriplet` | `DALOS|SC_NAME`, `account:string`, `owner-konto`, `patron` |

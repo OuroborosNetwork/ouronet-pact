@@ -105,7 +105,7 @@
                     true (= 1 (length (distinct
                         [(at "ignis-full" (at "ignis" i-tf-link)) (at "ignis-full" (at "ignis" i-sf))
                          (at "ignis-full" (at "ignis" i-nf))      (at "ignis-full" (at "ignis" i-nfs))]))))
-                ;; STOA: standard × (2 if acnoi else 1) — the exact ANK STOA|C_Collect amount
+                ;; STOA: standard × (2 if acnoi else 1) — the exact ANK XE_CollectStoa amount
                 (expect "<<ANK>> TF issue (link) stoa-full == standard" standard (at "stoa-full" (at "stoa" i-tf-link)))
                 (expect "<<ANK>> TF issue (acnoi) stoa-full == 2×standard" (* 2.0 standard) (at "stoa-full" (at "stoa" i-tf-new)))
                 (expect "<<ANK>> NF issue (acnoi) stoa-full == 2×standard" (* 2.0 standard) (at "stoa-full" (at "stoa" i-nf)))
@@ -478,7 +478,7 @@
                 (expect "<<MTX>> 2-sweep subsidised (ignis 0)" 0.0 (at "ignis-full" (at "ignis" i-mtxsweep)))
                 ;;FUNCTION COVERAGE (G6) — the ZERO half of `INFO_AQP-POOL|AbortVacate`.
                 ;;This preview quotes "Costs you nothing" for an op that visibly calls
-                ;;`IGNIS::C_Collect patron (VCT::C_AbortVacate pool-id)`. That is correct, because
+                ;;`IGNIS::XE_CollectIgnis patron (VCT::C_AbortVacate pool-id)`. That is correct, because
                 ;;`C_AbortVacate` returns `UC_EmptyOc` and collecting an empty cumulator collects
                 ;;nothing — but it is exactly the shape that WAS a defect in three other previews
                 ;;(`INFO_EQUITY|IssueCompany`, `INFO_SWP|ToggleFeeLock`, `INFO_ATS|ToggleParameterLock`,

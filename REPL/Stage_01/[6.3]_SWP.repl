@@ -9446,7 +9446,7 @@
                 (expect "<<SWP|TX 054-03>> the output balance is untouched"
                     out-before (ref-DPTF::UR_AccountSupply output-id KST.ANHD))
                 ;;The empty cumulator (UDC_ConstructOutputCumulator 0.0 BAR true []) is still
-                ;;handed to IGNIS::C_Collect, which runs BEFORE the branch that builds the
+                ;;handed to IGNIS::XE_CollectIgnis, which runs BEFORE the branch that builds the
                 ;;message. Charging 0.0 is the correct outcome and worth pinning: a caller
                 ;;retrying a stale quote in a loop must not be billed for each miss.
                 (expect "<<SWP|TX 054-03>> the patron is charged NO ignis for a non-executed swap"

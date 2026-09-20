@@ -1,8 +1,8 @@
 ;; ---------------------------------------------------------------------------
 ;; OURONET DEPLOY -- file 12 of 20
-;; This is STEP 12 of 21 in the full sequence (see Deploy/MANIFEST.md).
-;; Steps 1-11 must have run first, including the init steps between deploys.
-;; 2 module(s), 47,586 gas measured in the REPL gas model, 178,247 bytes
+;; This is STEP 13 of 23 in the full sequence (see Deploy/MANIFEST.md).
+;; Steps 1-12 must have run first, including the init steps between deploys.
+;; 2 module(s), 47,586 gas measured in the REPL gas model, 179,363 bytes
 ;;
 ;; Modules in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/00_AQP-SCHEMAS.pact
@@ -1233,9 +1233,21 @@
         )
     )
     (defun P|A_Define ()
-        @doc "Post-deploy hook (AQP-BOOT Step 0). No cross-module IMP registration required — \
-            \ ANK calls DALOS UR_*/CAP_*/UEV_* only (no DALOS P|UEV_IMC on those paths); client entry is Talos P|TALOS-SUMMONER."
-        true
+        @doc "Post-deploy hook (AQP-BOOT Step 0). Registers ANK's caller guard into IGNIS's IMP, \
+            \ which became REQUIRED on 2026-09-20 when the STOA collectors were reclassified from \
+            \ C_ to IMC-gated X_ functions. ANK calls XE_CollectStoa on its issuance paths, so \
+            \ without this line every one of them fails at P|UEV_IMC. \
+            \ \
+            \ This @doc used to read 'No cross-module IMP registration required'. That was true \
+            \ when the collector was an ungated C_; it stopped being true the moment the collector \
+            \ was protected, which is exactly the kind of statement that rots silently."
+        (let
+            (
+                (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
+                (mg:guard (create-capability-guard (P|ANK|CALLER)))
+            )
+            (ref-P|IGNIS::P|A_AddIMP mg)
+        )
     )
 
     ;;<=========================================================================>
@@ -3097,7 +3109,8 @@
         )
     )
     ;; [XE]
-    ;;Protection: Class 5 — IMC + Custom: ANK|XE>SWEEP-REVOKE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          ANK|XE>SWEEP-REVOKE
     (defun XE_SweepRevokeAnchor:string
         (anchor-id:string)
         @doc "Forward (re-score sweep terminal · MTX-AQP): revoke an EMPLOYED anchor after the sweep has refreshed \
@@ -3112,7 +3125,8 @@
         )
         anchor-id
     )
-    ;;Protection: Class 5 — IMC + Custom: ANK|C>BUMP-BOOST-CLASS-LINKS
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          ANK|C>BUMP-BOOST-CLASS-LINKS
     (defun XE_BumpBoostClassScoreLinks:string
         (boost-class-id:string score-id:string)
         @doc "Forward (AQP-SCORE::XI_CreateBoostClassLink): register score-id in the BoostClass reverse-index set, \
@@ -3123,7 +3137,8 @@
             (WU_BC|AddScoreLink boost-class-id score-id)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: ANK|C>BUMP-BOOST-CLASS-LINKS
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          ANK|C>BUMP-BOOST-CLASS-LINKS
     (defun XE_UnbumpBoostClassScoreLinks:string
         (boost-class-id:string score-id:string)
         @doc "Forward (AQP-SCORE::XI_CreateBoostClassLink re-point/unlink): remove score-id from the BoostClass \
@@ -3134,7 +3149,8 @@
             (WU_BC|RemoveScoreLink boost-class-id score-id)
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: ANK|XE>SWEEP
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          ANK|XE>SWEEP
     (defun XE_RecomputeUserBoostAggregates:string
         (account:string boost-class-ids:[string])
         @doc "Forward (re-score sweep): refold this user's aggregate-promile for the given boost-classes from the \
@@ -3150,7 +3166,7 @@
     )
     ;;
     ;; --- Block C · TF user promile ---
-    ;;Protection: Class 5 — IMC + Custom: ANK|C>UPDATE-DPTF
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_UpdateTrueFungibleUserAnchorValues:object{IgnisCollectorV3.OutputCumulator}
         (account:string dptf-id:string total-dptf-amount:decimal)
         @doc "Backward (FVT::XI_RefreshTrueFungibleStakeAnchors / C_Sync*): P|UEV_IMC + XI_1|UpdateTrueFungibleUserAnchorValues \
@@ -3181,7 +3197,8 @@
     )
     ;;
     ;; --- Block D · SF user promile ---
-    ;;Protection: Class 5 — IMC + Custom: ANK|C>UPDATE-DPSF
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          ANK|C>UPDATE-DPSF
     (defun XE_UpdateSemiFungibleUserAnchorValues
         (account:string dpsf-id:string nonces:[integer] nonce-amounts:[integer] direction:bool)
         @doc "Updates user promile for each live SF anchor on dpsf-id, then recomputes affected BoostClass aggregates."
@@ -3192,7 +3209,8 @@
     )
     ;;
     ;; --- Block E · NF user promile ---
-    ;;Protection: Class 5 — IMC + Custom: ANK|C>UPDATE-DPNF
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          ANK|C>UPDATE-DPNF
     (defun XE_UpdateNonFungibleUserAnchorValues
         (account:string dpnf-id:string nonces:[integer] direction:bool)
         @doc "Updates user promile for each live NF anchor on dpnf-id, then recomputes affected BoostClass aggregates."
@@ -3203,7 +3221,7 @@
     )
     ;;
     ;; --- Block D′ · SF resync (C_SyncCollectableAnchors · son=true) ---
-    ;;Protection: Class 5 — IMC + Custom: ANK|C>UPDATE-DPSF
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_ResyncSemiFungibleUserAnchorValues:object{IgnisCollectorV3.OutputCumulator}
         (account:string dpsf-id:string nonces:[integer] nonce-amounts:[integer])
         @doc "Backward (AQP::C_SyncCollectableAnchors): rewrite SF promile from full rollup inventory; IGNIS per live anchor."
@@ -3232,7 +3250,7 @@
     )
     ;;
     ;; --- Block E′ · NF resync (C_SyncCollectableAnchors · son=false) ---
-    ;;Protection: Class 5 — IMC + Custom: ANK|C>UPDATE-DPNF
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_ResyncNonFungibleUserAnchorValues:object{IgnisCollectorV3.OutputCumulator}
         (account:string dpnf-id:string nonces:[integer])
         @doc "Backward (AQP::C_SyncCollectableAnchors): rewrite NF promile from full rollup inventory; IGNIS per live anchor."
@@ -3292,7 +3310,7 @@
                     )
                 )
                 (XI_PlaceAnchorInBookkeeping anchor-id dptf-id boost-class-id)
-                (ref-IGNIS::STOA|C_Collect patron (URCi_IssueAnchorStoa acnoi))
+                (ref-IGNIS::XE_CollectStoa patron (URCi_IssueAnchorStoa acnoi))
                 (URCi_IssueAnchor "AQP-ANK|C_IssueTrueFungibleAnchor" (if acnoi [anchor-id boost-class-id] [anchor-id]))
             )
         )
@@ -3317,7 +3335,7 @@
                     )
                 )
                 (XI_PlaceAnchorInBookkeeping anchor-id dpsf-id boost-class-id)
-                (ref-IGNIS::STOA|C_Collect patron (URCi_IssueAnchorStoa acnoi))
+                (ref-IGNIS::XE_CollectStoa patron (URCi_IssueAnchorStoa acnoi))
                 (URCi_IssueAnchor "AQP-ANK|C_IssueSemiFungibleAnchor" (if acnoi [anchor-id boost-class-id] [anchor-id]))
             )
         )
@@ -3342,7 +3360,7 @@
                     )
                 )
                 (XI_PlaceAnchorInBookkeeping anchor-id dpnf-id boost-class-id)
-                (ref-IGNIS::STOA|C_Collect patron (URCi_IssueAnchorStoa acnoi))
+                (ref-IGNIS::XE_CollectStoa patron (URCi_IssueAnchorStoa acnoi))
                 (URCi_IssueAnchor "AQP-ANK|C_IssueNonFungibleAnchor" (if acnoi [anchor-id boost-class-id] [anchor-id]))
             )
         )
@@ -3367,7 +3385,7 @@
                     )
                 )
                 (XI_PlaceAnchorInBookkeeping anchor-id dpnf-id boost-class-id)
-                (ref-IGNIS::STOA|C_Collect patron (URCi_IssueAnchorStoa acnoi))
+                (ref-IGNIS::XE_CollectStoa patron (URCi_IssueAnchorStoa acnoi))
                 (URCi_IssueAnchor "AQP-ANK|C_IssueNonFungibleSetAnchor" (if acnoi [anchor-id boost-class-id] [anchor-id]))
             )
         )

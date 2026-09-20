@@ -299,7 +299,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-B|SWP:module{BrandingUsagePrimaryV2} SWP)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-B|SWP::C_UpdatePendingBranding entity-id logo description website social)
                 )
             )
@@ -329,7 +329,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-B|SWPLC:module{BrandingUsageSecondaryV2} SWPLC)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-B|SWPLC::C_UpdatePendingBrandingLPs swpair entity-pos logo description website social)
                 )
             )
@@ -356,7 +356,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SWP:module{SwapperV4} SWP)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-SWP::C_ChangeOwnership swpair new-owner)
                 )
                 (format "Succesfully changed ownership for SWP-Pair {}" [swpair])
@@ -380,7 +380,7 @@
                     )
                     (issued-frozen-lp-id:string (at 0 (at "output" ico)))
                 )
-                (ref-IGNIS::C_Collect patron ico)
+                (ref-IGNIS::XE_CollectIgnis patron ico)
                 (if (= current-frozen-link BAR)
                     (do
                         (ref-TS01-A::XB_DynamicFuelSTOA)
@@ -411,7 +411,7 @@
                     )
                     (issued-sleeping-lp-id:string (at 0 (at "output" ico)))
                 )
-                (ref-IGNIS::C_Collect patron ico)
+                (ref-IGNIS::XE_CollectIgnis patron ico)
                 (if (= current-sleeping-link BAR)
                     (do
                         (ref-TS01-A::XB_DynamicFuelSTOA)
@@ -442,7 +442,7 @@
                         (ref-SWPI::C_Issue patron account pool-tokens fee-lp weights amp p)
                     )
                 )
-                (ref-IGNIS::C_Collect patron ico)
+                (ref-IGNIS::XE_CollectIgnis patron ico)
                 (ref-TS01-A::XB_DynamicFuelSTOA)
                 (at "output" ico)
             )
@@ -470,7 +470,7 @@
                         (ref-SWPI::C_Issue patron account pool-tokens fee-lp weights -1.0 p)
                     )
                 )
-                (ref-IGNIS::C_Collect patron ico)
+                (ref-IGNIS::XE_CollectIgnis patron ico)
                 (ref-TS01-A::XB_DynamicFuelSTOA)
                 (at "output" ico)
             )
@@ -484,7 +484,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SWP:module{SwapperV4} SWP)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-SWP::C_ModifyCanChangeOwner swpair new-boolean)
                 )
                 (format "Succesfully updated SWP-Pair {} <can-change-owner> Parameter" [swpair])
@@ -499,7 +499,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SWP:module{SwapperV4} SWP)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-SWP::C_ModifyWeights swpair new-weights)
                 )
                 (format "Succesfully updated SWP-Pair {} Weigths Parameter" [swpair])
@@ -522,7 +522,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-SWPLC::C_ToggleAddLiquidity swpair toggle)
                 )
                 (format "Succesfully toggled Liquidity Provisioning for SWP-Pair" [swpair])
@@ -542,7 +542,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SWPU:module{SwapperUsageV3} SWPU)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-SWPU::C_ToggleSwapCapability swpair toggle)
                 )
                 (format "Succesfully toggled Swap Capability for SWP-Pair" [swpair])
@@ -563,7 +563,7 @@
                     )
                     (collect:bool (at 0 (at "output" ico)))
                 )
-                (ref-IGNIS::C_Collect patron ico)
+                (ref-IGNIS::XE_CollectIgnis patron ico)
                 (ref-TS01-A::XE_ConditionalFuelSTOA collect)
                 (format "Succesfully toggled the Fee Lock for the SWP-Pair" [swpair])
             )
@@ -577,7 +577,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SWP:module{SwapperV4} SWP)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-SWP::C_UpdateAmplifier swpair amp)
                 )
                 (format "Succesfully updated SWP-Pair {} Amplifier Parameter" [swpair])
@@ -599,7 +599,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SWP:module{SwapperV4} SWP)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-SWP::C_UpdateFee swpair new-fee lp-or-special)
                 )
                 (format "Succesfully updated SWP-Pair {} Fees" [swpair])
@@ -614,7 +614,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SWP:module{SwapperV4} SWP)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-SWP::C_UpdateSpecialFeeTargets swpair targets)
                 )
                 (format "Succesfully updated SWP-Pair {} Special Fee Targets" [swpair])
@@ -635,7 +635,7 @@
                     (ref-SWP:module{SwapperV4} SWP)
                     (ref-SWPI:module{SwapperIssueV4} SWPI)
                 )
-                (ref-IGNIS::C_Collect patron
+                (ref-IGNIS::XE_CollectIgnis patron
                     (ref-SWPLC::C_Fuel account swpair input-amounts true true)
                 )
                 (ref-SWP::XE_UpdateStoaValue swpair (at 0 (ref-SWPI::URC_PoolValue swpair)))
@@ -670,7 +670,7 @@
                         (ref-SWPLC::STOA-PID|C_AddStandardLiquidity account swpair input-amounts stoa-pid)
                     )
                 )
-                (ref-IGNIS::C_Collect patron ico)
+                (ref-IGNIS::XE_CollectIgnis patron ico)
                 (ref-SWP::XE_UpdateStoaValue swpair (at 0 (ref-SWPI::URC_PoolValue swpair)))
                 (format "Generated {} Native LP Tokens for Swpair {}"
                     [(at 0 (at "output" ico)) swpair]
@@ -703,7 +703,7 @@
                         (ref-SWPLC::STOA-PID|C_AddIcedLiquidity account swpair input-amounts stoa-pid)
                     )
                 )
-                (ref-IGNIS::C_Collect patron ico)
+                (ref-IGNIS::XE_CollectIgnis patron ico)
                 (ref-SWP::XE_UpdateStoaValue swpair (at 0 (ref-SWPI::URC_PoolValue swpair)))
                 (format "Generated {} Native and {} Frozen LP Tokens for Swpair {}"
                     [(at 0 (at "output" ico)) (at 1 (at "output" ico)) swpair]
@@ -734,7 +734,7 @@
                         (ref-SWPLC::STOA-PID|C_AddGlacialLiquidity account swpair input-amounts stoa-pid)
                     )
                 )
-                (ref-IGNIS::C_Collect patron ico)
+                (ref-IGNIS::XE_CollectIgnis patron ico)
                 (ref-SWP::XE_UpdateStoaValue swpair (at 0 (ref-SWPI::URC_PoolValue swpair)))
                 (format "Generated {} Native and {} Frozen LP Tokens for Swpair {}"
                     [(at 0 (at "output" ico)) (at 1 (at "output" ico)) swpair]
@@ -764,7 +764,7 @@
                         (ref-SWPLC::STOA-PID|C_AddFrozenLiquidity account swpair frozen-dptf input-amount stoa-pid)
                     )
                 )
-                (ref-IGNIS::C_Collect patron ico)
+                (ref-IGNIS::XE_CollectIgnis patron ico)
                 (ref-SWP::XE_UpdateStoaValue swpair (at 0 (ref-SWPI::URC_PoolValue swpair)))
                 (format "Generated {} Frozen LP Tokens for Swpair {}"
                     [(at 0 (at "output" ico)) swpair]
@@ -794,7 +794,7 @@
                         (ref-SWPLC::STOA-PID|C_AddSleepingLiquidity account swpair sleeping-dpof nonce stoa-pid)
                     )
                 )
-                (ref-IGNIS::C_Collect patron ico)
+                (ref-IGNIS::XE_CollectIgnis patron ico)
                 (ref-SWP::XE_UpdateStoaValue swpair (at 0 (ref-SWPI::URC_PoolValue swpair)))
                 (format "Generated {} Leeping LP Tokens for Swpair {}"
                     [(at 0 (at "output" ico)) swpair]
@@ -817,7 +817,7 @@
                         (ref-SWPLC::C_RemoveLiquidity account swpair lp-amount)
                     )
                 )
-                (ref-IGNIS::C_Collect patron ico)
+                (ref-IGNIS::XE_CollectIgnis patron ico)
                 (ref-SWP::XE_UpdateStoaValue swpair (at 0 (ref-SWPI::URC_PoolValue swpair)))
                 (format "Removed {} LP Tokens from SWP-Pair {}, yielding {} of all Pool Tokens" [lp-amount swpair (at "output" ico)])
             )
@@ -946,7 +946,7 @@
                         (ref-SWPT::UC_MakeGraphFromRaw BAR BAR all-swpairs raw-graph)
                     )
                 )
-                (ref-IGNIS::C_Collect patron ico)
+                (ref-IGNIS::XE_CollectIgnis patron ico)
                 (map
                     (lambda (sp:string)
                         (ref-SWP::XE_UpdateStoaValue sp (at 0 (ref-SWPI::URC_PoolValueFromGraph sp graph)))
@@ -1028,7 +1028,7 @@
                         (ref-SWPT::UC_MakeGraphFromRaw BAR BAR all-swpairs raw-graph)
                     )
                 )
-                (ref-IGNIS::C_Collect patron ico)
+                (ref-IGNIS::XE_CollectIgnis patron ico)
                 (map
                     (lambda (sp:string)
                         (ref-SWP::XE_UpdateStoaValue sp (at 0 (ref-SWPI::URC_PoolValueFromGraph sp graph)))
@@ -1087,7 +1087,7 @@
                     (stoa-results:list (at 1 result))
                     (out:list (at "output" ico))
                 )
-                (ref-IGNIS::C_Collect patron ico)
+                (ref-IGNIS::XE_CollectIgnis patron ico)
                 (map
                     (lambda (pv:object) (ref-SWP::XE_UpdateStoaValue (at "pool" pv) (at "stoa-value" pv)))
                     stoa-results
@@ -1132,7 +1132,7 @@
                     (stoa-results:list (at 1 result))
                     (out:list (at "output" ico))
                 )
-                (ref-IGNIS::C_Collect patron ico)
+                (ref-IGNIS::XE_CollectIgnis patron ico)
                 (map
                     (lambda (pv:object) (ref-SWP::XE_UpdateStoaValue (at "pool" pv) (at "stoa-value" pv)))
                     stoa-results
@@ -1172,7 +1172,7 @@
                         )
                     )
                 )
-                (ref-IGNIS::C_Collect patron ico)
+                (ref-IGNIS::XE_CollectIgnis patron ico)
                 (ref-SWP::XE_UpdateStoaValue swpair (at 0 (ref-SWPI::URC_PoolValue swpair)))
                 ;;G-47: the refusal payload is ALSO one element here, so `(at 0 ...)` does not
                 ;;fault -- it silently interpolates the exceed-message into a sentence that starts
@@ -1216,7 +1216,7 @@
                         )
                     )
                 )
-                (ref-IGNIS::C_Collect patron ico)
+                (ref-IGNIS::XE_CollectIgnis patron ico)
                 (ref-SWP::XE_UpdateStoaValue swpair (at 0 (ref-SWPI::URC_PoolValue swpair)))
                 (format "Succesfully swapped input(s) to {} {}" [(at 0 (at "output" ico)) output-id])
             )
@@ -1250,7 +1250,7 @@
                         )
                     )
                 )
-                (ref-IGNIS::C_Collect patron ico)
+                (ref-IGNIS::XE_CollectIgnis patron ico)
                 (ref-SWP::XE_UpdateStoaValue swpair (at 0 (ref-SWPI::URC_PoolValue swpair)))
                 ;;G-47: the refusal payload is ALSO one element here, so `(at 0 ...)` does not
                 ;;fault -- it silently interpolates the exceed-message into a sentence that starts
@@ -1293,7 +1293,7 @@
                             -1.0 stoa-pid slippage-bounds)
                     )
                 )
-                (ref-IGNIS::C_Collect patron ico)
+                (ref-IGNIS::XE_CollectIgnis patron ico)
                 (ref-SWP::XE_UpdateStoaValue swpair (at 0 (ref-SWPI::URC_PoolValue swpair)))
                 (format "Succesfully swapped input(s) to {} {}" [(at 0 (at "output" ico)) output-id])
             )

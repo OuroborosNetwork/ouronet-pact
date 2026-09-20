@@ -145,7 +145,7 @@ _ISS='ISSUANCE GATE — {} (1 ignis = 1 cent) → {} ignis base + components'
 WIPE_NOTE=' [+5 ignis per nonce wiped — owner directive: wipe scales with nonce count (substage-5 constant)]'
 VAR_NOTE=' [VARIABLE-SCALE: components reflect one run shape, not fixed — {}]'
 OWNER={
- ('02_IGNIS.pact','C_TransferDalosFuel'):dict(deter=None,why='IGNIS-EXEMPT — basically a coin.transfer execution'),
+ ('02_IGNIS.pact','XB_MoveDalosFuel'):dict(deter=None,why='IGNIS-EXEMPT — basically a coin.transfer execution'),
  ('05_DPTF.pact','C_Issue'):dict(deter=1000.0,why=_ISS.format('true fungible = $10','1000')),
  ('06_DPOF.pact','C_Issue'):dict(deter=1000.0,why=_ISS.format('ortofungible = $10','1000')),
  ('04_DPDC-I.pact','C_IssueDigitalCollection'):dict(deter=('SPLIT',2000.0,2500.0),
@@ -306,7 +306,7 @@ def main():
     print("Account-deploy count (confirmed 2026-09-05): DALOS has exactly 2 admin-free A_Deploy*Account +")
     print("2 user STOA-priced C_Deploy*Account; per-token C_DeployAccount is a different, 50x-priced concept.\n")
     print("OWNER DECISIONS APPLIED (2026-09-05): all genuinely admin-gated A_/AA_/Ap_ = exempt;")
-    print("C_TransferDalosFuel exempt; issuance $ tiers (TF/OF $10, SFT $20, NFT $25, ATS pair $40,")
+    print("XB_MoveDalosFuel exempt; issuance $ tiers (TF/OF $10, SFT $20, NFT $25, ATS pair $40,")
     print("SWP pair $50, ShareholderCollection $100, DSA vault $50 / agency $20, anchors = half their")
     print("asset type); fragmentation gate moved to C_EnableNonceFragmentation; wipe +5ig/nonce;")
     print("DSA A_→C_ rename DONE (substage 4) — only 2 genuine GOV fns remain A_ in DSA.\n")

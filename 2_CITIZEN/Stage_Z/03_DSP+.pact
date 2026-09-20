@@ -466,7 +466,7 @@
             \ \
             \ GASLESS, AND THE EMISSION SITS ON THE DISPENSER -- which it could not, until Band 3. \
             \ IGNIS is waived for exactly one account: \
-            \ 02_IGNIS.pact C_Collect reads `(= patron (DALOS::GOV|DALOS|SC_NAME))` and skips collection \
+            \ 02_IGNIS.pact XE_CollectIgnis reads `(= patron (DALOS::GOV|DALOS|SC_NAME))` and skips collection \
             \ when true -- the owner-confirmed single hardcoded gasless payer, which is what \
             \ GASLESS-PATRON binds to. Stage One can pass it as `patron` while the tokens move from \
             \ the dispenser, because C_Mint / C_BulkTransfer / ATS|C_Fuel / ATS|C_Coil all take patron \

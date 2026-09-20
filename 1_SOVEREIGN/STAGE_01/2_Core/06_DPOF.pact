@@ -522,11 +522,13 @@
                 (ref-P|DALOS:module{OuronetPolicyV2} DALOS)
                 (ref-P|BRD:module{OuronetPolicyV2} BRD)
                 (ref-P|DPTF:module{OuronetPolicyV2} DPTF)
+                (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
                 (mg:guard (create-capability-guard (P|DPOF|CALLER)))
             )
             (ref-P|DALOS::P|A_AddIMP mg)
             (ref-P|BRD::P|A_AddIMP mg)
             (ref-P|DPTF::P|A_AddIMP mg)
+            (ref-P|IGNIS::P|A_AddIMP mg)
         )
     )
 
@@ -2315,7 +2317,8 @@
             )
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: DPOF|C>ISSUE
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          DPOF|C>ISSUE
     (defun XB_IssueFree:object{IgnisCollectorV3.OutputCumulator}
         (
             account:string
@@ -2687,7 +2690,8 @@
             {"hibernation-link" : dptf}
         )
     )
-    ;;Protection: Class 5 — IMC + Custom: DPOF|C>UPDATE-SPECIAL
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          DPOF|C>UPDATE-SPECIAL
     (defun XE_UpdateSpecialOrtoFungible:object{IgnisCollectorV3.OutputCumulator}
         (main-dptf:string secondary-dpof:string vzh-tag:integer)
         (P|UEV_IMC)
@@ -2915,7 +2919,7 @@
             (with-capability (DPOF|C>UPGRADE-BRD entity-id)
                 (ref-BRD::XE_UpgradeBranding entity-id parent-owner months)
             )
-            (ref-IGNIS::STOA|C_CollectWT patron (URCi_UpgradeBranding months) false)
+            (ref-IGNIS::XB_CollectStoaWithTrigger patron (URCi_UpgradeBranding months) false)
         )
     )
     ;;
@@ -2943,7 +2947,7 @@
                     )
                 )
             )
-            (ref-IGNIS::STOA|C_Collect patron stoa-costs)
+            (ref-IGNIS::XE_CollectStoa patron stoa-costs)
             ico
         )
     )

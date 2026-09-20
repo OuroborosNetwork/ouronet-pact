@@ -573,7 +573,7 @@
             ;;together: C_Collect aborts; AA_FlushUncollected maps XI_CollectFor over the stragglers
             ;;and fails identically; and A_Inject refuses to open a new round while
             ;;(!= unclaimed-count 0). The vault stops paying and cannot be restarted from ANY
-            ;;entrypoint. IGNIS::C_TransferDalosFuel documents this exact lesson in its own @doc --
+            ;;entrypoint. IGNIS::XB_MoveDalosFuel documents this exact lesson in its own @doc --
             ;;it simply was not applied here.
             ;;
             ;;The fix is the guard the delivery already had, moved to cover the mint as well. The

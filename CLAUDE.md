@@ -243,7 +243,12 @@ The sentence above describes **shape A**, which is the common case but not the o
 | **E** | **defpact step** — the `C_` is only a starter; a later step bills | the 8 `MTX-SWP` pool/liquidity ops |
 | **F** | **nested Talos** — the core calls another Talos client that collects | `DEMIPAD::C_Transmit*` → `DPTF|C_Transfer` |
 
-Plus **primitives** (`IGNIS::C_TransferDalosFuel`, the `STOA|C_Collect*` family) which *are* the collectors and cannot collect from themselves.
+Plus **primitives** — the IGNIS collectors — which *are* the collectors and cannot collect from
+themselves. CORRECTED 2026-09-20: these used to be `C_`s (`IGNIS::C_TransferDalosFuel`, the
+`STOA|C_Collect*` family) and were the standing exception to every rule in this section. They are
+now `XB_MoveDalosFuel` / `XB_Collect*` / `XE_Collect*` — protected `X_` functions behind
+`P|UEV_IMC`, reachable only from a module holding a registered IMP guard. **The exception is gone
+because the prefix was wrong, not because the rule was.**
 
 The choice belongs to the op. `_conformance.py`'s `C-without-cumulator` reports all of these as **observations**, not violations — but the rule is still worth reading, because it is the only place that would surface a genuinely unbilled operation.
 
