@@ -278,6 +278,24 @@ are applied.
 two parameters. No exceptions.** This is a construction rule for the MODULE; what Talos does with
 those two parameters is what separates an admin path from a client path.
 
+### POSITION IS CANON, not just presence (owner ruling, 2026-09-20)
+
+```
+1st   patron      ALWAYS
+2nd   executor    ALWAYS
+3rd   executee    ALWAYS, when one exists
+```
+
+The roles occupy fixed slots. A function whose executor sits fourth is **not** conforming, even
+though it has one. This is what makes the surface readable without reading: the first three
+arguments of any entrypoint answer *who pays*, *who acts*, and *who it is done to*, in that order,
+every time.
+
+It also has a cost worth stating plainly: Pact arguments are POSITIONAL, so reordering a signature
+rewrites **every call site**. `C_Transfer (id sender receiver amount method)` becomes
+`C_Transfer (patron executor executee id amount method)` — the parameters do not merely gain a
+name, they move.
+
 ### The three roles
 
 | role | what it is | ownership enforcement |
@@ -313,6 +331,19 @@ deliberately do not, which is precisely why `patron` disappears from the wrapper
 **Consequence for Talos:** whatever permissions the gasless patron needs in order to satisfy each
 `A_`'s gates must be granted **in Talos**. The capability that proves the gasless patron's
 ownership is the same capability that proves the admin gating — one mechanism, two jobs.
+
+### `P|` POLICY FUNCTIONS ARE EXEMPT (owner ruling, 2026-09-20)
+
+Anything denominated `P|` — `P|A_Define`, `P|A_Add`, `P|A_AddIMP`, … — is **out of scope for this
+canon and must be left exactly as it is**. They are not client functions. They are **setup**
+functions with admin characteristics: deploy-time policy and inter-module-guard registration, run
+by the admin, with special permissions.
+
+That is what the `P|` denomination exists to signal, and it is why the exemption is safe to state
+as a blanket rule rather than a per-function judgement: the prefix already carries the meaning.
+`P|A_Define` takes no parameters at all — there is nothing to pay for and nobody to act upon.
+
+**126 functions.** A tool that counts them as non-conforming is measuring the wrong surface.
 
 ### Naming
 

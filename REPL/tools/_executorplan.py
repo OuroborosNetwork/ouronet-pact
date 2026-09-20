@@ -16,12 +16,18 @@ path in this system, so the blind spot was the client surface.
 
 CLASSIFICATION, on the SECOND parameter (the executor slot):
 
+    EXEMPT   `P|` policy functions -- setup, not client. Excluded entirely, by owner ruling.
     DONE     already named `executor`
     RENAME   an ACCOUNT under a bespoke name -- kickstarter / curler / coiler / fueler / account /
              owner-konto / client / injector / sender ... -> rename to `executor`
     ADD      an ENTITY id (id, ats, swpair, pool-id, fvt-id ...) -- there is no executor parameter
              at all and one must be added; the executor is currently derived inside a capability
     PATRON   the first parameter is not `patron` -- needs one (Talos supplies GASLESS-PATRON for A_)
+
+POSITION IS CANON. patron 1st, executor 2nd, executee 3rd when present. A function whose executor
+exists but sits fourth is NOT conforming. Pact arguments are positional, so a signature that has
+to be reordered rewrites every call site -- which is why RENAME and ADD are counted separately
+from the reorder they may also imply.
 
 The RENAME/ADD split matters: assuming "second parameter == executor" is wrong for 286 functions,
 where that slot holds an entity id.
@@ -54,8 +60,25 @@ def plan():
         for n, b in B._forms(s[mi:], "defun"):
             if not ENTRY.search(n):
                 continue
+            # `P|` POLICY FUNCTIONS ARE EXEMPT (owner ruling 2026-09-20). They are not client
+            # functions -- they are deploy-time setup and inter-module-guard registration, run by
+            # the admin with special permissions. The `P|` denomination exists precisely to signal
+            # that, which is why this is a blanket exclusion and not a per-function judgement.
+            # P|A_Define takes no parameters at all: nothing to pay for, nobody to act upon.
+            if n.startswith("P|"):
+                continue
             ps = TYPED.findall(B._params(b))
             f = os.path.basename(p)
+            # A TALOS A_ WRAPPER CORRECTLY HAS NO PATRON -- the blessed path supplies
+            # GASLESS-PATRON itself, which is exactly why the parameter disappears from the
+            # wrapper while remaining in the module. Without this rule the tool demands a patron on
+            # 200+ Talos admin wrappers and "fixing" them would BREAK the canon it is checking.
+            is_talos = os.sep + "3_Talos" + os.sep in p
+            is_admin = re.search(r'(?:^|\|)(A|AA)_', n) is not None
+            if is_talos and is_admin:
+                rows.append((f, n, "DONE" if ps and ps[0] == "executor" else "ADD",
+                             ps[0] if ps else ""))
+                continue
             if not ps or ps[0] != "patron":
                 rows.append((f, n, "PATRON", ps[0] if ps else ""))
                 continue
