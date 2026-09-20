@@ -963,3 +963,29 @@ Giving it a real executor means a NEW parameter → Band 1 → `EquityV2` is liv
 **4. `05_FVT::C_RotateOwnership` — Band 1, not Band 2.** Already diagnosed: `new-owner-konto` is
 the recipient; the executor is `owner-now`, derived. Cascade-free (`AcquisitionFarmsVaultsTreasuriesV1`
 is V1) — **this one is actually doable now**, and is the only one of the four that is.
+
+---
+
+## THE THREAD'S ORIGINAL QUESTION, RE-ANSWERED AFTER THE REFACTOR (2026-09-20)
+
+`AA_OuroMinterStageTwo` re-measured with the whole AQP family converted:
+
+```
+before the refactor (boot suite)   911,546 gas
+after  the refactor (boot suite)   911,547 gas
+```
+
+**One gas.** But the honest reading is narrower than the number invites, and worth stating plainly
+because the number is tempting:
+
+The emission's path is `C_Mint`, `C_BulkTransfer`, `CC_Inject` ×4, `C_Coil`. **`CC_Inject` was
+converted in Band 3, before the 911,546 measurement was taken.** Everything Band 1 did afterwards —
+`05_FVT`'s config surface, `08_DSA`, `03_AQP`'s pool governance, `01_ANK`'s anchors, `02_SCORE`'s
+models — is entrypoints this emission never calls.
+
+So the figure is a **regression check** confirming nothing on the money path moved. It is **not**
+evidence that adding an executor is free. A function that gained a `UEV_ExecutorIz*` enforce pays
+for that enforce; none of them is on this path.
+
+What it does close: the emission still fits a block, still costs ~47% of one, and the `<<TX-BOOT-S2GAS>>`
+band still holds at both ends after the largest change this codebase has had in one day.

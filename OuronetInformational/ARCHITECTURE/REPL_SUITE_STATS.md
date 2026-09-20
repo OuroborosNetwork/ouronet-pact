@@ -150,7 +150,7 @@ The **live worklist** is the figure to size remaining work by. It is NOT `_cheap
 | `@doc` AUTHORITY claims | 15 | `_docclaims.py` |
 | `@doc` IMMUTABLE claims | 5 | `_docclaims.py` |
 | `@doc` BOUND claims | 8 | `_docclaims.py` |
-| `@doc` INVARIANT claims | 82 | `_docclaims.py` |
+| `@doc` INVARIANT claims | 83 | `_docclaims.py` |
 | conformance violations | 0 | `_conformance.py` |
 | conformance observations | 115 | `_conformance.py` |
 

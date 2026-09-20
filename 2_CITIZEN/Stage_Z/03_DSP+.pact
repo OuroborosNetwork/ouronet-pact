@@ -487,6 +487,13 @@
             \ two measurements taken minutes apart already differ by 6% (911,546 in the boot suite, \
             \ 966,256 standalone) purely from chain state. \
             \ \
+            \ RE-MEASURED 2026-09-20 after the patron/executor refactor converted 52 entrypoints: \
+            \ 911,547 -- ONE GAS more than before it. Read that for what it is. This function's \
+            \ path (C_Mint, C_BulkTransfer, CC_Inject x4, C_Coil) was already converted in Band 3; \
+            \ the Band 1 work that followed touched CONFIGURATION and ADMIN entrypoints the \
+            \ emission never calls. So the figure is a REGRESSION CHECK that nothing on the money \
+            \ path moved -- not evidence that adding an executor is free. \
+            \ \
             \ The documented spike fallback is the MTX|n|C_Inject defpact -- and until 2026-09-20 \
             \ that fallback was FICTION for this function: the defpact hardcoded `XB_FvtInject \
             \ patron patron`, so it could only run when the gas payer was also the token source, \
