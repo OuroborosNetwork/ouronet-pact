@@ -165,7 +165,7 @@
                     (expect (format "<<TX-AQP-CL03>> farm ghost S>0 got={}" [ghost-s]) true (> ghost-s 0.0))
                     (expect (format "<<TX-AQP-CL03>> inject denom>0 got={}" [denom]) true (> denom 0.0))
                     (print (format "<(C_Inject OURO farm {})> => \"{}\"" [inject-amt
-                        (ref-TS02-C3::AQP-FVT|CC_Inject patron farm-id ouro-id inject-amt)
+                        (ref-TS02-C3::AQP-FVT|CC_Inject patron patron farm-id ouro-id inject-amt)
                     ]))
                     (let
                         (
@@ -185,7 +185,7 @@
                             (expect (format "<<TX-AQP-CL03>> member L_i advanced by inject got={}" [li-pre]) true (> li-pre 0.0))
                           ])
                         (print (format "<(CC_Collect farm triplet OURO)> => \"{}\"" [
-                            (ref-TS02-C3::AQP-FVT|CC_Collect owner farm-id 3 triplet-id ouro-id)
+                            (ref-TS02-C3::AQP-FVT|CC_Collect owner owner farm-id 3 triplet-id ouro-id)
                         ]))
                         (let
                             (
@@ -372,7 +372,7 @@
                 )
                 (print "--- [TX-AQP-CL04 · 03 · inject + both collect] ---")
                 (print (format "<(C_Inject OURO farm {})> => \"{}\"" [inject-amt
-                    (ref-TS02-C3::AQP-FVT|CC_Inject patron farm-id ouro-id inject-amt)
+                    (ref-TS02-C3::AQP-FVT|CC_Inject patron patron farm-id ouro-id inject-amt)
                 ]))
                 (let
                     (
@@ -384,10 +384,10 @@
                         (elite-e0:decimal (ref-DPTF::UR_AccountSupply elite-auryn-id emma))
                     )
                     (print (format "<(CC_Collect ANHD)> => \"{}\"" [
-                        (ref-TS02-C3::AQP-FVT|CC_Collect anhd farm-id 3 triplet-id ouro-id)
+                        (ref-TS02-C3::AQP-FVT|CC_Collect anhd anhd farm-id 3 triplet-id ouro-id)
                     ]))
                     (print (format "<(CC_Collect EMMA)> => \"{}\"" [
-                        (ref-TS02-C3::AQP-FVT|CC_Collect emma farm-id 3 triplet-id ouro-id)
+                        (ref-TS02-C3::AQP-FVT|CC_Collect emma emma farm-id 3 triplet-id ouro-id)
                     ]))
                     (let
                         (
@@ -484,9 +484,9 @@
                         ;;not move the counter. Before the repair each one decremented it, so an
                         ;;attacker could drive gc to 1 while honest stakers were still staked and then
                         ;;take the pool.
-                        (ref-TS02-C3::AQP-FVT|CC_Collect emma farm-id 3 triplet-id ouro-id)
-                        (ref-TS02-C3::AQP-FVT|CC_Collect emma farm-id 3 triplet-id ouro-id)
-                        (ref-TS02-C3::AQP-FVT|CC_Collect emma farm-id 3 triplet-id ouro-id)
+                        (ref-TS02-C3::AQP-FVT|CC_Collect emma emma farm-id 3 triplet-id ouro-id)
+                        (ref-TS02-C3::AQP-FVT|CC_Collect emma emma farm-id 3 triplet-id ouro-id)
+                        (ref-TS02-C3::AQP-FVT|CC_Collect emma emma farm-id 3 triplet-id ouro-id)
                         (map print
                             [
                                 (expect "<<TX-AQP-CL04>> a zero-weight account cannot walk the claimant counter"
@@ -494,7 +494,7 @@
                             ]
                         )
                         (let ((ab:decimal (ref-DPTF::UR_AccountSupply ouro-id anhd)))
-                            (ref-TS02-C3::AQP-FVT|CC_Collect anhd farm-id 3 triplet-id ouro-id)
+                            (ref-TS02-C3::AQP-FVT|CC_Collect anhd anhd farm-id 3 triplet-id ouro-id)
                             (map print
                                 [
                                     ;;and the sweep still WORKS: the rightful claimant is paid the

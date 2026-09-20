@@ -113,8 +113,8 @@
             ]
         )
     )
-    (print (format "<(TS02-C3.AQP-FVT|CC_Inject Wstoa amount={})> => \"{}\"" [inject-amount
-        (ref-TS02-C3::AQP-FVT|CC_Inject patron fvt-id wstoa-id inject-amount)
+    (print (format "<(TS02-C3.AQP-FVT|CC_Inject Wstoa Wstoa amount={})> => \"{}\"" [inject-amount
+        (ref-TS02-C3::AQP-FVT|CC_Inject patron patron fvt-id wstoa-id inject-amount)
     ]))
     (let
         (
@@ -143,7 +143,7 @@
             (wstoa-after-inject:decimal (ref-DPTF::UR_AccountSupply wstoa-id beneficiary-id))
         )
         (print (format "<(TS02-C3.AQP-FVT|CC_Collect Wstoa)> => \"{}\"" [
-            (ref-TS02-C3::AQP-FVT|CC_Collect patron fvt-id 1 score-id wstoa-id)
+            (ref-TS02-C3::AQP-FVT|CC_Collect patron patron fvt-id 1 score-id wstoa-id)
         ]))
         (let
             (
@@ -271,8 +271,8 @@
             (
                 (g-pre:decimal (ref-FVT::UR_FVT-RG|CurrentRps fvt-id auryn-id))
             )
-            (print (format "<(TS02-C3.AQP-FVT|CC_Inject Auryn {})> => \"{}\"" [inject-amount
-                (ref-TS02-C3::AQP-FVT|CC_Inject patron fvt-id auryn-id inject-amount)
+            (print (format "<(TS02-C3.AQP-FVT|CC_Inject Auryn Auryn {})> => \"{}\"" [inject-amount
+                (ref-TS02-C3::AQP-FVT|CC_Inject patron patron fvt-id auryn-id inject-amount)
             ]))
             (let
                 (
@@ -315,8 +315,8 @@
         (ar-before:decimal (ref-FVT::UR_FVT-RG|AvailableRewards fvt-id auryn-id))
     )
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-    (print (format "<(TS02-C3.AQP-FVT|CC_Inject Auryn amount={})> => \"{}\"" [inject-amount
-        (ref-TS02-C3::AQP-FVT|CC_Inject patron fvt-id auryn-id inject-amount)
+    (print (format "<(TS02-C3.AQP-FVT|CC_Inject Auryn Auryn amount={})> => \"{}\"" [inject-amount
+        (ref-TS02-C3::AQP-FVT|CC_Inject patron patron fvt-id auryn-id inject-amount)
     ]))
     (let
         (
@@ -378,8 +378,8 @@
             (
                 (pre-bal:decimal (ref-DPTF::UR_AccountSupply ouroboros-id patron))
             )
-            (print (format "<(TS02-C3.AQP-FVT|CC_Inject Ouroboros {})> => \"{}\"" [inject-amount
-                (ref-TS02-C3::AQP-FVT|CC_Inject patron fvt-id ouroboros-id inject-amount)
+            (print (format "<(TS02-C3.AQP-FVT|CC_Inject Ouroboros Ouroboros {})> => \"{}\"" [inject-amount
+                (ref-TS02-C3::AQP-FVT|CC_Inject patron patron fvt-id ouroboros-id inject-amount)
             ]))
             (let
                 (
@@ -393,7 +393,7 @@
                     ))
                 )
                 (print (format "<(TS02-C3.AQP-FVT|CC_Collect Ouroboros)> => \"{}\"" [
-                    (ref-TS02-C3::AQP-FVT|CC_Collect patron fvt-id 1 shares-score-id ouroboros-id)
+                    (ref-TS02-C3::AQP-FVT|CC_Collect patron patron fvt-id 1 shares-score-id ouroboros-id)
                 ]))
                 (let
                     (

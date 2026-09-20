@@ -92,7 +92,7 @@
     )
     ;; [XB]
     (defun XB_FvtInject:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
+        (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
     ;;{5.7}  User [A/C]
     (defun C_SetQualitySplit:object{IgnisCollectorV3.OutputCumulator}
@@ -160,16 +160,16 @@
         (patron:string fvt-id:string reward-dptf-id:string enabled:bool)
     )
     (defun CC_InjectStream:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
+        (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
     )
     (defun CC_Inject:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
+        (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
     (defun CCp_InjectFixChunk:string
         (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
     )
     (defun CC_InjectFinalize:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
+        (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
     (defun CCp_UnstaleAll:string
         (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
@@ -179,7 +179,7 @@
     (defun CCp_SweepRecomputeChunk:string (patron:string anchor-id:string chunk:integer))
     (defun CC_UnstaleMyScores:object{IgnisCollectorV3.OutputCumulator} (patron:string fvt-ids:[string]))
     (defun CC_Collect:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
+        (patron:string collector:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
     )
 
 
@@ -2042,7 +2042,7 @@
     ;; [XB]
     ;;Protection: Class 5 — IMC + Custom: FVT|C>INJECT
     (defun XB_FvtInject:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
+        (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "THE single authorized inject entry — usable BOTH internally (C_Inject delegates here) and externally \
             \ (the MTX|n|C_Inject defpact terminal step calls it cross-module), hence `XB`. Just the auth wrapper: \
             \ P|UEV_IMC + FVT|C>INJECT (validates + composes SECURE) around the one XI_FvtInjectCore. Any FVT class \
@@ -2056,7 +2056,7 @@
             )
             (P|UEV_IMC)
         (with-capability (FVT|C>INJECT patron fvt-id reward-dptf-id amount)
-            (ref-RPS::XE_XI_FvtInjectCore "MTX-AQP|2|CC_Inject" patron fvt-id reward-dptf-id amount)
+            (ref-RPS::XE_XI_FvtInjectCore "MTX-AQP|2|CC_Inject" patron injector fvt-id reward-dptf-id amount)
         )
     )
     )
@@ -2419,7 +2419,7 @@
     ;; ───────────────────────────────────────────────────────────────────────────
     ;;
     (defun CC_InjectStream:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
+        (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
         @doc "Inject a reward DPTF as a TIME-STREAM — the DELAYED inject path (any FVT class): `amount` vests \
             \ LINEARLY over `duration` seconds (1h..365d) and whoever is staked during each slice earns that slice \
             \ (late stakers included). duration = 0 is not accepted here — use C_Inject for an instant inject. \
@@ -2433,12 +2433,12 @@
             )
             (P|UEV_IMC)
         (with-capability (FVT|C>INJECT-STREAM patron fvt-id reward-dptf-id amount duration)
-            (ref-RPS::XE_XI_FvtAddStream "AQP-FVT|CC_InjectStream" patron fvt-id reward-dptf-id amount duration)
+            (ref-RPS::XE_XI_FvtAddStream "AQP-FVT|CC_InjectStream" patron injector fvt-id reward-dptf-id amount duration)
         )
     )
     )
     (defun CC_Inject:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
+        (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "HEAVY (R3 `CC_`) enforced-FRESH inject for ANY FVT class (farm/vault/treasury) — see the INJECT \
             \ FUNCTION MATRIX above C_Inject. Before injecting, SCAN the FVT's present users (`URH_FvtStalePresentUsers` \
             \ — one select over the purpose-built presence table, populated for every class at stake) and FIX every \
@@ -2476,7 +2476,7 @@
                             (UC_EmptyOc)
                         )
                         ;;===>PHASE 1-3=== inject on the now-FRESH divisor (shared core, also driven by the defpact)
-                        (ref-RPS::XE_XI_FvtInjectCore "AQP-FVT|CC_Inject" patron fvt-id reward-dptf-id amount)
+                        (ref-RPS::XE_XI_FvtInjectCore "AQP-FVT|CC_Inject" patron injector fvt-id reward-dptf-id amount)
                     ]
                     []
                 )
@@ -2528,7 +2528,7 @@
     )
     )
     (defun CC_InjectFinalize:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
+        (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "FINALIZE a paginated enforced-fresh inject: enforce that NO stale present user remains (the prior \
             \ CCp_InjectFixChunk pages made the divisor live), then inject on the fresh divisor via the shared \
             \ XI_FvtInjectCore — identical outcome to the single-tx CC_Inject and the MTX|2|C_Inject defpact terminal \
@@ -2550,7 +2550,7 @@
                 )
                 (enforce (= 0 stale-remaining)
                     "Stale stakers remain — page CCp_InjectFixChunk until none remain before finalizing (or use single-tx CC_Inject)")
-                (ref-RPS::XE_XI_FvtInjectCore "AQP-FVT|CC_InjectFinalize" patron fvt-id reward-dptf-id amount)
+                (ref-RPS::XE_XI_FvtInjectCore "AQP-FVT|CC_InjectFinalize" patron injector fvt-id reward-dptf-id amount)
             )
         )
     )
@@ -2788,7 +2788,7 @@
     )
     )
     (defun CC_Collect:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
+        (patron:string collector:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
         @doc "Collect reward DPTF — phases 0 → 5 — see canonical collect map above. UrStoa ≡ C_URV|Collect."
         (let
             (
@@ -2824,14 +2824,14 @@
                         ;;
                         ;;===>PHASE 1=== coin step 1 · C_Transmit URV|KONTO→account
                         ;; PRE payout via URC_CollectClaimableRewards inside XI (post phase 0, pre reset)
-                        (ref-RPS::XE_XI_TransferRewardDptfFromVault patron pool-id fvt-id score-entity-type score-entity-id reward-dptf-id)
+                        (ref-RPS::XE_XI_TransferRewardDptfFromVault patron collector pool-id fvt-id score-entity-type score-entity-id reward-dptf-id)
                         ;;
                         ;;===>PHASE 5=== coin step 5 · XI_URV|UpdateVaultSupply false
                         ;; ICO slot before phase 2 so URC reads same pre-reset state as UrStoa available-rewards let
                         (let
                             (
                                 (payout:decimal
-                                    (ref-RPS::URC_CollectClaimableRewards patron pool-id fvt-id score-entity-type score-entity-id reward-dptf-id)
+                                    (ref-RPS::URC_CollectClaimableRewards collector pool-id fvt-id score-entity-type score-entity-id reward-dptf-id)
                                 )
                                 (ar:decimal (ref-RPS::UR_FVT-RG|AvailableRewards fvt-id reward-dptf-id))
                                 (new-ar:decimal (- ar payout))
@@ -2863,19 +2863,19 @@
                         ;;already-exited account could decrement the counter a second time.
                         ;;The two phases touch disjoint state -- counters here, pending-rewards
                         ;;there -- so the swap changes nothing else.
-                        (ref-RPS::XE_XI_BookCollectUnclaimed patron pool-id fvt-id score-entity-type score-entity-id reward-dptf-id)
+                        (ref-RPS::XE_XI_BookCollectUnclaimed collector pool-id fvt-id score-entity-type score-entity-id reward-dptf-id)
                         ;;
                         ;;===>PHASE 2=== coin step 2 · XI_URV|ResetPendingRewards
                         (do
                             ;; SECURE: granted by WU_RpsUser|PendingRewards (underlying W_).
-                            (ref-RPS::XE_WU_RpsUser|PendingRewards patron fvt-id score-entity-id reward-dptf-id 0.0)
+                            (ref-RPS::XE_WU_RpsUser|PendingRewards collector fvt-id score-entity-id reward-dptf-id 0.0)
                             (UC_EmptyOc)
                         )
                         ;;
                         ;;===>PHASE 4=== coin step 4 · XI_URV|UpdateUserRPS (farm: L_i; vault/treasury: G)
                         (do
                             ;; SECURE: granted by WU_RpsUser|LastRps (underlying W_).
-                            (ref-RPS::XE_WU_RpsUser|LastRps patron fvt-id score-entity-id reward-dptf-id
+                            (ref-RPS::XE_WU_RpsUser|LastRps collector fvt-id score-entity-id reward-dptf-id
                                 (ref-RPS::URC_FvtTier1IndexRps fvt-id score-entity-id reward-dptf-id)
                             )
                             (UC_EmptyOc)
@@ -2888,14 +2888,14 @@
                         ;; deb-score(s) to live (each triplet leg at its OWN pool), and resync the FVT total-deb mirror
                         ;; by the member delta. Runs AFTER phases 1-4 so settle-before-weight-change holds. No-op when
                         ;; fresh or a TRUE triplet (deb-independent lanes).
-                        (ref-RPS::XE_XI_FixUserMemberDeb patron fvt-id score-entity-type score-entity-id)
+                        (ref-RPS::XE_XI_FixUserMemberDeb collector fvt-id score-entity-type score-entity-id)
                         ;;===>PHASE 7=== (M3 #12 2e) inject-forced-fix penalty: `count × RATE` NON-discountable IGNIS,
                         ;; then zero the count. Non-discount via gross-up (price = count×RATE / patron-discount → after
                         ;; the uniform prime-time discount it lands at exactly count×RATE). The reward paid is untouched;
                         ;; self-fixing (PHASE 6) is never penalized, so it stays the cheaper path. No-op when count = 0.
                         (let
                             (
-                                (ffc:integer (ref-RPS::UR_FVT-FFC|Count fvt-id reward-dptf-id patron))
+                                (ffc:integer (ref-RPS::UR_FVT-FFC|Count fvt-id reward-dptf-id collector))
                             )
                             (if (<= ffc 0)
                                 (UC_EmptyOc)
@@ -2904,7 +2904,7 @@
                                         (ref-DALOS:module{OuronetDalosV2} DALOS)
                                         (penalty:decimal (* (dec ffc) CT_FORCED_FIX_RATE))
                                     )
-                                    (ref-RPS::XE_WU_FvtForcedFixCount|Zero fvt-id reward-dptf-id patron)
+                                    (ref-RPS::XE_WU_FvtForcedFixCount|Zero fvt-id reward-dptf-id collector)
                                     (ref-IGNIS::UDC_ConstructOutputCumulator
                                         (/ penalty (ref-DALOS::URC_IgnisGasDiscount patron)) patron trigger []
                                     )

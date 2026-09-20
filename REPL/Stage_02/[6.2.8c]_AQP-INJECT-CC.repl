@@ -115,7 +115,7 @@
             ;; error instead. Either way finalize cannot proceed while stale; the assertion above confirms >0 stale.)
             (expect-failure "<<TX-INJECT-CC02>> CC_InjectFinalize REFUSES while stale stakers remain"
                 "Stale stakers remain — page CCp_InjectFixChunk until none remain"
-                (ref-TS02-C3::AQP-FVT|CC_InjectFinalize anhd fvt-id auryn-id 10.0))
+                (ref-TS02-C3::AQP-FVT|CC_InjectFinalize anhd anhd fvt-id auryn-id 10.0))
         ]
     )
 )
@@ -238,7 +238,7 @@
             (gas-pre:decimal (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" anhd))
         )
     (print (format "<(INJECT-CC04 AQP-FVT|CC_InjectFinalize)> => \"{}\""
-        [(ref-TS02-C3::AQP-FVT|CC_InjectFinalize anhd fvt-id auryn-id inject-amt)]))
+        [(ref-TS02-C3::AQP-FVT|CC_InjectFinalize anhd anhd fvt-id auryn-id inject-amt)]))
     (map print
         [
             (format "<<TX-INJECT-CC04>> InjectFinalize predicted={} real={}"

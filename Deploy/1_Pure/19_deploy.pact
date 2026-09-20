@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 19 of 20
 ;; This is STEP 19 of 21 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-18 must have run first, including the init steps between deploys.
-;; 5 module(s), 236,990 gas measured in the REPL gas model, 267,336 bytes
+;; 5 module(s), 236,990 gas measured in the REPL gas model, 267,503 bytes
 ;;
 ;; Modules in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact
@@ -294,16 +294,16 @@
         (patron:string owner-konto:string vault-name:string stake-dptf-id:string reward-dptf-id:string)
     )
     (defun AQP-FVT|CC_InjectStream:string
-        (patron:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
+        (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
     )
     (defun AQP-FVT|CC_Inject:string
-        (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
+        (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
     (defun AQP-FVT|CCp_InjectFixChunk:string
         (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
     )
     (defun AQP-FVT|CC_InjectFinalize:string
-        (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
+        (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
     (defun AQP-FVT|CCp_UnstaleAll:string
         (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
@@ -327,7 +327,7 @@
         (patron:string fvt-ids:[string])
     )
     (defun AQP-FVT|CC_Collect:string
-        (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
+        (patron:string collector:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
     )
     (defun AQP-DSA|C_DefineDelegationVault:string
         (patron:string fvt-id:string model-id:string unit-score:integer)
@@ -2308,7 +2308,7 @@
     )
 
     (defun AQP-FVT|CC_InjectStream:string
-        (patron:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
+        (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
         @doc "Injects reward DPTF as a TIME-STREAM (linear vesting over `duration` seconds, 1h..365d) into fvt-id \
             \ and collects IGNIS on patron. The DELAYED counterpart of AQP-FVT|CC_Inject (instant): the amount vests \
             \ continuously and whoever is staked during each slice earns it (late stakers included). Independent \
@@ -2321,7 +2321,7 @@
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-FVT::CC_InjectStream patron fvt-id reward-dptf-id amount duration)
+                    (ref-FVT::CC_InjectStream patron injector fvt-id reward-dptf-id amount duration)
                 )
                 (ref-TS01-A::XB_DynamicFuelSTOA)
                 (format "Successfully streamed {} {} into FVT {} over {}s." [amount reward-dptf-id fvt-id duration])
@@ -2329,7 +2329,7 @@
         )
     )
     (defun AQP-FVT|CC_Inject:string
-        (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
+        (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "HEAVY enforced-FRESH inject for ANY FVT class (farm/vault/treasury; M3 #12): refreshes every stale \
             \ staker's deb so the divisor is live before injecting, then injects + collects IGNIS on patron. Same \
             \ shape as C_Inject. Farms are covered too — a mosaic farm's singular/non-true-triplet members are \
@@ -2342,7 +2342,7 @@
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-FVT::CC_Inject patron fvt-id reward-dptf-id amount)
+                    (ref-FVT::CC_Inject patron injector fvt-id reward-dptf-id amount)
                 )
                 (ref-TS01-A::XB_DynamicFuelSTOA)
                 (format "Successfully FRESH-injected {} {} into FVT {}." [amount reward-dptf-id fvt-id])
@@ -2372,7 +2372,7 @@
         )
     )
     (defun AQP-FVT|CC_InjectFinalize:string
-        (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
+        (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "FINALIZE a paginated enforced-fresh inject: after CCp_InjectFixChunk pages left ZERO stale, inject on \
             \ the fresh divisor + collect IGNIS on patron — same outcome as the single-tx AQP-FVT|CC_Inject. Lives \
             \ in AQP-FVT."
@@ -2384,7 +2384,7 @@
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-FVT::CC_InjectFinalize patron fvt-id reward-dptf-id amount)
+                    (ref-FVT::CC_InjectFinalize patron injector fvt-id reward-dptf-id amount)
                 )
                 (ref-TS01-A::XB_DynamicFuelSTOA)
                 (format "Successfully FRESH-injected {} {} into FVT {} (paginated)." [amount reward-dptf-id fvt-id])
@@ -2542,7 +2542,7 @@
         )
     )
     (defun AQP-FVT|CC_Collect:string
-        (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
+        (patron:string collector:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
         @doc "Collects pending reward DPTF for patron on one score-entity from fvt-id; collects IGNIS on patron."
         (with-capability (P|TS)
             (let
@@ -2554,7 +2554,7 @@
                     (bal-before:decimal (ref-DPTF::UR_AccountSupply reward-dptf-id patron))
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-FVT::CC_Collect patron fvt-id score-entity-type score-entity-id reward-dptf-id)
+                    (ref-FVT::CC_Collect patron collector fvt-id score-entity-type score-entity-id reward-dptf-id)
                 )
                 (ref-TS01-A::XB_DynamicFuelSTOA)
                 (let

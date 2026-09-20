@@ -1159,7 +1159,7 @@
                 (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
             )
             (print (format "<(TS02-C3.AQP-FVT|CC_Inject)> => \"{}\""
-                [(ref-TS02-C3::AQP-FVT|CC_Inject patron fvt-id wstoa-id 25.0)]))
+                [(ref-TS02-C3::AQP-FVT|CC_Inject patron patron fvt-id wstoa-id 25.0)]))
             (let
                 (
                     (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
@@ -1849,7 +1849,7 @@
         ;;(measured in its own right at <<TX-INFO-GT-INJECT>>), and it completes before the
         ;;measurement window below opens.
         (print (format "<(setup inject)> => \"{}\""
-            [(ref-TS02-C3::AQP-FVT|CC_Inject patron fvt-id wstoa-id 25.0)]))
+            [(ref-TS02-C3::AQP-FVT|CC_Inject patron patron fvt-id wstoa-id 25.0)]))
         (let
             (
                 (predicted:decimal
@@ -1858,7 +1858,7 @@
                 (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
             )
             (print (format "<(TS02-C3.AQP-FVT|CC_Collect)> => \"{}\""
-                [(ref-TS02-C3::AQP-FVT|CC_Collect patron fvt-id 1 score-id wstoa-id)]))
+                [(ref-TS02-C3::AQP-FVT|CC_Collect patron patron fvt-id 1 score-id wstoa-id)]))
             (let
                 (
                     (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
@@ -1971,7 +1971,7 @@
             (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
         )
         (print (format "<(TS02-C3.AQP-FVT|CC_InjectStream)> => \"{}\""
-            [(ref-TS02-C3::AQP-FVT|CC_InjectStream patron fvt-id wstoa-id 24.0 86400)]))
+            [(ref-TS02-C3::AQP-FVT|CC_InjectStream patron patron fvt-id wstoa-id 24.0 86400)]))
         (let
             (
                 (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))

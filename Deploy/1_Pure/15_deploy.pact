@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 15 of 20
 ;; This is STEP 15 of 21 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-14 must have run first, including the init steps between deploys.
-;; 1 module(s), 229,502 gas measured in the REPL gas model, 292,357 bytes
+;; 1 module(s), 229,502 gas measured in the REPL gas model, 293,638 bytes
 ;;
 ;; Modules in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/04_RPS.pact
@@ -80,8 +80,8 @@
     (defun XE_XI_FixUserFvtDeb:object{IgnisCollectorV3.OutputCumulator} (user-id:string fvt-id:string))
     (defun XE_XI_FixUserFvtDebPenalizedIn:object{IgnisCollectorV3.OutputCumulator} (fvt-id:string reward-dptf-id:string user-id:string members:[string] reward-rows:[string]))
     (defun XE_XI_FixUserMemberDeb:object{IgnisCollectorV3.OutputCumulator} (user-id:string fvt-id:string score-entity-type:integer score-entity-id:string))
-    (defun XE_XI_FvtAddStream:object{IgnisCollectorV3.OutputCumulator} (op-key:string patron:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer))
-    (defun XE_XI_FvtInjectCore:object{IgnisCollectorV3.OutputCumulator} (op-key:string patron:string fvt-id:string reward-dptf-id:string amount:decimal))
+    (defun XE_XI_FvtAddStream:object{IgnisCollectorV3.OutputCumulator} (op-key:string patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer))
+    (defun XE_XI_FvtInjectCore:object{IgnisCollectorV3.OutputCumulator} (op-key:string patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal))
     (defun XE_XI_FvtSweepRecomputeChunk:object{IgnisCollectorV3.OutputCumulator} (fvt-id:string score-entity-id:string swept-boost-class-id:string users:[string]))
     (defun XE_XI_FvtSweepRecomputeWindow:integer (score-ids:[string] boost-class-id:string win-lo:integer win-hi:integer))
     (defun XE_XI_IssueMultipletFamily:string (token-0-id:string
@@ -96,7 +96,7 @@
     (defun XE_XI_SyncFvtPresence:object{IgnisCollectorV3.OutputCumulator} (beneficiary-id:string distinct-fvts:[string] direction:bool))
     (defun XE_XI_ToggleRewardLink:string (fvt-id:string reward-dptf-id:string enabled:bool))
     (defun XE_XI_ToggleScoreEntityLink:string (fvt-id:string score-entity-id:string enabled:bool))
-    (defun XE_XI_TransferRewardDptfFromVault:object{IgnisCollectorV3.OutputCumulator} (patron:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string))
+    (defun XE_XI_TransferRewardDptfFromVault:object{IgnisCollectorV3.OutputCumulator} (patron:string collector:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string))
 )
 
 (module RPS GOV
@@ -3365,8 +3365,20 @@
 
     ;;Protection: Class 2 — SECURE
     (defun XI_TransferRewardDptfFromVault:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
-        @doc "PHASE 1.1 collect — plain TFT or MULTIPLET_BASE lane split (Coil/Curl via ATSU)."
+        (patron:string collector:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
+        @doc "PHASE 1.1 collect — plain TFT or MULTIPLET_BASE lane split (Coil/Curl via ATSU). \
+            \ `collector` is the REWARD SUBJECT: its claimable amount is computed, its lanes are \
+            \ read, and every payout leg credits it. `patron` only pays IGNIS and is deliberately \
+            \ unused here -- the cumulator is built by the caller. \
+            \ \
+            \ THE SPLIT WAS HALF-DONE FOR ONE COMMIT AND IT IS WORTH KNOWING WHY. Band 3 first \
+            \ renamed only the final `C_Transfer` target, leaving the payout computed from `patron` \
+            \ and paid to `collector` -- compute one account's rewards, credit another's. It was \
+            \ harmless only because every call site still passed the same value twice. The gate did \
+            \ not catch it and could not: no ownership enforce disappeared, so AUTH-SURFACE.md was \
+            \ clean, and the assertion count was unchanged because no test varies the two. A \
+            \ mechanical invariant proves authorisation did not WEAKEN; it says nothing about \
+            \ whether a rename is SEMANTICALLY COMPLETE. Seven call sites had to move, not one."
         (require-capability (SECURE))
         (let
             (
@@ -3376,7 +3388,7 @@
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (reward-kind:string (UR_FVT-RG|RewardKind fvt-id reward-dptf-id))
-                (payout:decimal (URC_CollectClaimableRewards patron pool-id fvt-id score-entity-type score-entity-id reward-dptf-id))
+                (payout:decimal (URC_CollectClaimableRewards collector pool-id fvt-id score-entity-type score-entity-id reward-dptf-id))
             )
             (if (<= payout 0.0)
                 (UC_EmptyOc)
@@ -3384,7 +3396,7 @@
                     (let
                         (
                             (mf-id:string (UR_FVT-RG|MultipletFamilyId fvt-id reward-dptf-id))
-                            (lanes:object (URC_ComputeTripletLanes patron pool-id score-entity-id))
+                            (lanes:object (URC_ComputeTripletLanes collector pool-id score-entity-id))
                             (lane-b:decimal (at "lane-b" lanes))
                             (lane-s:decimal (at "lane-s" lanes))
                             (lane-g:decimal (at "lane-g" lanes))
@@ -3422,20 +3434,20 @@
                         )
                         (if (= mode CT_REWARD_MODE_HETEROGENEOUS)
                             ;; heterogeneous: each lane → all 3 ladder tokens per the FVT|QualitySplit matrix
-                            (XI_1|HeterogeneousLaneRoute patron fvt-id reward-dptf-id mf-id amt-b amt-s amt-g prec)
+                            (XI_1|HeterogeneousLaneRoute collector fvt-id reward-dptf-id mf-id amt-b amt-s amt-g prec)
                             ;; homogeneous (default): bronze → token-0 raw, silver → token-1 (coil), gold → token-2 (curl)
                             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                                 [
-                                    (if (> amt-b 0.0) (ref-TFT::C_Transfer token-0 AQP|SC_NAME patron amt-b true) (UC_EmptyOc))
-                                    (if (> fund-sg 0.0) (ref-TFT::C_Transfer token-0 AQP|SC_NAME patron fund-sg true) (UC_EmptyOc))
-                                    (if coil-s-ok (ref-ATSU::C_Coil patron ats-01 token-0 amt-s) (UC_EmptyOc))
-                                    (if curl-g-ok (ref-ATSU::C_Curl patron ats-01 ats-12 token-0 amt-g) (UC_EmptyOc))
+                                    (if (> amt-b 0.0) (ref-TFT::C_Transfer token-0 AQP|SC_NAME collector amt-b true) (UC_EmptyOc))
+                                    (if (> fund-sg 0.0) (ref-TFT::C_Transfer token-0 AQP|SC_NAME collector fund-sg true) (UC_EmptyOc))
+                                    (if coil-s-ok (ref-ATSU::C_Coil collector ats-01 token-0 amt-s) (UC_EmptyOc))
+                                    (if curl-g-ok (ref-ATSU::C_Curl collector ats-01 ats-12 token-0 amt-g) (UC_EmptyOc))
                                 ]
                                 []
                             )
                         )
                     )
-                    (ref-TFT::C_Transfer reward-dptf-id AQP|SC_NAME patron payout true)
+                    (ref-TFT::C_Transfer reward-dptf-id AQP|SC_NAME collector payout true)
                 )
             )
         )
@@ -4383,10 +4395,10 @@
 
     ;;Protection: Class 2 — SECURE
     (defun XI_FvtInjectCore:object{IgnisCollectorV3.OutputCumulator}
-        (op-key:string patron:string fvt-id:string reward-dptf-id:string amount:decimal)
+        (op-key:string patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "THE single inject-CORE for ALL FVT classes — the ONLY place inject writes exist. C_Inject, CC_Inject \
             \ and the MTX|n|C_Inject defpact terminal step all route through here (one code path to audit/fix). \
-            \ (1) custody transfer R patron→AQP|SC_NAME; (2) escrow-aware distribute over the divisor — FARM \
+            \ (1) custody transfer R injector→AQP|SC_NAME; (2) escrow-aware distribute over the divisor — FARM \
             \ (class 0): S = fresh split-at-inject value-sum, distribute (amount + zombie) across members via \
             \ XI_1|FarmSplitInject; VAULT/TREASURY: divisor = maintained total-deb-score mirror, G += (amount + \
             \ zombie) / divisor. FLUSH (divisor > 0): available-rewards += (amount + zombie), zombie→0. ESCROW \
@@ -4408,7 +4420,7 @@
                     ;; a freshly-released lane — a live stream + an instant inject in the same tx compose correctly.
                     (XI_ReleaseStream fvt-id reward-dptf-id)
                     ;;===>PHASE 1=== custody transfer · UrStoa ≡ C_Transfer / C_Transmit
-                    (ref-TFT::C_Transfer reward-dptf-id patron AQP|SC_NAME amount true)
+                    (ref-TFT::C_Transfer reward-dptf-id injector AQP|SC_NAME amount true)
                     ;;===>PHASE 2+3=== escrow-aware distribute + available-rewards (shared with the stream drip).
                     ;; Reward tokens are ALREADY in custody. XI_DistributeInjectAmount handles both the FLUSH
                     ;; (divisor > 0 → farm split-at-inject / vault G bump, available-rewards += R_eff, zombie→0) and
@@ -4427,10 +4439,10 @@
     ;;          can see it; a finished stream frees its slot only once the drip prunes it.
     ;;Protection: Class 2 — SECURE
     (defun XIv_FvtAddStream:object{IgnisCollectorV3.OutputCumulator}
-        (op-key:string patron:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
+        (op-key:string patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
         @doc "Streamed inject CORE (linear vesting). (0) DRIP pending streams (checkpoint + prune finished → free \
             \ slots); (0b) enforce a free stream slot on the POST-DRIP count under the FVT owner konto's Elite-tier \
-            \ cap; (1) custody-transfer `amount` patron→AQP|SC_NAME (held, invisible to available-rewards until \
+            \ cap; (1) custody-transfer `amount` injector→AQP|SC_NAME (held, invisible to available-rewards until \
             \ dripped); (2) append a stream at the next compacted position (rate = amount/duration, finish = \
             \ now+duration, released 0) and bump the lane cursor (stream-count, stream-unreleased += amount, \
             \ stream-last-release = now). NO distribution here — later drips release it linearly. require SECURE."
@@ -4457,7 +4469,7 @@
                     [
                         drip-oc
                         ;; PHASE 1 — custody transfer `amount` into AQP|SC_NAME (held until dripped)
-                        (ref-TFT::C_Transfer reward-dptf-id patron AQP|SC_NAME amount true)
+                        (ref-TFT::C_Transfer reward-dptf-id injector AQP|SC_NAME amount true)
                         ;; PHASE 2 — append the stream at the next compacted position + bump the lane cursor
                         (let*
                             (
@@ -5254,17 +5266,17 @@
         )
     )
     ;;Protection: Class 5 — IMC + Custom: RPS|XE>WRITE
-    (defun XE_XI_FvtAddStream:object{IgnisCollectorV3.OutputCumulator} (op-key:string patron:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
+    (defun XE_XI_FvtAddStream:object{IgnisCollectorV3.OutputCumulator} (op-key:string patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
-            (XIv_FvtAddStream op-key patron fvt-id reward-dptf-id amount duration)
+            (XIv_FvtAddStream op-key patron injector fvt-id reward-dptf-id amount duration)
         )
     )
     ;;Protection: Class 5 — IMC + Custom: RPS|XE>WRITE
-    (defun XE_XI_FvtInjectCore:object{IgnisCollectorV3.OutputCumulator} (op-key:string patron:string fvt-id:string reward-dptf-id:string amount:decimal)
+    (defun XE_XI_FvtInjectCore:object{IgnisCollectorV3.OutputCumulator} (op-key:string patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
-            (XI_FvtInjectCore op-key patron fvt-id reward-dptf-id amount)
+            (XI_FvtInjectCore op-key patron injector fvt-id reward-dptf-id amount)
         )
     )
     ;;Protection: Class 5 — IMC + Custom: RPS|XE>WRITE
@@ -5363,10 +5375,10 @@
         )
     )
     ;;Protection: Class 5 — IMC + Custom: RPS|XE>WRITE
-    (defun XE_XI_TransferRewardDptfFromVault:object{IgnisCollectorV3.OutputCumulator} (patron:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
+    (defun XE_XI_TransferRewardDptfFromVault:object{IgnisCollectorV3.OutputCumulator} (patron:string collector:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
         (P|UEV_IMC)
         (with-capability (RPS|XE>WRITE)
-            (XI_TransferRewardDptfFromVault patron pool-id fvt-id score-entity-type score-entity-id reward-dptf-id)
+            (XI_TransferRewardDptfFromVault patron collector pool-id fvt-id score-entity-type score-entity-id reward-dptf-id)
         )
     )
 )

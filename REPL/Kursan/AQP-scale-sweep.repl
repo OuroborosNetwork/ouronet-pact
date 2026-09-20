@@ -235,7 +235,7 @@
                 true (ref-AQP::UR_AQP|PoolSweepInProgress pool-id))
             (expect-failure "<<SCALE-SWP-FREEZE>> a collect on that pool is refused while the sweep is open"
                 "Collect is frozen while a re-score sweep is in progress on this pool"
-                (ref-TS02-C3::AQP-FVT|CC_Collect patron fvt-id 1 score-id ouro-id))
+                (ref-TS02-C3::AQP-FVT|CC_Collect patron patron fvt-id 1 score-id ouro-id))
             ;;TWO MORE GUARDS LIVE IN EXACTLY THIS WINDOW, and nowhere else in the suite: an OPEN
             ;;sweep is the precondition for both, and it exists only between CC_SweepBegin above and
             ;;the recompute chunks below.

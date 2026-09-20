@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 17 of 20
 ;; This is STEP 17 of 21 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-16 must have run first, including the init steps between deploys.
-;; 3 module(s), 849,276 gas measured in the REPL gas model, 250,789 bytes
+;; 3 module(s), 849,276 gas measured in the REPL gas model, 250,803 bytes
 ;;
 ;; Modules in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/06_VCT.pact
@@ -3859,7 +3859,7 @@
                             (n:integer (length stale))
                         )
                         (RPS.XE_FvtFixUserChunk fvt-id reward-dptf-id stale)
-                        (ref-IGNIS::C_Collect patron (ref-FVT::XB_FvtInject patron fvt-id reward-dptf-id amount))
+                        (ref-IGNIS::C_Collect patron (ref-FVT::XB_FvtInject patron patron fvt-id reward-dptf-id amount))
                         (yield {"injected" : true})
                         (format "MTX Inject 1|2: fixed {} stale staker(s) and INJECTED {} {} (terminal)." [n amount reward-dptf-id])
                     )
@@ -3889,7 +3889,7 @@
                                 (stale:[string] (RPS.URH_FvtStalePresentUsers fvt-id))
                             )
                             (RPS.XE_FvtFixUserChunk fvt-id reward-dptf-id stale)
-                            (ref-IGNIS::C_Collect patron (ref-FVT::XB_FvtInject patron fvt-id reward-dptf-id amount))
+                            (ref-IGNIS::C_Collect patron (ref-FVT::XB_FvtInject patron patron fvt-id reward-dptf-id amount))
                             (format "MTX Inject 2|2: fixed {} remaining stale staker(s) and INJECTED {} {}." [(length stale) amount reward-dptf-id])
                         )
                     )

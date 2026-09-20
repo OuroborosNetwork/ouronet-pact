@@ -354,28 +354,45 @@
             (gsid:string (ref-U|DALOS::UDC_Makeid (concat ["FeeAgency" "Golden"])))
         )
         (let ((triplet-id:string (ref-SCR::UC_ComputeTripletId bsid ssid gsid)))
-            (ref-TS02-C3::AQP-FVT|CC_Inject anhd fvt-id ouro 5000.0)
+            (ref-TS02-C3::AQP-FVT|CC_Inject anhd anhd fvt-id ouro 5000.0)
             ;; OPERATOR COLLECTS FIRST — independent of delegators
             (let ((op-before:decimal (ref-DPTF::UR_AccountSupply ouro anhd)))
-                (ref-TS02-C3::AQP-FVT|CC_Collect anhd fvt-id 3 triplet-id ouro)
+                (ref-TS02-C3::AQP-FVT|CC_Collect anhd anhd fvt-id 3 triplet-id ouro)
                 (let
                     (
                         (op-got:decimal (- (ref-DPTF::UR_AccountSupply ouro anhd) op-before))
                         (em-before:decimal (ref-DPTF::UR_AccountSupply ouro emma))
                     )
-                    (ref-TS02-C3::AQP-FVT|CC_Collect emma fvt-id 3 triplet-id ouro)
+                    (ref-TS02-C3::AQP-FVT|CC_Collect emma emma fvt-id 3 triplet-id ouro)
                     (let
                         (
                             (em-got:decimal (- (ref-DPTF::UR_AccountSupply ouro emma) em-before))
                             (lu-before:decimal (ref-DPTF::UR_AccountSupply ouro lumy))
                         )
-                        (ref-TS02-C3::AQP-FVT|CC_Collect lumy fvt-id 3 triplet-id ouro)
+                        ;;<<FEE-05-SPONSOR>> A SPONSORED COLLECT: ANHD is the patron (pays the
+                        ;;IGNIS), LUMY is the collector (receives the rewards). Every other collect
+                        ;;in this file passes the same account twice, which is what the Band 3
+                        ;;migration produced and which proves only that nothing broke.
+                        ;;
+                        ;;This line is the one that proves the separation WORKS, and it doubles as
+                        ;;the regression test for the bug Band 3 briefly shipped: the payout was
+                        ;;computed from `patron` while being paid to `collector`, so LUMY would have
+                        ;;been credited ANHD's claimable amount. The 1800 assertion below is the
+                        ;;detector -- under that bug it fails, and under a correct implementation it
+                        ;;is unchanged from when LUMY paid for herself.
+                        (ref-TS02-C3::AQP-FVT|CC_Collect anhd lumy fvt-id 3 triplet-id ouro)
                         (let ((lu-got:decimal (- (ref-DPTF::UR_AccountSupply ouro lumy) lu-before)))
                             (print (format "<(operator / emma / lumy)> => {} / {} / {}" [op-got em-got lu-got]))
                             (map print
                               [ (expect "<<FEE-05>> operator collected 1400 (own 900 net + fee 500), INDEPENDENT" 1400.0 op-got)
                                 (expect "<<FEE-05>> EMMA collected 1800 (2000 net of 10%)" 1800.0 em-got)
                                 (expect "<<FEE-05>> LUMY collected 1800" 1800.0 lu-got)
+                                ;;The other half of the sponsorship: ANHD paid the gas and must NOT
+                                ;;have been credited anything for it. `op-got` was measured before
+                                ;;LUMY's collect, so if the payout had gone to the patron this would
+                                ;;have moved.
+                                (expect "<<FEE-05-SPONSOR>> ...and ANHD, the PATRON, gained nothing from sponsoring it"
+                                    1400.0 (- (ref-DPTF::UR_AccountSupply ouro anhd) op-before))
                                 (expect "<<FEE-05>> conservation: op+emma+lumy = 5000" 5000.0 (+ op-got (+ em-got lu-got))) ])))))
         )
     )
@@ -428,21 +445,21 @@
         (let ((triplet-id:string (ref-SCR::UC_ComputeTripletId bsid ssid gsid)))
             ;; O(1) fee change — reprices only the next inject
             (ref-TS02-C3::AQP-DSA|C_SetAgencyFee anhd fvt-id triplet-id 200)
-            (ref-TS02-C3::AQP-FVT|CC_Inject anhd fvt-id ouro 5000.0)
+            (ref-TS02-C3::AQP-FVT|CC_Inject anhd anhd fvt-id ouro 5000.0)
             (let ((op-before:decimal (ref-DPTF::UR_AccountSupply ouro anhd)))
-                (ref-TS02-C3::AQP-FVT|CC_Collect anhd fvt-id 3 triplet-id ouro)
+                (ref-TS02-C3::AQP-FVT|CC_Collect anhd anhd fvt-id 3 triplet-id ouro)
                 (let
                     (
                         (op-got:decimal (- (ref-DPTF::UR_AccountSupply ouro anhd) op-before))
                         (em-before:decimal (ref-DPTF::UR_AccountSupply ouro emma))
                     )
-                    (ref-TS02-C3::AQP-FVT|CC_Collect emma fvt-id 3 triplet-id ouro)
+                    (ref-TS02-C3::AQP-FVT|CC_Collect emma emma fvt-id 3 triplet-id ouro)
                     (let
                         (
                             (em-got:decimal (- (ref-DPTF::UR_AccountSupply ouro emma) em-before))
                             (lu-before:decimal (ref-DPTF::UR_AccountSupply ouro lumy))
                         )
-                        (ref-TS02-C3::AQP-FVT|CC_Collect lumy fvt-id 3 triplet-id ouro)
+                        (ref-TS02-C3::AQP-FVT|CC_Collect lumy lumy fvt-id 3 triplet-id ouro)
                         (let ((lu-got:decimal (- (ref-DPTF::UR_AccountSupply ouro lumy) lu-before)))
                             (print (format "<(20%% op / emma / lumy)> => {} / {} / {}" [op-got em-got lu-got]))
                             (map print

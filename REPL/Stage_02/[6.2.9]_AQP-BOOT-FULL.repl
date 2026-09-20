@@ -1017,7 +1017,7 @@
                     (print (format "<(lanes EMMA)> => {}"
                         [(RPS.URC_ComputeTripletLanes KST.EMMA pool-id emma-triplet)]))
                     (print (format "<(inject 3000 OURO)> => \"{}\""
-                        [(TS02-C3.AQP-FVT|CC_Inject patron fvt-id ouro 3000.0)]))
+                        [(TS02-C3.AQP-FVT|CC_Inject patron patron fvt-id ouro 3000.0)]))
                     (let
                         (
                             (a0:decimal (DPTF.UR_AccountSupply ouro patron))
@@ -1028,9 +1028,9 @@
                             (e0e:decimal (DPTF.UR_AccountSupply elite KST.EMMA))
                         )
                         (print (format "<(ANHD collect)> => \"{}\""
-                            [(TS02-C3.AQP-FVT|CC_Collect patron fvt-id 3 anhd-triplet ouro)]))
+                            [(TS02-C3.AQP-FVT|CC_Collect patron patron fvt-id 3 anhd-triplet ouro)]))
                         (print (format "<(EMMA collect)> => \"{}\""
-                            [(TS02-C3.AQP-FVT|CC_Collect KST.EMMA fvt-id 3 emma-triplet ouro)]))
+                            [(TS02-C3.AQP-FVT|CC_Collect KST.EMMA KST.EMMA fvt-id 3 emma-triplet ouro)]))
                         (print (format "<(ANHD gained)> ouro={} auryn={} elite={}"
                             [(- (DPTF.UR_AccountSupply ouro patron) a0)
                              (- (DPTF.UR_AccountSupply auryn patron) a0a)

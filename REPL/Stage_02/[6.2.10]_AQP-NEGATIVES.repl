@@ -48,7 +48,7 @@
             (expect-failure
                 (format "<<TX-AQP-NEG-IMC1>> direct AQP-FVT::CC_Inject rejected (P|UEV_IMC)" [])
                 "None of the guards passed"
-                (ref-FVT::CC_Inject patron fvt-id ouro-id 1.0))
+                (ref-FVT::CC_Inject patron patron fvt-id ouro-id 1.0))
             (expect-failure
                 (format "<<TX-AQP-NEG-IMC1>> direct AQP-FVT::CC_SweepRevokeAnchor rejected (P|UEV_IMC)" [])
                 "None of the guards passed"

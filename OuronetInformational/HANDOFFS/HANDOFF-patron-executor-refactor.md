@@ -218,3 +218,98 @@ against a module that no longer existed at that point. It cost two ~20-minute ga
 
 **Moving a module's deploy position means moving its test position too, and nothing enforces that
 coupling.** Worth a gate check of its own if this recurs.
+
+
+## Band 3 post-mortem (2026-09-20) — three defects I introduced, and what each teaches
+
+**1. The half-migration.** The collect function's transfer TARGET was renamed to `collector` while
+the payout stayed COMPUTED from `patron`:
+
+    (payout ... (URC_CollectClaimableRewards patron ...))       ;; whose rewards
+    (C_Transfer reward-dptf-id AQP|SC_NAME collector payout)    ;; who receives them
+
+Compute one account's rewards, credit another's. SEVEN call sites had to move, not one -- the
+payout, the triplet lanes, the heterogeneous route, two bronze/silver transfers and the Coil/Curl
+legs. Harmless only because every call site still passes the same value twice, i.e. harmless until
+someone uses the feature the refactor exists to enable.
+
+**Neither mechanical invariant could see it.** AUTH-SURFACE was clean because no ownership enforce
+disappeared -- it asks "did authorisation WEAKEN?", not "is the rename COMPLETE?". The assertion
+count was unchanged because no test varies patron from executor. A mechanical invariant proves a
+PROPERTY, not correctness, and it is dangerously easy to let a green check stand in for the rest.
+What found it was asking a different question before writing the proof test: *does anything
+validate that the collector is entitled to those rewards?*
+
+**2. Two scripts, two function lists.** The call-site transformer and the core-signature script
+each carried their own list of "functions in this band". They disagreed on
+`CCp_InjectFixChunk`: the transformer added an argument at 7 call sites, the core script never
+added the parameter -- because that function fixes stale debs and moves no tokens, so it correctly
+has NO executor. Result: call sites passing an argument the function does not take.
+
+> For Bands 1/2/4: ONE source of truth for band membership, consumed by both scripts. Two lists
+> that must agree, with nothing enforcing it, is the same defect class as every other one found
+> this session.
+
+**3. Two call FORMS.** The transformer matched only the Talos-qualified `AQP-FVT|CC_Inject` and
+missed direct core calls written `ref-FVT::CC_Inject` (`[6.2.10]_AQP-NEGATIVES.repl`) and
+`ref-FVT::XB_FvtInject` (`07_MTX-AQP.pact` x2). A migration regex must cover every way the
+codebase spells a call, and this codebase spells it three ways: bare, `ref-X::`, and `Module.`.
+
+**What actually caught 2 and 3:** the suite, via arity errors. What caught 1: stopping to think
+about the test. The order matters -- the proof tests must come BEFORE the band commit, because they
+are the only thing that can detect a half-migration.
+
+**Follow-up left open:** `07_MTX-AQP.pact` passes `patron patron` into `XB_FvtInject`. MTX's own
+defpact signature has no executor yet; threading it is Band 3b, deliberately not folded in here.
+
+
+## Call-graph tooling on this codebase: the FOUR ways a check hides
+
+Building `_authsurface.py` and `_bandplan.py` produced the same bug four times, and every instance
+UNDER-reported -- the tool said "this function enforces nothing" about code that is enforced. That
+is the dangerous direction: it invites adding an executor with nothing to validate it against, or
+removing a derived check the tool could not see.
+
+A call-graph tool here MUST follow all four, or it is lying:
+
+    1. BARE NAME, resolved per FILE.      `(UEV_x ...)`
+       Resolving by name alone across modules is worse than useless: `C_Transfer` is defined in six
+       modules, and unioning them gave 342 of 841 entrypoints an IDENTICAL 7-target set.
+    2. A UEV_/CAP_ HELPER the defcap calls. C_SetMosaic -> UEV_SetMosaicContext -> CAP_Owner.
+    3. A COMPOSED CAPABILITY.             VST|C>VESTING-LINK -> VST|C>LINK -> DPTF::CAP_Owner.
+    4. A CROSS-MODULE HELPER.             `(ref-RPS::UEV_AddRewardLinkContext ...)` -- a regex
+       anchored on `(UEV_` misses it entirely. C_AddRewardLink DOES enforce ownership, at
+       04_RPS.pact:2800.
+
+And ownership is not one idiom but EIGHT. `CAP_Owner` (150 uses) is more common than
+`CAP_EnforceAccountOwnership` (108), with six module-local variants besides: CAP_StakeOwner,
+CAP_PoolOwner, CAP_VctVacatePoolOwner, CAP_TF|Owner, CAP_AqpAssetOwner, CAP_Creator. The first
+version of AUTH-SURFACE.md knew only one of the eight and therefore covered under half the
+enforcement in the tree -- 714 entrypoints reported as enforcing, against 811 in truth.
+
+Measured effect of fixing these, on "Band 1 functions whose executor cannot be determined
+mechanically": 30 -> 25 -> 14 -> 12. The first three numbers were tool artefacts.
+
+**I wrote the first tool BECAUSE non-transitive scans under-report, and then made the same mistake
+three more times in its sibling.** Knowing a failure mode does not prevent repeating it; only
+testing each specific shape does.
+
+### Genuine residue (12), not tooling gaps
+
+`C_IssueSingleScoreModel` and `C_CombineTripletScoreModel` have NO ownership check at all -- their
+defcap does `UEV_EnforceAccountExists patron` and stops. Anyone may define a score model. Probably
+harmless alone, but it pairs badly with the open finding that `DSA|Template.model-id` is written
+and never read: if a vault's declared model were ever enforced, an unowned model factory would
+start to matter. Two half-open doors that only matter together.
+
+## Band 3 verified authorisation-neutral (2026-09-20)
+
+Not asserted -- MEASURED, differentially, with the corrected tool across the commit boundary:
+check out Step 0 (d333fc9) into a worktree, run the 8-idiom transitive analyser against both trees,
+diff per `module::entrypoint`.
+
+    pre-Band-3: 1104 entrypoints        post: 1104
+    LOST an enforce:   0        GAINED: 0        disappeared: 0
+
+This comparison was only possible because Step 0 was committed SEPARATELY. Folding the instrument
+into the same commit as the change it validates would have left no boundary to measure across.

@@ -105,7 +105,16 @@ def collect():
     return defs, modfile
 
 
-OWN    = re.compile(r'CAP_EnforceAccountOwnership\s+([A-Za-z0-9|_-]+)')
+# EVERY ownership idiom, not just DALOS's. A first version matched only
+# CAP_EnforceAccountOwnership and therefore covered UNDER HALF the ownership enforcement in the
+# tree: CAP_Owner alone appears 150 times against its 108, and six module-local variants carry the
+# rest. The baseline's whole promise is "no entrypoint stopped enforcing something", and a promise
+# that cannot see CAP_Owner is not the promise it claims to be. Found while classifying Band 1:
+# DPTF authorises through UEV_ParentOwnership -> CAP_Owner, which the tool had reported as no
+# ownership check at all.
+OWN    = re.compile(r'(?:CAP_EnforceAccountOwnership|CAP_Owner|CAP_StakeOwner|CAP_PoolOwner|'
+                    r'CAP_VctVacatePoolOwner|CAP_TF\|Owner|CAP_AqpAssetOwner|CAP_Creator)'
+                    r'\s+\(?([A-Za-z0-9|_.:-]+)')
 BARE   = re.compile(r'\(([A-Za-z][A-Za-z0-9|_>-]*)[\s)]')
 VIAREF = re.compile(r'\(ref-([A-Za-z0-9|_-]+)::([A-Za-z0-9|_>-]+)')
 VIAMOD = re.compile(r'\(([A-Z][A-Za-z0-9|_-]*)\.([A-Za-z0-9|_>-]+)')

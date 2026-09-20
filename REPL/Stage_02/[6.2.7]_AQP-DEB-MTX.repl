@@ -152,7 +152,7 @@
         (mirror-pre:decimal (ref-FVT::UR_FVT|TotalDebScore fvt-id))
     )
     (print (format "<(DEB01 CC_Collect treasury Auryn)> => \"{}\""
-        [(ref-TS02-C3::AQP-FVT|CC_Collect anhd fvt-id 1 score-id auryn-id)]))
+        [(ref-TS02-C3::AQP-FVT|CC_Collect anhd anhd fvt-id 1 score-id auryn-id)]))
     (let
         (
             (stored-post:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore anhd pool-id score-id))
@@ -500,7 +500,7 @@
     )
     (expect "<<TX-AQP-DEB06>> pre: ANHD Bunnies score STALE" true (ref-SCR::URC_U-SCR|UserScoreDebStale anhd bunnies-pool bunnies-score))
     (expect "<<TX-AQP-DEB06>> pre: ANHD CodingDivision score STALE" true (ref-SCR::URC_U-SCR|UserScoreDebStale anhd coding-pool coding-score))
-    (print (format "<(DEB06 CC_Inject)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|CC_Inject anhd fvt-id auryn-id inject-amt)]))
+    (print (format "<(DEB06 CC_Inject)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|CC_Inject anhd anhd fvt-id auryn-id inject-amt)]))
     (let
         (
             (bunnies-post:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore anhd bunnies-pool bunnies-score))
@@ -566,7 +566,7 @@
             ;; CC_Inject (DEB06) forced 2 fixes for ANHD on the auryn lane
             (expect "<<TX-AQP-DEB07>> CC_Inject recorded 2 forced fixes for ANHD (Bunnies + CodingDivision)" 2 ffc-pre)
             (format "<(DEB07 CC_Collect Bunnies auryn)> => \"{}\""
-                [(ref-TS02-C3::AQP-FVT|CC_Collect anhd fvt-id 1 bunnies-score auryn-id)])
+                [(ref-TS02-C3::AQP-FVT|CC_Collect anhd anhd fvt-id 1 bunnies-score auryn-id)])
             ;; the collect charged count×RATE non-discountable IGNIS and ZEROED the count
             (expect "<<TX-AQP-DEB07>> forced-fix count ZEROED after collect (penalty charged)"
                 0 (ref-FVT::UR_FVT-FFC|Count fvt-id auryn-id anhd))
@@ -824,8 +824,8 @@
             (ar-pre:decimal (ref-FVT::UR_FVT-RG|AvailableRewards fvt-id wstoa-id))
             (zb-pre:decimal (ref-FVT::UR_FVT-RG|ZombieRewards fvt-id wstoa-id))
         )
-        (ref-TS02-C3::AQP-FVT|CC_Inject anhd fvt-id wstoa-id 10.0)
-        (ref-TS02-C3::AQP-FVT|CC_Inject anhd fvt-id wstoa-id 15.0)
+        (ref-TS02-C3::AQP-FVT|CC_Inject anhd anhd fvt-id wstoa-id 10.0)
+        (ref-TS02-C3::AQP-FVT|CC_Inject anhd anhd fvt-id wstoa-id 15.0)
         (let
             (
                 (g-post:decimal (ref-FVT::UR_FVT-RG|CurrentRps fvt-id wstoa-id))
@@ -885,14 +885,14 @@
             (denom:decimal (ref-FVT::URC_InjectDenominator fvt-id))
         )
         ;; The first NON-zero inject: R_eff = 5 (this amount) + 25 (escrow) = 30, distributed to ANHD.
-        (ref-TS02-C3::AQP-FVT|CC_Inject anhd fvt-id wstoa-id 5.0)
+        (ref-TS02-C3::AQP-FVT|CC_Inject anhd anhd fvt-id wstoa-id 5.0)
         (let
             (
                 (zb-post:decimal (ref-FVT::UR_FVT-RG|ZombieRewards fvt-id wstoa-id))
                 ;; measure the COLLECT payout in isolation: balance immediately before vs after the collect.
                 (wstoa-pre-collect:decimal (ref-DPTF::UR_AccountSupply wstoa-id anhd))
             )
-            (ref-TS02-C3::AQP-FVT|CC_Collect anhd fvt-id 1 score-id wstoa-id)
+            (ref-TS02-C3::AQP-FVT|CC_Collect anhd anhd fvt-id 1 score-id wstoa-id)
             (let
                 (
                     (payout:decimal (- (ref-DPTF::UR_AccountSupply wstoa-id anhd) wstoa-pre-collect))
@@ -970,7 +970,7 @@
         (expect "<<TX-AQP-DEB11>> OuroLpFarm is class 0 (farm)" 0 class)
         (let
             (
-                (r:string (ref-TS02-C3::AQP-FVT|CC_Inject anhd farm-id ouro-id inject-amt))
+                (r:string (ref-TS02-C3::AQP-FVT|CC_Inject anhd anhd farm-id ouro-id inject-amt))
             )
             (let
                 (

@@ -397,7 +397,7 @@
     )
     (expect "<<SCALE-INJ-FINALIZE>> pre: zero stale (gate may proceed)" 0 (length (ref-FVT::URH_FvtStalePresentUsers fvt-id)))
     (env-gas 0)
-    (ref-TS02-C3::AQP-FVT|CC_InjectFinalize patron fvt-id ouro-id 10.0)
+    (ref-TS02-C3::AQP-FVT|CC_InjectFinalize patron patron fvt-id ouro-id 10.0)
     (let
         (
             (g:integer (env-gas))

@@ -518,11 +518,11 @@
                 (ref-TS01-C1::DPTF|C_BulkTransfer GASLESS-PATRON ouro holder [treasury] [s2-treasury])
                 ;;3. 20% into the Custodians vault. Injected as OURO; the multiplet ladder pays each
                 ;;   staker OURO, Auryn or Elite-Auryn according to their score quality.
-                (ref-TS02-C3::AQP-FVT|CC_Inject GASLESS-PATRON (at 0 fvt-ids) ouro s2-custodians)
+                (ref-TS02-C3::AQP-FVT|CC_Inject GASLESS-PATRON GASLESS-PATRON (at 0 fvt-ids) ouro s2-custodians)
                 ;;4. 10% to shareholders. Its reward link IS Ouroboros, so a direct OURO inject.
-                (ref-TS02-C3::AQP-FVT|CC_Inject GASLESS-PATRON (at 1 fvt-ids) ouro s2-shareholders)
+                (ref-TS02-C3::AQP-FVT|CC_Inject GASLESS-PATRON GASLESS-PATRON (at 1 fvt-ids) ouro s2-shareholders)
                 ;;5. 20% into Ouroboros liquidity farming — OURO in, triplet rules out.
-                (ref-TS02-C3::AQP-FVT|CC_Inject GASLESS-PATRON (at 2 fvt-ids) ouro s2-farm)
+                (ref-TS02-C3::AQP-FVT|CC_Inject GASLESS-PATRON GASLESS-PATRON (at 2 fvt-ids) ouro s2-farm)
                 ;;6. 20% fuels the Auryndex directly
                 (ref-TS01-C2::ATS|C_Fuel GASLESS-PATRON holder auryndex ouro s2-autostake)
                 ;;7. 20% coiled OURO->Auryn, then injected as AURYN into the Subsidiary treasury
@@ -531,7 +531,7 @@
                         (subsidiary-auryn:decimal (ref-ATS::URC_RBT auryndex ouro s2-subsidiary))
                     )
                     (ref-TS01-C2::ATS|C_Coil GASLESS-PATRON holder auryndex ouro s2-subsidiary)
-                    (ref-TS02-C3::AQP-FVT|CC_Inject GASLESS-PATRON (at 3 fvt-ids) auryn subsidiary-auryn)
+                    (ref-TS02-C3::AQP-FVT|CC_Inject GASLESS-PATRON GASLESS-PATRON (at 3 fvt-ids) auryn subsidiary-auryn)
                     [daily s2-custodians s2-treasury s2-shareholders s2-farm s2-autostake subsidiary-auryn]
                 )
             )

@@ -421,7 +421,7 @@
     (enforce (>= ouro-pre inject-amt) "TX-FVT-05: patron needs OURO for inject")
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
     (print (format "<(TS02-C3.AQP-FVT|CC_Inject amount={})> => \"{}\"" [inject-amt
-        (ref-TS02-C3::AQP-FVT|CC_Inject patron fvt-id ouro-id inject-amt)
+        (ref-TS02-C3::AQP-FVT|CC_Inject patron patron fvt-id ouro-id inject-amt)
     ]))
     (let
         (
@@ -453,7 +453,7 @@
             )
             (print (format "<(URCi_CollectFull plain→ignis-need)> = {} ; patron pre-gas = {}" [predicted pre-gas]))
             (print (format "<(TS02-C3.AQP-FVT|CC_Collect type=1)> => \"{}\"" [
-                (ref-TS02-C3::AQP-FVT|CC_Collect patron fvt-id 1 score-id ouro-id)
+                (ref-TS02-C3::AQP-FVT|CC_Collect patron patron fvt-id 1 score-id ouro-id)
             ]))
             (let ((post-gas:decimal (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" patron)))
                 (map print
@@ -488,7 +488,7 @@
                     (ouro-before-2:decimal (ref-DPTF::UR_AccountSupply ouro-id patron))
                 )
                 (print (format "<(TS02-C3.AQP-FVT|CC_Collect second)> => \"{}\"" [
-                    (ref-TS02-C3::AQP-FVT|CC_Collect patron fvt-id 1 score-id ouro-id)
+                    (ref-TS02-C3::AQP-FVT|CC_Collect patron patron fvt-id 1 score-id ouro-id)
                 ]))
                 (let
                     (
@@ -544,7 +544,7 @@
     (env-chain-data { "block-time": t0 })
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
     (let ((ouro-pre:decimal (ref-DPTF::UR_AccountSupply ouro-id patron)))
-        (print (format "<(AQP-FVT|CC_InjectStream)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|CC_InjectStream patron fvt-id ouro-id 240.0 86400)]))
+        (print (format "<(AQP-FVT|CC_InjectStream)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|CC_InjectStream patron patron fvt-id ouro-id 240.0 86400)]))
         (map print
             [ (expect "<<05b>> stream-count = 1 after inject" 1 (AQP-FVT.UR_FVT-RG|StreamCount fvt-id ouro-id))
               (expect "<<05b>> stream-unreleased = 240 after inject" 240.0 (AQP-FVT.UR_FVT-RG|StreamUnreleased fvt-id ouro-id))
@@ -562,7 +562,7 @@
             [ (format "<<05b>> URC_LiveClaimable @12h (pre-collect) = {}" [live])
               (expect (format "<<05b>> URC_LiveClaimable projects ~120 @12h got={}" [live]) true (and (> live 119.99) (< live 120.01))) ]))
     (let ((ouro-pre:decimal (ref-DPTF::UR_AccountSupply ouro-id patron)))
-        (print (format "<(CC_Collect @12h)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|CC_Collect patron fvt-id 1 score-id ouro-id)]))
+        (print (format "<(CC_Collect @12h)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|CC_Collect patron patron fvt-id 1 score-id ouro-id)]))
         (let ((payout:decimal (- (ref-DPTF::UR_AccountSupply ouro-id patron) ouro-pre)))
             (map print
                 [ (format "<<05b>> payout @12h = {}" [payout])
@@ -574,7 +574,7 @@
     (env-chain-data { "block-time": (add-time t0 86400) })
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
     (let ((ouro-pre:decimal (ref-DPTF::UR_AccountSupply ouro-id patron)))
-        (print (format "<(CC_Collect @24h)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|CC_Collect patron fvt-id 1 score-id ouro-id)]))
+        (print (format "<(CC_Collect @24h)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|CC_Collect patron patron fvt-id 1 score-id ouro-id)]))
         (let
             (
                 (payout:decimal (- (ref-DPTF::UR_AccountSupply ouro-id patron) ouro-pre))
@@ -1009,13 +1009,13 @@
                 (ouro-e-pre:decimal (ref-DPTF::UR_AccountSupply ouro-id emma))
             )
             (print (format "<(C_Inject {})> => \"{}\"" [inject-amt
-                (ref-TS02-C3::AQP-FVT|CC_Inject patron fvt-id ouro-id inject-amt)
+                (ref-TS02-C3::AQP-FVT|CC_Inject patron patron fvt-id ouro-id inject-amt)
             ]))
             (print (format "<(CC_Collect ANHD)> => \"{}\"" [
-                (ref-TS02-C3::AQP-FVT|CC_Collect anhd fvt-id 1 score-id ouro-id)
+                (ref-TS02-C3::AQP-FVT|CC_Collect anhd anhd fvt-id 1 score-id ouro-id)
             ]))
             (print (format "<(CC_Collect EMMA)> => \"{}\"" [
-                (ref-TS02-C3::AQP-FVT|CC_Collect emma fvt-id 1 score-id ouro-id)
+                (ref-TS02-C3::AQP-FVT|CC_Collect emma emma fvt-id 1 score-id ouro-id)
             ]))
             (let
                 (
