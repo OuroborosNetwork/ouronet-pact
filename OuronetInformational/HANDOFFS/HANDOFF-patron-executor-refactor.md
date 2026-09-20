@@ -577,3 +577,72 @@ other*, so a stale source figure propagates consistently and reports clean. The 
 assertion count is checked against the tree and did fail loudly; the `executed` count has no such
 anchor. Cross-document consistency is not the same as correctness, and only one of these two
 figures had a ground truth.
+
+---
+
+## BAND 1 / AQP — `01_ANK` DONE, all 4 (2026-09-20). Two real defects found.
+
+### DEFECT 1 — the two DPNF anchor paths enforced no ownership at all
+
+```
+ANK|C>ISSUE-DPTF      -> CAP_TF|Owner dptf-id              (gated)
+ANK|C>ISSUE-DPSF      -> CAP_OwnerOrCreator dpsf-id true   (gated)
+ANK|C>ISSUE-DPNF      -> ANK|XI>ISSUE-DPNF-COMMON          -> NOTHING
+ANK|C>ISSUE-DPNF-SET  -> ANK|XI>ISSUE-DPNF-COMMON          -> NOTHING
+```
+
+Two of four siblings gated, two did not. **Concrete failure scenario, not a theoretical one:**
+`UEV_AssetAnchorCap` caps an asset at **49 anchors**, so a stranger could mint 49 anchors against
+a collection he did not own, **exhaust the cap permanently**, and own every boost class created
+along the way (`XI_IssueBoostClass` wrote `patron` as the owner). Bounded by STOA cost, but cheap
+next to blocking a collection forever.
+
+**It was being exercised.** Closing the gate immediately failed
+`[6.2.4]_AQP-FVT-NF`, which anchors `DHB-98c486052a51` while signing only as `PK_AncientHodler` —
+and DHB is owned by `KST.LUMY`, created by `KST.EMMA`. The fixture has been issuing anchors on a
+collection it does not control for as long as the test has existed. Fixed by signing as the owner,
+which is what a real caller would have to do.
+
+### DEFECT 2 — inline boost classes were owned by the GAS PAYER
+
+```pact
+(XI_IssueBoostClass boost-class-name-or-id patron)    ;; x4
+```
+
+The boost-class ownership field added earlier was being filled with the **patron**. Under a gasless
+patron every inline boost class would have been owned by `DALOS|SC_NAME` rather than its creator —
+silently, since nothing reads it back at issuance time. Now `executor`.
+
+### What naming the executor revealed: `CAP_TF|Owner` is KEY-based, not ACCOUNT-based
+
+The first run of the new `(= executor …)` check failed on OURO, and the improved error message
+named why:
+
+    Executor Ѻ.éXødV… is not an authority for anchored asset OURO-98c486052a51;
+    authority is ["Σ.W∇ЦwÏξБØ…"]
+
+`Σ.` is a **smart account**. OURO is owned by a smart account whose key the admin merely holds, so
+`CAP_EnforceAccountOwnership` passed while the *account* differed. Every call site had been passing
+the human patron as though it were the actor. **The parameter did not exist, so the question was
+never asked.** Test call sites now read the owner via the new `URC_AnchorableAssetOwner` rather
+than assuming it.
+
+### Shared helpers added, and the duplication NOT created
+
+- `URCv_CoreDptf` — the `F|`/`R|` → core-token resolution, **extracted from `CAP_TF|Owner`** so the
+  executor check and the ownership gate read the same rule. Copying that `cond` would have been the
+  same "two lists that must agree" failure `_bandplan.py`'s own docstring exists to warn about.
+- `UEV_ExecutorIzAssetAuthority` — handles the DPTF **value** and the collectable **disjunction**
+  (owner OR creator) in one place.
+- `UEV_ExecutorIzAnchorAuthority` — anchor-level form. **This is what `MTX-AQP::C_2|SweepRevokeAnchor`
+  was waiting for**; it can now be finished.
+- `URC_AnchorableAssetOwner` — the reader that answers "who may anchor this?" for call sites and UIs.
+
+### Two migration lessons worth carrying into the remaining modules
+
+1. **`executor = patron` is not a safe default.** It is only right where the patron already was the
+   actor. For anchors it is usually wrong, and the new enforce caught it on the first run.
+2. **Do not bind the owner eagerly.** Two sites broke: `[6.2.15]` reads the collection *before it is
+   issued*, and `modules/AQP.repl`'s negative probes use an **LP id with no owner row** — there the
+   eager read raised and replaced the very refusal the test asserts. Negative probes must keep
+   passing a plain account.

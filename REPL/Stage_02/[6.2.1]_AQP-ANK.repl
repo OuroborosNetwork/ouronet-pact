@@ -55,6 +55,7 @@
     (
         (patron:string KST.ANHD)
         (ouro-id:string "OURO-98c486052a51")
+        (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
         (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
@@ -106,13 +107,13 @@
     (print "--- [TX001 · 04 · issue 7 TF anchors (acnoi=true for 1st creates BoostClass, acnoi=false for 2..7)] ---")
     (map print
         [
-            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFAnchorAa acnoi=true CoreBoostTFa)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorAa" ouro-id true core-class-name 3 100.0 1000.0)])
-            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFAnchorAb acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorAb" ouro-id false core-class-id 3 110.0 1100.0)])
-            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFAnchorAc acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorAc" ouro-id false core-class-id 3 120.0 1200.0)])
-            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFAnchorAd acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorAd" ouro-id false core-class-id 3 130.0 1300.0)])
-            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFAnchorAe acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorAe" ouro-id false core-class-id 3 140.0 1400.0)])
-            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFAnchorAf acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorAf" ouro-id false core-class-id 3 150.0 1500.0)])
-            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFAnchorAg acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorAg" ouro-id false core-class-id 3 160.0 1600.0)])
+            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFAnchorAa acnoi=true CoreBoostTFa)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron ouro-owner "TFAnchorAa" ouro-id true core-class-name 3 100.0 1000.0)])
+            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFAnchorAb acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron ouro-owner "TFAnchorAb" ouro-id false core-class-id 3 110.0 1100.0)])
+            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFAnchorAc acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron ouro-owner "TFAnchorAc" ouro-id false core-class-id 3 120.0 1200.0)])
+            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFAnchorAd acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron ouro-owner "TFAnchorAd" ouro-id false core-class-id 3 130.0 1300.0)])
+            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFAnchorAe acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron ouro-owner "TFAnchorAe" ouro-id false core-class-id 3 140.0 1400.0)])
+            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFAnchorAf acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron ouro-owner "TFAnchorAf" ouro-id false core-class-id 3 150.0 1500.0)])
+            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFAnchorAg acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron ouro-owner "TFAnchorAg" ouro-id false core-class-id 3 160.0 1600.0)])
         ]
     )
     ;;==== TX001 · 05 · expect-failure (8th anchor slot in BoostClass) — REPL =========
@@ -122,7 +123,7 @@
             (expect-failure
                 (format "<<TX001 expect-failure>> BoostClass must reject 8th anchor slot: <(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFAnchorfailslot)> (must fail)" [])
                 "{\"anchor-id\": \"|\",\"ouronet-account\": \"|\",\"promile\": 0.0} BoostClass"
-                (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorfailslot" ouro-id false core-class-id 3 990.0 9900.0)
+                (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron ouro-owner "TFAnchorfailslot" ouro-id false core-class-id 3 990.0 9900.0)
             )
         ]
     )
@@ -134,34 +135,34 @@
         [
             (expect-failure "<<TX001 M6#15>> promile > 10000 rejected"
                 "Invalid Promile Variables: precision must be 3 and promile within [1,"
-                (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFbadPromileHi" ouro-id true "M6HiClass" 3 10001.0 1000.0))
+                (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron ouro-owner "TFbadPromileHi" ouro-id true "M6HiClass" 3 10001.0 1000.0))
             (expect-failure "<<TX001 M6#15>> promile < 1 rejected"
                 "Invalid Promile Variables: precision must be 3 and promile within [1,"
-                (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFbadPromileLo" ouro-id true "M6LoClass" 3 0.999 1000.0))
+                (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron ouro-owner "TFbadPromileLo" ouro-id true "M6LoClass" 3 0.999 1000.0))
             (expect-failure "<<TX001 M6#15>> promile not conform to precision 3 rejected"
                 "Invalid Promile Variables: precision must be 3 and promile within [1,"
-                (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFbadConf" ouro-id true "M6ConfClass" 3 100.0001 1000.0))
+                (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron ouro-owner "TFbadConf" ouro-id true "M6ConfClass" 3 100.0001 1000.0))
             (expect-failure "<<TX001 M6#15>> precision != 3 rejected"
                 "Invalid Promile Variables: precision must be 3 and promile within [1,"
-                (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFbadPrec" ouro-id true "M6PrecClass" 4 100.0 1000.0))
+                (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron ouro-owner "TFbadPrec" ouro-id true "M6PrecClass" 4 100.0 1000.0))
             (expect-failure "<<TX001 M6#15>> dptf-amount < 1000 rejected"
                 "TF anchor denominated amount (dptf-amount) must be within [1000,"
-                (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFbadAmtLo" ouro-id true "M6AmtLoClass" 3 100.0 999.0))
+                (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron ouro-owner "TFbadAmtLo" ouro-id true "M6AmtLoClass" 3 100.0 999.0))
             (expect-failure "<<TX001 M6#15>> dptf-amount > 1,000,000 rejected"
                 "TF anchor denominated amount (dptf-amount) must be within [1000,"
-                (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFbadAmtHi" ouro-id true "M6AmtHiClass" 3 100.0 1000001.0))
+                (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron ouro-owner "TFbadAmtHi" ouro-id true "M6AmtHiClass" 3 100.0 1000001.0))
         ]
     )
     ;;==== TX001 · 06 · Talos C_IssueTrueFungibleAnchor acnoi=true (6 more classes, 1 anchor each) =
     (print "--- [TX001 · 06 · issue 6 more TF anchors (acnoi=true each creates its own BoostClass)] ---")
     (map print
         [
-            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFclassBa acnoi=true CoreBoostTFb)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFclassBa" ouro-id true "CoreBoostTFb" 3 100.0 1000.0)])
-            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFclassCa acnoi=true CoreBoostTFc)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFclassCa" ouro-id true "CoreBoostTFc" 3 220.0 2200.0)])
-            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFclassDa acnoi=true CoreBoostTFd)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFclassDa" ouro-id true "CoreBoostTFd" 3 230.0 2300.0)])
-            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFclassEa acnoi=true CoreBoostTFe)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFclassEa" ouro-id true "CoreBoostTFe" 3 240.0 2400.0)])
-            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFclassFa acnoi=true CoreBoostTFf)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFclassFa" ouro-id true "CoreBoostTFf" 3 250.0 2500.0)])
-            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFclassGa acnoi=true CoreBoostTFg)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFclassGa" ouro-id true "CoreBoostTFg" 3 260.0 2600.0)])
+            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFclassBa acnoi=true CoreBoostTFb)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron ouro-owner "TFclassBa" ouro-id true "CoreBoostTFb" 3 100.0 1000.0)])
+            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFclassCa acnoi=true CoreBoostTFc)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron ouro-owner "TFclassCa" ouro-id true "CoreBoostTFc" 3 220.0 2200.0)])
+            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFclassDa acnoi=true CoreBoostTFd)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron ouro-owner "TFclassDa" ouro-id true "CoreBoostTFd" 3 230.0 2300.0)])
+            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFclassEa acnoi=true CoreBoostTFe)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron ouro-owner "TFclassEa" ouro-id true "CoreBoostTFe" 3 240.0 2400.0)])
+            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFclassFa acnoi=true CoreBoostTFf)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron ouro-owner "TFclassFa" ouro-id true "CoreBoostTFf" 3 250.0 2500.0)])
+            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFclassGa acnoi=true CoreBoostTFg)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron ouro-owner "TFclassGa" ouro-id true "CoreBoostTFg" 3 260.0 2600.0)])
         ]
     )
     ;;==== TX001 · 07 · ref-ANK UR_BC|Data / UR_AA|Data / UR_ANK|Data — REPL =========
@@ -199,6 +200,7 @@
     (
         (patron:string KST.ANHD)
         (ouro-id:string "OURO-98c486052a51")
+        (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
         (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
@@ -253,7 +255,7 @@
         [
             (format "<(TS02-C3.AQP-ANK|C_RevokeAnchor TFclassGa-98c486052a51)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_RevokeAnchor patron "TFclassGa-98c486052a51")])
             (format "<(TS02-C3.AQP-ANK|C_RevokeBoostClass CoreBoostTFg)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_RevokeBoostClass patron class07-id)])
-            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFTEMPaa acnoi=true TempClassTF)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFTEMPaa" ouro-id true temp-class-name 3 400.0 4000.0)])
+            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFTEMPaa acnoi=true TempClassTF)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron ouro-owner "TFTEMPaa" ouro-id true temp-class-name 3 400.0 4000.0)])
         ]
     )
     ;;==== TX002 · 05 · expect-failure (revoke non-empty BoostClass) — REPL ===========
@@ -315,6 +317,7 @@
     (
         (beneficiary:string KST.ANHD)
         (ouro-id:string "OURO-98c486052a51")
+        (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
         (total-dptf:decimal 500.0)
         (anchor-id:string "TFclassBa-98c486052a51")
         (bc-id:string "CoreBoostTFb-98c486052a51")
@@ -397,6 +400,7 @@
     (
         (patron:string KST.ANHD)
         (ouro-id:string "OURO-98c486052a51")
+        (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
         (dhcd-id:string "DHCD-98c486052a51")
         (kbn-id:string "KBN-98c486052a51")
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
@@ -669,6 +673,7 @@
     (
         (attacker:string KST.LUMY)
         (ouro-id:string "OURO-98c486052a51")
+        (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
         (anchor-name:string "RtAnkOwnerProbe")
         (class-name:string "RtAnkOwnerClass")
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -698,13 +703,13 @@
                 ;;shown to have escaped it.
                 (expect-failure "<<TX008>> SHADOW: an out-of-band dptf-amount is refused by the M6 #15 bound, NOT by ownership"
                     "TF anchor denominated amount (dptf-amount) must be within [1000, 1,000,000]"
-                    (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor attacker anchor-name ouro-id true class-name 3 100.0 10.0))
+                    (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor attacker ouro-owner anchor-name ouro-id true class-name 3 100.0 10.0))
                 ;;THE GATE. The identical call with an in-band amount. Every one of the seven earlier
                 ;;checks now passes, the message changes, and it NAMES THE VICTIM -- so the refusal is
                 ;;attributable to `CAP_TF|Owner` and to nothing upstream of it.
                 (expect-failure "<<TX008>> GATE: an in-band amount reaches CAP_TF|Owner, which refuses and names the victim"
                     (format "Smart DALOS Account {} Ownership could not be verified!" [victim])
-                    (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor attacker anchor-name ouro-id true class-name 3 100.0 1000.0))
+                    (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor attacker ouro-owner anchor-name ouro-id true class-name 3 100.0 1000.0))
                 ;;...and the refusal was TOTAL: no anchor row, no BoostClass row.
                 (expect "<<TX008>> ...and no anchor was created by either attempt"
                     anchors-before (length (ref-ANK::URH_ANK|AllAnchorIds)))
@@ -747,6 +752,7 @@
     (
         (patron:string KST.ANHD)
         (ouro-id:string "OURO-98c486052a51")
+        (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
         (anchor-name:string "RtAnkOwnerProbe")
         (class-name:string "RtAnkOwnerClass")
         (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -771,7 +777,7 @@
             }
         ]
     )
-    (print (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor, rightful owner signing)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron anchor-name ouro-id true class-name 3 100.0 1000.0)]))
+    (print (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor, rightful owner signing)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron ouro-owner anchor-name ouro-id true class-name 3 100.0 1000.0)]))
     (map print
         [
             (expect "<<TX008b>> with the rightful owner signing, the identical issuance succeeds"

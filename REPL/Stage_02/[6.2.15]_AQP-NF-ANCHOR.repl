@@ -21,6 +21,8 @@
 (print "--- [TX-NA-001 - issue trait-bearing DPNF, anchor on the trait · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
+        { "key": "PK_Lumy", "caps": [] }
+        { "key": "PK_Emma", "caps": [] }
         { "key": "PK_AncientHodler", "caps": [] }
         { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
           "caps":
@@ -63,7 +65,7 @@
         )
         (ref-TS02-C2::DPNF|C_Create patron tnf-id (make-list 8 nd))
         ;; anchor on the "rarity"="golden" trait; acnoi=true creates the boost class inline (2x STOA)
-        (print (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "NFTraitAnchor" tnf-id true "NFTraitBoost" 3 100.0 "rarity" "golden"))
+        (print (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron patron "NFTraitAnchor" tnf-id true "NFTraitBoost" 3 100.0 "rarity" "golden"))
         (print "<<TX-NA-001>> DPNF|C_Issue/Create (trait) + AQP-ANK|C_IssueNonFungibleAnchor OK")
     )
 )

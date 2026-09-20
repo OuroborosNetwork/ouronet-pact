@@ -400,11 +400,15 @@
                     (anchor-auryn-rain-id:string (ref-U|DALOS::UDC_Makeid "AurynRain"))
                     (anchor-elite-auryn-rain-id:string (ref-U|DALOS::UDC_Makeid "EliteAurynRain"))
                     (anchor-legendary-snake-token-rain-id:string (ref-U|DALOS::UDC_Makeid "LegendarySnakeTokenRain"))
+                    ;;The EXECUTOR of an anchor issuance is the ANCHORED ASSET's owner, which is not
+                    ;;necessarily the patron paying for it -- sovereign assets are owned by SMART
+                    ;;accounts whose key the admin merely holds. Read it, never assume it.
+                    (kbn-owner:string (AQP-ANK.URC_AnchorableAssetOwner kbn-id [false false]))
                 )
-                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "OuroborosRain" kbn-id true "BronzeSnakePower" 3 50.0 "Background" "Ouroboros Rain")
-                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "AurynRain" kbn-id true "SilverSnakePower" 3 100.0 "Background" "Auryn Rain")
-                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "EliteAurynRain" kbn-id true "GoldenSnakePower" 3 200.0 "Background" "Elite-Auryn Rain")
-                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "LegendarySnakeTokenRain" kbn-id false golden-boost-class-id 3 400.0 "Rarity" "Legendary")
+                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron kbn-owner "OuroborosRain" kbn-id true "BronzeSnakePower" 3 50.0 "Background" "Ouroboros Rain")
+                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron kbn-owner "AurynRain" kbn-id true "SilverSnakePower" 3 100.0 "Background" "Auryn Rain")
+                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron kbn-owner "EliteAurynRain" kbn-id true "GoldenSnakePower" 3 200.0 "Background" "Elite-Auryn Rain")
+                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron kbn-owner "LegendarySnakeTokenRain" kbn-id false golden-boost-class-id 3 400.0 "Rarity" "Legendary")
                 ;;OUTPUT SHAPE CHANGED 2026-09-18, for deployment use.
                 ;;
                 ;;It used to print the three boost classes TWICE, in two different orders: first
@@ -463,21 +467,23 @@
                     (anchor-blue-eyes-id:string (ref-U|DALOS::UDC_Makeid "BlueEyes"))
                     (anchor-legendary-vesta-booster-id:string (ref-U|DALOS::UDC_Makeid "LegendaryVestaBooster"))
                     (anchor-rgb-eyes-id:string (ref-U|DALOS::UDC_Makeid "RGBEyes"))
+                    ;;Anchor executor = the anchored asset's owner, read not assumed.
+                    (kbn-owner:string (AQP-ANK.URC_AnchorableAssetOwner kbn-id [false false]))
                 )
                 ;; Unity
-                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "Elk0nite" kbn-id true "UnityBooster" 3 100.0 "Eyes" "Elk0nite Unity Glasses")
-                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "Osmiridium" kbn-id false unity-boost-class-id 3 300.0 "Eyes" "Osmiridium Unity Glasses")
-                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "Titanium" kbn-id false unity-boost-class-id 3 900.0 "Eyes" "Titaniumgold Unity Glasses")
-                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "LegendaryUnityBooster" kbn-id false unity-boost-class-id 3 1000.0 "Rarity" "Legendary")
+                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron kbn-owner "Elk0nite" kbn-id true "UnityBooster" 3 100.0 "Eyes" "Elk0nite Unity Glasses")
+                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron kbn-owner "Osmiridium" kbn-id false unity-boost-class-id 3 300.0 "Eyes" "Osmiridium Unity Glasses")
+                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron kbn-owner "Titanium" kbn-id false unity-boost-class-id 3 900.0 "Eyes" "Titaniumgold Unity Glasses")
+                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron kbn-owner "LegendaryUnityBooster" kbn-id false unity-boost-class-id 3 1000.0 "Rarity" "Legendary")
                 ;; Stoa
-                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "VegoldEyes" kbn-id true "StoaBooster" 3 1000.0 "Eyes" "vEGLD Focus")
-                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "LegendaryStoaBooster" kbn-id false stoa-boost-class-id 3 3500.0 "Rarity" "Legendary")
+                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron kbn-owner "VegoldEyes" kbn-id true "StoaBooster" 3 1000.0 "Eyes" "vEGLD Focus")
+                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron kbn-owner "LegendaryStoaBooster" kbn-id false stoa-boost-class-id 3 3500.0 "Rarity" "Legendary")
                 ;; Vesta
-                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "RedEyes" kbn-id true "VestaBooster" 3 250.0 "Eyes" "Red")
-                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "GreenEyes" kbn-id false vesta-boost-class-id 3 250.0 "Eyes" "Green")
-                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "BlueEyes" kbn-id false vesta-boost-class-id 3 250.0 "Eyes" "Blue")
-                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "LegendaryVestaBooster" kbn-id false vesta-boost-class-id 3 3500.0 "Rarity" "Legendary")
-                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleSetAnchor patron "RGBEyes" kbn-id false vesta-boost-class-id 3 1000.0 1)
+                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron kbn-owner "RedEyes" kbn-id true "VestaBooster" 3 250.0 "Eyes" "Red")
+                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron kbn-owner "GreenEyes" kbn-id false vesta-boost-class-id 3 250.0 "Eyes" "Green")
+                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron kbn-owner "BlueEyes" kbn-id false vesta-boost-class-id 3 250.0 "Eyes" "Blue")
+                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron kbn-owner "LegendaryVestaBooster" kbn-id false vesta-boost-class-id 3 3500.0 "Rarity" "Legendary")
+                (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleSetAnchor patron kbn-owner "RGBEyes" kbn-id false vesta-boost-class-id 3 1000.0 1)
                 (format "AQP-BOOT Step 3 done. kbn-id={}. anchor-ids=[{} {} {} {} {} {} {} {} {} {} {}]. boost-class-ids=[unity={} stoa={} vesta={}]. NEXT=none-for-Steps4-7."
                     [
                         kbn-id
@@ -1071,13 +1077,16 @@
                     (golden-model-id:string (ref-U|DALOS::UDC_Makeid BOOT|MODEL_CUSTODIANS_GOLDEN))
                     (triplet-model-id:string (ref-U|DALOS::UDC_Makeid BOOT|MODEL_CUSTODIANS_TRIPLET))
                     (og-boost-class-id:string (ref-U|DALOS::UDC_Makeid BOOT|CUSTODIANS_OG_BOOST_CLASS))
+                    ;;Anchor executor = the anchored SFT collection's owner, read not assumed.
+                    (custodians-dpsf-owner:string
+                        (AQP-ANK.URC_AnchorableAssetOwner custodians-dpsf-id [false true]))
                 )
                 ;; 1. the OG-Founder ANCHOR (+5%) and the boost class it creates. `acnoi` true means
                 ;;    the next argument is a NAME to create rather than an existing class id.
                 ;;    Issued once, here: the class is shared by every agency's scores (Step 14
                 ;;    links them), which is what makes the 5% apply to a user's WHOLE staked
                 ;;    quintessence rather than only the golden lane.
-                (ref-TS02-C3::AQP-ANK|C_IssueSemiFungibleAnchor patron BOOT|CUSTODIANS_OG_ANCHOR
+                (ref-TS02-C3::AQP-ANK|C_IssueSemiFungibleAnchor patron custodians-dpsf-owner BOOT|CUSTODIANS_OG_ANCHOR
                     custodians-dpsf-id true BOOT|CUSTODIANS_OG_BOOST_CLASS
                     BOOT|CUSTODIANS_ANK_PRECISION BOOT|CUSTODIANS_OG_PROMILE BOOT|CUSTODIANS_OG_NONCE)
                 ;; 2. the three single models — score-class 3 (SemiFungible); v1 models are SF-only.

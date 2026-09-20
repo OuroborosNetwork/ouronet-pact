@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 12 of 20
 ;; This is STEP 12 of 21 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-11 must have run first, including the init steps between deploys.
-;; 2 module(s), 47,586 gas measured in the REPL gas model, 172,241 bytes
+;; 2 module(s), 47,586 gas measured in the REPL gas model, 178,247 bytes
 ;;
 ;; Modules in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/00_AQP-SCHEMAS.pact
@@ -1043,11 +1043,15 @@
     (defun URCi_IssueAnchorStoa:decimal (acnoi:bool))
     (defun URCi_RevokeAnchor:object{IgnisCollectorV3.OutputCumulator} ())
     (defun URCi_RevokeBoostClass:object{IgnisCollectorV3.OutputCumulator} ())
+    (defun URC_AnchorableAssetOwner:string (ank-asset:string asset-fungibility:[bool]))
+    (defun URCv_CoreDptf:string (dptf-id:string))
     ;;{5.4}  Validate [UEV/CAP]
     ;; [UEV] enforce
     (defun UEV_AnkFungibility (asset-fungibility:[bool]))
     (defun UEV_Promile (anchor-precision:integer anchor-promile:decimal))
     (defun UEV_IssueAnchor (ank-asset:string boost-class-id:string))
+    (defun UEV_ExecutorIzAssetAuthority (executor:string ank-asset:string asset-fungibility:[bool]))
+    (defun UEV_ExecutorIzAnchorAuthority (executor:string anchor-id:string))
     (defun UEV_AssetAnchorCap (ank-asset:string))
     (defun UEV_LiveAnchor (anchor-id:string))
     ;;{5.5}  Write [W]
@@ -1080,16 +1084,16 @@
         (boost-class-id:string)
     )
     (defun C_IssueTrueFungibleAnchor:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string anchor-name:string dptf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dptf-amount:decimal)
+        (patron:string executor:string anchor-name:string dptf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dptf-amount:decimal)
     )
     (defun C_IssueSemiFungibleAnchor:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string anchor-name:string dpsf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpsf-nonce:integer)
+        (patron:string executor:string anchor-name:string dpsf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpsf-nonce:integer)
     )
     (defun C_IssueNonFungibleAnchor:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-trait-key:string dpnf-trait-value:string)
+        (patron:string executor:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-trait-key:string dpnf-trait-value:string)
     )
     (defun C_IssueNonFungibleSetAnchor:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-nonce-class:integer)
+        (patron:string executor:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-nonce-class:integer)
     )
     (defun C_RevokeAnchor:object{IgnisCollectorV3.OutputCumulator} (anchor-id:string))
 
@@ -1366,7 +1370,7 @@
         (compose-capability (SECURE))
     )
     (defcap ANK|C>ISSUE-DPTF
-        (anchor-name:string dptf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dptf-amount:decimal)
+        (executor:string anchor-name:string dptf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dptf-amount:decimal)
         @doc "Validates DPTF anchor issuance. When acnoi=true, validates boost-class-name for inline creation; when false, validates existing BoostClass."
         @event
         (let
@@ -1403,6 +1407,7 @@
             )
             (UEV_Promile anchor-precision anchor-promile)
             (CAP_TF|Owner dptf-id)
+            (UEV_ExecutorIzAssetAuthority executor dptf-id [true true])
             (if acnoi
                 (UEV_AssetAnchorCap dptf-id)
                 (UEV_IssueAnchor dptf-id boost-class-name-or-id)
@@ -1411,7 +1416,7 @@
         )
     )
     (defcap ANK|C>ISSUE-DPSF
-        (anchor-name:string dpsf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpsf-nonce:integer)
+        (executor:string anchor-name:string dpsf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpsf-nonce:integer)
         @doc "Validates DPSF anchor issuance. When acnoi=true, validates boost-class-name for inline creation; when false, validates existing BoostClass."
         @event
         (let
@@ -1423,6 +1428,7 @@
             (ref-DPDC::UEV_id dpsf-id true)
             (ref-DPDC::UEV_Nonce dpsf-id true dpsf-nonce)
             (ref-DPDC::CAP_OwnerOrCreator dpsf-id true)
+            (UEV_ExecutorIzAssetAuthority executor dpsf-id [false true])
             (if acnoi
                 (ref-U|ATS::UEV_AutostakeIndex boost-class-name-or-id)
                 true
@@ -1436,7 +1442,7 @@
         )
     )
     (defcap ANK|C>ISSUE-DPNF
-        (anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-trait-key:string dpnf-trait-value:string)
+        (executor:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-trait-key:string dpnf-trait-value:string)
         @doc "Validates DPNF trait-anchor issuance. When acnoi=true, validates boost-class-name for inline creation; when false, validates existing BoostClass."
         @event
         (let
@@ -1462,11 +1468,11 @@
                 )
                 "Invalid Non-Fungible Key or Invalid Promile DPNF Trait-Value"
             )
-            (compose-capability (ANK|XI>ISSUE-DPNF-COMMON anchor-name dpnf-id acnoi boost-class-name-or-id anchor-precision anchor-promile))
+            (compose-capability (ANK|XI>ISSUE-DPNF-COMMON executor anchor-name dpnf-id acnoi boost-class-name-or-id anchor-precision anchor-promile))
         )
     )
     (defcap ANK|C>ISSUE-DPNF-SET
-        (anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-nonce-class:integer)
+        (executor:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-nonce-class:integer)
         @doc "Validates DPNF set-anchor issuance via nonce-class model. When acnoi=true, validates boost-class-name for inline creation; when false, validates existing BoostClass."
         @event
         (let
@@ -1479,17 +1485,26 @@
                 (and (>= dpnf-nonce-class 0) (<= dpnf-nonce-class classes-used))
                 (format "Invalid DPNF nonce-class {} for collection {}." [dpnf-nonce-class dpnf-id])
             )
-            (compose-capability (ANK|XI>ISSUE-DPNF-COMMON anchor-name dpnf-id acnoi boost-class-name-or-id anchor-precision anchor-promile))
+            (compose-capability (ANK|XI>ISSUE-DPNF-COMMON executor anchor-name dpnf-id acnoi boost-class-name-or-id anchor-precision anchor-promile))
         )
     )
     (defcap ANK|XI>ISSUE-DPNF-COMMON
-        (anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal)
+        (executor:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal)
         @doc "Common DPNF issuance checks shared by trait and set modes."
         (let
             (
                 (ref-U|ATS:module{UtilityAtsV3} U|ATS)
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
+            ;;AUTHORISATION FIRST (2026-09-14 ruling), and it is NEW here. Until 2026-09-20 the two
+            ;;DPNF anchor paths reached NO ownership enforce at all, while their DPTF sibling ran
+            ;;CAP_TF|Owner and their DPSF sibling ran CAP_OwnerOrCreator. The asymmetry mattered:
+            ;;UEV_AssetAnchorCap caps an asset at 49 anchors, so a stranger could mint 49 anchors
+            ;;against a collection he did not own, exhaust the cap permanently, and own every
+            ;;resulting boost class. Bounded by STOA cost, but cheap next to blocking a collection
+            ;;forever. Closed here because AQP is pre-mainnet and the gap is free to close now.
+            (ref-DPDC::CAP_OwnerOrCreator dpnf-id false)
+            (UEV_ExecutorIzAssetAuthority executor dpnf-id [false false])
             (ref-U|ATS::UEV_AutostakeIndex anchor-name)
             (ref-DPDC::UEV_id dpnf-id false)
             (if acnoi
@@ -2442,6 +2457,43 @@
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisPrice "AQP-ANK|C_RevokeBoostClass" "revoke-boost") AQP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
         ))
+    (defun URC_AnchorableAssetOwner:string (ank-asset:string asset-fungibility:[bool])
+        @doc "The OWNER konto of an anchorable asset -- the account an anchor issuance must name as \
+            \ its executor. For a DPTF this resolves F|/R| to the core token first; for a collectable \
+            \ it is the owner (the CREATOR is also an authority -- see UEV_ExecutorIzAssetAuthority -- \
+            \ but only one of the two can be 'the' owner, and this reader answers that). \
+            \ Exists because the answer is frequently NOT the obvious account: sovereign assets such \
+            \ as OURO are owned by a SMART account, and the human admin merely holds its key. Before \
+            \ the executor was named, that distinction was invisible at every call site."
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPDC:module{DpdcV2} DPDC)
+            )
+            (if (= asset-fungibility [true true])
+                (ref-DPTF::UR_Konto (URCv_CoreDptf ank-asset))
+                (ref-DPDC::UR_OwnerKonto ank-asset (= asset-fungibility [false true]))
+            )
+        )
+    )
+    (defun URCv_CoreDptf:string (dptf-id:string)
+        @doc "The CORE DPTF behind an anchored DPTF id: an `F|` frozen or `R|` reserved token \
+            \ resolves to its parent, anything else is already core. Extracted from CAP_TF|Owner \
+            \ (2026-09-20) so the executor check and the ownership gate read the SAME rule -- two \
+            \ copies of a resolution that must agree is the failure class this refactor's own \
+            \ tooling was built to prevent."
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (first-two:string (take 2 dptf-id))
+            )
+            (cond
+                ((= first-two "F|") (ref-DPTF::UR_Frozen dptf-id))
+                ((= first-two "R|") (ref-DPTF::UR_Reservation dptf-id))
+                dptf-id
+            )
+        )
+    )
     ;;{5.4}  Validate [UEV/CAP]
     ;; [UEV] enforce
     (defun UEV_AnkFungibility (asset-fungibility:[bool])
@@ -2489,6 +2541,55 @@
             (enforce (< (at "anchors" bc) 7) (format "{} BoostClass {} full (7 anchors)" [E-ANK boost-class-id]))
             (enforce (< (at "anchors-active" aa) 49) (format "{} Asset {} at 49-anchor cap" [E-ANK ank-asset]))
         )
+    )
+    (defun UEV_ExecutorIzAssetAuthority (executor:string ank-asset:string asset-fungibility:[bool])
+        @doc "Enforces that <executor> IS the anchored asset's authority, mirroring -- never replacing \
+            \ -- the CAP_ gate running alongside it. The authority differs by asset kind, and that \
+            \ difference is why this is one helper rather than three inline checks: a DPTF has exactly \
+            \ ONE authority (its owner, resolved through F|/R| to the core token), a collectable has \
+            \ TWO (owner OR creator) and is therefore a DISJUNCTION, not a value. Band 1's usual \
+            \ prescription -- 'enforce executor equals the derived owner' -- has no single owner to \
+            \ equal in the collectable case, which is exactly why MTX-AQP's C_2|SweepRevokeAnchor \
+            \ could not be done inline and waited for this."
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPDC:module{DpdcV2} DPDC)
+            )
+            (enforce
+                (if (= asset-fungibility [true true])
+                    (= executor (ref-DPTF::UR_Konto (URCv_CoreDptf ank-asset)))
+                    (let
+                        (
+                            (son:bool (= asset-fungibility [false true]))
+                        )
+                        (or (= executor (ref-DPDC::UR_OwnerKonto ank-asset son))
+                            (= executor (ref-DPDC::UR_CreatorKonto ank-asset son)))
+                    )
+                )
+                (format "Executor {} is not an authority for anchored asset {}; authority is {}"
+                    [executor ank-asset
+                        (if (= asset-fungibility [true true])
+                            [(ref-DPTF::UR_Konto (URCv_CoreDptf ank-asset))]
+                            (let
+                                (
+                                    (son:bool (= asset-fungibility [false true]))
+                                )
+                                [(ref-DPDC::UR_OwnerKonto ank-asset son)
+                                 (ref-DPDC::UR_CreatorKonto ank-asset son)]
+                            )
+                        )
+                    ]
+                )
+            )
+        )
+    )
+    (defun UEV_ExecutorIzAnchorAuthority (executor:string anchor-id:string)
+        @doc "Anchor-level form of UEV_ExecutorIzAssetAuthority: resolves the anchored asset and its \
+            \ fungibility from the anchor row, then defers. This is the shape MTX-AQP needs for \
+            \ C_2|SweepRevokeAnchor, which holds an anchor-id and no asset."
+        (UEV_ExecutorIzAssetAuthority executor
+            (UR_ANK|AnchoredAsset anchor-id) (UR_ANK|Fungibility anchor-id))
     )
     (defun UEV_AssetAnchorCap (ank-asset:string)
         @doc "Validates asset 49-anchor cap. Used when acnoi=true (BoostClass is new)."
@@ -2546,15 +2647,7 @@
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 ;;
-                (first-two:string (take 2 dptf-id))
-                (core-dptf-id:string
-                    (cond
-                        ((= first-two "F|") (ref-DPTF::UR_Frozen dptf-id))
-                        ((= first-two "R|") (ref-DPTF::UR_Reservation dptf-id))
-                        dptf-id
-                    )
-                )
-                (owner:string (ref-DPTF::UR_Konto core-dptf-id))
+                (owner:string (ref-DPTF::UR_Konto (URCv_CoreDptf dptf-id)))
             )
             (ref-DALOS::CAP_EnforceAccountOwnership owner)
         )
@@ -3180,16 +3273,16 @@
         )
     )
     (defun C_IssueTrueFungibleAnchor:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string anchor-name:string dptf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dptf-amount:decimal)
+        (patron:string executor:string anchor-name:string dptf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dptf-amount:decimal)
         @doc "Issues a DPTF anchor. When acnoi=true creates a new BoostClass inline (2x STOA); when false links to existing (1x STOA). \
             \ IGNIS output list: [anchor-id] or [anchor-id boost-class-id] when acnoi."
         (P|UEV_IMC)
-        (with-capability (ANK|C>ISSUE-DPTF anchor-name dptf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dptf-amount)
+        (with-capability (ANK|C>ISSUE-DPTF executor anchor-name dptf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dptf-amount)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     ;;
-                    (boost-class-id:string (if acnoi (XI_IssueBoostClass boost-class-name-or-id patron) boost-class-name-or-id))
+                    (boost-class-id:string (if acnoi (XI_IssueBoostClass boost-class-name-or-id executor) boost-class-name-or-id))
                     (fungibility:[bool] [true true])
                     (anchor-id:string
                         (XI_IssueAnchor 
@@ -3205,16 +3298,16 @@
         )
     )
     (defun C_IssueSemiFungibleAnchor:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string anchor-name:string dpsf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpsf-nonce:integer)
+        (patron:string executor:string anchor-name:string dpsf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpsf-nonce:integer)
         @doc "Issues a DPSF anchor. When acnoi=true creates a new BoostClass inline (2x STOA); when false links to existing (1x STOA). \
             \ IGNIS output list: [anchor-id] or [anchor-id boost-class-id] when acnoi."
         (P|UEV_IMC)
-        (with-capability (ANK|C>ISSUE-DPSF anchor-name dpsf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dpsf-nonce)
+        (with-capability (ANK|C>ISSUE-DPSF executor anchor-name dpsf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dpsf-nonce)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     ;;
-                    (boost-class-id:string (if acnoi (XI_IssueBoostClass boost-class-name-or-id patron) boost-class-name-or-id))
+                    (boost-class-id:string (if acnoi (XI_IssueBoostClass boost-class-name-or-id executor) boost-class-name-or-id))
                     (fungibility:[bool] [false true])
                     (anchor-id:string
                         (XI_IssueAnchor 
@@ -3230,16 +3323,16 @@
         )
     )
     (defun C_IssueNonFungibleAnchor:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-trait-key:string dpnf-trait-value:string)
+        (patron:string executor:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-trait-key:string dpnf-trait-value:string)
         @doc "Issues a DPNF trait-anchor. When acnoi=true creates a new BoostClass inline (2x STOA); when false links to existing (1x STOA). \
             \ IGNIS output list: [anchor-id] or [anchor-id boost-class-id] when acnoi."
         (P|UEV_IMC)
-        (with-capability (ANK|C>ISSUE-DPNF anchor-name dpnf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dpnf-trait-key dpnf-trait-value)
+        (with-capability (ANK|C>ISSUE-DPNF executor anchor-name dpnf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dpnf-trait-key dpnf-trait-value)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     ;;
-                    (boost-class-id:string (if acnoi (XI_IssueBoostClass boost-class-name-or-id patron) boost-class-name-or-id))
+                    (boost-class-id:string (if acnoi (XI_IssueBoostClass boost-class-name-or-id executor) boost-class-name-or-id))
                     (fungibility:[bool] [false false])
                     (anchor-id:string
                         (XI_IssueAnchor
@@ -3255,16 +3348,16 @@
         )
     )
     (defun C_IssueNonFungibleSetAnchor:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-nonce-class:integer)
+        (patron:string executor:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-nonce-class:integer)
         @doc "Issues a DPNF set-anchor. When acnoi=true creates a new BoostClass inline (2x STOA); when false links to existing (1x STOA). \
             \ IGNIS output list: [anchor-id] or [anchor-id boost-class-id] when acnoi."
         (P|UEV_IMC)
-        (with-capability (ANK|C>ISSUE-DPNF-SET anchor-name dpnf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dpnf-nonce-class)
+        (with-capability (ANK|C>ISSUE-DPNF-SET executor anchor-name dpnf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dpnf-nonce-class)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     ;;
-                    (boost-class-id:string (if acnoi (XI_IssueBoostClass boost-class-name-or-id patron) boost-class-name-or-id))
+                    (boost-class-id:string (if acnoi (XI_IssueBoostClass boost-class-name-or-id executor) boost-class-name-or-id))
                     (fungibility:[bool] [false false])
                     (anchor-id:string
                         (XI_IssueAnchor

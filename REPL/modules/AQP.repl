@@ -3028,7 +3028,7 @@
             (expect-failure "<<AQP-G37>> an LP token cannot carry a DPTF anchor"
                 "Anchor cannot be issued for the DPTF S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51."
                 (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor
-                    KST.ANHD "Probe1" lp false bc 3 10.0 1.0))
+                    KST.ANHD KST.ANHD "Probe1" lp false bc 3 10.0 1.0))
         ]
     )
     (print "--- [AQP-G37 · 02 · the DPNF trait and nonce-class domains] ---")
@@ -3043,7 +3043,7 @@
             (expect-failure "<<AQP-G37>> a trait anchor on a key the collection does not have is refused"
                 "Invalid Non-Fungible Key or Invalid Promile DPNF Trait-Value"
                 (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor
-                    KST.ANHD "Probe2" nf false bc 3 10.0 "no-such-key" "x"))
+                    KST.ANHD KST.ANHD "Probe2" nf false bc 3 10.0 "no-such-key" "x"))
         ]
     )
     ;;GUARD 3 -- ANK|C>ISSUE-DPNF-SET bounds the nonce-class to [0, classes-used]. BOTH ends are driven,
@@ -3057,11 +3057,11 @@
                 (expect-failure "<<AQP-G37>> a negative nonce-class is refused, and quoted back"
                     "Invalid DPNF nonce-class -1 for collection TNF-98c486052a51."
                     (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleSetAnchor
-                        KST.ANHD "Probe3" nf false bc 3 10.0 -1))
+                        KST.ANHD KST.ANHD "Probe3" nf false bc 3 10.0 -1))
                 (expect-failure "<<AQP-G37>> ...and so is one past the classes the collection uses"
                     "Invalid DPNF nonce-class"
                     (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleSetAnchor
-                        KST.ANHD "Probe4" nf false bc 3 10.0 (+ cu 1)))
+                        KST.ANHD KST.ANHD "Probe4" nf false bc 3 10.0 (+ cu 1)))
             ]
         )
     )

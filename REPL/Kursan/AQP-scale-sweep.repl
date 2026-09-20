@@ -90,6 +90,7 @@
     (
         (patron:string KST.ANHD)
         (ouro-id:string "OURO-98c486052a51")
+        (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
@@ -100,7 +101,7 @@
         (boost-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpBoost"))
     )
     ;; 1. anchor on OURO (promile 500 / reference 1000) — acnoi=true creates the boost-class
-    (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "ScaleSwpAnchor" ouro-id true "ScaleSwpBoost" 3 500.0 1000.0)
+    (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron ouro-owner "ScaleSwpAnchor" ouro-id true "ScaleSwpBoost" 3 500.0 1000.0)
     ;; 2. pool + score, LINK the score to the boost-class WHILE EMPTY, then vault + enable
     (ref-TS02-C3::AQP-POOL|C_Issue patron "ScaleSwpPool" ouro-id 1)
     (ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron patron "ScaleSwpScore" 12 1.0)
@@ -225,6 +226,7 @@
         (score-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpScore"))
         (pool-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpPool"))
         (ouro-id:string "OURO-98c486052a51")
+        (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
     )
     (map print
         [

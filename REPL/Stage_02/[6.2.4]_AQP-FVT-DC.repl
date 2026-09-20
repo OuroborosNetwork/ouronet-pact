@@ -31,6 +31,7 @@
         (patron:string KST.ANHD)
         (owner-konto:string KST.ANHD)
         (dpsf-id:string "DHCD-98c486052a51")
+        (dpsf-owner:string (AQP-ANK.URC_AnchorableAssetOwner dpsf-id [false true]))
         (ouro-id:string "OURO-98c486052a51")
         (score-name:string "SfStakeScore")
         (fvt-name:string "SfStakeVault")
@@ -130,6 +131,7 @@
         (owner-id:string KST.ANHD)
         (beneficiary-id:string KST.ANHD)
         (dpsf-id:string "DHCD-98c486052a51")
+        (dpsf-owner:string (AQP-ANK.URC_AnchorableAssetOwner dpsf-id [false true]))
         (ouro-id:string "OURO-98c486052a51")
         (score-name:string "SfStakeScore")
         (fvt-name:string "SfStakeVault")
@@ -222,6 +224,7 @@
         (patron:string KST.ANHD)
         (beneficiary-id:string KST.ANHD)
         (dpsf-id:string "DHCD-98c486052a51")
+        (dpsf-owner:string (AQP-ANK.URC_AnchorableAssetOwner dpsf-id [false true]))
         (boost-class-name:string "SfStakeBoost")
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -239,6 +242,8 @@
     (print (format "<(need-sync/aa pre)> => \"{}\" / {}" [need-pre aa-pre]))
     (env-sigs
         [
+            { "key": "PK_Lumy", "caps": [] }
+            { "key": "PK_Emma", "caps": [] }
             { "key": "PK_AncientHodler", "caps": [] }
             { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
               "caps":
@@ -252,7 +257,7 @@
         ]
     )
     (print (format "<(AQP-ANK|C_IssueSemiFungibleAnchor SfStakeAnchor)> => \"{}\"" [
-        (ref-TS02-C3::AQP-ANK|C_IssueSemiFungibleAnchor patron "SfStakeAnchor" dpsf-id true boost-class-name 3 50.0 1)
+        (ref-TS02-C3::AQP-ANK|C_IssueSemiFungibleAnchor patron dpsf-owner "SfStakeAnchor" dpsf-id true boost-class-name 3 50.0 1)
     ]))
     (let
         (
@@ -330,6 +335,7 @@
         (owner-id:string KST.ANHD)
         (beneficiary-id:string KST.ANHD)
         (dpsf-id:string "DHCD-98c486052a51")
+        (dpsf-owner:string (AQP-ANK.URC_AnchorableAssetOwner dpsf-id [false true]))
         (ouro-id:string "OURO-98c486052a51")
         (score-name:string "SfStakeScore")
         (fvt-name:string "SfStakeVault")
@@ -416,6 +422,7 @@
         (owner-id:string KST.ANHD)
         (foreign-ben:string KST.EMMA)
         (dpsf-id:string "DHCD-98c486052a51")
+        (dpsf-owner:string (AQP-ANK.URC_AnchorableAssetOwner dpsf-id [false true]))
         (score-name:string "SfStakeScore")
         (pool-name:string "SfStakePool")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -511,6 +518,7 @@
         (owner-id:string KST.ANHD)
         (beneficiary-id:string KST.ANHD)
         (dpsf-id:string "DHCD-98c486052a51")
+        (dpsf-owner:string (AQP-ANK.URC_AnchorableAssetOwner dpsf-id [false true]))
         (ouro-id:string "OURO-98c486052a51")
         (score-name:string "SfStakeScore")
         (fvt-name:string "SfStakeVault")
@@ -597,6 +605,7 @@
         (beneficiary-a:string KST.ANHD)
         (beneficiary-b:string KST.EMMA)
         (dpsf-id:string "DHCD-98c486052a51")
+        (dpsf-owner:string (AQP-ANK.URC_AnchorableAssetOwner dpsf-id [false true]))
         (ouro-id:string "OURO-98c486052a51")
         (score-name:string "SfStakeScore")
         (fvt-name:string "SfStakeVault")
@@ -739,6 +748,7 @@
         (owner-id:string KST.ANHD)
         (beneficiary-id:string KST.ANHD)
         (dpsf-id:string "DHCD-98c486052a51")
+        (dpsf-owner:string (AQP-ANK.URC_AnchorableAssetOwner dpsf-id [false true]))
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DPDC:module{DpdcV2} DPDC)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)

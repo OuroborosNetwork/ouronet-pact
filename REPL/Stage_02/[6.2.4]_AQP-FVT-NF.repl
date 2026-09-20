@@ -65,6 +65,7 @@
         (beneficiary-id:string KST.ANHD)
         (source:string KST.EMMA)
         (dpnf-id:string "DHB-98c486052a51")
+        (dpnf-owner:string (AQP-ANK.URC_AnchorableAssetOwner dpnf-id [false false]))
         (ouro-id:string "OURO-98c486052a51")
         (score-name:string "NfSyncScore")
         (fvt-name:string "NfSyncVault")
@@ -188,6 +189,7 @@
         (patron:string KST.ANHD)
         (beneficiary-id:string KST.ANHD)
         (dpnf-id:string "DHB-98c486052a51")
+        (dpnf-owner:string (AQP-ANK.URC_AnchorableAssetOwner dpnf-id [false false]))
         (boost-class-name:string "NfSyncBoost")
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -205,6 +207,8 @@
     (print (format "<(need-sync/aa pre)> => \"{}\" / {}" [need-pre aa-pre]))
     (env-sigs
         [
+            { "key": "PK_Lumy", "caps": [] }
+            { "key": "PK_Emma", "caps": [] }
             { "key": "PK_AncientHodler", "caps": [] }
             { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
               "caps":
@@ -219,7 +223,7 @@
     )
     (print (format "<(AQP-ANK|C_IssueNonFungibleSetAnchor NfSyncAnchor)> => \"{}\"" [
         (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleSetAnchor
-            patron "NfSyncAnchor" dpnf-id true boost-class-name 3 50.0 0)
+            patron dpnf-owner "NfSyncAnchor" dpnf-id true boost-class-name 3 50.0 0)
     ]))
     (let
         (
@@ -300,6 +304,7 @@
         (owner-id:string KST.ANHD)
         (beneficiary-id:string KST.ANHD)
         (dpnf-id:string "DHB-98c486052a51")
+        (dpnf-owner:string (AQP-ANK.URC_AnchorableAssetOwner dpnf-id [false false]))
         (ouro-id:string "OURO-98c486052a51")
         (score-name:string "NfSyncScore")
         (fvt-name:string "NfSyncVault")
@@ -393,6 +398,7 @@
         (owner-id:string KST.ANHD)
         (beneficiary-id:string KST.ANHD)
         (dpnf-id:string "DHB-98c486052a51")
+        (dpnf-owner:string (AQP-ANK.URC_AnchorableAssetOwner dpnf-id [false false]))
         (pool-name:string "NfSyncPool")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -436,6 +442,7 @@
         (owner-id:string KST.ANHD)
         (foreign-ben:string KST.EMMA)
         (dpnf-id:string "DHB-98c486052a51")
+        (dpnf-owner:string (AQP-ANK.URC_AnchorableAssetOwner dpnf-id [false false]))
         (pool-name:string "NfSyncPool")
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-DPDC:module{DpdcV2} DPDC)
@@ -515,6 +522,7 @@
         (beneficiary-id:string KST.ANHD)
         (source:string KST.EMMA)
         (dpnf-id:string "DHB-98c486052a51")
+        (dpnf-owner:string (AQP-ANK.URC_AnchorableAssetOwner dpnf-id [false false]))
         (ouro-id:string "OURO-98c486052a51")
         (score-name:string "NfDrainScore")
         (fvt-name:string "NfDrainVault")
@@ -639,6 +647,7 @@
         (ben:string KST.ANHD)
         (source:string KST.EMMA)
         (dpnf-id:string "DHB-98c486052a51")
+        (dpnf-owner:string (AQP-ANK.URC_AnchorableAssetOwner dpnf-id [false false]))
         (ouro-id:string "OURO-98c486052a51")
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)

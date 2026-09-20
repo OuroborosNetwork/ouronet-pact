@@ -29,6 +29,7 @@
         (owner-id:string        KST.ANHD)
         (beneficiary-id:string  KST.ANHD)
         (ouro-id:string         "OURO-98c486052a51")
+        (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
         (gas-id:string          "GAS-98c486052a51")
         (amount:decimal         100.0)
         (ref-U|DALOS:module{UtilityDalosV2}                 U|DALOS)
@@ -91,6 +92,7 @@
         (owner-id:string        KST.ANHD)
         (beneficiary-id:string  KST.ANHD)
         (ouro-id:string         "OURO-98c486052a51")
+        (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
         (gas-id:string          "GAS-98c486052a51")
         (amount:decimal         50.0)
         (ref-U|DALOS:module{UtilityDalosV2}                 U|DALOS)
@@ -149,6 +151,7 @@
         (owner-konto:string KST.ANHD)
         (dpof-id:string "MVST-98c486052a51")
         (ouro-id:string "OURO-98c486052a51")
+        (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
         (score-name:string "InfoGtOfScore")
         (fvt-name:string "InfoGtOfVault")
         (pool-name:string "InfoGtOfPool")
@@ -289,6 +292,7 @@
         (owner-konto:string KST.ANHD)
         (dpsf-id:string "DHCD-98c486052a51")
         (ouro-id:string "OURO-98c486052a51")
+        (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
         (score-name:string "InfoGtSfScore")
         (fvt-name:string "InfoGtSfVault")
         (pool-name:string "InfoGtSfPool")
@@ -413,6 +417,7 @@
         (owner-id:string        KST.ANHD)
         (beneficiary-id:string  KST.ANHD)
         (ouro-id:string         "OURO-98c486052a51")
+        (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
         (gas-id:string          "GAS-98c486052a51")
         (amount:decimal         100.0)
         (ref-U|DALOS:module{UtilityDalosV2}                 U|DALOS)
@@ -601,6 +606,7 @@
         (patron:string KST.ANHD)
         (owner-konto:string KST.ANHD)
         (ouro-id:string "OURO-98c486052a51")
+        (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
         (score-name:string "InfoGtTfDrScore")
         (fvt-name:string "InfoGtTfDrVault")
         (pool-name:string "InfoGtTfDrPool")
@@ -999,6 +1005,7 @@
     (
         (patron:string KST.ANHD) (owner-konto:string KST.ANHD)
         (ouro-id:string "OURO-98c486052a51")
+        (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
         (score-name:string "InfoGtFvScore") (fvt-name:string "InfoGtFvVault") (pool-name:string "InfoGtFvPool")
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -1215,6 +1222,7 @@
         (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
         (patron:string KST.ANHD)
         (ouro-id:string "OURO-98c486052a51")
+        (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
         (gas-id:string "GAS-98c486052a51")
     )
     ;;SETUP — the cap enforces `(> (UR_AQP|BenDptfTotalBalance beneficiary dptf) 0.0)`: there must be a
@@ -3246,6 +3254,7 @@
         (patron:string KST.ANHD)
         (gas-id:string "GAS-98c486052a51")
         (ouro-id:string "OURO-98c486052a51")
+        (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
     )
     (print (format "<(setup issue fresh CLASS-0 farm)> => \"{}\""
         [(ref-TS02-C3::AQP-FVT|C_Issue patron "GtComDenProbeFarm" patron 0 ouro-id)]))
@@ -3412,6 +3421,7 @@
         (score:string "TheCodingDivision-98c486052a51")
         (dpsf-id:string "DHCD-98c486052a51")
         (ouro-id:string "OURO-98c486052a51")
+        (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
     )
     ;;SETUP — a VIRGIN score. Every standing score in this file is already employed by a pool or
     ;;linked to an FVT, and each of the ops below refuses an entity that is. Issuing one is a
@@ -3491,6 +3501,7 @@
         (score:string "TheCodingDivision-98c486052a51")
         (dpsf-id:string "DHCD-98c486052a51")
         (ouro-id:string "OURO-98c486052a51")
+        (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
     )
     ;;SETUP — a VIRGIN score. Every standing score in this file is already employed by a pool or
     ;;linked to an FVT, and each of the ops below refuses an entity that is. Issuing one is a
@@ -3573,6 +3584,7 @@
         (score:string "TheCodingDivision-98c486052a51")
         (dpsf-id:string "DHCD-98c486052a51")
         (ouro-id:string "OURO-98c486052a51")
+        (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
     )
     ;;SETUP — a VIRGIN class-3 score; a definition may only be attached to a matching class.
     (print (format "<(setup issue virgin SF score)> => \"{}\""
@@ -3650,6 +3662,7 @@
         (score:string "TheCodingDivision-98c486052a51")
         (dpsf-id:string "DHCD-98c486052a51")
         (ouro-id:string "OURO-98c486052a51")
+        (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
     )
     ;;SETUP — a VIRGIN score. Every standing score in this file is already employed by a pool or
     ;;linked to an FVT, and each of the ops below refuses an entity that is. Issuing one is a
@@ -3727,6 +3740,7 @@
         (gas-id:string "GAS-98c486052a51")
         (fvt:string "CodingDivisionTreasury-98c486052a51")
         (ouro-id:string "OURO-98c486052a51")
+        (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
     )
     ;;SETUP — a VIRGIN score. Every standing score here is already employed by a pool or linked
     ;;to an FVT, and the ops below refuse an entity that is. The issue is a billed STOA op
@@ -3846,6 +3860,7 @@
         (gas-id:string "GAS-98c486052a51")
         (fvt:string "GtSeAddScoreVault-98c486052a51")
         (ouro-id:string "OURO-98c486052a51")
+        (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
     )
     ;;SETUP — a VIRGIN score. Every standing score here is already employed by a pool or linked
     ;;to an FVT, and the ops below refuse an entity that is. The issue is a billed STOA op
@@ -3929,6 +3944,7 @@
         (gas-id:string "GAS-98c486052a51")
         (fvt:string "CodingDivisionTreasury-98c486052a51")
         (ouro-id:string "OURO-98c486052a51")
+        (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
     )
     (let
         (
@@ -4000,6 +4016,7 @@
         (gas-id:string "GAS-98c486052a51")
         (fvt:string "CodingDivisionTreasury-98c486052a51")
         (ouro-id:string "OURO-98c486052a51")
+        (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
     )
     (let
         (
@@ -4218,6 +4235,7 @@
         (gas-id:string "GAS-98c486052a51")
         (boost-class:string "GtBcProbeClass-98c486052a51")
         (ouro-id:string "OURO-98c486052a51")
+        (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
     )
     ;;SETUP — a FRESH boost class. `CoreBoostTFa` from `[6.2.1]` exists but is INACTIVE by this point
     ;;("BoostClass must be active", `02_SCORE.pact:894`), and a class has no constructor of its own: it
@@ -4225,7 +4243,7 @@
     ;;issues an ANCHOR to obtain one. That anchor issue costs 2x the STOA anchor price precisely
     ;;BECAUSE `acnoi` is true, which is what the cap split above is sized for.
     (print (format "<(setup issue anchor + mint boost class)> => \"{}\""
-        [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "GtBcProbeAnchor" ouro-id true
+        [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron ouro-owner "GtBcProbeAnchor" ouro-id true
             "GtBcProbeClass" 3 100.0 1000.0)]))
     (print (format "<(setup issue virgin score)> => \"{}\""
         [(ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron patron "GtBcLinkScoreProbe" 12 1.0)]))

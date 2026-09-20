@@ -56,16 +56,16 @@
     ;;
     (defun AQP-ANK|C_RevokeBoostClass:string (patron:string boost-class-id:string))
     (defun AQP-ANK|C_IssueTrueFungibleAnchor:string
-        (patron:string anchor-name:string dptf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dptf-amount:decimal)
+        (patron:string executor:string anchor-name:string dptf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dptf-amount:decimal)
     )
     (defun AQP-ANK|C_IssueSemiFungibleAnchor:string
-        (patron:string anchor-name:string dpsf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpsf-nonce:integer)
+        (patron:string executor:string anchor-name:string dpsf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpsf-nonce:integer)
     )
     (defun AQP-ANK|C_IssueNonFungibleAnchor:string
-        (patron:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-trait-key:string dpnf-trait-value:string)
+        (patron:string executor:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-trait-key:string dpnf-trait-value:string)
     )
     (defun AQP-ANK|C_IssueNonFungibleSetAnchor:string
-        (patron:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-nonce-class:integer)
+        (patron:string executor:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-nonce-class:integer)
     )
     (defun AQP-ANK|C_RevokeAnchor:string (patron:string anchor-id:string))
     ;;
@@ -1036,7 +1036,7 @@
         )
     )
     (defun AQP-ANK|C_IssueTrueFungibleAnchor:string
-        (patron:string anchor-name:string dptf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dptf-amount:decimal)
+        (patron:string executor:string anchor-name:string dptf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dptf-amount:decimal)
         @doc "Issues a DPTF Anchor. acnoi=true creates BoostClass inline (2x STOA); false links to existing (1x STOA)."
         (with-capability (P|TS)
             (let
@@ -1046,7 +1046,7 @@
                     (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-ANK::C_IssueTrueFungibleAnchor 
-                            patron anchor-name dptf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dptf-amount
+                            patron executor anchor-name dptf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dptf-amount
                         )
                     )
                     (out:[string] (at "output" ico))
@@ -1062,7 +1062,7 @@
         )
     )
     (defun AQP-ANK|C_IssueSemiFungibleAnchor:string
-        (patron:string anchor-name:string dpsf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpsf-nonce:integer)
+        (patron:string executor:string anchor-name:string dpsf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpsf-nonce:integer)
         @doc "Issues a DPSF Anchor. acnoi=true creates BoostClass inline (2x STOA); false links to existing (1x STOA)."
         (with-capability (P|TS)
             (let
@@ -1072,7 +1072,7 @@
                     (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-ANK::C_IssueSemiFungibleAnchor 
-                            patron anchor-name dpsf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dpsf-nonce
+                            patron executor anchor-name dpsf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dpsf-nonce
                         )
                     )
                     (out:[string] (at "output" ico))
@@ -1088,7 +1088,7 @@
         )
     )
     (defun AQP-ANK|C_IssueNonFungibleAnchor:string
-        (patron:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-trait-key:string dpnf-trait-value:string)
+        (patron:string executor:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-trait-key:string dpnf-trait-value:string)
         @doc "Issues a DPNF trait-Anchor. acnoi=true creates BoostClass inline (2x STOA); false links to existing (1x STOA)."
         (with-capability (P|TS)
             (let
@@ -1098,7 +1098,7 @@
                     (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-ANK::C_IssueNonFungibleAnchor 
-                            patron anchor-name dpnf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dpnf-trait-key dpnf-trait-value
+                            patron executor anchor-name dpnf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dpnf-trait-key dpnf-trait-value
                         )
                     )
                     (out:[string] (at "output" ico))
@@ -1114,7 +1114,7 @@
         )
     )
     (defun AQP-ANK|C_IssueNonFungibleSetAnchor:string
-        (patron:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-nonce-class:integer)
+        (patron:string executor:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-nonce-class:integer)
         @doc "Issues a DPNF set-Anchor. acnoi=true creates BoostClass inline (2x STOA); false links to existing (1x STOA)."
         (with-capability (P|TS)
             (let
@@ -1124,7 +1124,7 @@
                     (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-ANK::C_IssueNonFungibleSetAnchor
-                            patron anchor-name dpnf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dpnf-nonce-class
+                            patron executor anchor-name dpnf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dpnf-nonce-class
                         )
                     )
                     (out:[string] (at "output" ico))
