@@ -238,7 +238,7 @@
         (let ((triplet-id:string (ref-SCR::UC_ComputeTripletId bronze-sid silver-sid gold-sid)))
             ;; atomic: admit blank triplet -> stake ANHD's full -1/-2/-3 supply (Q1 = 50+500+3000 = 3550) -> gate
             (print (format "<(open)> => \"{}\""
-                [ (ref-TS02-C3::AQP-DSA|CC_OpenAgency anhd fvt-id pool-id triplet-id 100 dhoc [-1 -2 -3]) ]))
+                [ (ref-TS02-C3::AQP-DSA|CC_OpenAgency anhd anhd fvt-id pool-id triplet-id 100 dhoc [-1 -2 -3]) ]))
             (map print
               [ (expect "<<TX-P3-03>> agency operator recorded" anhd (AQP-DSA.UR_DSA-AGN|Operator fvt-id triplet-id))
                 (expect "<<TX-P3-03>> member flagged as delegation" true (AQP-FVT.UR_FVT-SEL|Delegation fvt-id triplet-id))

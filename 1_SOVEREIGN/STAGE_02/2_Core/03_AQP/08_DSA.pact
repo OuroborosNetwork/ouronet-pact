@@ -70,7 +70,7 @@
     (defun C_DefineDelegationVault:object{IgnisCollectorV3.OutputCumulator}
         (patron:string executor:string fvt-id:string model-id:string unit-score:integer))
     (defun C_AdmitAgency:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-id:string score-entity-id:string fee-per-mille:integer))
+        (patron:string executor:string fvt-id:string score-entity-id:string fee-per-mille:integer))
     (defun C_RecomputeCapture:object{IgnisCollectorV3.OutputCumulator}
         (patron:string fvt-id:string score-entity-id:string))
     (defun C_SetOracleAuth:object{IgnisCollectorV3.OutputCumulator}
@@ -297,7 +297,7 @@
         )
         (compose-capability (SECURE))
     )
-    (defcap DSA|C>OPEN-AGENCY (patron:string fvt-id:string score-entity-id:string fee-per-mille:integer)
+    (defcap DSA|C>OPEN-AGENCY (patron:string executor:string fvt-id:string score-entity-id:string fee-per-mille:integer)
         @doc "Authorize opening a delegation agency on an active DSA vault. Enforces the vault template exists + \
             \ active and the fee is in [DSA_FEE_MIN, DSA_FEE_MAX]. Composes P|SECURE-CALLER so DSA's registered IMC \
             \ guard + SECURE are active for the FVT admit/delegation/stake calls + the DSA|Agency write. The \
@@ -881,7 +881,7 @@
     )
     ;; [C]   client
     (defun C_AdmitAgency:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-id:string score-entity-id:string fee-per-mille:integer)
+        (patron:string executor:string fvt-id:string score-entity-id:string fee-per-mille:integer)
         @doc "Core admit of the ATOMIC open (the Talos AQP-DSA|CC_OpenAgency flow drives the full sequence): admit \
             \ the operator's BLANK triplet as a delegation member of the class-0 vault FVT (XE_AdmitDelegationMember \
             \ — requires the sub-scores' fvt-links BAR, i.e. unstaked) + flip delegation on + record DSA|Agency. \
@@ -890,17 +890,17 @@
             \ P|TS after this admit, then calls UEV_OpenGate as the terminal atomic check (a short stake reverts the \
             \ whole open). P|UEV_IMC + DSA|C>OPEN-AGENCY. Bills GAS|OPEN-AGENCY."
         (P|UEV_IMC)
-        (with-capability (DSA|C>OPEN-AGENCY patron fvt-id score-entity-id fee-per-mille)
+        (with-capability (DSA|C>OPEN-AGENCY patron executor fvt-id score-entity-id fee-per-mille)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
-                (RPS.XE_AdmitDelegationMember fvt-id score-entity-id patron)
+                (RPS.XE_AdmitDelegationMember fvt-id score-entity-id executor)
                 (RPS.XE_SetMemberDelegation fvt-id score-entity-id true)
-                (WI_Agency fvt-id score-entity-id (UDC_DSA|Agency patron fee-per-mille 0 DSA_UPTIME_FULL fvt-id score-entity-id))
+                (WI_Agency fvt-id score-entity-id (UDC_DSA|Agency executor fee-per-mille 0 DSA_UPTIME_FULL fvt-id score-entity-id))
                 ;; mirror the operator + fee onto the FVT member so the inject settle can apply the fee split locally
-                (RPS.XE_SetAgencyFee fvt-id score-entity-id patron fee-per-mille)
+                (RPS.XE_SetAgencyFee fvt-id score-entity-id executor fee-per-mille)
                 (URCi_OpenAgency patron [score-entity-id])
             )
         )

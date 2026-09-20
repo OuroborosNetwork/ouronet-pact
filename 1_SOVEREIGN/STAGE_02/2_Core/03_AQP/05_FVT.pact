@@ -146,6 +146,7 @@
     (defun C_IssueMultipletFamily:object{IgnisCollectorV3.OutputCumulator}
         (
             patron:string
+            executor:string
             token-0-id:string
             token-1-id:string
             token-2-id:string
@@ -636,6 +637,7 @@
     )
     (defcap FVT|C>ISSUE-MULTIPLET-FAMILY
         (
+            executor:string
             token-0-id:string
             token-1-id:string
             token-2-id:string
@@ -644,6 +646,12 @@
         )
         @doc "Issue one FVT|T|MultipletFamily reward ladder. Distinct tokens and ATS pairs; family id unused. Composes SECURE."
         @event
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership executor)
+        )
         (UEV_IssueMultipletFamilyContext token-0-id token-1-id token-2-id ats-0-1-id ats-1-2-id)
         (compose-capability (SECURE))
     )
@@ -2287,6 +2295,7 @@
     (defun C_IssueMultipletFamily:object{IgnisCollectorV3.OutputCumulator}
         (
             patron:string
+            executor:string
             token-0-id:string
             token-1-id:string
             token-2-id:string
@@ -2306,7 +2315,7 @@
                 (family-id:string (ref-RPS::UCk_MultipletFamily token-0-id token-1-id token-2-id))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
             )
-            (with-capability (FVT|C>ISSUE-MULTIPLET-FAMILY token-0-id token-1-id token-2-id ats-0-1-id ats-1-2-id)
+            (with-capability (FVT|C>ISSUE-MULTIPLET-FAMILY executor token-0-id token-1-id token-2-id ats-0-1-id ats-1-2-id)
                 (ref-RPS::XE_XI_IssueMultipletFamily token-0-id token-1-id token-2-id ats-0-1-id ats-1-2-id)
             )
             (URCi_IssueMultipletFamily patron [family-id])

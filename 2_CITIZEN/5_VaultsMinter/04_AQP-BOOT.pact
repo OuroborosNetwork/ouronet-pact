@@ -964,7 +964,7 @@
                     (family-id:string (concat ["F" "|" ouro-id "|" auryn-id "|" elite-auryn-id]))
                 )
                 (ref-TS02-C3::AQP-FVT|C_IssueMultipletFamily
-                    patron ouro-id auryn-id elite-auryn-id ats-0-1-id ats-1-2-id
+                    patron patron ouro-id auryn-id elite-auryn-id ats-0-1-id ats-1-2-id
                 )
                 (format "AQP-BOOT Step 10 done. multiplet-family-id={}. tokens=[ouro={} auryn={} elite={}] ats=[{} {}]. NEXT=Step11:C_IssueTriplet+AddScoreEntity."
                     [family-id ouro-id auryn-id elite-auryn-id ats-0-1-id ats-1-2-id]
@@ -1207,7 +1207,7 @@
                     (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-owner pool-id silver-id)
                     (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-owner pool-id golden-id)
                     ;; 3. admit + stake + gate, atomically
-                    (ref-TS02-C3::AQP-DSA|CC_OpenAgency patron fvt-id pool-id
+                    (ref-TS02-C3::AQP-DSA|CC_OpenAgency patron patron fvt-id pool-id
                         (ref-SCR::UC_ComputeTripletId bronze-id silver-id golden-id)
                         fee-per-mille custodians-dpsf-id stake-nonces)
                     (format "AQP-BOOT Step 14 done. agency={} triplet={} operator={} fee={}/1000 scores=[bronze={} silver={} golden={}]. NEXT: C_SetOracleAuth then C_OracleWrite — capture stays 0 until an oracle reports nodes."

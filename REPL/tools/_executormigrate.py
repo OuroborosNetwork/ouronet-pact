@@ -57,6 +57,9 @@ RULES = {
     "AQP-DSA|C_BurnRoyalty":           (4, "{0}"),
     "AQP-DSA|C_FuelRoyalty":           (5, "{0}"),
     "AQP-DSA|C_SetAgencyFee":          (5, "{0}"),
+    # CC_OpenAgency: the OPERATOR. All four uses took `patron`, and operator-konto is PERSISTED --
+    # a sponsored open would have recorded the sponsor as the operator permanently.
+    "AQP-DSA|CC_OpenAgency":           (8, "{0}"),
     # 05_FVT -- owner-gated config surface. The executor IS the FVT owner, read from the vault.
     "AQP-FVT|C_Control":                (5, "(AQP-FVT.UR_FVT|OwnerKonto {1})"),
     "AQP-FVT|C_SetCommonDenominator":   (4, "(AQP-FVT.UR_FVT|OwnerKonto {1})"),
@@ -70,6 +73,9 @@ RULES = {
     # the sweep pair: authority is the ANCHOR's (owner OR creator of the anchored asset), so the
     # executor is read through ANK rather than the FVT.
     "AQP-FVT|CC_SweepRevokeAnchor":     (3, "(AQP-ANK.URC_AnchorableAssetOwner (AQP-ANK.UR_ANK|AnchoredAsset {1}) (AQP-ANK.UR_ANK|Fungibility {1}))"),
+    # IssueMultipletFamily reached NO ownership enforce at all; the executor is simply the creator,
+    # so the fixtures keep the account they used -- what changes is that it must now be OWNED.
+    "AQP-FVT|C_IssueMultipletFamily":   (7, "{0}"),
     "AQP-FVT|CC_SweepBegin":            (3, "(AQP-ANK.URC_AnchorableAssetOwner (AQP-ANK.UR_ANK|AnchoredAsset {1}) (AQP-ANK.UR_ANK|Fungibility {1}))"),
 }
 

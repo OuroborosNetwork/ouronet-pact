@@ -812,3 +812,57 @@ notion of the grammar.**
   and the consistent treatment is the same: `executor` + `CAP_EnforceAccountOwnership`. Not yet done.
 - **`AQP-DSA::C_AdmitAgency`** — its executor is the OPERATOR, enforced in
   `FVT|XE>ADMIT-DELEGATION`. Still outstanding, still in this module's neighbourhood.
+
+---
+
+## THE AQP FAMILY IS DONE (2026-09-20)
+
+`05_FVT` 12/12, `08_DSA` 9/9, `03_AQP` 5/5, `01_ANK` 4/4, `02_SCORE` 3/3, `07_MTX-AQP` 2/2 — plus
+Band 3's inject/collect. `python3 REPL/tools/_bandplan.py` now lists **no AQP module** in the Band 1
+worklist.
+
+### `C_AdmitAgency` — the worst conflation found, because it PERSISTS
+
+```pact
+(RPS.XE_AdmitDelegationMember fvt-id score-entity-id patron)
+(WI_Agency ... (UDC_DSA|Agency patron fee-per-mille ...))      ;; operator-konto, WRITTEN TO STATE
+(RPS.XE_SetAgencyFee fvt-id score-entity-id patron fee-per-mille)
+```
+
+Four uses of `patron` as the **operator**, one of them persisted as `operator-konto`. A sponsored
+open would have recorded the *sponsor* as the agency's operator permanently — and under the gasless
+patron, `DALOS|SC_NAME`. The Talos flow conflated it too, staking the operator's quintessence from
+`patron`. Every other patron/executor defect so far was recoverable by calling again with the right
+account; **this one wrote the wrong owner into a row.**
+
+### `C_IssueMultipletFamily` — no ownership enforce at all
+
+`UEV_IssueMultipletFamilyContext` checks token distinctness and ATS pairing and nothing else. Same
+shape as `02_SCORE`'s two model functions, same treatment: `executor` +
+`CAP_EnforceAccountOwnership`, authorisation first.
+
+### `05_TS02-DPAD::A_RegisterAssetToLaunchpad` — deliberately NOT given an executor
+
+Its authority chain is `DEMIPAD|C>REGISTER` → `DEMIPAD|C>SECURE-ADMIN` → **`GOV|DEMIPAD_ADMIN`**:
+an admin **keyset**, not an account. There is no account for an executor to equal, so naming one
+would be decorative — and a decorative executor is worse than none, because it reads as a check.
+This is the same disposition as `C_OracleWrite` (stored guard) and `C_RecomputeCapture`
+(permissionless by design).
+
+It also **straddles the live-cascade boundary**: it is declared in both `TalosStageTwo_DemiPadV1`
+(free) and `DemiourgosLaunchpadV2` (assumed live). Both reasons point the same way — leave it, and
+it belongs to the Band 4 question about `A_` functions and the gasless patron rather than to Band 1.
+
+### Where the refactor stands
+
+| | |
+|---|---|
+| processed | **52** of 89 |
+| **AQP family** | **COMPLETE** — the mainnet-critical path, no interface bumps |
+| live core (Band 1) | **22** — blocked on the 48-interface cascade decision |
+| Band 2 unlicensed | 9, each needing a ruling rather than a rename |
+| Band 4 | 78 patronless `A_`, untouched |
+
+**The remaining Band 1 work is all live-core and all cascade-bound.** Nothing more can be done in
+AQP, and the next step is not a code change — it is the owner's decision on whether to re-version
+64% of the interface surface of a deployed system.

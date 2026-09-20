@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 19 of 20
 ;; This is STEP 19 of 21 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-18 must have run first, including the init steps between deploys.
-;; 5 module(s), 236,990 gas measured in the REPL gas model, 269,465 bytes
+;; 5 module(s), 236,990 gas measured in the REPL gas model, 269,577 bytes
 ;;
 ;; Modules in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact
@@ -253,6 +253,7 @@
     (defun AQP-FVT|C_IssueMultipletFamily:string
         (
             patron:string
+            executor:string
             token-0-id:string
             token-1-id:string
             token-2-id:string
@@ -333,7 +334,7 @@
         (patron:string executor:string fvt-id:string model-id:string unit-score:integer)
     )
     (defun AQP-DSA|CC_OpenAgency:string
-        (patron:string fvt-id:string pool-id:string score-entity-id:string fee-per-mille:integer
+        (patron:string executor:string fvt-id:string pool-id:string score-entity-id:string fee-per-mille:integer
          collectable-id:string stake-nonces:[integer])
     )
     (defun AQP-DSA|C_RecomputeCapture:string
@@ -2024,6 +2025,7 @@
     (defun AQP-FVT|C_IssueMultipletFamily:string
         (
             patron:string
+            executor:string
             token-0-id:string
             token-1-id:string
             token-2-id:string
@@ -2039,7 +2041,7 @@
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-FVT::C_IssueMultipletFamily
-                            patron token-0-id token-1-id token-2-id ats-0-1-id ats-1-2-id
+                            patron executor token-0-id token-1-id token-2-id ats-0-1-id ats-1-2-id
                         )
                     )
                     (out:[string] (at "output" ico))
@@ -2577,7 +2579,7 @@
         )
     )
     (defun AQP-DSA|CC_OpenAgency:string
-        (patron:string fvt-id:string pool-id:string score-entity-id:string fee-per-mille:integer
+        (patron:string executor:string fvt-id:string pool-id:string score-entity-id:string fee-per-mille:integer
          collectable-id:string stake-nonces:[integer])
         @doc "DSA (Talos): open a delegation agency ATOMICALLY under P|TS — (1) admit the operator's BLANK triplet \
             \ <score-entity-id> to vault <fvt-id> (AQP-DSA::C_AdmitAgency); (2) stake the operator's initial \
@@ -2594,12 +2596,12 @@
                 )
                 ;; (1) admit the blank triplet (fvt-links must be BAR) + record the agency
                 (ref-IGNIS::C_Collect patron
-                    (ref-DSA::C_AdmitAgency patron fvt-id score-entity-id fee-per-mille))
+                    (ref-DSA::C_AdmitAgency patron executor fvt-id score-entity-id fee-per-mille))
                 ;; (2) stake the operator's initial quintessence into the now-linked, reward-ready triplet
                 (ref-IGNIS::C_Collect patron
                     (ref-FVT::CC_CollectableStakeFlow
-                        pool-id patron patron collectable-id true
-                        stake-nonces (ref-DPDC::UR_AccountNoncesSupplies patron collectable-id true stake-nonces) true))
+                        pool-id executor executor collectable-id true
+                        stake-nonces (ref-DPDC::UR_AccountNoncesSupplies executor collectable-id true stake-nonces) true))
                 ;; (3) terminal atomic gate — after the stake, Q must clear unit-score/2 or the whole tx reverts
                 (ref-DSA::UEV_OpenGate fvt-id score-entity-id)
                 (format "Agency opened on FVT {} for score-entity {} (fee {} per-mille)." [fvt-id score-entity-id fee-per-mille])

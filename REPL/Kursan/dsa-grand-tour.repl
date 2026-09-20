@@ -392,7 +392,7 @@
         )
         (let ((triplet-id:string (ref-SCR::UC_ComputeTripletId bsid ssid gsid)))
             ;; atomic open: admit blank triplet member + operator-stake -2 frags + terminal gate; fee 100 per-mille
-            (ref-TS02-C3::AQP-DSA|CC_OpenAgency anhd fvt-id pool-id triplet-id 100 dhoc [-2])
+            (ref-TS02-C3::AQP-DSA|CC_OpenAgency anhd anhd fvt-id pool-id triplet-id 100 dhoc [-2])
             (map print
               [ (expect "<<GT-03>> agency Q = 1000 (operator own)" 1000.0 (AQP-DSA.URC_AgencyQuintessence triplet-id))
                 (expect "<<GT-03>> operator recorded on the agency" anhd (AQP-DSA.UR_DSA-AGN|Operator fvt-id triplet-id))
@@ -409,7 +409,7 @@
                 ;;Same transaction, same caller, same vault -- only the triplet id is wrong.
                 (expect-failure "<<GT-03>> opening an agency on a triplet that was never issued is refused"
                     "Triplet must be issued in AQP-SCORE"
-                    (ref-TS02-C3::AQP-DSA|CC_OpenAgency anhd fvt-id pool-id
+                    (ref-TS02-C3::AQP-DSA|CC_OpenAgency anhd anhd fvt-id pool-id
                         "NOSUCHTRIPLET-98c486052a51" 100 dhoc [-2])) ]))
     )
 )

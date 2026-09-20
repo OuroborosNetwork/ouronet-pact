@@ -4344,7 +4344,7 @@
             (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
         )
         (print (format "<(TS02-C3.AQP-FVT|C_IssueMultipletFamily)> => \"{}\""
-            [(ref-TS02-C3::AQP-FVT|C_IssueMultipletFamily patron t0 t1 t2 p01 p12)]))
+            [(ref-TS02-C3::AQP-FVT|C_IssueMultipletFamily patron patron t0 t1 t2 p01 p12)]))
         (let
             (
                 (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
@@ -4416,7 +4416,7 @@
     (ref-TS01-C2::ATS|C_Issue patron patron ["GtMultPair01"] [24] [t0] [false] [t1] [true])
     (ref-TS01-C2::ATS|C_Issue patron patron ["GtMultPair12"] [24] [t1] [false] [t2] [true])
     (print (format "<(setup issue family)> => \"{}\""
-        [(ref-TS02-C3::AQP-FVT|C_IssueMultipletFamily patron t0 t1 t2 p01 p12)]))
+        [(ref-TS02-C3::AQP-FVT|C_IssueMultipletFamily patron patron t0 t1 t2 p01 p12)]))
     (print (format "<(setup issue virgin FVT)> => \"{}\""
         [(ref-TS02-C3::AQP-FVT|C_Issue patron "GtQSplitProbeVault" patron 1 "|")]))
     ;;THE FAMILY ID IS DERIVED, NOT THE BASE TOKEN. `XI_IssueMultipletFamily` keys the row on

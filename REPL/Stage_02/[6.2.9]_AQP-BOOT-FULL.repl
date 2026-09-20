@@ -842,7 +842,7 @@
             (TS02-C3.AQP-POOL|C_AddScore emma (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id eg)
             ;;20 whole bronze x 1000 = 20 000 quintessence -- twice the 10 000 gate.
             (print (format "<(EMMA CC_OpenAgency, stake 20 whole bronze)> => \"{}\""
-                [(TS02-C3.AQP-DSA|CC_OpenAgency emma fvt-id pool-id
+                [(TS02-C3.AQP-DSA|CC_OpenAgency emma emma fvt-id pool-id
                     (AQP-SCORE.UC_ComputeTripletId eb es eg) 100 dhoc-id [1])]))
             (print (format "<(EMMA agency quintessence)> => {}"
                 [(AQP-DSA.URC_AgencyQuintessence (AQP-SCORE.UC_ComputeTripletId eb es eg))]))
