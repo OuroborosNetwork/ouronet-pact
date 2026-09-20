@@ -95,6 +95,7 @@
     ;;{5.2}  Compute [UC]
     ;;
     (defun UC_TenTwentyThirtyFourtySplit:[decimal] (input:decimal ip:integer))
+    (defun UC_StageTwoEmissionSplit:[decimal] (input:decimal ip:integer))
     (defun UC_DirectFilterId:[string] (listoflists:[[string]] account:string))
     (defun UC_InverseFilterId:[string] (listoflists:[[string]] account:string))
     (defun UC_ConcatWithBar:string (input:[string]))
@@ -275,6 +276,25 @@
                 (v4:decimal (- input(fold (+) 0.0 [v1 v2 v3])))
             )
             [v1 v2 v3 v4]
+        )
+    )
+    (defun UC_StageTwoEmissionSplit:[decimal] (input:decimal ip:integer)
+        @doc "Stage Two daily OURO emission split, in DESTINATION ORDER: \
+            \ [custodians-20 treasury-10 shareholders-10 liquidity-farm-20 autostake-20 subsidiary-20]. \
+            \ Mirrors UC_TenTwentyThirtyFourtySplit exactly: every share is derived from ONE floored \
+            \ 10% unit, and the LAST share absorbs the rounding remainder so the parts always sum to \
+            \ `input` with nothing minted-but-unassigned. Sums to 100%: 20+10+10+20+20+20."
+        (let
+            (
+                (u:decimal (floor (* 0.1 input) ip))           ;;one 10% unit, floored once
+                (v20a:decimal (* 2.0 u))                       ;;custodians
+                (v10a:decimal u)                               ;;demiourgos treasury
+                (v10b:decimal u)                               ;;shareholders
+                (v20b:decimal (* 2.0 u))                       ;;ouroboros liquidity farming
+                (v20c:decimal (* 2.0 u))                       ;;autostaking — auryndex fuel
+                (v20d:decimal (- input (fold (+) 0.0 [(* 2.0 u) u u (* 2.0 u) (* 2.0 u)])))
+            )
+            [v20a v10a v10b v20b v20c v20d]
         )
     )
     (defun UC_DirectFilterId:[string] (listoflists:[[string]] account:string)

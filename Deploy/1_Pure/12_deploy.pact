@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 12 of 20
 ;; This is STEP 12 of 21 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-11 must have run first, including the init steps between deploys.
-;; 2 module(s), 151,366 gas measured in the REPL gas model, 172,241 bytes
+;; 2 module(s), 47,586 gas measured in the REPL gas model, 172,241 bytes
 ;;
 ;; Modules in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/00_AQP-SCHEMAS.pact

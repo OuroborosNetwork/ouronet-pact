@@ -50,7 +50,10 @@
 ;;P2>      ATS (autostake — KOSON assets) / VST / Dispenser / CODEX / PYTHIA
 (load "Stage_01/[6.6]_ATS.repl")
 (load "Stage_01/[6.7]_VST.repl")
-(load "Stage_01/[6.8]_Dispenser.repl")
+;;[6.8]_Dispenser MOVED BELOW, past the Stage 2 deploy (2026-09-20). DSP+ now deploys in
+;;Stage_02/[7.0]_Dispenser-Z.repl, where CLAUDE.md always said it belonged ("deployed last"), so a
+;;dispenser test cannot run before Stage 2 exists. It was only ever load-order luck that this
+;;worked: nothing in DSP referenced a Stage 2 module until AA_OuroMinterStageTwo needed TS02-C3.
 (load "Stage_01/[6.9]_CODEX.repl")
 (load "Stage_01/[6.10]_PYTHIA.repl")
 
@@ -58,6 +61,9 @@
 ;; DEPLOY — Stage 2
 ;;==================================================================================
 (load "deploy-stage02.repl")
+
+;;DSP+ deploys inside deploy-stage02 (Stage_02/[7.0]_Dispenser-Z.repl), so its suite runs here.
+(load "Stage_01/[6.8]_Dispenser.repl")
 
 ;;==================================================================================
 ;; STAGE 2 — DPDC / DemiPad collectables suites

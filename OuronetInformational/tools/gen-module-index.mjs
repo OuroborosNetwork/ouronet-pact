@@ -29,7 +29,12 @@ function parse(file) {
   const implic = uniq(all("\\(implements\\s+([^\\s)]+)", s));
   const tables = uniq(all("\\(deftable\\s+([^\\s:)]+)", s));
   const schemas = uniq(all("\\(defschema\\s+([^\\s)]+)", s));
-  const entry = uniq(all("\\(defun\\s+((?:C_|A_|XI_|XE_|XB_)[^\\s:(]+)", s));
+  // CORRECTED 2026-09-20: the pattern listed C_/A_/XI_/XE_/XB_ and silently dropped the DOUBLED
+  // prefixes CC_ and AA_, which CLAUDE.md documents as "heavy" -- a heavy read is reached somewhere
+  // in the call tree. The index therefore under-reported the public surface, and the omission was
+  // invisible because nothing cross-checks it. Also picks up pipe-qualified names (DPTF|C_Transfer),
+  // which the old `[^\s:(]+` tail happened to allow only after the prefix.
+  const entry = uniq(all("\\(defun\\s+((?:CC_|C_|AA_|A_|XI_|XE_|XB_)[^\\s:(]+)", s));
   // one-line purpose: first @doc string anywhere near the top, else first ;; comment, else name
   const doc = /@doc\s+"([^"]{4,160})/.exec(s);
   const cmt = /^\s*;;\s*([^\n]{6,110})/m.exec(s.slice(0, 1200));

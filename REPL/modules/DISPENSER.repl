@@ -24,6 +24,11 @@
 ;; Run: cd REPL && pact modules/DISPENSER.repl
 (load "../deploy-stage00.repl")
 (load "../deploy-stage01.repl")
+;;DSP+ now deploys in Stage_02/[7.0]_Dispenser-Z.repl -- CLAUDE.md always said Stage_Z is "deployed
+;;last", and the REPL was the thing out of step. So anything that touches DSP must load Stage 2
+;;first. This is the THIRD file needing that edit after the move (ZALL and [5.2] were the others);
+;;the coupling between a module's deploy position and its test position is real and unenforced.
+(load "../deploy-stage02.repl")
 (load "../Stage_01/[6.8]_Dispenser.repl")
 
 ;;|| NEXT >

@@ -68,3 +68,14 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (AQP-BOOT.C_Step0_WireImcAndGovernor KST.ANHD)
 (commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;
+;;THE STAGE_Z DISPENSER, DEPLOYED LAST -- which is what CLAUDE.md has always said it is. It moved
+;;here from Stage_01/[5.2] on 2026-09-20: DSP references TS02-C3 for the Stage Two emission injects,
+;;and a module reference resolves at LOAD, so it cannot be loaded before the Stage 2 modules exist.
+;;On chain this was never a problem -- DSP is live and gets UPGRADED after Stage 2 -- the REPL was
+;;simply modelling an order the deployment does not use.
+(load "Stage_02/[7.0]_Dispenser-Z.repl")

@@ -429,6 +429,20 @@ def main():
         print(_db.stdout + _db.stderr)
         sys.exit("GATE FAILED: Deploy/ does not match the sovereign sources byte for byte.")
 
+    # AUTHORISATION SURFACE -- the only check here that speaks to authorisation directly. For every
+    # C_/A_ entrypoint it records which accounts' ownership is enforced ANYWHERE in its call tree,
+    # and requires that set to only ever GROW. Built 2026-09-20 ahead of the patron/executor
+    # refactor, whose failure mode is a diff that reads as an improvement: add an `executor`
+    # parameter, enforce it, drop the derived check it replaced. Tests stay green, because a caller
+    # passing the right account is the normal case; the hole opens only for the caller who does not.
+    # Validated by removing one enforce from TFT and confirming four dependent entrypoints were
+    # reported WEAKENED -- a baseline tool that cannot fail is decoration.
+    _as = subprocess.run([sys.executable, "tools/_authsurface.py", "--check"],
+                         capture_output=True, text=True)
+    if _as.returncode != 0:
+        print(_as.stdout + _as.stderr)
+        sys.exit("GATE FAILED: an entrypoint lost an ownership enforce -- see _authsurface.py.")
+
     # MODREF MEMBERS -- fatal only on LIVE class-B: a `(ref-X::member ...)` call where `member` is
     # defined NOWHERE in the module implementing X. Pact 5 resolves modref members DYNAMICALLY, so
     # such a call loads and runs, and only raises if that branch is ever taken -- invisible to every

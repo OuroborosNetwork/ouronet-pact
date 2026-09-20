@@ -1,0 +1,134 @@
+;;<=========================================================================>
+;; REPL/Stage_02/[7.0]_Dispenser-Z.repl — the Stage_Z dispenser automaton, DEPLOYED LAST
+;;<=========================================================================>
+;;
+;;MOVED HERE 2026-09-20 from Stage_01/[5.2]_Dispenser+.repl, which loaded it during Stage 1.
+;;
+;;2_CITIZEN/Stage_Z/03_DSP+.pact is documented in CLAUDE.md as "deployed last", and on chain that
+;;is what happens -- DSP is live, and a change to it is an UPGRADE applied once the Stage 2 modules
+;;are there. The REPL said otherwise, and it went unnoticed because nothing in DSP had ever
+;;referenced a Stage 2 module. A_OuroMinterStageTwo does (TS02-C3 for the FVT injects), and a
+;;module reference resolves at LOAD -- so DSP could not compile at all in its old position.
+;;
+;;The transaction labels below said "DALOS Module"; that was a copy-paste leftover and is corrected.
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_02/[7.0]_Dispenser-Z.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
+(begin-tx "TX-02 [Z] - DSP+ Dispenser Module")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-02 [Z] - DSP+ Dispenser Module · 01 · env-sigs (caps) ==== =======================================
+(print "--- [TX-02 [Z] - DSP+ Dispenser Module · 01 · env-sigs (caps)] ---")
+;;==== TX-02 [Z] - DSP+ Dispenser Module · 01 · env-sigs (caps) ==== =======================================
+(print "--- [TX-02 [Z] - DSP+ Dispenser Module · 01 · env-sigs (caps)] ---")
+(env-sigs
+  [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-02 [Z] - DSP+ Dispenser Module · 02 · load module ==== ===========================================
+(print "--- [TX-02 [Z] - DSP+ Dispenser Module · 02 · load module] ---")
+;;==== TX-02 [Z] - DSP+ Dispenser Module · 02 · load module ==== ===========================================
+(print "--- [TX-02 [Z] - DSP+ Dispenser Module · 02 · load module] ---")
+(load "../../2_CITIZEN/Stage_Z/03_DSP+.pact")
+;;==== TX-02 [Z] - DSP+ Dispenser Module · 03 · gas echo ==== ==============================================
+(print "--- [TX-02 [Z] - DSP+ Dispenser Module · 03 · gas echo] ---")
+(print (format "<<<<<<<AOZ Costs {} GAS>>>>>>>" [(env-gas)]))
+(print "")
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(print "")
+;;
+;;
+;;================================================================================
+;;                                                                              ;;
+;;              3      Post-Loads execs                                         ;;
+;;                                                                              ;;
+;;================================================================================
+;;
+;;
+(print "")
+(begin-tx "TX-03 [3.1] - DSP Init [1]: Dispenser Setup")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+
+;;==== TX-03 [3.1] - DSP Init [1]: Dispenser Setup · 01 · env-sigs (caps) ==== ====================
+(print "--- [TX-03 [3.1] - DSP Init [1]: Dispenser Setup · 01 · env-sigs (caps)] ---")
+;;==== TX-03 [3.1] - DSP Init [1]: Dispenser Setup · 01 · env-sigs (caps) ==== ====================
+(print "--- [TX-03 [3.1] - DSP Init [1]: Dispenser Setup · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "PK_AOZ", "caps": [] }
+        { "key": "PK_DHV", "caps": [] }
+    ]
+)
+
+;;==== TX-03 [3.1] - DSP Init [1]: Dispenser Setup · 02 · let / invocation ==== ===================
+(print "--- [TX-03 [3.1] - DSP Init [1]: Dispenser Setup · 02 · let / invocation] ---")
+;;==== TX-03 [3.1] - DSP Init [1]: Dispenser Setup · 02 · let / invocation ==== ===================
+(print "--- [TX-03 [3.1] - DSP Init [1]: Dispenser Setup · 02 · let / invocation] ---")
+(let
+    (
+        (ref-U|G:module{OuronetGuardsV2} U|G)
+        (ref-P|DALOS:module{OuronetPolicyV2} DALOS)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+        (ref-AOZ:module{AgeOfZalmoxis} AOZ)
+        (ref-P|DSP:module{OuronetPolicyV2} DSP)
+        (ref-DSP:module{Dispenser} DSP)
+        ;;
+        (patron:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
+        (dalos-sc:string (ref-DALOS::GOV|DALOS|SC_NAME))
+        (smart-dhvault-sc:string (ref-DALOS::GOV|DHV2|SC_NAME))
+        (standard-dispenser:string (ref-DSP::GOV|DSP1|SC_NAME))
+        (OuroID:string (ref-DALOS::UR_OuroborosID))
+        (PrimordialKosonID:string      (ref-AOZ::UR_PrimalTrueFungible 1))
+        (EsothericKosonID:string       (ref-AOZ::UR_PrimalTrueFungible 2))
+        (AncientKosonID:string         (ref-AOZ::UR_PrimalTrueFungible 3))
+    )
+    ;;1]Define IMC for Dispenser
+    (ref-P|DSP::P|A_Define)
+    ;;2]Reconfigure DALOS Governor, to be accesable from Dispenser, in order to use Gassless Patron for dispensing
+    (ref-TS01-C1::DALOS|C_RotateGovernor patron dalos-sc
+        (ref-U|G::UEV_GuardOfAny
+            [
+                (ref-P|DALOS::P|UR "TFT|RemoteDalosGov")
+                (ref-P|DALOS::P|UR "ORBR|RemoteDalosGov")
+                (ref-P|DALOS::P|UR "SWPU|RemoteDalosGov")
+                (ref-P|DALOS::P|UR "TS01-A|RemoteDalosGov")
+                (ref-P|DALOS::P|UR "DSP|RemoteDalosGov")
+            ]
+        )
+    )
+    ;;3]Reconfigure the SMART-DHVault Governor, to acces it fro mthe DSP Module
+    (ref-TS01-C1::DALOS|C_RotateGovernor patron smart-dhvault-sc
+        (ref-P|DALOS::P|UR "DSP|RemoteDalosGov")
+    )
+    ;;4]Toggle Mint Role for Ouro on Dispenser
+    (ref-TS01-C1::DPTF|C_ToggleMintRole patron OuroID standard-dispenser true)
+    ;;5]Toggle Mint Role for Primordial, Esoteric, and Ancient Kosons on Dispenser
+    ;;#N2 fix: standard-dispenser is a system smart account (not self-owned) - admin variant
+    (ref-TS01-A::DPTF|A_DeployAccount patron PrimordialKosonID standard-dispenser)
+    (ref-TS01-A::DPTF|A_DeployAccount patron EsothericKosonID standard-dispenser)
+    (ref-TS01-A::DPTF|A_DeployAccount patron AncientKosonID standard-dispenser)
+    ;;
+    (ref-TS01-C1::DPTF|C_ToggleMintRole patron PrimordialKosonID standard-dispenser true)
+    (ref-TS01-C1::DPTF|C_ToggleMintRole patron EsothericKosonID standard-dispenser true)
+    (ref-TS01-C1::DPTF|C_ToggleMintRole patron AncientKosonID standard-dispenser true)
+)
+
+;;==== TX-03 [3.1] - DSP Init [1]: Dispenser Setup · 03 · gas echo ==== ===========================
+(print "--- [TX-03 [3.1] - DSP Init [1]: Dispenser Setup · 03 · gas echo] ---")
+(print (format "<<<<<<<Dispenser Init [1] Costs {} GAS>>>>>>>" [(env-gas)]))
+(print "")
+(commit-tx)
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>

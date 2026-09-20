@@ -965,6 +965,15 @@
 
 ;;|| NEXT >
 ;;
+;;STAGE 2 LOADED HERE, and here only, for ATS-G10 -- the one assertion in this file that names a
+;;CITIZEN module (DSP.GOV|DSP_ADMIN). DSP+ moved to Stage_02/[7.0]_Dispenser-Z.repl on 2026-09-20
+;;("deployed last", as CLAUDE.md always said), so a DSP reference cannot resolve before Stage 2.
+;;
+;;It is loaded HERE and not beside the Stage 1 loads at the top, which was tried first and BROKE
+;;<<ATS-BRD>>: deploying Stage 2 earlier changes the branding state that assertion inspects, so an
+;;unrelated test started failing. Load position is not free -- it is part of the fixture.
+(load "../deploy-stage02.repl")
+
 (begin-tx "ATS-G10 — the two CITIZEN module-governance caps")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
