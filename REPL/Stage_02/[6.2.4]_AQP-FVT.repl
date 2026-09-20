@@ -186,8 +186,8 @@
     )
     ;;==== TX-FVT-02 · 02 · issue class-1 pool on OURO + C_AddScore — REPL ===========
     (print "--- [TX-FVT-02 · 02 · C_Issue class-1 pool + C_AddScore] ---")
-    (print (format "<(TS02-C3.AQP-POOL|C_Issue class=1 OURO)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_Issue patron pool-name ouro-id aqp-class)]))
-    (print (format "<(TS02-C3.AQP-POOL|C_AddScore)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)]))
+    (print (format "<(TS02-C3.AQP-POOL|C_Issue class=1 OURO)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_Issue patron (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset aqp-class ouro-id) pool-name ouro-id aqp-class)]))
+    (print (format "<(TS02-C3.AQP-POOL|C_AddScore)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id score-id)]))
     ;;==== TX-FVT-02 · 03 · C_Issue vault + C_AddRewardLink + C_AddScoreEntity — REPL =====
     (print "--- [TX-FVT-02 · 03 · C_Issue vault + C_AddRewardLink + C_AddScoreEntity] ---")
     (print (format "<(TS02-C3.AQP-FVT|C_Issue class=1 vault)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_Issue patron fvt-name patron fvt-class "|")]))
@@ -870,9 +870,9 @@
         (ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron owner-konto score-name 12 1.0)
     ]))
     (print (format "<(C_Issue pool + AddScore)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name ouro-id 1)
+        (ref-TS02-C3::AQP-POOL|C_Issue patron (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 1 ouro-id) pool-name ouro-id 1)
     ]))
-    (print (format "<(C_AddScore)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)]))
+    (print (format "<(C_AddScore)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id score-id)]))
     (print (format "<(C_Issue vault)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_Issue patron fvt-name patron 1 "|")]))
     (let
         (
@@ -1103,7 +1103,7 @@
         (pre-anhd-deb:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore owner-id pool-id score-id))
     )
     (enforce (>= pre-owner-supply stake-amount) "TX-FVT-10: owner needs OURO for the non-self proof")
-    (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+    (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
     ;;==== TX-FVT-10 · 01 · owner ANHD stakes FOR foreign beneficiary EMMA ====
     (print "--- [TX-FVT-10 · 01 · stake owner=ANHD, beneficiary=EMMA] ---")
     (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id foreign-ben ouro-id stake-amount)

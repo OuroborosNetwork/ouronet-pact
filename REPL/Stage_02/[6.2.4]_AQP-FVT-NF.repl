@@ -112,10 +112,10 @@
         (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron owner-id score-name 6 0)
     ]))
     (print (format "<(AQP-POOL|C_Issue class=4 DHB)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpnf-id aqp-class)
+        (ref-TS02-C3::AQP-POOL|C_Issue patron (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset aqp-class dpnf-id) pool-name dpnf-id aqp-class)
     ]))
     (print (format "<(AQP-POOL|C_AddScore)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+        (ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id score-id)
     ]))
     (print (format "<(AQP-FVT|REPL_BootstrapVault)> => \"{}\"" [
         (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
@@ -561,8 +561,8 @@
         ]
     )
     (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron owner-id score-name 6 0)
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpnf-id 4)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::AQP-POOL|C_Issue patron (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 4 dpnf-id) pool-name dpnf-id 4)
+    (ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     (ref-TS02-C2::DPNF|C_Create patron dpnf-id (NfSyncProbe.UC_DpnfNonceRows 1))
     (let
@@ -692,8 +692,8 @@
                                 (amts:[integer] (make-list n 1))
                             )
                             (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron owner-id sc 6 0)
-                            (ref-TS02-C3::AQP-POOL|C_Issue patron pool dpnf-id 4)
-                            (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id (ref-U|DALOS::UDC_Makeid sc))
+                            (ref-TS02-C3::AQP-POOL|C_Issue patron (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 4 dpnf-id) pool dpnf-id 4)
+                            (ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id (ref-U|DALOS::UDC_Makeid sc))
                             (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron (ref-U|DALOS::UDC_Makeid (format "{}Fvt" [pool])) patron (ref-U|DALOS::UDC_Makeid sc) ouro-id)
                             (ref-TS02-C2::DPNF|C_Create patron dpnf-id (NfSyncProbe.UC_DpnfNonceRows n))
                             (let ((minted:[integer] (take (- n) (ref-DPDC::URH_AccountNonces source dpnf-id false))))
@@ -824,8 +824,8 @@
                                     (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron owner-id sc 6 1)
                                     (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScoreDefinition patron score-id kbn-id
                                         ["Rarity" "Rarity" "Background"] ["Common" "Legendary" "Movie Set"] [50.0 9999.0 10.0])
-                                    (ref-TS02-C3::AQP-POOL|C_Issue patron pool kbn-id 4)
-                                    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+                                    (ref-TS02-C3::AQP-POOL|C_Issue patron (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 4 kbn-id) pool kbn-id 4)
+                                    (ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id score-id)
                                     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron (ref-U|DALOS::UDC_Makeid (format "{}Fvt" [pool])) patron score-id ouro-id)
                                     (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron pool-id owner-id ben kbn-id ns)
                                     (let ((g0:integer (env-gas)))

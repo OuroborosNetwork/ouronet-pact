@@ -85,10 +85,10 @@
         (ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron owner-konto score-name 3 true)
     ]))
     (print (format "<(TS02-C3.AQP-POOL|C_Issue class=3 DHCD)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpsf-id aqp-class)
+        (ref-TS02-C3::AQP-POOL|C_Issue patron (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset aqp-class dpsf-id) pool-name dpsf-id aqp-class)
     ]))
     (print (format "<(TS02-C3.AQP-POOL|C_AddScore)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+        (ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id score-id)
     ]))
     (print (format "<(TS02-C3.AQP-FVT|REPL_BootstrapVault reward=OURO)> => \"{}\"" [
         (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
@@ -629,7 +629,7 @@
     (print "--- [TX-FVT-DC-05 · 00 · re-enable stake after TX-FVT-DC-04 vacate (XB disable)] ---")
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
     (print (format "<(TS02-C3.AQP-POOL|C_EnablePoolStake)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
     ]))
     (print "--- [TX-FVT-DC-05 · 01 · transfer DHCD nonce 2 to EMMA + dual stake] ---")
     (env-sigs

@@ -190,8 +190,8 @@
         (ref-TS01-C1::DPOF|C_Mint patron dpof-id owner-konto 1000.0 [{"test": "info-gt-of"}])
         "already has MVST")
     (ref-TS02-C3::AQP-SCR|C_IssueOrtoFungibleScore patron owner-konto score-name 12 1.0 1.0)
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpof-id 2)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::AQP-POOL|C_Issue patron (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 2 dpof-id) pool-name dpof-id 2)
+    (ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     (print "<(fresh OF fixture provisioned)>")
 )
@@ -325,8 +325,8 @@
         ]
     )
     (ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron owner-konto score-name 3 true)
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpsf-id 3)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::AQP-POOL|C_Issue patron (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 3 dpsf-id) pool-name dpsf-id 3)
+    (ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     (print "<(fresh SF fixture provisioned)>")
 )
@@ -631,8 +631,8 @@
                 (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
                     "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-smart)) ] } ])
     (ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron owner-konto score-name 12 1.0)
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name ouro-id 1)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::AQP-POOL|C_Issue patron (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 1 ouro-id) pool-name ouro-id 1)
+    (ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     (print "<(fresh TF drain fixture provisioned)>")
 )
@@ -764,8 +764,8 @@
                     "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-smart)) ] } ])
     ;; reuse an owned MVST nonce (the OF vacate returned its nonce to the owner) — drain takes the full tracked position
     (ref-TS02-C3::AQP-SCR|C_IssueOrtoFungibleScore patron owner-konto score-name 12 1.0 1.0)
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpof-id 2)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::AQP-POOL|C_Issue patron (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 2 dpof-id) pool-name dpof-id 2)
+    (ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     (print "<(fresh OF drain fixture provisioned)>")
 )
@@ -895,8 +895,8 @@
                 (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
                     "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-smart)) ] } ])
     (ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron owner-konto score-name 3 true)
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpsf-id 3)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::AQP-POOL|C_Issue patron (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 3 dpsf-id) pool-name dpsf-id 3)
+    (ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     (print "<(fresh SF drain fixture provisioned)>")
 )
@@ -1028,8 +1028,8 @@
                 (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
                     "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-smart)) ] } ])
     (ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron owner-konto score-name 12 1.0)
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name ouro-id 1)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::AQP-POOL|C_Issue patron (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 1 ouro-id) pool-name ouro-id 1)
+    (ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     (print "<(fresh full-vacate fixture provisioned)>")
 )
@@ -1240,7 +1240,7 @@
     (print (format "<(setup abort-vacate)> => \"{}\""
         [(ref-TS02-C3::AQP-POOL|C_AbortVacate patron "TfStakePool-98c486052a51")]))
     (print (format "<(setup enable-stake)> => \"{}\""
-        [(ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron "TfStakePool-98c486052a51")]))
+        [(ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto "TfStakePool-98c486052a51") "TfStakePool-98c486052a51")]))
     (print (format "<(setup re-stake)> => \"{}\""
         [(ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron "TfStakePool-98c486052a51" patron patron ouro-id 100.0)]))
     (let
@@ -1317,7 +1317,7 @@
             (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
         )
         (print (format "<(TS02-C3.AQP-POOL|C_EnablePoolStake)> => \"{}\""
-            [(ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)]))
+            [(ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)]))
         (let
             (
                 (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
@@ -1534,7 +1534,7 @@
             (
                 (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
                 (pre-stoa:decimal (coin.get-balance stoa-acct))
-                (m (ref-TS02-C3::AQP-POOL|C_Issue patron "GtCostProbePool" "OURO-98c486052a51" 1))
+                (m (ref-TS02-C3::AQP-POOL|C_Issue patron (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 1 "OURO-98c486052a51") "GtCostProbePool" "OURO-98c486052a51" 1))
             )
             (map print
                 [
@@ -1789,7 +1789,7 @@
             (predicted:decimal (at "ignis-need" (at "ignis" (AQP-INFO.INFO_AQP-POOL|DisablePoolStake patron "DHCodingDivision-98c486052a51"))))
             (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
         )
-        (print (format "<(AQP-POOL|C_DisablePoolStake)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_DisablePoolStake patron "DHCodingDivision-98c486052a51")]))
+        (print (format "<(AQP-POOL|C_DisablePoolStake)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_DisablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto "DHCodingDivision-98c486052a51") "DHCodingDivision-98c486052a51")]))
         (let
             (
                 (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
@@ -2042,7 +2042,7 @@
     (print (format "<(setup abort-vacate)> => \"{}\""
         [(ref-TS02-C3::AQP-POOL|C_AbortVacate patron pool-id)]))
     (print (format "<(setup enable-stake)> => \"{}\""
-        [(ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)]))
+        [(ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)]))
     (let
         (
             (owned:[integer] (ref-DPDC::URH_AccountNonces patron dpsf-id true))
@@ -2826,7 +2826,7 @@
     (print (format "<(setup abort-vacate)> => \"{}\""
         [(ref-TS02-C3::AQP-POOL|C_AbortVacate patron pool-id)]))
     (print (format "<(setup enable-stake)> => \"{}\""
-        [(ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)]))
+        [(ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)]))
     (let
         (
             (owned:[integer] (ref-DPOF::URH_AccountNonces patron asset))
@@ -2904,7 +2904,7 @@
     (print (format "<(setup abort-vacate)> => \"{}\""
         [(ref-TS02-C3::AQP-POOL|C_AbortVacate patron pool-id)]))
     (print (format "<(setup enable-stake)> => \"{}\""
-        [(ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)]))
+        [(ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)]))
     (let
         (
             (owned:[integer] (ref-DPDC::URH_AccountNonces patron asset true))
@@ -3678,7 +3678,7 @@
                 (predicted:decimal (at "ignis-need" (at "ignis" (AQP-INFO.INFO_AQP-POOL|AddScore patron (ref-U|DALOS::UDC_Makeid "TfStakePool") fresh))))
                 (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
             )
-            (print (format "<(TS02-C3.AQP-POOL|C_AddScore)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_AddScore patron (ref-U|DALOS::UDC_Makeid "TfStakePool") fresh)]))
+            (print (format "<(TS02-C3.AQP-POOL|C_AddScore)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto (ref-U|DALOS::UDC_Makeid "TfStakePool")) (ref-U|DALOS::UDC_Makeid "TfStakePool") fresh)]))
             (let
                 (
                     (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
@@ -3748,7 +3748,7 @@
     (print (format "<(setup issue virgin score)> => \"{}\""
         [(ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron patron "GtPoolRevScoreProbe" 12 1.0)]))
     (print (format "<(setup add to pool)> => \"{}\""
-        [(ref-TS02-C3::AQP-POOL|C_AddScore patron (ref-U|DALOS::UDC_Makeid "TfStakePool")
+        [(ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto (ref-U|DALOS::UDC_Makeid "TfStakePool")) (ref-U|DALOS::UDC_Makeid "TfStakePool")
             (ref-U|DALOS::UDC_Makeid "GtPoolRevScoreProbe"))]))
     (let
         (
@@ -3759,7 +3759,7 @@
                 (predicted:decimal (at "ignis-need" (at "ignis" (AQP-INFO.INFO_AQP-POOL|RevokeScore patron (ref-U|DALOS::UDC_Makeid "TfStakePool") fresh))))
                 (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
             )
-            (print (format "<(TS02-C3.AQP-POOL|C_RevokeScore)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_RevokeScore patron (ref-U|DALOS::UDC_Makeid "TfStakePool") fresh)]))
+            (print (format "<(TS02-C3.AQP-POOL|C_RevokeScore)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_RevokeScore patron (AQP-POOL.URC_AqpOwnerKonto (ref-U|DALOS::UDC_Makeid "TfStakePool")) (ref-U|DALOS::UDC_Makeid "TfStakePool") fresh)]))
             (let
                 (
                     (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
@@ -3871,7 +3871,7 @@
     ;;reads `UR_AQP|PoolAssetId` on the score's pool, and an unemployed score carries the BAR sentinel
     ;;there — so the failure is a raw table miss on key "|" that names neither the score nor the rule.
     (print (format "<(setup employ it in a pool)> => \"{}\""
-        [(ref-TS02-C3::AQP-POOL|C_AddScore patron (ref-U|DALOS::UDC_Makeid "TfStakePool")
+        [(ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto (ref-U|DALOS::UDC_Makeid "TfStakePool")) (ref-U|DALOS::UDC_Makeid "TfStakePool")
             (ref-U|DALOS::UDC_Makeid "GtSeAddScoreProbe"))]))
     (let
         (

@@ -184,10 +184,10 @@
         (ref-TS02-C3::AQP-FVT|C_AddRewardLink anhd fvt-id ouro false family-id)
         (ref-TS02-C3::AQP-DSA|C_DefineDelegationVault anhd fvt-id model-id 2000)
         ;; 4) pool employing the 3 sub-scores (where operator + delegators stake their custodian frags)
-        (ref-TS02-C3::AQP-POOL|C_Issue anhd "GtPool" dhoc 3)
-        (ref-TS02-C3::AQP-POOL|C_AddScore anhd pool-id bsid)
-        (ref-TS02-C3::AQP-POOL|C_AddScore anhd pool-id ssid)
-        (ref-TS02-C3::AQP-POOL|C_AddScore anhd pool-id gsid)
+        (ref-TS02-C3::AQP-POOL|C_Issue anhd (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 3 dhoc) "GtPool" dhoc 3)
+        (ref-TS02-C3::AQP-POOL|C_AddScore anhd (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id bsid)
+        (ref-TS02-C3::AQP-POOL|C_AddScore anhd (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id ssid)
+        (ref-TS02-C3::AQP-POOL|C_AddScore anhd (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id gsid)
         (map print
           [ (expect "<<GT-02>> vault is class-0 (DSA delegation vault)" 0 (AQP-FVT.UR_FVT|FvtClass fvt-id))
             (expect "<<GT-02>> OURO reward is MULTIPLET_BASE on the vault" "MULTIPLET_BASE" (AQP-FVT.UR_FVT-RG|RewardKind fvt-id ouro))
@@ -1234,7 +1234,7 @@
     (let*
         (
             (sc:string (ref-U|DALOS::UDC_Makeid "FvtProbeScore"))
-            (ignore:string (ref-TS02-C3::AQP-POOL|C_AddScore KST.ANHD pool sc))
+            (ignore:string (ref-TS02-C3::AQP-POOL|C_AddScore KST.ANHD (AQP-POOL.URC_AqpOwnerKonto pool) pool sc))
             ;;the fifth conjunct compares against this. Note the FIRST argument is the integer
             ;;CT_SCORE_ENTITY_SCORE (1), not a string -- passing "SCORE" fails with a runtime typecheck.
             (swpair:string (AQP-FVT.URC_ResolveScoreEntitySwpair 1 sc 0))
@@ -1383,7 +1383,7 @@
         )
         ;;the silver score carries the pool link the admission context reads; bronze and golden stay
         ;;unlinked, which the third enforce also requires (all three fvt-links BAR).
-        (ref-TS02-C3::AQP-POOL|C_AddScore KST.ANHD pool sv)
+        (ref-TS02-C3::AQP-POOL|C_AddScore KST.ANHD (AQP-POOL.URC_AqpOwnerKonto pool) pool sv)
         (ref-TS02-C3::AQP-SCR|C_IssueTriplet KST.ANHD KST.ANHD b sv g)
         (let*
             (

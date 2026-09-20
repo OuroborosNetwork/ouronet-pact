@@ -769,11 +769,17 @@
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
                     ;;
                     (asset-coding:string (at 0 dh-asset-ids))
+                    (asset-coding-owner:string (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 3 asset-coding))
                     (asset-bloodshed:string (at 1 dh-asset-ids))
+                    (asset-bloodshed-owner:string (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 4 asset-bloodshed))
                     (asset-company:string (at 2 dh-asset-ids))
+                    (asset-company-owner:string (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 3 asset-company))
                     (asset-wondercoach:string (at 3 dh-asset-ids))
+                    (asset-wondercoach-owner:string (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 3 asset-wondercoach))
                     (asset-nosferatu:string (at 4 dh-asset-ids))
+                    (asset-nosferatu-owner:string (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 4 asset-nosferatu))
                     (asset-bunnies:string (at 5 dh-asset-ids))
+                    (asset-bunnies-owner:string (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 4 asset-bunnies))
                     ;;
                     ;;POOL IDS ARE DERIVED HERE, NOT PASSED IN. Changed 2026-09-18.
                     ;;They used to be two arguments -- `dh-pool-ids` (6) and `ouro-lp-pool-id` --
@@ -788,12 +794,19 @@
                     ;;What remains as arguments is precisely what this step CANNOT know: the six
                     ;;live collection assets, and the twelve scores created in earlier blocks.
                     (pool-coding:string (ref-U|DALOS::UDC_Makeid "DHCodingDivision"))
+                    (pool-coding-owner:string (AQP-POOL.URC_AqpOwnerKonto pool-coding))
                     (pool-bloodshed:string (ref-U|DALOS::UDC_Makeid "DHBloodshed"))
+                    (pool-bloodshed-owner:string (AQP-POOL.URC_AqpOwnerKonto pool-bloodshed))
                     (pool-company:string (ref-U|DALOS::UDC_Makeid "DHCompany"))
+                    (pool-company-owner:string (AQP-POOL.URC_AqpOwnerKonto pool-company))
                     (pool-wondercoach:string (ref-U|DALOS::UDC_Makeid "DHWonderCoach"))
+                    (pool-wondercoach-owner:string (AQP-POOL.URC_AqpOwnerKonto pool-wondercoach))
                     (pool-nosferatu:string (ref-U|DALOS::UDC_Makeid "DHNosferatu"))
+                    (pool-nosferatu-owner:string (AQP-POOL.URC_AqpOwnerKonto pool-nosferatu))
                     (pool-bunnies:string (ref-U|DALOS::UDC_Makeid "DHBunnies"))
+                    (pool-bunnies-owner:string (AQP-POOL.URC_AqpOwnerKonto pool-bunnies))
                     (pool-ouro-lp:string (ref-U|DALOS::UDC_Makeid "DHOuroLp"))
+                    (pool-ouro-lp-owner:string (AQP-POOL.URC_AqpOwnerKonto pool-ouro-lp))
                     ;;
                     (score-coding:string (at 0 dh-score-ids))
                     (score-sub-coding:string (at 1 dh-score-ids))
@@ -807,34 +820,37 @@
                     (score-silver:string (at 0 ouro-triplet-score-ids))
                     (score-bronze:string (at 1 ouro-triplet-score-ids))
                     (score-golden:string (at 2 ouro-triplet-score-ids))
+                    ;;The LP pool's executor is the LP token's owner konto -- read, not assumed.
+                    (ouro-lp-asset-owner:string
+                        (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 0 ouro-lp-asset-id))
                 )
                 ;;
                 ;; [1] DHCodingDivision — aqp-class 3 (DPSF)
-                (ref-TS02-C3::AQP-POOL|C_Issue patron "DHCodingDivision" asset-coding 3)
-                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-coding score-coding)
-                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-coding score-sub-coding)
+                (ref-TS02-C3::AQP-POOL|C_Issue patron asset-coding-owner "DHCodingDivision" asset-coding 3)
+                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-coding-owner pool-coding score-coding)
+                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-coding-owner pool-coding score-sub-coding)
                 ;; [2] DHBloodshed — aqp-class 4 (DPNF)
-                (ref-TS02-C3::AQP-POOL|C_Issue patron "DHBloodshed" asset-bloodshed 4)
-                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-bloodshed score-bloodshed)
-                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-bloodshed score-sub-bloodshed)
+                (ref-TS02-C3::AQP-POOL|C_Issue patron asset-bloodshed-owner "DHBloodshed" asset-bloodshed 4)
+                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-bloodshed-owner pool-bloodshed score-bloodshed)
+                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-bloodshed-owner pool-bloodshed score-sub-bloodshed)
                 ;; [3] DHCompany — aqp-class 3 (DPSF)
-                (ref-TS02-C3::AQP-POOL|C_Issue patron "DHCompany" asset-company 3)
-                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-company score-company-share)
-                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-company score-company-snakes)
+                (ref-TS02-C3::AQP-POOL|C_Issue patron asset-company-owner "DHCompany" asset-company 3)
+                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-company-owner pool-company score-company-share)
+                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-company-owner pool-company score-company-snakes)
                 ;; [4] DHWonderCoach — aqp-class 3 (DPSF)
-                (ref-TS02-C3::AQP-POOL|C_Issue patron "DHWonderCoach" asset-wondercoach 3)
-                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-wondercoach score-sub-wondercoach)
+                (ref-TS02-C3::AQP-POOL|C_Issue patron asset-wondercoach-owner "DHWonderCoach" asset-wondercoach 3)
+                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-wondercoach-owner pool-wondercoach score-sub-wondercoach)
                 ;; [5] DHNosferatu — aqp-class 4 (DPNF)
-                (ref-TS02-C3::AQP-POOL|C_Issue patron "DHNosferatu" asset-nosferatu 4)
-                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-nosferatu score-sub-nosferatu)
+                (ref-TS02-C3::AQP-POOL|C_Issue patron asset-nosferatu-owner "DHNosferatu" asset-nosferatu 4)
+                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-nosferatu-owner pool-nosferatu score-sub-nosferatu)
                 ;; [6] DHBunnies — aqp-class 4 (DPNF)
-                (ref-TS02-C3::AQP-POOL|C_Issue patron "DHBunnies" asset-bunnies 4)
-                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-bunnies score-sub-bunnies)
+                (ref-TS02-C3::AQP-POOL|C_Issue patron asset-bunnies-owner "DHBunnies" asset-bunnies 4)
+                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-bunnies-owner pool-bunnies score-sub-bunnies)
                 ;; [7] DHOuroLp — aqp-class 0 (LP); triplet from Step 6 — see Step 6 ;; for OURO LP flow
-                (ref-TS02-C3::AQP-POOL|C_Issue patron "DHOuroLp" ouro-lp-asset-id 0)
-                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-ouro-lp score-silver)
-                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-ouro-lp score-bronze)
-                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-ouro-lp score-golden)
+                (ref-TS02-C3::AQP-POOL|C_Issue patron ouro-lp-asset-owner "DHOuroLp" ouro-lp-asset-id 0)
+                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-ouro-lp-owner pool-ouro-lp score-silver)
+                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-ouro-lp-owner pool-ouro-lp score-bronze)
+                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-ouro-lp-owner pool-ouro-lp score-golden)
                 ;;
                 (format "AQP-BOOT Step 7 done. pool-ids=[coding={} bloodshed={} company={} wondercoach={} nosferatu={} bunnies={} ouro-lp={}]. ouro-lp-asset-id={}. score-slots-wired=12. NEXT=Step8:C_Step8_IssueFvtEntities."
                     [
@@ -1117,7 +1133,7 @@
                 (ref-TS02-C3::AQP-DSA|C_DefineDelegationVault patron fvt-id triplet-model-id
                     BOOT|CUSTODIANS_UNIT_SCORE)
                 ;; 8. the pool the Custodians SFT stakes into — aqp-class 3 (DPSF)
-                (ref-TS02-C3::AQP-POOL|C_Issue patron BOOT|POOL_CUSTODIANS custodians-dpsf-id 3)
+                (ref-TS02-C3::AQP-POOL|C_Issue patron custodians-dpsf-owner BOOT|POOL_CUSTODIANS custodians-dpsf-id 3)
                 (format "AQP-BOOT Step 13 done. fvt={} pool={} triplet-model={} models=[bronze={} silver={} golden={}] og-boost-class={} (+5%% on nonce 4) unit-score={} (agency gate {}). NEXT=Step14:CC_Step14_OpenCustodiansAgency."
                     [
                         fvt-id pool-id triplet-model-id
@@ -1168,6 +1184,7 @@
                     (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                     (fvt-id:string (ref-U|DALOS::UDC_Makeid BOOT|FVT_CUSTODIANS_VAULT))
                     (pool-id:string (ref-U|DALOS::UDC_Makeid BOOT|POOL_CUSTODIANS))
+                    (pool-owner:string (AQP-POOL.URC_AqpOwnerKonto pool-id))
                     (triplet-model-id:string (ref-U|DALOS::UDC_Makeid BOOT|MODEL_CUSTODIANS_TRIPLET))
                     (og-boost-class-id:string (ref-U|DALOS::UDC_Makeid BOOT|CUSTODIANS_OG_BOOST_CLASS))
                 )
@@ -1186,9 +1203,9 @@
                     ;;    or point at another class. The class now rides on the MODEL and is applied
                     ;;    by XI_IssueOneFromModel at issue, so step 1 above already linked all three.
                     ;;    The vault admin defines how a score behaves; the agency just opens.
-                    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id bronze-id)
-                    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id silver-id)
-                    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id golden-id)
+                    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-owner pool-id bronze-id)
+                    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-owner pool-id silver-id)
+                    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-owner pool-id golden-id)
                     ;; 3. admit + stake + gate, atomically
                     (ref-TS02-C3::AQP-DSA|CC_OpenAgency patron fvt-id pool-id
                         (ref-SCR::UC_ComputeTripletId bronze-id silver-id golden-id)

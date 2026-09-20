@@ -257,7 +257,7 @@
     )
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
     (print (format "<(TS02-C3.AQP-POOL|C_EnablePoolStake)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
     ]))
     (print (format "<(TS02-C3.AQP-POOL|CC_StakeTrueFungible)> => \"{}\"" [
         (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id stake-amount)
@@ -333,7 +333,7 @@
     ;; re-enable stake + re-stake the OF nonce so the rehaul path has inventory to scan
     (if (ref-DPOF::UR_R-Frozen dpof-id owner-id)
         (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron dpof-id owner-id false) true)
-    (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+    (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
     (print (format "<(restake OF nonce {})> => \"{}\"" [stake-nonce
         (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron pool-id owner-id beneficiary-id dpof-id [stake-nonce])]))
     (let ((tracker-pre:decimal (ref-AQP::UR_AQP|DPOFTrackerBalance pool-id dpof-id owner-id beneficiary-id stake-nonce)))
@@ -404,7 +404,7 @@
         )
     )
     (print (format "<(TS02-C3.AQP-POOL|C_EnablePoolStake)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
     ]))
     (print (format "<(TS02-C3.AQP-POOL|CC_StakeSemiFungibleCollectable owner-a)> => \"{}\"" [
         (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron pool-id owner-a beneficiary-a dpsf-id [nonce-a])
@@ -511,7 +511,7 @@
         ]
     )
     ;; re-enable stake + re-stake both owners' nonces so the rehaul path has a full collection to scan
-    (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+    (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
     (print (format "<(restake SF owner-a)> => \"{}\""
         [(ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron pool-id owner-a beneficiary-a dpsf-id [nonce-a])]))
     (print (format "<(restake SF owner-b)> => \"{}\""
@@ -580,7 +580,7 @@
     )
     ;; SfStakePool is empty + stake-enabled after L02b. Re-stake two owner legs (ANHD n1 + EMMA n2) so a
     ;; PARTIAL batch can open a vacate campaign without draining the pool — the leftover leg keeps it open.
-    (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+    (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
     (print (format "<(restake SF owner-a)> => \"{}\""
         [(ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron pool-id owner-a beneficiary-a dpsf-id [nonce-a])]))
     (print (format "<(restake SF owner-b)> => \"{}\""
@@ -700,7 +700,7 @@
     )
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
     (print (format "<(TS02-C3.AQP-POOL|C_EnablePoolStake)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
     ]))
     (let
         (
@@ -756,7 +756,7 @@
             (expect-failure
                 (format "<<TX-VCT-L04b expect-failure>> non-owner C_EnablePoolStake rejected (pool-owner gate)" [])
                 "Keyset failure (keys-all): [PK_Ancie...]"
-                (ref-TS02-C3::AQP-POOL|C_EnablePoolStake foreign pool-id))
+                (ref-TS02-C3::AQP-POOL|C_EnablePoolStake foreign (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id))
         ]
     )
 )
@@ -829,10 +829,10 @@
         (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron owner-id score-name 6 0)
     ]))
     (print (format "<(TS02-C3.AQP-POOL|C_Issue class=4 DHB)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpnf-id aqp-class)
+        (ref-TS02-C3::AQP-POOL|C_Issue patron (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset aqp-class dpnf-id) pool-name dpnf-id aqp-class)
     ]))
     (print (format "<(TS02-C3.AQP-POOL|C_AddScore)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+        (ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id score-id)
     ]))
     (print (format "<(TS02-C3.AQP-FVT|REPL_BootstrapVault)> => \"{}\"" [
         (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
@@ -954,10 +954,10 @@
         (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron owner-id score-name 6 0)
     ]))
     (print (format "<(TS02-C3.AQP-POOL|C_Issue class=4 DHN)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpnf-id aqp-class)
+        (ref-TS02-C3::AQP-POOL|C_Issue patron (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset aqp-class dpnf-id) pool-name dpnf-id aqp-class)
     ]))
     (print (format "<(TS02-C3.AQP-POOL|C_AddScore)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+        (ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id score-id)
     ]))
     (print (format "<(TS02-C3.AQP-FVT|REPL_BootstrapVault)> => \"{}\"" [
         (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
@@ -1143,10 +1143,10 @@
         (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron owner-id score-name 6 0)
     ]))
     (print (format "<(TS02-C3.AQP-POOL|C_Issue class=4 KBN)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpnf-id aqp-class)
+        (ref-TS02-C3::AQP-POOL|C_Issue patron (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset aqp-class dpnf-id) pool-name dpnf-id aqp-class)
     ]))
     (print (format "<(TS02-C3.AQP-POOL|C_AddScore)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+        (ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id score-id)
     ]))
     (print (format "<(TS02-C3.AQP-FVT|REPL_BootstrapVault)> => \"{}\"" [
         (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
@@ -1231,7 +1231,7 @@
     )
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
     (print (format "<(TS02-C3.AQP-POOL|C_EnablePoolStake)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
     ]))
     (print (format "<(TS02-C3.AQP-POOL|CC_StakeTrueFungible)> => \"{}\"" [
         (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id stake-amount)
@@ -1298,7 +1298,7 @@
     )
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
     (print (format "<(TS02-C3.AQP-POOL|C_EnablePoolStake)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
     ]))
     ;; Two stakes → two TF legs if different beneficiaries; same owner×ben collapses to one row.
     ;; Use amount-only: stake once, then try finalize with a zeroed amount batch that doesn't clear inventory.
@@ -1363,7 +1363,7 @@
     )
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
     (print (format "<(TS02-C3.AQP-POOL|C_EnablePoolStake)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
     ]))
     (print (format "<(TS02-C3.AQP-POOL|CC_StakeTrueFungible)> => \"{}\"" [
         (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id stake-amount)
@@ -1437,7 +1437,7 @@
         )
     )
     (print (format "<(TS02-C3.AQP-POOL|C_EnablePoolStake)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
     ]))
     (print (format "<(TS02-C3.AQP-POOL|CC_StakeTrueFungible owner-a)> => \"{}\"" [
         (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-a beneficiary-a ouro-id stake-amount)
@@ -1550,7 +1550,7 @@
         )
     )
     (print (format "<(TS02-C3.AQP-POOL|C_EnablePoolStake)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
     ]))
     (print (format "<(TS02-C3.AQP-POOL|CC_StakeTrueFungible owner-a)> => \"{}\"" [
         (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-a beneficiary-a ouro-id stake-amount)
@@ -1654,7 +1654,7 @@
         true
     )
     (print (format "<(TS02-C3.AQP-POOL|C_EnablePoolStake)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
     ]))
     ;; Owner-a: existing nonce-a. Owner-b: mint → transfer → stake (2 owner-rows for N=2).
     (print (format "<(TS02-C3.AQP-POOL|CC_StakeOrtoFungible owner-a)> => \"{}\"" [
@@ -1800,8 +1800,8 @@
         ]
     )
     (ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron owner-id score-name 12 1.0)
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name ouro-id 1)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::AQP-POOL|C_Issue patron (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 1 ouro-id) pool-name ouro-id 1)
+    (ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     ;; 3 scored TF legs (owner ANHD; beneficiaries ANHD / EMMA / LUMY)
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
@@ -2016,8 +2016,8 @@
         ]
     )
     (ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron owner-id score-name 12 1.0)
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name ouro-id 1)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::AQP-POOL|C_Issue patron (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 1 ouro-id) pool-name ouro-id 1)
+    (ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
     (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id ben-a ouro-id amt)

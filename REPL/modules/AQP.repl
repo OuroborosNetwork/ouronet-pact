@@ -671,7 +671,7 @@
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
         (of:string (ref-U|DALOS::UDC_Makeid "OfStakePool"))
     )
-    (ref-TS02-C3::AQP-POOL|C_DisablePoolStake KST.ANHD of)
+    (ref-TS02-C3::AQP-POOL|C_DisablePoolStake KST.ANHD (AQP-POOL.URC_AqpOwnerKonto of) of)
     ""
 )
 (commit-tx)
@@ -723,7 +723,7 @@
         (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
         (of:string (ref-U|DALOS::UDC_Makeid "OfStakePool"))
     )
-    (ref-TS02-C3::AQP-POOL|C_EnablePoolStake KST.ANHD of)
+    (ref-TS02-C3::AQP-POOL|C_EnablePoolStake KST.ANHD (AQP-POOL.URC_AqpOwnerKonto of) of)
     (map print
         [
             (expect "<<AQP-G11c>> staking is open again — nothing downstream inherits a closed pool"
@@ -758,7 +758,7 @@
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
         (sf:string (ref-U|DALOS::UDC_Makeid "SfStakePool"))
     )
-    (ref-TS02-C3::AQP-POOL|C_DisablePoolStake KST.ANHD sf)
+    (ref-TS02-C3::AQP-POOL|C_DisablePoolStake KST.ANHD (AQP-POOL.URC_AqpOwnerKonto sf) sf)
     ""
 )
 (commit-tx)
@@ -810,7 +810,7 @@
         (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
         (sf:string (ref-U|DALOS::UDC_Makeid "SfStakePool"))
     )
-    (ref-TS02-C3::AQP-POOL|C_EnablePoolStake KST.ANHD sf)
+    (ref-TS02-C3::AQP-POOL|C_EnablePoolStake KST.ANHD (AQP-POOL.URC_AqpOwnerKonto sf) sf)
     (map print
         [
             (expect "<<AQP-G12c>> staking is open again — nothing downstream inherits a closed pool"
@@ -1755,7 +1755,7 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
     )
-    (ref-TS02-C3::AQP-POOL|C_AddScore KST.ANHD
+    (ref-TS02-C3::AQP-POOL|C_AddScore KST.ANHD (AQP-POOL.URC_AqpOwnerKonto (ref-U|DALOS::UDC_Makeid "ResumeVacPool"))
         (ref-U|DALOS::UDC_Makeid "ResumeVacPool") (ref-U|DALOS::UDC_Makeid "G25Score"))
     ""
 )
@@ -1777,7 +1777,7 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
     )
-    (ref-TS02-C3::AQP-POOL|C_AddScore KST.ANHD
+    (ref-TS02-C3::AQP-POOL|C_AddScore KST.ANHD (AQP-POOL.URC_AqpOwnerKonto (ref-U|DALOS::UDC_Makeid "DrainVacPool"))
         (ref-U|DALOS::UDC_Makeid "DrainVacPool") (ref-U|DALOS::UDC_Makeid "G24Score"))
     ""
 )

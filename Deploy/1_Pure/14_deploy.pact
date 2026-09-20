@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 14 of 20
 ;; This is STEP 14 of 21 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-13 must have run first, including the init steps between deploys.
-;; 1 module(s), 151,366 gas measured in the REPL gas model, 169,718 bytes
+;; 1 module(s), 151,366 gas measured in the REPL gas model, 171,755 bytes
 ;;
 ;; Modules in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/03_AQP.pact
@@ -252,19 +252,19 @@
     ;; [C]   client
     ;;
     (defun C_Issue:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string pool-name:string asset-id:string aqp-class:integer)
+        (patron:string executor:string pool-name:string asset-id:string aqp-class:integer)
     )
     (defun C_AddScore:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string pool-id:string score-id:string)
+        (patron:string executor:string pool-id:string score-id:string)
     )
     (defun C_RevokeScore:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string pool-id:string score-id:string)
+        (patron:string executor:string pool-id:string score-id:string)
     )
     (defun C_DisablePoolStake:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string pool-id:string)
+        (patron:string executor:string pool-id:string)
     )
     (defun C_EnablePoolStake:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string pool-id:string)
+        (patron:string executor:string pool-id:string)
     )
     ;;
     (defun C_SyncTrueFungibleAnchors:object{IgnisCollectorV3.OutputCumulator}
@@ -480,7 +480,7 @@
     )
     ;;{C3}  Composed
     (defcap AQP|C>ISSUE-POOL
-        (pool-name:string asset-id:string aqp-class:integer)
+        (executor:string pool-name:string asset-id:string aqp-class:integer)
         @doc "Issue one acquisition pool (single @event). Validates pool-name, class, and asset-id; \
             \ enforces canonical asset ownership from aqp-class + asset-id; composes SECURE for XI_IssuePool."
         @event
@@ -494,39 +494,43 @@
             (UEV_IssuePoolClassAndAsset aqp-class asset-id)
             ;;3] tx sender must own the canonical asset behind this pool class + asset-id
             (CAP_AqpAssetOwner aqp-class asset-id)
+            (UEV_ExecutorIzAqpAssetOwner executor aqp-class asset-id)
             (compose-capability (SECURE))
         )
     )
     (defcap AQP|C>ADD-SCORE
-        (pool-id:string score-id:string slot-index:integer)
+        (executor:string pool-id:string score-id:string slot-index:integer)
         @doc "Assign score-id to score slot slot-index (first free; computed once in C_AddScore). Validates \
             \ slot claim, pool/score pairing; CAP_PoolOwner. Score owner in SCR|XE>CREATE-AQPOOL-LINK on XE. \
             \ Composes SECURE for XI_AddScoreToPool."
         @event
         (UEV_AddScorePoolAndScore pool-id score-id slot-index)
         (CAP_PoolOwner pool-id)
+        (UEV_ExecutorIzPoolOwner executor pool-id)
         (compose-capability (SECURE))
     )
     (defcap AQP|C>REVOKE-SCORE
-        (pool-id:string score-id:string slot-index:integer)
+        (executor:string pool-id:string score-id:string slot-index:integer)
         @doc "Revoke score-id from score slot slot-index (computed once in C_RevokeScore). Validates \
             \ slot claim, zero totals, fvt-link BAR, boost-link dependents; CAP_PoolOwner. Score owner in \
             \ SCR|XE>REVOKE-AQPOOL-LINK on XE. Composes SECURE for XI_RevokeScoreFromPool."
         @event
         (UEV_RevokeScorePoolAndScore pool-id score-id slot-index)
         (CAP_PoolOwner pool-id)
+        (UEV_ExecutorIzPoolOwner executor pool-id)
         (compose-capability (SECURE))
     )
     (defcap AQP|C>DISABLE-POOL-STAKE
-        (pool-id:string)
+        (executor:string pool-id:string)
         @doc "Pool owner pauses new stakes (stake-enabled → false). Idempotent when already false. \
             \ Unstake and vacate are unaffected."
         @event
         (CAP_PoolOwner pool-id)
+        (UEV_ExecutorIzPoolOwner executor pool-id)
         (compose-capability (SECURE))
     )
     (defcap AQP|C>ENABLE-POOL-STAKE
-        (pool-id:string)
+        (executor:string pool-id:string)
         @doc "Pool owner re-enables new stakes (stake-enabled → true). BLOCKED while a vacate session is in \
             \ progress — the owner must finish the vacate or C_AbortVacate first (audit H2 / fix #5). \
             \ Idempotent when already true; admission still requires ≥1 employed score and FVT pipeline ready."
@@ -536,6 +540,7 @@
             "Cannot enable pool stake while a vacate is in progress; finish or abort the vacate first"
         )
         (CAP_PoolOwner pool-id)
+        (UEV_ExecutorIzPoolOwner executor pool-id)
         (compose-capability (SECURE))
     )
     (defcap AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY
@@ -2293,6 +2298,25 @@
         )
     )
     ;;
+    (defun UEV_ExecutorIzPoolOwner (executor:string pool-id:string)
+        @doc "Enforces that <executor> IS the pool's owner konto -- the SAME value CAP_PoolOwner \
+            \ resolves and key-checks, read through the same URC_ so the two can never disagree. \
+            \ It does not REPLACE that gate: CAP_PoolOwner proves the signer holds the owner's key, \
+            \ this proves the named actor IS that owner. Both are needed, because they are not the \
+            \ same question -- a sovereign asset's owner is a SMART account whose key a human holds, \
+            \ so the key check passes for an account the caller never names (see 01_ANK, 2026-09-20)."
+        (enforce (= executor (URC_AqpOwnerKonto pool-id))
+            (format "Executor {} is not the owner of pool {} (owner is {})"
+                [executor pool-id (URC_AqpOwnerKonto pool-id)]))
+    )
+    (defun UEV_ExecutorIzAqpAssetOwner (executor:string aqp-class:integer asset-id:string)
+        @doc "Issue-time form of UEV_ExecutorIzPoolOwner: the pool does not exist yet, so the \
+            \ authority is derived from the canonical asset for <aqp-class>/<asset-id>, mirroring \
+            \ CAP_AqpAssetOwner."
+        (enforce (= executor (URC_AqpOwnerKontoFromClassAndAsset aqp-class asset-id))
+            (format "Executor {} is not the owner of the canonical asset {} (owner is {})"
+                [executor asset-id (URC_AqpOwnerKontoFromClassAndAsset aqp-class asset-id)]))
+    )
     (defun CAP_AqpAssetOwner (aqp-class:integer asset-id:string)
         @doc "Issue / pre-pool: tx sender must own the canonical asset for aqp-class and asset-id."
         (let 
@@ -3178,11 +3202,11 @@
     ;;
     ;;Lifecycle (AQP|T|Pool / AQP|Schema)
     (defun C_Issue:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string pool-name:string asset-id:string aqp-class:integer)
+        (patron:string executor:string pool-name:string asset-id:string aqp-class:integer)
         @doc "Create a new pool (canonical native asset-id + aqp-class). Patron pays STOA smart + IGNIS; \
             \ returns pool-id in output list. Score slots start BAR."
         (P|UEV_IMC)
-        (with-capability (AQP|C>ISSUE-POOL pool-name asset-id aqp-class)
+        (with-capability (AQP|C>ISSUE-POOL executor pool-name asset-id aqp-class)
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -3199,7 +3223,7 @@
     )
     ;;Score slots (score-primary … score-septenary); score-class must match pool aqp-class.
     (defun C_AddScore:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string pool-id:string score-id:string)
+        (patron:string executor:string pool-id:string score-id:string)
         @doc "Assign score-id to the first free pool slot; SCR XE_CreateAqpoolLink then XI pool slot write. \
             \ URC_FirstFreeScoreSlotIndex runs once before the cap; slot-index is passed through. \
             \ IGNIS only (GAS|ADD-SCORE 500.0 on AQP|SC_NAME); no STOA."
@@ -3208,7 +3232,7 @@
             (
                 (slot-index:integer (URC_FirstFreeScoreSlotIndex pool-id))
             )
-            (with-capability (AQP|C>ADD-SCORE pool-id score-id slot-index)
+            (with-capability (AQP|C>ADD-SCORE executor pool-id score-id slot-index)
                 (let
                     (
                         (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
@@ -3224,7 +3248,7 @@
         )
     )
     (defun C_RevokeScore:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string pool-id:string score-id:string)
+        (patron:string executor:string pool-id:string score-id:string)
         @doc "Clear score-id from its pool slot (compact higher slots); SCR XE_RevokeAqpoolLink then XI pool slot write. \
             \ URC_ScoreSlotIndexForScore runs once before the cap; slot-index is passed through. \
             \ IGNIS only (GAS|REVOKE-SCORE 500.0 on AQP|SC_NAME); no STOA."
@@ -3233,7 +3257,7 @@
             (
                 (slot-index:integer (URC_ScoreSlotIndexForScore pool-id score-id))
             )
-            (with-capability (AQP|C>REVOKE-SCORE pool-id score-id slot-index)
+            (with-capability (AQP|C>REVOKE-SCORE executor pool-id score-id slot-index)
                 (let
                     (
                         (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
@@ -3249,10 +3273,10 @@
         )
     )
     (defun C_DisablePoolStake:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string pool-id:string)
+        (patron:string executor:string pool-id:string)
         @doc "Pool owner pauses new stakes (stake-enabled → false). IGNIS only (GAS|SET-POOL-STAKE); no STOA."
         (P|UEV_IMC)
-        (with-capability (AQP|C>DISABLE-POOL-STAKE pool-id)
+        (with-capability (AQP|C>DISABLE-POOL-STAKE executor pool-id)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
@@ -3265,10 +3289,10 @@
         )
     )
     (defun C_EnablePoolStake:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string pool-id:string)
+        (patron:string executor:string pool-id:string)
         @doc "Pool owner re-enables new stakes (stake-enabled → true). IGNIS only (GAS|SET-POOL-STAKE); no STOA."
         (P|UEV_IMC)
-        (with-capability (AQP|C>ENABLE-POOL-STAKE pool-id)
+        (with-capability (AQP|C>ENABLE-POOL-STAKE executor pool-id)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)

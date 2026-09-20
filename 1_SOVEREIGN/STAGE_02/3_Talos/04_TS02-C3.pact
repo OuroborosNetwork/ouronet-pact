@@ -114,19 +114,19 @@
     ;;  [AQP-POOL]
     ;;
     (defun AQP-POOL|C_Issue:string
-        (patron:string pool-name:string asset-id:string aqp-class:integer)
+        (patron:string executor:string pool-name:string asset-id:string aqp-class:integer)
     )
     (defun AQP-POOL|C_AddScore:string
-        (patron:string pool-id:string score-id:string)
+        (patron:string executor:string pool-id:string score-id:string)
     )
     (defun AQP-POOL|C_RevokeScore:string
-        (patron:string pool-id:string score-id:string)
+        (patron:string executor:string pool-id:string score-id:string)
     )
     (defun AQP-POOL|C_DisablePoolStake:string
-        (patron:string pool-id:string)
+        (patron:string executor:string pool-id:string)
     )
     (defun AQP-POOL|C_EnablePoolStake:string
-        (patron:string pool-id:string)
+        (patron:string executor:string pool-id:string)
     )
     ;;
     (defun AQP-POOL|CC_StakeSemiFungibleCollectable:string
@@ -1423,7 +1423,7 @@
         )
     )
     (defun AQP-POOL|C_Issue:string
-        (patron:string pool-name:string asset-id:string aqp-class:integer)
+        (patron:string executor:string pool-name:string asset-id:string aqp-class:integer)
         @doc "Issues an acquisition pool (aqp-class + canonical native asset-id) and collects IGNIS output on patron."
         (with-capability (P|TS)
             (let
@@ -1432,7 +1432,7 @@
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                     (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-AQP::C_Issue patron pool-name asset-id aqp-class)
+                        (ref-AQP::C_Issue patron executor pool-name asset-id aqp-class)
                     )
                     (out:[string] (at "output" ico))
                     (pool-id:string (at 0 out))
@@ -1444,7 +1444,7 @@
         )
     )
     (defun AQP-POOL|C_AddScore:string
-        (patron:string pool-id:string score-id:string)
+        (patron:string executor:string pool-id:string score-id:string)
         @doc "Assigns score-id to the first free slot on pool-id; collects IGNIS output on patron."
         (with-capability (P|TS)
             (let
@@ -1454,7 +1454,7 @@
                     (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-AQP::C_AddScore patron pool-id score-id)
+                    (ref-AQP::C_AddScore patron executor pool-id score-id)
                 )
                 (ref-TS01-A::XB_DynamicFuelSTOA)
                 (format "Successfully assigned Score {} to Pool {}." [score-id pool-id])
@@ -1462,7 +1462,7 @@
         )
     )
     (defun AQP-POOL|C_RevokeScore:string
-        (patron:string pool-id:string score-id:string)
+        (patron:string executor:string pool-id:string score-id:string)
         @doc "Revokes score-id from pool-id (compact slots, clear aqpool-link); collects IGNIS output on patron."
         (with-capability (P|TS)
             (let
@@ -1472,7 +1472,7 @@
                     (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-AQP::C_RevokeScore patron pool-id score-id)
+                    (ref-AQP::C_RevokeScore patron executor pool-id score-id)
                 )
                 (ref-TS01-A::XB_DynamicFuelSTOA)
                 (format "Successfully revoked Score {} from Pool {}." [score-id pool-id])
@@ -1480,7 +1480,7 @@
         )
     )
     (defun AQP-POOL|C_DisablePoolStake:string
-        (patron:string pool-id:string)
+        (patron:string executor:string pool-id:string)
         @doc "Pool owner pauses new stakes (stake-enabled → false); collects IGNIS output on patron."
         (with-capability (P|TS)
             (let
@@ -1490,7 +1490,7 @@
                     (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-AQP::C_DisablePoolStake patron pool-id)
+                    (ref-AQP::C_DisablePoolStake patron executor pool-id)
                 )
                 (ref-TS01-A::XB_DynamicFuelSTOA)
                 (format "Successfully disabled staking on Pool {}." [pool-id])
@@ -1498,7 +1498,7 @@
         )
     )
     (defun AQP-POOL|C_EnablePoolStake:string
-        (patron:string pool-id:string)
+        (patron:string executor:string pool-id:string)
         @doc "Pool owner re-enables new stakes (stake-enabled → true); collects IGNIS output on patron."
         (with-capability (P|TS)
             (let
@@ -1508,7 +1508,7 @@
                     (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-AQP::C_EnablePoolStake patron pool-id)
+                    (ref-AQP::C_EnablePoolStake patron executor pool-id)
                 )
                 (ref-TS01-A::XB_DynamicFuelSTOA)
                 (format "Successfully enabled staking on Pool {}." [pool-id])
@@ -2260,14 +2260,19 @@
                     (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
                     (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
                     (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
+                    ;;The POOL's executor is the STAKED ASSET's owner konto -- which is NOT
+                    ;;necessarily `owner-konto`, the account that will own the score and vault.
+                    ;;A vault operator may stake a token somebody else issued. Derived, not assumed.
+                    (stake-asset-owner:string
+                        (ref-AQP::URC_AqpOwnerKontoFromClassAndAsset GV|POOL_CLASS_TF stake-dptf-id))
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators
                         [
                             (ref-SCR::C_IssueTrueFungibleScore
                                 patron owner-konto score-name GV|PRECISION GV|MX_FROZEN)
-                            (ref-AQP::C_Issue patron pool-name stake-dptf-id GV|POOL_CLASS_TF)
-                            (ref-AQP::C_AddScore patron pool-id score-id)
+                            (ref-AQP::C_Issue patron stake-asset-owner pool-name stake-dptf-id GV|POOL_CLASS_TF)
+                            (ref-AQP::C_AddScore patron stake-asset-owner pool-id score-id)
                             (ref-FVT::C_Issue
                                 patron fvt-name owner-konto GV|FVT_CLASS_VAULT GV|COMMON_BAR)
                             (ref-FVT::C_AddScoreEntity

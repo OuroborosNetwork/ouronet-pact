@@ -670,3 +670,54 @@ One layout note worth carrying: the first version of that assertion was a bare `
 a `let` body. It ran and it passed — and printed nothing, so **the gate never counted it**, while
 `_suite_stats` counts distinct assertions from source. That combination drifts the executed/distinct
 figures apart silently. Wrapped in `print`, per the canonical REPL layout.
+
+---
+
+## BAND 1 / AQP — `03_AQP` DONE, all 5 (2026-09-20). The migration cost the lesson.
+
+The module edit was the easiest so far: four caps gate on `CAP_PoolOwner pool-id`, one on
+`CAP_AqpAssetOwner aqp-class asset-id`, both resolving through `URC_` readers. Two helpers
+(`UEV_ExecutorIzPoolOwner`, `UEV_ExecutorIzAqpAssetOwner`) read through the **same** `URC_` the
+`CAP_` uses, so the executor check and the ownership gate cannot disagree.
+
+One real decision inside the Talos orchestrator: `AQP-FVT|C_IssueGenericEarningVault` has
+`owner-konto` in scope, and it would have been natural to pass it. **It is the wrong account** —
+that is the VAULT's owner, while the pool's authority is the STAKED ASSET's owner, and a vault
+operator may stake a token somebody else issued. Derived via
+`URC_AqpOwnerKontoFromClassAndAsset` into a named binding instead.
+
+### What actually cost the time: ~250 fixture call sites, and five regex passes that each missed
+
+The module change took one pass. The call-site migration took **six**, and every failure was the
+same shape — a call form the pattern did not anticipate:
+
+| pass | what it missed |
+|---|---|
+| 1 | multi-line calls (args on the following line) |
+| 2 | string-literal assets (`"DHCD-…"` rather than a bound id) |
+| 3 | owner bindings hoisted into a `let` that does not have `aqp-class` in scope |
+| 4 | eager owner reads on entities created LATER in the same transaction |
+| 5 | direct **core** calls (`ref-AQP::C_Issue`) rather than the `AQP-POOL\|` wrapper |
+| 6 | right arity, wrong executor — `patron patron` left by an earlier pass |
+
+Each miss cost a full ~9-minute gate run to discover. **The fix was to stop pattern-matching and
+parse**: a small form-aware splitter that answers "what are this call's top-level arguments?"
+resolved the remainder in one pass. That is the same lesson as `_bandplan`'s transitivity gaps and
+this morning's `/tmp/gate*` glob — *a regex approximating structure will be wrong in a way that
+looks like success.*
+
+**And the parser bit too, once.** Its first version searched for the literal text `AQP-POOL|` and
+matched inside a **string**: `(ref-IGNIS::UC_IgnisPrice "AQP-POOL|C_AddScore" "add-score")` is a
+price-table KEY, and rewriting there wrecked an unrelated `expect` in `[6.2.16]`. Reverted, and the
+tool now skips strings and comments. A structure-aware tool still has to know what is *not*
+structure.
+
+### Migration rules now confirmed twice (ANK, then AQP)
+
+1. `executor = patron` is **not** a safe default — it is right only where the patron already was
+   the actor. Sovereign assets are owned by SMART accounts (`Σ.`), so the human patron is usually
+   the wrong answer.
+2. **Never read the owner eagerly** in a `let` — the entity may not exist yet, and in negative
+   probes the read raises and replaces the refusal being asserted.
+3. Negative probes keep a plain account: they must fail on the guard under test, not on arity or
+   a missing row.

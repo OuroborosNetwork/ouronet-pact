@@ -104,11 +104,11 @@
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "ScaleVacFvt"))
     )
     ;; pool (class 1 = TF) + score + vault + enable stake
-    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name ouro-id 1)
+    (ref-TS02-C3::AQP-POOL|C_Issue patron (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 1 ouro-id) pool-name ouro-id 1)
     (ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron patron score-name 12 1.0)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
-    (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+    (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
     ;; fund + stake synth-001 .. synth-050 (2 OURO each), each its OWN beneficiary
     (VCTGAS.XI_TfStakeOnly patron pool-id ouro-id 50 2.0)
     (print (format "<(staked 50 synth · pool leg-count)> => {}"
@@ -293,7 +293,7 @@
                     ;;drained would let new stakers enter a pool that is being emptied underneath them.
                     (expect-failure "<<SCALE-VAC-R1>> ...and pool stake cannot be re-enabled mid-drain"
                         "Cannot enable pool stake while a vacate is in progress"
-                        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id))
+                        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id))
                     ;;neither refusal disturbed the drain -- the next round asserts 20 remaining and
                     ;;would fail loudly if either call had written, but that is a late signal.
                     (expect "<<SCALE-VAC-R1>> ...and neither refusal moved the drain on"

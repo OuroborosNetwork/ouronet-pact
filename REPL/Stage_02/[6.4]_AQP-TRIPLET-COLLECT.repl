@@ -639,7 +639,7 @@
                         (enforce (> (length z-nonces) z-pre-count) "CL05: sleep did not mint Z| nonce")
                         (if (not (ref-AQP::UR_AQP|PoolStakeEnabled pool-id))
                             (print (format "<(AQP-POOL|C_EnablePoolStake)> => \"{}\"" [
-                                (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+                                (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
                             ]))
                             true
                         )

@@ -105,11 +105,11 @@
             (expect-failure
                 (format "<<TX-AQP-NEG-IMC2>> direct AQP-POOL::C_DisablePoolStake rejected (P|UEV_IMC)" [])
                 "None of the guards passed"
-                (ref-AQP::C_DisablePoolStake patron pool-id))
+                (ref-AQP::C_DisablePoolStake patron patron pool-id))
             (expect-failure
                 (format "<<TX-AQP-NEG-IMC2>> direct AQP-POOL::C_Issue rejected (P|UEV_IMC)" [])
                 "None of the guards passed"
-                (ref-AQP::C_Issue patron "NegProbePool" ouro-id 1))
+                (ref-AQP::C_Issue patron patron "NegProbePool" ouro-id 1))
         ]
     )
 )
@@ -147,7 +147,7 @@
         (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
     )
-    (ref-TS02-C3::AQP-POOL|C_DisablePoolStake patron pool-id)
+    (ref-TS02-C3::AQP-POOL|C_DisablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
     (map print
         [
             (expect (format "<<TX-AQP-NEG-STATE>> pool now stake-disabled got={}" [(ref-AQP::UR_AQP|PoolStakeEnabled pool-id)]) false (ref-AQP::UR_AQP|PoolStakeEnabled pool-id))
@@ -183,7 +183,7 @@
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "ResumeVacPool"))
     )
-    (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+    (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
 )
 (env-sigs [])
 (commit-tx)
@@ -219,15 +219,15 @@
             (expect-failure
                 (format "<<TX-AQP-NEG-OWNER>> non-owner C_DisablePoolStake rejected (pool-owner gate)" [])
                 "Smart DALOS Account"
-                (ref-TS02-C3::AQP-POOL|C_DisablePoolStake foreign pool-id))
+                (ref-TS02-C3::AQP-POOL|C_DisablePoolStake foreign (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id))
             (expect-failure
                 (format "<<TX-AQP-NEG-OWNER>> non-owner C_AddScore rejected (pool-owner gate)" [])
                 "Invalid score-id for pool assignment (missing score, class mismatch,"
-                (ref-TS02-C3::AQP-POOL|C_AddScore foreign pool-id score-id))
+                (ref-TS02-C3::AQP-POOL|C_AddScore foreign (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id score-id))
             (expect-failure
                 (format "<<TX-AQP-NEG-OWNER>> non-owner C_RevokeScore rejected (pool-owner gate)" [])
                 "Invalid score revoke for pool (slot, aqpool-link, zero totals,"
-                (ref-TS02-C3::AQP-POOL|C_RevokeScore foreign pool-id score-id))
+                (ref-TS02-C3::AQP-POOL|C_RevokeScore foreign (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id score-id))
         ]
     )
 )

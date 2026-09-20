@@ -105,8 +105,8 @@
     (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron ouro-owner "StreamAnchor" ouro-id true "StreamBoost" 3 500.0 5000.0)
     ;; 2. class-1 score, class-1 pool, employ score
     (ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron patron "StreamScore" 12 1.0)
-    (ref-TS02-C3::AQP-POOL|C_Issue patron "StreamPool" ouro-id 1)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::AQP-POOL|C_Issue patron (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 1 ouro-id) "StreamPool" ouro-id 1)
+    (ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id score-id)
     ;; 3. vault FVT + reward link (OURO) + score entity
     (ref-TS02-C3::AQP-FVT|C_Issue patron "StreamVault" patron 1 "|")
     (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron fvt-id ouro-id false (ref-U|CT::CT_BAR))
@@ -542,8 +542,8 @@
                   (coin.TRANSFER (concat ["k:" gs-key]) "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
         ;; farm score is a class-0 LP score (lp-denominator = OURO full id, per README_HOWTO_FVT)
         (ref-TS02-C3::AQP-SCR|C_IssueLiquidityScore patron patron "FarmStreamScore" 12 ouro-id 1.0 1.0)
-        (ref-TS02-C3::AQP-POOL|C_Issue patron "FarmStreamPool" lp-id 0)
-        (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+        (ref-TS02-C3::AQP-POOL|C_Issue patron (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 0 lp-id) "FarmStreamPool" lp-id 0)
+        (ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id score-id)
         (ref-TS02-C3::AQP-FVT|C_Issue patron "FarmStreamFvt" patron 0 ouro-id)
         (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron fvt-id ouro-id false (ref-U|CT::CT_BAR))
         (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron fvt-id 1 score-id)

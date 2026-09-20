@@ -108,13 +108,13 @@
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "ScaleInjFvt"))
     )
     ;; deb-based (class-1) vault + score + enable
-    (ref-TS02-C3::AQP-POOL|C_Issue patron "ScaleInjPool" ouro-id 1)
+    (ref-TS02-C3::AQP-POOL|C_Issue patron (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 1 ouro-id) "ScaleInjPool" ouro-id 1)
     (ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron patron "ScaleInjScore" 12 1.0)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id score-id)
     ;; ENABLE deb-boost while the score is empty — required for the score's deb to track Elite-DEB (go stale)
     (ref-TS02-C3::AQP-SCR|C_EnableDebBoost patron score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
-    (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+    (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
     ;; stake 50 synth (2 OURO each) at Elite-DEB=1.0 → deb stored on the 1.0 basis
     (VCTGAS.XI_TfStakeOnly patron pool-id ouro-id 50 2.0)
     ;; mint EliteAuryn to patron, then GIVE 100000 to each synth → Elite-DEB rises → stored deb stale

@@ -221,14 +221,14 @@
         ]
     )
     (print (format "<(ouro-lp-asset-id from SWP)> => \"{}\"" [ouro-lp-asset-id]))
-    (ref-TS02-C3::AQP-POOL|C_Issue patron "DHCodingDivision" "DHCD-98c486052a51" 3)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-coding score-coding)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-coding score-sub-coding)
-    (ref-TS02-C3::AQP-POOL|C_Issue patron "DHCompany" "E|DH-98c486052a51" 3)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-company score-company-share)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-company score-company-snakes)
-    (ref-TS02-C3::AQP-POOL|C_Issue patron "DHWonderCoach" "DHWC-98c486052a51" 3)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-wondercoach score-sub-wondercoach)
+    (ref-TS02-C3::AQP-POOL|C_Issue patron (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 3 "DHCD-98c486052a51") "DHCodingDivision" "DHCD-98c486052a51" 3)
+    (ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-coding) pool-coding score-coding)
+    (ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-coding) pool-coding score-sub-coding)
+    (ref-TS02-C3::AQP-POOL|C_Issue patron (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 3 "E|DH-98c486052a51") "DHCompany" "E|DH-98c486052a51" 3)
+    (ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-company) pool-company score-company-share)
+    (ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-company) pool-company score-company-snakes)
+    (ref-TS02-C3::AQP-POOL|C_Issue patron (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 3 "DHWC-98c486052a51") "DHWonderCoach" "DHWC-98c486052a51" 3)
+    (ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-wondercoach) pool-wondercoach score-sub-wondercoach)
     (let
         (
             (lp-uev-ok:bool
@@ -239,11 +239,11 @@
         )
         (if lp-uev-ok
             (do
-                (print (format "<(AQP-POOL|C_Issue DHOuroLp lp-id={})>" [ouro-lp-asset-id]))
-                (ref-TS02-C3::AQP-POOL|C_Issue patron "DHOuroLp" ouro-lp-asset-id 0)
-                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-ouro-lp score-silver)
-                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-ouro-lp score-bronze)
-                (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-ouro-lp score-golden)
+                (print (format "<(AQP-POOL|C_Issue DHOuroLp DHOuroLp lp-id={})>" [ouro-lp-asset-id]))
+                (ref-TS02-C3::AQP-POOL|C_Issue patron (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 0 ouro-lp-asset-id) "DHOuroLp" ouro-lp-asset-id 0)
+                (ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-ouro-lp) pool-ouro-lp score-silver)
+                (ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-ouro-lp) pool-ouro-lp score-bronze)
+                (ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-ouro-lp) pool-ouro-lp score-golden)
                 (print "AQP-BOOT Step7 ANHD pools done (incl. DHOuroLp).")
             )
             (print (format "NOTE: DHOuroLp skipped — SWP|LP tracker roundtrip failed for {}" [ouro-lp-asset-id]))
@@ -298,7 +298,7 @@
             }
         ]
     )
-    (ref-TS02-C3::AQP-POOL|C_Issue patron "DHBloodshed" "DHB-98c486052a51" 4)
+    (ref-TS02-C3::AQP-POOL|C_Issue patron (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 4 "DHB-98c486052a51") "DHBloodshed" "DHB-98c486052a51" 4)
     ;;BOTH Bloodshed scores, matching C_Step7 exactly. Owner ruling 2026-09-19: "bloodshed would
     ;;have two scores" and "staking bloodshed assets determines the pure bloodshed score, and we
     ;;need to be able to earn stuff via that score alone."
@@ -309,12 +309,12 @@
     ;;`Bloodshed` makes it EMPLOYED, and Step 9 admitted it to no FVT, so every stake aborted at
     ;;05_FVT.pact:1031. Fixed properly by giving it the treasury it never had -- see
     ;;BOOT|FVT_BLOODSHED_TREASURY in 04_AQP-BOOT.pact.
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-bloodshed score-bloodshed)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-bloodshed score-sub-bloodshed)
-    (ref-TS02-C3::AQP-POOL|C_Issue patron "DHNosferatu" "DHN-98c486052a51" 4)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-nosferatu score-sub-nosferatu)
-    (ref-TS02-C3::AQP-POOL|C_Issue patron "DHBunnies" "KBN-98c486052a51" 4)
-    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-bunnies score-sub-bunnies)
+    (ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-bloodshed) pool-bloodshed score-bloodshed)
+    (ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-bloodshed) pool-bloodshed score-sub-bloodshed)
+    (ref-TS02-C3::AQP-POOL|C_Issue patron (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 4 "DHN-98c486052a51") "DHNosferatu" "DHN-98c486052a51" 4)
+    (ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-nosferatu) pool-nosferatu score-sub-nosferatu)
+    (ref-TS02-C3::AQP-POOL|C_Issue patron (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 4 "KBN-98c486052a51") "DHBunnies" "KBN-98c486052a51" 4)
+    (ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-bunnies) pool-bunnies score-sub-bunnies)
     (print "AQP-BOOT Step7 DPNF pools done.")
 )
 (env-sigs [])
@@ -837,9 +837,9 @@
             (TS02-C3.AQP-SCR|C_CreateScoreBoostClassLink emma eb og-class)
             (TS02-C3.AQP-SCR|C_CreateScoreBoostClassLink emma es og-class)
             (TS02-C3.AQP-SCR|C_CreateScoreBoostClassLink emma eg og-class)
-            (TS02-C3.AQP-POOL|C_AddScore emma pool-id eb)
-            (TS02-C3.AQP-POOL|C_AddScore emma pool-id es)
-            (TS02-C3.AQP-POOL|C_AddScore emma pool-id eg)
+            (TS02-C3.AQP-POOL|C_AddScore emma (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id eb)
+            (TS02-C3.AQP-POOL|C_AddScore emma (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id es)
+            (TS02-C3.AQP-POOL|C_AddScore emma (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id eg)
             ;;20 whole bronze x 1000 = 20 000 quintessence -- twice the 10 000 gate.
             (print (format "<(EMMA CC_OpenAgency, stake 20 whole bronze)> => \"{}\""
                 [(TS02-C3.AQP-DSA|CC_OpenAgency emma fvt-id pool-id

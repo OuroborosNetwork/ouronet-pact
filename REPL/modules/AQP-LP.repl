@@ -252,7 +252,7 @@
             (lp:string (at 0 (keys SWP.SWP|LP)))
             (sc:string (ref-U|DALOS::UDC_Makeid "LpProbeScore"))
         )
-        (ref-TS02-C3::AQP-POOL|C_Issue KST.ANHD "LpProbePool" lp 0)
+        (ref-TS02-C3::AQP-POOL|C_Issue KST.ANHD (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 0 lp) "LpProbePool" lp 0)
         (let*
             (
                 (pool:string (ref-U|DALOS::UDC_Makeid "LpProbePool"))
