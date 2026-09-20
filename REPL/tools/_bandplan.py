@@ -86,7 +86,15 @@ def plan():
         for n, b in _forms(mod, "defun"):
             if n.startswith("UEV_") or n.startswith("CAP_"):
                 helpers[n] = b
-            if re.match(r'^(A|AA|C|CC)_|\|(A|AA|C|CC)_', n):
+            # `(?:^|\|)` -- NOT `^...|\|...`. re.match ANCHORS THE WHOLE PATTERN at position 0,
+            # so the second alternative could only fire on a name STARTING with a bar, which no
+            # name does. Every Talos entrypoint (`ATS|A_KickStart`, `DPTF|C_Issue`,
+            # `AQP-FVT|C_Control`) was therefore invisible to this plan: the tool reported 89
+            # patron-taking entrypoints when the tree has 482. The refactor was scoped, sequenced
+            # and reported against a number that excluded 395 functions -- the ENTIRE Talos
+            # surface, which is the only client-facing path in the system and the one the owner
+            # was reading when he noticed. Found 2026-09-20 by the owner, not by the tooling.
+            if re.search(r'(?:^|\|)(A|AA|C|CC)_', n):
                 funs.append((os.path.basename(p), n, b))
     rows = []
     for f, n, b in funs:
