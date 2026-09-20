@@ -104,63 +104,71 @@ the tooling.
 
 ---
 
-## 4. THE WORKLIST — 46 modules, 719 functions, smallest first
+## 4. THE WORKLIST — DEPLOY ORDER, 46 modules, 719 functions
+
+**Order is deploy order, first module of Stage 1 to the last of Stage 2 — NOT smallest-first.**
+That is the owner's instruction and it is also the correct dependency order: a module's call sites
+live in the modules deployed *after* it, so sweeping forward means every module is already fixed
+before anything that calls it is touched. Working smallest-first would revisit the same call sites
+repeatedly.
+
+A module already conforming is **not skipped silently** — report *"looked it up, this module was
+done in previous runs, nothing to do here"* and move on.
 
 R = rename · A = add executor · P = add patron
 
 | # | module | R | A | P | total | interface(s) to update |
 |---|---|---:|---:|---:|---:|---|
-| 1 | `04_DPDC-I.pact` | 0 | 1 | 0 | **1** | `DpdcIssueV2` |
-| 2 | `07_MTX-AQP.pact` | 1 | 0 | 0 | **1** | `AqpMtxV1` |
-| 3 | `16_SWPI.pact` | 0 | 0 | 1 | **1** | — |
-| 4 | `01_ANK.pact` | 0 | 0 | 2 | **2** | `AcquisitionAnchorsV1` |
-| 5 | `02_DPDC.pact` | 0 | 1 | 1 | **2** | `BrandingUsageTertiaryV2` |
-| 6 | `03_AQP.pact` | 2 | 0 | 0 | **2** | `AcquisitionPoolsV1` |
-| 7 | `03_DPDC-C.pact` | 0 | 0 | 2 | **2** | `DpdcCreateV2` |
-| 8 | `04_BRD.pact` | 0 | 0 | 2 | **2** | `BrandingV2` |
-| 9 | `11_EQUITY+.pact` | 1 | 0 | 1 | **2** | `EquityV2` |
-| 10 | `06_VCT.pact` | 0 | 0 | 3 | **3** | `AcquisitionVacateV1` |
-| 11 | `07_DPDC-T.pact` | 1 | 0 | 3 | **4** | `DpdcTransferV2` |
-| 12 | `08_DSA.pact` | 0 | 2 | 2 | **4** | `DsaV1` |
-| 13 | `09_DPDC-F.pact` | 0 | 0 | 4 | **4** | `DpdcFragmentsV2` |
-| 14 | `19_SWPU.pact` | 0 | 0 | 4 | **4** | `SwapperUsageV3` |
-| 15 | `09_TFT.pact` | 0 | 0 | 5 | **5** | `TrueFungibleTransferV2` |
-| 16 | `12_LIQUID.pact` | 0 | 0 | 5 | **5** | `StoaLiquidStakingV2` |
-| 17 | `13_OUROBOROS.pact` | 0 | 0 | 5 | **5** | `OuroborosV2` |
-| 18 | `21_CODEX.pact` | 0 | 0 | 5 | **5** | `CodexV2` |
-| 19 | `02_IGNIS.pact` | 0 | 1 | 5 | **6** | `IgnisCollectorV3` |
-| 20 | `05_TS01-P.pact` | 8 | 0 | 0 | **8** | `TalosStageOne_ClientPactsV4` |
-| 21 | `10_DPDC-N.pact` | 0 | 0 | 8 | **8** | `DpdcNonceV2` |
-| 22 | `05_FVT.pact` | 4 | 2 | 3 | **9** | `AcquisitionFarmsVaultsTreasuriesV1` |
-| 23 | `22_PYTHIA.pact` | 0 | 0 | 9 | **9** | `PythiaLedgerV3`, `PythiaV5` |
-| 24 | `00_Demipad.pact` | 2 | 2 | 6 | **10** | `DemiourgosLaunchpadV2` |
-| 25 | `08_DPDC-S.pact` | 0 | 0 | 10 | **10** | `DpdcSetsV2` |
-| 26 | `18_SWPLC.pact` | 0 | 1 | 9 | **10** | `BrandingUsageSecondaryV2`, `SwapperLiquidityClientV2` |
-| 27 | `05_DPDC-R.pact` | 0 | 0 | 11 | **11** | `DpdcRolesV2` |
-| 28 | `06_DPDC-MNG.pact` | 0 | 0 | 12 | **12** | `DpdcManagementV2` |
-| 29 | `02_SCORE.pact` | 6 | 0 | 8 | **14** | `AcquisitionScoresV1` |
-| 30 | `05_TS02-DPAD.pact` | 8 | 6 | 0 | **14** | `TalosStageTwo_DemiPadV1` |
-| 31 | `06_TS01-C4.pact` | 1 | 12 | 1 | **14** | `TalosStageOne_ClientFourV8` |
-| 32 | `10_ATSU.pact` | 0 | 0 | 14 | **14** | `AutostakeUsageV2` |
-| 33 | `00_DPMF.pact` | 0 | 1 | 16 | **17** | `DemiourgosPactMetaFungibleV7` |
-| 34 | `01_DALOS.pact` | 0 | 0 | 18 | **18** | `OuronetDalosV2`, `OuronetPolicyV2` |
-| 35 | `15_SWP.pact` | 0 | 4 | 14 | **18** | `SwapperV4` |
-| 36 | `06_DPOF.pact` | 0 | 1 | 20 | **21** | `DemiourgosPactOrtoFungibleV2`, `DpofUdcV2` |
-| 37 | `05_DPTF.pact` | 0 | 2 | 22 | **24** | `BrandingUsagePrimaryV2`, `DemiourgosPactTrueFungibleV2` |
-| 38 | `08_ATS.pact` | 0 | 3 | 21 | **24** | `AutostakeV3` |
-| 39 | `01_TS01-A.pact` | 0 | 27 | 0 | **27** | `TalosStageOne_AdminV2` |
-| 40 | `11_VST.pact` | 0 | 5 | 24 | **29** | `VestingV2` |
-| 41 | `04_TS01-C3.pact` | 18 | 15 | 1 | **34** | `TalosStageOne_ClientThreeV4` |
-| 42 | `04_TS02-C3.pact` | 15 | 27 | 0 | **42** | `TalosStageTwo_ClientThreeV1` |
-| 43 | `02_TS02-C2.pact` | 9 | 50 | 0 | **59** | `TalosStageTwo_ClientTwoV2` |
-| 44 | `02_TS01-C1.pact` | 10 | 49 | 2 | **61** | `TalosStageOne_ClientOneV2` |
-| 45 | `01_TS02-C1.pact` | 11 | 54 | 0 | **65** | `TalosStageTwo_ClientOneV2` |
-| 46 | `03_TS01-C2.pact` | 18 | 56 | 3 | **77** | `TalosStageOne_ClientTwoV2` |
+| 1 | `01_DALOS.pact` | 0 | 0 | 18 | **18** | `OuronetDalosV2`, `OuronetPolicyV2` |
+| 2 | `02_IGNIS.pact` | 0 | 1 | 5 | **6** | `IgnisCollectorV3` |
+| 3 | `04_BRD.pact` | 0 | 0 | 2 | **2** | `BrandingV2` |
+| 4 | `05_DPTF.pact` | 0 | 2 | 22 | **24** | `BrandingUsagePrimaryV2`, `DemiourgosPactTrueFungibleV2` |
+| 5 | `00_DPMF.pact` | 0 | 1 | 16 | **17** | `DemiourgosPactMetaFungibleV7` |
+| 6 | `06_DPOF.pact` | 0 | 1 | 20 | **21** | `DemiourgosPactOrtoFungibleV2`, `DpofUdcV2` |
+| 7 | `08_ATS.pact` | 0 | 3 | 21 | **24** | `AutostakeV3` |
+| 8 | `09_TFT.pact` | 0 | 0 | 5 | **5** | `TrueFungibleTransferV2` |
+| 9 | `10_ATSU.pact` | 0 | 0 | 14 | **14** | `AutostakeUsageV2` |
+| 10 | `11_VST.pact` | 0 | 5 | 24 | **29** | `VestingV2` |
+| 11 | `12_LIQUID.pact` | 0 | 0 | 5 | **5** | `StoaLiquidStakingV2` |
+| 12 | `13_OUROBOROS.pact` | 0 | 0 | 5 | **5** | `OuroborosV2` |
+| 13 | `15_SWP.pact` | 0 | 4 | 14 | **18** | `SwapperV4` |
+| 14 | `16_SWPI.pact` | 0 | 0 | 1 | **1** | — |
+| 15 | `18_SWPLC.pact` | 0 | 1 | 9 | **10** | `BrandingUsageSecondaryV2`, `SwapperLiquidityClientV2` |
+| 16 | `19_SWPU.pact` | 0 | 0 | 4 | **4** | `SwapperUsageV3` |
+| — | `20_MTX-SWP.pact` | — | — | — | — | *nothing to do* |
+| 17 | `21_CODEX.pact` | 0 | 0 | 5 | **5** | `CodexV2` |
+| 18 | `22_PYTHIA.pact` | 0 | 0 | 9 | **9** | `PythiaLedgerV3`, `PythiaV5` |
+| 19 | `01_TS01-A.pact` | 0 | 27 | 0 | **27** | `TalosStageOne_AdminV2` |
+| 20 | `02_TS01-C1.pact` | 10 | 49 | 2 | **61** | `TalosStageOne_ClientOneV2` |
+| 21 | `03_TS01-C2.pact` | 18 | 56 | 3 | **77** | `TalosStageOne_ClientTwoV2` |
+| 22 | `04_TS01-C3.pact` | 18 | 15 | 1 | **34** | `TalosStageOne_ClientThreeV4` |
+| 23 | `06_TS01-C4.pact` | 1 | 12 | 1 | **14** | `TalosStageOne_ClientFourV8` |
+| 24 | `05_TS01-P.pact` | 8 | 0 | 0 | **8** | `TalosStageOne_ClientPactsV4` |
+| 25 | `02_DPDC.pact` | 0 | 1 | 1 | **2** | `BrandingUsageTertiaryV2` |
+| 26 | `03_DPDC-C.pact` | 0 | 0 | 2 | **2** | `DpdcCreateV2` |
+| 27 | `04_DPDC-I.pact` | 0 | 1 | 0 | **1** | `DpdcIssueV2` |
+| 28 | `05_DPDC-R.pact` | 0 | 0 | 11 | **11** | `DpdcRolesV2` |
+| 29 | `06_DPDC-MNG.pact` | 0 | 0 | 12 | **12** | `DpdcManagementV2` |
+| 30 | `07_DPDC-T.pact` | 1 | 0 | 3 | **4** | `DpdcTransferV2` |
+| 31 | `08_DPDC-S.pact` | 0 | 0 | 10 | **10** | `DpdcSetsV2` |
+| 32 | `09_DPDC-F.pact` | 0 | 0 | 4 | **4** | `DpdcFragmentsV2` |
+| 33 | `10_DPDC-N.pact` | 0 | 0 | 8 | **8** | `DpdcNonceV2` |
+| 34 | `11_EQUITY+.pact` | 1 | 0 | 1 | **2** | `EquityV2` |
+| 35 | `00_Demipad.pact` | 2 | 2 | 6 | **10** | `DemiourgosLaunchpadV2` |
+| 36 | `01_ANK.pact` | 0 | 0 | 2 | **2** | `AcquisitionAnchorsV1` |
+| 37 | `02_SCORE.pact` | 6 | 0 | 8 | **14** | `AcquisitionScoresV1` |
+| 38 | `03_AQP.pact` | 2 | 0 | 0 | **2** | `AcquisitionPoolsV1` |
+| 39 | `05_FVT.pact` | 4 | 2 | 3 | **9** | `AcquisitionFarmsVaultsTreasuriesV1` |
+| 40 | `06_VCT.pact` | 0 | 0 | 3 | **3** | `AcquisitionVacateV1` |
+| 41 | `07_MTX-AQP.pact` | 1 | 0 | 0 | **1** | `AqpMtxV1` |
+| 42 | `08_DSA.pact` | 0 | 2 | 2 | **4** | `DsaV1` |
+| 43 | `01_TS02-C1.pact` | 11 | 54 | 0 | **65** | `TalosStageTwo_ClientOneV2` |
+| 44 | `02_TS02-C2.pact` | 9 | 50 | 0 | **59** | `TalosStageTwo_ClientTwoV2` |
+| 45 | `04_TS02-C3.pact` | 15 | 27 | 0 | **42** | `TalosStageTwo_ClientThreeV1` |
+| 46 | `05_TS02-DPAD.pact` | 8 | 6 | 0 | **14** | `TalosStageTwo_DemiPadV1` |
 
 **Interfaces get CONTENT updates, not necessarily VERSION bumps** — most are already ahead of
 mainnet. This is what dissolved the "48-interface cascade" that blocked the first attempt.
-
----
 
 ## 5. PROTOCOL — one module at a time
 
