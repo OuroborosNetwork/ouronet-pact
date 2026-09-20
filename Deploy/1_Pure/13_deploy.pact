@@ -1,8 +1,8 @@
 ;; ---------------------------------------------------------------------------
 ;; OURONET DEPLOY -- file 13 of 20
-;; This is STEP 14 of 23 in the full sequence (see Deploy/MANIFEST.md).
-;; Steps 1-13 must have run first, including the init steps between deploys.
-;; 1 module(s), 96,321 gas measured in the REPL gas model, 212,915 bytes
+;; This is STEP 13 of 21 in the full sequence (see Deploy/MANIFEST.md).
+;; Steps 1-12 must have run first, including the init steps between deploys.
+;; 1 module(s), 96,321 gas measured in the REPL gas model, 213,633 bytes
 ;;
 ;; Modules in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/02_SCORE.pact
@@ -350,21 +350,26 @@
         )
     )
     (defun P|A_Define ()
-        @doc "Post-deploy hook (AQP-BOOT Step 0). Registers SCORE's caller guard into IGNIS's IMP, \
-            \ which became REQUIRED on 2026-09-20 when the STOA collectors were reclassified from \
-            \ C_ to IMC-gated X_ functions. SCORE calls XE_CollectStoa on its issuance paths, so \
-            \ without this line every one of them fails at P|UEV_IMC. \
+        @doc "No IMP registration, and that is a MEASURED conclusion rather than an omission. \
             \ \
-            \ This @doc used to read 'No cross-module IMP registration required'. That was true \
-            \ when the collector was an ungated C_; it stopped being true the moment the collector \
-            \ was protected, which is exactly the kind of statement that rots silently."
-        (let
-            (
-                (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
-                (mg:guard (create-capability-guard (P|AQP-SCORE|CALLER)))
-            )
-            (ref-P|IGNIS::P|A_AddIMP mg)
-        )
+            \ This module bills -- `C_Issue*Score` all end on IGNIS' STOA collector, which became \
+            \ `P|UEV_IMC`-gated on 2026-09-20. It still needs no guard of its own in IGNIS' IMP, \
+            \ because every one of those call sites is a plain `C_` reached through TS02-C3, and \
+            \ `P|UEV_IMC` is DEPTH-INVARIANT: the `P|TALOS-SUMMONER` capability TS02-C3 acquires \
+            \ at the top is still in scope when the collector is reached. TS02-C3's guard is \
+            \ registered; this module's would be a second answer to a question already answered. \
+            \ \
+            \ That is not free to add. `P|UEV_IMC` -> `U|G::UEV_Any` maps `UC_Try` over the WHOLE \
+            \ guard list with no short-circuit, so every entry in IGNIS' IMP costs gas on EVERY \
+            \ billed operation on the chain. A redundant registration is a permanent tax. \
+            \ \
+            \ WHAT WOULD CHANGE THIS: a billing call site inside a `defpact` step. A step arrives \
+            \ in its own transaction via `continue-pact` with an EMPTY capability scope and \
+            \ inherits nothing -- which is exactly what caught MTX-SWP. If one is ever added here, \
+            \ this module needs its own guard registered, or that step must acquire `P|AQP-SCORE|CALLER` \
+            \ itself. Verified 2026-09-20 by `REPL/tools/_impdiff.py`: this registration never \
+            \ landed in the genesis chain and the full gate was green regardless."
+        true
     )
 
     ;;<=========================================================================>

@@ -104,7 +104,35 @@ ROUNDS = {
         # pension/ATS fixtures (its own gas echo says "Migrate DPMF [01]"). A label match
         # would have shipped a test fixture as an init step. Relabelled to [4.1.20] the same
         # day. Label matching is only as safe as the labels.
-        "init": ["AQP-BOOT", "Define IMC Policies"],
+        "init": ["AQP-BOOT"],
+        # IMP DELTA -- the registrations this round ADDS, and nothing else.
+        #
+        # 2026-09-20: this was briefly `"init": [..., "Define IMC Policies"]`, which lifted the
+        # two whole-chain `P|A_Define` blocks out of the REPL into the round. That was wrong in
+        # two independent ways, and the second is the dangerous one:
+        #
+        #   1. Those are GENESIS blocks. The Stage-2 one ends on a `DALOS|C_RotateGovernor` of the
+        #      DPDC smart account, and the emitter itself flagged it "LIKELY A SANDBOX FIXTURE".
+        #      An upgrade round has no business re-running either.
+        #
+        #   2. `P|A_AddIMP` ends in `UC_AppL` = `(+ in [item])` -- A BLIND APPEND, NO DEDUPE.
+        #      MEASURED: re-running ONE module's `P|A_Define` took IGNIS' IMP from 16 to 17.
+        #      `P|UEV_IMC` -> `UEV_Any` maps `UC_Try` over the WHOLE list, so every duplicate
+        #      costs gas on EVERY IMC-gated call, forever. Replaying 47 `P|A_Define`s at mainnet
+        #      would have been a permanent, compounding gas regression that nothing would report.
+        #
+        # So the round carries the DELTA instead: only the (target, registrar) pairs the source
+        # now has and the live chain does not. It is computed, not written -- see
+        # `REPL/tools/_impdiff.py`, which derives the intended composition from every module's
+        # `P|A_Define` and subtracts a live snapshot. `create-capability-guard` on ANOTHER
+        # module's capability works from a plain transaction (measured), which is what makes a
+        # targeted `P|A_AddIMP` call possible without going through `P|A_Define` at all.
+        "imp_delta": [
+            ("IGNIS", "MTX-AQP",    "P|MTX-AQP|CALLER"),
+            ("IGNIS", "TS02-C2",    "P|TALOS-SUMMONER"),
+            ("IGNIS", "TS02-C3",    "P|TALOS-SUMMONER"),
+            ("IGNIS", "TS02-DPAD",  "P|TALOS-SUMMONER"),
+        ],
         # Modules that are NEW on chain this round. Owner confirmed 2026-09-18: none of the AQP
         # family is live -- this round deploys it for the first time. New modules get their
         # `(create-table ...)` calls ACTIVE; everything else in the round is an upgrade of a live
@@ -343,6 +371,8 @@ def main():
         rnd, keep, initpat = None, None, None
     else:
         rnd = ROUNDS[rname]
+        global RND
+        RND = rnd
         NEW_KEYS.extend(rnd.get("new", []))
         keep = round_modules(rnd)
         initpat = [x.lower() for x in rnd["init"]]
@@ -687,6 +717,8 @@ def write(steps, budget, maxbytes, mode="upgrade", existing=frozenset()):
             body.append("")
         emit(os.path.join(PURE, fn), "\n".join(body) + "\n")
         manifest.append((seq, dep, "DEPLOY", ", ".join(names), s["gas"], s["pacts"], fn, 0))
+    if RND is not None:
+        emit_imp_delta(RND)
     write_manifest(manifest, steps, budget, maxbytes, mode)
     write_tables(inventory, mode, existing)
     write_init_readme()
@@ -701,9 +733,59 @@ def write(steps, budget, maxbytes, mode="upgrade", existing=frozenset()):
 
 
 INIT_SEQ = []
+RND = None          # the active round, so write() can emit its IMP delta
 STRIPPED = []
 ORPHANS = []
 NEW_KEYS = []
+
+
+def emit_imp_delta(rnd):
+    """The round's IMP delta as its own init file -- the registrations the source expects and a
+    live chain does not have.
+
+    This is NOT `P|A_Define`. `P|A_AddIMP` ends in `UC_AppL` = `(+ in [item])`, a blind append
+    with no dedupe (measured: re-running one module's `P|A_Define` took IGNIS' IMP from 16 to 17),
+    and `P|UEV_IMC` -> `UEV_Any` maps `UC_Try` over the whole list with no short-circuit. Replaying
+    a define block therefore taxes every billed operation on the chain, permanently, and nothing
+    reports it. So an upgrade round ships the difference and only the difference.
+
+    `create-capability-guard` on ANOTHER module's capability works from a plain transaction
+    (measured 2026-09-20), which is what makes each line below expressible without the registrar
+    module's own code running.
+    """
+    delta = rnd.get("imp_delta") or []
+    if not delta:
+        return
+    n = len(INIT_SEQ) + 1
+    fn = f"{n:02d}_init.pact"
+    L = [";; ---------------------------------------------------------------------------",
+         f";; OURONET INIT -- file {n}",
+         ";; IMC POLICY DELTA for this round.",
+         ";;",
+         ";; Each line adds ONE registration that the current sources expect and the live chain",
+         ";; does not have. Derived, not written: `python3 REPL/tools/_impdiff.py --live SNAP`",
+         ";; computes it from every module's `P|A_Define` minus a snapshot of what is on chain.",
+         ";;",
+         ";; DO NOT substitute `P|A_Define` calls for this file. `P|A_AddIMP` is a blind append",
+         ";; with no dedupe, and `P|UEV_IMC` scans the whole list on every IMC-gated call -- so a",
+         ";; replayed define block is a permanent gas tax on every billed operation, invisible",
+         ";; afterwards. Add the delta; never replay the definition.",
+         ";;",
+         ";; SIGNERS: each call needs the TARGET module's admin key --",
+         ";;   `P|A_AddIMP` opens with `(with-capability (GOV|<TARGET>_ADMIN) ...)`.",
+         ";;",
+         f";; {len(delta)} registration(s).",
+         ";; ---------------------------------------------------------------------------",
+         "",
+         '(namespace "ouronet-ns")',
+         ""]
+    for target, registrar, cap in delta:
+        L.append(f";; {registrar} -> {target}")
+        L.append(f"({target}.P|A_AddIMP (create-capability-guard ({registrar}.{cap})))")
+    emit(os.path.join(INIT, fn), "\n".join(L) + "\n")
+    INIT_SEQ.append((n, "—", "IMC POLICY DELTA (generated by _impdiff.py)",
+                     len(delta), False, "REPL/tools/_deploybundle.py", 0))
+    return fn
 
 
 def emit_init(seq, step):
