@@ -183,7 +183,7 @@
         (ref-TS02-C3::AQP-FVT|C_Issue anhd "P3DelegationVault" anhd 0 ouro)
         (ref-TS02-C3::AQP-FVT|C_AddRewardLink anhd fvt-id ouro false "|")
         ;; bind the vault as a DSA delegation vault (unit-score 2000 => open gate 1000)
-        (ref-TS02-C3::AQP-DSA|C_DefineDelegationVault anhd fvt-id model-id 2000)
+        (ref-TS02-C3::AQP-DSA|C_DefineDelegationVault anhd anhd fvt-id model-id 2000)
         ;; class-3 DHOC pool employing the 3 sub-scores (so the triplet's silver has an aqpool for admission)
         (ref-TS02-C3::AQP-POOL|C_Issue anhd (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 3 dhoc) "P3capPool" dhoc 3)
         (ref-TS02-C3::AQP-POOL|C_AddScore anhd (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id bronze-sid)
@@ -290,7 +290,7 @@
         )
         (let ((triplet-id:string (ref-SCR::UC_ComputeTripletId bronze-sid silver-sid gold-sid)))
             ;; owner authorizes the delegated oracle key + arms oracle-on (25h expiry)
-            (ref-TS02-C3::AQP-DSA|C_SetOracleAuth anhd fvt-id (read-keyset "dsa-oracle"))
+            (ref-TS02-C3::AQP-DSA|C_SetOracleAuth anhd anhd fvt-id (read-keyset "dsa-oracle"))
             ;; oracle reports 10 nodes at full uptime -> capture-units = min(3550/2000, 10) = min(1,10) = 1
             (ref-TS02-C3::AQP-DSA|C_OracleWrite anhd fvt-id triplet-id 10 1000)
             (map print
@@ -862,7 +862,7 @@
                 (bal-before:decimal (ref-DPTF::UR_AccountSupply ouro anhd))
             )
             (print (format "<(royalty pool before withdraw)> => {}" [roy-before]))
-            (ref-TS02-C3::AQP-DSA|C_WithdrawRoyalty anhd fvt-id ouro)
+            (ref-TS02-C3::AQP-DSA|C_WithdrawRoyalty anhd anhd fvt-id ouro)
             (let ((received:decimal (- (ref-DPTF::UR_AccountSupply ouro anhd) bal-before)))
                 (map print
                   [ ;; the whole accrued royalty (700 = 500 + 200) landed on the owner
@@ -907,7 +907,7 @@
         (map print
           [ (expect-failure "<<TX-P3-16>> non-owner royalty withdraw rejected"
                 "Only the FVT owner may withdraw royalty"
-                (ref-TS02-C3::AQP-DSA|C_WithdrawRoyalty "k:not-the-owner" fvt-id ouro)) ]))
+                (ref-TS02-C3::AQP-DSA|C_WithdrawRoyalty "k:not-the-owner" "k:not-the-owner" fvt-id ouro)) ]))
 )
 (env-sigs [])
 (commit-tx)
@@ -1010,7 +1010,7 @@
                         (at "ignis-need" (at "ignis" (AQP-INFO.INFO_AQP-DSA|BurnRoyalty anhd fvt-id ouro))))
                     (pre-gas:decimal (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" anhd))
                 )
-            (ref-TS02-C3::AQP-DSA|C_BurnRoyalty anhd fvt-id ouro)
+            (ref-TS02-C3::AQP-DSA|C_BurnRoyalty anhd anhd fvt-id ouro)
             (let ((burned:decimal (- supply-before (ref-DPTF::UR_Supply ouro))))
                 (map print
                   [ (format "<<TX-P3-18>> INFO_AQP-DSA|BurnRoyalty predicted={} real={}"
@@ -1118,7 +1118,7 @@
                 (reserves-before:decimal (fold (+) 0.0 (ref-SWP::UR_PoolTokenSupplies swpair)))
                 (lp-supply-before:decimal (ref-DPTF::UR_Supply (ref-SWP::UR_TokenLP swpair)))
             )
-            (ref-TS02-C3::AQP-DSA|C_FuelRoyalty anhd fvt-id ouro swpair)
+            (ref-TS02-C3::AQP-DSA|C_FuelRoyalty anhd anhd fvt-id ouro swpair)
             (let
                 (
                     (reserves-added:decimal (- (fold (+) 0.0 (ref-SWP::UR_PoolTokenSupplies swpair)) reserves-before))
@@ -1384,7 +1384,7 @@
     )
     (let ((fvt-id:string (ref-U|DALOS::UDC_Makeid "P3DelegationVault")))
         (let ((ouro-before:decimal (ref-DPTF::UR_AccountSupply ouro anhd)))
-            (ref-TS02-C3::AQP-DSA|C_WithdrawRoyalty anhd fvt-id gas)
+            (ref-TS02-C3::AQP-DSA|C_WithdrawRoyalty anhd anhd fvt-id gas)
             (let ((ouro-received:decimal (- (ref-DPTF::UR_AccountSupply ouro anhd) ouro-before)))
                 (print (format "<(owner OURO from IGNIS royalty)> => {}" [ouro-received]))
                 (map print

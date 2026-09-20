@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 20 of 20
 ;; This is STEP 20 of 21 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-19 must have run first, including the init steps between deploys.
-;; 1 module(s), 0 gas measured in the REPL gas model, 83,937 bytes
+;; 1 module(s), 0 gas measured in the REPL gas model, 83,944 bytes
 ;;
 ;; Modules in this transaction, IN ORDER (do not reorder):
 ;;   2_CITIZEN/5_VaultsMinter/04_AQP-BOOT.pact
@@ -1146,7 +1146,7 @@
                     BOOT|REWARD_MODE_HETEROGENEOUS
                     BOOT|CUSTODIANS_SPLIT_BRONZE BOOT|CUSTODIANS_SPLIT_SILVER BOOT|CUSTODIANS_SPLIT_GOLDEN)
                 ;; 7. the DSA template — unit-score sets the node bar AND, at half, the agency bar
-                (ref-TS02-C3::AQP-DSA|C_DefineDelegationVault patron fvt-id triplet-model-id
+                (ref-TS02-C3::AQP-DSA|C_DefineDelegationVault patron patron fvt-id triplet-model-id
                     BOOT|CUSTODIANS_UNIT_SCORE)
                 ;; 8. the pool the Custodians SFT stakes into — aqp-class 3 (DPSF)
                 (ref-TS02-C3::AQP-POOL|C_Issue patron custodians-dpsf-owner BOOT|POOL_CUSTODIANS custodians-dpsf-id 3)

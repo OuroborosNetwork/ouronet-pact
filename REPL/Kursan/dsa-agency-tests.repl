@@ -109,7 +109,7 @@
             (model-id:string  (ref-U|DALOS::UDC_Makeid "DsaAgnModel"))
         )
         ;; define the vault (unit-score 20000 → open gate = 10000 quintessence)
-        (print (format "<(define)> => \"{}\"" [(ref-TS02-C3::AQP-DSA|C_DefineDelegationVault anhd fvt-id model-id 20000)]))
+        (print (format "<(define)> => \"{}\"" [(ref-TS02-C3::AQP-DSA|C_DefineDelegationVault anhd anhd fvt-id model-id 20000)]))
         (map print
             [ (expect "<<DSA-VAULT-01>> template records the model" model-id (at "model-id" (ref-DSA::UR_DSA-TMP|Template fvt-id)))
               (expect "<<DSA-VAULT-01>> template unit-score" 20000 (ref-DSA::UR_DSA-TMP|UnitScore fvt-id))
@@ -119,15 +119,15 @@
             [ ;; a non-owner cannot define the vault (patron != FVT owner)
               (expect-failure "<<DSA-VAULT-01>> non-owner define rejected"
                 "Only the FVT owner may define the delegation vault"
-                  (ref-TS02-C3::AQP-DSA|C_DefineDelegationVault "k:not-the-owner" fvt-id model-id 20000))
+                  (ref-TS02-C3::AQP-DSA|C_DefineDelegationVault "k:not-the-owner" "k:not-the-owner" fvt-id model-id 20000))
               ;; unit-score must be positive
               (expect-failure "<<DSA-VAULT-01>> zero unit-score rejected"
                 "unit-score must be positive"
-                  (ref-TS02-C3::AQP-DSA|C_DefineDelegationVault anhd fvt-id model-id 0))
+                  (ref-TS02-C3::AQP-DSA|C_DefineDelegationVault anhd anhd fvt-id model-id 0))
               ;; re-defining an already-bound vault is rejected
               (expect-failure "<<DSA-VAULT-01>> duplicate vault-define rejected"
                 "This FVT is already a DSA vault"
-                  (ref-TS02-C3::AQP-DSA|C_DefineDelegationVault anhd fvt-id model-id 20000)) ])
+                  (ref-TS02-C3::AQP-DSA|C_DefineDelegationVault anhd anhd fvt-id model-id 20000)) ])
         ""
     )
 )

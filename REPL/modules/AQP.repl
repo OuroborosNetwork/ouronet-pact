@@ -1430,7 +1430,7 @@
                 1 (ref-RPS::UR_FVT|FvtClass vault))
             (expect-failure "<<AQP-G20b>> binding a non-farm FVT as a delegation vault is refused"
                 "DSA vault must be a class-0 FVT"
-                (ref-TS02-C3::AQP-DSA|C_DefineDelegationVault KST.ANHD vault
+                (ref-TS02-C3::AQP-DSA|C_DefineDelegationVault KST.ANHD KST.ANHD vault
                     (ref-U|DALOS::UDC_Makeid "NoModel") 10))
             ;;the oracle-validity window is how long an oracle write stays fresh; zero or negative
             ;;would make every write instantly stale, or permanently fresh.

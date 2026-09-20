@@ -721,3 +721,46 @@ structure.
    probes the read raises and replaces the refusal being asserted.
 3. Negative probes keep a plain account: they must fail on the guard under test, not on arity or
    a missing row.
+
+---
+
+## BAND 1 / AQP — `08_DSA`: 6 of 9 done, and the 6 were a REAL patron/executor conflation
+
+```pact
+(enforce (= patron fvt-owner) "Only the FVT owner may define the delegation vault")   ;; x6
+```
+
+`C_DefineDelegationVault`, `C_SetOracleAuth`, `C_WithdrawRoyalty`, `C_BurnRoyalty`,
+`C_FuelRoyalty`, `C_SetAgencyFee` all forced the **gas payer to BE the FVT owner**. No sponsor
+could pay for a vault owner's operation, and the gasless patron was unusable across this entire
+surface. This is Band 3's defect — *the gas payer and the actor cannot be separated* — sitting in
+six functions the classifier filed as Band 1, because the conflation lives in a plain `enforce`
+rather than an ownership `CAP_`. **`_bandplan` under-reports Band 3 for exactly this shape.**
+
+Now `(= executor fvt-owner)`, with `CAP_EnforceAccountOwnership fvt-owner` untouched beside it.
+
+`<<GT-04-SPONSOR>>` proves it in both directions, which is the only way to prove a separation:
+EMMA sponsors while ANHD (the owner) acts — **a call that was impossible before** — and ANHD
+paying cannot name EMMA as executor. Paying does not confer authority.
+
+### The three NOT done, each for a stated reason
+
+- **`C_RecomputeCapture` — permissionless BY DESIGN.** Its own `@doc`: *"permissionless — any
+  patron may keep an agency's capture fresh after a delegator stake/unstake changed Q"*. Naming an
+  executor here would imply an authority that deliberately does not exist.
+- **`C_OracleWrite` — the authority is a stored GUARD**, not an account
+  (`enforce-guard (UR_DSA-ORA|Guard fvt-id)`). There is no account to tie an executor to. Naming
+  one would be decorative, and a decorative executor is worse than none: it reads as a check.
+- **`C_AdmitAgency` — the executor is the OPERATOR**, enforced downstream in
+  `FVT|XE>ADMIT-DELEGATION`. Real work, not a rename; left for the `05_FVT` pass where that
+  capability lives, for the same reason the sweep waited for ANK.
+
+## TOOLING — `REPL/tools/_executormigrate.py` (new, registered)
+
+The 03_AQP migration's six passes are why this exists. It parses call sites rather than matching
+them, handles both failure modes (**missing** argument and **right arity / wrong executor**), and
+carries a per-function rule table so it can only touch functions explicitly registered in it.
+
+It earned itself immediately: the 32 DSA call sites migrated in **one pass, green on first run**.
+Its first useful output was also a free audit — run against the finished AQP rules it reported
+**0 sites**, independently confirming that migration complete.

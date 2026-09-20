@@ -860,7 +860,7 @@
                 (print (format "<(capture before oracle)> anhd={} emma={}"
                     [(AQP-DSA.URC_CaptureUnits fvt-id anhd-triplet)
                      (AQP-DSA.URC_CaptureUnits fvt-id emma-triplet)]))
-                (TS02-C3.AQP-DSA|C_SetOracleAuth patron fvt-id (read-keyset "dsa-oracle"))
+                (TS02-C3.AQP-DSA|C_SetOracleAuth patron patron fvt-id (read-keyset "dsa-oracle"))
                 ;;ANHD holds 10,000,000 q = 500 units of capacity but is capped by nodes=2.
                 ;;EMMA holds 20,000 q = 1 unit and runs 1 node. So the CAP binds for ANHD and
                 ;;the STAKE binds for EMMA -- both sides of min(floor(Q/unit), nodes) exercised.

@@ -68,23 +68,23 @@
     ;;{5.7}  User [A/C]
     ;;
     (defun C_DefineDelegationVault:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-id:string model-id:string unit-score:integer))
+        (patron:string executor:string fvt-id:string model-id:string unit-score:integer))
     (defun C_AdmitAgency:object{IgnisCollectorV3.OutputCumulator}
         (patron:string fvt-id:string score-entity-id:string fee-per-mille:integer))
     (defun C_RecomputeCapture:object{IgnisCollectorV3.OutputCumulator}
         (patron:string fvt-id:string score-entity-id:string))
     (defun C_SetOracleAuth:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-id:string oracle-guard:guard))
+        (patron:string executor:string fvt-id:string oracle-guard:guard))
     (defun C_OracleWrite:object{IgnisCollectorV3.OutputCumulator}
         (patron:string fvt-id:string score-entity-id:string nodes:integer uptime:integer))
     (defun C_WithdrawRoyalty:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-id:string reward-dptf-id:string))
+        (patron:string executor:string fvt-id:string reward-dptf-id:string))
     (defun C_BurnRoyalty:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-id:string reward-dptf-id:string))
+        (patron:string executor:string fvt-id:string reward-dptf-id:string))
     (defun C_FuelRoyalty:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-id:string reward-dptf-id:string swpair:string))
+        (patron:string executor:string fvt-id:string reward-dptf-id:string swpair:string))
     (defun C_SetAgencyFee:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-id:string score-entity-id:string fee-per-mille:integer))
+        (patron:string executor:string fvt-id:string score-entity-id:string fee-per-mille:integer))
     (defun A_ToggleExternalOracle:string (on:bool))
     (defun A_SetOracleValidity:string (seconds:integer))
 
@@ -279,7 +279,7 @@
     )
     ;;{C2}  Simple
     ;;{C3}  Composed
-    (defcap DSA|C>DEFINE-VAULT (patron:string fvt-id:string model-id:string unit-score:integer)
+    (defcap DSA|C>DEFINE-VAULT (patron:string executor:string fvt-id:string model-id:string unit-score:integer)
         @doc "Bind a class-0 FVT as a DSA delegation vault. Enforces: the FVT exists + is class-0, patron IS the \
             \ FVT owner (+ signs), unit-score positive, no template yet. Composes SECURE for the template write. \
             \ (The model-id's validity is enforced when CC_OpenAgency calls the SCORE factory.)"
@@ -290,7 +290,7 @@
                 (fvt-owner:string (RPS.UR_FVT|OwnerKonto fvt-id))
             )
             (enforce (= (RPS.UR_FVT|FvtClass fvt-id) 0) "DSA vault must be a class-0 FVT")
-            (enforce (= patron fvt-owner) "Only the FVT owner may define the delegation vault")
+            (enforce (= executor fvt-owner) "Only the FVT owner may define the delegation vault")
             (enforce (> unit-score 0) "unit-score must be positive")
             (enforce (not (URC_DsaTemplateExists fvt-id)) "This FVT is already a DSA vault")
             (ref-DALOS::CAP_EnforceAccountOwnership fvt-owner)
@@ -320,7 +320,7 @@
         (enforce (RPS.UR_FVT-SEL|Delegation fvt-id score-entity-id) "Score entity is not a delegation member")
         (compose-capability (P|SECURE-CALLER))
     )
-    (defcap DSA|C>SET-ORACLE-AUTH (patron:string fvt-id:string)
+    (defcap DSA|C>SET-ORACLE-AUTH (patron:string executor:string fvt-id:string)
         @doc "Authorize the delegated oracle key for a DSA vault + arm the FVT oracle-on expiry. Owner-gated \
             \ (patron IS the FVT owner + signs). Composes P|SECURE-CALLER for the FVT XE_SetFvtOracleOn write."
         @event
@@ -330,12 +330,12 @@
                 (fvt-owner:string (RPS.UR_FVT|OwnerKonto fvt-id))
             )
             (enforce (URC_DsaTemplateActive fvt-id) "DSA vault not defined or inactive")
-            (enforce (= patron fvt-owner) "Only the FVT owner may set the oracle authority")
+            (enforce (= executor fvt-owner) "Only the FVT owner may set the oracle authority")
             (ref-DALOS::CAP_EnforceAccountOwnership fvt-owner)
         )
         (compose-capability (P|SECURE-CALLER))
     )
-    (defcap DSA|C>WITHDRAW-ROYALTY (patron:string fvt-id:string)
+    (defcap DSA|C>WITHDRAW-ROYALTY (patron:string executor:string fvt-id:string)
         @doc "Owner-only: withdraw the whole royalty pool of a DSA vault to the FVT owner. Enforces the vault is a \
             \ live DSA vault + patron IS the FVT owner (+ signs). Composes P|SECURE-CALLER so DSA's registered IMC \
             \ guard is active for the FVT XE_WithdrawRoyalty custody call."
@@ -346,12 +346,12 @@
                 (fvt-owner:string (RPS.UR_FVT|OwnerKonto fvt-id))
             )
             (enforce (URC_DsaTemplateActive fvt-id) "DSA vault not defined or inactive")
-            (enforce (= patron fvt-owner) "Only the FVT owner may withdraw royalty")
+            (enforce (= executor fvt-owner) "Only the FVT owner may withdraw royalty")
             (ref-DALOS::CAP_EnforceAccountOwnership fvt-owner)
         )
         (compose-capability (P|SECURE-CALLER))
     )
-    (defcap DSA|C>BURN-ROYALTY (patron:string fvt-id:string)
+    (defcap DSA|C>BURN-ROYALTY (patron:string executor:string fvt-id:string)
         @doc "Owner-only: BURN the whole royalty pool of a DSA vault. Enforces the vault is a live DSA vault + \
             \ patron IS the FVT owner (+ signs). Composes P|SECURE-CALLER so DSA's registered IMC guard is active \
             \ for the FVT XE_BurnRoyalty custody-burn call."
@@ -362,12 +362,12 @@
                 (fvt-owner:string (RPS.UR_FVT|OwnerKonto fvt-id))
             )
             (enforce (URC_DsaTemplateActive fvt-id) "DSA vault not defined or inactive")
-            (enforce (= patron fvt-owner) "Only the FVT owner may burn royalty")
+            (enforce (= executor fvt-owner) "Only the FVT owner may burn royalty")
             (ref-DALOS::CAP_EnforceAccountOwnership fvt-owner)
         )
         (compose-capability (P|SECURE-CALLER))
     )
-    (defcap DSA|C>FUEL-ROYALTY (patron:string fvt-id:string swpair:string)
+    (defcap DSA|C>FUEL-ROYALTY (patron:string executor:string fvt-id:string swpair:string)
         @doc "Owner-only: FUEL a swpair with the whole royalty pool of a DSA vault (add liquidity, no LP mint). \
             \ Enforces the vault is a live DSA vault + patron IS the FVT owner (+ signs). Composes P|SECURE-CALLER \
             \ so DSA's registered IMC guard is active for the FVT XE_FuelRoyalty custody-fuel call."
@@ -378,12 +378,12 @@
                 (fvt-owner:string (RPS.UR_FVT|OwnerKonto fvt-id))
             )
             (enforce (URC_DsaTemplateActive fvt-id) "DSA vault not defined or inactive")
-            (enforce (= patron fvt-owner) "Only the FVT owner may fuel with royalty")
+            (enforce (= executor fvt-owner) "Only the FVT owner may fuel with royalty")
             (ref-DALOS::CAP_EnforceAccountOwnership fvt-owner)
         )
         (compose-capability (P|SECURE-CALLER))
     )
-    (defcap DSA|C>SET-AGENCY-FEE (patron:string fvt-id:string score-entity-id:string fee-per-mille:integer)
+    (defcap DSA|C>SET-AGENCY-FEE (patron:string executor:string fvt-id:string score-entity-id:string fee-per-mille:integer)
         @doc "Owner-only: change a delegation agency's operator fee. Enforces the vault is live, patron IS the FVT \
             \ owner (+ signs), fee in [DSA_FEE_MIN, DSA_FEE_MAX]. A fee change is O(1) — it reprices only FUTURE \
             \ injects (the fee is never baked into a stored weight). Composes P|SECURE-CALLER for the FVT mirror."
@@ -394,7 +394,7 @@
                 (fvt-owner:string (RPS.UR_FVT|OwnerKonto fvt-id))
             )
             (enforce (URC_DsaTemplateActive fvt-id) "DSA vault not defined or inactive")
-            (enforce (= patron fvt-owner) "Only the FVT owner may change the agency fee")
+            (enforce (= executor fvt-owner) "Only the FVT owner may change the agency fee")
             (enforce (and (>= fee-per-mille DSA_FEE_MIN) (<= fee-per-mille DSA_FEE_MAX)) "Operator fee out of range (1%..50%)")
             (ref-DALOS::CAP_EnforceAccountOwnership fvt-owner)
         )
@@ -731,11 +731,11 @@
     ;;
     ;; [A]   admin
     (defun C_DefineDelegationVault:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-id:string model-id:string unit-score:integer)
+        (patron:string executor:string fvt-id:string model-id:string unit-score:integer)
         @doc "Bind a class-0 FVT as a DSA delegation vault: record the score-entity model + unit-score (active). \
             \ Only the FVT owner may define it. P|UEV_IMC + DSA|C>DEFINE-VAULT. Bills GAS|DEFINE-VAULT."
         (P|UEV_IMC)
-        (with-capability (DSA|C>DEFINE-VAULT patron fvt-id model-id unit-score)
+        (with-capability (DSA|C>DEFINE-VAULT patron executor fvt-id model-id unit-score)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
@@ -747,12 +747,12 @@
         )
     )
     (defun C_SetOracleAuth:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-id:string oracle-guard:guard)
+        (patron:string executor:string fvt-id:string oracle-guard:guard)
         @doc "Owner-only: authorize the delegated oracle key for this DSA vault (DSA|OracleAuth) and ARM the FVT \
             \ oracle-on expiry, so stale oracle data (>25h) captures nothing. P|UEV_IMC + DSA|C>SET-ORACLE-AUTH. \
             \ Bills GAS|SET-ORACLE-AUTH."
         (P|UEV_IMC)
-        (with-capability (DSA|C>SET-ORACLE-AUTH patron fvt-id)
+        (with-capability (DSA|C>SET-ORACLE-AUTH patron executor fvt-id)
             (let
                 (
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
@@ -806,13 +806,13 @@
         )
     )
     (defun C_WithdrawRoyalty:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-id:string reward-dptf-id:string)
+        (patron:string executor:string fvt-id:string reward-dptf-id:string)
         @doc "Owner-only: dispose the whole royalty pool (uptime-shortfall custody) of <reward-dptf-id> on a DSA \
             \ vault by WITHDRAWING it to the FVT owner (delegates the AQP-custody move + zero to the FVT primitive \
             \ FVT::XE_WithdrawRoyalty, which holds the custody-governor authority). P|UEV_IMC + DSA|C>WITHDRAW-ROYALTY. \
             \ Bills GAS|WITHDRAW-ROYALTY merged with the custody transfer's IGNIS."
         (P|UEV_IMC)
-        (with-capability (DSA|C>WITHDRAW-ROYALTY patron fvt-id)
+        (with-capability (DSA|C>WITHDRAW-ROYALTY patron executor fvt-id)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
@@ -825,12 +825,12 @@
         )
     )
     (defun C_BurnRoyalty:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-id:string reward-dptf-id:string)
+        (patron:string executor:string fvt-id:string reward-dptf-id:string)
         @doc "Owner-only: dispose the whole royalty pool of <reward-dptf-id> on a DSA vault by BURNING it (delegates \
             \ the AQP-custody burn + zero to FVT::XE_BurnRoyalty; AQP|SC_NAME holds the autonomic burn role). \
             \ P|UEV_IMC + DSA|C>BURN-ROYALTY. Bills GAS|BURN-ROYALTY merged with the burn's IGNIS."
         (P|UEV_IMC)
-        (with-capability (DSA|C>BURN-ROYALTY patron fvt-id)
+        (with-capability (DSA|C>BURN-ROYALTY patron executor fvt-id)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
@@ -843,12 +843,12 @@
         )
     )
     (defun C_FuelRoyalty:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-id:string reward-dptf-id:string swpair:string)
+        (patron:string executor:string fvt-id:string reward-dptf-id:string swpair:string)
         @doc "Owner-only: dispose the whole royalty pool of <reward-dptf-id> on a DSA vault by FUELING <swpair> \
             \ (add liquidity WITHOUT minting LP — delegates to FVT::XE_FuelRoyalty; the reward-dptf must be a token \
             \ of the swpair). P|UEV_IMC + DSA|C>FUEL-ROYALTY. Bills GAS|FUEL-ROYALTY merged with the fuel's IGNIS."
         (P|UEV_IMC)
-        (with-capability (DSA|C>FUEL-ROYALTY patron fvt-id swpair)
+        (with-capability (DSA|C>FUEL-ROYALTY patron executor fvt-id swpair)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
@@ -861,13 +861,13 @@
         )
     )
     (defun C_SetAgencyFee:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-id:string score-entity-id:string fee-per-mille:integer)
+        (patron:string executor:string fvt-id:string score-entity-id:string fee-per-mille:integer)
         @doc "Owner-only: change a delegation agency's operator fee-per-mille. Updates DSA|Agency + mirrors it onto \
             \ the FVT member (FVT::XE_SetAgencyFee) so the next inject uses the new split. Safe + O(1) — the fee is \
             \ never in a stored weight, so this reprices only FUTURE injects, no per-delegator recompute. P|UEV_IMC + \
             \ DSA|C>SET-AGENCY-FEE. Bills GAS|SET-AGENCY-FEE."
         (P|UEV_IMC)
-        (with-capability (DSA|C>SET-AGENCY-FEE patron fvt-id score-entity-id fee-per-mille)
+        (with-capability (DSA|C>SET-AGENCY-FEE patron executor fvt-id score-entity-id fee-per-mille)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
