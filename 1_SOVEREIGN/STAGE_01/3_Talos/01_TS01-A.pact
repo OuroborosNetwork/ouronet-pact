@@ -74,7 +74,7 @@
     (defun DPOF|A_DeployAccount (patron:string id:string account:string))
     ;;
     (defun ATS|AA_RemoveSecondary (patron:string remover:string ats:string reward-token:string accounts-with-ats-data:[string]))
-    (defun ATS|A_KickStart (patron:string kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
+    (defun ATS|A_KickStart (executor:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
     ;;
     (defun LIQUID|A_MigrateLiquidFunds:decimal (migration-target-stoa-account:string))
     ;;
@@ -638,7 +638,7 @@
             )
         )
     )
-    (defun ATS|A_KickStart (patron:string kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
+    (defun ATS|A_KickStart (executor:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
         @doc "Administrative Variant (audit finding #11M / M2): forgoes pool ownership \
             \ for module governance, with no upper bound on the resulting KickStart \
             \ index (still subject to the shared 0.1 floor) - for legitimate ratios \
@@ -649,8 +649,11 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-ATSU:module{AutostakeUsageV2} ATSU)
                 )
-                (ref-IGNIS::C_Collect patron
-                    (ref-ATSU::A_KickStart kickstarter ats rt-amounts rbt-request-amount)
+                ;;A_ on the blessed path: the collection runs EXACTLY as any C_'s does -- it is
+                ;;simply served by GASLESS-PATRON, the one account IGNIS::C_Collect exempts. The
+                ;;path is preserved, not skipped; that is what makes an A_ gasless.
+                (ref-IGNIS::C_Collect GASLESS-PATRON
+                    (ref-ATSU::A_KickStart GASLESS-PATRON executor ats rt-amounts rbt-request-amount)
                 )
             )
         )

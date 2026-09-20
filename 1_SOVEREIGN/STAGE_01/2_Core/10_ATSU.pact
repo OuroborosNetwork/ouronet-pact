@@ -73,7 +73,7 @@
         (remover:string ats:string reward-token:string accounts-with-ats-data:[string])
     )
     (defun A_KickStart:object{IgnisCollectorV3.OutputCumulator}
-        (kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
+        (patron:string executor:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
     )
     ;;
     ;;  [C]
@@ -1613,13 +1613,13 @@
         )
     )
     (defun A_KickStart:object{IgnisCollectorV3.OutputCumulator}
-        (kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
+        (patron:string executor:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
         @doc "Administrative variant (audit finding #11M / M2): forgoes pool ownership \
             \ for module governance (GOV|ATSU_ADMIN); resulting index is only bound by \
             \ the shared 0.1 floor, no ceiling - for legitimate ratios above 100.0."
         (P|UEV_IMC)
-        (with-capability (ATSU|C>ADMINISTRATIVE-KICKSTART kickstarter ats rt-amounts rbt-request-amount)
-            (XI_KickStart kickstarter ats rt-amounts rbt-request-amount)
+        (with-capability (ATSU|C>ADMINISTRATIVE-KICKSTART executor ats rt-amounts rbt-request-amount)
+            (XI_KickStart executor ats rt-amounts rbt-request-amount)
         )
     )
     (defun CC_RemoveSecondary:object{IgnisCollectorV3.OutputCumulator}

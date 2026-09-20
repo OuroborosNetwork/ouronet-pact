@@ -272,6 +272,65 @@ are applied.
 
 ---
 
+## 2.2 THE PATRON / EXECUTOR / EXECUTEE CANON (owner ruling, 2026-09-20)
+
+**Every `A_`, `AA_`, `C_` and `CC_` function takes `patron:string executor:string` as its first
+two parameters. No exceptions.** This is a construction rule for the MODULE; what Talos does with
+those two parameters is what separates an admin path from a client path.
+
+### The three roles
+
+| role | what it is | ownership enforcement |
+|---|---|---|
+| **`patron`** | the account that PAYS | **always, and directly**, via the gas-collection path |
+| **`executor`** | the account that ACTS | **always**, directly *or indirectly* — if indirect, the path MUST be named in the function's `@doc` |
+| **`executee`** | the account the execution is **bestowed upon** | **conditionally** — the conditions MUST be named in the function's `@doc` |
+
+`executee` is the third-party/auxiliary role. It is not always present, and when it is present its
+ownership is not always required. A **transfer** is the canonical case:
+
+```pact
+(C_Transfer patron sender receiver amount method)
+;;            ^      ^      ^
+;;        patron  executor  executee
+```
+
+— where the receiver needs an ownership check **only when `method` is true AND the receiver is a
+smart Ouronet account**. That condition belongs in the `@doc`, not in a reader's head.
+
+### Talos is where the two paths diverge
+
+| | module signature | Talos wrapper |
+|---|---|---|
+| **`C_`** | `(patron executor …)` | passes the **caller's** patron through — customness preserved |
+| **`A_`** | `(patron executor …)` | takes **no patron**; supplies `GASLESS-PATRON` itself |
+
+An `A_` is therefore gasless **not because it skips collection**. Its collection runs exactly as a
+`C_`'s does — it is simply served by the one account `IGNIS::C_Collect` exempts. *The path is
+preserved, not removed.* A Talos `A_` variant with caller-chosen customness could be written; we
+deliberately do not, which is precisely why `patron` disappears from the wrapper's signature.
+
+**Consequence for Talos:** whatever permissions the gasless patron needs in order to satisfy each
+`A_`'s gates must be granted **in Talos**. The capability that proves the gasless patron's
+ownership is the same capability that proves the admin gating — one mechanism, two jobs.
+
+### Naming
+
+The executor is **usually the second parameter after the patron**, and across this codebase it has
+been given a different bespoke name almost every time: `kickstarter`, `curler`, `coiler`, `fueler`,
+`swaper`, `sender`, `owner-konto`, `injector`, `collector`, `account`. **All of them become
+`executor`.** A function that has no executor parameter gains one.
+
+### Why "always two ownerships"
+
+1. **`patron`** — proven by the collection path itself.
+2. **`executor`** — proven directly, or indirectly through a derived-owner gate; the indirect
+   route is only acceptable if it is *written down in the function*.
+3. **`executee`** — proven when the operation's own rules demand it, documented per function.
+
+A function that cannot state where its executor's ownership is proven does not satisfy this canon,
+even if it happens to be safe.
+
 ## 3. Migration mapping (old → new)
 
 The heavy-read letter changed from `D` (which collided with `D`=Data in `UDC_`, and was not
