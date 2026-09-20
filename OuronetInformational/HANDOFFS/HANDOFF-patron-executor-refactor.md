@@ -646,3 +646,27 @@ than assuming it.
    issued*, and `modules/AQP.repl`'s negative probes use an **LP id with no owner row** — there the
    eager read raised and replaced the very refusal the test asserts. Negative probes must keep
    passing a plain account.
+
+---
+
+## `MTX-AQP::C_2|SweepRevokeAnchor` — FINISHED (2026-09-20), the module is now complete
+
+Deferred earlier because its authority is a **disjunction** (DPTF → owner; DPSF/DPNF → owner OR
+creator) and Band 1's "enforce executor equals the derived owner" has no single owner to equal.
+`01_ANK` now owns that rule as `UEV_ExecutorIzAnchorAuthority`, so MTX defers to it rather than
+carrying a second copy — which was the whole reason for waiting.
+
+`MTX-AQP|C>SWEEP-REVOKE` gained `executor` and calls the helper. **Where the check now sits is the
+point:** the anchor owner was previously enforced only downstream in `ANK|XE>SWEEP-REVOKE`, which
+step 0 reaches *after* it has already frozen every affected pool and swept-revoked the anchor.
+Naming the executor moves the refusal to the front of the defpact.
+
+`<<TX-SWEEP01-NEG>>` proves it: ANHD — a legitimate, signed, present holder of the anchor's boost
+class — cannot start the sweep. **It is ordered before the real sweep deliberately.** Afterwards
+the anchor is retired and the same call would fail on *liveness* instead: a pass for the wrong
+reason, and indistinguishable from a pass for the right one.
+
+One layout note worth carrying: the first version of that assertion was a bare `expect-failure` in
+a `let` body. It ran and it passed — and printed nothing, so **the gate never counted it**, while
+`_suite_stats` counts distinct assertions from source. That combination drifts the executed/distinct
+figures apart silently. Wrapped in `print`, per the canonical REPL layout.

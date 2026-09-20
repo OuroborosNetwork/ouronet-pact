@@ -7,7 +7,7 @@
 |---|---|
 | version | **1.1** |
 | released | 2026-09-19 |
-| built from commit | `e605d25+dirty` |
+| built from commit | `12206ac+dirty` |
 | pages | 231 |
 | chapters | 24 |
 

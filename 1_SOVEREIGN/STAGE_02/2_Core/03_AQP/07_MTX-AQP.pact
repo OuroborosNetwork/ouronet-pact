@@ -46,7 +46,7 @@
     ;;{5.7}  User [A/C]
     ;;
     (defun C_2|Inject (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal))
-    (defun C_2|SweepRevokeAnchor (patron:string anchor-id:string))
+    (defun C_2|SweepRevokeAnchor (patron:string executor:string anchor-id:string))
 
 )
 ;;
@@ -236,13 +236,20 @@
         @event
         (compose-capability (P|SECURE-CALLER))
     )
-    (defcap MTX-AQP|C>SWEEP-REVOKE (patron:string anchor-id:string)
+    (defcap MTX-AQP|C>SWEEP-REVOKE (patron:string executor:string anchor-id:string)
         @doc "Protects the MTX|n|C_SweepRevokeAnchor multistep flow. Composes P|SECURE-CALLER so P|MTX-AQP|CALLER is \
             \ ACTIVE while the steps call AQP-FVT's XE_ bracket (freeze/revoke/unfreeze) + recompute-chunk building \
             \ blocks (FVT's P|UEV_IMC checks MTX-AQP's registered caller guard — see P|A_Define). Acquired fresh per \
             \ step (steps are separate txs; the pact-id gates continuation). The anchor owner (= anchored-asset \
-            \ owner) is enforced downstream inside ANK|XE>SWEEP-REVOKE."
+            \ owner) is enforced downstream inside ANK|XE>SWEEP-REVOKE; the EXECUTOR is pinned to that same \
+            \ authority here, via ANK's shared disjunction helper rather than a second copy of the rule."
         @event
+        (let
+            (
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+            )
+            (ref-ANK::UEV_ExecutorIzAnchorAuthority executor anchor-id)
+        )
         (compose-capability (P|SECURE-CALLER))
     )
     ;;{C4}  Ownership [gold]
@@ -351,14 +358,14 @@
             (MTX|2|C_Inject patron injector fvt-id reward-dptf-id amount)
         )
     )
-    (defun C_2|SweepRevokeAnchor (patron:string anchor-id:string)
+    (defun C_2|SweepRevokeAnchor (patron:string executor:string anchor-id:string)
         @doc "2-step paginated re-score SWEEP that retires an employed anchor (Phase 3 closeout; spike fallback for \
             \ AQP-FVT::CC_SweepRevokeAnchor when the recompute set exceeds one tx). Acquires MTX-AQP|C>SWEEP-REVOKE, \
             \ then runs the MTX|2|C_SweepRevokeAnchor defpact. Step 0 brackets (freeze + swept-revoke) + recomputes \
             \ the first window; advance with (continue-pact 1). Owner enforced downstream in ANK|XE>SWEEP-REVOKE."
         (P|UEV_IMC)
-        (with-capability (MTX-AQP|C>SWEEP-REVOKE patron anchor-id)
-            (MTX|2|C_SweepRevokeAnchor patron anchor-id)
+        (with-capability (MTX-AQP|C>SWEEP-REVOKE patron executor anchor-id)
+            (MTX|2|C_SweepRevokeAnchor patron executor anchor-id)
         )
     )
     (defpact MTX|2|C_Inject (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
@@ -426,7 +433,7 @@
             )
         )
     )
-    (defpact MTX|2|C_SweepRevokeAnchor (patron:string anchor-id:string)
+    (defpact MTX|2|C_SweepRevokeAnchor (patron:string executor:string anchor-id:string)
         @doc "Paginated re-score sweep + anchor revoke as a 2-step defpact (Phase 3 closeout): step 0 brackets \
             \ the sweep (freezes every affected pool + swept-revokes the anchor) then recomputes the first window \
             \ of present holders; sweep-in-progress holds across steps (separate txs) so the flattened holder \
@@ -445,7 +452,7 @@
                     (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
-                (require-capability (MTX-AQP|C>SWEEP-REVOKE patron anchor-id))
+                (require-capability (MTX-AQP|C>SWEEP-REVOKE patron executor anchor-id))
                 (let
                     (
                         (boost-class-id:string (ref-ANK::UR_ANK|BoostClassId anchor-id))
@@ -486,7 +493,7 @@
                 {"done" := done, "boost-class-id" := boost-class-id, "score-ids" := score-ids, "offset" := offset}
                 (if done
                     "MTX Sweep 2|2: already completed in step 1 — no-op."
-                    (with-capability (MTX-AQP|C>SWEEP-REVOKE patron anchor-id)
+                    (with-capability (MTX-AQP|C>SWEEP-REVOKE patron executor anchor-id)
                         (let
                             (
                                 (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)

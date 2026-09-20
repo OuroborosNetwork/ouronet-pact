@@ -292,7 +292,7 @@
         (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
     (defun MTX-AQP|2|CC_SweepRevokeAnchor:string
-        (patron:string anchor-id:string)
+        (patron:string executor:string anchor-id:string)
     )
     (defun AQP-FVT|CC_SweepRevokeAnchor:string
         (patron:string anchor-id:string)
@@ -2416,7 +2416,7 @@
         )
     )
     (defun MTX-AQP|2|CC_SweepRevokeAnchor:string
-        (patron:string anchor-id:string)
+        (patron:string executor:string anchor-id:string)
         @doc "Starts the 2-step paginated re-score SWEEP defpact (MTX-AQP — spike fallback for \
             \ AQP-FVT|CC_SweepRevokeAnchor when the recompute set exceeds one tx). Step 0 brackets (freeze + \
             \ swept-revoke) + recomputes the first window here; advance with (continue-pact 1). The defpact is \
@@ -2429,7 +2429,7 @@
                 )
                 (let
                     (
-                        (r:string (ref-MTX-AQP::C_2|SweepRevokeAnchor patron anchor-id))
+                        (r:string (ref-MTX-AQP::C_2|SweepRevokeAnchor patron executor anchor-id))
                     )
                     (ref-TS01-A::XB_DynamicFuelSTOA)
                     r

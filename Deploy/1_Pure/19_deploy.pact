@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 19 of 20
 ;; This is STEP 19 of 21 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-18 must have run first, including the init steps between deploys.
-;; 5 module(s), 236,990 gas measured in the REPL gas model, 267,831 bytes
+;; 5 module(s), 236,990 gas measured in the REPL gas model, 267,872 bytes
 ;;
 ;; Modules in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact
@@ -312,7 +312,7 @@
         (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
     (defun MTX-AQP|2|CC_SweepRevokeAnchor:string
-        (patron:string anchor-id:string)
+        (patron:string executor:string anchor-id:string)
     )
     (defun AQP-FVT|CC_SweepRevokeAnchor:string
         (patron:string anchor-id:string)
@@ -2436,7 +2436,7 @@
         )
     )
     (defun MTX-AQP|2|CC_SweepRevokeAnchor:string
-        (patron:string anchor-id:string)
+        (patron:string executor:string anchor-id:string)
         @doc "Starts the 2-step paginated re-score SWEEP defpact (MTX-AQP — spike fallback for \
             \ AQP-FVT|CC_SweepRevokeAnchor when the recompute set exceeds one tx). Step 0 brackets (freeze + \
             \ swept-revoke) + recomputes the first window here; advance with (continue-pact 1). The defpact is \
@@ -2449,7 +2449,7 @@
                 )
                 (let
                     (
-                        (r:string (ref-MTX-AQP::C_2|SweepRevokeAnchor patron anchor-id))
+                        (r:string (ref-MTX-AQP::C_2|SweepRevokeAnchor patron executor anchor-id))
                     )
                     (ref-TS01-A::XB_DynamicFuelSTOA)
                     r
