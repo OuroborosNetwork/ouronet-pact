@@ -971,7 +971,7 @@
                 )
                 (if wire-farm
                     (do
-                        (ref-TS02-C3::AQP-SCR|C_IssueTriplet patron bronze-score-id silver-score-id golden-score-id)
+                        (ref-TS02-C3::AQP-SCR|C_IssueTriplet patron patron bronze-score-id silver-score-id golden-score-id)
                         (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron farm-id BOOT|SCORE_ENTITY_TRIPLET triplet-id)
                         (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron farm-id ouro-id false multiplet-family-id)
                     )
@@ -1083,17 +1083,17 @@
                 ;; 2. the three single models — score-class 3 (SemiFungible); v1 models are SF-only.
                 ;;    Each carries og-boost-class-id, so every score minted from them is boost-linked
                 ;;    AT ISSUE by the vault's rule. The agency never chooses.
-                (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel patron BOOT|MODEL_CUSTODIANS_BRONZE
+                (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel patron patron BOOT|MODEL_CUSTODIANS_BRONZE
                     3 custodians-dpsf-id BOOT|CUSTODIANS_PRECISION
                     BOOT|CUSTODIANS_NONCES_BRONZE BOOT|CUSTODIANS_VALUE_BRONZE og-boost-class-id)
-                (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel patron BOOT|MODEL_CUSTODIANS_SILVER
+                (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel patron patron BOOT|MODEL_CUSTODIANS_SILVER
                     3 custodians-dpsf-id BOOT|CUSTODIANS_PRECISION
                     BOOT|CUSTODIANS_NONCES_SILVER BOOT|CUSTODIANS_VALUE_SILVER og-boost-class-id)
-                (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel patron BOOT|MODEL_CUSTODIANS_GOLDEN
+                (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel patron patron BOOT|MODEL_CUSTODIANS_GOLDEN
                     3 custodians-dpsf-id BOOT|CUSTODIANS_PRECISION
                     BOOT|CUSTODIANS_NONCES_GOLDEN BOOT|CUSTODIANS_VALUE_GOLDEN og-boost-class-id)
                 ;; 3. the triplet model — what every agency instantiates, so all agencies score alike
-                (ref-TS02-C3::AQP-SCR|C_CombineTripletScoreModel patron BOOT|MODEL_CUSTODIANS_TRIPLET
+                (ref-TS02-C3::AQP-SCR|C_CombineTripletScoreModel patron patron BOOT|MODEL_CUSTODIANS_TRIPLET
                     bronze-model-id silver-model-id golden-model-id)
                 ;; 4. the class-0 FVT. common-denominator is a REAL DPTF here, not BAR: DSA capture
                 ;;    arithmetic is denominated in it, which is the whole reason class 1/2 is refused.

@@ -229,6 +229,9 @@ def run_one(path):
             "ok": "Load successful" in out and "Load failed" not in out,
             "tail": "\n".join(l for l in out.splitlines() if "FAILURE:" in l)[:2000]}
 
+GATE_RECEIPT = "/tmp/.ouronet-gate-receipt.log"
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("-j", type=int, default=os.cpu_count())
@@ -557,7 +560,28 @@ def main():
     print(f"\nwall {time.time()-t0:.1f}s   executed {pos+neg} assertions ({pos} positive, {neg} negative)")
     for r in bad:
         print(f"\n--- {r['path']} ---\n{r['tail']}")
-    print(("\nGATE FAILED" if bad or orphans else "\nGATE GREEN"))
+    verdict = "\nGATE FAILED" if bad or orphans else "\nGATE GREEN"
+    print(verdict)
+    # CANONICAL RECEIPT. _suite_stats.py sources "assertions executed per full gate run" from the
+    # most recent GREEN gate output, and used to FIND that output by globbing /tmp. That glob has
+    # now been wrong twice for the same reason. 2026-09-15: it matched on EXTENSION (.log/.out), so
+    # a run redirected to .txt was invisible. 2026-09-17: fixed to scan CONTENT -- but only of
+    # files matching `/tmp/gate*`, i.e. it still depended on the operator's FILENAME. On
+    # 2026-09-20 three green runs were written to /tmp/g9.log, /tmp/gb2.log and /tmp/gmtx2.log;
+    # none matched, so REPL_SUITE_STATS.md quoted 25,196 from the PREVIOUS DAY while claiming to
+    # quote "the most recent green gate output" -- self-consistent, gate-green, and a day wrong.
+    #
+    # The lesson both fixes missed: you cannot infer an artefact from a name the operator chose.
+    # The gate now writes its OWN receipt to a fixed path, so the figure's provenance no longer
+    # depends on how stdout happened to be redirected.
+    try:
+        with open(GATE_RECEIPT, "w") as _fh:
+            _fh.write(f"GATE RECEIPT {time.strftime('%Y-%m-%d %H:%M:%S')}\n"
+                      f"GATE: {len(GATE)} entrypoints, {len(reachable)} files reachable\n"
+                      f"wall {time.time()-t0:.1f}s   executed {pos+neg} assertions "
+                      f"({pos} positive, {neg} negative)\n{verdict.strip()}\n")
+    except OSError:
+        pass
     return 1 if (bad or orphans) else 0
 
 if __name__ == "__main__":

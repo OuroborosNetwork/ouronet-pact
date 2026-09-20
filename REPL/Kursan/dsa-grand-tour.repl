@@ -173,10 +173,10 @@
             (family-id:string (concat ["F" "|" ouro "|" (ref-DALOS::UR_AurynID) "|" (ref-DALOS::UR_EliteAurynID)]))
         )
         ;; 1) three single score models (bronze/silver/gold) over the custodian frag nonces -> combine into a triplet
-        (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "GtBronzeModel" 3 dhoc 24 [-1] [1.0] "|")
-        (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "GtSilverModel" 3 dhoc 24 [-2] [10.0] "|")
-        (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "GtGoldModel"   3 dhoc 24 [-3] [100.0] "|")
-        (ref-TS02-C3::AQP-SCR|C_CombineTripletScoreModel anhd "GtTripletModel" bmid smid gmid)
+        (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd anhd "GtBronzeModel" 3 dhoc 24 [-1] [1.0] "|")
+        (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd anhd "GtSilverModel" 3 dhoc 24 [-2] [10.0] "|")
+        (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd anhd "GtGoldModel"   3 dhoc 24 [-3] [100.0] "|")
+        (ref-TS02-C3::AQP-SCR|C_CombineTripletScoreModel anhd anhd "GtTripletModel" bmid smid gmid)
         ;; 2) issue the OPERATOR's triplet score from the model
         (ref-TS02-C3::AQP-SCR|C_IssueScoreFromModel anhd anhd model-id "GtAgency")
         ;; 3) class-0 vault + MULTIPLET_BASE OURO reward (family, NOT BAR) + register it as a DSA delegation vault
@@ -244,20 +244,20 @@
                 ;;THE ITEM, in each of the three slots
                 (expect-failure "<<GT-02b>> a TRIPLET model in the bronze slot is refused"
                     "The three sub-models must all be single"
-                    (ref-TS02-C3::AQP-SCR|C_CombineTripletScoreModel anhd "GtNestB" tmid smid gmid))
+                    (ref-TS02-C3::AQP-SCR|C_CombineTripletScoreModel anhd anhd "GtNestB" tmid smid gmid))
                 (expect-failure "<<GT-02b>> ...in the silver slot"
                     "The three sub-models must all be single"
-                    (ref-TS02-C3::AQP-SCR|C_CombineTripletScoreModel anhd "GtNestS" bmid tmid gmid))
+                    (ref-TS02-C3::AQP-SCR|C_CombineTripletScoreModel anhd anhd "GtNestS" bmid tmid gmid))
                 (expect-failure "<<GT-02b>> ...and in the golden slot"
                     "The three sub-models must all be single"
-                    (ref-TS02-C3::AQP-SCR|C_CombineTripletScoreModel anhd "GtNestG" bmid smid tmid))
+                    (ref-TS02-C3::AQP-SCR|C_CombineTripletScoreModel anhd anhd "GtNestG" bmid smid tmid))
                 ;;THE CONTRAST: the same call with the same three singles GT-02 used, under a fresh
                 ;;name. Without it the three refusals are also consistent with the combine being
                 ;;broken outright -- and the name has to be fresh, because "Model id already exists"
                 ;;sits one enforce ABOVE the rule under test and would answer for it.
                 (expect "<<GT-02b>> ...while three SINGLE models combine under a fresh name"
                     true (!= "" (format "{}"
-                        [(ref-TS02-C3::AQP-SCR|C_CombineTripletScoreModel anhd "GtNestOk" bmid smid gmid)])))
+                        [(ref-TS02-C3::AQP-SCR|C_CombineTripletScoreModel anhd anhd "GtNestOk" bmid smid gmid)])))
                 (expect "<<GT-02b>> ...and the result is itself a TRIPLET model"
                     3 (ref-SCR::UR_SCR|ModelEntityType (ref-U|DALOS::UDC_Makeid "GtNestOk")))
             ]
@@ -1378,13 +1378,13 @@
                 ;;in the same token. Using the odd one out is the only difference from the call below.
                 (expect-failure "<<GT-16>> a class-0 triplet with a mismatched denominator is refused"
                     "LP triplet requires identical lp-denominator on all three scores"
-                    (ref-TS02-C3::AQP-SCR|C_IssueTriplet KST.ANHD b sv odd))
+                    (ref-TS02-C3::AQP-SCR|C_IssueTriplet KST.ANHD KST.ANHD b sv odd))
             ]
         )
         ;;the silver score carries the pool link the admission context reads; bronze and golden stay
         ;;unlinked, which the third enforce also requires (all three fvt-links BAR).
         (ref-TS02-C3::AQP-POOL|C_AddScore KST.ANHD pool sv)
-        (ref-TS02-C3::AQP-SCR|C_IssueTriplet KST.ANHD b sv g)
+        (ref-TS02-C3::AQP-SCR|C_IssueTriplet KST.ANHD KST.ANHD b sv g)
         (let*
             (
                 (tid:string (ref-SCR::UC_ComputeTripletId b sv g))

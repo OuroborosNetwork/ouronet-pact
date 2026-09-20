@@ -1908,7 +1908,7 @@
             (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
         )
         (print (format "<(TS02-C3.AQP-SCR|C_IssueSingleScoreModel)> => \"{}\""
-            [(ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel patron "GtCostProbeModel" 3 dpsf-id 12 [-2] [10.0] "|")]))
+            [(ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel patron patron "GtCostProbeModel" 3 dpsf-id 12 [-2] [10.0] "|")]))
         (let
             (
                 (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
@@ -2715,15 +2715,15 @@
         (score:string "TheCodingDivision-98c486052a51")
         (dpsf-id:string "DHCD-98c486052a51")
     )
-    (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel patron "GtProbeModelA" 3 dpsf-id 12 [-2] [10.0] "|")
-    (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel patron "GtProbeModelB" 3 dpsf-id 12 [-2] [20.0] "|")
-    (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel patron "GtProbeModelC" 3 dpsf-id 12 [-2] [30.0] "|")
+    (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel patron patron "GtProbeModelA" 3 dpsf-id 12 [-2] [10.0] "|")
+    (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel patron patron "GtProbeModelB" 3 dpsf-id 12 [-2] [20.0] "|")
+    (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel patron patron "GtProbeModelC" 3 dpsf-id 12 [-2] [30.0] "|")
     (let
         (
             (predicted:decimal (at "ignis-need" (at "ignis" (AQP-INFO.INFO_AQP-SCR|CombineTripletScoreModel patron "GtProbeTriplet" (ref-U|DALOS::UDC_Makeid "GtProbeModelA") (ref-U|DALOS::UDC_Makeid "GtProbeModelB") (ref-U|DALOS::UDC_Makeid "GtProbeModelC")))))
             (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
         )
-        (print (format "<(TS02-C3.AQP-SCR|C_CombineTripletScoreModel)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_CombineTripletScoreModel patron "GtProbeTriplet" (ref-U|DALOS::UDC_Makeid "GtProbeModelA") (ref-U|DALOS::UDC_Makeid "GtProbeModelB") (ref-U|DALOS::UDC_Makeid "GtProbeModelC"))]))
+        (print (format "<(TS02-C3.AQP-SCR|C_CombineTripletScoreModel)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_CombineTripletScoreModel patron patron "GtProbeTriplet" (ref-U|DALOS::UDC_Makeid "GtProbeModelA") (ref-U|DALOS::UDC_Makeid "GtProbeModelB") (ref-U|DALOS::UDC_Makeid "GtProbeModelC"))]))
         (let
             (
                 (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
@@ -2760,7 +2760,7 @@
         (score:string "TheCodingDivision-98c486052a51")
         (dpsf-id:string "DHCD-98c486052a51")
     )
-    (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel patron "GtProbeModelA" 3 dpsf-id 12 [-2] [10.0] "|")
+    (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel patron patron "GtProbeModelA" 3 dpsf-id 12 [-2] [10.0] "|")
     (let
         (
             (predicted:decimal (at "ignis-need" (at "ignis" (AQP-INFO.INFO_AQP-SCR|IssueScoreFromModel patron patron (ref-U|DALOS::UDC_Makeid "GtProbeModelA") "GtAgencyProbe"))))
@@ -4153,7 +4153,7 @@
             (predicted:decimal (at "ignis-need" (at "ignis" (AQP-INFO.INFO_AQP-SCR|IssueTriplet patron (ref-U|DALOS::UDC_Makeid "GtTripBronze") (ref-U|DALOS::UDC_Makeid "GtTripSilver") (ref-U|DALOS::UDC_Makeid "GtTripGolden")))))
             (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
         )
-        (print (format "<(TS02-C3.AQP-SCR|C_IssueTriplet)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueTriplet patron (ref-U|DALOS::UDC_Makeid "GtTripBronze") (ref-U|DALOS::UDC_Makeid "GtTripSilver") (ref-U|DALOS::UDC_Makeid "GtTripGolden"))]))
+        (print (format "<(TS02-C3.AQP-SCR|C_IssueTriplet)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueTriplet patron patron (ref-U|DALOS::UDC_Makeid "GtTripBronze") (ref-U|DALOS::UDC_Makeid "GtTripSilver") (ref-U|DALOS::UDC_Makeid "GtTripGolden"))]))
         (let
             (
                 (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))

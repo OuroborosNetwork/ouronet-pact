@@ -1132,7 +1132,7 @@
                 true (> (ref-SCR::UR_SCR|ScoreClass score) -1))
             (expect-failure "<<AQP-G14>> a triplet built from ONE score repeated three times is refused"
                 "scores must exist, be distinct, same owner and score-class"
-                (ref-TS02-C3::AQP-SCR|C_IssueTriplet KST.ANHD score score score))
+                (ref-TS02-C3::AQP-SCR|C_IssueTriplet KST.ANHD KST.ANHD score score score))
         ]
     )
     ""
@@ -2724,7 +2724,7 @@
         (silver:string (ref-U|DALOS::UDC_Makeid "G25Score"))
         (golden:string (ref-U|DALOS::UDC_Makeid "G28Golden"))
     )
-    (print (ref-TS02-C3::AQP-SCR|C_IssueTriplet KST.ANHD bronze silver golden))
+    (print (ref-TS02-C3::AQP-SCR|C_IssueTriplet KST.ANHD KST.ANHD bronze silver golden))
     ;;the fixture has to be RIGHT for <<AQP-G46>> below to mean anything: if the triplet did not
     ;;exist, or the silver leg were not pool-linked, the guards under test would never be reached
     ;;and their expect-failures would pass for the wrong reason.

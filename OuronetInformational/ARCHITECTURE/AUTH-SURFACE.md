@@ -7,8 +7,8 @@
 | metric | value |
 |---|---|
 | entrypoints scanned | 1104 |
-| reaching at least one ownership enforce | 811 |
-| reaching NONE | 293 |
+| reaching at least one ownership enforce | 813 |
+| reaching NONE | 291 |
 
 ## Per entrypoint
 
@@ -659,7 +659,7 @@
 | `01_ANK` | `P|A_Add` | — |
 | `01_ANK` | `P|A_AddIMP` | — |
 | `01_ANK` | `P|A_Define` | — |
-| `02_SCORE` | `C_CombineTripletScoreModel` | — |
+| `02_SCORE` | `C_CombineTripletScoreModel` | `account:string`, `executor` |
 | `02_SCORE` | `C_Control` | `account:string`, `owner-konto` |
 | `02_SCORE` | `C_CreateBoostClassLink` | `account:string`, `owner-konto` |
 | `02_SCORE` | `C_CreateBoostLink` | `account:string`, `owner-konto` |
@@ -672,7 +672,7 @@
 | `02_SCORE` | `C_IssueScoreFromModel` | `account:string`, `owner-konto` |
 | `02_SCORE` | `C_IssueSemiFungibleScore` | `account:string`, `owner-konto` |
 | `02_SCORE` | `C_IssueSemiFungibleScoreDefinition` | `account:string`, `owner-konto` |
-| `02_SCORE` | `C_IssueSingleScoreModel` | — |
+| `02_SCORE` | `C_IssueSingleScoreModel` | `account:string`, `executor` |
 | `02_SCORE` | `C_IssueTriplet` | `account:string`, `owner-konto` |
 | `02_SCORE` | `C_IssueTrueFungibleScore` | `account:string`, `owner-konto` |
 | `02_SCORE` | `C_RotateOwnership` | `account:string`, `owner-now` |
@@ -928,7 +928,7 @@
 | `04_TS02-C3` | `AQP-POOL|C_SyncNonFungibleAnchors` | `DALOS|SC_NAME`, `account:string`, `patron` |
 | `04_TS02-C3` | `AQP-POOL|C_SyncSemiFungibleAnchors` | `DALOS|SC_NAME`, `account:string`, `patron` |
 | `04_TS02-C3` | `AQP-POOL|C_SyncTrueFungibleAnchors` | `DALOS|SC_NAME`, `account:string`, `patron` |
-| `04_TS02-C3` | `AQP-SCR|C_CombineTripletScoreModel` | `DALOS|SC_NAME`, `account:string`, `patron` |
+| `04_TS02-C3` | `AQP-SCR|C_CombineTripletScoreModel` | `DALOS|SC_NAME`, `account:string`, `executor`, `patron` |
 | `04_TS02-C3` | `AQP-SCR|C_ControlScore` | `DALOS|SC_NAME`, `account:string`, `owner-konto`, `patron` |
 | `04_TS02-C3` | `AQP-SCR|C_CreateScoreBoostClassLink` | `DALOS|SC_NAME`, `account:string`, `owner-konto`, `patron` |
 | `04_TS02-C3` | `AQP-SCR|C_CreateScoreBoostLink` | `DALOS|SC_NAME`, `account:string`, `owner-konto`, `patron` |
@@ -941,7 +941,7 @@
 | `04_TS02-C3` | `AQP-SCR|C_IssueScoreFromModel` | `DALOS|SC_NAME`, `account:string`, `owner-konto`, `patron` |
 | `04_TS02-C3` | `AQP-SCR|C_IssueSemiFungibleScore` | `DALOS|SC_NAME`, `account:string`, `owner-konto`, `patron` |
 | `04_TS02-C3` | `AQP-SCR|C_IssueSemiFungibleScoreDefinition` | `DALOS|SC_NAME`, `account:string`, `owner-konto`, `patron` |
-| `04_TS02-C3` | `AQP-SCR|C_IssueSingleScoreModel` | `DALOS|SC_NAME`, `account:string`, `patron` |
+| `04_TS02-C3` | `AQP-SCR|C_IssueSingleScoreModel` | `DALOS|SC_NAME`, `account:string`, `executor`, `patron` |
 | `04_TS02-C3` | `AQP-SCR|C_IssueTriplet` | `DALOS|SC_NAME`, `account:string`, `owner-konto`, `patron` |
 | `04_TS02-C3` | `AQP-SCR|C_IssueTrueFungibleScore` | `DALOS|SC_NAME`, `account:string`, `owner-konto`, `patron` |
 | `04_TS02-C3` | `AQP-SCR|C_RotateScoreOwnership` | `DALOS|SC_NAME`, `account:string`, `owner-now`, `patron` |
@@ -1051,7 +1051,7 @@
 | `04_AQP-BOOT` | `C_Step10_IssueMultipletFamily` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `patron`, `receiver`, `sender` |
 | `04_AQP-BOOT` | `C_Step11_WireFarmTriplet` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `client`, `fvt-owner`, `id`, `id:string`, `owner-konto`, `patron`, `receiver`, `sender` |
 | `04_AQP-BOOT` | `C_Step12_AddFvtRewardLinks` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `owner-konto`, `patron`, `receiver`, `sender` |
-| `04_AQP-BOOT` | `C_Step13_CreateCustodiansVault` | `DALOS|SC_NAME`, `URC_AqpOwnerKontoFromClassAndAsset`, `UR_CreatorKonto`, `UR_Konto`, `UR_OwnerKonto`, `account`, `account:string`, `aqp-class`, `aqp-class:integer`, `at`, `client`, `fvt-owner`, `id`, `id:string`, `owner-konto`, `patron`, `receiver`, `sender` |
+| `04_AQP-BOOT` | `C_Step13_CreateCustodiansVault` | `DALOS|SC_NAME`, `URC_AqpOwnerKontoFromClassAndAsset`, `UR_CreatorKonto`, `UR_Konto`, `UR_OwnerKonto`, `account`, `account:string`, `aqp-class`, `aqp-class:integer`, `at`, `client`, `executor`, `fvt-owner`, `id`, `id:string`, `owner-konto`, `patron`, `receiver`, `sender` |
 | `04_AQP-BOOT` | `C_Step1_CreateBunnySet` | — |
 | `04_AQP-BOOT` | `C_Step2_CreateSnakePowerAnchorClasses` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `at`, `client`, `id`, `id:string`, `patron`, `receiver`, `sender` |
 | `04_AQP-BOOT` | `C_Step3_CreateBoosterAnchorClasses` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `at`, `client`, `id`, `id:string`, `patron`, `receiver`, `sender` |

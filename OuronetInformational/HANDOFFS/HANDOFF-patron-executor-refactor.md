@@ -485,3 +485,95 @@ mirroring the disjunction rather than collapsing it. That helper belongs in the 
 the concept, so this function waits for the `01_ANK` pass (4 functions) rather than growing a
 bespoke copy of ANK's authority rule inside MTX. This is one of the 12 functions previously flagged
 as having no mechanically-determinable executor, and it is the first to be diagnosed precisely.
+
+---
+
+## BAND 1 / AQP — `02_SCORE` DONE, all 3 (2026-09-20)
+
+### Two of the three had NO ownership check at all
+
+`C_IssueSingleScoreModel` and `C_CombineTripletScoreModel` enforced only
+`UEV_EnforceAccountExists patron` — *"this is a real account"*, with nothing asserting the caller
+owns it. This was flagged weeks ago as an open item; it is now diagnosed and closed.
+
+**It was not exploitable**, and it is worth being precise about why: `AUTH-SURFACE` shows the Talos
+wrappers (`04_TS02-C3::AQP-SCR|C_IssueSingleScoreModel`) DO reach a `patron` ownership enforce, and
+`P|UEV_IMC` makes Talos the only reachable path. The hole was one layer of defence deep, not zero —
+the same architecture that makes `DPTF::C_Issue` safe. But a core function that would hand out
+free model-creation to anyone who reached it is worth closing on its own terms, and closing it is
+what lets a sponsor pay for someone else's model — impossible before, because Talos required the
+patron to own the account it was billing.
+
+Both gained `executor` + `CAP_EnforceAccountOwnership executor`, placed **before** the business
+enforces per the 2026-09-14 authorisation-precedes-validation ruling.
+
+`_authsurface --check` reports **"none weakened, 5 strengthened"** — which is the instrument doing
+exactly the job it was built for: naming, mechanically, the functions that gained authorisation.
+
+### `C_IssueTriplet` — the full Band 1 prescription, and a shadow it created
+
+The derived owner is well-defined here (the cap already enforces all three scores share one owner),
+so the edit is the textbook one: add `executor`, enforce `(= executor owner-konto)`, and **leave
+the derived `CAP_EnforceAccountOwnership owner-konto` untouched**.
+
+Adding a *redundant* `CAP_EnforceAccountOwnership executor` was considered and rejected: with
+equality enforced against a value that is already ownership-checked, it is provably a no-op, and a
+no-op enforce is noise that future readers must re-derive.
+
+**The new conjunct immediately shadowed the existing ownership test.** `<<TX-SCORE-14 TRIPLET>>
+GATE` exists precisely to prove the ownership gate is reachable; with `executor = attacker` it now
+failed on the executor conjunct instead, and the keyset failure it asserts was never reached.
+
+Fixed the way CLAUDE.md requires — **a fixture that satisfies the first guard, not a reorder**:
+the GATE case now passes `executor = victim`, so the attacker is *impersonating* the victim, the
+executor conjunct passes, and the only thing left that can refuse is the keyset. It is a better
+test than it was: impersonation is the realistic attack, a malformed request is not.
+
+A second case (`SHADOW2`) was added for the new guard itself. Without it the executor conjunct
+would never fail in the suite, and **a guard nothing ever fails on is indistinguishable from an
+absent one** — the same argument the SHADOW/GATE pattern was invented to answer.
+
+### Also fixed: two capability sites the signature change exposed
+
+`XI_IssueTriplet`'s `require-capability` and the internal triplet build inside
+`C_IssueScoreFromModel` both had to carry the executor. The latter's executor is `owner-konto` —
+the account the three scores are issued to — **derived, not invented**.
+
+---
+
+## TOOLING — the gate's executed-assertion figure was a day stale (2026-09-20)
+
+Found while chasing a routine `FIGURE DRIFT` failure, not while looking for it.
+
+`REPL_SUITE_STATS.md` publishes **"assertions executed per full gate run"** and labels it
+*"most recent green gate output"*. `_suite_stats._newest_gate()` found that output by globbing
+`/tmp/gate*` for files containing `GATE GREEN`.
+
+Three green gate runs happened on 2026-09-20. They were written to `/tmp/g9.log`,
+`/tmp/gb2.log`, `/tmp/gmtx2.log` — **none match `/tmp/gate*`**. So the newest match was
+`/tmp/gate_rel.log` from the previous evening, and the published figure was **25,196 while the
+tree was executing 25,215**. Self-consistent, gate-green, and a day wrong.
+
+**This is the third time this function has been wrong, for the same reason each time.** Its own
+comments record the first two:
+
+| date | what it matched on | what was invisible |
+|---|---|---|
+| 2026-09-15 | file **extension** (`.log`/`.out`) | a run redirected to `.txt` |
+| 2026-09-17 | file **content**, but only within `/tmp/gate*` | a run redirected to `gate_run3.txt`… |
+| 2026-09-20 | *(same)* | …and any run not named `gate*` at all |
+
+The 2026-09-17 comment states the principle correctly — *"the output's extension is the operator's
+choice; the only reliable marker is the content"* — and then keeps a prefix glob, which is the
+operator's choice by another name. **The fix each time addressed the instance, not the class.**
+
+**Fixed at the source.** `_gate.py` now writes its own receipt to a fixed path
+(`/tmp/.ouronet-gate-receipt.log`) on every run, and `_suite_stats` prefers it, keeping the
+filename scan only as a fallback for older receipts. Provenance no longer depends on how stdout
+was redirected — which is the only version of this fix that cannot recur.
+
+**Worth noting what the gate did NOT catch:** `_figuresync` compares documents *against each
+other*, so a stale source figure propagates consistently and reports clean. The `distinct`
+assertion count is checked against the tree and did fail loudly; the `executed` count has no such
+anchor. Cross-document consistency is not the same as correctness, and only one of these two
+figures had a ground truth.

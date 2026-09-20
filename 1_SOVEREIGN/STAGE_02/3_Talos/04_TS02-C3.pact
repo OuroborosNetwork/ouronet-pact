@@ -92,13 +92,13 @@
     (defun AQP-SCR|C_CreateScoreBoostLink:string (patron:string score-id:string boost-score-id:string))
     (defun AQP-SCR|C_EnableDebBoost:string (patron:string score-id:string))
     (defun AQP-SCR|C_IssueTriplet:string
-        (patron:string bronze-score-id:string silver-score-id:string golden-score-id:string)
+        (patron:string executor:string bronze-score-id:string silver-score-id:string golden-score-id:string)
     )
     (defun AQP-SCR|C_IssueSingleScoreModel:string
-        (patron:string model-name:string score-class:integer collectable-id:string precision:integer nonces:[integer] nonce-score-values:[decimal] boost-class-id:string)
+        (patron:string executor:string model-name:string score-class:integer collectable-id:string precision:integer nonces:[integer] nonce-score-values:[decimal] boost-class-id:string)
     )
     (defun AQP-SCR|C_CombineTripletScoreModel:string
-        (patron:string model-name:string bronze-model-id:string silver-model-id:string golden-model-id:string)
+        (patron:string executor:string model-name:string bronze-model-id:string silver-model-id:string golden-model-id:string)
     )
     (defun AQP-SCR|C_IssueScoreFromModel:string (patron:string owner-konto:string model-id:string agency-name:string))
     (defun AQP-SCR|C_IssueSemiFungibleScoreDefinition:string
@@ -1302,7 +1302,7 @@
         )
     )
     (defun AQP-SCR|C_IssueTriplet:string
-        (patron:string bronze-score-id:string silver-score-id:string golden-score-id:string)
+        (patron:string executor:string bronze-score-id:string silver-score-id:string golden-score-id:string)
         @doc "Issues SCR triplet bundle T|bronze|silver|golden and collects IGNIS on patron."
         (with-capability (P|TS)
             (let
@@ -1310,7 +1310,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-SCR::C_IssueTriplet patron bronze-score-id silver-score-id golden-score-id)
+                        (ref-SCR::C_IssueTriplet patron executor bronze-score-id silver-score-id golden-score-id)
                     )
                     (out:[string] (at "output" ico))
                     (triplet-id:string (at 0 out))
@@ -1321,7 +1321,7 @@
         )
     )
     (defun AQP-SCR|C_IssueSingleScoreModel:string
-        (patron:string model-name:string score-class:integer collectable-id:string precision:integer nonces:[integer] nonce-score-values:[decimal] boost-class-id:string)
+        (patron:string executor:string model-name:string score-class:integer collectable-id:string precision:integer nonces:[integer] nonce-score-values:[decimal] boost-class-id:string)
         @doc "Defines a SINGLE score-entity model in AQP-SCORE and collects IGNIS on patron. Returns the model-id."
         (with-capability (P|TS)
             (let
@@ -1329,7 +1329,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-SCR::C_IssueSingleScoreModel patron model-name score-class collectable-id precision nonces nonce-score-values boost-class-id)
+                        (ref-SCR::C_IssueSingleScoreModel patron executor model-name score-class collectable-id precision nonces nonce-score-values boost-class-id)
                     )
                     (model-id:string (at 0 (at "output" ico)))
                 )
@@ -1339,7 +1339,7 @@
         )
     )
     (defun AQP-SCR|C_CombineTripletScoreModel:string
-        (patron:string model-name:string bronze-model-id:string silver-model-id:string golden-model-id:string)
+        (patron:string executor:string model-name:string bronze-model-id:string silver-model-id:string golden-model-id:string)
         @doc "Combines three single models into a TRIPLET score-entity model in AQP-SCORE and collects IGNIS on patron."
         (with-capability (P|TS)
             (let
@@ -1347,7 +1347,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-SCR::C_CombineTripletScoreModel patron model-name bronze-model-id silver-model-id golden-model-id)
+                        (ref-SCR::C_CombineTripletScoreModel patron executor model-name bronze-model-id silver-model-id golden-model-id)
                     )
                     (model-id:string (at 0 (at "output" ico)))
                 )

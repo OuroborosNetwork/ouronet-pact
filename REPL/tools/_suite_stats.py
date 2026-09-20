@@ -35,6 +35,18 @@ def _newest_gate():
     # returned a run from the PREVIOUS DAY and the report would have been written from it -- green,
     # plausible, and a day wrong. The output's extension is the operator's choice; the only
     # reliable marker is the content. Match any `/tmp/gate*` FILE that says GATE GREEN.
+    # CORRECTED 2026-09-20 (third time): prefer the gate's OWN receipt. The two previous fixes
+    # both tried to guess the operator's filename -- first by extension, then by prefix -- and
+    # both were wrong for the same reason. `_gate.py` now writes /tmp/.ouronet-gate-receipt.log
+    # itself on every run, so provenance no longer depends on how stdout was redirected. The
+    # filename scan is kept as a fallback for receipts written before this existed.
+    _receipt = "/tmp/.ouronet-gate-receipt.log"
+    if os.path.isfile(_receipt):
+        try:
+            if "GATE GREEN" in open(_receipt, errors="ignore").read():
+                return _receipt
+        except OSError:
+            pass
     outs = []
     for f in _g.glob("/tmp/gate*"):
         if not os.path.isfile(f):

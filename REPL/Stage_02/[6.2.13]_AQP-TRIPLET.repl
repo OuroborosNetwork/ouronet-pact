@@ -57,7 +57,7 @@
         (print (format "<(silver)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron patron "TripSilverScore" 24 2.0)]))
         (print (format "<(gold)>   => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron patron "TripGoldScore"   24 2.0)]))
         ;; bundle the three into one immutable triplet (silver owner becomes triplet owner)
-        (print (ref-TS02-C3::AQP-SCR|C_IssueTriplet patron bronze-id silver-id gold-id))
+        (print (ref-TS02-C3::AQP-SCR|C_IssueTriplet patron patron bronze-id silver-id gold-id))
         (print "<<TX-TR-001>> IssueTrueFungibleScore x3 + IssueTriplet OK")
     )
 )

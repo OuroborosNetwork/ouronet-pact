@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 13 of 20
 ;; This is STEP 13 of 21 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-12 must have run first, including the init steps between deploys.
-;; 1 module(s), 96,321 gas measured in the REPL gas model, 211,527 bytes
+;; 1 module(s), 96,321 gas measured in the REPL gas model, 211,965 bytes
 ;;
 ;; Modules in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/02_SCORE.pact
@@ -214,7 +214,7 @@
     (defun C_CreateBoostLink:object{IgnisCollectorV3.OutputCumulator} (score-id:string boost-score-id:string))
     (defun C_EnableDebBoost:object{IgnisCollectorV3.OutputCumulator} (score-id:string))
     (defun C_IssueTriplet:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string bronze-score-id:string silver-score-id:string golden-score-id:string)
+        (patron:string executor:string bronze-score-id:string silver-score-id:string golden-score-id:string)
     )
     (defun C_IssueSemiFungibleScoreDefinition:object{IgnisCollectorV3.OutputCumulator}
         (score-id:string dpsf-id:string nonces:[integer] nonce-score-values:[decimal])
@@ -226,10 +226,10 @@
         (score-id:string dpnf-id:string dpnf-nonce-classes:[integer] class-score-values:[decimal])
     )
     (defun C_IssueSingleScoreModel:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string model-name:string score-class:integer collectable-id:string precision:integer nonces:[integer] nonce-score-values:[decimal] boost-class-id:string)
+        (patron:string executor:string model-name:string score-class:integer collectable-id:string precision:integer nonces:[integer] nonce-score-values:[decimal] boost-class-id:string)
     )
     (defun C_CombineTripletScoreModel:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string model-name:string bronze-model-id:string silver-model-id:string golden-model-id:string)
+        (patron:string executor:string model-name:string bronze-model-id:string silver-model-id:string golden-model-id:string)
     )
     (defun C_IssueScoreFromModel:object{IgnisCollectorV3.OutputCumulator}
         (patron:string owner-konto:string model-id:string agency-name:string)
@@ -778,7 +778,7 @@
         )
     )
     (defcap SCR|C>ISSUE-TRIPLET
-        (bronze-score-id:string silver-score-id:string golden-score-id:string)
+        (executor:string bronze-score-id:string silver-score-id:string golden-score-id:string)
         @doc "Issue one immutable SCR|T|Triplet row T|bronze|silver|golden and mark all three scores triplet=true. \
             \ Any three distinct scores of the same score-class and owner may bundle; boost topology is not required (true-triplet flag records boost-anchored shape). \
             \ Duplicate combo fails at WI_Triplet insert; each score may belong to at most one triplet. Composes SECURE."
@@ -816,6 +816,7 @@
                         (!= bronze-score-id silver-score-id)
                         (!= bronze-score-id golden-score-id)
                         (!= silver-score-id golden-score-id)
+                        (= executor owner-konto)
                         (= bronze-owner owner-konto)
                         (= silver-owner owner-konto)
                         (= golden-owner owner-konto)
@@ -827,7 +828,7 @@
                         (not (UR_SCR|ScoreTriplet golden-score-id))
                     ]
                 )
-                "SCR|C>ISSUE-TRIPLET: scores must exist, be distinct, same owner and score-class, valid category, not already in a triplet"
+                "SCR|C>ISSUE-TRIPLET: executor must be the scores' owner; scores must exist, be distinct, same owner and score-class, valid category, not already in a triplet"
             )
             (if (= class-b 0)
                 (enforce
@@ -1176,7 +1177,7 @@
         (compose-capability (SECURE))
     )
     (defcap SCR|C>ISSUE-SINGLE-SCORE-MODEL
-        (patron:string model-name:string score-class:integer nonces:[integer] nonce-score-values:[decimal])
+        (patron:string executor:string model-name:string score-class:integer nonces:[integer] nonce-score-values:[decimal])
         @doc "Define a SINGLE score-entity model. Enforces: patron account exists, the model-id (from model-name) \
             \ is free, and nonces/values are the same NON-empty length. Composes SECURE for the model write."
         @event
@@ -1185,6 +1186,7 @@
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
             )
+            (ref-DALOS::CAP_EnforceAccountOwnership executor)
             (ref-DALOS::UEV_EnforceAccountExists patron)
             (enforce (not (URC_ScoreEntityModelExists (ref-U|DALOS::UDC_Makeid model-name))) "Model id already exists")
             (enforce (and (= (length nonces) (length nonce-score-values)) (> (length nonces) 0))
@@ -1193,7 +1195,7 @@
         (compose-capability (SECURE))
     )
     (defcap SCR|C>COMBINE-TRIPLET-SCORE-MODEL
-        (patron:string model-name:string bronze-model-id:string silver-model-id:string golden-model-id:string)
+        (patron:string executor:string model-name:string bronze-model-id:string silver-model-id:string golden-model-id:string)
         @doc "Combine three SINGLE models into a TRIPLET score-entity model. Enforces: patron exists, model-id \
             \ free, the three sub-models all exist AND are single. Composes SECURE for the model write."
         @event
@@ -1202,6 +1204,7 @@
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
             )
+            (ref-DALOS::CAP_EnforceAccountOwnership executor)
             (ref-DALOS::UEV_EnforceAccountExists patron)
             (enforce (not (URC_ScoreEntityModelExists (ref-U|DALOS::UDC_Makeid model-name))) "Model id already exists")
             (enforce
@@ -3138,9 +3141,9 @@
     )
     ;;Protection: Class 3 — Custom: SCR|C>ISSUE-TRIPLET
     (defun XI_IssueTriplet:string
-        (bronze-score-id:string silver-score-id:string golden-score-id:string)
+        (executor:string bronze-score-id:string silver-score-id:string golden-score-id:string)
         @doc "Under SCR|C>ISSUE-TRIPLET: insert triplet row (true-triplet from boost topology) and mark all three scores triplet=true. Write only."
-        (require-capability (SCR|C>ISSUE-TRIPLET bronze-score-id silver-score-id golden-score-id))
+        (require-capability (SCR|C>ISSUE-TRIPLET executor bronze-score-id silver-score-id golden-score-id))
         (let
             (
                 (class:integer (UR_SCR|ScoreClass bronze-score-id))
@@ -3921,7 +3924,7 @@
         )
     )
     (defun C_IssueTriplet:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string bronze-score-id:string silver-score-id:string golden-score-id:string)
+        (patron:string executor:string bronze-score-id:string silver-score-id:string golden-score-id:string)
         @doc "Bundle three issued scores into one triplet T|bronze|silver|golden. Silver score owner; costs GAS|ISSUE-TRIPLET IGNIS."
         (P|UEV_IMC)
         (let
@@ -3931,8 +3934,8 @@
                 (owner-konto:string (UR_SCR|ScoreOwnerKonto silver-score-id))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
             )
-            (with-capability (SCR|C>ISSUE-TRIPLET bronze-score-id silver-score-id golden-score-id)
-                (XI_IssueTriplet bronze-score-id silver-score-id golden-score-id)
+            (with-capability (SCR|C>ISSUE-TRIPLET executor bronze-score-id silver-score-id golden-score-id)
+                (XI_IssueTriplet executor bronze-score-id silver-score-id golden-score-id)
             )
             (URCi_IssueTriplet silver-score-id
                 [(UC_ComputeTripletId bronze-score-id silver-score-id golden-score-id)]
@@ -4004,11 +4007,11 @@
         )
     )
     (defun C_IssueSingleScoreModel:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string model-name:string score-class:integer collectable-id:string precision:integer nonces:[integer] nonce-score-values:[decimal] boost-class-id:string)
+        (patron:string executor:string model-name:string score-class:integer collectable-id:string precision:integer nonces:[integer] nonce-score-values:[decimal] boost-class-id:string)
         @doc "Define a SINGLE score-entity model (the scoring spec for one score + its SF definition). model-id \
             \ from model-name (UDC_Makeid). P|UEV_IMC + SCR|C>ISSUE-SINGLE-SCORE-MODEL. Bills GAS|ISSUE-SCORE-MODEL."
         (P|UEV_IMC)
-        (with-capability (SCR|C>ISSUE-SINGLE-SCORE-MODEL patron model-name score-class nonces nonce-score-values)
+        (with-capability (SCR|C>ISSUE-SINGLE-SCORE-MODEL patron executor model-name score-class nonces nonce-score-values)
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -4023,11 +4026,11 @@
         )
     )
     (defun C_CombineTripletScoreModel:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string model-name:string bronze-model-id:string silver-model-id:string golden-model-id:string)
+        (patron:string executor:string model-name:string bronze-model-id:string silver-model-id:string golden-model-id:string)
         @doc "Combine three SINGLE models into a TRIPLET score-entity model. model-id from model-name. \
             \ P|UEV_IMC + SCR|C>COMBINE-TRIPLET-SCORE-MODEL. Bills GAS|ISSUE-SCORE-MODEL."
         (P|UEV_IMC)
-        (with-capability (SCR|C>COMBINE-TRIPLET-SCORE-MODEL patron model-name bronze-model-id silver-model-id golden-model-id)
+        (with-capability (SCR|C>COMBINE-TRIPLET-SCORE-MODEL patron executor model-name bronze-model-id silver-model-id golden-model-id)
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -4070,8 +4073,8 @@
                                             (s:string (XI_IssueOneFromModel owner-konto (at "silver-model-id" m) (concat [agency-name "Silver"])))
                                             (g:string (XI_IssueOneFromModel owner-konto (at "golden-model-id" m) (concat [agency-name "Golden"])))
                                         )
-                                        (with-capability (SCR|C>ISSUE-TRIPLET b s g)
-                                            (XI_IssueTriplet b s g))
+                                        (with-capability (SCR|C>ISSUE-TRIPLET owner-konto b s g)
+                                            (XI_IssueTriplet owner-konto b s g))
                                         (UC_ComputeTripletId b s g)
                                     )
                                 )

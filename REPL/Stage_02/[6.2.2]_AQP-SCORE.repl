@@ -786,11 +786,23 @@
             (expect "<<TX-SCORE-14 TRIPLET>> ...and none of them is already in a triplet"
                 [false false false] [(ref-SCR::UR_SCR|ScoreTriplet coding-id) (ref-SCR::UR_SCR|ScoreTriplet shareholder-id) (ref-SCR::UR_SCR|ScoreTriplet snakes-id)])
             (expect-failure "<<TX-SCORE-14 TRIPLET>> SHADOW: a non-distinct trio is refused by the bundle enforce, NOT by ownership"
-                "SCR|C>ISSUE-TRIPLET: scores must exist, be distinct, same owner and score-class, valid category, not already in a triplet"
-                (ref-TS02-C3::AQP-SCR|C_IssueTriplet attacker coding-id coding-id snakes-id))
-            (expect-failure "<<TX-SCORE-14 TRIPLET>> GATE: a distinct trio reaches CAP_EnforceAccountOwnership, which refuses and names the victim"
+                "SCR|C>ISSUE-TRIPLET: executor must be the scores' owner; scores must exist, be distinct, same owner and score-class, valid category, not already in a triplet"
+                (ref-TS02-C3::AQP-SCR|C_IssueTriplet attacker attacker coding-id coding-id snakes-id))
+            ;;SHADOW 2 (new, 2026-09-20) -- the `executor` guard added by the patron/executor refactor.
+            ;;The attacker names HIMSELF as executor on a trio he does not own. Distinct, same class,
+            ;;untripleted: every other conjunct passes, so this can ONLY be the executor conjunct.
+            ;;Without this the new guard would be invisible -- the GATE case below deliberately
+            ;;satisfies it, and a guard nothing ever fails on is indistinguishable from an absent one.
+            (expect-failure "<<TX-SCORE-14 TRIPLET>> SHADOW2: naming YOURSELF executor over a trio you do not own is refused"
+                "SCR|C>ISSUE-TRIPLET: executor must be the scores' owner"
+                (ref-TS02-C3::AQP-SCR|C_IssueTriplet attacker attacker coding-id shareholder-id snakes-id))
+            ;;GATE -- per CLAUDE.md, a fixture that SATISFIES the first guard exposes BOTH. The
+            ;;attacker now claims to act AS the victim (executor = victim), so the executor conjunct
+            ;;passes and the only thing left that can refuse is the ownership keyset. This is also
+            ;;the more realistic attack: impersonation, not a malformed request.
+            (expect-failure "<<TX-SCORE-14 TRIPLET>> GATE: claiming to BE the victim reaches CAP_EnforceAccountOwnership, which refuses and names him"
                 "Keyset failure (keys-all): [PK_Ancie...]"
-                (ref-TS02-C3::AQP-SCR|C_IssueTriplet attacker coding-id shareholder-id snakes-id))
+                (ref-TS02-C3::AQP-SCR|C_IssueTriplet attacker victim coding-id shareholder-id snakes-id))
             ;;--- c] NF set-mode score definition ----------------------------------------------------
             (expect "<<TX-SCORE-14 NF-SET>> Bloodshed is a class-4 score owned by the victim"
                 [4 victim] [(ref-SCR::UR_SCR|ScoreClass bloodshed-id) (ref-SCR::UR_SCR|ScoreOwnerKonto bloodshed-id)])
@@ -860,7 +872,7 @@
     (map print
         [
             (format "<(TS02-C3.AQP-SCR|C_IssueSemiFungibleScoreDefinition, owner signing)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition patron coding-id dhcd-id [11] [1.0])])
-            (format "<(TS02-C3.AQP-SCR|C_IssueTriplet, owner signing)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueTriplet patron coding-id shareholder-id snakes-id)])
+            (format "<(TS02-C3.AQP-SCR|C_IssueTriplet, owner signing)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueTriplet patron patron coding-id shareholder-id snakes-id)])
             (format "<(TS02-C3.AQP-SCR|C_IssueNonFungibleSetScoreDefinition, owner signing)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueNonFungibleSetScoreDefinition patron bloodshed-id kbn-id [0] [1.0])])
         ]
     )

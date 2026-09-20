@@ -54,11 +54,11 @@
             (model-id:string  (ref-U|DALOS::UDC_Makeid "DsaCustModel"))
         )
         ;; define the three SINGLE models (Custodians fragment nonces → quintessence)
-        (print (format "<(bronze)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "DsaCustBronze" 3 cust 24 [-1] [1.0] "|")]))
-        (print (format "<(silver)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "DsaCustSilver" 3 cust 24 [-2] [10.0] "|")]))
-        (print (format "<(gold)>   => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "DsaCustGold"   3 cust 24 [-3] [100.0] "|")]))
+        (print (format "<(bronze)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd anhd "DsaCustBronze" 3 cust 24 [-1] [1.0] "|")]))
+        (print (format "<(silver)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd anhd "DsaCustSilver" 3 cust 24 [-2] [10.0] "|")]))
+        (print (format "<(gold)>   => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd anhd "DsaCustGold"   3 cust 24 [-3] [100.0] "|")]))
         ;; combine into a TRIPLET model
-        (print (format "<(combine)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_CombineTripletScoreModel anhd "DsaCustModel" bronze-id silver-id gold-id)]))
+        (print (format "<(combine)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_CombineTripletScoreModel anhd anhd "DsaCustModel" bronze-id silver-id gold-id)]))
         (let
             (
                 (bronze:object{AcquisitionSchemasV1.SCR|ScoreEntityModel} (AQP-SCORE.UR_SCR|ScoreEntityModel bronze-id))
@@ -114,15 +114,15 @@
             ;; re-defining DsaCustBronze → model-id already exists
             (expect-failure "<<DSA-MODEL-02>> duplicate model-id rejected"
                 "Model id already exists"
-                (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "DsaCustBronze" 3 cust 24 [-1] [1.0] "|"))
+                (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd anhd "DsaCustBronze" 3 cust 24 [-1] [1.0] "|"))
             ;; combine over a non-existent sub-model → rejected
             (expect-failure "<<DSA-MODEL-02>> triplet over a missing sub-model rejected"
                 "The three sub-models must all exist"
-                (ref-TS02-C3::AQP-SCR|C_CombineTripletScoreModel anhd "DsaBadModel" "Nonexistent-Model-Id" "Nonexistent-Model-Id" "Nonexistent-Model-Id"))
+                (ref-TS02-C3::AQP-SCR|C_CombineTripletScoreModel anhd anhd "DsaBadModel" "Nonexistent-Model-Id" "Nonexistent-Model-Id" "Nonexistent-Model-Id"))
             ;; nonces/values length mismatch → rejected
             (expect-failure "<<DSA-MODEL-02>> nonces/values length mismatch rejected"
                 "nonces and nonce-score-values must be the same non-empty length"
-                (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "DsaMismatch" 3 cust 24 [-1 -2] [1.0] "|"))
+                (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd anhd "DsaMismatch" 3 cust 24 [-1 -2] [1.0] "|"))
         ]
     )
 )
