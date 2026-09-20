@@ -260,7 +260,7 @@
         (patron:string executor:string fvt-id:string new-can-upgrade:bool new-can-change-owner:bool)
     )
     (defun AQP-FVT|C_RotateOwnership:string
-        (patron:string fvt-id:string new-owner-konto:string)
+        (patron:string executor:string fvt-id:string new-owner-konto:string)
     )
     (defun AQP-FVT|C_SetCommonDenominator:string
         (patron:string executor:string fvt-id:string common-denominator:string)
@@ -2142,7 +2142,7 @@
         )
     )
     (defun AQP-FVT|C_RotateOwnership:string
-        (patron:string fvt-id:string new-owner-konto:string)
+        (patron:string executor:string fvt-id:string new-owner-konto:string)
         @doc "Rotates FVT ownership and collects IGNIS output on patron."
         (with-capability (P|TS)
             (let
@@ -2151,7 +2151,7 @@
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-FVT::C_RotateOwnership patron fvt-id new-owner-konto)
+                    (ref-FVT::C_RotateOwnership patron executor fvt-id new-owner-konto)
                 )
                 (format "Successfully rotated ownership for FVT {} to {}." [fvt-id new-owner-konto])
             )

@@ -4027,7 +4027,7 @@
                 (predicted:decimal (at "ignis-need" (at "ignis" (AQP-INFO.INFO_AQP-FVT|RotateOwnership patron fvt flrn))))
                 (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
             )
-            (print (format "<(TS02-C3.AQP-FVT|C_RotateOwnership)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_RotateOwnership patron fvt flrn)]))
+            (print (format "<(TS02-C3.AQP-FVT|C_RotateOwnership)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_RotateOwnership patron (AQP-FVT.UR_FVT|OwnerKonto fvt) fvt flrn)]))
             (let
                 (
                     (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))

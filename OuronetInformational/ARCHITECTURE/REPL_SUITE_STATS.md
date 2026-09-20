@@ -76,7 +76,7 @@ Two denominators, and mixing them is how this gets misreported. **All defined fu
 | **reached at all** | 4,565 | **3,833 (85%)** |
 | never reached | 882 | 693 |
 
-**Total function invocations across the suite, duplicates included: 16,974.** That is every call site in every `.repl`, so a function called in 20 files counts 20 times — it answers "how much testing happens", not "how much is covered".
+**Total function invocations across the suite, duplicates included: 16,978.** That is every call site in every `.repl`, so a function called in 20 files counts 20 times — it answers "how much testing happens", not "how much is covered".
 
 ### How often a tested function is tested
 
@@ -93,7 +93,7 @@ Two denominators, and mixing them is how this gets misreported. **All defined fu
 
 | prefix | called / defined | call sites |
 |---|---:|---:|
-| `UR_` | 519 / 830 | 6,087 |
+| `UR_` | 519 / 830 | 6,091 |
 | `C_` | 413 / 717 | 3,492 |
 | `INFO_` | 416 / 427 | 562 |
 | `URC_` | 183 / 417 | 1,230 |
@@ -143,7 +143,7 @@ The **live worklist** is the figure to size remaining work by. It is NOT `_cheap
 |---|---:|---|
 | guards pinned by a negative test (unambiguous) | 709 | `_enforce_coverage.py` |
 | guards pinned (upper bound, incl. shared wording) | 765 | `_enforce_coverage.py` |
-| **guards still to pin (live worklist)** | **5** | `_enforce_coverage.py` |
+| **guards still to pin (live worklist)** | **6** | `_enforce_coverage.py` |
 | &nbsp;&nbsp;excluded: in the DEAD `00_DPMF` module | 24 | |
 | &nbsp;&nbsp;excluded: unreachable inside an `enforce-one` | 40 | |
 | &nbsp;&nbsp;excluded: proven unreachable and annotated | 31 | |
@@ -185,8 +185,8 @@ The **live worklist** is the figure to size remaining work by. It is NOT `_cheap
 | 80 | DIRECT | `03_AQP.pact` | `AQP-POOL` | `URC_AqpOwnerKontoFromClassAndAsset` |
 | 78 | DIRECT | `02_DPDC.pact` | `DPDC` | `URH_AccountNonces` |
 | 77 | DIRECT | `01_DALOS.pact` | `DALOS` | `UR_OuroborosID` |
+| 76 | DIRECT | `05_FVT.pact` | `AQP-FVT` | `UR_FVT|OwnerKonto` |
 | 73 | DIRECT | `06_DPOF.pact` | `DPOF` | `URH_AccountNonces` |
-| 72 | DIRECT | `05_FVT.pact` | `AQP-FVT` | `UR_FVT|OwnerKonto` |
 | 71 | DIRECT | `02_TS01-C1.pact` | `TS01-C1` | `DPTF|C_Transfer` |
 | 68 | DIRECT | `01_ANK.pact` | `AQP-ANK` | `URC_AnchorableAssetOwner` |
 | 68 | DIRECT | `06_DPOF.pact` | `DPOF` | `UR_NonceSupply` |

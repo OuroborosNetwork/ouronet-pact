@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 19 of 20
 ;; This is STEP 19 of 21 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-18 must have run first, including the init steps between deploys.
-;; 5 module(s), 236,990 gas measured in the REPL gas model, 269,577 bytes
+;; 5 module(s), 236,990 gas measured in the REPL gas model, 269,618 bytes
 ;;
 ;; Modules in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact
@@ -280,7 +280,7 @@
         (patron:string executor:string fvt-id:string new-can-upgrade:bool new-can-change-owner:bool)
     )
     (defun AQP-FVT|C_RotateOwnership:string
-        (patron:string fvt-id:string new-owner-konto:string)
+        (patron:string executor:string fvt-id:string new-owner-konto:string)
     )
     (defun AQP-FVT|C_SetCommonDenominator:string
         (patron:string executor:string fvt-id:string common-denominator:string)
@@ -2162,7 +2162,7 @@
         )
     )
     (defun AQP-FVT|C_RotateOwnership:string
-        (patron:string fvt-id:string new-owner-konto:string)
+        (patron:string executor:string fvt-id:string new-owner-konto:string)
         @doc "Rotates FVT ownership and collects IGNIS output on patron."
         (with-capability (P|TS)
             (let
@@ -2171,7 +2171,7 @@
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-FVT::C_RotateOwnership patron fvt-id new-owner-konto)
+                    (ref-FVT::C_RotateOwnership patron executor fvt-id new-owner-konto)
                 )
                 (format "Successfully rotated ownership for FVT {} to {}." [fvt-id new-owner-konto])
             )

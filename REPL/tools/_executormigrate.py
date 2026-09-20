@@ -76,6 +76,9 @@ RULES = {
     # IssueMultipletFamily reached NO ownership enforce at all; the executor is simply the creator,
     # so the fixtures keep the account they used -- what changes is that it must now be OWNED.
     "AQP-FVT|C_IssueMultipletFamily":   (7, "{0}"),
+    # RotateOwnership: the executor is the CURRENT owner. `new-owner-konto` is the RECIPIENT --
+    # naming it `executor` was the error a blind Band 2 rename would have made here.
+    "AQP-FVT|C_RotateOwnership":        (4, "(AQP-FVT.UR_FVT|OwnerKonto {1})"),
     "AQP-FVT|CC_SweepBegin":            (3, "(AQP-ANK.URC_AnchorableAssetOwner (AQP-ANK.UR_ANK|AnchoredAsset {1}) (AQP-ANK.UR_ANK|Fungibility {1}))"),
 }
 
@@ -185,7 +188,14 @@ def scan(path, apply_):
             elif len(vals) == arity and vals[1] == vals[0] and not vals[1].startswith("("):
                 shifted = [vals[0]] + vals[2:]
                 a, b = args[2]
-                edits.append((a, b, tmpl.format(*shifted), fn, "patron-as-executor"))
+                new = tmpl.format(*shifted)
+                # Skip when the replacement is IDENTICAL -- an already-migrated call whose rule
+                # template is "{0}" (executor == patron) re-matches this branch forever and
+                # rewrites itself to the same bytes. Harmless, but it inflated the reported count:
+                # one new rule appeared to touch 50 sites when it touched 6. A tool that
+                # over-reports its own effect is the same defect class as a stale figure.
+                if new != s[a:b]:
+                    edits.append((a, b, new, fn, "patron-as-executor"))
             i = end
     if not edits:
         return 0

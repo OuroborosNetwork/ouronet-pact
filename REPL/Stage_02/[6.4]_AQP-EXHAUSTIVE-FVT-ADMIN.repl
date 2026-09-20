@@ -73,7 +73,7 @@
                     true (ref-FVT::UR_FVT|CanChangeOwner fvt-id))
                 (expect-failure "<<TX-AQP-FA01>> rotating an FVT to the owner it ALREADY has is rejected"
                     "FVT owner rotation requires"
-                    (ref-TS02-C3::AQP-FVT|C_RotateOwnership patron fvt-id owner-now))
+                    (ref-TS02-C3::AQP-FVT|C_RotateOwnership patron (AQP-FVT.UR_FVT|OwnerKonto fvt-id) fvt-id owner-now))
                 (expect "<<TX-AQP-FA01>> the owner-konto is untouched after the rejection"
                     owner-now (ref-FVT::UR_FVT|OwnerKonto fvt-id))
             ]

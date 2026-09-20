@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 16 of 20
 ;; This is STEP 16 of 21 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-15 must have run first, including the init steps between deploys.
-;; 1 module(s), 203,548 gas measured in the REPL gas model, 201,937 bytes
+;; 1 module(s), 203,548 gas measured in the REPL gas model, 202,175 bytes
 ;;
 ;; Modules in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/05_FVT.pact
@@ -139,7 +139,7 @@
         (patron:string fvt-name:string owner-konto:string fvt-class:integer common-denominator:string)
     )
     (defun C_RotateOwnership:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-id:string new-owner-konto:string)
+        (patron:string executor:string fvt-id:string new-owner-konto:string)
     )
     (defun C_Control:object{IgnisCollectorV3.OutputCumulator}
         (patron:string executor:string fvt-id:string new-can-upgrade:bool new-can-change-owner:bool)
@@ -584,7 +584,7 @@
         )
     )
     )
-    (defcap FVT|C>ROTATE-OWNERSHIP-FVT (fvt-id:string new-owner-konto:string)
+    (defcap FVT|C>ROTATE-OWNERSHIP-FVT (executor:string fvt-id:string new-owner-konto:string)
         @doc "Rotate FVT owner-konto: current owner, can-change-owner true, distinct new standard account. Composes SECURE."
         @event
         (let
@@ -602,6 +602,9 @@
                 (and can-change-owner (!= new-owner-konto owner-now))
                 "FVT owner rotation requires can-change-owner true and a distinct new owner-konto"
             )
+            (enforce (= executor owner-now)
+                (format "Executor {} is not the current owner of FVT {} (owner is {})"
+                    [executor fvt-id owner-now]))
             (ref-DALOS::CAP_EnforceAccountOwnership owner-now)
             (ref-DALOS::UEV_EnforceAccountType new-owner-konto false)
             (compose-capability (SECURE))
@@ -2142,7 +2145,7 @@
     )
     ;;Management (FVT|Schema)
     (defun C_RotateOwnership:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-id:string new-owner-konto:string)
+        (patron:string executor:string fvt-id:string new-owner-konto:string)
         @doc "Transfer FVT owner-konto. Validation in FVT|C>ROTATE-OWNERSHIP-FVT; medium IGNIS on pre-rotate owner."
         (let
             (
@@ -2153,7 +2156,7 @@
             (
                 (ico:object{IgnisCollectorV3.OutputCumulator} (ref-RPS::URCi_RotateOwnership fvt-id))
             )
-            (with-capability (FVT|C>ROTATE-OWNERSHIP-FVT fvt-id new-owner-konto)
+            (with-capability (FVT|C>ROTATE-OWNERSHIP-FVT executor fvt-id new-owner-konto)
                 (ref-RPS::XE_XI_RotateOwnership fvt-id new-owner-konto)
             )
             ico

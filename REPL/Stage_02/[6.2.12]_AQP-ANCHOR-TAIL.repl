@@ -70,7 +70,7 @@
         ;; SetCommonDenominator while patron still owns the farm (switch OURO -> AURYN native DPTF)
         (print (ref-TS02-C3::AQP-FVT|C_SetCommonDenominator patron (AQP-FVT.UR_FVT|OwnerKonto fvt-id) fvt-id auryn-id))
         ;; RotateOwnership: hand the FVT to EMMA (existing DALOS account from the DPDC suites)
-        (print (ref-TS02-C3::AQP-FVT|C_RotateOwnership patron fvt-id emma))
+        (print (ref-TS02-C3::AQP-FVT|C_RotateOwnership patron (AQP-FVT.UR_FVT|OwnerKonto fvt-id) fvt-id emma))
         (print "<<TX-AT-001>> AQP-FVT|C_Issue + SetCommonDenominator + RotateOwnership OK")
     )
 )
