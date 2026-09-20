@@ -391,3 +391,52 @@ cheap in a way Band 1 will not be.
   and no ownership enforce is reachable. These are **repair** functions, so permissionless may well
   be intended (a stranger paying to fix your anchors harms nobody) — but that is a ruling, not a
   reading, and it has not been made.
+
+---
+
+## BAND 1 — THE INTERFACE CASCADE, measured before starting (2026-09-20)
+
+Band 1 adds a **parameter**. A parameter changes the declaration in the interface, and the cascade
+rule then applies: every interface that names a bumped interface bumps too. That cost was never
+measured, and it is the thing that decides how Band 1 should be sequenced.
+
+**50 of the 78 interfaces in the tree — 64% — are in the transitive closure of Band 1.**
+
+### The worklist is sorted in exactly the wrong order
+
+`_bandplan.py` prints "smallest module first", and the first line is:
+
+```
+   02_IGNIS.pact              1      <- C_Collect
+```
+
+One function, in the smallest module. It is **the single most expensive change in the refactor**:
+`IgnisCollectorV3` is what every `C_` returns (`OutputCumulator`), so touching it alone cascades to
+**48 interfaces** — the same 48 the entire live-core subset produces. "Smallest module" is a proxy
+for blast radius and here it inverts it completely.
+
+### The split that actually matters
+
+| subset | seed ifaces | transitive cascade | Band 1 fns | cost |
+|---|---|---|---|---|
+| **AQP family** (`FVT`, `DSA`, `AQP`, `ANK`, `SCORE`, `MTX-AQP`, `TS02-DPAD`) | 7 | **7 — closed, no bleed** | **36** | free: all `V1`, nothing live, edited in place per policy |
+| **live core** (`DPTF`, `DPOF`, `DPMF`, `ATS`, `SWP`, `SWPLC`, `DPDC`, `VST`, `IGNIS`, `Demipad`) | 14 | **48** | **22** | a 48-interface version bump + every consumer in lockstep |
+
+The AQP cascade is **closed**: its 7 interfaces reference each other and nothing outside reaches
+back in. That is not luck — it is the deploy-order layering working as designed, and it means the
+36 AQP functions can be done now, with no version bumps, on the very modules being prepared for
+mainnet.
+
+### Consequence for sequencing
+
+Do the **36 AQP functions** first. They are free, they are the mainnet-critical path, and they
+carry no cascade. **Stop before the live 22** — those need an explicit decision, because they are
+not a refactor any more, they are a coordinated re-versioning of most of the interface surface of
+a deployed system.
+
+**One assumption is flagged, not verified:** `00_Demipad.pact` (4 functions, `DemiourgosLaunchpadV2`)
+is counted as live. The owner confirmed *"no aqp is live on mainnet, nothing"*, but said nothing
+about DemiPad. If DemiPad is also undeployed it moves to the free subset and the live remainder
+drops to 18. **Do not guess this one** — `A_RegisterAssetToLaunchpad` is declared in *both*
+`TalosStageTwo_DemiPadV1` (free) and `DemiourgosLaunchpadV2` (assumed live), so it straddles the
+line and its cost depends entirely on the answer.
