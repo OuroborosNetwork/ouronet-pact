@@ -866,3 +866,50 @@ it belongs to the Band 4 question about `A_` functions and the gasless patron ra
 **The remaining Band 1 work is all live-core and all cascade-bound.** Nothing more can be done in
 AQP, and the next step is not a code change — it is the owner's decision on whether to re-version
 64% of the interface surface of a deployed system.
+
+---
+
+## BAND 4 RE-MEASURED (2026-09-20) — it is 40, not 78, and it is CASCADE-BOUND
+
+Checked before starting it, because the AQP experience says measure the cost first.
+
+### The 78 was a double count
+
+The plan's headline figure for the largest remaining band was produced by a scan that walked
+**whole files**, so a function declared in an interface AND defined in its module counted **twice**.
+Reproducing that scan gives **79**; scanning only the module region — the real function count —
+gives **40**.
+
+```
+whole-file scan (interface declarations counted as functions) : 79
+module-only scan (the actual functions)                       : 40
+```
+
+(60 including `2_CITIZEN`'s 20.) `_bandplan.py` was never affected: it has always scanned
+`s[mi:]`, the module region only, which is why its 89 total is sound.
+
+### And 39 of the 40 are interface-declared
+
+| | |
+|---|---|
+| patronless `A_`/`AA_` in `1_SOVEREIGN` | **40** |
+| declared in an interface → a signature change bumps it | **39** |
+| …declared only in **AQP** interfaces (free) | **2** |
+| in no interface at all (free) | **1** |
+
+Giving an `A_` function a patron changes its signature, so **Band 4 sits behind the same
+48-interface cascade as the live-core Band 1**. Three functions can be done today; the other 37
+cannot, for the same reason and on the same decision.
+
+### What this means for the refactor as a whole
+
+| band | remaining | blocked? |
+|---|---|---|
+| Band 1 — AQP | **0** | done |
+| Band 1 — live core | 22 | **cascade** |
+| Band 2 — unlicensed | 9 | needs a RULING, not a cascade |
+| Band 4 | 37 of 40 | **cascade** |
+
+**Essentially all remaining work is behind one decision.** The 9 Band 2 rows are the only code
+left that a ruling alone unblocks, and they are rulings about intent (is this function
+permissionless on purpose?) rather than about versioning.
