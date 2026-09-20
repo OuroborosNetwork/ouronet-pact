@@ -1,15 +1,13 @@
 ;; ---------------------------------------------------------------------------
-;; OURONET DEPLOY -- file 19 of 20
-;; This is STEP 19 of 21 in the full sequence (see Deploy/MANIFEST.md).
+;; OURONET DEPLOY -- file 19 of 22
+;; This is STEP 19 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-18 must have run first, including the init steps between deploys.
-;; 5 module(s), 236,990 gas measured in the REPL gas model, 279,604 bytes
+;; 3 module(s), 149,410 gas measured in the REPL gas model, 236,546 bytes
 ;;
 ;; Modules in this transaction, IN ORDER (do not reorder):
-;;   1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact
-;;   1_SOVEREIGN/STAGE_02/3_Talos/05_TS02-DPAD.pact
-;;   2_CITIZEN/7_Launchpad/2_Snakes/02_Snakes.pact
-;;   2_CITIZEN/7_Launchpad/3_Custodians/03_Custodians.pact
-;;   1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact
+;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact
+;;   1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact
+;;   1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact
 ;;
 ;; Paste this whole file as ONE transaction. It needs the Ouronet admin signature
 ;; and the `ouronet-ns` namespace, which the first line sets.
@@ -17,380 +15,42 @@
 
 (namespace "ouronet-ns")
 
-;; ===== 1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact ================
-;; Deploy: load THIS file — interface(s) + module ship together.
-;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/03_Talos.pact
+;; ===== 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact =========
+;; ================================================================================
+;; AQP-INFO — pre-execution COST PREVIEW surface for the AQP modules.
 ;;
-;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface TalosStageTwo_ClientThreeV1
-    @doc "Exposes Stage Two Third Batch of Client Functions: \
-        \ the AcquisitionPools Client Functions"
-
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;{G2}  schemas
-    ;;{G3}  tables  ⟨cannot exist in an interface⟩
-    ;;{G4}  capabilities
-    ;;{G5}  functions
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    ;;{P2}  schemas
-    ;;{P3}  tables  ⟨cannot exist in an interface⟩
-    ;;{P4}  capabilities
-    ;;{P5}  functions
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    ;;{3.2}  schemas
-    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    ;;{5.2}  Compute [UC]
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    (defun URCi_IssueGenericEarningVault:object{IgnisCollectorV3.OutputCumulator}
-        (owner-konto:string vault-name:string stake-dptf-id:string reward-dptf-id:string)
-    )
-    ;;{5.4}  Validate [UEV/CAP]
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    (defun AQP-POOL|XB_VacateTrueFungible:string (patron:string pool-id:string))
-    (defun AQP-POOL|XB_VacateOrtoFungible:string (patron:string pool-id:string dpof-id:string))
-    (defun AQP-POOL|XB_VacateSemiFungible:string (patron:string pool-id:string dpsf-id:string))
-    (defun AQP-POOL|XB_VacateNonFungible:string (patron:string pool-id:string dpnf-id:string))
-    ;;{5.7}  User [A/C]
-    ;;
-    ;;  [ANK]
-    ;;
-    (defun AQP-ANK|C_RevokeBoostClass:string (patron:string boost-class-id:string))
-    (defun AQP-ANK|C_IssueTrueFungibleAnchor:string
-        (patron:string executor:string anchor-name:string dptf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dptf-amount:decimal)
-    )
-    (defun AQP-ANK|C_IssueSemiFungibleAnchor:string
-        (patron:string executor:string anchor-name:string dpsf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpsf-nonce:integer)
-    )
-    (defun AQP-ANK|C_IssueNonFungibleAnchor:string
-        (patron:string executor:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-trait-key:string dpnf-trait-value:string)
-    )
-    (defun AQP-ANK|C_IssueNonFungibleSetAnchor:string
-        (patron:string executor:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-nonce-class:integer)
-    )
-    (defun AQP-ANK|C_RevokeAnchor:string (patron:string anchor-id:string))
-    ;;
-    ;;  [AQP-SCORE]
-    ;;
-    (defun AQP-SCR|C_IssueLiquidityScore:string
-        (patron:string owner-konto:string score-name:string precision:integer lp-denominator:string mx-frozen:decimal mx-sleeping:decimal)
-    )
-    (defun AQP-SCR|C_IssueTrueFungibleScore:string
-        (patron:string owner-konto:string score-name:string precision:integer mx-frozen:decimal)
-    )
-    (defun AQP-SCR|C_IssueOrtoFungibleScore:string
-        (patron:string owner-konto:string score-name:string precision:integer mx-sleeping:decimal mx-hibernated:decimal)
-    )
-    (defun AQP-SCR|C_IssueSemiFungibleScore:string
-        (patron:string owner-konto:string score-name:string precision:integer sft-equality:bool)
-    )
-    (defun AQP-SCR|C_IssueNonFungibleScore:string
-        (patron:string owner-konto:string score-name:string precision:integer nft-score-model:integer)
-    )
-    (defun AQP-SCR|C_RotateScoreOwnership:string (patron:string score-id:string new-owner-konto:string))
-    (defun AQP-SCR|C_ControlScore:string (patron:string score-id:string new-can-upgrade:bool new-can-change-owner:bool))
-    (defun AQP-SCR|C_CreateScoreBoostClassLink:string (patron:string score-id:string boost-class-id:string))
-    (defun AQP-SCR|C_CreateScoreBoostLink:string (patron:string score-id:string boost-score-id:string))
-    (defun AQP-SCR|C_EnableDebBoost:string (patron:string score-id:string))
-    (defun AQP-SCR|C_IssueTriplet:string
-        (patron:string executor:string bronze-score-id:string silver-score-id:string golden-score-id:string)
-    )
-    (defun AQP-SCR|C_IssueSingleScoreModel:string
-        (patron:string executor:string model-name:string score-class:integer collectable-id:string precision:integer nonces:[integer] nonce-score-values:[decimal] boost-class-id:string)
-    )
-    (defun AQP-SCR|C_CombineTripletScoreModel:string
-        (patron:string executor:string model-name:string bronze-model-id:string silver-model-id:string golden-model-id:string)
-    )
-    (defun AQP-SCR|C_IssueScoreFromModel:string (patron:string owner-konto:string model-id:string agency-name:string))
-    (defun AQP-SCR|C_IssueSemiFungibleScoreDefinition:string
-        (patron:string score-id:string dpsf-id:string nonces:[integer] nonce-score-values:[decimal])
-    )
-    (defun AQP-SCR|C_IssueNonFungibleScoreDefinition:string
-        (patron:string score-id:string dpnf-id:string trait-keys:[string] trait-values:[string] trait-score-values:[decimal])
-    )
-    (defun AQP-SCR|C_IssueNonFungibleSetScoreDefinition:string
-        (patron:string score-id:string dpnf-id:string dpnf-nonce-classes:[integer] class-score-values:[decimal])
-    )
-    ;;
-    ;;  [AQP-POOL]
-    ;;
-    (defun AQP-POOL|C_Issue:string
-        (patron:string executor:string pool-name:string asset-id:string aqp-class:integer)
-    )
-    (defun AQP-POOL|C_AddScore:string
-        (patron:string executor:string pool-id:string score-id:string)
-    )
-    (defun AQP-POOL|C_RevokeScore:string
-        (patron:string executor:string pool-id:string score-id:string)
-    )
-    (defun AQP-POOL|C_DisablePoolStake:string
-        (patron:string executor:string pool-id:string)
-    )
-    (defun AQP-POOL|C_EnablePoolStake:string
-        (patron:string executor:string pool-id:string)
-    )
-    ;;
-    (defun AQP-POOL|CC_StakeSemiFungibleCollectable:string
-        (
-            patron:string
-            pool-id:string
-            owner-id:string
-            beneficiary-id:string
-            collectable-id:string
-            nonces:[integer]
-        )
-    )
-    (defun AQP-POOL|CC_UnstakeSemiFungibleCollectable:string
-        (
-            patron:string
-            pool-id:string
-            owner-id:string
-            beneficiary-id:string
-            collectable-id:string
-            nonces:[integer]
-            nonce-amounts:[integer]
-        )
-    )
-    (defun AQP-POOL|CC_StakeNonFungibleCollectable:string
-        (
-            patron:string
-            pool-id:string
-            owner-id:string
-            beneficiary-id:string
-            collectable-id:string
-            nonces:[integer]
-        )
-    )
-    (defun AQP-POOL|CC_UnstakeNonFungibleCollectable:string
-        (
-            patron:string
-            pool-id:string
-            owner-id:string
-            beneficiary-id:string
-            collectable-id:string
-            nonces:[integer]
-            nonce-amounts:[integer]
-        )
-    )
-    ;;
-    (defun AQP-POOL|CC_StakeTrueFungible:string
-        (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
-    )
-    (defun AQP-POOL|CC_UnstakeTrueFungible:string
-        (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
-    )
-    (defun AQP-POOL|CC_StakeOrtoFungible:string
-        (
-            patron:string
-            pool-id:string
-            owner-id:string
-            beneficiary-id:string
-            dpof-id:string
-            nonces:[integer]
-        )
-    )
-    (defun AQP-POOL|CC_UnstakeOrtoFungible:string
-        (
-            patron:string
-            pool-id:string
-            owner-id:string
-            beneficiary-id:string
-            dpof-id:string
-            nonces:[integer]
-        )
-    )
-    (defun AQP-POOL|C_SyncTrueFungibleAnchors:string
-        (patron:string beneficiary-id:string dptf-id:string)
-    )
-    (defun AQP-POOL|C_SyncSemiFungibleAnchors:string
-        (patron:string beneficiary-id:string dpsf-id:string)
-    )
-    (defun AQP-POOL|C_SyncNonFungibleAnchors:string
-        (patron:string beneficiary-id:string dpnf-id:string)
-    )
-    (defun AQP-POOL|C_AbortVacate:string
-        (patron:string pool-id:string)
-    )
-    (defun AQP-POOL|C_FinalizeVacate:string (patron:string pool-id:string))
-    (defun AQP-POOL|CC_FullVacate:string (patron:string pool-id:string))
-    (defun AQP-POOL|CCp_BatchVacateTrueFungible:string
-        (patron:string pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal]))
-    (defun AQP-POOL|CCp_BatchVacateOrtoFungible:string
-        (patron:string pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]]))
-    (defun AQP-POOL|CCp_BatchVacateCollectables:string
-        (patron:string pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]]))
-    (defun AQP-POOL|CCp_BatchDrainTrueFungible:string
-        (patron:string pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal]))
-    (defun AQP-POOL|CCp_BatchDrainOrtoFungible:string
-        (patron:string pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]]))
-    (defun AQP-POOL|CCp_BatchDrainCollectable:string
-        (patron:string pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]]))
-    ;;
-    ;;  [AQP-FVT]
-    ;;
-    (defun AQP-FVT|C_Issue:string
-        (patron:string fvt-name:string owner-konto:string fvt-class:integer common-denominator:string)
-    )
-    (defun AQP-FVT|C_IssueMultipletFamily:string
-        (
-            patron:string
-            executor:string
-            token-0-id:string
-            token-1-id:string
-            token-2-id:string
-            ats-0-1-id:string
-            ats-1-2-id:string
-        )
-    )
-    (defun AQP-FVT|C_AddScoreEntity:string
-        (patron:string executor:string fvt-id:string score-entity-type:integer score-entity-id:string)
-    )
-    (defun AQP-FVT|C_AddRewardLink:string
-        (patron:string executor:string fvt-id:string reward-dptf-id:string segmentation:bool multiplet-family-id:string)
-    )
-    (defun AQP-FVT|C_ToggleScoreEntityLink:string
-        (patron:string executor:string fvt-id:string score-entity-type:integer score-entity-id:string enabled:bool)
-    )
-    (defun AQP-FVT|C_ToggleRewardLink:string
-        (patron:string executor:string fvt-id:string reward-dptf-id:string enabled:bool)
-    )
-    (defun AQP-FVT|C_SetQualitySplit:string
-        (patron:string executor:string fvt-id:string reward-dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer])
-    )
-    (defun AQP-FVT|C_Control:string
-        (patron:string executor:string fvt-id:string new-can-upgrade:bool new-can-change-owner:bool)
-    )
-    (defun AQP-FVT|C_RotateOwnership:string
-        (patron:string executor:string fvt-id:string new-owner-konto:string)
-    )
-    (defun AQP-FVT|C_SetCommonDenominator:string
-        (patron:string executor:string fvt-id:string common-denominator:string)
-    )
-    (defun AQP-FVT|C_SetMosaic:string
-        (patron:string executor:string fvt-id:string mosaic:bool)
-    )
-    (defun AQP-FVT|C_SetSplitMode:string
-        (patron:string executor:string fvt-id:string split-mode:string)
-    )
-    (defun AQP-FVT|C_IssueGenericEarningVault:string
-        (patron:string owner-konto:string vault-name:string stake-dptf-id:string reward-dptf-id:string)
-    )
-    (defun AQP-FVT|CC_InjectStream:string
-        (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
-    )
-    (defun AQP-FVT|CC_Inject:string
-        (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
-    )
-    (defun AQP-FVT|CCp_InjectFixChunk:string
-        (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
-    )
-    (defun AQP-FVT|CC_InjectFinalize:string
-        (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
-    )
-    (defun AQP-FVT|CCp_UnstaleAll:string
-        (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
-    )
-    (defun MTX-AQP|2|CC_Inject:string
-        (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
-    )
-    (defun MTX-AQP|2|CC_SweepRevokeAnchor:string
-        (patron:string executor:string anchor-id:string)
-    )
-    (defun AQP-FVT|CC_SweepRevokeAnchor:string
-        (patron:string executor:string anchor-id:string)
-    )
-    (defun AQP-FVT|CC_SweepBegin:string
-        (patron:string executor:string anchor-id:string)
-    )
-    (defun AQP-FVT|CCp_SweepRecomputeChunk:string
-        (patron:string anchor-id:string chunk:integer)
-    )
-    (defun AQP-FVT|CC_UnstaleMyScores:string
-        (patron:string fvt-ids:[string])
-    )
-    (defun AQP-FVT|CC_Collect:string
-        (patron:string collector:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
-    )
-    (defun AQP-DSA|C_DefineDelegationVault:string
-        (patron:string executor:string fvt-id:string model-id:string unit-score:integer)
-    )
-    (defun AQP-DSA|CC_OpenAgency:string
-        (patron:string executor:string fvt-id:string pool-id:string score-entity-id:string fee-per-mille:integer
-         collectable-id:string stake-nonces:[integer])
-    )
-    (defun AQP-DSA|C_RecomputeCapture:string
-        (patron:string fvt-id:string score-entity-id:string)
-    )
-    (defun AQP-DSA|C_SetOracleAuth:string
-        (patron:string executor:string fvt-id:string oracle-guard:guard)
-    )
-    (defun AQP-DSA|C_OracleWrite:string
-        (patron:string fvt-id:string score-entity-id:string nodes:integer uptime:integer)
-    )
-    (defun AQP-DSA|C_WithdrawRoyalty:string
-        (patron:string executor:string fvt-id:string reward-dptf-id:string)
-    )
-    (defun AQP-DSA|C_BurnRoyalty:string
-        (patron:string executor:string fvt-id:string reward-dptf-id:string)
-    )
-    (defun AQP-DSA|C_FuelRoyalty:string
-        (patron:string executor:string fvt-id:string reward-dptf-id:string swpair:string)
-    )
-    (defun AQP-DSA|C_SetAgencyFee:string
-        (patron:string executor:string fvt-id:string score-entity-id:string fee-per-mille:integer)
-    )
-    (defun AQP-DSA|A_ToggleExternalOracle:string (on:bool))
-    (defun AQP-DSA|A_SetOracleValidity:string (seconds:integer))
-
-)
+;; Each AQP-<MOD>|INFO_<Fn> is the read-only counterpart of a TS02-C3 execution
+;; wrapper. It returns object{OuronetInfoV2.ClientInfo} describing what the op does,
+;; which execution function runs it, and the EXACT IGNIS + STOA price for a given
+;; account (mirroring the execution's own cost logic byte-for-byte — same GAS| const,
+;; same UsagePrice tier, same multipliers/branches, same zero-gas toggle gate).
 ;;
-(module TS02-C3 GOV
-    @doc "TALOS Stage 2 Client Functiones Part 3 - Acquisition Pools Functions"
+;; Procedure: OuronetInformational/skills/aqp-info-module-procedure.md
+;; Surface  : OuronetInformational/skills/aqp-entrypoint-surface.md
+;; Deploys AFTER 01_ANK..07_DSA + TS02-C3 (reads their state + GAS| constants; never writes).
+;; No interface: this is a leaf read-only preview module — nothing references it via module{}.
+;; ================================================================================
+(module AQP-INFO GOV
+    @doc "Read-only pre-execution cost-preview module for the AQP family. Each INFO_ \
+        \ function mirrors a TS02-C3 execution wrapper and returns an \
+        \ OuronetInfoV2.ClientInfo describing the operation, its execution function, and the \
+        \ exact IGNIS+STOA price for an account — sourced from each AQP module's URCi_ cost \
+        \ readers so previews match execution byte-for-byte. A leaf module with no \
+        \ interface; never writes; deploys after all AQP cores and TS02-C3."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
-    ;;
-    (implements OuronetPolicyV2)
-    (implements TalosStageTwo_ClientThreeV1)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
     ;;
-    ;;Defaults for AQP-FVT|C_IssueGenericEarningVault. Named rather than inlined because each one
-    ;;is a class rule a caller would otherwise have to know: getting any of them wrong builds a
-    ;;vault that looks issued and cannot be staked.
-    (defconst GV|PRECISION:integer                      6)
-    (defconst GV|MX_FROZEN:decimal                      2.0)
-    (defconst GV|POOL_CLASS_TF:integer                  1)      ;;aqp-class 1 = non-LP true fungible
-    (defconst GV|FVT_CLASS_VAULT:integer                1)      ;;fvt-class 1 = Vault
-    (defconst GV|SCORE_ENTITY_SCORE:integer             1)
-    (defconst GV|COMMON_BAR:string                      "|")
-    (defconst GOV|MD_TS02-C3                            (keyset-ref-guard (GOV|Demiurgoi)))
+    (defconst GOV|MD_INFO|AQP                           (keyset-ref-guard (GOV|Demiurgoi)))
     ;;{G2}  schemas
     ;;{G3}  tables
     ;;{G4}  capabilities
-    (defcap GOV ()                                      (compose-capability (GOV|TS02-C3_ADMIN)))
-    (defcap GOV|TS02-C3_ADMIN ()                        (enforce-guard GOV|MD_TS02-C3))
+    (defcap GOV ()                                      (compose-capability (GOV|INFO|AQP_ADMIN)))
+    (defcap GOV|INFO|AQP_ADMIN ()                       (enforce-guard GOV|MD_INFO|AQP))
     ;;{G5}  functions
     (defun GOV|Demiurgoi ()
         (let
@@ -404,168 +64,10 @@
     ;;<=========================================================================>
     ;;{2}  POLICY
     ;;{P1}  constants
-    (defconst P|I                                       (P|Info))
     ;;{P2}  schemas
     ;;{P3}  tables
-    ;;
-    (deftable P|T:{OuronetPolicyV2.P|S})
-    (deftable P|MT:{OuronetPolicyV2.P|MS})
     ;;{P4}  capabilities
-    (defcap P|TS ()
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (gap:bool (ref-DALOS::UR_GAP))
-            )
-            (enforce (not gap) "While Global Administrative Pause is online, no client Functions can be executed")
-            (compose-capability (P|TALOS-SUMMONER))
-        )
-    )
-    (defcap P|TALOS-SUMMONER ()
-        @doc "Talos Summoner Capability"
-        true
-    )
     ;;{P5}  functions
-    (defun P|Info ()
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-            )
-            (ref-DALOS::P|Info)
-        )
-    )
-    (defun P|UR:guard (policy-name:string)
-        (at "policy" (read P|T policy-name ["policy"]))
-    )
-    (defun P|UR_IMP:[guard] ()
-        ;;DEFAULT ADDED 2026-09-14 (owner ruling). This was a bare `read`, which RAISES
-        ;;`No value found in table <M>_P|MT for key: InterModulePolicies` when the row does not
-        ;;exist -- i.e. before ANY module has registered. P|UEV_IMC is built on this, so in that
-        ;;window the inter-module gate answered with a raw table error naming a row key instead of
-        ;;refusing cleanly. Surfaced by the X-01 repair, which removed the harness registration
-        ;;that had been creating the row as a side effect.
-        ;;
-        ;;The default is the module's OWN SECURE capability guard, which is exactly what
-        ;;P|A_AddIMP already seeds the row with. So reader and writer now agree on what an
-        ;;unregistered policy list contains, and the gate's answer is the same before and after
-        ;;the first registration: satisfiable only from inside this module.
-        (with-default-read P|MT P|I
-            {"m-policies" : [(create-capability-guard (SECURE))]}
-            {"m-policies" := mp}
-            mp
-        )
-    )
-    (defun P|UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV2} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|TS02-C3_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun P|A_AddIMP (policy-guard:guard)
-        @doc "Registers <policy-guard> as a trusted inter-module caller of this module. \
-            \ IDEMPOTENT: a guard already in the chain is left alone rather than appended \
-            \ a second time. See OuronetPolicyV2 for why that is load-bearing."
-        (with-capability (GOV|TS02-C3_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV2} U|LST)
-                    ;;
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" :
-                            (if (contains policy-guard mp)
-                                mp
-                                (ref-U|LST::UC_AppL mp policy-guard)
-                            )
-                        }
-                    )
-                )
-            )
-        )
-    )
-    (defun P|A_RemoveIMP (policy-guard:guard)
-        @doc "Revokes <policy-guard> from this module's guard chain. Removes EVERY occurrence, so \
-            \ it doubles as the cleanup for duplicates left behind by the pre-idempotence append. \
-            \ Refuses to drop this module's own SECURE seed -- see OuronetPolicyV2."
-        (with-capability (GOV|TS02-C3_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV2} U|LST)
-                    ;;
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (enforce (!= policy-guard dg) "The module's own SECURE seed cannot be revoked")
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_RemoveItem mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun P|A_SetIMP (policy-guards:[guard])
-        @doc "Replaces this module's whole guard chain in one write -- the recovery hatch. \
-            \ Deduplicates, and enforces that the module's own SECURE seed survives: without it \
-            \ the module can no longer reach its own P|UEV_IMC-gated functions."
-        (with-capability (GOV|TS02-C3_ADMIN)
-            (let
-                (
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (enforce (contains dg policy-guards) "The module's own SECURE seed must be present")
-                (write P|MT P|I
-                    {"m-policies" : (distinct policy-guards)}
-                )
-            )
-        )
-    )
-    (defun P|A_Define ()
-        (let
-            (
-                (ref-P|TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                (ref-P|ANK:module{OuronetPolicyV2} AQP-ANK)
-                (ref-P|SCR:module{OuronetPolicyV2} AQP-SCORE)
-                (ref-P|AQP:module{OuronetPolicyV2} AQP-POOL)
-                (ref-P|FVT:module{OuronetPolicyV2} AQP-FVT)
-                (ref-P|VCT:module{OuronetPolicyV2} AQP-VCT)
-                (ref-P|ATSU:module{OuronetPolicyV2} ATSU)
-                (ref-P|MTX-AQP:module{OuronetPolicyV2} MTX-AQP)
-                (ref-P|DSA:module{OuronetPolicyV2} AQP-DSA)
-                (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
-                (mg:guard (create-capability-guard (P|TALOS-SUMMONER)))
-            )
-            (ref-P|TS01-A::P|A_AddIMP mg)
-            (ref-P|ANK::P|A_AddIMP mg)
-            (ref-P|SCR::P|A_AddIMP mg)
-            (ref-P|AQP::P|A_AddIMP mg)
-            (ref-P|FVT::P|A_AddIMP mg)
-            (ref-P|VCT::P|A_AddIMP mg)
-            (ref-P|ATSU::P|A_AddIMP mg)
-            ;; MTX-AQP defpact wrapper below — register the Talos summoner as an allowed IMC caller of MTX-AQP.
-            (ref-P|MTX-AQP::P|A_AddIMP mg)
-            ;; DSA vault/agency wrappers below — register the Talos summoner as an allowed IMC caller of AQP-DSA.
-            (ref-P|DSA::P|A_AddIMP mg)
-            ;;IGNIS RESTRUCTURE 2026-09-20: the collectors became protected X_ functions
-            ;;behind `P|UEV_IMC`, so every module that bills must be a registered IMP peer
-            ;;of IGNIS or the fee call dies with "None of the guards passed".
-            (ref-P|IGNIS::P|A_AddIMP mg)
-        )
-    )
 
     ;;<=========================================================================>
     ;;{3}  CST
@@ -577,92 +79,15 @@
     ;;<=========================================================================>
     ;;{4}  CAPABILITIES
     ;;{C1}  Trivial [bronze]
-    ;;
-    ;;
-    (defcap SECURE ()
-        true
-    )
     ;;{C2}  Simple
     ;;{C3}  Composed
-    (defcap AQP|C>STAKE-TRUE-FUNGIBLE
-        (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
-        @doc "AQP client event: stake TrueFungible. Composes P|TS only; sovereign recipe in FVT::CC_TrueFungibleStakeFlow."
-        @event
-        (compose-capability (P|TS))
-    )
-    (defcap AQP|C>UNSTAKE-TRUE-FUNGIBLE
-        (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
-        @doc "AQP client event: unstake TrueFungible. Composes P|TS only; sovereign recipe in FVT::CC_TrueFungibleStakeFlow."
-        @event
-        (compose-capability (P|TS))
-    )
-    (defcap AQP|C>STAKE-ORTO-FUNGIBLE
-        (patron:string pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal])
-        @doc "AQP client event: stake OrtoFungible. nonces and nonce-amounts are resolved before this cap \
-            \ (DPOF::UR_NoncesSupplies — whole nonce only) so the explorer records the exact legs moved."
-        @event
-        (compose-capability (P|TS))
-    )
-    (defcap AQP|C>UNSTAKE-ORTO-FUNGIBLE
-        (patron:string pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal])
-        @doc "AQP client event: unstake OrtoFungible. nonces and nonce-amounts resolved before this cap \
-            \ (DPOF::UR_NoncesSupplies — whole nonce only) for explorer visibility."
-        @event
-        (compose-capability (P|TS))
-    )
-    (defcap AQP|C>STAKE-SEMI-FUNGIBLE-COLLECTABLE
-        (patron:string pool-id:string owner-id:string beneficiary-id:string collectable-id:string nonces:[integer] nonce-amounts:[integer])
-        @doc "AQP client event: stake DPSF collectable (son=true). Composes P|TS only."
-        @event
-        (compose-capability (P|TS))
-    )
-    (defcap AQP|C>UNSTAKE-SEMI-FUNGIBLE-COLLECTABLE
-        (patron:string pool-id:string owner-id:string beneficiary-id:string collectable-id:string nonces:[integer] nonce-amounts:[integer])
-        @doc "AQP client event: unstake DPSF collectable (son=true). Composes P|TS only."
-        @event
-        (compose-capability (P|TS))
-    )
-    (defcap AQP|C>STAKE-NON-FUNGIBLE-COLLECTABLE
-        (patron:string pool-id:string owner-id:string beneficiary-id:string collectable-id:string nonces:[integer] nonce-amounts:[integer])
-        @doc "AQP client event: stake DPNF collectable (son=false). Composes P|TS only."
-        @event
-        (compose-capability (P|TS))
-    )
-    (defcap AQP|C>UNSTAKE-NON-FUNGIBLE-COLLECTABLE
-        (patron:string pool-id:string owner-id:string beneficiary-id:string collectable-id:string nonces:[integer] nonce-amounts:[integer])
-        @doc "AQP client event: unstake DPNF collectable (son=false). Composes P|TS only."
-        @event
-        (compose-capability (P|TS))
-    )
-    (defcap AQP|C>SYNC-TF-ANCHORS
-        (patron:string beneficiary-id:string dptf-id:string)
-        @doc "AQP client event: pool-agnostic TF anchor repair. Composes P|TS only."
-        @event
-        (compose-capability (P|TS))
-    )
-    (defcap AQP|C>SYNC-SEMI-FUNGIBLE-ANCHORS
-        (patron:string beneficiary-id:string dpsf-id:string)
-        @doc "AQP client event: pool-agnostic DPSF anchor repair. Composes P|TS only."
-        @event
-        (compose-capability (P|TS))
-    )
-    (defcap AQP|C>SYNC-NON-FUNGIBLE-ANCHORS
-        (patron:string beneficiary-id:string dpnf-id:string)
-        @doc "AQP client event: pool-agnostic DPNF anchor repair. Composes P|TS only."
-        @event
-        (compose-capability (P|TS))
-    )
-    (defcap AQP|C>ABORT-VACATE
-        (patron:string pool-id:string)
-        @doc "AQP client event: clear vacate-in-progress (stake stays disabled). Composes P|TS only."
-        @event
-        (compose-capability (P|TS))
-    )
     ;;{C4}  Ownership [gold]
 
     ;;<=========================================================================>
     ;;{5}  FUNCTIONS
     ;;{5.1}  Construct [CT/UDC]
+    ;;
+    ;;
     (defun CT_Bar ()
         (let
             (
@@ -672,2036 +97,1470 @@
         )
     )
     ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
-    (defun UC_ShortAccount:string (account:string)
+    ;;
+    ;;   (AQP-{ANK,SCORE,POOL,FVT,VCT,DSA}.URCi_*, via OI|UC_IfpFromOutputCumulator / OI|UDC_DynamicStoaCost),
+    ;;   so the local price-tier gates (UC_GasPrice / SIP|URC_* / SKP|URC_*) are no longer used here.
+    ;;
+    ;;[AQP-ANK] Anchors
+    (defun INFO_AQP-ANK|IssueTrueFungibleAnchor:object{OuronetInfoV2.ClientInfo}
+        (patron:string anchor-name:string dptf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dptf-amount:decimal)
+        @doc "Cost preview for AQP-ANK|C_IssueTrueFungibleAnchor. IGNIS 1000 (inline) + STOA 'standard' x(2 if acnoi else 1)."
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
             )
-            (ref-I|OURONET::OI|UC_ShortAccount account)
-        )
-    )
-    (defun UC_FormatStakeTrueFungibleResult:string
-        (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
-        @doc "Stake success text: self-stake when owner=beneficiary; else names short owner and beneficiary."
-        (if (= owner-id beneficiary-id)
-            (format "Successfully staked TrueFungible {} amount {} into Pool {} (self-stake, {}). "
-                [dptf-id amount pool-id (UC_ShortAccount owner-id)]
-            )
-            (format "Successfully staked TrueFungible {} amount {} into Pool {} for beneficiary {} (owner {}). "
-                [dptf-id amount pool-id (UC_ShortAccount beneficiary-id) (UC_ShortAccount owner-id)]
-            )
-        )
-    )
-    (defun UC_FormatUnstakeTrueFungibleResult:string
-        (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
-        @doc "Unstake success text: self-stake when owner=beneficiary; else names short owner and beneficiary."
-        (if (= owner-id beneficiary-id)
-            (format "Successfully unstaked TrueFungible {} amount {} from Pool {} (self-stake, {}). "
-                [dptf-id amount pool-id (UC_ShortAccount owner-id)]
-            )
-            (format "Successfully unstaked TrueFungible {} amount {} from Pool {} for beneficiary {} (owner {}). "
-                [dptf-id amount pool-id (UC_ShortAccount beneficiary-id) (UC_ShortAccount owner-id)]
-            )
-        )
-    )
-    (defun UC_FormatStakeOrtoFungibleResult:string
-        (pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonce-count:integer)
-        @doc "Stake OF success text (whole-nonce Transfer)."
-        (if (= owner-id beneficiary-id)
-            (format "Successfully staked OrtoFungible {} ({} whole nonces) into Pool {} (self-stake, {}). "
-                [
-                    dpof-id
-                    nonce-count
-                    pool-id
-                    (UC_ShortAccount owner-id)
-                ]
-            )
-            (format "Successfully staked OrtoFungible {} ({} whole nonces) into Pool {} for beneficiary {} (owner {}). "
-                [
-                    dpof-id
-                    nonce-count
-                    pool-id
-                    (UC_ShortAccount beneficiary-id)
-                    (UC_ShortAccount owner-id)
-                ]
-            )
-        )
-    )
-    (defun UC_FormatUnstakeOrtoFungibleResult:string
-        (pool-id:string owner-id:string dpof-id:string nonce-count:integer)
-        @doc "Unstake OF success text; beneficiary resolved from tracker in sovereign phase 1."
-        (format "Successfully unstaked OrtoFungible {} ({} whole nonces) from Pool {} (owner {}). "
-            [
-                dpof-id
-                nonce-count
-                pool-id
-                (UC_ShortAccount owner-id)
-            ]
-        )
-    )
-    (defun UC_FormatStakeCollectableResult:string
-        (
-            pool-id:string
-            owner-id:string
-            beneficiary-id:string
-            collectable-id:string
-            son:bool
-            nonce-count:integer
-        )
-        @doc "Stake collectable success text."
-        (if (= owner-id beneficiary-id)
-            (format "Successfully staked {} {} ({} nonces) into Pool {} (self-stake, {}). "
-                [
-                    (if son "DPSF" "DPNF")
-                    collectable-id
-                    nonce-count
-                    pool-id
-                    (UC_ShortAccount owner-id)
-                ]
-            )
-            (format "Successfully staked {} {} ({} nonces) into Pool {} for beneficiary {} (owner {}). "
-                [
-                    (if son "DPSF" "DPNF")
-                    collectable-id
-                    nonce-count
-                    pool-id
-                    (UC_ShortAccount beneficiary-id)
-                    (UC_ShortAccount owner-id)
-                ]
-            )
-        )
-    )
-    (defun UC_FormatUnstakeCollectableResult:string
-        (pool-id:string owner-id:string collectable-id:string son:bool nonce-count:integer)
-        @doc "Unstake collectable success text."
-        (format "Successfully unstaked {} {} ({} nonces) from Pool {} (owner {}). "
-            [
-                (if son "DPSF" "DPNF")
-                collectable-id
-                nonce-count
-                pool-id
-                (UC_ShortAccount owner-id)
-            ]
-        )
-    )
-    (defun UC_FormatVacateCollectableResult:string
-        (
-            pool-id:string
-            owner-id:string
-            beneficiary-id:string
-            collectable-id:string
-            son:bool
-            nonce-count:integer
-        )
-        @doc "Vacate collectable success text (pool-owner forced unstake)."
-        (format "Successfully vacated {} {} ({} nonces) from Pool {} (owner {} → beneficiary {}). "
-            [
-                (if son "DPSF" "DPNF")
-                collectable-id
-                nonce-count
-                pool-id
-                (UC_ShortAccount owner-id)
-                (UC_ShortAccount beneficiary-id)
-            ]
-        )
-    )
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;ADDED 2026-09-19. The generic-vault cost reader. It lives HERE, under {5.3} Read, and not
-    ;;beside the client function it prices: URCi_ is a reader, and the canonical section order
-    ;;puts every UR/URC/URH/URCi/INFO in this block regardless of what consumes it.
-    (defun URCi_IssueGenericEarningVault:object{IgnisCollectorV3.OutputCumulator}
-        (owner-konto:string vault-name:string stake-dptf-id:string reward-dptf-id:string)
-        @doc "Cost reader for AQP-FVT|C_IssueGenericEarningVault: the six component cumulators, \
-            \ concatenated exactly as the operation concatenates them."
-        ;;WHY IT COMPOSES RATHER THAN NAMING A PRICE. The operation is six core calls; its cost is
-        ;;whatever those six cost. Writing a standalone price here would be a SECOND definition of
-        ;;the same number, free to drift from the first -- the failure this codebase has found in
-        ;;its own artefacts repeatedly. Concatenating the same six readers the operation's own
-        ;;cumulators come from means the preview cannot disagree with the charge by construction.
-        ;;
-        ;;The component readers live in four different modules, and two of them are on RPS rather
-        ;;than FVT (AddScoreEntity, AddRewardLink) -- which is worth knowing, because looking for
-        ;;them on FVT beside the ops they price finds nothing.
-        (let*
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                ;;
-                (score-name:string (concat [vault-name "Score"]))
-                (pool-name:string (concat [vault-name "Pool"]))
-                (fvt-name:string (concat [vault-name "Vault"]))
-                (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
-                (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
-                (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
-            )
-            (ref-IGNIS::UDC_ConcatenateOutputCumulators
-                [
-                    (ref-SCR::URCi_IssueScore owner-konto [score-id])
-                    (ref-AQP::URCi_Issue [pool-id])
-                    (ref-AQP::URCi_AddScore [pool-id score-id])
-                    (ref-FVT::URCi_Issue owner-konto [fvt-id])
-                    ;;THE LAST TWO ARE BUILT HERE RATHER THAN CALLED, and the reason is specific.
-                    ;;RPS::URCi_AddScoreEntity and URCi_AddRewardLink resolve their active-account
-                    ;;with `UR_FVT|OwnerKonto fvt-id` -- a READ of the FVT row. For a PREVIEW of a
-                    ;;vault that does not exist yet, that row is absent and the reader aborts:
-                    ;;  No value found in table RPS_FVT|T|RewardAggregate for key: <name>Vault-...
-                    ;;A cost preview for a CREATION operation cannot depend on reading the thing it
-                    ;;is about to create. (Found by running it; the RT-K family is about exactly
-                    ;;this class of preview/exec divergence.)
-                    ;;
-                    ;;The PRICE is not the problem -- it is static, from the same price-table keys
-                    ;;below. Only the active-account came from the row, and here it is `owner-konto`,
-                    ;;which the caller supplies. So these two use the identical UC_IgnisPrice keys
-                    ;;and substitute the account. No price is restated; nothing can drift.
-                    (ref-IGNIS::UDC_ConstructOutputCumulator
-                        (ref-IGNIS::UC_IgnisPrice "AQP-FVT|C_AddScoreEntity" "add-score-entity")
-                        owner-konto (ref-IGNIS::URC_IsVirtualGasZero) [fvt-id score-id])
-                    (ref-IGNIS::UDC_ConstructOutputCumulator
-                        (ref-IGNIS::UC_IgnisPrice "AQP-FVT|C_AddRewardLink" "add-reward-link")
-                        owner-konto (ref-IGNIS::URC_IsVirtualGasZero)
-                        [fvt-id reward-dptf-id GV|COMMON_BAR])
-                ]
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Issue a True-Fungible (DPTF) anchor for pool boosting."
+                 (if acnoi "Creates a new BoostClass inline (2x STOA)." "Links to an existing BoostClass (1x STOA).")
+                 "Executes via TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor."]
+                [(format "Anchor '{}' issued on DPTF {}." [anchor-name dptf-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ANK::URCi_IssueAnchor "AQP-ANK|C_IssueTrueFungibleAnchor" [])))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-ANK::URCi_IssueAnchorStoa acnoi))
                 []
             )
         )
     )
-
-
-    ;;{5.4}  Validate [UEV/CAP]
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;Protection: Class 3 — Custom: P|TS
-    (defun AQP-POOL|XB_VacateTrueFungible:string
-        (patron:string pool-id:string)
-        @doc "Vacate rehaul — pool-owner vacate of a pool's TrueFungible leg only (one tx; used standalone or by \
-            \ the agnostic CC_FullVacate for a class-1 TF+OF pool). Owner enforced in VCT|C>VACATE; IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron (ref-VCT::XB_VacateTrueFungible pool-id))
-                (format "Successfully vacated the TrueFungible leg of Pool {}." [pool-id])
+    (defun INFO_AQP-ANK|IssueSemiFungibleAnchor:object{OuronetInfoV2.ClientInfo}
+        (patron:string anchor-name:string dpsf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpsf-nonce:integer)
+        @doc "Cost preview for AQP-ANK|C_IssueSemiFungibleAnchor. IGNIS 1000 + STOA 'standard' x(2 if acnoi else 1)."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Issue a Semi-Fungible (DPSF) anchor for pool boosting."
+                 (if acnoi "Creates a new BoostClass inline (2x STOA)." "Links to an existing BoostClass (1x STOA).")
+                 "Executes via TS02-C3.AQP-ANK|C_IssueSemiFungibleAnchor."]
+                [(format "Anchor '{}' issued on DPSF {} nonce {}." [anchor-name dpsf-id dpsf-nonce])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ANK::URCi_IssueAnchor "AQP-ANK|C_IssueSemiFungibleAnchor" [])))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-ANK::URCi_IssueAnchorStoa acnoi))
+                []
             )
         )
     )
-    ;;Protection: Class 3 — Custom: P|TS
-    (defun AQP-POOL|XB_VacateOrtoFungible:string
-        (patron:string pool-id:string dpof-id:string)
-        @doc "Vacate rehaul — pool-owner vacate of ONE OrtoFungible asset of a pool (one tx; standalone or per \
-            \ class-1 satellite). Owner enforced in VCT|C>VACATE; IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron (ref-VCT::XB_VacateOrtoFungible pool-id dpof-id))
-                (format "Successfully vacated OrtoFungible {} of Pool {}." [dpof-id pool-id])
+    (defun INFO_AQP-ANK|IssueNonFungibleAnchor:object{OuronetInfoV2.ClientInfo}
+        (patron:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-trait-key:string dpnf-trait-value:string)
+        @doc "Cost preview for AQP-ANK|C_IssueNonFungibleAnchor. IGNIS 1000 + STOA 'standard' x(2 if acnoi else 1)."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Issue a Non-Fungible (DPNF) trait-anchor for pool boosting."
+                 (if acnoi "Creates a new BoostClass inline (2x STOA)." "Links to an existing BoostClass (1x STOA).")
+                 "Executes via TS02-C3.AQP-ANK|C_IssueNonFungibleAnchor."]
+                [(format "Anchor '{}' issued on DPNF {} trait {}={}." [anchor-name dpnf-id dpnf-trait-key dpnf-trait-value])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ANK::URCi_IssueAnchor "AQP-ANK|C_IssueNonFungibleAnchor" [])))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-ANK::URCi_IssueAnchorStoa acnoi))
+                []
             )
         )
     )
-    ;;Protection: Class 3 — Custom: P|TS
-    (defun AQP-POOL|XB_VacateSemiFungible:string
-        (patron:string pool-id:string dpsf-id:string)
-        @doc "Vacate rehaul — pool-owner vacate of the DPSF (semi-fungible) collection of a class-3 pool (one tx). \
-            \ Owner enforced in VCT|C>VACATE; IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron (ref-VCT::XB_VacateSemiFungible pool-id dpsf-id))
-                (format "Successfully vacated SemiFungible {} of Pool {}." [dpsf-id pool-id])
+    (defun INFO_AQP-ANK|IssueNonFungibleSetAnchor:object{OuronetInfoV2.ClientInfo}
+        (patron:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-nonce-class:integer)
+        @doc "Cost preview for AQP-ANK|C_IssueNonFungibleSetAnchor. IGNIS 1000 + STOA 'standard' x(2 if acnoi else 1)."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Issue a Non-Fungible (DPNF) set-anchor (by nonce-class) for pool boosting."
+                 (if acnoi "Creates a new BoostClass inline (2x STOA)." "Links to an existing BoostClass (1x STOA).")
+                 "Executes via TS02-C3.AQP-ANK|C_IssueNonFungibleSetAnchor."]
+                [(format "Anchor '{}' issued on DPNF {} nonce-class {}." [anchor-name dpnf-id dpnf-nonce-class])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ANK::URCi_IssueAnchor "AQP-ANK|C_IssueNonFungibleSetAnchor" [])))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-ANK::URCi_IssueAnchorStoa acnoi))
+                []
             )
         )
     )
-    ;;Protection: Class 3 — Custom: P|TS
-    (defun AQP-POOL|XB_VacateNonFungible:string
-        (patron:string pool-id:string dpnf-id:string)
-        @doc "Vacate rehaul — pool-owner vacate of the DPNF (non-fungible) collection of a class-4 pool (one tx). \
-            \ Owner enforced in VCT|C>VACATE; IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron (ref-VCT::XB_VacateNonFungible pool-id dpnf-id))
-                (format "Successfully vacated NonFungible {} of Pool {}." [dpnf-id pool-id])
+    (defun INFO_AQP-ANK|RevokeAnchor:object{OuronetInfoV2.ClientInfo}
+        (patron:string anchor-id:string)
+        @doc "Cost preview for AQP-ANK|C_RevokeAnchor. IGNIS 'ignis|biggest' tier; no STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Revoke an anchor and update its BoostClass bookkeeping."
+                 "Executes via TS02-C3.AQP-ANK|C_RevokeAnchor."]
+                [(format "Anchor {} revoked." [anchor-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ANK::URCi_RevokeAnchor)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
             )
         )
     )
-    ;;{5.7}  User [A/C]
-    (defun AQP-DSA|C_DefineDelegationVault:string
-        (patron:string executor:string fvt-id:string model-id:string unit-score:integer)
-        @doc "DSA (Talos): bind a class-0 FVT as a delegation vault (score-entity model + unit-score); collects \
-            \ IGNIS on patron. Only the FVT owner may run it."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DSA:module{DsaV1} AQP-DSA)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-DSA::C_DefineDelegationVault patron executor fvt-id model-id unit-score)
-                    )
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (format "DSA vault defined on FVT {} (model {}, unit-score {})." [fvt-id model-id unit-score])
-            )
-        )
-    )
-    (defun AQP-DSA|C_SetOracleAuth:string
-        (patron:string executor:string fvt-id:string oracle-guard:guard)
-        @doc "DSA (Talos): owner authorizes the delegated oracle key for a vault + arms the 25h capture expiry; \
-            \ collects IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DSA:module{DsaV1} AQP-DSA)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-DSA::C_SetOracleAuth patron executor fvt-id oracle-guard)
-                    )
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (format "Oracle authority set + oracle-on armed on FVT {}." [fvt-id])
-            )
-        )
-    )
-    (defun AQP-DSA|C_OracleWrite:string
-        (patron:string fvt-id:string score-entity-id:string nodes:integer uptime:integer)
-        @doc "DSA (Talos): the delegated oracle writes an agency's daily {nodes, uptime} + recomputes its capture \
-            \ (fresh oracle-ts); collects IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DSA:module{DsaV1} AQP-DSA)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-DSA::C_OracleWrite patron fvt-id score-entity-id nodes uptime)
-                    )
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (format "Oracle wrote nodes {} / uptime {}‰ for agency {}." [nodes uptime score-entity-id])
-            )
-        )
-    )
-    (defun AQP-DSA|C_WithdrawRoyalty:string
-        (patron:string executor:string fvt-id:string reward-dptf-id:string)
-        @doc "DSA (Talos): the FVT owner withdraws the whole royalty pool of <reward-dptf-id> on vault <fvt-id> to \
-            \ the owner konto; collects IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DSA:module{DsaV1} AQP-DSA)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-DSA::C_WithdrawRoyalty patron executor fvt-id reward-dptf-id)
-                    )
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (format "Royalty pool of {} on FVT {} withdrawn to the owner." [reward-dptf-id fvt-id])
-            )
-        )
-    )
-    (defun AQP-DSA|C_BurnRoyalty:string
-        (patron:string executor:string fvt-id:string reward-dptf-id:string)
-        @doc "DSA (Talos): the FVT owner BURNS the whole royalty pool of <reward-dptf-id> on vault <fvt-id>; \
-            \ collects IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DSA:module{DsaV1} AQP-DSA)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-DSA::C_BurnRoyalty patron executor fvt-id reward-dptf-id)
-                    )
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (format "Royalty pool of {} on FVT {} burned." [reward-dptf-id fvt-id])
-            )
-        )
-    )
-    (defun AQP-DSA|C_FuelRoyalty:string
-        (patron:string executor:string fvt-id:string reward-dptf-id:string swpair:string)
-        @doc "DSA (Talos): the FVT owner FUELS <swpair> with the whole royalty pool of <reward-dptf-id> on vault \
-            \ <fvt-id> (adds liquidity, no LP mint); collects IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DSA:module{DsaV1} AQP-DSA)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-DSA::C_FuelRoyalty patron executor fvt-id reward-dptf-id swpair)
-                    )
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (format "Royalty pool of {} on FVT {} fueled into swpair {}." [reward-dptf-id fvt-id swpair])
-            )
-        )
-    )
-    (defun AQP-DSA|C_SetAgencyFee:string
-        (patron:string executor:string fvt-id:string score-entity-id:string fee-per-mille:integer)
-        @doc "DSA (Talos): the FVT owner changes a delegation agency's operator fee (reprices only future injects); \
-            \ collects IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DSA:module{DsaV1} AQP-DSA)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-DSA::C_SetAgencyFee patron executor fvt-id score-entity-id fee-per-mille)
-                    )
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (format "Agency {} fee set to {} per-mille." [score-entity-id fee-per-mille])
-            )
-        )
-    )
-    (defun AQP-DSA|A_ToggleExternalOracle:string (on:bool)
-        @doc "DSA (Talos): MODULE ADMIN (GOV) flip of the SINGULAR GLOBAL external-oracle switch for ALL agencies. \
-            \ No IGNIS billing (pure governance, master-signed, no OutputCumulator)."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-DSA:module{DsaV1} AQP-DSA)
-                )
-                (ref-DSA::A_ToggleExternalOracle on)
-                (format "Global external-oracle switch set to {}." [on])
-            )
-        )
-    )
-    (defun AQP-DSA|A_SetOracleValidity:string (seconds:integer)
-        @doc "DSA (Talos): MODULE ADMIN (GOV) set of the GLOBAL oracle-validity window (freshness horizon, seconds). \
-            \ No IGNIS billing (pure governance, master-signed, no OutputCumulator)."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-DSA:module{DsaV1} AQP-DSA)
-                )
-                (ref-DSA::A_SetOracleValidity seconds)
-                (format "Global oracle-validity window set to {} seconds." [seconds])
-            )
-        )
-    )
-    ;;
-    (defun AQP-ANK|C_RevokeBoostClass:string
+    (defun INFO_AQP-ANK|RevokeBoostClass:object{OuronetInfoV2.ClientInfo}
         (patron:string boost-class-id:string)
-        @doc "Revokes an empty BoostClass."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ANK::C_RevokeBoostClass boost-class-id)
-                )
-                (format "Successfully revoked BoostClass {}." [boost-class-id])
+        @doc "Cost preview for AQP-ANK|C_RevokeBoostClass. IGNIS 'ignis|biggest' tier; no STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Revoke an empty BoostClass."
+                 "Executes via TS02-C3.AQP-ANK|C_RevokeBoostClass."]
+                [(format "BoostClass {} revoked." [boost-class-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ANK::URCi_RevokeBoostClass)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
             )
         )
     )
-    (defun AQP-ANK|C_IssueTrueFungibleAnchor:string
-        (patron:string executor:string anchor-name:string dptf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dptf-amount:decimal)
-        @doc "Issues a DPTF Anchor. acnoi=true creates BoostClass inline (2x STOA); false links to existing (1x STOA)."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-ANK::C_IssueTrueFungibleAnchor 
-                            patron executor anchor-name dptf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dptf-amount
-                        )
-                    )
-                    (out:[string] (at "output" ico))
-                    (anchor-id:string (at 0 out))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                (if acnoi
-                    (format "Successfully issued TrueFungible Anchor {} (new BoostClass {}) for {}." [anchor-id (at 1 out) dptf-id])
-                    (format "Successfully issued TrueFungible Anchor {} for {}." [anchor-id dptf-id])
-                )
-            )
-        )
-    )
-    (defun AQP-ANK|C_IssueSemiFungibleAnchor:string
-        (patron:string executor:string anchor-name:string dpsf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpsf-nonce:integer)
-        @doc "Issues a DPSF Anchor. acnoi=true creates BoostClass inline (2x STOA); false links to existing (1x STOA)."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-ANK::C_IssueSemiFungibleAnchor 
-                            patron executor anchor-name dpsf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dpsf-nonce
-                        )
-                    )
-                    (out:[string] (at "output" ico))
-                    (anchor-id:string (at 0 out))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                (if acnoi
-                    (format "Successfully issued SemiFungible Anchor {} (new BoostClass {}) for {}." [anchor-id (at 1 out) dpsf-id])
-                    (format "Successfully issued SemiFungible Anchor {} for {}." [anchor-id dpsf-id])
-                )
-            )
-        )
-    )
-    (defun AQP-ANK|C_IssueNonFungibleAnchor:string
-        (patron:string executor:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-trait-key:string dpnf-trait-value:string)
-        @doc "Issues a DPNF trait-Anchor. acnoi=true creates BoostClass inline (2x STOA); false links to existing (1x STOA)."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-ANK::C_IssueNonFungibleAnchor 
-                            patron executor anchor-name dpnf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dpnf-trait-key dpnf-trait-value
-                        )
-                    )
-                    (out:[string] (at "output" ico))
-                    (anchor-id:string (at 0 out))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                (if acnoi
-                    (format "Successfully issued NonFungible Anchor {} (new BoostClass {}) for {}." [anchor-id (at 1 out) dpnf-id])
-                    (format "Successfully issued NonFungible Anchor {} for {}." [anchor-id dpnf-id])
-                )
-            )
-        )
-    )
-    (defun AQP-ANK|C_IssueNonFungibleSetAnchor:string
-        (patron:string executor:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-nonce-class:integer)
-        @doc "Issues a DPNF set-Anchor. acnoi=true creates BoostClass inline (2x STOA); false links to existing (1x STOA)."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-ANK::C_IssueNonFungibleSetAnchor
-                            patron executor anchor-name dpnf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dpnf-nonce-class
-                        )
-                    )
-                    (out:[string] (at "output" ico))
-                    (anchor-id:string (at 0 out))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                (if acnoi
-                    (format "Successfully issued NonFungible Set Anchor {} (new BoostClass {}) for {}." [anchor-id (at 1 out) dpnf-id])
-                    (format "Successfully issued NonFungible Set Anchor {} for {}." [anchor-id dpnf-id])
-                )
-            )
-        )
-    )
-    (defun AQP-ANK|C_RevokeAnchor:string (patron:string anchor-id:string)
-        @doc "Revokes an existing Anchor, removing it from its BoostClass and AssetAnchors bookkeeping."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron 
-                    (ref-ANK::C_RevokeAnchor anchor-id)
-                )
-                (format "Successfully revoked Anchor {}." [anchor-id])
-            )
-        )
-    )
-    (defun AQP-SCR|C_IssueLiquidityScore:string
+    ;;
+    ;;[AQP-SCR] Scores
+    (defun INFO_AQP-SCR|IssueLiquidityScore:object{OuronetInfoV2.ClientInfo}
         (patron:string owner-konto:string score-name:string precision:integer lp-denominator:string mx-frozen:decimal mx-sleeping:decimal)
-        @doc "Issues score-class 0 (LP) in AQP-SCORE and collects resulting IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-SCR::C_IssueLiquidityScore patron owner-konto score-name precision lp-denominator mx-frozen mx-sleeping)
-                )
-                (format "Successfully issued Liquidity Score {} for owner {}." [score-name owner-konto])
+        @doc "Cost preview for AQP-SCR|C_IssueLiquidityScore. IGNIS GAS|ISSUE-SCORE + STOA 'smart'."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Create a class-0 (Liquidity) score." "Executes via TS02-C3.AQP-SCR|C_IssueLiquidityScore."]
+                [(format "Liquidity score '{}' issued for {}." [score-name owner-konto])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_IssueScore owner-konto [])))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (AQP-SCORE.URCi_IssueScoreStoa))
+                [])
         )
     )
-    (defun AQP-SCR|C_IssueTrueFungibleScore:string
+    (defun INFO_AQP-SCR|IssueTrueFungibleScore:object{OuronetInfoV2.ClientInfo}
         (patron:string owner-konto:string score-name:string precision:integer mx-frozen:decimal)
-        @doc "Issues score-class 1 (DPTF) in AQP-SCORE and collects resulting IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-SCR::C_IssueTrueFungibleScore patron owner-konto score-name precision mx-frozen)
-                )
-                (format "Successfully issued TrueFungible Score {} for owner {}." [score-name owner-konto])
+        @doc "Cost preview for AQP-SCR|C_IssueTrueFungibleScore. IGNIS GAS|ISSUE-SCORE + STOA 'smart'."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Create a class-1 (True-Fungible) score." "Executes via TS02-C3.AQP-SCR|C_IssueTrueFungibleScore."]
+                [(format "True-Fungible score '{}' issued for {}." [score-name owner-konto])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_IssueScore owner-konto [])))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (AQP-SCORE.URCi_IssueScoreStoa))
+                [])
         )
     )
-    (defun AQP-SCR|C_IssueOrtoFungibleScore:string
+    (defun INFO_AQP-SCR|IssueOrtoFungibleScore:object{OuronetInfoV2.ClientInfo}
         (patron:string owner-konto:string score-name:string precision:integer mx-sleeping:decimal mx-hibernated:decimal)
-        @doc "Issues score-class 2 (DPOF) in AQP-SCORE and collects resulting IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-SCR::C_IssueOrtoFungibleScore patron owner-konto score-name precision mx-sleeping mx-hibernated)
-                )
-                (format "Successfully issued OrtoFungible Score {} for owner {}." [score-name owner-konto])
+        @doc "Cost preview for AQP-SCR|C_IssueOrtoFungibleScore. IGNIS GAS|ISSUE-SCORE + STOA 'smart'."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Create a class-2 (Orto-Fungible / special) score." "Executes via TS02-C3.AQP-SCR|C_IssueOrtoFungibleScore."]
+                [(format "Orto-Fungible score '{}' issued for {}." [score-name owner-konto])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_IssueScore owner-konto [])))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (AQP-SCORE.URCi_IssueScoreStoa))
+                [])
         )
     )
-    (defun AQP-SCR|C_IssueSemiFungibleScore:string
+    (defun INFO_AQP-SCR|IssueSemiFungibleScore:object{OuronetInfoV2.ClientInfo}
         (patron:string owner-konto:string score-name:string precision:integer sft-equality:bool)
-        @doc "Issues score-class 3 (DPSF) in AQP-SCORE and collects resulting IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-SCR::C_IssueSemiFungibleScore patron owner-konto score-name precision sft-equality)
-                )
-                (format "Successfully issued SemiFungible Score {} for owner {}." [score-name owner-konto])
+        @doc "Cost preview for AQP-SCR|C_IssueSemiFungibleScore. IGNIS GAS|ISSUE-SCORE + STOA 'smart'."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Create a class-3 (Semi-Fungible) score." "Executes via TS02-C3.AQP-SCR|C_IssueSemiFungibleScore."]
+                [(format "Semi-Fungible score '{}' issued for {}." [score-name owner-konto])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_IssueScore owner-konto [])))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (AQP-SCORE.URCi_IssueScoreStoa))
+                [])
         )
     )
-    (defun AQP-SCR|C_IssueNonFungibleScore:string
+    (defun INFO_AQP-SCR|IssueNonFungibleScore:object{OuronetInfoV2.ClientInfo}
         (patron:string owner-konto:string score-name:string precision:integer nft-score-model:integer)
-        @doc "Issues score-class 4 (DPNF) in AQP-SCORE and collects resulting IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-SCR::C_IssueNonFungibleScore patron owner-konto score-name precision nft-score-model)
-                )
-                (format "Successfully issued NonFungible Score {} for owner {}." [score-name owner-konto])
+        @doc "Cost preview for AQP-SCR|C_IssueNonFungibleScore. IGNIS GAS|ISSUE-SCORE + STOA 'smart'."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Create a class-4 (Non-Fungible) score." "Executes via TS02-C3.AQP-SCR|C_IssueNonFungibleScore."]
+                [(format "Non-Fungible score '{}' issued for {}." [score-name owner-konto])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_IssueScore owner-konto [])))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (AQP-SCORE.URCi_IssueScoreStoa))
+                [])
         )
     )
-    (defun AQP-SCR|C_RotateScoreOwnership:string (patron:string score-id:string new-owner-konto:string)
-        @doc "Rotates score ownership in AQP-SCORE and collects resulting IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron (ref-SCR::C_RotateOwnership score-id new-owner-konto))
-                (format "Successfully rotated ownership for score {} to {}." [score-id new-owner-konto])
+    (defun INFO_AQP-SCR|RotateScoreOwnership:object{OuronetInfoV2.ClientInfo}
+        (patron:string score-id:string new-owner-konto:string)
+        @doc "Cost preview for AQP-SCR|C_RotateScoreOwnership. IGNIS 'ignis|medium' tier; no STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Transfer a score's owner-konto." "Executes via TS02-C3.AQP-SCR|C_RotateScoreOwnership."]
+                [(format "Score {} ownership moved to {}." [score-id new-owner-konto])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_RotateOwnership score-id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
         )
     )
-    (defun AQP-SCR|C_ControlScore:string (patron:string score-id:string new-can-upgrade:bool new-can-change-owner:bool)
-        @doc "Updates score control flags in AQP-SCORE and collects resulting IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-SCR::C_Control score-id new-can-upgrade new-can-change-owner)
-                )
-                (format "Successfully updated control flags for score {}." [score-id])
+    (defun INFO_AQP-SCR|ControlScore:object{OuronetInfoV2.ClientInfo}
+        (patron:string score-id:string new-can-upgrade:bool new-can-change-owner:bool)
+        @doc "Cost preview for AQP-SCR|C_ControlScore. IGNIS 'ignis|medium' tier; no STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Set a score's can-upgrade / can-change-owner flags." "Executes via TS02-C3.AQP-SCR|C_ControlScore."]
+                [(format "Score {} control flags updated." [score-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_Control score-id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
         )
     )
-    (defun AQP-SCR|C_CreateScoreBoostClassLink:string (patron:string score-id:string boost-class-id:string)
-        @doc "Creates score -> boost-class link in AQP-SCORE and collects resulting IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron (ref-SCR::C_CreateBoostClassLink score-id boost-class-id))
-                (format "Successfully linked score {} to BoostClass {}." [score-id boost-class-id])
+    (defun INFO_AQP-SCR|CreateScoreBoostClassLink:object{OuronetInfoV2.ClientInfo}
+        (patron:string score-id:string boost-class-id:string)
+        @doc "Cost preview for AQP-SCR|C_CreateScoreBoostClassLink. IGNIS 'ignis|biggest' tier; no STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Link a score to a BoostClass (once)." "Executes via TS02-C3.AQP-SCR|C_CreateScoreBoostClassLink."]
+                [(format "Score {} linked to BoostClass {}." [score-id boost-class-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_CreateBoostClassLink score-id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
         )
     )
-    (defun AQP-SCR|C_CreateScoreBoostLink:string (patron:string score-id:string boost-score-id:string)
-        @doc "Creates score -> boost-score link in AQP-SCORE and collects resulting IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron (ref-SCR::C_CreateBoostLink score-id boost-score-id))
-                (format "Successfully linked score {} to boost score {}." [score-id boost-score-id])
+    (defun INFO_AQP-SCR|CreateScoreBoostLink:object{OuronetInfoV2.ClientInfo}
+        (patron:string score-id:string boost-score-id:string)
+        @doc "Cost preview for AQP-SCR|C_CreateScoreBoostLink. IGNIS 'ignis|biggest' tier; no STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Link a score to a boost-score (once)." "Executes via TS02-C3.AQP-SCR|C_CreateScoreBoostLink."]
+                [(format "Score {} boost-linked to {}." [score-id boost-score-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_CreateBoostLink score-id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
         )
     )
-    (defun AQP-SCR|C_EnableDebBoost:string (patron:string score-id:string)
-        @doc "Enables irreversible DEB boost on the score row. Medium IGNIS cost; no native STOA."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron (ref-SCR::C_EnableDebBoost score-id))
-                (format "Successfully enabled DEB boost for score {}." [score-id])
+    (defun INFO_AQP-SCR|EnableDebBoost:object{OuronetInfoV2.ClientInfo}
+        (patron:string score-id:string)
+        @doc "Cost preview for AQP-SCR|C_EnableDebBoost. IGNIS 'ignis|medium' tier; no STOA. Irreversible."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Enable deb-boost on a score (irreversible)." "Executes via TS02-C3.AQP-SCR|C_EnableDebBoost."]
+                [(format "Score {} deb-boost enabled." [score-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_EnableDebBoost score-id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
         )
     )
-    (defun AQP-SCR|C_IssueTriplet:string
-        (patron:string executor:string bronze-score-id:string silver-score-id:string golden-score-id:string)
-        @doc "Issues SCR triplet bundle T|bronze|silver|golden and collects IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-SCR::C_IssueTriplet patron executor bronze-score-id silver-score-id golden-score-id)
-                    )
-                    (out:[string] (at "output" ico))
-                    (triplet-id:string (at 0 out))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (format "Successfully issued triplet {}." [triplet-id])
+    (defun INFO_AQP-SCR|IssueTriplet:object{OuronetInfoV2.ClientInfo}
+        (patron:string bronze-score-id:string silver-score-id:string golden-score-id:string)
+        @doc "Cost preview for AQP-SCR|C_IssueTriplet. IGNIS GAS|ISSUE-TRIPLET; no STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Bundle three scores into one triplet (T|bronze|silver|golden)." "Executes via TS02-C3.AQP-SCR|C_IssueTriplet."]
+                [(format "Triplet issued from {} / {} / {}." [bronze-score-id silver-score-id golden-score-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_IssueTriplet silver-score-id [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
         )
     )
-    (defun AQP-SCR|C_IssueSingleScoreModel:string
-        (patron:string executor:string model-name:string score-class:integer collectable-id:string precision:integer nonces:[integer] nonce-score-values:[decimal] boost-class-id:string)
-        @doc "Defines a SINGLE score-entity model in AQP-SCORE and collects IGNIS on patron. Returns the model-id."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-SCR::C_IssueSingleScoreModel patron executor model-name score-class collectable-id precision nonces nonce-score-values boost-class-id)
-                    )
-                    (model-id:string (at 0 (at "output" ico)))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (format "Successfully defined single score-entity model {}." [model-id])
+    (defun INFO_AQP-SCR|IssueSingleScoreModel:object{OuronetInfoV2.ClientInfo}
+        (patron:string model-name:string score-class:integer collectable-id:string precision:integer nonces:[integer] nonce-score-values:[decimal])
+        @doc "Cost preview for AQP-SCR|C_IssueSingleScoreModel. IGNIS GAS|ISSUE-SCORE-MODEL; no STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Define a SINGLE score-entity model." "Executes via TS02-C3.AQP-SCR|C_IssueSingleScoreModel."]
+                [(format "Single score model '{}' defined (class {})." [model-name score-class])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_IssueScoreModel "AQP-SCR|C_IssueSingleScoreModel" patron [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
         )
     )
-    (defun AQP-SCR|C_CombineTripletScoreModel:string
-        (patron:string executor:string model-name:string bronze-model-id:string silver-model-id:string golden-model-id:string)
-        @doc "Combines three single models into a TRIPLET score-entity model in AQP-SCORE and collects IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-SCR::C_CombineTripletScoreModel patron executor model-name bronze-model-id silver-model-id golden-model-id)
-                    )
-                    (model-id:string (at 0 (at "output" ico)))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (format "Successfully combined triplet score-entity model {}." [model-id])
+    (defun INFO_AQP-SCR|CombineTripletScoreModel:object{OuronetInfoV2.ClientInfo}
+        (patron:string model-name:string bronze-model-id:string silver-model-id:string golden-model-id:string)
+        @doc "Cost preview for AQP-SCR|C_CombineTripletScoreModel. IGNIS GAS|ISSUE-SCORE-MODEL; no STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Combine three SINGLE models into a TRIPLET model." "Executes via TS02-C3.AQP-SCR|C_CombineTripletScoreModel."]
+                [(format "Triplet score model '{}' combined." [model-name])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_CombineTripletModel patron [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
         )
     )
-    (defun AQP-SCR|C_IssueScoreFromModel:string (patron:string owner-konto:string model-id:string agency-name:string)
-        @doc "FACTORY (Talos): issue a conforming score entity from <model-id> for owner-konto; collects IGNIS on \
-            \ patron. Returns the (score | triplet) id."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-SCR::C_IssueScoreFromModel patron owner-konto model-id agency-name)
-                    )
-                    (entity-id:string (at 0 (at "output" ico)))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (format "Successfully issued score entity {} from model {}." [entity-id model-id])
+    (defun INFO_AQP-SCR|IssueScoreFromModel:object{OuronetInfoV2.ClientInfo}
+        (patron:string owner-konto:string model-id:string agency-name:string)
+        @doc "Cost preview for AQP-SCR|C_IssueScoreFromModel. IGNIS GAS|ISSUE-SCORE-MODEL; no STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Issue a score/triplet entity conforming to a model." "Executes via TS02-C3.AQP-SCR|C_IssueScoreFromModel."]
+                [(format "Entity '{}' issued from model {} for {}." [agency-name model-id owner-konto])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_IssueScoreModel "AQP-SCR|C_IssueScoreFromModel" patron [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
         )
     )
-    (defun AQP-SCR|C_IssueSemiFungibleScoreDefinition:string
+    (defun INFO_AQP-SCR|IssueSemiFungibleScoreDefinition:object{OuronetInfoV2.ClientInfo}
         (patron:string score-id:string dpsf-id:string nonces:[integer] nonce-score-values:[decimal])
-        @doc "Writes DPSF nonce score definitions in AQP-SCORE and collects resulting IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-SCR::C_IssueSemiFungibleScoreDefinition score-id dpsf-id nonces nonce-score-values)
-                )
-                (format "Successfully issued SemiFungible score definitions for score {} and dpsf-id {}." [score-id dpsf-id])
+        @doc "Cost preview for AQP-SCR|C_IssueSemiFungibleScoreDefinition. IGNIS = count × 'ignis|big'; no STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Write Semi-Fungible score definition rows (one per nonce)." "Executes via TS02-C3.AQP-SCR|C_IssueSemiFungibleScoreDefinition."]
+                [(format "Wrote {} SF score-definition rows on score {}." [(length nonces) score-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_IssueSemiFungibleScoreDefinition score-id nonces)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
         )
     )
-    (defun AQP-SCR|C_IssueNonFungibleScoreDefinition:string
+    (defun INFO_AQP-SCR|IssueNonFungibleScoreDefinition:object{OuronetInfoV2.ClientInfo}
         (patron:string score-id:string dpnf-id:string trait-keys:[string] trait-values:[string] trait-score-values:[decimal])
-        @doc "Writes DPNF trait score definitions in AQP-SCORE and collects resulting IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-SCR::C_IssueNonFungibleScoreDefinition score-id dpnf-id trait-keys trait-values trait-score-values)
-                )
-                (format "Successfully issued NonFungible score definitions for score {} and dpnf-id {}." [score-id dpnf-id])
+        @doc "Cost preview for AQP-SCR|C_IssueNonFungibleScoreDefinition. IGNIS = count × 'ignis|biggest'; no STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Write Non-Fungible trait-score definition rows (one per trait)." "Executes via TS02-C3.AQP-SCR|C_IssueNonFungibleScoreDefinition."]
+                [(format "Wrote {} NF trait-score rows on score {}." [(length trait-keys) score-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_IssueNonFungibleScoreDefinition score-id trait-keys)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
         )
     )
-    (defun AQP-SCR|C_IssueNonFungibleSetScoreDefinition:string
+    (defun INFO_AQP-SCR|IssueNonFungibleSetScoreDefinition:object{OuronetInfoV2.ClientInfo}
         (patron:string score-id:string dpnf-id:string dpnf-nonce-classes:[integer] class-score-values:[decimal])
-        @doc "Writes DPNF set-mode (nonce-class) score definitions in AQP-SCORE and collects resulting IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-SCR::C_IssueNonFungibleSetScoreDefinition score-id dpnf-id dpnf-nonce-classes class-score-values)
-                )
-                (format "Successfully issued NonFungible set score definitions for score {} and dpnf-id {}." [score-id dpnf-id])
+        @doc "Cost preview for AQP-SCR|C_IssueNonFungibleSetScoreDefinition. IGNIS = count × 'ignis|biggest'; no STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
-        )
-    )
-    (defun AQP-POOL|C_Issue:string
-        (patron:string executor:string pool-name:string asset-id:string aqp-class:integer)
-        @doc "Issues an acquisition pool (aqp-class + canonical native asset-id) and collects IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-AQP::C_Issue patron executor pool-name asset-id aqp-class)
-                    )
-                    (out:[string] (at "output" ico))
-                    (pool-id:string (at 0 out))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                (format "Successfully issued Acquisition Pool {} (class {} for asset {})." [pool-id aqp-class asset-id])
-            )
-        )
-    )
-    (defun AQP-POOL|C_AddScore:string
-        (patron:string executor:string pool-id:string score-id:string)
-        @doc "Assigns score-id to the first free slot on pool-id; collects IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-AQP::C_AddScore patron executor pool-id score-id)
-                )
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                (format "Successfully assigned Score {} to Pool {}." [score-id pool-id])
-            )
-        )
-    )
-    (defun AQP-POOL|C_RevokeScore:string
-        (patron:string executor:string pool-id:string score-id:string)
-        @doc "Revokes score-id from pool-id (compact slots, clear aqpool-link); collects IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-AQP::C_RevokeScore patron executor pool-id score-id)
-                )
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                (format "Successfully revoked Score {} from Pool {}." [score-id pool-id])
-            )
-        )
-    )
-    (defun AQP-POOL|C_DisablePoolStake:string
-        (patron:string executor:string pool-id:string)
-        @doc "Pool owner pauses new stakes (stake-enabled → false); collects IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-AQP::C_DisablePoolStake patron executor pool-id)
-                )
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                (format "Successfully disabled staking on Pool {}." [pool-id])
-            )
-        )
-    )
-    (defun AQP-POOL|C_EnablePoolStake:string
-        (patron:string executor:string pool-id:string)
-        @doc "Pool owner re-enables new stakes (stake-enabled → true); collects IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-AQP::C_EnablePoolStake patron executor pool-id)
-                )
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                (format "Successfully enabled staking on Pool {}." [pool-id])
-            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Write Non-Fungible SET score definition rows (one per nonce-class)." "Executes via TS02-C3.AQP-SCR|C_IssueNonFungibleSetScoreDefinition."]
+                [(format "Wrote {} NF set score-definition rows on score {}." [(length dpnf-nonce-classes) score-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_IssueNonFungibleSetScoreDefinition score-id dpnf-nonce-classes)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
         )
     )
     ;;
-    (defun AQP-POOL|CC_StakeTrueFungible:string
-        (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
-        @doc "Stake DPTF (or native|F| LP) into pool-id. Talos client shell: event cap + FVT::CC_TrueFungibleStakeFlow direction=true."
-        (with-capability (AQP|C>STAKE-TRUE-FUNGIBLE patron pool-id owner-id beneficiary-id dptf-id amount)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::CC_TrueFungibleStakeFlow pool-id owner-id beneficiary-id dptf-id amount true)
-                )
-                (UC_FormatStakeTrueFungibleResult pool-id owner-id beneficiary-id dptf-id amount)
-            )
-        )
-    )
-    (defun AQP-POOL|CC_UnstakeTrueFungible:string
-        (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
-        @doc "Unstake DPTF from pool-id. Talos client shell: event cap + FVT::CC_TrueFungibleStakeFlow direction=false."
-        (with-capability (AQP|C>UNSTAKE-TRUE-FUNGIBLE patron pool-id owner-id beneficiary-id dptf-id amount)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::CC_TrueFungibleStakeFlow pool-id owner-id beneficiary-id dptf-id amount false)
-                )
-                (UC_FormatUnstakeTrueFungibleResult pool-id owner-id beneficiary-id dptf-id amount)
-            )
-        )
-    )
-    (defun AQP-POOL|CC_StakeOrtoFungible:string
-        (
-            patron:string
-            pool-id:string
-            owner-id:string
-            beneficiary-id:string
-            dpof-id:string
-            nonces:[integer]
-        )
-        @doc "Stake whole DPOF nonces via C_Transfer. Poll DPOF::UR_NoncesSupplies, then @event cap with resolved legs."
+    ;;[AQP-POOL] Pools (config)
+    (defun INFO_AQP-POOL|Issue:object{OuronetInfoV2.ClientInfo}
+        (patron:string pool-name:string asset-id:string aqp-class:integer)
+        @doc "Cost preview for AQP-POOL|C_Issue. IGNIS GAS|ISSUE-POOL + STOA 'smart'."
         (let
             (
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                ;;
-                (nonce-count:integer (length nonces))
-                (nonce-amounts:[decimal] (ref-DPOF::UR_NoncesSupplies dpof-id nonces))
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
-            (with-capability (AQP|C>STAKE-ORTO-FUNGIBLE patron pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts)
-                (let
-                    (
-                        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                    )
-                    (ref-IGNIS::XE_CollectIgnis patron
-                        (ref-FVT::CC_OrtoFungibleStakeFlow
-                            pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts true
-                        )
-                    )
-                    (UC_FormatStakeOrtoFungibleResult pool-id owner-id beneficiary-id dpof-id nonce-count)
-                )
-            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Create a new staking pool over an asset." "Executes via TS02-C3.AQP-POOL|C_Issue."]
+                [(format "Pool '{}' created over asset {} (class {})." [pool-name asset-id aqp-class])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-POOL.URCi_Issue [])))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (AQP-POOL.URCi_IssueStoa))
+                [])
         )
     )
-    (defun AQP-POOL|CC_UnstakeOrtoFungible:string
-        (
-            patron:string
-            pool-id:string
-            owner-id:string
-            beneficiary-id:string
-            dpof-id:string
-            nonces:[integer]
-        )
-        @doc "Unstake whole DPOF nonces via C_Transfer from the (owner, beneficiary) row. M5: beneficiary-id is \
-            \ caller-supplied (self OR foreign) so the exact staked row is located — mirrors TF. Poll UR_NoncesSupplies, \
-            \ then @event cap with resolved legs."
+    (defun INFO_AQP-POOL|AddScore:object{OuronetInfoV2.ClientInfo}
+        (patron:string pool-id:string score-id:string)
+        @doc "Cost preview for AQP-POOL|C_AddScore. IGNIS GAS|ADD-SCORE; no STOA."
         (let
             (
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                ;;
-                (nonce-count:integer (length nonces))
-                (nonce-amounts:[decimal] (ref-DPOF::UR_NoncesSupplies dpof-id nonces))
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
-            (with-capability (AQP|C>UNSTAKE-ORTO-FUNGIBLE patron pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts)
-                (let
-                    (
-                        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                    )
-                    (ref-IGNIS::XE_CollectIgnis patron
-                        (ref-FVT::CC_OrtoFungibleStakeFlow
-                            pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts false
-                        )
-                    )
-                    (UC_FormatUnstakeOrtoFungibleResult pool-id owner-id dpof-id nonce-count)
-                )
-            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Assign a score to the pool's first free slot." "Executes via TS02-C3.AQP-POOL|C_AddScore."]
+                [(format "Score {} added to pool {}." [score-id pool-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-POOL.URCi_AddScore [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
         )
     )
-    ;;
-    (defun AQP-POOL|CC_StakeSemiFungibleCollectable:string
-        (
-            patron:string
-            pool-id:string
-            owner-id:string
-            beneficiary-id:string
-            collectable-id:string
-            nonces:[integer]
-        )
-        @doc "Stake DPSF collectable (son=true). Poll DPDC::UR_AccountNoncesSupplies, then FVT::CC_CollectableStakeFlow."
+    (defun INFO_AQP-POOL|RevokeScore:object{OuronetInfoV2.ClientInfo}
+        (patron:string pool-id:string score-id:string)
+        @doc "Cost preview for AQP-POOL|C_RevokeScore. IGNIS GAS|REVOKE-SCORE; no STOA."
         (let
             (
-                (ref-DPDC:module{DpdcV2} DPDC)
-                ;;
-                (nonce-count:integer (length nonces))
-                (nonce-amounts:[integer] (ref-DPDC::UR_AccountNoncesSupplies owner-id collectable-id true nonces))
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
-            (with-capability
-                (AQP|C>STAKE-SEMI-FUNGIBLE-COLLECTABLE
-                    patron pool-id owner-id beneficiary-id collectable-id nonces nonce-amounts
-                )
-                (let
-                    (
-                        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                    )
-                    (ref-IGNIS::XE_CollectIgnis patron
-                        (ref-FVT::CC_CollectableStakeFlow
-                            pool-id owner-id beneficiary-id collectable-id true nonces nonce-amounts true
-                        )
-                    )
-                    (UC_FormatStakeCollectableResult
-                        pool-id owner-id beneficiary-id collectable-id true nonce-count
-                    )
-                )
-            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Clear a score from its pool slot." "Executes via TS02-C3.AQP-POOL|C_RevokeScore."]
+                [(format "Score {} revoked from pool {}." [score-id pool-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-POOL.URCi_RevokeScore [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
         )
     )
-    (defun AQP-POOL|CC_UnstakeSemiFungibleCollectable:string
-        (
-            patron:string
-            pool-id:string
-            owner-id:string
-            beneficiary-id:string
-            collectable-id:string
-            nonces:[integer]
-            nonce-amounts:[integer]
-        )
-        @doc "Unstake DPSF collectable (son=true) from the (owner, beneficiary) row. M5: beneficiary-id caller-supplied \
-            \ (self OR foreign) so the exact staked row is located — mirrors TF."
-        (let
-            (
-                (nonce-count:integer (length nonces))
-            )
-            (with-capability
-                (AQP|C>UNSTAKE-SEMI-FUNGIBLE-COLLECTABLE
-                    patron pool-id owner-id beneficiary-id collectable-id nonces nonce-amounts
-                )
-                (let
-                    (
-                        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                    )
-                    (ref-IGNIS::XE_CollectIgnis patron
-                        (ref-FVT::CC_CollectableStakeFlow
-                            pool-id owner-id beneficiary-id collectable-id true nonces nonce-amounts false
-                        )
-                    )
-                    (UC_FormatUnstakeCollectableResult pool-id owner-id collectable-id true nonce-count)
-                )
-            )
-        )
-    )
-    (defun AQP-POOL|CC_StakeNonFungibleCollectable:string
-        (
-            patron:string
-            pool-id:string
-            owner-id:string
-            beneficiary-id:string
-            collectable-id:string
-            nonces:[integer]
-        )
-        @doc "Stake DPNF collectable (son=false). Poll DPDC::UR_AccountNoncesSupplies, then FVT::CC_CollectableStakeFlow."
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-                ;;
-                (nonce-count:integer (length nonces))
-                (nonce-amounts:[integer] (ref-DPDC::UR_AccountNoncesSupplies owner-id collectable-id false nonces))
-            )
-            (with-capability
-                (AQP|C>STAKE-NON-FUNGIBLE-COLLECTABLE
-                    patron pool-id owner-id beneficiary-id collectable-id nonces nonce-amounts
-                )
-                (let
-                    (
-                        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                    )
-                    (ref-IGNIS::XE_CollectIgnis patron
-                        (ref-FVT::CC_CollectableStakeFlow
-                            pool-id owner-id beneficiary-id collectable-id false nonces nonce-amounts true
-                        )
-                    )
-                    (UC_FormatStakeCollectableResult
-                        pool-id owner-id beneficiary-id collectable-id false nonce-count
-                    )
-                )
-            )
-        )
-    )
-    (defun AQP-POOL|CC_UnstakeNonFungibleCollectable:string
-        (
-            patron:string
-            pool-id:string
-            owner-id:string
-            beneficiary-id:string
-            collectable-id:string
-            nonces:[integer]
-            nonce-amounts:[integer]
-        )
-        @doc "Unstake DPNF collectable (son=false) from the (owner, beneficiary) row. M5: beneficiary-id caller-supplied \
-            \ (self OR foreign) so the exact staked row is located — mirrors TF."
-        (let
-            (
-                (nonce-count:integer (length nonces))
-            )
-            (with-capability
-                (AQP|C>UNSTAKE-NON-FUNGIBLE-COLLECTABLE
-                    patron pool-id owner-id beneficiary-id collectable-id nonces nonce-amounts
-                )
-                (let
-                    (
-                        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                    )
-                    (ref-IGNIS::XE_CollectIgnis patron
-                        (ref-FVT::CC_CollectableStakeFlow
-                            pool-id owner-id beneficiary-id collectable-id false nonces nonce-amounts false
-                        )
-                    )
-                    (UC_FormatUnstakeCollectableResult pool-id owner-id collectable-id false nonce-count)
-                )
-            )
-        )
-    )
-    ;;
-    ;; Vacate — Full (1 tx) or Stateless Legs (N txs; auto-begin; finalize on last)
-    ;;
-    (defun AQP-POOL|C_AbortVacate:string
+    (defun INFO_AQP-POOL|EnablePoolStake:object{OuronetInfoV2.ClientInfo}
         (patron:string pool-id:string)
-        @doc "Clear vacate-in-progress; stake stays disabled. Talos → AQP-VCT::C_AbortVacate."
-        (with-capability (AQP|C>ABORT-VACATE patron pool-id)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VCT::C_AbortVacate pool-id)
-                )
-                (format "Successfully aborted vacate-in-progress on Pool {} (stake remains disabled)."
-                    [pool-id]
-                )
+        @doc "Cost preview for AQP-POOL|C_EnablePoolStake. IGNIS GAS|SET-POOL-STAKE; no STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Re-enable new stakes on a pool." "Executes via TS02-C3.AQP-POOL|C_EnablePoolStake."]
+                [(format "Pool {} staking enabled." [pool-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-POOL.URCi_SetPoolStake [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
         )
     )
-    (defun AQP-POOL|C_FinalizeVacate:string
+    (defun INFO_AQP-POOL|DisablePoolStake:object{OuronetInfoV2.ClientInfo}
         (patron:string pool-id:string)
-        @doc "Vacate-v2 FINALIZE (nuke) — after a pool has been fully drained via AQP-POOL|Cp_BatchDrain*, this \
-            \ bulk-zeroes every employed score + bumps their vacate-generation (lazily invalidating all per-user \
-            \ rows), then clears vacate-in-progress, re-enables stake, and unfreezes the pool's FVTs. Pool-owner + \
-            \ nns==0 gated in VCT; IGNIS on patron. The commit-forward terminal step of a v2 drain campaign."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron (ref-VCT::C_FinalizeVacate pool-id))
-                (format "Successfully finalized vacate on Pool {} — scores nuked, stake re-enabled." [pool-id])
+        @doc "Cost preview for AQP-POOL|C_DisablePoolStake. IGNIS GAS|SET-POOL-STAKE; no STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Pause new stakes on a pool." "Executes via TS02-C3.AQP-POOL|C_DisablePoolStake."]
+                [(format "Pool {} staking disabled." [pool-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-POOL.URCi_SetPoolStake [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
         )
     )
-    (defun AQP-POOL|CC_FullVacate:string
-        (patron:string pool-id:string)
-        @doc "Vacate rehaul — pool-owner AGNOSTIC full vacate (one tx): input is JUST the pool-id. VCT reads the \
-            \ pool class + scans its inventory on-chain and vacates every asset type. Owner enforced in VCT|C>VACATE; \
-            \ collects IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron (ref-VCT::CC_FullVacate pool-id))
-                (format "Successfully full-vacated Pool {} (all asset types)." [pool-id])
-            )
-        )
-    )
-    (defun AQP-POOL|CCp_BatchVacateTrueFungible:string
-        (patron:string pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal])
-        @doc "One TF batch of a UI-sliced vacate campaign. The first successful batch freezes the pool + its FVTs; \
-            \ the batch that empties the pool auto-finalizes/unfreezes. Owner enforced in VCT; IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VCT::CCp_BatchVacateTrueFungible pool-id dptf-id owner-ids beneficiary-ids amounts))
-                (format "Batch-vacated {} TF leg(s) on Pool {} (asset {})." [(length owner-ids) pool-id dptf-id])
-            )
-        )
-    )
-    (defun AQP-POOL|CCp_BatchDrainTrueFungible:string
-        (patron:string pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal])
-        @doc "Vacate-v2 FAST-DRAIN — one TF batch that returns assets + preserves rewards WITHOUT touching scores \
-            \ and WITHOUT finalizing (cheaper than CCp_BatchVacateTrueFungible for large pools). First batch freezes \
-            \ the pool + its FVTs; the pool stays frozen until AQP-POOL|C_FinalizeVacate nukes the scores once \
-            \ empty. Owner enforced in VCT; IGNIS on patron. Commit-forward — CCp_BatchVacateTrueFungible is the \
-            \ abortable path."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VCT::CCp_BatchDrainTrueFungible pool-id dptf-id owner-ids beneficiary-ids amounts))
-                (format "Fast-drained {} TF leg(s) on Pool {} (asset {}) — scores untouched, awaiting finalize."
-                    [(length owner-ids) pool-id dptf-id])
-            )
-        )
-    )
-    (defun AQP-POOL|CCp_BatchDrainOrtoFungible:string
-        (patron:string pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]])
-        @doc "Vacate-v2 FAST-DRAIN — one OF batch that returns nonces + preserves rewards WITHOUT touching scores \
-            \ and WITHOUT finalizing. Amounts resolved on-chain from the tracker. First batch freezes the pool + \
-            \ its FVTs; it stays frozen until AQP-POOL|C_FinalizeVacate nukes the scores once empty. Owner enforced \
-            \ in VCT; IGNIS on patron. Commit-forward — CCp_BatchVacateOrtoFungible is the abortable path."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VCT::CCp_BatchDrainOrtoFungible pool-id dpof-id owner-ids beneficiary-ids nonces-array))
-                (format "Fast-drained {} OF leg(s) on Pool {} (asset {}) — scores untouched, awaiting finalize."
-                    [(length owner-ids) pool-id dpof-id])
-            )
-        )
-    )
-    (defun AQP-POOL|CCp_BatchDrainCollectable:string
-        (patron:string pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]])
-        @doc "Vacate-v2 FAST-DRAIN — one DPSF (son=true) / DPNF (son=false) batch that returns nonces + preserves \
-            \ rewards WITHOUT touching scores and WITHOUT finalizing. First batch freezes the pool + its FVTs; it \
-            \ stays frozen until AQP-POOL|C_FinalizeVacate nukes the scores once empty. Owner enforced in VCT; \
-            \ IGNIS on patron. Commit-forward — CCp_BatchVacateCollectables is the abortable path."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VCT::CCp_BatchDrainCollectable pool-id collectable-id son owner-ids beneficiary-ids nonces-array amounts-array))
-                (format "Fast-drained {} collectable leg(s) on Pool {} (asset {}, son {}) — scores untouched, awaiting finalize."
-                    [(length owner-ids) pool-id collectable-id son])
-            )
-        )
-    )
-    (defun AQP-POOL|CCp_BatchVacateOrtoFungible:string
-        (patron:string pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]])
-        @doc "One OF batch of a UI-sliced vacate campaign (amounts resolved on-chain from the tracker). First batch \
-            \ freezes; the emptying batch auto-finalizes/unfreezes. Owner enforced in VCT; IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VCT::CCp_BatchVacateOrtoFungible pool-id dpof-id owner-ids beneficiary-ids nonces-array))
-                (format "Batch-vacated {} OF leg(s) on Pool {} (asset {})." [(length owner-ids) pool-id dpof-id])
-            )
-        )
-    )
-    (defun AQP-POOL|CCp_BatchVacateCollectables:string
-        (patron:string pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]])
-        @doc "One DPSF (son=true) / DPNF (son=false) batch of a UI-sliced vacate campaign. First batch freezes; the \
-            \ emptying batch auto-finalizes/unfreezes. Owner enforced in VCT; IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VCT::CCp_BatchVacateCollectables pool-id collectable-id son owner-ids beneficiary-ids nonces-array amounts-array))
-                (format "Batch-vacated {} collectable leg(s) on Pool {} (asset {}, son {})."
-                    [(length owner-ids) pool-id collectable-id son])
-            )
-        )
-    )
-    (defun AQP-POOL|C_SyncTrueFungibleAnchors:string
+    (defun INFO_AQP-POOL|SyncTrueFungibleAnchors:object{OuronetInfoV2.ClientInfo}
         (patron:string beneficiary-id:string dptf-id:string)
-        @doc "Pool-agnostic TF anchor repair for beneficiary × dptf-id. Talos shell → AQP-POOL::C_SyncTrueFungibleAnchors."
-        (with-capability (AQP|C>SYNC-TF-ANCHORS patron beneficiary-id dptf-id)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-AQP::C_SyncTrueFungibleAnchors patron beneficiary-id dptf-id)
-                )
-                (format "Successfully synced TrueFungible anchors for beneficiary {} on {}."
-                    [(UC_ShortAccount beneficiary-id) dptf-id]
-                )
+        @doc "Cost preview for AQP-POOL|C_SyncTrueFungibleAnchors. FULL IGNIS: GAS|SYNC-TF-ANCHORS gas leg + \
+            \ state-dependent ANK anchor-repair (ignis|small x live TF anchors) + biggest-tier sync-count stamp; no STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Repair a beneficiary's True-Fungible anchor slots after a stake."
+                 "Full IGNIS shown: gas + per-anchor repair + sync-count stamp (reconstructed byte-for-byte)."
+                 "Executes via TS02-C3.AQP-POOL|C_SyncTrueFungibleAnchors."]
+                [(format "TF anchors synced for {} on DPTF {}." [beneficiary-id dptf-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (AQP-POOL.URCi_SyncTrueFungibleAnchorsFull beneficiary-id dptf-id))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
         )
     )
-    (defun AQP-POOL|C_SyncSemiFungibleAnchors:string
+    (defun INFO_AQP-POOL|SyncSemiFungibleAnchors:object{OuronetInfoV2.ClientInfo}
         (patron:string beneficiary-id:string dpsf-id:string)
-        @doc "Pool-agnostic DPSF anchor repair. Talos shell → AQP-POOL::C_SyncCollectableAnchors son=true."
-        (with-capability (AQP|C>SYNC-SEMI-FUNGIBLE-ANCHORS patron beneficiary-id dpsf-id)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-AQP::C_SyncCollectableAnchors patron beneficiary-id dpsf-id true)
-                )
-                (format "Successfully synced SemiFungible anchors for beneficiary {} on {}."
-                    [(UC_ShortAccount beneficiary-id) dpsf-id]
-                )
+        @doc "Cost preview for AQP-POOL|C_SyncSemiFungibleAnchors. FULL IGNIS: GAS|SYNC-COLLECTABLE-ANCHORS gas leg + \
+            \ state-dependent ANK anchor-repair (ignis|small x live SF anchors) + biggest-tier sync-count stamp; no STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Repair a beneficiary's Semi-Fungible anchor slots after a stake."
+                 "Full IGNIS shown: gas + per-anchor repair + sync-count stamp (reconstructed byte-for-byte)."
+                 "Executes via TS02-C3.AQP-POOL|C_SyncSemiFungibleAnchors."]
+                [(format "SF anchors synced for {} on DPSF {}." [beneficiary-id dpsf-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (AQP-POOL.URCi_SyncCollectableAnchorsFull beneficiary-id dpsf-id))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
         )
     )
-    (defun AQP-POOL|C_SyncNonFungibleAnchors:string
+    (defun INFO_AQP-POOL|SyncNonFungibleAnchors:object{OuronetInfoV2.ClientInfo}
         (patron:string beneficiary-id:string dpnf-id:string)
-        @doc "Pool-agnostic DPNF anchor repair. Talos shell → AQP-POOL::C_SyncCollectableAnchors son=false."
-        (with-capability (AQP|C>SYNC-NON-FUNGIBLE-ANCHORS patron beneficiary-id dpnf-id)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-AQP::C_SyncCollectableAnchors patron beneficiary-id dpnf-id false)
-                )
-                (format "Successfully synced NonFungible anchors for beneficiary {} on {}."
-                    [(UC_ShortAccount beneficiary-id) dpnf-id]
-                )
+        @doc "Cost preview for AQP-POOL|C_SyncNonFungibleAnchors. FULL IGNIS: GAS|SYNC-COLLECTABLE-ANCHORS gas leg + \
+            \ state-dependent ANK anchor-repair (ignis|small x live NF anchors) + biggest-tier sync-count stamp; no STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Repair a beneficiary's Non-Fungible anchor slots after a stake."
+                 "Full IGNIS shown: gas + per-anchor repair + sync-count stamp (reconstructed byte-for-byte)."
+                 "Executes via TS02-C3.AQP-POOL|C_SyncNonFungibleAnchors."]
+                [(format "NF anchors synced for {} on DPNF {}." [beneficiary-id dpnf-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (AQP-POOL.URCi_SyncCollectableAnchorsFull beneficiary-id dpnf-id))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
+        )
+    )
+    ;;<---- stake / unstake (multi-leg reconstructed cost) ---->
+    (defun INFO_AQP-POOL|StakeTrueFungible:object{OuronetInfoV2.ClientInfo}
+        (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
+        @doc "Cost preview for AQP-POOL|CC_StakeTrueFungible. Full multi-leg IGNIS (transfer + tracker + rollup \
+            \ + RPS + anchor + score-delta + book + checkpoint); no STOA. Cost reconstructed byte-for-byte."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Stake a True-Fungible amount into the pool for a beneficiary."
+                 "Executes via TS02-C3.AQP-POOL|CC_StakeTrueFungible."]
+                [(format "Staked {} of {} into pool {} for {}." [amount dptf-id pool-id beneficiary-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (RPS.URCi_TrueFungibleStakeFlow pool-id owner-id beneficiary-id dptf-id amount true))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [amount])
+        )
+    )
+    (defun INFO_AQP-POOL|UnstakeTrueFungible:object{OuronetInfoV2.ClientInfo}
+        (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
+        @doc "Cost preview for AQP-POOL|CC_UnstakeTrueFungible. Same legs as stake with the custody transfer \
+            \ reversed (vault→owner); no STOA. Cost reconstructed byte-for-byte."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Unstake a True-Fungible amount from the pool."
+                 "Executes via TS02-C3.AQP-POOL|CC_UnstakeTrueFungible."]
+                [(format "Unstaked {} of {} from pool {} for {}." [amount dptf-id pool-id beneficiary-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (RPS.URCi_TrueFungibleStakeFlow pool-id owner-id beneficiary-id dptf-id amount false))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [amount])
+        )
+    )
+    (defun INFO_AQP-POOL|StakeOrtoFungible:object{OuronetInfoV2.ClientInfo}
+        (patron:string pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer])
+        @doc "Cost preview for AQP-POOL|CC_StakeOrtoFungible. Multi-leg IGNIS (transfer + tracker×|nonces| + RPS \
+            \ + class-matched score-delta + book + checkpoint); no STOA. Reconstructed byte-for-byte."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Stake whole Orto-Fungible nonces into the pool for a beneficiary."
+                 "Executes via TS02-C3.AQP-POOL|CC_StakeOrtoFungible."]
+                [(format "Staked {} nonces of {} into pool {} for {}." [(length nonces) dpof-id pool-id beneficiary-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (RPS.URCi_OrtoFungibleStakeFlow pool-id owner-id beneficiary-id dpof-id nonces true))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [(length nonces)])
+        )
+    )
+    (defun INFO_AQP-POOL|UnstakeOrtoFungible:object{OuronetInfoV2.ClientInfo}
+        (patron:string pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer])
+        @doc "Cost preview for AQP-POOL|CC_UnstakeOrtoFungible. Same legs as OF stake; no STOA. Reconstructed byte-for-byte."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Unstake whole Orto-Fungible nonces from the pool."
+                 "Executes via TS02-C3.AQP-POOL|CC_UnstakeOrtoFungible."]
+                [(format "Unstaked {} nonces of {} from pool {} for {}." [(length nonces) dpof-id pool-id beneficiary-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (RPS.URCi_OrtoFungibleStakeFlow pool-id owner-id beneficiary-id dpof-id nonces false))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [(length nonces)])
+        )
+    )
+    (defun INFO_AQP-POOL|StakeSemiFungibleCollectable:object{OuronetInfoV2.ClientInfo}
+        (patron:string pool-id:string owner-id:string beneficiary-id:string collectable-id:string nonces:[integer])
+        @doc "Cost preview for AQP-POOL|CC_StakeSemiFungibleCollectable (DPSF, son=true / class-3). Multi-leg IGNIS \
+            \ (transfer + tracker×|nonces| + rollup×|nonces| + RPS + flat anchor + class-3 score-delta + book + checkpoint); no STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Stake Semi-Fungible collectable nonces (DPSF) into the pool for a beneficiary."
+                 "Executes via TS02-C3.AQP-POOL|CC_StakeSemiFungibleCollectable."]
+                [(format "Staked {} DPSF nonces of {} into pool {} for {}." [(length nonces) collectable-id pool-id beneficiary-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (RPS.URCi_CollectableStakeFlow pool-id owner-id beneficiary-id collectable-id true nonces
+                        (DPDC.UR_AccountNoncesSupplies owner-id collectable-id true nonces) true))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [(length nonces)])
+        )
+    )
+    (defun INFO_AQP-POOL|UnstakeSemiFungibleCollectable:object{OuronetInfoV2.ClientInfo}
+        (patron:string pool-id:string owner-id:string beneficiary-id:string collectable-id:string nonces:[integer] nonce-amounts:[integer])
+        @doc "Cost preview for AQP-POOL|CC_UnstakeSemiFungibleCollectable (DPSF, son=true / class-3). Same legs as SF stake; \
+            \ nonce-amounts is caller-supplied (the staked quantities — owner no longer holds them). No STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Unstake Semi-Fungible collectable nonces (DPSF) from the pool."
+                 "Executes via TS02-C3.AQP-POOL|CC_UnstakeSemiFungibleCollectable."]
+                [(format "Unstaked {} DPSF nonces of {} from pool {} for {}." [(length nonces) collectable-id pool-id beneficiary-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (RPS.URCi_CollectableStakeFlow pool-id owner-id beneficiary-id collectable-id true nonces nonce-amounts false))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [(length nonces)])
+        )
+    )
+    (defun INFO_AQP-POOL|StakeNonFungibleCollectable:object{OuronetInfoV2.ClientInfo}
+        (patron:string pool-id:string owner-id:string beneficiary-id:string collectable-id:string nonces:[integer])
+        @doc "Cost preview for AQP-POOL|CC_StakeNonFungibleCollectable (DPNF, son=false / class-4). Multi-leg IGNIS \
+            \ (transfer + tracker×|nonces| + rollup×|nonces| + RPS + flat anchor + class-4 score-delta + book + checkpoint); no STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Stake Non-Fungible collectable nonces (DPNF) into the pool for a beneficiary."
+                 "Executes via TS02-C3.AQP-POOL|CC_StakeNonFungibleCollectable."]
+                [(format "Staked {} DPNF nonces of {} into pool {} for {}." [(length nonces) collectable-id pool-id beneficiary-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (RPS.URCi_CollectableStakeFlow pool-id owner-id beneficiary-id collectable-id false nonces
+                        (DPDC.UR_AccountNoncesSupplies owner-id collectable-id false nonces) true))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [(length nonces)])
+        )
+    )
+    (defun INFO_AQP-POOL|UnstakeNonFungibleCollectable:object{OuronetInfoV2.ClientInfo}
+        (patron:string pool-id:string owner-id:string beneficiary-id:string collectable-id:string nonces:[integer] nonce-amounts:[integer])
+        @doc "Cost preview for AQP-POOL|CC_UnstakeNonFungibleCollectable (DPNF, son=false / class-4). Same legs as NF stake; \
+            \ nonce-amounts is caller-supplied (the staked quantities — owner no longer holds them). No STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Unstake Non-Fungible collectable nonces (DPNF) from the pool."
+                 "Executes via TS02-C3.AQP-POOL|CC_UnstakeNonFungibleCollectable."]
+                [(format "Unstaked {} DPNF nonces of {} from pool {} for {}." [(length nonces) collectable-id pool-id beneficiary-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (RPS.URCi_CollectableStakeFlow pool-id owner-id beneficiary-id collectable-id false nonces nonce-amounts false))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [(length nonces)])
+        )
+    )
+    ;;<---- vacate lifecycle (fixed-cost endpoints) ---->
+    (defun INFO_AQP-POOL|BatchVacateTrueFungible:object{OuronetInfoV2.ClientInfo}
+        (patron:string pool-id:string dptf-id:string legs:[object{AcquisitionSchemasV1.VCT|VacateTfLeg}])
+        @doc "Cost preview for AQP-POOL|CCp_BatchVacateTrueFungible. Multi-leg IGNIS (per-leg \
+            \ tracker-zero + per-beneficiary unwind + one bulk transfer); no STOA. Fed the same \
+            \ dirty-read <legs> slice the exec is fed."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Batch-vacate one DPTF asset's owner-legs out of the pool."
+                 "Executes via TS02-C3.AQP-POOL|CCp_BatchVacateTrueFungible."]
+                [(format "Batch-vacated {} legs of {} from pool {}." [(length legs) dptf-id pool-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (AQP-VCT.URCi_BatchVacateTrueFungible pool-id dptf-id legs))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
+        )
+    )
+    (defun INFO_AQP-POOL|BatchVacateOrtoFungible:object{OuronetInfoV2.ClientInfo}
+        (patron:string pool-id:string dpof-id:string legs:[object{AcquisitionSchemasV1.VCT|VacateNonceLeg}])
+        @doc "Cost preview for AQP-POOL|CCp_BatchVacateOrtoFungible. Multi-leg IGNIS (bulk DPOF \
+            \ transfer + per-nonce tracker + per-beneficiary score unwind); no STOA. Fed the same \
+            \ dirty-read nonce <legs> slice the exec is fed."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Batch-vacate one DPOF asset's owner nonce-legs out of the pool."
+                 "Executes via TS02-C3.AQP-POOL|CCp_BatchVacateOrtoFungible."]
+                [(format "Batch-vacated {} nonce-legs of {} from pool {}." [(length legs) dpof-id pool-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (AQP-VCT.URCi_BatchVacateOrtoFungible pool-id dpof-id legs))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
+        )
+    )
+    (defun INFO_AQP-POOL|BatchVacateCollectables:object{OuronetInfoV2.ClientInfo}
+        (patron:string pool-id:string collectable-id:string son:bool legs:[object{AcquisitionSchemasV1.VCT|VacateNonceLeg}])
+        @doc "Cost preview for AQP-POOL|CCp_BatchVacateCollectables (son=DPSF true / DPNF false). \
+            \ Multi-leg IGNIS (bulk transfer + per-nonce tracker + rollup + flat anchor + per- \
+            \ beneficiary class-matched score unwind); no STOA. Fed the dirty-read nonce <legs>."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Batch-vacate one collectable collection's owner nonce-legs out of the pool."
+                 "Executes via TS02-C3.AQP-POOL|CCp_BatchVacateCollectables."]
+                [(format "Batch-vacated {} nonce-legs of {} (son={}) from pool {}." [(length legs) collectable-id son pool-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (AQP-VCT.URCi_BatchVacateCollectables pool-id collectable-id son legs))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
+        )
+    )
+    (defun INFO_AQP-POOL|BatchDrainTrueFungible:object{OuronetInfoV2.ClientInfo}
+        (patron:string pool-id:string dptf-id:string legs:[object{AcquisitionSchemasV1.VCT|VacateTfLeg}])
+        @doc "Cost preview for AQP-POOL|CCp_BatchDrainTrueFungible. Score-free drain: per-leg \
+            \ tracker-zero + rollup, settle-on-last-drain only for beneficiaries fully drained \
+            \ this round (live UserUnn), then one bulk transfer; no STOA. Fed the dirty-read legs."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Batch-drain one DPTF asset's owner-legs out of the pool (score-free)."
+                 "Executes via TS02-C3.AQP-POOL|CCp_BatchDrainTrueFungible."]
+                [(format "Batch-drained {} legs of {} from pool {}." [(length legs) dptf-id pool-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (AQP-VCT.URCi_BatchDrainTrueFungible pool-id dptf-id legs))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
+        )
+    )
+    (defun INFO_AQP-POOL|BatchDrainOrtoFungible:object{OuronetInfoV2.ClientInfo}
+        (patron:string pool-id:string dpof-id:string legs:[object{AcquisitionSchemasV1.VCT|VacateNonceLeg}])
+        @doc "Cost preview for AQP-POOL|CCp_BatchDrainOrtoFungible. Score-free drain: bulk DPOF \
+            \ transfer + per-nonce tracker + settle-on-last-drain (no anchor); no STOA. Fed the legs."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Batch-drain one DPOF asset's owner nonce-legs out of the pool (score-free)."
+                 "Executes via TS02-C3.AQP-POOL|CCp_BatchDrainOrtoFungible."]
+                [(format "Batch-drained {} nonce-legs of {} from pool {}." [(length legs) dpof-id pool-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (AQP-VCT.URCi_BatchDrainOrtoFungible pool-id dpof-id legs))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
+        )
+    )
+    (defun INFO_AQP-POOL|BatchDrainCollectable:object{OuronetInfoV2.ClientInfo}
+        (patron:string pool-id:string collectable-id:string son:bool legs:[object{AcquisitionSchemasV1.VCT|VacateNonceLeg}])
+        @doc "Cost preview for AQP-POOL|CCp_BatchDrainCollectable (son=DPSF true / DPNF false). \
+            \ Score-free drain: bulk transfer + per-leg tracker + rollup + flat anchor + settle- \
+            \ on-last-drain; no STOA. Fed the dirty-read nonce <legs>."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Batch-drain one collectable collection's owner nonce-legs out of the pool (score-free)."
+                 "Executes via TS02-C3.AQP-POOL|CCp_BatchDrainCollectable."]
+                [(format "Batch-drained {} nonce-legs of {} (son={}) from pool {}." [(length legs) collectable-id son pool-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (AQP-VCT.URCi_BatchDrainCollectable pool-id collectable-id son legs))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
+        )
+    )
+    (defun INFO_AQP-POOL|FullVacate:object{OuronetInfoV2.ClientInfo}
+        (patron:string pool-id:string
+         tf-lanes:[object{AcquisitionSchemasV1.VCT|VacateTfLane}]
+         of-lanes:[object{AcquisitionSchemasV1.VCT|VacateNonceLane}]
+         coll-lanes:[object{AcquisitionSchemasV1.VCT|VacateNonceLane}]
+         coll-son:bool)
+        @doc "Cost preview for AQP-POOL|CC_FullVacate — the single-tx whole-pool vacate. Sums the \
+            \ per-asset vacate cost across every dirty-read lane (TF + OF satellites + collectables); \
+            \ no STOA. Fed the same lane plan the exec's phase-1 scan builds."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Fully vacate a pool in a single transaction (all assets, all owners)."
+                 "Executes via TS02-C3.AQP-POOL|CC_FullVacate."]
+                [(format "Fully vacated pool {} ({} TF + {} OF + {} collectable lanes)."
+                    [pool-id (length tf-lanes) (length of-lanes) (length coll-lanes)])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (AQP-VCT.URCi_FullVacate pool-id tf-lanes of-lanes coll-lanes coll-son))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
+        )
+    )
+    (defun INFO_AQP-POOL|FinalizeVacate:object{OuronetInfoV2.ClientInfo}
+        (patron:string pool-id:string)
+        @doc "Cost preview for AQP-POOL|C_FinalizeVacate. IGNIS one flat 'ignis|medium' tier (05_VCT:3016); no STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Finalize a vacate — nuke employed scores, unfreeze FVTs, re-enable stake."
+                 "Executes via TS02-C3.AQP-POOL|C_FinalizeVacate."]
+                [(format "Finalized vacate on pool {}." [pool-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-VCT.URCi_FinalizeVacate)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
+        )
+    )
+    (defun INFO_AQP-POOL|AbortVacate:object{OuronetInfoV2.ClientInfo}
+        (patron:string pool-id:string)
+        @doc "Cost preview for AQP-POOL|C_AbortVacate. Empty cumulator (05_VCT:2989) — costs you nothing."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Abort an in-progress vacate (clear the in-progress flag; stake stays disabled)."
+                 "Costs you nothing."
+                 "Executes via TS02-C3.AQP-POOL|C_AbortVacate."]
+                [(format "Aborted vacate on pool {}." [pool-id])]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
         )
     )
     ;;
-    ;; --- AQP-FVT lifecycle (Talos client shell → AQP-FVT::C_*) ---
-    (defun AQP-FVT|C_Issue:string
+    ;;[AQP-FVT] Farms / Vaults / Treasuries (config + rewards)
+    (defun INFO_AQP-FVT|Issue:object{OuronetInfoV2.ClientInfo}
         (patron:string fvt-name:string owner-konto:string fvt-class:integer common-denominator:string)
-        @doc "Issues an FVT (farm/vault/treasury) and collects IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-FVT::C_Issue patron fvt-name owner-konto fvt-class common-denominator)
-                    )
-                    (out:[string] (at "output" ico))
-                    (fvt-id:string (at 0 out))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                (format "Successfully issued FVT {} (class {})." [fvt-id fvt-class])
+        @doc "Cost preview for AQP-FVT|C_Issue. IGNIS GAS|ISSUE-FVT + STOA 'smart'."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Create a Farm / Vault / Treasury." "Executes via TS02-C3.AQP-FVT|C_Issue."]
+                [(format "FVT '{}' created (class {}) for {}." [fvt-name fvt-class owner-konto])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-FVT.URCi_Issue owner-konto [])))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (AQP-FVT.URCi_IssueStoa))
+                [])
         )
     )
-    (defun AQP-FVT|C_IssueMultipletFamily:string
-        (
-            patron:string
-            executor:string
-            token-0-id:string
-            token-1-id:string
-            token-2-id:string
-            ats-0-1-id:string
-            ats-1-2-id:string
-        )
-        @doc "Issues chain-wide MultipletFamily F|t0|t1|t2 (rank 3) with ATS ladder validation."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-FVT::C_IssueMultipletFamily
-                            patron executor token-0-id token-1-id token-2-id ats-0-1-id ats-1-2-id
-                        )
-                    )
-                    (out:[string] (at "output" ico))
-                    (family-id:string (at 0 out))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                (format "Successfully issued MultipletFamily {}." [family-id])
+    (defun INFO_AQP-FVT|RotateOwnership:object{OuronetInfoV2.ClientInfo}
+        (patron:string fvt-id:string new-owner-konto:string)
+        @doc "Cost preview for AQP-FVT|C_RotateOwnership. IGNIS 'ignis|medium'; no STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Transfer an FVT's owner-konto." "Executes via TS02-C3.AQP-FVT|C_RotateOwnership."]
+                [(format "FVT {} ownership moved to {}." [fvt-id new-owner-konto])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (RPS.URCi_RotateOwnership fvt-id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
         )
     )
-    (defun AQP-FVT|C_AddScoreEntity:string
-        (patron:string executor:string fvt-id:string score-entity-type:integer score-entity-id:string)
-        @doc "Admits score (type 1) or triplet (type 3) to fvt-id via ScoreEntityLink."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::C_AddScoreEntity patron executor fvt-id score-entity-type score-entity-id)
-                )
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                (format "Successfully added score-entity type {} id {} to FVT {}."
-                    [score-entity-type score-entity-id fvt-id]
-                )
+    (defun INFO_AQP-FVT|Control:object{OuronetInfoV2.ClientInfo}
+        (patron:string fvt-id:string new-can-upgrade:bool new-can-change-owner:bool)
+        @doc "Cost preview for AQP-FVT|C_Control. IGNIS 'ignis|medium'; no STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Set an FVT's can-upgrade / can-change-owner flags." "Executes via TS02-C3.AQP-FVT|C_Control."]
+                [(format "FVT {} control flags updated." [fvt-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (RPS.URCi_Control fvt-id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
         )
     )
-    (defun AQP-FVT|C_AddRewardLink:string
-        (patron:string executor:string fvt-id:string reward-dptf-id:string segmentation:bool multiplet-family-id:string)
-        @doc "Registers one reward DPTF on fvt-id (multiplet-family-id BAR for plain tokens). Collects IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::C_AddRewardLink patron executor fvt-id reward-dptf-id segmentation multiplet-family-id)
-                )
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                (format "Successfully added reward link {} on FVT {} (family={})."
-                    [reward-dptf-id fvt-id multiplet-family-id]
-                )
+    (defun INFO_AQP-FVT|SetCommonDenominator:object{OuronetInfoV2.ClientInfo}
+        (patron:string fvt-id:string common-denominator:string)
+        @doc "Cost preview for AQP-FVT|C_SetCommonDenominator. IGNIS GAS|SET-COMMON-DENOMINATOR; no STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Set a farm's common-denominator (before any links)." "Executes via TS02-C3.AQP-FVT|C_SetCommonDenominator."]
+                [(format "FVT {} common-denominator set to {}." [fvt-id common-denominator])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (RPS.URCi_SetCommonDenominator fvt-id [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
         )
     )
-    (defun AQP-FVT|C_ToggleScoreEntityLink:string
-        (patron:string executor:string fvt-id:string score-entity-type:integer score-entity-id:string enabled:bool)
-        @doc "Toggles ScoreEntityLink.enabled and collects IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::C_ToggleScoreEntityLink patron executor fvt-id score-entity-type score-entity-id enabled)
-                )
-                (format "Successfully toggled score-entity type {} id {} on FVT {} to enabled={}."
-                    [score-entity-type score-entity-id fvt-id enabled]
-                )
+    (defun INFO_AQP-FVT|SetMosaic:object{OuronetInfoV2.ClientInfo}
+        (patron:string fvt-id:string mosaic:bool)
+        @doc "Cost preview for AQP-FVT|C_SetMosaic. IGNIS GAS|SET-MOSAIC; no STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Toggle a farm's mosaic membership policy." "Executes via TS02-C3.AQP-FVT|C_SetMosaic."]
+                [(format "FVT {} mosaic set to {}." [fvt-id mosaic])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (RPS.URCi_SetMosaic fvt-id [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
         )
     )
-    (defun AQP-FVT|C_ToggleRewardLink:string
-        (patron:string executor:string fvt-id:string reward-dptf-id:string enabled:bool)
-        @doc "Toggles reward-enabled and collects IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::C_ToggleRewardLink patron executor fvt-id reward-dptf-id enabled)
-                )
-                (format "Successfully toggled reward link {} on FVT {} to enabled={}." [reward-dptf-id fvt-id enabled])
+    (defun INFO_AQP-FVT|SetSplitMode:object{OuronetInfoV2.ClientInfo}
+        (patron:string fvt-id:string split-mode:string)
+        @doc "Cost preview for AQP-FVT|C_SetSplitMode. IGNIS GAS|SET-SPLIT-MODE; no STOA. Reports the farm's current \
+            \ reward-split mode alongside the requested one."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Set a farm's reward-split mode (SPLIT|STAKED participation | SPLIT|TVL pool-size)." "Executes via TS02-C3.AQP-FVT|C_SetSplitMode."]
+                [(format "Farm {} reward-split mode: {} -> {}." [fvt-id (RPS.UR_FVT|SplitMode fvt-id) split-mode])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (RPS.URCi_SetSplitMode fvt-id [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
         )
     )
-    (defun AQP-FVT|C_SetQualitySplit:string
-        (patron:string executor:string fvt-id:string reward-dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer])
-        @doc "Round B: set a MULTIPLET_BASE reward's quality-split MODE + heterogeneous MATRIX (owner-gated). \
-            \ HOMOGENEOUS routes each lane to its one ladder token; HETEROGENEOUS splits each lane across all 3 \
-            \ ladder tokens per its [to-t0 to-t1 to-t2] per-mille row. Collects IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::C_SetQualitySplit patron executor fvt-id reward-dptf-id mode bronze-split silver-split gold-split)
-                )
-                (format "Successfully set quality split mode={} on reward {} of FVT {}." [mode reward-dptf-id fvt-id])
+    (defun INFO_AQP-FVT|AddScoreEntity:object{OuronetInfoV2.ClientInfo}
+        (patron:string fvt-id:string score-entity-type:integer score-entity-id:string)
+        @doc "Cost preview for AQP-FVT|C_AddScoreEntity. IGNIS GAS|ADD-SCORE-ENTITY; no STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Register a score (type 1) or triplet (type 3) on an FVT." "Executes via TS02-C3.AQP-FVT|C_AddScoreEntity."]
+                [(format "Score-entity {} (type {}) registered on FVT {}." [score-entity-id score-entity-type fvt-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (RPS.URCi_AddScoreEntity fvt-id [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
         )
     )
-    (defun AQP-FVT|C_Control:string
-        (patron:string executor:string fvt-id:string new-can-upgrade:bool new-can-change-owner:bool)
-        @doc "Updates FVT control flags and collects IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::C_Control patron executor fvt-id new-can-upgrade new-can-change-owner)
-                )
-                (format "Successfully updated control flags for FVT {}." [fvt-id])
+    (defun INFO_AQP-FVT|ToggleScoreEntityLink:object{OuronetInfoV2.ClientInfo}
+        (patron:string fvt-id:string score-entity-type:integer score-entity-id:string enabled:bool)
+        @doc "Cost preview for AQP-FVT|C_ToggleScoreEntityLink. IGNIS GAS|TOGGLE-SCORE-ENTITY-LINK; no STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Enable/disable a ScoreEntityLink on an FVT." "Executes via TS02-C3.AQP-FVT|C_ToggleScoreEntityLink."]
+                [(format "FVT {} score-entity {} enabled={}." [fvt-id score-entity-id enabled])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (RPS.URCi_ToggleScoreEntityLink fvt-id [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
         )
     )
-    (defun AQP-FVT|C_RotateOwnership:string
-        (patron:string executor:string fvt-id:string new-owner-konto:string)
-        @doc "Rotates FVT ownership and collects IGNIS output on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::C_RotateOwnership patron executor fvt-id new-owner-konto)
-                )
-                (format "Successfully rotated ownership for FVT {} to {}." [fvt-id new-owner-konto])
+    (defun INFO_AQP-FVT|IssueMultipletFamily:object{OuronetInfoV2.ClientInfo}
+        (patron:string token-0-id:string token-1-id:string token-2-id:string ats-0-1-id:string ats-1-2-id:string)
+        @doc "Cost preview for AQP-FVT|C_IssueMultipletFamily. IGNIS GAS|ISSUE-MULTIPLET-FAMILY; no STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Issue a chain-wide MultipletFamily reward ladder." "Executes via TS02-C3.AQP-FVT|C_IssueMultipletFamily."]
+                [(format "MultipletFamily issued: {} -> {} -> {}." [token-0-id token-1-id token-2-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-FVT.URCi_IssueMultipletFamily patron [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
         )
     )
-    (defun AQP-FVT|C_SetCommonDenominator:string
-        (patron:string executor:string fvt-id:string common-denominator:string)
-        @doc "Sets farm common-denominator (before ScoreEntityLinks) and collects IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::C_SetCommonDenominator patron executor fvt-id common-denominator)
-                )
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                (format "Successfully set common-denominator on FVT {} to {}." [fvt-id common-denominator])
-            )
-        )
-    )
-    (defun AQP-FVT|C_SetMosaic:string
-        (patron:string executor:string fvt-id:string mosaic:bool)
-        @doc "Sets mosaic membership policy when FVT has no member links; collects IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::C_SetMosaic patron executor fvt-id mosaic)
-                )
-                (format "Successfully set mosaic on FVT {} to {}." [fvt-id mosaic])
-            )
-        )
-    )
-    (defun AQP-FVT|C_SetSplitMode:string
-        (patron:string executor:string fvt-id:string split-mode:string)
-        @doc "Sets a farm's reward-split mode (SPLIT|STAKED participation | SPLIT|TVL pool-size); collects IGNIS on patron. \
-            \ Freely mutable — re-weights only future injects."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::C_SetSplitMode patron executor fvt-id split-mode)
-                )
-                (format "Successfully set reward-split mode on farm {} to {}." [fvt-id split-mode])
-            )
-        )
-    )
-    (defun AQP-FVT|C_IssueGenericEarningVault:string
+    (defun INFO_AQP-FVT|IssueGenericEarningVault:object{OuronetInfoV2.ClientInfo}
         (patron:string owner-konto:string vault-name:string stake-dptf-id:string reward-dptf-id:string)
-        @doc "Stand up a complete single-asset earning Vault in ONE transaction and ONE IGNIS \
-            \ collection: stake a true fungible, earn another true fungible. Composes the six core \
-            \ operations a Vault needs and concatenates their cumulators, so the caller pays once \
-            \ rather than six times."
-        ;; WHY THIS IS A TALOS ORCHESTRATOR AND NOT A CITIZEN HELPER
-        ;;   The same six steps written in a citizen module would call the six TS02-C3 wrappers,
-        ;;   and EVERY ONE OF THOSE COLLECTS IGNIS ON ITS OWN -- six collections for one logical
-        ;;   operation. Composing the CORE C_ functions here and concatenating their cumulators
-        ;;   collects once, which is the entire reason this belongs in Talos.
-        ;;
-        ;; WHAT A VAULT ACTUALLY NEEDS -- six operations, four class constants
-        ;;   1 score for the staked DPTF   score-class 1
-        ;;   2 pool it is staked into      aqp-class 1   (0 is reserved for LP)
-        ;;   3 score -> pool link          without it the pool scores nothing
-        ;;   4 the FVT entity              fvt-class 1 (Vault)
-        ;;   5 score admitted to the FVT   score-entity type 1
-        ;;   6 reward token registered     multiplet-family-id BAR (plain, not a laddered family)
-        ;;
-        ;;   Step 6 is not optional: an EMPLOYED score with no reward link makes every stake abort
-        ;;   in the FVT pipeline (05_FVT.pact:1210). Doing 1-5 without 6 builds a vault nobody can
-        ;;   use, which is a state this function makes unreachable.
-        ;;
-        ;; CLASS SAFETY
-        ;;   Two sovereign admission rules disagree about fvt-class for SF/NF
-        ;;   (URC_ScoreClassMatchesFvtClass vs URC_TripletCategoryMatchesFvtClass). They AGREE for
-        ;;   true fungibles: score-class 1 is admitted at fvt-class 1 by the first, and VAULT_TF
-        ;;   maps to 1 in the second. A TF-in/TF-out vault is the case both describe identically,
-        ;;   so this function does not depend on how that dispute is settled.
-        ;;
-        ;; NAMING -- one name in, three derived, and they MUST differ
-        ;;   UDC_Makeid is <name>-<block-hash> and ids collide across families because
-        ;;   BRD|BrandingTable is shared (DPDC audit #33M). Three entities minted from one name in
-        ;;   one transaction would produce three byte-identical ids and the second insert would
-        ;;   hard-abort. Hence <name>Score / <name>Pool / <name>Vault.
-        (with-capability (P|TS)
-            (let*
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                    ;;
-                    (score-name:string (concat [vault-name "Score"]))
-                    (pool-name:string (concat [vault-name "Pool"]))
-                    (fvt-name:string (concat [vault-name "Vault"]))
-                    ;;ids are derived in THIS transaction for entities minted in THIS transaction,
-                    ;;so UDC_Makeid returns exactly what the C_Issue calls below are about to make.
-                    (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
-                    (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
-                    (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
-                    ;;The POOL's executor is the STAKED ASSET's owner konto -- which is NOT
-                    ;;necessarily `owner-konto`, the account that will own the score and vault.
-                    ;;A vault operator may stake a token somebody else issued. Derived, not assumed.
-                    (stake-asset-owner:string
-                        (ref-AQP::URC_AqpOwnerKontoFromClassAndAsset GV|POOL_CLASS_TF stake-dptf-id))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-IGNIS::UDC_ConcatenateOutputCumulators
-                        [
-                            (ref-SCR::C_IssueTrueFungibleScore
-                                patron owner-konto score-name GV|PRECISION GV|MX_FROZEN)
-                            (ref-AQP::C_Issue patron stake-asset-owner pool-name stake-dptf-id GV|POOL_CLASS_TF)
-                            (ref-AQP::C_AddScore patron stake-asset-owner pool-id score-id)
-                            (ref-FVT::C_Issue
-                                patron fvt-name owner-konto GV|FVT_CLASS_VAULT GV|COMMON_BAR)
-                            ;;The FVT's executor here IS `owner-konto` -- C_Issue two lines up
-                            ;;makes that account the vault's owner, so it is derived, not assumed.
-                            (ref-FVT::C_AddScoreEntity
-                                patron owner-konto fvt-id GV|SCORE_ENTITY_SCORE score-id)
-                            (ref-FVT::C_AddRewardLink
-                                patron owner-konto fvt-id reward-dptf-id false GV|COMMON_BAR)
-                        ]
-                        []
-                    )
-                )
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                (format
-                    "Successfully issued Generic Earning Vault {}: stake {} earn {}. score={} pool={} fvt={}."
-                    [vault-name stake-dptf-id reward-dptf-id score-id pool-id fvt-id]
-                )
+        @doc "Cost preview for AQP-FVT|C_IssueGenericEarningVault -- the whole six-operation vault \
+            \ as ONE charge. IGNIS only; no STOA."
+        ;;The cost comes from TS02-C3.URCi_IssueGenericEarningVault, which concatenates the SAME six
+        ;;component readers the operation's own cumulators come from. Preview and charge therefore
+        ;;agree by construction rather than by a number kept in step by hand.
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Stand up a complete earning Vault in one transaction -- score, pool, pool-score link, FVT entity, score admission and reward link."
+                 "Executes via TS02-C3.AQP-FVT|C_IssueGenericEarningVault."]
+                [(format "Vault {}: stake {} to earn {}. Creates {}Score, {}Pool, {}Vault."
+                    [vault-name stake-dptf-id reward-dptf-id vault-name vault-name vault-name])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (ref-I|OURONET::OI|UC_IfpFromOutputCumulator
+                        (TS02-C3.URCi_IssueGenericEarningVault owner-konto vault-name stake-dptf-id reward-dptf-id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
         )
     )
-
-    (defun AQP-FVT|CC_InjectStream:string
-        (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
-        @doc "Injects reward DPTF as a TIME-STREAM (linear vesting over `duration` seconds, 1h..365d) into fvt-id \
-            \ and collects IGNIS on patron. The DELAYED counterpart of AQP-FVT|CC_Inject (instant): the amount vests \
-            \ continuously and whoever is staked during each slice earns it (late stakers included). Independent \
-            \ overlapping streams, capped by the FVT owner konto's Elite tier. See Audit/STREAMED-INJECT-DESIGN.md."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::CC_InjectStream patron injector fvt-id reward-dptf-id amount duration)
-                )
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                (format "Successfully streamed {} {} into FVT {} over {}s." [amount reward-dptf-id fvt-id duration])
+    (defun INFO_AQP-FVT|AddRewardLink:object{OuronetInfoV2.ClientInfo}
+        (patron:string fvt-id:string reward-dptf-id:string segmentation:bool multiplet-family-id:string)
+        @doc "Cost preview for AQP-FVT|C_AddRewardLink. IGNIS GAS|ADD-REWARD-LINK; no STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Register a reward DPTF on an FVT." "Executes via TS02-C3.AQP-FVT|C_AddRewardLink."]
+                [(format "Reward {} linked on FVT {} (family {})." [reward-dptf-id fvt-id multiplet-family-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (RPS.URCi_AddRewardLink fvt-id [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
         )
     )
-    (defun AQP-FVT|CC_Inject:string
-        (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
-        @doc "HEAVY enforced-FRESH inject for ANY FVT class (farm/vault/treasury; M3 #12): refreshes every stale \
-            \ staker's deb so the divisor is live before injecting, then injects + collects IGNIS on patron. Same \
-            \ shape as C_Inject. Farms are covered too — a mosaic farm's singular/non-true-triplet members are \
-            \ deb-stale-exposed via SCR|ScoreTotalDebScore just like a vault."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::CC_Inject patron injector fvt-id reward-dptf-id amount)
-                )
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                (format "Successfully FRESH-injected {} {} into FVT {}." [amount reward-dptf-id fvt-id])
+    (defun INFO_AQP-FVT|ToggleRewardLink:object{OuronetInfoV2.ClientInfo}
+        (patron:string fvt-id:string reward-dptf-id:string enabled:bool)
+        @doc "Cost preview for AQP-FVT|C_ToggleRewardLink. IGNIS GAS|TOGGLE-REWARD-LINK; no STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Toggle a reward link's enabled flag." "Executes via TS02-C3.AQP-FVT|C_ToggleRewardLink."]
+                [(format "FVT {} reward {} enabled={}." [fvt-id reward-dptf-id enabled])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (RPS.URCi_ToggleRewardLink fvt-id [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
         )
     )
-    (defun AQP-FVT|CCp_InjectFixChunk:string
+    (defun INFO_AQP-FVT|SetQualitySplit:object{OuronetInfoV2.ClientInfo}
+        (patron:string fvt-id:string reward-dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer])
+        @doc "Cost preview for AQP-FVT|C_SetQualitySplit. IGNIS GAS|SET-QUALITY-SPLIT; no STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Set a MULTIPLET_BASE reward's quality-split mode + matrix." "Executes via TS02-C3.AQP-FVT|C_SetQualitySplit."]
+                [(format "FVT {} reward {} quality-split mode={}." [fvt-id reward-dptf-id mode])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (RPS.URCi_SetQualitySplit fvt-id [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
+        )
+    )
+    (defun INFO_AQP-FVT|InjectStream:object{OuronetInfoV2.ClientInfo}
+        (patron:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
+        @doc "Cost preview for AQP-FVT|CC_InjectStream. IGNIS GAS|INJECT; STOA none (custody transfer)."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Inject reward tokens as a linear time-stream over the given duration."
+                 "Executes via TS02-C3.AQP-FVT|CC_InjectStream."]
+                [(format "Streaming {} of {} into FVT {} over {}s." [amount reward-dptf-id fvt-id duration])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    ;;MISSING LEG FIXED (2026-09-14) — same defect as INFO_AQP-FVT|Inject, same cause.
+                    ;;This quoted only RPS.URCi_Inject (the gas leg) while the exec also collects the
+                    ;;custody transfer of the reward principal: XIv_FvtAddStream PHASE 1 runs
+                    ;;`(ref-TFT::C_Transfer reward-dptf-id patron AQP|SC_NAME amount true)` ahead of the
+                    ;;gas leg, and that transfer carries its own cumulator. All FOUR members of the
+                    ;;inject family shared this. Measured and pinned for CC_Inject at
+                    ;;`Stage_02/[6.5.1]_AQP-INFO-GROUNDTRUTH.repl <<TX-INFO-GT-INJECT>>`; the other
+                    ;;three route through the identical core, so the same reader fixes them.
+                    (RPS.URCi_InjectFull "AQP-FVT|CC_InjectStream" patron fvt-id reward-dptf-id amount))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [amount])
+        )
+    )
+    (defun INFO_AQP-FVT|Inject:object{OuronetInfoV2.ClientInfo}
+        (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
+        @doc "Cost preview for AQP-FVT|CC_Inject (enforced-fresh single-tx inject). IGNIS GAS|INJECT; STOA none."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Enforced-fresh single-tx inject (fixes all stale members first)."
+                 "Executes via TS02-C3.AQP-FVT|CC_Inject."]
+                [(format "Fresh-injected {} of {} into FVT {}." [amount reward-dptf-id fvt-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    ;;MISSING LEG FIXED (2026-09-14). This quoted only RPS.URCi_Inject -- the gas leg --
+                    ;;while CC_Inject also collects the custody transfer of the reward principal
+                    ;;(XI_FvtInjectCore PHASE 1, 04_RPS.pact). Measured short by exactly the transfer
+                    ;;cumulator. URCi_InjectFull counts both, matching how URCi_CollectFull and
+                    ;;URCi_TrueFungibleStakeFlow already count theirs. Pinned by
+                    ;;`Stage_02/[6.5.1]_AQP-INFO-GROUNDTRUTH.repl <<TX-INFO-GT-INJECT>>`.
+                    (RPS.URCi_InjectFull "AQP-FVT|CC_Inject" patron fvt-id reward-dptf-id amount))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [amount])
+        )
+    )
+    (defun INFO_AQP-FVT|InjectFinalize:object{OuronetInfoV2.ClientInfo}
+        (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
+        @doc "Cost preview for AQP-FVT|CC_InjectFinalize. IGNIS GAS|INJECT; STOA none."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Finalize a paginated fresh inject (zero-stale gate, then inject)."
+                 "Executes via TS02-C3.AQP-FVT|CC_InjectFinalize."]
+                [(format "Finalized fresh inject of {} of {} into FVT {}." [amount reward-dptf-id fvt-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    ;;MISSING LEG FIXED (2026-09-14) — same defect as INFO_AQP-FVT|Inject, same cause.
+                    ;;This quoted only RPS.URCi_Inject (the gas leg) while the exec also collects the
+                    ;;custody transfer of the reward principal: XI_FvtInjectCore PHASE 1, via XE_XI_FvtInjectCore runs
+                    ;;`(ref-TFT::C_Transfer reward-dptf-id patron AQP|SC_NAME amount true)` ahead of the
+                    ;;gas leg, and that transfer carries its own cumulator. All FOUR members of the
+                    ;;inject family shared this. Measured and pinned for CC_Inject at
+                    ;;`Stage_02/[6.5.1]_AQP-INFO-GROUNDTRUTH.repl <<TX-INFO-GT-INJECT>>`; the other
+                    ;;three route through the identical core, so the same reader fixes them.
+                    (RPS.URCi_InjectFull "AQP-FVT|CC_InjectFinalize" patron fvt-id reward-dptf-id amount))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [amount])
+        )
+    )
+    (defun INFO_AQP-FVT|InjectFixChunk:object{OuronetInfoV2.ClientInfo}
         (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
-        @doc "PAGE the enforced-fresh inject's fix phase — refresh up to `chunk` currently-stale stakers (penalized), \
-            \ the scalable prelude to AQP-FVT|CC_InjectFinalize for stale sets exceeding one tx. Repeat until none \
-            \ remain. `chunk` is the UI's simulated slice (bounded by AQP-FVT's loose INJECT-FIX-CHUNK-MAX). Lives \
-            \ in AQP-FVT."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                )
-                (let
-                    (
-                        (r:string (ref-FVT::CCp_InjectFixChunk patron fvt-id reward-dptf-id chunk))
-                    )
-                    (ref-TS01-A::XB_DynamicFuelSTOA)
-                    r
-                )
+        @doc "Cost preview for AQP-FVT|CCp_InjectFixChunk. Gas-station subsidised — no IGNIS/STOA to the patron."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Page the enforced-fresh FIX phase (up to `chunk` stale members)."
+                 "Gas-station subsidised — costs you nothing."
+                 "Executes via TS02-C3.AQP-FVT|CCp_InjectFixChunk."]
+                [(format "Fixed up to {} stale members on FVT {} reward {}." [chunk fvt-id reward-dptf-id])]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
         )
     )
-    (defun AQP-FVT|CC_InjectFinalize:string
-        (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
-        @doc "FINALIZE a paginated enforced-fresh inject: after CCp_InjectFixChunk pages left ZERO stale, inject on \
-            \ the fresh divisor + collect IGNIS on patron — same outcome as the single-tx AQP-FVT|CC_Inject. Lives \
-            \ in AQP-FVT."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::CC_InjectFinalize patron injector fvt-id reward-dptf-id amount)
-                )
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                (format "Successfully FRESH-injected {} {} into FVT {} (paginated)." [amount reward-dptf-id fvt-id])
-            )
-        )
-    )
-    (defun AQP-FVT|CCp_UnstaleAll:string
+    (defun INFO_AQP-FVT|UnstaleAll:object{OuronetInfoV2.ClientInfo}
         (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
-        @doc "OWNER mass deb-unstale — force-refresh up to `chunk` currently-stale present stakers (penalized, same \
-            \ 2e tag as an inject's fix) to make the FVT INJECTION-READY, WITHOUT injecting. Repeat until the report \
-            \ says injection-ready (or `all up to date` when nothing is stale), then run a light AQP-FVT|CC_Inject. \
-            \ Owner-gated in AQP-FVT::CCp_UnstaleAll. `chunk` is the UI's simulated slice (bounded by INJECT-FIX-CHUNK-MAX). \
-            \ Lives in AQP-FVT."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                )
-                (let
-                    (
-                        (r:string (ref-FVT::CCp_UnstaleAll patron fvt-id reward-dptf-id chunk))
-                    )
-                    (ref-TS01-A::XB_DynamicFuelSTOA)
-                    r
-                )
+        @doc "Cost preview for AQP-FVT|CCp_UnstaleAll. Gas-station subsidised — no IGNIS/STOA to the patron."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Owner mass deb-unstale (make injection-ready; no inject)."
+                 "Gas-station subsidised — costs you nothing."
+                 "Executes via TS02-C3.AQP-FVT|CCp_UnstaleAll."]
+                [(format "Unstaled up to {} members on FVT {}." [chunk fvt-id])]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
         )
     )
-    (defun MTX-AQP|2|CC_Inject:string
-        (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
-        @doc "Starts the 2-step enforced-fresh inject defpact (MTX-AQP — spike fallback for AQP-FVT|CC_Inject when \
-            \ the stale set exceeds one tx). Step 0 runs here; advance with (continue-pact 1). Each defpact step \
-            \ collects its own IGNIS on patron, so this wrapper only summons the pact."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-MTX-AQP:module{AqpMtxV1} MTX-AQP)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                )
-                (let
-                    (
-                        (r:string (ref-MTX-AQP::C_2|Inject patron injector fvt-id reward-dptf-id amount))
-                    )
-                    (ref-TS01-A::XB_DynamicFuelSTOA)
-                    r
-                )
-            )
-        )
-    )
-    (defun MTX-AQP|2|CC_SweepRevokeAnchor:string
-        (patron:string executor:string anchor-id:string)
-        @doc "Starts the 2-step paginated re-score SWEEP defpact (MTX-AQP — spike fallback for \
-            \ AQP-FVT|CC_SweepRevokeAnchor when the recompute set exceeds one tx). Step 0 brackets (freeze + \
-            \ swept-revoke) + recomputes the first window here; advance with (continue-pact 1). The defpact is \
-            \ gas-only (no reward inject), so this wrapper just summons the pact and refuels."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-MTX-AQP:module{AqpMtxV1} MTX-AQP)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                )
-                (let
-                    (
-                        (r:string (ref-MTX-AQP::C_2|SweepRevokeAnchor patron executor anchor-id))
-                    )
-                    (ref-TS01-A::XB_DynamicFuelSTOA)
-                    r
-                )
-            )
-        )
-    )
-    (defun AQP-FVT|CC_SweepRevokeAnchor:string
-        (patron:string executor:string anchor-id:string)
-        @doc "Single-tx re-score SWEEP that retires an EMPLOYED anchor (H4 half-2): freezes the affected pools, \
-            \ removes the anchor (swept-revoke), recomputes every affected holder (aggregate/lane refold + deb), \
-            \ then unfreezes. Owner-initiated (patron = the anchored-asset owner). Lives in AQP-FVT."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                )
-                (let
-                    (
-                        (r:string (ref-FVT::CC_SweepRevokeAnchor patron executor anchor-id))
-                    )
-                    (ref-TS01-A::XB_DynamicFuelSTOA)
-                    r
-                )
-            )
-        )
-    )
-    (defun AQP-FVT|CC_SweepBegin:string
-        (patron:string executor:string anchor-id:string)
-        @doc "OPEN a paginated (defun+gate) re-score sweep — the scalable twin of AQP-FVT|CC_SweepRevokeAnchor for \
-            \ holder sets exceeding one tx: freezes the affected pools + swept-revokes the anchor, then defers the \
-            \ recompute to AQP-FVT|CCp_SweepRecomputeChunk calls under the held freeze. Owner-initiated. Lives in AQP-FVT."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                )
-                (let
-                    (
-                        (r:string (ref-FVT::CC_SweepBegin patron executor anchor-id))
-                    )
-                    (ref-TS01-A::XB_DynamicFuelSTOA)
-                    r
-                )
-            )
-        )
-    )
-    (defun AQP-FVT|CCp_SweepRecomputeChunk:string
-        (patron:string anchor-id:string chunk:integer)
-        @doc "PAGE an open re-score sweep: recompute the next `chunk` holders over the frozen global present set, \
-            \ advancing the cursor; the finalizing chunk (set exhausted) unfreezes the affected pools. `chunk` is \
-            \ the UI's simulated slice size (bounded by AQP-FVT's loose SWEEP-CHUNK-MAX backstop). Lives in AQP-FVT."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                )
-                (let
-                    (
-                        (r:string (ref-FVT::CCp_SweepRecomputeChunk patron anchor-id chunk))
-                    )
-                    (ref-TS01-A::XB_DynamicFuelSTOA)
-                    r
-                )
-            )
-        )
-    )
-    (defun AQP-FVT|CC_UnstaleMyScores:string
+    (defun INFO_AQP-FVT|UnstaleMyScores:object{OuronetInfoV2.ClientInfo}
         (patron:string fvt-ids:[string])
-        @doc "User self-service deb-unstale: the caller refreshes THEIR OWN stale scores across the listed FVTs \
-            \ (non-penalized — the cheap alternative to being force-fixed by an inject), then collects IGNIS on \
-            \ patron. The UI finds the FVT list via RPS.URC_FvtUserHasStaleMember per FVT the user stakes. \
-            \ Lives in AQP-FVT."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::CC_UnstaleMyScores patron fvt-ids)
-                )
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                (format "Refreshed your stale scores across {} FVT(s)." [(length fvt-ids)])
+        @doc "Cost preview for AQP-FVT|CC_UnstaleMyScores. IGNIS GAS|UNSTALE; no STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Self-service deb-unstale of your own scores across FVTs." "Executes via TS02-C3.AQP-FVT|CC_UnstaleMyScores."]
+                [(format "Unstaled your scores across {} FVTs." [(length fvt-ids)])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-FVT.URCi_UnstaleMyScores patron [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
         )
     )
-    (defun AQP-FVT|CC_Collect:string
-        (patron:string collector:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
-        @doc "Collects pending reward DPTF for patron on one score-entity from fvt-id; collects IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                    (bal-before:decimal (ref-DPTF::UR_AccountSupply reward-dptf-id patron))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::CC_Collect patron collector fvt-id score-entity-type score-entity-id reward-dptf-id)
-                )
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                (let
-                    (
-                        (bal-after:decimal (ref-DPTF::UR_AccountSupply reward-dptf-id patron))
-                        (payout:decimal (- bal-after bal-before))
-                    )
-                    (format "Successfully collected {} {} rewards from FVT {} for score-entity type {} id {}."
-                        [payout reward-dptf-id fvt-id score-entity-type score-entity-id]
-                    )
-                )
+    (defun INFO_AQP-FVT|Collect:object{OuronetInfoV2.ClientInfo}
+        (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
+        @doc "Cost preview for AQP-FVT|CC_Collect. FULL IGNIS: reward-payout leg (plain TFT transfer, or a \
+            \ MULTIPLET_BASE triplet Coil/Curl ladder) + Phase-7 forced-fix penalty + GAS|COLLECT; STOA none. \
+            \ Reconstructed on the current claimable state (exact for un-streamed / settled lanes)."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Collect your claimable reward from this FVT membership."
+                 "Full IGNIS shown: payout transfer/ladder + any forced-fix penalty + gas (reconstructed byte-for-byte)."
+                 "Executes via TS02-C3.AQP-FVT|CC_Collect."]
+                [(format "Collected reward token {} from score-entity {}." [reward-dptf-id score-entity-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (RPS.URCi_CollectFull patron fvt-id score-entity-type score-entity-id reward-dptf-id))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
         )
     )
-    (defun AQP-DSA|CC_OpenAgency:string
-        (patron:string executor:string fvt-id:string pool-id:string score-entity-id:string fee-per-mille:integer
-         collectable-id:string stake-nonces:[integer])
-        @doc "DSA (Talos): open a delegation agency ATOMICALLY under P|TS — (1) admit the operator's BLANK triplet \
-            \ <score-entity-id> to vault <fvt-id> (AQP-DSA::C_AdmitAgency); (2) stake the operator's initial \
-            \ <collectable-id>/<stake-nonces> from <pool-id> (FVT::CC_CollectableStakeFlow — runs under P|TS so the \
-            \ deep DPDC custody transfer's IMC passes); (3) enforce the terminal quintessence >= unit-score/2 open \
-            \ gate (AQP-DSA::UEV_OpenGate — a short stake reverts the whole open). Collects both cumulators on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC:module{DpdcV2} DPDC)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                    (ref-DSA:module{DsaV1} AQP-DSA)
-                )
-                ;; (1) admit the blank triplet (fvt-links must be BAR) + record the agency
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DSA::C_AdmitAgency patron executor fvt-id score-entity-id fee-per-mille))
-                ;; (2) stake the operator's initial quintessence into the now-linked, reward-ready triplet
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::CC_CollectableStakeFlow
-                        pool-id executor executor collectable-id true
-                        stake-nonces (ref-DPDC::UR_AccountNoncesSupplies executor collectable-id true stake-nonces) true))
-                ;; (3) terminal atomic gate — after the stake, Q must clear unit-score/2 or the whole tx reverts
-                (ref-DSA::UEV_OpenGate fvt-id score-entity-id)
-                (format "Agency opened on FVT {} for score-entity {} (fee {} per-mille)." [fvt-id score-entity-id fee-per-mille])
+    (defun INFO_AQP-FVT|SweepRevokeAnchor:object{OuronetInfoV2.ClientInfo}
+        (patron:string anchor-id:string)
+        @doc "Cost preview for AQP-FVT|CC_SweepRevokeAnchor. Gas-station subsidised — no IGNIS/STOA to the patron."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Single-tx re-score sweep retiring an employed anchor."
+                 "Gas-station subsidised — costs you nothing."
+                 "Executes via TS02-C3.AQP-FVT|CC_SweepRevokeAnchor."]
+                [(format "Swept + retired anchor {}." [anchor-id])]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
         )
     )
-    (defun AQP-DSA|C_RecomputeCapture:string
+    (defun INFO_AQP-FVT|SweepBegin:object{OuronetInfoV2.ClientInfo}
+        (patron:string anchor-id:string)
+        @doc "Cost preview for AQP-FVT|CC_SweepBegin. Gas-station subsidised — no IGNIS/STOA to the patron."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Open a paginated re-score sweep (freeze + swept-revoke + cursor)."
+                 "Gas-station subsidised — costs you nothing."
+                 "Executes via TS02-C3.AQP-FVT|CC_SweepBegin."]
+                [(format "Opened sweep on anchor {}." [anchor-id])]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
+        )
+    )
+    (defun INFO_AQP-FVT|SweepRecomputeChunk:object{OuronetInfoV2.ClientInfo}
+        (patron:string anchor-id:string chunk:integer)
+        @doc "Cost preview for AQP-FVT|CCp_SweepRecomputeChunk. Gas-station subsidised — no IGNIS/STOA to the patron."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Page a re-score sweep (recompute the next `chunk` holders; final page unfreezes)."
+                 "Gas-station subsidised — costs you nothing."
+                 "Executes via TS02-C3.AQP-FVT|CCp_SweepRecomputeChunk."]
+                [(format "Recomputed up to {} holders on anchor {}'s sweep." [chunk anchor-id])]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
+        )
+    )
+    ;;
+    ;;[AQP-DSA] Delegated Staking Agencies
+    (defun INFO_AQP-DSA|DefineDelegationVault:object{OuronetInfoV2.ClientInfo}
+        (patron:string fvt-id:string model-id:string unit-score:integer)
+        @doc "Cost preview for AQP-DSA|C_DefineDelegationVault. IGNIS GAS|DEFINE-VAULT; no STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Bind a class-0 FVT as a DSA delegation vault." "Executes via TS02-C3.AQP-DSA|C_DefineDelegationVault."]
+                [(format "FVT {} bound as delegation vault (model {})." [fvt-id model-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-DSA.URCi_DefineDelegationVault patron [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
+        )
+    )
+    (defun INFO_AQP-DSA|OpenAgency:object{OuronetInfoV2.ClientInfo}
+        (patron:string fvt-id:string pool-id:string score-entity-id:string fee-per-mille:integer collectable-id:string stake-nonces:[integer])
+        @doc "Cost preview for AQP-DSA|CC_OpenAgency. IGNIS GAS|OPEN-AGENCY base; the atomic open also stakes the \
+            \ operator's collateral (staking legs added at execution). No STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Open a delegation agency (admit + operator-stake + terminal gate)."
+                 "Base IGNIS shown; the operator collateral stake adds its legs at execution."
+                 "Executes via TS02-C3.AQP-DSA|CC_OpenAgency."]
+                [(format "Agency {} opened on vault {} (fee {} per-mille)." [score-entity-id fvt-id fee-per-mille])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-DSA.URCi_OpenAgency patron [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
+        )
+    )
+    (defun INFO_AQP-DSA|RecomputeCapture:object{OuronetInfoV2.ClientInfo}
         (patron:string fvt-id:string score-entity-id:string)
-        @doc "DSA (Talos): permissionlessly recompute an agency's capture from its current quintessence (after a \
-            \ delegator stake/unstake changed Q); collects IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DSA:module{DsaV1} AQP-DSA)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-DSA::C_RecomputeCapture patron fvt-id score-entity-id)
-                    )
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (format "Capture recomputed for agency {} on FVT {}." [score-entity-id fvt-id])
+        @doc "Cost preview for AQP-DSA|C_RecomputeCapture. IGNIS GAS|RECOMPUTE-CAPTURE; no STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
             )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Recompute an agency's capture (permissionless; preserves oracle-ts)." "Executes via TS02-C3.AQP-DSA|C_RecomputeCapture."]
+                [(format "Agency {} capture recomputed on vault {}." [score-entity-id fvt-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-DSA.URCi_RecomputeCapture patron [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
         )
     )
+    (defun INFO_AQP-DSA|SetOracleAuth:object{OuronetInfoV2.ClientInfo}
+        (patron:string fvt-id:string oracle-guard:guard)
+        @doc "Cost preview for AQP-DSA|C_SetOracleAuth. IGNIS GAS|SET-ORACLE-AUTH; no STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Authorize the delegated oracle key + arm the capture expiry." "Executes via TS02-C3.AQP-DSA|C_SetOracleAuth."]
+                [(format "Oracle authority set on vault {}." [fvt-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-DSA.URCi_SetOracleAuth patron [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
+        )
+    )
+    (defun INFO_AQP-DSA|OracleWrite:object{OuronetInfoV2.ClientInfo}
+        (patron:string fvt-id:string score-entity-id:string nodes:integer uptime:integer)
+        @doc "Cost preview for AQP-DSA|C_OracleWrite. IGNIS GAS|ORACLE-WRITE; no STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Oracle writes an agency's daily {nodes, uptime} + recomputes its capture." "Executes via TS02-C3.AQP-DSA|C_OracleWrite."]
+                [(format "Oracle wrote nodes {} / uptime {} for agency {}." [nodes uptime score-entity-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-DSA.URCi_OracleWrite patron [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
+        )
+    )
+    (defun INFO_AQP-DSA|ToggleExternalOracle:object{OuronetInfoV2.ClientInfo}
+        (on:bool)
+        @doc "Cost preview for AQP-DSA|A_ToggleExternalOracle. Chain-wide GOV switch — no IGNIS/STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Flip the SINGULAR GLOBAL external-oracle switch for ALL agencies (governance)."
+                 "Master-signed governance action — no gas."
+                 "Executes via TS02-C3.AQP-DSA|A_ToggleExternalOracle."]
+                [(format "Global external-oracle switch set to {}." [on])]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
+        )
+    )
+    (defun INFO_AQP-DSA|SetOracleValidity:object{OuronetInfoV2.ClientInfo}
+        (seconds:integer)
+        @doc "Cost preview for AQP-DSA|A_SetOracleValidity. Chain-wide GOV switch — no IGNIS/STOA."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Set the GLOBAL oracle-validity window (freshness horizon; governance)."
+                 "Master-signed governance action — no gas."
+                 "Executes via TS02-C3.AQP-DSA|A_SetOracleValidity."]
+                [(format "Global oracle-validity window set to {} seconds." [seconds])]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
+        )
+    )
+    (defun INFO_AQP-DSA|WithdrawRoyalty:object{OuronetInfoV2.ClientInfo}
+        (patron:string fvt-id:string reward-dptf-id:string)
+        @doc "Cost preview for AQP-DSA|C_WithdrawRoyalty. FULL IGNIS: GAS|WITHDRAW-ROYALTY gas leg + the state- \
+            \ dependent custody-move leg (normalize + TFT transfer of the live royalty pool to the FVT owner); STOA none."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Withdraw the whole royalty pool to the FVT owner."
+                 "Full IGNIS shown: gas + custody move (reconstructed from the live royalty balance)."
+                 "Executes via TS02-C3.AQP-DSA|C_WithdrawRoyalty."]
+                [(format "Royalty pool of reward {} on FVT {} withdrawn to owner." [reward-dptf-id fvt-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (AQP-DSA.URCi_WithdrawRoyaltyFull patron fvt-id reward-dptf-id))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
+        )
+    )
+    (defun INFO_AQP-DSA|BurnRoyalty:object{OuronetInfoV2.ClientInfo}
+        (patron:string fvt-id:string reward-dptf-id:string)
+        @doc "Cost preview for AQP-DSA|C_BurnRoyalty. FULL IGNIS: GAS|BURN-ROYALTY gas leg + the state-dependent \
+            \ custody-burn leg (normalize + DPTF burn of the live royalty pool); STOA none."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Burn the whole royalty pool."
+                 "Full IGNIS shown: gas + custody burn (reconstructed from the live royalty balance)."
+                 "Executes via TS02-C3.AQP-DSA|C_BurnRoyalty."]
+                [(format "Royalty pool of reward {} on FVT {} burned." [reward-dptf-id fvt-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (AQP-DSA.URCi_BurnRoyaltyFull patron fvt-id reward-dptf-id))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
+        )
+    )
+    (defun INFO_AQP-DSA|FuelRoyalty:object{OuronetInfoV2.ClientInfo}
+        (patron:string fvt-id:string reward-dptf-id:string swpair:string)
+        @doc "Cost preview for AQP-DSA|C_FuelRoyalty. FULL IGNIS: GAS|FUEL-ROYALTY gas leg + the state-dependent \
+            \ custody-fuel leg (normalize + SWPLC fuel of the live royalty pool into the swpair); STOA none."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Fuel a swap pair with the whole royalty pool (no LP mint)."
+                 "Full IGNIS shown: gas + custody fuel (reconstructed from the live royalty balance)."
+                 "Executes via TS02-C3.AQP-DSA|C_FuelRoyalty."]
+                [(format "Royalty pool of reward {} on FVT {} fueled into {}." [reward-dptf-id fvt-id swpair])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (AQP-DSA.URCi_FuelRoyaltyFull patron fvt-id reward-dptf-id swpair))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
+        )
+    )
+    (defun INFO_AQP-DSA|SetAgencyFee:object{OuronetInfoV2.ClientInfo}
+        (patron:string fvt-id:string score-entity-id:string fee-per-mille:integer)
+        @doc "Cost preview for AQP-DSA|C_SetAgencyFee. IGNIS GAS|SET-AGENCY-FEE; no STOA. O(1) reprice."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Change a delegation agency's operator fee (reprices only future injects)." "Executes via TS02-C3.AQP-DSA|C_SetAgencyFee."]
+                [(format "Agency {} fee set to {} per-mille." [score-entity-id fee-per-mille])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-DSA.URCi_SetAgencyFee patron [])))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
+        )
+    )
+    ;;
+    ;;[AQP-MTX] Matrix drivers (spike-fallback defpacts)
+    (defun INFO_AQP-MTX|2Inject:object{OuronetInfoV2.ClientInfo}
+        (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
+        @doc "Cost preview for MTX-AQP|2|CC_Inject (2-step enforced-fresh inject). IGNIS GAS|INJECT (inner XB_FvtInject); STOA none."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: 2-step enforced-fresh inject (spike fallback for CC_Inject on vault/treasury)."
+                 "Executes via TS02-C3.MTX-AQP|2|CC_Inject."]
+                [(format "2-step fresh-injected {} of {} into FVT {}." [amount reward-dptf-id fvt-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    ;;MISSING LEG FIXED (2026-09-14) — same defect as INFO_AQP-FVT|Inject, same cause.
+                    ;;This quoted only RPS.URCi_Inject (the gas leg) while the exec also collects the
+                    ;;custody transfer of the reward principal: XI_FvtInjectCore PHASE 1, via XB_FvtInject runs
+                    ;;`(ref-TFT::C_Transfer reward-dptf-id patron AQP|SC_NAME amount true)` ahead of the
+                    ;;gas leg, and that transfer carries its own cumulator. All FOUR members of the
+                    ;;inject family shared this. Measured and pinned for CC_Inject at
+                    ;;`Stage_02/[6.5.1]_AQP-INFO-GROUNDTRUTH.repl <<TX-INFO-GT-INJECT>>`; the other
+                    ;;three route through the identical core, so the same reader fixes them.
+                    (RPS.URCi_InjectFull "MTX-AQP|2|CC_Inject" patron fvt-id reward-dptf-id amount))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [amount])
+        )
+    )
+    (defun INFO_AQP-MTX|2SweepRevokeAnchor:object{OuronetInfoV2.ClientInfo}
+        (patron:string anchor-id:string)
+        @doc "Cost preview for MTX-AQP|2|CC_SweepRevokeAnchor. Gas-station subsidised — no IGNIS/STOA to the patron."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: 2-step paginated sweep retiring an employed anchor (spike fallback for CC_SweepRevokeAnchor)."
+                 "Gas-station subsidised — costs you nothing."
+                 "Executes via TS02-C3.MTX-AQP|2|CC_SweepRevokeAnchor."]
+                [(format "2-step swept + retired anchor {}." [anchor-id])]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [])
+        )
+    )
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+
 )
 
-;; --- tables for 04_TS02-C3.pact (2 defined) ---
-;; UPGRADE MODE: this module is assumed already deployed, so its
-;; tables already exist and (create-table) would ABORT the whole
-;; transaction. They are listed here, commented, for reference.
-;; If any of these is NEW since the last deploy, uncomment JUST it.
-;; (create-table P|T)
-;; (create-table P|MT)
-
-;; ===== 1_SOVEREIGN/STAGE_02/3_Talos/05_TS02-DPAD.pact ==============
+;; ===== 1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact ================
 ;; Deploy: load THIS file — interface(s) + module ship together.
 ;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/03_Talos.pact
 ;;
-;; SOVEREIGN launchpad Talos. Holds ONLY the sovereign DEMIPAD orchestration
-;; (asset registration/config + deposit/fuel/retrieve/withdraw). The per-sale
-;; CITIZEN user wrappers (SPARK|/SNAKES|/CUSTODIANS|/KPAY|/STOAICO|) live in the
-;; citizen Talos 2_CITIZEN/7_Launchpad/99_TS02-CPAD.pact, deployed AFTER the
-;; citizen sales. Deploy order: DEMIPAD core -> TS02-C1/C2/C3 -> THIS (sovereign)
-;; -> citizen sales -> TS02-CPAD (citizen Talos).
-;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface TalosStageTwo_DemiPadV1
-    @doc "Exposes Ouronet Stage Two Demipad SOVEREIGN Client Functions"
+(interface TalosStageTwo_ClientOneV2
+    @doc "Exposes Stage Two First Batch of Client Functions: \
+        \ the SemiFungible Client Functions"
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -2742,49 +1601,177 @@
     ;;{5.6}  Aux/X
     ;;{5.7}  User [A/C]
     ;;
-    ;;  [A]
+    ;;  [2] DPDC
     ;;
-    (defun A_RegisterAssetToLaunchpad (patron:string asset-id:string fungibility:[bool]))
-    (defun A_ToggleOpenForBusiness (asset-id:string toggle:bool))
-    (defun A_DefinePrice (asset-id:string price:object))
-    (defun A_ToggleRetrieval (asset-id:string toggle:bool))
+    (defun DPDC|C_MultiTransfer (patron:string ids:[string] sons:[bool] sender:string receiver:string nonces-array:[[integer]] amounts-array:[[integer]] method:bool))
+    (defun DPSF|C_UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
+    (defun DPSF|C_UpgradeBranding (patron:string entity-id:string months:integer))
     ;;
-    ;;  [C]
+    ;;  [3] DPDC-C
     ;;
-    (defun DEMIPAD|C_Deposit (patron:string donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal))
+    (defun DPSF|C_Create:string
+        (
+            patron:string id:string amount:[integer]
+            input-nonce-data:[object{DpdcUdcV2.DPDC|NonceData}]
+        )
+    )
     ;;
-    (defun DEMIPAD|C_Withdraw (patron:string asset-id:string type:integer destination:string))
+    ;;  [4] DPDC-I
     ;;
-    (defun DEMIPAD|C_FuelTrueFungible (patron:string client:string asset-id:string amount:decimal))
-    (defun DEMIPAD|C_FuelOrtoFungible (patron:string client:string asset-id:string nonces:[integer]))
-    (defun DEMIPAD|C_FuelSemiFungible (patron:string client:string asset-id:string nonces:[integer] amounts:[integer]))
-    (defun DEMIPAD|C_FuelNonFungible (patron:string client:string asset-id:string nonces:[integer] amounts:[integer]))
-    (defun DEMIPAD|C_RetrieveTrueFungible (patron:string client:string asset-id:string amount:decimal))
-    (defun DEMIPAD|C_RetrieveOrtoFungible (patron:string client:string asset-id:string nonces:[integer]))
-    (defun DEMIPAD|C_RetrieveSemiFungible (patron:string client:string asset-id:string nonces:[integer] amounts:[integer]))
-    (defun DEMIPAD|C_RetrieveNonFungible (patron:string client:string asset-id:string nonces:[integer] amounts:[integer]))
+    ;; DPSF|C_DeployAccount removed — DPDC Audit #35M: standalone deployment let any signer force any
+    ;; existing account to associate with any collection, with no ownership check. Real auto-association
+    ;; (on transfer, role-toggle, Issue, set-fragmentation) always calls DPDC::XBv_DeployAccountSFT
+    ;; directly, module-to-module, bypassing this public entrypoint entirely.
+    (defun DPSF|C_Issue:string 
+        (
+            patron:string 
+            owner-account:string creator-account:string collection-name:string collection-ticker:string
+            can-upgrade:bool can-change-owner:bool can-change-creator:bool can-add-special-role:bool
+            can-transfer-nft-create-role:bool can-freeze:bool can-wipe:bool can-pause:bool
+        )
+    )
+    ;;
+    ;;  [5] DPDC-R
+    ;;
+    (defun DPSF|C_ToggleAddQuantityRole (patron:string id:string account:string toggle:bool))
+    (defun DPSF|C_ToggleFreezeAccount (patron:string id:string account:string toggle:bool))
+    (defun DPSF|C_ToggleExemptionRole (patron:string id:string account:string toggle:bool))
+    (defun DPSF|C_ToggleBurnRole (patron:string id:string account:string toggle:bool))
+    (defun DPSF|C_ToggleUpdateRole (patron:string id:string account:string toggle:bool))
+    (defun DPSF|C_ToggleModifyCreatorRole (patron:string id:string account:string toggle:bool))
+    (defun DPSF|C_ToggleModifyRoyaltiesRole (patron:string id:string account:string toggle:bool))
+    (defun DPSF|C_ToggleTransferRole (patron:string id:string account:string toggle:bool))
+    (defun DPSF|C_MoveCreateRole (patron:string id:string new-account:string))
+    (defun DPSF|C_MoveRecreateRole (patron:string id:string new-account:string))
+    (defun DPSF|C_MoveSetUriRole (patron:string id:string new-account:string))
+    ;;
+    ;;  [6] DPDC-MNG
+    ;;
+    (defun DPSF|C_Control (patron:string id:string cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool))
+    (defun DPSF|C_TogglePause (patron:string id:string toggle:bool))
+        ;;
+    (defun DPSF|C_AddQuantity (patron:string id:string account:string nonce:integer amount:integer))
+    (defun DPSF|C_Burn (patron:string id:string account:string nonce:integer amount:integer))
+    (defun DPSF|C_WipeNoncePartialy (patron:string id:string account:string nonce:integer amount:integer))
+    (defun DPSF|C_WipeNonce (patron:string id:string account:string nonce:integer))
+        ;;
+    (defun DPSF|CC_WipeHeavy (patron:string account:string id:string))
+    (defun DPSF|C_WipePure (patron:string account:string id:string removable-nonces-obj:object{DpdcManagementV2.RemovableNonces}))
+    (defun DPSF|C_WipeClean (patron:string account:string id:string nonces:[integer]))
+    (defun DPSF|C_WipeDirty (patron:string account:string id:string nonces:[integer]))
+    (defun DPSF|Cp_WipeSlice (patron:string account:string id:string removable-nonces-obj:object{DpdcManagementV2.RemovableNonces}))
+    ;;
+    ;;  [7] DPDC-T
+    ;;
+    (defun DPSF|C_Repurpose (patron:string id:string repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer]))
+    (defun DPSF|C_TransferNonce (patron:string id:string sender:string receiver:string nonce:integer amount:integer method:bool))
+    (defun DPSF|C_TransferNonces (patron:string id:string sender:string receiver:string nonces:[integer] amounts:[integer] method:bool))
+    ;;
+    ;;  [8] DPDC-S
+    ;;
+    (defun DPSF|C_Make (patron:string account:string id:string nonces:[integer] set-class:integer how-many-sets:integer))
+    (defun DPSF|CC_Break (patron:string account:string id:string nonce:integer how-many-sets:integer))
+    (defun DPSF|C_DefinePrimordialSet 
+        (
+            patron:string id:string set-name:string score-multiplier:decimal
+            set-definition:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}]
+            ind:object{DpdcUdcV2.DPDC|NonceData}
+        )
+    )
+    (defun DPSF|C_DefineCompositeSet
+        (
+            patron:string id:string set-name:string score-multiplier:decimal
+            set-definition:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}]
+            ind:object{DpdcUdcV2.DPDC|NonceData}
+        )
+    )
+    (defun DPSF|C_DefineHybridSet
+        (
+            patron:string id:string set-name:string score-multiplier:decimal
+            primordial-sd:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}]
+            composite-sd:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}]
+            ind:object{DpdcUdcV2.DPDC|NonceData}
+        )
+    )
+    (defun DPSF|C_EnableSetClassFragmentation
+        (
+            patron:string id:string set-class:integer
+            fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData}
+        )
+    )
+    (defun DPSF|C_ToggleSet (patron:string id:string set-class:integer toggle:bool))
+    (defun DPSF|C_RenameSet (patron:string id:string set-class:integer new-name:string))
+    ;; DPSF|C_UpdateSetMultiplier removed — DPDC Audit #15H: score-multiplier is immutable after Define.
+    ;;
+    (defun DPSF|C_UpdateSetNonce                        (patron:string id:string account:string set-class:integer nos:bool new-nonce-data:object{DpdcUdcV2.DPDC|NonceData}))
+    (defun DPSF|C_UpdateSetNonces                       (patron:string id:string account:string set-classes:[integer] nos:bool new-nonces-data:[object{DpdcUdcV2.DPDC|NonceData}]))
+    (defun DPSF|C_UpdateSetNonceRoyalty                 (patron:string id:string account:string set-class:integer nos:bool royalty-value:decimal))
+    (defun DPSF|C_UpdateSetNonceIgnisRoyalty            (patron:string id:string account:string set-class:integer nos:bool royalty-value:decimal))
+    (defun DPSF|C_UpdateSetNonceName                    (patron:string id:string account:string set-class:integer nos:bool name:string))
+    (defun DPSF|C_UpdateSetNonceDescription             (patron:string id:string account:string set-class:integer nos:bool description:string))
+    (defun DPSF|C_UpdateSetNonceScore                   (patron:string id:string account:string set-class:integer nos:bool score:decimal))
+    (defun DPSF|C_RemoveSetNonceScore                   (patron:string id:string account:string set-class:integer nos:bool))
+    (defun DPSF|C_UpdateSetNonceMetaData                (patron:string id:string account:string set-class:integer nos:bool meta-data:object))
+    (defun DPSF|C_UpdateSetNonceURI                     (patron:string id:string account:string set-class:integer nos:bool ay:object{DpdcUdcV2.URI|Type} u1:object{DpdcUdcV2.URI|Data} u2:object{DpdcUdcV2.URI|Data} u3:object{DpdcUdcV2.URI|Data}))
+    ;;
+    ;;  [9] DPDC-F
+    ;;
+    (defun DPSF|C_RepurposeFragments (patron:string id:string repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer]))
+    (defun DPSF|C_MakeFragments (patron:string account:string id:string nonce:integer amount:integer))
+    (defun DPSF|C_MergeFragments (patron:string account:string id:string nonce:integer amount:integer))
+    (defun DPSF|C_EnableNonceFragmentation (patron:string id:string nonce:integer fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData}))
+    ;;
+    ;;  [10] DPDC-N
+    ;;
+    (defun DPSF|C_UpdateNonce                           (patron:string id:string account:string nonce:integer nos:bool new-nonce-data:object{DpdcUdcV2.DPDC|NonceData}))
+    (defun DPSF|C_UpdateNonces                          (patron:string id:string account:string nonces:[integer] nos:bool new-nonces-data:[object{DpdcUdcV2.DPDC|NonceData}]))
+    (defun DPSF|C_UpdateNonceRoyalty                    (patron:string id:string account:string nonce:integer nos:bool royalty-value:decimal))
+    (defun DPSF|C_UpdateNonceIgnisRoyalty               (patron:string id:string account:string nonce:integer nos:bool royalty-value:decimal))
+    (defun DPSF|C_UpdateNonceName                       (patron:string id:string account:string nonce:integer nos:bool name:string))
+    (defun DPSF|C_UpdateNonceDescription                (patron:string id:string account:string nonce:integer nos:bool description:string))
+    (defun DPSF|C_UpdateNonceScore                      (patron:string id:string account:string nonce:integer nos:bool score:decimal))
+    (defun DPSF|C_RemoveNonceScore                      (patron:string id:string account:string nonce:integer nos:bool))
+    (defun DPSF|C_UpdateNonceMetaData                   (patron:string id:string account:string nonce:integer nos:bool meta-data:object))
+    (defun DPSF|C_UpdateNonceURI                        (patron:string id:string account:string nonce:integer nos:bool ay:object{DpdcUdcV2.URI|Type} u1:object{DpdcUdcV2.URI|Data} u2:object{DpdcUdcV2.URI|Data} u3:object{DpdcUdcV2.URI|Data}))
+    ;;
+    ;;
+    ;;  [10] EQUITY
+    ;;
+    (defun DPSF|C_IssueCompany:string
+        (
+            patron:string creator-account:string collection-name:string collection-ticker:string
+            royalty:decimal ignis-royalty:decimal ipfs-links:[string]
+        )
+    )
+    (defun DPSF|C_MorphEquity (patron:string account:string id:string input-nonce:integer input-amount:integer output-nonce:integer))
+    (defun DPDC|C_BulkTransfer
+        (patron:string id:string son:bool nonces-array:[[integer]] amounts-array:[[integer]] sender:string receiver-lst:[string] method:bool)
+    )
+    (defun DPSF|C_BulkTransfer
+        (patron:string id:string nonces-array:[[integer]] amounts-array:[[integer]] sender:string receiver-lst:[string] method:bool)
+    )
 
 )
 ;;
-(module TS02-DPAD GOV
-    @doc "TALOS Stage 2 Demiourgos Launchpad SOVEREIGN Functions"
+(module TS02-C1 GOV
+    @doc "TALOS Stage 2 Client Functiones Part 1 - SFT Functions"
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements TalosStageTwo_DemiPadV1)
+    (implements TalosStageTwo_ClientOneV2)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
     ;;
-    (defconst GOV|MD_TS02-DPAD                          (keyset-ref-guard (GOV|Demiurgoi)))
+    (defconst GOV|MD_TS02-C1                            (keyset-ref-guard (GOV|Demiurgoi)))
     ;;{G2}  schemas
     ;;{G3}  tables
     ;;{G4}  capabilities
-    (defcap GOV ()                                      (compose-capability (GOV|TS02-DPAD_ADMIN)))
-    (defcap GOV|TS02-DPAD_ADMIN ()                      (enforce-guard GOV|MD_TS02-DPAD))
+    (defcap GOV ()                                      (compose-capability (GOV|TS02-C1_ADMIN)))
+    (defcap GOV|TS02-C1_ADMIN ()                        (enforce-guard GOV|MD_TS02-C1))
     ;;{G5}  functions
     (defun GOV|Demiurgoi ()
         (let
@@ -2858,7 +1845,7 @@
         )
     )
     (defun P|A_Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|TS02-DPAD_ADMIN)
+        (with-capability (GOV|TS02-C1_ADMIN)
             (write P|T policy-name
                 {"policy" : policy-guard}
             )
@@ -2868,7 +1855,7 @@
         @doc "Registers <policy-guard> as a trusted inter-module caller of this module. \
             \ IDEMPOTENT: a guard already in the chain is left alone rather than appended \
             \ a second time. See OuronetPolicyV2 for why that is load-bearing."
-        (with-capability (GOV|TS02-DPAD_ADMIN)
+        (with-capability (GOV|TS02-C1_ADMIN)
             (let
                 (
                     (ref-U|LST:module{StringProcessorV2} U|LST)
@@ -2894,7 +1881,7 @@
         @doc "Revokes <policy-guard> from this module's guard chain. Removes EVERY occurrence, so \
             \ it doubles as the cleanup for duplicates left behind by the pre-idempotence append. \
             \ Refuses to drop this module's own SECURE seed -- see OuronetPolicyV2."
-        (with-capability (GOV|TS02-DPAD_ADMIN)
+        (with-capability (GOV|TS02-C1_ADMIN)
             (let
                 (
                     (ref-U|LST:module{StringProcessorV2} U|LST)
@@ -2916,7 +1903,7 @@
         @doc "Replaces this module's whole guard chain in one write -- the recovery hatch. \
             \ Deduplicates, and enforces that the module's own SECURE seed survives: without it \
             \ the module can no longer reach its own P|UEV_IMC-gated functions."
-        (with-capability (GOV|TS02-DPAD_ADMIN)
+        (with-capability (GOV|TS02-C1_ADMIN)
             (let
                 (
                     (dg:guard (create-capability-guard (SECURE)))
@@ -2929,24 +1916,1727 @@
         )
     )
     (defun P|A_Define ()
-        @doc "Registers THIS sovereign launchpad Talos' summoner guard as a trusted IMP peer of the \
-            \ sovereign modules it drives (DEMIPAD core + DPDC for direct XB_DeployAccount). The \
-            \ per-sale CITIZEN modules are registered by the citizen Talos (TS02-CPAD)."
         (let
             (
                 (ref-P|TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                (ref-P|DPAD:module{OuronetPolicyV2} DEMIPAD)
                 (ref-P|DPDC:module{OuronetPolicyV2} DPDC)
+                (ref-P|DPDC-C:module{OuronetPolicyV2} DPDC-C)
+                (ref-P|DPDC-I:module{OuronetPolicyV2} DPDC-I)
+                (ref-P|DPDC-R:module{OuronetPolicyV2} DPDC-R)
+                (ref-P|DPDC-MNG:module{OuronetPolicyV2} DPDC-MNG)
+                (ref-P|DPDC-T:module{OuronetPolicyV2} DPDC-T)
+                (ref-P|DPDC-F:module{OuronetPolicyV2} DPDC-F)
+                (ref-P|DPDC-S:module{OuronetPolicyV2} DPDC-S)
+                (ref-P|DPDC-N:module{OuronetPolicyV2} DPDC-N)
+                (ref-P|EQUITY:module{OuronetPolicyV2} EQUITY)
                 (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
                 (mg:guard (create-capability-guard (P|TALOS-SUMMONER)))
             )
             (ref-P|TS01-A::P|A_AddIMP mg)
-            (ref-P|DPAD::P|A_AddIMP mg)
-            ;;DPDC Audit #35M: TS02-DPAD calls DPDC::XBv_DeployAccountSFT/NFT directly (the removed
-            ;;DPSF|C_DeployAccount/DPNF|C_DeployAccount Talos wrappers previously carried TS02-C1/C2's
-            ;;own registered guard through the call chain instead) -- register this module's own guard
-            ;;as a trusted DPDC peer so P|UEV_IMC recognizes the direct call.
             (ref-P|DPDC::P|A_AddIMP mg)
+            (ref-P|DPDC-C::P|A_AddIMP mg)
+            (ref-P|DPDC-I::P|A_AddIMP mg)
+            (ref-P|DPDC-R::P|A_AddIMP mg)
+            (ref-P|DPDC-MNG::P|A_AddIMP mg)
+            (ref-P|DPDC-T::P|A_AddIMP mg)
+            (ref-P|DPDC-F::P|A_AddIMP mg)
+            (ref-P|DPDC-S::P|A_AddIMP mg)
+            (ref-P|DPDC-N::P|A_AddIMP mg)
+            (ref-P|EQUITY::P|A_AddIMP mg)
+            (ref-P|IGNIS::P|A_AddIMP mg)
+        )
+    )
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;
+    ;;
+    (defcap SECURE ()
+        true
+    )
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
+    ;;
+    (defun UC_ShortAccount:string (account:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UC_ShortAccount account)
+        )
+    )
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+    ;;
+    ;;
+    ;;  [2] DPDC
+    ;;
+    (defun DPDC|C_MultiTransfer (patron:string ids:[string] sons:[bool] sender:string receiver:string nonces-array:[[integer]] amounts-array:[[integer]] method:bool)
+        @doc "Transfer multiple SFT <ids> from <sender> to <receiver>"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                    (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount sender))
+                    (ra:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
+                    (hm:integer (length ids))
+                    ;;
+                    (irs:object{DpdcTransferV2.AggregatedRoyalties}
+                        (ref-DPDC-T::C_IgnisRoyaltyCollector patron sender ids sons nonces-array amounts-array)
+                    )
+                    (c:[string] (at "creators" irs))
+                    (r:[decimal] (at "ignis-royalties" irs))
+                    (s:decimal (fold (+) 0.0 r))
+                    (l:integer (length c))
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-T::C_Transfer ids sons sender receiver nonces-array amounts-array method)
+                )
+                [
+                    (format "Successfully transfered DPDC(s) {} Nonce-Array {} using Amount-Array {} from {} to {}" [ids nonces-array amounts-array sa ra])
+                    (if (= s 0.0)
+                        (format "Transfer executed without collecting any IGNIS Royalties for the Collectable(s) {}" [ids])
+                        (format "Transfer executed while collecting {} IGNIS Royalty to {} Collectable Creator(s)" [s l])
+                    )
+                ]
+            )
+        )
+    )
+    (defun DPSF|C_UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+        @doc "Updates <pending-branding> for DPSF Token <entity-id> costing 400 IGNIS"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC:module{DpdcV2} DPDC)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC::C_UpdatePendingBranding entity-id true logo description website social)
+                )
+            )
+        )
+    )
+    (defun DPSF|C_UpgradeBranding (patron:string entity-id:string months:integer)
+        @doc "Upgrades Branding for DPSF Token, making it a premium BrandingV2. \
+            \ Also sets pending-branding to live branding if its branding is not live yet"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-DPDC:module{DpdcV2} DPDC)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                )
+                (ref-DPDC::C_UpgradeBranding patron entity-id true months)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
+            )
+        )
+    )
+    ;;
+    ;;  [3] DPDC-C
+    ;;
+    (defun DPSF|C_Create:string
+        (
+            patron:string id:string amount:[integer]
+            input-nonce-data:[object{DpdcUdcV2.DPDC|NonceData}]
+        )
+        @doc "Creates a new SFT Collection Element(s), having a new nonce, \
+            \ of amount <amount>, on the Account that has <r-nft-create> \
+            \ As this account is the only Account that is allowed to create new SFTs in the Collection"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
+                    (l:integer (length input-nonce-data))
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (if (= l 1)
+                            (ref-DPDC-C::C_CreateNewNonce
+                                id true 0 (at 0 amount) (at 0 input-nonce-data) false
+                            )
+                            (ref-DPDC-C::C_CreateNewNonces
+                                id true amount input-nonce-data
+                            )
+                        )
+                    )
+                )
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                (format "Created {} Clas 0 SemiFungible(s) within the {} DPSF Collection"
+                    [(at "output" ico) id]
+                )
+            )
+        )
+    )
+    ;;
+    ;;  [4] DPDC-I
+    ;;
+    ;; DPSF|C_DeployAccount removed — DPDC Audit #35M: see interface-side removal note above.
+    (defun DPSF|C_Issue:string
+        (
+            patron:string 
+            owner-account:string creator-account:string collection-name:string collection-ticker:string
+            can-upgrade:bool can-change-owner:bool can-change-creator:bool can-add-special-role:bool
+            can-transfer-nft-create-role:bool can-freeze:bool can-wipe:bool can-pause:bool
+        )
+        @doc "Issues a new DPSF (Demiourgos Pact Semi-Fungible) Digital Collection: <SFT> \
+            \ Costs 5x<ignis|token-issue> = 2500 IGNIS and 400 STOA"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-I:module{DpdcIssueV2} DPDC-I)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-DPDC-I::C_IssueDigitalCollection
+                            patron true 
+                            owner-account creator-account collection-name collection-ticker
+                            can-upgrade can-change-owner can-change-creator can-add-special-role
+                            can-transfer-nft-create-role can-freeze can-wipe can-pause
+                            false
+                        )
+                    )
+                )
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
+                (at 0 (at "output" ico))
+            )
+        )
+    )
+    ;;
+    ;;  [5] DPDC-R
+    ;;
+    (defun DPSF|C_ToggleAddQuantityRole (patron:string id:string account:string toggle:bool)
+        @doc "Toggles the add quantity role for a DPTF Token on a given Ouronet Account"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-R::C_ToggleAddQuantityRole id account toggle)
+                )
+            )
+        )
+    )
+    (defun DPSF|C_ToggleFreezeAccount (patron:string id:string account:string toggle:bool)
+        @doc "Freezes a given account for a given DPSF Token. Frozen Accounts can no longer send or receive that DPSF Token"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-R::C_ToggleFreezeAccount id true account toggle)
+                )
+            )
+        )
+    )
+    (defun DPSF|C_ToggleExemptionRole (patron:string id:string account:string toggle:bool)
+        @doc "Toggles exemption Role for a given DPSF on a given Smart Ouronet Account (Only Smart Ouronet Accounts can accept this role) \
+            \ When sending to or receiving from such Accounts, the flat IGNIS Royalty fee must not be paid."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-R::C_ToggleExemptionRole id true account toggle)
+                )
+            )
+        )
+    )
+    (defun DPSF|C_ToggleBurnRole (patron:string id:string account:string toggle:bool)
+        @doc "Toggles burn Role for a given DPSF on any Ouronet Account. \
+            \ Such Accounts can then burn the DPSF"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-R::C_ToggleBurnRole id true account toggle)
+                )
+            )
+        )
+    )
+    (defun DPSF|C_ToggleUpdateRole (patron:string id:string account:string toggle:bool)
+        @doc "Toggles update Role for a given DPSF on any Ouronet Account. \
+            \ Such Accounts can then update (modify) the Metadata on any DPSF nonce"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-R::C_ToggleUpdateRole id true account toggle)
+                )
+            )
+        )
+    )
+    (defun DPSF|C_ToggleModifyCreatorRole (patron:string id:string account:string toggle:bool)
+        @doc "Toggles Modify Creator Role for a given DPSF on any Ouronet Account. \
+            \ Such Accounts can proceed to modify the Creator of the DPSF Collection"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-R::C_ToggleModifyCreatorRole id true account toggle)
+                )
+            )
+        )
+    )
+    (defun DPSF|C_ToggleModifyRoyaltiesRole (patron:string id:string account:string toggle:bool)
+        @doc "Toggles Modify Royalties Role for a given DPSF on any Ouronet Account. \
+            \ Such Accounts can proceed to modify the Permille Royalty of any nonce in the  DPSF Collection"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-R::C_ToggleModifyRoyaltiesRole id true account toggle)
+                )
+            )
+        )
+    )
+    (defun DPSF|C_ToggleTransferRole (patron:string id:string account:string toggle:bool)
+        @doc "Toggles Transfer Role for a given DPSF on any Ouronet Account. \
+            \ Transfers for any Nonce in the DPSF Collection are then restricted only to and from these accounts"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-R::C_ToggleTransferRole id true account toggle)
+                )
+            )
+        )
+    )
+    (defun DPSF|C_MoveCreateRole (patron:string id:string new-account:string)
+        @doc "Moves the Create Role to another Ouronet Account. A single Account may have this Role \
+            \ This is the only account that can issue new SFTs in the Collection"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-R::C_MoveCreateRole id true new-account)
+                )
+            )
+        )
+    )
+    (defun DPSF|C_MoveRecreateRole (patron:string id:string new-account:string)
+        @doc "Moves the Recreate Role to another Ouronet Account. A single Account may have this Role \
+            \ This is the only account that can recreate any existing SFT in the Collection \
+            \ Recreation reffers to a complete update (modification) of all SFT properties of a given nonce"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-R::C_MoveRecreateRole id true new-account)
+                )
+            )
+        )
+    )
+    (defun DPSF|C_MoveSetUriRole (patron:string id:string new-account:string)
+        @doc "Moves the Set URI Role to another Ouronet Account. A single Account may have this Role \
+            \ This is the only account that can modify the URIs of any nonce in the SFT Collection"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-R::C_MoveSetUriRole id true new-account)
+                )
+            )
+        )
+    )
+    ;;
+    ;;  [6] DPDC-MNG
+    ;;
+    (defun DPSF|C_Control (patron:string id:string cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool)
+        @doc "Controls DPSF Properties"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-MNG::C_Control id true cu cco ccc casr ctncr cf cw cp)
+                )
+            )
+        )
+    )
+    (defun DPSF|C_TogglePause (patron:string id:string toggle:bool)
+        @doc "Pauses a DPSF Collection. Paused Collections can no longer be transfered"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-MNG::C_TogglePause id true toggle)
+                )
+            )
+        )
+    )
+    (defun DPSF|C_AddQuantity (patron:string id:string account:string nonce:integer amount:integer)
+        @doc "Increases the Quantity for SFT <id> <nonce> by <amount> on <account>"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-MNG::C_AddQuantity account id nonce amount)
+                )
+                (format "Successfully added {} Units for SFT {} Nonce {} on Account {}" [amount id nonce (UC_ShortAccount account)])
+            )
+        )
+    )
+    (defun DPSF|C_Burn (patron:string id:string account:string nonce:integer amount:integer)
+        @doc "Decreases the Quantity for SFT <id> <nonce> by <amount> on <account>"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-MNG::C_BurnSFT account id nonce amount)
+                )
+                (format "Successfully burned {} Units for SFT {} Nonce {} on Account {}" [amount id nonce (UC_ShortAccount account)])
+            )
+        )
+    )
+    (defun DPSF|C_WipeNoncePartialy (patron:string id:string account:string nonce:integer amount:integer)
+        @doc "Wipes a partial <amount> of SFT <id> <nonce> from <account>"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-MNG::C_WipeSlim account id nonce amount)
+                )
+                (format "Successfully wiped {} Units for SFT {} Nonce {} from Account {}" [amount id nonce (UC_ShortAccount account)])
+            )
+        )
+    )
+    (defun DPSF|C_WipeNonce (patron:string id:string account:string nonce:integer)
+        @doc "Wipes the SFT <id> <nonce> from <account>"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-MNG::C_WipeNonce account id true nonce)
+                )
+                (format "Successfully wiped SFT {} Nonce {} from Account {}" [id nonce (UC_ShortAccount account)])
+            )
+        )
+    )
+    (defun DPSF|CC_WipeHeavy (patron:string account:string id:string)
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-DPDC-MNG::CC_WipeHeavy account id true)
+                    )
+                    (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
+                    (total-nonces-supplies:integer (fold (+) 0 (at "r-amounts" (at 0 (at "output" ico)))))
+                )
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                (format 
+                    "Successfully executed Heavy Wipe of SFT {} on Account {}, wiping {} Nonces With a Total Supply of {}" 
+                    [id (UC_ShortAccount account) no-of-nonces total-nonces-supplies]
+                )
+            )
+        )
+    )
+    (defun DPSF|C_WipePure (patron:string account:string id:string removable-nonces-obj:object{DpdcManagementV2.RemovableNonces})
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-DPDC-MNG::C_WipePure account id true removable-nonces-obj) 
+                    )
+                    (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
+                    (total-nonces-supplies:integer (fold (+) 0 (at "r-amounts" (at 0 (at "output" ico)))))
+                )
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                (format 
+                    "Successfully executed Pure Wipe of SFT {} on Account {}, wiping {} Nonces With a Total Supply of {}" 
+                    [id (UC_ShortAccount account) no-of-nonces total-nonces-supplies]
+                )
+            )
+        )
+    )
+    (defun DPSF|C_WipeClean (patron:string account:string id:string nonces:[integer])
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-DPDC-MNG::C_WipeClean account id true nonces) 
+                    )
+                    (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
+                    (total-nonces-supplies:integer (fold (+) 0 (at "r-amounts" (at 0 (at "output" ico)))))
+                )
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                (format 
+                    "Successfully executed Clean Wipe of SFT {} on Account {}, wiping {} Nonces With a Total Supply of {}" 
+                    [id (UC_ShortAccount account) no-of-nonces total-nonces-supplies]
+                )
+            )
+        )
+    )
+    (defun DPSF|C_WipeDirty (patron:string account:string id:string nonces:[integer])
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-DPDC-MNG::C_WipeDirty account id true nonces)
+                    )
+                    (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
+                    (total-nonces-supplies:integer (fold (+) 0 (at "r-amounts" (at 0 (at "output" ico)))))
+                )
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                (format
+                    "Successfully executed Dirty Wipe of SFT {} on Account {}, wiping {} Nonces With a Total Supply of {}"
+                    [id (UC_ShortAccount account) no-of-nonces total-nonces-supplies]
+                )
+            )
+        )
+    )
+    (defun DPSF|Cp_WipeSlice (patron:string account:string id:string removable-nonces-obj:object{DpdcManagementV2.RemovableNonces})
+        @doc "Hydra parallel wipe slice: wipes ONE <URHC_BuildWipeSlicePlan> slice of the SFT \
+            \ <account>'s <id> nonces. The UI dirty-reads the plan and fires one such tx per \
+            \ slice, all in parallel; slices are disjoint, order-independent and retryable \
+            \ (replay REVERTS on the zeroed account supply)."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-DPDC-MNG::Cp_WipeSlice account id true removable-nonces-obj)
+                    )
+                    (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
+                    (total-nonces-supplies:integer (fold (+) 0 (at "r-amounts" (at 0 (at "output" ico)))))
+                )
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                (format
+                    "Successfully executed Hydra Wipe Slice of SFT {} on Account {}, wiping {} Nonces With a Total Supply of {}"
+                    [id (UC_ShortAccount account) no-of-nonces total-nonces-supplies]
+                )
+            )
+        )
+    )
+    ;;
+    ;;  [7] DPDC-T
+    ;;
+    (defun DPSF|C_Repurpose (patron:string id:string repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer])
+        @doc "Repurpose SFT(s) from <repurpose-from> to <repurpose-to>. Requires <id> ownerhsip"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                    (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
+                    (sf:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-from))
+                    (st:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-T::C_RepurposeCollectable id true repurpose-from repurpose-to nonces amounts)
+                )
+                (format "Successfully repurposed SFT {} Nonces {} with Amounts {} from {} to {}" [id nonces amounts sf st])
+            )
+        )
+    )
+    (defun DPSF|C_TransferNonce (patron:string id:string sender:string receiver:string nonce:integer amount:integer method:bool)
+        @doc "Transfer an SFT <nonce> of <amount> from <sender> to <receiver> using <method>"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                    (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount sender))
+                    (ra:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
+                    ;;
+                    (irs:object{DpdcTransferV2.AggregatedRoyalties}
+                        (ref-DPDC-T::C_IgnisRoyaltyCollector patron sender [id] [true] [[nonce]] [[amount]])
+                    )
+                    (r:[decimal] (at "ignis-royalties" irs))
+                    (s:decimal (fold (+) 0.0 r))
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-T::C_Transfer [id] [true] sender receiver [[nonce]] [[amount]] method)
+                )
+                [
+                    (format "Successfully transfered SFT {} Nonce {} and Amount {} from {} to {}" [id nonce amount sa ra])
+                    (if (= s 0.0)
+                        (format "Transfer executed without collecting any IGNIS Royalties for the Collectable {}" [id])
+                        (format "Transfer executed while collecting {} IGNIS Royalty to the Collectable {} Creator" [s id])
+                    )
+                ]
+            )
+        )
+    )
+    (defun DPSF|C_TransferNonces (patron:string id:string sender:string receiver:string nonces:[integer] amounts:[integer] method:bool)
+        @doc "Transfer an SFT <nonce> of <amount> from <sender> to <receiver> using <method>"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                    (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount sender))
+                    (ra:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
+                    ;;
+                    (irs:object{DpdcTransferV2.AggregatedRoyalties}
+                        (ref-DPDC-T::C_IgnisRoyaltyCollector patron sender [id] [true] [nonces] [amounts])
+                    )
+                    (c:[string] (at "creators" irs))
+                    (r:[decimal] (at "ignis-royalties" irs))
+                    (s:decimal (fold (+) 0.0 r))
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-T::C_Transfer [id] [true] sender receiver [nonces] [amounts] method)
+                )
+                [
+                    (format "Successfully transfered SFT {} Nonces {} with Amounts {} from {} to {}" [id nonces amounts sa ra])
+                    (if (= s 0.0)
+                        (format "Transfer executed without collecting any IGNIS Royalties for the Collectable {}" [id])
+                        (format "Transfer executed while collecting {} IGNIS Royalty to the Collectable {} Creator" [s id])
+                    )
+                ]
+            )
+        )
+    )
+    (defun DPDC|C_BulkTransfer
+        (patron:string id:string son:bool nonces-array:[[integer]] amounts-array:[[integer]] sender:string receiver-lst:[string] method:bool)
+        @doc "Bulk whole collectable transfer — one sender, many standard-account receivers (TalosStageTwo_ClientOneV2)."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                    (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
+                    ;;
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount sender))
+                    (l:integer (length receiver-lst))
+                    ;;FIXED 2026-09-12: these two used to map over `(enumerate 0 (- l 1))`.
+                    ;;**In Pact `(enumerate 0 -1)` is `[0, -1]` -- a DESCENDING pair, not an empty
+                    ;;list.** So an EMPTY receiver list produced TWO ids, `C_IgnisRoyaltyCollector`
+                    ;;below indexed past the one-element arrays, and the caller got
+                    ;;`Array index out of bounds` instead of DPDC-T|C>BULK-TRANSFER's own shape
+                    ;;message -- which is bound in that cap and never got the chance to speak.
+                    ;;Mapping over `receiver-lst` ITSELF yields exactly `l` elements and is genuinely
+                    ;;empty when the list is, so the hazard is removed rather than worked around.
+                    ;;Chosen over reordering the call: the royalty collector must still run BEFORE the
+                    ;;transfer, and moving it would change what is charged, not just what is said.
+                    (ids:[string]  (map (lambda (rcv:string) id)  receiver-lst))
+                    (sons:[bool]   (map (lambda (rcv:string) son) receiver-lst))
+                )
+                ;;THE CORE TRANSFER RUNS FIRST, and the ordering is the fix.
+                ;;FIXED 2026-09-12: the royalty collector used to be bound in the `let` ABOVE this
+                ;;call. It iterates `(enumerate 0 (- (length ids) 1))` and indexes
+                ;;`(at idx nonces-array)` -- so for an EMPTY receiver list, or for MORE receivers than
+                ;;nonce legs, it ran off the end and raised `Array index out of bounds` before
+                ;;DPDC-T|C>BULK-TRANSFER's shape guard could say what was actually wrong. Only the
+                ;;opposite mismatch (more legs than receivers) stayed in bounds and reached the
+                ;;message, which is what made it a defect rather than a dead guard.
+                ;;Calling the core first lets its capability validate the shapes, after which every
+                ;;downstream `enumerate` is operating on lists already proven to agree.
+                ;;`TS01-C1::DPOF|C_BulkTransfer` has always been in this order and is not mute
+                ;;(pinned by DPOF-G12) -- so this follows an in-repo precedent rather than inventing
+                ;;an order. Royalties are computed from the collectable's creator settings and the
+                ;;amounts, not from balances, so moving the call does not change what is charged.
+                (let
+                    (
+                        (core-ico:object{IgnisCollectorV3.OutputCumulator}
+                            (ref-DPDC-T::C_BulkTransfer id son nonces-array amounts-array sender receiver-lst method)
+                        )
+                    )
+                (let
+                    (
+                    (irs:object{DpdcTransferV2.AggregatedRoyalties}
+                        (ref-DPDC-T::C_IgnisRoyaltyCollector patron sender ids sons nonces-array amounts-array)
+                    )
+                    (r:[decimal] (at "ignis-royalties" irs))
+                    (s:decimal (fold (+) 0.0 r))
+                )
+                (ref-IGNIS::XE_CollectIgnis patron core-ico)
+                [
+                    (format "Successfully bulk-transferred collectable {} from {} to {} receivers" [id sa l])
+                    (if (= s 0.0)
+                        (format "Bulk transfer executed without collecting any IGNIS Royalties for the Collectable {}" [id])
+                        (format "Bulk transfer executed while collecting {} IGNIS Royalty to the Collectable {} Creator" [s id])
+                    )
+                ]
+            )))
+        )
+    )
+    (defun DPSF|C_BulkTransfer
+        (patron:string id:string nonces-array:[[integer]] amounts-array:[[integer]] sender:string receiver-lst:[string] method:bool)
+        @doc "Bulk SFT transfer — son=true wrapper over DPDC|C_BulkTransfer."
+        (DPDC|C_BulkTransfer patron id true nonces-array amounts-array sender receiver-lst method)
+    )
+    ;;
+    ;;  [8] DPDC-S
+    ;;
+    (defun DPSF|C_Make
+        (patron:string account:string id:string nonces:[integer] set-class:integer how-many-sets:integer)
+        @doc "Makes a Set SFT of Class <set-class>"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                    (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                )
+                ;;G-44 FIX (2026-09-17), and the G-14 shape exactly: <nonce> used to be bound HERE,
+                ;;eagerly, purely to be printed in the success message below. `UR_NonceOfSet`
+                ;;funnels to `UR_Set`'s bare `read`, so a set-class that does not exist aborted on
+                ;;the raw table key IN THIS WRAPPER -- before the core was called and therefore
+                ;;before `DPDC-S|C>MAKE`'s own guard could speak. Fixing the defcap alone left this
+                ;;path unchanged, which is how the fix was caught as incomplete.
+                ;;Reading it AFTER the core call is value-identical: "nonce-of-set" is written once,
+                ;;when the set-class is DEFINED, and never updated by a make. Inlined rather than
+                ;;re-bound because it is used exactly once (CLAUDE.md let-vs-inline rule).
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-S::C_MakeSemiFungibleSet account id nonces set-class how-many-sets)
+                )
+                (format "Successfully generated {} Class {} Sets (Nonce {}) of SFT Collection {} on Account {}"
+                    [how-many-sets set-class (ref-DPDC-S::UR_NonceOfSet id set-class) id sa])
+            )
+        )
+    )
+    (defun DPSF|CC_Break
+        (patron:string account:string id:string nonce:integer how-many-sets:integer)
+        @doc "Brakes an SFT Nonce representing an SFT Set"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                    (ref-DPDC:module{DpdcV2} DPDC)
+                    (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+                    (set-class:integer (ref-DPDC::UR_NonceClass id true nonce))
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-S::CC_BreakSemiFungibleSet account id nonce how-many-sets)
+                )
+                (format "Successfully broken {} Class {} Sets (Nonce {}) of SFT Collection {} on Account {}" [how-many-sets set-class nonce id sa])
+            )
+        )
+    )
+    (defun DPSF|C_DefinePrimordialSet
+        (
+            patron:string id:string set-name:string score-multiplier:decimal
+            set-definition:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}]
+            ind:object{DpdcUdcV2.DPDC|NonceData}
+        )
+        @doc "Defines a New Primordial SFT Set. Primordial Sets are composed of Class 0 Nonces"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-S::C_DefinePrimordialSet id true set-name score-multiplier set-definition ind)
+                )
+                (format "Primordial Set <{}> for SFT Collection {} defined succesfully" [set-name id])
+            )
+        )
+    )
+    (defun DPSF|C_DefineCompositeSet
+        (
+            patron:string id:string set-name:string score-multiplier:decimal
+            set-definition:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}]
+            ind:object{DpdcUdcV2.DPDC|NonceData}
+        )
+        @doc "Defines a New Composite SFT Set. Composite Sets are composed of Class (!=0) Nonces"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-S::C_DefineCompositeSet id true set-name score-multiplier set-definition ind)
+                )
+                (format "Composite Set <{}> for SFT Collection {} defined succesfully" [set-name id])
+            )
+        )
+    )
+    (defun DPSF|C_DefineHybridSet
+        (
+            patron:string id:string set-name:string score-multiplier:decimal
+            primordial-sd:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}]
+            composite-sd:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}]
+            ind:object{DpdcUdcV2.DPDC|NonceData}
+        )
+        @doc "Defines a New Hybrid SFT Set. Hybrid Sets are composed of both Class 0 and Non-0 Nonces"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-S::C_DefineHybridSet id true set-name score-multiplier primordial-sd composite-sd ind)
+                )
+                (format "Hybrid Set <{}> for SFT Collection {} defined succesfully" [set-name id])
+            )
+        )
+    )
+    (defun DPSF|C_EnableSetClassFragmentation
+        (
+            patron:string id:string set-class:integer
+            fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData}
+        )
+        @doc "Enables Fragmentation for a given Set Class. This allows all SFTs of the given Set Class to be Fragmented"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-S::C_EnableSetClassFragmentation id true set-class fragmentation-ind)
+                )
+                (format "Set Class {} for SFT {} succesfully fragmented" [set-class id])
+            )
+        )
+    )
+    (defun DPSF|C_ToggleSet (patron:string id:string set-class:integer toggle:bool)
+        @doc "Enables or Disables a Set. A disabled Set allows only for decomposition of Set Elements, but not for composition"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-S::C_ToggleSet id true set-class toggle)
+                )
+                (format "SFT {} Set Class {} succesfully turned {}" [id set-class (if toggle "ON" "OFF")])
+            )
+        )
+    )
+    (defun DPSF|C_RenameSet (patron:string id:string set-class:integer new-name:string)
+        @doc "Renames an SFT Set"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-S::C_RenameSet id true set-class new-name)
+                )
+                (format "SFT {} Set Class {} succesfuly renamed to <{}>" [id set-class new-name])
+            )
+        )
+    )
+    ;; DPSF|C_UpdateSetMultiplier removed — DPDC Audit #15H.
+    ;;
+    (defun DPSF|C_UpdateSetNonce 
+        (patron:string id:string account:string set-class:integer nos:bool new-nonce-data:object{DpdcUdcV2.DPDC|NonceData})
+        @doc "[0] Updates Full Set Nonce Data, either Native or Split, for an SFT"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-N::C_UpdateNonces id true account [set-class] nos false [new-nonce-data])
+                )
+            )
+        )
+    )
+    (defun DPSF|C_UpdateSetNonces
+        (patron:string id:string account:string set-classes:[integer] nos:bool new-nonces-data:[object{DpdcUdcV2.DPDC|NonceData}])
+        @doc "[0] Updates Full Set Nonce Data, either Native or Split, for an SFT"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-N::C_UpdateNonces id true account set-classes nos false new-nonces-data)
+                )
+            )
+        )
+    )
+    (defun DPSF|C_UpdateSetNonceRoyalty
+        (patron:string id:string account:string set-class:integer nos:bool royalty-value:decimal)
+        @doc "[1] Updates Set Nonce Native Royalty Value, either Native or Split, for an SFT"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-N::C_UpdateNonceRoyalty id true account set-class nos false royalty-value)
+                )
+            )
+        )
+    )
+    (defun DPSF|C_UpdateSetNonceIgnisRoyalty
+        (patron:string id:string account:string set-class:integer nos:bool royalty-value:decimal)
+        @doc "[2] Updates Set Nonce IGNIS Royalty Value, either Native or Split, for an SFT"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-N::C_UpdateNonceIgnisRoyalty id true account set-class nos false royalty-value)
+                )
+            )
+        )
+    )
+    (defun DPSF|C_UpdateSetNonceName
+        (patron:string id:string account:string set-class:integer nos:bool name:string)
+        @doc "[3] Updates Set Nonce Name, either Native or Split, for an SFT"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-N::C_UpdateNonceName id true account set-class nos false name)
+                )
+            )
+        )
+    )
+    (defun DPSF|C_UpdateSetNonceDescription
+        (patron:string id:string account:string set-class:integer nos:bool description:string)
+        @doc "[4] Updates Set Nonce Description, either Native or Split, for an SFT"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-N::C_UpdateNonceDescription id true account set-class nos false description)
+                )
+            )
+        )
+    )
+    (defun DPSF|C_UpdateSetNonceScore
+        (patron:string id:string account:string set-class:integer nos:bool score:decimal)
+        @doc "[5] Updates Set Nonce Score, either Native or Split, for an SFT"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-N::C_UpdateNonceScore id true account set-class nos false score)
+                )
+            )
+        )
+    )
+    (defun DPSF|C_RemoveSetNonceScore (patron:string id:string account:string set-class:integer nos:bool)
+        @doc "[5b] Removes Set Nonce Score, setting it to -1.0, either Native or Split, for an SFT"
+        (DPSF|C_UpdateSetNonceScore patron id account set-class nos -1.0)
+    )
+    (defun DPSF|C_UpdateSetNonceMetaData
+        (patron:string id:string account:string set-class:integer nos:bool meta-data:object)
+        @doc "[6] Updates Set Nonce Meta-Data, either Native or Split, for an SFT"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-N::C_UpdateNonceMetaData id true account set-class nos false meta-data)
+                )
+            )
+        )
+    )
+    (defun DPSF|C_UpdateSetNonceURI
+        (
+            patron:string id:string account:string set-class:integer nos:bool
+            ay:object{DpdcUdcV2.URI|Type} u1:object{DpdcUdcV2.URI|Data} u2:object{DpdcUdcV2.URI|Data} u3:object{DpdcUdcV2.URI|Data}
+        )
+        @doc "[7] Updates Set Nonce URI, either Native or Split, for an SFT"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-N::C_UpdateNonceURI id true account set-class nos false ay u1 u2 u3)
+                )
+            )
+        )
+    )
+    ;;
+    ;;  [9] DPDC-F
+    ;;
+    (defun DPSF|C_RepurposeFragments (patron:string id:string repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer])
+        @doc "Repurpose SFT Fragment(s) from <repurpose-from> to <repurpose-to>. Requires <id> ownerhsip"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                    (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
+                    (sf:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-from))
+                    (st:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-F::C_RepurposeCollectableFragments id true repurpose-from repurpose-to nonces amounts)
+                )
+                (format "Successfully repurposed SFT {} Fragment-Nonces {} with Amounts {} from {} to {}" [id nonces amounts sf st])
+            )
+        )
+    )
+    (defun DPSF|C_MakeFragments (patron:string account:string id:string nonce:integer amount:integer)
+        @doc "Fragments SFT nonce of the given amount into its respective Fragments."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-F::C_MakeFragments account id true nonce amount)
+                )
+                (format "Successfully Fragmented {} SFT(s) {} of Nonce {}" [amount id nonce])
+            )
+        )
+    )
+    (defun DPSF|C_MergeFragments (patron:string account:string id:string nonce:integer amount:integer)
+        @doc "MErges SFT Fragments nonces of the given amount into the original SFT nonce."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-F::C_MergeFragments account id true nonce amount)
+                )
+                (format "Successfully merged {} {} SFT(s) Fragments of Nonce {}" [amount id nonce])
+            )
+        )
+    )
+    (defun DPSF|C_EnableNonceFragmentation (patron:string id:string nonce:integer fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData})
+        @doc "Enables Fragmentation for a given SFT Nonce"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-F::C_EnableNonceFragmentation id true nonce fragmentation-ind)
+                )
+                (format "Fragmentation for SFT {} Nonce {} enabled succesfully" [id nonce])
+            )
+        )
+    )
+    ;;
+    ;;  [10] DPDC-N
+    ;;
+    (defun DPSF|C_UpdateNonce
+        (patron:string id:string account:string nonce:integer nos:bool new-nonce-data:object{DpdcUdcV2.DPDC|NonceData})
+        @doc "[0] Updates Full Nonce Data, either Native or Split, for an SFT"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-N::C_UpdateNonces id true account [nonce] nos true [new-nonce-data])
+                )
+            )
+        )
+    )
+    (defun DPSF|C_UpdateNonces
+        (patron:string id:string account:string nonces:[integer] nos:bool new-nonces-data:[object{DpdcUdcV2.DPDC|NonceData}])
+        @doc "[0] Updates Full Nonce Data, either Native or Split, for an SFT, for multiple Nonces at a time"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-N::C_UpdateNonces id true account nonces nos true new-nonces-data)
+                )
+            )
+        )
+    )
+    (defun DPSF|C_UpdateNonceRoyalty
+        (patron:string id:string account:string nonce:integer nos:bool royalty-value:decimal)
+        @doc "[1] Updates Nonce Native Royalty Value, either Native or Split, for an SFT"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-N::C_UpdateNonceRoyalty id true account nonce nos true royalty-value)
+                )
+            )
+        )
+    )
+    (defun DPSF|C_UpdateNonceIgnisRoyalty
+        (patron:string id:string account:string nonce:integer nos:bool royalty-value:decimal)
+        @doc "[2] Updates Nonce IGNIS Royalty Value, either Native or Split, for an SFT"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-N::C_UpdateNonceIgnisRoyalty id true account nonce nos true royalty-value)
+                )
+            )
+        )
+    )
+    (defun DPSF|C_UpdateNonceName
+        (patron:string id:string account:string nonce:integer nos:bool name:string)
+        @doc "[3] Updates Nonce Name, either Native or Split, for an SFT"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-N::C_UpdateNonceName id true account nonce nos true name)
+                )
+            )
+        )
+    )
+    (defun DPSF|C_UpdateNonceDescription
+        (patron:string id:string account:string nonce:integer nos:bool description:string)
+        @doc "[4] Updates Nonce Description, either Native or Split, for an SFT"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-N::C_UpdateNonceDescription id true account nonce nos true description)
+                )
+            )
+        )
+    )
+    (defun DPSF|C_UpdateNonceScore
+        (patron:string id:string account:string nonce:integer nos:bool score:decimal)
+        @doc "[5] Updates Nonce Score, either Native or Split, for an SFT"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-N::C_UpdateNonceScore id true account nonce nos true score)
+                )
+            )
+        )
+    )
+    (defun DPSF|C_RemoveNonceScore (patron:string id:string account:string nonce:integer nos:bool)
+        @doc "[5b] Removes Nonce Score, setting it to -1.0, either Native or Split, for an SFT"
+        (DPSF|C_UpdateNonceScore patron id account nonce nos -1.0)
+    )
+    (defun DPSF|C_UpdateNonceMetaData
+        (patron:string id:string account:string nonce:integer nos:bool meta-data:object)
+        @doc "[6] Updates Nonce Meta-Data, either Native or Split, for an SFT"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-N::C_UpdateNonceMetaData id true account nonce nos true meta-data)
+                )
+            )
+        )
+    )
+    (defun DPSF|C_UpdateNonceURI
+        (
+            patron:string id:string account:string nonce:integer nos:bool
+            ay:object{DpdcUdcV2.URI|Type} u1:object{DpdcUdcV2.URI|Data} u2:object{DpdcUdcV2.URI|Data} u3:object{DpdcUdcV2.URI|Data}
+        )
+        @doc "[7] Updates Nonce URI, either Native or Split, for an SFT"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-N::C_UpdateNonceURI id true account nonce nos true ay u1 u2 u3)
+                )
+            )
+        )
+    )
+    ;;
+    ;;  [11] EQUITY
+    ;;
+    (defun DPSF|C_IssueCompany:string
+        (
+            patron:string creator-account:string collection-name:string collection-ticker:string
+            royalty:decimal ignis-royalty:decimal ipfs-links:[string]
+        )
+        @doc "Issues an SFT Equity Collection to tokenize Company Shares on Ouronet. \
+            \ Royalty is the standard Royalty for the Whole Collection \
+            \ While <ignis-royalty> is the ignis Royalty for 1% of Company Shares \
+            \ This makes the value of <ignis-royalty> in $ the Price to transfer All Existing Shares as Package Shares \
+            \ \
+            \ <ipfs-links> must be 8 elements long.\
+            \ The Collection is an Image SFT Collection, automanaged by the <dpdc> Smart Ouronet Account as Collection Owner \
+            \ Only 8 Elements can exist in this Collection, and no more can be added. \
+            \ \
+            \ Equity Collections Costs 0.001 IGNIS per Share for Pure Share Transfers as GAS Fees. \
+            \ Package Share cost the normal <ignis|small> price per unit as GAS Fees, as for all SFTs.\
+            \ \
+            \ <ipfs-links> must contain a 24 string list, 8 links for each element in the primary secondarz and tertiary uri list"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                    (ref-EQUITY:module{EquityV2} EQUITY)
+                    ;;
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-EQUITY::C_IssueShareholderCollection 
+                            patron creator-account collection-name collection-ticker
+                            royalty ignis-royalty ipfs-links
+                        )
+                    )
+                )
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                ;;Issuing a COMPANY is $100 in IGNIS deter and $100 in STOA (spec): the equity
+                ;;premium leg. The underlying SFT collection issue carries its own cost on top,
+                ;;in both currencies — same composition rule as the VST links.
+                (ref-IGNIS::XE_CollectStoa patron (ref-IGNIS::UC_StoaPrice "issue-shareholder"))
+                (ref-TS01-A::XB_DynamicFuelSTOA)
+                (at 0 (at "output" ico))
+            )
+        )
+    )
+    (defun DPSF|C_MorphEquity
+        (patron:string account:string id:string input-nonce:integer input-amount:integer output-nonce:integer)
+        @doc "Converts any Nonce to [1 2 3 4 5 6 7 8] to any Nonce [1 2 3 4 5 6 7 8] \
+            \ Input-Nonce must be different from Output-Nonce"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                    (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
+                    (ref-EQUITY:module{EquityV2} EQUITY)
+                    ;;
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-EQUITY::C_MorphPackageShares
+                            account id input-nonce input-amount output-nonce
+                        )
+                    )
+                    (output:list (at "output" ico))
+                    (ir-nonces:[integer] (at 0 output))
+                    (ir-amounts:[integer] (at 1 output))
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                    ;;
+                    (irs:object{DpdcTransferV2.AggregatedRoyalties}
+                        (ref-DPDC-T::C_IgnisRoyaltyCollector patron account [id] [true] [ir-nonces] [ir-amounts])
+                    )
+                    (c:[string] (at "creators" irs))
+                    (r:[decimal] (at "ignis-royalties" irs))
+                    (s:decimal (fold (+) 0.0 r))
+                )
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                (if (= input-nonce 1)
+                    [
+                        ;;Make Package Shares
+                        (format "Successfully combined {} Shares to Tier {} Package Share on Account {}" [input-amount (- output-nonce 1) sa])
+                        (if (= s 0.0)
+                            (format "Combining Shares executed witout collecting any IGNIS Royalties for the Collectable {}" [id])
+                            (format "Combining Shares executed while collecting {} IGNIS Royalty to the Collectable {} Creator" [s id])
+                        )
+                    ]
+                    (if (= output-nonce 1)
+                        [
+                            ;;Brake Package Shares
+                            (format "Successfully broke {} Tier {} Package Share to {} Shares on Account {}" [input-amount (- input-nonce 1) (at 1 ir-amounts) sa])
+                            (if (= s 0.0)
+                                (format "Breaking Package Shares executed witout collecting any IGNIS Royalties for the Collectable {}" [id])
+                                (format "Breaking Package Shares executed while collecting {} IGNIS Royalty to the Collectable {} Creator" [s id])
+                            )
+                        ]
+                        [
+                            ;;Convert Package Shares
+                            (format "Successfully Converter Tier {} to Tier {} Package Shares on Account {}" [(- input-nonce 1) (- output-nonce 1) sa])
+                            (if (= s 0.0)
+                                (format "Converting Package Shares executed witout collecting any IGNIS Royalties for the Collectable {}" [id])
+                                (format "Converting Package Shares executed while collecting {} IGNIS Royalty to the Collectable {} Creator" [s id])
+                            )
+                        ]
+                        
+                        
+                    )
+                )
+            )
+        )
+    )
+
+)
+
+;; --- tables for 01_TS02-C1.pact (2 defined) ---
+;; UPGRADE MODE: this module is assumed already deployed, so its
+;; tables already exist and (create-table) would ABORT the whole
+;; transaction. They are listed here, commented, for reference.
+;; If any of these is NEW since the last deploy, uncomment JUST it.
+;; (create-table P|T)
+;; (create-table P|MT)
+
+;; ===== 1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact ================
+;; Deploy: load THIS file — interface(s) + module ship together.
+;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/03_Talos.pact
+;;
+;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
+(interface TalosStageTwo_ClientTwoV2
+    @doc "Exposes Stage Two Second Batch of Client Functions: \
+        \ the NonFungible Client Functions"
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables  ⟨cannot exist in an interface⟩
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables  ⟨cannot exist in an interface⟩
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+    ;;
+    ;;  [2] DPDC
+    ;;
+    (defun DPNF|C_UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
+    (defun DPNF|C_UpgradeBranding (patron:string entity-id:string months:integer))
+    ;;
+    ;;  [3] DPDC-C
+    ;;
+    (defun DPNF|C_Create:string
+        (
+            patron:string id:string
+            input-nonce-data:[object{DpdcUdcV2.DPDC|NonceData}]
+        )
+    )
+    ;;
+    ;;  [4] DPDC-I
+    ;;
+    ;; DPNF|C_DeployAccount removed — DPDC Audit #35M: standalone deployment let any signer force any
+    ;; existing account to associate with any collection, with no ownership check. Real auto-association
+    ;; (on transfer, role-toggle, Issue, set-fragmentation) always calls DPDC::XBv_DeployAccountNFT
+    ;; directly, module-to-module, bypassing this public entrypoint entirely.
+    (defun DPNF|C_Issue:string
+        (
+            patron:string 
+            owner-account:string creator-account:string collection-name:string collection-ticker:string
+            can-upgrade:bool can-change-owner:bool can-change-creator:bool can-add-special-role:bool
+            can-transfer-nft-create-role:bool can-freeze:bool can-wipe:bool can-pause:bool
+        )
+    )
+    ;;
+    ;;  [5] DPDC-R
+    ;;
+    (defun DPNF|C_ToggleFreezeAccount (patron:string id:string account:string toggle:bool))
+    (defun DPNF|C_ToggleExemptionRole (patron:string id:string account:string toggle:bool))
+    (defun DPNF|C_ToggleBurnRole (patron:string id:string account:string toggle:bool))
+    (defun DPNF|C_ToggleUpdateRole (patron:string id:string account:string toggle:bool))
+    (defun DPNF|C_ToggleModifyCreatorRole (patron:string id:string account:string toggle:bool))
+    (defun DPNF|C_ToggleModifyRoyaltiesRole (patron:string id:string account:string toggle:bool))
+    (defun DPNF|C_ToggleTransferRole (patron:string id:string account:string toggle:bool))
+    (defun DPNF|C_MoveCreateRole (patron:string id:string new-account:string))
+    (defun DPNF|C_MoveRecreateRole (patron:string id:string new-account:string))
+    (defun DPNF|C_MoveSetUriRole (patron:string id:string new-account:string))
+    ;;
+    ;;  [6] DPDC-MNG
+    ;;
+    (defun DPNF|C_Control (patron:string id:string cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool))
+    (defun DPNF|C_TogglePause (patron:string id:string toggle:bool))
+        ;;
+    (defun DPNF|C_Respawn (patron:string id:string account:string nonce:integer))
+    (defun DPNF|C_Burn (patron:string id:string account:string nonce:integer))
+    (defun DPNF|C_WipeNonce (patron:string id:string account:string nonce:integer))
+        ;;
+    (defun DPNF|CC_WipeHeavy (patron:string account:string id:string))
+    (defun DPNF|C_WipePure (patron:string account:string id:string removable-nonces-obj:object{DpdcManagementV2.RemovableNonces}))
+    (defun DPNF|C_WipeClean (patron:string account:string id:string nonces:[integer]))
+    (defun DPNF|C_WipeDirty (patron:string account:string id:string nonces:[integer]))
+    (defun DPNF|Cp_WipeSlice (patron:string account:string id:string removable-nonces-obj:object{DpdcManagementV2.RemovableNonces}))
+    ;;
+    ;;  [7] DPDC-T
+    ;;
+    (defun DPNF|C_Repurpose (patron:string id:string repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer]))
+    (defun DPNF|C_TransferNonce (patron:string id:string sender:string receiver:string nonce:integer amount:integer method:bool))
+    (defun DPNF|C_TransferNonces (patron:string id:string sender:string receiver:string nonces:[integer] amounts:[integer] method:bool)) 
+    ;;
+    ;;  [8] DPDC-S
+    ;;
+    (defun DPNF|C_Make (patron:string account:string id:string nonces:[integer] set-class:integer))
+    (defun DPNF|C_Break (patron:string account:string id:string nonce:integer))
+    (defun DPNF|C_DefinePrimordialSet 
+        (
+            patron:string id:string set-name:string score-multiplier:decimal
+            set-definition:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}]
+            ind:object{DpdcUdcV2.DPDC|NonceData}
+        )
+    )
+    (defun DPNF|C_DefineCompositeSet
+        (
+            patron:string id:string set-name:string score-multiplier:decimal
+            set-definition:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}]
+            ind:object{DpdcUdcV2.DPDC|NonceData}
+        )
+    )
+    (defun DPNF|C_DefineHybridSet
+        (
+            patron:string id:string set-name:string score-multiplier:decimal
+            primordial-sd:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}]
+            composite-sd:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}]
+            ind:object{DpdcUdcV2.DPDC|NonceData}
+        )
+    )
+    (defun DPNF|C_EnableSetClassFragmentation
+        (
+            patron:string id:string set-class:integer
+            fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData}
+        )
+    )
+    (defun DPNF|C_ToggleSet (patron:string id:string set-class:integer toggle:bool))
+    (defun DPNF|C_RenameSet (patron:string id:string set-class:integer new-name:string))
+    ;; DPNF|C_UpdateSetMultiplier removed — DPDC Audit #15H: score-multiplier is immutable after Define.
+    ;;
+    (defun DPNF|C_UpdateSetNonce                        (patron:string id:string account:string set-class:integer nos:bool new-nonce-data:object{DpdcUdcV2.DPDC|NonceData}))
+    (defun DPNF|C_UpdateSetNonces                       (patron:string id:string account:string set-classes:[integer] nos:bool new-nonces-data:[object{DpdcUdcV2.DPDC|NonceData}]))
+    (defun DPNF|C_UpdateSetNonceRoyalty                 (patron:string id:string account:string set-class:integer nos:bool royalty-value:decimal))
+    (defun DPNF|C_UpdateSetNonceIgnisRoyalty            (patron:string id:string account:string set-class:integer nos:bool royalty-value:decimal))
+    (defun DPNF|C_UpdateSetNonceName                    (patron:string id:string account:string set-class:integer nos:bool name:string))
+    (defun DPNF|C_UpdateSetNonceDescription             (patron:string id:string account:string set-class:integer nos:bool description:string))
+    (defun DPNF|C_UpdateSetNonceScore                   (patron:string id:string account:string set-class:integer nos:bool score:decimal))
+    (defun DPNF|C_RemoveSetNonceScore                   (patron:string id:string account:string set-class:integer nos:bool))
+    (defun DPNF|C_UpdateSetNonceMetaData                (patron:string id:string account:string set-class:integer nos:bool meta-data:object))
+    (defun DPNF|C_UpdateSetNonceURI                     (patron:string id:string account:string set-class:integer nos:bool ay:object{DpdcUdcV2.URI|Type} u1:object{DpdcUdcV2.URI|Data} u2:object{DpdcUdcV2.URI|Data} u3:object{DpdcUdcV2.URI|Data}))
+    ;;
+    ;;  [9] DPDC-F
+    ;;
+    (defun DPNF|C_RepurposeFragments (patron:string id:string repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer]))
+    (defun DPNF|C_MakeFragments (patron:string account:string id:string nonce:integer amount:integer))
+    (defun DPNF|C_MergeFragments (patron:string account:string id:string nonce:integer amount:integer))
+    (defun DPNF|C_EnableNonceFragmentation (patron:string id:string nonce:integer fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData}))
+    ;;
+    ;;  [10] DPDC-N
+    ;;
+    (defun DPNF|C_UpdateNonce                           (patron:string id:string account:string nonce:integer nos:bool new-nonce-data:object{DpdcUdcV2.DPDC|NonceData}))
+    (defun DPNF|C_UpdateNonces                          (patron:string id:string account:string nonces:[integer] nos:bool new-nonces-data:[object{DpdcUdcV2.DPDC|NonceData}]))
+    (defun DPNF|C_UpdateNonceRoyalty                    (patron:string id:string account:string nonce:integer nos:bool royalty-value:decimal))
+    (defun DPNF|C_UpdateNonceIgnisRoyalty               (patron:string id:string account:string nonce:integer nos:bool royalty-value:decimal))
+    (defun DPNF|C_UpdateNonceName                       (patron:string id:string account:string nonce:integer nos:bool name:string))
+    (defun DPNF|C_UpdateNonceDescription                (patron:string id:string account:string nonce:integer nos:bool description:string))
+    (defun DPNF|C_UpdateNonceScore                      (patron:string id:string account:string nonce:integer nos:bool score:decimal))
+    (defun DPNF|C_RemoveNonceScore                      (patron:string id:string account:string nonce:integer nos:bool))
+    (defun DPNF|C_UpdateNonceMetaData                   (patron:string id:string account:string nonce:integer nos:bool meta-data:object))
+    (defun DPNF|C_UpdateNonceURI                        (patron:string id:string account:string nonce:integer nos:bool ay:object{DpdcUdcV2.URI|Type} u1:object{DpdcUdcV2.URI|Data} u2:object{DpdcUdcV2.URI|Data} u3:object{DpdcUdcV2.URI|Data}))
+    (defun DPNF|C_BulkTransfer
+        (patron:string id:string nonces-array:[[integer]] amounts-array:[[integer]] sender:string receiver-lst:[string] method:bool)
+    )
+
+)
+;;
+(module TS02-C2 GOV
+    @doc "TALOS Stage 2 Client Functiones Part 2 - NFT Functions"
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
+    ;;
+    (implements OuronetPolicyV2)
+    (implements TalosStageTwo_ClientTwoV2)
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;
+    (defconst GOV|MD_TS02-C2                            (keyset-ref-guard (GOV|Demiurgoi)))
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    (defcap GOV ()                                      (compose-capability (GOV|TS02-C2_ADMIN)))
+    (defcap GOV|TS02-C2_ADMIN ()                        (enforce-guard GOV|MD_TS02-C2))
+    ;;{G5}  functions
+    (defun GOV|Demiurgoi ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::GOV|Demiurgoi)
+        )
+    )
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    (defconst P|I                                       (P|Info))
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;
+    (deftable P|T:{OuronetPolicyV2.P|S})
+    (deftable P|MT:{OuronetPolicyV2.P|MS})
+    ;;{P4}  capabilities
+    (defcap P|TS ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (gap:bool (ref-DALOS::UR_GAP))
+            )
+            (enforce (not gap) "While Global Administrative Pause is online, no client Functions can be executed")
+            (compose-capability (P|TALOS-SUMMONER))
+        )
+    )
+    (defcap P|TALOS-SUMMONER ()
+        @doc "Talos Summoner Capability"
+        true
+    )
+    ;;{P5}  functions
+    (defun P|Info ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::P|Info)
+        )
+    )
+    (defun P|UR:guard (policy-name:string)
+        (at "policy" (read P|T policy-name ["policy"]))
+    )
+    (defun P|UR_IMP:[guard] ()
+        ;;DEFAULT ADDED 2026-09-14 (owner ruling). This was a bare `read`, which RAISES
+        ;;`No value found in table <M>_P|MT for key: InterModulePolicies` when the row does not
+        ;;exist -- i.e. before ANY module has registered. P|UEV_IMC is built on this, so in that
+        ;;window the inter-module gate answered with a raw table error naming a row key instead of
+        ;;refusing cleanly. Surfaced by the X-01 repair, which removed the harness registration
+        ;;that had been creating the row as a side effect.
+        ;;
+        ;;The default is the module's OWN SECURE capability guard, which is exactly what
+        ;;P|A_AddIMP already seeds the row with. So reader and writer now agree on what an
+        ;;unregistered policy list contains, and the gate's answer is the same before and after
+        ;;the first registration: satisfiable only from inside this module.
+        (with-default-read P|MT P|I
+            {"m-policies" : [(create-capability-guard (SECURE))]}
+            {"m-policies" := mp}
+            mp
+        )
+    )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV2} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|TS02-C2_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        @doc "Registers <policy-guard> as a trusted inter-module caller of this module. \
+            \ IDEMPOTENT: a guard already in the chain is left alone rather than appended \
+            \ a second time. See OuronetPolicyV2 for why that is load-bearing."
+        (with-capability (GOV|TS02-C2_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
+                    ;;
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" :
+                            (if (contains policy-guard mp)
+                                mp
+                                (ref-U|LST::UC_AppL mp policy-guard)
+                            )
+                        }
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_RemoveIMP (policy-guard:guard)
+        @doc "Revokes <policy-guard> from this module's guard chain. Removes EVERY occurrence, so \
+            \ it doubles as the cleanup for duplicates left behind by the pre-idempotence append. \
+            \ Refuses to drop this module's own SECURE seed -- see OuronetPolicyV2."
+        (with-capability (GOV|TS02-C2_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
+                    ;;
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (enforce (!= policy-guard dg) "The module's own SECURE seed cannot be revoked")
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_RemoveItem mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_SetIMP (policy-guards:[guard])
+        @doc "Replaces this module's whole guard chain in one write -- the recovery hatch. \
+            \ Deduplicates, and enforces that the module's own SECURE seed survives: without it \
+            \ the module can no longer reach its own P|UEV_IMC-gated functions."
+        (with-capability (GOV|TS02-C2_ADMIN)
+            (let
+                (
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (enforce (contains dg policy-guards) "The module's own SECURE seed must be present")
+                (write P|MT P|I
+                    {"m-policies" : (distinct policy-guards)}
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                (ref-P|DPDC:module{OuronetPolicyV2} DPDC)
+                (ref-P|DPDC-C:module{OuronetPolicyV2} DPDC-C)
+                (ref-P|DPDC-I:module{OuronetPolicyV2} DPDC-I)
+                (ref-P|DPDC-R:module{OuronetPolicyV2} DPDC-R)
+                (ref-P|DPDC-MNG:module{OuronetPolicyV2} DPDC-MNG)
+                (ref-P|DPDC-N:module{OuronetPolicyV2} DPDC-N)
+                (ref-P|DPDC-T:module{OuronetPolicyV2} DPDC-T)
+                (ref-P|DPDC-F:module{OuronetPolicyV2} DPDC-F)
+                (ref-P|DPDC-S:module{OuronetPolicyV2} DPDC-S)
+                (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
+                (mg:guard (create-capability-guard (P|TALOS-SUMMONER)))
+            )
+            (ref-P|TS01-A::P|A_AddIMP mg)
+            (ref-P|DPDC::P|A_AddIMP mg)
+            (ref-P|DPDC-C::P|A_AddIMP mg)
+            (ref-P|DPDC-I::P|A_AddIMP mg)
+            (ref-P|DPDC-R::P|A_AddIMP mg)
+            (ref-P|DPDC-MNG::P|A_AddIMP mg)
+            (ref-P|DPDC-T::P|A_AddIMP mg)
+            (ref-P|DPDC-F::P|A_AddIMP mg)
+            (ref-P|DPDC-S::P|A_AddIMP mg)
+            (ref-P|DPDC-N::P|A_AddIMP mg)
             ;;IGNIS RESTRUCTURE 2026-09-20: the collectors became protected X_ functions
             ;;behind `P|UEV_IMC`, so every module that bills must be a registered IMP peer
             ;;of IGNIS or the fee call dies with "None of the guards passed".
@@ -2991,2571 +3681,1051 @@
     ;;{5.6}  Aux/X
     ;;{5.7}  User [A/C]
     ;;
-    (defun A_RegisterAssetToLaunchpad (patron:string asset-id:string fungibility:[bool])
-        @doc "Registers an Asset to Launchpad; \
-            \ An Asset can be a DPTF, DPMF, DPSF or DPNF \
-            \   Asset-type can be designated via the double-boolean <fungibility> \
-            \   \
-            \   DPFT >> [true true] \
-            \   DPMF >> [true false] \
-            \   DPSF >> [false true] \
-            \   DPNF >> [false false]"
-        (with-capability (P|TALOS-SUMMONER)
+    ;;
+    ;;  [2] DPDC
+    ;;
+    (defun DPNF|C_UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+        @doc "Updates <pending-branding> for DPNF Token <entity-id> costing 500 IGNIS"
+        (with-capability (P|TS)
             (let
                 (
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC:module{DpdcV2} DPDC)
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                    (lpad:string (ref-DEMIPAD::GOV|DEMIPAD|SC_NAME))
-                    (tf:[bool] [true true])
-                    (of:[bool] [true false])
-                    (sf:[bool] [false true])
-                    (nf:[bool] [false false])
-                    (f:bool false)
                 )
-                (ref-DEMIPAD::A_RegisterAssetToLaunchpad patron asset-id fungibility)
-                ;;Reconciles two audits' DeployAccount hardening (dptf-dpof #N2 + DPDC #35M):
-                ;; #N2: lpad is DEMIPAD's own system smart account (not patron's) — tf/of use the ADMIN
-                ;;   variant (TS01-A, no ownership check on <account>); the self-service C_ variant now
-                ;;   requires the caller to own <account>, which they don't for lpad.
-                ;; #35M: the public DPSF|C_DeployAccount/DPNF|C_DeployAccount Talos wrappers were REMOVED
-                ;;   (any signer could force any account onto any collection); sf/nf now call
-                ;;   DPDC::XBv_DeployAccountSFT/NFT directly, module-to-module — the pattern every
-                ;;   legitimate internal caller (DPDC-C/DPDC-F/DPDC-R/DPDC-S) already uses.
-                (cond
-                    ((= fungibility tf) (ref-TS01-A::DPTF|A_DeployAccount patron asset-id lpad))
-                    ((= fungibility of) (ref-TS01-A::DPOF|A_DeployAccount patron asset-id lpad))
-                    ((= fungibility sf) (ref-DPDC::XBv_DeployAccountSFT lpad asset-id f f f f f f f f f f f))
-                    ((= fungibility nf) (ref-DPDC::XBv_DeployAccountNFT lpad asset-id f f f f f f f f f f))
-                    true
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC::C_UpdatePendingBranding entity-id false logo description website social)
                 )
             )
         )
     )
-    (defun A_ToggleOpenForBusiness (asset-id:string toggle:bool)
-        @doc "Toggle Open For Bussines. Must be on to acquire Assets"
-        (with-capability (P|TALOS-SUMMONER)
-            (let
-                (
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                )
-                (ref-DEMIPAD::A_ToggleOpenForBusiness asset-id toggle)
-            )
-        )
-    )
-    (defun A_DefinePrice (asset-id:string price:object)
-        @doc "Updates Price Object for an Asset"
-        (with-capability (P|TALOS-SUMMONER)
-            (let
-                (
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                )
-                (ref-DEMIPAD::A_DefinePrice asset-id price)
-            )
-        )
-    )
-    (defun A_ToggleRetrieval (asset-id:string toggle:bool)
-        @doc "Retrieval ON allows Asset Owners to retrieve their Asssets that still exist on the Launchpad"
-        (with-capability (P|TALOS-SUMMONER)
-            (let
-                (
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                )
-                (ref-DEMIPAD::A_ToggleRetrieval asset-id toggle)
-            )
-        )
-    )
-    (defun DEMIPAD|C_Deposit (patron:string donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal)
-        @doc "Sovereign launchpad DEPOSIT Talos op — the citizen sales call this to move a buyer's \
-            \ STOA/OURS working-token into the Launchpad against <asset-id>. <type> 0 = Native STOA \
-            \ (wrapped), 1 = OWS; <max-cost> is the buyer's dollar slippage ceiling (sentinel < 0 = \
-            \ slippage off). IGNIS billed on patron here; the sale composes it Sigma-wise with its \
-            \ asset-transfer Talos op."
+    (defun DPNF|C_UpgradeBranding (patron:string entity-id:string months:integer)
+        @doc "Upgrades Branding for DPNF Token, making it a premium BrandingV2. \
+            \ Also sets pending-branding to live branding if its branding is not live yet"
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                    (sd:string (ref-I|OURONET::OI|UC_ShortAccount donor))
+                    (ref-DPDC:module{DpdcV2} DPDC)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DEMIPAD::C_Deposit donor asset-id amount-in-dollars type direct-injection max-cost)
-                )
-                (format "Succesfuly deposited {} $ worth against {} into Demipad from {}." [amount-in-dollars asset-id sd])
+                (ref-DPDC::C_UpgradeBranding patron entity-id false months)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
             )
         )
     )
     ;;
-    (defun DEMIPAD|C_Withdraw (patron:string asset-id:string type:integer destination:string)
-        @doc "Withdraws all cumulated Tokens in the Launchpad, gathered through sale \
-            \ Type 1 = WSTOA \
-            \ Type 2 = SSTOA \
-            \ Type 3 = OURO "
+    ;;  [3] DPDC-C
+    ;;
+    (defun DPNF|C_Create:string
+        (
+            patron:string id:string
+            input-nonce-data:[object{DpdcUdcV2.DPDC|NonceData}]
+        )
+        @doc "Creates a new NFT Collection Element(s), having a new nonce, \
+            \ of amount 1, on the <creator> account."
         (with-capability (P|TS)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV2} DALOS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                    (retrieval-amount:decimal (ref-DEMIPAD::URv_Funds asset-id type))
-                    (working-id:string
-                        (if (= type 1)
-                            (ref-DALOS::UR_WrappedStoaID)
-                            (if (= type 2)
-                                (ref-DALOS::UR_SilverStoaID)
-                                (ref-DALOS::UR_OuroborosID)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
+                    (l:integer (length input-nonce-data))
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (if (= l 1)
+                            (ref-DPDC-C::C_CreateNewNonce
+                                id false 0 1 (at 0 input-nonce-data) false
+                            )
+                            (ref-DPDC-C::C_CreateNewNonces
+                                id false (make-list l 1) input-nonce-data
                             )
                         )
                     )
-                    (sd:string (ref-I|OURONET::OI|UC_ShortAccount destination))
                 )
-                (ref-DEMIPAD::C_Withdraw patron asset-id type destination)
-                (format "Succesfuly withdrawn {} {} from Demipad to {}." [retrieval-amount working-id sd])
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                (format "Created {} Clas 0 NonFungible(s) within the {} DPNF Collection"
+                    [(at "output" ico) id]
+                )
             )
         )
     )
     ;;
-    (defun DEMIPAD|C_FuelTrueFungible (patron:string client:string asset-id:string amount:decimal)
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                )
-                (ref-DEMIPAD::C_TransmitTrueFungible patron client asset-id amount true)
-            )
+    ;;  [4] DPDC-I
+    ;;
+    ;; DPNF|C_DeployAccount removed — DPDC Audit #35M: see interface-side removal note above.
+    (defun DPNF|C_Issue:string
+        (
+            patron:string 
+            owner-account:string creator-account:string collection-name:string collection-ticker:string
+            can-upgrade:bool can-change-owner:bool can-change-creator:bool can-add-special-role:bool
+            can-transfer-nft-create-role:bool can-freeze:bool can-wipe:bool can-pause:bool
         )
-    )
-    (defun DEMIPAD|C_FuelOrtoFungible (patron:string client:string asset-id:string nonces:[integer])
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                )
-                (ref-DEMIPAD::C_TransmitOrtoFungible patron client asset-id nonces true)
-            )
-        )
-    )
-    (defun DEMIPAD|C_FuelSemiFungible (patron:string client:string asset-id:string nonces:[integer] amounts:[integer])
+        @doc "Issues a new DPNF (Demiourgos Pact Non-Fungible) Digital Collection: <NFT> \
+            \ Costs 10x<ignis|token-issue> = 5000 IGNIS and 500 STOA"
         (with-capability (P|TS)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                    (c:string (ref-I|OURONET::OI|UC_ShortAccount client))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DEMIPAD::C_TransmitSemiFungibles client asset-id nonces amounts true)
-                )
-                (format "Succesfuly fueled {} Nonces {} with Amounts {} to Demiourgos Launchpad from Account {}" [asset-id nonces amounts c])
-            )
-        )
-    )
-    (defun DEMIPAD|C_FuelNonFungible (patron:string client:string asset-id:string nonces:[integer] amounts:[integer])
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                    (c:string (ref-I|OURONET::OI|UC_ShortAccount client))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DEMIPAD::C_TransmitNonFungibles client asset-id nonces amounts true)
-                )
-                (format "Succesfuly fueled {} Nonces {} with Amounts {} to Demiourgos Launchpad from Account {}" [asset-id nonces amounts c])
-            )
-        )
-    )
-    ;;
-    (defun DEMIPAD|C_RetrieveTrueFungible (patron:string client:string asset-id:string amount:decimal)
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                )
-                (ref-DEMIPAD::C_TransmitTrueFungible patron client asset-id amount false)
-            )
-        )
-    )
-    (defun DEMIPAD|C_RetrieveOrtoFungible (patron:string client:string asset-id:string nonces:[integer])
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                )
-                (ref-DEMIPAD::C_TransmitOrtoFungible patron client asset-id nonces false)
-            )
-        )
-    )
-    (defun DEMIPAD|C_RetrieveSemiFungible (patron:string client:string asset-id:string nonces:[integer] amounts:[integer])
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                    (c:string (ref-I|OURONET::OI|UC_ShortAccount client))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DEMIPAD::C_TransmitSemiFungibles client asset-id nonces amounts false)
-                )
-                (format "Succesfuly retrieved {} Nonces {} with Amounts {} from Demiourgos Launchpad to Account {}" [asset-id nonces amounts c])
-            )
-        )
-    )
-    (defun DEMIPAD|C_RetrieveNonFungible (patron:string client:string asset-id:string nonces:[integer] amounts:[integer])
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                    (c:string (ref-I|OURONET::OI|UC_ShortAccount client))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DEMIPAD::C_TransmitNonFungibles client asset-id nonces amounts false)
-                )
-                (format "Succesfuly retrieved {} Nonces {} with Amounts {} from Demiourgos Launchpad to Account {}" [asset-id nonces amounts c])
-            )
-        )
-    )
-
-)
-
-;; --- tables for 05_TS02-DPAD.pact (2 defined) ---
-;; UPGRADE MODE: this module is assumed already deployed, so its
-;; tables already exist and (create-table) would ABORT the whole
-;; transaction. They are listed here, commented, for reference.
-;; If any of these is NEW since the last deploy, uncomment JUST it.
-;; (create-table P|T)
-;; (create-table P|MT)
-
-;; ===== 2_CITIZEN/7_Launchpad/2_Snakes/02_Snakes.pact ===============
-;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface SaleSnakesV2
-
-
-
-
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;{G2}  schemas
-    ;;{G3}  tables  ⟨cannot exist in an interface⟩
-    ;;{G4}  capabilities
-    ;;{G5}  functions
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    ;;{P2}  schemas
-    ;;{P3}  tables  ⟨cannot exist in an interface⟩
-    ;;{P4}  capabilities
-    ;;{P5}  functions
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    ;;{3.2}  schemas
-    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    ;;{5.2}  Compute [UC]
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;
-    ;;  [UR]
-    ;;
-    (defun UR_AssetID ())
-    (defun UR_DollarSharePrice:decimal ())
-    (defun UR_NonceSaleAvailability:integer (nonce:integer))
-    ;;
-    ;;  [URC]
-    ;;
-    (defun URC_NonceValueInShares:integer (nonce:integer))
-    (defun URC_ShareCosts:object{DemiourgosLaunchpadV2.Costs} ())
-    (defun URC_NonceCosts:object{DemiourgosLaunchpadV2.Costs} (nonce:integer))
-    (defun URC_NonceAmountCosts:object{DemiourgosLaunchpadV2.Costs} (nonce:integer amount:integer))
-    (defun URC_Acquire:[string] (buyer:string nonce:integer amount:integer iz-native:bool slippage:decimal))
-    ;;
-    ;;  [URCi] / [INFO]  (pure-citizen cost preview: Sigma of the sovereign Talos ops' IGNIS)
-    ;;
-    (defun URCi_Acquire:decimal (buyer:string nonce:integer amount:integer iz-native:bool))
-    (defun INFO_Acquire:object{OuronetInfoV2.ClientInfo} (patron:string buyer:string nonce:integer amount:integer iz-native:bool))
-    ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_AcquisitionNonce (nonce:integer))
-    (defun CAP_Acquire (buyer:string nonce:integer amount:integer iz-native:bool))
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;{5.7}  User [A/C]
-    ;;
-    ;;  [A+C]
-    ;;
-    (defun A_UpdateSharePrice (price:decimal))
-    (defun C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool max-cost:decimal))
-
-)
-(module DEMIPAD-SNAKES GOV
-    @doc "Module defining the Sale Mechanics for Demiourgos Share Holder Collection"
-
-    ;;<=========================================================================>
-    ;;{0}  IMPLEMENTERS
-    ;;
-    (implements OuronetPolicyV2)
-    (implements SaleSnakesV2)
-
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;
-    (defconst GOV|MD_SNAKES                             (keyset-ref-guard (GOV|Demiurgoi)))
-    ;;{G2}  schemas
-    ;;{G3}  tables
-    ;;{G4}  capabilities
-    (defcap GOV ()                                      (compose-capability (GOV|SNAKES_ADMIN)))
-    (defcap GOV|SNAKES_ADMIN ()                         (enforce-guard GOV|MD_SNAKES))
-    ;;{G5}  functions
-    (defun GOV|Demiurgoi ()
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-            )
-            (ref-DALOS::GOV|Demiurgoi)
-        )
-    )
-    (defun GOV|DEMIPAD|SC_NAME ()
-        (let
-            (
-                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-            )
-            (ref-DEMIPAD::GOV|DEMIPAD|SC_NAME)
-        )
-    )
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    (defconst P|I                                       (P|Info))
-    ;;{P2}  schemas
-    ;;{P3}  tables
-    ;;
-    (deftable P|T:{OuronetPolicyV2.P|S})
-    (deftable P|MT:{OuronetPolicyV2.P|MS})
-    ;;{P4}  capabilities
-    (defcap P|SNAKES|CALLER ()
-        true
-    )
-    (defcap P|SNAKES|REMOTE-GOV ()
-        true
-    )
-    (defcap P|SECURE-CALLER ()
-        (compose-capability (P|SNAKES|CALLER))
-        (compose-capability (SECURE))
-    )
-    ;;{P5}  functions
-    (defun P|Info ()
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-            )
-            (ref-DALOS::P|Info)
-        )
-    )
-    (defun P|UR:guard (policy-name:string)
-        (at "policy" (read P|T policy-name ["policy"]))
-    )
-    (defun P|UR_IMP:[guard] ()
-        ;;DEFAULT ADDED 2026-09-14 (owner ruling). This was a bare `read`, which RAISES
-        ;;`No value found in table <M>_P|MT for key: InterModulePolicies` when the row does not
-        ;;exist -- i.e. before ANY module has registered. P|UEV_IMC is built on this, so in that
-        ;;window the inter-module gate answered with a raw table error naming a row key instead of
-        ;;refusing cleanly. Surfaced by the X-01 repair, which removed the harness registration
-        ;;that had been creating the row as a side effect.
-        ;;
-        ;;The default is the module's OWN SECURE capability guard, which is exactly what
-        ;;P|A_AddIMP already seeds the row with. So reader and writer now agree on what an
-        ;;unregistered policy list contains, and the gate's answer is the same before and after
-        ;;the first registration: satisfiable only from inside this module.
-        (with-default-read P|MT P|I
-            {"m-policies" : [(create-capability-guard (SECURE))]}
-            {"m-policies" := mp}
-            mp
-        )
-    )
-    (defun P|UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV2} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|SNAKES_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun P|A_AddIMP (policy-guard:guard)
-        @doc "Registers <policy-guard> as a trusted inter-module caller of this module. \
-            \ IDEMPOTENT: a guard already in the chain is left alone rather than appended \
-            \ a second time. See OuronetPolicyV2 for why that is load-bearing."
-        (with-capability (GOV|SNAKES_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV2} U|LST)
-                    ;;
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" :
-                            (if (contains policy-guard mp)
-                                mp
-                                (ref-U|LST::UC_AppL mp policy-guard)
-                            )
-                        }
-                    )
-                )
-            )
-        )
-    )
-    (defun P|A_RemoveIMP (policy-guard:guard)
-        @doc "Revokes <policy-guard> from this module's guard chain. Removes EVERY occurrence, so \
-            \ it doubles as the cleanup for duplicates left behind by the pre-idempotence append. \
-            \ Refuses to drop this module's own SECURE seed -- see OuronetPolicyV2."
-        (with-capability (GOV|SNAKES_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV2} U|LST)
-                    ;;
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (enforce (!= policy-guard dg) "The module's own SECURE seed cannot be revoked")
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_RemoveItem mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun P|A_SetIMP (policy-guards:[guard])
-        @doc "Replaces this module's whole guard chain in one write -- the recovery hatch. \
-            \ Deduplicates, and enforces that the module's own SECURE seed survives: without it \
-            \ the module can no longer reach its own P|UEV_IMC-gated functions."
-        (with-capability (GOV|SNAKES_ADMIN)
-            (let
-                (
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (enforce (contains dg policy-guards) "The module's own SECURE seed must be present")
-                (write P|MT P|I
-                    {"m-policies" : (distinct policy-guards)}
-                )
-            )
-        )
-    )
-    (defun P|A_Define ()
-        (let
-            (
-                (ref-P|DPDC-T:module{OuronetPolicyV2} DPDC-T)
-                (ref-P|DPAD:module{OuronetPolicyV2} DEMIPAD)
-                (mg:guard (create-capability-guard (P|SNAKES|CALLER)))
-            )
-            (ref-P|DPAD::P|A_Add
-                "SNAKES|RemoteGov"
-                (create-capability-guard (P|SNAKES|REMOTE-GOV))
-            )
-            (ref-P|DPDC-T::P|A_AddIMP mg)
-            (ref-P|DPAD::P|A_AddIMP mg)
-        )
-    )
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    ;;
-    (defconst DEMIPAD|SC_NAME                           (GOV|DEMIPAD|SC_NAME))
-    (defconst SNAKES|INFO                               (CT_Info))
-    (defconst BAR                                       (CT_Bar))
-    ;;{3.2}  schemas
-    ;;
-    (defschema SNAKES|PropertiesSchema
-        asset-id:string
-    )
-    ;;{3.3}  tables
-    (deftable SNAKES|T|Properties:{SNAKES|PropertiesSchema})
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;
-    (defcap SECURE ()
-        true
-    )
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    (defcap SNAKES|C>INITIALISE ()
-        @event
-        (compose-capability (GOV|SNAKES_ADMIN))
-    )
-    (defcap SNAKES|ACQUIRE (nonce:integer amount:integer)
-        @event
-        (let
-            (
-                (available-supply-to-acquire:integer (UR_NonceSaleAvailability nonce))
-            )
-            ;;nonce validity FIRST, so an unsellable nonce is named as such rather than reported as
-            ;;a stock shortage it can never recover from. Order matters: UR_NonceSaleAvailability
-            ;;answers 0 for an unknown nonce, so the supply check below would otherwise absorb it.
-            (UEV_AcquisitionNonce nonce)
-            (enforce (<= amount available-supply-to-acquire) "Insufficient Assets for Acquisiton!")
-            (compose-capability (P|SNAKES|CALLER))
-            (compose-capability (P|SNAKES|REMOTE-GOV))
-        )
-    )
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    (defun CT_Info ()                                   (at 0 ["Shareholders"]))
-    (defun CT_Bar ()
-        (let
-            (
-                (ref-U|CT:module{OuronetConstantsV2} U|CT)
-            )
-            (ref-U|CT::CT_BAR)
-        )
-    )
-    ;;{5.2}  Compute [UC]
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;
-    (defun UR_AssetID ()
-        (at "asset-id" (read SNAKES|T|Properties SNAKES|INFO ["asset-id"]))
-    )
-    (defun UR_DollarSharePrice:decimal ()
-        (let
-            (
-                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-            )
-            (at "price-per-share-in-dollars" (ref-DEMIPAD::UR_Price (UR_AssetID)))
-        )
-    )
-    (defun UR_NonceSaleAvailability:integer (nonce:integer)
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                (lpad:string (ref-DEMIPAD::GOV|DEMIPAD|SC_NAME))
-                (asset:string (UR_AssetID))
-            )
-            (ref-DPDC::UR_AccountNonceSupply lpad asset true nonce)
-        )
-    )
-    (defun URC_NonceValueInShares:integer (nonce:integer)
-        (if (= nonce 1)
-            1
-            (let
-                (
-                    (ref-EQUITY:module{EquityV2} EQUITY)
-                    (asset:string (UR_AssetID))
-                    (tier:integer (- nonce 1))
-                )
-                (ref-EQUITY::URC_SingleSharePerMillions asset tier)
-            )
-        )
-    )
-    (defun URC_ShareCosts:object{DemiourgosLaunchpadV2.Costs} ()
-        (let
-            (
-                (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                ;;
-                (share-pid:decimal (UR_DollarSharePrice))
-                (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
-                ;;
-                (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
-                (wstoa-prec:integer (ref-DPTF::UR_Decimals wstoa-id))
-            )
-            (ref-DEMIPAD::UDC_Costs
-                share-pid
-                (floor (/ share-pid stoa-pid) wstoa-prec)
-            )
-        )
-    )
-    (defun URC_NonceCosts:object{DemiourgosLaunchpadV2.Costs} (nonce:integer)
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                ;;
-                (share-costs:object{DemiourgosLaunchpadV2.Costs} (URC_ShareCosts))
-                (nonce-value-in-shares:integer (URC_NonceValueInShares nonce))
-                ;;
-                (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
-                (wstoa-prec:integer (ref-DPTF::UR_Decimals wstoa-id))
-            )
-            (ref-DEMIPAD::UDC_Costs
-                (floor (* (at "pid" share-costs) (dec nonce-value-in-shares)) 2)
-                (floor (* (at "wstoa" share-costs) (dec nonce-value-in-shares)) wstoa-prec)
-            )
-        )
-    )
-    (defun URC_NonceAmountCosts:object{DemiourgosLaunchpadV2.Costs} (nonce:integer amount:integer)
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                ;;
-                (nonce-costs:object{DemiourgosLaunchpadV2.Costs} (URC_NonceCosts nonce))
-                ;;
-                (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
-                (wstoa-prec:integer (ref-DPTF::UR_Decimals wstoa-id))
-            )
-            (ref-DEMIPAD::UDC_Costs
-                (floor (* (at "pid" nonce-costs) (dec amount)) 2)
-                (floor (* (at "wstoa" nonce-costs) (dec amount)) wstoa-prec)
-            )
-        )
-    )
-    (defun URCi_Acquire:decimal (buyer:string nonce:integer amount:integer iz-native:bool)
-        @doc "Pure-citizen IGNIS cost preview for C_Acquire = Sigma of the two SOVEREIGN Talos ops' \
-            \ IGNIS (each self-collects): DEMIPAD deposit + DPDC-T SFT nonce transfer. Amount-independent \
-            \ deposit; the transfer cost depends only on the collectable fee class."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
-                (asset:string (UR_AssetID))
-                (pid:decimal (at "pid" (URC_NonceAmountCosts nonce amount)))
-                (type:integer (if iz-native 0 1))
-            )
-            (+ (+ (ref-I|OURONET::OI|UC_IfpFromOutputCumulator
-                      (ref-DEMIPAD::URCi_Deposit buyer asset pid type false))
-                  (ref-I|OURONET::OI|UC_IfpFromOutputCumulator
-                      (ref-DPDC-T::URCi_MultiTransferCumulator [asset] [true] DEMIPAD|SC_NAME buyer [[nonce]] [[amount]])))
-               ;;MISSING LEG FIXED (2026-09-14). The Sigma counted the deposit and the transfer GAS but
-               ;;not the IGNIS ROYALTY. `DPDC|C_MultiTransfer` runs `C_IgnisRoyaltyCollector patron ...`
-               ;;before its own collect, and that pays the collection creator OUT OF THE PATRON — so a
-               ;;buyer of a royalty-bearing nonce is charged more than this preview quoted. Measured
-               ;;89.002 quoted against 89.004 charged on a 2-share buy (0.001/share).
-               ;;The `(if virtual-gas-zero 0.0 ...)` mirrors the collector's own short-circuit, so the
-               ;;preview stays correct when virtual gas is switched off.
-               (if (ref-IGNIS::URC_IsVirtualGasZero)
-                   0.0
-                   (ref-DPDC-T::URC_SummedIgnisRoyalty DEMIPAD|SC_NAME asset true [nonce] [amount])))
-        )
-    )
-    (defun INFO_Acquire:object{OuronetInfoV2.ClientInfo} (patron:string buyer:string nonce:integer amount:integer iz-native:bool)
-        @doc "Cost preview for the SNAKES|C_Acquire pure-citizen buy (sole gas-funded path = the \
-            \ TS02-CPAD Talos wrapper). IGNIS = URCi_Acquire (Sigma of the two Talos ops). Launchpad ops \
-            \ carry NO protocol STOA fee; the ACQUISITION cost (dollar pid + STOA wstoa) is declared in \
-            \ the description as the good bought, not a fee-to-execute (protocol stoa = none)."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (asset:string (UR_AssetID))
-                (costs:object{DemiourgosLaunchpadV2.Costs} (URC_NonceAmountCosts nonce amount))
-                (pid:decimal (at "pid" costs))
-                (wstoa:decimal (at "wstoa" costs))
-                (pay:string (if iz-native "Native STOA" "OWS (Wrapped STOA)"))
-                (sb:string (ref-I|OURONET::OI|UC_ShortAccount buyer))
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                [ (format "Operation: Acquire {} of {} nonce {} for {} (pure-citizen, Sigma-billed)." [amount asset nonce sb])
-                  (format "Acquisition cost: {} $ paid as {} {} (not a protocol fee)." [pid wstoa pay])
-                  "Executes via TS02-CPAD.SNAKES|C_Acquire (the sole gas-funded path)." ]
-                [ (format "Acquired {} of {} nonce {}." [amount asset nonce]) ]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (URCi_Acquire buyer nonce amount iz-native))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                []
-            )
-        )
-    )
-    (defun URC_Acquire:[string]
-        (buyer:string nonce:integer amount:integer iz-native:bool slippage:decimal)
-        @doc "Variant 1 (with slippage) — coin.TRANSFER caps the UI signs, padded by (1 + slippage/100)."
-        (let
-            (
-                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                (asset-id:string (UR_AssetID))
-                (type:integer (if iz-native 0 1))
-                (pid:decimal (at "pid" (URC_NonceAmountCosts nonce amount)))
-            )
-            (ref-DEMIPAD::URC_Acquire buyer asset-id pid type slippage)
-        )
-    )
-    ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_AcquisitionNonce (nonce:integer)
-        @doc "The nonces this pad actually sells: 1 = Pure Shares, 2-8 = Tier 1-7 PackageShares. \
-            \ ADDED 2026-09-14, mirroring the Custodians twin's UEV_AcquisitionNonce, which had it \
-            \ from the start. Without it a nonexistent nonce was refused by the SUPPLY cap instead \
-            \ -- UR_NonceSaleAvailability returns 0 for an unknown nonce, so any amount exceeds it \
-            \ -- and reported \"Insufficient Assets for Acquisiton!\". That is actively misleading, \
-            \ not merely terse: the implied remedy is to wait for restocking, which can NEVER work \
-            \ for a nonce the pad does not sell, and the text was identical to a genuine over-buy, \
-            \ so the two were indistinguishable to a client."
-        (let
-            (
-                (acquisition-nonces:[integer] (enumerate 1 8))
-                (iz-acquisition-nonce:bool (contains nonce acquisition-nonces))
-            )
-            (enforce iz-acquisition-nonce "Invalid Snakes Acquisition Nonce")
-        )
-    )
-    (defun CAP_Acquire
-        (buyer:string nonce:integer amount:integer iz-native:bool)
-        @doc "Variant 2 (slippage off) — installs the coin.TRANSFER caps in-code at the live price."
-        (let
-            (
-                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                (asset-id:string (UR_AssetID))
-                (type:integer (if iz-native 0 1))
-                (pid:decimal (at "pid" (URC_NonceAmountCosts nonce amount)))
-            )
-            (ref-DEMIPAD::CAP_Acquire buyer asset-id pid type)
-        )
-    )
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;{5.7}  User [A/C]
-    ;;
-    (defun A_UpdateSharePrice (price:decimal)
-        @doc "Updates the Share Price. \
-            \ FIXED 2026-09-14 -- this was DEAD ON ARRIVAL. DEMIPAD::A_DefinePrice opens with \
-            \ P|UEV_IMC, a UEV_Any over the caller-policy guards DEMIPAD has registered, and the \
-            \ one that admits this module is (create-capability-guard (P|SNAKES|CALLER)). A \
-            \ capability guard only passes while its capability is IN SCOPE, and this defun \
-            \ acquired nothing at all -- so every invocation died on P|UEV_IMC with \
-            \ \"None of the guards passed\", admin signature and all. Its sibling C_Acquire earns \
-            \ the same gate because its defcap composes P|SNAKES|CALLER; this now does the same \
-            \ through P|SECURE-CALLER. NOTE this grants no authority: P|SECURE-CALLER only \
-            \ proves the call originates inside this module. The ACTUAL authorization is \
-            \ DEMIPAD|C>DEFINE-PRICE -> DEMIPAD|C>SECURE-ADMIN -> GOV|DEMIPAD_ADMIN, which was \
-            \ previously UNREACHABLE and is now the gate that decides. Pinned by \
-            \ modules/LAUNCHPAD.repl."
-        (with-capability (P|SECURE-CALLER)
-            (let
-                (
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                    (asset:string (UR_AssetID))
-                )
-                (ref-DEMIPAD::A_DefinePrice asset
-                    {"price-per-share-in-dollars" : price}
-                )
-            )
-        )
-    )
-    (defun C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool max-cost:decimal)
-        @doc "Nonce 1 are Pure Shares, Nonces 2-8 are Tier 1-7 PackageShares \
-            \ When <iz-native> is set to true, Native STOA is used for buy, which must be wrapped to WSTOA \
-            \ <max-cost> is the buyer's slippage ceiling in dollars (sentinel < 0 = slippage off)."
-        (with-capability (SNAKES|ACQUIRE nonce amount)
-            (let
-                (
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
-                    (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-                    ;;
-                    (asset:string (UR_AssetID))
-                    (costs:object{DemiourgosLaunchpadV2.Costs} (URC_NonceAmountCosts nonce amount))
-                    (pid:decimal (at "pid" costs))
-                    (type:integer (if iz-native 0 1))
-                    (sb:string (ref-I|OURONET::OI|UC_ShortAccount buyer))
-                )
-                ;;1] SOVEREIGN deposit Talos op — buyer's STOA into the Launchpad; self-collects IGNIS on patron
-                (ref-TS02-DPAD::DEMIPAD|C_Deposit patron buyer asset pid type false max-cost)
-                ;;2] SOVEREIGN DPDC collectable transfer Talos op — SFT nonce(s) from the Launchpad SC to the buyer; self-collects IGNIS
-                (ref-TS02-C1::DPDC|C_MultiTransfer patron [asset] [true] DEMIPAD|SC_NAME buyer [[nonce]] [[amount]] true)
-                (format "User {} succesfuly acquired {} Nonce {} {} SFTs" [sb amount nonce asset])
-            )
-        )
-    )
-
-)
-
-;; --- tables for 02_Snakes.pact (3 defined) ---
-;; UPGRADE MODE: this module is assumed already deployed, so its
-;; tables already exist and (create-table) would ABORT the whole
-;; transaction. They are listed here, commented, for reference.
-;; If any of these is NEW since the last deploy, uncomment JUST it.
-;; (create-table P|T)
-;; (create-table P|MT)
-;; (create-table SNAKES|T|Properties)
-
-;; ===== 2_CITIZEN/7_Launchpad/3_Custodians/03_Custodians.pact =======
-;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface SaleCustodiansV2
-
-
-
-
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;{G2}  schemas
-    ;;{G3}  tables  ⟨cannot exist in an interface⟩
-    ;;{G4}  capabilities
-    ;;{G5}  functions
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    ;;{P2}  schemas
-    ;;{P3}  tables  ⟨cannot exist in an interface⟩
-    ;;{P4}  capabilities
-    ;;{P5}  functions
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    ;;{3.2}  schemas
-    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    ;;{5.2}  Compute [UC]
-    ;;
-    ;;  [UC]
-    ;;
-    (defun UC_NonceQuintessence:integer (nonce:integer))
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;
-    ;;  [UR]
-    ;;
-    (defun UR_AssetID ())
-    (defun UR_QuitessencePrice:decimal ())
-    (defun UR_NonceSaleAvailability:integer (nonce:integer))
-    ;;
-    ;;  [URC]
-    ;;
-    (defun URC_QuintessenceCosts:object{DemiourgosLaunchpadV2.Costs} ())
-    (defun URC_NonceCosts:object{DemiourgosLaunchpadV2.Costs} (nonce:integer))
-    (defun URC_NonceAmountCosts:object{DemiourgosLaunchpadV2.Costs} (nonce:integer amount:integer))
-    (defun URC_Acquire:[string] (buyer:string nonce:integer amount:integer iz-native:bool slippage:decimal))
-    ;;
-    ;;  [URCi] / [INFO]  (pure-citizen cost preview: Sigma of the sovereign Talos ops' IGNIS)
-    ;;
-    (defun URCi_Acquire:decimal (buyer:string nonce:integer amount:integer iz-native:bool))
-    (defun INFO_Acquire:object{OuronetInfoV2.ClientInfo} (patron:string buyer:string nonce:integer amount:integer iz-native:bool))
-    ;;{5.4}  Validate [UEV/CAP]
-    (defun CAP_Acquire (buyer:string nonce:integer amount:integer iz-native:bool))
-    ;;
-    ;;  [UEV]
-    ;;
-    (defun UEV_AcquisitionNonce (nonce:integer))
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;{5.7}  User [A/C]
-    ;;
-    ;;  [A+C]
-    ;;
-    (defun A_UpdateQuintessencePrice (price:decimal))
-    (defun C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool max-cost:decimal))
-
-)
-(module DEMIPAD-CUSTODIANS GOV
-    @doc "Module defining the Sale Mechanics for Ouronet Custodians Collection"
-
-    ;;<=========================================================================>
-    ;;{0}  IMPLEMENTERS
-    ;;
-    (implements OuronetPolicyV2)
-    (implements SaleCustodiansV2)
-
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;
-    (defconst GOV|MD_CUSTODIANS                         (keyset-ref-guard (GOV|Demiurgoi)))
-    ;;{G2}  schemas
-    ;;{G3}  tables
-    ;;{G4}  capabilities
-    (defcap GOV ()                                      (compose-capability (GOV|CUSTODIANS_ADMIN)))
-    (defcap GOV|CUSTODIANS_ADMIN ()                     (enforce-guard GOV|MD_CUSTODIANS))
-    ;;{G5}  functions
-    (defun GOV|Demiurgoi ()
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-            )
-            (ref-DALOS::GOV|Demiurgoi)
-        )
-    )
-    (defun GOV|DEMIPAD|SC_NAME ()
-        (let
-            (
-                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-            )
-            (ref-DEMIPAD::GOV|DEMIPAD|SC_NAME)
-        )
-    )
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    (defconst P|I                                       (P|Info))
-    ;;{P2}  schemas
-    ;;{P3}  tables
-    ;;
-    (deftable P|T:{OuronetPolicyV2.P|S})
-    (deftable P|MT:{OuronetPolicyV2.P|MS})
-    ;;{P4}  capabilities
-    (defcap P|CUSTODIANS|CALLER ()
-        true
-    )
-    (defcap P|CUSTODIANS|REMOTE-GOV ()
-        true
-    )
-    (defcap P|SECURE-CALLER ()
-        (compose-capability (P|CUSTODIANS|CALLER))
-        (compose-capability (SECURE))
-    )
-    ;;{P5}  functions
-    (defun P|Info ()
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-            )
-            (ref-DALOS::P|Info)
-        )
-    )
-    (defun P|UR:guard (policy-name:string)
-        (at "policy" (read P|T policy-name ["policy"]))
-    )
-    (defun P|UR_IMP:[guard] ()
-        ;;DEFAULT ADDED 2026-09-14 (owner ruling). This was a bare `read`, which RAISES
-        ;;`No value found in table <M>_P|MT for key: InterModulePolicies` when the row does not
-        ;;exist -- i.e. before ANY module has registered. P|UEV_IMC is built on this, so in that
-        ;;window the inter-module gate answered with a raw table error naming a row key instead of
-        ;;refusing cleanly. Surfaced by the X-01 repair, which removed the harness registration
-        ;;that had been creating the row as a side effect.
-        ;;
-        ;;The default is the module's OWN SECURE capability guard, which is exactly what
-        ;;P|A_AddIMP already seeds the row with. So reader and writer now agree on what an
-        ;;unregistered policy list contains, and the gate's answer is the same before and after
-        ;;the first registration: satisfiable only from inside this module.
-        (with-default-read P|MT P|I
-            {"m-policies" : [(create-capability-guard (SECURE))]}
-            {"m-policies" := mp}
-            mp
-        )
-    )
-    (defun P|UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV2} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|CUSTODIANS_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun P|A_AddIMP (policy-guard:guard)
-        @doc "Registers <policy-guard> as a trusted inter-module caller of this module. \
-            \ IDEMPOTENT: a guard already in the chain is left alone rather than appended \
-            \ a second time. See OuronetPolicyV2 for why that is load-bearing."
-        (with-capability (GOV|CUSTODIANS_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV2} U|LST)
-                    ;;
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" :
-                            (if (contains policy-guard mp)
-                                mp
-                                (ref-U|LST::UC_AppL mp policy-guard)
-                            )
-                        }
-                    )
-                )
-            )
-        )
-    )
-    (defun P|A_RemoveIMP (policy-guard:guard)
-        @doc "Revokes <policy-guard> from this module's guard chain. Removes EVERY occurrence, so \
-            \ it doubles as the cleanup for duplicates left behind by the pre-idempotence append. \
-            \ Refuses to drop this module's own SECURE seed -- see OuronetPolicyV2."
-        (with-capability (GOV|CUSTODIANS_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV2} U|LST)
-                    ;;
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (enforce (!= policy-guard dg) "The module's own SECURE seed cannot be revoked")
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_RemoveItem mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun P|A_SetIMP (policy-guards:[guard])
-        @doc "Replaces this module's whole guard chain in one write -- the recovery hatch. \
-            \ Deduplicates, and enforces that the module's own SECURE seed survives: without it \
-            \ the module can no longer reach its own P|UEV_IMC-gated functions."
-        (with-capability (GOV|CUSTODIANS_ADMIN)
-            (let
-                (
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (enforce (contains dg policy-guards) "The module's own SECURE seed must be present")
-                (write P|MT P|I
-                    {"m-policies" : (distinct policy-guards)}
-                )
-            )
-        )
-    )
-    (defun P|A_Define ()
-        (let
-            (
-                (ref-P|DPDC-T:module{OuronetPolicyV2} DPDC-T)
-                (ref-P|DPAD:module{OuronetPolicyV2} DEMIPAD)
-                (mg:guard (create-capability-guard (P|CUSTODIANS|CALLER)))
-            )
-            (ref-P|DPAD::P|A_Add
-                "CUSTODIANS|RemoteGov"
-                (create-capability-guard (P|CUSTODIANS|REMOTE-GOV))
-            )
-            (ref-P|DPDC-T::P|A_AddIMP mg)
-            (ref-P|DPAD::P|A_AddIMP mg)
-        )
-    )
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    ;;
-    (defconst DEMIPAD|SC_NAME                           (GOV|DEMIPAD|SC_NAME))
-    (defconst CUSTODIANS|INFO                           (CT_Info))
-    (defconst BAR                                       (CT_Bar))
-    ;;{3.2}  schemas
-    ;;
-    (defschema CUSTODIANS|PropertiesSchema
-        asset-id:string
-    )
-    ;;{3.3}  tables
-    (deftable CUSTODIANS|T|Properties:{CUSTODIANS|PropertiesSchema})
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;
-    (defcap SECURE ()
-        true
-    )
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    (defcap CUSTODIANS|C>INITIALISE ()
-        @event
-        (compose-capability (GOV|CUSTODIANS_ADMIN))
-    )
-    (defcap CUSTODIANS|ACQUIRE (nonce:integer amount:integer)
-        @event
-        ;;#10M: nonce validation is enforced HERE (was buried in the UR_ read, which must not enforce).
-        (UEV_AcquisitionNonce nonce)
-        (let
-            (
-                (available-supply-to-acquire:integer (UR_NonceSaleAvailability nonce))
-            )
-            (enforce (<= amount available-supply-to-acquire) "Insufficient Assets for Acquisiton!")
-            (compose-capability (P|CUSTODIANS|CALLER))
-            (compose-capability (P|CUSTODIANS|REMOTE-GOV))
-        )
-    )
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    (defun CT_Info ()                                   (at 0 ["Custodians"]))
-    (defun CT_Bar ()
-        (let
-            (
-                (ref-U|CT:module{OuronetConstantsV2} U|CT)
-            )
-            (ref-U|CT::CT_BAR)
-        )
-    )
-    ;;{5.2}  Compute [UC]
-    ;;
-    (defun UC_NonceQuintessence:integer (nonce:integer)
-        @doc "Pure nonce->quintessence mapping for the three Custodian fragment nonces: \
-            \ -1 (Bronze) = 1, -2 (Silver) = 10, -3 (Golden) = 100. No enforce: nonce validity \
-            \ is enforced by the CUSTODIANS|ACQUIRE cap on the mutation path (UEV_AcquisitionNonce)."
-        (if (= nonce -1)
-            1
-            (if (= nonce -2)
-                10
-                100
-            )
-        )
-    )
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    (defun UR_AssetID ()
-        (at "asset-id" (read CUSTODIANS|T|Properties CUSTODIANS|INFO ["asset-id"]))
-    )
-    (defun UR_QuitessencePrice:decimal ()
-        (let
-            (
-                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-            )
-            (at "quintessence-price" (ref-DEMIPAD::UR_Price (UR_AssetID)))
-        )
-    )
-    (defun UR_NonceSaleAvailability:integer (nonce:integer)
-        ;;#10M: pure DPDC supply read (no enforce — matches the Snakes twin). Nonce validity is enforced
-        ;;      by the CUSTODIANS|ACQUIRE cap on the mutation path.
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                ;;#4H: was the non-existent GOV|LAUNCHPAD|SC_NAME → the real member (matches Snakes twin)
-                (lpad:string (ref-DEMIPAD::GOV|DEMIPAD|SC_NAME))
-                (asset:string (UR_AssetID))
-            )
-            (ref-DPDC::UR_AccountNonceSupply lpad asset true nonce)
-        )
-    )
-    (defun URC_QuintessenceCosts:object{DemiourgosLaunchpadV2.Costs} ()
-        (let
-            (
-                (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                ;;
-                (q-pid:decimal (UR_QuitessencePrice))
-                (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
-                ;;
-                (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
-                (wstoa-prec:integer (ref-DPTF::UR_Decimals wstoa-id))
-            )
-            (ref-DEMIPAD::UDC_Costs
-                q-pid
-                (floor (/ q-pid stoa-pid) wstoa-prec)
-            )
-        )
-    )
-    (defun URC_NonceCosts:object{DemiourgosLaunchpadV2.Costs} (nonce:integer)
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                ;;
-                (q-costs:object{DemiourgosLaunchpadV2.Costs} (URC_QuintessenceCosts))
-                (nonce-value-in-quintessence:integer (UC_NonceQuintessence nonce))
-                ;;
-                (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
-                (wstoa-prec:integer (ref-DPTF::UR_Decimals wstoa-id))
-            )
-            (ref-DEMIPAD::UDC_Costs
-                (floor (* (at "pid" q-costs) (dec nonce-value-in-quintessence)) 2)
-                (floor (* (at "wstoa" q-costs) (dec nonce-value-in-quintessence)) wstoa-prec)
-            )
-        )
-    )
-    (defun URC_NonceAmountCosts:object{DemiourgosLaunchpadV2.Costs} (nonce:integer amount:integer)
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                ;;
-                (nonce-costs:object{DemiourgosLaunchpadV2.Costs} (URC_NonceCosts nonce))
-                ;;
-                (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
-                (wstoa-prec:integer (ref-DPTF::UR_Decimals wstoa-id))
-            )
-            (ref-DEMIPAD::UDC_Costs
-                (floor (* (at "pid" nonce-costs) (dec amount)) 2)
-                (floor (* (at "wstoa" nonce-costs) (dec amount)) wstoa-prec)
-            )
-        )
-    )
-    (defun URCi_Acquire:decimal (buyer:string nonce:integer amount:integer iz-native:bool)
-        @doc "Pure-citizen IGNIS cost preview for C_Acquire = Sigma of the two SOVEREIGN Talos ops' \
-            \ IGNIS (each self-collects): DEMIPAD deposit + DPDC-T SFT nonce transfer."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
-                (asset:string (UR_AssetID))
-                (pid:decimal (at "pid" (URC_NonceAmountCosts nonce amount)))
-                (type:integer (if iz-native 0 1))
-            )
-            (+ (+ (ref-I|OURONET::OI|UC_IfpFromOutputCumulator
-                      (ref-DEMIPAD::URCi_Deposit buyer asset pid type false))
-                  (ref-I|OURONET::OI|UC_IfpFromOutputCumulator
-                      (ref-DPDC-T::URCi_MultiTransferCumulator [asset] [true] DEMIPAD|SC_NAME buyer [[nonce]] [[amount]])))
-               ;;MISSING LEG FIXED (2026-09-14). The Sigma counted the deposit and the transfer GAS but
-               ;;not the IGNIS ROYALTY. `DPDC|C_MultiTransfer` runs `C_IgnisRoyaltyCollector patron ...`
-               ;;before its own collect, and that pays the collection creator OUT OF THE PATRON — so a
-               ;;buyer of a royalty-bearing nonce is charged more than this preview quoted. Measured
-               ;;89.002 quoted against 89.004 charged on a 2-share buy (0.001/share).
-               ;;The `(if virtual-gas-zero 0.0 ...)` mirrors the collector's own short-circuit, so the
-               ;;preview stays correct when virtual gas is switched off.
-               (if (ref-IGNIS::URC_IsVirtualGasZero)
-                   0.0
-                   (ref-DPDC-T::URC_SummedIgnisRoyalty DEMIPAD|SC_NAME asset true [nonce] [amount])))
-        )
-    )
-    (defun INFO_Acquire:object{OuronetInfoV2.ClientInfo} (patron:string buyer:string nonce:integer amount:integer iz-native:bool)
-        @doc "Cost preview for the CUSTODIANS|C_Acquire pure-citizen buy (sole gas-funded path = the \
-            \ TS02-CPAD Talos wrapper). IGNIS = URCi_Acquire (Sigma of the two Talos ops). Launchpad ops \
-            \ carry NO protocol STOA fee; the ACQUISITION cost (dollar pid + STOA wstoa) is declared as \
-            \ the good bought (protocol stoa = none)."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (asset:string (UR_AssetID))
-                (costs:object{DemiourgosLaunchpadV2.Costs} (URC_NonceAmountCosts nonce amount))
-                (pid:decimal (at "pid" costs))
-                (wstoa:decimal (at "wstoa" costs))
-                (pay:string (if iz-native "Native STOA" "OWS (Wrapped STOA)"))
-                (sb:string (ref-I|OURONET::OI|UC_ShortAccount buyer))
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                [ (format "Operation: Acquire {} of {} nonce {} for {} (pure-citizen, Sigma-billed)." [amount asset nonce sb])
-                  (format "Acquisition cost: {} $ paid as {} {} (not a protocol fee)." [pid wstoa pay])
-                  "Executes via TS02-CPAD.CUSTODIANS|C_Acquire (the sole gas-funded path)." ]
-                [ (format "Acquired {} of {} nonce {}." [amount asset nonce]) ]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (URCi_Acquire buyer nonce amount iz-native))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                []
-            )
-        )
-    )
-    (defun URC_Acquire:[string]
-        (buyer:string nonce:integer amount:integer iz-native:bool slippage:decimal)
-        @doc "Variant 1 (with slippage) — coin.TRANSFER caps the UI signs, padded by (1 + slippage/100)."
-        (let
-            (
-                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                (asset-id:string (UR_AssetID))
-                (type:integer (if iz-native 0 1))
-                (pid:decimal (at "pid" (URC_NonceAmountCosts nonce amount)))
-            )
-            (ref-DEMIPAD::URC_Acquire buyer asset-id pid type slippage)
-        )
-    )
-    ;;{5.4}  Validate [UEV/CAP]
-    (defun CAP_Acquire
-        (buyer:string nonce:integer amount:integer iz-native:bool)
-        (let
-            (
-                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                (asset-id:string (UR_AssetID))
-                (type:integer (if iz-native 0 1))
-                (pid:decimal (at "pid" (URC_NonceAmountCosts nonce amount)))
-            )
-            (ref-DEMIPAD::CAP_Acquire buyer asset-id pid type)
-        )
-    )
-    (defun UEV_AcquisitionNonce (nonce:integer)
-        (let
-            (
-                (acquisition-nonces:[integer] [-3 -2 -1])
-                (iz-acquisition-nonce:bool (contains nonce acquisition-nonces))
-            )
-            (enforce iz-acquisition-nonce "Invalid Custodian Acquisition Nonce")
-        )
-    )
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;Protection: Class 3 — Custom: GOV|CUSTODIANS_ADMIN
-    (defun XI_I|AssetId (asset-id:string)
-        (require-capability (GOV|CUSTODIANS_ADMIN))
-        (insert CUSTODIANS|T|Properties CUSTODIANS|INFO
-            {"asset-id"     : asset-id}
-        )
-    )
-    ;;{5.7}  User [A/C]
-    ;;
-    (defun A_UpdateQuintessencePrice (price:decimal)
-        @doc "Updates the Quintessence Price. \
-            \ FIXED 2026-09-14 -- this was DEAD ON ARRIVAL. DEMIPAD::A_DefinePrice opens with \
-            \ P|UEV_IMC, a UEV_Any over the caller-policy guards DEMIPAD has registered, and the \
-            \ one that admits this module is (create-capability-guard (P|CUSTODIANS|CALLER)). A \
-            \ capability guard only passes while its capability is IN SCOPE, and this defun \
-            \ acquired nothing at all -- so every invocation died on P|UEV_IMC with \
-            \ \"None of the guards passed\", admin signature and all. Its sibling C_Acquire earns \
-            \ the same gate because its defcap composes P|CUSTODIANS|CALLER; this now does the same \
-            \ through P|SECURE-CALLER. NOTE this grants no authority: P|SECURE-CALLER only \
-            \ proves the call originates inside this module. The ACTUAL authorization is \
-            \ DEMIPAD|C>DEFINE-PRICE -> DEMIPAD|C>SECURE-ADMIN -> GOV|DEMIPAD_ADMIN, which was \
-            \ previously UNREACHABLE and is now the gate that decides. Pinned by \
-            \ modules/LAUNCHPAD.repl."
-        (with-capability (P|SECURE-CALLER)
-            (let
-                (
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                    (asset:string (UR_AssetID))
-                )
-                (ref-DEMIPAD::A_DefinePrice asset
-                    {"quintessence-price" : price}
-                )
-            )
-        )
-    )
-    (defun C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool max-cost:decimal)
-        @doc "Only Nonce -3 -2 -1 can be used, and these are Bronze/Silver/Golden Fragment Nonces. \
-            \ <max-cost> is the buyer's slippage ceiling in dollars (sentinel < 0 = slippage off)."
-        ;;#3H: open CUSTODIANS|ACQUIRE (was missing — the twin Snakes wraps SNAKES|ACQUIRE). This restores
-        ;;    the per-nonce supply cap (enforce amount <= available) + composes the P|CUSTODIANS caller
-        ;;    policies the downstream DPDC-T transfer needs, and fires the @event.
-        (with-capability (CUSTODIANS|ACQUIRE nonce amount)
-            (let
-                (
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
-                    (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
-                    ;;
-                    (asset:string (UR_AssetID))
-                    (costs:object{DemiourgosLaunchpadV2.Costs} (URC_NonceAmountCosts nonce amount))
-                    (pid:decimal (at "pid" costs))
-                    (type:integer (if iz-native 0 1))
-                    (sb:string (ref-I|OURONET::OI|UC_ShortAccount buyer))
-                )
-                ;;1] SOVEREIGN deposit Talos op — buyer's STOA into the Launchpad; self-collects IGNIS on patron
-                (ref-TS02-DPAD::DEMIPAD|C_Deposit patron buyer asset pid type false max-cost)
-                ;;2] SOVEREIGN DPDC collectable transfer Talos op — SFT nonce(s) from the Launchpad SC to the buyer; self-collects IGNIS
-                (ref-TS02-C1::DPDC|C_MultiTransfer patron [asset] [true] DEMIPAD|SC_NAME buyer [[nonce]] [[amount]] true)
-                (format "User {} succesfuly acquired {} Nonce {} {} SFTs" [sb amount nonce asset])
-            )
-        )
-    )
-
-)
-
-;; --- tables for 03_Custodians.pact (3 defined) ---
-;; UPGRADE MODE: this module is assumed already deployed, so its
-;; tables already exist and (create-table) would ABORT the whole
-;; transaction. They are listed here, commented, for reference.
-;; If any of these is NEW since the last deploy, uncomment JUST it.
-;; (create-table P|T)
-;; (create-table P|MT)
-;; (create-table CUSTODIANS|T|Properties)
-
-;; ===== 1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact ===============
-;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface InfoTwoV2
-    @doc "Exposes the Stage-2 INFO (ClientInfo preview) surface — DPDC collectables, \
-        \ DEMIPAD launchpad, EQUITY, AQP. Each function wraps a core URCi cost reader."
-
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;{G2}  schemas
-    ;;{G3}  tables  ⟨cannot exist in an interface⟩
-    ;;{G4}  capabilities
-    ;;{G5}  functions
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    ;;{P2}  schemas
-    ;;{P3}  tables  ⟨cannot exist in an interface⟩
-    ;;{P4}  capabilities
-    ;;{P5}  functions
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    ;;{3.2}  schemas
-    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    ;;{5.2}  Compute [UC]
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;  [DPDC collectables]
-    (defun INFO_DPSF|Make:object{OuronetInfoV2.ClientInfo} (patron:string account:string id:string nonces:[integer] set-class:integer how-many-sets:integer))
-    (defun INFO_DPNF|Make:object{OuronetInfoV2.ClientInfo} (patron:string account:string id:string nonces:[integer] set-class:integer))
-    ;;  [DEMIPAD] — sovereign launchpad
-    (defun INFO_DEMIPAD|Deposit:object{OuronetInfoV2.ClientInfo} (patron:string donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal))
-    (defun INFO_DEMIPAD|Withdraw:object{OuronetInfoV2.ClientInfo} (patron:string asset-id:string type:integer destination:string))
-    (defun INFO_DEMIPAD|FuelTrueFungible:object{OuronetInfoV2.ClientInfo} (patron:string client:string asset-id:string amount:decimal))
-    (defun INFO_DEMIPAD|RetrieveTrueFungible:object{OuronetInfoV2.ClientInfo} (patron:string client:string asset-id:string amount:decimal))
-    (defun INFO_DEMIPAD|FuelOrtoFungible:object{OuronetInfoV2.ClientInfo} (patron:string client:string asset-id:string nonces:[integer]))
-    (defun INFO_DEMIPAD|RetrieveOrtoFungible:object{OuronetInfoV2.ClientInfo} (patron:string client:string asset-id:string nonces:[integer]))
-    (defun INFO_DEMIPAD|FuelSemiFungible:object{OuronetInfoV2.ClientInfo} (patron:string client:string asset-id:string nonces:[integer] amounts:[integer]))
-    (defun INFO_DEMIPAD|RetrieveSemiFungible:object{OuronetInfoV2.ClientInfo} (patron:string client:string asset-id:string nonces:[integer] amounts:[integer]))
-    (defun INFO_DEMIPAD|FuelNonFungible:object{OuronetInfoV2.ClientInfo} (patron:string client:string asset-id:string nonces:[integer] amounts:[integer]))
-    (defun INFO_DEMIPAD|RetrieveNonFungible:object{OuronetInfoV2.ClientInfo} (patron:string client:string asset-id:string nonces:[integer] amounts:[integer]))
-    ;;  [EQUITY]
-    (defun INFO_EQUITY|IssueCompany:object{OuronetInfoV2.ClientInfo} (patron:string creator-account:string collection-name:string))
-    (defun INFO_EQUITY|MorphEquity:object{OuronetInfoV2.ClientInfo} (patron:string account:string id:string input-nonce:integer input-amount:integer output-nonce:integer))
-    ;;{5.4}  Validate [UEV/CAP]
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;{5.7}  User [A/C]
-
-)
-;;INFO_LIQUID|UnwrapStoa
-;;INFO_LIQUID|WrapStoa
-;;INFO_LIQUID|UnwrapUrStoa
-(module INFO-TWO GOV
-    @doc "INFO-TWO (InfoTwoV2) is the read-only Stage-2 UI info module exposing INFO_ \
-        \ preview functions returning ClientInfo objects (description, result, IGNIS/STOA \
-        \ cost) for Stage-2 client ops: DPDC collectables (roles, management, nonce/set \
-        \ updates, wipes, burns, transfers, sets), the DEMIPAD sovereign launchpad, EQUITY, \
-        \ and AQP. Each preview wraps the corresponding core module's URCi_ cost reader via \
-        \ shared helpers; it holds no tables and does no writes."
-
-    ;;<=========================================================================>
-    ;;{0}  IMPLEMENTERS
-
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;
-    ;;(implements InfoTwoV2)
-    ;;
-    (defconst GOV|MD_INFO|DPTF                          (keyset-ref-guard (GOV|Demiurgoi)))
-    ;;{G2}  schemas
-    ;;{G3}  tables
-    ;;{G4}  capabilities
-    (defcap GOV ()                                      (compose-capability (GOV|INFO|DPTF_ADMIN)))
-    (defcap GOV|INFO|DPTF_ADMIN ()                      (enforce-guard GOV|MD_INFO|DPTF))
-    ;;{G5}  functions
-    (defun GOV|Demiurgoi ()
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-            )
-            (ref-DALOS::GOV|Demiurgoi)
-        )
-    )
-    (defun GOV|SWP|SC_NAME ()
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-            )
-            (ref-DALOS::GOV|SWP|SC_NAME)
-        )
-    )
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    ;;{P2}  schemas
-    ;;{P3}  tables
-    ;;{P4}  capabilities
-    ;;{P5}  functions
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    (defconst BAR                                       (CT_Bar))
-    (defconst EOC                                       (CT_EmptyCumulator))
-    (defconst SWP|SC_NAME                               (GOV|SWP|SC_NAME))
-    ;;{3.2}  schemas
-    ;;{3.3}  tables
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    ;;
-    ;;
-    (defun CT_Bar ()
-        (let
-            (
-                (ref-U|CT:module{OuronetConstantsV2} U|CT)
-            )
-            (ref-U|CT::CT_BAR)
-        )
-    )
-    (defun CT_EmptyCumulator ()
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-            )
-            (ref-IGNIS::UDC_EmptyOutputCumulatorV2)
-        )
-    )
-    ;;{5.2}  Compute [UC]
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;
-    ;;
-    ;;
-    ;;  [SIP|URC] - Simple Ignis Price >> dependent on a single trigger
-    ;;
-    ;;
-    ;;  [SKP|URC] - Simple Stoa Price 
-    ;;
-    ;;
-    ;;  [INFO] - Informational URC Functions
-    ;;
-    ;;
-    ;;  [DPDC roles/toggles] — DPDC-R (son = false for DPNF, true for DPSF)
-    (defun INFO_DPDC-R|Toggle:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string son:bool label:string ico:object{IgnisCollectorV3.OutputCumulator} toggle:bool)
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                [(if toggle (format "Operation: Adds {} Role for {} {} to {}" [label (if son "SFT" "NFT") id sa]) (format "Operation: Removes {} Role for {} {} to {}" [label (if son "SFT" "NFT") id sa]))]
-                [(if toggle (format "{} Role added for {} to {}" [label id sa]) (format "{} Role removed for {} to {}" [label id sa]))]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [toggle])
-        ))
-    (defun INFO_DPNF|ToggleBurnRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool)
-        (let
-            (
-                (r:module{DpdcRolesV2} DPDC-R)
-            )
-            (INFO_DPDC-R|Toggle patron id account false "Burn" (r::URCi_ToggleBurnRole id false) toggle)
-        )
-    )
-    (defun INFO_DPSF|ToggleBurnRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool)
-        (let
-            (
-                (r:module{DpdcRolesV2} DPDC-R)
-            )
-            (INFO_DPDC-R|Toggle patron id account true "Burn" (r::URCi_ToggleBurnRole id true) toggle)
-        )
-    )
-    (defun INFO_DPNF|ToggleExemptionRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool)
-        (let
-            (
-                (r:module{DpdcRolesV2} DPDC-R)
-            )
-            (INFO_DPDC-R|Toggle patron id account false "Fee-Exemption" (r::URCi_ToggleExemptionRole id false) toggle)
-        )
-    )
-    (defun INFO_DPSF|ToggleExemptionRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool)
-        (let
-            (
-                (r:module{DpdcRolesV2} DPDC-R)
-            )
-            (INFO_DPDC-R|Toggle patron id account true "Fee-Exemption" (r::URCi_ToggleExemptionRole id true) toggle)
-        )
-    )
-    (defun INFO_DPNF|ToggleFreezeAccount:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool)
-        (let
-            (
-                (r:module{DpdcRolesV2} DPDC-R)
-            )
-            (INFO_DPDC-R|Toggle patron id account false "Freeze" (r::URCi_ToggleFreezeAccount id false) toggle)
-        )
-    )
-    (defun INFO_DPSF|ToggleFreezeAccount:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool)
-        (let
-            (
-                (r:module{DpdcRolesV2} DPDC-R)
-            )
-            (INFO_DPDC-R|Toggle patron id account true "Freeze" (r::URCi_ToggleFreezeAccount id true) toggle)
-        )
-    )
-    (defun INFO_DPNF|ToggleModifyCreatorRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool)
-        (let
-            (
-                (r:module{DpdcRolesV2} DPDC-R)
-            )
-            (INFO_DPDC-R|Toggle patron id account false "Modify-Creator" (r::URCi_ToggleModifyCreatorRole id false) toggle)
-        )
-    )
-    (defun INFO_DPSF|ToggleModifyCreatorRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool)
-        (let
-            (
-                (r:module{DpdcRolesV2} DPDC-R)
-            )
-            (INFO_DPDC-R|Toggle patron id account true "Modify-Creator" (r::URCi_ToggleModifyCreatorRole id true) toggle)
-        )
-    )
-    (defun INFO_DPNF|ToggleModifyRoyaltiesRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool)
-        (let
-            (
-                (r:module{DpdcRolesV2} DPDC-R)
-            )
-            (INFO_DPDC-R|Toggle patron id account false "Modify-Royalties" (r::URCi_ToggleModifyRoyaltiesRole id false) toggle)
-        )
-    )
-    (defun INFO_DPSF|ToggleModifyRoyaltiesRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool)
-        (let
-            (
-                (r:module{DpdcRolesV2} DPDC-R)
-            )
-            (INFO_DPDC-R|Toggle patron id account true "Modify-Royalties" (r::URCi_ToggleModifyRoyaltiesRole id true) toggle)
-        )
-    )
-    (defun INFO_DPNF|ToggleTransferRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool)
-        (let
-            (
-                (r:module{DpdcRolesV2} DPDC-R)
-            )
-            (INFO_DPDC-R|Toggle patron id account false "Transfer" (r::URCi_ToggleTransferRole id false) toggle)
-        )
-    )
-    (defun INFO_DPSF|ToggleTransferRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool)
-        (let
-            (
-                (r:module{DpdcRolesV2} DPDC-R)
-            )
-            (INFO_DPDC-R|Toggle patron id account true "Transfer" (r::URCi_ToggleTransferRole id true) toggle)
-        )
-    )
-    (defun INFO_DPNF|ToggleUpdateRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool)
-        (let
-            (
-                (r:module{DpdcRolesV2} DPDC-R)
-            )
-            (INFO_DPDC-R|Toggle patron id account false "Update" (r::URCi_ToggleUpdateRole id false) toggle)
-        )
-    )
-    (defun INFO_DPSF|ToggleUpdateRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool)
-        (let
-            (
-                (r:module{DpdcRolesV2} DPDC-R)
-            )
-            (INFO_DPDC-R|Toggle patron id account true "Update" (r::URCi_ToggleUpdateRole id true) toggle)
-        )
-    )
-    (defun INFO_DPSF|ToggleAddQuantityRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool)
-        (let
-            (
-                (r:module{DpdcRolesV2} DPDC-R)
-            )
-            (INFO_DPDC-R|Toggle patron id account true "Add-Quantity" (r::URCi_ToggleAddQuantityRole id) toggle)
-        )
-    )
-    ;;  [DPDC role moves] — DPDC-R Move* (patron id new-account)
-    (defun INFO_DPDC-R|Move:object{OuronetInfoV2.ClientInfo} (patron:string id:string new-account:string son:bool label:string ico:object{IgnisCollectorV3.OutputCumulator})
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (sa:string (ref-I|OURONET::OI|UC_ShortAccount new-account))
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                [(format "Operation: Moves the {} Role of {} {} to {}" [label (if son "SFT" "NFT") id sa])]
-                [(format "{} Role of {} succesfully moved to {}" [label id sa])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
-        ))
-    (defun INFO_DPNF|MoveCreateRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string new-account:string)
-        (let
-            (
-                (r:module{DpdcRolesV2} DPDC-R)
-            )
-            (INFO_DPDC-R|Move patron id new-account false "Create" (r::URCi_MoveCreateRole id false))
-        )
-    )
-    (defun INFO_DPSF|MoveCreateRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string new-account:string)
-        (let
-            (
-                (r:module{DpdcRolesV2} DPDC-R)
-            )
-            (INFO_DPDC-R|Move patron id new-account true "Create" (r::URCi_MoveCreateRole id true))
-        )
-    )
-    (defun INFO_DPNF|MoveRecreateRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string new-account:string)
-        (let
-            (
-                (r:module{DpdcRolesV2} DPDC-R)
-            )
-            (INFO_DPDC-R|Move patron id new-account false "Recreate" (r::URCi_MoveRecreateRole id false))
-        )
-    )
-    (defun INFO_DPSF|MoveRecreateRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string new-account:string)
-        (let
-            (
-                (r:module{DpdcRolesV2} DPDC-R)
-            )
-            (INFO_DPDC-R|Move patron id new-account true "Recreate" (r::URCi_MoveRecreateRole id true))
-        )
-    )
-    (defun INFO_DPNF|MoveSetUriRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string new-account:string)
-        (let
-            (
-                (r:module{DpdcRolesV2} DPDC-R)
-            )
-            (INFO_DPDC-R|Move patron id new-account false "Set-URI" (r::URCi_MoveSetUriRole id false))
-        )
-    )
-    (defun INFO_DPSF|MoveSetUriRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string new-account:string)
-        (let
-            (
-                (r:module{DpdcRolesV2} DPDC-R)
-            )
-            (INFO_DPDC-R|Move patron id new-account true "Set-URI" (r::URCi_MoveSetUriRole id true))
-        )
-    )
-    ;;  [DPDC management] — DPDC-MNG Control / Pause / Respawn / AddQuantity
-    (defun INFO_DPDC-MNG|Simple:object{OuronetInfoV2.ClientInfo} (patron:string desc:string result:string ico:object{IgnisCollectorV3.OutputCumulator})
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo [desc] [result]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
-        ))
-    (defun INFO_DPNF|Control:object{OuronetInfoV2.ClientInfo} (patron:string id:string cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool)
-        (let
-            (
-                (r:module{DpdcManagementV2} DPDC-MNG)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Controls Boolean Properties of NFT {}" [id]) (format "Succesfully controlled Properties of NFT {}" [id]) (r::URCi_Control id false))
-        )
-    )
-    (defun INFO_DPSF|Control:object{OuronetInfoV2.ClientInfo} (patron:string id:string cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool)
-        (let
-            (
-                (r:module{DpdcManagementV2} DPDC-MNG)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Controls Boolean Properties of SFT {}" [id]) (format "Succesfully controlled Properties of SFT {}" [id]) (r::URCi_Control id true))
-        )
-    )
-    (defun INFO_DPNF|TogglePause:object{OuronetInfoV2.ClientInfo} (patron:string id:string toggle:bool)
-        (let
-            (
-                (r:module{DpdcManagementV2} DPDC-MNG)
-            )
-            (INFO_DPDC-MNG|Simple patron (if toggle (format "Operation: Pauses NFT {}" [id]) (format "Operation: Unpauses NFT {}" [id])) (format "NFT {} pause toggled" [id]) (r::URCi_TogglePause id false))
-        )
-    )
-    (defun INFO_DPSF|TogglePause:object{OuronetInfoV2.ClientInfo} (patron:string id:string toggle:bool)
-        (let
-            (
-                (r:module{DpdcManagementV2} DPDC-MNG)
-            )
-            (INFO_DPDC-MNG|Simple patron (if toggle (format "Operation: Pauses SFT {}" [id]) (format "Operation: Unpauses SFT {}" [id])) (format "SFT {} pause toggled" [id]) (r::URCi_TogglePause id true))
-        )
-    )
-    (defun INFO_DPNF|Respawn:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string nonce:integer)
-        (let
-            (
-                (r:module{DpdcManagementV2} DPDC-MNG)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Respawns NFT {} Nonce {}" [id nonce]) (format "Succesfully respawned NFT {} Nonce {}" [id nonce]) (r::URCi_RespawnNFT id))
-        )
-    )
-    (defun INFO_DPSF|AddQuantity:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string nonce:integer amount:integer)
-        (let
-            (
-                (r:module{DpdcManagementV2} DPDC-MNG)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Adds {} quantity to SFT {} Nonce {}" [amount id nonce]) (format "Succesfully added {} quantity to SFT {} Nonce {}" [amount id nonce]) (r::URCi_AddQuantity id))
-        )
-    )
-    ;;  [DPDC updates] — DPDC-N single-field (URCi_UpdateNonceField) + bulk (URCi_UpdateNonces)
-    (defun INFO_DPDC-N|Field:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string son:bool label:string)
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (r:module{DpdcNonceV2} DPDC-N)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                [(format "Operation: Updates the {} of {} {}" [label (if son "SFT" "NFT") id])]
-                [(format "{} of {} {} succesfully updated" [label (if son "SFT" "NFT") id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (r::URCi_UpdateNonceField account)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
-        ))
-    (defun INFO_DPDC-N|Bulk:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string son:bool label:string count:integer)
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (r:module{DpdcNonceV2} DPDC-N)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                [(format "Operation: Updates {} {} of {} {}" [count label (if son "SFT" "NFT") id])]
-                [(format "{} {} of {} {} succesfully updated" [count label (if son "SFT" "NFT") id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (r::URCi_UpdateNonces account count)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
-        ))
-    ;;   NF single-field
-    (defun INFO_DPNF|UpdateNonceName:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string nonce:integer nos:bool name:string) (INFO_DPDC-N|Field patron id account false (format "Name (Nonce {})" [nonce])))
-    (defun INFO_DPNF|UpdateNonceDescription:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string nonce:integer nos:bool description:string) (INFO_DPDC-N|Field patron id account false (format "Description (Nonce {})" [nonce])))
-    (defun INFO_DPNF|UpdateNonceRoyalty:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string nonce:integer nos:bool royalty-value:decimal) (INFO_DPDC-N|Field patron id account false (format "Royalty (Nonce {})" [nonce])))
-    (defun INFO_DPNF|UpdateNonceIgnisRoyalty:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string nonce:integer nos:bool royalty-value:decimal) (INFO_DPDC-N|Field patron id account false (format "Ignis-Royalty (Nonce {})" [nonce])))
-    (defun INFO_DPNF|UpdateNonceURI:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string nonce:integer nos:bool ay:object{DpdcUdcV2.URI|Type} u1:object{DpdcUdcV2.URI|Data} u2:object{DpdcUdcV2.URI|Data} u3:object{DpdcUdcV2.URI|Data}) (INFO_DPDC-N|Field patron id account false (format "URI (Nonce {})" [nonce])))
-    (defun INFO_DPNF|UpdateNonceMetaData:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string nonce:integer nos:bool meta-data:object) (INFO_DPDC-N|Field patron id account false (format "Meta-Data (Nonce {})" [nonce])))
-    (defun INFO_DPNF|UpdateNonceScore:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string nonce:integer nos:bool score:decimal) (INFO_DPDC-N|Field patron id account false (format "Score (Nonce {})" [nonce])))
-    (defun INFO_DPNF|RemoveNonceScore:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string nonce:integer nos:bool) (INFO_DPDC-N|Field patron id account false (format "Score-Removal (Nonce {})" [nonce])))
-    (defun INFO_DPNF|UpdateSetNonceName:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string set-class:integer nos:bool name:string) (INFO_DPDC-N|Field patron id account false (format "Name (Set-Class {})" [set-class])))
-    (defun INFO_DPNF|UpdateSetNonceDescription:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string set-class:integer nos:bool description:string) (INFO_DPDC-N|Field patron id account false (format "Description (Set-Class {})" [set-class])))
-    (defun INFO_DPNF|UpdateSetNonceRoyalty:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string set-class:integer nos:bool royalty-value:decimal) (INFO_DPDC-N|Field patron id account false (format "Royalty (Set-Class {})" [set-class])))
-    (defun INFO_DPNF|UpdateSetNonceIgnisRoyalty:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string set-class:integer nos:bool royalty-value:decimal) (INFO_DPDC-N|Field patron id account false (format "Ignis-Royalty (Set-Class {})" [set-class])))
-    (defun INFO_DPNF|UpdateSetNonceURI:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string set-class:integer nos:bool ay:object{DpdcUdcV2.URI|Type} u1:object{DpdcUdcV2.URI|Data} u2:object{DpdcUdcV2.URI|Data} u3:object{DpdcUdcV2.URI|Data}) (INFO_DPDC-N|Field patron id account false (format "URI (Set-Class {})" [set-class])))
-    (defun INFO_DPNF|UpdateSetNonceMetaData:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string set-class:integer nos:bool meta-data:object) (INFO_DPDC-N|Field patron id account false (format "Meta-Data (Set-Class {})" [set-class])))
-    (defun INFO_DPNF|UpdateSetNonceScore:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string set-class:integer nos:bool score:decimal) (INFO_DPDC-N|Field patron id account false (format "Score (Set-Class {})" [set-class])))
-    (defun INFO_DPNF|RemoveSetNonceScore:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string set-class:integer nos:bool) (INFO_DPDC-N|Field patron id account false (format "Score-Removal (Set-Class {})" [set-class])))
-    ;;   NF bulk
-    (defun INFO_DPNF|UpdateNonce:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string nonce:integer nos:bool new-nonce-data:object{DpdcUdcV2.DPDC|NonceData}) (INFO_DPDC-N|Bulk patron id account false "Nonce" 1))
-    (defun INFO_DPNF|UpdateNonces:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string nonces:[integer] nos:bool new-nonces-data:[object{DpdcUdcV2.DPDC|NonceData}]) (INFO_DPDC-N|Bulk patron id account false "Nonces" (length nonces)))
-    (defun INFO_DPNF|UpdateSetNonce:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string set-class:integer nos:bool new-nonce-data:object{DpdcUdcV2.DPDC|NonceData}) (INFO_DPDC-N|Bulk patron id account false "Set-Nonce" 1))
-    (defun INFO_DPNF|UpdateSetNonces:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string set-classes:[integer] nos:bool new-nonces-data:[object{DpdcUdcV2.DPDC|NonceData}]) (INFO_DPDC-N|Bulk patron id account false "Set-Nonces" (length set-classes)))
-    ;;   SF single-field
-    (defun INFO_DPSF|UpdateNonceName:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string nonce:integer nos:bool name:string) (INFO_DPDC-N|Field patron id account true (format "Name (Nonce {})" [nonce])))
-    (defun INFO_DPSF|UpdateNonceDescription:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string nonce:integer nos:bool description:string) (INFO_DPDC-N|Field patron id account true (format "Description (Nonce {})" [nonce])))
-    (defun INFO_DPSF|UpdateNonceRoyalty:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string nonce:integer nos:bool royalty-value:decimal) (INFO_DPDC-N|Field patron id account true (format "Royalty (Nonce {})" [nonce])))
-    (defun INFO_DPSF|UpdateNonceIgnisRoyalty:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string nonce:integer nos:bool royalty-value:decimal) (INFO_DPDC-N|Field patron id account true (format "Ignis-Royalty (Nonce {})" [nonce])))
-    (defun INFO_DPSF|UpdateNonceURI:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string nonce:integer nos:bool ay:object{DpdcUdcV2.URI|Type} u1:object{DpdcUdcV2.URI|Data} u2:object{DpdcUdcV2.URI|Data} u3:object{DpdcUdcV2.URI|Data}) (INFO_DPDC-N|Field patron id account true (format "URI (Nonce {})" [nonce])))
-    (defun INFO_DPSF|UpdateNonceMetaData:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string nonce:integer nos:bool meta-data:object) (INFO_DPDC-N|Field patron id account true (format "Meta-Data (Nonce {})" [nonce])))
-    (defun INFO_DPSF|UpdateNonceScore:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string nonce:integer nos:bool score:decimal) (INFO_DPDC-N|Field patron id account true (format "Score (Nonce {})" [nonce])))
-    (defun INFO_DPSF|RemoveNonceScore:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string nonce:integer nos:bool) (INFO_DPDC-N|Field patron id account true (format "Score-Removal (Nonce {})" [nonce])))
-    (defun INFO_DPSF|UpdateSetNonceName:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string set-class:integer nos:bool name:string) (INFO_DPDC-N|Field patron id account true (format "Name (Set-Class {})" [set-class])))
-    (defun INFO_DPSF|UpdateSetNonceDescription:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string set-class:integer nos:bool description:string) (INFO_DPDC-N|Field patron id account true (format "Description (Set-Class {})" [set-class])))
-    (defun INFO_DPSF|UpdateSetNonceRoyalty:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string set-class:integer nos:bool royalty-value:decimal) (INFO_DPDC-N|Field patron id account true (format "Royalty (Set-Class {})" [set-class])))
-    (defun INFO_DPSF|UpdateSetNonceIgnisRoyalty:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string set-class:integer nos:bool royalty-value:decimal) (INFO_DPDC-N|Field patron id account true (format "Ignis-Royalty (Set-Class {})" [set-class])))
-    (defun INFO_DPSF|UpdateSetNonceURI:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string set-class:integer nos:bool ay:object{DpdcUdcV2.URI|Type} u1:object{DpdcUdcV2.URI|Data} u2:object{DpdcUdcV2.URI|Data} u3:object{DpdcUdcV2.URI|Data}) (INFO_DPDC-N|Field patron id account true (format "URI (Set-Class {})" [set-class])))
-    (defun INFO_DPSF|UpdateSetNonceMetaData:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string set-class:integer nos:bool meta-data:object) (INFO_DPDC-N|Field patron id account true (format "Meta-Data (Set-Class {})" [set-class])))
-    (defun INFO_DPSF|UpdateSetNonceScore:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string set-class:integer nos:bool score:decimal) (INFO_DPDC-N|Field patron id account true (format "Score (Set-Class {})" [set-class])))
-    (defun INFO_DPSF|RemoveSetNonceScore:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string set-class:integer nos:bool) (INFO_DPDC-N|Field patron id account true (format "Score-Removal (Set-Class {})" [set-class])))
-    ;;   SF bulk
-    (defun INFO_DPSF|UpdateNonce:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string nonce:integer nos:bool new-nonce-data:object{DpdcUdcV2.DPDC|NonceData}) (INFO_DPDC-N|Bulk patron id account true "Nonce" 1))
-    (defun INFO_DPSF|UpdateNonces:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string nonces:[integer] nos:bool new-nonces-data:[object{DpdcUdcV2.DPDC|NonceData}]) (INFO_DPDC-N|Bulk patron id account true "Nonces" (length nonces)))
-    (defun INFO_DPSF|UpdateSetNonce:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string set-class:integer nos:bool new-nonce-data:object{DpdcUdcV2.DPDC|NonceData}) (INFO_DPDC-N|Bulk patron id account true "Set-Nonce" 1))
-    (defun INFO_DPSF|UpdateSetNonces:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string set-classes:[integer] nos:bool new-nonces-data:[object{DpdcUdcV2.DPDC|NonceData}]) (INFO_DPDC-N|Bulk patron id account true "Set-Nonces" (length set-classes)))
-    ;;  [DPDC wipes] — DPDC-MNG single (URCi_WipeNonce/WipeSlim) + multi (URCi_WipeCumulator)
-    (defun INFO_DPDC-MNG|WipeMulti:object{OuronetInfoV2.ClientInfo} (patron:string id:string son:bool obj:object{DpdcManagementV2.RemovableNonces} label:string)
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (r:module{DpdcManagementV2} DPDC-MNG)
-                (n:integer (length (at "r-nonces" obj)))
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                [(format "Operation: {} wipe of {} {} Nonces of {}" [label (if son "SFT" "NFT") n id])]
-                [(format "{} wipe of {} {} Nonces of {} succesful" [label (if son "SFT" "NFT") n id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (r::URCi_WipeCumulator id son obj)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
-        ))
-    (defun INFO_DPNF|WipeNonce:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string nonce:integer)
-        (let
-            (
-                (r:module{DpdcManagementV2} DPDC-MNG)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Wipes NFT {} Nonce {}" [id nonce]) (format "NFT {} Nonce {} wiped" [id nonce]) (r::URCi_WipeNonce id false))
-        )
-    )
-    (defun INFO_DPSF|WipeNonce:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string nonce:integer)
-        (let
-            (
-                (r:module{DpdcManagementV2} DPDC-MNG)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Wipes SFT {} Nonce {}" [id nonce]) (format "SFT {} Nonce {} wiped" [id nonce]) (r::URCi_WipeNonce id true))
-        )
-    )
-    (defun INFO_DPSF|WipeNoncePartialy:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string nonce:integer amount:integer)
-        (let
-            (
-                (r:module{DpdcManagementV2} DPDC-MNG)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Partially wipes {} of SFT {} Nonce {}" [amount id nonce]) (format "Partially wiped {} of SFT {} Nonce {}" [amount id nonce]) (r::URCi_WipeSlim id))
-        )
-    )
-    (defun INFO_DPNF|WipeHeavy:object{OuronetInfoV2.ClientInfo} (patron:string account:string id:string)
-        (let
-            (
-                (r:module{DpdcManagementV2} DPDC-MNG)
-            )
-            (INFO_DPDC-MNG|WipeMulti patron id false (r::URHC_WipePure account id false) "Heavy")
-        )
-    )
-    (defun INFO_DPSF|WipeHeavy:object{OuronetInfoV2.ClientInfo} (patron:string account:string id:string)
-        (let
-            (
-                (r:module{DpdcManagementV2} DPDC-MNG)
-            )
-            (INFO_DPDC-MNG|WipeMulti patron id true (r::URHC_WipePure account id true) "Heavy")
-        )
-    )
-    (defun INFO_DPNF|WipePure:object{OuronetInfoV2.ClientInfo} (patron:string account:string id:string removable-nonces-obj:object{DpdcManagementV2.RemovableNonces}) (INFO_DPDC-MNG|WipeMulti patron id false removable-nonces-obj "Pure"))
-    (defun INFO_DPSF|WipePure:object{OuronetInfoV2.ClientInfo} (patron:string account:string id:string removable-nonces-obj:object{DpdcManagementV2.RemovableNonces}) (INFO_DPDC-MNG|WipeMulti patron id true removable-nonces-obj "Pure"))
-    (defun INFO_DPNF|WipeClean:object{OuronetInfoV2.ClientInfo} (patron:string account:string id:string nonces:[integer])
-        (let
-            (
-                (r:module{DpdcManagementV2} DPDC-MNG)
-                (d:module{DpdcV2} DPDC)
-            )
-            (INFO_DPDC-MNG|WipeMulti patron id false (r::UDC_RemovableNonces nonces (d::UR_AccountNoncesSupplies account id false nonces)) "Clean")
-        )
-    )
-    (defun INFO_DPSF|WipeClean:object{OuronetInfoV2.ClientInfo} (patron:string account:string id:string nonces:[integer])
-        (let
-            (
-                (r:module{DpdcManagementV2} DPDC-MNG)
-                (d:module{DpdcV2} DPDC)
-            )
-            (INFO_DPDC-MNG|WipeMulti patron id true (r::UDC_RemovableNonces nonces (d::UR_AccountNoncesSupplies account id true nonces)) "Clean")
-        )
-    )
-    (defun INFO_DPNF|WipeDirty:object{OuronetInfoV2.ClientInfo} (patron:string account:string id:string nonces:[integer])
-        (let
-            (
-                (r:module{DpdcManagementV2} DPDC-MNG)
-            )
-            (INFO_DPDC-MNG|WipeMulti patron id false (r::URC_FilterAccountViableNonces account id false nonces) "Dirty")
-        )
-    )
-    (defun INFO_DPSF|WipeDirty:object{OuronetInfoV2.ClientInfo} (patron:string account:string id:string nonces:[integer])
-        (let
-            (
-                (r:module{DpdcManagementV2} DPDC-MNG)
-            )
-            (INFO_DPDC-MNG|WipeMulti patron id true (r::URC_FilterAccountViableNonces account id true nonces) "Dirty")
-        )
-    )
-    (defun INFO_DPNF|WipeSlice:object{OuronetInfoV2.ClientInfo} (patron:string account:string id:string removable-nonces-obj:object{DpdcManagementV2.RemovableNonces}) (INFO_DPDC-MNG|WipeMulti patron id false removable-nonces-obj "Hydra-Slice"))
-    (defun INFO_DPSF|WipeSlice:object{OuronetInfoV2.ClientInfo} (patron:string account:string id:string removable-nonces-obj:object{DpdcManagementV2.RemovableNonces}) (INFO_DPDC-MNG|WipeMulti patron id true removable-nonces-obj "Hydra-Slice"))
-    (defun INFO_DPDC-MNG|WipeFull:object{OuronetInfoV2.ClientInfo} (patron:string id:string son:bool plan:object{DpdcManagementV2.DPDC-MNG|WipeSlicePlan})
-        @doc "Hydra wipe FULL preview: grand-total IGNIS across the whole <URHC_BuildWipeSlicePlan> \
-            \ plan = the sum of every slice's own ifp (mirrors the per-slice executor byte-for-byte)."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (r:module{DpdcManagementV2} DPDC-MNG)
-                (slice-count:integer (at "slice-count" plan))
-                (total-ifp:decimal
-                    (fold (+) 0.0
-                        (map
-                            (lambda
-                                (slice:object{DpdcManagementV2.RemovableNonces})
-                                (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (r::URCi_WipeCumulator id son slice))
-                            )
-                            (at "slices" plan)
+                    (ref-DPDC-I:module{DpdcIssueV2} DPDC-I)
+                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-DPDC-I::C_IssueDigitalCollection
+                            patron false 
+                            owner-account creator-account collection-name collection-ticker
+                            can-upgrade can-change-owner can-change-creator can-add-special-role
+                            can-transfer-nft-create-role can-freeze can-wipe can-pause
+                            false
                         )
                     )
                 )
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
+                (at 0 (at "output" ico))
             )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                [(format "Operation: Hydra wipe campaign of {} {} over {} slice tx(s)" [(if son "SFT" "NFT") id slice-count])]
-                [(format "Hydra wipe campaign of {} {} over {} slice tx(s) succesful" [(if son "SFT" "NFT") id slice-count])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron total-ifp)
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [slice-count])
-        ))
-    (defun INFO_DPNF|WipeFull:object{OuronetInfoV2.ClientInfo} (patron:string account:string id:string plan:object{DpdcManagementV2.DPDC-MNG|WipeSlicePlan}) (INFO_DPDC-MNG|WipeFull patron id false plan))
-    (defun INFO_DPSF|WipeFull:object{OuronetInfoV2.ClientInfo} (patron:string account:string id:string plan:object{DpdcManagementV2.DPDC-MNG|WipeSlicePlan}) (INFO_DPDC-MNG|WipeFull patron id true plan))
-    ;;  [DPDC burn] — DPDC-MNG single-nonce burn
-    (defun INFO_DPNF|Burn:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string nonce:integer)
-        (let
-            (
-                (r:module{DpdcManagementV2} DPDC-MNG)
-                (d:module{DpdcV2} DPDC)
-            )
-            ;;STRUCTURAL check only -- the SAME function the exec's capability calls, so the two
-            ;;refuse in one wording. Deliberately NOT the burn-ROLE check the exec also runs: a role
-            ;;is transient state that changes between quote and submission, and family K's rule
-            ;;(RT-K-002) is that previews validate what the caller cannot change, not what they can.
-            ;;Without this the quote died on a raw DPNF|T|Properties read while the op refused
-            ;;cleanly. Pinned by RedTeam/[RT-K]_PreviewParity.repl <<RT-K-004a>>.
-            (d::UEV_id id false)
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Burns NFT {} Nonce {}" [id nonce]) (format "NFT {} Nonce {} burned" [id nonce]) (r::URCi_BurnNFT id))
         )
     )
-    (defun INFO_DPSF|Burn:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string nonce:integer amount:integer)
-        (let
-            (
-                (r:module{DpdcManagementV2} DPDC-MNG)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Burns {} of SFT {} Nonce {}" [amount id nonce]) (format "Burned {} of SFT {} Nonce {}" [amount id nonce]) (r::URCi_BurnSFT id))
-        )
-    )
-    ;;  [DPDC transfers] — DPDC-T Multi/Bulk transfer + Repurpose (DPDC-T / DPDC-F)
-    (defun INFO_DPNF|TransferNonce:object{OuronetInfoV2.ClientInfo} (patron:string id:string sender:string receiver:string nonce:integer amount:integer method:bool)
-        (let
-            (
-                (t:module{DpdcTransferV2} DPDC-T)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Transfers {} of NFT {} Nonce {} to {}" [amount id nonce receiver]) (format "Transferred {} of NFT {} Nonce {}" [amount id nonce]) (t::URCi_MultiTransferCumulator [id] [false] sender receiver [[nonce]] [[amount]]))
-        )
-    )
-    (defun INFO_DPSF|TransferNonce:object{OuronetInfoV2.ClientInfo} (patron:string id:string sender:string receiver:string nonce:integer amount:integer method:bool)
-        (let
-            (
-                (t:module{DpdcTransferV2} DPDC-T)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Transfers {} of SFT {} Nonce {} to {}" [amount id nonce receiver]) (format "Transferred {} of SFT {} Nonce {}" [amount id nonce]) (t::URCi_MultiTransferCumulator [id] [true] sender receiver [[nonce]] [[amount]]))
-        )
-    )
-    (defun INFO_DPNF|TransferNonces:object{OuronetInfoV2.ClientInfo} (patron:string id:string sender:string receiver:string nonces:[integer] amounts:[integer] method:bool)
-        (let
-            (
-                (t:module{DpdcTransferV2} DPDC-T)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Transfers {} Nonces of NFT {} to {}" [(length nonces) id receiver]) (format "Transferred {} Nonces of NFT {}" [(length nonces) id]) (t::URCi_MultiTransferCumulator [id] [false] sender receiver [nonces] [amounts]))
-        )
-    )
-    (defun INFO_DPSF|TransferNonces:object{OuronetInfoV2.ClientInfo} (patron:string id:string sender:string receiver:string nonces:[integer] amounts:[integer] method:bool)
-        (let
-            (
-                (t:module{DpdcTransferV2} DPDC-T)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Transfers {} Nonces of SFT {} to {}" [(length nonces) id receiver]) (format "Transferred {} Nonces of SFT {}" [(length nonces) id]) (t::URCi_MultiTransferCumulator [id] [true] sender receiver [nonces] [amounts]))
-        )
-    )
-    (defun INFO_DPDC|MultiTransfer:object{OuronetInfoV2.ClientInfo} (patron:string ids:[string] sons:[bool] sender:string receiver:string nonces-array:[[integer]] amounts-array:[[integer]] method:bool)
-        (let
-            (
-                (t:module{DpdcTransferV2} DPDC-T)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Multi-transfers {} Collectable(s) to {}" [(length ids) receiver]) (format "Multi-transferred {} Collectable(s) to {}" [(length ids) receiver]) (t::URCi_MultiTransferCumulator ids sons sender receiver nonces-array amounts-array))
-        )
-    )
-    (defun INFO_DPDC|BulkTransfer:object{OuronetInfoV2.ClientInfo} (patron:string id:string son:bool nonces-array:[[integer]] amounts-array:[[integer]] sender:string receiver-lst:[string] method:bool)
-        (let
-            (
-                (t:module{DpdcTransferV2} DPDC-T)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Bulk-transfers Collectable {} to {} receivers" [id (length receiver-lst)]) (format "Bulk-transferred Collectable {} to {} receivers" [id (length receiver-lst)]) (t::URCi_BulkTransferCumulator id son sender receiver-lst nonces-array amounts-array))
-        )
-    )
-    (defun INFO_DPNF|BulkTransfer:object{OuronetInfoV2.ClientInfo} (patron:string id:string nonces-array:[[integer]] amounts-array:[[integer]] sender:string receiver-lst:[string] method:bool)
-        (let
-            (
-                (t:module{DpdcTransferV2} DPDC-T)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Bulk-transfers NFT {} to {} receivers" [id (length receiver-lst)]) (format "Bulk-transferred NFT {} to {} receivers" [id (length receiver-lst)]) (t::URCi_BulkTransferCumulator id false sender receiver-lst nonces-array amounts-array))
-        )
-    )
-    (defun INFO_DPSF|BulkTransfer:object{OuronetInfoV2.ClientInfo} (patron:string id:string nonces-array:[[integer]] amounts-array:[[integer]] sender:string receiver-lst:[string] method:bool)
-        (let
-            (
-                (t:module{DpdcTransferV2} DPDC-T)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Bulk-transfers SFT {} to {} receivers" [id (length receiver-lst)]) (format "Bulk-transferred SFT {} to {} receivers" [id (length receiver-lst)]) (t::URCi_BulkTransferCumulator id true sender receiver-lst nonces-array amounts-array))
-        )
-    )
-    (defun INFO_DPNF|Repurpose:object{OuronetInfoV2.ClientInfo} (patron:string id:string repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer])
-        (let
-            (
-                (t:module{DpdcTransferV2} DPDC-T)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Repurposes {} Nonces of NFT {}" [(length nonces) id]) (format "Repurposed {} Nonces of NFT {}" [(length nonces) id]) (t::URCi_RepurposeCollectable id false amounts))
-        )
-    )
-    (defun INFO_DPSF|Repurpose:object{OuronetInfoV2.ClientInfo} (patron:string id:string repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer])
-        (let
-            (
-                (t:module{DpdcTransferV2} DPDC-T)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Repurposes {} Nonces of SFT {}" [(length nonces) id]) (format "Repurposed {} Nonces of SFT {}" [(length nonces) id]) (t::URCi_RepurposeCollectable id true amounts))
-        )
-    )
-    (defun INFO_DPNF|RepurposeFragments:object{OuronetInfoV2.ClientInfo} (patron:string id:string repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer])
-        (let
-            (
-                (fr:module{DpdcFragmentsV2} DPDC-F)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Repurposes {} Fragment-Nonces of NFT {}" [(length nonces) id]) (format "Repurposed {} Fragment-Nonces of NFT {}" [(length nonces) id]) (fr::URCi_RepurposeCollectableFragments id false amounts))
-        )
-    )
-    (defun INFO_DPSF|RepurposeFragments:object{OuronetInfoV2.ClientInfo} (patron:string id:string repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer])
-        (let
-            (
-                (fr:module{DpdcFragmentsV2} DPDC-F)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Repurposes {} Fragment-Nonces of SFT {}" [(length nonces) id]) (format "Repurposed {} Fragment-Nonces of SFT {}" [(length nonces) id]) (fr::URCi_RepurposeCollectableFragments id true amounts))
-        )
-    )
-    ;;  [DPDC sets] — DpdcSetsV2 Make/Break/Define/Rename/Toggle
-    (defun INFO_DPNF|Make:object{OuronetInfoV2.ClientInfo} (patron:string account:string id:string nonces:[integer] set-class:integer)
-        (let
-            (
-                (s:module{DpdcSetsV2} DPDC-S)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Makes an NFT {} Set (class {}) from {} Nonces" [id set-class (length nonces)]) (format "NFT {} Set (class {}) made" [id set-class]) (s::URCi_MakeNonFungibleSet account id nonces))
-        )
-    )
-    (defun INFO_DPSF|Make:object{OuronetInfoV2.ClientInfo} (patron:string account:string id:string nonces:[integer] set-class:integer how-many-sets:integer)
-        (let
-            (
-                (s:module{DpdcSetsV2} DPDC-S)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Makes {} SFT {} Sets (class {}) from {} Nonces" [how-many-sets id set-class (length nonces)]) (format "{} SFT {} Sets (class {}) made" [how-many-sets id set-class]) (s::URCi_MakeSemiFungibleSet account id nonces how-many-sets))
-        )
-    )
-    (defun INFO_DPNF|Break:object{OuronetInfoV2.ClientInfo} (patron:string account:string id:string nonce:integer)
-        (let
-            (
-                (s:module{DpdcSetsV2} DPDC-S)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Breaks NFT {} Set-Nonce {}" [id nonce]) (format "NFT {} Set-Nonce {} broken" [id nonce]) (s::URCi_BreakNonFungibleSet account id nonce))
-        )
-    )
-    (defun INFO_DPSF|Break:object{OuronetInfoV2.ClientInfo} (patron:string account:string id:string nonce:integer how-many-sets:integer)
-        (let
-            (
-                (s:module{DpdcSetsV2} DPDC-S)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Breaks {} SFT {} Set-Nonce {}" [how-many-sets id nonce]) (format "{} SFT {} Set-Nonce {} broken" [how-many-sets id nonce]) (s::URCi_BreakSemiFungibleSet account id nonce how-many-sets))
-        )
-    )
-    (defun INFO_DPNF|DefinePrimordialSet:object{OuronetInfoV2.ClientInfo} (patron:string id:string set-name:string score-multiplier:decimal set-definition:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}] ind:object{DpdcUdcV2.DPDC|NonceData})
-        (let
-            (
-                (s:module{DpdcSetsV2} DPDC-S)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Defines Primordial Set '{}' for NFT {}" [set-name id]) (format "Primordial Set '{}' defined for NFT {}" [set-name id]) (s::URCi_DefinePrimordialSet id false))
-        )
-    )
-    (defun INFO_DPSF|DefinePrimordialSet:object{OuronetInfoV2.ClientInfo} (patron:string id:string set-name:string score-multiplier:decimal set-definition:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}] ind:object{DpdcUdcV2.DPDC|NonceData})
-        (let
-            (
-                (s:module{DpdcSetsV2} DPDC-S)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Defines Primordial Set '{}' for SFT {}" [set-name id]) (format "Primordial Set '{}' defined for SFT {}" [set-name id]) (s::URCi_DefinePrimordialSet id true))
-        )
-    )
-    (defun INFO_DPNF|DefineCompositeSet:object{OuronetInfoV2.ClientInfo} (patron:string id:string set-name:string score-multiplier:decimal set-definition:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}] ind:object{DpdcUdcV2.DPDC|NonceData})
-        (let
-            (
-                (s:module{DpdcSetsV2} DPDC-S)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Defines Composite Set '{}' for NFT {}" [set-name id]) (format "Composite Set '{}' defined for NFT {}" [set-name id]) (s::URCi_DefineCompositeSet id false))
-        )
-    )
-    (defun INFO_DPSF|DefineCompositeSet:object{OuronetInfoV2.ClientInfo} (patron:string id:string set-name:string score-multiplier:decimal set-definition:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}] ind:object{DpdcUdcV2.DPDC|NonceData})
-        (let
-            (
-                (s:module{DpdcSetsV2} DPDC-S)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Defines Composite Set '{}' for SFT {}" [set-name id]) (format "Composite Set '{}' defined for SFT {}" [set-name id]) (s::URCi_DefineCompositeSet id true))
-        )
-    )
-    (defun INFO_DPNF|DefineHybridSet:object{OuronetInfoV2.ClientInfo} (patron:string id:string set-name:string score-multiplier:decimal primordial-sd:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}] composite-sd:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}] ind:object{DpdcUdcV2.DPDC|NonceData})
-        (let
-            (
-                (s:module{DpdcSetsV2} DPDC-S)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Defines Hybrid Set '{}' for NFT {}" [set-name id]) (format "Hybrid Set '{}' defined for NFT {}" [set-name id]) (s::URCi_DefineHybridSet id false))
-        )
-    )
-    (defun INFO_DPSF|DefineHybridSet:object{OuronetInfoV2.ClientInfo} (patron:string id:string set-name:string score-multiplier:decimal primordial-sd:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}] composite-sd:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}] ind:object{DpdcUdcV2.DPDC|NonceData})
-        (let
-            (
-                (s:module{DpdcSetsV2} DPDC-S)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Defines Hybrid Set '{}' for SFT {}" [set-name id]) (format "Hybrid Set '{}' defined for SFT {}" [set-name id]) (s::URCi_DefineHybridSet id true))
-        )
-    )
-    (defun INFO_DPNF|RenameSet:object{OuronetInfoV2.ClientInfo} (patron:string id:string set-class:integer new-name:string)
-        (let
-            (
-                (s:module{DpdcSetsV2} DPDC-S)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Renames NFT {} Set-Class {} to '{}'" [id set-class new-name]) (format "NFT {} Set-Class {} renamed to '{}'" [id set-class new-name]) (s::URCi_RenameSet id false))
-        )
-    )
-    (defun INFO_DPSF|RenameSet:object{OuronetInfoV2.ClientInfo} (patron:string id:string set-class:integer new-name:string)
-        (let
-            (
-                (s:module{DpdcSetsV2} DPDC-S)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Renames SFT {} Set-Class {} to '{}'" [id set-class new-name]) (format "SFT {} Set-Class {} renamed to '{}'" [id set-class new-name]) (s::URCi_RenameSet id true))
-        )
-    )
-    (defun INFO_DPNF|ToggleSet:object{OuronetInfoV2.ClientInfo} (patron:string id:string set-class:integer toggle:bool)
-        (let
-            (
-                (s:module{DpdcSetsV2} DPDC-S)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Toggles NFT {} Set-Class {}" [id set-class]) (format "NFT {} Set-Class {} toggled" [id set-class]) (s::URCi_ToggleSet id false))
-        )
-    )
-    (defun INFO_DPSF|ToggleSet:object{OuronetInfoV2.ClientInfo} (patron:string id:string set-class:integer toggle:bool)
-        (let
-            (
-                (s:module{DpdcSetsV2} DPDC-S)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Toggles SFT {} Set-Class {}" [id set-class]) (format "SFT {} Set-Class {} toggled" [id set-class]) (s::URCi_ToggleSet id true))
-        )
-    )
-    ;;  [DPDC fragments] — DpdcFragmentsV2 (+ EnableSetClassFragmentation on DpdcSetsV2)
-    (defun INFO_DPNF|EnableNonceFragmentation:object{OuronetInfoV2.ClientInfo} (patron:string id:string nonce:integer fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData})
-        (let
-            (
-                (fr:module{DpdcFragmentsV2} DPDC-F)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Enables Fragmentation of NFT {} Nonce {}" [id nonce]) (format "Fragmentation enabled for NFT {} Nonce {}" [id nonce]) (fr::URCi_EnableNonceFragmentation id false))
-        )
-    )
-    (defun INFO_DPSF|EnableNonceFragmentation:object{OuronetInfoV2.ClientInfo} (patron:string id:string nonce:integer fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData})
-        (let
-            (
-                (fr:module{DpdcFragmentsV2} DPDC-F)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Enables Fragmentation of SFT {} Nonce {}" [id nonce]) (format "Fragmentation enabled for SFT {} Nonce {}" [id nonce]) (fr::URCi_EnableNonceFragmentation id true))
-        )
-    )
-    (defun INFO_DPNF|EnableSetClassFragmentation:object{OuronetInfoV2.ClientInfo} (patron:string id:string set-class:integer fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData})
-        (let
-            (
-                (s:module{DpdcSetsV2} DPDC-S)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Enables Fragmentation of NFT {} Set-Class {}" [id set-class]) (format "Fragmentation enabled for NFT {} Set-Class {}" [id set-class]) (s::URCi_EnableSetClassFragmentation id false))
-        )
-    )
-    (defun INFO_DPSF|EnableSetClassFragmentation:object{OuronetInfoV2.ClientInfo} (patron:string id:string set-class:integer fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData})
-        (let
-            (
-                (s:module{DpdcSetsV2} DPDC-S)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Enables Fragmentation of SFT {} Set-Class {}" [id set-class]) (format "Fragmentation enabled for SFT {} Set-Class {}" [id set-class]) (s::URCi_EnableSetClassFragmentation id true))
-        )
-    )
-    (defun INFO_DPNF|MakeFragments:object{OuronetInfoV2.ClientInfo} (patron:string account:string id:string nonce:integer amount:integer)
-        (let
-            (
-                (fr:module{DpdcFragmentsV2} DPDC-F)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Makes {} Fragments of NFT {} Nonce {}" [amount id nonce]) (format "{} Fragments made of NFT {} Nonce {}" [amount id nonce]) (fr::URCi_MakeFragments id false))
-        )
-    )
-    (defun INFO_DPSF|MakeFragments:object{OuronetInfoV2.ClientInfo} (patron:string account:string id:string nonce:integer amount:integer)
-        (let
-            (
-                (fr:module{DpdcFragmentsV2} DPDC-F)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Makes {} Fragments of SFT {} Nonce {}" [amount id nonce]) (format "{} Fragments made of SFT {} Nonce {}" [amount id nonce]) (fr::URCi_MakeFragments id true))
-        )
-    )
-    (defun INFO_DPNF|MergeFragments:object{OuronetInfoV2.ClientInfo} (patron:string account:string id:string nonce:integer amount:integer)
-        (let
-            (
-                (fr:module{DpdcFragmentsV2} DPDC-F)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Merges {} Fragments of NFT {} Nonce {}" [amount id nonce]) (format "{} Fragments merged of NFT {} Nonce {}" [amount id nonce]) (fr::URCi_MergeFragments id false))
-        )
-    )
-    (defun INFO_DPSF|MergeFragments:object{OuronetInfoV2.ClientInfo} (patron:string account:string id:string nonce:integer amount:integer)
-        (let
-            (
-                (fr:module{DpdcFragmentsV2} DPDC-F)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Merges {} Fragments of SFT {} Nonce {}" [amount id nonce]) (format "{} Fragments merged of SFT {} Nonce {}" [amount id nonce]) (fr::URCi_MergeFragments id true))
-        )
-    )
-    ;;  [DPDC create/issue] — DpdcCreateV2 / DpdcIssueV2
-    (defun INFO_DPNF|Create:object{OuronetInfoV2.ClientInfo} (patron:string id:string input-nonce-data:[object{DpdcUdcV2.DPDC|NonceData}])
-        (let
-            (
-                (c:module{DpdcCreateV2} DPDC-C)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Creates {} new Nonces for NFT {}" [(length input-nonce-data) id]) (format "{} new Nonces created for NFT {}" [(length input-nonce-data) id]) (c::URCi_CreateNewNonces id false (make-list (length input-nonce-data) 1)))
-        )
-    )
-    (defun INFO_DPSF|Create:object{OuronetInfoV2.ClientInfo} (patron:string id:string amount:[integer] input-nonce-data:[object{DpdcUdcV2.DPDC|NonceData}])
-        (let
-            (
-                (c:module{DpdcCreateV2} DPDC-C)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Creates {} new Nonces for SFT {}" [(length input-nonce-data) id]) (format "{} new Nonces created for SFT {}" [(length input-nonce-data) id]) (c::URCi_CreateNewNonces id true amount))
-        )
-    )
-    (defun INFO_DPDC-I|Issue:object{OuronetInfoV2.ClientInfo} (patron:string owner-account:string collection-name:string son:bool)
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (i:module{DpdcIssueV2} DPDC-I)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                [(format "Operation: Issues a new {} Collection '{}' for {}" [(if son "SemiFungible" "NonFungible") collection-name (ref-I|OURONET::OI|UC_ShortAccount owner-account)])]
-                [(format "{} Collection '{}' succesfully issued" [(if son "SemiFungible" "NonFungible") collection-name])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (i::URCi_IssueDigitalCollection son owner-account)))
-                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (i::URCi_IssueCollectionStoa son)) [])
-        ))
-    (defun INFO_DPNF|Issue:object{OuronetInfoV2.ClientInfo} (patron:string owner-account:string creator-account:string collection-name:string collection-ticker:string can-upgrade:bool can-change-owner:bool can-change-creator:bool can-add-special-role:bool can-transfer-nft-create-role:bool can-freeze:bool can-wipe:bool can-pause:bool) (INFO_DPDC-I|Issue patron owner-account collection-name false))
-    (defun INFO_DPSF|Issue:object{OuronetInfoV2.ClientInfo} (patron:string owner-account:string creator-account:string collection-name:string collection-ticker:string can-upgrade:bool can-change-owner:bool can-change-creator:bool can-add-special-role:bool can-transfer-nft-create-role:bool can-freeze:bool can-wipe:bool can-pause:bool) (INFO_DPDC-I|Issue patron owner-account collection-name true))
-    ;;  [DPDC branding] — DpdcV2 UpdatePendingBranding (IGNIS) + UpgradeBranding (STOA)
-    (defun INFO_DPNF|UpdatePendingBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
-        (let
-            (
-                (d:module{DpdcV2} DPDC)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Updates pending Branding of NFT {}" [entity-id]) (format "Pending Branding of NFT {} updated" [entity-id]) (d::URCi_UpdatePendingBranding entity-id false))
-        )
-    )
-    (defun INFO_DPSF|UpdatePendingBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
-        (let
-            (
-                (d:module{DpdcV2} DPDC)
-            )
-            (INFO_DPDC-MNG|Simple patron (format "Operation: Updates pending Branding of SFT {}" [entity-id]) (format "Pending Branding of SFT {} updated" [entity-id]) (d::URCi_UpdatePendingBranding entity-id true))
-        )
-    )
-    (defun INFO_DPDC|UpgradeBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string months:integer son:bool)
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (d:module{DpdcV2} DPDC)
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                [(format "Operation: Upgrades Branding of {} {} for {} months" [(if son "SFT" "NFT") entity-id months])]
-                [(format "Branding of {} {} upgraded for {} months" [(if son "SFT" "NFT") entity-id months])]
-                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
-                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (d::URCi_UpgradeBranding months)) [])
-        ))
-    (defun INFO_DPNF|UpgradeBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string months:integer) (INFO_DPDC|UpgradeBranding patron entity-id months false))
-    (defun INFO_DPSF|UpgradeBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string months:integer) (INFO_DPDC|UpgradeBranding patron entity-id months true))
-    ;;  [DPSF equity aliases] — Talos surfaces EQUITY ops under the DPSF| client namespace
-    (defun INFO_DPSF|IssueCompany:object{OuronetInfoV2.ClientInfo} (patron:string creator-account:string collection-name:string collection-ticker:string royalty:decimal ignis-royalty:decimal ipfs-links:[string]) (INFO_EQUITY|IssueCompany patron creator-account collection-name))
-    (defun INFO_DPSF|MorphEquity:object{OuronetInfoV2.ClientInfo} (patron:string account:string id:string input-nonce:integer input-amount:integer output-nonce:integer) (INFO_EQUITY|MorphEquity patron account id input-nonce input-amount output-nonce))
     ;;
-    ;;  [DEMIPAD] — sovereign launchpad ops (deposit + fuel/retrieve TF/OF/SF/NF + withdraw)
-    (defun INFO_DEMIPAD|Deposit:object{OuronetInfoV2.ClientInfo} (patron:string donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal)
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                (sd:string (ref-I|OURONET::OI|UC_ShortAccount donor))
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                [(format "Operation: Deposits {} $ worth against {} into the Launchpad from {}" [amount-in-dollars asset-id sd])]
-                [(format "Succesfully deposited {} $ worth against {} into Demipad from {}" [amount-in-dollars asset-id sd])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DEMIPAD::URCi_Deposit donor asset-id amount-in-dollars type direct-injection)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
-        ))
-    (defun INFO_DEMIPAD|Withdraw:object{OuronetInfoV2.ClientInfo} (patron:string asset-id:string type:integer destination:string)
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
-                (lpad:string (ref-DEMIPAD::GOV|DEMIPAD|SC_NAME))
-                (amount:decimal (ref-DEMIPAD::URv_Funds asset-id type))
-                (working-id:string (if (= type 1) (ref-DALOS::UR_WrappedStoaID) (if (= type 2) (ref-DALOS::UR_SilverStoaID) (ref-DALOS::UR_OuroborosID))))
-                (sd:string (ref-I|OURONET::OI|UC_ShortAccount destination))
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                [(format "Operation: Withdraws {} {} accumulated in the Launchpad to {}" [amount working-id sd])]
-                [(format "Succesfully withdrawn {} {} from Demipad to {}" [amount working-id sd])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-TFT::URCi_Transfer working-id lpad destination amount)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
-        ))
-    (defun INFO_DEMIPAD|FuelTrueFungible:object{OuronetInfoV2.ClientInfo} (patron:string client:string asset-id:string amount:decimal)
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
-                (lpad:string (ref-DEMIPAD::GOV|DEMIPAD|SC_NAME))
-                (sa:string (ref-I|OURONET::OI|UC_ShortAccount client))
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                [(format "Operation: Fuels {} {} (TrueFungible) to the Launchpad from {}" [amount asset-id sa])]
-                [(format "Succesfully fueled {} {} to the Launchpad from {}" [amount asset-id sa])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-TFT::URCi_Transfer asset-id client lpad amount)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
-        ))
-    (defun INFO_DEMIPAD|RetrieveTrueFungible:object{OuronetInfoV2.ClientInfo} (patron:string client:string asset-id:string amount:decimal)
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
-                (lpad:string (ref-DEMIPAD::GOV|DEMIPAD|SC_NAME))
-                (sa:string (ref-I|OURONET::OI|UC_ShortAccount client))
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                [(format "Operation: Retrieves {} {} (TrueFungible) from the Launchpad to {}" [amount asset-id sa])]
-                [(format "Succesfully retrieved {} {} from the Launchpad to {}" [amount asset-id sa])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-TFT::URCi_Transfer asset-id lpad client amount)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
-        ))
-    (defun INFO_DEMIPAD|FuelOrtoFungible:object{OuronetInfoV2.ClientInfo} (patron:string client:string asset-id:string nonces:[integer])
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                (sa:string (ref-I|OURONET::OI|UC_ShortAccount client))
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                [(format "Operation: Fuels {} Nonces {} (OrtoFungible) to the Launchpad from {}" [asset-id nonces sa])]
-                [(format "Succesfully fueled {} Nonces {} to the Launchpad from {}" [asset-id nonces sa])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_MoveCumulator asset-id nonces false)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [nonces])
-        ))
-    (defun INFO_DEMIPAD|RetrieveOrtoFungible:object{OuronetInfoV2.ClientInfo} (patron:string client:string asset-id:string nonces:[integer])
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                (sa:string (ref-I|OURONET::OI|UC_ShortAccount client))
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                [(format "Operation: Retrieves {} Nonces {} (OrtoFungible) from the Launchpad to {}" [asset-id nonces sa])]
-                [(format "Succesfully retrieved {} Nonces {} from the Launchpad to {}" [asset-id nonces sa])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_MoveCumulator asset-id nonces false)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [nonces])
-        ))
-    (defun INFO_DEMIPAD|FuelSemiFungible:object{OuronetInfoV2.ClientInfo} (patron:string client:string asset-id:string nonces:[integer] amounts:[integer])
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                (sa:string (ref-I|OURONET::OI|UC_ShortAccount client))
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                [(format "Operation: Fuels {} Nonces {} Amounts {} (SemiFungible) to the Launchpad from {}" [asset-id nonces amounts sa])]
-                [(format "Succesfully fueled {} Nonces {} to the Launchpad from {}" [asset-id nonces sa])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DEMIPAD::URCi_TransmitSemiFungibles client asset-id nonces amounts true)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [amounts])
-        ))
-    (defun INFO_DEMIPAD|RetrieveSemiFungible:object{OuronetInfoV2.ClientInfo} (patron:string client:string asset-id:string nonces:[integer] amounts:[integer])
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                (sa:string (ref-I|OURONET::OI|UC_ShortAccount client))
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                [(format "Operation: Retrieves {} Nonces {} Amounts {} (SemiFungible) from the Launchpad to {}" [asset-id nonces amounts sa])]
-                [(format "Succesfully retrieved {} Nonces {} from the Launchpad to {}" [asset-id nonces sa])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DEMIPAD::URCi_TransmitSemiFungibles client asset-id nonces amounts false)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [amounts])
-        ))
-    (defun INFO_DEMIPAD|FuelNonFungible:object{OuronetInfoV2.ClientInfo} (patron:string client:string asset-id:string nonces:[integer] amounts:[integer])
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                (sa:string (ref-I|OURONET::OI|UC_ShortAccount client))
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                [(format "Operation: Fuels {} Nonces {} (NonFungible) to the Launchpad from {}" [asset-id nonces sa])]
-                [(format "Succesfully fueled {} Nonces {} to the Launchpad from {}" [asset-id nonces sa])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DEMIPAD::URCi_TransmitNonFungibles client asset-id nonces amounts true)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [nonces])
-        ))
-    (defun INFO_DEMIPAD|RetrieveNonFungible:object{OuronetInfoV2.ClientInfo} (patron:string client:string asset-id:string nonces:[integer] amounts:[integer])
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                (sa:string (ref-I|OURONET::OI|UC_ShortAccount client))
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                [(format "Operation: Retrieves {} Nonces {} (NonFungible) from the Launchpad to {}" [asset-id nonces sa])]
-                [(format "Succesfully retrieved {} Nonces {} from the Launchpad to {}" [asset-id nonces sa])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DEMIPAD::URCi_TransmitNonFungibles client asset-id nonces amounts false)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [nonces])
-        ))
+    ;;  [5] DPDC-R
     ;;
-    ;;  [EQUITY] — shareholder/company SFT collection (exposed via DPSF Talos)
-    (defun INFO_EQUITY|IssueCompany:object{OuronetInfoV2.ClientInfo} (patron:string creator-account:string collection-name:string)
-        ;;MISSING STOA LEG FIXED (2026-09-14). This reported `OI|UDC_NoStoaCosts` -- a LITERAL ZERO,
-        ;;rendered to the client as "Operation is free of native Stoa (STOA)". It is not free. The
-        ;;exec charges TWO currencies (`01_TS02-C1.pact:1556-1560`):
-        ;;    (ref-IGNIS::XE_CollectIgnis patron ico)
-        ;;    (ref-IGNIS::XE_CollectStoa patron (ref-IGNIS::UC_StoaPrice "issue-shareholder"))
-        ;;with the source comment "Issuing a COMPANY is $100 in IGNIS deter and $100 in STOA (spec)".
-        ;;
-        ;;MEASURED, not inferred: a live `DPSF|C_IssueCompany` charged **918.0 STOA** while this
-        ;;preview reported **0.0**. The IGNIS leg was already correct (6965.26 predicted == charged),
-        ;;which is why the gap survived -- half the quote was right.
-        ;;
-        ;;A UI showing this preview told the user an Equity issue cost no STOA at all.
-        ;;
-        ;;THE CHARGE HAS TWO LEGS, which is why a first repair reporting only the premium still came
-        ;;up short (765 quoted vs 918 charged). `DPDC-I::C_IssueDigitalCollection` runs its OWN
-        ;;`XE_CollectStoa patron (URCi_IssueCollectionStoa son)` at `04_DPDC-I.pact:502`, nested
-        ;;inside `C_IssueShareholderCollection`, and the Talos wrapper then adds the equity premium
-        ;;on top. `11_EQUITY+.pact:385` already said so -- "the collection-issue STOA price previews
-        ;;SEPARATELY via DPDC-I::URCi_IssueCollectionStoa" -- but nothing ever added the two together
-        ;;for the client. Both legs are summed here, raw, before the patron discount is applied.
-        ;;Pinned by REPL/modules/EQUITY.repl <<EQ-I1>>, which asserts BOTH currencies against a
-        ;;measured charge.
+    (defun DPNF|C_ToggleFreezeAccount (patron:string id:string account:string toggle:bool)
+        @doc "Freezes a given account for a given DPNF Token. Frozen Accounts can no longer send or receive that DPNF Token"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-R::C_ToggleFreezeAccount id false account toggle)
+                )
+            )
+        )
+    )
+    (defun DPNF|C_ToggleExemptionRole (patron:string id:string account:string toggle:bool)
+        @doc "Toggles exemption Role for a given DPNF on a given Smart Ouronet Account (Only Smart Ouronet Accounts can accept this role) \
+            \ When sending to or receiving from such Accounts, the flat IGNIS Royalty fee must not be paid."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-R::C_ToggleExemptionRole id false account toggle)
+                )
+            )
+        )
+    )
+    (defun DPNF|C_ToggleBurnRole (patron:string id:string account:string toggle:bool)
+        @doc "Toggles burn Role for a given DPNF on any Ouronet Account. \
+            \ Such Accounts can then burn the DPNF"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-R::C_ToggleBurnRole id false account toggle)
+                )
+            )
+        )
+    )
+    (defun DPNF|C_ToggleUpdateRole (patron:string id:string account:string toggle:bool)
+        @doc "Toggles update Role for a given DPNF on any Ouronet Account. \
+            \ Such Accounts can then update (modify) the Metadata on any DPNF nonce"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-R::C_ToggleUpdateRole id false account toggle)
+                )
+            )
+        )
+    )
+    (defun DPNF|C_ToggleModifyCreatorRole (patron:string id:string account:string toggle:bool)
+        @doc "Toggles Modify Creator Role for a given DPNF on any Ouronet Account. \
+            \ Such Accounts can proceed to modify the Creator of the DPNF Collection"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-R::C_ToggleModifyCreatorRole id false account toggle)
+                )
+            )
+        )
+    )
+    (defun DPNF|C_ToggleModifyRoyaltiesRole (patron:string id:string account:string toggle:bool)
+        @doc "Toggles Modify Royalties Role for a given DPNF on any Ouronet Account. \
+            \ Such Accounts can proceed to modify the Permille Royalty of any nonce in the  DPNF Collection"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-R::C_ToggleModifyRoyaltiesRole id false account toggle)
+                )
+            )
+        )
+    )
+    (defun DPNF|C_ToggleTransferRole (patron:string id:string account:string toggle:bool)
+        @doc "Toggles Transfer Role for a given DPNF on any Ouronet Account. \
+            \ Transfers for any Nonce in the DPNF Collection are then restricted only to and from these accounts"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-R::C_ToggleTransferRole id false account toggle)
+                )
+            )
+        )
+    )
+    (defun DPNF|C_MoveCreateRole (patron:string id:string new-account:string)
+        @doc "Moves the Create Role to another Ouronet Account. A single Account may have this Role \
+            \ This is the only account that can issue new NFTs in the Collection"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-R::C_MoveCreateRole id false new-account)
+                )
+            )
+        )
+    )
+    (defun DPNF|C_MoveRecreateRole (patron:string id:string new-account:string)
+        @doc "Moves the Recreate Role to another Ouronet Account. A single Account may have this Role \
+            \ This is the only account that can recreate any existing NFT in the Collection \
+            \ Recreation reffers to a complete update (modification) of all NFT properties of a given nonce"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-R::C_MoveRecreateRole id false new-account)
+                )
+            )
+        )
+    )
+    (defun DPNF|C_MoveSetUriRole (patron:string id:string new-account:string)
+        @doc "Moves the Set URI Role to another Ouronet Account. A single Account may have this Role \
+            \ This is the only account that can modify the URIs of any nonce in the NFT Collection"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-R::C_MoveSetUriRole id false new-account)
+                )
+            )
+        )
+    )
+    ;;
+    ;;  [6] DPDC-MNG
+    ;;
+    (defun DPNF|C_Control (patron:string id:string cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool)
+        @doc "Controls DPNF Properties"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-MNG::C_Control id false cu cco ccc casr ctncr cf cw cp)
+                )
+            )
+        )
+    )
+    (defun DPNF|C_TogglePause (patron:string id:string toggle:bool)
+        @doc "Pauses a DPNF Collection. Paused Collections can no longer be transfered"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-MNG::C_TogglePause id false toggle)
+                )
+            )
+        )
+    )
+    (defun DPNF|C_Respawn (patron:string id:string account:string nonce:integer)
+        @doc "Respawns NFT <id> <nonce> on <account>"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-MNG::C_RespawnNFT account id nonce)
+                )
+                (format "Succesfuly respawned NFT {} Nonce {} on Account {}" [id nonce (UC_ShortAccount account)])
+            )
+        )
+    )
+    (defun DPNF|C_Burn (patron:string id:string account:string nonce:integer)
+        @doc "Burns NFT <id> <nonce> on <account>"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-MNG::C_BurnNFT account id nonce)
+                )
+                (format "Succesfuly burned NFT {} Nonce {} on Account {}" [id nonce (UC_ShortAccount account)])
+            )
+        )
+    )
+    (defun DPNF|C_WipeNonce (patron:string id:string account:string nonce:integer)
+        @doc "Wipes NFT <id> <nonce> on <account>"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-MNG::C_WipeNonce account id false nonce)
+                )
+                (format "Succesfuly wiped NFT {} Nonce {} from Account {}" [id nonce (UC_ShortAccount account)])
+            )
+        )
+    )
+    (defun DPNF|CC_WipeHeavy (patron:string account:string id:string)
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-DPDC-MNG::CC_WipeHeavy account id false)
+                    )
+                    (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
+                    (total-nonces-supplies:integer (fold (+) 0 (at "r-amounts" (at 0 (at "output" ico)))))
+                )
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                (format 
+                    "Succesfuly executed Heavy Wipe of NFT {} on Account {}, wiping {} Nonces With a Total Supply of {}" 
+                    [id (UC_ShortAccount account) no-of-nonces total-nonces-supplies]
+                )
+            )
+        )
+    )
+    (defun DPNF|C_WipePure (patron:string account:string id:string removable-nonces-obj:object{DpdcManagementV2.RemovableNonces})
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-DPDC-MNG::C_WipePure account id false removable-nonces-obj) 
+                    )
+                    (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
+                    (total-nonces-supplies:integer (fold (+) 0 (at "r-amounts" (at 0 (at "output" ico)))))
+                )
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                (format 
+                    "Succesfuly executed Pure Wipe of NFT {} on Account {}, wiping {} Nonces With a Total Supply of {}" 
+                    [id (UC_ShortAccount account) no-of-nonces total-nonces-supplies]
+                )
+            )
+        )
+    )
+    (defun DPNF|C_WipeClean (patron:string account:string id:string nonces:[integer])
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-DPDC-MNG::C_WipeClean account id false nonces) 
+                    )
+                    (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
+                    (total-nonces-supplies:integer (fold (+) 0 (at "r-amounts" (at 0 (at "output" ico)))))
+                )
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                (format 
+                    "Succesfuly executed Clean Wipe of NFT {} on Account {}, wiping {} Nonces With a Total Supply of {}" 
+                    [id (UC_ShortAccount account) no-of-nonces total-nonces-supplies]
+                )
+            )
+        )
+    )
+    (defun DPNF|C_WipeDirty (patron:string account:string id:string nonces:[integer])
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-DPDC-MNG::C_WipeDirty account id false nonces)
+                    )
+                    (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
+                    (total-nonces-supplies:integer (fold (+) 0 (at "r-amounts" (at 0 (at "output" ico)))))
+                )
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                (format
+                    "Succesfuly executed Dirty Wipe of NFT {} on Account {}, wiping {} Nonces With a Total Supply of {}"
+                    [id (UC_ShortAccount account) no-of-nonces total-nonces-supplies]
+                )
+            )
+        )
+    )
+    (defun DPNF|Cp_WipeSlice (patron:string account:string id:string removable-nonces-obj:object{DpdcManagementV2.RemovableNonces})
+        @doc "Hydra parallel wipe slice: wipes ONE <URHC_BuildWipeSlicePlan> slice of the NFT \
+            \ <account>'s <id> nonces. The UI dirty-reads the plan and fires one such tx per \
+            \ slice, all in parallel; slices are disjoint, order-independent and retryable \
+            \ (replay REVERTS on the zeroed account supply)."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
+                    (ico:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-DPDC-MNG::Cp_WipeSlice account id false removable-nonces-obj)
+                    )
+                    (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
+                    (total-nonces-supplies:integer (fold (+) 0 (at "r-amounts" (at 0 (at "output" ico)))))
+                )
+                (ref-IGNIS::XE_CollectIgnis patron ico)
+                (format
+                    "Succesfuly executed Hydra Wipe Slice of NFT {} on Account {}, wiping {} Nonces With a Total Supply of {}"
+                    [id (UC_ShortAccount account) no-of-nonces total-nonces-supplies]
+                )
+            )
+        )
+    )
+    ;;
+    ;;  [7] DPDC-T
+    ;;
+    (defun DPNF|C_Repurpose (patron:string id:string repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer])
+        @doc "Repurpose NFT(s) from <repurpose-from> to <repurpose-to>. Requires <id> ownerhsip"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                    (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
+                    (sf:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-from))
+                    (st:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-T::C_RepurposeCollectable id false repurpose-from repurpose-to nonces amounts)
+                )
+                (format "Successfully repurposed NFT {} Nonces {} with Amounts {} from {} to {}" [id nonces amounts sf st])
+            )
+        )
+    )
+    (defun DPNF|C_TransferNonce (patron:string id:string sender:string receiver:string nonce:integer amount:integer method:bool)
+        @doc "Transfer an NFT <nonce> of <amount> from <sender> to <receiver> using <method>"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                    (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount sender))
+                    (ra:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
+                    ;;
+                    (irs:object{DpdcTransferV2.AggregatedRoyalties}
+                        (ref-DPDC-T::C_IgnisRoyaltyCollector patron sender [id] [false] [[nonce]] [[amount]])
+                    )
+                    (r:[decimal] (at "ignis-royalties" irs))
+                    (s:decimal (fold (+) 0.0 r))
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-T::C_Transfer [id] [false] sender receiver [[nonce]] [[amount]] method)
+                )
+                [
+                    (format "Successfully transfered NFT {} Nonce {} and Amount {} from {} to {}" [id nonce amount sa ra])
+                    (if (= s 0.0)
+                        (format "Transfer executed without collecting any IGNIS Royalties for the Collectable {}" [id])
+                        (format "Transfer executed while collecting {} IGNIS Royalty to the Collectable {} Creator" [s id])
+                    )
+                ]
+            )
+        )
+    )
+    (defun DPNF|C_TransferNonces (patron:string id:string sender:string receiver:string nonces:[integer] amounts:[integer] method:bool)
+        @doc "Transfer an NFT <nonce> of <amount> from <sender> to <receiver> using <method>"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                    (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount sender))
+                    (ra:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
+                    ;;
+                    (irs:object{DpdcTransferV2.AggregatedRoyalties}
+                        (ref-DPDC-T::C_IgnisRoyaltyCollector patron sender [id] [false] [nonces] [amounts])
+                    )
+                    (c:[string] (at "creators" irs))
+                    (r:[decimal] (at "ignis-royalties" irs))
+                    (s:decimal (fold (+) 0.0 r))
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-T::C_Transfer [id] [false] sender receiver [nonces] [amounts] method)
+                )
+                [
+                    (format "Successfully transfered NFT {} Nonces {} with Amounts {} from {} to {}" [id nonces amounts sa ra])
+                    (if (= s 0.0)
+                        (format "Transfer executed without collecting any IGNIS Royalties for the Collectable {}" [id])
+                        (format "Transfer executed while collecting {} IGNIS Royalty to the Collectable {} Creator" [s id])
+                    )
+                ]
+            )
+        )
+    )
+    (defun DPNF|C_BulkTransfer
+        (patron:string id:string nonces-array:[[integer]] amounts-array:[[integer]] sender:string receiver-lst:[string] method:bool)
+        @doc "Bulk NFT transfer — son=false wrapper over TS02-C1.DPDC|C_BulkTransfer."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC-I:module{DpdcIssueV2} DPDC-I)
-                (ref-EQUITY:module{EquityV2} EQUITY)
-                (sa:string (ref-I|OURONET::OI|UC_ShortAccount creator-account))
+                (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
             )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                [(format "Operation: Issues the 8-element Shareholder (Equity) SFT Collection '{}' on Account {}" [collection-name sa])]
-                [(format "Shareholder Collection '{}' issued succesfully on Account {}" [collection-name sa])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-EQUITY::URCi_IssueShareholderCollection)))
-                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron
-                    (+ (ref-DPDC-I::URCi_IssueCollectionStoa true)
-                       (ref-IGNIS::UC_StoaPrice "issue-shareholder"))) [])
-        ))
-    (defun INFO_EQUITY|MorphEquity:object{OuronetInfoV2.ClientInfo} (patron:string account:string id:string input-nonce:integer input-amount:integer output-nonce:integer)
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-EQUITY:module{EquityV2} EQUITY)
-                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            (ref-TS02-C1::DPDC|C_BulkTransfer patron id false nonces-array amounts-array sender receiver-lst method)
+        )
+    )
+    ;;
+    ;;  [8] DPDC-S
+    ;;
+    (defun DPNF|C_Make
+        (patron:string account:string id:string nonces:[integer] set-class:integer)
+        @doc "Makes a Set NFT of Class <set-class>"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                    (ref-DPDC:module{DpdcV2} DPDC)
+                    (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                    (nonce:integer (+ 1 (ref-DPDC::UR_NoncesUsed id false)))
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-S::C_MakeNonFungibleSet account id nonces set-class)
+                )
+                (format "Successfully generated Class {} Set (Nonce {}) of NFT Collection {} on Account {}" [set-class nonce id sa])
             )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                [(format "Operation: Morphs {} shares of {} Nonce {} into Nonce {} on Account {}" [input-amount id input-nonce output-nonce sa])]
-                [(format "Succesfully morphed {} {} Nonce {} shares into Nonce {} on {}" [input-amount id input-nonce output-nonce sa])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-EQUITY::URCi_MorphPackageShares account id input-nonce input-amount output-nonce)))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
-        ))
-    ;;{5.4}  Validate [UEV/CAP]
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;{5.7}  User [A/C]
+        )
+    )
+    (defun DPNF|C_Break
+        (patron:string account:string id:string nonce:integer)
+        @doc "Brakes an NFT Nonce representing an NFT Set"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                    (ref-DPDC:module{DpdcV2} DPDC)
+                    (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+                    (set-class:integer (ref-DPDC::UR_NonceClass id false nonce))
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-S::C_BreakNonFungibleSet account id nonce)
+                )
+                (format "Successfully broken Class {} Set (Nonce {}) of NFT Collection {} on Account {}" [set-class nonce id sa])
+            )
+        )
+    )
+    (defun DPNF|C_DefinePrimordialSet
+        (
+            patron:string id:string set-name:string score-multiplier:decimal
+            set-definition:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}]
+            ind:object{DpdcUdcV2.DPDC|NonceData}
+        )
+        @doc "Defines a New Primordial NFT Set. Primordial Sets are composed of Class 0 Nonces"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-S::C_DefinePrimordialSet id false set-name score-multiplier set-definition ind)
+                )
+                (format "Primordial Set <{}> for NFT Collection {} defined succesfully" [set-name id])
+            )
+        )
+    )
+    (defun DPNF|C_DefineCompositeSet
+        (
+            patron:string id:string set-name:string score-multiplier:decimal
+            set-definition:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}]
+            ind:object{DpdcUdcV2.DPDC|NonceData}
+        )
+        @doc "Defines a New Composite NFT Set. Composite Sets are composed of Class (!=0) Nonces"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-S::C_DefineCompositeSet id false set-name score-multiplier set-definition ind)
+                )
+                (format "Composite Set <{}> for NFT Collection {} defined succesfully" [set-name id])
+            )
+        )
+    )
+    (defun DPNF|C_DefineHybridSet
+        (
+            patron:string id:string set-name:string score-multiplier:decimal
+            primordial-sd:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}]
+            composite-sd:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}]
+            ind:object{DpdcUdcV2.DPDC|NonceData}
+        )
+        @doc "Defines a New Hybrid NFT Set. Hybrid Sets are composed of both Class 0 and Non-0 Nonces"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-S::C_DefineHybridSet id false set-name score-multiplier primordial-sd composite-sd ind)
+                )
+                (format "Hybrid Set <{}> for NFT Collection {} defined succesfully" [set-name id])
+            )
+        )
+    )
+    (defun DPNF|C_EnableSetClassFragmentation
+        (
+            patron:string id:string set-class:integer
+            fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData}
+        )
+        @doc "Enables Fragmentation for a given Set Class. This allows all NFTs of the given Set Class to be Fragmented"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-S::C_EnableSetClassFragmentation id false set-class fragmentation-ind)
+                )
+                (format "Set Class {} for NFT {} succesfully fragmented" [set-class id])
+            )
+        )
+    )
+    (defun DPNF|C_ToggleSet (patron:string id:string set-class:integer toggle:bool)
+        @doc "Enables or Disables a Set. A disabled Set allows only for decomposition of Set Elements, but not for composition"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-S::C_ToggleSet id false set-class toggle)
+                )
+                (format "NFT {} Set Class {} succesfully turned {}" [id set-class (if toggle "ON" "OFF")])
+            )
+        )
+    )
+    (defun DPNF|C_RenameSet (patron:string id:string set-class:integer new-name:string)
+        @doc "Renames an NFT Set"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-S::C_RenameSet id false set-class new-name)
+                )
+                (format "NFT {} Set Class {} succesfuly renamed to <{}>" [id set-class new-name])
+            )
+        )
+    )
+    ;; DPNF|C_UpdateSetMultiplier removed — DPDC Audit #15H.
+    ;;
+    (defun DPNF|C_UpdateSetNonce 
+        (patron:string id:string account:string set-class:integer nos:bool new-nonce-data:object{DpdcUdcV2.DPDC|NonceData})
+        @doc "[0] Updates Full Set Nonce Data, either Native or Split, for an NFT"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-N::C_UpdateNonces id false account [set-class] nos false [new-nonce-data])
+                )
+            )
+        )
+    )
+    (defun DPNF|C_UpdateSetNonces
+        (patron:string id:string account:string set-classes:[integer] nos:bool new-nonces-data:[object{DpdcUdcV2.DPDC|NonceData}])
+        @doc "[0] Updates Full Set Nonce Data, either Native or Split, for an NFT"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-N::C_UpdateNonces id false account set-classes nos false new-nonces-data)
+                )
+            )
+        )
+    )
+    (defun DPNF|C_UpdateSetNonceRoyalty
+        (patron:string id:string account:string set-class:integer nos:bool royalty-value:decimal)
+        @doc "[1] Updates Set Nonce Native Royalty Value, either Native or Split, for an NFT"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-N::C_UpdateNonceRoyalty id false account set-class nos false royalty-value)
+                )
+            )
+        )
+    )
+    (defun DPNF|C_UpdateSetNonceIgnisRoyalty
+        (patron:string id:string account:string set-class:integer nos:bool royalty-value:decimal)
+        @doc "[2] Updates Set Nonce IGNIS Royalty Value, either Native or Split, for an NFT"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-N::C_UpdateNonceIgnisRoyalty id false account set-class nos false royalty-value)
+                )
+            )
+        )
+    )
+    (defun DPNF|C_UpdateSetNonceName
+        (patron:string id:string account:string set-class:integer nos:bool name:string)
+        @doc "[3] Updates Set Nonce Name, either Native or Split, for an NFT"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-N::C_UpdateNonceName id false account set-class nos false name)
+                )
+            )
+        )
+    )
+    (defun DPNF|C_UpdateSetNonceDescription
+        (patron:string id:string account:string set-class:integer nos:bool description:string)
+        @doc "[4] Updates Set Nonce Description, either Native or Split, for an NFT"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-N::C_UpdateNonceDescription id false account set-class nos false description)
+                )
+            )
+        )
+    )
+    (defun DPNF|C_UpdateSetNonceScore
+        (patron:string id:string account:string set-class:integer nos:bool score:decimal)
+        @doc "[5] Updates Set Nonce Score, either Native or Split, for an NFT"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-N::C_UpdateNonceScore id false account set-class nos false score)
+                )
+            )
+        )
+    )
+    (defun DPNF|C_RemoveSetNonceScore (patron:string id:string account:string set-class:integer nos:bool)
+        @doc "[5b] Removes Set Nonce Score, setting it to -1.0, either Native or Split, for an NFT"
+        (DPNF|C_UpdateSetNonceScore patron id account set-class nos -1.0)
+    )
+    (defun DPNF|C_UpdateSetNonceMetaData
+        (patron:string id:string account:string set-class:integer nos:bool meta-data:object)
+        @doc "[6] Updates Set Nonce Meta-Data, either Native or Split, for an NFT"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-N::C_UpdateNonceMetaData id false account set-class nos false meta-data)
+                )
+            )
+        )
+    )
+    (defun DPNF|C_UpdateSetNonceURI
+        (
+            patron:string id:string account:string set-class:integer nos:bool
+            ay:object{DpdcUdcV2.URI|Type} u1:object{DpdcUdcV2.URI|Data} u2:object{DpdcUdcV2.URI|Data} u3:object{DpdcUdcV2.URI|Data}
+        )
+        @doc "[7] Updates Set Nonce URI, either Native or Split, for an NFT"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-N::C_UpdateNonceURI id false account set-class nos false ay u1 u2 u3)
+                )
+            )
+        )
+    )
+    ;;
+    ;;  [9] DPDC-F
+    ;;
+    (defun DPNF|C_RepurposeFragments (patron:string id:string repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer])
+        @doc "Repurpose NFT Fragment(s) from <repurpose-from> to <repurpose-to>. Requires <id> ownerhsip"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                    (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
+                    (sf:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-from))
+                    (st:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    ;; #79: this is the NFT (C_DPNF|) wrapper — son MUST be false. Was hardcoded `true`
+                    ;; (SFT), so it read CNF from the DPSF table and failed. Never caught: no test coverage.
+                    (ref-DPDC-F::C_RepurposeCollectableFragments id false repurpose-from repurpose-to nonces amounts)
+                )
+                (format "Successfully repurposed NFT {} Fragment-Nonces {} with Amounts {} from {} to {}" [id nonces amounts sf st])
+            )
+        )
+    )
+    (defun DPNF|C_MakeFragments (patron:string account:string id:string nonce:integer amount:integer)
+        @doc "Fragments NFT nonce of the given amount into its respective Fragments."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-F::C_MakeFragments account id false nonce amount)
+                )
+                (format "Succesfuly Fragmented {} NFT(s) {} of Nonce {}" [amount id nonce])
+            )
+        )
+    )
+    (defun DPNF|C_MergeFragments (patron:string account:string id:string nonce:integer amount:integer)
+        @doc "MErges NFT Fragments nonces of the given amount into the original NFT nonce."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-F::C_MergeFragments account id false nonce amount)
+                )
+                (format "Succesfuly merged {} {} NFT(s) Fragments of Nonce {}" [amount id nonce])
+            )
+        )
+    )
+    (defun DPNF|C_EnableNonceFragmentation (patron:string id:string nonce:integer fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData})
+        @doc "Enables Fragmentation for a given NFT Nonce"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-F::C_EnableNonceFragmentation id false nonce fragmentation-ind)
+                )
+                (format "Fragmentation for NFT {} Nonce {} enabled succesfully" [id nonce])
+            )
+        )
+    )
+    ;;
+    ;;  [10] DPDC-N
+    ;;
+    (defun DPNF|C_UpdateNonce 
+        (patron:string id:string account:string nonce:integer nos:bool new-nonce-data:object{DpdcUdcV2.DPDC|NonceData})
+        @doc "[0] Updates Full Nonce Data, either Native or Split, for an NFT"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-N::C_UpdateNonces id false account [nonce] nos true [new-nonce-data])
+                )
+                (format "Nonce {} updated successfully!" [nonce])
+            )
+        )
+    )
+    (defun DPNF|C_UpdateNonces
+        (patron:string id:string account:string nonces:[integer] nos:bool new-nonces-data:[object{DpdcUdcV2.DPDC|NonceData}])
+        @doc "[0] Updates Full Nonce Data, either Native or Split, for an NFT"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-N::C_UpdateNonces id false account nonces nos true new-nonces-data)
+                )
+                (format "Nonces {} updated successfully!" [nonces])
+            )
+        )
+    )
+    (defun DPNF|C_UpdateNonceRoyalty
+        (patron:string id:string account:string nonce:integer nos:bool royalty-value:decimal)
+        @doc "[1] Updates Nonce Native Royalty Value, either Native or Split, for an NFT"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-N::C_UpdateNonceRoyalty id false account nonce nos true royalty-value)
+                )
+            )
+        )
+    )
+    (defun DPNF|C_UpdateNonceIgnisRoyalty
+        (patron:string id:string account:string nonce:integer nos:bool royalty-value:decimal)
+        @doc "[2] Updates Nonce IGNIS Royalty Value, either Native or Split, for an NFT"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-N::C_UpdateNonceIgnisRoyalty id false account nonce nos true royalty-value)
+                )
+            )
+        )
+    )
+    (defun DPNF|C_UpdateNonceName
+        (patron:string id:string account:string nonce:integer nos:bool name:string)
+        @doc "[3] Updates Nonce Name, either Native or Split, for an NFT"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-N::C_UpdateNonceName id false account nonce nos true name)
+                )
+            )
+        )
+    )
+    (defun DPNF|C_UpdateNonceDescription
+        (patron:string id:string account:string nonce:integer nos:bool description:string)
+        @doc "[4] Updates Nonce Description, either Native or Split, for an NFT"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-N::C_UpdateNonceDescription id false account nonce nos true description)
+                )
+            )
+        )
+    )
+    (defun DPNF|C_UpdateNonceScore
+        (patron:string id:string account:string nonce:integer nos:bool score:decimal)
+        @doc "[5] Updates Nonce Score, either Native or Split, for an NFT"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-N::C_UpdateNonceScore id false account nonce nos true score)
+                )
+            )
+        )
+    )
+    (defun DPNF|C_RemoveNonceScore (patron:string id:string account:string nonce:integer nos:bool)
+        @doc "[5b] Removes Nonce Score, setting it to -1.0, either Native or Split, for an NFT"
+        (DPNF|C_UpdateNonceScore patron id account nonce nos -1.0)
+    )
+    (defun DPNF|C_UpdateNonceMetaData
+        (patron:string id:string account:string nonce:integer nos:bool meta-data:object)
+        @doc "[6] Updates Nonce Meta-Data, either Native or Split, for an NFT"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-N::C_UpdateNonceMetaData id false account nonce nos true meta-data)
+                )
+            )
+        )
+    )
+    (defun DPNF|C_UpdateNonceURI
+        (
+            patron:string id:string account:string nonce:integer nos:bool
+            ay:object{DpdcUdcV2.URI|Type} u1:object{DpdcUdcV2.URI|Data} u2:object{DpdcUdcV2.URI|Data} u3:object{DpdcUdcV2.URI|Data}
+        )
+        @doc "[7] Updates Nonce URI, either Native or Split, for an NFT"
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-DPDC-N::C_UpdateNonceURI id false account nonce nos true ay u1 u2 u3)
+                )
+            )
+        )
+    )
 
 )
+
+;; --- tables for 02_TS02-C2.pact (2 defined) ---
+;; UPGRADE MODE: this module is assumed already deployed, so its
+;; tables already exist and (create-table) would ABORT the whole
+;; transaction. They are listed here, commented, for reference.
+;; If any of these is NEW since the last deploy, uncomment JUST it.
+;; (create-table P|T)
+;; (create-table P|MT)
 

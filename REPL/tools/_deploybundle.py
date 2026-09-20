@@ -145,8 +145,103 @@ ROUNDS = {
         # left to be noticed on the day.
         "extra": [("1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact", "08_DSA.pact")],
     },
+    "2026-09-full": {
+        "why": "FULL REDEPLOY. The tree has diverged from the 2026-08-30 live snapshot in 127 "
+               ".pact files, and two of those changes are breaking across the whole cake: 17 "
+               "`UC_` functions renamed to `UCv_` in the Stage-1 utilities (every module calls "
+               "them), and `OuronetPolicyV2` gaining `P|A_RemoveIMP`/`P|A_SetIMP` (59 modules "
+               "implement it). Interface-name scoping cannot express that -- see `all_modules`.",
+        # NO interface filter. `round_modules()` keeps modules that NAME a bumped interface, which
+        # is a proxy for "differs from live" and a bad one: it cannot see a changed BODY, and it
+        # cannot see a utility whose FUNCTION NAMES changed. Scoping the 2026-09-aqp round that
+        # way left 27 in-chain modules unplanned -- among them 01_DALOS.pact (which declares
+        # OuronetPolicyV2 itself) and all 13 utilities. Owner caught it by reading the bundle.
+        "all_modules": True,
+        "interfaces": [],
+        # AQP-BOOT Step 0 still belongs here: the AQP family is NEW on chain, so its four
+        # P|A_Define calls and the AQP smart-account governor rotate have never run. Do NOT add
+        # the whole-chain "Define IMC Policies" blocks -- those are genesis, and replaying them
+        # duplicates guards. The upgrade-side registrations go in `imp_delta` below.
+        "init": ["AQP-BOOT"],
+        "new": ["/03_AQP/", "04_AQP-BOOT.pact"],
+        "extra": [("1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact", "08_DSA.pact")],
+        "imp_delta": [
+            ("IGNIS", "MTX-AQP",    "P|MTX-AQP|CALLER"),
+            ("IGNIS", "TS02-C2",    "P|TALOS-SUMMONER"),
+            ("IGNIS", "TS02-C3",    "P|TALOS-SUMMONER"),
+            ("IGNIS", "TS02-DPAD",  "P|TALOS-SUMMONER"),
+        ],
+        # EVERY .pact in the tree must be planned or excluded HERE WITH A REASON. A module that is
+        # merely absent is indistinguishable from one that was forgotten -- which is exactly how
+        # 01_DALOS.pact went missing. `--write` reports anything unaccounted for.
+        "excluded": {
+            "1_SOVEREIGN/STAGE_01/0_Interfaces/01_Utilities.pact":
+                "vestigial registry: declares 0 interfaces, 0 modules (interfaces are co-located "
+                "with their modules per StoicSyntax 7.10)",
+            "1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact": "vestigial registry, declares nothing",
+            "1_SOVEREIGN/STAGE_01/0_Interfaces/03_Talos.pact": "vestigial registry, declares nothing",
+            "1_SOVEREIGN/STAGE_02/0_Interfaces/02_Core.pact": "vestigial registry, declares nothing",
+            "1_SOVEREIGN/STAGE_02/0_Interfaces/03_Talos.pact": "vestigial registry, declares nothing",
+            "1_SOVEREIGN/STAGE_01/2_Core/00_DPMF.pact":
+                "OBSOLETE, owner call 2026-09-21. DPOF is the live OrtoFungible path; DPMF is kept "
+                "for historical/migration context only. VERIFIED before excluding: zero CODE "
+                "references in the tree -- all six files that mention DPMF do so in @doc prose, "
+                "nothing binds it as a modref and nothing implements "
+                "DemiourgosPactMetaFungibleV7 except DPMF itself. NOT redeployed: the live copy "
+                "stays exactly as it is. That is deliberate and is the SAFE half of 'stub it out' "
+                "-- a deployed module cannot be removed in Pact, and upgrading this one to a stub "
+                "would drop 5 deftables (P|T, P|MT, DPMF|Properties/Balance/Role), orphaning their "
+                "rows. Reducing the SOURCE to a stub is a separate, owner-approved step.",
+        },
+    },
 }
-DEFAULT_ROUND = "2026-09-aqp"
+DEFAULT_ROUND = "2026-09-full"
+
+
+def chain_pacts():
+    """Every module the deploy chain loads -- the `all_modules` round's keep-set."""
+    return {x for b in parse_chain() for x in b["pacts"]}
+
+
+def tree_pacts():
+    """Every .pact in the tree, so the round can be checked for COVERAGE and not just order."""
+    out = set()
+    for top in ("1_SOVEREIGN", "2_CITIZEN"):
+        for d, _, fs in os.walk(os.path.join(ROOT, top)):
+            if os.sep + "Audit" in d + os.sep:
+                continue
+            for f in fs:
+                if f.endswith(".pact"):
+                    out.add(os.path.normpath(os.path.join(d, f)))
+    return out
+
+
+def report_coverage(rnd, planned):
+    """Anything in the tree this round neither ships nor explains. Loud, by design.
+
+    The 2026-09-aqp round shipped 53 of 94 tree modules and said nothing about the other 41,
+    because its only question was "does this module NAME a bumped interface?". Absence was
+    indistinguishable from omission, and 01_DALOS.pact -- which declares OuronetPolicyV2 -- sat in
+    the gap. This asks the other question: is every module in the tree accounted for?
+    """
+    excluded = {os.path.normpath(os.path.join(ROOT, k)): v
+                for k, v in (rnd.get("excluded") or {}).items()}
+    chain = chain_pacts()
+    unaccounted = sorted(tree_pacts() - planned - set(excluded))
+    if excluded:
+        print(f"\n  excluded by the round, with reasons ({len(excluded)}):")
+        for p in sorted(excluded):
+            print(f"     {os.path.relpath(p, ROOT)}\n         -- {excluded[p]}")
+    if unaccounted:
+        print(f"\n  !! {len(unaccounted)} tree module(s) NEITHER PLANNED NOR EXCLUDED:")
+        for p in unaccounted:
+            why = "in no deploy chain" if p not in chain else "in the chain but not planned"
+            print(f"     {os.path.relpath(p, ROOT)}   ({why})")
+        print("  !! Add each to the round, or to its `excluded` map with a reason. An absent")
+        print("  !! module is indistinguishable from a forgotten one.\n")
+        ORPHANS.extend(unaccounted)
+    else:
+        print("\n  tree coverage: every .pact is planned or explicitly excluded.")
 
 
 def round_modules(rnd):
@@ -374,7 +469,12 @@ def main():
         global RND
         RND = rnd
         NEW_KEYS.extend(rnd.get("new", []))
-        keep = round_modules(rnd)
+        keep = (chain_pacts() if rnd.get("all_modules") else round_modules(rnd))
+        # `excluded` must REMOVE, not merely annotate. The first cut of this only fed the coverage
+        # report, so DPMF was documented as excluded and shipped anyway -- a comment that
+        # contradicts the artefact beside it is worse than no comment.
+        keep -= {os.path.normpath(os.path.join(ROOT, k))
+                 for k in (rnd.get("excluded") or {})}
         initpat = [x.lower() for x in rnd["init"]]
 
     blocks = attach_gas(parse_chain())
@@ -719,6 +819,7 @@ def write(steps, budget, maxbytes, mode="upgrade", existing=frozenset()):
         manifest.append((seq, dep, "DEPLOY", ", ".join(names), s["gas"], s["pacts"], fn, 0))
     if RND is not None:
         emit_imp_delta(RND)
+        report_coverage(RND, {x for s2 in steps if s2["kind"] == "batch" for x in s2["pacts"]})
     write_manifest(manifest, steps, budget, maxbytes, mode)
     write_tables(inventory, mode, existing)
     write_init_readme()

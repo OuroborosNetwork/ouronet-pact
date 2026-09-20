@@ -3,9 +3,9 @@
 **Generated** by `python3 REPL/tools/_deploybundle.py --write`. Do not hand-edit; regenerate.
 
 - per-transaction gas budget: **1,700,000** (StoaChain block limit 2,000,000)
-- module-deploy transactions: **20**
-- modules deployed: **53**
-- measured module gas: **5,428,811**
+- module-deploy transactions: **22**
+- modules deployed: **79**
+- measured module gas: **5,880,074**
 
 ## Read this before deploying
 
@@ -19,7 +19,15 @@
 
 These name an interface that bumped this round, so Pact's cascade rule requires them to be redeployed -- but no deploy chain loads them, so **they are not in the files below**:
 
+- `2_CITIZEN/2_BloodshedMinter/01_BSD-L.pact`
+- `2_CITIZEN/2_BloodshedMinter/02_BSD-E.pact`
+- `2_CITIZEN/2_BloodshedMinter/03_BSD-R.pact`
+- `2_CITIZEN/2_BloodshedMinter/04_BSD-C.pact`
+- `2_CITIZEN/2_BloodshedMinter/05_BSD-SETS.pact`
+- `2_CITIZEN/3_NosferatuMinter/01_NOSFERATU.pact`
+- `2_CITIZEN/6_OuronetBridge/03_CADUCEUS.pact`
 - `2_CITIZEN/Stage_Z/01_DPL-UR.pact`
+- `2_CITIZEN/Stage_Z/02_EXPLORER.pact`
 
 `01_DPL-UR.pact` is expected: Stage Z deploys from `deploy-stagezz.repl`, a separate chain that runs last.
 
@@ -90,28 +98,30 @@ All six `Step7` sites are in `modules/DPDC.repl` and all six are `expect-failure
 
 ## The sequence
 
-Read top to bottom. **`step`** is the position in the full sequence; **`file`** is the deploy file to paste, numbered `01`..`20` in the order you use them. Init steps have no file -- their source is given instead.
+Read top to bottom. **`step`** is the position in the full sequence; **`file`** is the deploy file to paste, numbered `01`..`22` in the order you use them. Init steps have no file -- their source is given instead.
 
 | step | file | what | gas | source |
 |---:|:---:|---|---:|---|
-| 1 | **01** | DEPLOY 2 modules: 02_IGNIS, 05_DPTF | 234,294 | `Deploy/1_Pure/01_deploy.pact` |
-| 2 | **02** | DEPLOY 2 modules: 00_DPMF, 06_DPOF | 289,772 | `Deploy/1_Pure/02_deploy.pact` |
-| 3 | **03** | DEPLOY 2 modules: 08_ATS, 09_TFT | 285,032 | `Deploy/1_Pure/03_deploy.pact` |
-| 4 | **04** | DEPLOY 4 modules: 10_ATSU, 11_VST, 12_LIQUID, 13_OUROBOROS | 397,481 | `Deploy/1_Pure/04_deploy.pact` |
-| 5 | **05** | DEPLOY 2 modules: 15_SWP, 16_SWPI | 254,885 | `Deploy/1_Pure/05_deploy.pact` |
-| 6 | **06** | DEPLOY 3 modules: 17_SWPL, 18_SWPLC, 19_SWPU | 358,201 | `Deploy/1_Pure/06_deploy.pact` |
-| 7 | **07** | DEPLOY 5 modules: 20_MTX-SWP, 21_CODEX, 22_PYTHIA, 01_TS01-A, 02_TS01-C1 | 321,972 | `Deploy/1_Pure/07_deploy.pact` |
-| 8 | **08** | DEPLOY 3 modules: 03_TS01-C2, 04_TS01-C3, 06_TS01-C4 | 215,823 | `Deploy/1_Pure/08_deploy.pact` |
-| 9 | **09** | DEPLOY 1 modules: 02_INFO-ONE+ | 436,246 | `Deploy/1_Pure/09_deploy.pact` |
-| 10 | **10** | DEPLOY 6 modules: 02_DPDC, 03_DPDC-C, 04_DPDC-I, 05_DPDC-R, 06_DPDC-MNG, 07_DPDC-T | 350,541 | `Deploy/1_Pure/10_deploy.pact` |
-| 11 | **11** | DEPLOY 5 modules: 08_DPDC-S, 09_DPDC-F, 10_DPDC-N, 11_EQUITY+, 00_Demipad | 320,565 | `Deploy/1_Pure/11_deploy.pact` |
-| 12 | **12** | DEPLOY 2 modules: 00_AQP-SCHEMAS, 01_ANK | 47,586 | `Deploy/1_Pure/12_deploy.pact` |
-| 13 | **13** | DEPLOY 1 modules: 02_SCORE | 96,321 | `Deploy/1_Pure/13_deploy.pact` |
-| 14 | **14** | DEPLOY 1 modules: 03_AQP | 151,366 | `Deploy/1_Pure/14_deploy.pact` |
-| 15 | **15** | DEPLOY 1 modules: 04_RPS | 229,502 | `Deploy/1_Pure/15_deploy.pact` |
-| 16 | **16** | DEPLOY 1 modules: 05_FVT | 203,548 | `Deploy/1_Pure/16_deploy.pact` |
-| 17 | **17** | DEPLOY 3 modules: 06_VCT, 07_MTX-AQP, 08_DSA | 849,276 | `Deploy/1_Pure/17_deploy.pact` |
-| 18 | **18** | DEPLOY 3 modules: 09_AQP-INFO, 01_TS02-C1, 02_TS02-C2 | 149,410 | `Deploy/1_Pure/18_deploy.pact` |
-| 19 | **19** | DEPLOY 5 modules: 04_TS02-C3, 05_TS02-DPAD, 02_Snakes, 03_Custodians, 01_INFO-TWO | 236,990 | `Deploy/1_Pure/19_deploy.pact` |
-| 20 | **20** | DEPLOY 1 modules: 04_AQP-BOOT | 0 | `Deploy/1_Pure/20_deploy.pact` |
-| 21 | — | *init* — deploy-stage02 · AQP-BOOT Step0 WireImcAndGovernor | — | `Deploy/2_Init/` · `REPL/deploy-stage02.repl:63` |
+| 1 | **01** | DEPLOY 14 modules: 01_U_CT, 02_U_G, 03_U_ST, 04_U_RS, 05_U_LST, 06_U_INT, 07_U_DEC, 08_U_DALOS, 09_U_ATS, 10_U_DPTF, 11_U_VST, 12_U_SWP, 13_U_BFS, 01_DALOS | 271,373 | `Deploy/1_Pure/01_deploy.pact` |
+| 2 | **02** | DEPLOY 3 modules: 02_IGNIS, 04_BRD, 05_DPTF | 267,241 | `Deploy/1_Pure/02_deploy.pact` |
+| 3 | **03** | DEPLOY 3 modules: 06_DPOF, 07_ELITE, 08_ATS | 350,668 | `Deploy/1_Pure/03_deploy.pact` |
+| 4 | **04** | DEPLOY 2 modules: 09_TFT, 10_ATSU | 261,798 | `Deploy/1_Pure/04_deploy.pact` |
+| 5 | **05** | DEPLOY 4 modules: 11_VST, 12_LIQUID, 13_OUROBOROS, 14_SWPT | 296,962 | `Deploy/1_Pure/05_deploy.pact` |
+| 6 | **06** | DEPLOY 2 modules: 15_SWP, 16_SWPI | 254,885 | `Deploy/1_Pure/06_deploy.pact` |
+| 7 | **07** | DEPLOY 3 modules: 17_SWPL, 18_SWPLC, 19_SWPU | 358,201 | `Deploy/1_Pure/07_deploy.pact` |
+| 8 | **08** | DEPLOY 5 modules: 20_MTX-SWP, 21_CODEX, 22_PYTHIA, 01_TS01-A, 02_TS01-C1 | 321,972 | `Deploy/1_Pure/08_deploy.pact` |
+| 9 | **09** | DEPLOY 5 modules: 03_TS01-C2, 04_TS01-C3, 06_TS01-C4, 05_TS01-P, 01_INFO-ZERO | 228,598 | `Deploy/1_Pure/09_deploy.pact` |
+| 10 | **10** | DEPLOY 3 modules: 02_INFO-ONE+, 01_AOZ+, 01_DPDC-UDC | 457,539 | `Deploy/1_Pure/10_deploy.pact` |
+| 11 | **11** | DEPLOY 6 modules: 02_DPDC, 03_DPDC-C, 04_DPDC-I, 05_DPDC-R, 06_DPDC-MNG, 07_DPDC-T | 350,541 | `Deploy/1_Pure/11_deploy.pact` |
+| 12 | **12** | DEPLOY 5 modules: 08_DPDC-S, 09_DPDC-F, 10_DPDC-N, 11_EQUITY+, 00_Demipad | 320,565 | `Deploy/1_Pure/12_deploy.pact` |
+| 13 | **13** | DEPLOY 2 modules: 00_AQP-SCHEMAS, 01_ANK | 47,586 | `Deploy/1_Pure/13_deploy.pact` |
+| 14 | **14** | DEPLOY 1 modules: 02_SCORE | 96,321 | `Deploy/1_Pure/14_deploy.pact` |
+| 15 | **15** | DEPLOY 1 modules: 03_AQP | 151,366 | `Deploy/1_Pure/15_deploy.pact` |
+| 16 | **16** | DEPLOY 1 modules: 04_RPS | 229,502 | `Deploy/1_Pure/16_deploy.pact` |
+| 17 | **17** | DEPLOY 1 modules: 05_FVT | 203,548 | `Deploy/1_Pure/17_deploy.pact` |
+| 18 | **18** | DEPLOY 3 modules: 06_VCT, 07_MTX-AQP, 08_DSA | 849,276 | `Deploy/1_Pure/18_deploy.pact` |
+| 19 | **19** | DEPLOY 3 modules: 09_AQP-INFO, 01_TS02-C1, 02_TS02-C2 | 149,410 | `Deploy/1_Pure/19_deploy.pact` |
+| 20 | **20** | DEPLOY 7 modules: 04_TS02-C3, 05_TS02-DPAD, 01_Spark, 02_Snakes, 03_Custodians, 04_STOICPAY, 05_STOAICO | 221,896 | `Deploy/1_Pure/20_deploy.pact` |
+| 21 | **21** | DEPLOY 4 modules: 99_TS02-CPAD, 01_INFO-TWO, 02_KBunnies, 04_AQP-BOOT | 175,977 | `Deploy/1_Pure/21_deploy.pact` |
+| 22 | — | *init* — deploy-stage02 · AQP-BOOT Step0 WireImcAndGovernor | — | `Deploy/2_Init/` · `REPL/deploy-stage02.repl:63` |
+| 23 | **22** | DEPLOY 1 modules: 03_DSP+ | 14,849 | `Deploy/1_Pure/22_deploy.pact` |

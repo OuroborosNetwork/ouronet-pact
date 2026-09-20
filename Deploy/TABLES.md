@@ -1,6 +1,6 @@
 # Tables, per module
 
-**Mode: `upgrade`.** 181 tables are defined across the modules in this plan.
+**Mode: `upgrade`.** 224 tables are defined across the modules in this plan.
 
 `(create-table X)` **fails if X already exists**, and which tables exist is a property of the chain that this repository cannot determine (see the note at the top of `REPL/tools/_deploybundle.py`). So ask the chain.
 
@@ -9,9 +9,21 @@
 It returns a row per table that exists and errors on the first that does not, so run it in chunks, or wrap each in `(try "MISSING" (describe-table ...))` if your pipeline allows.
 
 ```pact
+;; 1_SOVEREIGN/STAGE_01/2_Core/01_DALOS.pact
+(try "MISSING P|T" (let ((x (describe-table P|T))) "P|T"))
+(try "MISSING P|MT" (let ((x (describe-table P|MT))) "P|MT"))
+(try "MISSING DALOS|PropertiesTable" (let ((x (describe-table DALOS|PropertiesTable))) "DALOS|PropertiesTable"))
+(try "MISSING DALOS|GasManagementTable" (let ((x (describe-table DALOS|GasManagementTable))) "DALOS|GasManagementTable"))
+(try "MISSING DALOS|PricesTable" (let ((x (describe-table DALOS|PricesTable))) "DALOS|PricesTable"))
+(try "MISSING DALOS|AccountTable" (let ((x (describe-table DALOS|AccountTable))) "DALOS|AccountTable"))
+(try "MISSING DALOS|StoaLedger" (let ((x (describe-table DALOS|StoaLedger))) "DALOS|StoaLedger"))
 ;; 1_SOVEREIGN/STAGE_01/2_Core/02_IGNIS.pact
 (try "MISSING P|T" (let ((x (describe-table P|T))) "P|T"))
 (try "MISSING P|MT" (let ((x (describe-table P|MT))) "P|MT"))
+;; 1_SOVEREIGN/STAGE_01/2_Core/04_BRD.pact
+(try "MISSING P|T" (let ((x (describe-table P|T))) "P|T"))
+(try "MISSING P|MT" (let ((x (describe-table P|MT))) "P|MT"))
+(try "MISSING BRD|BrandingTable" (let ((x (describe-table BRD|BrandingTable))) "BRD|BrandingTable"))
 ;; 1_SOVEREIGN/STAGE_01/2_Core/05_DPTF.pact
 (try "MISSING P|T" (let ((x (describe-table P|T))) "P|T"))
 (try "MISSING P|MT" (let ((x (describe-table P|MT))) "P|MT"))
@@ -25,6 +37,9 @@ It returns a row per table that exists and errors on the first that does not, so
 (try "MISSING DPOF|T|Nonces" (let ((x (describe-table DPOF|T|Nonces))) "DPOF|T|Nonces"))
 (try "MISSING DPOF|T|VerumRoles" (let ((x (describe-table DPOF|T|VerumRoles))) "DPOF|T|VerumRoles"))
 (try "MISSING DPOF|T|AccountRoles" (let ((x (describe-table DPOF|T|AccountRoles))) "DPOF|T|AccountRoles"))
+;; 1_SOVEREIGN/STAGE_01/2_Core/07_ELITE.pact
+(try "MISSING P|T" (let ((x (describe-table P|T))) "P|T"))
+(try "MISSING P|MT" (let ((x (describe-table P|MT))) "P|MT"))
 ;; 1_SOVEREIGN/STAGE_01/2_Core/08_ATS.pact
 (try "MISSING P|T" (let ((x (describe-table P|T))) "P|T"))
 (try "MISSING P|MT" (let ((x (describe-table P|MT))) "P|MT"))
@@ -45,6 +60,12 @@ It returns a row per table that exists and errors on the first that does not, so
 ;; 1_SOVEREIGN/STAGE_01/2_Core/13_OUROBOROS.pact
 (try "MISSING P|T" (let ((x (describe-table P|T))) "P|T"))
 (try "MISSING P|MT" (let ((x (describe-table P|MT))) "P|MT"))
+;; 1_SOVEREIGN/STAGE_01/2_Core/14_SWPT.pact
+(try "MISSING P|T" (let ((x (describe-table P|T))) "P|T"))
+(try "MISSING P|MT" (let ((x (describe-table P|MT))) "P|MT"))
+(try "MISSING SWPT|Graph" (let ((x (describe-table SWPT|Graph))) "SWPT|Graph"))
+(try "MISSING SWPT|PathCache" (let ((x (describe-table SWPT|PathCache))) "SWPT|PathCache"))
+(try "MISSING SWPT|TopologyVersion" (let ((x (describe-table SWPT|TopologyVersion))) "SWPT|TopologyVersion"))
 ;; 1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact
 (try "MISSING P|T" (let ((x (describe-table P|T))) "P|T"))
 (try "MISSING P|MT" (let ((x (describe-table P|MT))) "P|MT"))
@@ -97,6 +118,21 @@ It returns a row per table that exists and errors on the first that does not, so
 (try "MISSING P|T" (let ((x (describe-table P|T))) "P|T"))
 (try "MISSING P|MT" (let ((x (describe-table P|MT))) "P|MT"))
 ;; 1_SOVEREIGN/STAGE_01/3_Talos/06_TS01-C4.pact
+(try "MISSING P|T" (let ((x (describe-table P|T))) "P|T"))
+(try "MISSING P|MT" (let ((x (describe-table P|MT))) "P|MT"))
+;; 1_SOVEREIGN/STAGE_01/3_Talos/05_TS01-P.pact
+(try "MISSING P|T" (let ((x (describe-table P|T))) "P|T"))
+(try "MISSING P|MT" (let ((x (describe-table P|MT))) "P|MT"))
+;; 2_CITIZEN/1_AOZ/01_AOZ+.pact
+(try "MISSING AOZ|T|AssetCounter" (let ((x (describe-table AOZ|T|AssetCounter))) "AOZ|T|AssetCounter"))
+(try "MISSING AOZ|T|PrimalTrueFungibles" (let ((x (describe-table AOZ|T|PrimalTrueFungibles))) "AOZ|T|PrimalTrueFungibles"))
+(try "MISSING AOZ|T|PrimalOrtoFungibles" (let ((x (describe-table AOZ|T|PrimalOrtoFungibles))) "AOZ|T|PrimalOrtoFungibles"))
+(try "MISSING AOZ|T|AutostakePairs" (let ((x (describe-table AOZ|T|AutostakePairs))) "AOZ|T|AutostakePairs"))
+(try "MISSING AOZ|T|TrueFungibles" (let ((x (describe-table AOZ|T|TrueFungibles))) "AOZ|T|TrueFungibles"))
+(try "MISSING AOZ|T|OrtoFungibles" (let ((x (describe-table AOZ|T|OrtoFungibles))) "AOZ|T|OrtoFungibles"))
+(try "MISSING AOZ|T|SemiFungibles" (let ((x (describe-table AOZ|T|SemiFungibles))) "AOZ|T|SemiFungibles"))
+(try "MISSING AOZ|T|NonFungibles" (let ((x (describe-table AOZ|T|NonFungibles))) "AOZ|T|NonFungibles"))
+;; 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/01_DPDC-UDC.pact
 (try "MISSING P|T" (let ((x (describe-table P|T))) "P|T"))
 (try "MISSING P|MT" (let ((x (describe-table P|MT))) "P|MT"))
 ;; 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/02_DPDC.pact
@@ -229,6 +265,10 @@ It returns a row per table that exists and errors on the first that does not, so
 ;; 1_SOVEREIGN/STAGE_02/3_Talos/05_TS02-DPAD.pact
 (try "MISSING P|T" (let ((x (describe-table P|T))) "P|T"))
 (try "MISSING P|MT" (let ((x (describe-table P|MT))) "P|MT"))
+;; 2_CITIZEN/7_Launchpad/1_Spark/01_Spark.pact
+(try "MISSING P|T" (let ((x (describe-table P|T))) "P|T"))
+(try "MISSING P|MT" (let ((x (describe-table P|MT))) "P|MT"))
+(try "MISSING SPARK|T|Properties" (let ((x (describe-table SPARK|T|Properties))) "SPARK|T|Properties"))
 ;; 2_CITIZEN/7_Launchpad/2_Snakes/02_Snakes.pact
 (try "MISSING P|T" (let ((x (describe-table P|T))) "P|T"))
 (try "MISSING P|MT" (let ((x (describe-table P|MT))) "P|MT"))
@@ -237,22 +277,53 @@ It returns a row per table that exists and errors on the first that does not, so
 (try "MISSING P|T" (let ((x (describe-table P|T))) "P|T"))
 (try "MISSING P|MT" (let ((x (describe-table P|MT))) "P|MT"))
 (try "MISSING CUSTODIANS|T|Properties" (let ((x (describe-table CUSTODIANS|T|Properties))) "CUSTODIANS|T|Properties"))
+;; 2_CITIZEN/7_Launchpad/4_StoicPay/04_STOICPAY.pact
+(try "MISSING P|T" (let ((x (describe-table P|T))) "P|T"))
+(try "MISSING P|MT" (let ((x (describe-table P|MT))) "P|MT"))
+(try "MISSING KPAY|T|Properties" (let ((x (describe-table KPAY|T|Properties))) "KPAY|T|Properties"))
+;; 2_CITIZEN/7_Launchpad/5_StoicIco/05_STOAICO.pact
+(try "MISSING P|T" (let ((x (describe-table P|T))) "P|T"))
+(try "MISSING P|MT" (let ((x (describe-table P|MT))) "P|MT"))
+(try "MISSING STOAICO|T|User" (let ((x (describe-table STOAICO|T|User))) "STOAICO|T|User"))
+(try "MISSING STOAICO|T|General" (let ((x (describe-table STOAICO|T|General))) "STOAICO|T|General"))
+;; 2_CITIZEN/7_Launchpad/99_TS02-CPAD.pact
+(try "MISSING P|T" (let ((x (describe-table P|T))) "P|T"))
+(try "MISSING P|MT" (let ((x (describe-table P|MT))) "P|MT"))
+;; 2_CITIZEN/Stage_Z/03_DSP+.pact
+(try "MISSING P|T" (let ((x (describe-table P|T))) "P|T"))
+(try "MISSING P|MT" (let ((x (describe-table P|MT))) "P|MT"))
 ```
 
 ## Inventory
 
 | module | tables |
 |---|---|
+| `01_U_CT.pact` | *none* |
+| `02_U_G.pact` | *none* |
+| `03_U_ST.pact` | *none* |
+| `04_U_RS.pact` | *none* |
+| `05_U_LST.pact` | *none* |
+| `06_U_INT.pact` | *none* |
+| `07_U_DEC.pact` | *none* |
+| `08_U_DALOS.pact` | *none* |
+| `09_U_ATS.pact` | *none* |
+| `10_U_DPTF.pact` | *none* |
+| `11_U_VST.pact` | *none* |
+| `12_U_SWP.pact` | *none* |
+| `13_U_BFS.pact` | *none* |
+| `01_DALOS.pact` | `P|T`, `P|MT`, `DALOS|PropertiesTable`, `DALOS|GasManagementTable`, `DALOS|PricesTable`, `DALOS|AccountTable`, `DALOS|StoaLedger` |
 | `02_IGNIS.pact` | `P|T`, `P|MT` |
+| `04_BRD.pact` | `P|T`, `P|MT`, `BRD|BrandingTable` |
 | `05_DPTF.pact` | `P|T`, `P|MT`, `DPTF|PropertiesTable`, `DPTF|BalanceTable`, `DPTF|RoleTable` |
-| `00_DPMF.pact` | *none* |
 | `06_DPOF.pact` | `P|T`, `P|MT`, `DPOF|T|Properties`, `DPOF|T|Nonces`, `DPOF|T|VerumRoles`, `DPOF|T|AccountRoles` |
+| `07_ELITE.pact` | `P|T`, `P|MT` |
 | `08_ATS.pact` | `P|T`, `P|MT`, `ATS|Pairs`, `ATS|Ledger` |
 | `09_TFT.pact` | `P|T`, `P|MT` |
 | `10_ATSU.pact` | `P|T`, `P|MT` |
 | `11_VST.pact` | `P|T`, `P|MT` |
 | `12_LIQUID.pact` | `P|T`, `P|MT` |
 | `13_OUROBOROS.pact` | `P|T`, `P|MT` |
+| `14_SWPT.pact` | `P|T`, `P|MT`, `SWPT|Graph`, `SWPT|PathCache`, `SWPT|TopologyVersion` |
 | `15_SWP.pact` | `P|T`, `P|MT`, `SWP|Properties`, `SWP|Asymmetry`, `SWP|Pairs`, `SWP|Pools`, `SWP|LP` |
 | `16_SWPI.pact` | `P|T`, `P|MT` |
 | `17_SWPL.pact` | `P|T`, `P|MT` |
@@ -266,7 +337,11 @@ It returns a row per table that exists and errors on the first that does not, so
 | `03_TS01-C2.pact` | `P|T`, `P|MT` |
 | `04_TS01-C3.pact` | `P|T`, `P|MT` |
 | `06_TS01-C4.pact` | `P|T`, `P|MT` |
+| `05_TS01-P.pact` | `P|T`, `P|MT` |
+| `01_INFO-ZERO.pact` | *none* |
 | `02_INFO-ONE+.pact` | *none* |
+| `01_AOZ+.pact` | `AOZ|T|AssetCounter`, `AOZ|T|PrimalTrueFungibles`, `AOZ|T|PrimalOrtoFungibles`, `AOZ|T|AutostakePairs`, `AOZ|T|TrueFungibles`, `AOZ|T|OrtoFungibles`, `AOZ|T|SemiFungibles`, `AOZ|T|NonFungibles` |
+| `01_DPDC-UDC.pact` | `P|T`, `P|MT` |
 | `02_DPDC.pact` | `P|T`, `P|MT`, `DPSF|T|Properties`, `DPSF|T|Nonces`, `DPSF|T|VerumRoles`, `DPSF|T|Account`, `DPSF|T|AccountSupplies`, `DPNF|T|Properties`, `DPNF|T|Nonces`, `DPNF|T|VerumRoles`, `DPNF|T|Account`, `DPNF|T|AccountSupplies` |
 | `03_DPDC-C.pact` | `P|T`, `P|MT` |
 | `04_DPDC-I.pact` | `P|T`, `P|MT` |
@@ -292,7 +367,13 @@ It returns a row per table that exists and errors on the first that does not, so
 | `02_TS02-C2.pact` | `P|T`, `P|MT` |
 | `04_TS02-C3.pact` | `P|T`, `P|MT` |
 | `05_TS02-DPAD.pact` | `P|T`, `P|MT` |
+| `01_Spark.pact` | `P|T`, `P|MT`, `SPARK|T|Properties` |
 | `02_Snakes.pact` | `P|T`, `P|MT`, `SNAKES|T|Properties` |
 | `03_Custodians.pact` | `P|T`, `P|MT`, `CUSTODIANS|T|Properties` |
+| `04_STOICPAY.pact` | `P|T`, `P|MT`, `KPAY|T|Properties` |
+| `05_STOAICO.pact` | `P|T`, `P|MT`, `STOAICO|T|User`, `STOAICO|T|General` |
+| `99_TS02-CPAD.pact` | `P|T`, `P|MT` |
 | `01_INFO-TWO.pact` | *none* |
+| `02_KBunnies.pact` | *none* |
 | `04_AQP-BOOT.pact` | *none* |
+| `03_DSP+.pact` | `P|T`, `P|MT` |
