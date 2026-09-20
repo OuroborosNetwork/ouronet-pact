@@ -1057,6 +1057,60 @@
 (rollback-tx)
 (env-sigs [])
 
+(begin-tx "TX-BOOT-S2GAS - the Stage Two daily emission, and what it costs")
+(print "")
+(print "=== TX-BOOT-S2GAS — AA_OuroMinterStageTwo gas =================================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+;;ADDED 2026-09-20. The question that opened this whole line of work was "how much does the Stage
+;;Two emission cost, and does it fit?" -- and it could not be answered until three things landed:
+;;DSP moved to Stage 2 (it referenced TS02-C3 and would not compile in Stage 1), Band 3 gave inject
+;;a named executor (so the dispenser can hold the emission while the gasless patron pays), and the
+;;Custodians vault existed to inject into.
+;;
+;;MEASURED: ~966k gas, about 48% of a 2M block, against Stage One's ~135k. Seven times the cost,
+;;and half a block for ONE transaction.
+;;
+;;THE ASSERTION IS A BAND, NOT A NUMBER, and deliberately so. Four of the six legs are CC_Inject,
+;;the HEAVY enforced-fresh variant: each scans the FVT's present users and fixes every stale one, so
+;;the cost scales with STAKER COUNT. This fixture has a handful. The figure here is a FLOOR, not a
+;;ceiling, and on a busy chain this transaction does not fit -- which is what the AA_ prefix says
+;;and why MTX|n|C_Inject exists as the documented spike fallback.
+;;   upper bound  fits one block at all
+;;   lower bound  catches a regression that silently SKIPS legs -- a cheaper emission is a broken
+;;                one, and without a floor that reads as an improvement
+(env-sigs
+    [   { "key": "PK_AOZ", "caps": [] }
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "PK_DSP", "caps": [] }
+    ])
+(let
+    (
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+    )
+    (env-gas 0)
+    (print (format "<(AA_OuroMinterStageTwo)> => {}"
+        [(DSP.AA_OuroMinterStageTwo
+            [(ref-U|DALOS::UDC_Makeid "CustodiansVault")
+             (ref-U|DALOS::UDC_Makeid "CompanySharesTreasury")
+             (ref-U|DALOS::UDC_Makeid "OuroLpFarm")
+             (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury")])]))
+    (let ((g:integer (env-gas)))
+        (print (format ">>>>>>> STAGE TWO EMISSION COSTS {} GAS <<<<<<<" [g]))
+        (map print
+            [
+            (expect "<<TX-BOOT-S2GAS>> the Stage Two emission fits inside one 2M block"
+                true (< g 2000000))
+            (expect "<<TX-BOOT-S2GAS>> ...and it is NOT suspiciously cheap (all six legs ran)"
+                true (> g 500000))
+            ]
+        )
+    )
+    ""
+)
+(rollback-tx)
+(env-sigs [])
+
 (begin-tx "TX-BOOT-13-SPLIT - dual reward-split ECONOMIC flip on OuroLpFarm (task #89 / D1-G2)")
 (print "")
 (print "=== TX-BOOT-13-SPLIT — the SAME member's W_i flips STAKED<->TVL on the real LP farm ==")

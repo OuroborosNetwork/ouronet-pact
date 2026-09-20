@@ -464,22 +464,34 @@
             \ through the Auryndex and the Auryn is injected — the same idiom Stage One already uses \
             \ to reach the Elite-Auryndex. \
             \ \
-            \ GASLESS, and that DICTATES where the OURO sits. IGNIS is waived for exactly one account: \
+            \ GASLESS, AND THE EMISSION SITS ON THE DISPENSER -- which it could not, until Band 3. \
+            \ IGNIS is waived for exactly one account: \
             \ 02_IGNIS.pact C_Collect reads `(= patron (DALOS::GOV|DALOS|SC_NAME))` and skips collection \
             \ when true -- the owner-confirmed single hardcoded gasless payer, which is what \
             \ GASLESS-PATRON binds to. Stage One can pass it as `patron` while the tokens move from \
             \ the dispenser, because C_Mint / C_BulkTransfer / ATS|C_Fuel / ATS|C_Coil all take patron \
             \ AND a separate source account. CC_Inject does NOT: it debits the patron itself \
             \ (04_RPS.pact XI_FvtInjectCore -> C_Transfer token PATRON AQP|SC_NAME). So to inject \
-            \ gaslessly the daily emission must be MINTED TO the gasless patron rather than to the \
-            \ dispenser. That is a consequence of the signatures, not a preference -- the alternative \
-            \ is extra transfers that cost the gas this is trying to avoid. \
+            \ gaslessly the emission had to be MINTED TO the gasless patron -- the dispenser could not \
+            \ hold it. Band 3 (2026-09-20) gave inject a named executor, so the roles separate the way \
+            \ every other leg here already did: GASLESS-PATRON pays, `dispenser` acts. The emission is \
+            \ back on the dispenser, where it belongs. \
             \ \
-            \ GAS: every inject reachable through Talos is the HEAVY enforced-fresh CC_Inject, which \
-            \ scans the FVT's present users. FOUR of them run here, so this is expected to cost far \
-            \ more than Stage One's ~135k and may not fit one transaction as staker counts grow. \
-            \ Measured in the REPL before deployment; if it does not fit, the MTX|n|C_Inject defpact \
-            \ is the documented spike fallback. \
+            \ GAS, MEASURED 2026-09-20: ~910k-970k, i.e. roughly HALF of a 2M block, against Stage \
+            \ One's ~135k. Seven times the cost for one transaction. \
+            \ \
+            \ AND THAT IS A FLOOR, NOT A CEILING. Four of the six legs are CC_Inject, the HEAVY \
+            \ enforced-fresh variant: each SCANS the FVT's present users and fixes every stale one, \
+            \ so cost scales with STAKER COUNT. The measurement above comes from a fixture with a \
+            \ handful of stakers. On a chain with real depth this transaction does not fit, and the \
+            \ two measurements taken minutes apart already differ by 6% (911,546 in the boot suite, \
+            \ 966,256 standalone) purely from chain state. \
+            \ \
+            \ The documented spike fallback is the MTX|n|C_Inject defpact. Plan for the daily \
+            \ emission to become a SEQUENCE rather than one transaction before the Custodians vault \
+            \ has depth -- not after. Pinned by <<TX-BOOT-S2GAS>> as a BAND (fits a block / is not \
+            \ suspiciously cheap), because an exact pin would be noise at this variance and a \
+            \ cheaper emission is a BROKEN one, not an improvement. \
             \ \
             \ RETURNS [daily custodians treasury shareholders farm autostake subsidiary-auryn]."
         (with-capability (DSP|STAGE-ONE-MINTER)
@@ -505,7 +517,7 @@
                     (s2-subsidiary:decimal (at 5 split))
                     ;;
                     (treasury:string (ref-DALOS::GOV|DHV1|SC_NAME))
-                    (holder:string GASLESS-PATRON)   ;;mints here so the injects can be gasless
+                    (dispenser:string DSP1|SC_NAME)  ;;holds the emission; the EXECUTOR of every leg
                     ;;
                     (auryn:string (ref-DALOS::UR_AurynID))
                     (auryndex:string (at 0 (ref-DPTF::UR_RewardBearingToken auryn)))
@@ -513,25 +525,25 @@
                 (enforce (= (length fvt-ids) 4)
                     "Stage Two expects fvt-ids x4: [custodians shareholders farm subsidiary]")
                 ;;1. Mint the whole daily emission on the Dispenser
-                (ref-TS01-C1::DPTF|C_Mint GASLESS-PATRON ouro holder daily false)
+                (ref-TS01-C1::DPTF|C_Mint GASLESS-PATRON ouro dispenser daily false)
                 ;;2. 10% to the Demiourgos Treasury, as pure OURO
-                (ref-TS01-C1::DPTF|C_BulkTransfer GASLESS-PATRON ouro holder [treasury] [s2-treasury])
+                (ref-TS01-C1::DPTF|C_BulkTransfer GASLESS-PATRON ouro dispenser [treasury] [s2-treasury])
                 ;;3. 20% into the Custodians vault. Injected as OURO; the multiplet ladder pays each
                 ;;   staker OURO, Auryn or Elite-Auryn according to their score quality.
-                (ref-TS02-C3::AQP-FVT|CC_Inject GASLESS-PATRON GASLESS-PATRON (at 0 fvt-ids) ouro s2-custodians)
+                (ref-TS02-C3::AQP-FVT|CC_Inject GASLESS-PATRON dispenser (at 0 fvt-ids) ouro s2-custodians)
                 ;;4. 10% to shareholders. Its reward link IS Ouroboros, so a direct OURO inject.
-                (ref-TS02-C3::AQP-FVT|CC_Inject GASLESS-PATRON GASLESS-PATRON (at 1 fvt-ids) ouro s2-shareholders)
+                (ref-TS02-C3::AQP-FVT|CC_Inject GASLESS-PATRON dispenser (at 1 fvt-ids) ouro s2-shareholders)
                 ;;5. 20% into Ouroboros liquidity farming — OURO in, triplet rules out.
-                (ref-TS02-C3::AQP-FVT|CC_Inject GASLESS-PATRON GASLESS-PATRON (at 2 fvt-ids) ouro s2-farm)
+                (ref-TS02-C3::AQP-FVT|CC_Inject GASLESS-PATRON dispenser (at 2 fvt-ids) ouro s2-farm)
                 ;;6. 20% fuels the Auryndex directly
-                (ref-TS01-C2::ATS|C_Fuel GASLESS-PATRON holder auryndex ouro s2-autostake)
+                (ref-TS01-C2::ATS|C_Fuel GASLESS-PATRON dispenser auryndex ouro s2-autostake)
                 ;;7. 20% coiled OURO->Auryn, then injected as AURYN into the Subsidiary treasury
                 (let
                     (
                         (subsidiary-auryn:decimal (ref-ATS::URC_RBT auryndex ouro s2-subsidiary))
                     )
-                    (ref-TS01-C2::ATS|C_Coil GASLESS-PATRON holder auryndex ouro s2-subsidiary)
-                    (ref-TS02-C3::AQP-FVT|CC_Inject GASLESS-PATRON GASLESS-PATRON (at 3 fvt-ids) auryn subsidiary-auryn)
+                    (ref-TS01-C2::ATS|C_Coil GASLESS-PATRON dispenser auryndex ouro s2-subsidiary)
+                    (ref-TS02-C3::AQP-FVT|CC_Inject GASLESS-PATRON dispenser (at 3 fvt-ids) auryn subsidiary-auryn)
                     [daily s2-custodians s2-treasury s2-shareholders s2-farm s2-autostake subsidiary-auryn]
                 )
             )
