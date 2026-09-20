@@ -111,6 +111,15 @@ def plan():
             # annotations masquerading as accounts. A capability's definition is not a call to it.
             body = re.sub(r'^[ \t]*\((?:defun|defcap)\s+\S+[^\n]*\n(?:\s*\([^\n]*\n)?', '', body, count=1)
             owns.extend(re.findall(r'(?:CAP_EnforceAccountOwnership|CAP_Owner|CAP_StakeOwner|CAP_PoolOwner|CAP_VctVacatePoolOwner|CAP_TF\|Owner|CAP_AqpAssetOwner|CAP_Creator)\s+\(?([A-Za-z0-9|_.:-]+)', body))
+            # THE EXECUTOR-EQUALITY IDIOM, added 2026-09-20 after the refactor made it the common
+            # shape. A converted entrypoint does NOT gate the executor with a CAP_ -- that would be
+            # a no-op beside the derived owner gate already there. It pins the executor TO that
+            # derived owner with `(= executor <derived>)`, usually inside a UEV_ExecutorIz* helper.
+            # Without this the tool reported every function it had just converted as "cannot
+            # license", and the flag stopped distinguishing DONE from UNDONE -- 51 rows of noise
+            # burying the 9 that genuinely need a ruling. An instrument that cannot see the fix it
+            # was built to drive is worse than no instrument.
+            owns.extend(re.findall(r'\(=\s+(executor)[\s)]', body))
             # Follow BOTH routes an authorisation can hide behind:
             #   * a UEV_/CAP_ helper the defcap calls   (C_SetMosaic -> UEV_SetMosaicContext)
             #   * a composed CAPABILITY                  (VST|C>VESTING-LINK -> VST|C>LINK -> CAP_Owner)
@@ -156,13 +165,21 @@ def plan():
         acct_params = {q for q in re.findall(r'([A-Za-z0-9|_-]+):', sig)
                        if ACCT.search(q + ':string')}
         verified = bool(acct_params & set(targets))
+        # CONVERTED: the signature already carries an executor-role parameter. That is a fact about
+        # the signature, not a guess, and it is the one thing the walker can always answer. It
+        # matters because several converted entrypoints enforce the executor's ownership one layer
+        # DOWN, inside a defun BODY this walker does not follow -- CC_Inject's authority is
+        # ref-TFT::C_Transfer's `CAP_EnforceAccountOwnership sender`, and C_AdmitAgency's is
+        # FVT|XE>ADMIT-DELEGATION. Reporting those beside genuinely-unchecked functions put seven
+        # finished items in a list headed "read each before touching it".
+        converted = bool({"executor", "injector", "collector"} & acct_params)
         if ACCT.search(sig):
             band = 2
         elif targets and all(o == 'patron' for o in targets):
             band = 3
         else:
             band = 1
-        rows.append((f, n, band, targets, verified))
+        rows.append((f, n, band, targets, verified or converted))
     return rows
 
 
@@ -192,8 +209,9 @@ def main():
         print(f"   {f:26s} {k}")
     unver = [(f, n) for f, n, b, t, v in rows if b == 2 and not v]
     if unver:
-        print(f"\nBand 2 rows the walker CANNOT license for rename ({len(unver)}) -- the account\n"
-              f"parameter is not the enforced ownership target. Read each before touching it:")
+        print(f"\nBand 2 rows neither CONVERTED nor licensed ({len(unver)}) -- no executor-role\n"
+              f"parameter, and the account parameter is not the enforced ownership target.\n"
+              f"Read each before touching it:")
         for f, n in unver:
             print(f"   ?? {f:26s} {n}")
     return 0

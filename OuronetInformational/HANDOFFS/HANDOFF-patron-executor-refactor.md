@@ -913,3 +913,53 @@ cannot, for the same reason and on the same decision.
 **Essentially all remaining work is behind one decision.** The 9 Band 2 rows are the only code
 left that a ruling alone unblocks, and they are rulings about intent (is this function
 permissionless on purpose?) rather than about versioning.
+
+---
+
+## THE RESIDUAL FOUR — dispositions with evidence (2026-09-20)
+
+First the instrument had to be fixed, because it had stopped being able to answer the question.
+
+### `_bandplan` could not see the fix it was built to drive: 51 → 23 → 4
+
+A converted entrypoint does **not** gate its executor with a `CAP_` — that would be a provable
+no-op beside the derived owner gate already there. It pins the executor **to** that derived owner
+with `(= executor <derived>)`, usually inside a `UEV_ExecutorIz*` helper. The walker only looked
+for `CAP_` calls, so **every function the refactor had just converted** came back "cannot license".
+
+Two additions, and the noise collapsed:
+
+| | rows flagged |
+|---|---|
+| before | **51** — mostly finished work |
+| recognise `(= executor …)` | **23** |
+| plus: **CONVERTED** = the signature carries `executor`/`injector`/`collector` | **4** |
+
+The second matters because several converted entrypoints enforce the executor one layer **down, in
+a defun body** the walker does not follow — `CC_Inject`'s authority is `ref-TFT::C_Transfer`'s
+`CAP_EnforceAccountOwnership sender`; `C_AdmitAgency`'s is `FVT|XE>ADMIT-DELEGATION`. Seven
+finished items were sitting in a list headed *"read each before touching it"*.
+
+### The four, and what I recommend
+
+**1–2. `03_AQP::C_SyncTrueFungibleAnchors` / `C_SyncCollectableAnchors` — LEAVE PERMISSIONLESS.**
+The written value is **derived from state, not supplied**: `total` comes from
+`UR_AQP|BenDptfTotalBalance`, so a stranger cannot inject a false figure — only force a
+recomputation to the truth, at their own IGNIS cost. Structurally identical to
+`DSA::C_RecomputeCapture`, which documents itself as permissionless by design.
+*One caveat worth an explicit ruling rather than my assumption:* if a beneficiary's anchors have
+**decreased**, a stranger can force the unfavourable-but-accurate refresh **earlier** than the
+beneficiary would choose. It would happen on their next stake regardless, so this is timing, not
+value — but it is a stranger choosing the timing.
+
+**3. `11_EQUITY+::C_IssueShareholderCollection` — the account is NOT the executor. Do not rename.**
+It calls `C_IssueDigitalCollection dpdc creator-account …`: the collection is **owned by the DPDC
+smart account** and merely *created by* `creator-account`. The ownership enforce lands on `dpdc`,
+which is why the walker never saw `creator-account`. So `creator-account` is a **beneficiary**,
+exactly like `C_RotateOwnership`'s `new-owner-konto` — and naming a beneficiary `executor` is the
+error Band 2 nearly made twice. The executor here is the patron, checked at the Talos boundary.
+Giving it a real executor means a NEW parameter → Band 1 → `EquityV2` is live → **cascade-bound**.
+
+**4. `05_FVT::C_RotateOwnership` — Band 1, not Band 2.** Already diagnosed: `new-owner-konto` is
+the recipient; the executor is `owner-now`, derived. Cascade-free (`AcquisitionFarmsVaultsTreasuriesV1`
+is V1) — **this one is actually doable now**, and is the only one of the four that is.
