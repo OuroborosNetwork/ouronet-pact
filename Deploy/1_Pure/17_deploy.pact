@@ -2,10 +2,21 @@
 ;; OURONET DEPLOY -- file 17 of 22
 ;; This is STEP 17 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-16 must have run first, including the init steps between deploys.
-;; 1 module(s), 203,548 gas measured in the REPL gas model, 204,725 bytes
+;; 1 source file(s), 203,548 gas measured in the REPL gas model, 204,725 bytes
 ;;
-;; Modules in this transaction, IN ORDER (do not reorder):
+;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/05_FVT.pact
+;;
+;; TOTAL: 1 interface(s), 1 module(s), 5 table(s)
+;; What it DEPLOYS, in load order:
+;;   -- 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/05_FVT.pact
+;;      interface  AcquisitionFarmsVaultsTreasuriesV1
+;;      module     AQP-FVT
+;;      table      P|T
+;;      table      P|MT
+;;      table      FVT|T
+;;      table      FVT|T|VacateFreeze
+;;      table      FVT|T|SweepProgress
 ;;
 ;; Paste this whole file as ONE transaction. It needs the Ouronet admin signature
 ;; and the `ouronet-ns` namespace, which the first line sets.

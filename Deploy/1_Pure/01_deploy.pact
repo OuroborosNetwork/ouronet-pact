@@ -2,9 +2,9 @@
 ;; OURONET DEPLOY -- file 1 of 22
 ;; This is STEP 1 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-0 must have run first, including the init steps between deploys.
-;; 14 module(s), 271,373 gas measured in the REPL gas model, 310,478 bytes
+;; 14 source file(s), 271,373 gas measured in the REPL gas model, 310,478 bytes
 ;;
-;; Modules in this transaction, IN ORDER (do not reorder):
+;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/1_Utilities/01_U_CT.pact
 ;;   1_SOVEREIGN/STAGE_01/1_Utilities/02_U_G.pact
 ;;   1_SOVEREIGN/STAGE_01/1_Utilities/03_U_ST.pact
@@ -19,6 +19,61 @@
 ;;   1_SOVEREIGN/STAGE_01/1_Utilities/12_U_SWP.pact
 ;;   1_SOVEREIGN/STAGE_01/1_Utilities/13_U_BFS.pact
 ;;   1_SOVEREIGN/STAGE_01/2_Core/01_DALOS.pact
+;;
+;; TOTAL: 17 interface(s), 14 module(s), 7 table(s)
+;; What it DEPLOYS, in load order:
+;;   -- 1_SOVEREIGN/STAGE_01/1_Utilities/01_U_CT.pact
+;;      interface  DiaStoaPidV2
+;;      interface  OuronetConstantsV2
+;;      module     U|CT
+;;   -- 1_SOVEREIGN/STAGE_01/1_Utilities/02_U_G.pact
+;;      interface  OuronetGuardsV2
+;;      module     U|G
+;;   -- 1_SOVEREIGN/STAGE_01/1_Utilities/03_U_ST.pact
+;;      interface  OuronetGasStationV2
+;;      module     U|ST
+;;   -- 1_SOVEREIGN/STAGE_01/1_Utilities/04_U_RS.pact
+;;      interface  ReservedAccountsV2
+;;      module     U|RS
+;;   -- 1_SOVEREIGN/STAGE_01/1_Utilities/05_U_LST.pact
+;;      interface  StringProcessorV2
+;;      module     U|LST
+;;   -- 1_SOVEREIGN/STAGE_01/1_Utilities/06_U_INT.pact
+;;      interface  OuronetIntegersV2
+;;      module     U|INT
+;;   -- 1_SOVEREIGN/STAGE_01/1_Utilities/07_U_DEC.pact
+;;      interface  OuronetDecimalsV2
+;;      module     U|DEC
+;;   -- 1_SOVEREIGN/STAGE_01/1_Utilities/08_U_DALOS.pact
+;;      interface  UtilityDalosGlyphsV3
+;;      interface  UtilityDalosV2
+;;      module     U|DALOS
+;;   -- 1_SOVEREIGN/STAGE_01/1_Utilities/09_U_ATS.pact
+;;      interface  UtilityAtsV3
+;;      module     U|ATS
+;;   -- 1_SOVEREIGN/STAGE_01/1_Utilities/10_U_DPTF.pact
+;;      interface  UtilityDptfV2
+;;      module     U|DPTF
+;;   -- 1_SOVEREIGN/STAGE_01/1_Utilities/11_U_VST.pact
+;;      interface  UtilityVstV2
+;;      module     U|VST
+;;   -- 1_SOVEREIGN/STAGE_01/1_Utilities/12_U_SWP.pact
+;;      interface  UtilitySwpV2
+;;      module     U|SWP
+;;   -- 1_SOVEREIGN/STAGE_01/1_Utilities/13_U_BFS.pact
+;;      interface  BreadthFirstSearchV2
+;;      module     U|BFS
+;;   -- 1_SOVEREIGN/STAGE_01/2_Core/01_DALOS.pact
+;;      interface  OuronetPolicyV2
+;;      interface  OuronetDalosV2
+;;      module     DALOS
+;;      table      P|T
+;;      table      P|MT
+;;      table      DALOS|PropertiesTable
+;;      table      DALOS|GasManagementTable
+;;      table      DALOS|PricesTable
+;;      table      DALOS|AccountTable
+;;      table      DALOS|StoaLedger
 ;;
 ;; Paste this whole file as ONE transaction. It needs the Ouronet admin signature
 ;; and the `ouronet-ns` namespace, which the first line sets.

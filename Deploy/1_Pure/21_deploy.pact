@@ -2,13 +2,29 @@
 ;; OURONET DEPLOY -- file 21 of 22
 ;; This is STEP 21 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-20 must have run first, including the init steps between deploys.
-;; 4 module(s), 175,977 gas measured in the REPL gas model, 188,066 bytes
+;; 4 source file(s), 175,977 gas measured in the REPL gas model, 188,066 bytes
 ;;
-;; Modules in this transaction, IN ORDER (do not reorder):
+;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   2_CITIZEN/7_Launchpad/99_TS02-CPAD.pact
 ;;   1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact
 ;;   2_CITIZEN/4_BunniesMinter/02_KBunnies.pact
 ;;   2_CITIZEN/5_VaultsMinter/04_AQP-BOOT.pact
+;;
+;; TOTAL: 3 interface(s), 4 module(s), 2 table(s)
+;; What it DEPLOYS, in load order:
+;;   -- 2_CITIZEN/7_Launchpad/99_TS02-CPAD.pact
+;;      interface  CitizenLaunchpadTalosV1
+;;      module     TS02-CPAD
+;;      table      P|T
+;;      table      P|MT
+;;   -- 1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact
+;;      interface  InfoTwoV2
+;;      module     INFO-TWO
+;;   -- 2_CITIZEN/4_BunniesMinter/02_KBunnies.pact
+;;      module     KBN
+;;   -- 2_CITIZEN/5_VaultsMinter/04_AQP-BOOT.pact
+;;      interface  AcquisitionPoolBootV1
+;;      module     AQP-BOOT
 ;;
 ;; Paste this whole file as ONE transaction. It needs the Ouronet admin signature
 ;; and the `ouronet-ns` namespace, which the first line sets.

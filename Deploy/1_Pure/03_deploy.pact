@@ -2,12 +2,38 @@
 ;; OURONET DEPLOY -- file 3 of 22
 ;; This is STEP 3 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-2 must have run first, including the init steps between deploys.
-;; 3 module(s), 350,668 gas measured in the REPL gas model, 298,048 bytes
+;; 3 source file(s), 350,668 gas measured in the REPL gas model, 298,048 bytes
 ;;
-;; Modules in this transaction, IN ORDER (do not reorder):
+;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/06_DPOF.pact
 ;;   1_SOVEREIGN/STAGE_01/2_Core/07_ELITE.pact
 ;;   1_SOVEREIGN/STAGE_01/2_Core/08_ATS.pact
+;;
+;; TOTAL: 5 interface(s), 3 module(s), 12 table(s)
+;; What it DEPLOYS, in load order:
+;;   -- 1_SOVEREIGN/STAGE_01/2_Core/06_DPOF.pact
+;;      interface  DpofUdcV2
+;;      interface  DemiourgosPactOrtoFungibleV2
+;;      module     DPOF
+;;      table      P|T
+;;      table      P|MT
+;;      table      DPOF|T|Properties
+;;      table      DPOF|T|Nonces
+;;      table      DPOF|T|VerumRoles
+;;      table      DPOF|T|AccountRoles
+;;   -- 1_SOVEREIGN/STAGE_01/2_Core/07_ELITE.pact
+;;      interface  EliteV2
+;;      module     ELITE
+;;      table      P|T
+;;      table      P|MT
+;;   -- 1_SOVEREIGN/STAGE_01/2_Core/08_ATS.pact
+;;      interface  AutostakeV3
+;;      interface  AutostakeComputerV2
+;;      module     ATS
+;;      table      P|T
+;;      table      P|MT
+;;      table      ATS|Pairs
+;;      table      ATS|Ledger
 ;;
 ;; Paste this whole file as ONE transaction. It needs the Ouronet admin signature
 ;; and the `ouronet-ns` namespace, which the first line sets.

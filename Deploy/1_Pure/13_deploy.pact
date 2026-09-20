@@ -2,11 +2,27 @@
 ;; OURONET DEPLOY -- file 13 of 22
 ;; This is STEP 13 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-12 must have run first, including the init steps between deploys.
-;; 2 module(s), 47,586 gas measured in the REPL gas model, 182,185 bytes
+;; 2 source file(s), 47,586 gas measured in the REPL gas model, 182,185 bytes
 ;;
-;; Modules in this transaction, IN ORDER (do not reorder):
+;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/00_AQP-SCHEMAS.pact
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/01_ANK.pact
+;;
+;; TOTAL: 2 interface(s), 1 module(s), 8 table(s)
+;; What it DEPLOYS, in load order:
+;;   -- 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/00_AQP-SCHEMAS.pact
+;;      interface  AcquisitionSchemasV1
+;;   -- 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/01_ANK.pact
+;;      interface  AcquisitionAnchorsV1
+;;      module     AQP-ANK
+;;      table      P|T
+;;      table      P|MT
+;;      table      ANK|T|Anchor
+;;      table      ANK|T|BoostClass
+;;      table      ANK|T|AssetAnchors
+;;      table      ANK|T|BoostClassScoreLinks
+;;      table      ANK|T|Anchors
+;;      table      ANK|T|UserBoost
 ;;
 ;; Paste this whole file as ONE transaction. It needs the Ouronet admin signature
 ;; and the `ouronet-ns` namespace, which the first line sets.

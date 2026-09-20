@@ -2,14 +2,46 @@
 ;; OURONET DEPLOY -- file 12 of 22
 ;; This is STEP 12 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-11 must have run first, including the init steps between deploys.
-;; 5 module(s), 320,565 gas measured in the REPL gas model, 260,082 bytes
+;; 5 source file(s), 320,565 gas measured in the REPL gas model, 260,082 bytes
 ;;
-;; Modules in this transaction, IN ORDER (do not reorder):
+;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/08_DPDC-S.pact
 ;;   1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/09_DPDC-F.pact
 ;;   1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/10_DPDC-N.pact
 ;;   1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/11_EQUITY+.pact
 ;;   1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/00_Demipad.pact
+;;
+;; TOTAL: 5 interface(s), 5 module(s), 14 table(s)
+;; What it DEPLOYS, in load order:
+;;   -- 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/08_DPDC-S.pact
+;;      interface  DpdcSetsV2
+;;      module     DPDC-S
+;;      table      P|T
+;;      table      P|MT
+;;      table      DPSF|SetsTable
+;;      table      DPNF|SetsTable
+;;   -- 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/09_DPDC-F.pact
+;;      interface  DpdcFragmentsV2
+;;      module     DPDC-F
+;;      table      P|T
+;;      table      P|MT
+;;   -- 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/10_DPDC-N.pact
+;;      interface  DpdcNonceV2
+;;      module     DPDC-N
+;;      table      P|T
+;;      table      P|MT
+;;   -- 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/11_EQUITY+.pact
+;;      interface  EquityV2
+;;      module     EQUITY
+;;      table      P|T
+;;      table      P|MT
+;;   -- 1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/00_Demipad.pact
+;;      interface  DemiourgosLaunchpadV2
+;;      module     DEMIPAD
+;;      table      P|T
+;;      table      P|MT
+;;      table      DEMIPAD|T|Ledger
+;;      table      DEMIPAD|T|Properties
 ;;
 ;; Paste this whole file as ONE transaction. It needs the Ouronet admin signature
 ;; and the `ouronet-ns` namespace, which the first line sets.

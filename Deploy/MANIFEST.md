@@ -15,24 +15,6 @@
 
 **The `INIT` steps are not generated.** Between runs of module deploys the chain performs initialisation -- registering inter-module policies, seeding constants, minting genesis supply. Those need signatures, keysets and transaction data that only you can supply, and some blocks in the REPL chain are sandbox fixtures that must **not** reach mainnet. Each is listed below with its source location so you can lift the real calls out of it. **Do not skip them:** a module deployed after an init step may depend on that step having run.
 
-## ⚠ Modules that must redeploy but are in no deploy chain
-
-These name an interface that bumped this round, so Pact's cascade rule requires them to be redeployed -- but no deploy chain loads them, so **they are not in the files below**:
-
-- `2_CITIZEN/2_BloodshedMinter/01_BSD-L.pact`
-- `2_CITIZEN/2_BloodshedMinter/02_BSD-E.pact`
-- `2_CITIZEN/2_BloodshedMinter/03_BSD-R.pact`
-- `2_CITIZEN/2_BloodshedMinter/04_BSD-C.pact`
-- `2_CITIZEN/2_BloodshedMinter/05_BSD-SETS.pact`
-- `2_CITIZEN/3_NosferatuMinter/01_NOSFERATU.pact`
-- `2_CITIZEN/6_OuronetBridge/03_CADUCEUS.pact`
-- `2_CITIZEN/Stage_Z/01_DPL-UR.pact`
-- `2_CITIZEN/Stage_Z/02_EXPLORER.pact`
-
-`01_DPL-UR.pact` is expected: Stage Z deploys from `deploy-stagezz.repl`, a separate chain that runs last.
-
-`09_AQP-INFO.pact` is **not** expected and is the same module flagged earlier as absent from `deploy-stage02.repl`. It is 1,405 lines of cost-preview code referenced by 18 test files, it names a bumped interface, and nothing deploys it. Either the chain is missing it or it is test-only -- and if it is live on mainnet today, it is about to be left on a stale interface.
-
 ## What was verified, and what was not
 
 - **A generated batch loads.** `Deploy/06_deploy.pact` (13 utility modules) was loaded in the REPL on top of Stage 00 and succeeded, costing **183,034 gas** against the **183,286** predicted by summing the modules individually -- 0.14% apart. The concatenation is sound and the gas model is predictive.

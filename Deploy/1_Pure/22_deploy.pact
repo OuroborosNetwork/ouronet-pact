@@ -2,10 +2,18 @@
 ;; OURONET DEPLOY -- file 22 of 22
 ;; This is STEP 23 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-22 must have run first, including the init steps between deploys.
-;; 1 module(s), 14,849 gas measured in the REPL gas model, 41,491 bytes
+;; 1 source file(s), 14,849 gas measured in the REPL gas model, 41,491 bytes
 ;;
-;; Modules in this transaction, IN ORDER (do not reorder):
+;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   2_CITIZEN/Stage_Z/03_DSP+.pact
+;;
+;; TOTAL: 1 interface(s), 1 module(s), 2 table(s)
+;; What it DEPLOYS, in load order:
+;;   -- 2_CITIZEN/Stage_Z/03_DSP+.pact
+;;      interface  Dispenser
+;;      module     DSP
+;;      table      P|T
+;;      table      P|MT
 ;;
 ;; Paste this whole file as ONE transaction. It needs the Ouronet admin signature
 ;; and the `ouronet-ns` namespace, which the first line sets.

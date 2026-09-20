@@ -174,7 +174,22 @@ the only client-facing path in the system. Trust the tool, and check the tool.
 
 ### Deployment order and interface versioning
 
-Kadena's ~150k deploy size cap forces strict deploy ordering: a module may only call into modules already deployed. Consequences:
+Kadena's ~150k deploy **gas** budget forces strict deploy ordering: a module may only call into
+modules already deployed. Consequences:
+
+CORRECTED 2026-09-21 — this said *"~150k deploy **size** cap"*, which conflates gas with bytes and
+made the figure read as a byte limit on the emitted transaction. It is not one, and StoaChain is
+not Kadena: `StoicSyntax.md` §10.2 already records **Kadena 150k / Stoa ~2M gas**, and the emitted
+`Deploy/1_Pure/01_deploy.pact` was **measured** at **316.6 KB / 7,222 lines = 686.7K of 2.00M gas**
+(exec ~275.5K + size ~411.1K). So a third of a megabyte deploys with two thirds of the gas budget
+to spare, and the ordering constraint below is driven by **dependency order**, not by bytes.
+
+**What the real byte ceiling is remains UNKNOWN.** The same measurement reported room for only
+~1,274 more lines — a ceiling near 8,500 lines — and that cannot be the gas limit either
+(scaling 686.7K by 8,496/7,222 gives ~808K, not 2.00M). Something else binds first.
+`REPL/tools/_deploybundle.py` therefore caps emitted transactions at a **conservative 320,000
+bytes**, justified by evidence (`04_RPS.pact` is 304,738 bytes and deploys) rather than by a
+specification, and now checks the **emitted** file size rather than the planned module bytes.
 
 - Cross-module calls use **module references** with `::` (e.g. `(ref-M::some-fun ...)`), not `module.function`, so only the used interface members matter for coupling.
 - Interfaces (`V1`, `V2`, `V3`, …) carry nearly the full public API. Interface names always end in a version suffix; each revision advances the suffix by **exactly one**.

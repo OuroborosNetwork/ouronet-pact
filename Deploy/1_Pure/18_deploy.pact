@@ -2,12 +2,33 @@
 ;; OURONET DEPLOY -- file 18 of 22
 ;; This is STEP 18 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-17 must have run first, including the init steps between deploys.
-;; 3 module(s), 849,276 gas measured in the REPL gas model, 258,941 bytes
+;; 3 source file(s), 849,276 gas measured in the REPL gas model, 258,941 bytes
 ;;
-;; Modules in this transaction, IN ORDER (do not reorder):
+;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/06_VCT.pact
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/07_MTX-AQP.pact
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/08_DSA.pact
+;;
+;; TOTAL: 3 interface(s), 3 module(s), 9 table(s)
+;; What it DEPLOYS, in load order:
+;;   -- 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/06_VCT.pact
+;;      interface  AcquisitionVacateV1
+;;      module     AQP-VCT
+;;      table      P|T
+;;      table      P|MT
+;;   -- 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/07_MTX-AQP.pact
+;;      interface  AqpMtxV1
+;;      module     MTX-AQP
+;;      table      P|T
+;;      table      P|MT
+;;   -- 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/08_DSA.pact
+;;      interface  DsaV1
+;;      module     AQP-DSA
+;;      table      P|T
+;;      table      P|MT
+;;      table      DSA|T|Template
+;;      table      DSA|T|Agency
+;;      table      DSA|T|OracleAuth
 ;;
 ;; Paste this whole file as ONE transaction. It needs the Ouronet admin signature
 ;; and the `ouronet-ns` namespace, which the first line sets.

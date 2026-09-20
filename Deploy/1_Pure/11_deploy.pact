@@ -2,15 +2,59 @@
 ;; OURONET DEPLOY -- file 11 of 22
 ;; This is STEP 11 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-10 must have run first, including the init steps between deploys.
-;; 6 module(s), 350,541 gas measured in the REPL gas model, 300,337 bytes
+;; 6 source file(s), 350,541 gas measured in the REPL gas model, 300,337 bytes
 ;;
-;; Modules in this transaction, IN ORDER (do not reorder):
+;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/02_DPDC.pact
 ;;   1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/03_DPDC-C.pact
 ;;   1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/04_DPDC-I.pact
 ;;   1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/05_DPDC-R.pact
 ;;   1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/06_DPDC-MNG.pact
 ;;   1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/07_DPDC-T.pact
+;;
+;; TOTAL: 7 interface(s), 6 module(s), 22 table(s)
+;; What it DEPLOYS, in load order:
+;;   -- 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/02_DPDC.pact
+;;      interface  BrandingUsageTertiaryV2
+;;      interface  DpdcV2
+;;      module     DPDC
+;;      table      P|T
+;;      table      P|MT
+;;      table      DPSF|T|Properties
+;;      table      DPSF|T|Nonces
+;;      table      DPSF|T|VerumRoles
+;;      table      DPSF|T|Account
+;;      table      DPSF|T|AccountSupplies
+;;      table      DPNF|T|Properties
+;;      table      DPNF|T|Nonces
+;;      table      DPNF|T|VerumRoles
+;;      table      DPNF|T|Account
+;;      table      DPNF|T|AccountSupplies
+;;   -- 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/03_DPDC-C.pact
+;;      interface  DpdcCreateV2
+;;      module     DPDC-C
+;;      table      P|T
+;;      table      P|MT
+;;   -- 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/04_DPDC-I.pact
+;;      interface  DpdcIssueV2
+;;      module     DPDC-I
+;;      table      P|T
+;;      table      P|MT
+;;   -- 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/05_DPDC-R.pact
+;;      interface  DpdcRolesV2
+;;      module     DPDC-R
+;;      table      P|T
+;;      table      P|MT
+;;   -- 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/06_DPDC-MNG.pact
+;;      interface  DpdcManagementV2
+;;      module     DPDC-MNG
+;;      table      P|T
+;;      table      P|MT
+;;   -- 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/07_DPDC-T.pact
+;;      interface  DpdcTransferV2
+;;      module     DPDC-T
+;;      table      P|T
+;;      table      P|MT
 ;;
 ;; Paste this whole file as ONE transaction. It needs the Ouronet admin signature
 ;; and the `ouronet-ns` namespace, which the first line sets.

@@ -2,12 +2,31 @@
 ;; OURONET DEPLOY -- file 7 of 22
 ;; This is STEP 7 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-6 must have run first, including the init steps between deploys.
-;; 3 module(s), 358,201 gas measured in the REPL gas model, 317,221 bytes
+;; 3 source file(s), 358,201 gas measured in the REPL gas model, 317,221 bytes
 ;;
-;; Modules in this transaction, IN ORDER (do not reorder):
+;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/17_SWPL.pact
 ;;   1_SOVEREIGN/STAGE_01/2_Core/18_SWPLC.pact
 ;;   1_SOVEREIGN/STAGE_01/2_Core/19_SWPU.pact
+;;
+;; TOTAL: 4 interface(s), 3 module(s), 6 table(s)
+;; What it DEPLOYS, in load order:
+;;   -- 1_SOVEREIGN/STAGE_01/2_Core/17_SWPL.pact
+;;      interface  SwapperLiquidityV2
+;;      module     SWPL
+;;      table      P|T
+;;      table      P|MT
+;;   -- 1_SOVEREIGN/STAGE_01/2_Core/18_SWPLC.pact
+;;      interface  BrandingUsageSecondaryV2
+;;      interface  SwapperLiquidityClientV2
+;;      module     SWPLC
+;;      table      P|T
+;;      table      P|MT
+;;   -- 1_SOVEREIGN/STAGE_01/2_Core/19_SWPU.pact
+;;      interface  SwapperUsageV3
+;;      module     SWPU
+;;      table      P|T
+;;      table      P|MT
 ;;
 ;; Paste this whole file as ONE transaction. It needs the Ouronet admin signature
 ;; and the `ouronet-ns` namespace, which the first line sets.

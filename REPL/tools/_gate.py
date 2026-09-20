@@ -446,6 +446,25 @@ def main():
         print(_as.stdout + _as.stderr)
         sys.exit("GATE FAILED: an entrypoint lost an ownership enforce -- see _authsurface.py.")
 
+    # CALL-SITE ARITY -- the twin of the modref-member check below, on the other axis. That one
+    # asks "does the member EXIST"; this asks "is it called with the right NUMBER of arguments".
+    # Both exist because **Pact checks modref calls at RUNTIME, not at module load**, so a wrong
+    # call compiles, deploys, and only raises if a test happens to execute it. Measured 2026-09-21:
+    # 05_DPTF re-signed, every sovereign module compiled clean, 69 nested call sites passing the
+    # old count.
+    #
+    # Worse, an `expect-failure` ABSORBS the error. A short call partially applies and yields a
+    # CLOSURE, so the test fails-as-expected and the wrongness is invisible --
+    # `Kursan/dsa-grand-tour.repl` carried one for weeks, documented as a "native error, cause not
+    # yet isolated". The cause was the arity. That is why this is gate-fatal rather than a report:
+    # the sweep changes signatures module by module, and a caller no test exercises is exactly the
+    # one that will not be found by running anything.
+    _ca = subprocess.run([sys.executable, "tools/_callarity.py"],
+                         capture_output=True, text=True)
+    if _ca.returncode != 0:
+        print(_ca.stdout + _ca.stderr)
+        sys.exit("GATE FAILED: a call site passes the wrong number of arguments -- see _callarity.py.")
+
     # MODREF MEMBERS -- fatal only on LIVE class-B: a `(ref-X::member ...)` call where `member` is
     # defined NOWHERE in the module implementing X. Pact 5 resolves modref members DYNAMICALLY, so
     # such a call loads and runs, and only raises if that branch is ever taken -- invisible to every

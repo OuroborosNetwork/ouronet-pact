@@ -2,14 +2,53 @@
 ;; OURONET DEPLOY -- file 8 of 22
 ;; This is STEP 8 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-7 must have run first, including the init steps between deploys.
-;; 5 module(s), 321,972 gas measured in the REPL gas model, 291,619 bytes
+;; 5 source file(s), 321,972 gas measured in the REPL gas model, 291,619 bytes
 ;;
-;; Modules in this transaction, IN ORDER (do not reorder):
+;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/20_MTX-SWP.pact
 ;;   1_SOVEREIGN/STAGE_01/2_Core/21_CODEX.pact
 ;;   1_SOVEREIGN/STAGE_01/2_Core/22_PYTHIA.pact
 ;;   1_SOVEREIGN/STAGE_01/3_Talos/01_TS01-A.pact
 ;;   1_SOVEREIGN/STAGE_01/3_Talos/02_TS01-C1.pact
+;;
+;; TOTAL: 6 interface(s), 5 module(s), 20 table(s)
+;; What it DEPLOYS, in load order:
+;;   -- 1_SOVEREIGN/STAGE_01/2_Core/20_MTX-SWP.pact
+;;      interface  SwapperMtxV4
+;;      module     MTX-SWP
+;;      table      P|T
+;;      table      P|MT
+;;   -- 1_SOVEREIGN/STAGE_01/2_Core/21_CODEX.pact
+;;      interface  CodexV2
+;;      module     CODEX
+;;      table      P|T
+;;      table      P|MT
+;;      table      CODEX|T|Identities
+;;      table      CODEX|T|ArweaveTracker
+;;      table      CODEX|T|StoicTags
+;;      table      CODEX|T|StoicTagsByAccount
+;;   -- 1_SOVEREIGN/STAGE_01/2_Core/22_PYTHIA.pact
+;;      interface  PythiaV5
+;;      interface  PythiaLedgerV3
+;;      module     PYTHIA
+;;      table      P|T
+;;      table      P|MT
+;;      table      PYTHIA|T|ApiKeys
+;;      table      PYTHIA|T|Config
+;;      table      PYTHIA|T|DualLinks
+;;      table      PYTHIA|T|Revocation
+;;      table      PYTHIA|T|PythDaily
+;;      table      PYTHIA|T|PythTotal
+;;   -- 1_SOVEREIGN/STAGE_01/3_Talos/01_TS01-A.pact
+;;      interface  TalosStageOne_AdminV2
+;;      module     TS01-A
+;;      table      P|T
+;;      table      P|MT
+;;   -- 1_SOVEREIGN/STAGE_01/3_Talos/02_TS01-C1.pact
+;;      interface  TalosStageOne_ClientOneV2
+;;      module     TS01-C1
+;;      table      P|T
+;;      table      P|MT
 ;;
 ;; Paste this whole file as ONE transaction. It needs the Ouronet admin signature
 ;; and the `ouronet-ns` namespace, which the first line sets.

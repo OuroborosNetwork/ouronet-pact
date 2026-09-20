@@ -2,12 +2,27 @@
 ;; OURONET DEPLOY -- file 19 of 22
 ;; This is STEP 19 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-18 must have run first, including the init steps between deploys.
-;; 3 module(s), 149,410 gas measured in the REPL gas model, 236,546 bytes
+;; 3 source file(s), 149,410 gas measured in the REPL gas model, 236,546 bytes
 ;;
-;; Modules in this transaction, IN ORDER (do not reorder):
+;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact
 ;;   1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact
 ;;   1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact
+;;
+;; TOTAL: 2 interface(s), 3 module(s), 4 table(s)
+;; What it DEPLOYS, in load order:
+;;   -- 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact
+;;      module     AQP-INFO
+;;   -- 1_SOVEREIGN/STAGE_02/3_Talos/01_TS02-C1.pact
+;;      interface  TalosStageTwo_ClientOneV2
+;;      module     TS02-C1
+;;      table      P|T
+;;      table      P|MT
+;;   -- 1_SOVEREIGN/STAGE_02/3_Talos/02_TS02-C2.pact
+;;      interface  TalosStageTwo_ClientTwoV2
+;;      module     TS02-C2
+;;      table      P|T
+;;      table      P|MT
 ;;
 ;; Paste this whole file as ONE transaction. It needs the Ouronet admin signature
 ;; and the `ouronet-ns` namespace, which the first line sets.

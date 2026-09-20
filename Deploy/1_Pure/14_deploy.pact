@@ -2,10 +2,28 @@
 ;; OURONET DEPLOY -- file 14 of 22
 ;; This is STEP 14 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-13 must have run first, including the init steps between deploys.
-;; 1 module(s), 96,321 gas measured in the REPL gas model, 215,800 bytes
+;; 1 source file(s), 96,321 gas measured in the REPL gas model, 215,800 bytes
 ;;
-;; Modules in this transaction, IN ORDER (do not reorder):
+;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/02_SCORE.pact
+;;
+;; TOTAL: 1 interface(s), 1 module(s), 12 table(s)
+;; What it DEPLOYS, in load order:
+;;   -- 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/02_SCORE.pact
+;;      interface  AcquisitionScoresV1
+;;      module     AQP-SCORE
+;;      table      P|T
+;;      table      P|MT
+;;      table      SCR|T|Score
+;;      table      SCR|T|UserScore
+;;      table      SCR|T|SF|Score
+;;      table      SCR|T|NF|TraitScore
+;;      table      SCR|T|NF|ClassScore
+;;      table      SCR|T|SF|DefRevision
+;;      table      SCR|T|NF|DefRevision
+;;      table      SCR|T|NF|TraitKeys
+;;      table      SCR|T|Triplet
+;;      table      SCR|T|ScoreEntityModel
 ;;
 ;; Paste this whole file as ONE transaction. It needs the Ouronet admin signature
 ;; and the `ouronet-ns` namespace, which the first line sets.

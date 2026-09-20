@@ -2,9 +2,9 @@
 ;; OURONET DEPLOY -- file 20 of 22
 ;; This is STEP 20 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-19 must have run first, including the init steps between deploys.
-;; 7 module(s), 221,896 gas measured in the REPL gas model, 318,440 bytes
+;; 7 source file(s), 221,896 gas measured in the REPL gas model, 318,440 bytes
 ;;
-;; Modules in this transaction, IN ORDER (do not reorder):
+;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact
 ;;   1_SOVEREIGN/STAGE_02/3_Talos/05_TS02-DPAD.pact
 ;;   2_CITIZEN/7_Launchpad/1_Spark/01_Spark.pact
@@ -12,6 +12,49 @@
 ;;   2_CITIZEN/7_Launchpad/3_Custodians/03_Custodians.pact
 ;;   2_CITIZEN/7_Launchpad/4_StoicPay/04_STOICPAY.pact
 ;;   2_CITIZEN/7_Launchpad/5_StoicIco/05_STOAICO.pact
+;;
+;; TOTAL: 6 interface(s), 7 module(s), 20 table(s)
+;; What it DEPLOYS, in load order:
+;;   -- 1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact
+;;      interface  TalosStageTwo_ClientThreeV1
+;;      module     TS02-C3
+;;      table      P|T
+;;      table      P|MT
+;;   -- 1_SOVEREIGN/STAGE_02/3_Talos/05_TS02-DPAD.pact
+;;      interface  TalosStageTwo_DemiPadV1
+;;      module     TS02-DPAD
+;;      table      P|T
+;;      table      P|MT
+;;   -- 2_CITIZEN/7_Launchpad/1_Spark/01_Spark.pact
+;;      interface  SparksV2
+;;      module     DEMIPAD-SPARK
+;;      table      P|T
+;;      table      P|MT
+;;      table      SPARK|T|Properties
+;;   -- 2_CITIZEN/7_Launchpad/2_Snakes/02_Snakes.pact
+;;      interface  SaleSnakesV2
+;;      module     DEMIPAD-SNAKES
+;;      table      P|T
+;;      table      P|MT
+;;      table      SNAKES|T|Properties
+;;   -- 2_CITIZEN/7_Launchpad/3_Custodians/03_Custodians.pact
+;;      interface  SaleCustodiansV2
+;;      module     DEMIPAD-CUSTODIANS
+;;      table      P|T
+;;      table      P|MT
+;;      table      CUSTODIANS|T|Properties
+;;   -- 2_CITIZEN/7_Launchpad/4_StoicPay/04_STOICPAY.pact
+;;      interface  StoicPayV3
+;;      module     DEMIPAD-STOICPAY
+;;      table      P|T
+;;      table      P|MT
+;;      table      KPAY|T|Properties
+;;   -- 2_CITIZEN/7_Launchpad/5_StoicIco/05_STOAICO.pact
+;;      module     STOAICO
+;;      table      P|T
+;;      table      P|MT
+;;      table      STOAICO|T|User
+;;      table      STOAICO|T|General
 ;;
 ;; Paste this whole file as ONE transaction. It needs the Ouronet admin signature
 ;; and the `ouronet-ns` namespace, which the first line sets.

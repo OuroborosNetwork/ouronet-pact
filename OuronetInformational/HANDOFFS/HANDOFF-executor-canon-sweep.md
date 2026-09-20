@@ -9,7 +9,7 @@ session must be able to see what is done by reading this file, without reconstru
 `git log`. If the table and `_executorplan.py` disagree, **the tool is right** — regenerate.
 
 **Status:** preparation complete, sweep starting at `01_DALOS`.
-**123 done · 677 remaining · 46 modules · 2 swept (01_DALOS, 02_IGNIS).**
+**125 done · 675 remaining · 46 modules · 3 swept (01_DALOS, 02_IGNIS, 04_BRD).**
 
 ---
 
@@ -154,11 +154,79 @@ lost; a line-oriented regex silently skips the multi-line call forms, which is t
 
 R = rename · A = add executor · P = add patron
 
+### 4b. LESSON FROM MODULE 4 — DEPLOY ORDER PUTS A MODULE *BEFORE* ITS CALLERS
+
+Recorded 2026-09-21. §4 justifies deploy order as *"a module's call sites live in the modules
+deployed after it, so sweeping forward means every module is already fixed before anything that
+calls it is touched."* **That sentence is backwards** and `05_DPTF` is where it showed.
+
+DPTF is module 4. Its callers — ATSU, VST, SWP, OUROBOROS, LIQUID, TFT, SWPL, SWPLC, SWPU, SWPI,
+MTX-SWP, RPS — are modules 7–16 and Stage 2. So when DPTF's entrypoints gained `patron`, **69
+nested call sites in twelve not-yet-swept modules had no patron in scope to pass.**
+
+Deploy order is still right (it is the dependency order, and a callee must be correct before its
+callers are touched), but the consequence has to be planned for: **a module's turn includes adding
+`patron` to whatever downstream functions reach it.** That is incremental, not rework — those
+functions gain their `executor` at their own turn, and `_executorplan.py` reads source, so it
+re-reports the truth either way.
+
+**Measure before despairing.** The first estimate for DPTF was "12 modules, unbounded"; the actual
+number was **38 enclosing functions and 76 call sites**, because a core `C_` is typically called
+once, from its own Talos wrapper, which already has a patron. Two hops, not many.
+
+**The nested calls are legitimate and must stay `C_`.** They are not the IGNIS case. ATSU binds
+DPTF's return as `ico2` and concatenates it into its own cumulator, so the nested call is
+**billing composition** — CLAUDE.md's shape F. Reclassifying them to `X_` would silently drop
+those legs from the bill. Check the *return value* before concluding a nested `C_` is misprefixed:
+IGNIS's collectors discarded it, these consume it, and that is the whole difference.
+
+**Use the compiler as the worklist.** Threading is a transitive cascade (`XI_Issue` ← `XI_FoldedIssue`
+← `C_Issue`) and a grep cannot see it — multi-line call forms defeat line-oriented matching, which
+is the same failure `_executormigrate.py` already records. A loop of *compile → read the one
+unbound-`patron` error → thread that function → repeat* terminates and is exhaustive.
+### 4c. THE 2026-09-21 TOOL INCIDENT — AND WHY THE FIX WAS A REVERT, NOT A REPAIR
+
+The DPTF pass was **written, compiled, and then thrown away**. What happened, because the shape
+recurs:
+
+To thread `patron` transitively I wrote a compile-read-error-edit-repeat loop. Its error parser
+used `awk`'s **GNU-only** three-argument `match($0, re, arr)`. The system `awk` is mawk, which does
+not have it, so `fn` was **empty from round one** — and the loop then called the call-site editor
+with an empty function name, in the background, 37 files deep, for twenty minutes.
+
+An empty name matches everywhere. The editor inserted the bare token `patron`:
+into every `()` (860 sites), at the head of every multi-line `let` binding list, and before
+individual bindings. Three shapes, all of them *plausible-looking text*.
+
+**Three things went wrong, and only the third one matters.**
+
+1. A portability bug in a throwaway script. Unavoidable-ish, cheap on its own.
+2. It ran unattended, writing, in the background. **`--apply` guards the tools in `REPL/tools/`;
+   a `/tmp` script has no such rule and I gave it none.**
+3. **I tried to repair it by pattern.** Two reversal passes worked. The third shape was
+   `patron (binding ...)`, and the discriminator I reached for — *"a line beginning with
+   `patron (`"* — **also matches legitimate multi-line call arguments, which exist in HEAD in
+   eight files.** A fourth pass would have corrupted real code while reporting success.
+
+The fix was `git checkout` of every source file and a redo. That is the right call whenever the
+damage class is *"parses fine, means something else"* — CLAUDE.md §formatter already records the
+same conclusion for `_subdivide_repl.py`, which was fixed by a **depth guard**, not by a cleverer
+regex. **A pattern that cannot distinguish damage from intent is not a repair tool.**
+
+What survived the revert, deliberately: the two real tool fixes found along the way —
+`_executormigrate.py`'s missing **name-boundary check** (`DPTF|C_SetFee` is a prefix of
+`DPTF|C_SetFeeTarget`, so both rules fired and 31 call sites got two executors) and the
+`_deploybundle.py` header work. Tool fixes are not source edits; they were kept on purpose.
+
+**Rule going in: any script that rewrites sources must (a) require `--apply`, (b) refuse an empty
+or unresolved target, and (c) run in the foreground where its output is read.** The redo uses the
+same tools with those three properties.
+
 | done · # | module | R | A | P | total | interface(s) to update |
 |---|---|---:|---:|---:|---:|---|
 | [x] 1 | `01_DALOS.pact` | 0 | 0 | 18 | **18** | `OuronetDalosV2`, `OuronetPolicyV2` |
 | [x] 2 | `02_IGNIS.pact` | 0 | 1 | 5 | **6** | `IgnisCollectorV3` |
-| [ ] 3 | `04_BRD.pact` | 0 | 0 | 2 | **2** | `BrandingV2` |
+| [x] 3 | `04_BRD.pact` | 0 | 0 | 2 | **2** | `BrandingV2` |
 | [ ] 4 | `05_DPTF.pact` | 0 | 2 | 22 | **24** | `BrandingUsagePrimaryV2`, `DemiourgosPactTrueFungibleV2` |
 | [ ] 5 | `00_DPMF.pact` | 0 | 1 | 16 | **17** | `DemiourgosPactMetaFungibleV7` |
 | [ ] 6 | `06_DPOF.pact` | 0 | 1 | 20 | **21** | `DemiourgosPactOrtoFungibleV2`, `DpofUdcV2` |
@@ -258,14 +326,28 @@ Per module, in order:
 4. Edit the **Talos wrapper(s)**: `C_` passes the caller's patron; `A_` drops patron and supplies
    `GASLESS-PATRON`.
 5. Add a rule to `_executormigrate.py`, run `--apply` for the call sites.
-6. `python3 REPL/tools/_deploybundle.py --write`.
-7. `python3 REPL/tools/_authsurface.py --check` — must report *no entrypoint weakened*.
-8. Full gate: `python3 REPL/tools/_gate.py`. Artefact chain if it complains:
+6. `python3 REPL/tools/_callarity.py --module <MOD>` — **must report zero arity mismatches.**
+   This is the step that proves the FORWARD REFACTOR actually reached every caller, and nothing
+   else does. **Pact checks modref call arity at RUNTIME, not at module load**, so a caller
+   passing the old argument count compiles, deploys, and stays silent until something executes
+   it — which means the 25,000-assertion gate covers only the call sites a test happens to run.
+   Worse, an `expect-failure` ABSORBS the error: a short call partially applies, yields a
+   CLOSURE, the assertion is satisfied, and the suite goes green over a broken line.
+   `Kursan/dsa-grand-tour.repl` carried one for weeks, written up as a *"native error, cause not
+   yet isolated"* — the cause was the arity. Gate-fatal since 2026-09-21, but run it PER MODULE
+   so the failure lands while the module is still in your head.
+7. `python3 REPL/tools/_deploybundle.py --write`.
+8. `python3 REPL/tools/_authsurface.py --check` — must report *no entrypoint weakened*.
+   Note what 6 and 8 each cover and what neither does: 6 proves the SHAPE of every call (right
+   number of arguments), 8 proves no entrypoint LOST an ownership enforce. **Neither proves
+   semantics** — the right account in a correctly-sized slot. That is what the suite is for, and
+   it is why a module's turn still ends in a full gate rather than two clean tool runs.
+9. Full gate: `python3 REPL/tools/_gate.py`. Artefact chain if it complains:
    `_suite_stats.py` → `_figuresync.py --write` → `_auditbook.py --docx`.
-9. **Commit per module.**
-10. **Tick the module in §4's table** — `[ ]` → `[x]`, in the same commit. The plan IS the
+10. **Commit per module.**
+11. **Tick the module in §4's table** — `[ ]` → `[x]`, in the same commit. The plan IS the
     progress tracker: a cold session must be able to see what is done without reading git log.
-11. **Report to the owner**: *"processed module X, modified these functions, N in total, done,
+12. **Report to the owner**: *"processed module X, modified these functions, N in total, done,
     moving to next."*
 
 ### Rules that cost time when ignored
@@ -277,6 +359,14 @@ Per module, in order:
 - **Negative probes keep plain accounts** — they must fail on the guard under test, not on arity.
 - Where a guard is added, add a test that **fails without it**. A guard nothing ever fails on is
   indistinguishable from an absent one.
+- **Never run a source-rewriting script unattended.** Added 2026-09-21 after the incident in §4c.
+  Three properties, not one: it must (a) require `--apply`, (b) **refuse an empty or unresolved
+  target** — an empty function name matches everywhere — and (c) run in the FOREGROUND where its
+  output is read. The tools in `REPL/tools/` have (a) by rule; a script in `/tmp` has none of
+  them unless you give them to it.
+- **Do not repair a broad mechanical corruption by pattern.** If the damage is of the form
+  *"parses fine, means something else"*, `git checkout` and redo. The discriminator you reach for
+  will match legitimate code somewhere in 370 files, and the second pass looks like success.
 
 ---
 

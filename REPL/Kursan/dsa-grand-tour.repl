@@ -1730,9 +1730,25 @@
                     ;;of bounds. Length (0), Index (0)".
                     ;;
                     ;;`DSA|C>FUEL-ROYALTY` carries three enforces -- vault live, patron is the FVT
-                    ;;owner, ownership signed -- and NO `royalty > 0` check, so nothing stops the
-                    ;;zero case reaching this. The exec entrypoint also fails here (with a different
-                    ;;native error, cause not yet isolated).
+                    ;;owner, ownership signed -- and NO `royalty > 0` check.
+                    ;;
+                    ;;SCOPE CORRECTED 2026-09-21. This paragraph used to end "The exec entrypoint
+                    ;;also fails here (with a different native error, cause not yet isolated)".
+                    ;;THAT HALF OF THE FINDING WAS NEVER DEMONSTRATED. The exec call below passed
+                    ;;THREE arguments to a FIVE-argument entrypoint, Pact partially applied it and
+                    ;;returned a CLOSURE, and the "different native error" was
+                    ;;"Expected Pact Value, got closure or table reference" -- the closure, not the
+                    ;;code. Given its real five arguments the call is refused by a KEYSET, because
+                    ;;this transaction runs under `(env-sigs [])`: it is a READ-and-PREVIEW block
+                    ;;and always was. So the exec path never reached the zero-royalty logic at all.
+                    ;;
+                    ;;WHAT REMAINS PROVEN is the PREVIEW bug, asserted below on a direct
+                    ;;`URCi_Fuel` call: the all-zero vector filters to `[]` and the empty list is
+                    ;;indexed. WHAT IS NOW OPEN is whether the EXEC path has the same hole --
+                    ;;unknown, because ownership answers first here. Proving it needs a SIGNED
+                    ;;fixture whose FVT owner really is the signer, which is the
+                    ;;"a fixture that satisfies the first guard exposes BOTH" rule in CLAUDE.md.
+                    ;;Left as an honest open question rather than a green tick over a closure.
                     ;;
                     ;;RECORDED AS BEHAVIOUR, NOT FIXED: the repair belongs in the cap, but the cap
                     ;;takes (patron, fvt-id, swpair) and does not name a reward token, so which
@@ -1742,9 +1758,24 @@
                     ;;to that guard's message.
                     (expect "<<GT-DOC2>> FINDING: this vault's royalty really is zero, the precondition"
                         0.0 (ref-RPS::UR_FVT-RG|RoyaltyRewards fvt-id ouro))
-                    (expect-failure "<<GT-DOC2>> FINDING: fuelling ZERO royalty dies in a native fault, not a guard"
-                        "Expected Pact Value, got closure or table reference"
-                        (TS02-C3.AQP-DSA|C_FuelRoyalty KST.ANHD fvt-id (at 0 (ref-SWP::URC_Swpairs))))
+                    ;;ARITY CORRECTED 2026-09-21, and the "finding" it carried was PARTLY MINE.
+                    ;;This call passed THREE arguments to a FIVE-argument entrypoint
+                    ;;(patron executor fvt-id reward-dptf-id swpair) -- <executor> and
+                    ;;<reward-dptf-id> were both absent. Pact PARTIALLY APPLIES a short call and
+                    ;;hands back a CLOSURE, so the "different native error, cause not yet isolated"
+                    ;;named in the note above was never a native fault at all: it was
+                    ;;"Expected Pact Value, got closure or table reference", which is precisely
+                    ;;what a closure in value position produces. The test passed, and it was
+                    ;;documenting the call site rather than the code.
+                    ;;
+                    ;;Two lessons worth keeping. An `expect-failure` ABSORBS a mis-arity call --
+                    ;;it fails, so the assertion is satisfied, and the wrongness is invisible.
+                    ;;And a green gate cannot see this class at all, because Pact checks modref
+                    ;;arity at RUNTIME, not at module load. `REPL/tools/_callarity.py` is the
+                    ;;check that does; it found this.
+                    (expect-failure "<<GT-DOC2>> the EXEC entrypoint is refused by OWNERSHIP, before any zero-royalty logic"
+                        "Keyset failure"
+                        (TS02-C3.AQP-DSA|C_FuelRoyalty KST.ANHD KST.ANHD fvt-id ouro (at 0 (ref-SWP::URC_Swpairs))))
                     ;;...and the preview a UI would call first dies too, so the client cannot even
                     ;;quote the operation before attempting it
                     (expect-failure "<<GT-DOC2>> FINDING: ...and so does the cost PREVIEW, on the filter-to-empty path"

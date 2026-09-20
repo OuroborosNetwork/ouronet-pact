@@ -2,11 +2,24 @@
 ;; OURONET DEPLOY -- file 4 of 22
 ;; This is STEP 4 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-3 must have run first, including the init steps between deploys.
-;; 2 module(s), 261,798 gas measured in the REPL gas model, 207,195 bytes
+;; 2 source file(s), 261,798 gas measured in the REPL gas model, 207,195 bytes
 ;;
-;; Modules in this transaction, IN ORDER (do not reorder):
+;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/09_TFT.pact
 ;;   1_SOVEREIGN/STAGE_01/2_Core/10_ATSU.pact
+;;
+;; TOTAL: 2 interface(s), 2 module(s), 4 table(s)
+;; What it DEPLOYS, in load order:
+;;   -- 1_SOVEREIGN/STAGE_01/2_Core/09_TFT.pact
+;;      interface  TrueFungibleTransferV2
+;;      module     TFT
+;;      table      P|T
+;;      table      P|MT
+;;   -- 1_SOVEREIGN/STAGE_01/2_Core/10_ATSU.pact
+;;      interface  AutostakeUsageV2
+;;      module     ATSU
+;;      table      P|T
+;;      table      P|MT
 ;;
 ;; Paste this whole file as ONE transaction. It needs the Ouronet admin signature
 ;; and the `ouronet-ns` namespace, which the first line sets.

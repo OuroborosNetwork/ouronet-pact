@@ -184,14 +184,14 @@
     ;; WithdrawRoyalties - ensure some royalty exists first
     (ref-TS01-C2::ATS|C_UpdateRoyalty aoz ps 5.0)
     (ref-TS01-C2::ATS|C_SwitchColdRecovery aoz ps true)
-    (ref-TS01-C2::ATS|C_Coil aoz ps pd-k 1.0)
+    (ref-TS01-C2::ATS|C_Coil aoz aoz ps pd-k 1.0)
     (print (format "ps royalty accrued: {}" [(ATS.UR_RewardTokenRUR ps 3)]))
     (ref-TS01-C2::ATS|C_WithdrawRoyalties aoz ps aoz)
     (print "royalties withdrawn")
     ;; DirectRecovery
     (ref-TS01-C2::ATS|C_SetDirectRecoveryFee aoz ps 5.0)
     (ref-TS01-C2::ATS|C_SwitchDirectRecovery aoz ps true)
-    (ref-TS01-C2::ATS|C_DirectRecovery aoz ps 1.0)
+    (ref-TS01-C2::ATS|C_DirectRecovery aoz aoz ps 1.0)
     (print "direct recovery done")
 )
 (commit-tx)

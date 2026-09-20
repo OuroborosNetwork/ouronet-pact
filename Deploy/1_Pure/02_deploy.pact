@@ -2,12 +2,36 @@
 ;; OURONET DEPLOY -- file 2 of 22
 ;; This is STEP 2 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-1 must have run first, including the init steps between deploys.
-;; 3 module(s), 267,241 gas measured in the REPL gas model, 260,930 bytes
+;; 3 source file(s), 267,241 gas measured in the REPL gas model, 260,930 bytes
 ;;
-;; Modules in this transaction, IN ORDER (do not reorder):
+;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/02_IGNIS.pact
 ;;   1_SOVEREIGN/STAGE_01/2_Core/04_BRD.pact
 ;;   1_SOVEREIGN/STAGE_01/2_Core/05_DPTF.pact
+;;
+;; TOTAL: 5 interface(s), 3 module(s), 10 table(s)
+;; What it DEPLOYS, in load order:
+;;   -- 1_SOVEREIGN/STAGE_01/2_Core/02_IGNIS.pact
+;;      interface  IgnisCollectorV3
+;;      interface  OuronetInfoV2
+;;      module     IGNIS
+;;      table      P|T
+;;      table      P|MT
+;;   -- 1_SOVEREIGN/STAGE_01/2_Core/04_BRD.pact
+;;      interface  BrandingV2
+;;      module     BRD
+;;      table      P|T
+;;      table      P|MT
+;;      table      BRD|BrandingTable
+;;   -- 1_SOVEREIGN/STAGE_01/2_Core/05_DPTF.pact
+;;      interface  BrandingUsagePrimaryV2
+;;      interface  DemiourgosPactTrueFungibleV2
+;;      module     DPTF
+;;      table      P|T
+;;      table      P|MT
+;;      table      DPTF|PropertiesTable
+;;      table      DPTF|BalanceTable
+;;      table      DPTF|RoleTable
 ;;
 ;; Paste this whole file as ONE transaction. It needs the Ouronet admin signature
 ;; and the `ouronet-ns` namespace, which the first line sets.

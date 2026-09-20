@@ -70,6 +70,25 @@ FIXTURE_HINTS = ("alice", "bob", "Testing", "Fuel", "test account", "sandbox",
 # B and every module naming B must redeploy, and so must every module naming an interface that
 # names B. Measured for the 2026-09-18 bump: 53 modules, driven almost entirely by IgnisCollector,
 # which 51 files reference because it owns OutputCumulator.
+# The two NFT minters, and why they are kept rather than deleted (owner, 2026-09-21).
+#
+# BLOODSHED and NOSFERATU were deployed for ONE job: minting their NFT collections in bulk,
+# because doing it one at a time was impractical. That job is DONE, so they are not needed for
+# normal operation -- but they are the only bulk-edit path those collections have, so if the
+# collections ever need a mass modification, these are what does it.
+#
+# Therefore: NOT deleted, NOT redeployed now. What they need is a REFACTOR -- they call into
+# dependencies and interfaces that have moved a long way since they were written, so the local
+# source is very likely stale against both the tree AND the chain. BLOCKED ON A LIVE READ before
+# anything ships: the live module must be compared with the local one first.
+BLOODSHED = (
+    "MINT-ONLY, JOB DONE (owner, 2026-09-21). Deployed solely to bulk-mint its NFT collection; "
+    "the mint has happened, so it is not needed in normal operation. KEPT because it is the only "
+    "bulk-modification path for that collection if one is ever needed. Needs a REFACTOR to the "
+    "current interfaces before any redeploy, and a LIVE COMPARISON first -- the live module may "
+    "differ from this source. Excluded until both are done."
+)
+
 ROUNDS = {
     "2026-09-aqp": {
         "why": "the 7-interface bump of 2026-09-18 (AQP family + IgnisCollector)",
@@ -183,15 +202,50 @@ ROUNDS = {
             "1_SOVEREIGN/STAGE_02/0_Interfaces/02_Core.pact": "vestigial registry, declares nothing",
             "1_SOVEREIGN/STAGE_02/0_Interfaces/03_Talos.pact": "vestigial registry, declares nothing",
             "1_SOVEREIGN/STAGE_01/2_Core/00_DPMF.pact":
-                "OBSOLETE, owner call 2026-09-21. DPOF is the live OrtoFungible path; DPMF is kept "
-                "for historical/migration context only. VERIFIED before excluding: zero CODE "
-                "references in the tree -- all six files that mention DPMF do so in @doc prose, "
-                "nothing binds it as a modref and nothing implements "
-                "DemiourgosPactMetaFungibleV7 except DPMF itself. NOT redeployed: the live copy "
-                "stays exactly as it is. That is deliberate and is the SAFE half of 'stub it out' "
-                "-- a deployed module cannot be removed in Pact, and upgrading this one to a stub "
-                "would drop 5 deftables (P|T, P|MT, DPMF|Properties/Balance/Role), orphaning their "
-                "rows. Reducing the SOURCE to a stub is a separate, owner-approved step.",
+                "OBSOLETE AND INERT. DPOF is the live OrtoFungible path. VERIFIED: zero CODE "
+                "references in the tree -- all six mentions are @doc prose, nothing binds it as "
+                "a modref, nothing implements DemiourgosPactMetaFungibleV7 but DPMF itself.\n"
+                "CORRECTED 2026-09-21. An earlier version of this note said a stub upgrade would "
+                "'drop 5 deftables, orphaning their rows'. THAT IS WRONG, and the module's own "
+                "header banner already said so: DPMF calls `create-table` ZERO times against its "
+                "five `deftable` declarations, so it is deployed with NO STORAGE and has no rows "
+                "to orphan. Pinned by REPL/modules/CONFORMANCE.repl <<CONF-06>>, which asserts "
+                "the exact failure `Table ouronet-ns.DPMF_P|MT not found`.\n"
+                "CONSEQUENCE FOR THE 'RETIRE IT READ-ONLY' PLAN (owner, 2026-09-21): that plan "
+                "preserves tables and their contents and keeps the readers. Here there is "
+                "nothing to preserve -- all 72 read functions would error on a missing table, "
+                "exactly as CONF-06 pins. A read-only DPMF reads nothing. So the plan is MOOT "
+                "for this module specifically, and the standing 2026-09-15 ruling stands "
+                "unchanged: keep it as dead material with commentary, do not redeploy, do not "
+                "create its tables. Creating them without wiring callers would turn an inert "
+                "module into a live one with 13 dead modref calls inside it, and CONF-06 goes "
+                "red on exactly that half-migration, by design.",
+            # ---- 2_CITIZEN: owner dispositions, 2026-09-21 ------------------------------------
+            # These are in NO deploy chain, so an `all_modules` round cannot plan them even in
+            # principle. Each is excluded for a DIFFERENT reason, and three of the five are
+            # BLOCKED ON A LIVE READ this repo cannot perform -- see REPL/tools/_liveinventory.py.
+            "2_CITIZEN/2_BloodshedMinter/01_BSD-L.pact": BLOODSHED,
+            "2_CITIZEN/2_BloodshedMinter/02_BSD-E.pact": BLOODSHED,
+            "2_CITIZEN/2_BloodshedMinter/03_BSD-R.pact": BLOODSHED,
+            "2_CITIZEN/2_BloodshedMinter/04_BSD-C.pact": BLOODSHED,
+            "2_CITIZEN/2_BloodshedMinter/05_BSD-SETS.pact": BLOODSHED,
+            "2_CITIZEN/3_NosferatuMinter/01_NOSFERATU.pact": BLOODSHED,
+            "2_CITIZEN/6_OuronetBridge/03_CADUCEUS.pact":
+                "STAGE 3, NOT STARTED (owner, 2026-09-21). CADUCEUS is the bridge module and is "
+                "the first thing in Stage 3; ALETHEIA, the oracle, is the other and does not "
+                "exist yet. Keep the source as it is and ship nothing: a half-written bridge is "
+                "the one module where a premature deploy is worse than none.",
+            "2_CITIZEN/Stage_Z/01_DPL-UR.pact":
+                "READS-ONLY deployer module. BLOCKED ON A LIVE READ (owner, 2026-09-21): the "
+                "owner may have deployed reads directly on chain that never made it back into "
+                "this tree, so shipping the local copy could REGRESS live functionality. Check "
+                "live first; if live is merely older, refactor it to the current Stage-1/2 "
+                "surface and ship. No new code is expected here either way.",
+            "2_CITIZEN/Stage_Z/02_EXPLORER.pact":
+                "WORK IN PROGRESS, read-only module for the Ouronet Explorer (owner, "
+                "2026-09-21). BLOCKED ON A LIVE READ: unknown whether it exists on mainnet at "
+                "all. If it does it holds very few functions, which then need refactoring to the "
+                "current Stage-1/2 surface.",
         },
     },
 }
@@ -271,12 +325,24 @@ DEFAULT_BUDGET = 1_700_000
 # -- a conflation worth knowing about, because batching on gas alone produced a 1.4 MB transaction
 # here before this cap existed.
 #
-# What IS known empirically: `04_RPS.pact` is 304,738 bytes and deploys, so a payload of that order
-# is fine. The default below sits just above it, so every emitted transaction is no larger than a
-# single module already proven to deploy. That is evidence, not a specification.
+# MEASURED 2026-09-21, owner's Pact code editor, on the emitted `01_deploy.pact`:
 #
-# Raise it once you know the real limit -- `--maxbytes 0` disables the constraint entirely and
-# batches on gas alone.
+#     316.6 KB   7,222 lines
+#     GAS  exec ~275.5K (est)  +  size ~411.1K  =  686.7K  of  2.00M
+#     "Room for about 1,274 more lines"  (ceiling ~8,496 lines)
+#
+# Two things follow, and only two. **Gas is not the binding constraint at this size** -- 686.7K of
+# 2.00M is a third of the budget, so the "~150k" figure in the docs is neither a byte limit nor the
+# ceiling that matters here. And the editor's own ceiling, ~8,500 lines, is NOT the gas limit
+# either: scaling 686.7K by 8,496/7,222 gives ~808K, nowhere near 2.00M. So something else binds
+# first, and THIS REPO DOES NOT KNOW WHAT. Do not model it from these two numbers; two points fit
+# any curve.
+#
+# Older evidence, consistent with the above: `04_RPS.pact` is 304,738 bytes and deploys.
+#
+# The default below sits just above that, so every emitted transaction is no larger than a payload
+# already proven to deploy, and comfortably under the ~372 KB the editor's line ceiling implies.
+# That is evidence, not a specification. `--maxbytes 0` disables the constraint entirely.
 DEFAULT_MAXBYTES = 320_000
 
 # ---------------------------------------------------------------------------------------------
@@ -737,6 +803,25 @@ def drop_empty_repl_section(src):
     return src
 
 
+DEPLOYABLE_RE = re.compile(r'^\((interface|module)\s+([A-Za-z0-9|_\-\.]+)', re.M)
+
+
+def deployables(src):
+    """Ordered [(kind, name)] of the top-level constructs a pact FILE actually deploys.
+
+    A pact file is not a module. `05_DPTF.pact` deploys THREE interfaces and one module;
+    `01_DALOS.pact` deploys five interfaces and DALOS. The deploy header used to list file
+    paths under the words "Modules in this transaction", which is wrong twice over: it named
+    the wrong unit, and it hid the interface ordering -- the one thing that actually cannot be
+    reordered, because an interface must load before anything that `implements` it.
+
+    Top-level only: the regex is anchored at column 0, and every interface/module in this tree
+    starts there, while nested `(module ...)` text inside a REPL fixture or a doc string is
+    always indented.
+    """
+    return [(m.group(1), m.group(2)) for m in DEPLOYABLE_RE.finditer(src)]
+
+
 def split_tables(src):
     """(module-code, [table names]) -- top-level create-table calls stripped off the end."""
     tables = TABLE_RE.findall(src)
@@ -771,13 +856,32 @@ def write(steps, budget, maxbytes, mode="upgrade", existing=frozenset()):
             f";; OURONET DEPLOY -- file {dep} of {ndep}",
             f";; This is STEP {seq} of {nstep} in the full sequence (see Deploy/MANIFEST.md).",
             f";; Steps 1-{seq-1} must have run first, including the init steps between deploys.",
-            f";; {len(s['pacts'])} module(s), {s['gas']:,} gas measured in the REPL gas model,"
-            f" {s['bytes']:,} bytes",
+            f";; {len(s['pacts'])} source file(s), {s['gas']:,} gas measured in the REPL gas"
+            f" model, {s['bytes']:,} bytes",
             ";;",
-            ";; Modules in this transaction, IN ORDER (do not reorder):",
+            ";; Source files in this transaction, IN ORDER (do not reorder):",
         ]
         for p in s["pacts"]:
             body.append(f";;   {os.path.relpath(p, ROOT)}")
+        # What this transaction actually DEPLOYS, construct by construct. A source file is a
+        # container: most hold one or more interfaces AND a module, and the interfaces must
+        # load first because the module `implements` them. Listing files alone hid that order.
+        body += [";;", ";; What it DEPLOYS, in load order:"]
+        n_if = n_mod = n_tab = 0
+        for p in s["pacts"]:
+            rel = os.path.relpath(p, ROOT)
+            psrc = strip_repl(open(p, encoding="utf8", errors="replace").read(), p)
+            pcode, ptables = split_tables(psrc)
+            body.append(f";;   -- {rel}")
+            for kind, name in deployables(pcode):
+                body.append(f";;      {'interface' if kind == 'interface' else 'module   '}  {name}")
+                n_if += kind == "interface"
+                n_mod += kind == "module"
+            for t in ptables:
+                body.append(f";;      table      {t}")
+                n_tab += 1
+        body.insert(body.index(";; What it DEPLOYS, in load order:"),
+                    f";; TOTAL: {n_if} interface(s), {n_mod} module(s), {n_tab} table(s)")
         body += [
             ";;",
             ";; Paste this whole file as ONE transaction. It needs the Ouronet admin signature",
@@ -831,6 +935,24 @@ def write(steps, budget, maxbytes, mode="upgrade", existing=frozenset()):
             open(tpl, encoding="utf8").read())
     print(f"\nwrote {os.path.relpath(OUT, ROOT)}/ -- "
           f"{sum(1 for m in manifest if m[2] == 'DEPLOY')} deploy files + MANIFEST.md")
+    # SIZE-CHECK THE EMITTED FILES, not the planned module bytes. The planner budgets on the
+    # size of the module SOURCES; what actually gets pasted is source + header. When the header
+    # grew (2026-09-21, to list interfaces/modules/tables instead of file paths) it added ~2 KB
+    # per file and pushed two transactions over `maxbytes` -- silently, because nothing measured
+    # the thing that ships. A budget enforced on a proxy is not enforced.
+    over = []
+    for f in sorted(os.listdir(PURE)):
+        if not f.endswith("_deploy.pact"):
+            continue
+        n = os.path.getsize(os.path.join(PURE, f))
+        if maxbytes and n > maxbytes:
+            over.append((f, n))
+    if over:
+        print(f"\n  !! {len(over)} EMITTED file(s) exceed maxbytes ({maxbytes:,}):")
+        for f, n in over:
+            print(f"     {f}  {n:,} bytes  (+{n - maxbytes:,})")
+        print("  !! The planner budgets on module bytes; the header is extra. Lower --budget to")
+        print("  !! split these, or raise --maxbytes if the real chain limit is known to be higher.")
 
 
 INIT_SEQ = []

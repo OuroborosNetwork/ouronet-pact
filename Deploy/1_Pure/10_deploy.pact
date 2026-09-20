@@ -2,12 +2,34 @@
 ;; OURONET DEPLOY -- file 10 of 22
 ;; This is STEP 10 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-9 must have run first, including the init steps between deploys.
-;; 3 module(s), 457,539 gas measured in the REPL gas model, 287,143 bytes
+;; 3 source file(s), 457,539 gas measured in the REPL gas model, 287,143 bytes
 ;;
-;; Modules in this transaction, IN ORDER (do not reorder):
+;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/Z_Reads/02_INFO-ONE+.pact
 ;;   2_CITIZEN/1_AOZ/01_AOZ+.pact
 ;;   1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/01_DPDC-UDC.pact
+;;
+;; TOTAL: 3 interface(s), 3 module(s), 10 table(s)
+;; What it DEPLOYS, in load order:
+;;   -- 1_SOVEREIGN/STAGE_01/Z_Reads/02_INFO-ONE+.pact
+;;      interface  InfoOneV2
+;;      module     INFO-ONE
+;;   -- 2_CITIZEN/1_AOZ/01_AOZ+.pact
+;;      interface  AgeOfZalmoxis
+;;      module     AOZ
+;;      table      AOZ|T|AssetCounter
+;;      table      AOZ|T|PrimalTrueFungibles
+;;      table      AOZ|T|PrimalOrtoFungibles
+;;      table      AOZ|T|AutostakePairs
+;;      table      AOZ|T|TrueFungibles
+;;      table      AOZ|T|OrtoFungibles
+;;      table      AOZ|T|SemiFungibles
+;;      table      AOZ|T|NonFungibles
+;;   -- 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/01_DPDC-UDC.pact
+;;      interface  DpdcUdcV2
+;;      module     DPDC-UDC
+;;      table      P|T
+;;      table      P|MT
 ;;
 ;; Paste this whole file as ONE transaction. It needs the Ouronet admin signature
 ;; and the `ouronet-ns` namespace, which the first line sets.

@@ -2,14 +2,39 @@
 ;; OURONET DEPLOY -- file 9 of 22
 ;; This is STEP 9 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-8 must have run first, including the init steps between deploys.
-;; 5 module(s), 228,598 gas measured in the REPL gas model, 199,476 bytes
+;; 5 source file(s), 228,598 gas measured in the REPL gas model, 199,476 bytes
 ;;
-;; Modules in this transaction, IN ORDER (do not reorder):
+;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/3_Talos/03_TS01-C2.pact
 ;;   1_SOVEREIGN/STAGE_01/3_Talos/04_TS01-C3.pact
 ;;   1_SOVEREIGN/STAGE_01/3_Talos/06_TS01-C4.pact
 ;;   1_SOVEREIGN/STAGE_01/3_Talos/05_TS01-P.pact
 ;;   1_SOVEREIGN/STAGE_01/Z_Reads/01_INFO-ZERO.pact
+;;
+;; TOTAL: 4 interface(s), 5 module(s), 8 table(s)
+;; What it DEPLOYS, in load order:
+;;   -- 1_SOVEREIGN/STAGE_01/3_Talos/03_TS01-C2.pact
+;;      interface  TalosStageOne_ClientTwoV2
+;;      module     TS01-C2
+;;      table      P|T
+;;      table      P|MT
+;;   -- 1_SOVEREIGN/STAGE_01/3_Talos/04_TS01-C3.pact
+;;      interface  TalosStageOne_ClientThreeV4
+;;      module     TS01-C3
+;;      table      P|T
+;;      table      P|MT
+;;   -- 1_SOVEREIGN/STAGE_01/3_Talos/06_TS01-C4.pact
+;;      interface  TalosStageOne_ClientFourV8
+;;      module     TS01-C4
+;;      table      P|T
+;;      table      P|MT
+;;   -- 1_SOVEREIGN/STAGE_01/3_Talos/05_TS01-P.pact
+;;      interface  TalosStageOne_ClientPactsV4
+;;      module     TS01-CP
+;;      table      P|T
+;;      table      P|MT
+;;   -- 1_SOVEREIGN/STAGE_01/Z_Reads/01_INFO-ZERO.pact
+;;      module     INFO-ZERO
 ;;
 ;; Paste this whole file as ONE transaction. It needs the Ouronet admin signature
 ;; and the `ouronet-ns` namespace, which the first line sets.

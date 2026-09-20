@@ -76,6 +76,36 @@ RULES = {
     # IssueMultipletFamily reached NO ownership enforce at all; the executor is simply the creator,
     # so the fixtures keep the account they used -- what changes is that it must now be OWNED.
     "AQP-FVT|C_IssueMultipletFamily":   (7, "{0}"),
+    # ---- 05_DPTF (sweep 4/46) -------------------------------------------------------------
+    # Every one of these is owner-gated: the entrypoint's capability reaches CAP_Owner <id>,
+    # which enforces ownership of (UR_Konto id). So the executor IS the token owner, read at
+    # the call site. The branding pair is gated on the PARENT's owner instead -- an f|/r| variant
+    # is branded by the pure token's owner -- which is why they read through URCv_Parent.
+    "DPTF|C_UpdatePendingBranding": (7, "(DPTF.UR_Konto (DPTF.URCv_Parent {1}))"),
+    "DPTF|C_UpgradeBranding":      (4, "(DPTF.UR_Konto (DPTF.URCv_Parent {1}))"),
+    "DPTF|C_RotateOwnership":      (4, "(DPTF.UR_Konto {1})"),
+    "DPTF|C_Control":              (9, "(DPTF.UR_Konto {1})"),
+    "DPTF|C_TogglePause":          (4, "(DPTF.UR_Konto {1})"),
+    "DPTF|C_ToggleReservation":    (4, "(DPTF.UR_Konto {1})"),
+    "DPTF|C_ToggleFee":            (4, "(DPTF.UR_Konto {1})"),
+    "DPTF|C_SetMinMove":           (4, "(DPTF.UR_Konto {1})"),
+    "DPTF|C_SetFee":               (4, "(DPTF.UR_Konto {1})"),
+    "DPTF|C_SetFeeTarget":         (4, "(DPTF.UR_Konto {1})"),
+    "DPTF|C_DonateFees":           (3, "(DPTF.UR_Konto {1})"),
+    "DPTF|C_ResetFeeTarget":       (3, "(DPTF.UR_Konto {1})"),
+    "DPTF|C_ToggleFeeLock":        (4, "(DPTF.UR_Konto {1})"),
+    "DPTF|C_ToggleFreezeAccount":  (5, "(DPTF.UR_Konto {1})"),
+    "DPTF|C_ToggleBurnRole":       (5, "(DPTF.UR_Konto {1})"),
+    "DPTF|C_ToggleMintRole":       (5, "(DPTF.UR_Konto {1})"),
+    "DPTF|C_ToggleFeeExemptionRole":(5,"(DPTF.UR_Konto {1})"),
+    "DPTF|C_ToggleTransferRole":   (5, "(DPTF.UR_Konto {1})"),
+    "DPTF|C_Mint":                 (6, "(DPTF.UR_Konto {1})"),
+    "DPTF|C_WipeSlim":             (5, "(DPTF.UR_Konto {1})"),
+    "DPTF|C_Wipe":                 (4, "(DPTF.UR_Konto {1})"),
+    # NOT here, deliberately -- DPTF|C_Burn and DPTF|C_DeployAccount keep their arity and MOVE
+    # an argument instead (their `account` WAS the executor), and the three DPTF|A_ wrappers have
+    # no patron in slot 0 at all. This tool only inserts after slot 0; a reorder or a
+    # patronless signature is a different edit and gets its own pass.
     # RotateOwnership: the executor is the CURRENT owner. `new-owner-konto` is the RECIPIENT --
     # naming it `executor` was the error a blind Band 2 rename would have made here.
     "AQP-FVT|C_RotateOwnership":        (4, "(AQP-FVT.UR_FVT|OwnerKonto {1})"),
@@ -107,7 +137,18 @@ def in_string(txt, pos):
 
 
 def split_form(txt, open_idx):
-    """Top-level argument spans of the s-expression whose '(' is at open_idx."""
+    """Top-level argument spans of the s-expression whose '(' is at open_idx.
+
+    BRACES COUNT AS NESTING, fixed 2026-09-21. This tracked `(` `[` but not `{`, so an OBJECT
+    LITERAL argument was not one argument -- its keys and values were counted as top-level
+    arguments of the enclosing call. `(ref-IGNIS::XE_CollectIgnis KST.EMMA {...})` read as TEN
+    arguments instead of two.
+
+    That is not cosmetic. Every rule in RULES is keyed on `len(vals)`, so any call site passing
+    an object literal was silently skipped (wrong arity -> no match) or, worse, matched a rule
+    meant for a different shape. Found by `_callarity.py` reporting a mismatch that turned out
+    to be the parser's, not the code's -- which is the second time today a tool that approximates
+    s-expression structure was wrong in a way that looked like a finding."""
     i = open_idx + 1
     d = 1
     args = []
@@ -136,13 +177,13 @@ def split_form(txt, open_idx):
             instr = True
             i += 1
             continue
-        if c in "([":
+        if c in "([{":
             if d == 1 and start is None:
                 start = i
             d += 1
             i += 1
             continue
-        if c in ")]":
+        if c in ")]}":
             d -= 1
             if d == 1 and start is not None:
                 args.append((start, i + 1))
@@ -175,6 +216,16 @@ def scan(path, apply_):
             if j < 0:
                 break
             if in_string(s, j):
+                i = j + 1
+                continue
+            # NAME BOUNDARY. `s.find` is substring matching, and these names nest:
+            # `DPTF|C_SetFee` is a PREFIX of `DPTF|C_SetFeeTarget`, `DPTF|C_ToggleFee` of
+            # `DPTF|C_ToggleFeeLock` and `DPTF|C_ToggleFeeExemptionRole`. With both rules
+            # present the shorter one fired inside the longer one and BOTH inserted an
+            # executor -- 31 call sites got two. Found by the compiler ("apply a closure to
+            # too many arguments"), not by the tool, which is the whole reason this parses
+            # instead of approximating. Requiring a delimiter after the name closes it.
+            if j + len(fn) < len(s) and s[j + len(fn)] not in " \n\t)":
                 i = j + 1
                 continue
             op = s.rfind("(", 0, j)

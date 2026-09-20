@@ -2,13 +2,39 @@
 ;; OURONET DEPLOY -- file 5 of 22
 ;; This is STEP 5 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-4 must have run first, including the init steps between deploys.
-;; 4 module(s), 296,962 gas measured in the REPL gas model, 263,929 bytes
+;; 4 source file(s), 296,962 gas measured in the REPL gas model, 263,929 bytes
 ;;
-;; Modules in this transaction, IN ORDER (do not reorder):
+;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/11_VST.pact
 ;;   1_SOVEREIGN/STAGE_01/2_Core/12_LIQUID.pact
 ;;   1_SOVEREIGN/STAGE_01/2_Core/13_OUROBOROS.pact
 ;;   1_SOVEREIGN/STAGE_01/2_Core/14_SWPT.pact
+;;
+;; TOTAL: 4 interface(s), 4 module(s), 11 table(s)
+;; What it DEPLOYS, in load order:
+;;   -- 1_SOVEREIGN/STAGE_01/2_Core/11_VST.pact
+;;      interface  VestingV2
+;;      module     VST
+;;      table      P|T
+;;      table      P|MT
+;;   -- 1_SOVEREIGN/STAGE_01/2_Core/12_LIQUID.pact
+;;      interface  StoaLiquidStakingV2
+;;      module     LIQUID
+;;      table      P|T
+;;      table      P|MT
+;;   -- 1_SOVEREIGN/STAGE_01/2_Core/13_OUROBOROS.pact
+;;      interface  OuroborosV2
+;;      module     OUROBOROS
+;;      table      P|T
+;;      table      P|MT
+;;   -- 1_SOVEREIGN/STAGE_01/2_Core/14_SWPT.pact
+;;      interface  SwapTracerV3
+;;      module     SWPT
+;;      table      P|T
+;;      table      P|MT
+;;      table      SWPT|Graph
+;;      table      SWPT|PathCache
+;;      table      SWPT|TopologyVersion
 ;;
 ;; Paste this whole file as ONE transaction. It needs the Ouronet admin signature
 ;; and the `ouronet-ns` namespace, which the first line sets.
