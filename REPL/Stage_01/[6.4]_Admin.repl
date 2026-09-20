@@ -166,8 +166,8 @@
     ;        { "social-media-name":  "Galium Waztup", "social-media-link": "Watzup link"}
     ;    ]
     ;)
-    (ref-TS01-A::BRD|A_Live "GA-98c486052a51")
-    (ref-TS01-A::BRD|A_SetFlag "GA-98c486052a51" 2)
+    (ref-TS01-A::BRD|A_Live KST.ANHD "GA-98c486052a51")
+    (ref-TS01-A::BRD|A_SetFlag KST.ANHD "GA-98c486052a51" 2)
 
     (ref-TS01-A::SWP|A_UpdateLimit 500.0 true)
     (ref-TS01-A::SWP|A_UpdateLimit 75.0 false)

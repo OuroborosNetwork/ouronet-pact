@@ -98,7 +98,7 @@
             ;;--- one that refuses via a keyset rather than a named message ----------------------
             (expect-failure "<<RT-C-001>> ...nor set a branding flag: BRD answers with its keyset"
                 "Keyset failure"
-                (ref-TS01-A::BRD|A_SetFlag "OURO-98c486052a51" 1))
+                (ref-TS01-A::BRD|A_SetFlag KST.EMMA "OURO-98c486052a51" 1))
             ;;--- the one that WAS shadowed, and is not any more ---------------------------------
             ;;WHEN THIS BLOCK WAS FIRST WRITTEN this assertion read "Cannot Wipe Positive Treasury
             ;;Balance" -- a BUSINESS guard. GOV|DPTF_ADMIN sat one line BELOW a solvency check in

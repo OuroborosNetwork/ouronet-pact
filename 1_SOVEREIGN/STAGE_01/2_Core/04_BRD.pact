@@ -82,8 +82,8 @@
     (defun XE_UpgradeBranding:decimal (entity-id:string entity-owner-account:string months:integer))
     ;;{5.7}  User [A/C]
     ;;
-    (defun A_Live (entity-id:string))
-    (defun A_SetFlag (entity-id:string flag:integer))
+    (defun A_Live (patron:string executor:string entity-id:string))
+    (defun A_SetFlag (patron:string executor:string entity-id:string flag:integer))
 
 )
 
@@ -591,8 +591,18 @@
     )
     ;;{5.7}  User [A/C]
     ;;
-    (defun A_Live (entity-id:string)
+    (defun A_Live (patron:string executor:string entity-id:string)
+        @doc "ADMIN: promotes <entity-id>'s pending Branding to live, resetting the pending slot. \
+            \ <executor> is the Branding Administrator; ownership is enforced here directly, \
+            \ because BRD|C>LIVE composes the SHARED GOV|BRD_ADMIN keyset and therefore proves \
+            \ admin-ness without proving WHICH account acted."
         (P|UEV_IMC)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership executor)
+        )
         (with-capability (BRD|C>LIVE)
             (let
                 (
@@ -610,8 +620,18 @@
             )
         )
     )
-    (defun A_SetFlag (entity-id:string flag:integer)
+    (defun A_SetFlag (patron:string executor:string entity-id:string flag:integer)
+        @doc "ADMIN: forcibly sets the Branding Flag of <entity-id>. \
+            \ <executor> is the Branding Administrator; ownership is enforced here directly, \
+            \ because BRD|C>ADMIN_SET composes the SHARED GOV|BRD_ADMIN keyset and therefore \
+            \ proves admin-ness without proving WHICH account acted."
         (P|UEV_IMC)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership executor)
+        )
         (with-capability (BRD|C>ADMIN_SET flag)
             (let
                 (

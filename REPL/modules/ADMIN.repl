@@ -43,7 +43,7 @@
     [
         (expect-failure "<<ADMIN-G9>> a non-admin cannot set branding live"
             "Keyset failure (keys-any)"
-            (TS01-A.BRD|A_Live "MOCKA-98c486052a51"))
+            (TS01-A.BRD|A_Live KST.EMMA "MOCKA-98c486052a51"))
     ]
 )
 (commit-tx)

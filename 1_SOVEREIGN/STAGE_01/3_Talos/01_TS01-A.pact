@@ -62,8 +62,8 @@
     (defun DALOS|A_UpdateUsagePrice (executor:string action:string new-price:decimal))
     ;;
     ;;
-    (defun BRD|A_Live (entity-id:string))
-    (defun BRD|A_SetFlag (entity-id:string flag:integer))
+    (defun BRD|A_Live (executor:string entity-id:string))
+    (defun BRD|A_SetFlag (executor:string entity-id:string flag:integer))
     ;;
     ;;
     (defun DPTF|A_UpdateTreasuryDispoParameters (type:integer tdp:decimal tds:decimal))
@@ -546,7 +546,7 @@
         )
     )
     ;;  [BRD_Administrator]
-    (defun BRD|A_Live (entity-id:string)
+    (defun BRD|A_Live (executor:string entity-id:string)
         @doc "Sets <pending-branding> for an <entity-id> to <live-branding>, reseting <pending-branding> data \
             \ Resetting <pending-branding> data does not reset its last 3 keys \
             \ Can only be done by Branding Administrator"
@@ -555,11 +555,11 @@
                 (
                     (ref-BRD:module{BrandingV2} BRD)
                 )
-                (ref-BRD::A_Live entity-id)
+                (ref-BRD::A_Live GASLESS-PATRON executor entity-id)
             )
         )
     )
-    (defun BRD|A_SetFlag (entity-id:string flag:integer)
+    (defun BRD|A_SetFlag (executor:string entity-id:string flag:integer)
         @doc "Forcibly (in administrator mode) sets a Branding Flag for <entity-id> \
             \ <0> Flag = Golden Flag        Premium Flag reserved for Demiourgos Entity IDs \
             \ <1> Flag = Blue Flag          Premium Flag for Entity IDs (non-Demiourgos); \
@@ -573,7 +573,7 @@
                 (
                     (ref-BRD:module{BrandingV2} BRD)
                 )
-                (ref-BRD::A_SetFlag entity-id flag)
+                (ref-BRD::A_SetFlag GASLESS-PATRON executor entity-id flag)
             )
         )
     )

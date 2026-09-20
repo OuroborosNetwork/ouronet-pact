@@ -2388,7 +2388,7 @@
             ;;so it answers even though the call is an admin one.
             (expect-failure "<<SWP-G24>> a flag outside 0..4 is refused by the setter"
                 "Invalid Integer Flag"
-                (TS01-A.BRD|A_SetFlag sp 5))
+                (TS01-A.BRD|A_SetFlag KST.ANHD sp 5))
             ;;GUARD 2 -- the months bound, read from the caller's elite tier rather than a constant.
             ;;99 months exceeds any tier's allowance.
             (expect-failure "<<SWP-G24>> more months than the owner's tier allows is refused"
@@ -2402,13 +2402,13 @@
         ]
     )
     ;;GUARD 3 -- GOLDEN is above Blue in the hierarchy, so "upgrading" it would be a demotion.
-    (TS01-A.BRD|A_SetFlag sp 0)
+    (TS01-A.BRD|A_SetFlag KST.ANHD sp 0)
     (print
         (expect-failure "<<SWP-G24>> a GOLDEN flag cannot be upgraded -- Blue is below it"
             "Golden Flag cannot be upgraded"
             (TS01-C3.SWP|C_UpgradeBranding KST.ANHD sp 1)))
     ;;GUARD 4 -- RED is the excluded flag; it is not a rung on the ladder at all.
-    (TS01-A.BRD|A_SetFlag sp 4)
+    (TS01-A.BRD|A_SetFlag KST.ANHD sp 4)
     (print
         (expect-failure "<<SWP-G24>> ...and a RED flag cannot be upgraded either"
             "Red Flag cannot be upgraded"
@@ -2422,7 +2422,7 @@
     ;;premium. With both BRD fixes in place that lands premium 30 days in the FUTURE, which is what
     ;;finally makes guard 5 reachable -- the immediate second attempt then has ~30 days remaining,
     ;;over the 15-day threshold, and the guard answers.
-    (TS01-A.BRD|A_SetFlag sp 2)
+    (TS01-A.BRD|A_SetFlag KST.ANHD sp 2)
     ;;PIN THE CLOCK, and here is why -- it is a consequence of FIX 1 worth knowing.
     ;;
     ;;Now that <premium-until> is the entity's ISSUANCE time rather than a module-load constant, it
