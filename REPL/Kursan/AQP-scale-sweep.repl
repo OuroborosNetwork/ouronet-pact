@@ -172,7 +172,7 @@
         (probe-user:string (VCTGAS.UC_SynthAccount 1))
     )
     (env-gas 0)
-    (ref-TS02-C3::AQP-FVT|CC_SweepBegin patron anchor-id)
+    (ref-TS02-C3::AQP-FVT|CC_SweepBegin patron (AQP-ANK.URC_AnchorableAssetOwner (AQP-ANK.UR_ANK|AnchoredAsset anchor-id) (AQP-ANK.UR_ANK|Fungibility anchor-id)) anchor-id)
     (let
         (
             (g:integer (env-gas))
@@ -247,7 +247,7 @@
             ;;finalizing chunk had already released.
             (expect-failure "<<SCALE-SWP-FREEZE>> a sweep cannot be opened twice on the same anchor"
                 "A sweep is already in progress for this anchor"
-                (ref-TS02-C3::AQP-FVT|CC_SweepBegin patron
+                (ref-TS02-C3::AQP-FVT|CC_SweepBegin patron (AQP-ANK.URC_AnchorableAssetOwner (AQP-ANK.UR_ANK|AnchoredAsset (ref-U|DALOS::UDC_Makeid "ScaleSwpAnchor")) (AQP-ANK.UR_ANK|Fungibility (ref-U|DALOS::UDC_Makeid "ScaleSwpAnchor")))
                     (ref-U|DALOS::UDC_Makeid "ScaleSwpAnchor")))
             ;;`05_FVT.pact:1006` -- the chunk size bound, BOTH ends. SWEEP-CHUNK-MAX is derived as
             ;;SWEEP-CHUNK-GAS-BUDGET / SWEEP-GAS-PER-HOLDER = 2,000,000 / 2,000 = 1000, so the bound

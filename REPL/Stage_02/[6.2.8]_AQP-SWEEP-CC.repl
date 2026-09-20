@@ -98,7 +98,7 @@
                 (sweep-quote:object{OuronetInfoV2.ClientInfo} (AQP-INFO.INFO_AQP-FVT|SweepBegin lumy anchor-id))
                 (gas-pre:decimal (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" lumy))
             )
-        (print (format "<(CC01 AQP-FVT|CC_SweepBegin)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|CC_SweepBegin lumy anchor-id)]))
+        (print (format "<(CC01 AQP-FVT|CC_SweepBegin)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|CC_SweepBegin lumy (AQP-ANK.URC_AnchorableAssetOwner (AQP-ANK.UR_ANK|AnchoredAsset anchor-id) (AQP-ANK.UR_ANK|Fungibility anchor-id)) anchor-id)]))
         (map print
             [
                 (format "<<TX-SWEEP-CC01>> SweepBegin quoted ignis={} stoa={} ; real gas delta={}"

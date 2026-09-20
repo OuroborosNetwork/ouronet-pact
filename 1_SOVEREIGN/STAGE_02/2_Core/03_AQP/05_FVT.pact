@@ -96,7 +96,7 @@
     )
     ;;{5.7}  User [A/C]
     (defun C_SetQualitySplit:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-id:string reward-dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer])
+        (patron:string executor:string fvt-id:string reward-dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer])
     )
     ;; [C]   client
     ;;
@@ -126,22 +126,22 @@
         (patron:string fvt-id:string new-owner-konto:string)
     )
     (defun C_Control:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-id:string new-can-upgrade:bool new-can-change-owner:bool)
+        (patron:string executor:string fvt-id:string new-can-upgrade:bool new-can-change-owner:bool)
     )
     (defun C_SetCommonDenominator:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-id:string common-denominator:string)
+        (patron:string executor:string fvt-id:string common-denominator:string)
     )
     (defun C_SetMosaic:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-id:string mosaic:bool)
+        (patron:string executor:string fvt-id:string mosaic:bool)
     )
     (defun C_SetSplitMode:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-id:string split-mode:string)
+        (patron:string executor:string fvt-id:string split-mode:string)
     )
     (defun C_AddScoreEntity:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-id:string score-entity-type:integer score-entity-id:string)
+        (patron:string executor:string fvt-id:string score-entity-type:integer score-entity-id:string)
     )
     (defun C_ToggleScoreEntityLink:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-id:string score-entity-type:integer score-entity-id:string enabled:bool)
+        (patron:string executor:string fvt-id:string score-entity-type:integer score-entity-id:string enabled:bool)
     )
     (defun C_IssueMultipletFamily:object{IgnisCollectorV3.OutputCumulator}
         (
@@ -154,10 +154,10 @@
         )
     )
     (defun C_AddRewardLink:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-id:string reward-dptf-id:string segmentation:bool multiplet-family-id:string)
+        (patron:string executor:string fvt-id:string reward-dptf-id:string segmentation:bool multiplet-family-id:string)
     )
     (defun C_ToggleRewardLink:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-id:string reward-dptf-id:string enabled:bool)
+        (patron:string executor:string fvt-id:string reward-dptf-id:string enabled:bool)
     )
     (defun CC_InjectStream:object{IgnisCollectorV3.OutputCumulator}
         (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
@@ -174,8 +174,8 @@
     (defun CCp_UnstaleAll:string
         (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
     )
-    (defun CC_SweepRevokeAnchor:string (patron:string anchor-id:string))
-    (defun CC_SweepBegin:string (patron:string anchor-id:string))
+    (defun CC_SweepRevokeAnchor:string (patron:string executor:string anchor-id:string))
+    (defun CC_SweepBegin:string (patron:string executor:string anchor-id:string))
     (defun CCp_SweepRecomputeChunk:string (patron:string anchor-id:string chunk:integer))
     (defun CC_UnstaleMyScores:object{IgnisCollectorV3.OutputCumulator} (patron:string fvt-ids:[string]))
     (defun CC_Collect:object{IgnisCollectorV3.OutputCumulator}
@@ -591,7 +591,7 @@
         )
     )
     )
-    (defcap FVT|C>CONTROL-FVT (fvt-id:string new-can-upgrade:bool new-can-change-owner:bool)
+    (defcap FVT|C>CONTROL-FVT (executor:string fvt-id:string new-can-upgrade:bool new-can-change-owner:bool)
         @doc "Update FVT can-upgrade and can-change-owner: owner ownership and current can-upgrade true. Composes SECURE."
         @event
         (let
@@ -606,27 +606,31 @@
                 (can-upgrade:bool (UR_FVT|CanUpgrade fvt-id))
             )
             (enforce can-upgrade "FVT control update requires can-upgrade true")
+            (UEV_ExecutorIzFvtOwner executor fvt-id)
             (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
             (compose-capability (SECURE))
         )
     )
     )
-    (defcap FVT|C>SET-COMMON-DENOMINATOR (fvt-id:string common-denominator:string)
+    (defcap FVT|C>SET-COMMON-DENOMINATOR (executor:string fvt-id:string common-denominator:string)
         @doc "Farm-only: set common-denominator before any ScoreEntityLink rows. Owner + can-upgrade. Composes SECURE."
         @event
+        (UEV_ExecutorIzFvtOwner executor fvt-id)
         (UEV_SetCommonDenominatorContext fvt-id common-denominator)
         (compose-capability (SECURE))
     )
-    (defcap FVT|C>SET-MOSAIC (fvt-id:string mosaic:bool)
+    (defcap FVT|C>SET-MOSAIC (executor:string fvt-id:string mosaic:bool)
         @doc "Toggle mosaic membership policy when FVT has zero ScoreEntityLink rows. Owner + can-upgrade. Composes SECURE."
         @event
+        (UEV_ExecutorIzFvtOwner executor fvt-id)
         (UEV_SetMosaicContext fvt-id mosaic)
         (compose-capability (SECURE))
     )
     (defcap FVT|C>ADD-SCORE-ENTITY
-        (fvt-id:string score-entity-type:integer score-entity-id:string swpair:string ghost-weight:decimal)
+        (executor:string fvt-id:string score-entity-type:integer score-entity-id:string swpair:string ghost-weight:decimal)
         @doc "Admit score (type 1) or triplet (type 3) via ScoreEntityLink. Composes SECURE."
         @event
+        (UEV_ExecutorIzFvtOwner executor fvt-id)
         (UEV_AddScoreEntityContext fvt-id score-entity-type score-entity-id swpair ghost-weight)
         (compose-capability (SECURE))
     )
@@ -644,7 +648,7 @@
         (compose-capability (SECURE))
     )
     (defcap FVT|C>TOGGLE-SCORE-ENTITY-LINK
-        (fvt-id:string score-entity-type:integer score-entity-id:string enabled:bool)
+        (executor:string fvt-id:string score-entity-type:integer score-entity-id:string enabled:bool)
         @doc "Toggle ScoreEntityLink.enabled; farm adjusts S. FVT owner. Composes SECURE."
         @event
         (let
@@ -658,36 +662,39 @@
             )
             (enforce (ref-RPS::URC_FvtScoreEntityLinkRowExists fvt-id score-entity-id) "ScoreEntityLink row must exist")
             (enforce (= score-entity-type (ref-RPS::UR_FVT-SEL|ScoreEntityType fvt-id score-entity-id)) "score-entity-type mismatch")
+            (UEV_ExecutorIzFvtOwner executor fvt-id)
             (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
             (compose-capability (SECURE))
         )
     )
     )
     (defcap FVT|C>ADD-REWARD-LINK
-        (fvt-id:string reward-dptf-id:string segmentation:bool reward-kind:string multiplet-family-id:string)
+        (executor:string fvt-id:string reward-dptf-id:string segmentation:bool reward-kind:string multiplet-family-id:string)
         @doc "Insert FVT|T|RPS|Global with reward-enabled true. FVT owner; issued reward DPTF. Composes SECURE."
         @event
         (let
             (
                 (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
             )
+            (UEV_ExecutorIzFvtOwner executor fvt-id)
             (ref-RPS::UEV_AddRewardLinkContext fvt-id reward-dptf-id reward-kind multiplet-family-id)
         (compose-capability (SECURE))
     )
     )
     (defcap FVT|C>SET-QUALITY-SPLIT
-        (fvt-id:string reward-dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer])
+        (executor:string fvt-id:string reward-dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer])
         @doc "Set a MULTIPLET_BASE reward's quality-split mode + heterogeneous matrix. FVT owner. Composes SECURE."
         @event
         (let
             (
                 (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
             )
+            (UEV_ExecutorIzFvtOwner executor fvt-id)
             (ref-RPS::UEV_QualitySplitContext fvt-id reward-dptf-id mode bronze-split silver-split gold-split)
         (compose-capability (SECURE))
     )
     )
-    (defcap FVT|C>SET-SPLIT-MODE (fvt-id:string split-mode:string)
+    (defcap FVT|C>SET-SPLIT-MODE (executor:string fvt-id:string split-mode:string)
         @doc "Set the farm reward-split mode (D1-G2): SPLIT|STAKED (participation) | SPLIT|TVL (pool-size). Farm \
             \ (class 0) only; FVT owner; FREELY mutable (no cooldown) — a change re-weights only FUTURE injects \
             \ (RPS is checkpoint-based, past rewards untouched). Composes SECURE."
@@ -708,12 +715,13 @@
                      (or (= split-mode CT_SPLIT_MODE_STAKED) (= split-mode CT_SPLIT_MODE_TVL)))
                 "Split-mode: farm (class 0) only, value must be SPLIT|STAKED or SPLIT|TVL")
             ;; 2] owner authorization
+            (UEV_ExecutorIzFvtOwner executor fvt-id)
             (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
             (compose-capability (SECURE))
         )
     )
     )
-    (defcap FVT|C>TOGGLE-REWARD-LINK (fvt-id:string reward-dptf-id:string enabled:bool)
+    (defcap FVT|C>TOGGLE-REWARD-LINK (executor:string fvt-id:string reward-dptf-id:string enabled:bool)
         @doc "Toggle RPS|Global.reward-enabled; ±1 enabled-reward-count on flip. FVT owner. Composes SECURE."
         @event
         (let
@@ -727,6 +735,7 @@
                 (owner-konto:string (ref-RPS::UR_FVT|OwnerKonto fvt-id))
             )
             (enforce (ref-RPS::URC_FvtRpsGlobalRowExists fvt-id reward-dptf-id) "Reward link row must exist")
+            (UEV_ExecutorIzFvtOwner executor fvt-id)
             (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
             (compose-capability (SECURE))
         )
@@ -805,13 +814,21 @@
         (compose-capability (P|SECURE-CALLER))
     )
     )
-    (defcap FVT|C>SWEEP-REVOKE (patron:string anchor-id:string)
+    (defcap FVT|C>SWEEP-REVOKE (patron:string executor:string anchor-id:string)
         @doc "Protects the single-tx re-score sweep (CC_SweepRevokeAnchor). Composes P|SECURE-CALLER so SECURE is \
             \ granted for the intra-module recompute (XI_*) AND FVT's registered SECURE guard is satisfied for the \
             \ cross-module XE calls into AQP-ANK (aggregate refold + swept anchor removal) and AQP-POOL (freeze) — \
             \ FVT is in both IMPs (P|A_Define). The anchor owner (= anchored-asset owner) is enforced inside \
-            \ ANK|XE>SWEEP-REVOKE."
+            \ ANK|XE>SWEEP-REVOKE; the EXECUTOR is pinned to that SAME authority here, at the FRONT of the \
+            \ flow, via ANK's shared disjunction helper rather than a second copy of the rule -- the downstream \
+            \ check is only reached after pools are frozen and the anchor revoked."
         @event
+        (let
+            (
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+            )
+            (ref-ANK::UEV_ExecutorIzAnchorAuthority executor anchor-id)
+        )
         (compose-capability (P|SECURE-CALLER))
     )
     (defcap FVT|C>COLLECT
@@ -1341,6 +1358,22 @@
     ;;   exact for un-streamed / settled lanes (see URCi_CollectFull residual note).
     ;;{5.4}  Validate [UEV/CAP]
     ;; [UEV] enforce
+    (defun UEV_ExecutorIzFvtOwner (executor:string fvt-id:string)
+        @doc "Enforces that <executor> IS the FVT's owner konto -- the SAME value every UEV_*Context \
+            \ helper resolves and key-checks, read through the same RPS reader so the two cannot \
+            \ disagree. It does NOT replace those gates: they prove the signer holds the owner's \
+            \ key, this proves the named actor IS that owner. Both are needed -- a sovereign FVT's \
+            \ owner can be a SMART account whose key a human holds, so the key check passes for an \
+            \ account the caller never names (see 01_ANK, 2026-09-20)."
+        (let
+            (
+                (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
+            )
+            (enforce (= executor (ref-RPS::UR_FVT|OwnerKonto fvt-id))
+                (format "Executor {} is not the owner of FVT {} (owner is {})"
+                    [executor fvt-id (ref-RPS::UR_FVT|OwnerKonto fvt-id)]))
+        )
+    )
     (defun UEV_SetMosaicContext (fvt-id:string mosaic:bool)
         @doc "C_SetMosaic: owner, can-upgrade, zero member-link-count."
         (let
@@ -2104,7 +2137,7 @@
     )
     )
     (defun C_Control:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-id:string new-can-upgrade:bool new-can-change-owner:bool)
+        (patron:string executor:string fvt-id:string new-can-upgrade:bool new-can-change-owner:bool)
         @doc "Set can-upgrade and can-change-owner on FVT. Medium IGNIS on owner-konto."
         (let
             (
@@ -2116,7 +2149,7 @@
                 ;;
                 (owner-konto:string (ref-RPS::UR_FVT|OwnerKonto fvt-id))
             )
-            (with-capability (FVT|C>CONTROL-FVT fvt-id new-can-upgrade new-can-change-owner)
+            (with-capability (FVT|C>CONTROL-FVT executor fvt-id new-can-upgrade new-can-change-owner)
                 (XI_Control fvt-id new-can-upgrade new-can-change-owner)
             )
             (ref-RPS::URCi_Control fvt-id)
@@ -2124,7 +2157,7 @@
     )
     )
     (defun C_SetCommonDenominator:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-id:string common-denominator:string)
+        (patron:string executor:string fvt-id:string common-denominator:string)
         @doc "Farm-only: set common-denominator before any ScoreEntityLinks. GAS|SET-COMMON-DENOMINATOR on owner."
         (let
             (
@@ -2138,7 +2171,7 @@
                 (owner-konto:string (ref-RPS::UR_FVT|OwnerKonto fvt-id))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
             )
-            (with-capability (FVT|C>SET-COMMON-DENOMINATOR fvt-id common-denominator)
+            (with-capability (FVT|C>SET-COMMON-DENOMINATOR executor fvt-id common-denominator)
                 (XI_SetCommonDenominator fvt-id common-denominator)
             )
             (ref-RPS::URCi_SetCommonDenominator fvt-id [fvt-id])
@@ -2146,7 +2179,7 @@
     )
     )
     (defun C_SetMosaic:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-id:string mosaic:bool)
+        (patron:string executor:string fvt-id:string mosaic:bool)
         @doc "Toggle mosaic membership policy when FVT has no ScoreEntityLink rows. GAS|SET-MOSAIC on owner."
         (let
             (
@@ -2160,7 +2193,7 @@
                 (owner-konto:string (ref-RPS::UR_FVT|OwnerKonto fvt-id))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
             )
-            (with-capability (FVT|C>SET-MOSAIC fvt-id mosaic)
+            (with-capability (FVT|C>SET-MOSAIC executor fvt-id mosaic)
                 (ref-RPS::XE_XI_SetMosaic fvt-id mosaic)
             )
             (ref-RPS::URCi_SetMosaic fvt-id [fvt-id])
@@ -2168,7 +2201,7 @@
     )
     )
     (defun C_SetSplitMode:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-id:string split-mode:string)
+        (patron:string executor:string fvt-id:string split-mode:string)
         @doc "Set the farm reward-split mode (D1-G2): SPLIT|STAKED (participation, default) | SPLIT|TVL (pool-size). \
             \ Farm owner; FREELY mutable (no cooldown) — a change re-weights only FUTURE injects (RPS is \
             \ checkpoint-based, past rewards untouched). GAS|SET-SPLIT-MODE on owner."
@@ -2184,7 +2217,7 @@
                 (owner-konto:string (ref-RPS::UR_FVT|OwnerKonto fvt-id))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
             )
-            (with-capability (FVT|C>SET-SPLIT-MODE fvt-id split-mode)
+            (with-capability (FVT|C>SET-SPLIT-MODE executor fvt-id split-mode)
                 (ref-RPS::XE_XI_SetSplitMode fvt-id split-mode)
             )
             (ref-RPS::URCi_SetSplitMode fvt-id [fvt-id split-mode])
@@ -2193,7 +2226,7 @@
     )
     ;; --- Score membership (FVT|T|ScoreEntityLink) ---
     (defun C_AddScoreEntity:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-id:string score-entity-type:integer score-entity-id:string)
+        (patron:string executor:string fvt-id:string score-entity-type:integer score-entity-id:string)
         @doc "Register score (type 1) or triplet (type 3) on FVT; insert ScoreEntityLink; SCR fvt-links. GAS|ADD-SCORE-ENTITY."
         (let
             (
@@ -2210,7 +2243,7 @@
                 (ghost-weight:decimal (RPS.URC_ResolveScoreEntityGhostWeight score-entity-type score-entity-id fvt-class swpair))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
             )
-            (with-capability (FVT|C>ADD-SCORE-ENTITY fvt-id score-entity-type score-entity-id swpair ghost-weight)
+            (with-capability (FVT|C>ADD-SCORE-ENTITY executor fvt-id score-entity-type score-entity-id swpair ghost-weight)
                 (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET)
                     (let
                         (
@@ -2231,7 +2264,7 @@
     )
     )
     (defun C_ToggleScoreEntityLink:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-id:string score-entity-type:integer score-entity-id:string enabled:bool)
+        (patron:string executor:string fvt-id:string score-entity-type:integer score-entity-id:string enabled:bool)
         @doc "Turn ScoreEntityLink.enabled on/off; farm adjusts S when toggling. GAS|TOGGLE-SCORE-ENTITY-LINK."
         (let
             (
@@ -2244,7 +2277,7 @@
                 (owner-konto:string (ref-RPS::UR_FVT|OwnerKonto fvt-id))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
             )
-            (with-capability (FVT|C>TOGGLE-SCORE-ENTITY-LINK fvt-id score-entity-type score-entity-id enabled)
+            (with-capability (FVT|C>TOGGLE-SCORE-ENTITY-LINK executor fvt-id score-entity-type score-entity-id enabled)
                 (ref-RPS::XE_XI_ToggleScoreEntityLink fvt-id score-entity-id enabled)
             )
             (ref-RPS::URCi_ToggleScoreEntityLink fvt-id [fvt-id score-entity-id])
@@ -2282,7 +2315,7 @@
     )
     ;; --- Reward token registration (FVT|T|RPS|Global) — atomic one row per reward DPTF ---
     (defun C_AddRewardLink:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-id:string reward-dptf-id:string segmentation:bool multiplet-family-id:string)
+        (patron:string executor:string fvt-id:string reward-dptf-id:string segmentation:bool multiplet-family-id:string)
         @doc "Register one reward DPTF on FVT (single RPS|Global row). multiplet-family-id BAR for plain tokens (VESTA, etc.); \
             \ F|t0|t1|t2 when reward-dptf-id is family token-0 — enables triplet lane collect on triplet anchors; score anchors stay plain. \
             \ One inject feeds all membership tranches; collect branches on anchor-id (score vs triplet)."
@@ -2304,7 +2337,7 @@
                 )
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
             )
-            (with-capability (FVT|C>ADD-REWARD-LINK fvt-id reward-dptf-id segmentation reward-kind multiplet-family-id)
+            (with-capability (FVT|C>ADD-REWARD-LINK executor fvt-id reward-dptf-id segmentation reward-kind multiplet-family-id)
                 (ref-RPS::XE_XI_AddRewardLink fvt-id reward-dptf-id segmentation reward-kind multiplet-family-id)
             )
             (ref-RPS::URCi_AddRewardLink fvt-id [fvt-id reward-dptf-id multiplet-family-id])
@@ -2312,7 +2345,7 @@
     )
     )
     (defun C_ToggleRewardLink:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-id:string reward-dptf-id:string enabled:bool)
+        (patron:string executor:string fvt-id:string reward-dptf-id:string enabled:bool)
         @doc "Toggle reward-enabled; ±1 enabled-reward-count on flip. GAS|TOGGLE-REWARD-LINK on owner."
         (let
             (
@@ -2326,7 +2359,7 @@
                 (owner-konto:string (ref-RPS::UR_FVT|OwnerKonto fvt-id))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
             )
-            (with-capability (FVT|C>TOGGLE-REWARD-LINK fvt-id reward-dptf-id enabled)
+            (with-capability (FVT|C>TOGGLE-REWARD-LINK executor fvt-id reward-dptf-id enabled)
                 (ref-RPS::XE_XI_ToggleRewardLink fvt-id reward-dptf-id enabled)
             )
             (ref-RPS::URCi_ToggleRewardLink fvt-id [fvt-id reward-dptf-id])
@@ -2334,7 +2367,7 @@
     )
     )
     (defun C_SetQualitySplit:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-id:string reward-dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer])
+        (patron:string executor:string fvt-id:string reward-dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer])
         @doc "Round B: set a MULTIPLET_BASE reward's quality-split MODE + heterogeneous MATRIX. HOMOGENEOUS (default \
             \ when unset) routes each quality lane to its one ladder token (bronze->t0, silver->t1, gold->t2). \
             \ HETEROGENEOUS routes each lane across ALL 3 ladder tokens per its [to-t0 to-t1 to-t2] per-mille row \
@@ -2351,7 +2384,7 @@
                 (owner-konto:string (ref-RPS::UR_FVT|OwnerKonto fvt-id))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
             )
-            (with-capability (FVT|C>SET-QUALITY-SPLIT fvt-id reward-dptf-id mode bronze-split silver-split gold-split)
+            (with-capability (FVT|C>SET-QUALITY-SPLIT executor fvt-id reward-dptf-id mode bronze-split silver-split gold-split)
                 (ref-RPS::XE_WI_QualitySplit fvt-id reward-dptf-id mode bronze-split silver-split gold-split)
             )
             (ref-RPS::URCi_SetQualitySplit fvt-id [fvt-id reward-dptf-id mode])
@@ -2604,7 +2637,7 @@
     )
     )
     (defun CC_SweepRevokeAnchor:string
-        (patron:string anchor-id:string)
+        (patron:string executor:string anchor-id:string)
         @doc "HEAVY (R3 CC_) single-tx RE-SCORE SWEEP that RETIRES an EMPLOYED anchor (H4 half-2). Freezes the \
             \ affected pools, removes the anchor globally (swept-revoke — skips the #9 score-link lock), recomputes \
             \ EVERY present holder on every affected FVT member (settle → aggregate/lane refold → deb refresh → \
@@ -2619,7 +2652,7 @@
                 (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
             )
             (P|UEV_IMC)
-        (with-capability (FVT|C>SWEEP-REVOKE patron anchor-id)
+        (with-capability (FVT|C>SWEEP-REVOKE patron executor anchor-id)
             (let
                 (
                     (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
@@ -2652,7 +2685,7 @@
     )
     )
     (defun CC_SweepBegin:string
-        (patron:string anchor-id:string)
+        (patron:string executor:string anchor-id:string)
         @doc "OPEN a paginated defun+gate re-score sweep — the scalable twin of CC_SweepRevokeAnchor (single-tx) \
             \ and MTX|2|C_SweepRevokeAnchor (fixed 2-step defpact). Mirrors steps 1-2 of the single-tx: FREEZE every \
             \ affected pool then swept-revoke the anchor globally (skips the #9 score-link lock), then records the \
@@ -2665,7 +2698,7 @@
                 (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
             )
             (P|UEV_IMC)
-        (with-capability (FVT|C>SWEEP-REVOKE patron anchor-id)
+        (with-capability (FVT|C>SWEEP-REVOKE patron executor anchor-id)
             (enforce (not (UR_FVT|SweepActive anchor-id)) "A sweep is already in progress for this anchor")
             (let
                 (

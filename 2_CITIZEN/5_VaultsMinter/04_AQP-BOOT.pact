@@ -934,14 +934,14 @@
                 (enforce (= (length subsidiary-score-ids) 5) "Step 9 expects subsidiary-score-ids×5.")
                 (map
                     (lambda (score-id:string)
-                        (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron sub-treasury-id BOOT|SCORE_ENTITY_SCORE score-id)
+                        (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron (AQP-FVT.UR_FVT|OwnerKonto sub-treasury-id) sub-treasury-id BOOT|SCORE_ENTITY_SCORE score-id)
                     )
                     subsidiary-score-ids
                 )
-                (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron coding-treasury-id BOOT|SCORE_ENTITY_SCORE coding-score-id)
-                (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron snakes-treasury-id BOOT|SCORE_ENTITY_SCORE snakes-score-id)
-                (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron shares-treasury-id BOOT|SCORE_ENTITY_SCORE shares-score-id)
-                (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron bloodshed-treasury-id BOOT|SCORE_ENTITY_SCORE bloodshed-score-id)
+                (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron (AQP-FVT.UR_FVT|OwnerKonto coding-treasury-id) coding-treasury-id BOOT|SCORE_ENTITY_SCORE coding-score-id)
+                (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron (AQP-FVT.UR_FVT|OwnerKonto snakes-treasury-id) snakes-treasury-id BOOT|SCORE_ENTITY_SCORE snakes-score-id)
+                (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron (AQP-FVT.UR_FVT|OwnerKonto shares-treasury-id) shares-treasury-id BOOT|SCORE_ENTITY_SCORE shares-score-id)
+                (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron (AQP-FVT.UR_FVT|OwnerKonto bloodshed-treasury-id) bloodshed-treasury-id BOOT|SCORE_ENTITY_SCORE bloodshed-score-id)
                 (format "AQP-BOOT Step 9 done. score-entities=[sub=5 coding=1 snakes=1 shares=1]. fvt-ids=[sub-treasury={} coding-treasury={} snakes-treasury={} shares-treasury={}]. NEXT=Step10:C_IssueMultipletFamily."
                     [
                         sub-treasury-id coding-treasury-id snakes-treasury-id shares-treasury-id
@@ -994,8 +994,8 @@
                 (if wire-farm
                     (do
                         (ref-TS02-C3::AQP-SCR|C_IssueTriplet patron patron bronze-score-id silver-score-id golden-score-id)
-                        (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron farm-id BOOT|SCORE_ENTITY_TRIPLET triplet-id)
-                        (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron farm-id ouro-id false multiplet-family-id)
+                        (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron (AQP-FVT.UR_FVT|OwnerKonto farm-id) farm-id BOOT|SCORE_ENTITY_TRIPLET triplet-id)
+                        (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron (AQP-FVT.UR_FVT|OwnerKonto farm-id) farm-id ouro-id false multiplet-family-id)
                     )
                     true
                 )
@@ -1026,10 +1026,10 @@
                     (ref-U|CT:module{OuronetConstantsV2} U|CT)
                     (bar:string (ref-U|CT::CT_BAR))
                 )
-                (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron sub-treasury-id reward-auryn-id false bar)
-                (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron coding-treasury-id reward-wstoa-id false bar)
-                (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron snakes-treasury-id reward-auryn-id false bar)
-                (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron shares-treasury-id reward-ouroboros-id false bar)
+                (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron (AQP-FVT.UR_FVT|OwnerKonto sub-treasury-id) sub-treasury-id reward-auryn-id false bar)
+                (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron (AQP-FVT.UR_FVT|OwnerKonto coding-treasury-id) coding-treasury-id reward-wstoa-id false bar)
+                (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron (AQP-FVT.UR_FVT|OwnerKonto snakes-treasury-id) snakes-treasury-id reward-auryn-id false bar)
+                (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron (AQP-FVT.UR_FVT|OwnerKonto shares-treasury-id) shares-treasury-id reward-ouroboros-id false bar)
                 ;;BloodshedTreasury earns TWO tokens -- owner ruling 2026-09-19: "add wstoa and
                 ;;auryn for now on the pure bloodshed score vault". It is the only FVT here with
                 ;;more than one reward; the other four take a single token each.
@@ -1037,8 +1037,8 @@
                 ;;This is supported by construction, not a workaround: FVT|T|RPS|Global is keyed
                 ;;`fvt-id | dptf-id` (RPS::UCk_RpsGlobal), so reward state is per (FVT, token) and
                 ;;UR_FVT|EnabledRewardCount exists to count them. Two links are two rows.
-                (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron bloodshed-treasury-id reward-auryn-id false bar)
-                (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron bloodshed-treasury-id reward-wstoa-id false bar)
+                (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron (AQP-FVT.UR_FVT|OwnerKonto bloodshed-treasury-id) bloodshed-treasury-id reward-auryn-id false bar)
+                (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron (AQP-FVT.UR_FVT|OwnerKonto bloodshed-treasury-id) bloodshed-treasury-id reward-wstoa-id false bar)
                 ;;LABELLING FIXED 2026-09-18. This read
                 ;;  reward-links=[sub={} coding={} snakes={} shares={}]
                 ;;fed with the REWARD TOKEN ids, so `sub=<auryn-id>` looked like it was naming the
@@ -1124,9 +1124,9 @@
                 ;;    arithmetic is denominated in it, which is the whole reason class 1/2 is refused.
                 (ref-TS02-C3::AQP-FVT|C_Issue patron BOOT|FVT_CUSTODIANS_VAULT owner-konto 0 ouro-id)
                 ;; 5. MULTIPLET_BASE reward — the family id is what makes it so
-                (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron fvt-id ouro-id false multiplet-family-id)
+                (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron (AQP-FVT.UR_FVT|OwnerKonto fvt-id) fvt-id ouro-id false multiplet-family-id)
                 ;; 6. the heterogeneous split across the OURO|AURYN|ELITEAURYN ladder
-                (ref-TS02-C3::AQP-FVT|C_SetQualitySplit patron fvt-id ouro-id
+                (ref-TS02-C3::AQP-FVT|C_SetQualitySplit patron (AQP-FVT.UR_FVT|OwnerKonto fvt-id) fvt-id ouro-id
                     BOOT|REWARD_MODE_HETEROGENEOUS
                     BOOT|CUSTODIANS_SPLIT_BRONZE BOOT|CUSTODIANS_SPLIT_SILVER BOOT|CUSTODIANS_SPLIT_GOLDEN)
                 ;; 7. the DSA template — unit-score sets the node bar AND, at half, the agency bar

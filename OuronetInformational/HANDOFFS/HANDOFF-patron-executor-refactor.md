@@ -764,3 +764,51 @@ carries a per-function rule table so it can only touch functions explicitly regi
 It earned itself immediately: the 32 DSA call sites migrated in **one pass, green on first run**.
 Its first useful output was also a free audit — run against the finished AQP rules it reported
 **0 sites**, independently confirming that migration complete.
+
+---
+
+## BAND 1 / AQP — `05_FVT`: 11 of 12 (2026-09-20)
+
+Nine owner-gated config entrypoints (`C_Control`, `C_SetCommonDenominator`, `C_SetMosaic`,
+`C_SetSplitMode`, `C_AddScoreEntity`, `C_ToggleScoreEntityLink`, `C_AddRewardLink`,
+`C_ToggleRewardLink`, `C_SetQualitySplit`) plus the sweep pair (`CC_SweepBegin`,
+`CC_SweepRevokeAnchor`).
+
+`UEV_ExecutorIzFvtOwner` reads the owner through the **same** `ref-RPS::UR_FVT|OwnerKonto` that
+every `UEV_*Context` helper already key-checks, so the executor check and the ownership gate cannot
+disagree. Placed **beside** each context gate, never instead of it.
+
+The sweep pair defers to ANK's `UEV_ExecutorIzAnchorAuthority` — the same helper MTX's sweep uses.
+Same reasoning as there: the anchor owner was previously enforced only downstream in
+`ANK|XE>SWEEP-REVOKE`, reached **after** pools are frozen and the anchor revoked.
+
+One judgement in the Talos orchestrator, the mirror of the `03_AQP` one: inside
+`C_IssueGenericEarningVault` the FVT's executor is `owner-konto` — `C_Issue` two lines above makes
+that account the vault's owner, so it is derived, not assumed. (The pool's executor there is a
+*different* account, the staked asset's owner.)
+
+### The tool's own defect: `[` is a nesting bracket
+
+`_executormigrate` counted `(` but not `[`, so
+
+```pact
+(... "HETEROGENEOUS" [1000 0 0] [1000 0 0] [1000 0 0])
+```
+
+presented as **twelve** arguments rather than seven, matched no rule, and was **silently skipped**.
+**43 call sites** across 9 files were being passed over while the tool reported success on the
+rest — the dangerous direction, because a tool reporting "0 sites" is indistinguishable from a tool
+that found nothing wrong. Found only because the gate broke on one of them. Fixed; `[`/`]` now nest
+exactly like `(`/`)`.
+
+That is twice this tool has been wrong about what counts as structure (strings first, brackets
+second), which is worth stating plainly: **parsing beats regex, but a parser is only as good as its
+notion of the grammar.**
+
+### Still open in FVT
+
+- **`C_IssueMultipletFamily`** — reaches NO ownership enforce at all (`UEV_IssueMultipletFamilyContext`
+  checks only token distinctness and ATS pairing). Same shape as `02_SCORE`'s two model functions,
+  and the consistent treatment is the same: `executor` + `CAP_EnforceAccountOwnership`. Not yet done.
+- **`AQP-DSA::C_AdmitAgency`** — its executor is the OPERATOR, enforced in
+  `FVT|XE>ADMIT-DELEGATION`. Still outstanding, still in this module's neighbourhood.

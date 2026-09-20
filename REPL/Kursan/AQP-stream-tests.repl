@@ -109,8 +109,8 @@
     (ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id score-id)
     ;; 3. vault FVT + reward link (OURO) + score entity
     (ref-TS02-C3::AQP-FVT|C_Issue patron "StreamVault" patron 1 "|")
-    (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron fvt-id ouro-id false (ref-U|CT::CT_BAR))
-    (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron fvt-id 1 score-id)
+    (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron (AQP-FVT.UR_FVT|OwnerKonto fvt-id) fvt-id ouro-id false (ref-U|CT::CT_BAR))
+    (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron (AQP-FVT.UR_FVT|OwnerKonto fvt-id) fvt-id 1 score-id)
     (map print
         [ (format "<(vault stake-ready)> => {}" [(ref-FVT::URC_PoolEmployedScoresFvtStakeReady pool-id)])
           (expect "<<T-STREAM-FIXTURE>> vault stake-ready" true (ref-FVT::URC_PoolEmployedScoresFvtStakeReady pool-id)) ]))
@@ -545,8 +545,8 @@
         (ref-TS02-C3::AQP-POOL|C_Issue patron (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 0 lp-id) "FarmStreamPool" lp-id 0)
         (ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id score-id)
         (ref-TS02-C3::AQP-FVT|C_Issue patron "FarmStreamFvt" patron 0 ouro-id)
-        (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron fvt-id ouro-id false (ref-U|CT::CT_BAR))
-        (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron fvt-id 1 score-id)
+        (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron (AQP-FVT.UR_FVT|OwnerKonto fvt-id) fvt-id ouro-id false (ref-U|CT::CT_BAR))
+        (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron (AQP-FVT.UR_FVT|OwnerKonto fvt-id) fvt-id 1 score-id)
         (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id anhd anhd lp-id 1.0)
         ;;==== T-STREAM-06 · 02 · @t6: stream 240 OURO / 24h into the farm ====
         (print "--- [T-STREAM-06 · 02 · CC_InjectStream 240/24h into farm] ---")

@@ -181,7 +181,7 @@
         (ref-TS02-C3::AQP-SCR|C_IssueScoreFromModel anhd anhd model-id "GtAgency")
         ;; 3) class-0 vault + MULTIPLET_BASE OURO reward (family, NOT BAR) + register it as a DSA delegation vault
         (ref-TS02-C3::AQP-FVT|C_Issue anhd "GtVault" anhd 0 ouro)
-        (ref-TS02-C3::AQP-FVT|C_AddRewardLink anhd fvt-id ouro false family-id)
+        (ref-TS02-C3::AQP-FVT|C_AddRewardLink anhd (AQP-FVT.UR_FVT|OwnerKonto fvt-id) fvt-id ouro false family-id)
         (ref-TS02-C3::AQP-DSA|C_DefineDelegationVault anhd anhd fvt-id model-id 2000)
         ;; 4) pool employing the 3 sub-scores (where operator + delegators stake their custodian frags)
         (ref-TS02-C3::AQP-POOL|C_Issue anhd (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 3 dhoc) "GtPool" dhoc 3)
@@ -319,17 +319,17 @@
                 (expect "<<GT-02d>> the vault starts controllable"
                     true (ref-FVT::UR_FVT|CanUpgrade fvt))
                 (expect "<<GT-02d>> a control call that sets can-upgrade FALSE is admitted"
-                    true (!= "" (format "{}" [(ref-TS02-C3::AQP-FVT|C_Control anhd fvt false true)])))
+                    true (!= "" (format "{}" [(ref-TS02-C3::AQP-FVT|C_Control anhd (AQP-FVT.UR_FVT|OwnerKonto fvt) fvt false true)])))
                 (expect "<<GT-02d>> ...and the flag is now false"
                     false (ref-FVT::UR_FVT|CanUpgrade fvt))
                 ;;THE ITEM
                 (expect-failure "<<GT-02d>> ...so any further control call is refused"
                     "FVT control update requires can-upgrade true"
-                    (ref-TS02-C3::AQP-FVT|C_Control anhd fvt false false))
+                    (ref-TS02-C3::AQP-FVT|C_Control anhd (AQP-FVT.UR_FVT|OwnerKonto fvt) fvt false false))
                 ;;the one-way property: the owner cannot buy the capability back
                 (expect-failure "<<GT-02d>> ...INCLUDING the call that would set it back to true"
                     "FVT control update requires can-upgrade true"
-                    (ref-TS02-C3::AQP-FVT|C_Control anhd fvt true true))
+                    (ref-TS02-C3::AQP-FVT|C_Control anhd (AQP-FVT.UR_FVT|OwnerKonto fvt) fvt true true))
             ]
         )
         ""
@@ -601,7 +601,7 @@
         (let ((triplet-id:string (ref-SCR::UC_ComputeTripletId bsid ssid gsid)))
             ;; heterogeneous, every lane -> token-0 (OURO) raw: the MULTIPLET collect degenerates to a plain OURO
             ;; transfer, so the exact two-track fee amounts are assertable while the hetero branch is exercised.
-            (ref-TS02-C3::AQP-FVT|C_SetQualitySplit anhd fvt-id ouro "HETEROGENEOUS" [1000 0 0] [1000 0 0] [1000 0 0])
+            (ref-TS02-C3::AQP-FVT|C_SetQualitySplit anhd (AQP-FVT.UR_FVT|OwnerKonto fvt-id) fvt-id ouro "HETEROGENEOUS" [1000 0 0] [1000 0 0] [1000 0 0])
             (expect "<<GT-05>> mode is HETEROGENEOUS on the agency reward" "HETEROGENEOUS" (ref-FVT::UR_FVT-QS|Mode fvt-id ouro))
             (ref-TS02-C3::AQP-FVT|CC_Inject anhd anhd fvt-id ouro 5000.0)
             ;; OPERATOR collects FIRST, independently of any delegator
@@ -666,7 +666,7 @@
             (gsid:string (ref-U|DALOS::UDC_Makeid (concat ["GtAgency" "Golden"])))
         )
         (let ((triplet-id:string (ref-SCR::UC_ComputeTripletId bsid ssid gsid)))
-            (ref-TS02-C3::AQP-FVT|C_SetQualitySplit anhd fvt-id ouro "HETEROGENEOUS" [0 1000 0] [0 1000 0] [0 1000 0])
+            (ref-TS02-C3::AQP-FVT|C_SetQualitySplit anhd (AQP-FVT.UR_FVT|OwnerKonto fvt-id) fvt-id ouro "HETEROGENEOUS" [0 1000 0] [0 1000 0] [0 1000 0])
             (ref-TS02-C3::AQP-FVT|CC_Inject anhd anhd fvt-id ouro 5000.0)
             (let
                 (
@@ -738,7 +738,7 @@
             (gsid:string (ref-U|DALOS::UDC_Makeid (concat ["GtAgency" "Golden"])))
         )
         (let ((triplet-id:string (ref-SCR::UC_ComputeTripletId bsid ssid gsid)))
-            (ref-TS02-C3::AQP-FVT|C_SetQualitySplit anhd fvt-id ouro "HETEROGENEOUS" [1000 0 0] [1000 0 0] [1000 0 0])
+            (ref-TS02-C3::AQP-FVT|C_SetQualitySplit anhd (AQP-FVT.UR_FVT|OwnerKonto fvt-id) fvt-id ouro "HETEROGENEOUS" [1000 0 0] [1000 0 0] [1000 0 0])
             (ref-TS02-C3::AQP-DSA|C_SetAgencyFee anhd anhd fvt-id triplet-id 200)
             (ref-TS02-C3::AQP-FVT|CC_Inject anhd anhd fvt-id ouro 5000.0)
             (let ((op0:decimal (ref-DPTF::UR_AccountSupply ouro anhd)))

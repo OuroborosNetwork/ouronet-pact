@@ -1144,10 +1144,10 @@
         ;; default mode (SPLIT|STAKED) — member staked value
         (w-staked:decimal (ref-FVT::URC_MemberLevel2Weight farm-id mtype m swp))
         ;; flip to SPLIT|TVL — whole-pool TVL
-        (set-tvl:string (ref-TS02-C3::AQP-FVT|C_SetSplitMode patron farm-id "SPLIT|TVL"))
+        (set-tvl:string (ref-TS02-C3::AQP-FVT|C_SetSplitMode patron (AQP-FVT.UR_FVT|OwnerKonto farm-id) farm-id "SPLIT|TVL"))
         (w-tvl:decimal (ref-FVT::URC_MemberLevel2Weight farm-id mtype m swp))
         ;; restore SPLIT|STAKED
-        (set-staked:string (ref-TS02-C3::AQP-FVT|C_SetSplitMode patron farm-id "SPLIT|STAKED"))
+        (set-staked:string (ref-TS02-C3::AQP-FVT|C_SetSplitMode patron (AQP-FVT.UR_FVT|OwnerKonto farm-id) farm-id "SPLIT|STAKED"))
         (w-restored:decimal (ref-FVT::URC_MemberLevel2Weight farm-id mtype m swp))
     )
     (map print

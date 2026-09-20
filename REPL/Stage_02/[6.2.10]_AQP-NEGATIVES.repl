@@ -52,7 +52,7 @@
             (expect-failure
                 (format "<<TX-AQP-NEG-IMC1>> direct AQP-FVT::CC_SweepRevokeAnchor rejected (P|UEV_IMC)" [])
                 "None of the guards passed"
-                (ref-FVT::CC_SweepRevokeAnchor patron anchor-id))
+                (ref-FVT::CC_SweepRevokeAnchor patron patron anchor-id))
             (expect-failure
                 (format "<<TX-AQP-NEG-IMC1>> direct MTX-AQP::C_2|Inject rejected (P|UEV_IMC)" [])
                 "None of the guards passed"
@@ -330,7 +330,7 @@
             (expect-failure
                 (format "<<TX-AQP-NEG-OWNER2>> non-owner AQP-FVT|C_Control rejected (fvt-owner gate)" [])
                 "Keyset failure (keys-all): [PK_Ancie...]"
-                (ref-TS02-C3::AQP-FVT|C_Control foreign fvt-id false false))
+                (ref-TS02-C3::AQP-FVT|C_Control foreign (AQP-FVT.UR_FVT|OwnerKonto fvt-id) fvt-id false false))
             ;;--- the three owner gates that no non-owner had ever reached (see preamble). Each is
             ;;preceded by the flag its shadowing `enforce` reads, so the refusal below is
             ;;attributable to ownership and to nothing else.
@@ -372,7 +372,7 @@
             (expect-failure
                 (format "<<TX-AQP-NEG-OWNER2>> non-owner AQP-FVT|C_ToggleRewardLink rejected (fvt-owner gate)" [])
                 "Keyset failure (keys-all): [PK_Ancie...]"
-                (ref-TS02-C3::AQP-FVT|C_ToggleRewardLink foreign fvt-id ouro-id false))
+                (ref-TS02-C3::AQP-FVT|C_ToggleRewardLink foreign (AQP-FVT.UR_FVT|OwnerKonto fvt-id) fvt-id ouro-id false))
             ;;The score-entity variant carries a SECOND guard ahead of ownership -- the entity type
             ;;must match the stored one -- so the type is READ rather than hardcoded. Writing a
             ;;literal here would pass today and silently start testing the type guard instead of
@@ -383,7 +383,7 @@
             (expect-failure
                 (format "<<TX-AQP-NEG-OWNER2>> non-owner AQP-FVT|C_ToggleScoreEntityLink rejected (fvt-owner gate)" [])
                 "Keyset failure (keys-all): [PK_Ancie...]"
-                (ref-TS02-C3::AQP-FVT|C_ToggleScoreEntityLink foreign fvt-id
+                (ref-TS02-C3::AQP-FVT|C_ToggleScoreEntityLink foreign (AQP-FVT.UR_FVT|OwnerKonto fvt-id) fvt-id
                     (ref-RPS::UR_FVT-SEL|ScoreEntityType fvt-id score-id) score-id false))
             ;;--- the two SCORE boost-link owner gates. Both sit behind a multi-conjunct enforce, so
             ;;every conjunct is pinned to its live value first: a non-owner test that tripped the

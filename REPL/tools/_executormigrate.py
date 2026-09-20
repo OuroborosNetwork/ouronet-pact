@@ -57,6 +57,20 @@ RULES = {
     "AQP-DSA|C_BurnRoyalty":           (4, "{0}"),
     "AQP-DSA|C_FuelRoyalty":           (5, "{0}"),
     "AQP-DSA|C_SetAgencyFee":          (5, "{0}"),
+    # 05_FVT -- owner-gated config surface. The executor IS the FVT owner, read from the vault.
+    "AQP-FVT|C_Control":                (5, "(AQP-FVT.UR_FVT|OwnerKonto {1})"),
+    "AQP-FVT|C_SetCommonDenominator":   (4, "(AQP-FVT.UR_FVT|OwnerKonto {1})"),
+    "AQP-FVT|C_SetMosaic":              (4, "(AQP-FVT.UR_FVT|OwnerKonto {1})"),
+    "AQP-FVT|C_SetSplitMode":           (4, "(AQP-FVT.UR_FVT|OwnerKonto {1})"),
+    "AQP-FVT|C_AddScoreEntity":         (5, "(AQP-FVT.UR_FVT|OwnerKonto {1})"),
+    "AQP-FVT|C_ToggleScoreEntityLink":  (6, "(AQP-FVT.UR_FVT|OwnerKonto {1})"),
+    "AQP-FVT|C_AddRewardLink":          (6, "(AQP-FVT.UR_FVT|OwnerKonto {1})"),
+    "AQP-FVT|C_ToggleRewardLink":       (5, "(AQP-FVT.UR_FVT|OwnerKonto {1})"),
+    "AQP-FVT|C_SetQualitySplit":        (8, "(AQP-FVT.UR_FVT|OwnerKonto {1})"),
+    # the sweep pair: authority is the ANCHOR's (owner OR creator of the anchored asset), so the
+    # executor is read through ANK rather than the FVT.
+    "AQP-FVT|CC_SweepRevokeAnchor":     (3, "(AQP-ANK.URC_AnchorableAssetOwner (AQP-ANK.UR_ANK|AnchoredAsset {1}) (AQP-ANK.UR_ANK|Fungibility {1}))"),
+    "AQP-FVT|CC_SweepBegin":            (3, "(AQP-ANK.URC_AnchorableAssetOwner (AQP-ANK.UR_ANK|AnchoredAsset {1}) (AQP-ANK.UR_ANK|Fungibility {1}))"),
 }
 
 
@@ -113,13 +127,13 @@ def split_form(txt, open_idx):
             instr = True
             i += 1
             continue
-        if c == "(":
+        if c in "([":
             if d == 1 and start is None:
                 start = i
             d += 1
             i += 1
             continue
-        if c == ")":
+        if c in ")]":
             d -= 1
             if d == 1 and start is not None:
                 args.append((start, i + 1))

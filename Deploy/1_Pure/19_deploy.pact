@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 19 of 20
 ;; This is STEP 19 of 21 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-18 must have run first, including the init steps between deploys.
-;; 5 module(s), 236,990 gas measured in the REPL gas model, 268,796 bytes
+;; 5 module(s), 236,990 gas measured in the REPL gas model, 269,465 bytes
 ;;
 ;; Modules in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact
@@ -261,34 +261,34 @@
         )
     )
     (defun AQP-FVT|C_AddScoreEntity:string
-        (patron:string fvt-id:string score-entity-type:integer score-entity-id:string)
+        (patron:string executor:string fvt-id:string score-entity-type:integer score-entity-id:string)
     )
     (defun AQP-FVT|C_AddRewardLink:string
-        (patron:string fvt-id:string reward-dptf-id:string segmentation:bool multiplet-family-id:string)
+        (patron:string executor:string fvt-id:string reward-dptf-id:string segmentation:bool multiplet-family-id:string)
     )
     (defun AQP-FVT|C_ToggleScoreEntityLink:string
-        (patron:string fvt-id:string score-entity-type:integer score-entity-id:string enabled:bool)
+        (patron:string executor:string fvt-id:string score-entity-type:integer score-entity-id:string enabled:bool)
     )
     (defun AQP-FVT|C_ToggleRewardLink:string
-        (patron:string fvt-id:string reward-dptf-id:string enabled:bool)
+        (patron:string executor:string fvt-id:string reward-dptf-id:string enabled:bool)
     )
     (defun AQP-FVT|C_SetQualitySplit:string
-        (patron:string fvt-id:string reward-dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer])
+        (patron:string executor:string fvt-id:string reward-dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer])
     )
     (defun AQP-FVT|C_Control:string
-        (patron:string fvt-id:string new-can-upgrade:bool new-can-change-owner:bool)
+        (patron:string executor:string fvt-id:string new-can-upgrade:bool new-can-change-owner:bool)
     )
     (defun AQP-FVT|C_RotateOwnership:string
         (patron:string fvt-id:string new-owner-konto:string)
     )
     (defun AQP-FVT|C_SetCommonDenominator:string
-        (patron:string fvt-id:string common-denominator:string)
+        (patron:string executor:string fvt-id:string common-denominator:string)
     )
     (defun AQP-FVT|C_SetMosaic:string
-        (patron:string fvt-id:string mosaic:bool)
+        (patron:string executor:string fvt-id:string mosaic:bool)
     )
     (defun AQP-FVT|C_SetSplitMode:string
-        (patron:string fvt-id:string split-mode:string)
+        (patron:string executor:string fvt-id:string split-mode:string)
     )
     (defun AQP-FVT|C_IssueGenericEarningVault:string
         (patron:string owner-konto:string vault-name:string stake-dptf-id:string reward-dptf-id:string)
@@ -315,10 +315,10 @@
         (patron:string executor:string anchor-id:string)
     )
     (defun AQP-FVT|CC_SweepRevokeAnchor:string
-        (patron:string anchor-id:string)
+        (patron:string executor:string anchor-id:string)
     )
     (defun AQP-FVT|CC_SweepBegin:string
-        (patron:string anchor-id:string)
+        (patron:string executor:string anchor-id:string)
     )
     (defun AQP-FVT|CCp_SweepRecomputeChunk:string
         (patron:string anchor-id:string chunk:integer)
@@ -2052,7 +2052,7 @@
         )
     )
     (defun AQP-FVT|C_AddScoreEntity:string
-        (patron:string fvt-id:string score-entity-type:integer score-entity-id:string)
+        (patron:string executor:string fvt-id:string score-entity-type:integer score-entity-id:string)
         @doc "Admits score (type 1) or triplet (type 3) to fvt-id via ScoreEntityLink."
         (with-capability (P|TS)
             (let
@@ -2062,7 +2062,7 @@
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-FVT::C_AddScoreEntity patron fvt-id score-entity-type score-entity-id)
+                    (ref-FVT::C_AddScoreEntity patron executor fvt-id score-entity-type score-entity-id)
                 )
                 (ref-TS01-A::XB_DynamicFuelSTOA)
                 (format "Successfully added score-entity type {} id {} to FVT {}."
@@ -2072,7 +2072,7 @@
         )
     )
     (defun AQP-FVT|C_AddRewardLink:string
-        (patron:string fvt-id:string reward-dptf-id:string segmentation:bool multiplet-family-id:string)
+        (patron:string executor:string fvt-id:string reward-dptf-id:string segmentation:bool multiplet-family-id:string)
         @doc "Registers one reward DPTF on fvt-id (multiplet-family-id BAR for plain tokens). Collects IGNIS on patron."
         (with-capability (P|TS)
             (let
@@ -2082,7 +2082,7 @@
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-FVT::C_AddRewardLink patron fvt-id reward-dptf-id segmentation multiplet-family-id)
+                    (ref-FVT::C_AddRewardLink patron executor fvt-id reward-dptf-id segmentation multiplet-family-id)
                 )
                 (ref-TS01-A::XB_DynamicFuelSTOA)
                 (format "Successfully added reward link {} on FVT {} (family={})."
@@ -2092,7 +2092,7 @@
         )
     )
     (defun AQP-FVT|C_ToggleScoreEntityLink:string
-        (patron:string fvt-id:string score-entity-type:integer score-entity-id:string enabled:bool)
+        (patron:string executor:string fvt-id:string score-entity-type:integer score-entity-id:string enabled:bool)
         @doc "Toggles ScoreEntityLink.enabled and collects IGNIS output on patron."
         (with-capability (P|TS)
             (let
@@ -2101,7 +2101,7 @@
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-FVT::C_ToggleScoreEntityLink patron fvt-id score-entity-type score-entity-id enabled)
+                    (ref-FVT::C_ToggleScoreEntityLink patron executor fvt-id score-entity-type score-entity-id enabled)
                 )
                 (format "Successfully toggled score-entity type {} id {} on FVT {} to enabled={}."
                     [score-entity-type score-entity-id fvt-id enabled]
@@ -2110,7 +2110,7 @@
         )
     )
     (defun AQP-FVT|C_ToggleRewardLink:string
-        (patron:string fvt-id:string reward-dptf-id:string enabled:bool)
+        (patron:string executor:string fvt-id:string reward-dptf-id:string enabled:bool)
         @doc "Toggles reward-enabled and collects IGNIS output on patron."
         (with-capability (P|TS)
             (let
@@ -2119,14 +2119,14 @@
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-FVT::C_ToggleRewardLink patron fvt-id reward-dptf-id enabled)
+                    (ref-FVT::C_ToggleRewardLink patron executor fvt-id reward-dptf-id enabled)
                 )
                 (format "Successfully toggled reward link {} on FVT {} to enabled={}." [reward-dptf-id fvt-id enabled])
             )
         )
     )
     (defun AQP-FVT|C_SetQualitySplit:string
-        (patron:string fvt-id:string reward-dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer])
+        (patron:string executor:string fvt-id:string reward-dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer])
         @doc "Round B: set a MULTIPLET_BASE reward's quality-split MODE + heterogeneous MATRIX (owner-gated). \
             \ HOMOGENEOUS routes each lane to its one ladder token; HETEROGENEOUS splits each lane across all 3 \
             \ ladder tokens per its [to-t0 to-t1 to-t2] per-mille row. Collects IGNIS output on patron."
@@ -2137,14 +2137,14 @@
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-FVT::C_SetQualitySplit patron fvt-id reward-dptf-id mode bronze-split silver-split gold-split)
+                    (ref-FVT::C_SetQualitySplit patron executor fvt-id reward-dptf-id mode bronze-split silver-split gold-split)
                 )
                 (format "Successfully set quality split mode={} on reward {} of FVT {}." [mode reward-dptf-id fvt-id])
             )
         )
     )
     (defun AQP-FVT|C_Control:string
-        (patron:string fvt-id:string new-can-upgrade:bool new-can-change-owner:bool)
+        (patron:string executor:string fvt-id:string new-can-upgrade:bool new-can-change-owner:bool)
         @doc "Updates FVT control flags and collects IGNIS output on patron."
         (with-capability (P|TS)
             (let
@@ -2153,7 +2153,7 @@
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-FVT::C_Control patron fvt-id new-can-upgrade new-can-change-owner)
+                    (ref-FVT::C_Control patron executor fvt-id new-can-upgrade new-can-change-owner)
                 )
                 (format "Successfully updated control flags for FVT {}." [fvt-id])
             )
@@ -2176,7 +2176,7 @@
         )
     )
     (defun AQP-FVT|C_SetCommonDenominator:string
-        (patron:string fvt-id:string common-denominator:string)
+        (patron:string executor:string fvt-id:string common-denominator:string)
         @doc "Sets farm common-denominator (before ScoreEntityLinks) and collects IGNIS on patron."
         (with-capability (P|TS)
             (let
@@ -2186,7 +2186,7 @@
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-FVT::C_SetCommonDenominator patron fvt-id common-denominator)
+                    (ref-FVT::C_SetCommonDenominator patron executor fvt-id common-denominator)
                 )
                 (ref-TS01-A::XB_DynamicFuelSTOA)
                 (format "Successfully set common-denominator on FVT {} to {}." [fvt-id common-denominator])
@@ -2194,7 +2194,7 @@
         )
     )
     (defun AQP-FVT|C_SetMosaic:string
-        (patron:string fvt-id:string mosaic:bool)
+        (patron:string executor:string fvt-id:string mosaic:bool)
         @doc "Sets mosaic membership policy when FVT has no member links; collects IGNIS on patron."
         (with-capability (P|TS)
             (let
@@ -2203,14 +2203,14 @@
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-FVT::C_SetMosaic patron fvt-id mosaic)
+                    (ref-FVT::C_SetMosaic patron executor fvt-id mosaic)
                 )
                 (format "Successfully set mosaic on FVT {} to {}." [fvt-id mosaic])
             )
         )
     )
     (defun AQP-FVT|C_SetSplitMode:string
-        (patron:string fvt-id:string split-mode:string)
+        (patron:string executor:string fvt-id:string split-mode:string)
         @doc "Sets a farm's reward-split mode (SPLIT|STAKED participation | SPLIT|TVL pool-size); collects IGNIS on patron. \
             \ Freely mutable — re-weights only future injects."
         (with-capability (P|TS)
@@ -2220,7 +2220,7 @@
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-FVT::C_SetSplitMode patron fvt-id split-mode)
+                    (ref-FVT::C_SetSplitMode patron executor fvt-id split-mode)
                 )
                 (format "Successfully set reward-split mode on farm {} to {}." [fvt-id split-mode])
             )
@@ -2295,10 +2295,12 @@
                             (ref-AQP::C_AddScore patron stake-asset-owner pool-id score-id)
                             (ref-FVT::C_Issue
                                 patron fvt-name owner-konto GV|FVT_CLASS_VAULT GV|COMMON_BAR)
+                            ;;The FVT's executor here IS `owner-konto` -- C_Issue two lines up
+                            ;;makes that account the vault's owner, so it is derived, not assumed.
                             (ref-FVT::C_AddScoreEntity
-                                patron fvt-id GV|SCORE_ENTITY_SCORE score-id)
+                                patron owner-konto fvt-id GV|SCORE_ENTITY_SCORE score-id)
                             (ref-FVT::C_AddRewardLink
-                                patron fvt-id reward-dptf-id false GV|COMMON_BAR)
+                                patron owner-konto fvt-id reward-dptf-id false GV|COMMON_BAR)
                         ]
                         []
                     )
@@ -2463,7 +2465,7 @@
         )
     )
     (defun AQP-FVT|CC_SweepRevokeAnchor:string
-        (patron:string anchor-id:string)
+        (patron:string executor:string anchor-id:string)
         @doc "Single-tx re-score SWEEP that retires an EMPLOYED anchor (H4 half-2): freezes the affected pools, \
             \ removes the anchor (swept-revoke), recomputes every affected holder (aggregate/lane refold + deb), \
             \ then unfreezes. Owner-initiated (patron = the anchored-asset owner). Lives in AQP-FVT."
@@ -2475,7 +2477,7 @@
                 )
                 (let
                     (
-                        (r:string (ref-FVT::CC_SweepRevokeAnchor patron anchor-id))
+                        (r:string (ref-FVT::CC_SweepRevokeAnchor patron executor anchor-id))
                     )
                     (ref-TS01-A::XB_DynamicFuelSTOA)
                     r
@@ -2484,7 +2486,7 @@
         )
     )
     (defun AQP-FVT|CC_SweepBegin:string
-        (patron:string anchor-id:string)
+        (patron:string executor:string anchor-id:string)
         @doc "OPEN a paginated (defun+gate) re-score sweep — the scalable twin of AQP-FVT|CC_SweepRevokeAnchor for \
             \ holder sets exceeding one tx: freezes the affected pools + swept-revokes the anchor, then defers the \
             \ recompute to AQP-FVT|CCp_SweepRecomputeChunk calls under the held freeze. Owner-initiated. Lives in AQP-FVT."
@@ -2496,7 +2498,7 @@
                 )
                 (let
                     (
-                        (r:string (ref-FVT::CC_SweepBegin patron anchor-id))
+                        (r:string (ref-FVT::CC_SweepBegin patron executor anchor-id))
                     )
                     (ref-TS01-A::XB_DynamicFuelSTOA)
                     r

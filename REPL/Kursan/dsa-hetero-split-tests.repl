@@ -218,7 +218,7 @@
                 ;; PROOF 2 - owner sets HETEROGENEOUS all-to-token0 [1000 0 0]; readers round-trip
                 (print "--- [TX-HET-01 - 01 - set HETEROGENEOUS all-to-OURO [1000 0 0]] ---")
                 (print (format "<(AQP-FVT|C_SetQualitySplit HET [1000 0 0]x3)> => \"{}\"" [
-                    (ref-TS02-C3::AQP-FVT|C_SetQualitySplit patron farm-id ouro-id "HETEROGENEOUS" [1000 0 0] [1000 0 0] [1000 0 0])
+                    (ref-TS02-C3::AQP-FVT|C_SetQualitySplit patron (AQP-FVT.UR_FVT|OwnerKonto farm-id) farm-id ouro-id "HETEROGENEOUS" [1000 0 0] [1000 0 0] [1000 0 0])
                 ]))
                 (map print
                     [
@@ -259,7 +259,7 @@
                 )
                 ;; PROOF 4 - O(1) reprice to all-to-token1 [0 1000 0] => next collect is pure Auryn (Coil leg)
                 (print "--- [TX-HET-01 - 03 - reprice all-to-Auryn [0 1000 0] + inject/collect] ---")
-                (ref-TS02-C3::AQP-FVT|C_SetQualitySplit patron farm-id ouro-id "HETEROGENEOUS" [0 1000 0] [0 1000 0] [0 1000 0])
+                (ref-TS02-C3::AQP-FVT|C_SetQualitySplit patron (AQP-FVT.UR_FVT|OwnerKonto farm-id) farm-id ouro-id "HETEROGENEOUS" [0 1000 0] [0 1000 0] [0 1000 0])
                 (ref-TS02-C3::AQP-FVT|CC_Inject patron patron farm-id ouro-id inject-amt)
                 (let
                     (
@@ -322,7 +322,7 @@
                 [
                     (expect-failure "<<TX-HET-02>> non-owner cannot set quality split"
                 "Keyset failure (keys-all): [PK_Ancie...]"
-                        (ref-TS02-C3::AQP-FVT|C_SetQualitySplit emma farm-id ouro-id "HETEROGENEOUS" [1000 0 0] [1000 0 0] [1000 0 0]))
+                        (ref-TS02-C3::AQP-FVT|C_SetQualitySplit emma (AQP-FVT.UR_FVT|OwnerKonto farm-id) farm-id ouro-id "HETEROGENEOUS" [1000 0 0] [1000 0 0] [1000 0 0]))
                     ;;THE SIBLING GATE, which had no witness until 2026-09-17. `FVT|C>SET-SPLIT-MODE`
                     ;;is a DIFFERENT defcap from `C>SET-QUALITY-SPLIT` above -- same owner, same farm,
                     ;;separate `CAP_EnforceAccountOwnership` -- so the assertion above said nothing
@@ -333,7 +333,7 @@
                     ;;the test cannot drift from the value the guard actually compares against.
                     (expect-failure "<<TX-HET-02>> ...nor the split mode, which is a separate owner gate"
                         "Keyset failure (keys-all): [PK_Ancie...]"
-                        (ref-TS02-C3::AQP-FVT|C_SetSplitMode emma farm-id AQP-FVT.CT_SPLIT_MODE_TVL))
+                        (ref-TS02-C3::AQP-FVT|C_SetSplitMode emma (AQP-FVT.UR_FVT|OwnerKonto farm-id) farm-id AQP-FVT.CT_SPLIT_MODE_TVL))
                 ]
             )
             (print "--- [TX-HET-02 - 02 - a row not summing to 1000 rejected] ---")
@@ -342,13 +342,13 @@
                 [
                     (expect-failure "<<TX-HET-02>> silver row [500 400 0] (sum 900) rejected"
                 "Each lane split must be [to-t0 to-t1 to-t2] non-negative per-mille"
-                        (ref-TS02-C3::AQP-FVT|C_SetQualitySplit patron farm-id ouro-id "HETEROGENEOUS" [1000 0 0] [500 400 0] [1000 0 0]))
+                        (ref-TS02-C3::AQP-FVT|C_SetQualitySplit patron (AQP-FVT.UR_FVT|OwnerKonto farm-id) farm-id ouro-id "HETEROGENEOUS" [1000 0 0] [500 400 0] [1000 0 0]))
                     (expect-failure "<<TX-HET-02>> a 2-element row rejected"
                 "Each lane split must be [to-t0 to-t1 to-t2] non-negative per-mille"
-                        (ref-TS02-C3::AQP-FVT|C_SetQualitySplit patron farm-id ouro-id "HETEROGENEOUS" [1000 0 0] [600 400] [1000 0 0]))
+                        (ref-TS02-C3::AQP-FVT|C_SetQualitySplit patron (AQP-FVT.UR_FVT|OwnerKonto farm-id) farm-id ouro-id "HETEROGENEOUS" [1000 0 0] [600 400] [1000 0 0]))
                     (expect-failure "<<TX-HET-02>> unknown mode rejected"
                 "mode must be HOMOGENEOUS or HETEROGENEOUS"
-                        (ref-TS02-C3::AQP-FVT|C_SetQualitySplit patron farm-id ouro-id "BOGUS" [1000 0 0] [1000 0 0] [1000 0 0]))
+                        (ref-TS02-C3::AQP-FVT|C_SetQualitySplit patron (AQP-FVT.UR_FVT|OwnerKonto farm-id) farm-id ouro-id "BOGUS" [1000 0 0] [1000 0 0] [1000 0 0]))
                 ]
             )
             (print "--- [TX-HET-02 - 03 - set on a PLAIN (non-multiplet) reward rejected] ---")
@@ -356,7 +356,7 @@
                 [
                     (expect-failure "<<TX-HET-02>> quality split on a non-existent reward link rejected"
                 "Reward link row must exist"
-                        (ref-TS02-C3::AQP-FVT|C_SetQualitySplit patron farm-id "VESTA-98c486052a51" "HETEROGENEOUS" [1000 0 0] [1000 0 0] [1000 0 0]))
+                        (ref-TS02-C3::AQP-FVT|C_SetQualitySplit patron (AQP-FVT.UR_FVT|OwnerKonto farm-id) farm-id "VESTA-98c486052a51" "HETEROGENEOUS" [1000 0 0] [1000 0 0] [1000 0 0]))
                 ]
             )
         )

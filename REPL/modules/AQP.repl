@@ -853,7 +853,7 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
     )
-    (ref-TS02-C3::AQP-FVT|C_ToggleScoreEntityLink KST.ANHD
+    (ref-TS02-C3::AQP-FVT|C_ToggleScoreEntityLink KST.ANHD (AQP-FVT.UR_FVT|OwnerKonto (ref-U|DALOS::UDC_Makeid "ResumeVacVault"))
         (ref-U|DALOS::UDC_Makeid "ResumeVacVault") 1 (ref-U|DALOS::UDC_Makeid "ResumeVacScore") false)
     ""
 )
@@ -909,7 +909,7 @@
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
         (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
     )
-    (ref-TS02-C3::AQP-FVT|C_ToggleScoreEntityLink KST.ANHD
+    (ref-TS02-C3::AQP-FVT|C_ToggleScoreEntityLink KST.ANHD (AQP-FVT.UR_FVT|OwnerKonto (ref-U|DALOS::UDC_Makeid "ResumeVacVault"))
         (ref-U|DALOS::UDC_Makeid "ResumeVacVault") 1 (ref-U|DALOS::UDC_Makeid "ResumeVacScore") true)
     (map print
         [
@@ -941,7 +941,7 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
     )
-    (ref-TS02-C3::AQP-FVT|C_ToggleScoreEntityLink KST.ANHD
+    (ref-TS02-C3::AQP-FVT|C_ToggleScoreEntityLink KST.ANHD (AQP-FVT.UR_FVT|OwnerKonto (ref-U|DALOS::UDC_Makeid "OfStakeVault"))
         (ref-U|DALOS::UDC_Makeid "OfStakeVault") 1 (ref-U|DALOS::UDC_Makeid "OfStakeScore") false)
     ""
 )
@@ -997,7 +997,7 @@
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
         (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
     )
-    (ref-TS02-C3::AQP-FVT|C_ToggleScoreEntityLink KST.ANHD
+    (ref-TS02-C3::AQP-FVT|C_ToggleScoreEntityLink KST.ANHD (AQP-FVT.UR_FVT|OwnerKonto (ref-U|DALOS::UDC_Makeid "OfStakeVault"))
         (ref-U|DALOS::UDC_Makeid "OfStakeVault") 1 (ref-U|DALOS::UDC_Makeid "OfStakeScore") true)
     (map print
         [
@@ -1029,7 +1029,7 @@
         (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
     )
-    (ref-TS02-C3::AQP-FVT|C_ToggleScoreEntityLink KST.ANHD
+    (ref-TS02-C3::AQP-FVT|C_ToggleScoreEntityLink KST.ANHD (AQP-FVT.UR_FVT|OwnerKonto (ref-U|DALOS::UDC_Makeid "SfStakeVault"))
         (ref-U|DALOS::UDC_Makeid "SfStakeVault") 1 (ref-U|DALOS::UDC_Makeid "SfStakeScore") false)
     ""
 )
@@ -1085,7 +1085,7 @@
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
         (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
     )
-    (ref-TS02-C3::AQP-FVT|C_ToggleScoreEntityLink KST.ANHD
+    (ref-TS02-C3::AQP-FVT|C_ToggleScoreEntityLink KST.ANHD (AQP-FVT.UR_FVT|OwnerKonto (ref-U|DALOS::UDC_Makeid "SfStakeVault"))
         (ref-U|DALOS::UDC_Makeid "SfStakeVault") 1 (ref-U|DALOS::UDC_Makeid "SfStakeScore") true)
     (map print
         [
@@ -1525,7 +1525,7 @@
         [
             (expect-failure "<<AQP-G22>> a non-farm FVT cannot be given a split mode"
                 "Split-mode: farm (class 0) only, value must be SPLIT|STAKED or SPLIT|TVL"
-                (ref-TS02-C3::AQP-FVT|C_SetSplitMode KST.ANHD
+                (ref-TS02-C3::AQP-FVT|C_SetSplitMode KST.ANHD (AQP-FVT.UR_FVT|OwnerKonto (ref-U|DALOS::UDC_Makeid "SfStakeVault"))
                     (ref-U|DALOS::UDC_Makeid "SfStakeVault") "BOGUS"))
         ]
     )

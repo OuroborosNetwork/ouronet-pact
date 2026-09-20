@@ -244,7 +244,7 @@
                 (stoa-pre:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
             )
         (env-gas 0)
-        (ref-TS02-C3::AQP-FVT|CC_SweepRevokeAnchor patron anchor-id)
+        (ref-TS02-C3::AQP-FVT|CC_SweepRevokeAnchor patron (AQP-ANK.URC_AnchorableAssetOwner (AQP-ANK.UR_ANK|AnchoredAsset anchor-id) (AQP-ANK.UR_ANK|Fungibility anchor-id)) anchor-id)
         (map print
             [
                 (format "<<SWP1-INFO>> quoted ignis={} stoa={} | real ignis={} stoa={}"
@@ -295,7 +295,7 @@
             [
                 (expect-failure "<<SWP1-EXEC>> sweeping an already-revoked anchor is refused"
                     "Anchor"
-                    (ref-TS02-C3::AQP-FVT|CC_SweepRevokeAnchor patron anchor-id))
+                    (ref-TS02-C3::AQP-FVT|CC_SweepRevokeAnchor patron (AQP-ANK.URC_AnchorableAssetOwner (AQP-ANK.UR_ANK|AnchoredAsset anchor-id) (AQP-ANK.UR_ANK|Fungibility anchor-id)) anchor-id))
                 ;;The op FREEZES THE POOLS FIRST and only then finds the anchor already revoked,
                 ;;so the pool is left frozen behind the abort. On chain that is harmless -- a
                 ;;failed transaction reverts everything, including the freeze. It is visible here

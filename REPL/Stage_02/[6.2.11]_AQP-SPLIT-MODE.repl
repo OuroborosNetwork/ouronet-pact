@@ -114,7 +114,7 @@
     ;;==== TX-SPLIT-02 · 01 · switch to SPLIT|TVL ====
     (print "--- [TX-SPLIT-02 · 01 · set SPLIT|TVL] ---")
     (print (format "<(AQP-FVT|C_SetSplitMode SPLIT|TVL)> => \"{}\""
-        [(ref-TS02-C3::AQP-FVT|C_SetSplitMode patron farm-id "SPLIT|TVL")]))
+        [(ref-TS02-C3::AQP-FVT|C_SetSplitMode patron (AQP-FVT.UR_FVT|OwnerKonto farm-id) farm-id "SPLIT|TVL")]))
     (let ((mode-tvl:string (ref-FVT::UR_FVT|SplitMode farm-id)))
         (map print
             [
@@ -128,7 +128,7 @@
     ;;==== TX-SPLIT-02 · 02 · switch back to SPLIT|STAKED (no cooldown — immediate) ====
     (print "--- [TX-SPLIT-02 · 02 · set SPLIT|STAKED again] ---")
     (print (format "<(AQP-FVT|C_SetSplitMode SPLIT|STAKED)> => \"{}\""
-        [(ref-TS02-C3::AQP-FVT|C_SetSplitMode patron farm-id "SPLIT|STAKED")]))
+        [(ref-TS02-C3::AQP-FVT|C_SetSplitMode patron (AQP-FVT.UR_FVT|OwnerKonto farm-id) farm-id "SPLIT|STAKED")]))
     (let ((mode-staked:string (ref-FVT::UR_FVT|SplitMode farm-id)))
         (map print
             [
@@ -172,12 +172,12 @@
             (expect-failure
                 (format "<<TX-SPLIT-03>> invalid split-mode value 'BOGUS' rejected (must be SPLIT|STAKED/SPLIT|TVL)" [])
                 "Split-mode: farm (class 0) only, value must be SPLIT|STAKED or"
-                (ref-TS02-C3::AQP-FVT|C_SetSplitMode patron farm-id "BOGUS"))
+                (ref-TS02-C3::AQP-FVT|C_SetSplitMode patron (AQP-FVT.UR_FVT|OwnerKonto farm-id) farm-id "BOGUS"))
             ;;==== TX-SPLIT-03 · 02 · non-farm (class-1 vault) rejected ====
             (expect-failure
                 (format "<<TX-SPLIT-03>> split-mode on a class-1 vault rejected (farm-class-0 only)" [])
                 "Split-mode: farm (class 0) only, value must be SPLIT|STAKED or"
-                (ref-TS02-C3::AQP-FVT|C_SetSplitMode patron vault-id "SPLIT|TVL"))
+                (ref-TS02-C3::AQP-FVT|C_SetSplitMode patron (AQP-FVT.UR_FVT|OwnerKonto vault-id) vault-id "SPLIT|TVL"))
         ]
     )
 )
