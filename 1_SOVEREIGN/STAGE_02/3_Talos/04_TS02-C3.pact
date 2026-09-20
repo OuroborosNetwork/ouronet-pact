@@ -289,7 +289,7 @@
         (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
     )
     (defun MTX-AQP|2|CC_Inject:string
-        (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
+        (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
     (defun MTX-AQP|2|CC_SweepRevokeAnchor:string
         (patron:string anchor-id:string)
@@ -2395,7 +2395,7 @@
         )
     )
     (defun MTX-AQP|2|CC_Inject:string
-        (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
+        (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "Starts the 2-step enforced-fresh inject defpact (MTX-AQP — spike fallback for AQP-FVT|CC_Inject when \
             \ the stale set exceeds one tx). Step 0 runs here; advance with (continue-pact 1). Each defpact step \
             \ collects its own IGNIS on patron, so this wrapper only summons the pact."
@@ -2407,7 +2407,7 @@
                 )
                 (let
                     (
-                        (r:string (ref-MTX-AQP::C_2|Inject patron fvt-id reward-dptf-id amount))
+                        (r:string (ref-MTX-AQP::C_2|Inject patron injector fvt-id reward-dptf-id amount))
                     )
                     (ref-TS01-A::XB_DynamicFuelSTOA)
                     r

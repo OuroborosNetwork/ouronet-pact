@@ -440,3 +440,48 @@ about DemiPad. If DemiPad is also undeployed it moves to the free subset and the
 drops to 18. **Do not guess this one** — `A_RegisterAssetToLaunchpad` is declared in *both*
 `TalosStageTwo_DemiPadV1` (free) and `DemiourgosLaunchpadV2` (assumed live), so it straddles the
 line and its cost depends entirely on the answer.
+
+---
+
+## BAND 1 / AQP — `07_MTX-AQP` DONE (2026-09-20). 1 of 2; the second needs a ruling.
+
+### `C_2|Inject` — the Band 3b gap, and it was worse than "a gap"
+
+```pact
+(ref-FVT::XB_FvtInject patron patron fvt-id reward-dptf-id amount)   ;; both steps
+```
+
+`XB_FvtInject` has taken `(patron injector ...)` since Band 3. MTX passed `patron` into both slots,
+so the defpact could only ever inject from the account paying the gas.
+
+**That matters far beyond tidiness.** `MTX|n|C_Inject` is the *documented spike fallback* for
+`AA_OuroMinterStageTwo`, which runs as **GASLESS-PATRON pays / dispenser holds the tokens**. The
+fallback could not run in the one shape it exists to rescue. The minter's `@doc` asserted the
+fallback was available; that assertion was false, and is now corrected in place.
+
+Threaded `injector` through: `AqpMtxV1` declaration → `C_2|Inject` → the `MTX|2|C_Inject` defpact →
+both `XB_FvtInject` sites → `TS02-C3::MTX-AQP|2|CC_Inject` (declaration + defun) → 3 call sites.
+
+### The test that makes it mean something
+
+Every pre-existing MTX test passes `patron == injector` — **the exact condition under which a
+conflated parameter looks correct**. Migrating them would have kept the suite green and proved
+nothing. `<<TX-MTX-SPONSOR>>` (`[6.2.7]`) runs `patron = EMMA, injector = ANHD` and asserts:
+
+- the 4.0 AURYN left **ANHD** (the injector), and
+- **EMMA paid no AURYN** — she sponsored gas only.
+
+It is load-bearing: EMMA holds no AURYN, so under the old `patron patron` the call would have
+failed outright.
+
+### `C_2|SweepRevokeAnchor` — NOT done, deliberately
+
+Its authority is `ANK::CAP_Owner anchor-id`, which is a **disjunction**, not a value: for a DPTF it
+delegates to `CAP_TF|Owner`; for DPSF/DPNF it accepts **owner OR creator**. Band 1's prescription —
+"enforce `executor` equals the derived owner" — has no single derived owner to equal.
+
+The honest fix is a `UEV_` in **ANK** that asks "is this account one of the anchor's authorities?",
+mirroring the disjunction rather than collapsing it. That helper belongs in the module that owns
+the concept, so this function waits for the `01_ANK` pass (4 functions) rather than growing a
+bespoke copy of ANK's authority rule inside MTX. This is one of the 12 functions previously flagged
+as having no mechanically-determinable executor, and it is the first to be diagnosed precisely.

@@ -45,7 +45,7 @@
     ;;{5.6}  Aux/X
     ;;{5.7}  User [A/C]
     ;;
-    (defun C_2|Inject (patron:string fvt-id:string reward-dptf-id:string amount:decimal))
+    (defun C_2|Inject (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal))
     (defun C_2|SweepRevokeAnchor (patron:string anchor-id:string))
 
 )
@@ -342,13 +342,13 @@
                 score-ids))
     )
     ;;{5.7}  User [A/C]
-    (defun C_2|Inject (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
+    (defun C_2|Inject (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "2-step enforced-fresh inject (spike fallback for AQP-FVT::CC_Inject; handles up to 2×N_FIX stale \
             \ stakers). Acquires MTX-AQP|C>INJECT, then runs the MTX|2|C_Inject defpact. Advance with \
             \ (continue-pact 1). Vault/treasury only (the defpact's inject is class≠0)."
         (P|UEV_IMC)
         (with-capability (MTX-AQP|C>INJECT patron fvt-id reward-dptf-id amount)
-            (MTX|2|C_Inject patron fvt-id reward-dptf-id amount)
+            (MTX|2|C_Inject patron injector fvt-id reward-dptf-id amount)
         )
     )
     (defun C_2|SweepRevokeAnchor (patron:string anchor-id:string)
@@ -361,7 +361,7 @@
             (MTX|2|C_SweepRevokeAnchor patron anchor-id)
         )
     )
-    (defpact MTX|2|C_Inject (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
+    (defpact MTX|2|C_Inject (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "Enforced-fresh vault/treasury inject as a 2-step defpact: each step's opening stale scan IS the \
             \ pre-inject freshness proof — atomically fixing a whole scanned set of size <= N_FIX leaves zero \
             \ stale, so no re-scan is needed. Step 0 injects terminally when the stale set fits, else fixes \
@@ -388,7 +388,7 @@
                             (n:integer (length stale))
                         )
                         (RPS.XE_FvtFixUserChunk fvt-id reward-dptf-id stale)
-                        (ref-IGNIS::C_Collect patron (ref-FVT::XB_FvtInject patron patron fvt-id reward-dptf-id amount))
+                        (ref-IGNIS::C_Collect patron (ref-FVT::XB_FvtInject patron injector fvt-id reward-dptf-id amount))
                         (yield {"injected" : true})
                         (format "MTX Inject 1|2: fixed {} stale staker(s) and INJECTED {} {} (terminal)." [n amount reward-dptf-id])
                     )
@@ -418,7 +418,7 @@
                                 (stale:[string] (RPS.URH_FvtStalePresentUsers fvt-id))
                             )
                             (RPS.XE_FvtFixUserChunk fvt-id reward-dptf-id stale)
-                            (ref-IGNIS::C_Collect patron (ref-FVT::XB_FvtInject patron patron fvt-id reward-dptf-id amount))
+                            (ref-IGNIS::C_Collect patron (ref-FVT::XB_FvtInject patron injector fvt-id reward-dptf-id amount))
                             (format "MTX Inject 2|2: fixed {} remaining stale staker(s) and INJECTED {} {}." [(length stale) amount reward-dptf-id])
                         )
                     )

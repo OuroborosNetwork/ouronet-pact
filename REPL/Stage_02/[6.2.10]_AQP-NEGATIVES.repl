@@ -56,7 +56,7 @@
             (expect-failure
                 (format "<<TX-AQP-NEG-IMC1>> direct MTX-AQP::C_2|Inject rejected (P|UEV_IMC)" [])
                 "None of the guards passed"
-                (ref-MTX::C_2|Inject patron fvt-id ouro-id 1.0))
+                (ref-MTX::C_2|Inject patron patron fvt-id ouro-id 1.0))
         ]
     )
 )

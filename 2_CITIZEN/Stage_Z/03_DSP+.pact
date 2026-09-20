@@ -487,7 +487,11 @@
             \ two measurements taken minutes apart already differ by 6% (911,546 in the boot suite, \
             \ 966,256 standalone) purely from chain state. \
             \ \
-            \ The documented spike fallback is the MTX|n|C_Inject defpact. Plan for the daily \
+            \ The documented spike fallback is the MTX|n|C_Inject defpact -- and until 2026-09-20 \
+            \ that fallback was FICTION for this function: the defpact hardcoded `XB_FvtInject \
+            \ patron patron`, so it could only run when the gas payer was also the token source, \
+            \ which is precisely the shape this minter does NOT use. It now takes an `injector`, \
+            \ proven by <<TX-MTX-SPONSOR>>. Plan for the daily \
             \ emission to become a SEQUENCE rather than one transaction before the Custodians vault \
             \ has depth -- not after. Pinned by <<TX-BOOT-S2GAS>> as a BAND (fits a block / is not \
             \ suspiciously cheap), because an exact pin would be noise at this variance and a \

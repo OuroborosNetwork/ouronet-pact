@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 19 of 20
 ;; This is STEP 19 of 21 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-18 must have run first, including the init steps between deploys.
-;; 5 module(s), 236,990 gas measured in the REPL gas model, 267,503 bytes
+;; 5 module(s), 236,990 gas measured in the REPL gas model, 267,544 bytes
 ;;
 ;; Modules in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact
@@ -309,7 +309,7 @@
         (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
     )
     (defun MTX-AQP|2|CC_Inject:string
-        (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
+        (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
     (defun MTX-AQP|2|CC_SweepRevokeAnchor:string
         (patron:string anchor-id:string)
@@ -2415,7 +2415,7 @@
         )
     )
     (defun MTX-AQP|2|CC_Inject:string
-        (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
+        (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "Starts the 2-step enforced-fresh inject defpact (MTX-AQP — spike fallback for AQP-FVT|CC_Inject when \
             \ the stale set exceeds one tx). Step 0 runs here; advance with (continue-pact 1). Each defpact step \
             \ collects its own IGNIS on patron, so this wrapper only summons the pact."
@@ -2427,7 +2427,7 @@
                 )
                 (let
                     (
-                        (r:string (ref-MTX-AQP::C_2|Inject patron fvt-id reward-dptf-id amount))
+                        (r:string (ref-MTX-AQP::C_2|Inject patron injector fvt-id reward-dptf-id amount))
                     )
                     (ref-TS01-A::XB_DynamicFuelSTOA)
                     r

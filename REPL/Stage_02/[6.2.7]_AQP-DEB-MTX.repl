@@ -650,7 +650,7 @@
     (map print
         [
             (format "<(DEB08 MTX-AQP|2|CC_Inject step 0)> => \"{}\""
-                [(ref-TS02-C3::MTX-AQP|2|CC_Inject anhd fvt-id auryn-id 8.0)])
+                [(ref-TS02-C3::MTX-AQP|2|CC_Inject anhd anhd fvt-id auryn-id 8.0)])
             ;; step 0 found S ≤ N_FIX ⟹ it fixed ANHD + injected in this tx (terminal)
             (expect "<<TX-AQP-DEB08>> defpact step 0 FIXED ANHD Bunnies (now FRESH)"
                 false (ref-SCR::URC_U-SCR|UserScoreDebStale anhd bunnies-pool bunnies-score))
@@ -1031,7 +1031,7 @@
     (map print
         [
             (format "<(DEB12 MTX-AQP|2|CC_Inject farm step 0)> => \"{}\""
-                [(ref-TS02-C3::MTX-AQP|2|CC_Inject anhd farm-id ouro-id defpact-amt)])
+                [(ref-TS02-C3::MTX-AQP|2|CC_Inject anhd anhd farm-id ouro-id defpact-amt)])
             ;; the defpact ran the shared inject-core on the farm ⟹ available-rewards flushed by the amount
             (expect (format "<<TX-AQP-DEB12>> farm defpact flushed available-rewards +{} ({}->{})" [defpact-amt ar-pre (ref-FVT::UR_FVT-RG|AvailableRewards farm-id ouro-id)])
                 defpact-amt (- (ref-FVT::UR_FVT-RG|AvailableRewards farm-id ouro-id) ar-pre))
@@ -1230,5 +1230,61 @@
     )
 )
 (commit-tx)
+(print "")
+(begin-tx "TX-AQP-MTX-SPONSOR - MTX inject with patron =/= injector (the Stage Two fallback shape)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-hash (hash "mtx-sponsor-inject"))
+;;==== TX-AQP-MTX-SPONSOR - MTX inject with patron =/= injector · 01 · env-sigs (caps) ====
+(print "--- [TX-AQP-MTX-SPONSOR - MTX inject with patron =/= injector · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "PK_Emma", "caps": [] }
+    ]
+)
+;;==== TX-AQP-MTX-SPONSOR - MTX inject with patron =/= injector · 02 · let / invocation ====
+(print "--- [TX-AQP-MTX-SPONSOR - MTX inject with patron =/= injector · 02 · let / invocation] ---")
+;; WHY THIS EXISTS. MTX|n|C_Inject is the DOCUMENTED spike fallback for the Stage Two daily
+;; emission, which runs as GASLESS-PATRON pays / dispenser holds the tokens. Until now the
+;; defpact hardcoded `XB_FvtInject patron patron`, so the fallback could ONLY run when the gas
+;; payer was also the token source -- i.e. it could not run in the shape it exists to rescue.
+;; Every other MTX test in this file passes patron == injector, which is exactly the condition
+;; under which a conflated parameter looks correct.
+(let
+    (
+        (anhd:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
+        (auryn-id:string "AURYN-98c486052a51")
+    )
+    (let
+        (
+            (anhd-before:decimal (ref-DPTF::UR_AccountSupply auryn-id anhd))
+            (emma-before:decimal (ref-DPTF::UR_AccountSupply auryn-id emma))
+        )
+        (map print
+            [
+                (format "<(MTX sponsor inject: patron=EMMA injector=ANHD)> => \"{}\""
+                    [(ref-TS02-C3::MTX-AQP|2|CC_Inject emma anhd fvt-id auryn-id 4.0)])
+                ;; The AURYN left the INJECTOR, not the patron -- the whole point of the separation.
+                (expect "<<TX-MTX-SPONSOR>> the 4.0 AURYN left the INJECTOR (ANHD)"
+                    (- anhd-before 4.0) (ref-DPTF::UR_AccountSupply auryn-id anhd))
+                ;; ...and the sponsor paid gas WITHOUT paying tokens. A regression that re-conflates
+                ;; the two would drain the patron here instead, and this is the assertion that sees it.
+                (expect "<<TX-MTX-SPONSOR>> the sponsoring PATRON (EMMA) paid no AURYN"
+                    emma-before (ref-DPTF::UR_AccountSupply auryn-id emma))
+            ]
+        )
+    )
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 (print "=== deb-staleness-proof END ===")
