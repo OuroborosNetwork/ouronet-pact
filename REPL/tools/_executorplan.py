@@ -17,6 +17,8 @@ path in this system, so the blind spot was the client surface.
 CLASSIFICATION, on the SECOND parameter (the executor slot):
 
     EXEMPT   `P|` policy functions -- setup, not client. Excluded entirely, by owner ruling.
+    (registries) PATRONLESS = no patron exists (deploy, the fuel transfer); EXECUTORLESS = the
+                 collector primitives, which keep `patron` and have no separate actor.
     DONE     already named `executor`
     RENAME   an ACCOUNT under a bespoke name -- kickstarter / curler / coiler / fueler / account /
              owner-konto / client / injector / sender ... -> rename to `executor`
@@ -61,7 +63,16 @@ PATRONLESS = {
     "C_DeployStandardAccount", "A_DeployStandardAccount",
     "DALOS|C_DeploySmartAccount", "DALOS|A_DeploySmartAccount",
     "DALOS|C_DeployStandardAccount", "DALOS|A_DeployStandardAccount",
-    "C_Collect", "C_TransferDalosFuel",
+    "C_TransferDalosFuel",
+}
+
+# EXECUTORLESS -- distinct from PATRONLESS, and the distinction matters. These functions ARE the
+# collection: charging the named account is their entire job, so there is no separate actor and an
+# `executor` would just be a second word for the same account. They keep `patron` and take NO
+# executor. (Engineering inference, 2026-09-20, NOT an owner ruling -- it follows CLAUDE.md's note
+# that these primitives "are the collectors and cannot collect from themselves".)
+EXECUTORLESS = {
+    "C_Collect",
     "STOA|C_Collect", "STOA|C_CollectWT", "STOA|C_CollectFull", "STOA|C_CollectWTEx",
 }
 ACCT = re.compile(r'^(account|konto|owner|client|sender|receiver|beneficiary|staker|user|operator|'
@@ -98,6 +109,10 @@ def plan():
             is_admin = re.search(r'(?:^|\|)(A|AA)_', n) is not None
             if is_talos and is_admin:
                 rows.append((f, n, "DONE" if ps and ps[0] == "executor" else "ADD",
+                             ps[0] if ps else ""))
+                continue
+            if n in EXECUTORLESS:
+                rows.append((f, n, "DONE" if ps and ps[0] == "patron" else "PATRON",
                              ps[0] if ps else ""))
                 continue
             if n in PATRONLESS:

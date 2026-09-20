@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 1 of 20
 ;; This is STEP 1 of 21 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-0 must have run first, including the init steps between deploys.
-;; 2 module(s), 234,294 gas measured in the REPL gas model, 225,049 bytes
+;; 2 module(s), 234,294 gas measured in the REPL gas model, 225,062 bytes
 ;;
 ;; Modules in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/02_IGNIS.pact
@@ -134,12 +134,12 @@
     ;;
     ;;  [C]
     ;;
-    (defun C_TransferDalosFuel (sender:string receiver:string amount:decimal))
+    (defun C_TransferDalosFuel (executor:string executee:string amount:decimal))
     (defun C_Collect                                    (patron:string input-output-cumulator:object{OutputCumulator}))
-    (defun STOA|C_Collect (sender:string amount:decimal))
-    (defun STOA|C_CollectWT (sender:string amount:decimal trigger:bool))
-    (defun STOA|C_CollectWTEx (payer:string discount-account:string amount:decimal trigger:bool))
-    (defun STOA|C_CollectFull (payer:string amount:decimal trigger:bool))
+    (defun STOA|C_Collect (patron:string amount:decimal))
+    (defun STOA|C_CollectWT (patron:string amount:decimal trigger:bool))
+    (defun STOA|C_CollectWTEx (patron:string discount-account:string amount:decimal trigger:bool))
+    (defun STOA|C_CollectFull (patron:string amount:decimal trigger:bool))
 
 )
 
@@ -1827,7 +1827,7 @@
     ;;{5.7}  User [A/C]
     ;;
     ;;
-    (defun C_TransferDalosFuel (sender:string receiver:string amount:decimal)
+    (defun C_TransferDalosFuel (executor:string executee:string amount:decimal)
         @doc "Move native STOA. A ZERO amount is a NO-OP, not a transfer: Stoa's coin enforces \
             \ (> amount 0.0), so passing 0.0 aborts the whole transaction. Zero legs are now \
             \ normal — the account-creation STOA switch prices onboarding at 0.0 while it is \
@@ -1838,7 +1838,7 @@
                 (
                     (ref-coin:module{stoa-ns.fungible-v1} coin)
                 )
-                (ref-coin::transfer sender receiver amount)
+                (ref-coin::transfer executor executee amount)
             )
             "Zero STOA leg — nothing transferred"
         )
@@ -1933,13 +1933,13 @@
             )
         )
     )
-    (defun STOA|C_Collect (sender:string amount:decimal)
-        (STOA|C_CollectWT sender amount (URC_IsNativeGasZero))
+    (defun STOA|C_Collect (patron:string amount:decimal)
+        (STOA|C_CollectWT patron amount (URC_IsNativeGasZero))
     )
-    (defun STOA|C_CollectWT (sender:string amount:decimal trigger:bool)
-        (STOA|C_CollectWTEx sender sender amount trigger)
+    (defun STOA|C_CollectWT (patron:string amount:decimal trigger:bool)
+        (STOA|C_CollectWTEx patron patron amount trigger)
     )
-    (defun STOA|C_CollectFull (payer:string amount:decimal trigger:bool)
+    (defun STOA|C_CollectFull (patron:string amount:decimal trigger:bool)
         @doc "Collect native STOA taxed in FULL — no Elite discount. The pricing spec marks a \
             \ few costs as non-discountable (PYTHIA's fees, some asymmetric-liquidity legs); \
             \ everything else must keep using STOA|C_Collect* so the discount applies."
@@ -1951,7 +1951,7 @@
                 (am1:decimal (at 1 split-full))
                 (am2:decimal (at 2 split-full))
                 (am3:decimal (at 3 split-full))
-                (stoa-sender:string (ref-DALOS::UR_AccountStoa payer))
+                (stoa-sender:string (ref-DALOS::UR_AccountStoa patron))
                 (demiurgoi:[string] (ref-DALOS::UR_DemiurgoiID))
                 (stoa-cto:string (ref-DALOS::UR_AccountStoa (at 1 demiurgoi)))
                 (stoa-hov:string (ref-DALOS::UR_AccountStoa (at 2 demiurgoi)))
@@ -1969,8 +1969,8 @@
             )
         )
     )
-    (defun STOA|C_CollectWTEx (payer:string discount-account:string amount:decimal trigger:bool)
-        @doc "Collect native STOA from payer Stoa account; Elite split from discount-account."
+    (defun STOA|C_CollectWTEx (patron:string discount-account:string amount:decimal trigger:bool)
+        @doc "Collect native STOA from patron Stoa account; Elite split from discount-account."
         (let
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -1979,7 +1979,7 @@
                 (am1:decimal (at 1 split-discounted-stoa))
                 (am2:decimal (at 2 split-discounted-stoa))
                 (am3:decimal (at 3 split-discounted-stoa))
-                (stoa-sender:string (ref-DALOS::UR_AccountStoa payer))
+                (stoa-sender:string (ref-DALOS::UR_AccountStoa patron))
                 (demiurgoi:[string] (ref-DALOS::UR_DemiurgoiID))
                 (stoa-cto:string (ref-DALOS::UR_AccountStoa (at 1 demiurgoi)))
                 (stoa-hov:string (ref-DALOS::UR_AccountStoa (at 2 demiurgoi)))

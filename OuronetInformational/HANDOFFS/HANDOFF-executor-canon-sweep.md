@@ -9,7 +9,7 @@ session must be able to see what is done by reading this file, without reconstru
 `git log`. If the table and `_executorplan.py` disagree, **the tool is right** — regenerate.
 
 **Status:** preparation complete, sweep starting at `01_DALOS`.
-**99 done · 701 remaining · 46 modules · 1 module swept (01_DALOS).**
+**123 done · 677 remaining · 46 modules · 2 swept (01_DALOS, 02_IGNIS).**
 
 ---
 
@@ -124,7 +124,7 @@ R = rename · A = add executor · P = add patron
 | done · # | module | R | A | P | total | interface(s) to update |
 |---|---|---:|---:|---:|---:|---|
 | [x] 1 | `01_DALOS.pact` | 0 | 0 | 18 | **18** | `OuronetDalosV2`, `OuronetPolicyV2` |
-| [ ] 2 | `02_IGNIS.pact` | 0 | 1 | 5 | **6** | `IgnisCollectorV3` |
+| [x] 2 | `02_IGNIS.pact` | 0 | 1 | 5 | **6** | `IgnisCollectorV3` |
 | [ ] 3 | `04_BRD.pact` | 0 | 0 | 2 | **2** | `BrandingV2` |
 | [ ] 4 | `05_DPTF.pact` | 0 | 2 | 22 | **24** | `BrandingUsagePrimaryV2`, `DemiourgosPactTrueFungibleV2` |
 | [ ] 5 | `00_DPMF.pact` | 0 | 1 | 16 | **17** | `DemiourgosPactMetaFungibleV7` |

@@ -357,6 +357,29 @@ are the thing a patron would be paid from. **Round these up explicitly; do not a
 A function being patronless is a **design fact to be discovered and recorded**, never a default
 for "I could not find a patron".
 
+### EXECUTORLESS — the collector primitives (inferred 2026-09-20, NOT an owner ruling)
+
+A third shape, distinct from both patronless and gasless, found while sweeping `02_IGNIS`:
+
+```pact
+(defun C_Collect (patron:string input-output-cumulator:object{...}))
+(defun STOA|C_Collect (sender:string amount:decimal))
+```
+
+These **are** the collection. Charging the named account is their entire job, so there is no
+separate actor to name — an executor here would be a second word for the same account. They keep
+`patron` and take no executor.
+
+Two consequences:
+- the `STOA|C_Collect*` family's `sender` / `payer` **is the patron** and should be renamed to it —
+  the current names read like a transfer's sender, which is exactly what they are not;
+- `IGNIS::C_TransferDalosFuel` is the odd one out in this file: it is a genuine **transfer** of the
+  gas source, so it is patronless with `sender` = executor and `receiver` = executee.
+
+**This is an engineering inference, not an owner ruling.** It follows the `CLAUDE.md` note that
+these primitives "*are* the collectors and cannot collect from themselves", but the owner has not
+ruled on it. If it is wrong, the fix is confined to six functions in one module.
+
 ### EXECUTEE IS RARE
 
 Observably it appears **only in transfer functions** (`patron sender receiver` → patron / executor
