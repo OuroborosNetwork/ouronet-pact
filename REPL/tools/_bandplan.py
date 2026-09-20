@@ -53,6 +53,28 @@ def _forms(s, kw):
     return out
 
 
+def _params(body):
+    """The PARAMETER LIST only -- not the first N chars of the body.
+
+    Band 2's whole premise is "the executor is already a named parameter", and its prescribed
+    action is a no-op rename. Deciding that from a 400-char slice of the BODY let seven
+    `C_UpgradeBranding` functions in as Band 2 on the strength of a LET BINDING
+    (`parent-owner:string`, derived from the entity) -- so the refactor would have renamed
+    nothing, changed nothing, and marked them done while `patron` stayed the de-facto actor.
+    Same failure direction as every other gap in these tools: a classifier that is confidently
+    wrong about who is checked. Read the signature, and only the signature.
+    """
+    m = re.match(r'\s*\((?:defun|defcap)\s+\S+\s*\(', body)
+    if not m:
+        return ""
+    i = m.end(); d = 1; j = i
+    while j < len(body) and d > 0:
+        if body[j] == '(': d += 1
+        elif body[j] == ')': d -= 1
+        j += 1
+    return re.sub(r'\s+', ' ', body[i:j - 1])
+
+
 def plan():
     caps, funs, helpers = {}, [], {}
     for p in sorted(glob.glob(os.path.join(SRC, "**", "*.pact"), recursive=True)):
@@ -68,8 +90,8 @@ def plan():
                 funs.append((os.path.basename(p), n, b))
     rows = []
     for f, n, b in funs:
-        hdr = re.sub(r'\s+', ' ', b[:400])
-        if 'patron:string' not in hdr:
+        sig = _params(b)
+        if 'patron:string' not in sig:
             continue
         # TRANSITIVE, and it has to be. A first version read only the defcap's own body and
         # classified C_SetMosaic as "derived, unnamed" -- but its enforce is one level further
@@ -83,6 +105,11 @@ def plan():
         def walk(body, depth=0):
             if depth > 6:
                 return
+            # Strip the defun/defcap SIGNATURE line before scanning. Without this the walk
+            # descends into the CAP_Owner DEFINITION and captures its own parameter -- which is
+            # why targets came back as `['account:string', 'id:string', ...]`, i.e. type
+            # annotations masquerading as accounts. A capability's definition is not a call to it.
+            body = re.sub(r'^[ \t]*\((?:defun|defcap)\s+\S+[^\n]*\n(?:\s*\([^\n]*\n)?', '', body, count=1)
             owns.extend(re.findall(r'(?:CAP_EnforceAccountOwnership|CAP_Owner|CAP_StakeOwner|CAP_PoolOwner|CAP_VctVacatePoolOwner|CAP_TF\|Owner|CAP_AqpAssetOwner|CAP_Creator)\s+\(?([A-Za-z0-9|_.:-]+)', body))
             # Follow BOTH routes an authorisation can hide behind:
             #   * a UEV_/CAP_ helper the defcap calls   (C_SetMosaic -> UEV_SetMosaicContext)
@@ -113,7 +140,7 @@ def plan():
             if c in caps:
                 walk(caps[c])
         targets = sorted(set(owns))
-        if ACCT.search(hdr):
+        if ACCT.search(sig):
             band = 2
         elif targets and all(o == 'patron' for o in targets):
             band = 3
