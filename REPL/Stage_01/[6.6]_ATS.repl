@@ -3302,7 +3302,7 @@
             (expect "TestKickPair index is -1.0 before KickStart (never fueled)" -1.0 (ref-ATS::URC_Index tkp))
         ]
     )
-    (ref-TS01-A::ATS|A_KickStart aoz aoz tkp [1000.0] 1000.0)
+    (ref-TS01-A::ATS|A_KickStart aoz tkp [1000.0] 1000.0)
     (map print
         [
             (expect "TestKickPair index is 1.0 after KickStart (1000.0 RT / 1000.0 RBT)" 1.0 (ref-ATS::URC_Index tkp))

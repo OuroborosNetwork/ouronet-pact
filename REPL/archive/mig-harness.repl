@@ -56,10 +56,10 @@
         ;; create the FRESH empty migration target (GOV|MIGRATE enforces target-balance = 0)
         (coin.create-account target (read-keyset "tgt-ks"))
         ;; GOV|MIGRATE requires GAP on
-        (ref-TS01-A::DALOS|A_ToggleGAP true)
+        (ref-TS01-A::DALOS|A_ToggleGAP KST.ANHD true)
         ;; migrate the DALOS SC's entire Stoa balance to the target
         (print (format "<(DALOS|A_MigrateLiquidFunds)> migrated => {}"
-            [(ref-TS01-A::DALOS|A_MigrateLiquidFunds target)]))
+            [(ref-TS01-A::DALOS|A_MigrateLiquidFunds KST.ANHD target)]))
         (print "<<TX-MIG-001>> DALOS|A_MigrateLiquidFunds OK")
     )
 )

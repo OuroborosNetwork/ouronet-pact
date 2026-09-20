@@ -300,38 +300,38 @@
     ;;
     ;;  [A]
     ;;
-    (defun A_MigrateLiquidFunds:decimal (migration-target-stoa-account:string))
-    (defun A_ToggleOAPU (oapu:bool))
-    (defun A_ToggleGAP (gap:bool))
-    (defun A_DeploySmartAccount (account:string guard:guard stoa:string sovereign:string public:string))
-    (defun A_DeployStandardAccount (account:string guard:guard stoa:string public:string))
-    (defun A_ToggleGasCollection (native:bool toggle:bool))
-    (defun A_ToggleAccountCreationStoa (toggle:bool))
-    (defun A_SetIgnisSourcePrice (price:decimal))
-    (defun A_SetAutoFueling (toggle:bool))
-    (defun A_UpdatePublicKey (account:string new-public:string))
-    (defun A_UpdateUsagePrice (action:string new-price:decimal))
+    (defun A_MigrateLiquidFunds:decimal (patron:string executor:string migration-target-stoa-account:string))
+    (defun A_ToggleOAPU (patron:string executor:string oapu:bool))
+    (defun A_ToggleGAP (patron:string executor:string gap:bool))
+    (defun A_DeploySmartAccount (executor:string guard:guard stoa:string sovereign:string public:string))
+    (defun A_DeployStandardAccount (executor:string guard:guard stoa:string public:string))
+    (defun A_ToggleGasCollection (patron:string executor:string native:bool toggle:bool))
+    (defun A_ToggleAccountCreationStoa (patron:string executor:string toggle:bool))
+    (defun A_SetIgnisSourcePrice (patron:string executor:string price:decimal))
+    (defun A_SetAutoFueling (patron:string executor:string toggle:bool))
+    (defun A_UpdatePublicKey (patron:string executor:string new-public:string))
+    (defun A_UpdateUsagePrice (patron:string executor:string action:string new-price:decimal))
     ;;
     ;;  [C]
     ;;
     (defun C_ControlSmartAccount
-        (account:string payable-as-smart-contract:bool payable-by-smart-contract:bool payable-by-method:bool)
+        (patron:string executor:string payable-as-smart-contract:bool payable-by-smart-contract:bool payable-by-method:bool)
     )
-    (defun C_DeploySmartAccount (account:string guard:guard stoa:string sovereign:string public:string))
-    (defun C_DeployStandardAccount (account:string guard:guard stoa:string public:string))
-    (defun C_RotateGovernor (account:string governor:guard))
-    (defun C_RotateGuard (account:string new-guard:guard safe:bool))
-    (defun C_RotateStoa (account:string stoa:string))
-    (defun C_RotateSovereign (account:string new-sovereign:string))
+    (defun C_DeploySmartAccount (executor:string guard:guard stoa:string sovereign:string public:string))
+    (defun C_DeployStandardAccount (executor:string guard:guard stoa:string public:string))
+    (defun C_RotateGovernor (patron:string executor:string governor:guard))
+    (defun C_RotateGuard (patron:string executor:string new-guard:guard safe:bool))
+    (defun C_RotateStoa (patron:string executor:string stoa:string))
+    (defun C_RotateSovereign (patron:string executor:string new-sovereign:string))
 
 )
 ;;
 (module DALOS GOV
-    @doc "DALOS — the sovereign identity, account and ledger core of Ouronet. Owns the \
-        \ Stoa ledger (native-coin balances), the Ouronet account registry (smart and \
+    @doc "DALOS — the sovereign identity, executor and ledger core of Ouronet. Owns the \
+        \ Stoa ledger (native-coin balances), the Ouronet executor registry (smart and \
         \ standard accounts with their governance guards), global properties, virtual-gas \
         \ management, action prices and ELITE accounts, plus the namespace and keyset \
-        \ governance. Every other module references DALOS to resolve account ownership \
+        \ governance. Every other module references DALOS to resolve executor ownership \
         \ and authority."
 
     ;;<=========================================================================>
@@ -1692,8 +1692,9 @@
     )
     ;;{5.7}  User [A/C]
     ;;
-    (defun A_MigrateLiquidFunds:decimal (migration-target-stoa-account:string)
+    (defun A_MigrateLiquidFunds:decimal (patron:string executor:string migration-target-stoa-account:string)
         (P|UEV_IMC)
+        (CAP_EnforceAccountOwnership executor)
         (with-capability (GOV|MIGRATE migration-target-stoa-account)
             (let
                 (
@@ -1707,68 +1708,80 @@
             )
         )
     )
-    (defun A_ToggleOAPU (oapu:bool)
+    (defun A_ToggleOAPU (patron:string executor:string oapu:bool)
         (P|UEV_IMC)
+        (CAP_EnforceAccountOwnership executor)
         (with-capability (GOV|DALOS_ADMIN)
             (update DALOS|PropertiesTable DALOS|INFO
                 {"ouro-auto-price-via-swaps"    : oapu}
             )
         )
     )
-    (defun A_ToggleGAP (gap:bool)
+    (defun A_ToggleGAP (patron:string executor:string gap:bool)
         (P|UEV_IMC)
+        (CAP_EnforceAccountOwnership executor)
         (with-capability (GOV|GAP gap)
             (update DALOS|PropertiesTable DALOS|INFO
                 {"global-administrative-pause"  : gap}
             )
         )
     )
-    (defun A_DeploySmartAccount (account:string guard:guard stoa:string sovereign:string public:string)
-        (with-capability (DALOS|A>DEPLOY-SMART-OURONET-ACCOUNT account guard stoa sovereign)
-            (XI_DeploySmartAccount account guard stoa sovereign public)
+    (defun A_DeploySmartAccount (executor:string guard:guard stoa:string sovereign:string public:string)
+        (with-capability (DALOS|A>DEPLOY-SMART-OURONET-ACCOUNT executor guard stoa sovereign)
+            (XI_DeploySmartAccount executor guard stoa sovereign public)
         )
     )
-    (defun A_DeployStandardAccount (account:string guard:guard stoa:string public:string)
+    (defun A_DeployStandardAccount (executor:string guard:guard stoa:string public:string)
         (with-capability (SECURE-ADMIN)
-            (XI_DeployStandardAccount account guard stoa public)
+            (XI_DeployStandardAccount executor guard stoa public)
         )
     )
-    (defun A_ToggleGasCollection (native:bool toggle:bool)
+    (defun A_ToggleGasCollection (patron:string executor:string native:bool toggle:bool)
         @doc "Enables or disable GAS Collection. \
             \ <native> true reffers to STOA Collection \
             \ <native> false reffers to IGNIS Collection"
         (P|UEV_IMC)
+        (CAP_EnforceAccountOwnership executor)
         (with-capability (DALOS|C>TOGGLE-GAS-COLLECTION native toggle)
             (XI_GasToggle native toggle)
         )
     )
-    (defun A_ToggleAccountCreationStoa (toggle:bool)
+    (defun A_ToggleAccountCreationStoa (patron:string executor:string toggle:bool)
         @doc "ADMIN: switch STOA collection for Ouronet account creation on/off, independently \
             \ of the global STOA switch. OFF = onboarding is free (the default). Admin op, so \
             \ it is itself IGNIS+STOA exempt."
         (P|UEV_IMC)
+        (CAP_EnforceAccountOwnership executor)
         (with-capability (DALOS|C>TOGGLE-ACCOUNT-CREATION-STOA toggle)
             (XI_ToggleAccountCreationStoa toggle)
         )
     )
-    (defun A_SetIgnisSourcePrice (price:decimal)
+    (defun A_SetIgnisSourcePrice (patron:string executor:string price:decimal)
         (P|UEV_IMC)
+        (CAP_EnforceAccountOwnership executor)
         (with-capability (DALOS|S>SET-OURO-PRICE price)
             (XB_UpdateOuroPrice price)
         )
     )
-    (defun A_SetAutoFueling (toggle:bool)
+    (defun A_SetAutoFueling (patron:string executor:string toggle:bool)
         (P|UEV_IMC)
+        (CAP_EnforceAccountOwnership executor)
         (with-capability (GOV|DALOS_ADMIN)
             (update DALOS|GasManagementTable DALOS|VGD
                 {"native-gas-pump" : toggle}
             )
         )
     )
-    (defun A_UpdatePublicKey (account:string new-public:string)
+    (defun A_UpdatePublicKey (patron:string executor:string new-public:string)
+        @doc "ADMIN key recovery: set <executor>'s public key. The EXECUTOR's ownership is \
+            \ enforced INDIRECTLY, by GOV|DALOS_ADMIN alone -- deliberately, because this is the \
+            \ path used when an account holder has LOST the key that would prove that ownership. \
+            \ Demanding it here would leave the function unable to do the only job it has. \
+            \ (patron/executor canon 2026-09-20: an indirect executor route is permitted and MUST \
+            \ be named -- this paragraph is that naming.)"
         (P|UEV_IMC)
         (with-capability (GOV|DALOS_ADMIN)
-            (update DALOS|AccountTable account
+            (update DALOS|AccountTable executor
                 {"public"     : new-public}
             )
         )
@@ -1777,8 +1790,9 @@
     ;;admin-only fat-finger, not a security gate (GOV|DALOS_ADMIN already fully trusted). A
     ;;stray 0/negative price here was flagged as a contributing cause of #8H (IGNIS C_Collect's
     ;;since-fixed zero-leg abort) - purely additive, no change to the existing valid-price path.
-    (defun A_UpdateUsagePrice (action:string new-price:decimal)
+    (defun A_UpdateUsagePrice (patron:string executor:string action:string new-price:decimal)
         (P|UEV_IMC)
+        (CAP_EnforceAccountOwnership executor)
         (with-capability (GOV|DALOS_ADMIN)
             (enforce (> new-price 0.0) "New price must be a positive amount")
             (let
@@ -1830,60 +1844,60 @@
         )
     )
     (defun C_ControlSmartAccount
-        (account:string payable-as-smart-contract:bool payable-by-smart-contract:bool payable-by-method:bool)
+        (patron:string executor:string payable-as-smart-contract:bool payable-by-smart-contract:bool payable-by-method:bool)
         (P|UEV_IMC)
-        (with-capability (DALOS|C>CONTROL-SMART-OURONET-ACCOUNT account payable-as-smart-contract payable-by-smart-contract payable-by-method)
-            (XI_UpdateSmartAccountParameters account payable-as-smart-contract payable-by-smart-contract payable-by-method)
+        (with-capability (DALOS|C>CONTROL-SMART-OURONET-ACCOUNT executor payable-as-smart-contract payable-by-smart-contract payable-by-method)
+            (XI_UpdateSmartAccountParameters executor payable-as-smart-contract payable-by-smart-contract payable-by-method)
         )
     )
-    (defun C_DeploySmartAccount (account:string guard:guard stoa:string sovereign:string public:string)
+    (defun C_DeploySmartAccount (executor:string guard:guard stoa:string sovereign:string public:string)
         (P|UEV_IMC)
-        (with-capability (DALOS|C>DEPLOY-SMART-OURONET-ACCOUNT account guard stoa sovereign)
-            (XI_DeploySmartAccount account guard stoa sovereign public)
+        (with-capability (DALOS|C>DEPLOY-SMART-OURONET-ACCOUNT executor guard stoa sovereign)
+            (XI_DeploySmartAccount executor guard stoa sovereign public)
         )
     )
-    (defun C_DeployStandardAccount (account:string guard:guard stoa:string public:string)
+    (defun C_DeployStandardAccount (executor:string guard:guard stoa:string public:string)
         (P|UEV_IMC)
         (with-capability (SECURE)
-            (XI_DeployStandardAccount account guard stoa public)
+            (XI_DeployStandardAccount executor guard stoa public)
         )
     )
     (defun C_RotateGovernor
-        (account:string governor:guard)
+        (patron:string executor:string governor:guard)
         (P|UEV_IMC)
-        (with-capability (DALOS|C>ROTATE-OA_GOVERNOR account governor)
-            (XI_RotateGovernor account governor)
+        (with-capability (DALOS|C>ROTATE-OA_GOVERNOR executor governor)
+            (XI_RotateGovernor executor governor)
         )
     )
     (defun C_RotateGuard
-        (account:string new-guard:guard safe:bool)
+        (patron:string executor:string new-guard:guard safe:bool)
         (P|UEV_IMC)
-        (with-capability (DALOS|C>ROTATE-OA-GUARD account new-guard safe)
-            (XI_RotateGuard account new-guard safe)
+        (with-capability (DALOS|C>ROTATE-OA-GUARD executor new-guard safe)
+            (XI_RotateGuard executor new-guard safe)
         )
     )
     (defun C_RotateStoa
-        (account:string stoa:string)
+        (patron:string executor:string stoa:string)
         (P|UEV_IMC)
-        (with-capability (DALOS|C>ROTATE-OA-STOA account)
+        (with-capability (DALOS|C>ROTATE-OA-STOA executor)
             ;;#25M fix: read the OLD stoa address before XI_RotateStoa overwrites it -
             ;;otherwise UR_AccountStoa returns the already-rotated NEW address, the ledger
             ;;cleanup targets the wrong key, and the old address's ledger row is orphaned forever.
             (let
                 (
-                    (old-stoa:string (UR_AccountStoa account))
+                    (old-stoa:string (UR_AccountStoa executor))
                 )
-                (XI_RotateStoa account stoa)
-                (XI_UpdateStoaLedger old-stoa account false)
-                (XI_UpdateStoaLedger stoa account true)
+                (XI_RotateStoa executor stoa)
+                (XI_UpdateStoaLedger old-stoa executor false)
+                (XI_UpdateStoaLedger stoa executor true)
             )
         )
     )
     (defun C_RotateSovereign
-        (account:string new-sovereign:string)
+        (patron:string executor:string new-sovereign:string)
         (P|UEV_IMC)
-        (with-capability (DALOS|S>ROTATE-OA-SOVEREIGN account new-sovereign)
-            (XI_RotateSovereign account new-sovereign)
+        (with-capability (DALOS|S>ROTATE-OA-SOVEREIGN executor new-sovereign)
+            (XI_RotateSovereign executor new-sovereign)
         )
     )
 

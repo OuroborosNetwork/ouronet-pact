@@ -58,8 +58,8 @@
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
         (patron:string KST.ANHD)
     )
-    (ref-TS01-A::DALOS|A_SetIgnisSourcePrice 1.2)
-    (ref-TS01-A::DALOS|A_SetAutoFueling true)
+    (ref-TS01-A::DALOS|A_SetIgnisSourcePrice KST.ANHD 1.2)
+    (ref-TS01-A::DALOS|A_SetAutoFueling KST.ANHD true)
     (ref-TS01-A::DALOS|A_UpdatePublicKey patron "plmea")
     ;;
     (ref-TS01-C1::DPTF|C_UpdatePendingBranding

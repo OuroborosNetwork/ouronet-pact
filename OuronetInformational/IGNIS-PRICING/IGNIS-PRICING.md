@@ -293,7 +293,7 @@ STOA; the constants-only conversion (65 table reads lifted); the `define-set` / 
 **443** Talos client functions carry a price; **5** carry no row, and the sheet now says which:
 
 ```
-182 exact  ·  200 floor  ·  11 STOA-only  ·  50 exempt  ·  0 unresolved  ·  5 unpriced
+182 exact  ·  200 floor  ·  3 STOA-only  ·  58 exempt  ·  0 unresolved  ·  5 unpriced
 ```
 
 Of the 5: **3 are admin entrypoints** (`ORBR|A_Fuel`, `P|A_Add`, `P|A_AddIMP`) — IGNIS and

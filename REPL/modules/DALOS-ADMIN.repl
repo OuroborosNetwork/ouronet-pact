@@ -44,17 +44,17 @@
     (let ((gap0:bool (ref-DALOS::UR_GAP)) (acs0:bool (ref-DALOS::UR_AccountCreationStoa)))
         ;;GAP — the global administrative pause. Flipping it ON must be observable, and flipping
         ;;it back must restore EXACTLY the prior value (metamorphic, not a hardcoded default).
-        (ref-TS01-A::DALOS|A_ToggleGAP true)
+        (ref-TS01-A::DALOS|A_ToggleGAP KST.ANHD true)
         (map print [(expect "<<DALOS-ADMIN-01>> A_ToggleGAP turned the global pause ON"
                         true (ref-DALOS::UR_GAP))])
-        (ref-TS01-A::DALOS|A_ToggleGAP gap0)
+        (ref-TS01-A::DALOS|A_ToggleGAP KST.ANHD gap0)
         (map print [(expect "<<DALOS-ADMIN-01>> A_ToggleGAP restored the original GAP state"
                         gap0 (ref-DALOS::UR_GAP))])
         ;;Account-creation STOA switch — added in the #76 pricing work, default OFF (onboarding).
-        (ref-TS01-A::DALOS|A_AccountCreationStoaToggle true)
+        (ref-TS01-A::DALOS|A_AccountCreationStoaToggle KST.ANHD true)
         (map print [(expect "<<DALOS-ADMIN-01>> A_AccountCreationStoaToggle turned it ON"
                         true (ref-DALOS::UR_AccountCreationStoa))])
-        (ref-TS01-A::DALOS|A_AccountCreationStoaToggle acs0)
+        (ref-TS01-A::DALOS|A_AccountCreationStoaToggle KST.ANHD acs0)
         (map print
             [
                 (expect "<<DALOS-ADMIN-01>> A_AccountCreationStoaToggle restored the original"
@@ -86,10 +86,10 @@
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
     )
     (let ((p0:decimal (ref-DALOS::UR_UsagePrice "dptf")))
-        (ref-TS01-A::DALOS|A_UpdateUsagePrice "dptf" 12345.0)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice KST.ANHD "dptf" 12345.0)
         (map print [(expect "<<DALOS-ADMIN-02>> A_UpdateUsagePrice stored the new price"
                         12345.0 (ref-DALOS::UR_UsagePrice "dptf"))])
-        (ref-TS01-A::DALOS|A_UpdateUsagePrice "dptf" p0)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice KST.ANHD "dptf" p0)
         (map print
             [
                 (expect "<<DALOS-ADMIN-02>> A_UpdateUsagePrice restored the original price"
@@ -171,10 +171,10 @@
                 ]
             )
             ;;PRECONDITION (a): arm the pause. Without this the op is rejected -- see 03b.
-            (ref-TS01-A::DALOS|A_ToggleGAP true)
+            (ref-TS01-A::DALOS|A_ToggleGAP KST.ANHD true)
             (let
                 (
-                    (moved:decimal (ref-TS01-A::DALOS|A_MigrateLiquidFunds target))
+                    (moved:decimal (ref-TS01-A::DALOS|A_MigrateLiquidFunds KST.ANHD target))
                 )
                 (map print
                     [
@@ -240,11 +240,11 @@
                 ;;target. The caller must treat "empty stoa account" as "already migrated".
                 (expect-failure "<<DALOS-ADMIN-03b>> a non-empty target is rejected"
                     "Migration can only be executed to an empty stoa account"
-                    (ref-TS01-A::DALOS|A_MigrateLiquidFunds funded))
+                    (ref-TS01-A::DALOS|A_MigrateLiquidFunds KST.ANHD funded))
             ]
         )
         ;;Now disarm GAP and aim at a genuinely empty account, isolating the FIRST guard.
-        (ref-TS01-A::DALOS|A_ToggleGAP false)
+        (ref-TS01-A::DALOS|A_ToggleGAP KST.ANHD false)
         (map print
             [
                 (expect "<<DALOS-ADMIN-03b>> GAP is now OFF" false (ref-DALOS::UR_GAP))
@@ -259,7 +259,7 @@
                 ;;unchanged behaviour: GAP is OFF -> refused -> "...must be online".
                 (expect-failure "<<DALOS-ADMIN-03b>> migration with GAP OFF is refused, and the message now says so correctly"
                     "Migration can only be executed when Global Administrative Pause is online"
-                    (ref-TS01-A::DALOS|A_MigrateLiquidFunds fresh))
+                    (ref-TS01-A::DALOS|A_MigrateLiquidFunds KST.ANHD fresh))
             ]
         )
         ""
@@ -517,24 +517,31 @@
         (ref-DALOS:module{OuronetDalosV2} DALOS)
     )
     (env-sigs [{ "key": "PK_Lumy", "caps": [] }])
+    ;;LUMY names HER OWN account as executor, which is the fixture that satisfies the executor
+    ;;gate so the OURO-price gate is the only thing left that can refuse. Naming ANHD here would
+    ;;fail on the executor's keyset instead and SHADOW the guard this test exists to prove.
     (print
         (expect-failure "<<DALOS-G9>> a third party holding none of the three guards is refused"
             "Permission not granted to Update OURO Price !"
-            (ref-TS01-A::DALOS|A_SetIgnisSourcePrice 42.0)))
+            (ref-TS01-A::DALOS|A_SetIgnisSourcePrice KST.LUMY 42.0)))
     ;;...and with NO signature at all, the same message -- so the refusal is about holding none of
     ;;the three, not about LUMY specifically.
+    ;;UNSIGNED. Under the patron/executor canon (2026-09-20) this no longer reaches the OURO-price
+    ;;gate at all: an A_ enforces its EXECUTOR's ownership first, and an unsigned caller owns
+    ;;nothing. The test still earns its place -- it now proves the EXECUTOR gate fires, which is a
+    ;;different guard from the one above, and between them both are exercised.
     (env-sigs [])
     (print
-        (expect-failure "<<DALOS-G9>> ...and so is an unsigned call"
-            "Permission not granted to Update OURO Price !"
-            (ref-TS01-A::DALOS|A_SetIgnisSourcePrice 42.0)))
+        (expect-failure "<<DALOS-G9>> an unsigned call is refused by the EXECUTOR gate, before the price gate"
+            "Keyset failure"
+            (ref-TS01-A::DALOS|A_SetIgnisSourcePrice KST.LUMY 42.0)))
     ;;CONTRAST: the DALOS admin key DOES satisfy the first branch, so the same call succeeds. Without
     ;;this the two refusals are equally consistent with the operation being broken outright -- and it
     ;;is exactly the signature that would have hidden the guard.
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
     (print
         (expect "<<DALOS-G9>> ...while the DALOS admin key satisfies the first branch"
-            true (!= "" (format "{}" [(ref-TS01-A::DALOS|A_SetIgnisSourcePrice 42.0)]))))
+            true (!= "" (format "{}" [(ref-TS01-A::DALOS|A_SetIgnisSourcePrice KST.ANHD 42.0)]))))
     ""
 )
 (env-sigs [])
@@ -724,18 +731,18 @@
         [
             (expect-failure "<<DALOS-G3>> toggling GAP to the value it already holds is refused"
                 "GAP is already toggled to"
-                (ref-TS01-A::DALOS|A_ToggleGAP (ref-DALOS::UR_GAP)))
+                (ref-TS01-A::DALOS|A_ToggleGAP KST.ANHD (ref-DALOS::UR_GAP)))
             (expect-failure "<<DALOS-G3>> ...and likewise the account-creation STOA switch"
                 "Account-creation STOA collection is already in that state"
-                (ref-TS01-A::DALOS|A_AccountCreationStoaToggle (ref-DALOS::UR_AccountCreationStoa)))
+                (ref-TS01-A::DALOS|A_AccountCreationStoaToggle KST.ANHD (ref-DALOS::UR_AccountCreationStoa)))
             ;;the usage-price floor. A zero or negative price would make account deployment free
             ;;or, worse, pay the depositor.
             (expect-failure "<<DALOS-G3>> a negative usage price is refused"
                 "New price must be a positive amount"
-                (ref-TS01-A::DALOS|A_UpdateUsagePrice "smart" -1.0))
+                (ref-TS01-A::DALOS|A_UpdateUsagePrice KST.ANHD "smart" -1.0))
             (expect-failure "<<DALOS-G3>> ...and so is zero"
                 "New price must be a positive amount"
-                (ref-TS01-A::DALOS|A_UpdateUsagePrice "smart" 0.0))
+                (ref-TS01-A::DALOS|A_UpdateUsagePrice KST.ANHD "smart" 0.0))
         ]
     )
     ""
@@ -905,7 +912,7 @@
         (
             (gap0:bool (ref-DALOS::UR_GAP))
         )
-        (ref-TS01-A::DALOS|A_ToggleGAP true)
+        (ref-TS01-A::DALOS|A_ToggleGAP KST.ANHD true)
         (map print
             [
                 (expect "<<DALOS-G6>> the global pause is ON" true (ref-DALOS::UR_GAP))
@@ -924,7 +931,7 @@
                     "While Global Administrative Pause is online" (test-capability (TS01-C4.P|TS)))
             ]
         )
-        (ref-TS01-A::DALOS|A_ToggleGAP gap0)
+        (ref-TS01-A::DALOS|A_ToggleGAP KST.ANHD gap0)
         (map print
             [
                 (expect "<<DALOS-G6>> GAP restored to the value this block found" gap0 (ref-DALOS::UR_GAP))

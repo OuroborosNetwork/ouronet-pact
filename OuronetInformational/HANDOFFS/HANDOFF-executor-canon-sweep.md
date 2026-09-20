@@ -9,7 +9,7 @@ session must be able to see what is done by reading this file, without reconstru
 `git log`. If the table and `_executorplan.py` disagree, **the tool is right** — regenerate.
 
 **Status:** preparation complete, sweep starting at `01_DALOS`.
-**81 done · 719 remaining · 46 modules · 0 modules swept.**
+**99 done · 701 remaining · 46 modules · 1 module swept (01_DALOS).**
 
 ---
 
@@ -123,7 +123,7 @@ R = rename · A = add executor · P = add patron
 
 | done · # | module | R | A | P | total | interface(s) to update |
 |---|---|---:|---:|---:|---:|---|
-| [ ] 1 | `01_DALOS.pact` | 0 | 0 | 18 | **18** | `OuronetDalosV2`, `OuronetPolicyV2` |
+| [x] 1 | `01_DALOS.pact` | 0 | 0 | 18 | **18** | `OuronetDalosV2`, `OuronetPolicyV2` |
 | [ ] 2 | `02_IGNIS.pact` | 0 | 1 | 5 | **6** | `IgnisCollectorV3` |
 | [ ] 3 | `04_BRD.pact` | 0 | 0 | 2 | **2** | `BrandingV2` |
 | [ ] 4 | `05_DPTF.pact` | 0 | 2 | 22 | **24** | `BrandingUsagePrimaryV2`, `DemiourgosPactTrueFungibleV2` |
@@ -173,6 +173,46 @@ R = rename · A = add executor · P = add patron
 
 **Interfaces get CONTENT updates, not necessarily VERSION bumps** — most are already ahead of
 mainnet. This is what dissolved the "48-interface cascade" that blocked the first attempt.
+
+## 4.1 PATRONLESS BY DESIGN — the correction that changes what "conforming" means
+
+**Owner correction, 2026-09-20, mid-sweep.** `patronless` and `gasless` are different things:
+
+- **gasless** — a patron exists and is supplied as `GASLESS-PATRON`; collection runs, collects zero.
+- **patronless** — **no patron is needed at all.** Adding one is wrong.
+
+**Account deployment is patronless**: the payer is the thing being created. There, *the account
+being deployed IS the executor*:
+
+```pact
+(defun C_DeploySmartAccount (executor:string guard:guard stoa:string sovereign:string public:string))
+```
+
+**The IGNIS source/collector primitives are the same** — they make virtual gas or compress it back
+to its source, so they are what a patron would be paid *from*. `CLAUDE.md` already records them as
+"the collectors [that] cannot collect from themselves": `C_Collect`, `C_TransferDalosFuel`, and the
+`STOA|C_Collect*` family.
+
+`_executorplan.py` now carries a `PATRONLESS` registry. **It is a set of discovered design facts,
+recorded per function — never a fallback for "I could not find a patron".** When a module's turn
+comes, ask whether each entrypoint *can* have a patron before assuming it must.
+
+**EXECUTEE IS RARE.** Observably it appears only in transfer functions. Do not hunt for a third
+role; if one seems to appear, read the body before promoting a parameter to third position.
+
+## 4.2 SCOPE OF ONE MODULE'S TURN
+
+Processing a module is **not** editing one file. It is:
+
+1. the core module, 2. its interface, 3. its Talos wrapper(s), 4. **every downstream module that
+calls it**, 5. **every REPL test that exercises it**, 6. the deploy bundle, 7. the gate.
+
+Steps 4 and 5 are the bulk. DALOS alone reached `RedTeam`, `CONFORMANCE`, `ATS`, `LIQUID` and the
+Stage-1 bootstrap. **Do it in ONE pass per module**, with intermediate commits inside that pass as
+needed — not repeated partial sweeps, which is how the same call sites get revisited.
+
+**At the end of all 46:** Audit Book 2.0 must prove the whole refactor works, is tested and is
+deploy-ready, and the **deploy pipeline is rewritten**.
 
 ## 5. PROTOCOL — one module at a time
 

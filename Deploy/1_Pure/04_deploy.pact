@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 4 of 20
 ;; This is STEP 4 of 21 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-3 must have run first, including the init steps between deploys.
-;; 4 module(s), 397,481 gas measured in the REPL gas model, 298,916 bytes
+;; 4 module(s), 397,481 gas measured in the REPL gas model, 298,932 bytes
 ;;
 ;; Modules in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/10_ATSU.pact
@@ -92,7 +92,7 @@
         (remover:string ats:string reward-token:string accounts-with-ats-data:[string])
     )
     (defun A_KickStart:object{IgnisCollectorV3.OutputCumulator}
-        (kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
+        (patron:string executor:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
     )
     ;;
     ;;  [C]
@@ -1632,13 +1632,13 @@
         )
     )
     (defun A_KickStart:object{IgnisCollectorV3.OutputCumulator}
-        (kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
+        (patron:string executor:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
         @doc "Administrative variant (audit finding #11M / M2): forgoes pool ownership \
             \ for module governance (GOV|ATSU_ADMIN); resulting index is only bound by \
             \ the shared 0.1 floor, no ceiling - for legitimate ratios above 100.0."
         (P|UEV_IMC)
-        (with-capability (ATSU|C>ADMINISTRATIVE-KICKSTART kickstarter ats rt-amounts rbt-request-amount)
-            (XI_KickStart kickstarter ats rt-amounts rbt-request-amount)
+        (with-capability (ATSU|C>ADMINISTRATIVE-KICKSTART executor ats rt-amounts rbt-request-amount)
+            (XI_KickStart executor ats rt-amounts rbt-request-amount)
         )
     )
     (defun CC_RemoveSecondary:object{IgnisCollectorV3.OutputCumulator}

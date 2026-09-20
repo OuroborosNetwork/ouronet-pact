@@ -535,7 +535,7 @@
         (amounts:[decimal] [10.0 10.0 10.0])
     )
     ;;native=false selects the VIRTUAL (IGNIS) collection switch; toggle=false turns it off.
-    (ref-TS01-A::DALOS|A_IgnisToggle false false)
+    (ref-TS01-A::DALOS|A_IgnisToggle KST.ANHD false false)
     (let
         (
             ;;the ASYMMETRY TAX, read from the same CLAD reader DPB-01 uses.
@@ -571,7 +571,7 @@
             )
             ;;restore BEFORE asserting, so a failure here cannot leave the switch off for any
             ;;later file that shares this state.
-            (ref-TS01-A::DALOS|A_IgnisToggle false true)
+            (ref-TS01-A::DALOS|A_IgnisToggle KST.ANHD false true)
             (map print
                 [
                     (format "<<DPB-05>> switch OFF: quoted={} charged={} tax={}" [quoted total tax])

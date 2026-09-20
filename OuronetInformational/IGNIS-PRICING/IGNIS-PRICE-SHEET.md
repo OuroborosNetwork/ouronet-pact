@@ -181,14 +181,14 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_UpdatePendingBranding` | `C_UpdatePendingBranding` | SETUP | **100** | — | $1.00 | branding 100 |
 | `C_UpdateRoyalty` | `C_UpdateRoyalty` | FEE | **44** | — | $0.44 | deter:fee 25 + components:ATS|C_UpdateRoyalty 19 |
 | `C_UpdateSyphon` | `C_UpdateSyphon` | USAGE | **20** | — | $0.20 | deter:usage 1 + components:ATS|C_UpdateSyphon 19 |
-| `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **0** | 250 | STOA only | no IGNIS charged — priced in STOA only; STOA: blue 250 |
+| `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **0** | — | free | free by design — Talos wrapper collects no IGNIS and no STOA |
 | `C_VestedCoil` | `C_Coil` ×2 | USAGE | **≥ 93** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:usage 1 + components:DPTF|C_Mint 86 + smallest 1 + small 2 + medium 3 |
 | `C_VestedCurl` | `C_Curl` ×2 | USAGE | **≥ 93** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:usage 1 + components:DPTF|C_Mint 86 + smallest 1 + small 2 + medium 3 |
 | `C_WithdrawRoyalties` | `C_WithdrawRoyalties` | USAGE | **≥ 6** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 + small 2 + medium 3 |
 | `CC_RemoveSecondary` | `CC_RemoveSecondary` | SETUP | **≥ 291** | — | COMPLEX | heavy / parallel-slice op; legs: deter:ats-secondary 250 + components:ATS|CC_RemoveSecondary 41 |
 | HOT-RBT\|C_Repurpose | HOT-RBT\|C_Repurpose | SETUP | **≥ 141** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_ToggleFreezeAccount 53 + components:DPOF|C_Mint 80 + small 2 + smallest 1 |
 | HOT-RBT\|C_UpdatePendingBranding | HOT-RBT\|C_UpdatePendingBranding | SETUP | **≥ 100** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: branding 100 |
-| HOT-RBT\|C_UpgradeBranding | HOT-RBT\|C_UpgradeBranding | SETUP | **0** | 250 | STOA only | no IGNIS charged — priced in STOA only; STOA: blue 250 |
+| HOT-RBT\|C_UpgradeBranding | HOT-RBT\|C_UpgradeBranding | SETUP | **0** | — | free | free by design — Talos wrapper collects no IGNIS and no STOA |
 
 ## BRD
 
@@ -314,7 +314,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_UpdateSetNonces` | `C_UpdateNonces` | SETUP | **≥ 1** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 |
 | `C_UpdateSetNonceScore` | `C_UpdateNonceScore` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
 | `C_UpdateSetNonceURI` | `C_UpdateNonceURI` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
-| `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **0** | 250 | STOA only | no IGNIS charged — priced in STOA only; STOA: blue 250 |
+| `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **0** | — | free | free by design — Talos wrapper collects no IGNIS and no STOA |
 | `C_WipeClean` | `C_WipeClean` | SETUP | **≥ 5** | — | COMPLEX | per-nonce / per-item work; legs: weight:wipe-nonce 5 |
 | `C_WipeDirty` | `C_WipeDirty` | SETUP | **≥ 5** | — | COMPLEX | per-nonce / per-item work; legs: weight:wipe-nonce 5 |
 | `C_WipeNonce` | `C_WipeNonce` | SETUP | **≥ 30** | — | COMPLEX | per-nonce / per-item work; legs: deter:setup 5 + components:DPNF|C_WipeNonce 25 |
@@ -344,7 +344,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_Transfer` | `C_Transfer` | USAGE | **≥ 3** | — | COMPLEX | charge multiplies by an item count; legs: small 2 + smallest 1 |
 | `C_Transmit` | `C_Transmit` | SETUP | **≥ 3** | — | COMPLEX | charge multiplies by an item count; legs: small 2 + smallest 1 |
 | `C_UpdatePendingBranding` | `C_UpdatePendingBranding` | SETUP | **100** | — | $1.00 | branding 100 |
-| `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **0** | 250 | STOA only | no IGNIS charged — priced in STOA only; STOA: blue 250 |
+| `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **0** | — | free | free by design — Talos wrapper collects no IGNIS and no STOA |
 | `C_WipeClean` | `C_WipeClean` | SETUP | **≥ 5** | — | COMPLEX | per-nonce / per-item work; legs: weight:wipe-nonce 5 |
 | `C_WipePure` | `C_WipePure` | SETUP | **≥ 5** | — | COMPLEX | per-nonce / per-item work; legs: weight:wipe-nonce 5 |
 | `C_WipeSlim` | `C_WipeSlim` | SETUP | **≥ 50** | — | COMPLEX | per-nonce / per-item work; legs: deter:setup 5 + components:DPOF|C_WipeSlim 45 |
@@ -410,7 +410,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_UpdateSetNonces` | `C_UpdateNonces` | SETUP | **≥ 1** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 |
 | `C_UpdateSetNonceScore` | `C_UpdateNonceScore` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
 | `C_UpdateSetNonceURI` | `C_UpdateNonceURI` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
-| `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **0** | 250 | STOA only | no IGNIS charged — priced in STOA only; STOA: blue 250 |
+| `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **0** | — | free | free by design — Talos wrapper collects no IGNIS and no STOA |
 | `C_WipeClean` | `C_WipeClean` | SETUP | **≥ 5** | — | COMPLEX | per-nonce / per-item work; legs: weight:wipe-nonce 5 |
 | `C_WipeDirty` | `C_WipeDirty` | SETUP | **≥ 5** | — | COMPLEX | per-nonce / per-item work; legs: weight:wipe-nonce 5 |
 | `C_WipeNonce` | `C_WipeNonce` | SETUP | **≥ 30** | — | COMPLEX | per-nonce / per-item work; legs: deter:setup 5 + components:DPSF|C_WipeNonce 25 |
@@ -455,7 +455,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_Transfer` | `C_Transfer` | USAGE | **≥ 6** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 + small 2 + medium 3 |
 | `C_Transmute` | `C_Transmute` | SETUP | **5** | — | $0.05 | medium 3 + small 2 |
 | `C_UpdatePendingBranding` | `C_UpdatePendingBranding` | SETUP | **100** | — | $1.00 | branding 100 |
-| `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **0** | 250 | STOA only | no IGNIS charged — priced in STOA only; STOA: blue 250 |
+| `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **0** | — | free | free by design — Talos wrapper collects no IGNIS and no STOA |
 | `C_Wipe` | `C_Wipe` | SETUP | **≥ 85** | — | COMPLEX | per-nonce / per-item work; legs: deter:setup 5 + components:DPTF|C_Wipe 80 |
 | `C_WipeSlim` | `C_WipeSlim` | SETUP | **≥ 85** | — | COMPLEX | per-nonce / per-item work; legs: deter:setup 5 + components:DPTF|C_WipeSlim 80 |
 
@@ -553,16 +553,16 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_AddSleepingLiquidity` | STOA-PID\|C_AddSleepingLiquidity | USAGE | **≥ 1359** | — | COMPLEX | charge multiplies by an item count; legs: deter:lp-churn 1000 + components:SWP|C_AddSleepingLiquidity 65 + deter:setup 5 + components:DPOF|C_Burn 45 + deter:usage 1 + components:DPTF|C_Burn 71 + components:DPTF|C_Mint 86 + components:DPOF|C_Mint 80 + small 2 + smallest 1 + medium 3 |
 | `C_AddStandardLiquidity` | `C_AddStandardLiquidity` | USAGE | **≥ 1000** | — | COMPLEX | charge multiplies by an item count; legs: deter:lp-churn 1000 + const:LQ|INITIATION-FEE 100 + less:LQ|INITIATION-FEE -100 |
 | `C_ChangeOwnership` | `C_ChangeOwnership` | AUTH | **29** | — | $0.29 | deter:auth 10 + components:SWP|C_ChangeOwnership 19 |
-| `C_EnableFrozenLP` | `C_EnableFrozenLP` | SETUP | **≥ 282** | 100 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:vst-link 250 + components:VST|C_CreateFrozenLink 29 + medium 3 | STOA: dptf 100 |
-| `C_EnableSleepingLP` | `C_EnableSleepingLP` | SETUP | **≥ 282** | 100 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:vst-link 250 + components:VST|C_CreateVestingLink 29 + medium 3 | STOA: dpmf 100 |
+| `C_EnableFrozenLP` | `C_EnableFrozenLP` | SETUP | **≥ 282** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:vst-link 250 + components:VST|C_CreateFrozenLink 29 + medium 3 |
+| `C_EnableSleepingLP` | `C_EnableSleepingLP` | SETUP | **≥ 282** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:vst-link 250 + components:VST|C_CreateVestingLink 29 + medium 3 |
 | `C_Firestarter` | `C_WrapStoa` ×3 | USAGE | **0** | — | free | free by design — builds cumulators and collects none of them |
 | `C_Fuel` | `C_Fuel` | USAGE | **≥ 6** | — | COMPLEX | charge multiplies by an item count; legs: smallest 1 + small 2 + medium 3 |
 | `C_IssueStable` | `C_Issue` | ISSUE | **≥ 5087** | 500 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:usage 1 + components:DPTF|C_Mint 86 + deter:issue-swp-pair 5000 | STOA: stoa:issue-swp-pair 500 |
-| `C_IssueStablePool` | `C_IssueStablePool` ×2 | ISSUE | **≥ 5606** | 600 | COMPLEX | charge multiplies by an item count; legs: deter:issue-swp-pair 5000 + token-issue 500 + biggest 5 + smallest 1 + literal 100 | STOA: dptf 100 + swp 500 |
+| `C_IssueStablePool` | `C_IssueStablePool` ×2 | ISSUE | **≥ 5606** | — | COMPLEX | charge multiplies by an item count; legs: deter:issue-swp-pair 5000 + token-issue 500 + biggest 5 + smallest 1 + literal 100 |
 | `C_IssueStandard` | `C_Issue` | ISSUE | **≥ 5087** | 500 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:usage 1 + components:DPTF|C_Mint 86 + deter:issue-swp-pair 5000 | STOA: stoa:issue-swp-pair 500 |
-| `C_IssueStandardPool` | `C_IssueStandardPool` | ISSUE | **≥ 5606** | 600 | COMPLEX | charge multiplies by an item count; legs: deter:issue-swp-pair 5000 + token-issue 500 + biggest 5 + smallest 1 + literal 100 | STOA: dptf 100 + swp 500 |
+| `C_IssueStandardPool` | `C_IssueStandardPool` | ISSUE | **≥ 5606** | — | COMPLEX | charge multiplies by an item count; legs: deter:issue-swp-pair 5000 + token-issue 500 + biggest 5 + smallest 1 + literal 100 |
 | `C_IssueWeighted` | `C_Issue` | ISSUE | **≥ 5087** | 500 | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:usage 1 + components:DPTF|C_Mint 86 + deter:issue-swp-pair 5000 | STOA: stoa:issue-swp-pair 500 |
-| `C_IssueWeightedPool` | `C_IssueWeightedPool` | ISSUE | **≥ 5606** | 600 | COMPLEX | charge multiplies by an item count; legs: deter:issue-swp-pair 5000 + token-issue 500 + biggest 5 + smallest 1 + literal 100 | STOA: dptf 100 + swp 500 |
+| `C_IssueWeightedPool` | `C_IssueWeightedPool` | ISSUE | **≥ 5606** | — | COMPLEX | charge multiplies by an item count; legs: deter:issue-swp-pair 5000 + token-issue 500 + biggest 5 + smallest 1 + literal 100 |
 | `C_ModifyCanChangeOwner` | `C_ModifyCanChangeOwner` | AUTH | **29** | — | $0.29 | deter:auth 10 + components:SWP|C_ModifyCanChangeOwner 19 |
 | `C_ModifyWeights` | `C_ModifyWeights` | FEE | **44** | — | $0.44 | deter:fee 25 + components:SWP|C_ModifyWeights 19 |
 | `C_MultiSwapNoSlippage` | `C_Swap` | USAGE | **≥ 6** | — | COMPLEX | charge multiplies by an item count; legs: small 2 + smallest 1 + medium 3 |
@@ -580,8 +580,8 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_UpdatePendingBranding` | `C_UpdatePendingBranding` | SETUP | **100** | — | $1.00 | branding 100 |
 | `C_UpdatePendingBrandingLPs` | `C_UpdatePendingBrandingLPs` | SETUP | **100** | — | $1.00 | branding 100 |
 | `C_UpdateSpecialFeeTargets` | `C_UpdateSpecialFeeTargets` | FEE | **44** | — | $0.44 | deter:fee 25 + components:SWP|C_UpdateSpecialFeeTargets 19 |
-| `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **0** | 250 | STOA only | no IGNIS charged — priced in STOA only; STOA: blue 250 |
-| `C_UpgradeBrandingLPs` | `C_UpgradeBrandingLPs` | SETUP | **0** | 250 | STOA only | no IGNIS charged — priced in STOA only; STOA: blue 250 |
+| `C_UpgradeBranding` | `C_UpgradeBranding` | SETUP | **0** | — | free | free by design — Talos wrapper collects no IGNIS and no STOA |
+| `C_UpgradeBrandingLPs` | `C_UpgradeBrandingLPs` | SETUP | **0** | — | free | free by design — Talos wrapper collects no IGNIS and no STOA |
 | `CC_SmartSwapNoSlippage` | `CC_SmartSwap` | USAGE | **≥ 6** | — | COMPLEX | heavy / parallel-slice op; legs: small 2 + smallest 1 + medium 3 |
 | `CC_SmartSwapWithSlippage` | `CC_SmartSwap` | USAGE | **≥ 6** | — | COMPLEX | heavy / parallel-slice op; legs: small 2 + smallest 1 + medium 3 |
 
@@ -590,11 +590,11 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | Talos function | core op | role | IGNIS | STOA | $ (ignis) | charge breakdown |
 |----------------|---------|------|------:|-----:|----------:|------------------|
 | `C_Awake` | `C_Awake` | SETUP | **≥ 128** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_Burn 45 + deter:usage 1 + components:DPTF|C_Burn 71 + small 2 + smallest 1 + medium 3 |
-| `C_CreateFrozenLink` | `C_CreateFrozenLink` | ISSUE | **≥ 1338** | 100 | COMPLEX | charge multiplies by an item count; legs: deter:vst-link 250 + components:VST|C_CreateFrozenLink 29 + deter:usage 1 + components:DPTF|C_ToggleTransferRole 58 + deter:issue-tf 1000 | STOA: dptf 100 |
-| `C_CreateHibernatingLink` | `C_CreateHibernatingLink` | ISSUE | **≥ 1333** | 100 | COMPLEX | charge multiplies by an item count; legs: deter:vst-link 250 + components:VST|C_CreateVestingLink 29 + deter:usage 1 + components:DPOF|C_ToggleTransferRole 53 + deter:issue-of 1000 | STOA: dpmf 100 |
-| `C_CreateReservationLink` | `C_CreateReservationLink` | ISSUE | **≥ 1338** | 100 | COMPLEX | charge multiplies by an item count; legs: deter:vst-link 250 + components:VST|C_CreateFrozenLink 29 + deter:usage 1 + components:DPTF|C_ToggleTransferRole 58 + deter:issue-tf 1000 | STOA: dptf 100 |
-| `C_CreateSleepingLink` | `C_CreateSleepingLink` | ISSUE | **≥ 1333** | 100 | COMPLEX | charge multiplies by an item count; legs: deter:vst-link 250 + components:VST|C_CreateVestingLink 29 + deter:usage 1 + components:DPOF|C_ToggleTransferRole 53 + deter:issue-of 1000 | STOA: dpmf 100 |
-| `C_CreateVestingLink` | `C_CreateVestingLink` | ISSUE | **≥ 1333** | 100 | COMPLEX | charge multiplies by an item count; legs: deter:vst-link 250 + components:VST|C_CreateVestingLink 29 + deter:usage 1 + components:DPOF|C_ToggleTransferRole 53 + deter:issue-of 1000 | STOA: dpmf 100 |
+| `C_CreateFrozenLink` | `C_CreateFrozenLink` | ISSUE | **≥ 1338** | — | COMPLEX | charge multiplies by an item count; legs: deter:vst-link 250 + components:VST|C_CreateFrozenLink 29 + deter:usage 1 + components:DPTF|C_ToggleTransferRole 58 + deter:issue-tf 1000 |
+| `C_CreateHibernatingLink` | `C_CreateHibernatingLink` | ISSUE | **≥ 1333** | — | COMPLEX | charge multiplies by an item count; legs: deter:vst-link 250 + components:VST|C_CreateVestingLink 29 + deter:usage 1 + components:DPOF|C_ToggleTransferRole 53 + deter:issue-of 1000 |
+| `C_CreateReservationLink` | `C_CreateReservationLink` | ISSUE | **≥ 1338** | — | COMPLEX | charge multiplies by an item count; legs: deter:vst-link 250 + components:VST|C_CreateFrozenLink 29 + deter:usage 1 + components:DPTF|C_ToggleTransferRole 58 + deter:issue-tf 1000 |
+| `C_CreateSleepingLink` | `C_CreateSleepingLink` | ISSUE | **≥ 1333** | — | COMPLEX | charge multiplies by an item count; legs: deter:vst-link 250 + components:VST|C_CreateVestingLink 29 + deter:usage 1 + components:DPOF|C_ToggleTransferRole 53 + deter:issue-of 1000 |
+| `C_CreateVestingLink` | `C_CreateVestingLink` | ISSUE | **≥ 1333** | — | COMPLEX | charge multiplies by an item count; legs: deter:vst-link 250 + components:VST|C_CreateVestingLink 29 + deter:usage 1 + components:DPOF|C_ToggleTransferRole 53 + deter:issue-of 1000 |
 | `C_Freeze` | `C_Freeze` | USAGE | **≥ 93** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:usage 1 + components:DPTF|C_Mint 86 + smallest 1 + small 2 + medium 3 |
 | `C_Hibernate` | `C_Hibernate` | SETUP | **≥ 91** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_Mint 80 + small 2 + smallest 1 + medium 3 |
 | `C_Merge` | `C_Merge` | SETUP | **≥ 146** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_ToggleFreezeAccount 53 + components:DPOF|C_Mint 80 + biggest 5 + small 2 + smallest 1 |
@@ -634,7 +634,7 @@ another Talos wrapper, not a core op) or admin entrypoints that are exempt by ru
 | P\|A_AddIMP | admin entrypoint -- IGNIS + STOA free by owner rule, nothing to price |
 
 ---
-182 simple (exact price) · 200 complex (floor price) · 11 STOA-only · 50 exempt · 0 unresolved · 5 unpriced · 443 Talos client functions
+182 simple (exact price) · 200 complex (floor price) · 3 STOA-only · 58 exempt · 0 unresolved · 5 unpriced · 443 Talos client functions
 
 `×N` on a core op = the wrapper drives N priced core ops in a FIXED composition (still exactly knowable).
 

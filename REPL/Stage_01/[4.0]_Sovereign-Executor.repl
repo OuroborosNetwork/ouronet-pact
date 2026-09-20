@@ -239,51 +239,51 @@
     )
     [
         ;;Stoa Prices (Main-Net Prices x1000)
-        (ref-TS01-A::DALOS|A_UpdateUsagePrice "standard"      0.01)
-        (ref-TS01-A::DALOS|A_UpdateUsagePrice "smart"         0.02)
-        (ref-TS01-A::DALOS|A_UpdateUsagePrice "ats"            0.1)
-        (ref-TS01-A::DALOS|A_UpdateUsagePrice "swp"           0.15)
-        (ref-TS01-A::DALOS|A_UpdateUsagePrice "dptf"           0.2)
-        (ref-TS01-A::DALOS|A_UpdateUsagePrice "dpmf"           0.3)
-        (ref-TS01-A::DALOS|A_UpdateUsagePrice "dpsf"           0.4)
-        (ref-TS01-A::DALOS|A_UpdateUsagePrice "dpnf"           0.5)
-        (ref-TS01-A::DALOS|A_UpdateUsagePrice "blue"         0.025)
-        (ref-TS01-A::DALOS|A_UpdateUsagePrice "codex"        100.0)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice KST.ANHD "standard"      0.01)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice KST.ANHD "smart"         0.02)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice KST.ANHD "ats"            0.1)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice KST.ANHD "swp"           0.15)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice KST.ANHD "dptf"           0.2)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice KST.ANHD "dpmf"           0.3)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice KST.ANHD "dpsf"           0.4)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice KST.ANHD "dpnf"           0.5)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice KST.ANHD "blue"         0.025)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice KST.ANHD "codex"        100.0)
 
         ;;Ignis Prices
-        (ref-TS01-A::DALOS|A_UpdateUsagePrice "ignis|smallest"            1.0)
-        (ref-TS01-A::DALOS|A_UpdateUsagePrice "ignis|small"               2.0)
-        (ref-TS01-A::DALOS|A_UpdateUsagePrice "ignis|medium"              3.0)
-        (ref-TS01-A::DALOS|A_UpdateUsagePrice "ignis|big"                 4.0)
-        (ref-TS01-A::DALOS|A_UpdateUsagePrice "ignis|biggest"             5.0)
-        (ref-TS01-A::DALOS|A_UpdateUsagePrice "ignis|branding"          100.0)
-        (ref-TS01-A::DALOS|A_UpdateUsagePrice "ignis|token-issue"       500.0)
-        (ref-TS01-A::DALOS|A_UpdateUsagePrice "ignis|ats-issue"        5000.0)
-        (ref-TS01-A::DALOS|A_UpdateUsagePrice "ignis|swp-issue"        4000.0)
-        (ref-TS01-A::DALOS|A_UpdateUsagePrice "ignis|swp-liquidity"      20.0)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice KST.ANHD "ignis|smallest"            1.0)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice KST.ANHD "ignis|small"               2.0)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice KST.ANHD "ignis|medium"              3.0)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice KST.ANHD "ignis|big"                 4.0)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice KST.ANHD "ignis|biggest"             5.0)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice KST.ANHD "ignis|branding"          100.0)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice KST.ANHD "ignis|token-issue"       500.0)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice KST.ANHD "ignis|ats-issue"        5000.0)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice KST.ANHD "ignis|swp-issue"        4000.0)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice KST.ANHD "ignis|swp-liquidity"      20.0)
         ;;STOA oracle price in USD. HARD-PEGGED at $0.10 until a real price feed exists.
         ;;UC_StoaPrice divides by this, so ISSUE functions charge a constant DOLLAR value:
         ;;when this moves, the STOA amount moves but the value the user pays does not.
-        (ref-TS01-A::DALOS|A_UpdateUsagePrice "stoa|price"                 0.1)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice KST.ANHD "stoa|price"                 0.1)
         ;;The legacy per-asset STOA issuance keys are now DERIVED from the dollar-pegged
         ;;UC_StoaPrice, not hand-set: one source of truth (IG|DETER + the stoa|price oracle).
         ;;Every REPL that sizes a coin.TRANSFER cap off these keys therefore stays exactly in
         ;;step with what the modules actually charge, and moves automatically when the peg does.
-        (ref-TS01-A::DALOS|A_UpdateUsagePrice "dptf" (ref-IGNIS::UC_StoaPrice "issue-tf"))
-        (ref-TS01-A::DALOS|A_UpdateUsagePrice "dpmf" (ref-IGNIS::UC_StoaPrice "issue-of"))
-        (ref-TS01-A::DALOS|A_UpdateUsagePrice "dpsf" (ref-IGNIS::UC_StoaPrice "issue-sft"))
-        (ref-TS01-A::DALOS|A_UpdateUsagePrice "dpnf" (ref-IGNIS::UC_StoaPrice "issue-nft"))
-        (ref-TS01-A::DALOS|A_UpdateUsagePrice "ats"  (ref-IGNIS::UC_StoaPrice "issue-ats-pair"))
-        (ref-TS01-A::DALOS|A_UpdateUsagePrice "swp"  (ref-IGNIS::UC_StoaPrice "issue-swp-pair"))
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice KST.ANHD "dptf" (ref-IGNIS::UC_StoaPrice "issue-tf"))
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice KST.ANHD "dpmf" (ref-IGNIS::UC_StoaPrice "issue-of"))
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice KST.ANHD "dpsf" (ref-IGNIS::UC_StoaPrice "issue-sft"))
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice KST.ANHD "dpnf" (ref-IGNIS::UC_StoaPrice "issue-nft"))
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice KST.ANHD "ats"  (ref-IGNIS::UC_StoaPrice "issue-ats-pair"))
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice KST.ANHD "swp"  (ref-IGNIS::UC_StoaPrice "issue-swp-pair"))
         ;;Account creation (owner 2026-09-07): standard = $5, smart = $10. These two were the
         ;;last STOA keys still holding raw pre-rehaul amounts (0.01 / 0.02) that were never
         ;;dollar-denominated, so they ignored the peg entirely. Deriving them here keeps the
         ;;rule uniform: every STOA price is a DOLLAR price divided by the STOA oracle price.
-        (ref-TS01-A::DALOS|A_UpdateUsagePrice "standard" (ref-IGNIS::UC_StoaPrice "acct-standard"))
-        (ref-TS01-A::DALOS|A_UpdateUsagePrice "smart"    (ref-IGNIS::UC_StoaPrice "acct-smart"))
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice KST.ANHD "standard" (ref-IGNIS::UC_StoaPrice "acct-standard"))
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice KST.ANHD "smart"    (ref-IGNIS::UC_StoaPrice "acct-smart"))
         ;;Blue-flag branding: $25/month (owner 2026-09-07) => 250 STOA at the $0.10 peg. Was
         ;;0.025 raw, the last STOA key still holding a non-dollar amount.
-        (ref-TS01-A::DALOS|A_UpdateUsagePrice "blue"     (ref-IGNIS::UC_StoaPrice "branding-blue"))
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice KST.ANHD "blue"     (ref-IGNIS::UC_StoaPrice "branding-blue"))
 
         ;;REPL-VARIANT:
         (acquire-module-admin ouronet-ns.DALOS)
@@ -1028,8 +1028,8 @@
         (liquid:string (ref-DALOS::GOV|LIQUID|SC_NAME))
     )
     [
-        (ref-TS01-A::DALOS|A_IgnisToggle false true)
-        (ref-TS01-A::DALOS|A_IgnisToggle true true)
+        (ref-TS01-A::DALOS|A_IgnisToggle KST.ANHD false true)
+        (ref-TS01-A::DALOS|A_IgnisToggle KST.ANHD true true)
         ;;
         ;;#N2 fix: system smart accounts (not self-owned) - admin variant, not self-service C_
         (ref-TS01-A::DPTF|A_DeployAccount patron AurynID ats)

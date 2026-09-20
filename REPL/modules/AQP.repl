@@ -2180,7 +2180,7 @@
         (
             (gap0:bool (ref-DALOS::UR_GAP))
         )
-        (ref-TS01-A::DALOS|A_ToggleGAP true)
+        (ref-TS01-A::DALOS|A_ToggleGAP KST.ANHD true)
         (map print
             [
                 (expect "<<AQP-G32>> the global pause is ON" true (ref-DALOS::UR_GAP))
@@ -2198,7 +2198,7 @@
                     "While Global Administrative Pause is online" (test-capability (TS02-CPAD.P|TS)))
             ]
         )
-        (ref-TS01-A::DALOS|A_ToggleGAP gap0)
+        (ref-TS01-A::DALOS|A_ToggleGAP KST.ANHD gap0)
         (map print
             [
                 (expect "<<AQP-G32>> GAP restored to the value this block found" gap0 (ref-DALOS::UR_GAP))
@@ -3475,7 +3475,7 @@
         (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
         (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
     )
-    (ref-TS01-A::DALOS|A_UpdateUsagePrice "stoa|price" 0.25)
+    (ref-TS01-A::DALOS|A_UpdateUsagePrice KST.ANHD "stoa|price" 0.25)
     (map print
         [
             ;;the AMOUNT moved, and moved the right way -- inversely, by exactly the peg ratio
@@ -3495,7 +3495,7 @@
     )
     ;;restore the peg in the SAME transaction it was moved in, so no later assertion in this suite
     ;;can observe the altered oracle even if this block is reordered.
-    (ref-TS01-A::DALOS|A_UpdateUsagePrice "stoa|price" 0.1)
+    (ref-TS01-A::DALOS|A_UpdateUsagePrice KST.ANHD "stoa|price" 0.1)
     (map print
         [
             (expect "<<AQP-D1b>> the peg is restored to $0.10 and the amounts come back"

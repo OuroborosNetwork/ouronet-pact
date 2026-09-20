@@ -332,6 +332,37 @@ deliberately do not, which is precisely why `patron` disappears from the wrapper
 `A_`'s gates must be granted **in Talos**. The capability that proves the gasless patron's
 ownership is the same capability that proves the admin gating — one mechanism, two jobs.
 
+### PATRONLESS ≠ GASLESS (owner correction, 2026-09-20)
+
+These are two different things and conflating them produces wrong signatures:
+
+| | meaning |
+|---|---|
+| **gasless** | a patron IS definable and present; the **gasless patron** is supplied, so collection runs and collects zero. The path exists. |
+| **patronless** | **no patron is needed at all** — there is no patron *at that moment*. The parameter must NOT be added. |
+
+**Account deployment is patronless BY DESIGN.** `C_DeploySmartAccount` / `A_DeployStandardAccount`
+create the account; there is nobody to pay yet, because the payer is what is being made. In these
+functions **the account being deployed IS the executor** — it is the subject of its own creation.
+
+```pact
+(defun C_DeploySmartAccount (executor:string guard:guard stoa:string sovereign:string public:string))
+;;                           ^^^^^^^^ the account being deployed. NO patron.
+```
+
+**The IGNIS source functions are the same shape** — sublimate / compress, the operations that
+*generate* virtual gas or compress it back to its source. They cannot take a patron because they
+are the thing a patron would be paid from. **Round these up explicitly; do not assume the list.**
+
+A function being patronless is a **design fact to be discovered and recorded**, never a default
+for "I could not find a patron".
+
+### EXECUTEE IS RARE
+
+Observably it appears **only in transfer functions** (`patron sender receiver` → patron / executor
+/ executee). Do not go looking for a third role elsewhere; if one seems to appear, check the body
+before promoting a parameter to third position.
+
 ### `P|` POLICY FUNCTIONS ARE EXEMPT (owner ruling, 2026-09-20)
 
 Anything denominated `P|` — `P|A_Define`, `P|A_Add`, `P|A_AddIMP`, … — is **out of scope for this

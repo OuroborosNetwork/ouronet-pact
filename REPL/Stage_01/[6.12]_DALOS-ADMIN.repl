@@ -38,12 +38,12 @@
             (ouro-price0:decimal (ref-DALOS::UR_OuroborosPrice))
         )
         ;; ToggleGAP enforces the value must CHANGE — flip to the opposite then flip back (net zero)
-        (ref-TS01-A::DALOS|A_ToggleGAP (not gap0))
-        (ref-TS01-A::DALOS|A_ToggleGAP gap0)
+        (ref-TS01-A::DALOS|A_ToggleGAP KST.ANHD (not gap0))
+        (ref-TS01-A::DALOS|A_ToggleGAP KST.ANHD gap0)
         ;; the rest are plain setters (no enforce-difference) — set each to its current value, no change
-        (ref-TS01-A::DALOS|A_ToggleOAPU oapu0)
-        (ref-TS01-A::DALOS|A_SetAutoFueling autofuel0)
-        (ref-TS01-A::DALOS|A_SetIgnisSourcePrice ouro-price0)
+        (ref-TS01-A::DALOS|A_ToggleOAPU KST.ANHD oapu0)
+        (ref-TS01-A::DALOS|A_SetAutoFueling KST.ANHD autofuel0)
+        (ref-TS01-A::DALOS|A_SetIgnisSourcePrice KST.ANHD ouro-price0)
         ;; prove the idempotency (values unchanged) — batch the expects so every line prints
         (map print
             [

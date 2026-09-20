@@ -78,23 +78,23 @@
             ;;--- the six that name DALOS's own admin guard -------------------------------------
             (expect-failure "<<RT-C-001>> a stranger cannot pause the chain"
                 "DALOS Admin not satisfed"
-                (ref-TS01-A::DALOS|A_ToggleGAP true))
+                (ref-TS01-A::DALOS|A_ToggleGAP KST.EMMA true))
             (expect-failure "<<RT-C-001>> ...nor flip auto-fueling"
                 "DALOS Admin not satisfed"
-                (ref-TS01-A::DALOS|A_SetAutoFueling true))
+                (ref-TS01-A::DALOS|A_SetAutoFueling KST.EMMA true))
             (expect-failure "<<RT-C-001>> ...nor toggle account-creation STOA"
                 "DALOS Admin not satisfed"
-                (ref-TS01-A::DALOS|A_AccountCreationStoaToggle true))
+                (ref-TS01-A::DALOS|A_AccountCreationStoaToggle KST.EMMA true))
             (expect-failure "<<RT-C-001>> ...nor switch gas collection on or off"
                 "DALOS Admin not satisfed"
-                (ref-TS01-A::DALOS|A_IgnisToggle true true))
+                (ref-TS01-A::DALOS|A_IgnisToggle KST.EMMA true true))
             (expect-failure "<<RT-C-001>> ...nor reprice a usage action"
                 "DALOS Admin not satisfed"
-                (ref-TS01-A::DALOS|A_UpdateUsagePrice "dptf" 1.0))
+                (ref-TS01-A::DALOS|A_UpdateUsagePrice KST.EMMA "dptf" 1.0))
             ;;--- one with its own dedicated message ---------------------------------------------
             (expect-failure "<<RT-C-001>> ...nor move the OURO source price that feeds gas economics"
                 "Permission not granted to Update OURO Price !"
-                (ref-TS01-A::DALOS|A_SetIgnisSourcePrice 0.5))
+                (ref-TS01-A::DALOS|A_SetIgnisSourcePrice KST.EMMA 0.5))
             ;;--- one that refuses via a keyset rather than a named message ----------------------
             (expect-failure "<<RT-C-001>> ...nor set a branding flag: BRD answers with its keyset"
                 "Keyset failure"

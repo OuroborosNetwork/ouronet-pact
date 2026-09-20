@@ -49,17 +49,17 @@
     (defun XE_ConditionalFuelSTOA (condition:bool))
     ;;{5.7}  User [A/C]
     ;;
-    (defun DALOS|A_MigrateLiquidFunds:decimal (migration-target-stoa-account:string))
-    (defun DALOS|A_ToggleOAPU (oapu:bool))
-    (defun DALOS|A_ToggleGAP (gap:bool))
-    (defun DALOS|A_DeploySmartAccount (account:string guard:guard stoa:string sovereign:string public:string))
-    (defun DALOS|A_DeployStandardAccount (account:string guard:guard stoa:string public:string))
-    (defun DALOS|A_IgnisToggle (native:bool toggle:bool))
-    (defun DALOS|A_AccountCreationStoaToggle (toggle:bool))
-    (defun DALOS|A_SetIgnisSourcePrice (price:decimal))
-    (defun DALOS|A_SetAutoFueling (toggle:bool))
-    (defun DALOS|A_UpdatePublicKey (account:string new-public:string))
-    (defun DALOS|A_UpdateUsagePrice (action:string new-price:decimal))
+    (defun DALOS|A_MigrateLiquidFunds:decimal (executor:string migration-target-stoa-account:string))
+    (defun DALOS|A_ToggleOAPU (executor:string oapu:bool))
+    (defun DALOS|A_ToggleGAP (executor:string gap:bool))
+    (defun DALOS|A_DeploySmartAccount (executor:string guard:guard stoa:string sovereign:string public:string))
+    (defun DALOS|A_DeployStandardAccount (executor:string guard:guard stoa:string public:string))
+    (defun DALOS|A_IgnisToggle (executor:string native:bool toggle:bool))
+    (defun DALOS|A_AccountCreationStoaToggle (executor:string toggle:bool))
+    (defun DALOS|A_SetIgnisSourcePrice (executor:string price:decimal))
+    (defun DALOS|A_SetAutoFueling (executor:string toggle:bool))
+    (defun DALOS|A_UpdatePublicKey (executor:string new-public:string))
+    (defun DALOS|A_UpdateUsagePrice (executor:string action:string new-price:decimal))
     ;;
     ;;
     (defun BRD|A_Live (entity-id:string))
@@ -333,7 +333,7 @@
     ;;{5.7}  User [A/C]
     ;;
     ;;  [DALOS_Administrator]
-    (defun DALOS|A_MigrateLiquidFunds:decimal (migration-target-stoa-account:string)
+    (defun DALOS|A_MigrateLiquidFunds:decimal (executor:string migration-target-stoa-account:string)
         @doc "Migrates Ouronet Gas Station Funds, to another stoa adress, \
         \ if needed due to a migration to a new namespace and new module code \
         \ Outputs the migrated amount"
@@ -342,18 +342,18 @@
                 (
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                 )
-                (ref-DALOS::A_MigrateLiquidFunds migration-target-stoa-account)
+                (ref-DALOS::A_MigrateLiquidFunds GASLESS-PATRON executor migration-target-stoa-account)
             )
         )
     )
-    (defun DALOS|A_ToggleOAPU (oapu:bool)
+    (defun DALOS|A_ToggleOAPU (executor:string oapu:bool)
         @doc "Toggles the Ouroboros Autonomous Price Update to <oapu>"
         (with-capability (P|TS)
             (let
                 (
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                 )
-                (ref-DALOS::A_ToggleOAPU oapu)
+                (ref-DALOS::A_ToggleOAPU GASLESS-PATRON executor oapu)
                 (if oapu
                     "Ouroboros Autonomous Price Update successfully turned ON"
                     "Ouroboros Autonomous Price Update successfully turned OFF"
@@ -361,14 +361,14 @@
             )
         )
     )
-    (defun DALOS|A_ToggleGAP (gap:bool)
+    (defun DALOS|A_ToggleGAP (executor:string gap:bool)
         @doc "Toggles the Global administrative Pause, the GAP, to <toggle>"
         (with-capability (P|TS)
             (let
                 (
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                 )
-                (ref-DALOS::A_ToggleGAP gap)
+                (ref-DALOS::A_ToggleGAP GASLESS-PATRON executor gap)
                 (if gap
                     "Global Administrative Pause successfully turned ON"
                     "Global Administrative Pause successfully turned OFF"
@@ -376,35 +376,35 @@
             )
         )
     )
-    (defun DALOS|A_DeploySmartAccount (account:string guard:guard stoa:string sovereign:string public:string)
+    (defun DALOS|A_DeploySmartAccount (executor:string guard:guard stoa:string sovereign:string public:string)
         @doc "Deploys a Smart Ouronet Account in Administrator Mode, without collection STOA"
         (with-capability (P|TS)
             (let
                 (
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
-                (ref-DALOS::A_DeploySmartAccount account guard stoa sovereign public)
+                (ref-DALOS::A_DeploySmartAccount executor guard stoa sovereign public)
                 (format "Succesfuly deployed Smart Account {} in Admin Mode!" [sa])
             )
         )
     )
-    (defun DALOS|A_DeployStandardAccount (account:string guard:guard stoa:string public:string)
+    (defun DALOS|A_DeployStandardAccount (executor:string guard:guard stoa:string public:string)
         @doc "Deploys a Standard Ouronet Account in Administrator Mode, without collection STOA"
         (with-capability (P|TS)
             (let
                 (
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
-                (ref-DALOS::A_DeployStandardAccount account guard stoa public)
+                (ref-DALOS::A_DeployStandardAccount executor guard stoa public)
                 (format "Succesfuly deployed Standard Account {} in Admin Mode!" [sa])
             )
         )
     )
-    (defun DALOS|A_AccountCreationStoaToggle (toggle:bool)
+    (defun DALOS|A_AccountCreationStoaToggle (executor:string toggle:bool)
         @doc "ADMIN: switch STOA collection on Ouronet ACCOUNT CREATION on/off, INDEPENDENTLY \
             \ of the global STOA switch (DALOS|A_IgnisToggle native=true). OFF — the default — \
             \ keeps onboarding free while global STOA collection is ON. Admin op, so this \
@@ -414,7 +414,7 @@
                 (
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                 )
-                (ref-DALOS::A_ToggleAccountCreationStoa toggle)
+                (ref-DALOS::A_ToggleAccountCreationStoa GASLESS-PATRON executor toggle)
                 (if toggle
                     "Account-Creation STOA Collection succesfully turned ON"
                     "Account-Creation STOA Collection succesfully turned OFF"
@@ -422,7 +422,7 @@
             )
         )
     )
-    (defun DALOS|A_IgnisToggle (native:bool toggle:bool)
+    (defun DALOS|A_IgnisToggle (executor:string native:bool toggle:bool)
         @doc "Toggles Ouronet Gas Collection \
         \ <native> true is STOA Collection for Specific Usage Actions \
         \ <native> false is IGNIS Collection for Client Functions"
@@ -431,7 +431,7 @@
                 (
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                 )
-                (ref-DALOS::A_ToggleGasCollection native toggle)
+                (ref-DALOS::A_ToggleGasCollection GASLESS-PATRON executor native toggle)
                 (if native
                     (if toggle
                         "STOA Collection succesfully turned ON"
@@ -445,26 +445,26 @@
             )
         )
     )
-    (defun DALOS|A_SetIgnisSourcePrice (price:decimal)
+    (defun DALOS|A_SetIgnisSourcePrice (executor:string price:decimal)
         @doc "Sets OUROBOROS Price in $. Used in Compresion and Sublimation"
         (with-capability (P|TS)
             (let
                 (
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                 )
-                (ref-DALOS::A_SetIgnisSourcePrice price)
+                (ref-DALOS::A_SetIgnisSourcePrice GASLESS-PATRON executor price)
                 (format "Succesfuly set IGNIS price to {}" [price])
             )
         )
     )
-    (defun DALOS|A_SetAutoFueling (toggle:bool)
+    (defun DALOS|A_SetAutoFueling (executor:string toggle:bool)
         @doc "Sets Automatic fueling of Collected STOA for the Increase of the <StoaLiquindex>"
         (with-capability (P|TS)
             (let
                 (
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                 )
-                (ref-DALOS::A_SetAutoFueling toggle)
+                (ref-DALOS::A_SetAutoFueling GASLESS-PATRON executor toggle)
                 (if toggle
                     "LiquidStaking Autofueling successfully turned ON"
                     "LiquidStaking Autofueling successfully turned OFF"
@@ -472,28 +472,28 @@
             )
         )
     )
-    (defun DALOS|A_UpdatePublicKey (account:string new-public:string)
+    (defun DALOS|A_UpdatePublicKey (executor:string new-public:string)
         @doc "Updates Public Key; To be used only as failsafe by the Admin"
         (with-capability (P|TS)
             (let
                 (
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
-                (ref-DALOS::A_UpdatePublicKey account new-public)
+                (ref-DALOS::A_UpdatePublicKey GASLESS-PATRON executor new-public)
                 (format "Public Key for Account {} successfully updated!" [sa])
             )
         )
     )
-    (defun DALOS|A_UpdateUsagePrice (action:string new-price:decimal)
+    (defun DALOS|A_UpdateUsagePrice (executor:string action:string new-price:decimal)
         @doc "Updates specific Usage Price in STOA"
         (with-capability (P|TS)
             (let
                 (
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                 )
-                (ref-DALOS::A_UpdateUsagePrice action new-price)
+                (ref-DALOS::A_UpdateUsagePrice GASLESS-PATRON executor action new-price)
                 (format "Price for Action {} successfully updated with {}" [action new-price])
             )
         )

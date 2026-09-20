@@ -93,7 +93,7 @@
             ;;an ordinary user cannot reach it -- the gate does work for everyone else.
             (expect-failure "<<RT-B-001>> an ordinary key cannot reach DALOS core: the gate holds for users"
                 "None of the guards passed"
-                (ref-DALOS::A_SetIgnisSourcePrice 0.5))
+                (ref-DALOS::A_SetIgnisSourcePrice KST.ANHD KST.ANHD 0.5))
         ]
     )
     ""
@@ -136,7 +136,7 @@
                 ;;   distinction has already changed a result twice in this programme.
                 (expect-failure "<<RT-B-001>> the MASTER KEY can no longer reach DALOS core directly"
                     "None of the guards passed"
-                    (ref-DALOS::A_SetIgnisSourcePrice 0.5))
+                    (ref-DALOS::A_SetIgnisSourcePrice KST.ANHD KST.ANHD 0.5))
                 ;;2] RULE 9 discharge: refused before any write, so the price input is untouched.
                 ;;   This is the assertion that says the admin did not half-execute.
                 (expect "<<RT-B-001>> ...and the OURO source price was not moved"
@@ -147,7 +147,7 @@
                 ;;   unbilled shortcut, not the capability.
                 (expect "<<RT-B-001>> ...while the admin's legitimate Talos route still works"
                     "Succesfuly set IGNIS price to 0.5"
-                    (ref-TS01-A::DALOS|A_SetIgnisSourcePrice 0.5))
+                    (ref-TS01-A::DALOS|A_SetIgnisSourcePrice KST.ANHD 0.5))
                 (expect "<<RT-B-001>> ...and THAT route really moved the price"
                     0.5 (ref-DALOS::UR_OuroborosPrice))
             ]

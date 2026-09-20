@@ -43,6 +43,27 @@ sys.path.insert(0, os.path.join(ROOT, "REPL", "tools"))
 import _bandplan as B
 
 ENTRY = re.compile(r'(?:^|\|)(A|AA|C|CC)_')
+
+# PATRONLESS BY DESIGN (owner correction, 2026-09-20). PATRONLESS is not the same as GASLESS:
+# gasless means a patron exists and the GASLESS-PATRON is supplied; patronless means no patron is
+# needed AT ALL because there is none at that moment. Adding one to these is WRONG.
+#
+#   * account deployment -- the payer is the thing being created, so the account being deployed IS
+#     the executor and there is nobody to pay yet
+#   * the IGNIS source/collector primitives -- they MAKE virtual gas or compress it back to its
+#     source, so they are what a patron would be paid FROM. CLAUDE.md already records that these
+#     "are the collectors and cannot collect from themselves".
+#
+# This is a registry of DESIGN FACTS, discovered and recorded per function -- never a fallback for
+# "no patron was found".
+PATRONLESS = {
+    "C_DeploySmartAccount", "A_DeploySmartAccount",
+    "C_DeployStandardAccount", "A_DeployStandardAccount",
+    "DALOS|C_DeploySmartAccount", "DALOS|A_DeploySmartAccount",
+    "DALOS|C_DeployStandardAccount", "DALOS|A_DeployStandardAccount",
+    "C_Collect", "C_TransferDalosFuel",
+    "STOA|C_Collect", "STOA|C_CollectWT", "STOA|C_CollectFull", "STOA|C_CollectWTEx",
+}
 ACCT = re.compile(r'^(account|konto|owner|client|sender|receiver|beneficiary|staker|user|operator|'
                   r'holder|injector|collector|executor|recoverer|remover|merger|wrapper|unwrapper|'
                   r'kickstarter|curler|coiler|fueler|swapper|swaper|minter|burner|depositor|'
@@ -76,6 +97,10 @@ def plan():
             is_talos = os.sep + "3_Talos" + os.sep in p
             is_admin = re.search(r'(?:^|\|)(A|AA)_', n) is not None
             if is_talos and is_admin:
+                rows.append((f, n, "DONE" if ps and ps[0] == "executor" else "ADD",
+                             ps[0] if ps else ""))
+                continue
+            if n in PATRONLESS:
                 rows.append((f, n, "DONE" if ps and ps[0] == "executor" else "ADD",
                              ps[0] if ps else ""))
                 continue

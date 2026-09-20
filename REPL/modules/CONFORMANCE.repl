@@ -60,7 +60,7 @@
                     (ref-DPTF::C_DeployAccount a emma))
                 (expect-failure "<<CONF-01>> DALOS::C_RotateStoa likewise, for an ordinary signer"
                     "None of the guards passed"
-                    (ref-DALOS::C_RotateStoa emma
+                    (ref-DALOS::C_RotateStoa emma emma
                         "k:0000000000000000000000000000000000000000000000000000000000000000"))
                 ;;RULE 9 discharge: both refuse before any write.
                 (expect "<<CONF-01>> EMMA's STOA address is untouched by the attempt"
@@ -119,7 +119,7 @@
                 ;;   refusal must come from the IMC gate, not from something incidental.
                 (expect-failure "<<CONF-01>> the MASTER KEY is refused at P|UEV_IMC, exactly like any other signer"
                     "None of the guards passed"
-                    (ref-DALOS::C_RotateStoa patron new-stoa))
+                    (ref-DALOS::C_RotateStoa patron patron new-stoa))
                 ;;2] RULE 9 discharge: the refusal is total, nothing moved.
                 (expect "<<CONF-01>> ...and the STOA address is untouched by the attempt"
                     stoa0 (ref-DALOS::UR_AccountStoa patron))
@@ -319,7 +319,7 @@
             [
                 (expect-failure "<<CONF-04>> DALOS|A_ToggleGAP is refused for a non-admin signer"
                     "DALOS Admin not satisfed"
-                    (ref-TS01-A::DALOS|A_ToggleGAP true))
+                    (ref-TS01-A::DALOS|A_ToggleGAP KST.EMMA true))
                 (expect "<<CONF-04>> the global pause is unchanged by the attempt"
                     gap0 (ref-DALOS::UR_GAP))
             ]
@@ -384,7 +384,7 @@
                 (ref-TS01-A::LIQUID|A_MigrateLiquidFunds "k:abc"))
             (expect-failure "<<CONF-05>> ATS|A_KickStart likewise"
                 "Keyset failure"
-                (ref-TS01-A::ATS|A_KickStart KST.EMMA KST.EMMA
+                (ref-TS01-A::ATS|A_KickStart KST.EMMA
                     "PlebeicStrength-98c486052a51" [1.0] 1.0))
         ]
     )

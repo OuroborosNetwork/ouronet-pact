@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 7 of 20
 ;; This is STEP 7 of 21 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-6 must have run first, including the init steps between deploys.
-;; 5 module(s), 321,972 gas measured in the REPL gas model, 275,729 bytes
+;; 5 module(s), 321,972 gas measured in the REPL gas model, 276,537 bytes
 ;;
 ;; Modules in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/20_MTX-SWP.pact
@@ -4053,17 +4053,17 @@
     (defun XE_ConditionalFuelSTOA (condition:bool))
     ;;{5.7}  User [A/C]
     ;;
-    (defun DALOS|A_MigrateLiquidFunds:decimal (migration-target-stoa-account:string))
-    (defun DALOS|A_ToggleOAPU (oapu:bool))
-    (defun DALOS|A_ToggleGAP (gap:bool))
-    (defun DALOS|A_DeploySmartAccount (account:string guard:guard stoa:string sovereign:string public:string))
-    (defun DALOS|A_DeployStandardAccount (account:string guard:guard stoa:string public:string))
-    (defun DALOS|A_IgnisToggle (native:bool toggle:bool))
-    (defun DALOS|A_AccountCreationStoaToggle (toggle:bool))
-    (defun DALOS|A_SetIgnisSourcePrice (price:decimal))
-    (defun DALOS|A_SetAutoFueling (toggle:bool))
-    (defun DALOS|A_UpdatePublicKey (account:string new-public:string))
-    (defun DALOS|A_UpdateUsagePrice (action:string new-price:decimal))
+    (defun DALOS|A_MigrateLiquidFunds:decimal (executor:string migration-target-stoa-account:string))
+    (defun DALOS|A_ToggleOAPU (executor:string oapu:bool))
+    (defun DALOS|A_ToggleGAP (executor:string gap:bool))
+    (defun DALOS|A_DeploySmartAccount (executor:string guard:guard stoa:string sovereign:string public:string))
+    (defun DALOS|A_DeployStandardAccount (executor:string guard:guard stoa:string public:string))
+    (defun DALOS|A_IgnisToggle (executor:string native:bool toggle:bool))
+    (defun DALOS|A_AccountCreationStoaToggle (executor:string toggle:bool))
+    (defun DALOS|A_SetIgnisSourcePrice (executor:string price:decimal))
+    (defun DALOS|A_SetAutoFueling (executor:string toggle:bool))
+    (defun DALOS|A_UpdatePublicKey (executor:string new-public:string))
+    (defun DALOS|A_UpdateUsagePrice (executor:string action:string new-price:decimal))
     ;;
     ;;
     (defun BRD|A_Live (entity-id:string))
@@ -4078,7 +4078,7 @@
     (defun DPOF|A_DeployAccount (patron:string id:string account:string))
     ;;
     (defun ATS|AA_RemoveSecondary (patron:string remover:string ats:string reward-token:string accounts-with-ats-data:[string]))
-    (defun ATS|A_KickStart (patron:string kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
+    (defun ATS|A_KickStart (executor:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
     ;;
     (defun LIQUID|A_MigrateLiquidFunds:decimal (migration-target-stoa-account:string))
     ;;
@@ -4337,7 +4337,7 @@
     ;;{5.7}  User [A/C]
     ;;
     ;;  [DALOS_Administrator]
-    (defun DALOS|A_MigrateLiquidFunds:decimal (migration-target-stoa-account:string)
+    (defun DALOS|A_MigrateLiquidFunds:decimal (executor:string migration-target-stoa-account:string)
         @doc "Migrates Ouronet Gas Station Funds, to another stoa adress, \
         \ if needed due to a migration to a new namespace and new module code \
         \ Outputs the migrated amount"
@@ -4346,18 +4346,18 @@
                 (
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                 )
-                (ref-DALOS::A_MigrateLiquidFunds migration-target-stoa-account)
+                (ref-DALOS::A_MigrateLiquidFunds GASLESS-PATRON executor migration-target-stoa-account)
             )
         )
     )
-    (defun DALOS|A_ToggleOAPU (oapu:bool)
+    (defun DALOS|A_ToggleOAPU (executor:string oapu:bool)
         @doc "Toggles the Ouroboros Autonomous Price Update to <oapu>"
         (with-capability (P|TS)
             (let
                 (
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                 )
-                (ref-DALOS::A_ToggleOAPU oapu)
+                (ref-DALOS::A_ToggleOAPU GASLESS-PATRON executor oapu)
                 (if oapu
                     "Ouroboros Autonomous Price Update successfully turned ON"
                     "Ouroboros Autonomous Price Update successfully turned OFF"
@@ -4365,14 +4365,14 @@
             )
         )
     )
-    (defun DALOS|A_ToggleGAP (gap:bool)
+    (defun DALOS|A_ToggleGAP (executor:string gap:bool)
         @doc "Toggles the Global administrative Pause, the GAP, to <toggle>"
         (with-capability (P|TS)
             (let
                 (
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                 )
-                (ref-DALOS::A_ToggleGAP gap)
+                (ref-DALOS::A_ToggleGAP GASLESS-PATRON executor gap)
                 (if gap
                     "Global Administrative Pause successfully turned ON"
                     "Global Administrative Pause successfully turned OFF"
@@ -4380,35 +4380,35 @@
             )
         )
     )
-    (defun DALOS|A_DeploySmartAccount (account:string guard:guard stoa:string sovereign:string public:string)
+    (defun DALOS|A_DeploySmartAccount (executor:string guard:guard stoa:string sovereign:string public:string)
         @doc "Deploys a Smart Ouronet Account in Administrator Mode, without collection STOA"
         (with-capability (P|TS)
             (let
                 (
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
-                (ref-DALOS::A_DeploySmartAccount account guard stoa sovereign public)
+                (ref-DALOS::A_DeploySmartAccount executor guard stoa sovereign public)
                 (format "Succesfuly deployed Smart Account {} in Admin Mode!" [sa])
             )
         )
     )
-    (defun DALOS|A_DeployStandardAccount (account:string guard:guard stoa:string public:string)
+    (defun DALOS|A_DeployStandardAccount (executor:string guard:guard stoa:string public:string)
         @doc "Deploys a Standard Ouronet Account in Administrator Mode, without collection STOA"
         (with-capability (P|TS)
             (let
                 (
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
-                (ref-DALOS::A_DeployStandardAccount account guard stoa public)
+                (ref-DALOS::A_DeployStandardAccount executor guard stoa public)
                 (format "Succesfuly deployed Standard Account {} in Admin Mode!" [sa])
             )
         )
     )
-    (defun DALOS|A_AccountCreationStoaToggle (toggle:bool)
+    (defun DALOS|A_AccountCreationStoaToggle (executor:string toggle:bool)
         @doc "ADMIN: switch STOA collection on Ouronet ACCOUNT CREATION on/off, INDEPENDENTLY \
             \ of the global STOA switch (DALOS|A_IgnisToggle native=true). OFF — the default — \
             \ keeps onboarding free while global STOA collection is ON. Admin op, so this \
@@ -4418,7 +4418,7 @@
                 (
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                 )
-                (ref-DALOS::A_ToggleAccountCreationStoa toggle)
+                (ref-DALOS::A_ToggleAccountCreationStoa GASLESS-PATRON executor toggle)
                 (if toggle
                     "Account-Creation STOA Collection succesfully turned ON"
                     "Account-Creation STOA Collection succesfully turned OFF"
@@ -4426,7 +4426,7 @@
             )
         )
     )
-    (defun DALOS|A_IgnisToggle (native:bool toggle:bool)
+    (defun DALOS|A_IgnisToggle (executor:string native:bool toggle:bool)
         @doc "Toggles Ouronet Gas Collection \
         \ <native> true is STOA Collection for Specific Usage Actions \
         \ <native> false is IGNIS Collection for Client Functions"
@@ -4435,7 +4435,7 @@
                 (
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                 )
-                (ref-DALOS::A_ToggleGasCollection native toggle)
+                (ref-DALOS::A_ToggleGasCollection GASLESS-PATRON executor native toggle)
                 (if native
                     (if toggle
                         "STOA Collection succesfully turned ON"
@@ -4449,26 +4449,26 @@
             )
         )
     )
-    (defun DALOS|A_SetIgnisSourcePrice (price:decimal)
+    (defun DALOS|A_SetIgnisSourcePrice (executor:string price:decimal)
         @doc "Sets OUROBOROS Price in $. Used in Compresion and Sublimation"
         (with-capability (P|TS)
             (let
                 (
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                 )
-                (ref-DALOS::A_SetIgnisSourcePrice price)
+                (ref-DALOS::A_SetIgnisSourcePrice GASLESS-PATRON executor price)
                 (format "Succesfuly set IGNIS price to {}" [price])
             )
         )
     )
-    (defun DALOS|A_SetAutoFueling (toggle:bool)
+    (defun DALOS|A_SetAutoFueling (executor:string toggle:bool)
         @doc "Sets Automatic fueling of Collected STOA for the Increase of the <StoaLiquindex>"
         (with-capability (P|TS)
             (let
                 (
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                 )
-                (ref-DALOS::A_SetAutoFueling toggle)
+                (ref-DALOS::A_SetAutoFueling GASLESS-PATRON executor toggle)
                 (if toggle
                     "LiquidStaking Autofueling successfully turned ON"
                     "LiquidStaking Autofueling successfully turned OFF"
@@ -4476,28 +4476,28 @@
             )
         )
     )
-    (defun DALOS|A_UpdatePublicKey (account:string new-public:string)
+    (defun DALOS|A_UpdatePublicKey (executor:string new-public:string)
         @doc "Updates Public Key; To be used only as failsafe by the Admin"
         (with-capability (P|TS)
             (let
                 (
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
-                (ref-DALOS::A_UpdatePublicKey account new-public)
+                (ref-DALOS::A_UpdatePublicKey GASLESS-PATRON executor new-public)
                 (format "Public Key for Account {} successfully updated!" [sa])
             )
         )
     )
-    (defun DALOS|A_UpdateUsagePrice (action:string new-price:decimal)
+    (defun DALOS|A_UpdateUsagePrice (executor:string action:string new-price:decimal)
         @doc "Updates specific Usage Price in STOA"
         (with-capability (P|TS)
             (let
                 (
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                 )
-                (ref-DALOS::A_UpdateUsagePrice action new-price)
+                (ref-DALOS::A_UpdateUsagePrice GASLESS-PATRON executor action new-price)
                 (format "Price for Action {} successfully updated with {}" [action new-price])
             )
         )
@@ -4642,7 +4642,7 @@
             )
         )
     )
-    (defun ATS|A_KickStart (patron:string kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
+    (defun ATS|A_KickStart (executor:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
         @doc "Administrative Variant (audit finding #11M / M2): forgoes pool ownership \
             \ for module governance, with no upper bound on the resulting KickStart \
             \ index (still subject to the shared 0.1 floor) - for legitimate ratios \
@@ -4653,8 +4653,11 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-ATSU:module{AutostakeUsageV2} ATSU)
                 )
-                (ref-IGNIS::C_Collect patron
-                    (ref-ATSU::A_KickStart kickstarter ats rt-amounts rbt-request-amount)
+                ;;A_ on the blessed path: the collection runs EXACTLY as any C_'s does -- it is
+                ;;simply served by GASLESS-PATRON, the one account IGNIS::C_Collect exempts. The
+                ;;path is preserved, not skipped; that is what makes an A_ gasless.
+                (ref-IGNIS::C_Collect GASLESS-PATRON
+                    (ref-ATSU::A_KickStart GASLESS-PATRON executor ats rt-amounts rbt-request-amount)
                 )
             )
         )
@@ -4856,13 +4859,13 @@
     ;;{5.6}  Aux/X
     ;;{5.7}  User [A/C]
     ;;
-    (defun DALOS|C_ControlSmartAccount (patron:string account:string payable-as-smart-contract:bool payable-by-smart-contract:bool payable-by-method:bool))
-    (defun DALOS|C_DeploySmartAccount (account:string guard:guard stoa:string sovereign:string public:string))
-    (defun DALOS|C_DeployStandardAccount (account:string guard:guard stoa:string public:string))
-    (defun DALOS|C_RotateGovernor (patron:string account:string governor:guard))
-    (defun DALOS|C_RotateGuard (patron:string account:string new-guard:guard safe:bool))
-    (defun DALOS|C_RotateStoa (patron:string account:string stoa:string))
-    (defun DALOS|C_RotateSovereign (patron:string account:string new-sovereign:string))
+    (defun DALOS|C_ControlSmartAccount (patron:string executor:string payable-as-smart-contract:bool payable-by-smart-contract:bool payable-by-method:bool))
+    (defun DALOS|C_DeploySmartAccount (executor:string guard:guard stoa:string sovereign:string public:string))
+    (defun DALOS|C_DeployStandardAccount (executor:string guard:guard stoa:string public:string))
+    (defun DALOS|C_RotateGovernor (patron:string executor:string governor:guard))
+    (defun DALOS|C_RotateGuard (patron:string executor:string new-guard:guard safe:bool))
+    (defun DALOS|C_RotateStoa (patron:string executor:string stoa:string))
+    (defun DALOS|C_RotateSovereign (patron:string executor:string new-sovereign:string))
     (defun DALOS|C_UpdateEliteAccount (patron:string account:string))
     (defun DALOS|C_UpdateEliteAccountSquared (patron:string sender:string receiver:string))
     ;;
@@ -5105,7 +5108,7 @@
     ;;
     ;;
     ;;  [DALOS_Client]
-    (defun DALOS|C_ControlSmartAccount (patron:string account:string payable-as-smart-contract:bool payable-by-smart-contract:bool payable-by-method:bool)
+    (defun DALOS|C_ControlSmartAccount (patron:string executor:string payable-as-smart-contract:bool payable-by-smart-contract:bool payable-by-method:bool)
         @doc "Controls Smart Ouronet Account properties via boolean triggers"
         (with-capability (P|TS)
             (let
@@ -5113,13 +5116,13 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                 )
-                (ref-DALOS::C_ControlSmartAccount account payable-as-smart-contract payable-by-smart-contract payable-by-method)
-                (ref-IGNIS::C_Collect patron (ref-IGNIS::DALOS|URCi_ControlSmartAccount account))
-                (format "Smart Ouronet Account {} controlled succesfully" [account])
+                (ref-DALOS::C_ControlSmartAccount patron executor payable-as-smart-contract payable-by-smart-contract payable-by-method)
+                (ref-IGNIS::C_Collect patron (ref-IGNIS::DALOS|URCi_ControlSmartAccount executor))
+                (format "Smart Ouronet Account {} controlled succesfully" [executor])
             )
         )
     )
-    (defun DALOS|C_DeploySmartAccount (account:string guard:guard stoa:string sovereign:string public:string)
+    (defun DALOS|C_DeploySmartAccount (executor:string guard:guard stoa:string sovereign:string public:string)
         @doc "Deploys a Standard Ouronet Account, taxing for STOA"
         (with-capability (P|TS)
             (let
@@ -5128,18 +5131,18 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
-                (ref-DALOS::C_DeploySmartAccount account guard stoa sovereign public)
+                (ref-DALOS::C_DeploySmartAccount executor guard stoa sovereign public)
                 ;;Collecting IGNIS is moved from DALOS here, due to IGNIS existing after DALOS
                 (if (not (ref-IGNIS::URC_IsNativeGasZero))
-                    (ref-IGNIS::STOA|C_Collect account (ref-IGNIS::DALOS|URCi_DeploySmartAccount))
+                    (ref-IGNIS::STOA|C_Collect executor (ref-IGNIS::DALOS|URCi_DeploySmartAccount))
                     true
                 )
                 (ref-TS01-A::XB_DynamicFuelSTOA)
-                (format "Smart Ouronet Account {} deployed succesfully" [account])
+                (format "Smart Ouronet Account {} deployed succesfully" [executor])
             )
         )
     )
-    (defun DALOS|C_DeployStandardAccount (account:string guard:guard stoa:string public:string)
+    (defun DALOS|C_DeployStandardAccount (executor:string guard:guard stoa:string public:string)
         @doc "Deploys a Standard Ouronet Account, taxing for STOA"
         (with-capability (P|TS)
             (let
@@ -5148,18 +5151,18 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
-                (ref-DALOS::C_DeployStandardAccount account guard stoa public)
+                (ref-DALOS::C_DeployStandardAccount executor guard stoa public)
                 ;;Collecting IGNIS is moved from DALOS here, due to IGNIS existing after DALOS
                 (if (not (ref-IGNIS::URC_IsNativeGasZero))
-                    (ref-IGNIS::STOA|C_Collect account (ref-IGNIS::DALOS|URCi_DeployStandardAccount))
+                    (ref-IGNIS::STOA|C_Collect executor (ref-IGNIS::DALOS|URCi_DeployStandardAccount))
                     true
                 )
                 (ref-TS01-A::XB_DynamicFuelSTOA)
-                (format "Standard Ouronet Account {} deployed succesfully" [account])
+                (format "Standard Ouronet Account {} deployed succesfully" [executor])
             )
         )
     )
-    (defun DALOS|C_RotateGovernor (patron:string account:string governor:guard)
+    (defun DALOS|C_RotateGovernor (patron:string executor:string governor:guard)
         @doc "Rotates the governor of a Smart Ouronet Account \
         \ The Governor acts as a governing entity for the Smart Ouronet Account allowing fine control of its assets"
         (with-capability (P|TS)
@@ -5168,13 +5171,13 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                 )
-                (ref-DALOS::C_RotateGovernor account governor)
-                (ref-IGNIS::C_Collect patron (ref-IGNIS::DALOS|URCi_RotateGovernor account))
-                (format "Ouronet Account {} Governor-Guard rotated succesfully!" [account])
+                (ref-DALOS::C_RotateGovernor patron executor governor)
+                (ref-IGNIS::C_Collect patron (ref-IGNIS::DALOS|URCi_RotateGovernor executor))
+                (format "Ouronet Account {} Governor-Guard rotated succesfully!" [executor])
             )
         )
     )
-    (defun DALOS|C_RotateGuard (patron:string account:string new-guard:guard safe:bool)
+    (defun DALOS|C_RotateGuard (patron:string executor:string new-guard:guard safe:bool)
         @doc "Rotates the guard of an Ouronet Safe. Boolean <safe> also enforces the <new-guard>"
         (with-capability (P|TS)
             (let
@@ -5182,13 +5185,13 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                 )
-                (ref-DALOS::C_RotateGuard account new-guard safe)
-                (ref-IGNIS::C_Collect patron (ref-IGNIS::DALOS|URCi_RotateGuard account))
-                (format "Ouronet Account {} Primary-Guard rotated succesfully!" [account])
+                (ref-DALOS::C_RotateGuard patron executor new-guard safe)
+                (ref-IGNIS::C_Collect patron (ref-IGNIS::DALOS|URCi_RotateGuard executor))
+                (format "Ouronet Account {} Primary-Guard rotated succesfully!" [executor])
             )
         )
     )
-    (defun DALOS|C_RotateStoa (patron:string account:string stoa:string)
+    (defun DALOS|C_RotateStoa (patron:string executor:string stoa:string)
         @doc "Rotates the STOA Account attached to an Ouronet Account. \
         \ The attached STOA Account is the account that makes STOA Payments for specific Ouronet Actions"
         (with-capability (P|TS)
@@ -5197,13 +5200,13 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                 )
-                (ref-DALOS::C_RotateStoa account stoa)
-                (ref-IGNIS::C_Collect patron (ref-IGNIS::DALOS|URCi_RotateStoa account))
-                (format "Ouronet Account {} Attached Stoa-Address rotated succesfully!" [account])
+                (ref-DALOS::C_RotateStoa patron executor stoa)
+                (ref-IGNIS::C_Collect patron (ref-IGNIS::DALOS|URCi_RotateStoa executor))
+                (format "Ouronet Account {} Attached Stoa-Address rotated succesfully!" [executor])
             )
         )
     )
-    (defun DALOS|C_RotateSovereign (patron:string account:string new-sovereign:string)
+    (defun DALOS|C_RotateSovereign (patron:string executor:string new-sovereign:string)
         @doc "Rotates the Sovereign of a Smart Ouronet Account \
         \ The Sovereign of a Smart Ouronet Account acts as its owner, allowing dominion over its assets"
         (with-capability (P|TS)
@@ -5212,9 +5215,9 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
                 )
-                (ref-DALOS::C_RotateSovereign account new-sovereign)
-                (ref-IGNIS::C_Collect patron (ref-IGNIS::DALOS|URCi_RotateSovereign account))
-                (format "Smart Ouronet Account {} Sovereign rotated succesfully!" [account])
+                (ref-DALOS::C_RotateSovereign patron executor new-sovereign)
+                (ref-IGNIS::C_Collect patron (ref-IGNIS::DALOS|URCi_RotateSovereign executor))
+                (format "Smart Ouronet Account {} Sovereign rotated succesfully!" [executor])
             )
         )
     )

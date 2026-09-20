@@ -326,7 +326,7 @@
             )
             ;;PRECONDITION: arm the pause. GOV|MIGRATE enforces GAP is ON (its message says the
             ;;opposite -- see the header note and DALOS-ADMIN-03b, which pins the same defect).
-            (ref-TS01-A::DALOS|A_ToggleGAP true)
+            (ref-TS01-A::DALOS|A_ToggleGAP KST.ANHD true)
             (let ((moved:decimal (ref-TS01-A::LIQUID|A_MigrateLiquidFunds target)))
                 (map print
                     [
@@ -522,7 +522,7 @@
     ;;SETUP — LQD-03 leaves the Global Administrative Pause ON and COMMITTED (the migration it tests
     ;;requires it), so every Talos client op after that point is refused by `P|TS` before any cost is
     ;;reached. GAP is lifted here and the whole block rolls back, leaving the file as LQD-03 left it.
-    (ref-TS01-A::DALOS|A_ToggleGAP false)
+    (ref-TS01-A::DALOS|A_ToggleGAP KST.ANHD false)
     ;;...and re-fund the escrow. LQD-03 MIGRATED every native STOA out of it, so an unwrap at this
     ;;point in the file has nothing to release ("The amount of 100.0 is to great to debit"). The wrap
     ;;is a billed op and closes before `ignis-before` is read.
@@ -578,7 +578,7 @@
     ;;SETUP — LQD-03 leaves the Global Administrative Pause ON and COMMITTED (the migration it tests
     ;;requires it), so every Talos client op after that point is refused by `P|TS` before any cost is
     ;;reached. GAP is lifted here and the whole block rolls back, leaving the file as LQD-03 left it.
-    (ref-TS01-A::DALOS|A_ToggleGAP false)
+    (ref-TS01-A::DALOS|A_ToggleGAP KST.ANHD false)
     (let
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_LIQUID|WrapUrStoa patron patron 1.0))
@@ -632,7 +632,7 @@
     ;;SETUP — LQD-03 leaves the Global Administrative Pause ON and COMMITTED (the migration it tests
     ;;requires it), so every Talos client op after that point is refused by `P|TS` before any cost is
     ;;reached. GAP is lifted here and the whole block rolls back, leaving the file as LQD-03 left it.
-    (ref-TS01-A::DALOS|A_ToggleGAP false)
+    (ref-TS01-A::DALOS|A_ToggleGAP KST.ANHD false)
     (ref-TS01-C2::LQD|C_WrapUrStoa patron patron 1.0)
     (let
         (

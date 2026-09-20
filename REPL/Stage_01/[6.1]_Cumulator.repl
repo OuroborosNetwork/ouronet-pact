@@ -344,7 +344,7 @@
         ]
     )
     ;;flip it ON through the Talos admin wrapper
-    (ref-TS01-A::DALOS|A_AccountCreationStoaToggle true)
+    (ref-TS01-A::DALOS|A_AccountCreationStoaToggle KST.ANHD true)
     (map (print)
         [
             (expect "<<TX-IGC-003>> switch ON" true (ref-DALOS::UR_AccountCreationStoa))
@@ -357,7 +357,7 @@
         ]
     )
     ;;restore the default so later suites see the world unchanged
-    (ref-TS01-A::DALOS|A_AccountCreationStoaToggle false)
+    (ref-TS01-A::DALOS|A_AccountCreationStoaToggle KST.ANHD false)
     (map (print)
         [
             (expect "<<TX-IGC-003>> restored to OFF" false (ref-DALOS::UR_AccountCreationStoa))

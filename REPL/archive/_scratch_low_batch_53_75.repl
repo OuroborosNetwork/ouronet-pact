@@ -48,11 +48,11 @@
         [
             (expect-failure
                 "A_UpdateUsagePrice must reject a non-positive new-price"
-                (ref-DALOS::A_UpdateUsagePrice "ignis" 0.0)
+                (ref-DALOS::A_UpdateUsagePrice KST.ANHD KST.ANHD "ignis" 0.0)
             )
             (expect-failure
                 "A_UpdateUsagePrice must reject a negative new-price"
-                (ref-DALOS::A_UpdateUsagePrice "ignis" -1.0)
+                (ref-DALOS::A_UpdateUsagePrice KST.ANHD KST.ANHD "ignis" -1.0)
             )
         ]
     )
