@@ -1775,15 +1775,15 @@
     (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD (SWP.UR_OwnerKonto pool7) pool7 true)
     (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD (SWP.UR_OwnerKonto pool8) pool8 true)
     ;;Toggle Swap Functionality
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD pool1 true)
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD pool2 true)
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD pool3 true)
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD pool4 true)
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD pool5 true)
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD pool6 true)
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD pool6a true)
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD pool7 true)
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD pool8 true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD (SWP.UR_OwnerKonto pool1) pool1 true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD (SWP.UR_OwnerKonto pool2) pool2 true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD (SWP.UR_OwnerKonto pool3) pool3 true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD (SWP.UR_OwnerKonto pool4) pool4 true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD (SWP.UR_OwnerKonto pool5) pool5 true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD (SWP.UR_OwnerKonto pool6) pool6 true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD (SWP.UR_OwnerKonto pool6a) pool6a true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD (SWP.UR_OwnerKonto pool7) pool7 true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD (SWP.UR_OwnerKonto pool8) pool8 true)
 )
 
 (print "")
@@ -2847,7 +2847,7 @@
         )
     )
     (map (lambda (p:string) (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD (SWP.UR_OwnerKonto p) p true)) chain)
-    (map (lambda (p:string) (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD p true)) chain)
+    (map (lambda (p:string) (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD (SWP.UR_OwnerKonto p) p true)) chain)
 )
 (print "")
 (print "--- [SWP|TX 025 - Enable Chain Pools · 03 · gas echo] ---")
@@ -2963,7 +2963,7 @@
         (shortcut:string "S|AG-98c486052a51|CO-98c486052a51")
     )
     (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD (SWP.UR_OwnerKonto shortcut) shortcut true)
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD shortcut true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD (SWP.UR_OwnerKonto shortcut) shortcut true)
 )
 (format "<<<<<<<SWP|TX 027 Issue+Enable Shortcut S|AG|CO ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "===^^^===")
@@ -2994,7 +2994,7 @@
         (shortcut:string "S|AG-98c486052a51|CO-98c486052a51")
         (expected-chain-nodes:[string] ["AG-98c486052a51" "AL-98c486052a51" "AU-98c486052a51" "BI-98c486052a51" "CO-98c486052a51"])
     )
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD shortcut false)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD (SWP.UR_OwnerKonto shortcut) shortcut false)
     (let
         (
             (h-obj:object{SwapperIssueV4.Hopper} (ref-SWPI::URC_HopperActive ag co 10.0))
@@ -3048,7 +3048,7 @@
               "S|BI-98c486052a51|CO-98c486052a51" ]
         )
     )
-    (map (lambda (p:string) (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD p false)) pools-to-disable)
+    (map (lambda (p:string) (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD (SWP.UR_OwnerKonto p) p false)) pools-to-disable)
 )
 (let
     (

@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 10 of 24
 ;; This is STEP 10 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-9 must have run first, including the init steps between deploys.
-;; 5 source file(s), 228,598 gas measured in the REPL gas model, 202,261 bytes
+;; 5 source file(s), 228,598 gas measured in the REPL gas model, 202,302 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/3_Talos/03_TS01-C2.pact
@@ -2027,7 +2027,7 @@
     (defun SWP|C_ModifyCanChangeOwner (patron:string executor:string swpair:string new-boolean:bool))
     (defun SWP|C_ModifyWeights (patron:string executor:string swpair:string new-weights:[decimal]))
     (defun SWP|C_ToggleAddLiquidity (patron:string executor:string swpair:string toggle:bool))
-    (defun SWP|C_ToggleSwapCapability (patron:string swpair:string toggle:bool))
+    (defun SWP|C_ToggleSwapCapability (patron:string executor:string swpair:string toggle:bool))
     (defun SWP|C_ToggleFeeLock (patron:string executor:string swpair:string toggle:bool))
     (defun SWP|C_UpdateAmplifier (patron:string executor:string swpair:string amp:decimal))
     (defun SWP|C_UpdateFee (patron:string executor:string swpair:string new-fee:decimal lp-or-special:bool))
@@ -2533,7 +2533,7 @@
             )
         )
     )
-    (defun SWP|C_ToggleSwapCapability (patron:string swpair:string toggle:bool)
+    (defun SWP|C_ToggleSwapCapability (patron:string executor:string swpair:string toggle:bool)
         @doc "Toggle on or off the Functionality of swapping for an <swpair> \
             \ When <toggle> is <true>, same setup for roles is executed as for <SWP|C_ToggleAddLiquidity> \
             \ \
@@ -2547,7 +2547,7 @@
                     (ref-SWPU:module{SwapperUsageV3} SWPU)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-SWPU::C_ToggleSwapCapability patron swpair toggle)
+                    (ref-SWPU::C_ToggleSwapCapability patron executor swpair toggle)
                 )
                 (format "Succesfully toggled Swap Capability for SWP-Pair" [swpair])
             )

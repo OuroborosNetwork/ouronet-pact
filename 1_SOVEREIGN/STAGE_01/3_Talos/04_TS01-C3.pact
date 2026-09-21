@@ -70,7 +70,7 @@
     (defun SWP|C_ModifyCanChangeOwner (patron:string executor:string swpair:string new-boolean:bool))
     (defun SWP|C_ModifyWeights (patron:string executor:string swpair:string new-weights:[decimal]))
     (defun SWP|C_ToggleAddLiquidity (patron:string executor:string swpair:string toggle:bool))
-    (defun SWP|C_ToggleSwapCapability (patron:string swpair:string toggle:bool))
+    (defun SWP|C_ToggleSwapCapability (patron:string executor:string swpair:string toggle:bool))
     (defun SWP|C_ToggleFeeLock (patron:string executor:string swpair:string toggle:bool))
     (defun SWP|C_UpdateAmplifier (patron:string executor:string swpair:string amp:decimal))
     (defun SWP|C_UpdateFee (patron:string executor:string swpair:string new-fee:decimal lp-or-special:bool))
@@ -576,7 +576,7 @@
             )
         )
     )
-    (defun SWP|C_ToggleSwapCapability (patron:string swpair:string toggle:bool)
+    (defun SWP|C_ToggleSwapCapability (patron:string executor:string swpair:string toggle:bool)
         @doc "Toggle on or off the Functionality of swapping for an <swpair> \
             \ When <toggle> is <true>, same setup for roles is executed as for <SWP|C_ToggleAddLiquidity> \
             \ \
@@ -590,7 +590,7 @@
                     (ref-SWPU:module{SwapperUsageV3} SWPU)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-SWPU::C_ToggleSwapCapability patron swpair toggle)
+                    (ref-SWPU::C_ToggleSwapCapability patron executor swpair toggle)
                 )
                 (format "Succesfully toggled Swap Capability for SWP-Pair" [swpair])
             )

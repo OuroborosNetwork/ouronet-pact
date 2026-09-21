@@ -714,3 +714,58 @@ hardcoded list that could not report its own incompleteness, after `_toolpaths`,
 Re-run after both repairs: **169 proven, 0 unproven across all 13 swept modules** — five of which
 the old list had never been looking at.
 
+---
+
+### 19_SWPU.pact — COMPLETE (4 of 4 entrypoints, 2026-09-22)
+
+**What v1 asserted that is now wrong.** One signature changed arity —
+`C_ToggleSwapCapability`, 47 call sites — and three renamed `account` → `executor` in the core
+only (`C_Swap`, `C_SmartSwap`, `CC_SmartSwap`), which is positionally invisible to a caller.
+
+**`C_ToggleSwapCapability` clears the second of the two provisional executor slots 15_SWP
+created** (`SWPLC::C_ToggleAddLiquidity` was the first). Both passed
+`(ref-SWP::UR_OwnerKonto swpair)` — the right value, **re-derived rather than attributed**. And
+here the gap was wider than in SWPLC: `SPWU|C>TOGGLE-SWAP` enforces only the pool-worth floor and
+**takes no account parameter at all**, so until this turn nothing in *either* module recorded who
+asked for the toggle. `SWP::C_ToggleAddOrSwap`'s `UEV_ExecutorIsOwnerKonto` now rejects the pair
+if the named account is not the owner.
+
+**The three swaps are proven by the DEBIT, and nothing else.** The swap capabilities take the
+account only to expose it in their `@event`; `SWPU|X>SWAP` validates the swap *shape*. Authority
+comes from `XI_Swap`'s `TFT::C_MultiTransfer`, which moves the input tokens out of the executor.
+Each `@doc` now names that route.
+
+**A capability that takes an account and emits it is not a capability that checks it.** That is
+the second time in two modules — `SWPLC|C>ADD-SLEEPING-LQ`'s possession check was the first — and
+it is worth stating as a reading rule: *an account in a `defcap`'s parameter list is evidence of
+an event, not of a gate.*
+
+---
+
+### THE CHECKER'S `FORWARDED` BRANCH IS CROSS-MODULE BY DESIGN — which is right, and had to be said
+
+`_modulecomplete` check 7 refused all three swaps: *"used 19x, never proven"*. They forward the
+executor into `XI_STOA-PID|Swap` → `XI_Swap`, a **same-module** internal, and the `FORWARDED`
+pattern matches `ref-X::` — a **cross-module** hand-off.
+
+That is not a bug. A cross-module forward is self-justifying: the foreign module is what does the
+proving, and the tool can go and look. An internal hop proves nothing by itself — the proof is
+wherever that internal function eventually debits — so it has to be traced by a human and written
+down. Which is exactly what `INDIRECT` is for, and why registering a route there is **not a
+waiver**: the tool still requires the function's own `@doc` to say it.
+
+**The registry keys are now file-qualifiable, and the selftest reports ambiguity.** `INDIRECT` was
+keyed by bare function name, and `C_Issue` alone matches **four** swept modules
+(`05_DPTF`, `06_DPOF`, `08_ATS`, `16_SWPI`) — a route-claim written for one applying silently to
+all four. It is a weaker hazard than the same shape in `_executorplan` (a module that does not
+name the route still fails), which is why it is reported rather than fatal; the three new entries
+are file-qualified, and the selftest now prints any bare key matching more than one swept module.
+
+**Three placement errors of my own, all caught by an assertion before anything was written.** The
+doc I wrote for `C_SmartSwap` landed first on the **module's** `@doc` and then on the **interface
+stub**, because `s.index()` on a `(defun` head finds the interface declaration before the
+implementation in a file that contains both. The guard that caught the third attempt was a
+distance check — *if `(P|UEV_IMC)` is more than N characters from the head, you are not in the
+function you think you are* — which also correctly flagged that `CC_SmartSwap` and `C_Swap`
+already **had** `@doc`s and needed extending rather than a second one.
+

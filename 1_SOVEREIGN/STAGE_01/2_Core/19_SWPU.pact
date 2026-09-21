@@ -147,19 +147,19 @@
     ;;  []C] Functions
     ;;
     ;;
-    (defun C_ToggleSwapCapability:object{IgnisCollectorV3.OutputCumulator} (patron:string swpair:string toggle:bool))
-    (defun CC_SmartSwap:object{IgnisCollectorV3.OutputCumulator} (patron:string account:string input-id:string input-amount:decimal output-id:string slippage:decimal stoa-pid:decimal slippage-bounds:object{Slippage}))
+    (defun C_ToggleSwapCapability:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string swpair:string toggle:bool))
+    (defun CC_SmartSwap:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string input-id:string input-amount:decimal output-id:string slippage:decimal stoa-pid:decimal slippage-bounds:object{Slippage}))
     ;;#34 Phase 8: the bundle-based, dirty-read-injected SmartSwap — performs zero
     ;;internal searching (route, boost-path and stoa-paths are all supplied by the
     ;;caller, per SmartSwapPathBundle), built alongside CC_SmartSwap for direct gas
     ;;comparison, not replacing it.
     (defun C_SmartSwap:list
         (patron:string 
-            account:string input-id:string input-amount:decimal output-id:string slippage:decimal
+            executor:string input-id:string input-amount:decimal output-id:string slippage:decimal
             stoa-pid:decimal slippage-bounds:object{Slippage} bundle:object{SmartSwapPathBundle}
         )
     )
-    (defun C_Swap:object{IgnisCollectorV3.OutputCumulator} (patron:string account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage:decimal stoa-pid:decimal slippage-bounds:object{Slippage}))
+    (defun C_Swap:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage:decimal stoa-pid:decimal slippage-bounds:object{Slippage}))
 
 )
 ;;
@@ -2303,26 +2303,32 @@
     )
     ;;{5.7}  User [A/C]
     (defun C_ToggleSwapCapability:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string swpair:string toggle:bool)
+        (patron:string executor:string swpair:string toggle:bool)
+        @doc "Executor: ENFORCED INDIRECTLY, downstream, and nothing here proves it: SPWU|C>TOGGLE-SWAP \
+            \ enforces only the pool-worth floor and takes no account at all. The proof is \
+            \ SWP::C_ToggleAddOrSwap, whose UEV_ExecutorIsOwnerKonto binds <executor> to \
+            \ (UR_OwnerKonto swpair) and whose SWP|C>ADD-OR-SWAP enforces CAP_Owner on that \
+            \ same pool -- its own @doc names itself the ONLY ownership check in this chain. \
+            \ (patron/executor canon 2.2, indirect route named, 2026-09-22.)"
         (P|UEV_IMC)
         (let
             (
                 (ref-SWP:module{SwapperV4} SWP)
             )
             (with-capability (SPWU|C>TOGGLE-SWAP swpair toggle)
-                ;;PROVISIONAL EXECUTOR SLOT (HANDOFF 4e, 2026-09-21). 15_SWP's turn gave
-                ;;C_ToggleAddOrSwap an `executor` bound to the POOL OWNER; this module's own turn
-                ;;has not come, so there is no `executor` parameter here to thread and the rule is
-                ;;to pass the account that actually initiates -- read directly rather than
-                ;;invented. It is CORRECT today (it is the same value the binder derives) and must
-                ;;become this module's own `executor` at its turn, which is the only thing that
-                ;;makes the attribution real rather than re-derived.
-                (ref-SWP::C_ToggleAddOrSwap patron (ref-SWP::UR_OwnerKonto swpair) swpair toggle false)
+                ;;PROVISIONAL EXECUTOR SLOT CLEARED at this module's own turn (2026-09-22),
+                ;;the twin of the one in SWPLC::C_ToggleAddLiquidity. 15_SWP's turn left
+                ;;(ref-SWP::UR_OwnerKonto swpair) here: the right VALUE, re-derived rather than
+                ;;attributed. SPWU|C>TOGGLE-SWAP above enforces only the pool-worth floor -- it
+                ;;proves nothing about any account -- so until now nothing in either module
+                ;;recorded WHO asked for the toggle. SWP::C_ToggleAddOrSwap's
+                ;;UEV_ExecutorIsOwnerKonto rejects the pair if the named account is not the owner.
+                (ref-SWP::C_ToggleAddOrSwap patron executor swpair toggle false)
             )
         )
     )
     (defun CC_SmartSwap:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string account:string input-id:string input-amount:decimal output-id:string slippage:decimal stoa-pid:decimal slippage-bounds:object{SwapperUsageV3.Slippage})
+        (patron:string executor:string input-id:string input-amount:decimal output-id:string slippage:decimal stoa-pid:decimal slippage-bounds:object{SwapperUsageV3.Slippage})
         @doc "Executes a Smart Swap from <input-id> to <output-id> across multiple pools using BFS path tracing. \
             \ Each hop executes a full swap with fees (LP, special, boost via Option B). \
             \ When slippage != -1.0, slippage-bounds must be the pre-computed object from UDC_SpawnSmartSwapSlippageBounds. \
@@ -2332,7 +2338,15 @@
             \ takes the freed C_SmartSwap name. \
             \ #65L fix: the BFS path search (<h-obj>) is computed exactly ONCE here and \
             \ threaded through the defcap and XI_SmartSwapRouter, instead of each \
-            \ independently re-running SWPI::URC_HopperActive's full-graph search."
+            \ independently re-running SWPI::URC_HopperActive's full-graph search. \
+            \ \
+            \ Executor: ENFORCED INDIRECTLY. No capability here proves it -- the swap caps take the \
+            \ account only to EXPOSE it in their @event, and SWPU|X>SWAP validates the swap SHAPE. \
+            \ The proof is the DEBIT: XI_Swap calls TFT::C_MultiTransfer with <executor> in the \
+            \ executor slot, moving the input tokens OUT of it, which enforces \
+            \ CAP_EnforceAccountOwnership once per leg via DPTF|C>MULTI-TRANSFER -> \
+            \ XB_DebitTrueFungible -> DPTF|C>DEBIT. \
+            \ (patron/executor canon 2.2, indirect route named, 2026-09-22.)"
         (P|UEV_IMC)
         (let
             (
@@ -2340,18 +2354,18 @@
                 (h-obj:object{SwapperIssueV4.Hopper} (ref-SWPI::URC_HopperActive input-id output-id input-amount))
             )
             (if (!= slippage -1.0)
-                (with-capability (SWPU|C>SMART-SWAP-WITH-SLIPPAGE account input-id input-amount output-id slippage slippage-bounds h-obj)
-                    (XI_SmartSwapRouter patron account input-id input-amount output-id slippage stoa-pid slippage-bounds h-obj)
+                (with-capability (SWPU|C>SMART-SWAP-WITH-SLIPPAGE executor input-id input-amount output-id slippage slippage-bounds h-obj)
+                    (XI_SmartSwapRouter patron executor input-id input-amount output-id slippage stoa-pid slippage-bounds h-obj)
                 )
-                (with-capability (SWPU|C>SMART-SWAP-NO-SLIPPAGE account input-id input-amount output-id slippage h-obj)
-                    (XI_SmartSwapRouter patron account input-id input-amount output-id slippage stoa-pid slippage-bounds h-obj)
+                (with-capability (SWPU|C>SMART-SWAP-NO-SLIPPAGE executor input-id input-amount output-id slippage h-obj)
+                    (XI_SmartSwapRouter patron executor input-id input-amount output-id slippage stoa-pid slippage-bounds h-obj)
                 )
             )
         )
     )
     (defun C_SmartSwap:list
         (patron:string 
-            account:string input-id:string input-amount:decimal output-id:string slippage:decimal
+            executor:string input-id:string input-amount:decimal output-id:string slippage:decimal
             stoa-pid:decimal slippage-bounds:object{SwapperUsageV3.Slippage} bundle:object{SwapperUsageV3.SmartSwapPathBundle}
         )
         @doc "#34 Phase 8 — the bundle-based, dirty-read-injected SmartSwap: performs \
@@ -2383,22 +2397,39 @@
             \ a granted capability's scope is its own dynamic extent, not the rest of \
             \ the transaction (confirmed the hard way: 'require-capability: not granted' \
             \ when this was first tried as a separate call after the with-capability \
-            \ block had already returned)."
+            \ block had already returned). \
+            \ \
+            \ Executor: ENFORCED INDIRECTLY, exactly as its CC_SmartSwap twin. No capability here \
+            \ proves it. The proof is the DEBIT inside XI_Swap -- TFT::C_MultiTransfer with \
+            \ <executor> in the executor slot -- reached through XI_STOA-PID|Swap. Note this is an \
+            \ INTERNAL hop, so _executorenforced's FORWARDED branch cannot see it: that branch \
+            \ matches cross-module `ref-X::` hand-offs, which is correct, because a foreign module \
+            \ is what would do the proving. An internal hop has to be traced by a human and \
+            \ written down, which is what this paragraph is. \
+            \ (patron/executor canon 2.2, indirect route named, 2026-09-22.)"
         (P|UEV_IMC)
         (if (!= slippage -1.0)
             (with-capability
-                (SWPU|C>SMART-SWAP-EXPLICIT-ROUTE-WITH-SLIPPAGE account input-id input-amount output-id slippage slippage-bounds bundle)
-                (XI_SmartSwapAndRegister patron account input-id input-amount output-id slippage stoa-pid slippage-bounds bundle)
+                (SWPU|C>SMART-SWAP-EXPLICIT-ROUTE-WITH-SLIPPAGE executor input-id input-amount output-id slippage slippage-bounds bundle)
+                (XI_SmartSwapAndRegister patron executor input-id input-amount output-id slippage stoa-pid slippage-bounds bundle)
             )
             (with-capability
-                (SWPU|C>SMART-SWAP-EXPLICIT-ROUTE-NO-SLIPPAGE account input-id input-amount output-id slippage bundle)
-                (XI_SmartSwapAndRegister patron account input-id input-amount output-id slippage stoa-pid slippage-bounds bundle)
+                (SWPU|C>SMART-SWAP-EXPLICIT-ROUTE-NO-SLIPPAGE executor input-id input-amount output-id slippage bundle)
+                (XI_SmartSwapAndRegister patron executor input-id input-amount output-id slippage stoa-pid slippage-bounds bundle)
             )
         )
     )
     (defun C_Swap:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage:decimal stoa-pid:decimal slippage-bounds:object{SwapperUsageV3.Slippage})
-        @doc "Execute swap. When slippage != -1.0, slippage-bounds must be the pre-computed slippage object from quote time (e.g. UDC_SlippageObject); when slippage == -1.0, pass a dummy object (e.g. UDC_Slippage 0.0 0 0.0)."
+        (patron:string executor:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage:decimal stoa-pid:decimal slippage-bounds:object{SwapperUsageV3.Slippage})
+        @doc "Execute swap. When slippage != -1.0, slippage-bounds must be the pre-computed slippage object from quote time (e.g. UDC_SlippageObject); when slippage == -1.0, pass a dummy object (e.g. UDC_Slippage 0.0 0 0.0). \
+            \ \
+            \ Executor: ENFORCED INDIRECTLY. No capability here proves it -- the swap caps take the \
+            \ account only to EXPOSE it in their @event, and SWPU|X>SWAP validates the swap SHAPE. \
+            \ The proof is the DEBIT: XI_Swap calls TFT::C_MultiTransfer with <executor> in the \
+            \ executor slot, moving the input tokens OUT of it, which enforces \
+            \ CAP_EnforceAccountOwnership once per leg via DPTF|C>MULTI-TRANSFER -> \
+            \ XB_DebitTrueFungible -> DPTF|C>DEBIT. \
+            \ (patron/executor canon 2.2, indirect route named, 2026-09-22.)"
         (P|UEV_IMC)
         (let
             (
@@ -2414,37 +2445,37 @@
             (if (= swpair pp)
                 (if s-or-m
                     (if (!= slippage -1.0)
-                        (with-capability (SWPU|OPU|C>SINGL-SWAP-WITH-SLIPPAGE account swpair dsid slippage slippage-bounds)
-                            (XI_STOA-PID|Swap patron account swpair dsid slippage stoa-pid slippage-bounds)
+                        (with-capability (SWPU|OPU|C>SINGL-SWAP-WITH-SLIPPAGE executor swpair dsid slippage slippage-bounds)
+                            (XI_STOA-PID|Swap patron executor swpair dsid slippage stoa-pid slippage-bounds)
                         )
-                        (with-capability (SWPU|OPU|C>SINGL-SWAP-NO-SLIPPAGE account swpair dsid slippage)
-                            (XI_STOA-PID|Swap patron account swpair dsid slippage stoa-pid slippage-bounds)
+                        (with-capability (SWPU|OPU|C>SINGL-SWAP-NO-SLIPPAGE executor swpair dsid slippage)
+                            (XI_STOA-PID|Swap patron executor swpair dsid slippage stoa-pid slippage-bounds)
                         )
                     )
                     (if (!= slippage -1.0)
-                        (with-capability (SWPU|OPU|C>MULTI-SWAP-WITH-SLIPPAGE account swpair dsid slippage slippage-bounds)
-                            (XI_STOA-PID|Swap patron account swpair dsid slippage stoa-pid slippage-bounds)
+                        (with-capability (SWPU|OPU|C>MULTI-SWAP-WITH-SLIPPAGE executor swpair dsid slippage slippage-bounds)
+                            (XI_STOA-PID|Swap patron executor swpair dsid slippage stoa-pid slippage-bounds)
                         )
-                        (with-capability (SWPU|OPU|C>MULTI-SWAP-NO-SLIPPAGE account swpair dsid slippage)
-                            (XI_STOA-PID|Swap patron account swpair dsid slippage stoa-pid slippage-bounds)
+                        (with-capability (SWPU|OPU|C>MULTI-SWAP-NO-SLIPPAGE executor swpair dsid slippage)
+                            (XI_STOA-PID|Swap patron executor swpair dsid slippage stoa-pid slippage-bounds)
                         )
                     )
                 )
                 (if s-or-m
                     (if (!= slippage -1.0)
-                        (with-capability (SWPU|C>SINGL-SWAP-WITH-SLIPPAGE account swpair dsid slippage slippage-bounds)
-                            (XI_STOA-PID|Swap patron account swpair dsid slippage -1.0 slippage-bounds)
+                        (with-capability (SWPU|C>SINGL-SWAP-WITH-SLIPPAGE executor swpair dsid slippage slippage-bounds)
+                            (XI_STOA-PID|Swap patron executor swpair dsid slippage -1.0 slippage-bounds)
                         )
-                        (with-capability (SWPU|C>SINGL-SWAP-NO-SLIPPAGE account swpair dsid slippage)
-                            (XI_STOA-PID|Swap patron account swpair dsid slippage -1.0 slippage-bounds)
+                        (with-capability (SWPU|C>SINGL-SWAP-NO-SLIPPAGE executor swpair dsid slippage)
+                            (XI_STOA-PID|Swap patron executor swpair dsid slippage -1.0 slippage-bounds)
                         )
                     )
                     (if (!= slippage -1.0)
-                        (with-capability (SWPU|C>MULTI-SWAP-WITH-SLIPPAGE account swpair dsid slippage slippage-bounds)
-                            (XI_STOA-PID|Swap patron account swpair dsid slippage -1.0 slippage-bounds)
+                        (with-capability (SWPU|C>MULTI-SWAP-WITH-SLIPPAGE executor swpair dsid slippage slippage-bounds)
+                            (XI_STOA-PID|Swap patron executor swpair dsid slippage -1.0 slippage-bounds)
                         )
-                        (with-capability (SWPU|C>MULTI-SWAP-NO-SLIPPAGE account swpair dsid slippage)
-                            (XI_STOA-PID|Swap patron account swpair dsid slippage -1.0 slippage-bounds)
+                        (with-capability (SWPU|C>MULTI-SWAP-NO-SLIPPAGE executor swpair dsid slippage)
+                            (XI_STOA-PID|Swap patron executor swpair dsid slippage -1.0 slippage-bounds)
                         )
                     )
                 )

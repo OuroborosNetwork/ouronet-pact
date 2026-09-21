@@ -170,6 +170,10 @@ RULES = {
     "SWP|C_UpdatePendingBrandingLPs": (8, "(SWP.UR_OwnerKonto {1})"),
     "SWP|C_UpgradeBrandingLPs":       (5, "(SWP.UR_OwnerKonto {1})"),
     "SWP|C_ToggleAddLiquidity":       (4, "(SWP.UR_OwnerKonto {1})"),
+    # ---- 19_SWPU (sweep 16/46). The toggle's twin: same pool-owner authority, proven in the
+    # same place (SWP::C_ToggleAddOrSwap). The three SWAP entrypoints are NOT here -- they
+    # renamed `account` -> `executor` in the core only, no arity change at the Talos boundary.
+    "SWP|C_ToggleSwapCapability":     (4, "(SWP.UR_OwnerKonto {1})"),
 
     "AQP-FVT|CC_SweepBegin":            (3, "(AQP-ANK.URC_AnchorableAssetOwner (AQP-ANK.UR_ANK|AnchoredAsset {1}) (AQP-ANK.UR_ANK|Fungibility {1}))"),
 }

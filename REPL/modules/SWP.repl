@@ -1283,7 +1283,7 @@
             (expect "<<SWP-G11a>> swapping starts ENABLED on this pool" true (ref-SWP::UR_CanSwap pool))
         ]
     )
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD pool false)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD (SWP.UR_OwnerKonto pool) pool false)
     (map print
         [
             (expect "<<SWP-G11a>> ...and is now disabled" false (ref-SWP::UR_CanSwap pool))
@@ -1405,7 +1405,7 @@
                 true (> (at 0 (ref-SWPI::URC_PoolValue pool)) (ref-SWP::UR_InactiveLimit)))
         ]
     )
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD pool true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD (SWP.UR_OwnerKonto pool) pool true)
     (map print
         [
             (expect "<<SWP-G11c>> swapping is enabled again — no later block inherits a dead pool"
@@ -2935,7 +2935,7 @@
                 ;;a long decimal derived at runtime.
                 (expect-failure "<<SWPX-13>> swap cannot be switched ON below the floor"
                     "cannot have its Swap Functionality turned on because its worth is"
-                    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD wp true))
+                    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD (SWP.UR_OwnerKonto wp) wp true))
                 ;;...and the OFF direction is NOT gated by worth -- that is the `if toggle` branch,
                 ;;and driving it is what shows the rule is one-sided by design rather than merely
                 ;;unreached. Swap is already off on this pool, so what answers is the no-op rule, NOT
@@ -2944,7 +2944,7 @@
                 ;;have been wrong, and the first draft did exactly that.
                 (expect-failure "<<SWPX-13>> ...while the OFF direction is answered by the no-op rule, not the floor"
                     "Similar boolean unallowed for <can-add> or <can-swap>"
-                    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD wp false))
+                    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD (SWP.UR_OwnerKonto wp) wp false))
                 ;;the pool really is below the floor at this moment, so the line above is a genuine
                 ;;"the worth rule declined to answer" and not an accident of ordering.
                 (expect "<<SWPX-13>> ...and the pool is still below the floor while that happens"
@@ -3486,7 +3486,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_SWP|ToggleSwapCapability patron sd false))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C3::SWP|C_ToggleSwapCapability patron sd false))
+            (m (ref-TS01-C3::SWP|C_ToggleSwapCapability patron (SWP.UR_OwnerKonto sd) sd false))
         )
         (map print
             [

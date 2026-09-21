@@ -81,6 +81,14 @@ INDIRECT = {
     # passed C_KickStart for a day on the strength of a CAP_Owner two arguments away.
     "C_KickStart":            "XI_KickStart",
     "A_KickStart":            "XI_KickStart",
+    # ---- 19_SWPU (2026-09-22). These forward the executor into a SAME-MODULE `XI_`, which the
+    # FORWARDED branch cannot see -- it looks for `ref-X::`, i.e. a CROSS-module hand-off. That
+    # is the correct shape for FORWARDED to match (a foreign module is what does the proving);
+    # an internal hop has to be traced by a human and written down, which is what INDIRECT is.
+    # The proof is the debit inside XI_Swap.
+    "19_SWPU.pact::C_Swap":       "TFT::C_MultiTransfer",
+    "19_SWPU.pact::CC_SmartSwap": "TFT::C_MultiTransfer",
+    "19_SWPU.pact::C_SmartSwap":  "XI_Swap",
 }
 
 # SELF-PROVING AT CREATION -- the base case of the attribution rule, resolved by the owner on
@@ -166,7 +174,7 @@ def _proves(caps, cname, pos, seen):
     return None
 
 
-def classify(name, body, caps):
+def classify(name, body, caps, base=""):
     """-> (verdict, detail). verdict in DIRECT / cap:… / FORWARDED / INDIRECT / UNPROVEN."""
     if re.search(OWN.pattern + r'\s+executor', body):
         return "DIRECT", ""
@@ -202,8 +210,14 @@ def classify(name, body, caps):
             return "SELF-PROVING", f'@doc names "{need}"'
         return "UNPROVEN", (f'registered SELF-PROVING but its @doc does not name "{need}" '
                             f'-- the canon requires the proof to be written in the function')
-    if bare in INDIRECT:
-        need = INDIRECT[bare]
+    # FILE-QUALIFIED KEYS TAKE PRECEDENCE. A bare name is not unique across 46 modules --
+    # `C_Issue` alone exists in DPTF, DPOF, ATS, SWPI and FVT, so an entry meant for one of them
+    # silently applies to all five. It is a weaker hazard here than in _executorplan (a module
+    # that does not NAME the route in its own @doc still fails), but it is the same hazard, and
+    # the selftest below refuses any new ambiguous bare key.
+    key = f"{base}::{bare}" if f"{base}::{bare}" in INDIRECT else bare
+    if key in INDIRECT:
+        need = INDIRECT[key]
         doc = re.search(r'@doc\s+"(.*?)(?<!\\)"', body, re.S)
         if doc and need.lower() in doc.group(1).lower():
             return "INDIRECT", f'@doc names "{need}"'
@@ -241,6 +255,23 @@ def selftest():
         got = bool(re.search(pat, src))
         if got != want:
             bad.append(f"   FORWARDED match on {src!r} = {got}, expected {want}  ({why})")
+    # AMBIGUOUS BARE KEYS. Promised in the comment beside the lookup, so it has to be real:
+    # a bare INDIRECT key that matches entrypoints in more than one SWEPT module is applying a
+    # route-claim written for one module to functions in another. Reported, not fatal, for the
+    # pre-existing ones -- each still has to NAME its route in its own @doc, so the hazard is
+    # bounded -- but a NEW one has to be file-qualified.
+    import glob as _g
+    where = {}
+    for f in _g.glob(os.path.join(ROOT, "1_SOVEREIGN", "**", "*.pact"), recursive=True):
+        b = os.path.basename(f)
+        if b not in SWEPT:
+            continue
+        for m in re.finditer(r"\(defun\s+([A-Za-z0-9|_\-]+)", open(f, encoding="utf8").read()):
+            where.setdefault(m.group(1).split("|")[-1], set()).add(b)
+    ambiguous = sorted(k for k in INDIRECT if "::" not in k and len(where.get(k, ())) > 1)
+    if ambiguous:
+        print("  _executorenforced: NOTE -- bare INDIRECT key(s) matching >1 swept module: "
+              + ", ".join(f"{k} {sorted(where[k])}" for k in ambiguous))
     if not SWEPT:
         bad.append("   SWEPT is empty -- --swept would report a confident clean zero")
     if "01_DALOS.pact" not in SWEPT:
@@ -278,7 +309,7 @@ def main():
         for n, body in defs.items():
             if not ENTRY.search(n) or n.startswith("P|"): continue
             if "executor:string" not in body[:500]: continue
-            v, d = classify(n, body, caps)
+            v, d = classify(n, body, caps, base)
             if v == "UNPROVEN":
                 bad.append((base, n, d))
             else:

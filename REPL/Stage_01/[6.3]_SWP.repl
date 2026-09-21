@@ -1397,15 +1397,15 @@
     (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD (SWP.UR_OwnerKonto pool7) pool7 true)
     (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD (SWP.UR_OwnerKonto pool8) pool8 true)
     ;;Toggle Swap Functionality
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD pool1 true)
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD pool2 true)
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD pool3 true)
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD pool4 true)
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD pool5 true)
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD pool6 true)
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD pool6a true)
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD pool7 true)
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD pool8 true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD (SWP.UR_OwnerKonto pool1) pool1 true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD (SWP.UR_OwnerKonto pool2) pool2 true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD (SWP.UR_OwnerKonto pool3) pool3 true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD (SWP.UR_OwnerKonto pool4) pool4 true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD (SWP.UR_OwnerKonto pool5) pool5 true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD (SWP.UR_OwnerKonto pool6) pool6 true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD (SWP.UR_OwnerKonto pool6a) pool6a true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD (SWP.UR_OwnerKonto pool7) pool7 true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD (SWP.UR_OwnerKonto pool8) pool8 true)
 )
 
 (print "")
@@ -1902,8 +1902,8 @@
         (poolP:string "P|OURO-98c486052a51|TSTY-98c486052a51")
         (poolQ:string "W|OURO-98c486052a51|TSTY-98c486052a51")
     )
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD poolP true)
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD poolQ true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD (SWP.UR_OwnerKonto poolP) poolP true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD (SWP.UR_OwnerKonto poolQ) poolQ true)
 )
 (print "")
 (print "")
@@ -3787,10 +3787,10 @@
     (
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
     )
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD "P|OURO-98c486052a51|TSTC-98c486052a51" true)
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD "S|TSTC-98c486052a51|TSTZ-98c486052a51" true)
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD "P|OURO-98c486052a51|TSTD-98c486052a51" true)
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD "S|TSTD-98c486052a51|TSTZ-98c486052a51" true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD (SWP.UR_OwnerKonto "P|OURO-98c486052a51|TSTC-98c486052a51") "P|OURO-98c486052a51|TSTC-98c486052a51" true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD (SWP.UR_OwnerKonto "S|TSTC-98c486052a51|TSTZ-98c486052a51") "S|TSTC-98c486052a51|TSTZ-98c486052a51" true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD (SWP.UR_OwnerKonto "P|OURO-98c486052a51|TSTD-98c486052a51") "P|OURO-98c486052a51|TSTD-98c486052a51" true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD (SWP.UR_OwnerKonto "S|TSTD-98c486052a51|TSTZ-98c486052a51") "S|TSTD-98c486052a51|TSTZ-98c486052a51" true)
 )
 (print "")
 (print "")
@@ -4671,7 +4671,7 @@
     ;;crashes instead of failing cleanly. Worth its own tracked finding — not
     ;;fixing it here, just routing around it to keep this specific pool
     ;;genuinely DLK-reachable so the swap can execute at all.
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD "P|OURO-98c486052a51|W1-98c486052a51" true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD (SWP.UR_OwnerKonto "P|OURO-98c486052a51|W1-98c486052a51") "P|OURO-98c486052a51|W1-98c486052a51" true)
 )
 (print "")
 (print "")
@@ -4821,7 +4821,7 @@
     ;;(matches how Liquid Boost already mirrors <lp-fee> when its own toggle is on), so
     ;;this "worst case" test actually stresses the path it claims to.
     (map (lambda (p:string) (ref-TS01-C3::SWP|C_UpdateFee KST.ANHD (SWP.UR_OwnerKonto p) p 10.0 false)) pools)
-    (map (lambda (p:string) (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD p true)) pools)
+    (map (lambda (p:string) (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD (SWP.UR_OwnerKonto p) p true)) pools)
 )
 (print "")
 (print "")
@@ -5077,7 +5077,7 @@
             tok-ids
         )
         ;;First batch: activate the first 20 (baseline 22 -> ~42 active).
-        (map (lambda (t:string) (ref-TS01-C3::SWP|C_ToggleSwapCapability patron (format "P|OURO-98c486052a51|{}" [t]) true)) (take 20 tok-ids))
+        (map (lambda (t:string) (ref-TS01-C3::SWP|C_ToggleSwapCapability patron (SWP.UR_OwnerKonto (format "P|OURO-98c486052a51|{}" [t])) (format "P|OURO-98c486052a51|{}" [t]) true)) (take 20 tok-ids))
     )
 )
 (print (format "<<<<<<<SWP|TX 032s ==> {} STOA GAS>>>>>>>" [(env-gas)]))
@@ -5119,7 +5119,7 @@
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
         (tok-ids:[string] (map (lambda (i:integer) (format "N2{}-98c486052a51" [i])) (enumerate 21 40)))
     )
-    (map (lambda (t:string) (ref-TS01-C3::SWP|C_ToggleSwapCapability patron (format "P|OURO-98c486052a51|{}" [t]) true)) tok-ids)
+    (map (lambda (t:string) (ref-TS01-C3::SWP|C_ToggleSwapCapability patron (SWP.UR_OwnerKonto (format "P|OURO-98c486052a51|{}" [t])) (format "P|OURO-98c486052a51|{}" [t]) true)) tok-ids)
 )
 (print (format "<<<<<<<SWP|TX 032v ==> {} STOA GAS>>>>>>>" [(env-gas)]))
 (env-sigs [])
@@ -5160,7 +5160,7 @@
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
         (tok-ids:[string] (map (lambda (i:integer) (format "N2{}-98c486052a51" [i])) (enumerate 41 60)))
     )
-    (map (lambda (t:string) (ref-TS01-C3::SWP|C_ToggleSwapCapability patron (format "P|OURO-98c486052a51|{}" [t]) true)) tok-ids)
+    (map (lambda (t:string) (ref-TS01-C3::SWP|C_ToggleSwapCapability patron (SWP.UR_OwnerKonto (format "P|OURO-98c486052a51|{}" [t])) (format "P|OURO-98c486052a51|{}" [t]) true)) tok-ids)
 )
 (print (format "<<<<<<<SWP|TX 032x ==> {} STOA GAS>>>>>>>" [(env-gas)]))
 (env-sigs [])
@@ -5201,7 +5201,7 @@
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
         (tok-ids:[string] (map (lambda (i:integer) (format "N2{}-98c486052a51" [i])) (enumerate 61 80)))
     )
-    (map (lambda (t:string) (ref-TS01-C3::SWP|C_ToggleSwapCapability patron (format "P|OURO-98c486052a51|{}" [t]) true)) tok-ids)
+    (map (lambda (t:string) (ref-TS01-C3::SWP|C_ToggleSwapCapability patron (SWP.UR_OwnerKonto (format "P|OURO-98c486052a51|{}" [t])) (format "P|OURO-98c486052a51|{}" [t]) true)) tok-ids)
 )
 (print (format "<<<<<<<SWP|TX 032z ==> {} STOA GAS>>>>>>>" [(env-gas)]))
 (env-sigs [])
@@ -5468,7 +5468,7 @@
 ;;==== SWP|TX 032z5 - #34 XI_RawLiquidPump Crash-Bug Fix Proof (Permanent) · 02 · let / invocation ==== 
 (print "--- [SWP|TX 032z5 - #34 XI_RawLiquidPump Crash-Bug Fix Proof (Permanent) · 02 · let / invocation] ---")
 (let ((ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3))
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD "P|OURO-98c486052a51|W1-98c486052a51" false)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD (SWP.UR_OwnerKonto "P|OURO-98c486052a51|W1-98c486052a51") "P|OURO-98c486052a51|W1-98c486052a51" false)
 )
 (let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost KST.ANHD true))
 (let*
@@ -5492,7 +5492,7 @@
 (let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost KST.ANHD false))
 (let ((ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3))
     ;;Restore — must not leak into any later transaction in this file.
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD "P|OURO-98c486052a51|W1-98c486052a51" true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD (SWP.UR_OwnerKonto "P|OURO-98c486052a51|W1-98c486052a51") "P|OURO-98c486052a51|W1-98c486052a51" true)
 )
 (env-sigs [])
 (commit-tx)
@@ -6660,7 +6660,7 @@
     ;;Inactive-edge case needs the pool actually toggled off first (a genuinely real,
     ;;structurally-connected, but can-swap=false pool) — same revert/restore pattern
     ;;as SWP|TX 032z5.
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD "P|OURO-98c486052a51|W1-98c486052a51" false)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD (SWP.UR_OwnerKonto "P|OURO-98c486052a51|W1-98c486052a51") "P|OURO-98c486052a51|W1-98c486052a51" false)
     (print
         (expect-failure
             "Adversarial: swap-route over a real, connected, but can-swap=false pool is rejected"
@@ -6668,7 +6668,7 @@
             (ref-TS01-C3::SWP|C_SmartSwapNoSlippage KST.ANHD KST.ANHD "W1-98c486052a51" 1.0 "OURO-98c486052a51" inactive-edge-bundle)
         )
     )
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD "P|OURO-98c486052a51|W1-98c486052a51" true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD (SWP.UR_OwnerKonto "P|OURO-98c486052a51|W1-98c486052a51") "P|OURO-98c486052a51|W1-98c486052a51" true)
 )
 ;;==== SWP|TX 032z8 - Adversarial Malformed-Bundle Proof · 03 · pricing-path graceful degrade ====
 (print "--- [SWP|TX 032z8 - Adversarial Malformed-Bundle Proof · 03 · pricing-path graceful degrade] ---")
@@ -8868,10 +8868,10 @@
     (
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
     )
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD "P|OURO-98c486052a51|TSTE-98c486052a51" true)
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD "S|TSTE-98c486052a51|TSTZ-98c486052a51" true)
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD "P|OURO-98c486052a51|TSTF-98c486052a51" true)
-    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD "S|TSTF-98c486052a51|TSTZ-98c486052a51" true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD (SWP.UR_OwnerKonto "P|OURO-98c486052a51|TSTE-98c486052a51") "P|OURO-98c486052a51|TSTE-98c486052a51" true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD (SWP.UR_OwnerKonto "S|TSTE-98c486052a51|TSTZ-98c486052a51") "S|TSTE-98c486052a51|TSTZ-98c486052a51" true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD (SWP.UR_OwnerKonto "P|OURO-98c486052a51|TSTF-98c486052a51") "P|OURO-98c486052a51|TSTF-98c486052a51" true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD (SWP.UR_OwnerKonto "S|TSTF-98c486052a51|TSTZ-98c486052a51") "S|TSTF-98c486052a51|TSTZ-98c486052a51" true)
 )
 (env-sigs [])
 (commit-tx)
