@@ -112,27 +112,31 @@
     ;; NOTE: INFO_PYTHIA|* previews are UI-only → NOT declared here (canon: INFO not in
     ;; interfaces); they live in the PYTHIA module's {5.3} Read block.
     ;;
-    (defun A_LinkDualApiKey:string (standard-apollo:string smart-apollo:string))
+    (defun A_LinkDualApiKey:string (patron:string executor:string standard-apollo:string smart-apollo:string))
         ;; Cronoton: create+activate (auto PYTHIA-<hash12> lane) or flip inactive→true
-    (defun A_RevokeDualLink:string (dual-link-key:string))
-    (defun A_UpdateDeployPrice:string (new-price:decimal))
-    (defun A_UpdateRenamePrice:string (new-price:decimal))
+    (defun A_RevokeDualLink:string (patron:string executor:string dual-link-key:string))
+    (defun A_UpdateDeployPrice:string (patron:string executor:string new-price:decimal))
+    (defun A_UpdateRenamePrice:string (patron:string executor:string new-price:decimal))
     ;;
     (defun C_DeployApolloPythiaApiKey:string
         (
-            owner-account:string
+            patron:string
+            executor:string
             apollo-account:string
             public:string
         ))
     (defun C_LinkDualApiKey:string
         (
+            executor:string
             standard-apollo:string
             smart-apollo:string
             consumer-lane:string
         ))
-    (defun C_RevokeDualLink:string (dual-link-key:string))
+    (defun C_RevokeDualLink:string (patron:string executor:string dual-link-key:string))
     (defun C_UpdateDualConsumerLane:string
         (
+            patron:string
+            executor:string
             dual-link-key:string
             new-name:string
         ))
@@ -227,7 +231,7 @@
     ;;{5.6}  Aux/X
     ;;{5.7}  User [A/C]
     ;;
-    (defun A_Flush:string (entries:[object{PYTHIA|S|PythFlushEntry}]))
+    (defun A_Flush:string (patron:string executor:string entries:[object{PYTHIA|S|PythFlushEntry}]))
 
 )
 ;;
@@ -486,6 +490,7 @@
     )
     (defcap PYTHIA|C>LINK-DUAL
         (
+            executor:string
             standard-apollo:string
             smart-apollo:string
             consumer-lane:string
@@ -498,6 +503,7 @@
             )
             (ref-U|DALOS::UEV_StoicTagName consumer-lane)
             (UEV_DualPairForLink standard-apollo smart-apollo)
+            (UEV_ExecutorIsHalfOwner executor standard-apollo smart-apollo)
             (compose-capability (PYTHIA|OWNER (UR_OwnerAccount standard-apollo)))
             (compose-capability (PYTHIA|OWNER (UR_OwnerAccount smart-apollo)))
             (compose-capability (SECURE))
@@ -528,7 +534,7 @@
             (compose-capability (SECURE))
         )
     )
-    (defcap PYTHIA|C>REVOKE-DUAL (dual-link-key:string)
+    (defcap PYTHIA|C>REVOKE-DUAL (executor:string dual-link-key:string)
         @doc "Both Apollo half-owners revoke active dual link (iz-active false)."
         @event
         (let
@@ -539,6 +545,7 @@
                 (iz-active:bool (at "iz-active" row))
             )
             (enforce iz-active "Dual link is already inactive")
+            (UEV_ExecutorIsHalfOwner executor standard smart)
             (compose-capability (PYTHIA|OWNER (UR_OwnerAccount standard)))
             (compose-capability (PYTHIA|OWNER (UR_OwnerAccount smart)))
             (compose-capability (SECURE))
@@ -556,7 +563,7 @@
             (compose-capability (SECURE))
         )
     )
-    (defcap PYTHIA|C>UPDATE-DUAL-LANE (dual-link-key:string new-name:string)
+    (defcap PYTHIA|C>UPDATE-DUAL-LANE (executor:string dual-link-key:string new-name:string)
         @doc "Both half-owners rename consumer-lane on the dual link row."
         @event
         (let
@@ -568,6 +575,7 @@
                 (smart:string (at "smart-apollo" row))
             )
             (ref-U|DALOS::UEV_StoicTagName new-name)
+            (UEV_ExecutorIsHalfOwner executor standard smart)
             (compose-capability (PYTHIA|OWNER (UR_OwnerAccount standard)))
             (compose-capability (PYTHIA|OWNER (UR_OwnerAccount smart)))
             (compose-capability (SECURE))
@@ -596,6 +604,26 @@
         )
     )
     ;;{C4}  Ownership [gold]
+    (defun UEV_ExecutorIsHalfOwner (executor:string standard-apollo:string smart-apollo:string)
+        @doc "BINDS <executor> to ONE of the two Apollo half-owners. \
+            \ \
+            \ Every dual-link operation requires BOTH halves' owners to sign -- the capability \
+            \ composes PYTHIA|OWNER twice, on two DERIVED accounts read out of the ApiKeys \
+            \ table. That proves the AUTHORITY completely and records no ACTOR at all: the two \
+            \ signatures say the operation was permitted, not which side asked for it. \
+            \ \
+            \ So the binder is a DISJUNCTION, deliberately. Requiring the executor to be a \
+            \ specific half would be a new business rule -- either owner may legitimately \
+            \ initiate -- while requiring it to be BOTH is impossible. What it rules out is the \
+            \ thing worth ruling out: naming a THIRD account, unrelated to the link, as the \
+            \ actor on an operation two other people authorised. \
+            \ (patron/executor canon 2.2; authority is unchanged, attribution is added.)"
+        (enforce
+            (or (= executor (UR_OwnerAccount standard-apollo))
+                (= executor (UR_OwnerAccount smart-apollo)))
+            "Executor owns neither Apollo half"
+        )
+    )
     (defcap PYTHIA|OWNER (owner-account:string)
         @doc "Caller controls the Ouronet (DALOS) account."
         (let
@@ -1697,9 +1725,21 @@
     )
     ;;{5.7}  User [A/C]
     ;;
-    (defun A_LinkDualApiKey:string (standard-apollo:string smart-apollo:string)
-        @doc "Cronoton create-or-activate (no fee): create active dual with auto PYTHIA-<hash12> lane, or flip inactive C_Link row to true."
+    (defun A_LinkDualApiKey:string (patron:string executor:string standard-apollo:string smart-apollo:string)
+        @doc "Cronoton create-or-activate (no fee): create active dual with auto PYTHIA-<hash12> lane, or flip inactive C_Link row to true. \
+            \ \
+            \ ATTRIBUTION (patron/executor canon 2.2, 2026-09-22). The AUTHORITY is the CRONOTON \
+            \ KEYSET -- PYTHIA|CRONOTON enforce-guards it -- so there is no account anywhere in \
+            \ the authority path and nothing for a binder to bind to. <executor> is therefore \
+            \ proven DIRECTLY, and records which Ouronet account drove an automaton action that \
+            \ the keyset alone cannot attribute. Both proofs are now required."
         (P|UEV_IMC)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership executor)
+        )
         (let
             (
                 (dlk:string (UC_DualLinkKey standard-apollo smart-apollo))
@@ -1732,17 +1772,42 @@
             )
         )
     )
-    (defun A_RevokeDualLink:string (dual-link-key:string)
-        @doc "Cronoton revokes active dual link."
+    (defun A_RevokeDualLink:string (patron:string executor:string dual-link-key:string)
+        @doc "Cronoton revokes active dual link. \
+            \ \
+            \ ATTRIBUTION (patron/executor canon 2.2, 2026-09-22). The AUTHORITY is the CRONOTON \
+            \ KEYSET -- PYTHIA|CRONOTON enforce-guards it -- so there is no account anywhere in \
+            \ the authority path and nothing for a binder to bind to. <executor> is therefore \
+            \ proven DIRECTLY, and records which Ouronet account drove an automaton action that \
+            \ the keyset alone cannot attribute. Both proofs are now required."
         (P|UEV_IMC)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership executor)
+        )
         (with-capability (PYTHIA|A>REVOKE-DUAL dual-link-key)
             (WU_DualLink|IzActive dual-link-key false)
             (XI_RecordRevocationAtHeight)
         )
         (format "Pythia dual link {} revoked by Cronoton" [dual-link-key])
     )
-    (defun A_UpdateDeployPrice:string (new-price:decimal)
+    (defun A_UpdateDeployPrice:string (patron:string executor:string new-price:decimal)
+@doc "Sets the Pythia DEPLOY price. \
+            \ \
+            \ ATTRIBUTION (patron/executor canon 2.2, 2026-09-22). The AUTHORITY is GOV|PYTHIA_ADMIN, \
+            \ a Demiurgoi keyset guard naming no account; <executor> is the ACTOR among its holders \
+            \ and is proven by CAP_EnforceAccountOwnership. This function had NO @doc at all before \
+            \ this turn -- one of two in the module -- so the price surface was undocumented as well \
+            \ as unattributed."
         (P|UEV_IMC)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership executor)
+        )
         (with-capability (GOV|PYTHIA_ADMIN)
             (with-capability (SECURE)
                 (WW_Config new-price (UR_RenamePrice))
@@ -1750,8 +1815,21 @@
         )
         (format "Pythia deploy price set to {}" [new-price])
     )
-    (defun A_UpdateRenamePrice:string (new-price:decimal)
+    (defun A_UpdateRenamePrice:string (patron:string executor:string new-price:decimal)
+@doc "Sets the Pythia RENAME price. \
+            \ \
+            \ ATTRIBUTION (patron/executor canon 2.2, 2026-09-22). The AUTHORITY is GOV|PYTHIA_ADMIN, \
+            \ a Demiurgoi keyset guard naming no account; <executor> is the ACTOR among its holders \
+            \ and is proven by CAP_EnforceAccountOwnership. This function had NO @doc at all before \
+            \ this turn -- one of two in the module -- so the price surface was undocumented as well \
+            \ as unattributed."
         (P|UEV_IMC)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership executor)
+        )
         (with-capability (GOV|PYTHIA_ADMIN)
             (with-capability (SECURE)
                 (WW_Config (UR_DeployPrice) new-price)
@@ -1759,9 +1837,21 @@
         )
         (format "Pythia rename price set to {}" [new-price])
     )
-    (defun A_Flush:string (entries:[object{PythiaLedgerV3.PYTHIA|S|PythFlushEntry}])
-        @doc "Cronoton batch flush: each entry is a drain DELTA — ADD onto day row + grand total; iz-complete seals only."
+    (defun A_Flush:string (patron:string executor:string entries:[object{PythiaLedgerV3.PYTHIA|S|PythFlushEntry}])
+        @doc "Cronoton batch flush: each entry is a drain DELTA — ADD onto day row + grand total; iz-complete seals only. \
+            \ \
+            \ ATTRIBUTION (patron/executor canon 2.2, 2026-09-22). The AUTHORITY is the CRONOTON \
+            \ KEYSET -- PYTHIA|CRONOTON enforce-guards it -- so there is no account anywhere in \
+            \ the authority path and nothing for a binder to bind to. <executor> is therefore \
+            \ proven DIRECTLY, and records which Ouronet account drove an automaton action that \
+            \ the keyset alone cannot attribute. Both proofs are now required."
         (P|UEV_IMC)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership executor)
+        )
         (with-capability (PYTHIA|A>FLUSH entries)
             (XI_FlushPythLedger entries)
         )
@@ -1770,19 +1860,33 @@
     ;;
     (defun C_DeployApolloPythiaApiKey:string
         (
-            owner-account:string
+            patron:string
+            executor:string
             apollo-account:string
             public:string
         )
-        @doc "Owner deploys inert Apollo half (₱. or Π.). Fee in TS01-C4."
+        @doc "Owner deploys inert Apollo half (₱. or Π.). Fee in TS01-C4. \
+            \ \
+            \ A RENAME, not an addition (patron/executor canon 2.2, 2026-09-22): the old \
+            \ <owner-account> was ALREADY the executor. PYTHIA|C>DEPLOY-API-KEY composes \
+            \ PYTHIA|OWNER on it, which is CAP_EnforceAccountOwnership -- a PARAMETER, proven \
+            \ directly. \
+            \ \
+            \ THIS IS THE FUNCTION THAT CREATES THE DERIVED ACCOUNT EVERY OTHER PYTHIA \
+            \ ENTRYPOINT LATER READS. The value is written into the ApiKeys row and comes back \
+            \ as (UR_OwnerAccount apollo-account), which is what PYTHIA|OWNER is composed on in \
+            \ the three dual-link capabilities. So the one place the account is a parameter is \
+            \ the place it is first recorded; everywhere after, it is a lookup, and the actor \
+            \ went missing with it. That progression -- passed once, derived forever -- is the \
+            \ mechanism behind HANDOFF 4g, visible end to end in one module."
         (P|UEV_IMC)
         (let
             (
                 (kind:string (if (UC_IsStandardApollo apollo-account) "Standard" "Smart"))
             )
-            (with-capability (PYTHIA|C>DEPLOY-API-KEY owner-account apollo-account public)
+            (with-capability (PYTHIA|C>DEPLOY-API-KEY executor apollo-account public)
                 (WI_ApiKey apollo-account
-                    (UDC_AKY|ApiKey public BAR owner-account apollo-account)
+                    (UDC_AKY|ApiKey public BAR executor apollo-account)
                 )
             )
             (format "Pythia {} Apollo half {} registered (unlinked)" [kind apollo-account])
@@ -1790,17 +1894,30 @@
     )
     (defun C_LinkDualApiKey:string
         (
+            executor:string
             standard-apollo:string
             smart-apollo:string
             consumer-lane:string
         )
-        @doc "Both half-owners link deployed halves into inactive dual row with lane (no fee)."
+        @doc "Both half-owners link deployed halves into inactive dual row with lane (no fee). \
+            \ \
+            \ PATRONLESS BY DESIGN, and it is the only client op in this module that is. Its \
+            \ Talos wrapper PYTHIA|C_Link takes no patron and collects nothing, while all three \
+            \ of its siblings charge. That is safe because it is BOUNDED, not because it is \
+            \ cheap: linking needs two already-deployed Apollo halves at 500 native STOA each, \
+            \ UEV_DualPairForLink refuses a half whose counterpart is set, and counterparts are \
+            \ never cleared -- so the free call is one-shot per pair, forever. Pinned by \
+            \ modules/PYTHIA.repl <<PYTHIA-LINK-ECON>>; if counterparts ever become clearable, \
+            \ the patronless design stops being safe. \
+            \ \
+            \ The executor is bound by UEV_ExecutorIsHalfOwner inside PYTHIA|C>LINK-DUAL. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
         (let
             (
                 (dlk:string (UC_DualLinkKey standard-apollo smart-apollo))
             )
-            (with-capability (PYTHIA|C>LINK-DUAL standard-apollo smart-apollo consumer-lane)
+            (with-capability (PYTHIA|C>LINK-DUAL executor standard-apollo smart-apollo consumer-lane)
                 (XI_ApplyDualCounterparts standard-apollo smart-apollo)
                 (WI_DualLink dlk
                     (UDC_DLK|DualLink
@@ -1811,10 +1928,17 @@
             (format "Pythia dual link {} created for lane {} (inactive)" [dlk consumer-lane])
         )
     )
-    (defun C_RevokeDualLink:string (dual-link-key:string)
-        @doc "Both half-owners revoke active dual link. Fee in TS01-C4 (IGNIS)."
+    (defun C_RevokeDualLink:string (patron:string executor:string dual-link-key:string)
+        @doc "Both half-owners revoke active dual link. Fee in TS01-C4 (IGNIS). \
+            \ \
+            \ HANDOFF 4g, in its two-signature form. The capability composes PYTHIA|OWNER TWICE, on \
+            \ two accounts DERIVED from the link row -- (UR_OwnerAccount standard) and \
+            \ (UR_OwnerAccount smart) -- so the authority is fully proven and the ACTOR is absent. \
+            \ Two signatures say the operation was permitted; they do not say which side asked. \
+            \ UEV_ExecutorIsHalfOwner, inside the capability, supplies that half as a DISJUNCTION. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
-        (with-capability (PYTHIA|C>REVOKE-DUAL dual-link-key)
+        (with-capability (PYTHIA|C>REVOKE-DUAL executor dual-link-key)
             (WU_DualLink|IzActive dual-link-key false)
             (XI_RecordRevocationAtHeight)
         )
@@ -1822,12 +1946,21 @@
     )
     (defun C_UpdateDualConsumerLane:string
         (
+            patron:string
+            executor:string
             dual-link-key:string
             new-name:string
         )
-        @doc "Both half-owners rename consumer-lane on dual link row. Fee in TS01-C4."
+        @doc "Both half-owners rename consumer-lane on dual link row. Fee in TS01-C4. \
+            \ \
+            \ HANDOFF 4g, in its two-signature form. The capability composes PYTHIA|OWNER TWICE, on \
+            \ two accounts DERIVED from the link row -- (UR_OwnerAccount standard) and \
+            \ (UR_OwnerAccount smart) -- so the authority is fully proven and the ACTOR is absent. \
+            \ Two signatures say the operation was permitted; they do not say which side asked. \
+            \ UEV_ExecutorIsHalfOwner, inside the capability, supplies that half as a DISJUNCTION. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
-        (with-capability (PYTHIA|C>UPDATE-DUAL-LANE dual-link-key new-name)
+        (with-capability (PYTHIA|C>UPDATE-DUAL-LANE executor dual-link-key new-name)
             (WU_DualLink|ConsumerLane dual-link-key new-name)
         )
         (format "Pythia dual link {} lane renamed to {}" [dual-link-key new-name])

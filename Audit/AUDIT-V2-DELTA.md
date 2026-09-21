@@ -837,3 +837,68 @@ made Pact read it as a module reference — *"Cannot find module: ouronet-ns.GAS
 the whole file stopped loading. Resolved from the same source `URC_Gassless` reads
 (`DALOS::GOV|DALOS|SC_NAME`) rather than re-declared, so the two cannot drift.
 
+---
+
+### 22_PYTHIA.pact — COMPLETE (9 of 9 entrypoints, 2026-09-22)
+
+**What v1 asserted that is now wrong.** All nine signatures moved; ~75 call sites with them, 69 of
+them slot-0 inserts on the five admin wrappers. `C_DeployApolloPythiaApiKey` changed **name only**
+at the Talos boundary — `owner-account` → `executor` — so its call sites did not move at all.
+
+**This module shows the WHOLE MECHANISM of §4g end to end, in one file.** `owner-account` is a
+parameter exactly once, in `C_DeployApolloPythiaApiKey`, where `PYTHIA|OWNER` proves it directly.
+That same value is then **written into the ApiKeys row**, and every later operation reads it back
+as `(UR_OwnerAccount apollo-account)` and composes `PYTHIA|OWNER` on *that*. So the account is
+**passed once and derived forever after** — and the actor disappeared at the moment it stopped
+being a parameter. Register/release in `21_CODEX` showed the same contrast between two siblings;
+here it is a single value's life story.
+
+**The dual-link trio is §4g in a form the sweep had not met: TWO signatures, no actor.**
+`PYTHIA|C>LINK-DUAL`, `C>REVOKE-DUAL` and `C>UPDATE-DUAL-LANE` each compose `PYTHIA|OWNER`
+**twice**, on both halves' derived owners. The authority is proven *more* completely than
+anywhere else in the codebase — and records *less*: two signatures say the operation was
+permitted, not which side asked for it.
+
+`UEV_ExecutorIsHalfOwner` is therefore a **disjunction**, deliberately:
+
+- demanding a *specific* half would invent a business rule — either owner may legitimately
+  initiate;
+- demanding *both* is impossible for one parameter;
+- what it rules out is the thing worth ruling out — **naming a third account, unrelated to the
+  link, as the actor on an operation two other people authorised.**
+
+Pinned by `<<PYTHIA-G2>>`, which asserts the precondition (EMMA owns neither half) so it cannot
+silently go vacuous, and asserts the link is still active afterwards so a refusal cannot be
+confused with a write followed by a raise.
+
+**Four entrypoints have no account in their authority path at all.** `A_LinkDualApiKey`,
+`A_RevokeDualLink` and `A_Flush` are gated by the **Cronoton keyset**; the two price setters by
+`GOV|PYTHIA_ADMIN`. Nothing to bind to, so their executors are proven **directly** — recording
+which Ouronet account drove an automaton action the keyset alone cannot attribute.
+
+**`A_UpdateDeployPrice` and `A_UpdateRenamePrice` had no `@doc` at all** — the only two in the
+module — so the price surface was undocumented as well as unattributed. Both now carry one. Worth
+noting because these are the pair that `#17H` found were *never wired into any Talos module*: a
+price control that existed, could not be reached, and said nothing about itself.
+
+**`C_LinkDualApiKey` is registered PATRONLESS, with unusually complete evidence.** Its Talos
+wrapper collects nothing while all three siblings charge. That is safe because it is **bounded**,
+not cheap: two deployed Apollo halves at 500 native STOA each, `UEV_DualPairForLink` refusing a
+half whose counterpart is set, and counterparts **never cleared** — so ~1000 STOA buys exactly one
+free link, per pair, forever. CLAUDE.md carries the ruling and `<<PYTHIA-LINK-ECON>>` pins the
+economics. The registry entry records the falsifier: **if counterparts ever become clearable, the
+entry is wrong and the op needs a patron.**
+
+**One negative test kept honest by its fixture, again.** `<<TX007d-02b>>` asserts a non-Cronoton
+signer is refused with a *keyset* failure. `CAP_EnforceAccountOwnership executor` now runs before
+the Cronoton gate is reached, so naming `KST.ANHD` — the account every other assertion in that
+file uses — would make **ownership** refuse first, with a different message, and the test would go
+on passing while proving nothing about Cronoton. It names `KST.EMMA`, who signs, so the keyset is
+the only thing left that can object.
+
+**A regex bug of my own, caught by the arity check reporting zero progress.** The slot-0 pass
+matched `PYTHIA\|A_` *and* listed `A_Flush`/`A_Link`/… as alternatives, so it searched for
+`PYTHIA|A_A_Flush` and rewrote **nothing** while reporting success. A rewriting pass that reports
+"0 changed" on a file it was pointed at is a failure, not a no-op — `_callarity.py`'s unchanged
+count is what said so.
+

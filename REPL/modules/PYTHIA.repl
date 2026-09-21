@@ -48,8 +48,8 @@
             (d0:decimal (ref-PYTHIA::UR_DeployPrice))
             (r0:decimal (ref-PYTHIA::UR_RenamePrice))
         )
-        (ref-TS01-C4::PYTHIA|A_UpdateDeployPrice 999.0)
-        (ref-TS01-C4::PYTHIA|A_UpdateRenamePrice 888.0)
+        (ref-TS01-C4::PYTHIA|A_UpdateDeployPrice KST.ANHD 999.0)
+        (ref-TS01-C4::PYTHIA|A_UpdateRenamePrice KST.ANHD 888.0)
         (map print
             [
                 (expect "<<PYTHIA-PRICE>> the deploy price is what the admin set" 999.0
@@ -65,8 +65,8 @@
             ]
         )
         ;;restore, so this block leaves the chain as it found it
-        (ref-TS01-C4::PYTHIA|A_UpdateDeployPrice d0)
-        (ref-TS01-C4::PYTHIA|A_UpdateRenamePrice r0)
+        (ref-TS01-C4::PYTHIA|A_UpdateDeployPrice KST.ANHD d0)
+        (ref-TS01-C4::PYTHIA|A_UpdateRenamePrice KST.ANHD r0)
         (map print
             [
                 (expect "<<PYTHIA-PRICE>> the setter is reversible -- deploy price restored"
@@ -166,14 +166,43 @@
             ;;Learned the hard way; "relinkattempt" is a valid tag.)
             (expect-failure "<<PYTHIA-LINK-ECON>> so the FREE link cannot be run again on the same pair"
                 "Standard half is already linked"
-                (ref-TS01-C4::PYTHIA|C_Link apollo-std apollo-smt "relinkattempt"))
+                (ref-TS01-C4::PYTHIA|C_Link (ref-PYTHIA::UR_OwnerAccount apollo-std) apollo-std apollo-smt "relinkattempt"))
             ;;and the bound is per-HALF, not per-pair-key: a linked standard half cannot be paired
             ;;with some third smart half either. Without this, one paid deployment could fund an
             ;;unbounded number of free links against fresh partners.
             (expect-failure "<<PYTHIA-LINK-ECON>> ...nor can a linked half be re-used against a DIFFERENT partner"
                 "already linked"
-                (ref-TS01-C4::PYTHIA|C_Link apollo-std
+                (ref-TS01-C4::PYTHIA|C_Link (ref-PYTHIA::UR_OwnerAccount apollo-std) apollo-std
                     (read-string "PYTHIA|APOLLO-SMART-2") "crossattempt"))
+            ;;<<PYTHIA-G2>> THE ATTRIBUTION HALF, new with the executor canon (2026-09-22).
+            ;;
+            ;;Every dual-link capability composes PYTHIA|OWNER TWICE, on two accounts DERIVED
+            ;;from the ApiKeys table. That proves the AUTHORITY completely -- both half-owners
+            ;;must sign -- and records no ACTOR at all: two signatures say the operation was
+            ;;permitted, not which side asked for it. HANDOFF 4g in its two-signature form.
+            ;;
+            ;;UEV_ExecutorIsHalfOwner is deliberately a DISJUNCTION. Demanding a SPECIFIC half
+            ;;would invent a business rule (either owner may legitimately initiate); demanding
+            ;;BOTH is impossible for one parameter. What it rules out is the thing worth ruling
+            ;;out -- naming a THIRD account, unrelated to the link, as the actor on an operation
+            ;;two other people authorised.
+            ;;
+            ;;EMMA is that third account. She signs nothing here and owns neither half, so this
+            ;;cannot be confused with an authority refusal: the binder runs INSIDE the capability,
+            ;;after the link is known to exist and be active, so every other guard has already
+            ;;passed by the time it speaks.
+            (expect "<<PYTHIA-G2>> precondition: EMMA owns neither Apollo half"
+                [false false]
+                [(= KST.EMMA (ref-PYTHIA::UR_OwnerAccount apollo-std))
+                 (= KST.EMMA (ref-PYTHIA::UR_OwnerAccount apollo-smt))])
+            (expect-failure "<<PYTHIA-G2>> a revoke may not be attributed to an account owning neither half"
+                "Executor owns neither Apollo half"
+                (ref-TS01-C4::PYTHIA|C_RevokeLink KST.ANHD KST.EMMA
+                    (ref-PYTHIA::UC_DualLinkKey apollo-std apollo-smt)))
+            ;;...and the link is untouched, so the binder refused BEFORE the write.
+            (expect "<<PYTHIA-G2>> ...and the link is still active after that refusal"
+                true (ref-PYTHIA::UR_DualLinkIzActive
+                          (ref-PYTHIA::UC_DualLinkKey apollo-std apollo-smt)))
         ]
     )
     (env-sigs [])

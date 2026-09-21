@@ -43,11 +43,11 @@
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
     (let
         (
-            (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+            (msg:string (ref-TS01-C4::PYTHIA|A_Flush KST.ANHD entries))
             (day-row:object{PythiaLedgerV3.PYTHIA|S|PythDaily} (ref-LEDGER::UR_PythDay cal-day))
             (tm:object{PythiaLedgerV3.PYTHIA|S|PythMetrics} (ref-LEDGER::UR_PythTotal|TotalMetrics))
         )
-        (print (format "<(TS01-C4.PYTHIA|A_Flush batch day82)> => \"{}\"" [msg]))
+        (print (format "<(TS01-C4.PYTHIA|A_Flush KST.ANHD batch day82)> => \"{}\"" [msg]))
         (map print
             [
                 (expect "<<TX009>> LastDay 82" cal-day (ref-LEDGER::UR_PythTotal|LastDay))
@@ -83,7 +83,7 @@
         )
     )
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-    (ref-TS01-C4::PYTHIA|A_Flush entries)
+    (ref-TS01-C4::PYTHIA|A_Flush KST.ANHD entries)
     (map print
         [
             (expect "<<TX010>> day petitions 150 (=100+50)" 150 (at "petitions" (at "metrics" (ref-LEDGER::UR_PythDay 82))))
@@ -119,7 +119,7 @@
         )
     )
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-    (ref-TS01-C4::PYTHIA|A_Flush entries)
+    (ref-TS01-C4::PYTHIA|A_Flush KST.ANHD entries)
     (map print
         [
             (expect "<<TX011>> LastDay 83" 83 (ref-LEDGER::UR_PythTotal|LastDay))
@@ -155,7 +155,7 @@
             (expect-failure
                 "<<TX012>> reject flush sealed day 82"
                 "Pyth flush batch invalid or exceeds max 1000 entries per tx"
-                (ref-TS01-C4::PYTHIA|A_Flush bad)
+                (ref-TS01-C4::PYTHIA|A_Flush KST.ANHD bad)
             )
         ]
     )
@@ -185,8 +185,8 @@
              , "transactions": 1, "gas-reserved": 50, "failed-transactions": 0, "wasted-gas-reserved": 0 }])
     )
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-    (ref-TS01-C4::PYTHIA|A_Flush e50)
-    (ref-TS01-C4::PYTHIA|A_Flush e10)
+    (ref-TS01-C4::PYTHIA|A_Flush KST.ANHD e50)
+    (ref-TS01-C4::PYTHIA|A_Flush KST.ANHD e10)
     (map print
         [
             (expect "<<TX013>> day 50 exists" true (ref-LEDGER::UR_PythDailyExists 50))
@@ -221,7 +221,7 @@
             (expect-failure
                 "<<TX014>> reject pondus >3 dp"
                 "Pyth flush batch invalid or exceeds max 1000 entries per tx"
-                (ref-TS01-C4::PYTHIA|A_Flush bad)
+                (ref-TS01-C4::PYTHIA|A_Flush KST.ANHD bad)
             )
         ]
     )

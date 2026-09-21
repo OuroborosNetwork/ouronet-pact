@@ -87,6 +87,16 @@ PATRONLESS = {
     # verified 2026-09-21: its patron was unused in the body, threaded in only because
     # C_SublimateV2 had temporarily acquired one.
     "SWP|C_Firestarter",
+    # THE FREE LINK, added 2026-09-22 at 22_PYTHIA's turn. Patronless by DESIGN, and unusually
+    # well evidenced -- CLAUDE.md already carries the ruling ("One deliberately free op exists"),
+    # both @docs say "(no fee)", and modules/PYTHIA.repl <<PYTHIA-LINK-ECON>> pins the economics
+    # that make it safe: linking needs two deployed Apollo halves at 500 native STOA each,
+    # UEV_DualPairForLink refuses a half whose counterpart is set, and counterparts are NEVER
+    # cleared -- so ~1000 STOA buys exactly ONE free link, forever, per pair.
+    #
+    # It is bounded, not cheap. If counterparts ever become clearable this entry is wrong and the
+    # op needs a patron; the test above is what would notice.
+    "C_LinkDualApiKey", "PYTHIA|C_Link",
 }
 
 # EXECUTORLESS -- distinct from PATRONLESS, and the distinction matters. These functions ARE the

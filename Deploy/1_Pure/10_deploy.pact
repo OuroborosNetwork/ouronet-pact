@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 10 of 24
 ;; This is STEP 10 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-9 must have run first, including the init steps between deploys.
-;; 5 source file(s), 228,598 gas measured in the REPL gas model, 203,141 bytes
+;; 5 source file(s), 228,598 gas measured in the REPL gas model, 204,001 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/3_Talos/03_TS01-C2.pact
@@ -3383,36 +3383,39 @@
     (defun PYTHIA|C_DeployApiKey:string
         (
             patron:string
-            owner-account:string
+            executor:string
             apollo-account:string
             public:string
         ))
     (defun PYTHIA|C_UpdateDualConsumerLane:string
         (
             patron:string
+            executor:string
             dual-link-key:string
             new-name:string
         ))
     (defun PYTHIA|C_Link:string
         (
+            executor:string
             standard-apollo:string
             smart-apollo:string
             consumer-lane:string
         ))
-    (defun PYTHIA|A_Link:string (standard-apollo:string smart-apollo:string))
+    (defun PYTHIA|A_Link:string (executor:string standard-apollo:string smart-apollo:string))
     (defun PYTHIA|C_RevokeLink:string
         (
             patron:string
+            executor:string
             dual-link-key:string
         ))
-    (defun PYTHIA|A_RevokeLink:string (dual-link-key:string))
+    (defun PYTHIA|A_RevokeLink:string (executor:string dual-link-key:string))
     (defun PYTHIA|A_Flush:string
-        (entries:[object{PythiaLedgerV3.PYTHIA|S|PythFlushEntry}]))
+        (executor:string entries:[object{PythiaLedgerV3.PYTHIA|S|PythFlushEntry}]))
     ;;#17H fix: PYTHIA|A_UpdateDeployPrice/A_UpdateRenamePrice were never wired into any Talos
     ;;module - the core PYTHIA functions (GOV|PYTHIA_ADMIN-gated) existed but had no reachable
     ;;client path, permanently frozen at their hardcoded defaults for anyone, even the admin.
-    (defun PYTHIA|A_UpdateDeployPrice:string (new-price:decimal))
-    (defun PYTHIA|A_UpdateRenamePrice:string (new-price:decimal))
+    (defun PYTHIA|A_UpdateDeployPrice:string (executor:string new-price:decimal))
+    (defun PYTHIA|A_UpdateRenamePrice:string (executor:string new-price:decimal))
 
 )
 ;;
@@ -3661,59 +3664,64 @@
             )
         )
     )
-    (defun PYTHIA|A_Link:string (standard-apollo:string smart-apollo:string)
+    (defun PYTHIA|A_Link:string (executor:string standard-apollo:string smart-apollo:string)
         @doc "Cronoton activates dual link after off-chain Apollo proof (no fee)."
         (with-capability (P|TS)
             (let
                 (
                     (ref-PYTHIA:module{PythiaV5} PYTHIA)
+                    (ref-DALOS:module{OuronetDalosV2} DALOS)
                 )
-                (ref-PYTHIA::A_LinkDualApiKey standard-apollo smart-apollo)
+                (ref-PYTHIA::A_LinkDualApiKey (ref-DALOS::GOV|DALOS|SC_NAME) executor standard-apollo smart-apollo)
             )
         )
     )
-    (defun PYTHIA|A_RevokeLink:string (dual-link-key:string)
+    (defun PYTHIA|A_RevokeLink:string (executor:string dual-link-key:string)
         @doc "Cronoton revokes active dual link (no fee; patronless)."
         (with-capability (P|TS)
             (let
                 (
                     (ref-PYTHIA:module{PythiaV5} PYTHIA)
+                    (ref-DALOS:module{OuronetDalosV2} DALOS)
                 )
-                (ref-PYTHIA::A_RevokeDualLink dual-link-key)
+                (ref-PYTHIA::A_RevokeDualLink (ref-DALOS::GOV|DALOS|SC_NAME) executor dual-link-key)
             )
         )
     )
     (defun PYTHIA|A_Flush:string
-        (entries:[object{PythiaLedgerV3.PYTHIA|S|PythFlushEntry}])
+        (executor:string entries:[object{PythiaLedgerV3.PYTHIA|S|PythFlushEntry}])
         @doc "Khronoton batch Pyth ledger flush (order-independent day entries; no fee)."
         (with-capability (P|TS)
             (let
                 (
                     (ref-LEDGER:module{PythiaLedgerV3} PYTHIA)
+                    (ref-DALOS:module{OuronetDalosV2} DALOS)
                 )
-                (ref-LEDGER::A_Flush entries)
+                (ref-LEDGER::A_Flush (ref-DALOS::GOV|DALOS|SC_NAME) executor entries)
             )
         )
     )
-    (defun PYTHIA|A_UpdateDeployPrice:string (new-price:decimal)
+    (defun PYTHIA|A_UpdateDeployPrice:string (executor:string new-price:decimal)
         @doc "Updates the PYTHIA Codex/Apollo deploy price (no fee)."
         (with-capability (P|TS)
             (let
                 (
                     (ref-PYTHIA:module{PythiaV5} PYTHIA)
+                    (ref-DALOS:module{OuronetDalosV2} DALOS)
                 )
-                (ref-PYTHIA::A_UpdateDeployPrice new-price)
+                (ref-PYTHIA::A_UpdateDeployPrice (ref-DALOS::GOV|DALOS|SC_NAME) executor new-price)
             )
         )
     )
-    (defun PYTHIA|A_UpdateRenamePrice:string (new-price:decimal)
+    (defun PYTHIA|A_UpdateRenamePrice:string (executor:string new-price:decimal)
         @doc "Updates the PYTHIA Codex/Apollo rename price (no fee)."
         (with-capability (P|TS)
             (let
                 (
                     (ref-PYTHIA:module{PythiaV5} PYTHIA)
+                    (ref-DALOS:module{OuronetDalosV2} DALOS)
                 )
-                (ref-PYTHIA::A_UpdateRenamePrice new-price)
+                (ref-PYTHIA::A_UpdateRenamePrice (ref-DALOS::GOV|DALOS|SC_NAME) executor new-price)
             )
         )
     )
@@ -3788,7 +3796,7 @@
     )
     (defun PYTHIA|C_DeployApiKey:string
         ( patron:string
-          owner-account:string
+          executor:string
           apollo-account:string
           public:string )
         @doc "Deploy inert Apollo half (₱. or Π.); collects UC_DeployPrice native STOA (500 default)."
@@ -3801,7 +3809,7 @@
                     (fee-anchor:string (ref-PYTHIA::UC_FeeDiscountAnchor))
                     (msg:string
                         (ref-PYTHIA::C_DeployApolloPythiaApiKey
-                            owner-account apollo-account public
+                            patron executor apollo-account public
                         )
                     )
                 )
@@ -3812,6 +3820,7 @@
     )
     (defun PYTHIA|C_UpdateDualConsumerLane:string
         ( patron:string
+          executor:string
           dual-link-key:string
           new-name:string )
         @doc "Rename Pythia dual-link consumer-lane; collects UC_RenamePrice native STOA."
@@ -3824,7 +3833,7 @@
                     (fee-anchor:string (ref-PYTHIA::UC_FeeDiscountAnchor))
                     (msg:string
                         (ref-PYTHIA::C_UpdateDualConsumerLane
-                            dual-link-key new-name
+                            patron executor dual-link-key new-name
                         )
                     )
                 )
@@ -3834,7 +3843,8 @@
         )
     )
     (defun PYTHIA|C_Link:string
-        ( standard-apollo:string
+        ( executor:string
+          standard-apollo:string
           smart-apollo:string
           consumer-lane:string )
         @doc "Both half-owners link deployed Standard+Smart halves into inactive dual row (no fee)."
@@ -3843,12 +3853,13 @@
                 (
                     (ref-PYTHIA:module{PythiaV5} PYTHIA)
                 )
-                (ref-PYTHIA::C_LinkDualApiKey standard-apollo smart-apollo consumer-lane)
+                (ref-PYTHIA::C_LinkDualApiKey executor standard-apollo smart-apollo consumer-lane)
             )
         )
     )
     (defun PYTHIA|C_RevokeLink:string
         ( patron:string
+          executor:string
           dual-link-key:string )
         @doc "Both half-owners revoke active dual link; collects UC_RevokeIgnisFee IGNIS from patron."
         (with-capability (P|TS)
@@ -3858,7 +3869,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (revoke-fee:decimal (ref-PYTHIA::URCi_RevokeLink))
                     (msg:string
-                        (ref-PYTHIA::C_RevokeDualLink dual-link-key)
+                        (ref-PYTHIA::C_RevokeDualLink patron executor dual-link-key)
                     )
                 )
                 (ref-IGNIS::XE_CollectIgnis patron

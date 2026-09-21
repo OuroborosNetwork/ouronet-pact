@@ -215,7 +215,7 @@
                 (PYTHIA.INFO_PYTHIA|Link apollo-std apollo-smt lane-dual))
             (stoa-before:decimal (coin.get-balance (DALOS.UR_AccountStoa KST.ANHD)))
             (ignis-before:decimal (DALOS.UR_TF_AccountSupply KST.ANHD false))
-            (link-msg:string (ref-TS01-C4::PYTHIA|C_Link apollo-std apollo-smt lane-dual))
+            (link-msg:string (ref-TS01-C4::PYTHIA|C_Link owner-acct apollo-std apollo-smt lane-dual))
          )
         (map print
             [
@@ -266,7 +266,7 @@
         (dlk:string (ref-PYTHIA::UC_DualLinkKey apollo-std apollo-smt))
     )
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-    (let ((act-msg:string (ref-TS01-C4::PYTHIA|A_Link apollo-std apollo-smt)))
+    (let ((act-msg:string (ref-TS01-C4::PYTHIA|A_Link KST.ANHD apollo-std apollo-smt)))
         (print (format "<(TS01-C4.PYTHIA|A_Link)> => \"{}\"" [act-msg]))
         (map print
             [
@@ -290,7 +290,7 @@
                 ;;one conjunct of the three that a caller can actually trip.
                 (expect-failure "<<TX004>> ...so re-activating an ALREADY-ACTIVE dual link is refused"
                     "Dual link not ready for Cronoton activate"
-                    (ref-TS01-C4::PYTHIA|A_Link apollo-std apollo-smt))
+                    (ref-TS01-C4::PYTHIA|A_Link KST.ANHD apollo-std apollo-smt))
             ]
         )
         ""
@@ -327,7 +327,7 @@
     (let (
             (predicted:object{OuronetInfoV2.ClientInfo} (PYTHIA.INFO_PYTHIA|RevokeLink patron dlk))
             (ignis-before:decimal (DALOS.UR_TF_AccountSupply patron false))
-            (rev-msg:string (ref-TS01-C4::PYTHIA|C_RevokeLink patron dlk))
+            (rev-msg:string (ref-TS01-C4::PYTHIA|C_RevokeLink patron owner-acct dlk))
          )
         (map print
             [
@@ -381,7 +381,7 @@
         (split-stoa:[decimal] (ref-DALOS::URC_SplitSTOAPrices (ref-PYTHIA::UC_FeeDiscountAnchor) rename-fee))
     )
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-    (let ((react-msg:string (ref-TS01-C4::PYTHIA|A_Link apollo-std apollo-smt)))
+    (let ((react-msg:string (ref-TS01-C4::PYTHIA|A_Link KST.ANHD apollo-std apollo-smt)))
         (print (format "<(TS01-C4.PYTHIA|A_Link)> => \"{}\"" [react-msg]))
         ""
     )
@@ -408,7 +408,7 @@
             (predicted:object{OuronetInfoV2.ClientInfo}
                 (PYTHIA.INFO_PYTHIA|UpdateDualConsumerLane patron dlk lane-renamed))
             (stoa-before:decimal (coin.get-balance patron-stoa))
-            (ren-msg:string (ref-TS01-C4::PYTHIA|C_UpdateDualConsumerLane patron dlk lane-renamed))
+            (ren-msg:string (ref-TS01-C4::PYTHIA|C_UpdateDualConsumerLane patron owner-acct dlk lane-renamed))
          )
         (map print
             [
@@ -595,7 +595,7 @@
         (dlk:string (ref-PYTHIA::UC_DualLinkKey apollo-std apollo-smt))
         (expected-lane:string (+ "PYTHIA-" (take 12 "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006")))
     )
-    (let ((act-msg:string (ref-TS01-C4::PYTHIA|A_Link apollo-std apollo-smt)))
+    (let ((act-msg:string (ref-TS01-C4::PYTHIA|A_Link KST.ANHD apollo-std apollo-smt)))
         (print (format "<(TS01-C4.PYTHIA|A_Link)> => \"{}\"" [act-msg]))
         (map print
             [
@@ -660,7 +660,7 @@
             )
             (let
                 (
-                    (rev-msg:string (ref-TS01-C4::PYTHIA|A_RevokeLink dlk))
+                    (rev-msg:string (ref-TS01-C4::PYTHIA|A_RevokeLink KST.ANHD dlk))
                 )
                 (print (format "<(TS01-C4.PYTHIA|A_RevokeLink)> => \"{}\"" [rev-msg]))
                 (map print
@@ -732,7 +732,7 @@
         (expect-failure "<<TX007d-02a>> re-revoking an already-inactive link is rejected"
             "Dual link is already inactive"
             (ref-TS01-C4::PYTHIA|A_RevokeLink
-                (ref-PYTHIA::UC_DualLinkKey
+                KST.ANHD (ref-PYTHIA::UC_DualLinkKey
                     (read-string "PYTHIA|APOLLO-STANDARD-2") (read-string "PYTHIA|APOLLO-SMART-2")))))
 )
 ;;(b) WRONG SIGNER. PK_Emma is a valid Ouronet key but not a Sith Master, so the
@@ -751,9 +751,16 @@
     ;;this test discriminating is the TARGET: an ACTIVE link, so PYTHIA|CRONOTON is the
     ;;only guard on the path that can produce it.
     (print
+        ;;THE EXECUTOR HERE IS EMMA, NOT ANHD, AND THAT IS THE FIXTURE DOING WORK
+        ;;(2026-09-22, executor canon). A_RevokeDualLink now runs
+        ;;CAP_EnforceAccountOwnership on <executor> BEFORE the Cronoton keyset is reached.
+        ;;Naming KST.ANHD -- the account every other assertion in this file uses -- would make
+        ;;the OWNERSHIP check refuse first, with a different message, and this test would go on
+        ;;passing while no longer proving anything about the Cronoton gate. EMMA signs, so EMMA
+        ;;owns herself, and the keyset is the only thing left that can object.
         (expect-failure "<<TX007d-02b>> a non-Cronoton signer cannot revoke an active link"
             "Keyset failure (keys-any): [PK_Ancie..., PK_Flore...]"
-            (ref-TS01-C4::PYTHIA|A_RevokeLink
+            (ref-TS01-C4::PYTHIA|A_RevokeLink KST.EMMA
                 (ref-PYTHIA::UC_DualLinkKey
                     (read-string "PYTHIA|APOLLO-STANDARD") (read-string "PYTHIA|APOLLO-SMART")))))
 )
@@ -773,7 +780,7 @@
         [
             (expect-failure "<<TX007d-02c>> FINDING: an unknown dual-link-key dies in the table read, not a guard"
                 "No value found in table"
-                (ref-TS01-C4::PYTHIA|A_RevokeLink "PYTHIA-NEVER-CREATED-KEY"))
+                (ref-TS01-C4::PYTHIA|A_RevokeLink KST.ANHD "PYTHIA-NEVER-CREATED-KEY"))
             (expect "<<TX007d-02c>> the OrFalse reader that would have caught it returns false"
                 false (ref-PYTHIA::UR_DualLinkIzActiveOrFalse "PYTHIA-NEVER-CREATED-KEY"))
         ]

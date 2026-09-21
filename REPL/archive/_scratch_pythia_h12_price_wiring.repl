@@ -28,8 +28,8 @@
     (map print
         [
             (format "PYTHIA deploy-price BEFORE: {} / rename-price BEFORE: {}" [deploy-before rename-before])
-            (format "<(TS01-C4.PYTHIA|A_UpdateDeployPrice)> => \"{}\"" [(ref-TS01-C4::PYTHIA|A_UpdateDeployPrice 999.0)])
-            (format "<(TS01-C4.PYTHIA|A_UpdateRenamePrice)> => \"{}\"" [(ref-TS01-C4::PYTHIA|A_UpdateRenamePrice 888.0)])
+            (format "<(TS01-C4.PYTHIA|A_UpdateDeployPrice)> => \"{}\"" [(ref-TS01-C4::PYTHIA|A_UpdateDeployPrice KST.ANHD 999.0)])
+            (format "<(TS01-C4.PYTHIA|A_UpdateRenamePrice)> => \"{}\"" [(ref-TS01-C4::PYTHIA|A_UpdateRenamePrice KST.ANHD 888.0)])
             (format "PYTHIA deploy-price AFTER: {} (expected 999.0) / rename-price AFTER: {} (expected 888.0)"
                 [(ref-PYTHIA::UR_DeployPrice) (ref-PYTHIA::UR_RenamePrice)]
             )
