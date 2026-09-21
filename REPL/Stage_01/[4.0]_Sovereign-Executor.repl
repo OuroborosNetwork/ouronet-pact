@@ -133,7 +133,11 @@
         ;;
         (ref-P|BRD:module{OuronetPolicyV2} BRD)
         (ref-P|DPTF:module{OuronetPolicyV2} DPTF)
-        (ref-P|DPMF:module{OuronetPolicyV2} DPMF)
+        ;;DPMF IS GONE FROM THIS LIST (archive mode, 2026-09-21). It no longer `implements`
+        ;;OuronetPolicyV2 -- an archived module keeps its tables and its readers and nothing
+        ;;else, so it has no P|A_Define to call and no inter-module policy to define. Nothing
+        ;;calls into DPMF (verified: zero `ref-DPMF::` in 1_SOVEREIGN or 2_CITIZEN), so it needs
+        ;;no inbound guard chain either.
         (ref-P|DPOF:module{OuronetPolicyV2} DPOF)
         (ref-P|ELITE:module{OuronetPolicyV2} ELITE)
         ;;
@@ -166,7 +170,6 @@
         ;;
         (ref-P|BRD::P|A_Define)
         (ref-P|DPTF::P|A_Define)
-        (ref-P|DPMF::P|A_Define)
         (ref-P|DPOF::P|A_Define)
         (ref-P|ELITE::P|A_Define)
         ;;

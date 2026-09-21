@@ -6,35 +6,14 @@
 
 | metric | value |
 |---|---|
-| entrypoints scanned | 1099 |
-| reaching at least one ownership enforce | 829 |
-| reaching NONE | 270 |
+| entrypoints scanned | 1194 |
+| reaching at least one ownership enforce | 816 |
+| reaching NONE | 378 |
 
 ## Per entrypoint
 
 | module | entrypoint | enforced ownership on |
 |---|---|---|
-| `00_DPMF` | `C_AddQuantity` | `account:string`, `client` |
-| `00_DPMF` | `C_Burn` | `account`, `account:string`, `client` |
-| `00_DPMF` | `C_Control` | `UR_Konto`, `account:string`, `id`, `id:string` |
-| `00_DPMF` | `C_Create` | `account:string`, `client` |
-| `00_DPMF` | `C_DeployAccount` | — |
-| `00_DPMF` | `C_Issue` | `account`, `account:string` |
-| `00_DPMF` | `C_Mint` | `account:string`, `client` |
-| `00_DPMF` | `C_MultiBatchTransfer` | `account`, `account:string`, `receiver`, `sender` |
-| `00_DPMF` | `C_RotateOwnership` | `UR_Konto`, `account:string`, `id`, `id:string` |
-| `00_DPMF` | `C_SingleBatchTransfer` | `account`, `account:string`, `receiver`, `sender` |
-| `00_DPMF` | `C_ToggleFreezeAccount` | `UR_Konto`, `account:string`, `id`, `id:string` |
-| `00_DPMF` | `C_TogglePause` | `UR_Konto`, `account:string`, `id`, `id:string` |
-| `00_DPMF` | `C_ToggleTransferRole` | `UR_Konto`, `account:string`, `id`, `id:string` |
-| `00_DPMF` | `C_Transfer` | `account`, `account:string`, `receiver`, `sender` |
-| `00_DPMF` | `C_UpdatePendingBranding` | `UR_Konto`, `account:string`, `dpmf`, `id:string`, `parent` |
-| `00_DPMF` | `C_UpgradeBranding` | `UR_Konto`, `account:string`, `dpmf`, `entity-owner-account`, `id:string`, `parent` |
-| `00_DPMF` | `C_Wipe` | `UR_Konto`, `account:string`, `id`, `id:string` |
-| `00_DPMF` | `C_WipePartial` | `UR_Konto`, `account:string`, `id`, `id:string` |
-| `00_DPMF` | `P|A_Add` | — |
-| `00_DPMF` | `P|A_AddIMP` | — |
-| `00_DPMF` | `P|A_Define` | — |
 | `01_DALOS` | `A_DeploySmartAccount` | — |
 | `01_DALOS` | `A_DeployStandardAccount` | — |
 | `01_DALOS` | `A_MigrateLiquidFunds` | `account:string`, `executor` |
@@ -56,15 +35,21 @@
 | `01_DALOS` | `P|A_Add` | — |
 | `01_DALOS` | `P|A_AddIMP` | — |
 | `01_DALOS` | `P|A_Define` | — |
+| `01_DALOS` | `P|A_RemoveIMP` | — |
+| `01_DALOS` | `P|A_SetIMP` | — |
 | `02_IGNIS` | `C_DonateStoa` | — |
 | `02_IGNIS` | `P|A_Add` | — |
 | `02_IGNIS` | `P|A_AddIMP` | — |
 | `02_IGNIS` | `P|A_Define` | — |
-| `04_BRD` | `A_Live` | — |
-| `04_BRD` | `A_SetFlag` | — |
+| `02_IGNIS` | `P|A_RemoveIMP` | — |
+| `02_IGNIS` | `P|A_SetIMP` | — |
+| `04_BRD` | `A_Live` | `account:string`, `executor` |
+| `04_BRD` | `A_SetFlag` | `account:string`, `executor` |
 | `04_BRD` | `P|A_Add` | — |
 | `04_BRD` | `P|A_AddIMP` | — |
 | `04_BRD` | `P|A_Define` | — |
+| `04_BRD` | `P|A_RemoveIMP` | — |
+| `04_BRD` | `P|A_SetIMP` | — |
 | `05_DPTF` | `A_UpdateTreasury` | — |
 | `05_DPTF` | `A_WipeTreasuryDebt` | `UR_Konto`, `account:string`, `client`, `id`, `id:string` |
 | `05_DPTF` | `A_WipeTreasuryDebtPartial` | `UR_Konto`, `account:string`, `client`, `id`, `id:string` |
@@ -93,6 +78,8 @@
 | `05_DPTF` | `P|A_Add` | — |
 | `05_DPTF` | `P|A_AddIMP` | — |
 | `05_DPTF` | `P|A_Define` | — |
+| `05_DPTF` | `P|A_RemoveIMP` | — |
+| `05_DPTF` | `P|A_SetIMP` | — |
 | `06_DPOF` | `CC_WipeHeavy` | `UR_Konto`, `account`, `account:string`, `id`, `id:string` |
 | `06_DPOF` | `C_AddQuantity` | `account:string`, `client` |
 | `06_DPOF` | `C_BulkTransfer` | `account:string`, `sender` |
@@ -118,9 +105,13 @@
 | `06_DPOF` | `P|A_Add` | — |
 | `06_DPOF` | `P|A_AddIMP` | — |
 | `06_DPOF` | `P|A_Define` | — |
+| `06_DPOF` | `P|A_RemoveIMP` | — |
+| `06_DPOF` | `P|A_SetIMP` | — |
 | `07_ELITE` | `P|A_Add` | — |
 | `07_ELITE` | `P|A_AddIMP` | — |
 | `07_ELITE` | `P|A_Define` | — |
+| `07_ELITE` | `P|A_RemoveIMP` | — |
+| `07_ELITE` | `P|A_SetIMP` | — |
 | `08_ATS` | `C_AddHotRBT` | `UR_Konto`, `UR_OwnerKonto`, `account:string`, `atspair`, `hot-rbt`, `id`, `id:string` |
 | `08_ATS` | `C_AddSecondary` | `UR_Konto`, `UR_OwnerKonto`, `account:string`, `atspair`, `id:string`, `reward-token` |
 | `08_ATS` | `C_Control` | `UR_OwnerKonto`, `account:string`, `atspair`, `id:string` |
@@ -149,6 +140,8 @@
 | `08_ATS` | `P|A_Add` | — |
 | `08_ATS` | `P|A_AddIMP` | — |
 | `08_ATS` | `P|A_Define` | — |
+| `08_ATS` | `P|A_RemoveIMP` | — |
+| `08_ATS` | `P|A_SetIMP` | — |
 | `09_TFT` | `C_ClearDispo` | `UR_Konto`, `account`, `account:string`, `id`, `id:string` |
 | `09_TFT` | `C_MultiBulkTransfer` | `UR_Konto`, `account`, `account:string`, `id`, `id:string` |
 | `09_TFT` | `C_MultiTransfer` | `UR_Konto`, `account`, `account:string`, `id`, `id:string`, `receiver` |
@@ -157,6 +150,8 @@
 | `09_TFT` | `P|A_Add` | — |
 | `09_TFT` | `P|A_AddIMP` | — |
 | `09_TFT` | `P|A_Define` | — |
+| `09_TFT` | `P|A_RemoveIMP` | — |
+| `09_TFT` | `P|A_SetIMP` | — |
 | `10_ATSU` | `AA_RemoveSecondary` | `UR_Konto`, `account`, `account:string`, `id`, `id:string`, `receiver`, `sender` |
 | `10_ATSU` | `A_KickStart` | `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `receiver`, `sender` |
 | `10_ATSU` | `CC_RemoveSecondary` | `UR_Konto`, `UR_OwnerKonto`, `account`, `account:string`, `ats`, `id`, `id:string`, `receiver`, `sender` |
@@ -175,6 +170,8 @@
 | `10_ATSU` | `P|A_Add` | — |
 | `10_ATSU` | `P|A_AddIMP` | — |
 | `10_ATSU` | `P|A_Define` | — |
+| `10_ATSU` | `P|A_RemoveIMP` | — |
+| `10_ATSU` | `P|A_SetIMP` | — |
 | `11_VST` | `C_Awake` | `UR_Konto`, `account`, `account:string`, `id`, `id:string`, `receiver`, `sender` |
 | `11_VST` | `C_Brumate` | `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `receiver`, `sender` |
 | `11_VST` | `C_Constrict` | `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `receiver`, `sender` |
@@ -207,6 +204,8 @@
 | `11_VST` | `P|A_Add` | — |
 | `11_VST` | `P|A_AddIMP` | — |
 | `11_VST` | `P|A_Define` | — |
+| `11_VST` | `P|A_RemoveIMP` | — |
+| `11_VST` | `P|A_SetIMP` | — |
 | `12_LIQUID` | `A_MigrateLiquidFunds` | — |
 | `12_LIQUID` | `C_UnwrapStoa` | `UR_Konto`, `account`, `account:string`, `id`, `id:string`, `receiver`, `sender` |
 | `12_LIQUID` | `C_UnwrapUrStoa` | `UR_Konto`, `account`, `account:string`, `id`, `id:string`, `receiver`, `sender` |
@@ -215,6 +214,8 @@
 | `12_LIQUID` | `P|A_Add` | — |
 | `12_LIQUID` | `P|A_AddIMP` | — |
 | `12_LIQUID` | `P|A_Define` | — |
+| `12_LIQUID` | `P|A_RemoveIMP` | — |
+| `12_LIQUID` | `P|A_SetIMP` | — |
 | `13_OUROBOROS` | `C_Compress` | `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `receiver`, `sender` |
 | `13_OUROBOROS` | `C_Fuel` | `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `receiver`, `sender` |
 | `13_OUROBOROS` | `C_Sublimate` | `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `receiver`, `sender` |
@@ -223,9 +224,13 @@
 | `13_OUROBOROS` | `P|A_Add` | — |
 | `13_OUROBOROS` | `P|A_AddIMP` | — |
 | `13_OUROBOROS` | `P|A_Define` | — |
+| `13_OUROBOROS` | `P|A_RemoveIMP` | — |
+| `13_OUROBOROS` | `P|A_SetIMP` | — |
 | `14_SWPT` | `P|A_Add` | — |
 | `14_SWPT` | `P|A_AddIMP` | — |
 | `14_SWPT` | `P|A_Define` | — |
+| `14_SWPT` | `P|A_RemoveIMP` | — |
+| `14_SWPT` | `P|A_SetIMP` | — |
 | `15_SWP` | `A_DefinePrimordialPool` | — |
 | `15_SWP` | `A_RotatePrincipal` | — |
 | `15_SWP` | `A_ToggleAsymetricLiquidityAddition` | `UR_Konto`, `account:string`, `id`, `id:string` |
@@ -247,14 +252,20 @@
 | `15_SWP` | `P|A_Add` | — |
 | `15_SWP` | `P|A_AddIMP` | — |
 | `15_SWP` | `P|A_Define` | — |
+| `15_SWP` | `P|A_RemoveIMP` | — |
+| `15_SWP` | `P|A_SetIMP` | — |
 | `16_SWPI` | `A_RebuildGraph` | — |
 | `16_SWPI` | `C_Issue` | `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `receiver`, `sender` |
 | `16_SWPI` | `P|A_Add` | — |
 | `16_SWPI` | `P|A_AddIMP` | — |
 | `16_SWPI` | `P|A_Define` | — |
+| `16_SWPI` | `P|A_RemoveIMP` | — |
+| `16_SWPI` | `P|A_SetIMP` | — |
 | `17_SWPL` | `P|A_Add` | — |
 | `17_SWPL` | `P|A_AddIMP` | — |
 | `17_SWPL` | `P|A_Define` | — |
+| `17_SWPL` | `P|A_RemoveIMP` | — |
+| `17_SWPL` | `P|A_SetIMP` | — |
 | `18_SWPLC` | `C_Fuel` | `UR_Konto`, `account`, `account:string`, `id`, `id:string`, `receiver` |
 | `18_SWPLC` | `C_RemoveLiquidity` | `UR_Konto`, `account`, `account:string`, `id`, `id:string`, `receiver`, `sender` |
 | `18_SWPLC` | `C_ToggleAddLiquidity` | `UR_Konto`, `UR_OwnerKonto`, `account:string`, `id`, `id:string`, `swpair`, `swpair:string` |
@@ -263,6 +274,8 @@
 | `18_SWPLC` | `P|A_Add` | — |
 | `18_SWPLC` | `P|A_AddIMP` | — |
 | `18_SWPLC` | `P|A_Define` | — |
+| `18_SWPLC` | `P|A_RemoveIMP` | — |
+| `18_SWPLC` | `P|A_SetIMP` | — |
 | `18_SWPLC` | `STOA-PID|C_AddFrozenLiquidity` | `UR_Konto`, `UR_OwnerKonto`, `account`, `account:string`, `client`, `id`, `id:string`, `receiver`, `sender`, `swpair`, `swpair:string` |
 | `18_SWPLC` | `STOA-PID|C_AddGlacialLiquidity` | `UR_Konto`, `UR_OwnerKonto`, `account`, `account:string`, `client`, `id`, `id:string`, `receiver`, `sender`, `swpair`, `swpair:string` |
 | `18_SWPLC` | `STOA-PID|C_AddIcedLiquidity` | `UR_Konto`, `UR_OwnerKonto`, `account`, `account:string`, `client`, `id`, `id:string`, `receiver`, `sender`, `swpair`, `swpair:string` |
@@ -275,6 +288,8 @@
 | `19_SWPU` | `P|A_Add` | — |
 | `19_SWPU` | `P|A_AddIMP` | — |
 | `19_SWPU` | `P|A_Define` | — |
+| `19_SWPU` | `P|A_RemoveIMP` | — |
+| `19_SWPU` | `P|A_SetIMP` | — |
 | `20_MTX-SWP` | `C_AddFrozenLiquidity` | — |
 | `20_MTX-SWP` | `C_AddGlacialLiquidity` | — |
 | `20_MTX-SWP` | `C_AddIcedLiquidity` | — |
@@ -286,6 +301,8 @@
 | `20_MTX-SWP` | `P|A_Add` | — |
 | `20_MTX-SWP` | `P|A_AddIMP` | — |
 | `20_MTX-SWP` | `P|A_Define` | — |
+| `20_MTX-SWP` | `P|A_RemoveIMP` | — |
+| `20_MTX-SWP` | `P|A_SetIMP` | — |
 | `21_CODEX` | `A_RegisterCodexIdentity` | — |
 | `21_CODEX` | `C_RecordArweaveUpload` | — |
 | `21_CODEX` | `C_RegisterStoicTag` | `account-address`, `account:string` |
@@ -294,6 +311,8 @@
 | `21_CODEX` | `P|A_Add` | — |
 | `21_CODEX` | `P|A_AddIMP` | — |
 | `21_CODEX` | `P|A_Define` | — |
+| `21_CODEX` | `P|A_RemoveIMP` | — |
+| `21_CODEX` | `P|A_SetIMP` | — |
 | `22_PYTHIA` | `A_Flush` | — |
 | `22_PYTHIA` | `A_LinkDualApiKey` | — |
 | `22_PYTHIA` | `A_RevokeDualLink` | — |
@@ -306,10 +325,12 @@
 | `22_PYTHIA` | `P|A_Add` | — |
 | `22_PYTHIA` | `P|A_AddIMP` | — |
 | `22_PYTHIA` | `P|A_Define` | — |
+| `22_PYTHIA` | `P|A_RemoveIMP` | — |
+| `22_PYTHIA` | `P|A_SetIMP` | — |
 | `01_TS01-A` | `ATS|AA_RemoveSecondary` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `id`, `id:string`, `patron`, `receiver`, `sender` |
 | `01_TS01-A` | `ATS|A_KickStart` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `patron`, `receiver`, `sender` |
-| `01_TS01-A` | `BRD|A_Live` | — |
-| `01_TS01-A` | `BRD|A_SetFlag` | — |
+| `01_TS01-A` | `BRD|A_Live` | `account:string`, `executor` |
+| `01_TS01-A` | `BRD|A_SetFlag` | `account:string`, `executor` |
 | `01_TS01-A` | `DALOS|A_AccountCreationStoaToggle` | `account:string`, `executor` |
 | `01_TS01-A` | `DALOS|A_DeploySmartAccount` | — |
 | `01_TS01-A` | `DALOS|A_DeployStandardAccount` | — |
@@ -331,6 +352,8 @@
 | `01_TS01-A` | `P|A_Add` | — |
 | `01_TS01-A` | `P|A_AddIMP` | — |
 | `01_TS01-A` | `P|A_Define` | — |
+| `01_TS01-A` | `P|A_RemoveIMP` | — |
+| `01_TS01-A` | `P|A_SetIMP` | — |
 | `01_TS01-A` | `SWP|A_DefinePrimordialPool` | — |
 | `01_TS01-A` | `SWP|A_RotatePrincipal` | — |
 | `01_TS01-A` | `SWP|A_ToggleAsymetricLiquidityAddition` | `UR_Konto`, `account:string`, `id`, `id:string` |
@@ -401,6 +424,8 @@
 | `02_TS01-C1` | `P|A_Add` | — |
 | `02_TS01-C1` | `P|A_AddIMP` | — |
 | `02_TS01-C1` | `P|A_Define` | — |
+| `02_TS01-C1` | `P|A_RemoveIMP` | — |
+| `02_TS01-C1` | `P|A_SetIMP` | — |
 | `03_TS01-C2` | `ATS|CC_RemoveSecondary` | `DALOS|SC_NAME`, `UR_Konto`, `UR_OwnerKonto`, `account`, `account:string`, `ats`, `id`, `id:string`, `patron`, `receiver`, `sender` |
 | `03_TS01-C2` | `ATS|C_AddHotRBT` | `DALOS|SC_NAME`, `UR_Konto`, `UR_OwnerKonto`, `account:string`, `atspair`, `hot-rbt`, `id`, `id:string`, `patron` |
 | `03_TS01-C2` | `ATS|C_AddSecondary` | `DALOS|SC_NAME`, `UR_Konto`, `UR_OwnerKonto`, `account:string`, `atspair`, `id:string`, `patron`, `reward-token` |
@@ -451,6 +476,8 @@
 | `03_TS01-C2` | `P|A_Add` | — |
 | `03_TS01-C2` | `P|A_AddIMP` | — |
 | `03_TS01-C2` | `P|A_Define` | — |
+| `03_TS01-C2` | `P|A_RemoveIMP` | — |
+| `03_TS01-C2` | `P|A_SetIMP` | — |
 | `03_TS01-C2` | `VST|C_Awake` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `id`, `id:string`, `patron`, `receiver`, `sender` |
 | `03_TS01-C2` | `VST|C_CreateFrozenLink` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `client`, `dptf`, `id`, `id:string`, `main-dptf`, `patron`, `receiver`, `secondary-dptf`, `sender` |
 | `03_TS01-C2` | `VST|C_CreateHibernatingLink` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `client`, `dptf`, `id`, `id:string`, `main-dptf`, `patron`, `receiver`, `secondary-dpof`, `sender` |
@@ -481,6 +508,8 @@
 | `04_TS01-C3` | `P|A_Add` | — |
 | `04_TS01-C3` | `P|A_AddIMP` | — |
 | `04_TS01-C3` | `P|A_Define` | — |
+| `04_TS01-C3` | `P|A_RemoveIMP` | — |
+| `04_TS01-C3` | `P|A_SetIMP` | — |
 | `04_TS01-C3` | `SWP|CC_SmartSwapNoSlippage` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `id`, `id:string`, `patron`, `receiver`, `sender` |
 | `04_TS01-C3` | `SWP|CC_SmartSwapWithSlippage` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `id`, `id:string`, `patron`, `receiver`, `sender` |
 | `04_TS01-C3` | `SWP|C_AddFrozenLiquidity` | `DALOS|SC_NAME`, `UR_Konto`, `UR_OwnerKonto`, `account`, `account:string`, `client`, `id`, `id:string`, `patron`, `receiver`, `sender`, `swpair`, `swpair:string` |
@@ -518,6 +547,8 @@
 | `05_TS01-P` | `P|A_Add` | — |
 | `05_TS01-P` | `P|A_AddIMP` | — |
 | `05_TS01-P` | `P|A_Define` | — |
+| `05_TS01-P` | `P|A_RemoveIMP` | — |
+| `05_TS01-P` | `P|A_SetIMP` | — |
 | `05_TS01-P` | `SWP|C_AddFrozenLiquidity` | — |
 | `05_TS01-P` | `SWP|C_AddGlacialLiquidity` | — |
 | `05_TS01-P` | `SWP|C_AddIcedLiquidity` | — |
@@ -543,23 +574,33 @@
 | `06_TS01-C4` | `P|A_Add` | — |
 | `06_TS01-C4` | `P|A_AddIMP` | — |
 | `06_TS01-C4` | `P|A_Define` | — |
+| `06_TS01-C4` | `P|A_RemoveIMP` | — |
+| `06_TS01-C4` | `P|A_SetIMP` | — |
 | `01_DPDC-UDC` | `P|A_Add` | — |
 | `01_DPDC-UDC` | `P|A_AddIMP` | — |
 | `01_DPDC-UDC` | `P|A_Define` | — |
+| `01_DPDC-UDC` | `P|A_RemoveIMP` | — |
+| `01_DPDC-UDC` | `P|A_SetIMP` | — |
 | `02_DPDC` | `C_UpdatePendingBranding` | `UR_OwnerKonto`, `account:string`, `entity-id`, `id:string` |
 | `02_DPDC` | `C_UpgradeBranding` | `UR_OwnerKonto`, `account:string`, `entity-id`, `entity-owner-account`, `id:string` |
 | `02_DPDC` | `P|A_Add` | — |
 | `02_DPDC` | `P|A_AddIMP` | — |
 | `02_DPDC` | `P|A_Define` | — |
+| `02_DPDC` | `P|A_RemoveIMP` | — |
+| `02_DPDC` | `P|A_SetIMP` | — |
 | `03_DPDC-C` | `C_CreateNewNonce` | `UR_OwnerKonto`, `account`, `account:string`, `id`, `id:string`, `r-nft-create-account` |
 | `03_DPDC-C` | `C_CreateNewNonces` | `UR_OwnerKonto`, `account`, `account:string`, `id`, `id:string`, `r-nft-create-account` |
 | `03_DPDC-C` | `P|A_Add` | — |
 | `03_DPDC-C` | `P|A_AddIMP` | — |
 | `03_DPDC-C` | `P|A_Define` | — |
+| `03_DPDC-C` | `P|A_RemoveIMP` | — |
+| `03_DPDC-C` | `P|A_SetIMP` | — |
 | `04_DPDC-I` | `C_IssueDigitalCollection` | `account:string`, `owner-account` |
 | `04_DPDC-I` | `P|A_Add` | — |
 | `04_DPDC-I` | `P|A_AddIMP` | — |
 | `04_DPDC-I` | `P|A_Define` | — |
+| `04_DPDC-I` | `P|A_RemoveIMP` | — |
+| `04_DPDC-I` | `P|A_SetIMP` | — |
 | `05_DPDC-R` | `C_MoveCreateRole` | `UR_OwnerKonto`, `account:string`, `id`, `id:string` |
 | `05_DPDC-R` | `C_MoveRecreateRole` | `UR_OwnerKonto`, `account:string`, `id`, `id:string` |
 | `05_DPDC-R` | `C_MoveSetUriRole` | `UR_OwnerKonto`, `account:string`, `id`, `id:string` |
@@ -574,6 +615,8 @@
 | `05_DPDC-R` | `P|A_Add` | — |
 | `05_DPDC-R` | `P|A_AddIMP` | — |
 | `05_DPDC-R` | `P|A_Define` | — |
+| `05_DPDC-R` | `P|A_RemoveIMP` | — |
+| `05_DPDC-R` | `P|A_SetIMP` | — |
 | `06_DPDC-MNG` | `CC_WipeHeavy` | `UR_OwnerKonto`, `account`, `account:string`, `id`, `id:string` |
 | `06_DPDC-MNG` | `C_AddQuantity` | `UR_OwnerKonto`, `account`, `account:string`, `id`, `id:string` |
 | `06_DPDC-MNG` | `C_BurnNFT` | `UR_OwnerKonto`, `account`, `account:string`, `id`, `id:string` |
@@ -589,6 +632,8 @@
 | `06_DPDC-MNG` | `P|A_Add` | — |
 | `06_DPDC-MNG` | `P|A_AddIMP` | — |
 | `06_DPDC-MNG` | `P|A_Define` | — |
+| `06_DPDC-MNG` | `P|A_RemoveIMP` | — |
+| `06_DPDC-MNG` | `P|A_SetIMP` | — |
 | `07_DPDC-T` | `C_BulkTransfer` | `UR_OwnerKonto`, `account`, `account:string`, `id`, `id:string`, `sender` |
 | `07_DPDC-T` | `C_IgnisRoyaltyCollector` | `account:string`, `sender` |
 | `07_DPDC-T` | `C_RepurposeCollectable` | `UR_OwnerKonto`, `account`, `account:string`, `id`, `id:string` |
@@ -596,6 +641,8 @@
 | `07_DPDC-T` | `P|A_Add` | — |
 | `07_DPDC-T` | `P|A_AddIMP` | — |
 | `07_DPDC-T` | `P|A_Define` | — |
+| `07_DPDC-T` | `P|A_RemoveIMP` | — |
+| `07_DPDC-T` | `P|A_SetIMP` | — |
 | `08_DPDC-S` | `CC_BreakSemiFungibleSet` | `UR_OwnerKonto`, `account`, `account:string`, `id`, `id:string`, `receiver`, `sender` |
 | `08_DPDC-S` | `C_BreakNonFungibleSet` | `UR_OwnerKonto`, `account`, `account:string`, `id`, `id:string`, `receiver`, `sender` |
 | `08_DPDC-S` | `C_DefineCompositeSet` | `UR_OwnerKonto`, `account`, `account:string`, `id`, `id:string`, `r-nft-create-account` |
@@ -609,6 +656,8 @@
 | `08_DPDC-S` | `P|A_Add` | — |
 | `08_DPDC-S` | `P|A_AddIMP` | — |
 | `08_DPDC-S` | `P|A_Define` | — |
+| `08_DPDC-S` | `P|A_RemoveIMP` | — |
+| `08_DPDC-S` | `P|A_SetIMP` | — |
 | `09_DPDC-F` | `C_EnableNonceFragmentation` | `UR_OwnerKonto`, `account:string`, `id`, `id:string` |
 | `09_DPDC-F` | `C_MakeFragments` | `UR_OwnerKonto`, `account`, `account:string`, `id`, `id:string`, `receiver`, `sender` |
 | `09_DPDC-F` | `C_MergeFragments` | `UR_OwnerKonto`, `account`, `account:string`, `id`, `id:string`, `receiver`, `sender` |
@@ -616,6 +665,8 @@
 | `09_DPDC-F` | `P|A_Add` | — |
 | `09_DPDC-F` | `P|A_AddIMP` | — |
 | `09_DPDC-F` | `P|A_Define` | — |
+| `09_DPDC-F` | `P|A_RemoveIMP` | — |
+| `09_DPDC-F` | `P|A_SetIMP` | — |
 | `10_DPDC-N` | `C_UpdateNonceDescription` | `account`, `account:string` |
 | `10_DPDC-N` | `C_UpdateNonceIgnisRoyalty` | `account`, `account:string` |
 | `10_DPDC-N` | `C_UpdateNonceMetaData` | `account`, `account:string` |
@@ -627,11 +678,15 @@
 | `10_DPDC-N` | `P|A_Add` | — |
 | `10_DPDC-N` | `P|A_AddIMP` | — |
 | `10_DPDC-N` | `P|A_Define` | — |
+| `10_DPDC-N` | `P|A_RemoveIMP` | — |
+| `10_DPDC-N` | `P|A_SetIMP` | — |
 | `11_EQUITY+` | `C_IssueShareholderCollection` | `UR_OwnerKonto`, `account`, `account:string`, `id`, `id:string`, `owner-account`, `r-nft-create-account` |
 | `11_EQUITY+` | `C_MorphPackageShares` | `UR_OwnerKonto`, `account`, `account:string`, `id`, `id:string`, `receiver`, `sender` |
 | `11_EQUITY+` | `P|A_Add` | — |
 | `11_EQUITY+` | `P|A_AddIMP` | — |
 | `11_EQUITY+` | `P|A_Define` | — |
+| `11_EQUITY+` | `P|A_RemoveIMP` | — |
+| `11_EQUITY+` | `P|A_SetIMP` | — |
 | `00_Demipad` | `A_DefinePrice` | — |
 | `00_Demipad` | `A_RegisterAssetToLaunchpad` | — |
 | `00_Demipad` | `A_ToggleOpenForBusiness` | — |
@@ -645,6 +700,8 @@
 | `00_Demipad` | `P|A_Add` | — |
 | `00_Demipad` | `P|A_AddIMP` | — |
 | `00_Demipad` | `P|A_Define` | — |
+| `00_Demipad` | `P|A_RemoveIMP` | — |
+| `00_Demipad` | `P|A_SetIMP` | — |
 | `01_ANK` | `C_IssueNonFungibleAnchor` | `UR_CreatorKonto`, `UR_OwnerKonto`, `account:string`, `at`, `id`, `id:string` |
 | `01_ANK` | `C_IssueNonFungibleSetAnchor` | `UR_CreatorKonto`, `UR_OwnerKonto`, `account:string`, `at`, `id`, `id:string` |
 | `01_ANK` | `C_IssueSemiFungibleAnchor` | `UR_CreatorKonto`, `UR_OwnerKonto`, `account:string`, `at`, `id`, `id:string` |
@@ -654,6 +711,8 @@
 | `01_ANK` | `P|A_Add` | — |
 | `01_ANK` | `P|A_AddIMP` | — |
 | `01_ANK` | `P|A_Define` | — |
+| `01_ANK` | `P|A_RemoveIMP` | — |
+| `01_ANK` | `P|A_SetIMP` | — |
 | `02_SCORE` | `C_CombineTripletScoreModel` | `account:string`, `executor` |
 | `02_SCORE` | `C_Control` | `account:string`, `owner-konto` |
 | `02_SCORE` | `C_CreateBoostClassLink` | `account:string`, `owner-konto` |
@@ -674,6 +733,8 @@
 | `02_SCORE` | `P|A_Add` | — |
 | `02_SCORE` | `P|A_AddIMP` | — |
 | `02_SCORE` | `P|A_Define` | — |
+| `02_SCORE` | `P|A_RemoveIMP` | — |
+| `02_SCORE` | `P|A_SetIMP` | — |
 | `03_AQP` | `C_AddScore` | `URC_AqpOwnerKonto`, `account:string`, `owner-konto`, `pool-id`, `pool-id:string` |
 | `03_AQP` | `C_DisablePoolStake` | `URC_AqpOwnerKonto`, `account:string`, `pool-id`, `pool-id:string` |
 | `03_AQP` | `C_EnablePoolStake` | `URC_AqpOwnerKonto`, `account:string`, `pool-id`, `pool-id:string` |
@@ -684,9 +745,13 @@
 | `03_AQP` | `P|A_Add` | — |
 | `03_AQP` | `P|A_AddIMP` | — |
 | `03_AQP` | `P|A_Define` | — |
+| `03_AQP` | `P|A_RemoveIMP` | — |
+| `03_AQP` | `P|A_SetIMP` | — |
 | `04_RPS` | `P|A_Add` | — |
 | `04_RPS` | `P|A_AddIMP` | — |
 | `04_RPS` | `P|A_Define` | — |
+| `04_RPS` | `P|A_RemoveIMP` | — |
+| `04_RPS` | `P|A_SetIMP` | — |
 | `05_FVT` | `CC_Collect` | `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `patron`, `receiver`, `sender` |
 | `05_FVT` | `CC_CollectableStakeFlow` | `UR_OwnerKonto`, `account`, `account:string`, `id`, `id:string`, `owner-id`, `owner-id:string`, `receiver`, `sender` |
 | `05_FVT` | `CC_Inject` | `UR_Konto`, `account`, `account:string`, `id`, `id:string`, `receiver`, `sender` |
@@ -712,17 +777,23 @@
 | `05_FVT` | `P|A_Add` | — |
 | `05_FVT` | `P|A_AddIMP` | — |
 | `05_FVT` | `P|A_Define` | — |
+| `05_FVT` | `P|A_RemoveIMP` | — |
+| `05_FVT` | `P|A_SetIMP` | — |
 | `06_VCT` | `CC_FullVacate` | `UR_Konto`, `UR_OwnerKonto`, `account`, `account:string`, `id`, `id:string`, `pool-id`, `pool-id:string`, `ref-AQP::URC_AqpOwnerKonto`, `sender` |
 | `06_VCT` | `C_AbortVacate` | `account:string`, `pool-id`, `pool-id:string`, `ref-AQP::URC_AqpOwnerKonto` |
 | `06_VCT` | `C_FinalizeVacate` | `account:string`, `pool-id`, `pool-id:string`, `ref-AQP::URC_AqpOwnerKonto` |
 | `06_VCT` | `P|A_Add` | — |
 | `06_VCT` | `P|A_AddIMP` | — |
 | `06_VCT` | `P|A_Define` | — |
+| `06_VCT` | `P|A_RemoveIMP` | — |
+| `06_VCT` | `P|A_SetIMP` | — |
 | `07_MTX-AQP` | `C_2|Inject` | — |
 | `07_MTX-AQP` | `C_2|SweepRevokeAnchor` | — |
 | `07_MTX-AQP` | `P|A_Add` | — |
 | `07_MTX-AQP` | `P|A_AddIMP` | — |
 | `07_MTX-AQP` | `P|A_Define` | — |
+| `07_MTX-AQP` | `P|A_RemoveIMP` | — |
+| `07_MTX-AQP` | `P|A_SetIMP` | — |
 | `08_DSA` | `A_SetOracleValidity` | — |
 | `08_DSA` | `A_ToggleExternalOracle` | — |
 | `08_DSA` | `C_AdmitAgency` | `account:string`, `operator`, `owner-konto` |
@@ -737,6 +808,8 @@
 | `08_DSA` | `P|A_Add` | — |
 | `08_DSA` | `P|A_AddIMP` | — |
 | `08_DSA` | `P|A_Define` | — |
+| `08_DSA` | `P|A_RemoveIMP` | — |
+| `08_DSA` | `P|A_SetIMP` | — |
 | `01_TS02-C1` | `DPDC|C_BulkTransfer` | `DALOS|SC_NAME`, `UR_OwnerKonto`, `account`, `account:string`, `id`, `id:string`, `patron`, `sender` |
 | `01_TS02-C1` | `DPDC|C_MultiTransfer` | `DALOS|SC_NAME`, `UR_OwnerKonto`, `account`, `account:string`, `id`, `id:string`, `patron`, `receiver`, `sender` |
 | `01_TS02-C1` | `DPSF|CC_Break` | `DALOS|SC_NAME`, `UR_OwnerKonto`, `account`, `account:string`, `id`, `id:string`, `patron`, `receiver`, `sender` |
@@ -805,6 +878,8 @@
 | `01_TS02-C1` | `P|A_Add` | — |
 | `01_TS02-C1` | `P|A_AddIMP` | — |
 | `01_TS02-C1` | `P|A_Define` | — |
+| `01_TS02-C1` | `P|A_RemoveIMP` | — |
+| `01_TS02-C1` | `P|A_SetIMP` | — |
 | `02_TS02-C2` | `DPNF|CC_WipeHeavy` | `DALOS|SC_NAME`, `UR_OwnerKonto`, `account`, `account:string`, `id`, `id:string`, `patron` |
 | `02_TS02-C2` | `DPNF|C_Break` | `DALOS|SC_NAME`, `UR_OwnerKonto`, `account`, `account:string`, `id`, `id:string`, `patron`, `receiver`, `sender` |
 | `02_TS02-C2` | `DPNF|C_BulkTransfer` | `DALOS|SC_NAME`, `UR_OwnerKonto`, `account`, `account:string`, `id`, `id:string`, `patron`, `sender` |
@@ -867,6 +942,8 @@
 | `02_TS02-C2` | `P|A_Add` | — |
 | `02_TS02-C2` | `P|A_AddIMP` | — |
 | `02_TS02-C2` | `P|A_Define` | — |
+| `02_TS02-C2` | `P|A_RemoveIMP` | — |
+| `02_TS02-C2` | `P|A_SetIMP` | — |
 | `04_TS02-C3` | `AQP-ANK|C_IssueNonFungibleAnchor` | `DALOS|SC_NAME`, `UR_CreatorKonto`, `UR_Konto`, `UR_OwnerKonto`, `account`, `account:string`, `at`, `client`, `id`, `id:string`, `patron`, `receiver`, `sender` |
 | `04_TS02-C3` | `AQP-ANK|C_IssueNonFungibleSetAnchor` | `DALOS|SC_NAME`, `UR_CreatorKonto`, `UR_Konto`, `UR_OwnerKonto`, `account`, `account:string`, `at`, `client`, `id`, `id:string`, `patron`, `receiver`, `sender` |
 | `04_TS02-C3` | `AQP-ANK|C_IssueSemiFungibleAnchor` | `DALOS|SC_NAME`, `UR_CreatorKonto`, `UR_Konto`, `UR_OwnerKonto`, `account`, `account:string`, `at`, `client`, `id`, `id:string`, `patron`, `receiver`, `sender` |
@@ -943,6 +1020,8 @@
 | `04_TS02-C3` | `P|A_Add` | — |
 | `04_TS02-C3` | `P|A_AddIMP` | — |
 | `04_TS02-C3` | `P|A_Define` | — |
+| `04_TS02-C3` | `P|A_RemoveIMP` | — |
+| `04_TS02-C3` | `P|A_SetIMP` | — |
 | `05_TS02-DPAD` | `A_DefinePrice` | — |
 | `05_TS02-DPAD` | `A_RegisterAssetToLaunchpad` | `DALOS|SC_NAME`, `account:string`, `patron` |
 | `05_TS02-DPAD` | `A_ToggleOpenForBusiness` | — |
@@ -960,6 +1039,8 @@
 | `05_TS02-DPAD` | `P|A_Add` | — |
 | `05_TS02-DPAD` | `P|A_AddIMP` | — |
 | `05_TS02-DPAD` | `P|A_Define` | — |
+| `05_TS02-DPAD` | `P|A_RemoveIMP` | — |
+| `05_TS02-DPAD` | `P|A_SetIMP` | — |
 | `01_AOZ+` | `A_InitialiseCounters` | — |
 | `01_AOZ+` | `A_RegisterAutostakePair` | — |
 | `01_AOZ+` | `A_RegisterNonFungible` | — |
@@ -1070,20 +1151,28 @@
 | `01_Spark` | `P|A_Add` | — |
 | `01_Spark` | `P|A_AddIMP` | — |
 | `01_Spark` | `P|A_Define` | — |
+| `01_Spark` | `P|A_RemoveIMP` | — |
+| `01_Spark` | `P|A_SetIMP` | — |
 | `02_Snakes` | `A_UpdateSharePrice` | — |
 | `02_Snakes` | `C_Acquire` | `DALOS|SC_NAME`, `UR_Konto`, `UR_OwnerKonto`, `account`, `account:string`, `client`, `id`, `id:string`, `patron`, `receiver`, `sender` |
 | `02_Snakes` | `P|A_Add` | — |
 | `02_Snakes` | `P|A_AddIMP` | — |
 | `02_Snakes` | `P|A_Define` | — |
+| `02_Snakes` | `P|A_RemoveIMP` | — |
+| `02_Snakes` | `P|A_SetIMP` | — |
 | `03_Custodians` | `A_UpdateQuintessencePrice` | — |
 | `03_Custodians` | `C_Acquire` | `DALOS|SC_NAME`, `UR_Konto`, `UR_OwnerKonto`, `account`, `account:string`, `client`, `id`, `id:string`, `patron`, `receiver`, `sender` |
 | `03_Custodians` | `P|A_Add` | — |
 | `03_Custodians` | `P|A_AddIMP` | — |
 | `03_Custodians` | `P|A_Define` | — |
+| `03_Custodians` | `P|A_RemoveIMP` | — |
+| `03_Custodians` | `P|A_SetIMP` | — |
 | `04_STOICPAY` | `C_BuyStoicPay` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `patron`, `receiver`, `sender` |
 | `04_STOICPAY` | `P|A_Add` | — |
 | `04_STOICPAY` | `P|A_AddIMP` | — |
 | `04_STOICPAY` | `P|A_Define` | — |
+| `04_STOICPAY` | `P|A_RemoveIMP` | — |
+| `04_STOICPAY` | `P|A_SetIMP` | — |
 | `05_STOAICO` | `AA_FlushUncollected` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `patron`, `receiver`, `sender` |
 | `05_STOAICO` | `A_InitialiseDistributionVault` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `patron`, `receiver`, `sender` |
 | `05_STOAICO` | `A_Inject` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `id`, `id:string`, `patron`, `receiver`, `sender` |
@@ -1093,11 +1182,15 @@
 | `05_STOAICO` | `P|A_Add` | — |
 | `05_STOAICO` | `P|A_AddIMP` | — |
 | `05_STOAICO` | `P|A_Define` | — |
+| `05_STOAICO` | `P|A_RemoveIMP` | — |
+| `05_STOAICO` | `P|A_SetIMP` | — |
 | `99_TS02-CPAD` | `CUSTODIANS|C_Acquire` | `DALOS|SC_NAME`, `UR_Konto`, `UR_OwnerKonto`, `account`, `account:string`, `client`, `id`, `id:string`, `patron`, `receiver`, `sender` |
 | `99_TS02-CPAD` | `KPAY|C_BuyStoicPay` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `patron`, `receiver`, `sender` |
 | `99_TS02-CPAD` | `P|A_Add` | — |
 | `99_TS02-CPAD` | `P|A_AddIMP` | — |
 | `99_TS02-CPAD` | `P|A_Define` | — |
+| `99_TS02-CPAD` | `P|A_RemoveIMP` | — |
+| `99_TS02-CPAD` | `P|A_SetIMP` | — |
 | `99_TS02-CPAD` | `SNAKES|C_Acquire` | `DALOS|SC_NAME`, `UR_Konto`, `UR_OwnerKonto`, `account`, `account:string`, `client`, `id`, `id:string`, `patron`, `receiver`, `sender` |
 | `99_TS02-CPAD` | `SPARK|C_BuySparks` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `patron`, `receiver`, `sender` |
 | `99_TS02-CPAD` | `SPARK|C_RedemAllSparks` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `patron`, `receiver`, `sender`, `spark-id` |
@@ -1113,4 +1206,6 @@
 | `03_DSP+` | `P|A_Add` | — |
 | `03_DSP+` | `P|A_AddIMP` | — |
 | `03_DSP+` | `P|A_Define` | — |
+| `03_DSP+` | `P|A_RemoveIMP` | — |
+| `03_DSP+` | `P|A_SetIMP` | — |
 

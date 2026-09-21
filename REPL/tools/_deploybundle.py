@@ -202,24 +202,21 @@ ROUNDS = {
             "1_SOVEREIGN/STAGE_02/0_Interfaces/02_Core.pact": "vestigial registry, declares nothing",
             "1_SOVEREIGN/STAGE_02/0_Interfaces/03_Talos.pact": "vestigial registry, declares nothing",
             "1_SOVEREIGN/STAGE_01/2_Core/00_DPMF.pact":
-                "OBSOLETE AND INERT. DPOF is the live OrtoFungible path. VERIFIED: zero CODE "
-                "references in the tree -- all six mentions are @doc prose, nothing binds it as "
-                "a modref, nothing implements DemiourgosPactMetaFungibleV7 but DPMF itself.\n"
-                "CORRECTED 2026-09-21. An earlier version of this note said a stub upgrade would "
-                "'drop 5 deftables, orphaning their rows'. THAT IS WRONG, and the module's own "
-                "header banner already said so: DPMF calls `create-table` ZERO times against its "
-                "five `deftable` declarations, so it is deployed with NO STORAGE and has no rows "
-                "to orphan. Pinned by REPL/modules/CONFORMANCE.repl <<CONF-06>>, which asserts "
-                "the exact failure `Table ouronet-ns.DPMF_P|MT not found`.\n"
-                "CONSEQUENCE FOR THE 'RETIRE IT READ-ONLY' PLAN (owner, 2026-09-21): that plan "
-                "preserves tables and their contents and keeps the readers. Here there is "
-                "nothing to preserve -- all 72 read functions would error on a missing table, "
-                "exactly as CONF-06 pins. A read-only DPMF reads nothing. So the plan is MOOT "
-                "for this module specifically, and the standing 2026-09-15 ruling stands "
-                "unchanged: keep it as dead material with commentary, do not redeploy, do not "
-                "create its tables. Creating them without wiring callers would turn an inert "
-                "module into a live one with 13 dead modref calls inside it, and CONF-06 goes "
-                "red on exactly that half-migration, by design.",
+                "ARCHIVE MODE since 2026-09-21 (owner ruling) -- the canonical retirement for an "
+                "obsolete module, specified in StoicSyntax-Prefixes.md 7.21 and applied by "
+                "REPL/tools/_archivemode.py. Schemas, deftables and every READ function kept; "
+                "105 definitions and all three `implements` clauses removed. 2,416 lines -> 848. "
+                "DPOF is the live OrtoFungible path.\n"
+                "NOT REDEPLOYED, and that is the point: a deployed module cannot be removed in "
+                "Pact, so the live copy stays exactly as it is until someone decides otherwise. "
+                "Archiving here changes what this REPO carries, not what the chain runs.\n"
+                "WHETHER MAINNET DPMF HOLDS ROWS IS UNKNOWN. Its source calls `create-table` "
+                "zero times, which proves only that a FRESH boot has no storage -- `create-table` "
+                "FAILS when the table already exists, which is exactly why an UPGRADE source "
+                "omits it, as this very tool's UPGRADE-vs-GENESIS note explains. An earlier DPMF "
+                "may well have created these tables on chain and filled them. Archive mode is "
+                "correct either way: rows stay readable if they exist, nothing is lost if they "
+                "do not. Settle it with REPL/tools/_liveinventory.py --probe.",
             # ---- 2_CITIZEN: owner dispositions, 2026-09-21 ------------------------------------
             # These are in NO deploy chain, so an `all_modules` round cannot plan them even in
             # principle. Each is excluded for a DIFFERENT reason, and three of the five are

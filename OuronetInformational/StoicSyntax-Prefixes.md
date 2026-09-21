@@ -1294,3 +1294,94 @@ else is a real enforcement and is treated as one, so this cannot become a genera
 
 `_conformance.py` `[XI-no-enforce]` skips `Xv_` variants (they have declared themselves) and skips a
 default-arm `(enforce false)`; `[x-enforce-declared]` requires the `;;Enforce:` line on every `Xv_`.
+
+### 7.21 ARCHIVE MODE — how an obsolete module is retired — amendment 2026-09-21
+
+**Owner ruling.** A superseded module is **not deleted**. A deployed module cannot be removed in
+Pact, and its tables may hold history worth reading. It is **reduced** instead:
+
+| | |
+|---|---|
+| **KEEP** | schemas, `deftable`s, constants, and every READ function — `UR_` `URC_` `URCv_` `URH_` `URD_` `URCi_` `UC_` `UCv_` `UDC_` `INFO_` `OI|` `CT_` |
+| **DROP** | everything that CHANGES something — `A_` `AA_` `C_` `CC_` `XI_` `XE_` `XB_` `XIv_` `XBv_` `W_` `WW_` `AU_` `URU_` `P|A_` `UEV_` `CAP_` |
+| **DROP** | every **gate capability** — any cap whose name carries `\|S>` `\|C>` `\|X>` `\|W>` |
+| **DROP** | every `implements` clause |
+| **KEEP** | `GOV` and `GOV|<MOD>_ADMIN` — **only** these |
+
+Tool: `REPL/tools/_archivemode.py <file> --apply [--keep NAME]`.
+
+**Capabilities: only GOVERNANCE survives.** A read-only module authorises nothing, so a
+capability in it gates nothing. `P|*|CALLER` and `P|SECURE-CALLER` go with the rest — nothing
+calls an archived module, so its inter-module caller guards protect a surface that no longer
+exists. `GOV` and `GOV|<MOD>_ADMIN` stay for two reasons that are not style: `(module X GOV)`
+**names** its governance capability, so Pact will not load the module without it, and that
+capability still decides who may **upgrade** the archived module — live even when nothing calls
+it. `SECURE` goes too *unless a surviving reader needs it as a **guard constructor*** — DPMF's
+`P|UR_IMP` defaults to `(create-capability-guard (SECURE))`, which is a value, not a gate. That
+is what `--keep` is for.
+
+**THE GOVERNANCE CHAIN MUST SURVIVE, AND THE TOOL PROVES IT.** `(module X GOVCAP)` names the
+capability that authorises replacing the module's code. Sever any link and the module is
+**bricked** — it keeps running, it can never be changed again, and the only exit is deploying a
+differently-named V2 and abandoning the original. That has happened before, on a Kadena module.
+Archiving is precisely the act of deleting definitions in bulk, so it is the pass most likely to
+do it.
+
+`_archivemode.py` therefore walks the whole chain after every `--apply` and refuses to finish if
+a link is missing:
+
+```
+(module DPMF GOV)
+  -> (defcap GOV ()            (compose-capability (GOV|DPMF_ADMIN)))
+  -> (defcap GOV|DPMF_ADMIN () (enforce-guard GOV|MD_DPMF))
+  -> (defconst GOV|MD_DPMF     (keyset-ref-guard (GOV|Demiurgoi)))
+  -> (defun GOV|Demiurgoi ...)
+```
+
+Two things that check got wrong before it worked, both worth knowing because they are the two
+ways *any* such check fails. It first pushed only references that were **already defined**, so a
+missing one was filtered out before it could be reported — **structurally incapable of failing**,
+and it passed a copy with `GOV|DPMF_ADMIN` deleted. Then, once able to fail, it reported **14
+sound modules as bricked**, all for `U|CT`: a governance function routinely binds a PEER module
+(`(ref-U|CT:module{OuronetConstantsV2} U|CT)`) and neither alias nor target belongs to this file.
+Validate such a check **in both directions** — it must go red on a real break and stay green on
+the whole tree — or it is decoration either way.
+
+**The module's OWN interface is BUMPED, not edited.** An interface is a published contract and a
+deployed one cannot be changed, so the suffix advances by exactly one and the new version
+declares only what survives — `DemiourgosPactMetaFungibleV7` (95 functions) → `...V8`
+(2 schemas + 53 functions). The old version is removed from the SOURCE, not from the chain;
+nothing can remove it from the chain and nothing needs to. `_archivemode.py`'s
+`emit_interface()` generates it. Two rules bite while doing this: a schema defined in the SAME
+interface is referenced **unqualified** (§7.10), and a reader returning a schema defined in the
+MODULE stays module-only, because an interface loads before module schemas exist.
+
+**Why the gate capabilities go.** A `MOD|C>OP` cap exists to authorise a write. Once every
+consumer is gone it can never fire — and a gate guarding nothing *reads as protection*, which is
+the same failure §7.18's Class-5 work was written to stop.
+
+**Why dropping `implements` is the part with leverage.** It removes the module from every future
+interface CASCADE. `DPMF` implemented `BrandingUsagePrimaryV2` alongside DPTF/DPOF/ATS/SWP, so
+every branding signature change had to be carried into a module nobody calls. Archiving took that
+cascade from five implementors to four, permanently.
+
+**The interface gets archived too, not deleted.** `DemiourgosPactMetaFungibleV7` declared 95
+functions and **2 schemas**. The functions went; the schemas stayed, because the surviving readers
+return `object{Iface.Schema}` and those shapes are load-bearing. Deleting the interface outright
+failed to compile — which is the check working. An interface left standing after its
+implementation is gone is *worse* than clutter: it is the document a reader consults to learn what
+a module offers, so it reads as verified and is false.
+
+**The compiler is the oracle for this, and only for this.** An unresolved NAME inside a module is
+a **load** error, so removing too much fails loudly and immediately — archive DPMF and the
+compiler names the two validators its readers still needed (`UEV_id`, `UEV_NoncesToAccount`).
+That is emphatically **not** true of call ARITY, which Pact resolves at RUNTIME; see
+`REPL/tools/_callarity.py`. Two different removal mistakes, two different detectors.
+
+**What archiving does NOT decide: whether the data exists.** `create-table` FAILS when a table
+already exists, which is exactly why an UPGRADE source omits it. So a source with zero
+`create-table` calls proves only that a FRESH boot has no storage — it says nothing about
+mainnet, where an earlier version may have created those tables and filled them. Archive mode is
+written to be correct either way: if the rows are there they stay readable; if not, nothing is
+lost. Settle the question with `REPL/tools/_liveinventory.py --probe`, not by reading the source.
+

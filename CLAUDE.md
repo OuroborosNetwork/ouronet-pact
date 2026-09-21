@@ -385,7 +385,29 @@ Mirror `REPL/Stage_02/[6.2.1]_AQP-ANK.repl` and `[6.2.2]_AQP-SCORE.repl`. Spec: 
 
 ## Historical note: DPMF → DPOF
 
-`DPMF` is the original MetaFungible module, kept for historical/migration context. Live metadata-rich fungible behavior is represented by **`DPOF`** (OrtoFungible). Naming shifted from MetaFungible to OrtoFungible to separate the active path from legacy meta-fungible semantics.
+`DPMF` is the original MetaFungible module. Live metadata-rich fungible behavior is represented
+by **`DPOF`** (OrtoFungible). Naming shifted from MetaFungible to OrtoFungible to separate the
+active path from legacy meta-fungible semantics.
+
+**DPMF is in ARCHIVE MODE since 2026-09-21** (owner ruling) — the canonical way an obsolete module
+is retired, specified in `StoicSyntax-Prefixes.md` §7.21 and applied by
+`REPL/tools/_archivemode.py`. It keeps its schemas, `deftable`s and every READ function, so
+whatever history those tables hold stays readable; everything that CHANGES something is gone —
+108 definitions plus all three `implements` clauses, and every capability except the
+governance pair. 2,416 lines → 902. Its own interface was **bumped** rather than edited —
+`DemiourgosPactMetaFungibleV7` (95 functions) → `V8` (2 schemas + 53 functions) — because a
+deployed interface cannot be changed.
+
+Two consequences worth knowing. **Dropping `implements` removes a module from every future
+interface cascade**: DPMF implemented `BrandingUsagePrimaryV2` alongside DPTF/DPOF/ATS/SWP, so
+every branding signature change had to be carried into a module nobody calls — that cascade is
+now four modules, not five. And the tree's **dead modref calls went from 13 to 0**, because all
+thirteen lived inside DPMF's removed write functions.
+
+**It is NOT redeployed**: a deployed module cannot be removed in Pact, so the live copy stays as
+it is. Whether mainnet DPMF actually holds rows is **unknown** — its source calls `create-table`
+zero times, but `create-table` FAILS when a table already exists, which is exactly why an upgrade
+source omits it. `REPL/tools/_liveinventory.py --probe` settles it; reading the source does not.
 
 ## Working agreement
 

@@ -626,7 +626,6 @@
     (
         (ref-P|TS01C1:module{OuronetPolicyV2} TS01-C1)
         (ref-P|TS01C3:module{OuronetPolicyV2} TS01-C3)
-        (ref-P|DPMF:module{OuronetPolicyV2} DPMF)
     )
     (map print
         [
@@ -639,16 +638,30 @@
                 1 (length (ref-P|TS01C3::P|UR_IMP)))
             ;;DPMF IS DIFFERENT, AND THE DIFFERENCE IS WORTH PINNING. It does not fail the GS-07
             ;;   way -- it fails EARLIER. `with-default-read` defaults a missing ROW; it cannot
-            ;;   default a missing TABLE. DPMF `deftable`s P|T and P|MT and then calls
-            ;;   `create-table` ZERO times -- every other module creates its tables at the end of
-            ;;   the file. So the legacy MetaFungible module is deployed with no storage at all and
-            ;;   every storage-backed function in it errors. Combined with the separate finding that
-            ;;   NOTHING in 1_SOVEREIGN or 2_CITIZEN calls `ref-DPMF::`, this states the strong form:
-            ;;   DPMF is not merely unreferenced, it is INERT. Asserted rather than left implicit, so
-            ;;   a half-migration that creates the tables without wiring the callers goes red here.
+            ;;   default a missing TABLE. DPMF `deftable`s P|T and P|MT and calls `create-table`
+            ;;   ZERO times, so in a fresh boot it has no storage and every storage-backed
+            ;;   function in it errors.
+            ;;
+            ;;   SCOPE CORRECTED 2026-09-21, because the old wording here claimed more than it
+            ;;   tested. It said DPMF "is deployed with no storage at all" -- full stop. That is
+            ;;   proven for THIS boot and nowhere else: `create-table` FAILS when the table
+            ;;   already exists, which is exactly why an UPGRADE source omits it, and the whole
+            ;;   of `_deploybundle.py` is built around that distinction. So an earlier DPMF may
+            ;;   well have created these tables on chain and filled them. What this assertion
+            ;;   pins is the REPL fact; only a live read settles mainnet.
+            ;;
+            ;;   Combined with the separate finding that NOTHING in 1_SOVEREIGN or 2_CITIZEN
+            ;;   calls `ref-DPMF::`, DPMF is not merely unreferenced, it is inert HERE. Asserted
+            ;;   rather than left implicit, so a half-migration that creates the tables without
+            ;;   wiring the callers goes red.
+            ;;
+            ;;   BOUND DIRECTLY, not through a modref: DPMF went to ARCHIVE MODE (2026-09-21) and
+            ;;   no longer `implements OuronetPolicyV2`, so `module{OuronetPolicyV2} DPMF` no
+            ;;   longer typechecks. `P|UR_IMP` survives archiving because it is a READER, which
+            ;;   is the whole point of the mode.
             (expect-failure "<<CONF-06>> DPMF is INERT -- it never create-tables its policy storage"
                 "Table ouronet-ns.DPMF_P|MT not found"
-                (ref-P|DPMF::P|UR_IMP))
+                (DPMF.P|UR_IMP))
             ;;2] THE GATE BUILT ON IT, pinned BY MESSAGE. This is the assertion that fails if GS-07
             ;;   is reverted: the refusal must be the POLICY refusal. A table error is also a
             ;;   refusal, and from the outside the two are indistinguishable unless the message is
