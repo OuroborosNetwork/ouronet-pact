@@ -9,7 +9,7 @@ session must be able to see what is done by reading this file, without reconstru
 `git log`. If the table and `_executorplan.py` disagree, **the tool is right** — regenerate.
 
 **Status:** preparation complete, sweep starting at `01_DALOS`.
-**149 done · 634 remaining · 46 modules · 4 swept (01_DALOS, 02_IGNIS, 04_BRD, 05_DPTF) · 1 archived (00_DPMF).**
+**215 done · 560 remaining · 46 modules · 5 swept (01_DALOS, 02_IGNIS, 04_BRD, 05_DPTF, 06_DPOF) · 1 archived (00_DPMF).**
 
 ---
 
@@ -229,7 +229,7 @@ same tools with those three properties.
 | [x] 3 | `04_BRD.pact` | 0 | 0 | 2 | **2** | `BrandingV2` |
 | [x] 4 | `05_DPTF.pact` | 0 | 2 | 22 | **24** | `BrandingUsagePrimaryV2`, `DemiourgosPactTrueFungibleV2` |
 | [—] 5 | `00_DPMF.pact` | — | — | — | — | **ARCHIVED**, not swept — read-only retirement, StoicSyntax 7.21 |
-| [ ] 6 | `06_DPOF.pact` | 0 | 1 | 20 | **21** | `DemiourgosPactOrtoFungibleV2`, `DpofUdcV2` — **also do `C_DeployAccount` → `XB_DeployAccount`**, see note below |
+| [x] 6 | `06_DPOF.pact` | 0 | 1 | 20 | **21** | `DemiourgosPactOrtoFungibleV2`, `DpofUdcV2` — done, incl. `XBv_DeployAccount` |
 | [ ] 7 | `08_ATS.pact` | 0 | 3 | 21 | **24** | `AutostakeV3` |
 | [ ] 8 | `09_TFT.pact` | 0 | 0 | 5 | **5** | `TrueFungibleTransferV2` |
 | [ ] 9 | `10_ATSU.pact` | 0 | 0 | 14 | **14** | `AutostakeUsageV2` |
@@ -389,6 +389,19 @@ Per module, in order:
 - **Negative probes keep plain accounts** — they must fail on the guard under test, not on arity.
 - Where a guard is added, add a test that **fails without it**. A guard nothing ever fails on is
   indistinguishable from an absent one.
+- **An arity-PRESERVING reorder is not idempotent. Run it exactly ONCE.** Added 2026-09-21 after
+  it cost most of `06_DPOF`. A pass that MOVES arguments without changing their count is a
+  permutation, so applying it twice composes the permutation with itself. For a simple swap
+  (`C_Mint`, `C_Burn`, `C_Transfer`) that is the IDENTITY: the second run reports *"rewrote 98
+  call sites"* and silently restores the original order. It looks exactly like success.
+  Arity-CHANGING passes are self-protecting — the executee group went 4 args to 5, so a second
+  pass could not match it, and it survived three runs untouched.
+- **When a reorder goes wrong, restore from `HEAD` — do not compose more permutations.** The
+  repair "it ran twice, so run it once more" is right only if the permutation is an INVOLUTION.
+  `C_Transmit`'s is a **5-cycle**, so three applications is not one, and the third run moved it
+  somewhere new. Two further traps in the restore itself: match by CONTENT, not by line index
+  (the file had shifted by two lines), and beware MULTI-LINE calls — a line-indexed restore
+  replaced only the first line of one and truncated the form.
 - **Never run a source-rewriting script unattended.** Added 2026-09-21 after the incident in §4c.
   Three properties, not one: it must (a) require `--apply`, (b) **refuse an empty or unresolved
   target** — an empty function name matches everywhere — and (c) run in the FOREGROUND where its

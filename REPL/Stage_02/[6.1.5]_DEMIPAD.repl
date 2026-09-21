@@ -156,8 +156,8 @@
     )
     ;; issue a fresh DPOF (list args); grant the owner the add-quantity role, then mint a nonce
     (ref-TS01-C1::DPOF|C_Issue patron patron ["CoverageOF"] ["COF"] [2] [true] [true] [true] [true] [true] [true] [true])
-    (ref-TS01-C1::DPOF|C_ToggleAddQuantityRole patron id patron true)
-    (ref-TS01-C1::DPOF|C_Mint patron id patron 1000.0 [{"cov": "of"}])
+    (ref-TS01-C1::DPOF|C_ToggleAddQuantityRole patron (DPOF.UR_Konto id) patron id true)
+    (ref-TS01-C1::DPOF|C_Mint patron patron id 1000.0 [{"cov": "of"}])
     ;; OF fungibility = [true false]; fuel nonce 1 into the launchpad, then retrieve it
     (ref-TS02-DPAD::A_RegisterAssetToLaunchpad patron id [true false])
     (ref-TS02-DPAD::DEMIPAD|C_FuelOrtoFungible patron patron id [1])

@@ -336,7 +336,7 @@
             (expect-failure
                 "<<RT-K-003d>> Mint · EXEC   (same failure as the preview)"
                 "DPOF|T|Properties"
-                (r::DPOF|C_Mint KST.ANHD bad KST.ANHD 1.0 []))
+                (r::DPOF|C_Mint KST.ANHD KST.ANHD bad 1.0 []))
         ])
     ""
 )

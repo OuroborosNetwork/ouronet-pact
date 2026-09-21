@@ -226,7 +226,7 @@
     ;;
     (defun HOT-RBT|C_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
     (defun HOT-RBT|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer))
-    (defun HOT-RBT|C_Repurpose:object{IgnisCollectorV3.OutputCumulator} (hot-rbt:string nonce:integer repurpose-to:string))
+    (defun HOT-RBT|C_Repurpose:object{IgnisCollectorV3.OutputCumulator} (patron:string hot-rbt:string nonce:integer repurpose-to:string))
         ;;
     (defun C_Issue:object{IgnisCollectorV3.OutputCumulator}
         (
@@ -256,7 +256,7 @@
     (defun C_ToggleUpgrade:object{IgnisCollectorV3.OutputCumulator} (atspair:string toggle:bool))
     (defun C_SwitchColdRecovery:object{IgnisCollectorV3.OutputCumulator} (atspair:string toggle:bool))
         ;;
-    (defun C_AddHotRBT:object{IgnisCollectorV3.OutputCumulator} (atspair:string hot-rbt:string))
+    (defun C_AddHotRBT:object{IgnisCollectorV3.OutputCumulator} (patron:string atspair:string hot-rbt:string))
     (defun C_ControlHotRecoveryFee:object{IgnisCollectorV3.OutputCumulator} (atspair:string h-fr:bool))
     (defun C_SetHotRecoveryFees:object{IgnisCollectorV3.OutputCumulator} (atspair:string promile:decimal decay:integer))
     (defun C_SwitchHotRecovery:object{IgnisCollectorV3.OutputCumulator} (atspair:string toggle:bool))
@@ -3067,7 +3067,7 @@
         )
     )
     (defun HOT-RBT|C_Repurpose:object{IgnisCollectorV3.OutputCumulator}
-        (hot-rbt:string nonce:integer repurpose-to:string)
+        (patron:string hot-rbt:string nonce:integer repurpose-to:string)
         @doc "Fix (audit finding #22L test-coverage sweep): UR_NonceMetaData was called \
             \ with zero arguments where it requires (id nonce) - an unconditional crash, \
             \ never caught because this function had zero test coverage before now. \
@@ -3089,15 +3089,15 @@
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators 
                     [
                         ;;1]Freeze <nonce> owner
-                        (ref-DPOF::C_ToggleFreezeAccount hot-rbt nonce-holder true)
+                        (ref-DPOF::C_ToggleFreezeAccount patron (ref-DPOF::UR_Konto hot-rbt) nonce-holder hot-rbt true)
                         ;;2]Wipe <nonce> on owner
-                        (ref-DPOF::C_WipeClean hot-rbt nonce-holder [nonce])
+                        (ref-DPOF::C_WipeClean patron (ref-DPOF::UR_Konto hot-rbt) nonce-holder hot-rbt [nonce])
                         ;;3]Unfreeze <nonce> owner
-                        (ref-DPOF::C_ToggleFreezeAccount hot-rbt nonce-holder false)
+                        (ref-DPOF::C_ToggleFreezeAccount patron (ref-DPOF::UR_Konto hot-rbt) nonce-holder hot-rbt false)
                         ;;4]Mint new DPOF on ATS|SC_NAME
-                        (ref-DPOF::C_Mint hot-rbt ATS|SC_NAME nonce-supply nonce-meta-data-chain)
+                        (ref-DPOF::C_Mint patron ATS|SC_NAME hot-rbt nonce-supply nonce-meta-data-chain)
                         ;;5]Transfer it to <repurpose-to>
-                        (ref-DPOF::C_Transfer hot-rbt [(+ nonces-used 1)] ATS|SC_NAME repurpose-to true)
+                        (ref-DPOF::C_Transfer patron ATS|SC_NAME repurpose-to hot-rbt [(+ nonces-used 1)] true)
                     ] 
                     []
                 )
@@ -3281,7 +3281,7 @@
     ;;Hot Recovery Management
     ;;Must be modified to either add a 0 supply Orto Fungible or Issue One
     (defun C_AddHotRBT:object{IgnisCollectorV3.OutputCumulator}
-        (atspair:string hot-rbt:string)
+        (patron:string atspair:string hot-rbt:string)
         (P|UEV_IMC)
         (with-capability (ATS|C>ADD-HOT-RBT atspair hot-rbt)
             (let
@@ -3299,14 +3299,14 @@
                     (ico1:object{IgnisCollectorV3.OutputCumulator}
                         ;;Change Ownership to ATS|SC_NAME if it is not
                         (if (!= hot-rbt-owner ATS|SC_NAME)
-                            (ref-DPOF::C_RotateOwnership hot-rbt ATS|SC_NAME)
+                            (ref-DPOF::C_RotateOwnership patron (ref-DPOF::UR_Konto hot-rbt) ATS|SC_NAME hot-rbt)
                             EOC
                         )
                     )
                     (ico2:object{IgnisCollectorV3.OutputCumulator}
                         ;;Lock Properties   <cu>    <cco>   <casr>  <ctocr> <cf>    <cw>    <cp>    <sg> to
                         ;;                  <false> <false> <false> <false> <true>  <true>  <false> <false>
-                        (ref-DPOF::C_Control hot-rbt false false false false true true false false)
+                        (ref-DPOF::C_Control patron (ref-DPOF::UR_Konto hot-rbt) hot-rbt false false false false true true false false)
                     )
                 )
                 (ref-DPOF::XB_DeployAccountWNE ATS|SC_NAME hot-rbt)

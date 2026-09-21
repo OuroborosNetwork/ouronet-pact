@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 15 of 22
 ;; This is STEP 15 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-14 must have run first, including the init steps between deploys.
-;; 1 source file(s), 151,366 gas measured in the REPL gas model, 175,047 bytes
+;; 1 source file(s), 151,366 gas measured in the REPL gas model, 175,082 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/03_AQP.pact
@@ -218,7 +218,7 @@
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
     )
     (defun XE_OrtoFungibleTransfer:object{IgnisCollectorV3.OutputCumulator}
-        (pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool)
+        (patron:string pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool)
     )
     (defun XE_OrtoFungiblePoolTracker:object{IgnisCollectorV3.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool)
@@ -3024,7 +3024,7 @@
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY
     (defun XE_OrtoFungibleTransfer:object{IgnisCollectorV3.OutputCumulator}
-        (
+        (patron:string 
             pool-id:string
             owner-id:string
             beneficiary-id:string
@@ -3044,7 +3044,7 @@
                     (sender:string (if direction owner-id vault))
                     (receiver:string (if direction vault owner-id))
                 )
-                (ref-DPOF::C_Transfer dpof-id nonces sender receiver true)
+                (ref-DPOF::C_Transfer patron sender receiver dpof-id nonces true)
             )
         )
     )

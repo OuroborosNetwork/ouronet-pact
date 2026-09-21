@@ -127,7 +127,7 @@
         (emma:string KST.EMMA)
         (aoz:string KST.AOZT)
     )
-    (ref-TS01-C1::DPOF|C_MoveCreateRole emma id aoz)
+    (ref-TS01-C1::DPOF|C_MoveCreateRole emma (DPOF.UR_Konto id) aoz id)
     (map print
         [
             (format "UR_Verum4 after Move 1 (expect aoz): {}" [(DPOF.UR_Verum4 id)])
@@ -153,7 +153,7 @@
         (aoz:string KST.AOZT)
         (patron:string KST.ANHD)
     )
-    (ref-TS01-C1::DPOF|C_MoveCreateRole emma id patron)
+    (ref-TS01-C1::DPOF|C_MoveCreateRole emma (DPOF.UR_Konto id) patron id)
     (map print
         [
             (format "UR_Verum4 after Move 2 (expect patron): {}" [(DPOF.UR_Verum4 id)])

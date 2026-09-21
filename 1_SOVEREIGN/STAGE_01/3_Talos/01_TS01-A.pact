@@ -665,7 +665,7 @@
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
-                (ref-DPOF::C_DeployAccount id account)
+                (ref-DPOF::XBv_DeployAccount id account)
                 (ref-IGNIS::XE_CollectIgnis patron
                     ;;charge through the SAME reader the client twin uses, so the admin variant
                     ;;cannot drift from DPOF|C_DeployAccount's price

@@ -90,11 +90,11 @@
                 (expect-failure
                     "<<DPOF-02>> C_Mint is rejected while the add-quantity role is unset"
                     "must be set to true for exec"
-                    (ref-TS01-C1::DPOF|C_Mint patron o patron 1000.0 [{}]))
+                    (ref-TS01-C1::DPOF|C_Mint patron patron o 1000.0 [{}]))
             ]
         )
-        (ref-TS01-C1::DPOF|C_ToggleAddQuantityRole patron o patron true)
-        (ref-TS01-C1::DPOF|C_Mint patron o patron 1000.0 [{}])
+        (ref-TS01-C1::DPOF|C_ToggleAddQuantityRole patron (DPOF.UR_Konto o) patron o true)
+        (ref-TS01-C1::DPOF|C_Mint patron patron o 1000.0 [{}])
         (map print
             [
                 (expect "<<DPOF-02>> C_Mint used exactly one new nonce"
@@ -137,7 +137,7 @@
             (n0:integer (ref-DPOF::UR_NoncesUsed o))
             (v0:decimal (ref-DPOF::UR_NonceSupply o 1))
         )
-        (ref-TS01-C1::DPOF|C_AddQuantity patron o patron 1 250.0)
+        (ref-TS01-C1::DPOF|C_AddQuantity patron patron o 1 250.0)
         (map print
             [
                 (expect "<<DPOF-03>> C_AddQuantity grew the EXISTING nonce, creating none"
@@ -175,7 +175,7 @@
             (s0:decimal (ref-DPOF::UR_Supply o))
             (v1:decimal (ref-DPOF::UR_NonceSupply o 1))
         )
-        (ref-TS01-C1::DPOF|C_Transfer patron o [1] patron emma false)
+        (ref-TS01-C1::DPOF|C_Transfer patron patron emma o [1] false)
         (map print
             [
                 (expect "<<DPOF-04>> C_Transfer moved the nonce to the receiver"
@@ -210,7 +210,7 @@
         (patron:string KST.ANHD)
     )
     (map print [(expect "<<DPOF-05>> token starts unpaused" false (ref-DPOF::UR_IsPaused o))])
-    (ref-TS01-C1::DPOF|C_TogglePause patron o true)
+    (ref-TS01-C1::DPOF|C_TogglePause patron (DPOF.UR_Konto o) o true)
     (map print
         [
             (expect "<<DPOF-05>> C_TogglePause paused the token" true (ref-DPOF::UR_IsPaused o))
@@ -221,10 +221,10 @@
                 "is already paused" (ref-DPOF::UEV_PauseState o false))
         ]
     )
-    (ref-TS01-C1::DPOF|C_TogglePause patron o false)
+    (ref-TS01-C1::DPOF|C_TogglePause patron (DPOF.UR_Konto o) o false)
     (map print [(expect "<<DPOF-05>> C_TogglePause unpaused the token" false (ref-DPOF::UR_IsPaused o))])
     ;;C_Control (cu cco casr ctocr cf cw cp sg) — turn can-pause OFF, keep the rest
-    (ref-TS01-C1::DPOF|C_Control patron o true true true true false false false false)
+    (ref-TS01-C1::DPOF|C_Control patron (DPOF.UR_Konto o) o true true true true false false false false)
     (map print
         [
             (expect "<<DPOF-05>> C_Control turned can-pause OFF"  false (ref-DPOF::UR_CanPause o))
@@ -239,7 +239,7 @@
     ;;can-change-owner joins the flip: like casr/ctocr it is REVERSIBLE, because DPOF|S>CONTROL
     ;;gates on can-upgrade -- which stays ON -- not on can-change-owner itself. (DPTF's
     ;;can-upgrade is the one-way case, and needed a dedicated token in modules/ADVERSARIAL.repl.)
-    (ref-TS01-C1::DPOF|C_Control patron o true false false false false false false false)
+    (ref-TS01-C1::DPOF|C_Control patron (DPOF.UR_Konto o) o true false false false false false false false)
     (map print
         [
             (expect "<<DPOF-05>> can-add-special-role is now OFF" false (ref-DPOF::UR_CanAddSpecialRole o))
@@ -255,7 +255,7 @@
                 "cannot have its create role transfered" (ref-DPOF::UEV_CanTransferOftCreateRoleON o))
         ]
     )
-    (ref-TS01-C1::DPOF|C_Control patron o true true true true false false false false)
+    (ref-TS01-C1::DPOF|C_Control patron (DPOF.UR_Konto o) o true true true true false false false false)
     (map print
         [
             (expect "<<DPOF-05>> can-add-special-role restored" true (ref-DPOF::UR_CanAddSpecialRole o))
@@ -305,7 +305,7 @@
         ]
     )
     ;;MOVE 1 — owner to EMMA. Granting is the half that always worked.
-    (ref-TS01-C1::DPOF|C_MoveCreateRole patron id emma)
+    (ref-TS01-C1::DPOF|C_MoveCreateRole patron (DPOF.UR_Konto id) emma id)
     (map print
         [
             (expect "<<DPOF-MCR>> move 1 recorded EMMA as the create-role holder"
@@ -316,7 +316,7 @@
     )
     ;;MOVE 2 — EMMA to LUMY. THE TEST: EMMA is the real previous holder and is NOT the owner,
     ;;so nothing else keeps the role on her. If the revoke targets the wrong account she keeps it.
-    (ref-TS01-C1::DPOF|C_MoveCreateRole patron id lumy)
+    (ref-TS01-C1::DPOF|C_MoveCreateRole patron (DPOF.UR_Konto id) lumy id)
     (map print
         [
             (expect "<<DPOF-MCR>> move 2 recorded LUMY as the holder"
@@ -686,7 +686,7 @@
                 [(U|CT.CT_BAR)] (DPOF.UR_Verum5 mo))
         ]
     )
-    (TS01-C1.DPOF|C_ToggleTransferRole KST.ANHD mo KST.LUMY true)
+    (TS01-C1.DPOF|C_ToggleTransferRole KST.ANHD (DPOF.UR_Konto mo) KST.LUMY mo true)
     (map print
         [
             (expect "<<DPOF-G5>> granting the role to one account activates the role set"
@@ -908,10 +908,10 @@
         [
             (expect-failure "<<DPOF-G12>> a bulk transfer with NO receivers is refused"
                 "Invalid DPOF bulk transfer: receiver/nonces legs or nonce list"
-                (ref-TS01-C1::DPOF|C_BulkTransfer KST.ANHD t [] KST.ANHD [] false))
+                (ref-TS01-C1::DPOF|C_BulkTransfer KST.ANHD KST.ANHD [] t [] false))
             (expect-failure "<<DPOF-G12>> ...and so is one nonce leg against two receivers"
                 "Invalid DPOF bulk transfer: receiver/nonces legs or nonce list"
-                (ref-TS01-C1::DPOF|C_BulkTransfer KST.ANHD t [[1]] KST.ANHD [KST.EMMA KST.LUMY] false))
+                (ref-TS01-C1::DPOF|C_BulkTransfer KST.ANHD KST.ANHD [KST.EMMA KST.LUMY] t [[1]] false))
         ]
     )
     (print "--- [DPOF-G12 · 02 · when the ATS contract owns a token, only it may mint] ---")
@@ -931,7 +931,7 @@
                     [true false]
                     [(= KST.ANHD (ref-DPOF::UR_Konto t)) (= ats-sc (ref-DPOF::UR_Konto t))])
                 (expect "<<DPOF-G12>> ...and ANHD can mint it while that is true"
-                    true (!= "" (ref-TS01-C1::DPOF|C_Mint KST.ANHD t KST.ANHD 5.0 [])))
+                    true (!= "" (ref-TS01-C1::DPOF|C_Mint KST.ANHD KST.ANHD t 5.0 [])))
             ]
         )
         (update DPOF.DPOF|T|Properties t { "owner-konto" : ats-sc })
@@ -941,7 +941,7 @@
                     true (= ats-sc (ref-DPOF::UR_Konto t)))
                 (expect-failure "<<DPOF-G12>> ...so ANHD may no longer mint it"
                     "Only the ATS owner can mint when the owner is ATS"
-                    (ref-TS01-C1::DPOF|C_Mint KST.ANHD t KST.ANHD 5.0 []))
+                    (ref-TS01-C1::DPOF|C_Mint KST.ANHD KST.ANHD t 5.0 []))
             ]
         )
         (update DPOF.DPOF|T|Properties t { "owner-konto" : KST.ANHD })
@@ -964,7 +964,7 @@
                 true (< (ref-DPOF::UR_NonceSupply t 1) 999999.0))
             (expect-failure "<<DPOF-G12>> debiting more than a nonce holds is refused, naming the nonce"
                 "Cannot Debit into the Negatives for Orto-Fungible MOCKO-98c486052a51 Nonce 1 on Account"
-                (ref-TS01-C1::DPOF|C_Transmit KST.ANHD t [1] [999999.0] KST.ANHD KST.EMMA false))
+                (ref-TS01-C1::DPOF|C_Transmit KST.ANHD KST.ANHD KST.EMMA t [1] [999999.0] false))
             ;;THE CONTRAST, and it is NOT a successful transfer. Driving one here would mean clearing
             ;;the holder check and then DPOF's transfer-role matrix (pinned separately by DPOF-G5..G5c)
             ;;-- three fixtures deep for one assertion. What actually needs proving is narrower: that
@@ -983,8 +983,8 @@
             ;;only thing in this suite that can assert WHICH error came out.)
             (expect-failure "<<DPOF-G12>> ...while a legal amount gets past it, and a LATER guard answers"
                 "Incompatible Transfer Roles"
-                (ref-TS01-C1::DPOF|C_Transmit KST.ANHD t [1] [1.0]
-                    (ref-DPOF::UR_NonceHolder t 1) KST.ANHD false))
+                (ref-TS01-C1::DPOF|C_Transmit KST.ANHD
+                    (ref-DPOF::UR_NonceHolder t 1) KST.ANHD t [1] [1.0] false))
         ]
     )
     ""
@@ -1042,7 +1042,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPOF|Mint patron o patron 5.0))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C1::DPOF|C_Mint patron o patron 5.0 []))
+            (m (ref-TS01-C1::DPOF|C_Mint patron patron o 5.0 []))
         )
         (map print
             [
@@ -1085,7 +1085,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPOF|ToggleAddQuantityRole patron o lumy true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C1::DPOF|C_ToggleAddQuantityRole patron o lumy true))
+            (m (ref-TS01-C1::DPOF|C_ToggleAddQuantityRole patron (DPOF.UR_Konto o) lumy o true))
         )
         (map print
             [
@@ -1126,7 +1126,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPOF|ToggleBurnRole patron o emma true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C1::DPOF|C_ToggleBurnRole patron o emma true))
+            (m (ref-TS01-C1::DPOF|C_ToggleBurnRole patron (DPOF.UR_Konto o) emma o true))
         )
         (map print
             [
@@ -1167,7 +1167,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPOF|ToggleTransferRole patron o coca true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C1::DPOF|C_ToggleTransferRole patron o coca true))
+            (m (ref-TS01-C1::DPOF|C_ToggleTransferRole patron (DPOF.UR_Konto o) coca o true))
         )
         (map print
             [
@@ -1208,7 +1208,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPOF|RotateOwnership patron o emma))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C1::DPOF|C_RotateOwnership patron o emma))
+            (m (ref-TS01-C1::DPOF|C_RotateOwnership patron (DPOF.UR_Konto o) emma o))
         )
         (map print
             [
@@ -1250,7 +1250,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPOF|MoveCreateRole patron o coca))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C1::DPOF|C_MoveCreateRole patron o coca))
+            (m (ref-TS01-C1::DPOF|C_MoveCreateRole patron (DPOF.UR_Konto o) coca o))
         )
         (map print
             [
@@ -1342,12 +1342,12 @@
     ;;has never held it (ANHD took it at DPOF-02 and nothing ever granted it onward). Granting it here
     ;;is setup, not the thing being measured: the grant is a separate op with its own price, and the
     ;;measurement below opens strictly after it.
-    (ref-TS01-C1::DPOF|C_ToggleAddQuantityRole patron o emma true)
+    (ref-TS01-C1::DPOF|C_ToggleAddQuantityRole patron (DPOF.UR_Konto o) emma o true)
     (let
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPOF|AddQuantity patron o 1 emma 10.0))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C1::DPOF|C_AddQuantity patron o emma 1 10.0))
+            (m (ref-TS01-C1::DPOF|C_AddQuantity patron emma o 1 10.0))
         )
         (map print
             [
@@ -1391,12 +1391,12 @@
         (lumy:string KST.LUMY)
     )
     ;;PRECONDITION — the burn role lives on the TARGET account, and EMMA has never held it.
-    (ref-TS01-C1::DPOF|C_ToggleBurnRole patron o emma true)
+    (ref-TS01-C1::DPOF|C_ToggleBurnRole patron (DPOF.UR_Konto o) emma o true)
     (let
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPOF|Burn patron o 1 emma 1250.0))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C1::DPOF|C_Burn patron o emma 1 1250.0))
+            (m (ref-TS01-C1::DPOF|C_Burn patron emma o 1 1250.0))
         )
         (map print
             [
@@ -1438,7 +1438,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPOF|Transfer patron o [1] emma lumy false))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C1::DPOF|C_Transfer patron o [1] emma lumy false))
+            (m (ref-TS01-C1::DPOF|C_Transfer patron emma lumy o [1] false))
         )
         (map print
             [
@@ -1480,7 +1480,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPOF|Control patron o))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C1::DPOF|C_Control patron o true true true true false false false false))
+            (m (ref-TS01-C1::DPOF|C_Control patron (DPOF.UR_Konto o) o true true true true false false false false))
         )
         (map print
             [
@@ -1519,12 +1519,12 @@
     ;;SETUP, outside the measurement window. MOCKO is left with can-freeze / can-wipe / can-pause all
     ;;OFF by DPOF-05, so the ops below are unreachable until they are turned back on. `C_Control` is
     ;;the supported way; it is itself a billed op, so it closes before `ignis-before` is read.
-    (ref-TS01-C1::DPOF|C_Control patron o true true true true true true true false)
+    (ref-TS01-C1::DPOF|C_Control patron (DPOF.UR_Konto o) o true true true true true true true false)
     (let
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPOF|TogglePause patron o true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C1::DPOF|C_TogglePause patron o true))
+            (m (ref-TS01-C1::DPOF|C_TogglePause patron (DPOF.UR_Konto o) o true))
         )
         (map print
             [
@@ -1563,12 +1563,12 @@
     ;;SETUP, outside the measurement window. MOCKO is left with can-freeze / can-wipe / can-pause all
     ;;OFF by DPOF-05, so the ops below are unreachable until they are turned back on. `C_Control` is
     ;;the supported way; it is itself a billed op, so it closes before `ignis-before` is read.
-    (ref-TS01-C1::DPOF|C_Control patron o true true true true true true true false)
+    (ref-TS01-C1::DPOF|C_Control patron (DPOF.UR_Konto o) o true true true true true true true false)
     (let
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPOF|ToggleFreezeAccount patron o emma true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron o emma true))
+            (m (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron (DPOF.UR_Konto o) emma o true))
         )
         (map print
             [
@@ -1611,7 +1611,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPOF|BulkTransfer patron o [[1]] emma [lumy] false))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C1::DPOF|C_BulkTransfer patron o [[1]] emma [lumy] false))
+            (m (ref-TS01-C1::DPOF|C_BulkTransfer patron emma [lumy] o [[1]] false))
         )
         (map print
             [
@@ -1660,7 +1660,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPOF|Transmit patron o [1] [10.0] emma lumy false))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C1::DPOF|C_Transmit patron o [1] [10.0] emma lumy false))
+            (m (ref-TS01-C1::DPOF|C_Transmit patron emma lumy o [1] [10.0] false))
         )
         (map print
             [
@@ -1700,9 +1700,9 @@
     ;;SETUP, outside the measurement window. MOCKO is left with can-freeze / can-wipe / can-pause all
     ;;OFF by DPOF-05, so the ops below are unreachable until they are turned back on. `C_Control` is
     ;;the supported way; it is itself a billed op, so it closes before `ignis-before` is read.
-    (ref-TS01-C1::DPOF|C_Control patron o true true true true true true true false)
+    (ref-TS01-C1::DPOF|C_Control patron (DPOF.UR_Konto o) o true true true true true true true false)
     ;;...and every wipe path additionally needs the target FROZEN. EMMA holds nonce 1 (1250.0).
-    (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron o emma true)
+    (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron (DPOF.UR_Konto o) emma o true)
     ;;SETUP — segmentation gates the amount-taking paths and there is NO client toggle for it
     ;;(`06_DPOF.pact:2417` sets it at issuance). DPOF-G12 established the direct write as the
     ;;supported fixture: a segmented token is an ordinary production configuration, not a contrived
@@ -1713,7 +1713,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPOF|WipeSlim patron o emma 1 10.0))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C1::DPOF|C_WipeSlim patron o emma 1 10.0))
+            (m (ref-TS01-C1::DPOF|C_WipeSlim patron (DPOF.UR_Konto o) emma o 1 10.0))
         )
         (map print
             [
@@ -1752,14 +1752,14 @@
     ;;SETUP, outside the measurement window. MOCKO is left with can-freeze / can-wipe / can-pause all
     ;;OFF by DPOF-05, so the ops below are unreachable until they are turned back on. `C_Control` is
     ;;the supported way; it is itself a billed op, so it closes before `ignis-before` is read.
-    (ref-TS01-C1::DPOF|C_Control patron o true true true true true true true false)
+    (ref-TS01-C1::DPOF|C_Control patron (DPOF.UR_Konto o) o true true true true true true true false)
     ;;...and every wipe path additionally needs the target FROZEN. EMMA holds nonce 1 (1250.0).
-    (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron o emma true)
+    (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron (DPOF.UR_Konto o) emma o true)
     (let
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPOF|WipeClean patron o emma [1]))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C1::DPOF|C_WipeClean patron o emma [1]))
+            (m (ref-TS01-C1::DPOF|C_WipeClean patron (DPOF.UR_Konto o) emma o [1]))
         )
         (map print
             [
@@ -1800,14 +1800,14 @@
     ;;SETUP, outside the measurement window. MOCKO is left with can-freeze / can-wipe / can-pause all
     ;;OFF by DPOF-05, so the ops below are unreachable until they are turned back on. `C_Control` is
     ;;the supported way; it is itself a billed op, so it closes before `ignis-before` is read.
-    (ref-TS01-C1::DPOF|C_Control patron o true true true true true true true false)
+    (ref-TS01-C1::DPOF|C_Control patron (DPOF.UR_Konto o) o true true true true true true true false)
     ;;...and every wipe path additionally needs the target FROZEN. EMMA holds nonce 1 (1250.0).
-    (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron o emma true)
+    (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron (DPOF.UR_Konto o) emma o true)
     (let
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPOF|WipePure patron o emma (ref-DPOF::URHC_WipePure emma o)))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C1::DPOF|C_WipePure patron o emma (ref-DPOF::URHC_WipePure emma o)))
+            (m (ref-TS01-C1::DPOF|C_WipePure patron (DPOF.UR_Konto o) emma o (ref-DPOF::URHC_WipePure emma o)))
         )
         (map print
             [
@@ -1847,14 +1847,14 @@
     ;;SETUP, outside the measurement window. MOCKO is left with can-freeze / can-wipe / can-pause all
     ;;OFF by DPOF-05, so the ops below are unreachable until they are turned back on. `C_Control` is
     ;;the supported way; it is itself a billed op, so it closes before `ignis-before` is read.
-    (ref-TS01-C1::DPOF|C_Control patron o true true true true true true true false)
+    (ref-TS01-C1::DPOF|C_Control patron (DPOF.UR_Konto o) o true true true true true true true false)
     ;;...and every wipe path additionally needs the target FROZEN. EMMA holds nonce 1 (1250.0).
-    (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron o emma true)
+    (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron (DPOF.UR_Konto o) emma o true)
     (let
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPOF|WipeHeavy patron o emma))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C1::DPOF|CC_WipeHeavy patron o emma))
+            (m (ref-TS01-C1::DPOF|CC_WipeHeavy patron (DPOF.UR_Konto o) emma o))
         )
         (map print
             [
@@ -1896,9 +1896,9 @@
     ;;SETUP, outside the measurement window. MOCKO is left with can-freeze / can-wipe / can-pause all
     ;;OFF by DPOF-05, so the ops below are unreachable until they are turned back on. `C_Control` is
     ;;the supported way; it is itself a billed op, so it closes before `ignis-before` is read.
-    (ref-TS01-C1::DPOF|C_Control patron o true true true true true true true false)
+    (ref-TS01-C1::DPOF|C_Control patron (DPOF.UR_Konto o) o true true true true true true true false)
     ;;...and every wipe path additionally needs the target FROZEN. EMMA holds nonce 1 (1250.0).
-    (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron o emma true)
+    (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron (DPOF.UR_Konto o) emma o true)
     (let
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPOF|WipeSlice patron o emma (ref-DPOF::UDC_RemovableNonces [1] [1250.0])))
@@ -1952,17 +1952,17 @@
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
     )
-    (ref-TS01-C1::DPOF|C_Control patron o true true true true true true true false)
+    (ref-TS01-C1::DPOF|C_Control patron (DPOF.UR_Konto o) o true true true true true true true false)
     ;;...and the mint target needs the ADD-QUANTITY role: `DPOF|C>MINT` enforces it on the ACCOUNT
     ;;being credited, not on the caller (`06_DPOF.pact:851`). ANHD holds it from DPOF-02; EMMA does not.
-    (ref-TS01-C1::DPOF|C_ToggleAddQuantityRole patron o emma true)
+    (ref-TS01-C1::DPOF|C_ToggleAddQuantityRole patron (DPOF.UR_Konto o) emma o true)
     ;;...and the CREATE role too, which unlike add-quantity is single-holder: `C_MoveCreateRole`
     ;;hands it over rather than granting a copy. That is destructive to LUMY's holding, which is
     ;;why the whole block rolls back — DPOF-G5 onward assumes LUMY keeps it.
-    (ref-TS01-C1::DPOF|C_MoveCreateRole patron o emma)
-    (ref-TS01-C1::DPOF|C_Mint patron o emma 10.0 [])
-    (ref-TS01-C1::DPOF|C_Mint patron o emma 20.0 [])
-    (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron o emma true)
+    (ref-TS01-C1::DPOF|C_MoveCreateRole patron (DPOF.UR_Konto o) emma o)
+    (ref-TS01-C1::DPOF|C_Mint patron emma o 10.0 [])
+    (ref-TS01-C1::DPOF|C_Mint patron emma o 20.0 [])
+    (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron (DPOF.UR_Konto o) emma o true)
     (let
         (
             (held:[integer] (ref-DPOF::URH_AccountNonces emma o))
@@ -2259,7 +2259,7 @@
                 ;;refused" from "the attacker's own signature was rejected".
                 (expect-failure "<<DPOF-G13>> paying the gas does not let you move someone else's nonce"
                     "Keyset failure (keys-all): [PK_Emma...]"
-                    (ref-TS01-C1::DPOF|C_Transfer attacker o [1] victim attacker false))
+                    (ref-TS01-C1::DPOF|C_Transfer attacker victim attacker o [1] false))
                 ;;THE PLURAL DOOR. `DPOF|C>BULK-TRANSFER` is a SEPARATE defcap with its own
                 ;;`CAP_EnforceAccountOwnership sender`, so the assertion above says nothing about
                 ;;it -- the same sibling-gate trap that left `FVT|C>SET-SPLIT-MODE` unwitnessed one
@@ -2268,7 +2268,7 @@
                 ;;reach the gate; one is passed anyway so the refusal cannot be blamed on shape.
                 (expect-failure "<<DPOF-G13>> ...nor in bulk, which is a separate gate"
                     "Keyset failure (keys-all): [PK_Emma...]"
-                    (ref-TS01-C1::DPOF|C_BulkTransfer attacker o [[1]] victim [attacker] false))
+                    (ref-TS01-C1::DPOF|C_BulkTransfer attacker victim [attacker] o [[1]] false))
                 ;;...and the refusal was TOTAL.
                 (expect "<<DPOF-G13>> ...and the nonce did not move"
                     holder-before (ref-DPOF::UR_NonceHolder o 1))
@@ -2301,7 +2301,7 @@
         (holder:string KST.EMMA)
     )
     (print (format "<(TS01-C1.DPOF|C_Transfer sponsored by LUMY)> => \"{}\""
-        [(ref-TS01-C1::DPOF|C_Transfer sponsor o [1] holder sponsor false)]))
+        [(ref-TS01-C1::DPOF|C_Transfer sponsor holder sponsor o [1] false)]))
     (map print
         [
             (expect "<<DPOF-G13>> with the holder signing, the identical call succeeds"
@@ -2378,8 +2378,7 @@
     (
         (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
     )
-    (ref-TS01-C1::DPOF|C_Control KST.ANHD "MOCKO-98c486052a51"
-        true true true true true true true true)
+    (ref-TS01-C1::DPOF|C_Control KST.ANHD (DPOF.UR_Konto "MOCKO-98c486052a51") "MOCKO-98c486052a51" true true true true true true true true)
     ""
 )
 (env-sigs [{ "key": "PK_Lumy", "caps": [] }])
@@ -2393,15 +2392,15 @@
             ;;C>TRANSFER -- the same nonce twice in one whole-nonce move.
             (expect-failure "<<DPOF-G15>> C3: a duplicated nonce is refused on TRANSFER"
                 "Unique Items Required, duplicate item found"
-                (ref-TS01-C1::DPOF|C_Transfer KST.LUMY o [1 1] KST.LUMY KST.EMMA false))
+                (ref-TS01-C1::DPOF|C_Transfer KST.LUMY KST.LUMY KST.EMMA o [1 1] false))
             ;;C>BULK-TRANSFER -- a separate defcap, checking the FLATTENED set.
             (expect-failure "<<DPOF-G15>> ...and on BULK-TRANSFER, which checks the flattened set"
                 "Unique Items Required, duplicate item found"
-                (ref-TS01-C1::DPOF|C_BulkTransfer KST.LUMY o [[1 1]] KST.LUMY [KST.EMMA] false))
+                (ref-TS01-C1::DPOF|C_BulkTransfer KST.LUMY KST.LUMY [KST.EMMA] o [[1 1]] false))
             ;;C>DEBIT -- reached through the partial-transmit path, the third and last site.
             (expect-failure "<<DPOF-G15>> ...and on DEBIT, reached through partial transmit"
                 "Unique Items Required, duplicate item found"
-                (ref-TS01-C1::DPOF|C_Transmit KST.LUMY o [1 1] [1.0 1.0] KST.EMMA KST.LUMY false))
+                (ref-TS01-C1::DPOF|C_Transmit KST.LUMY KST.EMMA KST.LUMY o [1 1] [1.0 1.0] false))
         ]
     )
     ""

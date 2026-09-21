@@ -6,9 +6,9 @@
 
 | metric | value |
 |---|---|
-| entrypoints scanned | 1193 |
+| entrypoints scanned | 1192 |
 | reaching at least one ownership enforce | 816 |
-| reaching NONE | 377 |
+| reaching NONE | 376 |
 
 ## Per entrypoint
 
@@ -84,7 +84,6 @@
 | `06_DPOF` | `C_BulkTransfer` | `account:string`, `sender` |
 | `06_DPOF` | `C_Burn` | `UR_Konto`, `account`, `account:string`, `id`, `id:string` |
 | `06_DPOF` | `C_Control` | `UR_Konto`, `account:string`, `id`, `id:string` |
-| `06_DPOF` | `C_DeployAccount` | — |
 | `06_DPOF` | `C_Issue` | `account`, `account:string` |
 | `06_DPOF` | `C_Mint` | `account:string`, `client` |
 | `06_DPOF` | `C_MoveCreateRole` | `UR_Konto`, `account:string`, `id`, `id:string` |

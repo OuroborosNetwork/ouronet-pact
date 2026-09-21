@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 18 of 22
 ;; This is STEP 18 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-17 must have run first, including the init steps between deploys.
-;; 3 source file(s), 849,276 gas measured in the REPL gas model, 258,962 bytes
+;; 3 source file(s), 849,276 gas measured in the REPL gas model, 259,193 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/06_VCT.pact
@@ -101,22 +101,22 @@
     ;;{5.6}  Aux/X
     ;; [XB]
     (defun XB_VacateTrueFungible:object{IgnisCollectorV3.OutputCumulator} (pool-id:string))
-    (defun XB_VacateOrtoFungible:object{IgnisCollectorV3.OutputCumulator} (pool-id:string dpof-id:string))
+    (defun XB_VacateOrtoFungible:object{IgnisCollectorV3.OutputCumulator} (patron:string pool-id:string dpof-id:string))
     (defun XB_VacateSemiFungible:object{IgnisCollectorV3.OutputCumulator} (pool-id:string dpsf-id:string))
     (defun XB_VacateNonFungible:object{IgnisCollectorV3.OutputCumulator} (pool-id:string dpnf-id:string))
     ;;{5.7}  User [A/C]
     ;; [C]   client
-    (defun CC_FullVacate:object{IgnisCollectorV3.OutputCumulator} (pool-id:string))
+    (defun CC_FullVacate:object{IgnisCollectorV3.OutputCumulator} (patron:string pool-id:string))
     (defun CCp_BatchVacateTrueFungible:object{IgnisCollectorV3.OutputCumulator}
         (pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal]))
     (defun CCp_BatchVacateOrtoFungible:object{IgnisCollectorV3.OutputCumulator}
-        (pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]]))
+        (patron:string pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]]))
     (defun CCp_BatchVacateCollectables:object{IgnisCollectorV3.OutputCumulator}
         (pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]]))
     (defun CCp_BatchDrainTrueFungible:object{IgnisCollectorV3.OutputCumulator}
         (pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal]))
     (defun CCp_BatchDrainOrtoFungible:object{IgnisCollectorV3.OutputCumulator}
-        (pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]]))
+        (patron:string pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]]))
     (defun CCp_BatchDrainCollectable:object{IgnisCollectorV3.OutputCumulator}
         (pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]]))
     (defun C_AbortVacate:object{IgnisCollectorV3.OutputCumulator} (pool-id:string))
@@ -2628,7 +2628,7 @@
     )
     ;;Protection: Class 3 — Custom: P|VCT|RECIPE
     (defun XI_VacateOrtoFungibleFromLegs:object{IgnisCollectorV3.OutputCumulator}
-        (pool-id:string dpof-id:string legs:[object{AcquisitionSchemasV1.VCT|VacateNonceLeg}])
+        (patron:string pool-id:string dpof-id:string legs:[object{AcquisitionSchemasV1.VCT|VacateNonceLeg}])
         @doc "OF vacate CONSUMER (per DPOF asset) — no scan. Unpack the pre-built nonce legs (owner/beneficiary/ \
             \ nonces + the real per-nonce decimal amounts the PHASE-1 URD scan already read off the tracker) into \
             \ the batch arrays and run bulk custody-return + unwind (XI_VacateOrtoFungibleBatch). Empty legs → \
@@ -2637,7 +2637,7 @@
         (require-capability (P|VCT|RECIPE))
         (if (= (length legs) 0)
             (UC_EmptyOc)
-            (XI_VacateOrtoFungibleBatch pool-id dpof-id
+            (XI_VacateOrtoFungibleBatch patron pool-id dpof-id
                 (map (lambda (l:object{AcquisitionSchemasV1.VCT|VacateNonceLeg}) (at "owner-id" l)) legs)
                 (map (lambda (l:object{AcquisitionSchemasV1.VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs)
                 (map (lambda (l:object{AcquisitionSchemasV1.VCT|VacateNonceLeg}) (at "nonces" l)) legs)
@@ -2686,7 +2686,7 @@
     )
     ;;Protection: Class 3 — Custom: P|VCT|RECIPE
     (defun XI_VacateOrtoFungiblePoolLegs:object{IgnisCollectorV3.OutputCumulator}
-        (pool-id:string lanes:[object{AcquisitionSchemasV1.VCT|VacateNonceLane}])
+        (patron:string pool-id:string lanes:[object{AcquisitionSchemasV1.VCT|VacateNonceLane}])
         @doc "OF-lane POOL consumer — no scan. Run XI_VacateOrtoFungibleFromLegs on every pre-scanned DPOF lane \
             \ (Z|/H| satellite or class-2 standalone) and concatenate. Empty → empty Oc. require P|VCT|RECIPE."
         (require-capability (P|VCT|RECIPE))
@@ -2699,7 +2699,7 @@
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
                     (map
                         (lambda (lane:object{AcquisitionSchemasV1.VCT|VacateNonceLane})
-                            (XI_VacateOrtoFungibleFromLegs pool-id (at "asset-id" lane) (at "legs" lane)))
+                            (XI_VacateOrtoFungibleFromLegs patron pool-id (at "asset-id" lane) (at "legs" lane)))
                         lanes)
                     [])
             )
@@ -2956,7 +2956,7 @@
     )
     ;;Protection: Class 3 — Custom: P|VCT|RECIPE
     (defun XI_VacateOrtoFungibleBatch:object{IgnisCollectorV3.OutputCumulator}
-        (
+        (patron:string 
             pool-id:string
             dpof-id:string
             owner-ids:[string]
@@ -2974,7 +2974,7 @@
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                 ;;
                 (bulk-oc:object{IgnisCollectorV3.OutputCumulator}
-                    (ref-DPOF::C_BulkTransfer dpof-id nonces-array AQP|SC_NAME owner-ids true)
+                    (ref-DPOF::C_BulkTransfer patron AQP|SC_NAME owner-ids dpof-id nonces-array true)
                 )
                 (unwind-oc:object{IgnisCollectorV3.OutputCumulator}
                     (XI_1|VacateOrtoFungibleUnwindBatch
@@ -3076,7 +3076,7 @@
     )
     ;;Protection: Class 3 — Custom: P|VCT|RECIPE
     (defun XI_DrainOrtoFungibleBatch:object{IgnisCollectorV3.OutputCumulator}
-        (
+        (patron:string 
             pool-id:string
             dpof-id:string
             owner-ids:[string]
@@ -3093,7 +3093,7 @@
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                 ;;
                 (bulk-oc:object{IgnisCollectorV3.OutputCumulator}
-                    (ref-DPOF::C_BulkTransfer dpof-id nonces-array AQP|SC_NAME owner-ids true)
+                    (ref-DPOF::C_BulkTransfer patron AQP|SC_NAME owner-ids dpof-id nonces-array true)
                 )
                 (unwind-oc:object{IgnisCollectorV3.OutputCumulator}
                     (XI_1|DrainOrtoFungibleUnwindBatch
@@ -3237,13 +3237,13 @@
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          VCT|C>VACATE
     (defun XB_VacateOrtoFungible:object{IgnisCollectorV3.OutputCumulator}
-        (pool-id:string dpof-id:string)
+        (patron:string pool-id:string dpof-id:string)
         @doc "Vacate rehaul — external per-kind OF vacate for ONE OF asset of a pool (both internal + external). \
             \ 2-phase: SCAN that asset's legs (URHC_VacateNonceOwnerRowsRaw) → CONSUME (XI_VacateOrtoFungibleFromLegs). \
             \ A class-1 pool has TF + ≥1 OF satellite; call per satellite, or use CC_FullVacate for the whole pool."
         (P|UEV_IMC)
         (with-capability (VCT|C>VACATE pool-id)
-            (XI_VacateOrtoFungibleFromLegs pool-id dpof-id
+            (XI_VacateOrtoFungibleFromLegs patron pool-id dpof-id
                 (URHC_VacateNonceOwnerRowsRaw pool-id dpof-id VACATE-KIND-OF))
         )
     )
@@ -3276,7 +3276,7 @@
     ;;{5.7}  User [A/C]
     ;; [C]   client
     (defun CC_FullVacate:object{IgnisCollectorV3.OutputCumulator}
-        (pool-id:string)
+        (patron:string pool-id:string)
         @doc "HEAVY (R3 CC_) AGNOSTIC single-tx full vacate: input is JUST the pool-id. Clean 2-PHASE per aqp-class: \
             \ PHASE 1 URH_Vacate*PoolLegs SCANs the pool's legs (grouped by asset-lane); PHASE 2 XI_Vacate*PoolLegs \
             \ CONSUMEs them. TF-FAMILY (class 0 LP farm / class 1 DPTF family) is MULTI-LANE — up to native TF + F| \
@@ -3298,11 +3298,11 @@
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators
                         [
                             (XI_VacateTrueFungiblePoolLegs pool-id (URH_VacateTrueFungiblePoolLegs pool-id))
-                            (XI_VacateOrtoFungiblePoolLegs pool-id (URH_VacateOrtoFungiblePoolLegs pool-id))
+                            (XI_VacateOrtoFungiblePoolLegs patron pool-id (URH_VacateOrtoFungiblePoolLegs pool-id))
                         ]
                         [])
                     (if (= c 2)
-                        (XI_VacateOrtoFungiblePoolLegs pool-id (URH_VacateOrtoFungiblePoolLegs pool-id))
+                        (XI_VacateOrtoFungiblePoolLegs patron pool-id (URH_VacateOrtoFungiblePoolLegs pool-id))
                         (XI_VacateCollectablesPoolLegs pool-id son (URH_VacateCollectablesPoolLegs pool-id son))
                     )
                 )
@@ -3319,7 +3319,7 @@
     ;; makes this conflict-free; split beneficiaries drain incrementally.
     ;; ═══════════════════════════════════════════════════════════════════════════
     (defun CCp_BatchVacateOrtoFungible:object{IgnisCollectorV3.OutputCumulator}
-        (
+        (patron:string 
             pool-id:string
             dpof-id:string
             owner-ids:[string]
@@ -3346,7 +3346,7 @@
                     (
                         (oc:object{IgnisCollectorV3.OutputCumulator}
                             (XI_VacateOrtoFungibleBatch
-                                pool-id dpof-id owner-ids beneficiary-ids nonces-array of-amounts
+                                patron pool-id dpof-id owner-ids beneficiary-ids nonces-array of-amounts
                             )
                         )
                     )
@@ -3408,7 +3408,7 @@
         )
     )
     (defun CCp_BatchDrainOrtoFungible:object{IgnisCollectorV3.OutputCumulator}
-        (
+        (patron:string 
             pool-id:string
             dpof-id:string
             owner-ids:[string]
@@ -3433,7 +3433,7 @@
                     pool-id dpof-id owner-ids beneficiary-ids nonces-array of-amounts false
                 )
                 (XI_EnsureVacateBegun pool-id)
-                (XI_DrainOrtoFungibleBatch pool-id dpof-id owner-ids beneficiary-ids nonces-array of-amounts)
+                (XI_DrainOrtoFungibleBatch patron pool-id dpof-id owner-ids beneficiary-ids nonces-array of-amounts)
             )
         )
     )

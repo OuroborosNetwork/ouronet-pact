@@ -61,8 +61,8 @@
     )
     (map print
         [
-            (format "DPOF|C_TogglePause => {}" [(ref-TS01-C1::DPOF|C_TogglePause patron dpof-id true)])
-            (format "DPOF|C_ToggleFreezeAccount => {}" [(ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron dpof-id patron true)])
+            (format "DPOF|C_TogglePause => {}" [(ref-TS01-C1::DPOF|C_TogglePause patron (DPOF.UR_Konto dpof-id) dpof-id true)])
+            (format "DPOF|C_ToggleFreezeAccount => {}" [(ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron (DPOF.UR_Konto dpof-id) patron dpof-id true)])
         ]
     )
 )

@@ -142,7 +142,7 @@
     )
     (print "--- [TX-FVT-05 · 01 · ensure owner holds ≥1 MVST nonce] ---")
     (if (= (length owned-nonces) 0)
-        (ref-TS01-C1::DPOF|C_Mint patron dpof-id owner-id 1000.0 [{"test": "of-stake"}])
+        (ref-TS01-C1::DPOF|C_Mint patron owner-id dpof-id 1000.0 [{"test": "of-stake"}])
         true
     )
     (let
@@ -157,7 +157,7 @@
         (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
         (print "--- [TX-FVT-05 · 01b · unfreeze owner if [6.5] left MVST frozen] ---")
         (if (ref-DPOF::UR_R-Frozen dpof-id owner-id)
-            (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron dpof-id owner-id false)
+            (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron (DPOF.UR_Konto dpof-id) owner-id dpof-id false)
             true
         )
         (print "--- [TX-FVT-05 · 02 · CC_StakeOrtoFungible] ---")
@@ -318,7 +318,7 @@
     )
     (enforce (> (length owned-nonces) 0) "owner needs an MVST nonce for the non-self proof")
     (if (ref-DPOF::UR_R-Frozen dpof-id owner-id)
-        (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron dpof-id owner-id false)
+        (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron (DPOF.UR_Konto dpof-id) owner-id dpof-id false)
         "not frozen")
     (let
         (
@@ -451,7 +451,7 @@
     (print "--- [TX-FVT-07 · 01 · re-stake after TX-FVT-06 round-trip] ---")
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
     (if (ref-DPOF::UR_R-Frozen dpof-id owner-id)
-        (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron dpof-id owner-id false)
+        (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron (DPOF.UR_Konto dpof-id) owner-id dpof-id false)
         true
     )
     (print (format "<(TS02-C3.AQP-POOL|CC_StakeOrtoFungible)> => \"{}\"" [
@@ -555,7 +555,7 @@
         (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
     ]))
     (if (ref-DPOF::UR_R-Frozen dpof-id owner-id)
-        (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron dpof-id owner-id false)
+        (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron (DPOF.UR_Konto dpof-id) owner-id dpof-id false)
         true
     )
     (print (format "<(TS02-C3.AQP-POOL|CC_StakeOrtoFungible)> => \"{}\"" [

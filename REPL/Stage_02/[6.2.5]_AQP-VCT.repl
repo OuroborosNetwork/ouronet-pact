@@ -332,7 +332,7 @@
     )
     ;; re-enable stake + re-stake the OF nonce so the rehaul path has inventory to scan
     (if (ref-DPOF::UR_R-Frozen dpof-id owner-id)
-        (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron dpof-id owner-id false) true)
+        (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron (DPOF.UR_Konto dpof-id) owner-id dpof-id false) true)
     (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
     (print (format "<(restake OF nonce {})> => \"{}\"" [stake-nonce
         (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron pool-id owner-id beneficiary-id dpof-id [stake-nonce])]))
@@ -1642,15 +1642,15 @@
         ]
     )
     (if (ref-DPOF::UR_R-Frozen dpof-id owner-a)
-        (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron dpof-id owner-a false)
+        (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron (DPOF.UR_Konto dpof-id) owner-a dpof-id false)
         true
     )
     (if (ref-DPOF::UR_R-Frozen dpof-id owner-b)
-        (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron dpof-id owner-b false)
+        (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron (DPOF.UR_Konto dpof-id) owner-b dpof-id false)
         true
     )
     (if (not (ref-DPOF::UR_R-AddQuantity dpof-id patron))
-        (ref-TS01-C1::DPOF|C_ToggleAddQuantityRole patron dpof-id patron true)
+        (ref-TS01-C1::DPOF|C_ToggleAddQuantityRole patron (DPOF.UR_Konto dpof-id) patron dpof-id true)
         true
     )
     (print (format "<(TS02-C3.AQP-POOL|C_EnablePoolStake)> => \"{}\"" [
@@ -1661,7 +1661,7 @@
         (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron pool-id owner-a beneficiary-a dpof-id [nonce-a])
     ]))
     (print (format "<(DPOF|C_Mint L06 emma)> => \"{}\"" [
-        (ref-TS01-C1::DPOF|C_Mint patron dpof-id patron 1.0 [{"vct-l06": true}])
+        (ref-TS01-C1::DPOF|C_Mint patron patron dpof-id 1.0 [{"vct-l06": true}])
     ]))
     (let
         (
@@ -1670,7 +1670,7 @@
         )
         (print (format "<(DPOF|C_Transfer nonce-b={} → EMMA)> => \"{}\"" [
             nonce-b
-            (ref-TS01-C1::DPOF|C_Transfer patron dpof-id [nonce-b] patron owner-b true)
+            (ref-TS01-C1::DPOF|C_Transfer patron patron owner-b dpof-id [nonce-b] true)
         ]))
         (print (format "<(TS02-C3.AQP-POOL|CC_StakeOrtoFungible owner-b)> => \"{}\"" [
             (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron pool-id owner-b beneficiary-b dpof-id [nonce-b])

@@ -49,8 +49,8 @@
     )
     ;;[6.1.6] TX-OF-002 spent most of nonce 1, so MINT a fresh nonce and fund from that one
     ;;(DPOF mint creates a NEW nonce rather than topping up an existing one).
-    (ref-TS01-C1::DPOF|C_Mint patron id patron 500.0 [])
-    (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron id emma false)
+    (ref-TS01-C1::DPOF|C_Mint patron patron id 500.0 [])
+    (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron (DPOF.UR_Konto id) emma id false)
     ;;60 transmits of 1.0 from the freshly minted nonce => 60 distinct nonces on EMMA
     (let
         (
@@ -60,11 +60,11 @@
         )
         (print (format "<(setup)> funding from owner nonce {}" [src]))
         (map
-            (lambda (i:integer) (ref-TS01-C1::DPOF|C_Transmit patron id [src] [1.0] patron emma false))
+            (lambda (i:integer) (ref-TS01-C1::DPOF|C_Transmit patron patron emma id [src] [1.0] false))
             (enumerate 1 60)
         )
     )
-    (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron id emma true)
+    (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron (DPOF.UR_Konto id) emma id true)
     (print (format "<(setup)> EMMA now holds {} wipeable nonces"
         [(length (at "r-nonces" (ref-DPOF::URHC_WipePure emma id)))]))
 )

@@ -183,7 +183,7 @@
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
     )
     (defun XE_OrtoFungibleTransfer:object{IgnisCollectorV3.OutputCumulator}
-        (pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool)
+        (patron:string pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool)
     )
     (defun XE_OrtoFungiblePoolTracker:object{IgnisCollectorV3.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool)
@@ -2989,7 +2989,7 @@
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY
     (defun XE_OrtoFungibleTransfer:object{IgnisCollectorV3.OutputCumulator}
-        (
+        (patron:string 
             pool-id:string
             owner-id:string
             beneficiary-id:string
@@ -3009,7 +3009,7 @@
                     (sender:string (if direction owner-id vault))
                     (receiver:string (if direction vault owner-id))
                 )
-                (ref-DPOF::C_Transfer dpof-id nonces sender receiver true)
+                (ref-DPOF::C_Transfer patron sender receiver dpof-id nonces true)
             )
         )
     )

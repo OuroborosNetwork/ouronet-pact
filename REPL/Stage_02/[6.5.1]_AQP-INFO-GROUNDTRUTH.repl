@@ -187,7 +187,7 @@
     )
     ;; ensure ANHD holds MVST nonces to stake
     (if (= (length (ref-DPOF::URH_AccountNonces owner-konto dpof-id)) 0)
-        (ref-TS01-C1::DPOF|C_Mint patron dpof-id owner-konto 1000.0 [{"test": "info-gt-of"}])
+        (ref-TS01-C1::DPOF|C_Mint patron owner-konto dpof-id 1000.0 [{"test": "info-gt-of"}])
         "already has MVST")
     (ref-TS02-C3::AQP-SCR|C_IssueOrtoFungibleScore patron owner-konto score-name 12 1.0 1.0)
     (ref-TS02-C3::AQP-POOL|C_Issue patron (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 2 dpof-id) pool-name dpof-id 2)

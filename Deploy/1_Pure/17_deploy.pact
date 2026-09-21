@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 17 of 22
 ;; This is STEP 17 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-16 must have run first, including the init steps between deploys.
-;; 1 source file(s), 203,548 gas measured in the REPL gas model, 204,725 bytes
+;; 1 source file(s), 203,548 gas measured in the REPL gas model, 204,760 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/05_FVT.pact
@@ -131,7 +131,7 @@
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
     )
     (defun CC_OrtoFungibleStakeFlow:object{IgnisCollectorV3.OutputCumulator}
-        (pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool)
+        (patron:string pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool)
     )
     (defun CC_CollectableStakeFlow:object{IgnisCollectorV3.OutputCumulator}
         (
@@ -3147,7 +3147,7 @@
     ;; --- OF stake/unstake recipe (Talos ×4 → CC_OrtoFungibleStakeFlow) ---
     ;;   No phase 2.2 — ANK anchors are DPTF / DPSF / DPNF only; OF custody does not refresh promile.
     (defun CC_OrtoFungibleStakeFlow:object{IgnisCollectorV3.OutputCumulator}
-        (pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool)
+        (patron:string pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool)
         @doc "Core OrtoFungible stake/unstake recipe. Phases 1 → 2 → 3 → 4 → 5 — see canonical map above. \
             \ OF: phase 1.3 and 3.x are N/A (comment-only in ICO list)."
         (let
@@ -3175,7 +3175,7 @@
                         ;;===>PHASE 1===
                         ;; PHASE 1.1 — Custody transfer · UrStoa ≡ X_UR|Transfer
                         (ref-AQP::XE_OrtoFungibleTransfer
-                            pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts direction)
+                            patron pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts direction)
                         ;; PHASE 1.2 — Per-pool DPOFTracker · UrStoa ≡ N/A
                         (ref-AQP::XE_OrtoFungiblePoolTracker
                             pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts direction)

@@ -97,30 +97,30 @@
     (defun DPOF|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer))
     ;;
     (defun DPOF|C_Issue:list (patron:string account:string name:[string] ticker:[string] decimals:[integer] can-upgrade:[bool] can-change-owner:[bool] can-add-special-role:[bool] can-transfer-oft-create-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool]))
-    (defun DPOF|C_RotateOwnership (patron:string id:string new-owner:string))
-    (defun DPOF|C_Control (patron:string id:string cu:bool cco:bool casr:bool ctocr:bool cf:bool cw:bool cp:bool sg:bool))
-    (defun DPOF|C_TogglePause (patron:string id:string toggle:bool))
+    (defun DPOF|C_RotateOwnership (patron:string executor:string executee:string id:string))
+    (defun DPOF|C_Control (patron:string executor:string id:string cu:bool cco:bool casr:bool ctocr:bool cf:bool cw:bool cp:bool sg:bool))
+    (defun DPOF|C_TogglePause (patron:string executor:string id:string toggle:bool))
         ;;
     (defun DPOF|C_DeployAccount (patron:string id:string account:string))
-    (defun DPOF|C_ToggleFreezeAccount (patron:string id:string account:string toggle:bool))
-    (defun DPOF|C_ToggleAddQuantityRole (patron:string id:string account:string toggle:bool))
-    (defun DPOF|C_ToggleBurnRole (patron:string id:string account:string toggle:bool))
-    (defun DPOF|C_MoveCreateRole (patron:string id:string receiver:string))
-    (defun DPOF|C_ToggleTransferRole (patron:string id:string account:string toggle:bool))
+    (defun DPOF|C_ToggleFreezeAccount (patron:string executor:string executee:string id:string toggle:bool))
+    (defun DPOF|C_ToggleAddQuantityRole (patron:string executor:string executee:string id:string toggle:bool))
+    (defun DPOF|C_ToggleBurnRole (patron:string executor:string executee:string id:string toggle:bool))
+    (defun DPOF|C_MoveCreateRole (patron:string executor:string executee:string id:string))
+    (defun DPOF|C_ToggleTransferRole (patron:string executor:string executee:string id:string toggle:bool))
         ;;
-    (defun DPOF|C_AddQuantity (patron:string id:string account:string nonce:integer amount:decimal))
-    (defun DPOF|C_Burn (patron:string id:string account:string nonce:integer amount:decimal))
-    (defun DPOF|C_Mint (patron:string id:string account:string amount:decimal meta-data-chain:[object]))
-    (defun DPOF|C_WipeSlim (patron:string id:string account:string nonce:integer amount:decimal))
-    (defun DPOF|CC_WipeHeavy (patron:string id:string account:string))
-    (defun DPOF|C_WipePure (patron:string id:string account:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces}))
-    (defun DPOF|C_WipeClean (patron:string id:string account:string nonces:[integer]))
+    (defun DPOF|C_AddQuantity (patron:string executor:string id:string nonce:integer amount:decimal))
+    (defun DPOF|C_Burn (patron:string executor:string id:string nonce:integer amount:decimal))
+    (defun DPOF|C_Mint (patron:string executor:string id:string amount:decimal meta-data-chain:[object]))
+    (defun DPOF|C_WipeSlim (patron:string executor:string executee:string id:string nonce:integer amount:decimal))
+    (defun DPOF|CC_WipeHeavy (patron:string executor:string executee:string id:string))
+    (defun DPOF|C_WipePure (patron:string executor:string executee:string id:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces}))
+    (defun DPOF|C_WipeClean (patron:string executor:string executee:string id:string nonces:[integer]))
     (defun DPOF|Cp_WipeSlice (patron:string id:string account:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces}))
         ;;
-    (defun DPOF|C_Transmit (patron:string id:string nonces:[integer] amounts:[decimal] sender:string receiver:string method:bool))
-    (defun DPOF|C_Transfer (patron:string id:string nonces:[integer] sender:string receiver:string method:bool))    
+    (defun DPOF|C_Transmit (patron:string sender:string receiver:string id:string nonces:[integer] amounts:[decimal] method:bool))
+    (defun DPOF|C_Transfer (patron:string sender:string receiver:string id:string nonces:[integer] method:bool))    
     (defun DPOF|C_BulkTransfer
-        (patron:string id:string nonces-array:[[integer]] sender:string receiver-lst:[string] method:bool)
+        (patron:string sender:string receiver-lst:[string] id:string nonces-array:[[integer]] method:bool)
     )
 
 )
@@ -1118,7 +1118,7 @@
             )
         )
     )
-    (defun DPOF|C_RotateOwnership (patron:string id:string new-owner:string)
+    (defun DPOF|C_RotateOwnership (patron:string executor:string executee:string id:string)
         @doc "Similar to its DPTF Variant"
         (with-capability (P|TS)
             (let
@@ -1127,12 +1127,12 @@
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPOF::C_RotateOwnership id new-owner)
+                    (ref-DPOF::C_RotateOwnership patron executor executee id)
                 )
             )
         )
     )
-    (defun DPOF|C_Control (patron:string id:string cu:bool cco:bool casr:bool ctocr:bool cf:bool cw:bool cp:bool sg:bool)
+    (defun DPOF|C_Control (patron:string executor:string id:string cu:bool cco:bool casr:bool ctocr:bool cf:bool cw:bool cp:bool sg:bool)
         @doc "Similar to its DPTF Variant, has an extra boolean trigger for <can-transfer-nft-create-role>"
         (with-capability (P|TS)
             (let
@@ -1141,13 +1141,13 @@
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPOF::C_Control id cu cco casr ctocr cf cw cp sg)
+                    (ref-DPOF::C_Control patron executor id cu cco casr ctocr cf cw cp sg)
                 )
                 (format "Succesfully controlled DPOF {} Boolean Properties" [id])
             )
         )
     )
-    (defun DPOF|C_TogglePause (patron:string id:string toggle:bool)
+    (defun DPOF|C_TogglePause (patron:string executor:string id:string toggle:bool)
         ;;#35M fix: removed a dead ref-TS01-A binding (copy-paste leftover, never used) and
         ;;added the CLAUDE.md-mandated format result string, mirroring the correct DPTF sibling.
         @doc "Similar to its DPTF Variant"
@@ -1158,7 +1158,7 @@
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPOF::C_TogglePause id toggle)
+                    (ref-DPOF::C_TogglePause patron executor id toggle)
                 )
                 (if toggle
                     (format "ID {} succesfully pauses" [id])
@@ -1183,7 +1183,7 @@
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
                 (ref-DALOS::CAP_EnforceAccountOwnership account)
-                (ref-DPOF::C_DeployAccount id account)
+                (ref-DPOF::XBv_DeployAccount id account)
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPOF::URCi_DeployAccount account)
                 )
@@ -1191,7 +1191,7 @@
             )
         )
     )
-    (defun DPOF|C_ToggleFreezeAccount (patron:string id:string account:string toggle:bool)
+    (defun DPOF|C_ToggleFreezeAccount (patron:string executor:string executee:string id:string toggle:bool)
         ;;#35M fix: removed a dead ref-TS01-A binding (copy-paste leftover, never used) and
         ;;added the CLAUDE.md-mandated format result string, mirroring the correct DPTF sibling.
         @doc "Similar to its DPTF Variant"
@@ -1201,10 +1201,10 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPOF::C_ToggleFreezeAccount id account toggle)
+                    (ref-DPOF::C_ToggleFreezeAccount patron executor executee id toggle)
                 )
                 (if toggle
                     (format "Account {} succesfully frozen for {}" [sa id])
@@ -1213,8 +1213,8 @@
             )
         )
     )
-    (defun DPOF|C_ToggleAddQuantityRole (patron:string id:string account:string toggle:bool)
-        @doc "Toggles <add-quantity-role> for a DPOF Token <id> on a specific <account>"
+    (defun DPOF|C_ToggleAddQuantityRole (patron:string executor:string executee:string id:string toggle:bool)
+        @doc "Toggles <add-quantity-role> for a DPOF Token <id> on a specific <executee>"
         (with-capability (P|TS)
             (let
                 (
@@ -1222,13 +1222,13 @@
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPOF::C_ToggleAddQuantityRole id account toggle)
+                    (ref-DPOF::C_ToggleAddQuantityRole patron executor executee id toggle)
                 )
             )
         )
     )
-    (defun DPOF|C_ToggleBurnRole (patron:string id:string account:string toggle:bool)
-        @doc "Toggles <burn-role> for a DPOF Token <id> on a specific <account>"
+    (defun DPOF|C_ToggleBurnRole (patron:string executor:string executee:string id:string toggle:bool)
+        @doc "Toggles <burn-role> for a DPOF Token <id> on a specific <executee>"
         (with-capability (P|TS)
             (let
                 (
@@ -1236,13 +1236,13 @@
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPOF::C_ToggleBurnRole id account toggle)
+                    (ref-DPOF::C_ToggleBurnRole patron executor executee id toggle)
                 )
             )
         )
     )
-    (defun DPOF|C_MoveCreateRole (patron:string id:string receiver:string)
-        @doc "Moves <create-role> for a DPOF Token <id> to <receiver> \
+    (defun DPOF|C_MoveCreateRole (patron:string executor:string executee:string id:string)
+        @doc "Moves <create-role> for a DPOF Token <id> to <executee> \
         \ Only a single account may have this role"
         (with-capability (P|TS)
             (let
@@ -1251,12 +1251,12 @@
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPOF::C_MoveCreateRole id receiver)
+                    (ref-DPOF::C_MoveCreateRole patron executor executee id)
                 )
             )
         )
     )
-    (defun DPOF|C_ToggleTransferRole (patron:string id:string account:string toggle:bool)
+    (defun DPOF|C_ToggleTransferRole (patron:string executor:string executee:string id:string toggle:bool)
         @doc "Similar to its DPTF Variant"
         (with-capability (P|TS)
             (let
@@ -1265,13 +1265,13 @@
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPOF::C_ToggleTransferRole id account toggle)
+                    (ref-DPOF::C_ToggleTransferRole patron executor executee id toggle)
                 )
             )
         )
     )
     ;;
-    (defun DPOF|C_AddQuantity (patron:string id:string account:string nonce:integer amount:decimal)
+    (defun DPOF|C_AddQuantity (patron:string executor:string id:string nonce:integer amount:decimal)
         @doc "Similar to its DPTF Variant"
         (with-capability (P|TS)
             (let
@@ -1279,16 +1279,16 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPOF::C_AddQuantity id account nonce amount)
+                    (ref-DPOF::C_AddQuantity patron executor id nonce amount)
                 )
                 (format "Succesfully increased DPOF {} nonce {} quantity on Account {} by {}" [id nonce sa amount])
             )
         )
     )
-    (defun DPOF|C_Burn (patron:string id:string account:string nonce:integer amount:decimal)
+    (defun DPOF|C_Burn (patron:string executor:string id:string nonce:integer amount:decimal)
         @doc "Similar to its DPTF Variant"
         (with-capability (P|TS)
             (let
@@ -1296,16 +1296,16 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPOF::C_Burn id account nonce amount)
+                    (ref-DPOF::C_Burn patron executor id nonce amount)
                 )
                 (format "Succesfully burned {} Units of DPOF {} Nonce {} on Account {}" [amount id nonce sa])
             )
         )
     )
-    (defun DPOF|C_Mint (patron:string id:string account:string amount:decimal meta-data-chain:[object])
+    (defun DPOF|C_Mint (patron:string executor:string id:string amount:decimal meta-data-chain:[object])
         @doc "Mints a DPOF Token, creating it and adding quantity to it \
         \ Outputs the nonce of the created DPOF"
         (with-capability (P|TS)
@@ -1316,18 +1316,18 @@
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (with-capability (P|TS)
-                            (ref-DPOF::C_Mint id account amount meta-data-chain)
+                            (ref-DPOF::C_Mint patron executor id amount meta-data-chain)
                         )
                     )
-                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron ico)
                 (format "Succesfully minted {} {} on Account {}, on the new Nonce {}" [amount id sa (at 0 (at "output" ico))])
             )
         )
     )
-    (defun DPOF|C_WipeSlim (patron:string id:string account:string nonce:integer amount:decimal)
-        @doc "Wipes a specific DPOF <id> <nonce> on <account> by <amount> \
+    (defun DPOF|C_WipeSlim (patron:string executor:string executee:string id:string nonce:integer amount:decimal)
+        @doc "Wipes a specific DPOF <id> <nonce> on <executee> by <amount> \
             \ Amount may be lower or equal to the nonce amount. \
             \ Requires <id> has <segmentation> set to true"
         (with-capability (P|TS)
@@ -1338,15 +1338,15 @@
                     (ref-ELITE:module{EliteV2} ELITE)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPOF::C_WipeSlim id account nonce amount)
+                    (ref-DPOF::C_WipeSlim patron executor executee id nonce amount)
                 )
                 ;;Update Elite Account
-                (ref-ELITE::XE_UpdateEliteSingle id account)
+                (ref-ELITE::XE_UpdateEliteSingle id executee)
             )
         )
     )
-    (defun DPOF|CC_WipeHeavy (patron:string id:string account:string)
-        @doc "Wipes all viable <id> Nonces of an DPOF <account> \
+    (defun DPOF|CC_WipeHeavy (patron:string executor:string executee:string id:string)
+        @doc "Wipes all viable <id> Nonces of an DPOF <executee> \
             \ \
             \ |Heavy| reffers to the usage of expensive functions like <select> or <keys> \
             \ (that arent meant to be used in transactional context) to get the Account Nonces; \
@@ -1359,21 +1359,21 @@
                     (ref-ELITE:module{EliteV2} ELITE)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPOF::CC_WipeHeavy id account)
+                    (ref-DPOF::CC_WipeHeavy patron executor executee id)
                 )
                 ;;Update Elite Account
-                (ref-ELITE::XE_UpdateEliteSingle id account)
+                (ref-ELITE::XE_UpdateEliteSingle id executee)
             )
         )
     )
-    (defun DPOF|C_WipePure (patron:string id:string account:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces})
-        @doc "Wipes all <id> Nonces of an DPOF <account>, presented via an <removable-nonces-obj> object \
+    (defun DPOF|C_WipePure (patron:string executor:string executee:string id:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces})
+        @doc "Wipes all <id> Nonces of an DPOF <executee>, presented via an <removable-nonces-obj> object \
         \ \
         \ The object must be pre-read (dirty read) \
         \ \
         \ Example to retrieve the <removable-nonces-obj> \
-        \ <(URHC_WipePure account id)> ; to get the whole object \
-        \ <(UCv_TakePureWipe (URHC_WipePure account id) 165)> ; to get only the first 165 units \
+        \ <(URHC_WipePure executee id)> ; to get the whole object \
+        \ <(UCv_TakePureWipe (URHC_WipePure executee id) 165)> ; to get only the first 165 units \
         \ Aproximately xx Individual Wipes fit inside one TX (for NFTs)."
         (with-capability (P|TS)
             (let
@@ -1383,15 +1383,15 @@
                     (ref-ELITE:module{EliteV2} ELITE)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPOF::C_WipePure id account removable-nonces-obj)
+                    (ref-DPOF::C_WipePure patron executor executee id removable-nonces-obj)
                 )
                 ;;Update Elite Account
-                (ref-ELITE::XE_UpdateEliteSingle id account)
+                (ref-ELITE::XE_UpdateEliteSingle id executee)
             )
         )
     )
-    (defun DPOF|C_WipeClean (patron:string id:string account:string nonces:[integer])
-        @doc "Wipes <id> select <nonces> of a DPOF <account>"
+    (defun DPOF|C_WipeClean (patron:string executor:string executee:string id:string nonces:[integer])
+        @doc "Wipes <id> select <nonces> of a DPOF <executee>"
         (with-capability (P|TS)
             (let
                 (
@@ -1400,10 +1400,10 @@
                     (ref-ELITE:module{EliteV2} ELITE)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPOF::C_WipeClean id account nonces)
+                    (ref-DPOF::C_WipeClean patron executor executee id nonces)
                 )
                 ;;Update Elite Account
-                (ref-ELITE::XE_UpdateEliteSingle id account)
+                (ref-ELITE::XE_UpdateEliteSingle id executee)
             )
         )
     )
@@ -1429,7 +1429,7 @@
         )
     )
     ;;
-    (defun DPOF|C_Transmit (patron:string id:string nonces:[integer] amounts:[decimal] sender:string receiver:string method:bool)
+    (defun DPOF|C_Transmit (patron:string sender:string receiver:string id:string nonces:[integer] amounts:[decimal] method:bool)
         @doc "Transfer DPOF <id> <nonces> from <sender> to <receiver> by a specific <amount> \
             \ This debits the <sender> nonces by <amount> and creates new nonces on receiver of <amount> \
             \ Requires <segmentation> set to <true> \
@@ -1446,7 +1446,7 @@
                     (sr:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPOF::C_Transmit id nonces amounts sender receiver method)
+                    (ref-DPOF::C_Transmit patron sender receiver id nonces amounts method)
                 )
                 (ref-ELITE::XE_UpdateElite id sender receiver)
                 (format "Succesfuly Transmited DPOF {} Nonces {} with Amounts {} from Sender {} to Receiver {}"
@@ -1455,7 +1455,7 @@
             )
         )
     )
-    (defun DPOF|C_Transfer (patron:string id:string nonces:[integer] sender:string receiver:string method:bool)
+    (defun DPOF|C_Transfer (patron:string sender:string receiver:string id:string nonces:[integer] method:bool)
         @doc "Transfer DPOF <id> <nonces> from <sender> to <receiver> by changing their Ownership"
         (with-capability (P|TS)
             (let
@@ -1469,7 +1469,7 @@
                     (sr:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPOF::C_Transfer id nonces sender receiver method)
+                    (ref-DPOF::C_Transfer patron sender receiver id nonces method)
                 )
                 (ref-ELITE::XE_UpdateElite id sender receiver)
                 (format "Succesfuly Transmited DPOF {} Nonces {} from Sender {} to Receiver {}"
@@ -1479,7 +1479,7 @@
         )
     )
     (defun DPOF|C_BulkTransfer
-        (patron:string id:string nonces-array:[[integer]] sender:string receiver-lst:[string] method:bool)
+        (patron:string sender:string receiver-lst:[string] id:string nonces-array:[[integer]] method:bool)
         @doc "Bulk whole-nonce DPOF transfer — one sender, many standard-account receivers (TalosStageOne_ClientOneV2)."
         (with-capability (P|TS)
             (let
@@ -1493,7 +1493,7 @@
                     (l:integer (length receiver-lst))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPOF::C_BulkTransfer id nonces-array sender receiver-lst method)
+                    (ref-DPOF::C_BulkTransfer patron sender receiver-lst id nonces-array method)
                 )
                 (map
                     (lambda (idx:integer)

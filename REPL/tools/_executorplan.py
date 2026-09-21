@@ -67,6 +67,18 @@ PATRONLESS = {
     # band entirely, so it is out of this sweep's scope and no longer needs an entry here. Kept as
     # a comment because the NAME is what future greps will look for.
     "C_DonateStoa",
+    # THE GAS-SOURCE FAMILY, added 2026-09-21 after it was broken. The owner's ruling named
+    # "sublimate and compress ... because they either make gas or compress it back to its gas
+    # source", and this registry did not contain them -- so DPTF's threading pass gave all three
+    # a patron and nothing objected. The proof they are patronless is in the wrapper:
+    # ORBR|C_Sublimate COLLECTS NOTHING, binding the returned cumulator only to read its output
+    # for the result string. A registry that is missing an entry is not neutral; it is a rule
+    # that silently does not apply.
+    "C_Sublimate", "C_SublimateV2", "C_Compress",
+    "ORBR|C_Sublimate", "ORBR|C_SublimateV2", "ORBR|C_Compress",
+    # verified 2026-09-21: its patron was unused in the body, threaded in only because
+    # C_SublimateV2 had temporarily acquired one.
+    "SWP|C_Firestarter",
 }
 
 # EXECUTORLESS -- distinct from PATRONLESS, and the distinction matters. These functions ARE the
@@ -75,8 +87,18 @@ PATRONLESS = {
 # executor. (Engineering inference, 2026-09-20, NOT an owner ruling -- it follows CLAUDE.md's note
 # that these primitives "are the collectors and cannot collect from themselves".)
 EXECUTORLESS = {
-    "C_Collect",
-    "STOA|C_Collect", "STOA|C_CollectWT", "STOA|C_CollectFull", "STOA|C_CollectWTEx",
+    # RETIRED 2026-09-21, kept as a tombstone rather than deleted. Every name that was here --
+    # C_Collect, STOA|C_Collect{,WT,Full,WTEx} -- NO LONGER EXISTS: the collectors were
+    # reclassified out of the C_ band on 2026-09-20 into XE_CollectIgnis / XE_CollectStoa /
+    # XB_Collect*, behind P|UEV_IMC. An X_ is outside the patron/executor canon entirely, so the
+    # "executorless" category dissolved with the misclassification that created it -- which is
+    # the right outcome: a category that exists only to explain functions that do not fit their
+    # prefix is describing a naming error, not a shape.
+    #
+    # Left non-empty-looking on purpose. The same stale-name failure hit the PRICE SHEET, whose
+    # shape-B detector went on grepping for `C_Collect*` for a day after the rename and silently
+    # stopped resolving three entrypoints. A rename pass has to carry the TOOLS that name the
+    # old thing.
 }
 ACCT = re.compile(r'^(account|konto|owner|client|sender|receiver|beneficiary|staker|user|operator|'
                   r'holder|injector|collector|executor|recoverer|remover|merger|wrapper|unwrapper|'

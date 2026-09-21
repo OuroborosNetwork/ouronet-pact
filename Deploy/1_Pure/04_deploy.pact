@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 4 of 22
 ;; This is STEP 4 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-3 must have run first, including the init steps between deploys.
-;; 2 source file(s), 261,798 gas measured in the REPL gas model, 207,661 bytes
+;; 2 source file(s), 261,798 gas measured in the REPL gas model, 207,703 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/09_TFT.pact
@@ -4123,10 +4123,10 @@
                             (ref-DPTF::C_Burn patron ATS|SC_NAME c-rbt ra)
                         )
                         (ico4:object{IgnisCollectorV3.OutputCumulator}
-                            (ref-DPOF::C_Mint h-rbt ATS|SC_NAME ra [meta-data-obj])
+                            (ref-DPOF::C_Mint patron ATS|SC_NAME h-rbt ra [meta-data-obj])
                         )
                         (ico5:object{IgnisCollectorV3.OutputCumulator}
-                            (ref-DPOF::C_Transfer h-rbt [new-nonce] ATS|SC_NAME recoverer true)
+                            (ref-DPOF::C_Transfer patron ATS|SC_NAME recoverer h-rbt [new-nonce] true)
                         )
                     )
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3 ico4 ico5] [])
@@ -4161,10 +4161,10 @@
                 (let
                     (
                         (ico1:object{IgnisCollectorV3.OutputCumulator}
-                            (ref-DPOF::C_Transfer id [nonce] recoverer ATS|SC_NAME true)
+                            (ref-DPOF::C_Transfer patron recoverer ATS|SC_NAME id [nonce] true)
                         )
                         (ico2:object{IgnisCollectorV3.OutputCumulator}
-                            (ref-DPOF::C_Burn id ATS|SC_NAME nonce nonce-supply)
+                            (ref-DPOF::C_Burn patron ATS|SC_NAME id nonce nonce-supply)
                         )
                         (ico3:object{IgnisCollectorV3.OutputCumulator}
                             (ref-DPTF::C_Mint patron ATS|SC_NAME c-rbt nonce-supply false)
@@ -4233,10 +4233,10 @@
                 (let
                     (
                         (ico1:object{IgnisCollectorV3.OutputCumulator}
-                            (ref-DPOF::C_Transfer id [nonce] redeemer ATS|SC_NAME true)
+                            (ref-DPOF::C_Transfer patron redeemer ATS|SC_NAME id [nonce] true)
                         )
                         (ico2:object{IgnisCollectorV3.OutputCumulator}
-                            (ref-DPOF::C_Burn id ATS|SC_NAME nonce nonce-supply)
+                            (ref-DPOF::C_Burn patron ATS|SC_NAME id nonce nonce-supply)
                         )
                         (ico3:object{IgnisCollectorV3.OutputCumulator}
                             (ref-TFT::C_MultiTransfer rt-lst ATS|SC_NAME redeemer earned-rts true)

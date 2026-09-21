@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 7 of 22
 ;; This is STEP 7 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-6 must have run first, including the init steps between deploys.
-;; 3 source file(s), 358,201 gas measured in the REPL gas model, 318,005 bytes
+;; 3 source file(s), 358,201 gas measured in the REPL gas model, 318,026 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/17_SWPL.pact
@@ -3550,10 +3550,10 @@
                         ;;
                         ;;Move the sleeping DPOF (Z| prefix) to vst-sc and burn it
                         (ico1:object{IgnisCollectorV3.OutputCumulator}
-                            (ref-DPOF::C_Transfer sleeping-dpof [nonce] account vst-sc true)
+                            (ref-DPOF::C_Transfer patron account vst-sc sleeping-dpof [nonce] true)
                         )
                         (ico2:object{IgnisCollectorV3.OutputCumulator}
-                            (ref-DPOF::C_Burn sleeping-dpof vst-sc nonce batch-amount)
+                            (ref-DPOF::C_Burn patron vst-sc sleeping-dpof nonce batch-amount)
                         )
                         ;;
                         ;;Compute CLAD
@@ -3575,7 +3575,7 @@
                     (let
                         (
                             (ico5:object{IgnisCollectorV3.OutputCumulator}
-                                (ref-VST::C_Sleep SWP|SC_NAME account lp-id sleeping-lp-transfer-amount dt)
+                                (ref-VST::C_Sleep patron SWP|SC_NAME account lp-id sleeping-lp-transfer-amount dt)
                             )
                         )
                         ;;Autonomous Swap Mangement

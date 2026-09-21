@@ -290,11 +290,17 @@ STOA; the constants-only conversion (65 table reads lifted); the `define-set` / 
 
 ## What is open
 
-**441** Talos client functions carry a price; **9** carry no row, and the sheet now says which:
+**439** Talos client functions carry a price; **11** carry no row, and the sheet now says which:
 
 ```
-186 exact  ·  134 floor  ·  2 STOA-only  ·  119 exempt  ·  0 unresolved  ·  9 unpriced
+185 exact  ·  134 floor  ·  2 STOA-only  ·  118 exempt  ·  0 unresolved  ·  11 unpriced
 ```
+
+MOVED AGAIN 2026-09-21, 441 → 439. One cause, and it is the DPTF change repeated on its twin:
+`DPOF::C_DeployAccount` was reclassified to `XBv_DeployAccount`, so both of its Talos doors lost
+the core `C_` a row is keyed on. `DPOF|C_DeployAccount` moved exact → unpriced as a **shape-B**
+entry naming its real reader `URCi_DeployAccount` (it still CHARGES); `DPOF|A_DeployAccount`
+moved exempt → unpriced as an admin op. Nothing was repriced, and nothing became free.
 
 MOVED 2026-09-21, 443 → 441 and 7 → 9 unpriced. Two causes, neither a repricing:
 

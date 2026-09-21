@@ -453,7 +453,7 @@
                     (srt:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATS::HOT-RBT|C_Repurpose hot-rbt nonce repurpose-to)
+                    (ref-ATS::HOT-RBT|C_Repurpose patron hot-rbt nonce repurpose-to)
                 )
                 (format "Succesfully repurposed HOT-RBT {} Nonce {} to Account {}" [hot-rbt nonce srt])
             )
@@ -709,7 +709,7 @@
                     (ref-ATS:module{AutostakeV3} ATS)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATS::C_AddHotRBT ats hot-rbt)
+                    (ref-ATS::C_AddHotRBT patron ats hot-rbt)
                 )
                 (format "Succesfully added DPOF {} as Hot-RBT for ATS-Pair {}" [hot-rbt ats])
             )
@@ -933,7 +933,7 @@
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators
                         [
                             (ref-ATSU::C_Coil patron coiler-vester ats coil-token amount)
-                            (ref-VST::C_Vest coiler-vester target-account c-rbt c-rbt-amount offset duration milestones)
+                            (ref-VST::C_Vest patron coiler-vester target-account c-rbt c-rbt-amount offset duration milestones)
                         ]
                         []
                     )
@@ -970,7 +970,7 @@
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators
                         [
                             (ref-ATSU::C_Curl patron curler-vester ats1 ats2 curl-token amount)
-                            (ref-VST::C_Vest curler-vester target-account (at "rbt-id" coil2-data) c-rbt2-amount offset duration milestones)
+                            (ref-VST::C_Vest patron curler-vester target-account (at "rbt-id" coil2-data) c-rbt2-amount offset duration milestones)
                         ]
                         []
                     )
@@ -1474,7 +1474,7 @@
                     (sta:string (ref-I|OURONET::OI|UC_ShortAccount target-account))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_Vest vester target-account dptf amount offset seconds milestones)
+                    (ref-VST::C_Vest patron vester target-account dptf amount offset seconds milestones)
                 )
                 (format "Succesfully vested DPTF {} From Account {} to Account {}" [dptf sv sta])
             )
@@ -1491,7 +1491,7 @@
                     (su:string (ref-I|OURONET::OI|UC_ShortAccount unvester))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_Unvest unvester dpof nonce)
+                    (ref-VST::C_Unvest patron unvester dpof nonce)
                 )
                 (format "Succesfully unvested DPOF {} Nonce {} to Account {}" [dpof nonce su])
             )
@@ -1509,7 +1509,7 @@
                     (srt:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_RepurposeVested dpof-to-repurpose nonce repurpose-from repurpose-to)
+                    (ref-VST::C_RepurposeVested patron dpof-to-repurpose nonce repurpose-from repurpose-to)
                 )
                 (format "Succesfully repurposed Vested DPTF {} Nonce {}from {} to {}" [dpof-to-repurpose nonce srf srt])
             )
@@ -1527,7 +1527,7 @@
                     (sta:string (ref-I|OURONET::OI|UC_ShortAccount target-account))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_Sleep sleeper target-account dptf amount seconds)
+                    (ref-VST::C_Sleep patron sleeper target-account dptf amount seconds)
                 )
                 (format "Sucesfully put to Sleep {} DPTF {} on Account {} for a Duration of {} seconds." [amount dptf sta seconds])
             )
@@ -1544,7 +1544,7 @@
                     (su:string (ref-I|OURONET::OI|UC_ShortAccount unsleeper))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_Unsleep unsleeper dpof nonce)
+                    (ref-VST::C_Unsleep patron unsleeper dpof nonce)
                 )
                 (format "Succesfully unsleeped DPOF {} Nonce {} on Account {}" [dpof nonce su])
             )
@@ -1563,7 +1563,7 @@
                     (sm:string (ref-I|OURONET::OI|UC_ShortAccount merger))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_Merge merger dpof nonces)
+                    (ref-VST::C_Merge patron merger dpof nonces)
                 )
                 (format "Succesfully merged Sleeping DPOF {} Nonces {} to Account {}" [dpof nonces sm])
             )
@@ -1581,7 +1581,7 @@
                     (srt:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_RepurposeMerge dpof-to-repurpose nonces repurpose-from repurpose-to)
+                    (ref-VST::C_RepurposeMerge patron dpof-to-repurpose nonces repurpose-from repurpose-to)
                 )
                 (format "Succesfully repurposed and merged Sleeping DPOF {} Nonces {} from {} to {}" 
                     [dpof-to-repurpose nonces srf srt]
@@ -1601,7 +1601,7 @@
                     (srt:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_RepurposeSleeping dpof-to-repurpose nonce repurpose-from repurpose-to)
+                    (ref-VST::C_RepurposeSleeping patron dpof-to-repurpose nonce repurpose-from repurpose-to)
                 )
                 (format "Succesfully repurposed Sleeping DPOF {} Nonce {} from {} to {}" 
                     [dpof-to-repurpose nonce srf srt]
@@ -1618,7 +1618,7 @@
                     (ref-VST:module{VestingV2} VST)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_ToggleTransferRoleSleepingDPOF s-dpof target toggle)
+                    (ref-VST::C_ToggleTransferRoleSleepingDPOF patron s-dpof target toggle)
                 )
                 (format "Succefully toggled Transfer Role for the Sleeping DPTF {}" [s-dpof])
             )
@@ -1636,7 +1636,7 @@
                     (sta:string (ref-I|OURONET::OI|UC_ShortAccount target-account))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_Hibernate hibernator target-account dptf amount dayz)
+                    (ref-VST::C_Hibernate patron hibernator target-account dptf amount dayz)
                 )
                 (format "Sucesfully hibernated {} {} on Account {} for a Duration of {} days." [amount dptf sta dayz])
             )
@@ -1680,7 +1680,7 @@
                     (sm:string (ref-I|OURONET::OI|UC_ShortAccount merger))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_Slumber merger dpof nonces)
+                    (ref-VST::C_Slumber patron merger dpof nonces)
                 )
                 (format "Succesfully merged Hibernated DPOF {} Nonces {} to Account {}" [dpof nonces sm])
             )
@@ -1698,7 +1698,7 @@
                     (srt:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_RepurposeSlumber dpof-to-repurpose nonces repurpose-from repurpose-to)
+                    (ref-VST::C_RepurposeSlumber patron dpof-to-repurpose nonces repurpose-from repurpose-to)
                 )
                 (format "Succesfully repurposed and merged Hibernated DPOF {} Nonces {} from {} to {}" 
                     [dpof-to-repurpose nonces srf srt]
@@ -1718,7 +1718,7 @@
                     (srt:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_RepurposeHibernating dpof-to-repurpose nonce repurpose-from repurpose-to)
+                    (ref-VST::C_RepurposeHibernating patron dpof-to-repurpose nonce repurpose-from repurpose-to)
                 )
                 (format "Succesfully repurposed Hibernated DPOF {} Nonce {} from {} to {}" 
                     [dpof-to-repurpose nonce srf srt]
@@ -1735,7 +1735,7 @@
                     (ref-VST:module{VestingV2} VST)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_ToggleTransferRoleHibernatingDPOF s-dpof target toggle)
+                    (ref-VST::C_ToggleTransferRoleHibernatingDPOF patron s-dpof target toggle)
                 )
                 (format "Succefully toggled Transfer Role for the Hibernating DPTF {}" [s-dpof])
             )

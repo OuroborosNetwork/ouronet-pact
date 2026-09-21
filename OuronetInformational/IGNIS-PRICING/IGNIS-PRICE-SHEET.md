@@ -326,12 +326,10 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 
 | Talos function | core op | role | IGNIS | STOA | $ (ignis) | charge breakdown |
 |----------------|---------|------|------:|-----:|----------:|------------------|
-| `A_DeployAccount` | `C_DeployAccount` | ISSUE | **0** | — | free | admin/exempt |
 | `C_AddQuantity` | `C_AddQuantity` | SETUP | **≥ 83** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_AddQuantity 78 |
 | `C_BulkTransfer` | `C_BulkTransfer` | USAGE | **≥ 3** | — | COMPLEX | per-nonce / per-item work; legs: small 2 + smallest 1 |
 | `C_Burn` | `C_Burn` | SETUP | **≥ 50** | — | COMPLEX | charge multiplies by an item count; legs: deter:setup 5 + components:DPOF|C_Burn 45 |
 | `C_Control` | `C_Control` | SETUP | **25** | — | $0.25 | deter:setup 5 + components:DPOF|C_Control 20 |
-| `C_DeployAccount` | `C_DeployAccount` | ISSUE | **77** | — | $0.77 | deter:token-account 50 + components:DPOF|C_DeployAccount 27 |
 | `C_Issue` | `C_Issue` | ISSUE | **≥ 1000** | 100 | COMPLEX | charge multiplies by an item count; legs: deter:issue-of 1000 | STOA: stoa:issue-of 100 |
 | `C_Mint` | `C_Mint` | SETUP | **0** | — | free | free by design — builds cumulators and collects none of them |
 | `C_MoveCreateRole` | `C_MoveCreateRole` | AUTH | **57** | — | $0.57 | deter:auth 10 + components:DPOF|C_MoveCreateRole 47 |
@@ -627,6 +625,8 @@ another Talos wrapper, not a core op) or admin entrypoints that are exempt by ru
 |---|---|
 | DALOS\|C_UpdateEliteAccount | billed by the wrapper itself (shape B) through `DALOS\|URCi_UpdateEliteAccount` — no core op to key a row on; read the cost there |
 | DALOS\|C_UpdateEliteAccountSquared | billed by the wrapper itself (shape B) through `DALOS\|URCi_UpdateEliteAccountSquared` — no core op to key a row on; read the cost there |
+| DPOF\|A_DeployAccount | admin entrypoint -- IGNIS + STOA free by owner rule, nothing to price |
+| DPOF\|C_DeployAccount | billed by the wrapper itself (shape B) through `URCi_DeployAccount` — no core op to key a row on; read the cost there |
 | DPTF\|A_DeployAccount | admin entrypoint -- IGNIS + STOA free by owner rule, nothing to price |
 | DPTF\|C_DeployAccount | billed by the wrapper itself (shape B) through `URCi_DeployAccount` — no core op to key a row on; read the cost there |
 | ORBR\|A_Fuel | admin entrypoint -- IGNIS + STOA free by owner rule, nothing to price |
@@ -636,7 +636,7 @@ another Talos wrapper, not a core op) or admin entrypoints that are exempt by ru
 | P\|A_SetIMP | admin entrypoint -- IGNIS + STOA free by owner rule, nothing to price |
 
 ---
-186 simple (exact price) · 134 complex (floor price) · 2 STOA-only · 119 exempt · 0 unresolved · 9 unpriced · 441 Talos client functions
+185 simple (exact price) · 134 complex (floor price) · 2 STOA-only · 118 exempt · 0 unresolved · 11 unpriced · 439 Talos client functions
 
 `×N` on a core op = the wrapper drives N priced core ops in a FIXED composition (still exactly knowable).
 

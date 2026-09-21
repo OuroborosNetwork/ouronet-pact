@@ -1677,11 +1677,11 @@
             )
             (if fuel-or-retrieve
                 (with-capability (DEMIPAD|C>FUEL-ORTO-FUNGIBLE asset-id)
-                    (ref-TS01-C1::DPOF|C_Transfer patron asset-id nonces client lpad true)
+                    (ref-TS01-C1::DPOF|C_Transfer patron client lpad asset-id nonces true)
                     (format "Succesfuly fueled {} Nonces {} to Demiourgos Launchpad from Account {}" [asset-id nonces sa-s])
                 )
                 (with-capability (DEMIPAD|C>RETRIEVE-ORTO-FUNGIBLE asset-id)
-                    (ref-TS01-C1::DPOF|C_Transfer patron asset-id nonces lpad client true)
+                    (ref-TS01-C1::DPOF|C_Transfer patron lpad client asset-id nonces true)
                     (format "Succesfuly retrieved {} Nonces {} from Demiourgos Launchpad to Account {}" [asset-id nonces sa-s])
                 )
             )

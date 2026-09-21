@@ -3191,7 +3191,7 @@
         (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
     )
     (ref-TS01-C1::DPOF|C_DeployAccount KST.ANHD "V|OURO-98c486052a51" KST.ANHD)
-    (ref-TS01-C1::DPOF|C_ToggleTransferRole KST.ANHD "V|OURO-98c486052a51" KST.ANHD true)
+    (ref-TS01-C1::DPOF|C_ToggleTransferRole KST.ANHD (DPOF.UR_Konto "V|OURO-98c486052a51") KST.ANHD "V|OURO-98c486052a51" true)
 )
 
 (print "")

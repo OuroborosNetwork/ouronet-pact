@@ -99,9 +99,9 @@
         (id:string "ATMT-98c486052a51")
         (emma:string KST.EMMA)
     )
-    (ref-TS01-C1::DPOF|C_Control emma id true true true true false false true true)
-    (ref-TS01-C1::DPOF|C_ToggleAddQuantityRole emma id emma true)
-    (ref-TS01-C1::DPOF|C_Mint emma id emma 100.0 [])
+    (ref-TS01-C1::DPOF|C_Control emma (DPOF.UR_Konto id) id true true true true false false true true)
+    (ref-TS01-C1::DPOF|C_ToggleAddQuantityRole emma (DPOF.UR_Konto id) emma id true)
+    (ref-TS01-C1::DPOF|C_Mint emma emma id 100.0 [])
     (print (format "emma total-account-supply after mint (expect 100.0): {}" [(DPOF.UR_AccountSupply id emma)]))
 )
 (commit-tx)
@@ -121,7 +121,7 @@
     ;; Nonce #1 has real supply 100.0. Transmit 40.0 of it to aoz — an entirely ordinary,
     ;; single-nonce, non-duplicated call. This should just work. Pre-fix: crashes with
     ;; `Key "meta-data" not found` regardless. Post-fix: succeeds, splits nonce 1 correctly.
-    (ref-TS01-C1::DPOF|C_Transmit emma id [1] [40.0] emma aoz false)
+    (ref-TS01-C1::DPOF|C_Transmit emma emma aoz id [1] [40.0] false)
     (map print
         [
             (format "PROOF: C_Transmit succeeded. emma remaining nonce-1 supply (expect 60.0): {}" [(DPOF.UR_NonceSupply id 1)])

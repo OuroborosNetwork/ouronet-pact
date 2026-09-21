@@ -55,25 +55,25 @@
     (ref-TS01-A::DPOF|A_DeployAccount patron id emma)
     (ref-TS01-A::DPOF|A_DeployAccount patron id lumy)
     ;; enable segmentation (Control's last flag `sg`) — Transmit requires it ON
-    (ref-TS01-C1::DPOF|C_Control patron id true true true true true true true true)
+    (ref-TS01-C1::DPOF|C_Control patron (DPOF.UR_Konto id) id true true true true true true true true)
     ;; DPOF|C_Transmit: move 300 units of nonce 1 to EMMA and LUMY (owner keeps 400)
-    (ref-TS01-C1::DPOF|C_Transmit patron id [1] [300.0] patron emma false)
-    (ref-TS01-C1::DPOF|C_Transmit patron id [1] [300.0] patron lumy false)
+    (ref-TS01-C1::DPOF|C_Transmit patron patron emma id [1] [300.0] false)
+    (ref-TS01-C1::DPOF|C_Transmit patron patron lumy id [1] [300.0] false)
     ;; DPOF is single-holder-per-nonce: Transmit gave EMMA a NEW (segmented) nonce — read it.
     ;; EMMA: freeze -> WipeSlim (partial) -> WipeClean (empties its nonce list)
     (let ((en:integer (at 0 (ref-DPOF::URH_AccountNonces emma id))))
-        (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron id emma true)
-        (ref-TS01-C1::DPOF|C_WipeSlim patron id emma en 100.0)
-        (ref-TS01-C1::DPOF|C_WipeClean patron id emma [en])
+        (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron (DPOF.UR_Konto id) emma id true)
+        (ref-TS01-C1::DPOF|C_WipeSlim patron (DPOF.UR_Konto id) emma id en 100.0)
+        (ref-TS01-C1::DPOF|C_WipeClean patron (DPOF.UR_Konto id) emma id [en])
     )
     ;; LUMY: freeze -> WipeHeavy (empties whole account, no nonce number needed)
-    (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron id lumy true)
-    (ref-TS01-C1::DPOF|CC_WipeHeavy patron id lumy)
+    (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron (DPOF.UR_Konto id) lumy id true)
+    (ref-TS01-C1::DPOF|CC_WipeHeavy patron (DPOF.UR_Konto id) lumy id)
     ;; re-fund EMMA (unfreeze, transmit, refreeze) -> WipePure via the computed removable obj
-    (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron id emma false)
-    (ref-TS01-C1::DPOF|C_Transmit patron id [1] [300.0] patron emma false)
-    (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron id emma true)
-    (ref-TS01-C1::DPOF|C_WipePure patron id emma (ref-DPOF::URHC_WipePure emma id))
+    (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron (DPOF.UR_Konto id) emma id false)
+    (ref-TS01-C1::DPOF|C_Transmit patron patron emma id [1] [300.0] false)
+    (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron (DPOF.UR_Konto id) emma id true)
+    (ref-TS01-C1::DPOF|C_WipePure patron (DPOF.UR_Konto id) emma id (ref-DPOF::URHC_WipePure emma id))
     ;; premium branding upgrade (STOA fee)
     ;;ORDER-DEPENDENCE FIX (G3), second site. BRD permits an upgrade only when under 15 days of
     ;;premium remain (04_BRD.pact:258). Whether that holds depends on how much chain time the
@@ -126,12 +126,12 @@
     )
     ;; re-fund EMMA with SIX segmented nonces (6 transmits of 15.0 — owner's nonce 1 holds
     ;; only 100 units after TX-OF-001), then freeze for the wipe
-    (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron id emma false)
+    (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron (DPOF.UR_Konto id) emma id false)
     (map
-        (lambda (i:integer) (ref-TS01-C1::DPOF|C_Transmit patron id [1] [15.0] patron emma false))
+        (lambda (i:integer) (ref-TS01-C1::DPOF|C_Transmit patron patron emma id [1] [15.0] false))
         (enumerate 1 6)
     )
-    (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron id emma true)
+    (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron (DPOF.UR_Konto id) emma id true)
     (let*
         (
             (full:object{DpofUdcV2.RemovableNonces} (ref-DPOF::URHC_WipePure emma id))
@@ -234,13 +234,13 @@
                 ;;so that the next one can be shown to have escaped it.
                 (expect-failure "<<TX-OF-003>> SHADOW: an over-supply amount is refused by the amount fold, NOT by ownership"
                     "Cannot Debit into the Negatives for Orto-Fungible COF-98c486052a51 Nonce 1 on Account"
-                    (ref-TS01-C1::DPOF|C_Transmit attacker id [1] [999999.0] victim attacker false))
+                    (ref-TS01-C1::DPOF|C_Transmit attacker victim attacker id [1] [999999.0] false))
                 ;;THE GATE. Same call, same signer, only the amount changed to one the fold accepts.
                 ;;The message changes to name the VICTIM's key -- so the refusal is attributable to
                 ;;`CAP_EnforceAccountOwnership sender` and to nothing upstream of it.
                 (expect-failure "<<TX-OF-003>> GATE: a valid amount reaches ownership, which refuses and names the victim"
                     "Keyset failure (keys-all): [PK_Ancie...]"
-                    (ref-TS01-C1::DPOF|C_Transmit attacker id [1] [10.0] victim attacker false))
+                    (ref-TS01-C1::DPOF|C_Transmit attacker victim attacker id [1] [10.0] false))
                 ;;...and the refusal was TOTAL.
                 (expect "<<TX-OF-003>> ...and no supply moved"
                     supply-before (ref-DPOF::UR_NonceSupply id 1))
@@ -270,7 +270,7 @@
     (
         (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
     )
-    (ref-TS01-C1::DPOF|C_ToggleFreezeAccount KST.ANHD "COF-98c486052a51" KST.LUMY false)
+    (ref-TS01-C1::DPOF|C_ToggleFreezeAccount KST.ANHD (DPOF.UR_Konto "COF-98c486052a51") KST.LUMY "COF-98c486052a51" false)
     ""
 )
 (env-sigs [{ "key": "PK_Lumy", "caps": [] } { "key": "PK_AncientHodler", "caps": [] }])
@@ -281,7 +281,7 @@
         (id:string "COF-98c486052a51")
     )
     (print (format "<(TS01-C1.DPOF|C_Transmit, holder signing, LUMY paying)> => \"{}\""
-        [(ref-TS01-C1::DPOF|C_Transmit KST.LUMY id [1] [10.0] KST.ANHD KST.LUMY false)]))
+        [(ref-TS01-C1::DPOF|C_Transmit KST.LUMY KST.ANHD KST.LUMY id [1] [10.0] false)]))
     (map print
         [
             (expect "<<TX-OF-003>> with the holder signing, the identical debit succeeds"

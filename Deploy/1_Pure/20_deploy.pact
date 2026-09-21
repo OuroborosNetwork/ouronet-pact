@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 20 of 22
 ;; This is STEP 20 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-19 must have run first, including the init steps between deploys.
-;; 7 source file(s), 221,896 gas measured in the REPL gas model, 318,697 bytes
+;; 7 source file(s), 221,896 gas measured in the REPL gas model, 318,739 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact
@@ -946,7 +946,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
-                (ref-IGNIS::XE_CollectIgnis patron (ref-VCT::XB_VacateOrtoFungible pool-id dpof-id))
+                (ref-IGNIS::XE_CollectIgnis patron (ref-VCT::XB_VacateOrtoFungible patron pool-id dpof-id))
                 (format "Successfully vacated OrtoFungible {} of Pool {}." [dpof-id pool-id])
             )
         )
@@ -1691,7 +1691,7 @@
                     )
                     (ref-IGNIS::XE_CollectIgnis patron
                         (ref-FVT::CC_OrtoFungibleStakeFlow
-                            pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts true
+                            patron pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts true
                         )
                     )
                     (UC_FormatStakeOrtoFungibleResult pool-id owner-id beneficiary-id dpof-id nonce-count)
@@ -1726,7 +1726,7 @@
                     )
                     (ref-IGNIS::XE_CollectIgnis patron
                         (ref-FVT::CC_OrtoFungibleStakeFlow
-                            pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts false
+                            patron pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts false
                         )
                     )
                     (UC_FormatUnstakeOrtoFungibleResult pool-id owner-id dpof-id nonce-count)
@@ -1930,7 +1930,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
-                (ref-IGNIS::XE_CollectIgnis patron (ref-VCT::CC_FullVacate pool-id))
+                (ref-IGNIS::XE_CollectIgnis patron (ref-VCT::CC_FullVacate patron pool-id))
                 (format "Successfully full-vacated Pool {} (all asset types)." [pool-id])
             )
         )
@@ -1984,7 +1984,7 @@
                     (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VCT::CCp_BatchDrainOrtoFungible pool-id dpof-id owner-ids beneficiary-ids nonces-array))
+                    (ref-VCT::CCp_BatchDrainOrtoFungible patron pool-id dpof-id owner-ids beneficiary-ids nonces-array))
                 (format "Fast-drained {} OF leg(s) on Pool {} (asset {}) — scores untouched, awaiting finalize."
                     [(length owner-ids) pool-id dpof-id])
             )
@@ -2020,7 +2020,7 @@
                     (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VCT::CCp_BatchVacateOrtoFungible pool-id dpof-id owner-ids beneficiary-ids nonces-array))
+                    (ref-VCT::CCp_BatchVacateOrtoFungible patron pool-id dpof-id owner-ids beneficiary-ids nonces-array))
                 (format "Batch-vacated {} OF leg(s) on Pool {} (asset {})." [(length owner-ids) pool-id dpof-id])
             )
         )
