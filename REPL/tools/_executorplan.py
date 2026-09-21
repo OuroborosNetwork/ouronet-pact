@@ -23,6 +23,14 @@ CLASSIFICATION, on the SECOND parameter (the executor slot):
     RENAME   an ACCOUNT under a bespoke name -- kickstarter / curler / coiler / fueler / account /
              owner-konto / client / injector / sender ... -> rename to `executor`
     ADD      an ENTITY id (id, ats, swpair, pool-id, fvt-id ...) -- there is no executor parameter
+    REVIEW   the 2nd parameter matches NEITHER list -- READ THE BODY, do not assume. Added
+             2026-09-21. This used to fall through to ADD, i.e. the tool silently DECIDED "no
+             executor here" on the strength of a name it had simply never seen. 11_VST.pact is the
+             proof: freezer / reserver / vester / sleeper / hibernator / awaker / constricter /
+             brumator are all ACCOUNTS and every one reported ADD -- following that would have
+             bolted a second account parameter beside the executor already present, in 11
+             signatures. 36 entrypoints tree-wide were in that state. ACCT is a hardcoded list and
+             a hardcoded list cannot report its own incompleteness; the fallback is now LOUD.
              at all and one must be added; the executor is currently derived inside a capability
     PATRON   the first parameter is not `patron` -- needs one (Talos supplies GASLESS-PATRON for A_)
 
@@ -104,6 +112,13 @@ ACCT = re.compile(r'^(account|konto|owner|client|sender|receiver|beneficiary|sta
                   r'holder|injector|collector|executor|recoverer|remover|merger|wrapper|unwrapper|'
                   r'kickstarter|curler|coiler|fueler|swapper|swaper|minter|burner|depositor|'
                   r'withdrawer|creator|patron)')
+# ENTITY ids -- the shapes that legitimately mean "there is no executor parameter here".
+# Kept EXPLICIT for the same reason ACCT is: so that a name matching NEITHER list is reported
+# rather than assumed. See REVIEW below.
+ENTITY = re.compile(r'^(id|ats|swpair|pool-id|fvt-id|score-id|anchor-id|dptf|dpof|dpsf|dpnf|'
+                    r's-dptf|s-dpof|nonce|set-class|model-id|triplet-id|link-id|lp-id|'
+                    r'.*-to-repurpose|.*-id|.*-pair|.*-token|.*-output)$')
+
 TYPED = re.compile(r'([A-Za-z0-9|_-]+):(?:string|bool|integer|decimal|guard|\[[^\]]+\]|object[^\s)]*)')
 
 
@@ -152,8 +167,20 @@ def plan():
                 rows.append((f, n, "DONE", p2))
             elif ACCT.match(p2):
                 rows.append((f, n, "RENAME", p2))
-            else:
+            elif ENTITY.match(p2):
                 rows.append((f, n, "ADD", p2))
+            else:
+                # NEITHER a known account name NOR a recognisable entity id. Previously this fell
+                # through to ADD, which is a DECISION -- "there is no executor here, add one" --
+                # taken silently on the strength of a name the list had simply never seen.
+                # 11_VST.pact is the proof: freezer / reserver / vester / sleeper / hibernator /
+                # awaker / constricter / brumator are all ACCOUNTS, every one reported ADD, and
+                # following that would have bolted a second account parameter beside the executor
+                # that was already there, in 11 signatures. ACCT is a hardcoded list and a
+                # hardcoded list cannot report its own incompleteness -- CLAUDE.md records exactly
+                # this about _toolpaths.py. So the fallback is now LOUD: REVIEW means "read the
+                # body", not "assume".
+                rows.append((f, n, "REVIEW", p2))
     return rows
 
 
@@ -173,7 +200,7 @@ def main():
         return 0
     c = collections.Counter(st for _, _, st, _ in rows)
     print(f"A_/C_ entrypoints in 1_SOVEREIGN modules: {len(rows)}")
-    for st in ("DONE", "RENAME", "ADD", "PATRON"):
+    for st in ("DONE", "RENAME", "ADD", "REVIEW", "PATRON"):
         print(f"   {st:8s} {c[st]:4d}")
     print(f"\n   remaining: {len(rows) - c['DONE']}")
     print("\nby module, remaining first:")
