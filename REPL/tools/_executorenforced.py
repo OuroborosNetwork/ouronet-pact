@@ -39,8 +39,32 @@ import os, re, sys, glob
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Modules whose sweep turn is DONE -- the only ones this is fair to judge. Grown per turn.
-SWEPT = ["01_DALOS.pact", "02_IGNIS.pact", "04_BRD.pact", "05_DPTF.pact", "06_DPOF.pact",
-         "08_ATS.pact", "09_TFT.pact", "10_ATSU.pact"]
+def _swept():
+    """The modules whose turn is done -- READ FROM THE WORKLIST, not remembered here.
+
+    This was a hardcoded list and it had stopped at 10_ATSU while five more modules had been
+    swept, so `--swept` silently judged a stale subset. That is the third tool in this programme
+    to carry a hardcoded list that cannot report its own incompleteness (_toolpaths, _bandplan,
+    _executorplan), and the fix is the same one: derive it from the artefact that is already the
+    single source of truth. The handoff's 4 table IS the progress tracker -- a ticked row is the
+    definition of "swept", so read the ticks.
+
+    FAILS LOUD if the worklist cannot be read. An empty SWEPT would make `--swept` report a
+    confident clean zero, which is the failure mode this whole file exists to prevent.
+    """
+    plan = os.path.join(ROOT, "OuronetInformational", "HANDOFFS",
+                        "HANDOFF-executor-canon-sweep.md")
+    if not os.path.exists(plan):
+        sys.exit(f"_executorenforced: cannot find the worklist at {plan} -- refusing to guess "
+                 f"which modules are swept.")
+    done = re.findall(r"^\|\s*\[x\]\s*\d+\s*\|\s*`([^`]+\.pact)`", open(plan, encoding="utf8").read(), re.M)
+    if not done:
+        sys.exit("_executorenforced: the worklist has no ticked rows -- either nothing is swept "
+                 "or the table format changed. Refusing to report on an empty set.")
+    return done
+
+
+SWEPT = _swept()
 
 # INDIRECT routes: fn -> the substring its @doc must contain. Registering a route here is not a
 # waiver; the tool still requires the function to SAY it, so the justification lives next to the
@@ -159,7 +183,16 @@ def classify(name, body, caps):
         hit = _proves(caps, cname, pos, set())
         if hit:
             return "DIRECT", hit
-    if re.search(r'ref-[A-Za-z0-9|_\-]+::[A-Za-z0-9|_]+\s+[\w\-|]+\s+executor', body):
+    # THE MEMBER NAME MAY CONTAIN A HYPHEN. This read `[A-Za-z0-9|_]+` for the member, and Pact
+    # identifiers contain `-`: every `ref-SWPL::XE_STOA-PID|AddLiquidity patron executor …` and
+    # every `HOT-RBT|C_*` call was invisible to this branch, so three of 18_SWPLC's entrypoints
+    # reported "used 5x, never proven" while forwarding the executor in the correct slot.
+    #
+    # THIRD TIME THIS EXACT MISTAKE HAS SURFACED IN ONE DAY -- _deadbind.py's `\b` (twice, in
+    # scan() and in twins()) and here. `\b` and `[A-Za-z0-9|_]` both encode a PYTHON notion of a
+    # word, and a Pact identifier is not one. Anything matching a Pact name needs `|`, `_` AND
+    # `-`; pinned by --selftest below so the fourth time fails loudly instead of silently.
+    if re.search(r'ref-[A-Za-z0-9|_\-]+::[A-Za-z0-9|_\-]+\s+[\w\-|]+\s+executor', body):
         return "FORWARDED", ""
     bare = name.split("|")[-1]
     if bare in SELF_PROVING:
@@ -181,7 +214,48 @@ def classify(name, body, caps):
                         if uses <= 0 else f"used {uses}x, never proven")
 
 
+def selftest():
+    """Pins the two repairs of 2026-09-22 so neither can quietly return.
+
+    1. FORWARDED must see a hyphenated modref member. Pact identifiers contain `-`, `|` and `_`;
+       a pattern built from a Python notion of "word" misses them. This exact mistake appeared
+       three times in one day across two tools, always as a SILENT under-report -- the tool says
+       "never proven" about code that proves it, or says nothing at all.
+    2. SWEPT must be derived from the worklist, and must be non-empty.
+    """
+    bad = []
+    cases = [
+        ("(ref-SWPL::XE_STOA-PID|AddLiquidity patron executor swpair true)", True,
+         "hyphenated member -- the 18_SWPLC regression"),
+        ("(ref-ATS::HOT-RBT|C_Repurpose patron executor id)", True,
+         "hyphenated PREFIX -- the HOT-RBT family"),
+        ("(ref-TFT::C_Transfer patron executor receiver id amt true)", True,
+         "the ordinary shape, which always worked"),
+        ("(ref-TFT::C_Transfer patron sender executor id amt true)", False,
+         "executor in slot 3 is the EXECUTEE position -- must NOT count as forwarded"),
+        ("(ref-IGNIS::UC_IgnisPrice \"STOA-PID|C_AddIcedLiquidity\" executor)", False,
+         "a price-table KEY in a string is not a call"),
+    ]
+    pat = r'ref-[A-Za-z0-9|_\-]+::[A-Za-z0-9|_\-]+\s+[\w\-|]+\s+executor'
+    for src, want, why in cases:
+        got = bool(re.search(pat, src))
+        if got != want:
+            bad.append(f"   FORWARDED match on {src!r} = {got}, expected {want}  ({why})")
+    if not SWEPT:
+        bad.append("   SWEPT is empty -- --swept would report a confident clean zero")
+    if "01_DALOS.pact" not in SWEPT:
+        bad.append("   SWEPT does not contain 01_DALOS.pact -- the worklist parse is broken")
+    if bad:
+        print("SELFTEST FAILED -- _executorenforced\n" + "\n".join(bad))
+        return 1
+    print(f"  _executorenforced selftest: {len(cases)} forwarding shapes OK, "
+          f"SWEPT derived ({len(SWEPT)} modules)")
+    return 0
+
+
 def main():
+    if "--selftest" in sys.argv:
+        return selftest()
     only = None
     if "--module" in sys.argv:
         only = sys.argv[sys.argv.index("--module") + 1]

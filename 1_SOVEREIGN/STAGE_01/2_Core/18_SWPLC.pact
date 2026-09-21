@@ -45,8 +45,8 @@
     ;;{5.6}  Aux/X
     ;;{5.7}  User [A/C]
     ;;
-    (defun C_UpdatePendingBrandingLPs:object{IgnisCollectorV3.OutputCumulator} (swpair:string entity-pos:integer logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
-    (defun C_UpgradeBrandingLPs (patron:string swpair:string entity-pos:integer months:integer))
+    (defun C_UpdatePendingBrandingLPs:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string swpair:string entity-pos:integer logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
+    (defun C_UpgradeBrandingLPs (patron:string executor:string swpair:string entity-pos:integer months:integer))
 
 )
 ;;
@@ -128,16 +128,16 @@
     ;;  []C] Functions
     ;;
     ;;
-    (defun C_ToggleAddLiquidity:object{IgnisCollectorV3.OutputCumulator} (patron:string swpair:string toggle:bool))
-    (defun C_Fuel:object{IgnisCollectorV3.OutputCumulator} (account:string swpair:string input-amounts:[decimal] direct-or-indirect:bool validation:bool))
+    (defun C_ToggleAddLiquidity:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string swpair:string toggle:bool))
+    (defun C_Fuel:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string swpair:string input-amounts:[decimal] direct-or-indirect:bool validation:bool))
         ;;
-    (defun STOA-PID|C_AddStandardLiquidity:object{IgnisCollectorV3.OutputCumulator} (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
-    (defun STOA-PID|C_AddIcedLiquidity:object{IgnisCollectorV3.OutputCumulator} (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
-    (defun STOA-PID|C_AddGlacialLiquidity:object{IgnisCollectorV3.OutputCumulator} (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
-    (defun STOA-PID|C_AddFrozenLiquidity:object{IgnisCollectorV3.OutputCumulator} (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal))
-    (defun STOA-PID|C_AddSleepingLiquidity:object{IgnisCollectorV3.OutputCumulator} (patron:string account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal))
+    (defun STOA-PID|C_AddStandardLiquidity:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
+    (defun STOA-PID|C_AddIcedLiquidity:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
+    (defun STOA-PID|C_AddGlacialLiquidity:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
+    (defun STOA-PID|C_AddFrozenLiquidity:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal))
+    (defun STOA-PID|C_AddSleepingLiquidity:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal))
         ;;
-    (defun C_RemoveLiquidity:object{IgnisCollectorV3.OutputCumulator} (patron:string account:string swpair:string lp-amount:decimal))
+    (defun C_RemoveLiquidity:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string swpair:string lp-amount:decimal))
 
 )
 ;;
@@ -1033,8 +1033,20 @@
     ;;{5.6}  Aux/X
     ;;{5.7}  User [A/C]
     (defun C_UpdatePendingBrandingLPs:object{IgnisCollectorV3.OutputCumulator}
-        (swpair:string entity-pos:integer logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+        (patron:string executor:string swpair:string entity-pos:integer logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+        @doc "ATTRIBUTION (patron/executor canon 2.2, 2026-09-22). The AUTHORITY is POOL \
+            \ ownership, enforced by SWPLC|C>UPDATE-BRD -> SWP::CAP_Owner <swpair>, which \
+            \ resolves the owner from the table rather than from a parameter -- HANDOFF 4g's \
+            \ signature for \"authority proven, actor unrecorded\". <UEV_ExecutorIsOwnerKonto> \
+            \ supplies the other half, binding the account the caller NAMED to that same owner. \
+            \ The ownership enforce is KEPT, not replaced."
         (P|UEV_IMC)
+        (let
+            (
+                (ref-SWP:module{SwapperV4} SWP)
+            )
+            (ref-SWP::UEV_ExecutorIsOwnerKonto executor swpair)
+        )
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
@@ -1055,8 +1067,20 @@
             )
         )
     )
-    (defun C_UpgradeBrandingLPs (patron:string swpair:string entity-pos:integer months:integer)
+    (defun C_UpgradeBrandingLPs (patron:string executor:string swpair:string entity-pos:integer months:integer)
+        @doc "ATTRIBUTION (patron/executor canon 2.2, 2026-09-22). The AUTHORITY is POOL \
+            \ ownership, enforced by SWPLC|C>UPGRADE-BRD -> SWP::CAP_Owner <swpair>, which \
+            \ resolves the owner from the table rather than from a parameter -- HANDOFF 4g's \
+            \ signature for \"authority proven, actor unrecorded\". <UEV_ExecutorIsOwnerKonto> \
+            \ supplies the other half, binding the account the caller NAMED to that same owner. \
+            \ The ownership enforce is KEPT, not replaced."
         (P|UEV_IMC)
+        (let
+            (
+                (ref-SWP:module{SwapperV4} SWP)
+            )
+            (ref-SWP::UEV_ExecutorIsOwnerKonto executor swpair)
+        )
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
@@ -1074,26 +1098,41 @@
         )
     )
     (defun C_ToggleAddLiquidity:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string swpair:string toggle:bool)
+        (patron:string executor:string swpair:string toggle:bool)
+        @doc "Executor: ENFORCED INDIRECTLY, downstream. Nothing in THIS module proves it -- P|SWPLC|CALLER is a \
+            \ trivially-true policy marker. The proof is SWP::C_ToggleAddOrSwap, whose \
+            \ UEV_ExecutorIsOwnerKonto binds <executor> to (UR_OwnerKonto swpair) and whose \
+            \ SWP|C>ADD-OR-SWAP then enforces CAP_Owner on that same pool. Its own @doc calls \
+            \ itself \"the ONLY place in this call chain that enforces pool ownership\", which \
+            \ is exactly why the executor has to be threaded rather than re-derived here. \
+            \ (patron/executor canon 2.2, indirect route named, 2026-09-22.)"
         (P|UEV_IMC)
         (let
             (
                 (ref-SWP:module{SwapperV4} SWP)
             )
             (with-capability (P|SWPLC|CALLER)
-                ;;PROVISIONAL EXECUTOR SLOT (HANDOFF 4e, 2026-09-21). 15_SWP's turn gave
-                ;;C_ToggleAddOrSwap an `executor` bound to the POOL OWNER; this module's own turn
-                ;;has not come, so there is no `executor` parameter here to thread and the rule is
-                ;;to pass the account that actually initiates -- read directly rather than
-                ;;invented. It is CORRECT today (it is the same value the binder derives) and must
-                ;;become this module's own `executor` at its turn, which is the only thing that
-                ;;makes the attribution real rather than re-derived.
-                (ref-SWP::C_ToggleAddOrSwap patron (ref-SWP::UR_OwnerKonto swpair) swpair toggle true)
+                ;;PROVISIONAL EXECUTOR SLOT CLEARED at this module's own turn (2026-09-22).
+                ;;15_SWP's turn left (ref-SWP::UR_OwnerKonto swpair) here -- correct, because it
+                ;;is the value SWP's binder derives, but RE-DERIVED rather than attributed. It is
+                ;;now the caller's own <executor>, which is the whole difference: the pool owner
+                ;;was always going to be what SWP checked, and what was missing was any record of
+                ;;WHO asked. SWP::C_ToggleAddOrSwap's UEV_ExecutorIsOwnerKonto rejects the pair
+                ;;if they disagree, so this cannot silently drift.
+                (ref-SWP::C_ToggleAddOrSwap patron executor swpair toggle true)
             )
         )
     )
     (defun C_Fuel:object{IgnisCollectorV3.OutputCumulator}
-        (account:string swpair:string input-amounts:[decimal] direct-or-indirect:bool validation:bool)
+        (patron:string executor:string swpair:string input-amounts:[decimal] direct-or-indirect:bool validation:bool)
+        @doc "Fuels <swpair> from <executor> without issuing LP, raising LP value. \
+            \ \
+            \ Executor: ENFORCED INDIRECTLY. Neither SWPLC|C>DIRECT-FUEL nor SWPLC|C>INDIRECT-FUEL \
+            \ enforces anything -- both are @event caps over trivially-true policy markers. The \
+            \ proof is TFT::C_MultiTransfer, which moves the fuel OUT of <executor> and whose own \
+            \ @doc records the chain: DPTF|C>MULTI-TRANSFER -> XB_DebitTrueFungible -> DPTF|C>DEBIT \
+            \ -> CAP_EnforceAccountOwnership, once per leg. \
+            \ (patron/executor canon 2.2, indirect route named, 2026-09-22.)"
         (P|UEV_IMC)
         (let
             (
@@ -1126,11 +1165,17 @@
                 true
             )
             (if direct-or-indirect
-                (with-capability (SWPLC|C>DIRECT-FUEL account swpair input-ids-for-transfer input-amounts-for-transfer)
+                (with-capability (SWPLC|C>DIRECT-FUEL executor swpair input-ids-for-transfer input-amounts-for-transfer)
                     (ref-SWP::XE_UpdateSupplies swpair new-balances)
-                    (ref-TFT::C_MultiTransfer account account SWP|SC_NAME input-ids-for-transfer input-amounts-for-transfer true)
+                    ;;PROVISIONAL PATRON SLOT CLEARED at this module's own turn (2026-09-22,
+                    ;;_patronslots.py). This read `C_MultiTransfer account account ...` -- the
+                    ;;same account in BOTH the patron and executor slots, because the module had
+                    ;;no patron parameter and the actor was the only account it knew. Arity was
+                    ;;right, no swept callee read the slot, and no assertion could reach it;
+                    ;;the registry is the only reason it was not lost.
+                    (ref-TFT::C_MultiTransfer patron executor SWP|SC_NAME input-ids-for-transfer input-amounts-for-transfer true)
                 )
-                (with-capability (SWPLC|C>INDIRECT-FUEL account swpair input-ids-for-transfer input-amounts-for-transfer)
+                (with-capability (SWPLC|C>INDIRECT-FUEL executor swpair input-ids-for-transfer input-amounts-for-transfer)
                     (ref-SWP::XE_UpdateSupplies swpair new-balances)
                     EOC
                 )
@@ -1138,7 +1183,15 @@
         )
     )
     (defun STOA-PID|C_AddStandardLiquidity:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
+        (patron:string executor:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
+        @doc "Executor: ENFORCED INDIRECTLY. This module proves nothing about it -- SWPLC|C>ADD-*-LQ \
+            \ and every capability it composes take only (swpair ld); the account never enters the \
+            \ capability graph at all. The proof is two modules along: SWPL::XE_STOA-PID|AddLiquidity \
+            \ -> XI_AddLiqSendAndMint (under SECURE) -> TFT::C_MultiTransfer, which moves the \
+            \ pool tokens OUT of <executor> and whose own @doc records DPTF|C>MULTI-TRANSFER -> \
+            \ XB_DebitTrueFungible -> DPTF|C>DEBIT -> CAP_EnforceAccountOwnership, once per leg. \
+            \ Unconditional: that call is a statement in a let BODY, not inside a branch. \
+            \ (patron/executor canon 2.2, indirect route named, 2026-09-22.)"
         (P|UEV_IMC)
         (let
             (
@@ -1159,7 +1212,7 @@
                         ;;
                         ;;Compute Liquidity Addition Data
                         (clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
-                            (ref-SWPL::URC_STOA-PID|CLAD account swpair ld true true stoa-pid)
+                            (ref-SWPL::URC_STOA-PID|CLAD executor swpair ld true true stoa-pid)
                         )
                         ;;
                         (ico1:object{IgnisCollectorV3.OutputCumulator}
@@ -1167,11 +1220,11 @@
                         )
                         (native-lp-transfer-amount:decimal (at "primary-lp" clad))
                     )
-                    (ref-SWPL::XE_STOA-PID|AddLiquidity patron account swpair true true stoa-pid ld clad)
+                    (ref-SWPL::XE_STOA-PID|AddLiquidity patron executor swpair true true stoa-pid ld clad)
                     (let
                         (
                             (ico2:object{IgnisCollectorV3.OutputCumulator}
-                                (ref-TFT::C_Transfer patron SWP|SC_NAME account lp-id native-lp-transfer-amount true)
+                                (ref-TFT::C_Transfer patron SWP|SC_NAME executor lp-id native-lp-transfer-amount true)
                             )
                         )
                         ;;Autonomous Swap Mangement
@@ -1191,7 +1244,15 @@
         )
     )
     (defun STOA-PID|C_AddIcedLiquidity:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
+        (patron:string executor:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
+        @doc "Executor: ENFORCED INDIRECTLY. This module proves nothing about it -- SWPLC|C>ADD-*-LQ \
+            \ and every capability it composes take only (swpair ld); the account never enters the \
+            \ capability graph at all. The proof is two modules along: SWPL::XE_STOA-PID|AddLiquidity \
+            \ -> XI_AddLiqSendAndMint (under SECURE) -> TFT::C_MultiTransfer, which moves the \
+            \ pool tokens OUT of <executor> and whose own @doc records DPTF|C>MULTI-TRANSFER -> \
+            \ XB_DebitTrueFungible -> DPTF|C>DEBIT -> CAP_EnforceAccountOwnership, once per leg. \
+            \ Unconditional: that call is a statement in a let BODY, not inside a branch. \
+            \ (patron/executor canon 2.2, indirect route named, 2026-09-22.)"
         (P|UEV_IMC)
         (let
             (
@@ -1212,7 +1273,7 @@
                         ;;
                         ;;Compute Liquidity Addition Data
                         (clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
-                            (ref-SWPL::URC_STOA-PID|CLAD account swpair ld false true stoa-pid)
+                            (ref-SWPL::URC_STOA-PID|CLAD executor swpair ld false true stoa-pid)
                         )
                         ;;
                         (ico1:object{IgnisCollectorV3.OutputCumulator}
@@ -1222,14 +1283,14 @@
                         (native-lp-transfer-amount:decimal (at "primary-lp" clad))
                         (frozen-lp-transfer-amount:decimal (at "secondary-lp" clad))
                     )
-                    (ref-SWPL::XE_STOA-PID|AddLiquidity patron account swpair false true stoa-pid ld clad)
+                    (ref-SWPL::XE_STOA-PID|AddLiquidity patron executor swpair false true stoa-pid ld clad)
                     (let
                         (
                             (ico2:object{IgnisCollectorV3.OutputCumulator}
-                                (ref-TFT::C_Transfer patron SWP|SC_NAME account lp-id native-lp-transfer-amount true)
+                                (ref-TFT::C_Transfer patron SWP|SC_NAME executor lp-id native-lp-transfer-amount true)
                             )
                             (ico3:object{IgnisCollectorV3.OutputCumulator}
-                                (ref-VST::C_Freeze patron SWP|SC_NAME account lp-id frozen-lp-transfer-amount)
+                                (ref-VST::C_Freeze patron SWP|SC_NAME executor lp-id frozen-lp-transfer-amount)
                             )
                         )
                         ;;Autonomous Swap Mangement
@@ -1249,7 +1310,15 @@
         )
     )
     (defun STOA-PID|C_AddGlacialLiquidity:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
+        (patron:string executor:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
+        @doc "Executor: ENFORCED INDIRECTLY. This module proves nothing about it -- SWPLC|C>ADD-*-LQ \
+            \ and every capability it composes take only (swpair ld); the account never enters the \
+            \ capability graph at all. The proof is two modules along: SWPL::XE_STOA-PID|AddLiquidity \
+            \ -> XI_AddLiqSendAndMint (under SECURE) -> TFT::C_MultiTransfer, which moves the \
+            \ pool tokens OUT of <executor> and whose own @doc records DPTF|C>MULTI-TRANSFER -> \
+            \ XB_DebitTrueFungible -> DPTF|C>DEBIT -> CAP_EnforceAccountOwnership, once per leg. \
+            \ Unconditional: that call is a statement in a let BODY, not inside a branch. \
+            \ (patron/executor canon 2.2, indirect route named, 2026-09-22.)"
         (P|UEV_IMC)
         (let
             (
@@ -1270,7 +1339,7 @@
                         ;;
                         ;;Compute Liquidity Addition Data
                         (clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
-                            (ref-SWPL::URC_STOA-PID|CLAD account swpair ld false false stoa-pid)
+                            (ref-SWPL::URC_STOA-PID|CLAD executor swpair ld false false stoa-pid)
                         )
                         ;;
                         (ico1:object{IgnisCollectorV3.OutputCumulator}
@@ -1280,17 +1349,17 @@
                         (native-lp-transfer-amount:decimal (at "primary-lp" clad))
                         (frozen-lp-transfer-amount:decimal (at "secondary-lp" clad))
                     )
-                    (ref-SWPL::XE_STOA-PID|AddLiquidity patron account swpair false false stoa-pid ld clad)
+                    (ref-SWPL::XE_STOA-PID|AddLiquidity patron executor swpair false false stoa-pid ld clad)
                     (let
                         (
                             (ico2:object{IgnisCollectorV3.OutputCumulator}
                                 (if (!= native-lp-transfer-amount 0.0)
-                                    (ref-TFT::C_Transfer patron SWP|SC_NAME account lp-id native-lp-transfer-amount true)
+                                    (ref-TFT::C_Transfer patron SWP|SC_NAME executor lp-id native-lp-transfer-amount true)
                                     EOC
                                 )
                             )
                             (ico3:object{IgnisCollectorV3.OutputCumulator}
-                                (ref-VST::C_Freeze patron SWP|SC_NAME account lp-id frozen-lp-transfer-amount)
+                                (ref-VST::C_Freeze patron SWP|SC_NAME executor lp-id frozen-lp-transfer-amount)
                             )
                         )
                         ;;Autonomous Swap Mangement
@@ -1310,7 +1379,13 @@
         )
     )
     (defun STOA-PID|C_AddFrozenLiquidity:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal)
+        (patron:string executor:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal)
+        @doc "Executor: ENFORCED INDIRECTLY, and by a NEARER route than its standard/iced/glacial \
+            \ siblings. SWPLC|C>ADD-FROZEN-LQ takes (swpair frozen-dptf ld) -- no account -- but this \
+            \ function's own body calls TFT::C_Transfer <patron> <executor> <vst-sc> to move the \
+            \ frozen DPTF out of the executor before anything else happens, and that enforces \
+            \ CAP_EnforceAccountOwnership on it via DPTF|C>X-TRANSFER. \
+            \ (patron/executor canon 2.2, indirect route named, 2026-09-22.)"
         (P|UEV_IMC)
         (let
             (
@@ -1340,7 +1415,7 @@
                         ;;
                         ;;Move F|DPTF to vst-sc and burn it
                         (ico1:object{IgnisCollectorV3.OutputCumulator}
-                            (ref-TFT::C_Transfer patron account vst-sc frozen-dptf input-amount true)
+                            (ref-TFT::C_Transfer patron executor vst-sc frozen-dptf input-amount true)
                         )
                         (ico2:object{IgnisCollectorV3.OutputCumulator}
                             (ref-DPTF::C_Burn patron vst-sc frozen-dptf input-amount)
@@ -1360,7 +1435,7 @@
                     (let
                         (
                             (ico4:object{IgnisCollectorV3.OutputCumulator}
-                                (ref-VST::C_Freeze patron SWP|SC_NAME account lp-id frozen-lp-transfer-amount)
+                                (ref-VST::C_Freeze patron SWP|SC_NAME executor lp-id frozen-lp-transfer-amount)
                             )
                         )
                         ;;Autonomous Swap Mangement
@@ -1380,7 +1455,14 @@
         )
     )
     (defun STOA-PID|C_AddSleepingLiquidity:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal)
+        (patron:string executor:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal)
+        @doc "Executor: ENFORCED INDIRECTLY, via DPOF rather than DPTF. SWPLC|C>ADD-SLEEPING-LQ is \
+            \ the ONE capability in this module that receives the account, but what it runs on it \
+            \ -- DPOF::UEV_NoncesToAccount -- is a POSSESSION check (the nonce belongs to that \
+            \ account), not a signature check. Possession is not authority. The authority is \
+            \ DPOF::C_Transfer <patron> <executor> <vst-sc>, in this body, moving the sleeping \
+            \ DPOF out of the executor. Worth stating because the cap LOOKS like it authorises. \
+            \ (patron/executor canon 2.2, indirect route named, 2026-09-22.)"
         (P|UEV_IMC)
         (let
             (
@@ -1398,7 +1480,7 @@
                     (ref-SWPL::URC_LD swpair lq-lst)
                 )
             )
-            (with-capability (SWPLC|C>ADD-SLEEPING-LQ account swpair sleeping-dpof nonce ld)
+            (with-capability (SWPLC|C>ADD-SLEEPING-LQ executor swpair sleeping-dpof nonce ld)
                 (let
                     (
                         (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
@@ -1417,7 +1499,7 @@
                         ;;
                         ;;Move the sleeping DPOF (Z| prefix) to vst-sc and burn it
                         (ico1:object{IgnisCollectorV3.OutputCumulator}
-                            (ref-DPOF::C_Transfer patron account vst-sc sleeping-dpof [nonce] true)
+                            (ref-DPOF::C_Transfer patron executor vst-sc sleeping-dpof [nonce] true)
                         )
                         (ico2:object{IgnisCollectorV3.OutputCumulator}
                             (ref-DPOF::C_Burn patron vst-sc sleeping-dpof nonce batch-amount)
@@ -1430,7 +1512,7 @@
                         ;;
                         ;;MOVE IGNIS to vst-sc, paying for the ignis-tax
                         (ico3:object{IgnisCollectorV3.OutputCumulator}
-                            (ref-TFT::C_Transfer patron account vst-sc ignis-id (at "total-ignis-tax-needed" clad) true)
+                            (ref-TFT::C_Transfer patron executor vst-sc ignis-id (at "total-ignis-tax-needed" clad) true)
                         )
                         ;;
                         (ico4:object{IgnisCollectorV3.OutputCumulator}
@@ -1442,7 +1524,7 @@
                     (let
                         (
                             (ico5:object{IgnisCollectorV3.OutputCumulator}
-                                (ref-VST::C_Sleep patron SWP|SC_NAME account lp-id sleeping-lp-transfer-amount dt)
+                                (ref-VST::C_Sleep patron SWP|SC_NAME executor lp-id sleeping-lp-transfer-amount dt)
                             )
                         )
                         ;;Autonomous Swap Mangement
@@ -1462,9 +1544,17 @@
         )
     )
     (defun C_RemoveLiquidity:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string account:string swpair:string lp-amount:decimal)
+        (patron:string executor:string swpair:string lp-amount:decimal)
         @doc "Removes <swpair> Liquidity using <lp-amount> of LP Tokens \
-            \ Always returns all Pool Tokens at current Pool Token Ratio"
+            \ Always returns all Pool Tokens at current Pool Token Ratio \
+            \ \
+            \ Executor: ENFORCED INDIRECTLY. SWPLC|C>REMOVE_LQ never receives the account at \
+            \ all -- its parameters are (swpair lp-amount) and UEV_RemoveLiquidity checks only \
+            \ that the amount is valid and within supply. The proof is TFT::C_Transfer, which \
+            \ moves the LP OUT of <executor> (DPTF|C>X-TRANSFER -> CAP_EnforceAccountOwnership, \
+            \ unconditionally on every branch). The two later calls credit rather than debit the \
+            \ executor and prove nothing about it. \
+            \ (patron/executor canon 2.2, indirect route named, 2026-09-22.)"
         ;;
         (P|UEV_IMC)
         (with-capability (SWPLC|C>REMOVE_LQ swpair lp-amount)
@@ -1497,13 +1587,13 @@
                     )
                     ;;
                     (ico1:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-TFT::C_Transfer patron account SWP|SC_NAME lp-id lp-amount true)
+                        (ref-TFT::C_Transfer patron executor SWP|SC_NAME lp-id lp-amount true)
                     )
                     (ico2:object{IgnisCollectorV3.OutputCumulator}
                         (ref-DPTF::C_Burn patron SWP|SC_NAME lp-id lp-amount)
                     )
                     (ico3:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-TFT::C_MultiTransfer patron SWP|SC_NAME account pool-token-ids pt-output-amounts true)
+                        (ref-TFT::C_MultiTransfer patron SWP|SC_NAME executor pool-token-ids pt-output-amounts true)
                     )
                 )
                 ;;Updates Pool Supplies

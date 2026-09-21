@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 10 of 24
 ;; This is STEP 10 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-9 must have run first, including the init steps between deploys.
-;; 5 source file(s), 228,598 gas measured in the REPL gas model, 202,124 bytes
+;; 5 source file(s), 228,598 gas measured in the REPL gas model, 202,261 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/3_Talos/03_TS01-C2.pact
@@ -2013,8 +2013,8 @@
     ;;
     (defun SWP|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
     (defun SWP|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer))
-    (defun SWP|C_UpdatePendingBrandingLPs (patron:string swpair:string entity-pos:integer logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
-    (defun SWP|C_UpgradeBrandingLPs (patron:string swpair:string entity-pos:integer months:integer))
+    (defun SWP|C_UpdatePendingBrandingLPs (patron:string executor:string swpair:string entity-pos:integer logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
+    (defun SWP|C_UpgradeBrandingLPs (patron:string executor:string swpair:string entity-pos:integer months:integer))
     ;;
     (defun SWP|C_ChangeOwnership (patron:string executor:string executee:string swpair:string))
     (defun SWP|C_EnableFrozenLP:string (patron:string executor:string swpair:string))
@@ -2026,7 +2026,7 @@
     ;;Management
     (defun SWP|C_ModifyCanChangeOwner (patron:string executor:string swpair:string new-boolean:bool))
     (defun SWP|C_ModifyWeights (patron:string executor:string swpair:string new-weights:[decimal]))
-    (defun SWP|C_ToggleAddLiquidity (patron:string swpair:string toggle:bool))
+    (defun SWP|C_ToggleAddLiquidity (patron:string executor:string swpair:string toggle:bool))
     (defun SWP|C_ToggleSwapCapability (patron:string swpair:string toggle:bool))
     (defun SWP|C_ToggleFeeLock (patron:string executor:string swpair:string toggle:bool))
     (defun SWP|C_UpdateAmplifier (patron:string executor:string swpair:string amp:decimal))
@@ -2322,7 +2322,7 @@
             )
         )
     )
-    (defun SWP|C_UpdatePendingBrandingLPs (patron:string swpair:string entity-pos:integer logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+    (defun SWP|C_UpdatePendingBrandingLPs (patron:string executor:string swpair:string entity-pos:integer logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
         @doc "Updates <pending-branding> for SWPair LPs (Native LP, Frozen LP or Sleeping LP) Token <entity-id> costing 200 IGNIS \
             \ <entity-pos> 1 = LP Token will be used \
             \ <entity-pos> 2 = Frozen-LP Token will be used \
@@ -2334,12 +2334,12 @@
                     (ref-B|SWPLC:module{BrandingUsageSecondaryV2} SWPLC)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-B|SWPLC::C_UpdatePendingBrandingLPs swpair entity-pos logo description website social)
+                    (ref-B|SWPLC::C_UpdatePendingBrandingLPs patron executor swpair entity-pos logo description website social)
                 )
             )
         )
     )
-    (defun SWP|C_UpgradeBrandingLPs (patron:string swpair:string entity-pos:integer months:integer)
+    (defun SWP|C_UpgradeBrandingLPs (patron:string executor:string swpair:string entity-pos:integer months:integer)
         @doc "Similar to its DPTF, DPOF, ATS SWP Variants, but for SWPair LPs"
         (with-capability (P|TS)
             (let
@@ -2347,7 +2347,7 @@
                     (ref-B|SWPLC:module{BrandingUsageSecondaryV2} SWPLC)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
-                (ref-B|SWPLC::C_UpgradeBrandingLPs patron swpair entity-pos months)
+                (ref-B|SWPLC::C_UpgradeBrandingLPs patron executor swpair entity-pos months)
                 (ref-TS01-A::XB_DynamicFuelSTOA)
             )
         )
@@ -2510,7 +2510,7 @@
             )
         )
     )
-    (defun SWP|C_ToggleAddLiquidity (patron:string swpair:string toggle:bool)
+    (defun SWP|C_ToggleAddLiquidity (patron:string executor:string swpair:string toggle:bool)
         @doc "Toggle on or off the Functionality of adding liquidity for an <swpair> \
             \ When <toggle> is <true>, ensures required Mint, Burn, Transfer Roles are set, if not, set them. \
             \ The Roles are: \
@@ -2527,7 +2527,7 @@
                     (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-SWPLC::C_ToggleAddLiquidity patron swpair toggle)
+                    (ref-SWPLC::C_ToggleAddLiquidity patron executor swpair toggle)
                 )
                 (format "Succesfully toggled Liquidity Provisioning for SWP-Pair" [swpair])
             )
@@ -2640,7 +2640,7 @@
                     (ref-SWPI:module{SwapperIssueV4} SWPI)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-SWPLC::C_Fuel account swpair input-amounts true true)
+                    (ref-SWPLC::C_Fuel patron account swpair input-amounts true true)
                 )
                 (ref-SWP::XE_UpdateStoaValue swpair (at 0 (ref-SWPI::URC_PoolValue swpair)))
                 (format "Succesfully fueled SWP-Pair {} with Token Amounts {}" [swpair input-amounts])

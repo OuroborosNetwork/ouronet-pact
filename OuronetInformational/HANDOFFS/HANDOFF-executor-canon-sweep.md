@@ -265,7 +265,7 @@ same tools with those three properties.
 | [x] 12 | `13_OUROBOROS.pact` | 0 | 0 | 5 | **5** | `OuroborosV2` |
 | [x] 13 | `15_SWP.pact` | 0 | 4 | 14 | **18** | `SwapperV4` |
 | [x] 14 | `16_SWPI.pact` | 0 | 0 | 1 | **1** | — |
-| [ ] 15 | `18_SWPLC.pact` | 0 | 1 | 9 | **10** | `BrandingUsageSecondaryV2`, `SwapperLiquidityClientV2` |
+| [x] 15 | `18_SWPLC.pact` | 0 | 1 | 9 | **10** | `BrandingUsageSecondaryV2`, `SwapperLiquidityClientV2` |
 | [ ] 16 | `19_SWPU.pact` | 0 | 0 | 4 | **4** | `SwapperUsageV3` |
 | [x] — | `20_MTX-SWP.pact` | — | — | — | — | *nothing to do* |
 | [ ] 17 | `21_CODEX.pact` | 0 | 0 | 5 | **5** | `CodexV2` |

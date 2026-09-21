@@ -125,7 +125,7 @@
         ]
     )
     (ref-TS01-C3::SWP|C_UpdatePendingBrandingLPs
-        patron
+        patron (SWP.UR_OwnerKonto "P|OURO-98c486052a51|VST-98c486052a51")
         "P|OURO-98c486052a51|VST-98c486052a51"
         1
         "This is the logo"
@@ -277,13 +277,13 @@
             (pool:string "P|OURO-98c486052a51|VST-98c486052a51")
         )
         (ref-TS01-C3::SWP|C_UpdatePendingBrandingLPs
-            patron pool 1
+            patron (SWP.UR_OwnerKonto pool) pool 1
             "https://ouronet.example/lp-logo.png"
             "#61L proof LP branding description"
             "https://ouronet.example"
             [{"social-media-name": "X", "social-media-link": "https://x.com/ouronet"}]
         )
-        (ref-TS01-C3::SWP|C_UpgradeBrandingLPs patron pool 1 months)
+        (ref-TS01-C3::SWP|C_UpgradeBrandingLPs patron (SWP.UR_OwnerKonto pool) pool 1 months)
         (let
             (
                 (lp-id:string (ref-SWP::UR_TokenLP pool))

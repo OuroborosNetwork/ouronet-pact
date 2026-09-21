@@ -5131,7 +5131,7 @@
                     (enforce (contains (at "token" norm) pool-tokens) "Normalized royalty token is not a token of the swpair")
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators
                         [ (at "oc" norm)
-                          (ref-SWPLC::C_Fuel AQP|SC_NAME swpair
+                          (ref-SWPLC::C_Fuel patron AQP|SC_NAME swpair
                               (map (lambda (t:string) (if (= t (at "token" norm)) (at "amount" norm) 0.0)) pool-tokens)
                               true true) ]
                         [reward-dptf-id])

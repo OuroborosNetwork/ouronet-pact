@@ -1765,15 +1765,15 @@
     (ref-TS01-A::SWP|A_DefinePrimordialPool KST.ANHD pool1)
     (ref-TS01-A::SWP|A_ToggleAsymetricLiquidityAddition KST.ANHD true)
     ;;Toggle Add Liquidity
-    (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD pool1 true)
-    (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD pool2 true)
-    (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD pool3 true)
-    (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD pool4 true)
-    (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD pool5 true)
-    (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD pool6 true)
-    (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD pool6a true)
-    (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD pool7 true)
-    (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD pool8 true)
+    (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD (SWP.UR_OwnerKonto pool1) pool1 true)
+    (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD (SWP.UR_OwnerKonto pool2) pool2 true)
+    (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD (SWP.UR_OwnerKonto pool3) pool3 true)
+    (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD (SWP.UR_OwnerKonto pool4) pool4 true)
+    (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD (SWP.UR_OwnerKonto pool5) pool5 true)
+    (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD (SWP.UR_OwnerKonto pool6) pool6 true)
+    (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD (SWP.UR_OwnerKonto pool6a) pool6a true)
+    (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD (SWP.UR_OwnerKonto pool7) pool7 true)
+    (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD (SWP.UR_OwnerKonto pool8) pool8 true)
     ;;Toggle Swap Functionality
     (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD pool1 true)
     (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD pool2 true)
@@ -2379,7 +2379,7 @@
         (patron-lp-before:decimal (ref-DPTF::UR_AccountSupply lp-id patron))
     )
     ;;Pause new deposits on pool1.
-    (ref-TS01-C3::SWP|C_ToggleAddLiquidity patron pool1 false)
+    (ref-TS01-C3::SWP|C_ToggleAddLiquidity patron (SWP.UR_OwnerKonto pool1) pool1 false)
     (map print
         [
             ;;can-add=false must still block a NEW deposit — unchanged, legitimate behavior.
@@ -2393,7 +2393,7 @@
     (print (format "H11 fix — removal succeeded despite can-add=false; patron LP before={} after={}"
         [patron-lp-before (ref-DPTF::UR_AccountSupply lp-id patron)]))
     ;;Restore pool1 to its normal (add-enabled) state so nothing downstream is perturbed.
-    (ref-TS01-C3::SWP|C_ToggleAddLiquidity patron pool1 true)
+    (ref-TS01-C3::SWP|C_ToggleAddLiquidity patron (SWP.UR_OwnerKonto pool1) pool1 true)
 )
 (print "")
 (print "")
@@ -2846,7 +2846,7 @@
               "S|BI-98c486052a51|CO-98c486052a51" ]
         )
     )
-    (map (lambda (p:string) (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD p true)) chain)
+    (map (lambda (p:string) (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD (SWP.UR_OwnerKonto p) p true)) chain)
     (map (lambda (p:string) (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD p true)) chain)
 )
 (print "")
@@ -2962,7 +2962,7 @@
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
         (shortcut:string "S|AG-98c486052a51|CO-98c486052a51")
     )
-    (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD shortcut true)
+    (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD (SWP.UR_OwnerKonto shortcut) shortcut true)
     (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD shortcut true)
 )
 (format "<<<<<<<SWP|TX 027 Issue+Enable Shortcut S|AG|CO ==> {} STOA GAS>>>>>>>" [(env-gas)])

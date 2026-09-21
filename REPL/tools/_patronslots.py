@@ -37,6 +37,7 @@ SWEPT = {
              "C_Control", "C_RotateOwnership"],
     "ATS":  ["C_Fuel"],
     "OUROBOROS": ["C_WithdrawFees"],
+    "SWPLC": ["C_Fuel", "C_RemoveLiquidity", "C_ToggleAddLiquidity"],
 }
 
 # (file basename, enclosing function) -> (expression in the patron slot, why, clears-at)
@@ -58,7 +59,10 @@ REGISTRY = {
  # C_WithdrawRoyalties and XI_RemoveSecondary all gained a real `patron` and their TFT call
  # sites were re-pointed to it. Removed rather than commented, which is the point of the
  # `clears-at` column -- it names the turn that retires the entry.
- ("18_SWPLC.pact", "C_Fuel"):             ("account", "provisional", "18_SWPLC"),
+ # 18_SWPLC's C_Fuel entry was CLEARED at its own turn (2026-09-22). The call read
+ # `C_MultiTransfer account account ...` -- the SAME account in both the patron and the executor
+ # slot, which is the most invisible form this takes: the arity is right, the two values agree,
+ # and only the registry remembered that one of them was a stand-in. It now threads a real patron.
  ("03_AQP.pact", "XE_TrueFungibleTransfer"): ("owner-id", "provisional", "03_AQP"),
  ("06_VCT.pact", "XI_VacateTrueFungibleFromLegs"):
    ("AQP|SC_NAME", "provisional -- no user account is in scope at all here; the vault is the "

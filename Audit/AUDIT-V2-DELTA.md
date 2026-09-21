@@ -641,3 +641,76 @@ being proven on the other side.
 is the only thing that notices, and it notices at the module's own turn — which is an argument for
 running it per module rather than once at the end.
 
+---
+
+### 18_SWPLC.pact — COMPLETE (10 of 10 entrypoints, 2026-09-22)
+
+**What v1 asserted that is now wrong.** Three signatures changed arity at the Talos boundary —
+`C_UpdatePendingBrandingLPs`, `C_UpgradeBrandingLPs`, `C_ToggleAddLiquidity` — moving 34 call
+sites. The other **seven changed none**: `C_Fuel`, `C_RemoveLiquidity` and the five
+`STOA-PID|C_Add*Liquidity` renamed `account` → `executor` in the **core only**, and a rename is
+positionally invisible to a caller. That asymmetry is why `_callarity.py` is run *after*
+`_executormigrate.py` rather than either being trusted alone.
+
+**This module has no ownership helper of its own, and eight of its ten entrypoints prove nothing
+locally.** Its `;;{C4} Ownership [gold]` section is present and **empty**. Only the two branding
+capabilities enforce anything — `SWP::CAP_Owner swpair`, i.e. *pool* ownership resolved from a
+table, §4g again — and those two now carry `SWP::UEV_ExecutorIsOwnerKonto`. For the other eight
+the authority genuinely lives downstream, so each one's `@doc` now **names its own route**, which
+is the canon's requirement and the only thing that makes an indirect proof auditable:
+
+| entrypoint | where the executor is actually proven |
+|---|---|
+| `C_ToggleAddLiquidity` | `SWP::C_ToggleAddOrSwap` — its `UEV_ExecutorIsOwnerKonto` + `CAP_Owner` |
+| `C_Fuel` | `TFT::C_MultiTransfer` — the fuel leaves the executor |
+| `C_RemoveLiquidity` | `TFT::C_Transfer` — the LP leaves the executor |
+| Standard / Iced / Glacial | `SWPL::XE_STOA-PID|AddLiquidity` → `XI_AddLiqSendAndMint` → `TFT::C_MultiTransfer` |
+| Frozen | `TFT::C_Transfer patron executor vst-sc` — in this module's own body |
+| Sleeping | `DPOF::C_Transfer patron executor vst-sc` — in this module's own body |
+
+**One of those deserves an auditor's attention on its own.** `SWPLC|C>ADD-SLEEPING-LQ` is the
+**only** capability in the module that receives an account, so it reads like the one that
+authorises. What it runs on that account is `DPOF::UEV_NoncesToAccount` — a **possession** check
+(the nonce belongs to that account), not a signature check. **Possession is not authority.** The
+authority is the `DPOF::C_Transfer` further down. A capability that takes an account and checks
+something about it is the easiest kind to mistake for an ownership gate.
+
+**TWO PROVISIONAL SLOTS CLEARED, one of each kind.**
+- *Executor* (created at 15_SWP's turn): `C_ToggleAddLiquidity` passed
+  `(ref-SWP::UR_OwnerKonto swpair)` into `SWP::C_ToggleAddOrSwap`. Correct, but **re-derived
+  rather than attributed** — the pool owner was always what SWP would check; what was missing was
+  any record of who asked. It now threads the caller's own `executor`, and SWP's binder rejects
+  the pair if they disagree.
+- *Patron* (`_patronslots.py`): `C_Fuel` called `C_MultiTransfer account account …` — the **same
+  account in both the patron and the executor slot**, which is the most invisible form this takes.
+  The arity is right, the two values agree, and only the registry remembered one was a stand-in.
+
+---
+
+### A THIRD INSTANCE OF ONE MISTAKE, IN A DIFFERENT TOOL, ON THE SAME DAY
+
+`_modulecomplete` check 7 reported three entrypoints *"used 5x, never proven"* — Standard, Iced
+and Glacial — while Frozen and Sleeping passed. All five forward the executor in the correct slot.
+The difference was the **callee's name**: `_executorenforced.py`'s FORWARDED pattern matched the
+member as `[A-Za-z0-9|_]+`, and `XE_STOA-PID|AddLiquidity` contains a hyphen.
+
+> `\b` and `[A-Za-z0-9|_]` both encode a **Python** notion of a word. A Pact identifier is not
+> one — it contains `|`, `_` **and** `-`. The same mistake appeared three times on 2026-09-21/22:
+> twice in `_deadbind.py` (`scan()` and `twins()`) and once here.
+
+Every time, the symptom was a **silent under-report** — the tool saying "never proven" about code
+that proves it, or saying nothing at all. The whole `HOT-RBT|C_*` family was equally invisible.
+Fixed and pinned by a `--selftest` carrying five forwarding shapes, including the negative case
+(an executor in slot 3 is the *executee* position and must **not** count as forwarded).
+
+**And the same tool's `SWEPT` list was a hardcoded list that had stopped at 10_ATSU**, five
+modules behind — so `--swept` was silently judging a stale subset. It is now **derived from the
+worklist's ticked rows**, which are already the single source of truth, and **fails loud** if the
+worklist cannot be read or has no ticks: an empty `SWEPT` would report a confident clean zero,
+which is the exact failure this file exists to prevent. Fourth tool in this programme to carry a
+hardcoded list that could not report its own incompleteness, after `_toolpaths`, `_bandplan` and
+`_executorplan`.
+
+Re-run after both repairs: **169 proven, 0 unproven across all 13 swept modules** — five of which
+the old list had never been looking at.
+

@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 17 of 24
 ;; This is STEP 17 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-16 must have run first, including the init steps between deploys.
-;; 1 source file(s), 229,502 gas measured in the REPL gas model, 299,188 bytes
+;; 1 source file(s), 229,502 gas measured in the REPL gas model, 299,195 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/04_RPS.pact
@@ -5169,7 +5169,7 @@
                     (enforce (contains (at "token" norm) pool-tokens) "Normalized royalty token is not a token of the swpair")
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators
                         [ (at "oc" norm)
-                          (ref-SWPLC::C_Fuel AQP|SC_NAME swpair
+                          (ref-SWPLC::C_Fuel patron AQP|SC_NAME swpair
                               (map (lambda (t:string) (if (= t (at "token" norm)) (at "amount" norm) 0.0)) pool-tokens)
                               true true) ]
                         [reward-dptf-id])

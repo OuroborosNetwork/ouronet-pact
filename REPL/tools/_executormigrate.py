@@ -157,6 +157,19 @@ RULES = {
     "SWP|C_UpdateAmplifier":         (4, "(SWP.UR_OwnerKonto {1})"),
     "SWP|C_UpdateFee":               (5, "(SWP.UR_OwnerKonto {1})"),
     "SWP|C_UpdateSpecialFeeTargets": (4, "(SWP.UR_OwnerKonto {1})"),
+    # ---- 18_SWPLC (sweep 15/46). Same POOL-OWNER authority as 15_SWP -- SWPLC has no ownership
+    # helper of its own; its two branding caps call SWP::CAP_Owner <swpair> directly, and the
+    # other eight prove nothing locally at all (the account never enters their capability graph)
+    # and rely on a downstream TFT/DPOF debit. Either way the executor IS the pool owner for the
+    # branding pair and the toggle, so the call sites read it the same way.
+    #
+    # ONLY THREE ARE HERE. The other seven changed NO arity at the Talos boundary: C_Fuel,
+    # C_RemoveLiquidity and the five STOA-PID adds renamed `account` -> `executor` in the CORE
+    # only, and a rename is positionally invisible to a caller. That asymmetry is the point of
+    # running _callarity after this tool rather than trusting either alone.
+    "SWP|C_UpdatePendingBrandingLPs": (8, "(SWP.UR_OwnerKonto {1})"),
+    "SWP|C_UpgradeBrandingLPs":       (5, "(SWP.UR_OwnerKonto {1})"),
+    "SWP|C_ToggleAddLiquidity":       (4, "(SWP.UR_OwnerKonto {1})"),
 
     "AQP-FVT|CC_SweepBegin":            (3, "(AQP-ANK.URC_AnchorableAssetOwner (AQP-ANK.UR_ANK|AnchoredAsset {1}) (AQP-ANK.UR_ANK|Fungibility {1}))"),
 }

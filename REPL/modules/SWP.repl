@@ -1505,7 +1505,7 @@
                     (ref-SWP::UR_CanChangeOwner pool)))
             (expect-failure "<<SWP-G13>> ...and can-add likewise"
                 "Similar boolean unallowed for <can-add> or <can-swap>"
-                (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD pool (ref-SWP::UR_CanAdd pool)))
+                (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD (SWP.UR_OwnerKonto pool) pool (ref-SWP::UR_CanAdd pool)))
             ;;weights summing to exactly 1.0, so only the pool TYPE is wrong
             (expect-failure "<<SWP-G13>> changing weights on a STABLE pool is refused on pool type"
                 "Changing weights available only for weighted Pools"
@@ -3444,7 +3444,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_SWP|ToggleAddLiquidity patron wp true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C3::SWP|C_ToggleAddLiquidity patron wp true))
+            (m (ref-TS01-C3::SWP|C_ToggleAddLiquidity patron (SWP.UR_OwnerKonto wp) wp true))
         )
         (map print
             [
@@ -3892,7 +3892,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_SWP|UpdatePendingBrandingLPs patron wp 1))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C3::SWP|C_UpdatePendingBrandingLPs patron wp 1 "ipfs://probe-logo" "cost probe" "https://probe.example" []))
+            (m (ref-TS01-C3::SWP|C_UpdatePendingBrandingLPs patron (SWP.UR_OwnerKonto wp) wp 1 "ipfs://probe-logo" "cost probe" "https://probe.example" []))
         )
         (map print
             [
@@ -4976,7 +4976,7 @@
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_SWP|UpgradeBrandingLPs patron wp 1 1))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (stoa-before:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
-            (m (ref-TS01-C3::SWP|C_UpgradeBrandingLPs patron wp 1 1))
+            (m (ref-TS01-C3::SWP|C_UpgradeBrandingLPs patron (SWP.UR_OwnerKonto wp) wp 1 1))
         )
         (map print
             [
