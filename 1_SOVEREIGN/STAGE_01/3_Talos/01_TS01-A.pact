@@ -76,7 +76,7 @@
     (defun ATS|AA_RemoveSecondary (patron:string executor:string ats:string reward-token:string accounts-with-ats-data:[string]))
     (defun ATS|A_KickStart (executor:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
     ;;
-    (defun LIQUID|A_MigrateLiquidFunds:decimal (migration-target-stoa-account:string))
+    (defun LIQUID|A_MigrateLiquidFunds:decimal (executor:string migration-target-stoa-account:string))
     ;;
     ;;
     (defun ORBR|A_Fuel ())
@@ -711,7 +711,7 @@
         )
     )
     ;;  [LIQUID_Administrator]
-    (defun LIQUID|A_MigrateLiquidFunds:decimal (migration-target-stoa-account:string)
+    (defun LIQUID|A_MigrateLiquidFunds:decimal (executor:string migration-target-stoa-account:string)
         @doc "Migrates Stoa Liquid Staking STOA Funds, to another stoa adress, \
         \ if needed due to a migration to a new namespace and new module code \
         \ Outputs the migrated amount"
@@ -720,7 +720,7 @@
                 (
                     (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
                 )
-                (ref-LIQUID::A_MigrateLiquidFunds migration-target-stoa-account)
+                (ref-LIQUID::A_MigrateLiquidFunds GASLESS-PATRON executor migration-target-stoa-account)
             )
         )
     )

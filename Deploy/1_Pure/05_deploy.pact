@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 5 of 24
 ;; This is STEP 5 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-4 must have run first, including the init steps between deploys.
-;; 3 source file(s), 342,033 gas measured in the REPL gas model, 278,691 bytes
+;; 3 source file(s), 342,033 gas measured in the REPL gas model, 279,536 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/10_ATSU.pact
@@ -5021,12 +5021,12 @@
     ;;
     ;;  [A]
     ;;
-    (defun A_MigrateLiquidFunds:decimal (migration-target-stoa-account:string))
+    (defun A_MigrateLiquidFunds:decimal (patron:string executor:string migration-target-stoa-account:string))
     ;;
     ;;  [C]
     ;;
-    (defun C_UnwrapStoa:object{IgnisCollectorV3.OutputCumulator} (patron:string unwrapper:string amount:decimal))
-    (defun C_WrapStoa:object{IgnisCollectorV3.OutputCumulator} (patron:string wrapper:string amount:decimal))
+    (defun C_UnwrapStoa:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string amount:decimal))
+    (defun C_WrapStoa:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string amount:decimal))
     ;;
     ;;#13H fix: C_RegisterOuronetAccountForUrstoaHoldings removed (2026-08-27) - it took a
     ;;caller-supplied <guard> for an arbitrary <ouronet-account> with no ownership check
@@ -5034,8 +5034,8 @@
     ;;handled by UI-constructed Pact code using the real signer's own (read-keyset "ks"), the
     ;;same established pattern already used for native Stoa unwrap - see
     ;;OuronetInformational/memories/2026-08-27-urstoa-account-creation-is-ui-constructed.md.
-    (defun C_UnwrapUrStoa:object{IgnisCollectorV3.OutputCumulator} (patron:string unwrapper:string amount:decimal))
-    (defun C_WrapUrStoa:object{IgnisCollectorV3.OutputCumulator} (patron:string wrapper:string amount:decimal))
+    (defun C_UnwrapUrStoa:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string amount:decimal))
+    (defun C_WrapUrStoa:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string amount:decimal))
 
 )
 ;;
@@ -5493,8 +5493,19 @@
     ;;{5.6}  Aux/X
     ;;{5.7}  User [A/C]
     ;;
-    (defun A_MigrateLiquidFunds:decimal (migration-target-stoa-account:string)
+    (defun A_MigrateLiquidFunds:decimal (patron:string executor:string migration-target-stoa-account:string)
+        @doc "ATTRIBUTION (patron/executor canon 2.2, 2026-09-21). The AUTHORITY here is the admin \
+            \ key, composed by GOV|MIGRATE via GOV|LIQUID_ADMIN; the executor is the ACTOR among \
+            \ the keyholders and is proven by CAP_EnforceAccountOwnership, exactly as in the \
+            \ already-swept twin DALOS::A_MigrateLiquidFunds. Authority and attribution are \
+            \ orthogonal -- neither substitutes for the other."
         (P|UEV_IMC)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership executor)
+        )
         (with-capability (GOV|MIGRATE migration-target-stoa-account)
             (let
                 (
@@ -5513,7 +5524,7 @@
         )
     )
     (defun C_UnwrapStoa:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string unwrapper:string amount:decimal)
+        (patron:string executor:string amount:decimal)
         (P|UEV_IMC)
         (let
             (
@@ -5524,16 +5535,16 @@
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 (lq-sc:string LIQUID|SC_NAME)
                 (lq-stoa:string LIQUID|SC_STOA-NAME)
-                (stoa-patron:string (ref-DALOS::UR_AccountStoa unwrapper))
+                (stoa-patron:string (ref-DALOS::UR_AccountStoa executor))
                 (w-stoa-id:string (ref-DALOS::UR_WrappedStoaID))
             )
-            (with-capability (LIQUID|C>UNWRAP unwrapper)
+            (with-capability (LIQUID|C>UNWRAP executor)
                 (let
                     (
                         (output:object{IgnisCollectorV3.OutputCumulator}
                             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                                 [
-                                    (ref-TFT::C_Transfer patron unwrapper lq-sc w-stoa-id amount true)
+                                    (ref-TFT::C_Transfer patron executor lq-sc w-stoa-id amount true)
                                     (ref-DPTF::C_Burn patron lq-sc w-stoa-id amount)
                                 ]
                                 []
@@ -5550,7 +5561,7 @@
         )
     )
     (defun C_WrapStoa:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string wrapper:string amount:decimal)
+        (patron:string executor:string amount:decimal)
         (P|UEV_IMC)
         (let
             (
@@ -5560,17 +5571,17 @@
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 (lq-sc:string LIQUID|SC_NAME)
                 (lq-stoa:string LIQUID|SC_STOA-NAME)
-                (stoa-patron:string (ref-DALOS::UR_AccountStoa wrapper))
+                (stoa-patron:string (ref-DALOS::UR_AccountStoa executor))
                 (w-stoa-id:string (ref-DALOS::UR_WrappedStoaID))
             )
-            (with-capability (LIQUID|C>WRAP wrapper)
+            (with-capability (LIQUID|C>WRAP executor)
                 (let
                     (
                         (output:object{IgnisCollectorV3.OutputCumulator}
                             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                                 [
                                     (ref-DPTF::C_Mint patron lq-sc w-stoa-id amount false)
-                                    (ref-TFT::C_Transfer patron lq-sc wrapper w-stoa-id amount true)
+                                    (ref-TFT::C_Transfer patron lq-sc executor w-stoa-id amount true)
                                 ]
                                 []
                             )
@@ -5583,8 +5594,9 @@
         )
     )
     (defun C_UnwrapUrStoa:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string unwrapper:string amount:decimal)
-        @doc "Unwrapper is the Ouronet Account doing the Unwrapping. \
+        (patron:string executor:string amount:decimal)
+        @doc "Executor is the Ouronet Account doing the Unwrapping (renamed from `unwrapper`, \
+            \ patron/executor canon 2.2, 2026-09-21). \
             \ Its attached Stoa address k:xxx must be registered in the UrStoa Account Table for this to work. \
             \ If its not registered there yet, the UI constructs a bespoke tx that creates the \
             \ account with the real signer's own (read-keyset \"ks\") immediately before this \
@@ -5600,16 +5612,16 @@
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 (lq-sc:string LIQUID|SC_NAME)
                 (lq-stoa:string LIQUID|SC_STOA-NAME)
-                (stoa-patron:string (ref-DALOS::UR_AccountStoa unwrapper))
+                (stoa-patron:string (ref-DALOS::UR_AccountStoa executor))
                 (w-ur-stoa-id:string (ref-DALOS::UR_UrStoaID))
             )
-            (with-capability (LIQUID|C>UR-UNWRAP unwrapper)
+            (with-capability (LIQUID|C>UR-UNWRAP executor)
                 (let
                     (
                         (output:object{IgnisCollectorV3.OutputCumulator}
                             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                                 [
-                                    (ref-TFT::C_Transfer patron unwrapper lq-sc w-ur-stoa-id amount true)
+                                    (ref-TFT::C_Transfer patron executor lq-sc w-ur-stoa-id amount true)
                                     (ref-DPTF::C_Burn patron lq-sc w-ur-stoa-id amount)
                                 ]
                                 []
@@ -5626,8 +5638,9 @@
         )
     )
     (defun C_WrapUrStoa:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string wrapper:string amount:decimal)
-        @doc "Wrapper is the Ouronet Account doing the Wrapping. \
+        (patron:string executor:string amount:decimal)
+        @doc "Executor is the Ouronet Account doing the Wrapping (renamed from `wrapper`, \
+            \ patron/executor canon 2.2, 2026-09-21). \
             \ Its attached Stoa address k:xxx must be registered in the UrStoa Account Table for this to work. \
             \ If its not registered there yet, the UI constructs a bespoke tx that creates the \
             \ account with the real signer's own (read-keyset \"ks\") immediately before this \
@@ -5643,17 +5656,17 @@
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 (lq-sc:string LIQUID|SC_NAME)
                 (lq-stoa:string LIQUID|SC_STOA-NAME)
-                (stoa-patron:string (ref-DALOS::UR_AccountStoa wrapper))
+                (stoa-patron:string (ref-DALOS::UR_AccountStoa executor))
                 (w-ur-stoa-id:string (ref-DALOS::UR_UrStoaID))
             )
-            (with-capability (LIQUID|C>UR-WRAP wrapper)
+            (with-capability (LIQUID|C>UR-WRAP executor)
                 (let
                     (
                         (output:object{IgnisCollectorV3.OutputCumulator}
                             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                                 [
                                     (ref-DPTF::C_Mint patron lq-sc w-ur-stoa-id amount false)
-                                    (ref-TFT::C_Transfer patron lq-sc wrapper w-ur-stoa-id amount true)
+                                    (ref-TFT::C_Transfer patron lq-sc executor w-ur-stoa-id amount true)
                                 ]
                                 []
                             )

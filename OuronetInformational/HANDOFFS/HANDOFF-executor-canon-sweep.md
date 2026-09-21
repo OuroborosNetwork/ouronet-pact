@@ -261,7 +261,7 @@ same tools with those three properties.
 | [x] 8 | `09_TFT.pact` | 0 | 0 | 5 | **5** | `TrueFungibleTransferV2` — done; +`DPTF\|C_ClearDispoForeign`. **Found a live security hole**, see §4d |
 | [x] 9 | `10_ATSU.pact` | 2 | 1 | 12 | **15** | `AutostakeUsageV2` — done; 2 three-role functions the plan could not see, see §4g |
 | [x] 10 | `11_VST.pact` | 0 | 5 | 24 | **29** | `VestingV2` |
-| [ ] 11 | `12_LIQUID.pact` | 0 | 0 | 5 | **5** | `StoaLiquidStakingV2` |
+| [x] 11 | `12_LIQUID.pact` | 0 | 0 | 5 | **5** | `StoaLiquidStakingV2` |
 | [ ] 12 | `13_OUROBOROS.pact` | 0 | 0 | 5 | **5** | `OuroborosV2` |
 | [ ] 13 | `15_SWP.pact` | 0 | 4 | 14 | **18** | `SwapperV4` |
 | [ ] 14 | `16_SWPI.pact` | 0 | 0 | 1 | **1** | — |

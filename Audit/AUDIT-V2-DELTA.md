@@ -288,9 +288,8 @@ not a mechanical one.
 
 ### 11_VST.pact — COMPLETE (29 of 29 entrypoints, 2026-09-21)
 
-**What v1 asserted that is now wrong.** Every VST client call site has moved. 18 of 29 entrypoints
-have a changed signature; the remaining 11 (`C_Repurpose*` ×7, `C_ToggleTransferRole*` ×4) are
-unchanged so far and will move at the same turn.
+**What v1 asserted that is now wrong.** Every VST client call site has moved, all 29 entrypoints
+now carry a changed signature, and `_modulecomplete` reports 29 executors proven / 0 unproven.
 
 **13 were RENAMES the plan called ADD — and that is the finding an auditor should look at first.**
 `freezer`, `reserver`, `unreserver`, `vester`, `unvester`, `sleeper`, `unsleeper`, `hibernator`,
@@ -401,3 +400,51 @@ source). The DPTF threading pass gave all three a patron and it had to be revert
 `PATRONLESS` registry in `_executorplan.py` did not contain them, so nothing objected. The
 registry is now filled. **An auditor seeing a patron on any of those three is looking at a
 regression**, not a design.
+
+---
+
+### 12_LIQUID.pact — COMPLETE (5 of 5 entrypoints, 2026-09-21)
+
+**What v1 asserted that is now wrong.** Four signatures changed name only and one changed arity.
+`C_WrapStoa` / `C_UnwrapStoa` / `C_WrapUrStoa` / `C_UnwrapUrStoa` renamed `wrapper` / `unwrapper`
+→ `executor`; `A_MigrateLiquidFunds` went 1 argument → 3, `(patron executor
+migration-target-stoa-account)`, and its Talos wrapper `LIQUID|A_MigrateLiquidFunds` 1 → 2 with
+`GASLESS-PATRON` supplied by the blessed path. **Every v1 assertion about the four `C_`s still
+holds verbatim** — a rename is positionally invisible to a caller.
+
+**The module had an exact already-swept twin, and that is why it was cheap.**
+`DALOS::A_MigrateLiquidFunds` is the same operation on the DALOS escrow and had been swept on
+2026-09-20: `(patron executor migration-target-stoa-account)`, with `CAP_EnforceAccountOwnership
+executor` preceding `with-capability (GOV|MIGRATE …)`. LIQUID's was copied from it account for
+account rather than re-derived. **An auditor should check the twins agree** — divergence between
+two functions that sweep two escrows by the same rule is the defect worth looking for here.
+
+**The wrap/unwrap asymmetry is deliberate and was VERIFIED, not assumed.** `LIQUID|C>WRAP`
+proves the executor (`→ LIQUID|C>X_WRAPPER → CAP_EnforceAccountOwnership`); `LIQUID|C>UNWRAP`
+accepts the account and proves nothing about it. That is §1.1a's "odd one out" shape and it is
+**not** a defect: unwrap's first act is `TFT::C_Transfer patron executor lq-sc …`, moving funds
+**from** the executor, and `TFT::C_Transfer`'s own `@doc` records that every branch composes
+`DPTF|C>X-TRANSFER`, which calls `CAP_EnforceAccountOwnership` on the executor unconditionally.
+Wrap needs its own gate precisely because its transfer runs the other way — out of the LIQUID
+smart account — so nothing downstream would prove the user. `_modulecomplete` check 7: 5 proven,
+0 unproven.
+
+The 2026-09-14 ledger entry on RT-F-001 is the reason this was traced rather than filed: an
+asymmetry between siblings is a **candidate-finder, not a design oracle**, and the last time it
+was treated as one the finding was false.
+
+**The negative test was preserved by choosing the fixture, not by reordering the guards.**
+`<<CONF-05>>` asserts `LIQUID|A_MigrateLiquidFunds` refuses a non-admin with *"Keyset failure"*.
+Adding `CAP_EnforceAccountOwnership executor` ahead of the admin gate would have changed that
+refusal into an ownership failure — the test would still pass and would no longer test the admin
+boundary. Passing `KST.EMMA`, the signer's **own** account, satisfies the ownership gate so the
+keyset gate is the only thing left that can refuse. Same treatment for `<<LQD-03pre>>`, which
+pins the GAP precondition by its message. This is CLAUDE.md's *"a fixture that satisfies the
+first guard exposes BOTH"*, applied rather than quoted.
+
+**Call sites re-pointed: 4** (`CONFORMANCE.repl`, `LIQUID.repl` ×2, `[6.3]_SWP.repl`). The
+`CONFORMANCE.repl` one matters more than its size: that block's own comment warns that *"an arity
+or type error would also raise — and would look exactly like a passing access-control test while
+proving nothing"*, and `expect-failure` around a short modref call absorbs the arity error
+silently. Leaving it un-re-pointed would have left a green assertion proving nothing.
+

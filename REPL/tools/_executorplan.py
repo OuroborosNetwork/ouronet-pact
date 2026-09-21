@@ -46,7 +46,7 @@ where that slot holds an entity id.
     python3 REPL/tools/_executorplan.py --module F.pact per-file detail
     python3 REPL/tools/_executorplan.py --state RENAME  flat list of one class
 """
-import os, re, sys, glob, collections
+import ast, os, re, sys, glob, collections
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, os.path.join(ROOT, "REPL", "tools"))
@@ -122,6 +122,36 @@ ENTITY = re.compile(r'^(id|ats|swpair|pool-id|fvt-id|score-id|anchor-id|dptf|dpo
 TYPED = re.compile(r'([A-Za-z0-9|_-]+):(?:string|bool|integer|decimal|guard|\[[^\]]+\]|object[^\s)]*)')
 
 
+def _slot(p):
+    """Classify whatever occupies the EXECUTOR slot. ONE function, used by EVERY branch.
+
+    ADDED 2026-09-21, and the reason is the same meta-finding for the third time. The REVIEW
+    state was introduced that morning to stop this tool SILENTLY DECIDING "no executor here" on
+    the strength of a name it had never seen -- but it was wired into the `patron`-first branch
+    ONLY, because that is the branch where 11_VST exhibited the bug. The PATRONLESS and
+    Talos-admin branches, where slot 0 IS the executor slot, went on hardcoding
+
+        "DONE" if ps[0] == "executor" else "ADD"
+
+    so an ACCOUNT sitting correctly in the executor slot reported ADD. ORBR::C_Compress
+    (client:string ignis-amount:decimal) is the proof: `client` is IN the ACCT list, and the tool
+    said "there is no executor parameter, add one" -- which, followed literally, bolts a second
+    account beside the one already there. Exactly the 11_VST failure, in the branch the 11_VST
+    fix did not touch.
+
+    A fix applied to the OCCURRENCE rather than to the CLASS leaves the class intact.
+    """
+    if p == "executor":
+        return "DONE"
+    if ACCT.match(p):
+        return "RENAME"
+    if ENTITY.match(p):
+        return "ADD"
+    # An EMPTY slot is not an unknown name -- it is a definite absence, so ADD is a reading of
+    # the evidence rather than a guess. Only a name matching NEITHER list is REVIEW.
+    return "REVIEW" if p else "ADD"
+
+
 def plan():
     rows = []
     for p in sorted(glob.glob(os.path.join(ROOT, "1_SOVEREIGN", "**", "*.pact"), recursive=True)):
@@ -148,43 +178,81 @@ def plan():
             is_talos = os.sep + "3_Talos" + os.sep in p
             is_admin = re.search(r'(?:^|\|)(A|AA)_', n) is not None
             if is_talos and is_admin:
-                rows.append((f, n, "DONE" if ps and ps[0] == "executor" else "ADD",
-                             ps[0] if ps else ""))
+                rows.append((f, n, _slot(ps[0] if ps else ""), ps[0] if ps else ""))
                 continue
             if n in EXECUTORLESS:
                 rows.append((f, n, "DONE" if ps and ps[0] == "patron" else "PATRON",
                              ps[0] if ps else ""))
                 continue
             if n in PATRONLESS:
-                rows.append((f, n, "DONE" if ps and ps[0] == "executor" else "ADD",
-                             ps[0] if ps else ""))
+                rows.append((f, n, _slot(ps[0] if ps else ""), ps[0] if ps else ""))
                 continue
             if not ps or ps[0] != "patron":
                 rows.append((f, n, "PATRON", ps[0] if ps else ""))
                 continue
             p2 = ps[1] if len(ps) > 1 else ""
-            if p2 == "executor":
-                rows.append((f, n, "DONE", p2))
-            elif ACCT.match(p2):
-                rows.append((f, n, "RENAME", p2))
-            elif ENTITY.match(p2):
-                rows.append((f, n, "ADD", p2))
-            else:
-                # NEITHER a known account name NOR a recognisable entity id. Previously this fell
-                # through to ADD, which is a DECISION -- "there is no executor here, add one" --
-                # taken silently on the strength of a name the list had simply never seen.
-                # 11_VST.pact is the proof: freezer / reserver / vester / sleeper / hibernator /
-                # awaker / constricter / brumator are all ACCOUNTS, every one reported ADD, and
-                # following that would have bolted a second account parameter beside the executor
-                # that was already there, in 11 signatures. ACCT is a hardcoded list and a
-                # hardcoded list cannot report its own incompleteness -- CLAUDE.md records exactly
-                # this about _toolpaths.py. So the fallback is now LOUD: REVIEW means "read the
-                # body", not "assume".
-                rows.append((f, n, "REVIEW", p2))
+            rows.append((f, n, _slot(p2), p2))
+
     return rows
 
 
+def selftest():
+    """PINS THE 2026-09-21 REGRESSION, because a repair that only I verified is a claim about
+    the past. The gate runs every `--selftest` it finds, so from here on the tool re-derives
+    this on every run.
+
+    Case 1 is the bug itself: an ACCOUNT name in the executor slot must be RENAME. It reported
+    ADD for every PATRONLESS and Talos-admin entrypoint, because the REVIEW fix earlier the same
+    day was wired into one branch of three.
+    Case 4 is the property REVIEW exists for: an unrecognised name is reported, never assumed.
+    """
+    cases = [
+        ("client",              "RENAME", "ACCT name in the executor slot -- ORBR::C_Compress"),
+        ("executor",            "DONE",   "already canon"),
+        ("swpair",              "ADD",    "an entity id -- no executor parameter exists"),
+        ("brumator",            "REVIEW", "matches NEITHER list -- read the body, do not assume"),
+        ("",                    "ADD",    "a definite absence, not an unknown name"),
+        ("dptf-to-repurpose",   "ADD",    "entity, via the -to-repurpose arm"),
+    ]
+    bad = []
+    for arg, want, why in cases:
+        got = _slot(arg)
+        if got != want:
+            bad.append(f"   _slot({arg!r}) = {got}, expected {want}  ({why})")
+    # And the structural property that the bug violated: ONE classifier, used by every branch.
+    # Checked on the AST, not on the text: the first version of this grepped the source for
+    # `else "ADD"` and tripped on its own docstring, which QUOTES the broken form. A structural
+    # property deserves a structural check.
+    tree = ast.parse(open(os.path.abspath(__file__), encoding="utf8").read())
+    fn = next(f for f in tree.body if isinstance(f, ast.FunctionDef) and f.name == "plan")
+    for call in ast.walk(fn):
+        if not (isinstance(call, ast.Call) and isinstance(call.func, ast.Attribute)
+                and call.func.attr == "append"):
+            continue
+        tup = call.args[0]
+        if not (isinstance(tup, ast.Tuple) and len(tup.elts) == 4):
+            continue
+        st = tup.elts[2]
+        # Legitimate non-_slot states: the bare "PATRON" (no patron in slot 0, so the executor
+        # slot has not been reached yet) and the EXECUTORLESS ternary, which classifies the
+        # PATRON slot rather than the executor slot. Anything else is the bug coming back.
+        consts = {c.value for c in ast.walk(st)
+                  if isinstance(c, ast.Constant) and isinstance(c.value, str)}
+        ok = (isinstance(st, ast.Call) and getattr(st.func, "id", None) == "_slot") \
+             or consts <= {"DONE", "PATRON", "patron"}
+        if not ok:
+            bad.append(f"   plan() classifies the executor slot inline (line {st.lineno}) "
+                       f"instead of via _slot()")
+    if bad:
+        print("SELFTEST FAILED -- _executorplan\n" + "\n".join(bad))
+        return 1
+    print(f"  _executorplan selftest: {len(cases)} slot classifications OK, single classifier")
+    return 0
+
+
 def main():
+    if "--selftest" in sys.argv:
+        return selftest()
     rows = plan()
     if "--module" in sys.argv:
         want = sys.argv[sys.argv.index("--module") + 1]

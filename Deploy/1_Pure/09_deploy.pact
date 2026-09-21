@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 9 of 24
 ;; This is STEP 9 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-8 must have run first, including the init steps between deploys.
-;; 4 source file(s), 252,440 gas measured in the REPL gas model, 238,184 bytes
+;; 4 source file(s), 252,440 gas measured in the REPL gas model, 238,240 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/21_CODEX.pact
@@ -3090,7 +3090,7 @@
     (defun ATS|AA_RemoveSecondary (patron:string executor:string ats:string reward-token:string accounts-with-ats-data:[string]))
     (defun ATS|A_KickStart (executor:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
     ;;
-    (defun LIQUID|A_MigrateLiquidFunds:decimal (migration-target-stoa-account:string))
+    (defun LIQUID|A_MigrateLiquidFunds:decimal (executor:string migration-target-stoa-account:string))
     ;;
     ;;
     (defun ORBR|A_Fuel ())
@@ -3725,7 +3725,7 @@
         )
     )
     ;;  [LIQUID_Administrator]
-    (defun LIQUID|A_MigrateLiquidFunds:decimal (migration-target-stoa-account:string)
+    (defun LIQUID|A_MigrateLiquidFunds:decimal (executor:string migration-target-stoa-account:string)
         @doc "Migrates Stoa Liquid Staking STOA Funds, to another stoa adress, \
         \ if needed due to a migration to a new namespace and new module code \
         \ Outputs the migrated amount"
@@ -3734,7 +3734,7 @@
                 (
                     (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
                 )
-                (ref-LIQUID::A_MigrateLiquidFunds migration-target-stoa-account)
+                (ref-LIQUID::A_MigrateLiquidFunds GASLESS-PATRON executor migration-target-stoa-account)
             )
         )
     )

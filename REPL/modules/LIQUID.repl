@@ -243,7 +243,7 @@
                     (expect "<<LQD-03pre>> GAP is OFF" false (ref-DALOS::UR_GAP))
                     (expect-failure "<<LQD-03pre>> migration is refused while the pause is off, and says so"
                         "Migration can only be executed when Global Administrative Pause is online"
-                        (ref-TS01-A::LIQUID|A_MigrateLiquidFunds tgt))
+                        (ref-TS01-A::LIQUID|A_MigrateLiquidFunds KST.ANHD tgt))
                     (expect "<<LQD-03pre>> and the escrow is untouched by the refusal"
                         e0 (ref-coin::get-balance lq-stoa))
                 ]
@@ -327,7 +327,7 @@
             ;;PRECONDITION: arm the pause. GOV|MIGRATE enforces GAP is ON (its message says the
             ;;opposite -- see the header note and DALOS-ADMIN-03b, which pins the same defect).
             (ref-TS01-A::DALOS|A_ToggleGAP KST.ANHD true)
-            (let ((moved:decimal (ref-TS01-A::LIQUID|A_MigrateLiquidFunds target)))
+            (let ((moved:decimal (ref-TS01-A::LIQUID|A_MigrateLiquidFunds KST.ANHD target)))
                 (map print
                     [
                         ;;The return value is the operator's receipt: it must be the PRE-balance,

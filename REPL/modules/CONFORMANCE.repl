@@ -403,7 +403,7 @@
                 (ref-TS01-A::SWP|A_ToggleAsymetricLiquidityAddition true))
             (expect-failure "<<CONF-05>> LIQUID|A_MigrateLiquidFunds likewise"
                 "Keyset failure"
-                (ref-TS01-A::LIQUID|A_MigrateLiquidFunds "k:abc"))
+                (ref-TS01-A::LIQUID|A_MigrateLiquidFunds KST.EMMA "k:abc"))
             (expect-failure "<<CONF-05>> ATS|A_KickStart likewise"
                 "Keyset failure"
                 (ref-TS01-A::ATS|A_KickStart KST.EMMA

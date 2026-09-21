@@ -134,12 +134,12 @@
     (defun VST|C_ToggleTransferRoleHibernatingDPOF (patron:string executor:string s-dpof:string target:string toggle:bool))
     ;;
     ;;
-    (defun LQD|C_UnwrapStoa (patron:string unwrapper:string amount:decimal))
-    (defun LQD|C_WrapStoa (patron:string wrapper:string amount:decimal))
+    (defun LQD|C_UnwrapStoa (patron:string executor:string amount:decimal))
+    (defun LQD|C_WrapStoa (patron:string executor:string amount:decimal))
     ;;#13H fix: LQD|C_RegisterOuronetAccountForUrstoaHoldings removed (2026-08-27) - see
     ;;12_LIQUID.pact's matching note; account creation is UI-constructed, not a Pact function.
-    (defun LQD|C_UnwrapUrStoa (patron:string unwrapper:string amount:decimal))
-    (defun LQD|C_WrapUrStoa (patron:string wrapper:string amount:decimal))
+    (defun LQD|C_UnwrapUrStoa (patron:string executor:string amount:decimal))
+    (defun LQD|C_WrapUrStoa (patron:string executor:string amount:decimal))
     ;;
     ;;
     (defun ORBR|C_Compress (client:string ignis-amount:decimal))
@@ -1742,7 +1742,7 @@
         )
     )
     ;;  [LIQUID_Client]
-    (defun LQD|C_UnwrapStoa (patron:string unwrapper:string amount:decimal)
+    (defun LQD|C_UnwrapStoa (patron:string executor:string amount:decimal)
         @doc "Unwraps DPTF Stoa to Native Stoa"
         (with-capability (P|TS)
             (let
@@ -1750,16 +1750,16 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
-                    (su:string (ref-I|OURONET::OI|UC_ShortAccount unwrapper))
+                    (su:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-LIQUID::C_UnwrapStoa patron unwrapper amount)
+                    (ref-LIQUID::C_UnwrapStoa patron executor amount)
                 )
                 (format "Succesfully Unwrapped {} STOA on Account {}" [amount su])
             )
         )
     )
-    (defun LQD|C_WrapStoa (patron:string wrapper:string amount:decimal)
+    (defun LQD|C_WrapStoa (patron:string executor:string amount:decimal)
         @doc "Wraps Native Stoa to DPTF Stoa"
         (with-capability (P|TS)
             (let
@@ -1767,16 +1767,16 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
-                    (sw:string (ref-I|OURONET::OI|UC_ShortAccount wrapper))
+                    (sw:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-LIQUID::C_WrapStoa patron wrapper amount)
+                    (ref-LIQUID::C_WrapStoa patron executor amount)
                 )
                 (format "Succesfully Wrapped {} STOA on Account {}" [amount sw])
             )
         )
     )
-    (defun LQD|C_UnwrapUrStoa (patron:string unwrapper:string amount:decimal)
+    (defun LQD|C_UnwrapUrStoa (patron:string executor:string amount:decimal)
         @doc "Unwrapper is the Ouronet Account doing the Unwrapping. \
             \ Its attached Stoa address k:xxx must be registered in the UrStoa Account Table for this to work. \
             \ If its not registered there yet, the UI constructs a bespoke tx that creates the \
@@ -1791,16 +1791,16 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
-                    (su:string (ref-I|OURONET::OI|UC_ShortAccount unwrapper))
+                    (su:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-LIQUID::C_UnwrapUrStoa patron unwrapper amount)
+                    (ref-LIQUID::C_UnwrapUrStoa patron executor amount)
                 )
                 (format "Succesfully Unwrapped {} URSTOA on Account {}" [amount su])
             )
         )
     )
-    (defun LQD|C_WrapUrStoa (patron:string wrapper:string amount:decimal)
+    (defun LQD|C_WrapUrStoa (patron:string executor:string amount:decimal)
         @doc "Wrapper is the Ouronet Account doing the Wrapping. \
             \ Its attached Stoa address k:xxx must be registered in the UrStoa Account Table for this to work. \
             \ If its not registered there yet, the UI constructs a bespoke tx that creates the \
@@ -1815,10 +1815,10 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
-                    (sw:string (ref-I|OURONET::OI|UC_ShortAccount wrapper))
+                    (sw:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-LIQUID::C_WrapUrStoa patron wrapper amount)
+                    (ref-LIQUID::C_WrapUrStoa patron executor amount)
                 )
                 (format "Succesfully Wrapped {} URSTOA on Account {}" [amount sw])
             )

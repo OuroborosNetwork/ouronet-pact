@@ -7988,7 +7988,7 @@
     ;(ref-TS01-A::DALOS|A_ToggleGAP true)  
     [   
         (format "DWK Supply is {}" [(ref-DPTF::UR_Supply dwk)])
-        ;(format "Migration will migrate {} STOA" [(ref-TS01-A::LIQUID|A_MigrateLiquidFunds migration-target)])
+        ;(format "Migration will migrate {} STOA" [(ref-TS01-A::LIQUID|A_MigrateLiquidFunds KST.ANHD migration-target)])
         ;(format "Migration address has {} STOA" [(ref-coin::get-balance migration-target)])
     ]
     
