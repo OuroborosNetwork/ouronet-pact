@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 5 of 24
 ;; This is STEP 5 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-4 must have run first, including the init steps between deploys.
-;; 3 source file(s), 342,033 gas measured in the REPL gas model, 272,849 bytes
+;; 3 source file(s), 342,033 gas measured in the REPL gas model, 272,872 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/10_ATSU.pact
@@ -2501,35 +2501,35 @@
     (defun C_CreateSleepingLink:object{IgnisCollectorV3.OutputCumulator} (patron:string dptf:string))
     (defun C_CreateHibernatingLink:object{IgnisCollectorV3.OutputCumulator} (patron:string dptf:string))
         ;;
-    (defun C_Freeze:object{IgnisCollectorV3.OutputCumulator} (patron:string freezer:string freeze-output:string dptf:string amount:decimal))
+    (defun C_Freeze:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string freeze-output:string dptf:string amount:decimal))
     (defun C_RepurposeFrozen:object{IgnisCollectorV3.OutputCumulator} (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string))
     (defun C_ToggleTransferRoleFrozenDPTF:object{IgnisCollectorV3.OutputCumulator} (patron:string s-dptf:string target:string toggle:bool))
         ;;
-    (defun C_Reserve:object{IgnisCollectorV3.OutputCumulator} (patron:string reserver:string dptf:string amount:decimal))
-    (defun C_Unreserve:object{IgnisCollectorV3.OutputCumulator} (patron:string unreserver:string r-dptf:string amount:decimal))
+    (defun C_Reserve:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string dptf:string amount:decimal))
+    (defun C_Unreserve:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string r-dptf:string amount:decimal))
     (defun C_RepurposeReserved:object{IgnisCollectorV3.OutputCumulator} (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string))
     (defun C_ToggleTransferRoleReservedDPTF:object{IgnisCollectorV3.OutputCumulator} (patron:string s-dptf:string target:string toggle:bool))
         ;;
-    (defun C_Vest:object{IgnisCollectorV3.OutputCumulator} (patron:string vester:string target-account:string dptf:string amount:decimal offset:integer duration:integer milestones:integer))
-    (defun C_Unvest:object{IgnisCollectorV3.OutputCumulator} (patron:string unvester:string dpof:string nonce:integer))
+    (defun C_Vest:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string target-account:string dptf:string amount:decimal offset:integer duration:integer milestones:integer))
+    (defun C_Unvest:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string dpof:string nonce:integer))
     (defun C_RepurposeVested:object{IgnisCollectorV3.OutputCumulator} (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
         ;;
-    (defun C_Sleep:object{IgnisCollectorV3.OutputCumulator} (patron:string sleeper:string target-account:string dptf:string amount:decimal duration:integer))
-    (defun C_Unsleep:object{IgnisCollectorV3.OutputCumulator} (patron:string unsleeper:string dpof:string nonce:integer))
-    (defun C_Merge:object{IgnisCollectorV3.OutputCumulator} (patron:string merger:string dpof:string nonces:[integer]))
+    (defun C_Sleep:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string target-account:string dptf:string amount:decimal duration:integer))
+    (defun C_Unsleep:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string dpof:string nonce:integer))
+    (defun C_Merge:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string dpof:string nonces:[integer]))
     (defun C_RepurposeMerge:object{IgnisCollectorV3.OutputCumulator} (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string))
     (defun C_RepurposeSleeping:object{IgnisCollectorV3.OutputCumulator} (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
     (defun C_ToggleTransferRoleSleepingDPOF:object{IgnisCollectorV3.OutputCumulator} (patron:string s-dpof:string target:string toggle:bool))
     ;;
-    (defun C_Hibernate:object{IgnisCollectorV3.OutputCumulator} (patron:string hibernator:string target-account:string dptf:string amount:decimal dayz:integer))
-    (defun C_Awake:object{IgnisCollectorV3.OutputCumulator} (patron:string awaker:string dpof:string nonce:integer))
-    (defun C_Slumber:object{IgnisCollectorV3.OutputCumulator} (patron:string merger:string dpof:string nonces:[integer]))
+    (defun C_Hibernate:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string target-account:string dptf:string amount:decimal dayz:integer))
+    (defun C_Awake:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string dpof:string nonce:integer))
+    (defun C_Slumber:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string dpof:string nonces:[integer]))
     (defun C_RepurposeSlumber:object{IgnisCollectorV3.OutputCumulator} (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string))
     (defun C_RepurposeHibernating:object{IgnisCollectorV3.OutputCumulator} (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
     (defun C_ToggleTransferRoleHibernatingDPOF:object{IgnisCollectorV3.OutputCumulator} (patron:string s-dpof:string target:string toggle:bool))
     ;;
-    (defun C_Constrict:object{IgnisCollectorV3.OutputCumulator} (patron:string constricter:string ats:string rt:string amount:decimal dayz:integer))
-    (defun C_Brumate:object{IgnisCollectorV3.OutputCumulator} (patron:string brumator:string ats1:string ats2:string rt:string amount:decimal dayz:integer))
+    (defun C_Constrict:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string ats:string rt:string amount:decimal dayz:integer))
+    (defun C_Brumate:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string ats1:string ats2:string rt:string amount:decimal dayz:integer))
 
 )
 ;;
@@ -2787,7 +2787,7 @@
         @event
         (compose-capability (VST|C>LINK dptf))
     )
-    (defcap VST|C>FREEZE (freezer:string freeze-output:string dptf:string amount:decimal)
+    (defcap VST|C>FREEZE (executor:string freeze-output:string dptf:string amount:decimal)
         @event
         (let
             (
@@ -2804,7 +2804,7 @@
         @event
         (compose-capability (VST|C>LINK dptf))
     )
-    (defcap VST|C>RESERVE (reserver:string dptf:string amount:decimal)
+    (defcap VST|C>RESERVE (executor:string dptf:string amount:decimal)
         @event
         (let
             (
@@ -2812,13 +2812,13 @@
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (iz-reservation:bool (ref-DPTF::UR_IzReservationOpen dptf))
             )
-            (ref-DALOS::UEV_EnforceAccountType reserver false)
+            (ref-DALOS::UEV_EnforceAccountType executor false)
             (ref-DPTF::UEV_Reserved dptf true)
             (enforce iz-reservation (format "Reservation is not opened for Token {}" [dptf]))
             (compose-capability (P|TT))
         )
     )
-    (defcap VST|C>UNRESERVE (unreserver:string r-dptf:string amount:decimal)
+    (defcap VST|C>UNRESERVE (executor:string r-dptf:string amount:decimal)
         @event
         (let
             (
@@ -2826,7 +2826,7 @@
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (dptf:string (ref-DPTF::UR_Reservation r-dptf))
             )
-            (ref-DALOS::UEV_EnforceAccountType unreserver true)
+            (ref-DALOS::UEV_EnforceAccountType executor true)
             (ref-DPTF::CAP_Owner dptf)
             (ref-DPTF::UEV_Reserved r-dptf true)
             (compose-capability (P|TT))
@@ -2837,7 +2837,7 @@
         @event
         (compose-capability (VST|C>LINK dptf))
     )
-    (defcap VST|C>VEST (vester:string target-account:string dptf:string amount:decimal offset:integer duration:integer milestones:integer)
+    (defcap VST|C>VEST (executor:string target-account:string dptf:string amount:decimal offset:integer duration:integer milestones:integer)
         @event
         (let
             (
@@ -2846,14 +2846,14 @@
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
             )
             (ref-U|VST::UEV_MilestoneWithTime offset duration milestones 788400000)
-            (ref-DALOS::UEV_EnforceAccountType vester false)
+            (ref-DALOS::UEV_EnforceAccountType executor false)
             (ref-DALOS::UEV_EnforceAccountType target-account false)
             (ref-DPTF::CAP_Owner dptf)
             (ref-DPTF::UEV_Vesting dptf true)
             (compose-capability (P|TT))
         )
     )
-    (defcap VST|C>CULL (unvester:string dpof:string nonce:integer culled-amount:decimal)
+    (defcap VST|C>CULL (executor:string dpof:string nonce:integer culled-amount:decimal)
         @event
         (let
             (
@@ -2861,7 +2861,7 @@
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
             )
             (enforce (> culled-amount 0.0) (format "Nonce {} cant be culled" [nonce]))
-            (ref-DALOS::UEV_EnforceAccountType unvester false)
+            (ref-DALOS::UEV_EnforceAccountType executor false)
             (ref-DPOF::UEV_Vesting dpof true)
             (compose-capability (P|TT))
         )
@@ -2871,7 +2871,7 @@
         @event
         (compose-capability (VST|C>LINK dptf))
     )
-    (defcap VST|C>SLEEP (sleeper:string target-account:string dptf:string amount:decimal duration:integer)
+    (defcap VST|C>SLEEP (executor:string target-account:string dptf:string amount:decimal duration:integer)
         @event
         (let
             (
@@ -2886,7 +2886,7 @@
             (compose-capability (P|TT))
         )
     )
-    (defcap VST|C>UNSLEEP (unsleeper:string dpof:string nonce:integer nonce-supply:decimal culled-amount:decimal)
+    (defcap VST|C>UNSLEEP (executor:string dpof:string nonce:integer nonce-supply:decimal culled-amount:decimal)
         @event
         (let
             (
@@ -2896,7 +2896,7 @@
                 ;;
                 (dptf:string (ref-DPOF::UR_Sleeping dpof))
             )
-            (ref-DALOS::UEV_EnforceAccountType unsleeper false)
+            (ref-DALOS::UEV_EnforceAccountType executor false)
             (ref-DPTF::UEV_Sleeping dptf true)
             (enforce 
                 (= nonce-supply culled-amount) 
@@ -2927,17 +2927,17 @@
     ;;matters: RepurposeSlumber is the ONLY remaining exit for a nonce that was already minted wrong.
     ;;Guarding it on kind would strand exactly the holders this fix exists to protect. These two caps
     ;;stop NEW bad rows; the repurpose path stays open for the ones that exist.
-    (defcap VST|C>MERGE (merger:string dpof:string nonces:[integer])
+    (defcap VST|C>MERGE (executor:string dpof:string nonces:[integer])
         @event
         (enforce (= (take 2 dpof) "Z|") "Merge requires a Sleeping DPOF")
         (UEV_NoncesForMerging nonces)
-        (compose-capability (VST|X>MERGE merger dpof))
+        (compose-capability (VST|X>MERGE executor dpof))
     )
-    (defcap VST|C>SLUMBER (merger:string dpof:string nonces:[integer])
+    (defcap VST|C>SLUMBER (executor:string dpof:string nonces:[integer])
         @event
         (enforce (= (take 2 dpof) "H|") "Slumber requires a Hibernating DPOF")
         (UEV_NoncesForMerging nonces)
-        (compose-capability (VST|X>MERGE merger dpof))
+        (compose-capability (VST|X>MERGE executor dpof))
     )
     (defcap VST|X>MERGE (merger:string dpof:string)
         (let
@@ -2949,7 +2949,7 @@
             (compose-capability (P|TT))
         )
     )
-    (defcap VST|C>HIBERNATE (hibernator:string target-account:string dptf:string amount:decimal dayz:integer)
+    (defcap VST|C>HIBERNATE (executor:string target-account:string dptf:string amount:decimal dayz:integer)
         @event
         (let
             (
@@ -2965,13 +2965,13 @@
             (compose-capability (P|TT))
         )
     )
-    (defcap VST|C>AWAKE (awaker:string dpof:string nonce:integer)
+    (defcap VST|C>AWAKE (executor:string dpof:string nonce:integer)
         (let
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
             )
-            (ref-DALOS::UEV_EnforceAccountType awaker false)
+            (ref-DALOS::UEV_EnforceAccountType executor false)
             (ref-DPOF::UEV_Hibernation dpof true)
             (compose-capability (P|TT))
         )
@@ -4318,9 +4318,9 @@
         )
     )
     (defun C_Freeze:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string freezer:string freeze-output:string dptf:string amount:decimal)
+        (patron:string executor:string freeze-output:string dptf:string amount:decimal)
         (P|UEV_IMC)
-        (with-capability (VST|C>FREEZE freezer freeze-output dptf amount)
+        (with-capability (VST|C>FREEZE executor freeze-output dptf amount)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
@@ -4331,8 +4331,8 @@
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
                     [
                         ;;1]Freezer sends dptf to VST|SC_NAME, if its not already there
-                        (if (!= freezer VST|SC_NAME)
-                            (ref-TFT::C_Transfer patron freezer VST|SC_NAME dptf amount true)
+                        (if (!= executor VST|SC_NAME)
+                            (ref-TFT::C_Transfer patron executor VST|SC_NAME dptf amount true)
                             EOC
                         )
                         ;;2]VST|SC_NAME mints F|dptf
@@ -4365,9 +4365,9 @@
         )
     )
     (defun C_Reserve:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string reserver:string dptf:string amount:decimal)
+        (patron:string executor:string dptf:string amount:decimal)
         (P|UEV_IMC)
-        (with-capability (VST|C>RESERVE reserver dptf amount)
+        (with-capability (VST|C>RESERVE executor dptf amount)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
@@ -4378,14 +4378,14 @@
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
                     [
                         ;;1]Reserver sends dptf to VST|SC_NAME if its not already tehre
-                        (if (!= reserver VST|SC_NAME)
-                            (ref-TFT::C_Transfer patron reserver VST|SC_NAME dptf amount true)
+                        (if (!= executor VST|SC_NAME)
+                            (ref-TFT::C_Transfer patron executor VST|SC_NAME dptf amount true)
                             EOC
                         )
                         ;;2]VST|SC_NAME mint R|dptf
                         (ref-DPTF::C_Mint patron VST|SC_NAME r-dptf amount false)
-                        ;;3]VST|SC_NAME sends R|dptf to reserver
-                        (ref-TFT::C_Transfer patron VST|SC_NAME reserver r-dptf amount true)
+                        ;;3]VST|SC_NAME sends R|dptf to executor
+                        (ref-TFT::C_Transfer patron VST|SC_NAME executor r-dptf amount true)
                     ]
                     []
                 )
@@ -4393,9 +4393,9 @@
         )
     )
     (defun C_Unreserve:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string unreserver:string r-dptf:string amount:decimal)
+        (patron:string executor:string r-dptf:string amount:decimal)
         (P|UEV_IMC)
-        (with-capability (VST|C>UNRESERVE unreserver r-dptf amount)
+        (with-capability (VST|C>UNRESERVE executor r-dptf amount)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
@@ -4406,11 +4406,11 @@
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
                     [
                         ;;1]Unreserver sends R|dptf to VST|SC_NAME
-                        (ref-TFT::C_Transfer patron unreserver VST|SC_NAME r-dptf amount true)
+                        (ref-TFT::C_Transfer patron executor VST|SC_NAME r-dptf amount true)
                         ;;2]VST|SC_NAME burns R|dptf
                         (ref-DPTF::C_Burn patron VST|SC_NAME r-dptf amount)
-                        ;;3]VST|SC_NAME sends dptf back to unreserver
-                        (ref-TFT::C_Transfer patron VST|SC_NAME unreserver dptf amount true)
+                        ;;3]VST|SC_NAME sends dptf back to executor
+                        (ref-TFT::C_Transfer patron VST|SC_NAME executor dptf amount true)
                     ]
                     []
                 )
@@ -4437,9 +4437,9 @@
         )
     )
     (defun C_Vest:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string vester:string target-account:string dptf:string amount:decimal offset:integer duration:integer milestones:integer)
+        (patron:string executor:string target-account:string dptf:string amount:decimal offset:integer duration:integer milestones:integer)
         (P|UEV_IMC)
-        (with-capability (VST|C>VEST vester target-account dptf amount offset duration milestones)
+        (with-capability (VST|C>VEST executor target-account dptf amount offset duration milestones)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
@@ -4458,8 +4458,8 @@
                         ;;1]VST|SC_NAME mints the DPOF Vested Token
                         (ref-DPOF::C_Mint patron VST|SC_NAME dpof-id amount meta-data-chain)
                         ;;2]Vester transfers the DPTF Token to the VST|SC_NAME if its not already there
-                        (if (!= vester VST|SC_NAME)
-                            (ref-TFT::C_Transfer patron vester VST|SC_NAME dptf amount true)
+                        (if (!= executor VST|SC_NAME)
+                            (ref-TFT::C_Transfer patron executor VST|SC_NAME dptf amount true)
                             EOC
                         )
                         ;;3]VST|SC_NAME transfers the DPOF Vested Token to target-account
@@ -4471,14 +4471,14 @@
         )
     )
     (defun C_Unvest:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string unvester:string dpof:string nonce:integer)
+        (patron:string executor:string dpof:string nonce:integer)
         (P|UEV_IMC)
         (let
             (
                 (culled-data:list (URC_CullMetaDataAmountWithObject dpof nonce))
                 (culled-amount:decimal (at 0 culled-data))
             )
-            (with-capability (VST|C>CULL unvester dpof nonce culled-amount)
+            (with-capability (VST|C>CULL executor dpof nonce culled-amount)
                 (let
                     (
                         (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
@@ -4502,16 +4502,16 @@
                         )
                         (ico2:object{IgnisCollectorV3.OutputCumulator}
                             (if (= return-amount 0.0)
-                                ;;1]VST|SC_NAME transfers the whole dptf back to the unvester, when there is no return amount
-                                (ref-TFT::C_Transfer patron VST|SC_NAME unvester dptf-id nonce-supply true)
+                                ;;1]VST|SC_NAME transfers the whole dptf back to the executor, when there is no return amount
+                                (ref-TFT::C_Transfer patron VST|SC_NAME executor dptf-id nonce-supply true)
                                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
                                     [
-                                        ;;1]Only the ready to unvest dptf is trasnfered back to unvester
-                                        (ref-TFT::C_Transfer patron VST|SC_NAME unvester dptf-id culled-amount true)
+                                        ;;1]Only the ready to unvest dptf is trasnfered back to executor
+                                        (ref-TFT::C_Transfer patron VST|SC_NAME executor dptf-id culled-amount true)
                                         ;;2]If return amount is non zero, it is minted as a new DPOF
                                         (ref-DPOF::C_Mint patron VST|SC_NAME dpof return-amount remint-meta-data-chain)
                                         ;;3]Together with the newly minted remainder, still vested, dppf
-                                        (ref-DPOF::C_Transfer patron VST|SC_NAME unvester dpof [(+ 1 nonces-used)] true)
+                                        (ref-DPOF::C_Transfer patron VST|SC_NAME executor dpof [(+ 1 nonces-used)] true)
                                     ]
                                     []
                                 )
@@ -4521,7 +4521,7 @@
                             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                                 [
                                     ;;1]Transfer <nonce> to VST|SC_NAME for Burning
-                                    (ref-DPOF::C_Transfer patron unvester VST|SC_NAME dpof [nonce] true)
+                                    (ref-DPOF::C_Transfer patron executor VST|SC_NAME dpof [nonce] true)
                                     ;;2]Burn it
                                     (ref-DPOF::C_Burn patron VST|SC_NAME dpof nonce nonce-supply)
                                 ]
@@ -4542,9 +4542,9 @@
         )
     )
     (defun C_Sleep:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string sleeper:string target-account:string dptf:string amount:decimal duration:integer)
+        (patron:string executor:string target-account:string dptf:string amount:decimal duration:integer)
         (P|UEV_IMC)
-        (with-capability (VST|C>SLEEP sleeper target-account dptf amount duration)
+        (with-capability (VST|C>SLEEP executor target-account dptf amount duration)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
@@ -4563,8 +4563,8 @@
                         ;;1]VST|SC_NAME mints the DPOF Sleeping Token
                         (ref-DPOF::C_Mint patron VST|SC_NAME dpof-id amount meta-data-chain)
                         ;;2]Sleeper transfers the DPTF Token to the VST|SC_NAME if its not already there
-                        (if (!= sleeper VST|SC_NAME)
-                            (ref-TFT::C_Transfer patron sleeper VST|SC_NAME dptf amount true)
+                        (if (!= executor VST|SC_NAME)
+                            (ref-TFT::C_Transfer patron executor VST|SC_NAME dptf amount true)
                             EOC
                         )
                         ;;3]VST|SC_NAME transfers the DPOF Sleeping Token to target-account
@@ -4576,7 +4576,7 @@
         )
     )
     (defun C_Unsleep:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string unsleeper:string dpof:string nonce:integer)
+        (patron:string executor:string dpof:string nonce:integer)
         (P|UEV_IMC)
         (let
             (
@@ -4584,7 +4584,7 @@
                 (nonce-supply:decimal (ref-DPOF::UR_NonceSupply dpof nonce))
                 (culled-amount:decimal (at 0 (URC_CullMetaDataAmountWithObject dpof nonce)))
             )
-            (with-capability (VST|C>UNSLEEP unsleeper dpof nonce nonce-supply culled-amount)
+            (with-capability (VST|C>UNSLEEP executor dpof nonce nonce-supply culled-amount)
                 (let
                     (
                         (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
@@ -4595,11 +4595,11 @@
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators
                         [
                             ;;1]Unsleeper transfers the initial dpof to the VST|SC_NAME
-                            (ref-DPOF::C_Transfer patron unsleeper VST|SC_NAME dpof [nonce] true)
+                            (ref-DPOF::C_Transfer patron executor VST|SC_NAME dpof [nonce] true)
                             ;;2]Which is then burned in its entirety
                             (ref-DPOF::C_Burn patron VST|SC_NAME dpof nonce nonce-supply)
                             ;;3]VST|SC_NAME transfers in return the initial amount of the dpof, as the dptf counterpart
-                            (ref-TFT::C_Transfer patron VST|SC_NAME unsleeper dptf-id nonce-supply true)
+                            (ref-TFT::C_Transfer patron VST|SC_NAME executor dptf-id nonce-supply true)
                         ]
                         []
                     )
@@ -4608,10 +4608,10 @@
         ) 
     )
     (defun C_Merge:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string merger:string dpof:string nonces:[integer])
+        (patron:string executor:string dpof:string nonces:[integer])
         (P|UEV_IMC)
-        (with-capability (VST|C>MERGE merger dpof nonces)
-            (XIv_MergeNonces patron dpof merger merger nonces 2)
+        (with-capability (VST|C>MERGE executor dpof nonces)
+            (XIv_MergeNonces patron dpof executor executor nonces 2)
         )
     )
     (defun C_RepurposeMerge:object{IgnisCollectorV3.OutputCumulator}
@@ -4641,9 +4641,9 @@
         )
     )
     (defun C_Hibernate:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string hibernator:string target-account:string dptf:string amount:decimal dayz:integer)
+        (patron:string executor:string target-account:string dptf:string amount:decimal dayz:integer)
         (P|UEV_IMC)
-        (with-capability (VST|C>HIBERNATE hibernator target-account dptf amount dayz)
+        (with-capability (VST|C>HIBERNATE executor target-account dptf amount dayz)
             (let
                 (
                     (ref-U|VST:module{UtilityVstV2} U|VST)
@@ -4667,8 +4667,8 @@
                         ;;1]VST|SC_NAME mints the DPOF Hibernating Token
                         (ref-DPOF::C_Mint patron VST|SC_NAME dpof-id amount meta-data-chain)
                         ;;2]Sleeper transfers the DPTF Token to the VST|SC_NAME if its not already there
-                        (if (!= hibernator VST|SC_NAME)
-                            (ref-TFT::C_Transfer patron hibernator VST|SC_NAME dptf amount true)
+                        (if (!= executor VST|SC_NAME)
+                            (ref-TFT::C_Transfer patron executor VST|SC_NAME dptf amount true)
                             EOC
                         )
                         ;;3]VST|SC_NAME transfers the DPOF Sleeping Token to target-account
@@ -4680,12 +4680,12 @@
         )
     )
     (defun C_Awake:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string awaker:string dpof:string nonce:integer)
+        (patron:string executor:string dpof:string nonce:integer)
         @doc "Hibernated Tokens have a 80% peak awakening fee, \
             \ that goes down to zero as time elapses towards its release date.\
             \ This fee is discared (burning it), with no way of collecting it."
         (P|UEV_IMC)
-        (with-capability (VST|C>AWAKE awaker dpof nonce)
+        (with-capability (VST|C>AWAKE executor dpof nonce)
             (let
                 (
                     (ref-U|ATS:module{UtilityAtsV3} U|ATS)
@@ -4723,11 +4723,11 @@
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
                     [
                         ;;1]Transfer Nonce to VST|SC_NAME
-                        (ref-DPOF::C_Transfer patron awaker VST|SC_NAME dpof [nonce] true)
+                        (ref-DPOF::C_Transfer patron executor VST|SC_NAME dpof [nonce] true)
                         ;;2]Burn it whole
                         (ref-DPOF::C_Burn patron VST|SC_NAME dpof nonce nonce-supply)
-                        ;;3]Transfer Remainder from VST|SC_NAME to <awaker>
-                        (ref-TFT::C_Transfer patron VST|SC_NAME awaker dptf-id remainder true)
+                        ;;3]Transfer Remainder from VST|SC_NAME to <executor>
+                        (ref-TFT::C_Transfer patron VST|SC_NAME executor dptf-id remainder true)
                         ;;4]Burn <hibernating-fee> if its greater than 0.0 on VST|SC_NAME
                         (if (!= hibernating-fee 0.0)
                             (ref-DPTF::C_Burn patron VST|SC_NAME dptf-id hibernating-fee)
@@ -4740,10 +4740,10 @@
         )
     )
     (defun C_Slumber:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string merger:string dpof:string nonces:[integer])
+        (patron:string executor:string dpof:string nonces:[integer])
         (P|UEV_IMC)
-        (with-capability (VST|C>SLUMBER merger dpof nonces)
-            (XIv_MergeNonces patron dpof merger merger nonces 3)
+        (with-capability (VST|C>SLUMBER executor dpof nonces)
+            (XIv_MergeNonces patron dpof executor executor nonces 3)
         )
     )
     (defun C_RepurposeSlumber:object{IgnisCollectorV3.OutputCumulator}
@@ -4773,7 +4773,7 @@
         )
     )
     (defun C_Constrict:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string constricter:string ats:string rt:string amount:decimal dayz:integer)
+        (patron:string executor:string ats:string rt:string amount:decimal dayz:integer)
             @doc "Constricts the <rt> Token, autostaking it in the ATS-Pair <ats>, generating Hibernated Token \
             \ Only works when <ats> has <hibernate> on"
         (P|UEV_IMC)
@@ -4795,13 +4795,13 @@
                     (c-rbt-amount:decimal (at "rbt-amount" coil-data))
                     ;;
                     (ico1:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-TFT::C_Transfer patron constricter ATS|SC_NAME rt amount true)
+                        (ref-TFT::C_Transfer patron executor ATS|SC_NAME rt amount true)
                     )
                     (ico2:object{IgnisCollectorV3.OutputCumulator}
                         (ref-DPTF::C_Mint patron ATS|SC_NAME c-rbt c-rbt-amount false)
                     )
                     (ico3:object{IgnisCollectorV3.OutputCumulator}
-                        (C_Hibernate patron ATS|SC_NAME constricter c-rbt c-rbt-amount dayz)
+                        (C_Hibernate patron ATS|SC_NAME executor c-rbt c-rbt-amount dayz)
                     )
                 )
                 (ref-ATS::XE_UpdateRUR ats rt 1 true input-amount)
@@ -4814,9 +4814,9 @@
         )
     )
     (defun C_Brumate:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string brumator:string ats1:string ats2:string rt:string amount:decimal dayz:integer)
+        (patron:string executor:string ats1:string ats2:string rt:string amount:decimal dayz:integer)
         @doc "Brumates the <rt> through 2 ATS-Pairs, \
-            \ outputting the <c-rbt2> as Hibernated Token to the <brumator> \
+            \ outputting the <c-rbt2> as Hibernated Token to the <executor> \
             \ <ats1> must have <hibernation> off, and <ats2> may on for brumation to work"
         (P|UEV_IMC)
         (with-capability (ATSU|C>BRUMATE ats1 ats2 rt)
@@ -4846,7 +4846,7 @@
                     (c-rbt2-amount:decimal (at "rbt-amount" coil2-data))
                     ;;
                     (ico1:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-TFT::C_Transfer patron brumator ATS|SC_NAME rt amount true)
+                        (ref-TFT::C_Transfer patron executor ATS|SC_NAME rt amount true)
                     )
                     (ico2:object{IgnisCollectorV3.OutputCumulator}
                         (ref-DPTF::C_Mint patron ATS|SC_NAME c-rbt1 c-rbt1-amount false)
@@ -4855,7 +4855,7 @@
                         (ref-DPTF::C_Mint patron ATS|SC_NAME c-rbt2 c-rbt2-amount false)
                     )
                     (ico4:object{IgnisCollectorV3.OutputCumulator}
-                        (C_Hibernate patron ATS|SC_NAME brumator c-rbt2 c-rbt2-amount dayz)
+                        (C_Hibernate patron ATS|SC_NAME executor c-rbt2 c-rbt2-amount dayz)
                     )
                 )
                 (ref-ATS::XE_UpdateRUR ats1 rt 1 true input1-amount)
