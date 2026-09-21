@@ -263,7 +263,7 @@ same tools with those three properties.
 | [x] 10 | `11_VST.pact` | 0 | 5 | 24 | **29** | `VestingV2` |
 | [x] 11 | `12_LIQUID.pact` | 0 | 0 | 5 | **5** | `StoaLiquidStakingV2` |
 | [x] 12 | `13_OUROBOROS.pact` | 0 | 0 | 5 | **5** | `OuroborosV2` |
-| [ ] 13 | `15_SWP.pact` | 0 | 4 | 14 | **18** | `SwapperV4` |
+| [x] 13 | `15_SWP.pact` | 0 | 4 | 14 | **18** | `SwapperV4` |
 | [ ] 14 | `16_SWPI.pact` | 0 | 0 | 1 | **1** | — |
 | [ ] 15 | `18_SWPLC.pact` | 0 | 1 | 9 | **10** | `BrandingUsageSecondaryV2`, `SwapperLiquidityClientV2` |
 | [ ] 16 | `19_SWPU.pact` | 0 | 0 | 4 | **4** | `SwapperUsageV3` |

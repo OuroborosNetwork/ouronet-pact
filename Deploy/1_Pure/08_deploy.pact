@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 8 of 24
 ;; This is STEP 8 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-7 must have run first, including the init steps between deploys.
-;; 3 source file(s), 323,224 gas measured in the REPL gas model, 271,310 bytes
+;; 3 source file(s), 323,224 gas measured in the REPL gas model, 272,656 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/18_SWPLC.pact
@@ -1118,7 +1118,14 @@
                 (ref-SWP:module{SwapperV4} SWP)
             )
             (with-capability (P|SWPLC|CALLER)
-                (ref-SWP::C_ToggleAddOrSwap patron swpair toggle true)
+                ;;PROVISIONAL EXECUTOR SLOT (HANDOFF 4e, 2026-09-21). 15_SWP's turn gave
+                ;;C_ToggleAddOrSwap an `executor` bound to the POOL OWNER; this module's own turn
+                ;;has not come, so there is no `executor` parameter here to thread and the rule is
+                ;;to pass the account that actually initiates -- read directly rather than
+                ;;invented. It is CORRECT today (it is the same value the binder derives) and must
+                ;;become this module's own `executor` at its turn, which is the only thing that
+                ;;makes the attribution real rather than re-derived.
+                (ref-SWP::C_ToggleAddOrSwap patron (ref-SWP::UR_OwnerKonto swpair) swpair toggle true)
             )
         )
     )
@@ -3869,7 +3876,14 @@
                 (ref-SWP:module{SwapperV4} SWP)
             )
             (with-capability (SPWU|C>TOGGLE-SWAP swpair toggle)
-                (ref-SWP::C_ToggleAddOrSwap patron swpair toggle false)
+                ;;PROVISIONAL EXECUTOR SLOT (HANDOFF 4e, 2026-09-21). 15_SWP's turn gave
+                ;;C_ToggleAddOrSwap an `executor` bound to the POOL OWNER; this module's own turn
+                ;;has not come, so there is no `executor` parameter here to thread and the rule is
+                ;;to pass the account that actually initiates -- read directly rather than
+                ;;invented. It is CORRECT today (it is the same value the binder derives) and must
+                ;;become this module's own `executor` at its turn, which is the only thing that
+                ;;makes the attribution real rather than re-derived.
+                (ref-SWP::C_ToggleAddOrSwap patron (ref-SWP::UR_OwnerKonto swpair) swpair toggle false)
             )
         )
     )

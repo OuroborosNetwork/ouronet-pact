@@ -129,8 +129,62 @@
 (let
     (
         (ref-DSP:module{Dispenser} DSP)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-AOZ:module{AgeOfZalmoxis} AOZ)
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
     )
-    (ref-DSP::A_KosonMinterStageOne)
+    (let
+        (
+            (pk:string (ref-AOZ::UR_PrimalTrueFungible 1))
+            (std-treasury:string (ref-DALOS::GOV|DHV1|SC_NAME))
+            (smt-treasury:string (ref-DALOS::GOV|DHV2|SC_NAME))
+            (validators:string DSP.CST1|SC_NAME)
+        )
+        (let
+            (
+                (t0:decimal (ref-DPTF::UR_AccountSupply pk std-treasury))
+                (m0:decimal (ref-DPTF::UR_AccountSupply pk smt-treasury))
+                (v0:decimal (ref-DPTF::UR_AccountSupply pk validators))
+                (ps:[decimal] (ref-U|DALOS::UC_TenTwentyThirtyFourtySplit
+                                  (at 0 (ref-DSP::URC_DailyKOSON false))
+                                  (ref-DPTF::UR_Decimals pk)))
+            )
+            (ref-DSP::A_KosonMinterStageOne)
+            ;;<<DSP-G1>> THE SINGLE-TX MINTER MUST DISTRIBUTE, NOT JUST MINT (added 2026-09-21).
+            ;;
+            ;;This transaction previously called A_KosonMinterStageOne and asserted NOTHING -- it
+            ;;printed a gas figure. A smoke test cannot distinguish "did the right thing" from
+            ;;"did not throw", and what it could not see is that the function's own comment
+            ;;promises "10% To Standard-Treasury, 20% to Smart-Treasury, 40% to
+            ;;Custodians(Validators), Leaving 30% of the Primordial Kosons to <dispenser>" and
+            ;;then never performs the two transfers that would do it. Its three-part sibling
+            ;;A_KosonMinterStageOne_1of3 does, with the same bindings, two lines of code apart.
+            ;;
+            ;;The fingerprint was three DEAD let-bindings -- ps10, ps20, ps40 computed and never
+            ;;read, beside standard-treasury / smart-treasury / validators, also never read.
+            ;;Surfaced by `_deadbind.py --twins`.
+            ;;
+            ;;It is not cosmetic. The NEXT step of the same function splits
+            ;;`daily-primordial-left` -- the dispenser's remaining balance, documented as the 30%
+            ;;-- six ways into the autostake pools. Without the transfers that balance is 100%,
+            ;;so the treasuries and the validators receive NOTHING and the pools receive 3.33x
+            ;;their intended share, every day the single-tx path is used.
+            (map print
+                [
+                    (expect "<<DSP-G1>> StageOne moved 10% of the Primordial Koson to the standard treasury"
+                        (at 0 ps) (- (ref-DPTF::UR_AccountSupply pk std-treasury) t0))
+                    (expect "<<DSP-G1>> ...20% to the smart treasury"
+                        (at 1 ps) (- (ref-DPTF::UR_AccountSupply pk smt-treasury) m0))
+                    (expect "<<DSP-G1>> ...and 40% to the validators"
+                        (at 3 ps) (- (ref-DPTF::UR_AccountSupply pk validators) v0))
+                    ;;the split must be a real one, or the three assertions above pass on zeroes
+                    (expect "<<DSP-G1>> ...and those are real, non-zero amounts"
+                        true (> (at 0 ps) 0.0))
+                ]
+            )
+        )
+    )
 )
 
 (print "")

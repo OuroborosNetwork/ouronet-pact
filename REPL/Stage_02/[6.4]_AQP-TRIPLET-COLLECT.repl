@@ -599,7 +599,7 @@
             )
             (if (= sleeping-pre bar)
                 (print (format "<(SWP|C_EnableSleepingLP)> => \"{}\"" [
-                    (ref-TS01-C3::SWP|C_EnableSleepingLP patron swpair)
+                    (ref-TS01-C3::SWP|C_EnableSleepingLP patron (SWP.UR_OwnerKonto swpair) swpair)
                 ]))
                 (print (format "<(sleeping LP already)> => \"{}\"" [sleeping-pre]))
             )

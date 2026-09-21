@@ -136,6 +136,28 @@ RULES = {
     # RotateOwnership: the executor is the CURRENT owner. `new-owner-konto` is the RECIPIENT --
     # naming it `executor` was the error a blind Band 2 rename would have made here.
     "AQP-FVT|C_RotateOwnership":        (4, "(AQP-FVT.UR_FVT|OwnerKonto {1})"),
+    # ---- 15_SWP (sweep 13/46). Identical shape to the ATS block above and for the identical
+    # reason: every swpair-keyed entrypoint reaches CAP_Owner <swpair>, which enforces ownership
+    # of the DERIVED (UR_OwnerKonto swpair). So the executor is the POOL OWNER, read at the call
+    # site, and SWP's own UEV_ExecutorIsOwnerKonto binds the named account to that same value.
+    # INSERTS, therefore self-protecting against a second run.
+    #
+    # NOT HERE, and each for a different reason:
+    #   * the six SWP|A_ admin wrappers -- a Talos A_ has NO patron, so the executor goes in
+    #     slot 0 and this tool only inserts AFTER slot 0.
+    #   * SWP|C_ChangeOwnership -- gained an `executee` in slot 2, which MOVES the swpair to
+    #     slot 3. That is a reorder, not an insert.
+    #   * SWP|C_ToggleAddOrSwap -- has no Talos wrapper at all; its only two callers are peer
+    #     CORE modules (SWPU, SWPLC), which this tool does not scan.
+    "SWP|C_EnableFrozenLP":          (3, "(SWP.UR_OwnerKonto {1})"),
+    "SWP|C_EnableSleepingLP":        (3, "(SWP.UR_OwnerKonto {1})"),
+    "SWP|C_ModifyCanChangeOwner":    (4, "(SWP.UR_OwnerKonto {1})"),
+    "SWP|C_ModifyWeights":           (4, "(SWP.UR_OwnerKonto {1})"),
+    "SWP|C_ToggleFeeLock":           (4, "(SWP.UR_OwnerKonto {1})"),
+    "SWP|C_UpdateAmplifier":         (4, "(SWP.UR_OwnerKonto {1})"),
+    "SWP|C_UpdateFee":               (5, "(SWP.UR_OwnerKonto {1})"),
+    "SWP|C_UpdateSpecialFeeTargets": (4, "(SWP.UR_OwnerKonto {1})"),
+
     "AQP-FVT|CC_SweepBegin":            (3, "(AQP-ANK.URC_AnchorableAssetOwner (AQP-ANK.UR_ANK|AnchoredAsset {1}) (AQP-ANK.UR_ANK|Fungibility {1}))"),
 }
 

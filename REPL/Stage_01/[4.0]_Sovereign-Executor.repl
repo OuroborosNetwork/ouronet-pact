@@ -1653,8 +1653,8 @@
                     10.0 [0.5 0.5] -1.0 false))
         ]
     )
-    (ref-TS01-A::SWP|A_UpdatePrincipal p1 true)
-    (ref-TS01-A::SWP|A_UpdatePrincipal p2 true)
+    (ref-TS01-A::SWP|A_UpdatePrincipal KST.ANHD p1 true)
+    (ref-TS01-A::SWP|A_UpdatePrincipal KST.ANHD p2 true)
     ;;the other side of the window: defining them clears the sentinel, so the guard above is
     ;;genuinely state-driven and not a permanent refusal
     (map print

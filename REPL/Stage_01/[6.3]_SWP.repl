@@ -1349,25 +1349,25 @@
         )
     )
     ;;Add Special Fee
-    (ref-TS01-C3::SWP|C_UpdateFee KST.ANHD pool1 20.0 false)
-    (ref-TS01-C3::SWP|C_UpdateFee KST.ANHD pool2 20.0 false)
-    (ref-TS01-C3::SWP|C_UpdateFee KST.ANHD pool3 20.0 false)
-    (ref-TS01-C3::SWP|C_UpdateFee KST.ANHD pool4 20.0 false)
-    (ref-TS01-C3::SWP|C_UpdateFee KST.ANHD pool5 20.0 false)
-    (ref-TS01-C3::SWP|C_UpdateFee KST.ANHD pool6 20.0 false)
-    (ref-TS01-C3::SWP|C_UpdateFee KST.ANHD pool6a 50.0 false)
-    (ref-TS01-C3::SWP|C_UpdateFee KST.ANHD pool7 20.0 false)
-    (ref-TS01-C3::SWP|C_UpdateFee KST.ANHD pool8 20.0 false)
+    (ref-TS01-C3::SWP|C_UpdateFee KST.ANHD (SWP.UR_OwnerKonto pool1) pool1 20.0 false)
+    (ref-TS01-C3::SWP|C_UpdateFee KST.ANHD (SWP.UR_OwnerKonto pool2) pool2 20.0 false)
+    (ref-TS01-C3::SWP|C_UpdateFee KST.ANHD (SWP.UR_OwnerKonto pool3) pool3 20.0 false)
+    (ref-TS01-C3::SWP|C_UpdateFee KST.ANHD (SWP.UR_OwnerKonto pool4) pool4 20.0 false)
+    (ref-TS01-C3::SWP|C_UpdateFee KST.ANHD (SWP.UR_OwnerKonto pool5) pool5 20.0 false)
+    (ref-TS01-C3::SWP|C_UpdateFee KST.ANHD (SWP.UR_OwnerKonto pool6) pool6 20.0 false)
+    (ref-TS01-C3::SWP|C_UpdateFee KST.ANHD (SWP.UR_OwnerKonto pool6a) pool6a 50.0 false)
+    (ref-TS01-C3::SWP|C_UpdateFee KST.ANHD (SWP.UR_OwnerKonto pool7) pool7 20.0 false)
+    (ref-TS01-C3::SWP|C_UpdateFee KST.ANHD (SWP.UR_OwnerKonto pool8) pool8 20.0 false)
     ;;Add Fee Targets
-    (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD pool1 spt2)
-    (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD pool2 spt2)
-    (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD pool3 spt1)
-    (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD pool4 spt1)
+    (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD (SWP.UR_OwnerKonto pool1) pool1 spt2)
+    (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD (SWP.UR_OwnerKonto pool2) pool2 spt2)
+    (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD (SWP.UR_OwnerKonto pool3) pool3 spt1)
+    (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD (SWP.UR_OwnerKonto pool4) pool4 spt1)
     ;(ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD pool5 spt2)
-    (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD pool6 spt2)
-    (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD pool6a spt2)
-    (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD pool7 spt2)
-    (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD pool8 spt2)
+    (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD (SWP.UR_OwnerKonto pool6) pool6 spt2)
+    (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD (SWP.UR_OwnerKonto pool6a) pool6a spt2)
+    (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD (SWP.UR_OwnerKonto pool7) pool7 spt2)
+    (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD (SWP.UR_OwnerKonto pool8) pool8 spt2)
     ;;Enable Asymetric Liquidity Addition and Primordial Pool
     ;;==== P3.3 · the PrimordialPool precondition, pinned in its only window ====
     ;;SWP|C>TG-ASYMETRIC-LQ refuses to touch the global asymmetric-liquidity switch until a
@@ -1383,9 +1383,9 @@
     (print
         (expect-failure "<<SWP-PP>> the asymmetric-liquidity switch is refused before a primordial pool exists"
             "PrimordialPool must be set for this operation"
-            (ref-TS01-A::SWP|A_ToggleAsymetricLiquidityAddition true)))
-    (ref-TS01-A::SWP|A_DefinePrimordialPool pool1)
-    (ref-TS01-A::SWP|A_ToggleAsymetricLiquidityAddition true)
+            (ref-TS01-A::SWP|A_ToggleAsymetricLiquidityAddition KST.ANHD true)))
+    (ref-TS01-A::SWP|A_DefinePrimordialPool KST.ANHD pool1)
+    (ref-TS01-A::SWP|A_ToggleAsymetricLiquidityAddition KST.ANHD true)
     ;;Toggle Add Liquidity
     (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD pool1 true)
     (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD pool2 true)
@@ -3341,10 +3341,10 @@
         ]
     )
     (ref-TS01-C2::VST|C_CreateSleepingLink emma (ouronet-ns.DPTF.UR_Konto ouro-id) ouro-id)
-    (ref-TS01-C3::SWP|C_EnableFrozenLP emma pool)
-    (ref-TS01-C3::SWP|C_EnableFrozenLP emma pool8)
-    (ref-TS01-C3::SWP|C_EnableSleepingLP emma pool)
-    (ref-TS01-C3::SWP|C_EnableSleepingLP emma pool8)
+    (ref-TS01-C3::SWP|C_EnableFrozenLP emma (SWP.UR_OwnerKonto pool) pool)
+    (ref-TS01-C3::SWP|C_EnableFrozenLP emma (SWP.UR_OwnerKonto pool8) pool8)
+    (ref-TS01-C3::SWP|C_EnableSleepingLP emma (SWP.UR_OwnerKonto pool) pool)
+    (ref-TS01-C3::SWP|C_EnableSleepingLP emma (SWP.UR_OwnerKonto pool8) pool8)
     (format "Emma GAS supply after unvest is {}" [(ref-DPTF::UR_AccountSupply "GAS-98c486052a51" KST.EMMA)])
 )
 
@@ -3392,12 +3392,12 @@
             (expect-failure
                 "Non-owner cannot enable Frozen LP on someone else's pool (#31M/M7 fix)"
                 "Keyset failure (keys-all): [PK_Ancie...]"
-                (ref-TS01-C3::SWP|C_EnableFrozenLP KST.EMMA pool5)
+                (ref-TS01-C3::SWP|C_EnableFrozenLP KST.EMMA (SWP.UR_OwnerKonto pool5) pool5)
             )
             (expect-failure
                 "Non-owner cannot enable Sleeping LP on someone else's pool (#31M/M7 fix)"
                 "Keyset failure (keys-all): [PK_Ancie...]"
-                (ref-TS01-C3::SWP|C_EnableSleepingLP KST.EMMA pool5)
+                (ref-TS01-C3::SWP|C_EnableSleepingLP KST.EMMA (SWP.UR_OwnerKonto pool5) pool5)
             )
             (expect
                 "Frozen LP must still read false — the rejected non-owner call must not have mutated state"
@@ -3485,8 +3485,8 @@
             }
         ]
     )
-    (ref-TS01-C3::SWP|C_EnableFrozenLP KST.ANHD pool5)
-    (ref-TS01-C3::SWP|C_EnableSleepingLP KST.ANHD pool5)
+    (ref-TS01-C3::SWP|C_EnableFrozenLP KST.ANHD (SWP.UR_OwnerKonto pool5) pool5)
+    (ref-TS01-C3::SWP|C_EnableSleepingLP KST.ANHD (SWP.UR_OwnerKonto pool5) pool5)
     (map print
         [
             (expect
@@ -4428,9 +4428,9 @@
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
         (ref-SWP:module{SwapperV4} SWP)
     )
-    (ref-TS01-A::SWP|A_UpdatePrincipal "W1-98c486052a51" true)
-    (ref-TS01-A::SWP|A_UpdatePrincipal "W4-98c486052a51" true)
-    (ref-TS01-A::SWP|A_UpdatePrincipal "W7-98c486052a51" true)
+    (ref-TS01-A::SWP|A_UpdatePrincipal KST.ANHD "W1-98c486052a51" true)
+    (ref-TS01-A::SWP|A_UpdatePrincipal KST.ANHD "W4-98c486052a51" true)
+    (ref-TS01-A::SWP|A_UpdatePrincipal KST.ANHD "W7-98c486052a51" true)
     (print (format "Principal count after adding W1/W4/W7: {}" [(length (ref-SWP::UR_Principals))]))
 )
 (print "")
@@ -4812,7 +4812,7 @@
             ]
         )
     )
-    (map (lambda (p:string) (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD p spt)) pools)
+    (map (lambda (p:string) (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD (SWP.UR_OwnerKonto p) p spt)) pools)
     ;;P0.6 correction, 2026-08-21: configuring targets alone (above) does NOT activate
     ;;the special-fee rate itself — <fee-special> defaults to 0.0 at issuance and stays
     ;;there unless explicitly set, meaning every prior worst-case measurement in this
@@ -4820,7 +4820,7 @@
     ;;all (o-id-special was 0.0 on every hop). Set to 10.0 here, mirroring <lp-fee>
     ;;(matches how Liquid Boost already mirrors <lp-fee> when its own toggle is on), so
     ;;this "worst case" test actually stresses the path it claims to.
-    (map (lambda (p:string) (ref-TS01-C3::SWP|C_UpdateFee KST.ANHD p 10.0 false)) pools)
+    (map (lambda (p:string) (ref-TS01-C3::SWP|C_UpdateFee KST.ANHD (SWP.UR_OwnerKonto p) p 10.0 false)) pools)
     (map (lambda (p:string) (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD p true)) pools)
 )
 (print "")
@@ -4866,7 +4866,7 @@
     (
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
     )
-    (ref-TS01-A::SWP|A_UpdateLiquidBoost true)
+    (ref-TS01-A::SWP|A_UpdateLiquidBoost KST.ANHD true)
 )
 ;;P0.6 direction 5: XI_SmartSwapCore now carries the Liquid Boost cut forward
 ;;hop-by-hop (SWPI::URCv_Swap over each hop's own already-selected edge, no
@@ -4918,7 +4918,7 @@
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
     )
     ;;Restore — must not leak into the rest of the file's later transactions.
-    (ref-TS01-A::SWP|A_UpdateLiquidBoost false)
+    (ref-TS01-A::SWP|A_UpdateLiquidBoost KST.ANHD false)
 )
 (print "===^^^===")
 (env-sigs [])
@@ -5095,13 +5095,13 @@
 ;;==== SWP|TX 032u - P2-Scale Checkpoint @ ~42 active pools · 02 · let / invocation ==== ==========
 (print "--- [SWP|TX 032u - P2-Scale Checkpoint @ ~42 active pools · 02 · let / invocation] ---")
 (let ((ref-SWP:module{SwapperV4} SWP)) (print (format "P2-scale checkpoint: active swpairs = {}" [(length (ref-SWP::URC_ActiveSwpairs))])))
-(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost true))
+(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost KST.ANHD true))
 (env-gas 0)
 (let ((ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3))
     (print (ref-TS01-C3::SWP|CC_SmartSwapNoSlippage KST.ANHD KST.ANHD "W1-98c486052a51" 10.0 "W7-98c486052a51"))
 )
 (print (format "<<<<<<<SWP|TX 032u P2-SCALE CHECKPOINT ==> {} STOA GAS>>>>>>>" [(env-gas)]))
-(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost false))
+(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost KST.ANHD false))
 (env-sigs [])
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -5136,13 +5136,13 @@
 ;;==== SWP|TX 032w - P2-Scale Checkpoint @ ~62 active pools · 02 · let / invocation ==== ==========
 (print "--- [SWP|TX 032w - P2-Scale Checkpoint @ ~62 active pools · 02 · let / invocation] ---")
 (let ((ref-SWP:module{SwapperV4} SWP)) (print (format "P2-scale checkpoint: active swpairs = {}" [(length (ref-SWP::URC_ActiveSwpairs))])))
-(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost true))
+(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost KST.ANHD true))
 (env-gas 0)
 (let ((ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3))
     (print (ref-TS01-C3::SWP|CC_SmartSwapNoSlippage KST.ANHD KST.ANHD "W1-98c486052a51" 10.0 "W7-98c486052a51"))
 )
 (print (format "<<<<<<<SWP|TX 032w P2-SCALE CHECKPOINT ==> {} STOA GAS>>>>>>>" [(env-gas)]))
-(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost false))
+(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost KST.ANHD false))
 (env-sigs [])
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -5177,13 +5177,13 @@
 ;;==== SWP|TX 032y - P2-Scale Checkpoint @ ~82 active pools · 02 · let / invocation ==== ==========
 (print "--- [SWP|TX 032y - P2-Scale Checkpoint @ ~82 active pools · 02 · let / invocation] ---")
 (let ((ref-SWP:module{SwapperV4} SWP)) (print (format "P2-scale checkpoint: active swpairs = {}" [(length (ref-SWP::URC_ActiveSwpairs))])))
-(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost true))
+(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost KST.ANHD true))
 (env-gas 0)
 (let ((ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3))
     (print (ref-TS01-C3::SWP|CC_SmartSwapNoSlippage KST.ANHD KST.ANHD "W1-98c486052a51" 10.0 "W7-98c486052a51"))
 )
 (print (format "<<<<<<<SWP|TX 032y P2-SCALE CHECKPOINT ==> {} STOA GAS>>>>>>>" [(env-gas)]))
-(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost false))
+(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost KST.ANHD false))
 (env-sigs [])
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -5218,13 +5218,13 @@
 ;;==== SWP|TX 032z2 - P2-Scale Checkpoint @ ~102 active pools · 02 · let / invocation ==== ========
 (print "--- [SWP|TX 032z2 - P2-Scale Checkpoint @ ~102 active pools · 02 · let / invocation] ---")
 (let ((ref-SWP:module{SwapperV4} SWP)) (print (format "P2-scale checkpoint: active swpairs = {}" [(length (ref-SWP::URC_ActiveSwpairs))])))
-(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost true))
+(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost KST.ANHD true))
 (env-gas 0)
 (let ((ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3))
     (print (ref-TS01-C3::SWP|CC_SmartSwapNoSlippage KST.ANHD KST.ANHD "W1-98c486052a51" 10.0 "W7-98c486052a51"))
 )
 (print (format "<<<<<<<SWP|TX 032z2 P2-SCALE CHECKPOINT ==> {} STOA GAS>>>>>>>" [(env-gas)]))
-(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost false))
+(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost KST.ANHD false))
 (env-sigs [])
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -5470,7 +5470,7 @@
 (let ((ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3))
     (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD "P|OURO-98c486052a51|W1-98c486052a51" false)
 )
-(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost true))
+(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost KST.ANHD true))
 (let*
     (
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
@@ -5489,7 +5489,7 @@
         ]
     )
 )
-(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost false))
+(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost KST.ANHD false))
 (let ((ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3))
     ;;Restore — must not leak into any later transaction in this file.
     (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD "P|OURO-98c486052a51|W1-98c486052a51" true)
@@ -5524,7 +5524,7 @@
 (print "--- [SWP|TX 032z6 - Bundle-Based SmartSwap Proof · 02 · dirty-read bundle + measured call] ---")
 ;;==== SWP|TX 032z6 - #34 Phase 8 Bundle-Based SmartSwap Proof + Gas Comparison (Permanent) · 02 · let / invocation ==== 
 (print "--- [SWP|TX 032z6 - #34 Phase 8 Bundle-Based SmartSwap Proof + Gas Comparison (Permanent) · 02 · let / invocation] ---")
-(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost true))
+(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost KST.ANHD true))
 (let*
     (
         (ref-SWPI:module{SwapperIssueV4} SWPI)
@@ -5627,7 +5627,7 @@
 )
 (print (format "<<<<<<<SWP|TX 032z6 #34 PHASE 8 BUNDLE-BASED SMARTSWAP (Liquid Boost ON, ~102 active pools) ==> {} STOA GAS>>>>>>>" [(env-gas)]))
 (print "Compare directly against SWP|TX 032z2's recorded SWP|CC_SmartSwapNoSlippage gas at the same ~102-active-pool state — this is the real 'how much does outsourcing dirty reads save us' number.")
-(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost false))
+(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost KST.ANHD false))
 (env-sigs [])
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -6066,7 +6066,7 @@
 (print "--- [SWP|TX 032z7 - Boost-Path Cache Registration Proof · 02 · dirty-read bundle + call] ---")
 ;;==== SWP|TX 032z7 - #34 Phase 8 Boost-Path Cache Registration Proof (Short Path) (Permanent) · 02 · let / invocation ==== 
 (print "--- [SWP|TX 032z7 - #34 Phase 8 Boost-Path Cache Registration Proof (Short Path) (Permanent) · 02 · let / invocation] ---")
-(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost true))
+(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost KST.ANHD true))
 (let*
     (
         (ref-SWPI:module{SwapperIssueV4} SWPI)
@@ -6134,7 +6134,7 @@
         )
     )
 )
-(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost false))
+(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost KST.ANHD false))
 (env-sigs [])
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -6370,7 +6370,7 @@
             (ref-SWP:module{SwapperV4} SWP)
         )
     (ref-TS01-C1::DPTF|C_Mint patron patron "MPTEST-98c486052a51" 10000.0 true)
-    (ref-TS01-A::SWP|A_UpdatePrincipal "MPTEST-98c486052a51" true)
+    (ref-TS01-A::SWP|A_UpdatePrincipal KST.ANHD "MPTEST-98c486052a51" true)
     (print (format "Principal count after adding MPTEST: {}" [(length (ref-SWP::UR_Principals))]))
     ;;P-type pool, MPTEST first (the pool WILL fail issuance if MPTEST weren't already a
     ;;principal — proves the anchoring, not just claims it), OURO second — a genuine 1-hop
@@ -6674,7 +6674,7 @@
 (print "--- [SWP|TX 032z8 - Adversarial Malformed-Bundle Proof · 03 · pricing-path graceful degrade] ---")
 ;;==== SWP|TX 032z8 - #34 Phase 10 Adversarial Malformed-Bundle Proof (Permanent) · 02 · let / invocation ==== 
 (print "--- [SWP|TX 032z8 - #34 Phase 10 Adversarial Malformed-Bundle Proof (Permanent) · 02 · let / invocation] ---")
-(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost true))
+(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost KST.ANHD true))
 (let*
     (
         (ref-SWPI:module{SwapperIssueV4} SWPI)
@@ -6724,7 +6724,7 @@
         ]
     )
 )
-(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost false))
+(let ((ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost KST.ANHD false))
 (env-sigs [])
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -6800,7 +6800,7 @@
     
     (ref-TS01-C3::SWP|C_AddSleepingLiquidity patron patron pool s-vst 31)
     (ref-TS01-C3::SWP|C_AddFrozenLiquidity patron patron pool f-vst 50000.0)
-    (ref-TS01-C3::SWP|C_ToggleFeeLock patron pool true)
+    (ref-TS01-C3::SWP|C_ToggleFeeLock patron (SWP.UR_OwnerKonto pool) pool true)
     ;(ref-DPOF::UR_NonceMetaData s-vst 31)
     [
         (format "Nonce MD is {}" [(at "release-date" (at 0 nonce-md))])
@@ -7687,11 +7687,11 @@
         (ignis:string "GAS-98c486052a51")
     )
     ;;(ref-TS01-C3::SWP|C_ChangeOwnership patron pool emma)
-    (ref-TS01-C3::SWP|C_ModifyCanChangeOwner patron pool false)
-    (ref-TS01-C3::SWP|C_ModifyCanChangeOwner patron pool true)
+    (ref-TS01-C3::SWP|C_ModifyCanChangeOwner patron (SWP.UR_OwnerKonto pool) pool false)
+    (ref-TS01-C3::SWP|C_ModifyCanChangeOwner patron (SWP.UR_OwnerKonto pool) pool true)
     ;;(ref-TS01-C3::SWP|C_ChangeOwnership patron pool patron)
-    (ref-TS01-C3::SWP|C_ModifyWeights patron wp [0.25 0.25 0.50])
-    (ref-TS01-C3::SWP|C_UpdateAmplifier patron sp 95.0)
+    (ref-TS01-C3::SWP|C_ModifyWeights patron (SWP.UR_OwnerKonto wp) wp [0.25 0.25 0.50])
+    (ref-TS01-C3::SWP|C_UpdateAmplifier patron (SWP.UR_OwnerKonto sp) sp 95.0)
 
     ;;
     (ref-TS01-C3::SWP|C_RemoveLiquidity patron patron wp 10000000.0)
@@ -8126,7 +8126,7 @@
     (
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
     )
-    (ref-TS01-A::SWP|A_UpdateLiquidBoost true)
+    (ref-TS01-A::SWP|A_UpdateLiquidBoost KST.ANHD true)
 )
 (let
     (
@@ -8195,7 +8195,7 @@
         ;;
         (v2:decimal (floor (+ (fold (*) 1.0 [a d-computed nn]) (/ (^ d-computed np1) (* nn product))) 24))
     )
-    ;(ref-TS01-A::SWP|A_UpdateLiquidBoost true)
+    ;(ref-TS01-A::SWP|A_UpdateLiquidBoost KST.ANHD true)
     (ref-TS01-C1::DPTF|C_Transfer patron patron nani ouro 1600.0 false)
     (ref-TS01-C1::DPTF|C_Transfer patron patron nani busd 50000.0 false)
     (ref-TS01-C1::DPTF|C_Transfer patron patron nani tusd 50000.0 false)
@@ -9652,7 +9652,7 @@
             (expect-failure
                 "<<SWP|TX 056-02>> an over-long list is refused by the TIER rule -- ownership unreached"
                 "Increase Major Elite Tier to add more Special Targets"
-                (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.LUMY pool1 eight))
+                (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.LUMY (SWP.UR_OwnerKonto pool1) pool1 eight))
         ]
     )
     ""
@@ -9680,7 +9680,7 @@
             (expect-failure
                 "<<SWP|TX 056-03>> a within-tier list clears the tier rule; CAP_Owner refuses the outsider"
                 "Keyset failure (keys-all): [PK_Ancie"
-                (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.LUMY pool1 two))
+                (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.LUMY (SWP.UR_OwnerKonto pool1) pool1 two))
             ;;T-13 again: a landed write would be visible here. The pool still carries its
             ;;original seven targets, so the attacker redirected nothing.
             (expect "<<SWP|TX 056-03>> and nothing moved: the pool still holds its 7 original targets"
@@ -9716,7 +9716,7 @@
             ]
         )
     )
-    (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD pool1 two)
+    (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD (SWP.UR_OwnerKonto pool1) pool1 two)
     (map print
         [
             (expect "<<SWP|TX 056-04>> non-vacuity: the identical call SUCCEEDS when the owner signs"
@@ -9724,7 +9724,7 @@
                 (length (ref-SWP::UR_FeeSPT pool1)))
         ]
     )
-    (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD pool1 original)
+    (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD (SWP.UR_OwnerKonto pool1) pool1 original)
     (map print
         [
             (expect "<<SWP|TX 056-04>> ...and the fixture is put back exactly as it was found"

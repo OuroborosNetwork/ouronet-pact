@@ -397,10 +397,10 @@
             ;;proving nothing. That trap is how this whole finding nearly went unnoticed.
             (expect-failure "<<CONF-05>> SWP|A_UpdateLimit likewise"
                 "Keyset failure"
-                (ref-TS01-A::SWP|A_UpdateLimit 5.0 false))
+                (ref-TS01-A::SWP|A_UpdateLimit KST.EMMA 5.0 false))
             (expect-failure "<<CONF-05>> SWP|A_ToggleAsymetricLiquidityAddition likewise"
                 "Keyset failure"
-                (ref-TS01-A::SWP|A_ToggleAsymetricLiquidityAddition true))
+                (ref-TS01-A::SWP|A_ToggleAsymetricLiquidityAddition KST.EMMA true))
             (expect-failure "<<CONF-05>> LIQUID|A_MigrateLiquidFunds likewise"
                 "Keyset failure"
                 (ref-TS01-A::LIQUID|A_MigrateLiquidFunds KST.EMMA "k:abc"))

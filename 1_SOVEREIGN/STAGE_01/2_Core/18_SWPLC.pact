@@ -1081,7 +1081,14 @@
                 (ref-SWP:module{SwapperV4} SWP)
             )
             (with-capability (P|SWPLC|CALLER)
-                (ref-SWP::C_ToggleAddOrSwap patron swpair toggle true)
+                ;;PROVISIONAL EXECUTOR SLOT (HANDOFF 4e, 2026-09-21). 15_SWP's turn gave
+                ;;C_ToggleAddOrSwap an `executor` bound to the POOL OWNER; this module's own turn
+                ;;has not come, so there is no `executor` parameter here to thread and the rule is
+                ;;to pass the account that actually initiates -- read directly rather than
+                ;;invented. It is CORRECT today (it is the same value the binder derives) and must
+                ;;become this module's own `executor` at its turn, which is the only thing that
+                ;;makes the attribution real rather than re-derived.
+                (ref-SWP::C_ToggleAddOrSwap patron (ref-SWP::UR_OwnerKonto swpair) swpair toggle true)
             )
         )
     )

@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 10 of 24
 ;; This is STEP 10 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-9 must have run first, including the init steps between deploys.
-;; 5 source file(s), 228,598 gas measured in the REPL gas model, 201,716 bytes
+;; 5 source file(s), 228,598 gas measured in the REPL gas model, 202,124 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/3_Talos/03_TS01-C2.pact
@@ -2016,22 +2016,22 @@
     (defun SWP|C_UpdatePendingBrandingLPs (patron:string swpair:string entity-pos:integer logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
     (defun SWP|C_UpgradeBrandingLPs (patron:string swpair:string entity-pos:integer months:integer))
     ;;
-    (defun SWP|C_ChangeOwnership (patron:string swpair:string new-owner:string))
-    (defun SWP|C_EnableFrozenLP:string (patron:string swpair:string))
-    (defun SWP|C_EnableSleepingLP:string (patron:string swpair:string))
+    (defun SWP|C_ChangeOwnership (patron:string executor:string executee:string swpair:string))
+    (defun SWP|C_EnableFrozenLP:string (patron:string executor:string swpair:string))
+    (defun SWP|C_EnableSleepingLP:string (patron:string executor:string swpair:string))
     ;;Issue
     (defun SWP|C_IssueStable:list (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal amp:decimal p:bool))
     (defun SWP|C_IssueStandard:list (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal p:bool))
     (defun SWP|C_IssueWeighted:list (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool))
     ;;Management
-    (defun SWP|C_ModifyCanChangeOwner (patron:string swpair:string new-boolean:bool))
-    (defun SWP|C_ModifyWeights (patron:string swpair:string new-weights:[decimal]))
+    (defun SWP|C_ModifyCanChangeOwner (patron:string executor:string swpair:string new-boolean:bool))
+    (defun SWP|C_ModifyWeights (patron:string executor:string swpair:string new-weights:[decimal]))
     (defun SWP|C_ToggleAddLiquidity (patron:string swpair:string toggle:bool))
     (defun SWP|C_ToggleSwapCapability (patron:string swpair:string toggle:bool))
-    (defun SWP|C_ToggleFeeLock (patron:string swpair:string toggle:bool))
-    (defun SWP|C_UpdateAmplifier (patron:string swpair:string amp:decimal))
-    (defun SWP|C_UpdateFee (patron:string swpair:string new-fee:decimal lp-or-special:bool))
-    (defun SWP|C_UpdateSpecialFeeTargets (patron:string swpair:string targets:[object{SwapperV4.FeeSplit}]))
+    (defun SWP|C_ToggleFeeLock (patron:string executor:string swpair:string toggle:bool))
+    (defun SWP|C_UpdateAmplifier (patron:string executor:string swpair:string amp:decimal))
+    (defun SWP|C_UpdateFee (patron:string executor:string swpair:string new-fee:decimal lp-or-special:bool))
+    (defun SWP|C_UpdateSpecialFeeTargets (patron:string executor:string swpair:string targets:[object{SwapperV4.FeeSplit}]))
     ;;Liquidity
     (defun SWP|C_AddLiquidity:string (patron:string account:string swpair:string input-amounts:[decimal]))
     (defun SWP|C_AddIcedLiquidity:string (patron:string account:string swpair:string input-amounts:[decimal]))
@@ -2352,7 +2352,7 @@
             )
         )
     )
-    (defun SWP|C_ChangeOwnership (patron:string swpair:string new-owner:string)
+    (defun SWP|C_ChangeOwnership (patron:string executor:string executee:string swpair:string)
         @doc "Changes Ownership of an SWPair"
         (with-capability (P|TS)
             (let
@@ -2361,13 +2361,13 @@
                     (ref-SWP:module{SwapperV4} SWP)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-SWP::C_ChangeOwnership swpair new-owner)
+                    (ref-SWP::C_ChangeOwnership patron executor executee swpair)
                 )
                 (format "Succesfully changed ownership for SWP-Pair {}" [swpair])
             )
         )
     )
-    (defun SWP|C_EnableFrozenLP:string (patron:string swpair:string)
+    (defun SWP|C_EnableFrozenLP:string (patron:string executor:string swpair:string)
         @doc "Enables the posibility of using Frozen Tokens to add Liquidity for an SWPair"
         (with-capability (P|TS)
             (let
@@ -2380,7 +2380,7 @@
                     (lp-id:string (ref-SWP::UR_TokenLP swpair))
                     (current-frozen-link:string (ref-DPTF::UR_Frozen lp-id))
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-SWP::C_EnableFrozenLP patron swpair)
+                        (ref-SWP::C_EnableFrozenLP patron executor swpair)
                     )
                     (issued-frozen-lp-id:string (at 0 (at "output" ico)))
                 )
@@ -2398,7 +2398,7 @@
             )
         )
     )
-    (defun SWP|C_EnableSleepingLP:string (patron:string swpair:string)
+    (defun SWP|C_EnableSleepingLP:string (patron:string executor:string swpair:string)
         @doc "Enables the posibility of using Sleeping Tokens to add Liquidity for an SWPair"
         (with-capability (P|TS)
             (let
@@ -2411,7 +2411,7 @@
                     (lp-id:string (ref-SWP::UR_TokenLP swpair))
                     (current-sleeping-link:string (ref-DPTF::UR_Sleeping lp-id))
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-SWP::C_EnableSleepingLP patron swpair)
+                        (ref-SWP::C_EnableSleepingLP patron executor swpair)
                     )
                     (issued-sleeping-lp-id:string (at 0 (at "output" ico)))
                 )
@@ -2480,7 +2480,7 @@
             )
         )
     )
-    (defun SWP|C_ModifyCanChangeOwner (patron:string swpair:string new-boolean:bool)
+    (defun SWP|C_ModifyCanChangeOwner (patron:string executor:string swpair:string new-boolean:bool)
         @doc "Modifies the <can-change-owner> parameter of an SWPair"
         (with-capability (P|TS)
             (let
@@ -2489,13 +2489,13 @@
                     (ref-SWP:module{SwapperV4} SWP)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-SWP::C_ModifyCanChangeOwner swpair new-boolean)
+                    (ref-SWP::C_ModifyCanChangeOwner patron executor swpair new-boolean)
                 )
                 (format "Succesfully updated SWP-Pair {} <can-change-owner> Parameter" [swpair])
             )
         )
     )
-    (defun SWP|C_ModifyWeights (patron:string swpair:string new-weights:[decimal])
+    (defun SWP|C_ModifyWeights (patron:string executor:string swpair:string new-weights:[decimal])
         @doc "Modify weights for an SWPair. Works only for W Pools"
         (with-capability (P|TS)
             (let
@@ -2504,7 +2504,7 @@
                     (ref-SWP:module{SwapperV4} SWP)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-SWP::C_ModifyWeights swpair new-weights)
+                    (ref-SWP::C_ModifyWeights patron executor swpair new-weights)
                 )
                 (format "Succesfully updated SWP-Pair {} Weigths Parameter" [swpair])
             )
@@ -2553,7 +2553,7 @@
             )
         )
     )
-    (defun SWP|C_ToggleFeeLock (patron:string swpair:string toggle:bool)
+    (defun SWP|C_ToggleFeeLock (patron:string executor:string swpair:string toggle:bool)
         @doc "Locks the SPWPair fees in place. Modifying the SWPair fees requires them to be unlocked \
             \ Unlocking costs STOA and is financially discouraged"
         (with-capability (P|TS)
@@ -2563,7 +2563,7 @@
                     (ref-SWP:module{SwapperV4} SWP)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-SWP::C_ToggleFeeLock patron swpair toggle)
+                        (ref-SWP::C_ToggleFeeLock patron executor swpair toggle)
                     )
                     (collect:bool (at 0 (at "output" ico)))
                 )
@@ -2573,7 +2573,7 @@
             )
         )
     )
-    (defun SWP|C_UpdateAmplifier (patron:string swpair:string amp:decimal)
+    (defun SWP|C_UpdateAmplifier (patron:string executor:string swpair:string amp:decimal)
         @doc "Updates Amplifier Value; Only works on S-Pools (Stable Pools)"
         (with-capability (P|TS)
             (let
@@ -2582,13 +2582,13 @@
                     (ref-SWP:module{SwapperV4} SWP)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-SWP::C_UpdateAmplifier swpair amp)
+                    (ref-SWP::C_UpdateAmplifier patron executor swpair amp)
                 )
                 (format "Succesfully updated SWP-Pair {} Amplifier Parameter" [swpair])
             )
         )
     )
-    (defun SWP|C_UpdateFee (patron:string swpair:string new-fee:decimal lp-or-special:bool)
+    (defun SWP|C_UpdateFee (patron:string executor:string swpair:string new-fee:decimal lp-or-special:bool)
         @doc "Updates Fees Values for an SWPair \
             \ The <lp-or-special> boolean defines whether its the LP-Fee or Special-Fee that is changed \
             \ THe LP Fee is the amount of Swap Output kept by the Liquidity Pool, increasing the Value of its LP Token(s) \
@@ -2604,13 +2604,13 @@
                     (ref-SWP:module{SwapperV4} SWP)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-SWP::C_UpdateFee swpair new-fee lp-or-special)
+                    (ref-SWP::C_UpdateFee patron executor swpair new-fee lp-or-special)
                 )
                 (format "Succesfully updated SWP-Pair {} Fees" [swpair])
             )
         )
     )
-    (defun SWP|C_UpdateSpecialFeeTargets (patron:string swpair:string targets:[object{SwapperV4.FeeSplit}])
+    (defun SWP|C_UpdateSpecialFeeTargets (patron:string executor:string swpair:string targets:[object{SwapperV4.FeeSplit}])
         @doc "Updates the Special Fee Targets, along with their Split, for an SWPair"
         (with-capability (P|TS)
             (let
@@ -2619,7 +2619,7 @@
                     (ref-SWP:module{SwapperV4} SWP)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-SWP::C_UpdateSpecialFeeTargets swpair targets)
+                    (ref-SWP::C_UpdateSpecialFeeTargets patron executor swpair targets)
                 )
                 (format "Succesfully updated SWP-Pair {} Special Fee Targets" [swpair])
             )

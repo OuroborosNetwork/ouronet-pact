@@ -640,6 +640,29 @@
                 (ref-TS01-C1::DPTF|C_Mint GASLESS-PATRON dispenser EsothericKosonID (at 1 daily) false)
                 ;;Moves Primordial Kosons: 10% To Standard-Treasury, 20% to Smart-Treasury, 40% to Custodians(Validators)
                 ;;Leaving 30% of the Primordial Kosons to <dispenser>
+                ;;
+                ;;BUG FIX 2026-09-21: THESE TWO LINES WERE MISSING. The comment above has always
+                ;;promised the 10/20/40 split and this single-transaction variant never performed
+                ;;it -- while its three-part sibling A_KosonMinterStageOne_1of3, thirty lines
+                ;;below, does exactly this with identical bindings. `ps10`, `ps20`, `ps40`,
+                ;;`standard-treasury`, `smart-treasury` and `validators` were all computed here
+                ;;and never read; those six dead bindings were the only visible trace, surfaced by
+                ;;`_deadbind.py --twins`.
+                ;;
+                ;;IT WAS NOT LATENT. This entrypoint is live and was exercised on every gate run
+                ;;by Stage_01/[6.8]_Dispenser.repl -- which called it, printed a gas figure and
+                ;;asserted NOTHING, so it could only ever distinguish "did not throw" from
+                ;;"threw". Measured before the fix: the three recipients received 0.0 against an
+                ;;expected 46.09 / 92.17 / 184.35.
+                ;;
+                ;;And the loss compounds rather than merely stalling, because the `let` directly
+                ;;below reads `daily-primordial-left` -- the dispenser's REMAINING balance, which
+                ;;this comment documents as the 30% -- and splits it six ways into the autostake
+                ;;pools. With the transfers missing that balance is 100%, so the pools drew 3.33x
+                ;;their intended share every day this path ran, and the treasuries and validators
+                ;;drew nothing. Pinned by <<DSP-G1>>.
+                (ref-TS01-C1::DPTF|C_BulkTransfer GASLESS-PATRON dispenser [standard-treasury validators] PrimordialKosonID [ps10 ps40])
+                (ref-TS01-C1::DPTF|C_Transfer GASLESS-PATRON dispenser smart-treasury PrimordialKosonID ps20 true)
                 (let
                     (
                         (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)

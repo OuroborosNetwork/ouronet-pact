@@ -405,16 +405,16 @@
                 ;;THE ITEM
                 (expect-failure "<<SWPX-02d>> weights summing to 0.9 are refused on the CHANGE path"
                     "All weights must add to exactly 1.0"
-                    (ref-TS01-C3::SWP|C_ModifyWeights KST.ANHD wp [0.4 0.2 0.2 0.1]))
+                    (ref-TS01-C3::SWP|C_ModifyWeights KST.ANHD (SWP.UR_OwnerKonto wp) wp [0.4 0.2 0.2 0.1]))
                 ;;...and over 1.0 as well, so this is an equality and not a ceiling
                 (expect-failure "<<SWPX-02d>> ...and so are weights summing to 1.1"
                     "All weights must add to exactly 1.0"
-                    (ref-TS01-C3::SWP|C_ModifyWeights KST.ANHD wp [0.5 0.2 0.2 0.2]))
+                    (ref-TS01-C3::SWP|C_ModifyWeights KST.ANHD (SWP.UR_OwnerKonto wp) wp [0.5 0.2 0.2 0.2]))
                 ;;CONTRAST -- a different, valid distribution IS accepted, so the two refusals are
                 ;;about the sum and not about the pool refusing all modification.
                 (expect "<<SWPX-02d>> ...while a different distribution summing to 1.0 is accepted"
                     true (!= "" (format "{}"
-                        [(ref-TS01-C3::SWP|C_ModifyWeights KST.ANHD wp [0.25 0.25 0.25 0.25])])))
+                        [(ref-TS01-C3::SWP|C_ModifyWeights KST.ANHD (SWP.UR_OwnerKonto wp) wp [0.25 0.25 0.25 0.25])])))
                 (expect "<<SWPX-02d>> ...and the pool now stores the new weights"
                     [0.25 0.25 0.25 0.25] (ref-SWP::UR_Weigths wp))
                 ;;GENESIS weights are NOT rewritten -- the pool remembers what it was issued with,
@@ -543,7 +543,7 @@
                     true (ref-SWP::UR_CanChangeOwner sp))
             ]
         )
-        (ref-TS01-C3::SWP|C_ChangeOwnership KST.ANHD sp KST.EMMA)
+        (ref-TS01-C3::SWP|C_ChangeOwnership KST.ANHD (ref-SWP::UR_OwnerKonto sp) KST.EMMA sp)
         (map print
             [
                 (expect "<<SWPX-03>> C_ChangeOwnership moved the pool to the new owner"
@@ -560,10 +560,42 @@
         ;;and the FORMER owner can no longer act as owner
         (map print
             [
+                ;;THE FIXTURE IS WHAT KEEPS THIS TEST HONEST (2026-09-21, executor canon).
+                ;;C_ChangeOwnership now runs UEV_ExecutorIsOwnerKonto BEFORE the capability. Had
+                ;;the executor been written as the literal KST.ANHD -- the account this test is
+                ;;about -- the binder would refuse first with "Executor is not the Entity Owner"
+                ;;and this assertion would go on passing while no longer testing the AUTHORITY
+                ;;gate it was written for. Reading the owner instead names EMMA, the binder is
+                ;;satisfied, and CAP_Owner is the only thing left that can refuse -- which is the
+                ;;refusal under test. <<SWP-G29>> below covers the binder itself.
                 (expect-failure "<<SWPX-03>> the former owner cannot change ownership again"
                     "Keyset failure"
-                    (ref-TS01-C3::SWP|C_ChangeOwnership KST.ANHD sp KST.ANHD))
+                    (ref-TS01-C3::SWP|C_ChangeOwnership KST.ANHD (ref-SWP::UR_OwnerKonto sp) KST.ANHD sp))
                 (expect "<<SWPX-03>> ...and the pool still belongs to the new owner"
+                    KST.EMMA (ref-SWP::UR_OwnerKonto sp))
+                ;;<<SWP-G29>> THE ATTRIBUTION HALF, new with the executor canon (2026-09-21).
+                ;;
+                ;;Every one of 15_SWP's 18 entrypoints enforced ownership on a DERIVED account --
+                ;;(UR_OwnerKonto swpair) -- and named no actor: HANDOFF 4g, across a whole module
+                ;;rather than one function. UEV_ExecutorIsOwnerKonto supplies the missing half.
+                ;;
+                ;;SWPX-03 above pins AUTHORITY: a non-owner is refused. It cannot pin ATTRIBUTION,
+                ;;because a caller who names the RIGHT owner while holding no key is already
+                ;;stopped by CAP_Owner. The gap is the other direction -- the true owner naming
+                ;;SOMEONE ELSE as the actor, where every signature check passes and only the
+                ;;binder can object. That is what this asserts, and the distinct message is what
+                ;;makes it an attribution test rather than a second liveness one.
+                ;;
+                ;;The two messages are the whole point: "Keyset failure" is authority,
+                ;;"Executor is not the Entity Owner" is attribution. Delete the binder and this
+                ;;goes red while SWPX-03 stays green.
+                (expect-failure "<<SWP-G29>> the true owner may not attribute the change to another account"
+                    "Executor is not the Entity Owner"
+                    (ref-TS01-C3::SWP|C_ChangeOwnership KST.ANHD KST.ANHD KST.LUMY sp))
+                ;;...and the pool is untouched by that refusal, so the binder refused BEFORE the
+                ;;write rather than after it. An expect-failure alone cannot tell those apart --
+                ;;the lesson <<ORBR-FEE3b>> paid for on 2026-09-21.
+                (expect "<<SWP-G29>> ...and the refusal moved nothing"
                     KST.EMMA (ref-SWP::UR_OwnerKonto sp))
             ]
         )
@@ -1417,16 +1449,16 @@
                 true (contains "OURO-98c486052a51" (ref-SWP::UR_Principals)))
             (expect-failure "<<SWP-G12>> a MAJOR principal cannot be removed"
                 "is a major (primordial-pool) principal — cannot be removed"
-                (ref-TS01-A::SWP|A_UpdatePrincipal "OURO-98c486052a51" false))
+                (ref-TS01-A::SWP|A_UpdatePrincipal KST.ANHD "OURO-98c486052a51" false))
             (expect-failure "<<SWP-G12>> ...nor rotated away"
                 "is a major (primordial-pool) principal — cannot be rotated"
-                (ref-TS01-A::SWP|A_RotatePrincipal "OURO-98c486052a51" "DLK-98c486052a51"))
+                (ref-TS01-A::SWP|A_RotatePrincipal KST.ANHD "OURO-98c486052a51" "DLK-98c486052a51"))
             ;;--- the primordial pool may only be (re)declared as itself: naming any other pool is
             ;;refused, which is what stops the major-principal set being redefined sideways.
             (expect-failure "<<SWP-G12>> a pool that is not the primordial pool cannot be declared as it"
                 "Pool is not the primordial pool"
                 (ref-TS01-A::SWP|A_DefinePrimordialPool
-                    "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51"))
+                    KST.ANHD "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51"))
         ]
     )
     ""
@@ -1466,10 +1498,10 @@
         [
             (expect-failure "<<SWP-G13>> setting the liquid boost to the value it already holds is refused"
                 "Liquid Boost already set to"
-                (ref-TS01-A::SWP|A_UpdateLiquidBoost (ref-SWP::UR_LiquidBoost)))
+                (ref-TS01-A::SWP|A_UpdateLiquidBoost KST.ANHD (ref-SWP::UR_LiquidBoost)))
             (expect-failure "<<SWP-G13>> ...and can-change-owner likewise"
                 "Similar boolean unallowed for <can-change-owner>"
-                (ref-TS01-C3::SWP|C_ModifyCanChangeOwner KST.ANHD pool
+                (ref-TS01-C3::SWP|C_ModifyCanChangeOwner KST.ANHD (SWP.UR_OwnerKonto pool) pool
                     (ref-SWP::UR_CanChangeOwner pool)))
             (expect-failure "<<SWP-G13>> ...and can-add likewise"
                 "Similar boolean unallowed for <can-add> or <can-swap>"
@@ -1477,7 +1509,7 @@
             ;;weights summing to exactly 1.0, so only the pool TYPE is wrong
             (expect-failure "<<SWP-G13>> changing weights on a STABLE pool is refused on pool type"
                 "Changing weights available only for weighted Pools"
-                (ref-TS01-C3::SWP|C_ModifyWeights KST.ANHD pool [0.5 0.3 0.2]))
+                (ref-TS01-C3::SWP|C_ModifyWeights KST.ANHD (SWP.UR_OwnerKonto pool) pool [0.5 0.3 0.2]))
         ]
     )
     ""
@@ -1655,7 +1687,7 @@
                 (ref-SWPL::UDC_LiquiditySplit [1.0 1.0 1.0] [0.0 0.0 0.0])
                 (ref-SWPL::UDC_LiquiditySplitType false true) 0.0 3.0 0.0))
     )
-    (ref-TS01-A::SWP|A_ToggleAsymetricLiquidityAddition false)
+    (ref-TS01-A::SWP|A_ToggleAsymetricLiquidityAddition KST.ANHD false)
     (map print
         [
             (expect "<<SWP-G16>> the global asymmetric switch is now OFF"
@@ -1665,7 +1697,7 @@
                 (ref-SWPLC::UEV_AddLiquidity pool ld-asymmetric))
         ]
     )
-    (ref-TS01-A::SWP|A_ToggleAsymetricLiquidityAddition true)
+    (ref-TS01-A::SWP|A_ToggleAsymetricLiquidityAddition KST.ANHD true)
     (map print
         [
             (expect "<<SWP-G16>> ...and the switch is back ON, as the rest of the suite expects"
@@ -1929,7 +1961,7 @@
     [
         (expect-failure "<<SWP-G20>> a fee ABOVE the 320 promile cap is refused"
             "SWP Pool Fee amount of 320.1 is invalid size wise"
-            (TS01-C3.SWP|C_UpdateFee KST.ANHD
+            (TS01-C3.SWP|C_UpdateFee KST.ANHD (SWP.UR_OwnerKonto "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
                 "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51" 320.1 true))
     ]
 )
@@ -1951,7 +1983,7 @@
     [
         (expect-failure "<<SWP-G20>> a ZERO fee is refused -- disabling is not 'set it to nothing'"
             "SWP Pool Fee amount of 0.0 is invalid size wise"
-            (TS01-C3.SWP|C_UpdateFee KST.ANHD
+            (TS01-C3.SWP|C_UpdateFee KST.ANHD (SWP.UR_OwnerKonto "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
                 "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51" 0.0 true))
     ]
 )
@@ -1974,9 +2006,9 @@
 ;;later test that touches this pair.
 (let* ((sp:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
        (original:decimal (SWP.UR_FeeLP sp)))
-    (TS01-C3.SWP|C_UpdateFee KST.ANHD sp 320.0 true)
+    (TS01-C3.SWP|C_UpdateFee KST.ANHD (SWP.UR_OwnerKonto sp) sp 320.0 true)
     (let ((at-cap:decimal (SWP.UR_FeeLP sp)))
-        (TS01-C3.SWP|C_UpdateFee KST.ANHD sp original true)
+        (TS01-C3.SWP|C_UpdateFee KST.ANHD (SWP.UR_OwnerKonto sp) sp original true)
         (map print
             [
                 (expect "<<SWP-G20>> the cap value 320.0 is ACCEPTED -- the bound is inclusive"
@@ -2036,7 +2068,7 @@
             ;;"Cannot apply value to non-closure" and fails here.
             (expect-failure "<<SWP-G21>> the tier rejection now surfaces its written explanation"
                 "Insufficient Major Elite Tier for NewOwner"
-                (TS01-C3.SWP|C_ChangeOwnership KST.ANHD sp KST.EMMA))
+                (TS01-C3.SWP|C_ChangeOwnership KST.ANHD (SWP.UR_OwnerKonto sp) KST.EMMA sp))
         ]
     )
 )
@@ -2071,7 +2103,7 @@
                 true (SWP.UEV_CanChangeOwnerON sp))
         ]
     )
-    (TS01-C3.SWP|C_ModifyCanChangeOwner KST.ANHD sp (not original))
+    (TS01-C3.SWP|C_ModifyCanChangeOwner KST.ANHD (SWP.UR_OwnerKonto sp) sp (not original))
     (let ((flipped:bool (SWP.UR_CanChangeOwner sp)))
         (map print
             [
@@ -2081,7 +2113,7 @@
                 ;;otherwise cost IGNIS and emit an event for nothing
                 (expect-failure "<<SWP-G21b>> re-setting it to the SAME value is refused"
                     "Similar boolean unallowed for <can-change-owner>"
-                    (TS01-C3.SWP|C_ModifyCanChangeOwner KST.ANHD sp flipped))
+                    (TS01-C3.SWP|C_ModifyCanChangeOwner KST.ANHD (SWP.UR_OwnerKonto sp) sp flipped))
                 ;;THE GUARD ITSELF, which this test was already creating the state for and never
                 ;;asserted. UEV_CanChangeOwnerON was on the unpinned worklist purely because nobody
                 ;;called it inside this window -- no new fixture, no table surgery, just the
@@ -2096,7 +2128,7 @@
             ]
         )
     )
-    (TS01-C3.SWP|C_ModifyCanChangeOwner KST.ANHD sp original)
+    (TS01-C3.SWP|C_ModifyCanChangeOwner KST.ANHD (SWP.UR_OwnerKonto sp) sp original)
     (map print
         [
             (expect "<<SWP-G21b>> ...and the flag is restored, so later tests see the original state"
@@ -2143,7 +2175,7 @@
             ;;low-tier target hits, NOT the ownership flag.
             (expect-failure "<<SWP-G21c>> a low-tier new owner is stopped by the TIER check first"
                 "Insufficient Major Elite Tier for NewOwner"
-                (TS01-C3.SWP|C_ChangeOwnership KST.ANHD sp KST.EMMA))
+                (TS01-C3.SWP|C_ChangeOwnership KST.ANHD (SWP.UR_OwnerKonto sp) KST.EMMA sp))
             ;;EMMA is major tier 4, which the cond in SWP|S>RT_OWN maps to 4 supportable targets;
             ;;the pair carries 7. Both numbers asserted, because the guard is the comparison of the
             ;;two and either one drifting would make the refusal above pass for a different reason.
@@ -2165,7 +2197,7 @@
     )
     ;;turn the ownership flag off, then call the client path. The tier check no longer answers, so
     ;;whatever comes back is what is NEXT in the defcap -- and it is the flag guard.
-    (TS01-C3.SWP|C_ModifyCanChangeOwner KST.ANHD sp (not original))
+    (TS01-C3.SWP|C_ModifyCanChangeOwner KST.ANHD (SWP.UR_OwnerKonto sp) sp (not original))
     (map print
         [
             (expect "<<SWP-G21c>> the flag is OFF"
@@ -2175,7 +2207,7 @@
             ;;pair is refused by THIS guard, naming the pair.
             (expect-failure "<<SWP-G21c>> ...so an otherwise-valid ownership change is refused by it"
                 "SWP Pair S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51 ownership cannot be changed"
-                (TS01-C3.SWP|C_ChangeOwnership KST.ANHD sp KST.EMMA))
+                (TS01-C3.SWP|C_ChangeOwnership KST.ANHD (SWP.UR_OwnerKonto sp) KST.EMMA sp))
         ]
     )
     ""
@@ -2313,13 +2345,13 @@
             ;;and the guard keys on that sign
             (expect-failure "<<SWP-G23>> updating the amplifier of a PRODUCT pool is refused"
                 "Amplifier can only be updated for Stable Pools"
-                (TS01-C3.SWP|C_UpdateAmplifier KST.AOZT pp 50.0))
+                (TS01-C3.SWP|C_UpdateAmplifier KST.AOZT (SWP.UR_OwnerKonto pp) pp 50.0))
         ]
     )
     ;;the contrast, so this is not satisfied by a function that refuses every pool
-    (TS01-C3.SWP|C_UpdateAmplifier KST.ANHD sp 50.0)
+    (TS01-C3.SWP|C_UpdateAmplifier KST.ANHD (SWP.UR_OwnerKonto sp) sp 50.0)
     (let ((updated:decimal (SWP.UR_Amplifier sp)))
-        (TS01-C3.SWP|C_UpdateAmplifier KST.ANHD sp original)
+        (TS01-C3.SWP|C_UpdateAmplifier KST.ANHD (SWP.UR_OwnerKonto sp) sp original)
         (map print
             [
                 (expect "<<SWP-G23>> ...while a STABLE pool accepts the same call"
@@ -2608,12 +2640,12 @@
                 true (contains "OURO-98c486052a51" (ref-SWP::UR_Principals)))
             (expect-failure "<<SWP-G26>> removing a token that was never a principal is refused"
                 "AURYN-98c486052a51 is not currently a principal"
-                (ref-TS01-A::SWP|A_UpdatePrincipal tok false))
+                (ref-TS01-A::SWP|A_UpdatePrincipal KST.ANHD tok false))
             ;;...and the ADD branch refuses the opposite case, which locates the two branches against
             ;;each other: the same capability, the same token set, opposite polarity.
             (expect-failure "<<SWP-G26>> ...and ADDING one that already is, is refused too"
                 "OURO-98c486052a51 is already a principal"
-                (ref-TS01-A::SWP|A_UpdatePrincipal "OURO-98c486052a51" true))
+                (ref-TS01-A::SWP|A_UpdatePrincipal KST.ANHD "OURO-98c486052a51" true))
         ]
     )
     ""
@@ -2681,7 +2713,7 @@
             (wp:string (ref-U|SWP::UC_PoolID toks [0.4 0.2 0.2 0.2] -1.0))
         )
         ;;the owner reweights -- legitimate, and it changes a field PoolState is built from
-        (ref-TS01-C3::SWP|C_ModifyWeights KST.ANHD wp [0.25 0.25 0.25 0.25])
+        (ref-TS01-C3::SWP|C_ModifyWeights KST.ANHD (SWP.UR_OwnerKonto wp) wp [0.25 0.25 0.25 0.25])
         (map print
             [
                 (expect "<<SWPX-10>> the pool has moved since the pact quoted it"
@@ -2701,7 +2733,7 @@
                 ;;how the disabled flag was found -- step 0 does not check it, step 1 does.)
                 (expect-failure "<<SWPX-10>> ...and once the pool is restored, the drift guard stops answering"
                     "Adding|Removing Liquidity isn't enabled on pool"
-                    (let ((restore (ref-TS01-C3::SWP|C_ModifyWeights KST.ANHD wp [0.4 0.2 0.2 0.2])))
+                    (let ((restore (ref-TS01-C3::SWP|C_ModifyWeights KST.ANHD (SWP.UR_OwnerKonto wp) wp [0.4 0.2 0.2 0.2])))
                         (continue-pact 1 false "2n12TVKIdyigszwESxXUSOkAtK48XfsKcVoUGxWYSSE")))
             ]
         )
@@ -2806,18 +2838,18 @@
                 ;;configuration, it is a no-op, and the guard says so rather than writing an empty row.
                 (expect-failure "<<SWPX-12>> an EMPTY target list is refused"
                     "Increase Major Elite Tier to add more Special Targets"
-                    (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD wp []))
+                    (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD (SWP.UR_OwnerKonto wp) wp []))
                 ;;UPPER END -- tier 7 buys 7, so EIGHT is one past the bound. The list is built with
                 ;;make-list so the count is the only thing wrong with it.
                 (expect-failure "<<SWPX-12>> ...and one MORE than the tier buys is refused"
                     "Increase Major Elite Tier to add more Special Targets"
-                    (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD wp (make-list 8 one)))
+                    (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD (SWP.UR_OwnerKonto wp) wp (make-list 8 one)))
                 ;;...and exactly AT the bound it is ACCEPTED. That is what makes the two refusals a
                 ;;bound rather than a blanket rejection, and it puts the boundary where the tier table
                 ;;says it is: tier 7 buys exactly 7, not 6 and not 8.
                 (expect "<<SWPX-12>> ...while exactly 7 -- the tier's maximum -- is accepted"
                     true (!= "" (format "{}"
-                        [(ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD wp (make-list 7 one))])))
+                        [(ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD (SWP.UR_OwnerKonto wp) wp (make-list 7 one))])))
                 (expect "<<SWPX-12>> ...and the pool now carries all seven"
                     7 (length (ref-SWP::UR_SpecialFeeTargets wp)))
             ]
@@ -3192,13 +3224,13 @@
                 ;;this chain, so the refusal can only be the existence check.
                 (expect-failure "<<SWP-D4>> a rotation whose NEW id is not a real token is refused"
                     "DPTF ID NOTATOKEN-98c486052a51 does not exist"
-                    (ref-TS01-A::SWP|A_RotatePrincipal "OURO-98c486052a51" "NOTATOKEN-98c486052a51"))
+                    (ref-TS01-A::SWP|A_RotatePrincipal KST.ANHD "OURO-98c486052a51" "NOTATOKEN-98c486052a51"))
                 ;;...and it is refused on EXISTENCE, not on OURO being a major principal -- which is
                 ;;the rejection the same call gets when <new> IS real. Two different messages from
                 ;;one argument change is what shows the ordering the doc describes.
                 (expect-failure "<<SWP-D4>> ...whereas the same rotation with a REAL new id fails later, on the major rule"
                     "is a major (primordial-pool) principal"
-                    (ref-TS01-A::SWP|A_RotatePrincipal "OURO-98c486052a51" "BUSD-98c486052a51"))
+                    (ref-TS01-A::SWP|A_RotatePrincipal KST.ANHD "OURO-98c486052a51" "BUSD-98c486052a51"))
                 ;;CLAIM 2 — count preservation. Both rejections above left the register untouched,
                 ;;which is the weaker half; the doc's actual claim is that a rotation never changes
                 ;;the COUNT, so the length is asserted rather than the list.
@@ -3289,7 +3321,7 @@
             ;;PRECONDITION: to measure the CHARGED direction the pool must start LOCKED. Locking is
             ;;the free direction, so this setup step cannot itself contribute to the measurement.
             (if (not (ref-SWP::UR_FeeLock sp))
-                (ref-TS01-C3::SWP|C_ToggleFeeLock patron sp true)
+                (ref-TS01-C3::SWP|C_ToggleFeeLock patron (SWP.UR_OwnerKonto sp) sp true)
                 "already locked"
             )
             (let
@@ -3309,7 +3341,7 @@
                             (predicted-stoa:decimal (at "stoa-need" (at "stoa" predicted)))
                             (predicted-ignis:decimal (at "ignis-need" (at "ignis" predicted)))
                         )
-                        (ref-TS01-C3::SWP|C_ToggleFeeLock patron sp false)
+                        (ref-TS01-C3::SWP|C_ToggleFeeLock patron (SWP.UR_OwnerKonto sp) sp false)
                         (let
                             (
                                 (real-stoa:decimal (- stoa-before (coin.get-balance stoa-acct)))
@@ -3372,7 +3404,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_SWP|ModifyWeights patron wp [0.25 0.25 0.25 0.25]))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C3::SWP|C_ModifyWeights patron wp [0.25 0.25 0.25 0.25]))
+            (m (ref-TS01-C3::SWP|C_ModifyWeights patron (SWP.UR_OwnerKonto wp) wp [0.25 0.25 0.25 0.25]))
         )
         (map print
             [
@@ -3494,7 +3526,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_SWP|UpdateFee patron wp 12.0 true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C3::SWP|C_UpdateFee patron wp 12.0 true))
+            (m (ref-TS01-C3::SWP|C_UpdateFee patron (SWP.UR_OwnerKonto wp) wp 12.0 true))
         )
         (map print
             [
@@ -3534,7 +3566,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_SWP|ModifyCanChangeOwner patron wp false))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C3::SWP|C_ModifyCanChangeOwner patron wp false))
+            (m (ref-TS01-C3::SWP|C_ModifyCanChangeOwner patron (SWP.UR_OwnerKonto wp) wp false))
         )
         (map print
             [
@@ -3574,7 +3606,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_SWP|ChangeOwnership patron wp lumy))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C3::SWP|C_ChangeOwnership patron wp lumy))
+            (m (ref-TS01-C3::SWP|C_ChangeOwnership patron (ref-SWP::UR_OwnerKonto wp) lumy wp))
         )
         (map print
             [
@@ -3647,7 +3679,7 @@
             (
                 (stoa-before:decimal (coin.get-balance stoa-acct))
                 (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-                (m (ref-TS01-C3::SWP|C_EnableFrozenLP patron wp))
+                (m (ref-TS01-C3::SWP|C_EnableFrozenLP patron (SWP.UR_OwnerKonto wp) wp))
             )
             (map print
                 [
@@ -3744,7 +3776,7 @@
             (
                 (stoa-before:decimal (coin.get-balance stoa-acct))
                 (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-                (m (ref-TS01-C3::SWP|C_EnableSleepingLP patron wp))
+                (m (ref-TS01-C3::SWP|C_EnableSleepingLP patron (SWP.UR_OwnerKonto wp) wp))
             )
             (map print
                 [
@@ -3907,7 +3939,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_SWP|UpdateSpecialFeeTargets patron wp ["probe-a" "probe-b"]))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets patron wp [{"target": emma, "value": 1} {"target": lumy, "value": 1}]))
+            (m (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets patron (SWP.UR_OwnerKonto wp) wp [{"target": emma, "value": 1} {"target": lumy, "value": 1}]))
         )
         (map print
             [
@@ -5120,7 +5152,7 @@
             )
             (let
                 (
-                    (m (ref-TS01-C3::SWP|C_UpdateAmplifier patron sd new-amp))
+                    (m (ref-TS01-C3::SWP|C_UpdateAmplifier patron (SWP.UR_OwnerKonto sd) sd new-amp))
                 )
                 (map print
                     [

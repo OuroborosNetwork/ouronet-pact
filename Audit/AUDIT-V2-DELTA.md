@@ -506,3 +506,102 @@ one of these was an owner ruling, not an engineering call.
 **Call sites re-pointed: 4** — `[6.3]_SWP.repl` ×1 and the `Kursan/` ORBR-FEE harness ×3, the
 latter being a gate entrypoint rather than a side script.
 
+---
+
+### 15_SWP.pact — COMPLETE (18 of 18 entrypoints, 2026-09-21)
+
+**What v1 asserted that is now wrong.** All 18 signatures moved and ~164 call sites with them —
+the largest single re-point of the sweep so far. Six `A_` admin ops gained `patron` + `executor`
+(their Talos wrappers gained `executor` only, `GASLESS-PATRON` being supplied by the blessed
+path); ten `C_` ops gained `executor`, six of them gaining `patron` too; `C_ChangeOwnership` also
+**reordered**, `(swpair new-owner)` → `(patron executor executee swpair)`, matching
+`DPTF::C_RotateOwnership`.
+
+**HANDOFF §4g, across an ENTIRE MODULE rather than one entrypoint — and that is the headline.**
+In all 18, the argument to `CAP_Owner` / `CAP_EnforceAccountOwnership` is the **derived**
+`(UR_OwnerKonto swpair)`. Not one entrypoint enforced ownership on a parameter it took. The
+spotting rule from module 9 is now a module-level diagnostic, not a per-function one: if a
+module's ownership helper takes an entity id and reads the owner out of a table, **every**
+entrypoint that uses it is unattributed by construction. `UEV_ExecutorIsOwnerKonto` — which
+already existed here, written for the two branding entrypoints in an earlier turn — now binds all
+18. `_modulecomplete` check 7: 18 proven, 0 unproven.
+
+**The two capability-ordering facts that shaped the fixtures.** The binder runs in the `defun`,
+before `with-capability`, following this module's own precedent rather than VST's in-capability
+placement. That makes it the FIRST thing to refuse, which is why two existing negative tests had
+to be re-pointed by **fixture** rather than by message: `<<SWPX-03>>`'s *"the former owner cannot
+change ownership again"* would have started failing on the binder and silently stopped testing
+the authority gate it was written for. It now reads the owner, satisfying the binder so
+`CAP_Owner` is the only thing left that can refuse. `<<SWP-G29>>` covers the binder itself, from
+the other direction: the **true owner** naming someone else as actor, where every signature check
+passes and only the binder can object.
+
+**Two PROVISIONAL executor slots CONFIRMED rather than re-pointed.** `C_EnableFrozenLP` and
+`C_EnableSleepingLP` pass `(ref-DPTF::UR_Konto lp-id)` into `VST::C_Create*Link`, registered
+against this module's turn on the assumption that SWP's own `executor` would replace it. **It must
+not.** SWP's executor is the POOL owner; VST's binder enforces the LP TOKEN's owner, a SMART
+account. Threading the new parameter would reintroduce the exact *"Executor is not the Token
+Owner"* refusal recorded when that was first attempted. **A provisional slot can clear by being
+confirmed, not only by being re-pointed** — worth stating, because the register's wording implied
+the latter.
+
+**Two NEW provisional slots created, in `18_SWPLC` and `19_SWPU`.** `C_ToggleAddOrSwap` has no
+Talos wrapper; its only callers are peer core modules, by accepted design (L71). Both now pass
+`(ref-SWP::UR_OwnerKonto swpair)` and both must become their own module's `executor` at their turn.
+
+---
+
+### A LATENT DEFECT IN `15_SWP`, AND A LIVE ONE IN `03_DSP+` — both found by the same signal
+
+**`A_ToggleAsymetricLiquidityAddition` guarded the wrong account.** Four `if` blocks grant roles
+only when absent. The fourth tested `ignis-fee-exemption-role` — SWP's exemption — while granting
+the exemption to `vst-sc`. The correctly-named binding, `ignis-fee-exemption-roleV2`, was computed
+four lines above and **never read**.
+
+It is not cosmetic: `DPTF|C>X_TOGGLE-FEE-EXEMPTION-ROLE` enforces
+`UEV_AccountFeeExemptionState id account (not toggle)`, so granting a role an account already
+holds **aborts**. If SWP were exempt and VST not, VST would silently never be exempted; if VST
+were exempt and SWP not, the entrypoint would become permanently **uncallable**.
+
+**Classified LATENT, by execution rather than by reading.** A probe established that IGNIS's
+`UR_Konto` is a **smart** account, so no external signer can drive
+`DPTF|C_ToggleFeeExemptionRole` on IGNIS, and nothing in the tree revokes either exemption. The
+two flags cannot currently diverge — which is also exactly why no test caught it: on a fresh chain
+both read `false` and both branches fire.
+
+**The same signal then found a LIVE money defect in a different module.** `_deadbind.py` — which
+has existed for weeks — reports dead `let` bindings, and reported this one every day, as one line
+inside a list of 150. A finding nobody can see is not a finding. Narrowing it to the shape that
+actually matters — *a dead binding whose name is a near-twin of a sibling in the same `let` that
+is read more than once* — gives a check with **zero** hits tree-wide, and it immediately surfaced
+`2_CITIZEN/Stage_Z/03_DSP+::A_KosonMinterStageOne`, where `ps10`/`ps20`/`ps40` and
+`standard-treasury`/`smart-treasury`/`validators` were all computed and discarded.
+
+**That one was live, and measured.** The function's own comment promises *"10% To
+Standard-Treasury, 20% to Smart-Treasury, 40% to Custodians(Validators), Leaving 30% … to
+<dispenser>"*, and the two transfers that would do it are simply absent — while its three-part
+sibling `A_KosonMinterStageOne_1of3`, thirty lines below, performs them with identical bindings.
+Before the fix the three recipients received **0.0** against an expected **46.09 / 92.17 /
+184.35**. The loss compounds: the next step splits the dispenser's *remaining* balance six ways
+into the autostake pools, so with the transfers missing the pools drew **3.33×** their intended
+share every day this path ran.
+
+**It was exercised on every gate run and could not have been caught.**
+`Stage_01/[6.8]_Dispenser.repl` called it, printed a gas figure and asserted **nothing** — a smoke
+test can only distinguish "threw" from "did not throw". `<<DSP-G1>>` replaces that with four
+assertions, including one that the amounts are non-zero, so the other three cannot pass on zeroes.
+
+**The general lesson, and the one an auditor should take from this section.** `_deadbind.py`'s own
+docstring asserted *"Not a correctness bug: nothing downstream sees a wrong answer."* Both findings
+falsify it. When a dead binding's name is a near-twin of a live one, the deadness is the symptom
+and the live name being read **twice** is the disease — and anyone tidying away "dead code" on the
+tool's say-so would have **deleted the evidence and left the defect**. The check is now gate-fatal
+at a threshold of zero.
+
+**Two defects in the new detector itself, both exposed by its first output.** It reported
+`03_AQP::XI_RevokeScoreFromPool`'s `lst-v1` as dead; `lst-v1` is read by the very next *binding*,
+which the detector was not counting. And it claimed `lst` was read 7× when all seven were
+`lst-v2` — because `\b` treats `-` as a word boundary and Pact identifiers contain hyphens. The
+second flaw was also in `_deadbind.py`'s long-standing `scan()`, making its count a **floor**:
+fixing it moved 149 → 155. A detector's first output is a test of the detector.
+

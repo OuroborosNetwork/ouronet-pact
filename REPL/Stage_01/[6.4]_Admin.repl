@@ -169,9 +169,9 @@
     (ref-TS01-A::BRD|A_Live KST.ANHD "GA-98c486052a51")
     (ref-TS01-A::BRD|A_SetFlag KST.ANHD "GA-98c486052a51" 2)
 
-    (ref-TS01-A::SWP|A_UpdateLimit 500.0 true)
-    (ref-TS01-A::SWP|A_UpdateLimit 75.0 false)
-    ;(ref-TS01-A::SWP|A_UpdateLiquidBoost true)
+    (ref-TS01-A::SWP|A_UpdateLimit KST.ANHD 500.0 true)
+    (ref-TS01-A::SWP|A_UpdateLimit KST.ANHD 75.0 false)
+    ;(ref-TS01-A::SWP|A_UpdateLiquidBoost KST.ANHD true)
 
     [
         (format "Ouro Price is {}" [(ref-DALOS::UR_OuroborosPrice)])

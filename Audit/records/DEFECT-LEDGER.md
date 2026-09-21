@@ -4039,3 +4039,81 @@ returned to **182 / 199 / 11 / 50 / 442**, identical to pre-bump.
 > and only the tally moves.
 
 **Result: gate GREEN at 25,035 — the same assertion count as before the bump.**
+
+---
+
+## 8.37 The dispenser minted the Koson and never distributed it — 70% of a daily emission
+
+**CONFIRMED, LIVE, MEASURED, FIXED.** `2_CITIZEN/Stage_Z/03_DSP+.pact::A_KosonMinterStageOne` —
+the single-transaction daily Koson emission — mints Primordial and Esoteric Koson to the
+dispenser and then, contrary to its own comment, performs **neither** of the two transfers that
+distribute it:
+
+```
+;;Moves Primordial Kosons: 10% To Standard-Treasury, 20% to Smart-Treasury, 40% to Custodians(Validators)
+;;Leaving 30% of the Primordial Kosons to <dispenser>
+```
+
+Its three-part sibling `A_KosonMinterStageOne_1of3`, thirty lines below, does exactly that with
+**identical bindings**, two lines of code:
+
+```pact
+(ref-TS01-C1::DPTF|C_BulkTransfer GASLESS-PATRON dispenser [standard-treasury validators] PrimordialKosonID [ps10 ps40])
+(ref-TS01-C1::DPTF|C_Transfer GASLESS-PATRON dispenser smart-treasury PrimordialKosonID ps20 true)
+```
+
+**Measured before the fix: 0.0 to all three recipients, against an expected 46.09 / 92.17 /
+184.35.** Not inferred from reading — `<<DSP-G1>>` was written first and run against the unfixed
+tree.
+
+**The loss compounds rather than stalling.** The next step of the same function reads
+`daily-primordial-left` — the dispenser's *remaining* balance, which the comment documents as the
+30% — and splits it six ways into the autostake pools. With the transfers missing that balance is
+100%, so the pools drew **3.33×** their intended share and the treasuries and validators drew
+nothing, every day this path ran.
+
+### Why nine months of green gates never saw it
+
+`Stage_01/[6.8]_Dispenser.repl` called the function on **every gate run**, printed
+`<<<<<<<Minting Koson FullTilt Costs N GAS>>>>>>>` and asserted **nothing**. A smoke test
+separates "threw" from "did not throw" and nothing else. `modules/DISPENSER.repl`'s own header
+had already noticed the shape — *"(477 lines, ZERO assertions) and so asserted nothing — it
+printed the deploy core's 11/7 baseline and passed because booting a chain passes"* — and
+rebuilt around it without going back to cover what `[6.8]` actually invoked.
+
+### What found it, and the rule that follows
+
+Six **dead `let` bindings**: `ps10`, `ps20`, `ps40`, `standard-treasury`, `smart-treasury`,
+`validators`, all computed and discarded. `REPL/tools/_deadbind.py` has reported dead bindings
+for weeks and reported these every single day — as six lines inside a list of 150, under a
+summary that ends *"… and 134 more"*.
+
+> **A finding nobody can see is not a finding.** The tool was right, continuously, and useless.
+> What was missing was not detection but a THRESHOLD.
+
+The narrow shape — *a dead binding whose name is a near-twin of a sibling in the same `let` that
+is read more than once* — has **zero** instances tree-wide once these are fixed, so it can be
+gate-fatal. `_deadbind.py --twins`, wired into `_gate.py`. It found two, in different modules and
+different stages, on its first run: this one, and `15_SWP::A_ToggleAsymetricLiquidityAddition`
+(§ AUDIT-V2-DELTA, latent — IGNIS's konto is a smart account, so the two flags cannot currently
+diverge).
+
+**And the tool's own docstring was wrong in a way that would have destroyed the evidence.** It
+said dead bindings are *"Not a correctness bug: nothing downstream sees a wrong answer."* Both
+findings falsify it. When the dead name is a near-twin of a live one, the deadness is the
+SYMPTOM and the live name being read twice is the DISEASE — and anyone tidying away "dead code"
+on the tool's say-so would have deleted `ps10`/`ps20`/`ps40` and left a 70% shortfall behind.
+
+### Two defects in the new detector, both exposed by its first output
+
+1. It called `03_AQP::XI_RevokeScoreFromPool`'s `lst-v1` dead. `lst-v1` is read by the very next
+   **binding** — `(lst-v2 (UC_AppL lst-v1 BAR))` — which the new code was not counting, though
+   the long-standing `scan()` was.
+2. It claimed `lst` was read 7×, when all seven were `lst-v2`. `\b` treats `-` as a word
+   boundary and **Pact identifiers contain hyphens**. The same flaw sat in `scan()`, making its
+   count a floor rather than a total: fixing it moved 149 → 155.
+
+> A detector's first output is a test of the detector, not of the codebase.
+
+**Result: gate GREEN at 25,641**, up 10 from 25,631 — `<<DSP-G1>>`'s four assertions and
+`<<SWP-G29>>`'s two, the former reached from more than one entrypoint.

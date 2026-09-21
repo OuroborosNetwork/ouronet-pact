@@ -374,6 +374,27 @@ def main():
         print(_el.stdout + _el.stderr)
         sys.exit("GATE FAILED: an enforce is shadowed by an eager hard read, unannotated.")
 
+    # DEAD BINDING BESIDE AN OVER-READ NEAR-TWIN -- fatal, and it should be, because it is a
+    # ZERO-NOISE check: the whole tree has none. It is NOT the plain dead-binding listing, which
+    # stands at 155 and is advisory waste. This is the narrow shape where one guard was
+    # duplicated and not re-pointed, so the dead name's twin is read once too often.
+    #
+    # ADDED 2026-09-21 after it found two, both real, neither previously known:
+    #   * 15_SWP::A_ToggleAsymetricLiquidityAddition -- the VST fee-exemption guard tested SWP's
+    #     flag, which would have bricked the entrypoint the moment the two diverged;
+    #   * 2_CITIZEN/Stage_Z/03_DSP+::A_KosonMinterStageOne -- 70% of the daily Primordial Koson
+    #     emission never left the dispenser. MEASURED at 0.0 against an expected
+    #     46.09 / 92.17 / 184.35 before the fix.
+    # _deadbind.py itself has existed for weeks and reported the first of those every single day,
+    # as one line inside a list of 150. A finding nobody can see is not a finding; the check that
+    # matters is the one with a threshold of zero.
+    _r = subprocess.run([sys.executable, "tools/_deadbind.py", "--twins"],
+                        capture_output=True, text=True)
+    print(_r.stdout.rstrip() or _r.stderr.rstrip())
+    if _r.returncode != 0:
+        sys.exit("GATE FAILED: a dead let-binding shadows an over-read near-twin "
+                 "-- see _deadbind.py --twins.")
+
     # AUDIT BOOK TABLES -- the book's headline tables must sum to their own totals, and Part III's
     # must match the attack register in the tree. Added 2026-09-17 after Part I's verification pass
     # found an audit tracker that said "FIXED: 19" while enumerating 18, with a compensating

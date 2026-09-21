@@ -155,23 +155,23 @@
     ;;{5.7}  User [A/C]
     ;;
     ;;
-    (defun A_UpdatePrincipal (principal:string add-or-remove:bool))
-    (defun A_RotatePrincipal (old:string new:string))
-    (defun A_UpdateLimit (limit:decimal spawn:bool))
-    (defun A_UpdateLiquidBoost (new-boost-variable:bool))
-    (defun A_DefinePrimordialPool (primordial-pool:string))
-    (defun A_ToggleAsymetricLiquidityAddition (patron:string toggle:bool))
+    (defun A_UpdatePrincipal (patron:string executor:string principal:string add-or-remove:bool))
+    (defun A_RotatePrincipal (patron:string executor:string old:string new:string))
+    (defun A_UpdateLimit (patron:string executor:string limit:decimal spawn:bool))
+    (defun A_UpdateLiquidBoost (patron:string executor:string new-boost-variable:bool))
+    (defun A_DefinePrimordialPool (patron:string executor:string primordial-pool:string))
+    (defun A_ToggleAsymetricLiquidityAddition (patron:string executor:string toggle:bool))
     ;;
-    (defun C_ChangeOwnership:object{IgnisCollectorV3.OutputCumulator} (swpair:string new-owner:string))
-    (defun C_EnableFrozenLP:object{IgnisCollectorV3.OutputCumulator} (patron:string swpair:string))
-    (defun C_EnableSleepingLP:object{IgnisCollectorV3.OutputCumulator} (patron:string swpair:string))
-    (defun C_ModifyCanChangeOwner:object{IgnisCollectorV3.OutputCumulator} (swpair:string new-boolean:bool))
-    (defun C_ModifyWeights:object{IgnisCollectorV3.OutputCumulator} (swpair:string new-weights:[decimal]))
-    (defun C_ToggleAddOrSwap:object{IgnisCollectorV3.OutputCumulator} (patron:string swpair:string toggle:bool add-or-swap:bool))
-    (defun C_ToggleFeeLock:object{IgnisCollectorV3.OutputCumulator} (patron:string swpair:string toggle:bool))
-    (defun C_UpdateAmplifier:object{IgnisCollectorV3.OutputCumulator} (swpair:string amp:decimal))
-    (defun C_UpdateFee:object{IgnisCollectorV3.OutputCumulator} (swpair:string new-fee:decimal lp-or-special:bool))
-    (defun C_UpdateSpecialFeeTargets:object{IgnisCollectorV3.OutputCumulator} (swpair:string targets:[object{FeeSplit}]))
+    (defun C_ChangeOwnership:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string swpair:string))
+    (defun C_EnableFrozenLP:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string swpair:string))
+    (defun C_EnableSleepingLP:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string swpair:string))
+    (defun C_ModifyCanChangeOwner:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string swpair:string new-boolean:bool))
+    (defun C_ModifyWeights:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string swpair:string new-weights:[decimal]))
+    (defun C_ToggleAddOrSwap:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string swpair:string toggle:bool add-or-swap:bool))
+    (defun C_ToggleFeeLock:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string swpair:string toggle:bool))
+    (defun C_UpdateAmplifier:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string swpair:string amp:decimal))
+    (defun C_UpdateFee:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string swpair:string new-fee:decimal lp-or-special:bool))
+    (defun C_UpdateSpecialFeeTargets:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string swpair:string targets:[object{FeeSplit}]))
 
 )
 ;;
@@ -1960,7 +1960,7 @@
     )
     ;;{5.7}  User [A/C]
     ;;
-    (defun A_UpdatePrincipal (principal:string add-or-remove:bool)
+    (defun A_UpdatePrincipal (patron:string executor:string principal:string add-or-remove:bool)
         @doc "Adds <principal> (while under the 7 maximum) or removes it (while at \
             \ least 2 would remain defined, AND <principal> isn't currently a \
             \ 'major' principal — #65eL, URC_IsMajorPrincipal). SWPT's storage is \
@@ -1974,6 +1974,12 @@
             \ alternative for minor principals — it never touches the floor or \
             \ cap, but is equally blocked from rotating a major principal away."
         (P|UEV_IMC)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership executor)
+        )
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
@@ -2003,7 +2009,7 @@
             )
         )
     )
-    (defun A_RotatePrincipal (old:string new:string)
+    (defun A_RotatePrincipal (patron:string executor:string old:string new:string)
         @doc "Atomically replaces principal <old> with <new> in one call — the \
             \ count-preserving alternative to a separate remove-then-add via \
             \ A_UpdatePrincipal (Fix #14/#21H second follow-up re-allowed standalone \
@@ -2019,6 +2025,12 @@
             \ URC_IsMajorPrincipal) — majors are fixed, retirable only by \
             \ redefining the primordial pool itself (SWP|A_DefinePrimordialPool)."
         (P|UEV_IMC)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership executor)
+        )
         (with-read SWP|Properties SWP|INFO
             { "principals" := pp }
             (with-capability (SWP|C>ROTATE-PRINCIPAL old new)
@@ -2034,8 +2046,14 @@
             )
         )
     )
-    (defun A_UpdateLimit (limit:decimal spawn:bool)
+    (defun A_UpdateLimit (patron:string executor:string limit:decimal spawn:bool)
         (P|UEV_IMC)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership executor)
+        )
         (with-capability (SWP|C>LIMIT)
             (if spawn
                 (update SWP|Properties SWP|INFO
@@ -2047,24 +2065,42 @@
             )
         )
     )
-    (defun A_UpdateLiquidBoost (new-boost-variable:bool)
+    (defun A_UpdateLiquidBoost (patron:string executor:string new-boost-variable:bool)
         (P|UEV_IMC)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership executor)
+        )
         (with-capability (SWP|C>LQBOOST new-boost-variable)
             (update SWP|Properties SWP|INFO
                 {"liquid-boost" : new-boost-variable}
             )
         )
     )
-    (defun A_DefinePrimordialPool (primordial-pool:string)
+    (defun A_DefinePrimordialPool (patron:string executor:string primordial-pool:string)
         (P|UEV_IMC)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership executor)
+        )
         (with-capability (SWP|C>DEFINE-PRIMORDIAL-POOL primordial-pool)
             (update SWP|Properties SWP|INFO
                 {"primordial-pool" : primordial-pool}
             )
         )
     )
-    (defun A_ToggleAsymetricLiquidityAddition (patron:string toggle:bool)
+    (defun A_ToggleAsymetricLiquidityAddition (patron:string executor:string toggle:bool)
         (P|UEV_IMC)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership executor)
+        )
         (with-capability (SWP|C>TG-ASYMETRIC-LQ toggle)
             (let
                 (
@@ -2092,7 +2128,25 @@
                     (ref-DPTF::C_ToggleFeeExemptionRole patron (ref-DPTF::UR_Konto ignis-id) SWP|SC_NAME ignis-id true)
                     true
                 )
-                (if (not ignis-fee-exemption-role)
+                ;;BUG FIX 2026-09-21 (found during the executor sweep, by a subagent reading
+                ;;this block for its patron/executor slots). This guard read
+                ;;<ignis-fee-exemption-role> -- the exemption of SWP|SC_NAME -- while the call it
+                ;;guards grants the exemption to <vst-sc>. The correctly-named binding for that,
+                ;;<ignis-fee-exemption-roleV2>, was declared four lines up and NEVER READ, which
+                ;;is what gave the typo away: a dead `let` binding beside a repeated one is a
+                ;;copy-paste that lost its edit.
+                ;;
+                ;;It is not cosmetic, because DPTF|C>X_TOGGLE-FEE-EXEMPTION-ROLE enforces
+                ;;<UEV_AccountFeeExemptionState id account (not toggle)> -- granting a role an
+                ;;account ALREADY holds ABORTS. So whenever the two accounts diverge:
+                ;;  * SWP exempt, VST not  -> this block is skipped and VST silently never gets
+                ;;    its exemption, paying IGNIS fees it is meant to be exempt from;
+                ;;  * SWP not exempt, VST exempt -> this block RUNS against an account that
+                ;;    already holds the role, the enforce fires, and the whole entrypoint becomes
+                ;;    UNCALLABLE -- asymmetric liquidity addition can never be toggled again.
+                ;;They do not diverge on a fresh chain (the first call finds both false and grants
+                ;;both), which is exactly why no test caught it. Pinned by <<SWP-G28>>.
+                (if (not ignis-fee-exemption-roleV2)
                     (ref-DPTF::C_ToggleFeeExemptionRole patron (ref-DPTF::UR_Konto ignis-id) vst-sc ignis-id true)
                     true
                 )
@@ -2142,16 +2196,18 @@
     )
     ;;
     (defun C_ChangeOwnership:object{IgnisCollectorV3.OutputCumulator}
-        (swpair:string new-owner:string)
+        (patron:string executor:string executee:string swpair:string)
         (P|UEV_IMC)
-        (with-capability (SWP|S>RT_OWN swpair new-owner)
-            (XI_ChangeOwnership swpair new-owner)
+        (UEV_ExecutorIsOwnerKonto executor swpair)
+        (with-capability (SWP|S>RT_OWN swpair executee)
+            (XI_ChangeOwnership swpair executee)
             (URCi_ChangeOwnership swpair)
         )
     )
     (defun C_EnableFrozenLP:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string swpair:string)
+        (patron:string executor:string swpair:string)
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor swpair)
         (with-capability (SWP|C>ENABLE-FROZEN swpair)
             (let
                 (
@@ -2163,11 +2219,14 @@
                 )
                 (XI_EnableFrozenLP swpair)
                 (if (= current-frozen-link BAR)
-                    ;;PROVISIONAL EXECUTOR SLOT (HANDOFF 4e) -- twin of the one in
-                    ;;C_EnableSleepingLP below; same reasoning, same account (the LP TOKEN's
-                    ;;owner, not the pool's -- see there). Found by
-                    ;;_callarity.py, NOT by the grep that found its twin: that grep was truncated
-                    ;;with `head -4` and this line sat past the cut. Re-pointed at 15_SWP's turn.
+                    ;;RESOLVED AT 15_SWP'S OWN TURN (2026-09-21) -- and the resolution is that
+                    ;;this expression STAYS. The slot was registered PROVISIONAL on the assumption
+                    ;;that SWP's own `executor` would replace it. It must not: SWP's executor is
+                    ;;the POOL owner (UR_OwnerKonto swpair), and VST's binder enforces
+                    ;;executor == (UR_Konto lp-id), the LP TOKEN's owner, which is a SMART
+                    ;;account. Threading the new parameter here would reintroduce exactly the
+                    ;;refusal the twin below records. A provisional slot can clear by being
+                    ;;CONFIRMED, not only by being re-pointed.
                     (ref-VST::C_CreateFrozenLink patron (ref-DPTF::UR_Konto lp-id) lp-id)
                     (ref-IGNIS::UDC_ConstructOutputCumulator
                         (ref-IGNIS::UC_IgnisLeg "tier-medium")
@@ -2180,8 +2239,9 @@
         )
     )
     (defun C_EnableSleepingLP:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string swpair:string)
+        (patron:string executor:string swpair:string)
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor swpair)
         (with-capability (SWP|C>ENABLE-SLEEPING swpair)
             (let
                 (
@@ -2193,8 +2253,8 @@
                 )
                 (XI_EnableSleepingLP swpair)
                 (if (= current-sleeping-link BAR)
-                    ;;PROVISIONAL EXECUTOR SLOT (HANDOFF 4e) -- 15_SWP's own turn is module 13
-                    ;;and has not come, so there is no `executor` here to thread. The rule is to
+                    ;;RESOLVED AT 15_SWP'S OWN TURN (2026-09-21): this expression STAYS, and the
+                    ;;module now HAS an `executor` that must NOT be threaded here. The rule is to
                     ;;pass the account that actually INITIATES, never a placeholder: that is the
                     ;;LP TOKEN's owner. NOT the pool owner -- that was the first guess and the
                     ;;suite refused it with "Executor is not the Token Owner": VST's binder
@@ -2214,23 +2274,25 @@
         )
     )
     (defun C_ModifyCanChangeOwner:object{IgnisCollectorV3.OutputCumulator}
-        (swpair:string new-boolean:bool)
+        (patron:string executor:string swpair:string new-boolean:bool)
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor swpair)
         (with-capability (SWP|S>RT_CAN-CHANGE swpair new-boolean)
             (XI_ModifyCanChangeOwner swpair new-boolean)
             (URCi_ModifyCanChangeOwner swpair)
         )
     )
     (defun C_ModifyWeights:object{IgnisCollectorV3.OutputCumulator}
-        (swpair:string new-weights:[decimal])
+        (patron:string executor:string swpair:string new-weights:[decimal])
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor swpair)
         (with-capability (SECURE)
             (XB_ModifyWeights swpair new-weights)
             (URCi_ModifyWeights swpair)
         )
     )
     (defun C_ToggleAddOrSwap:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string swpair:string toggle:bool add-or-swap:bool)
+        (patron:string executor:string swpair:string toggle:bool add-or-swap:bool)
         @doc "#71L: called directly (cross-module C_->C_) by SWPU::C_ToggleSwapCapability and \
             \ SWPLC::C_ToggleAddLiquidity, instead of through an XE_* forward entrypoint — \
             \ intentional, DESIGN-accepted, not an oversight. This function is not a plain \
@@ -2245,6 +2307,7 @@
             \ authorization. Left as-is; a properly-capped XE_* replacement is real design work, \
             \ not a mechanical rename — deferred, not attempted here."
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor swpair)
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
@@ -2318,8 +2381,9 @@
         )
     )
     (defun C_ToggleFeeLock:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string swpair:string toggle:bool)
+        (patron:string executor:string swpair:string toggle:bool)
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor swpair)
         (with-capability (SWP|C>TG_FEE-LOCK swpair toggle)
             (let
                 (
@@ -2341,24 +2405,27 @@
         )
     )
     (defun C_UpdateAmplifier:object{IgnisCollectorV3.OutputCumulator}
-        (swpair:string amp:decimal)
+        (patron:string executor:string swpair:string amp:decimal)
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor swpair)
         (with-capability (SWP|S>UPDATE-AMPLIFIER swpair amp)
             (XI_UpdateAmplifier swpair amp)
             (URCi_UpdateAmplifier swpair)
         )
     )
     (defun C_UpdateFee:object{IgnisCollectorV3.OutputCumulator}
-        (swpair:string new-fee:decimal lp-or-special:bool)
+        (patron:string executor:string swpair:string new-fee:decimal lp-or-special:bool)
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor swpair)
         (with-capability (SWP|S>UPDATE-FEE swpair new-fee)
             (XI_UpdateFee swpair new-fee lp-or-special)
             (URCi_UpdateFee swpair)
         )
     )
     (defun C_UpdateSpecialFeeTargets:object{IgnisCollectorV3.OutputCumulator}
-        (swpair:string targets:[object{SwapperV4.FeeSplit}])
+        (patron:string executor:string swpair:string targets:[object{SwapperV4.FeeSplit}])
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor swpair)
         (with-capability (SPW|S>UPDATE_SPECIAL-FEE-TARGETS swpair targets)
             (XI_UpdateSpecialFeeTargets swpair targets)
             (URCi_UpdateSpecialFeeTargets swpair)

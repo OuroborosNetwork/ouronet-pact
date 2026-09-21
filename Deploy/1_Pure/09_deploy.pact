@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 9 of 24
 ;; This is STEP 9 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-8 must have run first, including the init steps between deploys.
-;; 4 source file(s), 252,440 gas measured in the REPL gas model, 238,240 bytes
+;; 4 source file(s), 252,440 gas measured in the REPL gas model, 238,561 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/21_CODEX.pact
@@ -3096,12 +3096,12 @@
     (defun ORBR|A_Fuel ())
     ;;
     ;;
-    (defun SWP|A_UpdatePrincipal (principal:string add-or-remove:bool))
-    (defun SWP|A_RotatePrincipal (old:string new:string))
-    (defun SWP|A_UpdateLimit (limit:decimal spawn:bool))
-    (defun SWP|A_UpdateLiquidBoost (new-boost-variable:bool))
-    (defun SWP|A_DefinePrimordialPool (primordial-pool:string))
-    (defun SWP|A_ToggleAsymetricLiquidityAddition (toggle:bool))
+    (defun SWP|A_UpdatePrincipal (executor:string principal:string add-or-remove:bool))
+    (defun SWP|A_RotatePrincipal (executor:string old:string new:string))
+    (defun SWP|A_UpdateLimit (executor:string limit:decimal spawn:bool))
+    (defun SWP|A_UpdateLiquidBoost (executor:string new-boost-variable:bool))
+    (defun SWP|A_DefinePrimordialPool (executor:string primordial-pool:string))
+    (defun SWP|A_ToggleAsymetricLiquidityAddition (executor:string toggle:bool))
 
 )
 ;;
@@ -3772,7 +3772,7 @@
         )
     )
     ;;  [SWP_Administrator]
-    (defun SWP|A_UpdatePrincipal (principal:string add-or-remove:bool)
+    (defun SWP|A_UpdatePrincipal (executor:string principal:string add-or-remove:bool)
         @doc "Adds <principal> (while under the 7 maximum) or removes it (while at \
         \ least 2 would remain defined, and <principal> isn't a 'major' principal \
         \ — #65eL). A principal is a token that must exist once in every W or P \
@@ -3792,11 +3792,11 @@
                 (
                     (ref-SWP:module{SwapperV4} SWP)
                 )
-                (ref-SWP::A_UpdatePrincipal principal add-or-remove)
+                (ref-SWP::A_UpdatePrincipal GASLESS-PATRON executor principal add-or-remove)
             )
         )
     )
-    (defun SWP|A_RotatePrincipal (old:string new:string)
+    (defun SWP|A_RotatePrincipal (executor:string old:string new:string)
         @doc "Atomically replaces principal <old> with <new> in one step, without \
         \ touching the 2-minimum floor or 7-maximum cap. Safe with respect to \
         \ SWPT's routing graph (#21H fix): SWPT's storage is principal-agnostic, \
@@ -3812,11 +3812,11 @@
                 (
                     (ref-SWP:module{SwapperV4} SWP)
                 )
-                (ref-SWP::A_RotatePrincipal old new)
+                (ref-SWP::A_RotatePrincipal GASLESS-PATRON executor old new)
             )
         )
     )
-    (defun SWP|A_UpdateLimit (limit:decimal spawn:bool)
+    (defun SWP|A_UpdateLimit (executor:string limit:decimal spawn:bool)
         @doc "Updates either the <spawn-limit> or <inactive-limit> for the SWP Module \
         \ The <spawn-limit> is the minimum number in STOA that a pool must be created with, in order to be opened for swap \
         \ The <inactive-limit> is the minimum number in STOA as total pool liquidity value, that trigger autonomic disable of the swap mechanism"
@@ -3825,40 +3825,40 @@
                 (
                     (ref-SWP:module{SwapperV4} SWP)
                 )
-                (ref-SWP::A_UpdateLimit limit spawn)
+                (ref-SWP::A_UpdateLimit GASLESS-PATRON executor limit spawn)
             )
         )
     )
-    (defun SWP|A_UpdateLiquidBoost (new-boost-variable:bool)
+    (defun SWP|A_UpdateLiquidBoost (executor:string new-boost-variable:bool)
         @doc "Updates Liquid Boost switch. When set to true, every swap is set to pump the Index for Stoa Liquid Staking"
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
                     (ref-SWP:module{SwapperV4} SWP)
                 )
-                (ref-SWP::A_UpdateLiquidBoost new-boost-variable)
+                (ref-SWP::A_UpdateLiquidBoost GASLESS-PATRON executor new-boost-variable)
             )
         )
     )
-    (defun SWP|A_DefinePrimordialPool (primordial-pool:string)
+    (defun SWP|A_DefinePrimordialPool (executor:string primordial-pool:string)
         @doc "Updates the Primordial Pool"
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
                     (ref-SWP:module{SwapperV4} SWP)
                 )
-                (ref-SWP::A_DefinePrimordialPool primordial-pool)
+                (ref-SWP::A_DefinePrimordialPool GASLESS-PATRON executor primordial-pool)
             )
         )
     )
-    (defun SWP|A_ToggleAsymetricLiquidityAddition (toggle:bool)
+    (defun SWP|A_ToggleAsymetricLiquidityAddition (executor:string toggle:bool)
         @doc "Updates the Primordial Pool"
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
                     (ref-SWP:module{SwapperV4} SWP)
                 )
-                (ref-SWP::A_ToggleAsymetricLiquidityAddition GASLESS-PATRON toggle)
+                (ref-SWP::A_ToggleAsymetricLiquidityAddition GASLESS-PATRON executor toggle)
             )
         )
     )
