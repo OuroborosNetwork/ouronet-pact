@@ -7,8 +7,8 @@
 |---|---|
 | version | **2.0** |
 | released | 2026-09-20 |
-| built from commit | `6d51e75+dirty` |
-| pages | 232 |
+| built from commit | `7ed6de6+dirty` |
+| pages | 233 |
 | chapters | 24 |
 
 ## What changed in 2.0

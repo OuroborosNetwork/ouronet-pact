@@ -174,3 +174,76 @@ more than its name suggested.
 - **`DPOF|C>DEBIT`** could only be reached through a partial-transfer path that requires a token
   property the obvious fixture did not have. The first attempt died at that property check — a green
   assertion that said nothing whatever about ownership.
+
+## The one field that cannot be gated, and why we are saying so
+
+Every finding above is a gate that was missing, misplaced or shadowed — all of them fixable, and
+all of them fixed. This section is the opposite: a property the chain **cannot** enforce, stated
+plainly because an audit that only lists solved problems is not telling you where the edges are.
+
+### What the field is
+
+A DALOS account row carries a `public` field. It is **not** the account's Kadena signing key. The
+Kadena key is 64 hex characters and lives inside the account's `guard`; `public` is a **574–576
+character** string over a 50-symbol alphabet with a `9G.` / `9H.` version prefix — an Ouronet
+keypair of its own, used off-chain by the client for the account's key material.
+
+It is written once, at deployment, by whoever calls the deploy entrypoint. Nothing reads it back
+for validation. The only path that can change it afterwards is `DALOS::A_UpdatePublicKey`, which is
+`GOV|DALOS_ADMIN`-only **by design** — there is deliberately no client path, because the field is
+account identity rather than account preference.
+
+### Why the chain cannot check it
+
+Three independent routes were examined, and each is closed:
+
+1. **Verify a signature under the claimed key.** Pact can enforce Kadena ed25519 and WebAuthn
+   signatures and nothing else. There is no native that verifies a signature under a caller-supplied
+   foreign keypair, so the account cannot be made to prove it holds the private half.
+2. **Derive it from the guard.** `create-principal` does reach a key — this codebase already uses it
+   in `UC_GuardProtocol` to classify guards as `k:` / `w:` / `r:` / `u:` / `c:` / `m:` / `p:`. But
+   the key it reaches is the **Kadena** key. `public` is a different keypair with no arithmetic
+   relationship to it, so the principal tells you nothing about the field.
+3. **Derive it from the account name.** Ouronet account names are 162 characters, `Ѻ.` or `Σ.` plus
+   a 160-glyph body, and `GLYPH|UEV_DalosAccount` validates exactly that. The name is not a hash or
+   an encoding of `public`; the two are independent strings. There is no relationship to check.
+
+So the property *"the `public` on this account is the public half of a keypair its owner holds"* is
+**unenforceable on this blockchain**. Not difficult — unavailable.
+
+### What that means in practice
+
+Through the Ouronet UI the field is correct by construction: the client generates the keypair and
+supplies the public half, and the user never types it. The exposure is the **console**, or any
+hand-built transaction: the deploy entrypoints accept any string, so an account can be created
+carrying a key nobody holds, or — the sharper case — a **well-formed key belonging to somebody
+else**, which would publish a recipient the account's owner cannot read.
+
+The loss is borne by the account itself in the first case and by its correspondents in the second.
+No funds are reachable through it: `public` gates nothing on-chain, holds no authority, and is
+consulted by no capability. It is a *correctness* property of account identity, not an
+authorisation one — which is why the system stays safe without it and merely becomes wrong for that
+account.
+
+**The remedy exists and is the admin override.** An account created with a bad key is repaired by
+`A_UpdatePublicKey`, and since that is the only writer, the repair is as authoritative as the
+original write. **This is accepted, not unresolved** — the owner's position, and the audit's:
+enforcement is impossible, detection is off-chain, and the correction path is present and
+exclusive.
+
+### The part that is NOT closed, and is offered as an open recommendation
+
+The three routes above rule out proving **ownership** of the key. They do not rule out checking its
+**shape** — and the shape is regular: a fixed prefix, a narrow length band, a 50-symbol alphabet.
+The codebase already performs precisely this class of check on the field sitting beside it, in the
+same insert: `GLYPH|UEV_DalosAccount` enforces the account name's length, prefix, separator and
+charset. **`public` is the one account field admitted with no shape check at all.**
+
+Adding one would not make the key provably the owner's — that remains impossible. It would collapse
+the accidental case (a truncated paste, a wrong field, an empty string, a Kadena key pasted where an
+Ouronet key belongs) from *silently permanent* to *refused at the door*, leaving only the deliberate
+substitution of a well-formed foreign key — which is self-harming in the ordinary case and, being
+deliberate, is the part no validation could have stopped anyway.
+
+Recorded here as a recommendation rather than a change: it narrows the window, it does not close it,
+and the distinction is the whole point of this section.

@@ -778,6 +778,7 @@
     (
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+        (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
         (std:string KST.ANHD)
     )
     (let
@@ -852,6 +853,28 @@
                     "None of the guards passed"
                     (ref-TS01-C1::DALOS|C_DeploySmartAccount (+ "Ѻ" "WrongKind")
                         (ref-DALOS::UR_AccountGuard KST.EMMA) "stoa" std "pub"))
+                ;;...AND THE ADMIN PATH IS NOT AN EXCEPTION. This is the assertion that answers
+                ;;"can the admin deploy an account FOR someone else?" -- and the answer is NO.
+                ;;A_Deploy*Account composes SECURE-ADMIN, which grants GOV|DALOS_ADMIN, and then
+                ;;reaches the very same DALOS|C>DEPLOY-* capability and the very same UEV_Any.
+                ;;GOV|DALOS_ADMIN is NOT the GOV capability, so (create-capability-guard (GOV))
+                ;;-- the second element, the genesis door -- is not satisfied either. The admin
+                ;;is left needing the new account's own guard, exactly like everybody else.
+                ;;
+                ;;ANHD signs here and IS the DALOS admin, so the admin half is satisfied and the
+                ;;refusal below is attributable to the guard alone. A FOREIGN admin deploy would
+                ;;need a new entrypoint that deliberately skips this check; none exists, and the
+                ;;absence is the security property -- see StoicSyntax §2.2's base case.
+                (expect-failure "<<DALOS-G4b>> even the ADMIN cannot deploy an account whose guard it does not hold"
+                    "None of the guards passed"
+                    (ref-TS01-A::DALOS|A_DeployStandardAccount (+ "Σ" "WrongKind")
+                        (ref-DALOS::UR_AccountGuard KST.EMMA) "stoa" "pub"))
+                ;;the pairing again: same admin, same wrong glyph, but a guard ANHD DOES hold --
+                ;;so this one gets past UEV_Any and dies on the format check instead. Without it,
+                ;;the line above would also pass if the admin path were broken outright.
+                (expect-failure "<<DALOS-G4b>> ...while with a guard it DOES hold it reaches the format check"
+                    "Format for a Standard DALOS Account"
+                    (ref-TS01-A::DALOS|A_DeployStandardAccount (+ "Σ" "WrongKind") g "stoa" "pub"))
             ]
         )
         ""
