@@ -575,7 +575,7 @@
                         (output:object{IgnisCollectorV3.OutputCumulator}
                             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                                 [
-                                    (ref-TFT::C_Transfer w-stoa-id unwrapper lq-sc amount true)
+                                    (ref-TFT::C_Transfer patron unwrapper lq-sc w-stoa-id amount true)
                                     (ref-DPTF::C_Burn patron lq-sc w-stoa-id amount)
                                 ]
                                 []
@@ -612,7 +612,7 @@
                             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                                 [
                                     (ref-DPTF::C_Mint patron lq-sc w-stoa-id amount false)
-                                    (ref-TFT::C_Transfer w-stoa-id lq-sc wrapper amount true)
+                                    (ref-TFT::C_Transfer patron lq-sc wrapper w-stoa-id amount true)
                                 ]
                                 []
                             )
@@ -651,7 +651,7 @@
                         (output:object{IgnisCollectorV3.OutputCumulator}
                             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                                 [
-                                    (ref-TFT::C_Transfer w-ur-stoa-id unwrapper lq-sc amount true)
+                                    (ref-TFT::C_Transfer patron unwrapper lq-sc w-ur-stoa-id amount true)
                                     (ref-DPTF::C_Burn patron lq-sc w-ur-stoa-id amount)
                                 ]
                                 []
@@ -695,7 +695,7 @@
                             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                                 [
                                     (ref-DPTF::C_Mint patron lq-sc w-ur-stoa-id amount false)
-                                    (ref-TFT::C_Transfer w-ur-stoa-id lq-sc wrapper amount true)
+                                    (ref-TFT::C_Transfer patron lq-sc wrapper w-ur-stoa-id amount true)
                                 ]
                                 []
                             )

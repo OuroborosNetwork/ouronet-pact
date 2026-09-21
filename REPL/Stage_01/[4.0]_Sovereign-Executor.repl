@@ -1357,7 +1357,7 @@
         (ouro-id:string (ref-DALOS::UR_OuroborosID))
 
     )
-    (ref-TS01-C1::DPTF|C_Transmute patron ouro-id patron 10.0)
+    (ref-TS01-C1::DPTF|C_Transmute patron patron ouro-id 10.0)
 )
 
 ;;==== TX-15 [4.1.15] - Dalos INIT [15]: Transmute · 03 · gas echo ==== ===========================
@@ -1397,14 +1397,7 @@
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
     )
-    (ref-TS01-C1::DPTF|C_Transfer
-        patron
-        OuroID
-        patron
-        emma
-        2.0
-        false
-    )
+    (ref-TS01-C1::DPTF|C_Transfer patron patron emma OuroID 2.0 false)
 )
 
 ;;==== TX-16 [4.1.16] - Dalos INIT [16]: Transfer · 03 · gas echo ==== ============================
@@ -1840,7 +1833,7 @@
                 (format "AH has Native Stoa {}" [(ref-coin::get-balance patron-stoa)])
                 (format "AH has WSTOA {}" [(ref-DPTF::UR_AccountSupply wstoa-id patron)])
                 (format "AH has SSTOA {}" [(ref-DPTF::UR_AccountSupply sstoa-id patron)])
-                (ref-TS01-C1::DPTF|C_Transfer patron sstoa-id patron KST.EMMA 2000.0 false)
+                (ref-TS01-C1::DPTF|C_Transfer patron patron KST.EMMA sstoa-id 2000.0 false)
             ]
             [
                 PensionID HibernatedPensionID KoriID

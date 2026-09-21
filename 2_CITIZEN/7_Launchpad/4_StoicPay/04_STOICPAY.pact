@@ -608,11 +608,9 @@
                 ;;1] SOVEREIGN deposit Talos op — buyer's STOA into the Launchpad; self-collects IGNIS on patron
                 (ref-TS02-DPAD::DEMIPAD|C_Deposit patron buyer KpayID pid type false max-cost)
                 ;;2] SOVEREIGN DPTF transfer Talos op — StoicPay from the Launchpad SC to the buyer; self-collects IGNIS
-                (ref-TS01-C1::DPTF|C_Transfer patron KpayID DEMIPAD|SC_NAME buyer (dec kpay-amount) true)
+                (ref-TS01-C1::DPTF|C_Transfer patron DEMIPAD|SC_NAME buyer KpayID (dec kpay-amount) true)
                 ;;3] SOVEREIGN DPTF multi-bulk transfer Talos op — venture split (company 50% + 4 ventures); self-collects IGNIS
-                (ref-TS01-C1::DPTF|C_MultiBulkTransfer patron [KpayID] DEMIPAD|SC_NAME
-                    [[(GOV|COMPANY) (GOV|VENTURE1) (GOV|VENTURE2) (GOV|VENTURE3) (GOV|VENTURE4)]]
-                    [[twenty-p ten-p ten-p ten-p ten-p]])
+                (ref-TS01-C1::DPTF|C_MultiBulkTransfer patron DEMIPAD|SC_NAME [[(GOV|COMPANY) (GOV|VENTURE1) (GOV|VENTURE2) (GOV|VENTURE3) (GOV|VENTURE4)]] [KpayID] [[twenty-p ten-p ten-p ten-p ten-p]])
                 (if iz-native
                     (format "Account {} succesfully acquired {} STOICPAY at {} $ per Unit with {} Native STOA"
                         [sb kpay-amount present-kpay-price paid]

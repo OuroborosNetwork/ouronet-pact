@@ -245,7 +245,7 @@
             (fold
                 (lambda (acc:bool idx:integer)
                     (let ((owner:string (UC_SynthAccount idx)))
-                        (ref-TS01-C1::DPTF|C_Transfer patron ouro-id patron owner stake-amt true)
+                        (ref-TS01-C1::DPTF|C_Transfer patron patron owner ouro-id stake-amt true)
                         (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner owner ouro-id stake-amt)
                     )
                     true
@@ -752,7 +752,7 @@
                 (amounts:[decimal] (UC_MakeDecimals receiver-count amt))
                 (g-before:integer (env-gas))
             )
-            (ref-TS01-C1::DPTF|C_BulkTransfer patron ouro-id patron receivers amounts)
+            (ref-TS01-C1::DPTF|C_BulkTransfer patron patron receivers ouro-id amounts)
             (- (env-gas) g-before)
         )
     )
@@ -774,7 +774,7 @@
             (fold
                 (lambda (acc:bool idx:integer)
                     (let ((owner:string (UC_SynthAccount idx)))
-                        (ref-TS01-C1::DPTF|C_Transfer patron ouro-id patron owner stake-amt true)
+                        (ref-TS01-C1::DPTF|C_Transfer patron patron owner ouro-id stake-amt true)
                         (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner owner ouro-id stake-amt)
                     )
                     true

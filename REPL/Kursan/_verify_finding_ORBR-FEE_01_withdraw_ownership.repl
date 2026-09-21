@@ -55,7 +55,7 @@
             OUROBOROS.ORBR|SC_NAME (DPTF.UR_FeeTarget "OS-98c486052a51"))
     ]
 )
-(TS01-C1.DPTF|C_Transfer KST.ANHD "OS-98c486052a51" KST.ANHD KST.EMMA 1000.0 true)
+(TS01-C1.DPTF|C_Transfer KST.ANHD KST.ANHD KST.EMMA "OS-98c486052a51" 1000.0 true)
 (commit-tx)
 
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -70,7 +70,7 @@
 (let* ((os:string "OS-98c486052a51")
        (before:decimal (DPTF.UR_AccountSupply os OUROBOROS.ORBR|SC_NAME))
        (sup-before:decimal (DPTF.UR_Supply os)))
-    (TS01-C1.DPTF|C_Transfer KST.EMMA os KST.EMMA KST.LUMY 500.0 true)
+    (TS01-C1.DPTF|C_Transfer KST.EMMA KST.EMMA KST.LUMY os 500.0 true)
     (let ((after:decimal (DPTF.UR_AccountSupply os OUROBOROS.ORBR|SC_NAME))
           (sup-after:decimal (DPTF.UR_Supply os)))
         (map print

@@ -1,6 +1,6 @@
 ;; ---------------------------------------------------------------------------
 ;; OURONET INIT -- file 1
-;; STEP 22 of the full sequence (see Deploy/MANIFEST.md).
+;; STEP 24 of the full sequence (see Deploy/MANIFEST.md).
 ;; Label : deploy-stage02 · AQP-BOOT Step0 WireImcAndGovernor
 ;; Source: REPL/deploy-stage02.repl:63
 ;;

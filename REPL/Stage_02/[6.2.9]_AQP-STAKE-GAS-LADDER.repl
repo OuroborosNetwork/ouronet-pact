@@ -80,7 +80,7 @@
                 ]
             }
     ])
-    (ref-TS01-C1::DPTF|C_Transfer patron ouro-id patron owner amt true)
+    (ref-TS01-C1::DPTF|C_Transfer patron patron owner ouro-id amt true)
     (let
         (
             (stake-gas:integer (AQPGAS.XI_MeasureStakeTf patron pool-id ouro-id amt))
@@ -162,7 +162,7 @@
                 ]
             }
     ])
-    (ref-TS01-C1::DPTF|C_Transfer patron ouro-id patron owner amt true)
+    (ref-TS01-C1::DPTF|C_Transfer patron patron owner ouro-id amt true)
     (let
         (
             (stake-gas:integer (AQPGAS.XI_MeasureStakeTf patron pool-id ouro-id amt))
@@ -244,7 +244,7 @@
                 ]
             }
     ])
-    (ref-TS01-C1::DPTF|C_Transfer patron ouro-id patron owner amt true)
+    (ref-TS01-C1::DPTF|C_Transfer patron patron owner ouro-id amt true)
     (let
         (
             (stake-gas:integer (AQPGAS.XI_MeasureStakeTf patron pool-id ouro-id amt))
@@ -326,7 +326,7 @@
                 ]
             }
     ])
-    (ref-TS01-C1::DPTF|C_Transfer patron ouro-id patron owner amt true)
+    (ref-TS01-C1::DPTF|C_Transfer patron patron owner ouro-id amt true)
     (let
         (
             (stake-gas:integer (AQPGAS.XI_MeasureStakeTf patron pool-id ouro-id amt))
@@ -408,7 +408,7 @@
                 ]
             }
     ])
-    (ref-TS01-C1::DPTF|C_Transfer patron ouro-id patron owner amt true)
+    (ref-TS01-C1::DPTF|C_Transfer patron patron owner ouro-id amt true)
     (let
         (
             (stake-gas:integer (AQPGAS.XI_MeasureStakeTf patron pool-id ouro-id amt))
@@ -490,7 +490,7 @@
                 ]
             }
     ])
-    (ref-TS01-C1::DPTF|C_Transfer patron ouro-id patron owner amt true)
+    (ref-TS01-C1::DPTF|C_Transfer patron patron owner ouro-id amt true)
     (let
         (
             (stake-gas:integer (AQPGAS.XI_MeasureStakeTf patron pool-id ouro-id amt))
@@ -572,7 +572,7 @@
                 ]
             }
     ])
-    (ref-TS01-C1::DPTF|C_Transfer patron ouro-id patron owner amt true)
+    (ref-TS01-C1::DPTF|C_Transfer patron patron owner ouro-id amt true)
     (let
         (
             (stake-gas:integer (AQPGAS.XI_MeasureStakeTf patron pool-id ouro-id amt))

@@ -322,7 +322,7 @@
                 (UEV_Active)
                 (UEV_FreshSignal signal-id)
                 (ref-TS01-C1::DPTF|C_Mint patron bridge-account dptf-id amount false)
-                (ref-TS01-C1::DPTF|C_Transfer patron dptf-id bridge-account receiver amount true)
+                (ref-TS01-C1::DPTF|C_Transfer patron bridge-account receiver dptf-id amount true)
                 (write CADUCEUS|SignalTable signal-id
                     {
                         "signal-id"      : signal-id

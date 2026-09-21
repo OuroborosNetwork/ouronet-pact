@@ -338,7 +338,7 @@
                         )
                         (enforce (>= xfer need) "CL04: ANHD needs LP to fund EMMA stake")
                         (print (format "<(DPTF C_Transfer LP ANHD→EMMA {})> => \"{}\"" [xfer
-                            (ref-TS01-C1::DPTF|C_Transfer patron lp-id anhd emma xfer true)
+                            (ref-TS01-C1::DPTF|C_Transfer patron anhd emma lp-id xfer true)
                         ]))
                     )
                 )

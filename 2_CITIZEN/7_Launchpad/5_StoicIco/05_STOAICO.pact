@@ -632,15 +632,12 @@
                 (do
                     (ref-TS01-C1::DPTF|C_Mint patron DEMIPAD|SC_NAME urSTOA-id urSTOA-supply false)
                     (if (!= wSTOA-supply 0.0)
-                        (ref-TS01-C1::DPTF|C_MultiTransfer patron
-                            [wSTOA-id urSTOA-id] DEMIPAD|SC_NAME account
-                            [wSTOA-supply urSTOA-supply] true
-                        )
-                        (ref-TS01-C1::DPTF|C_Transfer patron urSTOA-id DEMIPAD|SC_NAME account urSTOA-supply true)
+                        (ref-TS01-C1::DPTF|C_MultiTransfer patron DEMIPAD|SC_NAME account [wSTOA-id urSTOA-id] [wSTOA-supply urSTOA-supply] true)
+                        (ref-TS01-C1::DPTF|C_Transfer patron DEMIPAD|SC_NAME account urSTOA-id urSTOA-supply true)
                     )
                 )
                 (if (!= wSTOA-supply 0.0)
-                    (ref-TS01-C1::DPTF|C_Transfer patron wSTOA-id DEMIPAD|SC_NAME account wSTOA-supply true)
+                    (ref-TS01-C1::DPTF|C_Transfer patron DEMIPAD|SC_NAME account wSTOA-id wSTOA-supply true)
                     "STOAICO: nothing owed this round -- settle-only, no delivery"
                 )
             )
@@ -968,7 +965,7 @@
                             (= (UR_Global7) 0)
                             "STOAICO: previous distribution-round not fully collected — flush the stragglers (or wait for collections) before injecting again")
                         ;;0]Move wSTOA from <account> to the D-Vault
-                        (ref-TS01-C1::DPTF|C_Transfer patron wSTOA-ID account DEMIPAD|SC_NAME wstoa-amount true)
+                        (ref-TS01-C1::DPTF|C_Transfer patron account DEMIPAD|SC_NAME wSTOA-ID wstoa-amount true)
                         ;;1]Count it in <wstoa-supply> (total held by the vault)
                         (XI_UpdateVaultSupply wstoa-amount true)
                         ;;2]Advance <current-rps> by the EFFECTIVE amount (new + escrowed zombie) / vault-score.
@@ -986,7 +983,7 @@
                     ;;    so the division is never reached with a zero denominator.
                     (do
                         ;;0]Move wSTOA from <account> to the D-Vault (held, not yet distributed)
-                        (ref-TS01-C1::DPTF|C_Transfer patron wSTOA-ID account DEMIPAD|SC_NAME wstoa-amount true)
+                        (ref-TS01-C1::DPTF|C_Transfer patron account DEMIPAD|SC_NAME wSTOA-ID wstoa-amount true)
                         ;;1]Count it in <wstoa-supply> (held by the vault)
                         (XI_UpdateVaultSupply wstoa-amount true)
                         ;;2]Escrow: postpone distribution to the next injection when vault-score is non-zero

@@ -2010,9 +2010,10 @@
                             ;;Handle Special Targets
                             (if (!= bk-ids [BAR])
                                 (ref-TFT::C_MultiBulkTransfer
-                                    [ignis-id]
+                                    patron
                                     SWP|SC_NAME
                                     [bk-ids]
+                                    [ignis-id]
                                     [bk-amt]
                                 )
                                 true
@@ -2062,8 +2063,10 @@
                 (ref-TFT:module{TrueFungibleTransferV2} TFT)
             )
             (ref-TFT::C_MultiTransfer
+                patron
+                account
+                SWP|SC_NAME
                 (at "mt-ids" (at "clad-op" clad))
-                account SWP|SC_NAME 
                 (at "mt-amt" (at "clad-op" clad))
                 true
             )

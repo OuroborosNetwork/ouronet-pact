@@ -30,7 +30,7 @@
         (receiver:string KST.EMMA)
         (ea-id:string "ELITEAURYN-98c486052a51")
     )
-    (ref-TS01-C1::DPTF|C_Transfer patron ea-id patron receiver 5000.0 false)
+    (ref-TS01-C1::DPTF|C_Transfer patron patron receiver ea-id 5000.0 false)
 )
 (commit-tx)
 

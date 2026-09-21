@@ -9,7 +9,8 @@ session must be able to see what is done by reading this file, without reconstru
 `git log`. If the table and `_executorplan.py` disagree, **the tool is right** — regenerate.
 
 **Status:** preparation complete, sweep starting at `01_DALOS`.
-**255 done · 520 remaining · 46 modules · 6 swept (01_DALOS, 02_IGNIS, 04_BRD, 05_DPTF, 06_DPOF, 08_ATS) · 1 archived (00_DPMF).**
+**273 done · 503 remaining · 46 modules · 7 swept (01_DALOS, 02_IGNIS, 04_BRD, 05_DPTF, 06_DPOF, 08_ATS, 09_TFT) · 1 archived (00_DPMF).**
+(Ground truth is `python3 REPL/tools/_executorplan.py`, never this line.)
 
 ---
 
@@ -257,7 +258,7 @@ same tools with those three properties.
 | [—] 5 | `00_DPMF.pact` | — | — | — | — | **ARCHIVED**, not swept — read-only retirement, StoicSyntax 7.21 |
 | [x] 6 | `06_DPOF.pact` | 0 | 1 | 20 | **21** | `DemiourgosPactOrtoFungibleV2`, `DpofUdcV2` — done, incl. `XBv_DeployAccount` |
 | [x] 7 | `08_ATS.pact` | 0 | 3 | 21 | **24** | `AutostakeV3` |
-| [ ] 8 | `09_TFT.pact` | 0 | 0 | 5 | **5** | `TrueFungibleTransferV2` |
+| [x] 8 | `09_TFT.pact` | 0 | 0 | 5 | **5** | `TrueFungibleTransferV2` — done; +`DPTF\|C_ClearDispoForeign`. **Found a live security hole**, see §4d |
 | [ ] 9 | `10_ATSU.pact` | 0 | 0 | 14 | **14** | `AutostakeUsageV2` |
 | [ ] 10 | `11_VST.pact` | 0 | 5 | 24 | **29** | `VestingV2` |
 | [ ] 11 | `12_LIQUID.pact` | 0 | 0 | 5 | **5** | `StoaLiquidStakingV2` |
@@ -330,6 +331,54 @@ IS that door's reason to exist, and `P|ADMINISTRATIVE-SUMMONER` is what confines
 
 **Interfaces get CONTENT updates, not necessarily VERSION bumps** — most are already ahead of
 mainnet. This is what dissolved the "48-interface cascade" that blocked the first attempt.
+
+### 4d. LESSON FROM MODULE 8 — THE CANON FINDS BUGS, AND A GREEN TEST CAN BE THE BUG
+
+`TFT::C_ClearDispo` took `(patron account)` and its capability enforced ownership of **nobody**.
+Anyone could clear anyone's dispo — which force-converts the subject's Elite-Auryn at **2.5x** the
+debt and burns it. It had been that way since the function was written.
+
+**A test was driving the attack and passing.** `modules/DPTF.repl` `<<DPTF-G10>>` called
+`DPTF|C_ClearDispo KST.ANHD KST.EMMA` — one signature, two accounts — and asserted the refusal
+`"Cannot Debit DPTF"`. That refusal is EMMA's empty Elite-Auryn balance, not a gate. Fund the
+victim and the attack works. The assertion was true; its subject was a hole.
+
+Three things to carry into every remaining module:
+
+1. **The question "who is the executor?" is a BUG-FINDING question, not a naming question.** No
+   static tool found this and none could: `_authsurface.py` reports what an entrypoint enforces,
+   never what it *should*. The canon found it because assigning the role forces you to answer
+   "whose ownership proves this?" — and here there was no answer.
+2. **When the plan says RENAME and the capability disagrees, the capability wins.**
+   `_executorplan.py` classified `account` as the executor; the caps proved it was the subject.
+   **Read the capability chain for every entrypoint before trusting the classification.**
+3. **A refusal that comes from a BALANCE is not a gate.** When an `expect-failure` passes, check
+   *which layer* refused. "It failed" and "it was refused by the guard I am testing" are different
+   claims, and only the second is worth an assertion.
+
+**When you find one: surface it, do not fix it silently.** This one went to the owner and came back
+with a design (the self/foreign pair, now canon in StoicSyntax §2.2) that is better than what I
+would have shipped.
+
+### 4e. PROVISIONAL PATRON SLOTS — the intermediate state, and how not to lose it
+
+When a swept entrypoint gains `patron`, its callers must supply one — and some callers live in
+modules whose own turn has not come, so they have no `patron` to pass. The rule:
+
+- **Never invent a placeholder.** Pass the account that actually initiates the operation, which is
+  a convention the codebase already used (`ORBR::C_Compress` passes `client` into `DPTF::C_Burn`'s
+  patron slot).
+- **Write every one of them down** — in the migration script's registry AND in the audit delta.
+  A provisional slot is invisible in the diff once it parses; the only thing that stops it going
+  stale is a list.
+- **The migration script must FAIL CLOSED** on a call site whose enclosing function has no patron
+  and no registry entry — report and refuse, never substitute a default. That is how TFT's 13 were
+  *found* rather than guessed at: the script listed exactly the sites it could not resolve, and
+  each got a decision. A script that silently picked something would have produced the same green
+  gate and thirteen unreviewed choices.
+
+TFT's 14 sites (13 functions, 5 modules — ATSU, OUROBOROS, SWPLC, AQP, VCT) are listed in the
+`09_TFT` block of `Audit/AUDIT-V2-DELTA.md`. Each is re-pointed at that module's turn.
 
 ## 4.1 PATRONLESS BY DESIGN — the correction that changes what "conforming" means
 

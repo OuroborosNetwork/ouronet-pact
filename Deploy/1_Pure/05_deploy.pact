@@ -1,8 +1,8 @@
 ;; ---------------------------------------------------------------------------
-;; OURONET DEPLOY -- file 5 of 22
-;; This is STEP 5 of 23 in the full sequence (see Deploy/MANIFEST.md).
+;; OURONET DEPLOY -- file 5 of 24
+;; This is STEP 5 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-4 must have run first, including the init steps between deploys.
-;; 4 source file(s), 296,962 gas measured in the REPL gas model, 265,823 bytes
+;; 4 source file(s), 296,962 gas measured in the REPL gas model, 266,026 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/11_VST.pact
@@ -1801,7 +1801,7 @@
                     ;;4]Mint <dptf-to-repurpose> anew
                     (ref-DPTF::C_Mint patron VST|SC_NAME dptf-to-repurpose amount false)
                     ;;5]Transfer it to <repurpose-to>
-                    (ref-TFT::C_Transfer dptf-to-repurpose VST|SC_NAME repurpose-to amount true)
+                    (ref-TFT::C_Transfer patron VST|SC_NAME repurpose-to dptf-to-repurpose amount true)
                 ]
                 []
             )
@@ -1894,7 +1894,7 @@
                     ;;
                     ;;C]Release DPTF if <free-amount> is non zero
                     (if (!= free-amount 0.0)
-                        (ref-TFT::C_Transfer dptf VST|SC_NAME target free-amount true)
+                        (ref-TFT::C_Transfer patron VST|SC_NAME target dptf free-amount true)
                         EOC
                     )
                     ;;
@@ -1982,13 +1982,13 @@
                     [
                         ;;1]Freezer sends dptf to VST|SC_NAME, if its not already there
                         (if (!= freezer VST|SC_NAME)
-                            (ref-TFT::C_Transfer dptf freezer VST|SC_NAME amount true)
+                            (ref-TFT::C_Transfer patron freezer VST|SC_NAME dptf amount true)
                             EOC
                         )
                         ;;2]VST|SC_NAME mints F|dptf
                         (ref-DPTF::C_Mint patron VST|SC_NAME f-dptf amount false)
                         ;;3|VST|SC_Name sends F|dptf to freeze-output
-                        (ref-TFT::C_Transfer f-dptf VST|SC_NAME freeze-output amount true)
+                        (ref-TFT::C_Transfer patron VST|SC_NAME freeze-output f-dptf amount true)
                     ]
                     []
                 )
@@ -2029,13 +2029,13 @@
                     [
                         ;;1]Reserver sends dptf to VST|SC_NAME if its not already tehre
                         (if (!= reserver VST|SC_NAME)
-                            (ref-TFT::C_Transfer dptf reserver VST|SC_NAME amount true)
+                            (ref-TFT::C_Transfer patron reserver VST|SC_NAME dptf amount true)
                             EOC
                         )
                         ;;2]VST|SC_NAME mint R|dptf
                         (ref-DPTF::C_Mint patron VST|SC_NAME r-dptf amount false)
                         ;;3]VST|SC_NAME sends R|dptf to reserver
-                        (ref-TFT::C_Transfer r-dptf VST|SC_NAME reserver amount true)
+                        (ref-TFT::C_Transfer patron VST|SC_NAME reserver r-dptf amount true)
                     ]
                     []
                 )
@@ -2056,11 +2056,11 @@
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
                     [
                         ;;1]Unreserver sends R|dptf to VST|SC_NAME
-                        (ref-TFT::C_Transfer r-dptf unreserver VST|SC_NAME amount true)
+                        (ref-TFT::C_Transfer patron unreserver VST|SC_NAME r-dptf amount true)
                         ;;2]VST|SC_NAME burns R|dptf
                         (ref-DPTF::C_Burn patron VST|SC_NAME r-dptf amount)
                         ;;3]VST|SC_NAME sends dptf back to unreserver
-                        (ref-TFT::C_Transfer dptf VST|SC_NAME unreserver amount true)
+                        (ref-TFT::C_Transfer patron VST|SC_NAME unreserver dptf amount true)
                     ]
                     []
                 )
@@ -2109,7 +2109,7 @@
                         (ref-DPOF::C_Mint patron VST|SC_NAME dpof-id amount meta-data-chain)
                         ;;2]Vester transfers the DPTF Token to the VST|SC_NAME if its not already there
                         (if (!= vester VST|SC_NAME)
-                            (ref-TFT::C_Transfer dptf vester VST|SC_NAME amount true)
+                            (ref-TFT::C_Transfer patron vester VST|SC_NAME dptf amount true)
                             EOC
                         )
                         ;;3]VST|SC_NAME transfers the DPOF Vested Token to target-account
@@ -2153,11 +2153,11 @@
                         (ico2:object{IgnisCollectorV3.OutputCumulator}
                             (if (= return-amount 0.0)
                                 ;;1]VST|SC_NAME transfers the whole dptf back to the unvester, when there is no return amount
-                                (ref-TFT::C_Transfer dptf-id VST|SC_NAME unvester nonce-supply true)
+                                (ref-TFT::C_Transfer patron VST|SC_NAME unvester dptf-id nonce-supply true)
                                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
                                     [
                                         ;;1]Only the ready to unvest dptf is trasnfered back to unvester
-                                        (ref-TFT::C_Transfer dptf-id VST|SC_NAME unvester culled-amount true)
+                                        (ref-TFT::C_Transfer patron VST|SC_NAME unvester dptf-id culled-amount true)
                                         ;;2]If return amount is non zero, it is minted as a new DPOF
                                         (ref-DPOF::C_Mint patron VST|SC_NAME dpof return-amount remint-meta-data-chain)
                                         ;;3]Together with the newly minted remainder, still vested, dppf
@@ -2214,7 +2214,7 @@
                         (ref-DPOF::C_Mint patron VST|SC_NAME dpof-id amount meta-data-chain)
                         ;;2]Sleeper transfers the DPTF Token to the VST|SC_NAME if its not already there
                         (if (!= sleeper VST|SC_NAME)
-                            (ref-TFT::C_Transfer dptf sleeper VST|SC_NAME amount true)
+                            (ref-TFT::C_Transfer patron sleeper VST|SC_NAME dptf amount true)
                             EOC
                         )
                         ;;3]VST|SC_NAME transfers the DPOF Sleeping Token to target-account
@@ -2249,7 +2249,7 @@
                             ;;2]Which is then burned in its entirety
                             (ref-DPOF::C_Burn patron VST|SC_NAME dpof nonce nonce-supply)
                             ;;3]VST|SC_NAME transfers in return the initial amount of the dpof, as the dptf counterpart
-                            (ref-TFT::C_Transfer dptf-id VST|SC_NAME unsleeper nonce-supply true)
+                            (ref-TFT::C_Transfer patron VST|SC_NAME unsleeper dptf-id nonce-supply true)
                         ]
                         []
                     )
@@ -2318,7 +2318,7 @@
                         (ref-DPOF::C_Mint patron VST|SC_NAME dpof-id amount meta-data-chain)
                         ;;2]Sleeper transfers the DPTF Token to the VST|SC_NAME if its not already there
                         (if (!= hibernator VST|SC_NAME)
-                            (ref-TFT::C_Transfer dptf hibernator VST|SC_NAME amount true)
+                            (ref-TFT::C_Transfer patron hibernator VST|SC_NAME dptf amount true)
                             EOC
                         )
                         ;;3]VST|SC_NAME transfers the DPOF Sleeping Token to target-account
@@ -2377,7 +2377,7 @@
                         ;;2]Burn it whole
                         (ref-DPOF::C_Burn patron VST|SC_NAME dpof nonce nonce-supply)
                         ;;3]Transfer Remainder from VST|SC_NAME to <awaker>
-                        (ref-TFT::C_Transfer dptf-id VST|SC_NAME awaker remainder true)
+                        (ref-TFT::C_Transfer patron VST|SC_NAME awaker dptf-id remainder true)
                         ;;4]Burn <hibernating-fee> if its greater than 0.0 on VST|SC_NAME
                         (if (!= hibernating-fee 0.0)
                             (ref-DPTF::C_Burn patron VST|SC_NAME dptf-id hibernating-fee)
@@ -2445,7 +2445,7 @@
                     (c-rbt-amount:decimal (at "rbt-amount" coil-data))
                     ;;
                     (ico1:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-TFT::C_Transfer rt constricter ATS|SC_NAME amount true)
+                        (ref-TFT::C_Transfer patron constricter ATS|SC_NAME rt amount true)
                     )
                     (ico2:object{IgnisCollectorV3.OutputCumulator}
                         (ref-DPTF::C_Mint patron ATS|SC_NAME c-rbt c-rbt-amount false)
@@ -2496,7 +2496,7 @@
                     (c-rbt2-amount:decimal (at "rbt-amount" coil2-data))
                     ;;
                     (ico1:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-TFT::C_Transfer rt brumator ATS|SC_NAME amount true)
+                        (ref-TFT::C_Transfer patron brumator ATS|SC_NAME rt amount true)
                     )
                     (ico2:object{IgnisCollectorV3.OutputCumulator}
                         (ref-DPTF::C_Mint patron ATS|SC_NAME c-rbt1 c-rbt1-amount false)
@@ -3111,7 +3111,7 @@
                         (output:object{IgnisCollectorV3.OutputCumulator}
                             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                                 [
-                                    (ref-TFT::C_Transfer w-stoa-id unwrapper lq-sc amount true)
+                                    (ref-TFT::C_Transfer patron unwrapper lq-sc w-stoa-id amount true)
                                     (ref-DPTF::C_Burn patron lq-sc w-stoa-id amount)
                                 ]
                                 []
@@ -3148,7 +3148,7 @@
                             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                                 [
                                     (ref-DPTF::C_Mint patron lq-sc w-stoa-id amount false)
-                                    (ref-TFT::C_Transfer w-stoa-id lq-sc wrapper amount true)
+                                    (ref-TFT::C_Transfer patron lq-sc wrapper w-stoa-id amount true)
                                 ]
                                 []
                             )
@@ -3187,7 +3187,7 @@
                         (output:object{IgnisCollectorV3.OutputCumulator}
                             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                                 [
-                                    (ref-TFT::C_Transfer w-ur-stoa-id unwrapper lq-sc amount true)
+                                    (ref-TFT::C_Transfer patron unwrapper lq-sc w-ur-stoa-id amount true)
                                     (ref-DPTF::C_Burn patron lq-sc w-ur-stoa-id amount)
                                 ]
                                 []
@@ -3231,7 +3231,7 @@
                             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                                 [
                                     (ref-DPTF::C_Mint patron lq-sc w-ur-stoa-id amount false)
-                                    (ref-TFT::C_Transfer w-ur-stoa-id lq-sc wrapper amount true)
+                                    (ref-TFT::C_Transfer patron lq-sc wrapper w-ur-stoa-id amount true)
                                 ]
                                 []
                             )
@@ -3970,10 +3970,10 @@
             (with-capability (IGNIS|XB>COMPRESS client)
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
                     [
-                        (ref-TFT::C_Transfer ignis-id client ORBR|SC_NAME ignis-amount true)
+                        (ref-TFT::C_Transfer patron client ORBR|SC_NAME ignis-id ignis-amount true)
                         (ref-DPTF::C_Burn patron ORBR|SC_NAME ignis-id ignis-amount)
                         (ref-DPTF::C_Mint patron ORBR|SC_NAME ouro-id ouro-remainder-amount false)
-                        (ref-TFT::C_Transfer ouro-id ORBR|SC_NAME client ouro-remainder-amount true)
+                        (ref-TFT::C_Transfer patron ORBR|SC_NAME client ouro-id ouro-remainder-amount true)
                     ]
                     [ouro-remainder-amount]
                 )
@@ -4003,13 +4003,13 @@
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
                     [
                         ;;01]Client sends GAS(Ignis) <ignis-amount> to the Ouroboros Smart Ouronet Account
-                        (ref-TFT::C_Transfer ignis-id client ORBR|SC_NAME ignis-amount true)
+                        (ref-TFT::C_Transfer client client ORBR|SC_NAME ignis-id ignis-amount true)
                         ;;02]Ouroboros burns GAS(Ignis) <ignis-amount>
                         (ref-DPTF::C_Burn client ORBR|SC_NAME ignis-id ignis-amount)
                         ;;03]Ouroboros mints OURO <ouro-remainder-amount>
                         (ref-DPTF::C_Mint client ORBR|SC_NAME ouro-id ouro-remainder-amount false)
                         ;;04]Ouroboros transfers OURO <ouro-remainder-amount> to <client>
-                        (ref-TFT::C_Transfer ouro-id ORBR|SC_NAME client ouro-remainder-amount true)
+                        (ref-TFT::C_Transfer client ORBR|SC_NAME client ouro-id ouro-remainder-amount true)
                     ]
                     [ouro-remainder-amount]
                 )
@@ -4079,13 +4079,13 @@
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
                     [
                         ;;01]Client sends OURO <ouro-amount> to the Ouroboros Smart Ouronet Account
-                        (ref-TFT::C_Transfer ouro-id client ORBR|SC_NAME ouro-amount true)
+                        (ref-TFT::C_Transfer client client ORBR|SC_NAME ouro-id ouro-amount true)
                         ;;02]Ouroboros burns OURO <ouro-amount>
                         (ref-DPTF::C_Burn client ORBR|SC_NAME ouro-id ouro-amount)
                         ;;03]Ouroboros mints GAS(Ignis) <ignis-amount>
                         (ref-DPTF::C_Mint client ORBR|SC_NAME ignis-id ignis-amount false)
                         ;;04]Ouroboros transfers GAS(Ignis) <ignis-amount> to <target>
-                        (ref-TFT::C_Transfer ignis-id ORBR|SC_NAME target ignis-amount true)
+                        (ref-TFT::C_Transfer client ORBR|SC_NAME target ignis-id ignis-amount true)
                     ]
                     [ignis-amount]
                 )
@@ -4127,7 +4127,7 @@
                         ;;04]Ouroboros mints GAS(Ignis) <ignis-amount>
                         (ref-DPTF::C_Mint client ORBR|SC_NAME ignis-id ignis-amount false)
                         ;;05]Ouroboros transfers GAS(Ignis) <ignis-amount> to <target>
-                        (ref-TFT::C_Transfer ignis-id ORBR|SC_NAME target ignis-amount true)
+                        (ref-TFT::C_Transfer client ORBR|SC_NAME target ignis-id ignis-amount true)
                     ]
                     [ignis-amount]
                 )
@@ -4153,7 +4153,7 @@
                         ;;00]Compose base withdraw IGNIS Price
                         (ref-IGNIS::UDC_ConstructOutputCumulator price ORBR|SC_NAME trigger [])
                         ;;01]Patron withdraws Fees from Ouroboros Smart DALOS Account to a target Normal Ouronet Account
-                        (ref-TFT::C_Transfer id ORBR|SC_NAME target withdraw-amount true)
+                        (ref-TFT::C_Transfer target ORBR|SC_NAME target id withdraw-amount true)
                     ]
                     []
                 )

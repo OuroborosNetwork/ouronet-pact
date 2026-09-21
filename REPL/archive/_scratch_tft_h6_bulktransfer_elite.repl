@@ -35,7 +35,7 @@
         ;; tier/score computed from remaining holdings should visibly differ if actually refreshed.
         (transfer-amt:decimal (floor (/ before-supply 2.0) 4))
     )
-    (ref-TS01-C1::DPTF|C_MultiBulkTransfer patron [ea-id] patron [[emma]] [[transfer-amt]])
+    (ref-TS01-C1::DPTF|C_MultiBulkTransfer patron patron [[emma]] [ea-id] [[transfer-amt]])
     (let
         (
             (after-supply:decimal (DPTF.UR_AccountSupply ea-id patron))

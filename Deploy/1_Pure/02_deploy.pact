@@ -1,8 +1,8 @@
 ;; ---------------------------------------------------------------------------
-;; OURONET DEPLOY -- file 2 of 22
-;; This is STEP 2 of 23 in the full sequence (see Deploy/MANIFEST.md).
+;; OURONET DEPLOY -- file 2 of 24
+;; This is STEP 2 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-1 must have run first, including the init steps between deploys.
-;; 3 source file(s), 267,241 gas measured in the REPL gas model, 266,523 bytes
+;; 3 source file(s), 267,241 gas measured in the REPL gas model, 266,586 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/02_IGNIS.pact
@@ -926,6 +926,7 @@
         ,"DPTF|C_BulkTransfer"                          : 143.0
         ,"DPTF|C_Burn"                                  : 71.0
         ,"DPTF|C_ClearDispo"                            : 51.0
+        ,"DPTF|C_ClearDispoForeign"                     : 51.0
         ,"DPTF|C_Control"                               : 20.0
         ,"DPTF|C_DeployAccount"                         : 24.0
         ,"DPTF|C_DonateFees"                            : 19.0

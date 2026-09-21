@@ -884,6 +884,7 @@
         ,"DPTF|C_BulkTransfer"                          : 143.0
         ,"DPTF|C_Burn"                                  : 71.0
         ,"DPTF|C_ClearDispo"                            : 51.0
+        ,"DPTF|C_ClearDispoForeign"                     : 51.0
         ,"DPTF|C_Control"                               : 20.0
         ,"DPTF|C_DeployAccount"                         : 24.0
         ,"DPTF|C_DonateFees"                            : 19.0

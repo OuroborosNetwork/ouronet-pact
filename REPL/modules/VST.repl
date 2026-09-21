@@ -924,7 +924,7 @@
             ;;RESERVED id -- passing the parent OURO id silently repurposes the holder's plain
             ;;OURO instead, leaving the reserve untouched. vst-harness.repl passes the parent id
             ;;and asserts nothing, so it has been doing exactly that unnoticed.
-            (ref-TS01-C1::DPTF|C_Transfer patron ouro patron emma 50.0 true)
+            (ref-TS01-C1::DPTF|C_Transfer patron patron emma ouro 50.0 true)
             ;;The RESERVER is the account whose balance moves, so EMMA must sign this leg --
             ;;C_Reserve enforces her account ownership. The signature is dropped again before
             ;;the recovery below, which is the point of the pair.
@@ -2483,7 +2483,7 @@
     ;;This is the same three-step hand-off `Stage_01/[6.3]_SWP.repl:2624-2629` performs.
     (ref-TS01-C1::DPTF|C_DeployAccount patron r bj)
     (ref-TS01-C1::DPTF|C_ToggleTransferRole patron (DPTF.UR_Konto r) bj r true)
-    (ref-TS01-C1::DPTF|C_Transfer patron r patron bj 20.0 true)
+    (ref-TS01-C1::DPTF|C_Transfer patron patron bj r 20.0 true)
     (let
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_VST|Unreserve patron bj r 10.0))

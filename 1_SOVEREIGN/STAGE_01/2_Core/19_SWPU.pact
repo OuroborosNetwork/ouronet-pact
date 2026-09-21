@@ -1640,7 +1640,7 @@
                 (ref-SWP:module{SwapperV4} SWP)
                 (pp:string (ref-SWP::UR_PrimordialPool))
                 (ico-input:object{IgnisCollectorV3.OutputCumulator}
-                    (ref-TFT::C_Transfer input-id account SWP|SC_NAME input-amount true)
+                    (ref-TFT::C_Transfer patron account SWP|SC_NAME input-id input-amount true)
                 )
                 (hop-result:list
                     (XI_SmartSwapCore patron account input-amount ico-input nodes edges boost-path)
@@ -1825,7 +1825,7 @@
                             ;;handled separately by <ico-special> below, never appended.
                             (sp-flush:object{IgnisCollectorV3.OutputCumulator}
                                 (if (and iz-last (!= (length sp-id-lst-in) 0))
-                                    (ref-TFT::C_MultiBulkTransfer sp-id-lst-in SWP|SC_NAME sp-receiver-arr-in sp-amount-arr-in)
+                                    (ref-TFT::C_MultiBulkTransfer patron SWP|SC_NAME sp-receiver-arr-in sp-id-lst-in sp-amount-arr-in)
                                     EOC
                                 )
                             )
@@ -1851,16 +1851,17 @@
                                             (with-capability (SWPU|S>FEED-SPECIAL-TARGETS o-id o-id-special f-targets target-proportions f-amounts)
                                                 (if (!= (length f-targets) 0)
                                                     (ref-TFT::C_MultiBulkTransfer
-                                                        [o-id]
+                                                        patron
                                                         SWP|SC_NAME
                                                         [(+ [account] f-targets)]
+                                                        [o-id]
                                                         [(+ [adjusted-netto] f-amounts)]
                                                     )
-                                                    (ref-TFT::C_Transfer o-id SWP|SC_NAME account adjusted-netto true)
+                                                    (ref-TFT::C_Transfer patron SWP|SC_NAME account o-id adjusted-netto true)
                                                 )
                                             )
                                         )
-                                        (ref-TFT::C_Transfer o-id SWP|SC_NAME account o-id-netto true)
+                                        (ref-TFT::C_Transfer patron SWP|SC_NAME account o-id o-id-netto true)
                                     )
                                     EOC
                                 )
@@ -2015,7 +2016,7 @@
                 (o-id-netto:decimal (at "o-id-netto" dtso))
                 ;;
                 (ico1:object{IgnisCollectorV3.OutputCumulator}
-                    (ref-TFT::C_MultiTransfer input-ids account SWP|SC_NAME input-amounts true)
+                    (ref-TFT::C_MultiTransfer patron account SWP|SC_NAME input-ids input-amounts true)
                 )
                 (ico2:object{IgnisCollectorV3.OutputCumulator}
                     (ref-SWPLC::C_Fuel account swpair lp-fuel false false)
@@ -2042,16 +2043,17 @@
                             (with-capability (SWPU|S>FEED-SPECIAL-TARGETS output-id o-id-special f-targets target-proportions f-amounts)
                                 (if (!= (length f-targets) 0)
                                     (ref-TFT::C_MultiBulkTransfer
-                                        [output-id]
+                                        patron
                                         SWP|SC_NAME
                                         [(+ [account] f-targets)]
+                                        [output-id]
                                         [(+ [adjusted-netto] f-amounts)]
                                     )
-                                    (ref-TFT::C_Transfer output-id SWP|SC_NAME account adjusted-netto true)
+                                    (ref-TFT::C_Transfer patron SWP|SC_NAME account output-id adjusted-netto true)
                                 )
                             )
                         )
-                        (ref-TFT::C_Transfer output-id SWP|SC_NAME account o-id-netto true)
+                        (ref-TFT::C_Transfer patron SWP|SC_NAME account output-id o-id-netto true)
                     )
                 )
             )

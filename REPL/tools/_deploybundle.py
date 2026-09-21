@@ -342,6 +342,20 @@ DEFAULT_BUDGET = 1_700_000
 # That is evidence, not a specification. `--maxbytes 0` disables the constraint entirely.
 DEFAULT_MAXBYTES = 320_000
 
+# WHAT THE PLANNER MEASURES IS NOT WHAT SHIPS. `plan()` sums the size of the module SOURCES; the
+# emitted transaction is those sources PLUS this tool's header (which lists every interface,
+# module and table the transaction deploys, in load order) MINUS whatever `create-table` forms
+# upgrade mode strips. Measured across the 22 emitted files on 2026-09-21 the net runs from
+# -3,380 bytes (17_deploy, strip-dominated) to +4,857 (11_deploy, header-dominated).
+#
+# So the planner reserves this much headroom. It is a HEURISTIC and is treated as one: the
+# emitted files are measured after writing and a file over `maxbytes` is now FATAL, not a
+# warning. That ordering matters -- when the header grew on 2026-09-21 it pushed two
+# transactions over the cap and the only thing that noticed was a printed line in a passing
+# run. A budget enforced on a proxy is not enforced; a proxy that is CHECKED against the real
+# thing is fine.
+HEADER_RESERVE = 6_000
+
 # ---------------------------------------------------------------------------------------------
 # UPGRADE vs GENESIS, and why this tool refuses to guess which tables exist.
 #
@@ -474,6 +488,8 @@ def plan(blocks, budget, maxbytes=DEFAULT_MAXBYTES):
     """
     steps, batch = [], None
     size_of = {}
+    if maxbytes:
+        maxbytes = max(1, maxbytes - HEADER_RESERVE)   # see HEADER_RESERVE
 
     def nbytes(paths):
         t = 0
@@ -626,8 +642,12 @@ def main():
         mode = "existing"
     print(f"  table mode                 : {mode}"
           + (f" ({len(existing)} known-existing)" if existing else ""))
+    oversize = []
     if "--write" in sys.argv or CHECK:
-        write(steps, budget, maxbytes, mode, existing)
+        oversize = write(steps, budget, maxbytes, mode, existing) or []
+    if oversize:
+        print("\nDEPLOY PIPELINE INVALID -- an emitted transaction exceeds the byte cap.")
+        return 1
     if CHECK:
         bad = check_report()
         if bad:
@@ -948,8 +968,10 @@ def write(steps, budget, maxbytes, mode="upgrade", existing=frozenset()):
         print(f"\n  !! {len(over)} EMITTED file(s) exceed maxbytes ({maxbytes:,}):")
         for f, n in over:
             print(f"     {f}  {n:,} bytes  (+{n - maxbytes:,})")
-        print("  !! The planner budgets on module bytes; the header is extra. Lower --budget to")
-        print("  !! split these, or raise --maxbytes if the real chain limit is known to be higher.")
+        print("  !! HEADER_RESERVE is too small for this tree. Raise it (the planner will split"
+              " one more transaction), or raise --maxbytes if the real chain limit is known to"
+              " be higher.")
+    return over
 
 
 INIT_SEQ = []

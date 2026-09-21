@@ -2476,9 +2476,10 @@
                     (bulk-arr:object (UC_VacateTfLegsToTftBulkArrays legs))
                     (bulk-oc:object{IgnisCollectorV3.OutputCumulator}
                         (ref-TFT::C_MultiBulkTransfer
-                            [dptf-id]
+                            AQP|SC_NAME
                             AQP|SC_NAME
                             (at "receiver-array" bulk-arr)
+                            [dptf-id]
                             (at "transfer-amount-array" bulk-arr)
                         )
                     )
@@ -2576,9 +2577,10 @@
                     (bulk-arr:object (UC_VacateTfLegsToTftBulkArrays legs))
                     (bulk-oc:object{IgnisCollectorV3.OutputCumulator}
                         (ref-TFT::C_MultiBulkTransfer
-                            [dptf-id]
+                            AQP|SC_NAME
                             AQP|SC_NAME
                             (at "receiver-array" bulk-arr)
+                            [dptf-id]
                             (at "transfer-amount-array" bulk-arr)
                         )
                     )
@@ -2968,7 +2970,13 @@
                 ;;
                 (bulk-oc:object{IgnisCollectorV3.OutputCumulator}
                     (ref-DPDC-T::C_BulkTransfer
-                        collectable-id son nonces-array amounts-array AQP|SC_NAME owner-ids true
+                        collectable-id
+                        son
+                        nonces-array
+                        amounts-array
+                        AQP|SC_NAME
+                        owner-ids
+                        true
                     )
                 )
                 (unwind-oc:object{IgnisCollectorV3.OutputCumulator}
@@ -3161,7 +3169,14 @@
                 ;;
                 (bulk-oc:object{IgnisCollectorV3.OutputCumulator}
                     (ref-DPDC-T::C_BulkTransfer
-                        collectable-id son nonces-array amounts-array AQP|SC_NAME owner-ids true)
+                        collectable-id
+                        son
+                        nonces-array
+                        amounts-array
+                        AQP|SC_NAME
+                        owner-ids
+                        true
+                    )
                 )
                 (unwind-oc:object{IgnisCollectorV3.OutputCumulator}
                     (XI_1|DrainCollectableUnwindBatch

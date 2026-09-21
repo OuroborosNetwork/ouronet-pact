@@ -1,3 +1,27 @@
+;; ---------------------------------------------------------------------------
+;; OURONET DEPLOY -- file 24 of 24
+;; This is STEP 25 of 25 in the full sequence (see Deploy/MANIFEST.md).
+;; Steps 1-24 must have run first, including the init steps between deploys.
+;; 1 source file(s), 14,849 gas measured in the REPL gas model, 41,491 bytes
+;;
+;; Source files in this transaction, IN ORDER (do not reorder):
+;;   2_CITIZEN/Stage_Z/03_DSP+.pact
+;;
+;; TOTAL: 1 interface(s), 1 module(s), 2 table(s)
+;; What it DEPLOYS, in load order:
+;;   -- 2_CITIZEN/Stage_Z/03_DSP+.pact
+;;      interface  Dispenser
+;;      module     DSP
+;;      table      P|T
+;;      table      P|MT
+;;
+;; Paste this whole file as ONE transaction. It needs the Ouronet admin signature
+;; and the `ouronet-ns` namespace, which the first line sets.
+;; ---------------------------------------------------------------------------
+
+(namespace "ouronet-ns")
+
+;; ===== 2_CITIZEN/Stage_Z/03_DSP+.pact ==============================
 (interface Dispenser
 
 
@@ -779,6 +803,11 @@
 
 )
 
+;; --- tables for 03_DSP+.pact (2 defined) ---
+;; UPGRADE MODE: this module is assumed already deployed, so its
+;; tables already exist and (create-table) would ABORT the whole
+;; transaction. They are listed here, commented, for reference.
+;; If any of these is NEW since the last deploy, uncomment JUST it.
+;; (create-table P|T)
+;; (create-table P|MT)
 
-(create-table P|T)
-(create-table P|MT)

@@ -80,17 +80,18 @@
     (defun DPTF|C_ToggleFeeExemptionRole (patron:string executor:string executee:string id:string toggle:bool))
     (defun DPTF|C_ToggleTransferRole (patron:string executor:string executee:string id:string toggle:bool))
         ;;
-    (defun DPTF|C_ClearDispo (patron:string account:string))
+    (defun DPTF|C_ClearDispo (patron:string executor:string))
+    (defun DPTF|C_ClearDispoForeign (patron:string executor:string executee:string))
     (defun DPTF|C_Burn (patron:string executor:string id:string amount:decimal))
     (defun DPTF|C_Mint (patron:string executor:string id:string amount:decimal origin:bool))
     (defun DPTF|C_WipeSlim (patron:string executor:string executee:string id:string amtbw:decimal))
     (defun DPTF|C_Wipe (patron:string executor:string executee:string id:string))
         ;;
-    (defun DPTF|C_Transmute (patron:string id:string transmuter:string transmute-amount:decimal))
-    (defun DPTF|C_Transfer (patron:string id:string sender:string receiver:string transfer-amount:decimal method:bool))
-    (defun DPTF|C_MultiTransfer (patron:string id-lst:[string] sender:string receiver:string transfer-amount-lst:[decimal] method:bool))
-    (defun DPTF|C_BulkTransfer (patron:string id:string sender:string receiver-lst:[string] transfer-amount-lst:[decimal]))
-    (defun DPTF|C_MultiBulkTransfer (patron:string id:[string] sender:string receiver-array:[[string]] transfer-amount-array:[[decimal]]))
+    (defun DPTF|C_Transmute (patron:string executor:string id:string transmute-amount:decimal))
+    (defun DPTF|C_Transfer (patron:string executor:string executee:string id:string transfer-amount:decimal method:bool))
+    (defun DPTF|C_MultiTransfer (patron:string executor:string executee:string id-lst:[string] transfer-amount-lst:[decimal] method:bool))
+    (defun DPTF|C_BulkTransfer (patron:string executor:string executee-lst:[string] id:string transfer-amount-lst:[decimal]))
+    (defun DPTF|C_MultiBulkTransfer (patron:string executor:string executee-array:[[string]] id-lst:[string] transfer-amount-array:[[decimal]]))
     ;;
     ;;
     (defun DPOF|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
@@ -851,8 +852,13 @@
         )
     )
     ;;
-    (defun DPTF|C_ClearDispo (patron:string account:string)
-        @doc "Clears OURO Dispo by levereging existing Elite-Auryn"
+    (defun DPTF|C_ClearDispo (patron:string executor:string)
+        @doc "SELF clear: <executor> settles their OWN OURO dispo by leveraging their existing \
+        \ Elite-Auryn. This is the variant every real user wants, and the reason it exists as \
+        \ its own name is that the core takes three roles while the self case has only two -- \
+        \ making the caller write the same account twice would be an invitation to write two \
+        \ different ones by accident. Ownership of <executor> is enforced in TFT's \
+        \ DPTF|C>CLEAR-DISPO. See DPTF|C_ClearDispoForeign for the delegated variant."
         (with-capability (P|TS)
             (let
                 (
@@ -860,7 +866,29 @@
                     (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-TFT::C_ClearDispo patron account)
+                    (ref-TFT::C_ClearDispo patron executor executor)
+                )
+            )
+        )
+    )
+    (defun DPTF|C_ClearDispoForeign (patron:string executor:string executee:string)
+        @doc "FOREIGN clear: <executor> settles <executee>'s OURO dispo. BOTH ownerships are \
+        \ enforced in TFT's DPTF|C>CLEAR-DISPO, because clearing a dispo force-spends the \
+        \ executee's Elite-Auryn at 2.5x the debt -- so this is not a favour the executor can \
+        \ do unilaterally, it is one the executee must sign for. \
+        \ \
+        \ The use case is narrow and the owner named it: the executee is stranded without \
+        \ connectivity and has handed their key to someone who can execute for them. Anyone \
+        \ able to run this could equally run DPTF|C_ClearDispo as the executee, so it adds no \
+        \ authority -- what it adds is an AUDIT TRAIL naming who actually executed."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                )
+                (ref-IGNIS::XE_CollectIgnis patron
+                    (ref-TFT::C_ClearDispo patron executor executee)
                 )
             )
         )
@@ -944,7 +972,7 @@
         )
     )
     ;;
-    (defun DPTF|C_Transmute (patron:string id:string transmuter:string transmute-amount:decimal)
+    (defun DPTF|C_Transmute (patron:string executor:string id:string transmute-amount:decimal)
         @doc "Transmutes a DPTF Token. Transmuting Uses the whole amount as it if were Primary Fee \
         \ without adding to the Primary Fee Counter. \
         \ Thus it can either be collected to the Fee Target Collector \
@@ -961,13 +989,13 @@
                     (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-TFT::C_Transmute id transmuter transmute-amount)
+                    (ref-TFT::C_Transmute patron executor id transmute-amount)
                 )
             )
         )
     )
-    (defun DPTF|C_Transfer (patron:string id:string sender:string receiver:string transfer-amount:decimal method:bool)
-        @doc "Transfers a DPTF Token from <sender> to <receiver>, using the <transfer-amount> and <method> \
+    (defun DPTF|C_Transfer (patron:string executor:string executee:string id:string transfer-amount:decimal method:bool)
+        @doc "Transfers a DPTF Token from <executor> to <executee>, using the <transfer-amount> and <method> \
         \ It autonomously choose between the 6 Transfer Variants spread over 3 Classes. \
         \ \
         \   Class 1 >> 1 IGNIS Cost \
@@ -985,12 +1013,12 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-TFT:module{TrueFungibleTransferV2} TFT)
-                    (receiver-amount:decimal (ref-TFT::URC_ReceiverAmount id sender receiver transfer-amount))
-                    (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount sender))
-                    (sa-r:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
+                    (receiver-amount:decimal (ref-TFT::URC_ReceiverAmount id executor executee transfer-amount))
+                    (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount executor))
+                    (sa-r:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-TFT::C_Transfer id sender receiver transfer-amount method)
+                    (ref-TFT::C_Transfer patron executor executee id transfer-amount method)
                 )
                 (if (= receiver-amount transfer-amount)
                     (format "Succesfully transfered {} {} from {} to {}, moving the Full Amount to the Receiver" [transfer-amount id sa-s sa-r])
@@ -999,8 +1027,8 @@
             )
         )
     )
-    (defun DPTF|C_MultiTransfer (patron:string id-lst:[string] sender:string receiver:string transfer-amount-lst:[decimal] method:bool)
-        @doc "Transfers Multiple DPTF Tokens from one sender to another, each token having its own amount specified \
+    (defun DPTF|C_MultiTransfer (patron:string executor:string executee:string id-lst:[string] transfer-amount-lst:[decimal] method:bool)
+        @doc "Transfers Multiple DPTF Tokens from <executor> to <executee>, each token having its own amount specified \
         \ Receiver, as it is only one, can also be a Smart Ouronet Account \
         \ 150k Gas can support between 10 and 20 Transfers, depending on DPTF Token (Simple, Complex, Elite, Unity)"
         (with-capability (P|TS)
@@ -1009,18 +1037,18 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-TFT:module{TrueFungibleTransferV2} TFT)
-                    (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount sender))
-                    (sa-r:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
+                    (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount executor))
+                    (sa-r:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-TFT::C_MultiTransfer id-lst sender receiver transfer-amount-lst method)
+                    (ref-TFT::C_MultiTransfer patron executor executee id-lst transfer-amount-lst method)
                 )
                 (format "Succesfully multi-transfered {} DPTFs from {} to {}" [(length id-lst) sa-s sa-r])
             )
         )
     )
-    (defun DPTF|C_BulkTransfer (patron:string id:string sender:string receiver-lst:[string] transfer-amount-lst:[decimal])
-        @doc "Transfers a DPTF in Bulk, from 1 sender to multiple receivers, each with its own amount \
+    (defun DPTF|C_BulkTransfer (patron:string executor:string executee-lst:[string] id:string transfer-amount-lst:[decimal])
+        @doc "Transfers a DPTF in Bulk, from <executor> to the multiple receivers in <executee-lst>, each with its own amount \
         \ Because <receivers> cannot be Smart Ouronet Accounts, no <method> parameter is needed \
         \ When the Token <id> is set up with a Transfer Fee, and its receiver is on the receiver list, \
         \ it is not exempted from the transfer fee, as is normally the case \
@@ -1043,16 +1071,16 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-TFT:module{TrueFungibleTransferV2} TFT)
-                    (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount sender))
+                    (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-TFT::C_MultiBulkTransfer [id] sender [receiver-lst] [transfer-amount-lst])
+                    (ref-TFT::C_MultiBulkTransfer patron executor [executee-lst] [id] [transfer-amount-lst])
                 )
-                (format "Succesfully bulk-transfered {} DPTF from {} to {} Receivers" [id sa-s (length receiver-lst)])
+                (format "Succesfully bulk-transfered {} DPTF from {} to {} Receivers" [id sa-s (length executee-lst)])
             )
         )
     )
-    (defun DPTF|C_MultiBulkTransfer (patron:string id:[string] sender:string receiver-array:[[string]] transfer-amount-array:[[decimal]])
+    (defun DPTF|C_MultiBulkTransfer (patron:string executor:string executee-array:[[string]] id-lst:[string] transfer-amount-array:[[decimal]])
         @doc "Executes Multiple Bulk Transfers in a single Function"
         (with-capability (P|TS)
             (let
@@ -1060,12 +1088,12 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-TFT:module{TrueFungibleTransferV2} TFT)
-                    (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount sender))
+                    (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-TFT::C_MultiBulkTransfer id sender receiver-array transfer-amount-array)
+                    (ref-TFT::C_MultiBulkTransfer patron executor executee-array id-lst transfer-amount-array)
                 )
-                (format "Succesfully multi-bulk-transfered {} DPTFs from Sender {} to {} Individual Receiver Lists" [(length id) sa-s (length receiver-array)])
+                (format "Succesfully multi-bulk-transfered {} DPTFs from Sender {} to {} Individual Receiver Lists" [(length id-lst) sa-s (length executee-array)])
             )
         )
     )

@@ -1,8 +1,8 @@
 ;; ---------------------------------------------------------------------------
-;; OURONET DEPLOY -- file 6 of 22
-;; This is STEP 6 of 23 in the full sequence (see Deploy/MANIFEST.md).
+;; OURONET DEPLOY -- file 6 of 24
+;; This is STEP 6 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-5 must have run first, including the init steps between deploys.
-;; 2 source file(s), 254,885 gas measured in the REPL gas model, 252,064 bytes
+;; 2 source file(s), 254,885 gas measured in the REPL gas model, 252,078 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact
@@ -5154,13 +5154,13 @@
                 (let
                     (
                         (ico-transfer-in:object{IgnisCollectorV3.OutputCumulator}
-                            (ref-TFT::C_MultiTransfer pool-token-ids account SWP|SC_NAME pool-token-amounts true)
+                            (ref-TFT::C_MultiTransfer patron account SWP|SC_NAME pool-token-ids pool-token-amounts true)
                         )
                         (ico-mint:object{IgnisCollectorV3.OutputCumulator}
                             (ref-DPTF::C_Mint patron SWP|SC_NAME token-lp GENESIS_LP_SUPPLY true)
                         )
                         (ico-transfer-out:object{IgnisCollectorV3.OutputCumulator}
-                            (ref-TFT::C_Transfer token-lp SWP|SC_NAME account GENESIS_LP_SUPPLY true)
+                            (ref-TFT::C_Transfer patron SWP|SC_NAME account token-lp GENESIS_LP_SUPPLY true)
                         )
                     )
                     ;;C9 fix (preserved): SWP|LP registration lives inside SWP::XE_Issue

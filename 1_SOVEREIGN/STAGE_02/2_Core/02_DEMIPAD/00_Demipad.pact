@@ -1577,11 +1577,11 @@
                     )
                     (ico3:object{IgnisCollectorV3.OutputCumulator}
                         (if (not direct-injection)
-                            (ref-TFT::C_Transfer working-id donor DEMIPAD|SC_NAME non-enviroment true)
+                            (ref-TFT::C_Transfer patron donor DEMIPAD|SC_NAME working-id non-enviroment true)
                             EOC
                             ;;When AQP LIVE, to be replaced by:
                             ;;(ref-AQP::C_Inject <pool-id> <working-id> <cod> <injection-type>)
-                            ;;(ref-TFT::C_Transfer working-id donor DEMIPAD|SC_NAME rem true)
+                            ;;(ref-TFT::C_Transfer patron donor DEMIPAD|SC_NAME working-id rem true)
                         )
                     )
                 )
@@ -1637,7 +1637,7 @@
                         )
                     )
                     ;;1]Withdraw Tokens to Destination
-                    (ref-TS01-C1::DPTF|C_Transfer patron working-id DEMIPAD|SC_NAME destination retrieval-amount true)
+                    (ref-TS01-C1::DPTF|C_Transfer patron DEMIPAD|SC_NAME destination working-id retrieval-amount true)
                     ;;2]Reset Holdings to 0.0 after withdrawal
                     (XI_U|Funds asset-id 0.0 type)
                 )
@@ -1656,11 +1656,11 @@
             )
             (if fuel-or-retrieve
                 (with-capability (DEMIPAD|C>FUEL-TRUE-FUNGIBLE asset-id)
-                    (ref-TS01-C1::DPTF|C_Transfer patron asset-id client lpad amount true)
+                    (ref-TS01-C1::DPTF|C_Transfer patron client lpad asset-id amount true)
                     (format "Succesfuly fueled {} {} to Demiourgos Launchpad from Account {}" [amount asset-id sa-s])
                 )
                 (with-capability (DEMIPAD|C>RETRIEVE-TRUE-FUNGIBLE asset-id)
-                    (ref-TS01-C1::DPTF|C_Transfer patron asset-id lpad client amount true)
+                    (ref-TS01-C1::DPTF|C_Transfer patron lpad client asset-id amount true)
                     (format "Succesfuly retrieved {} {} from Demiourgos Launchpad to Account {}" [amount asset-id sa-s])
                 )
             )

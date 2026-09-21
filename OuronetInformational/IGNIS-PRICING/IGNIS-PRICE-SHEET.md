@@ -428,6 +428,7 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_BulkTransfer` | `C_MultiBulkTransfer` | USAGE | **≥ 6** | — | COMPLEX | per-nonce / per-item work; legs: small 2 + smallest 1 + medium 3 |
 | `C_Burn` | `C_Burn` | USAGE | **72** | — | $0.72 | deter:usage 1 + components:DPTF|C_Burn 71 |
 | `C_ClearDispo` | `C_ClearDispo` | SETUP | **≥ 215** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:setup 5 + components:DPTF|C_ToggleFreezeAccount 58 + components:DPTF|C_WipeSlim 80 + deter:usage 1 + components:DPTF|C_Burn 71 |
+| `C_ClearDispoForeign` | `C_ClearDispo` | SETUP | **≥ 215** | — | COMPLEX | composes other client ops (legs may repeat — floor); legs: deter:setup 5 + components:DPTF|C_ToggleFreezeAccount 58 + components:DPTF|C_WipeSlim 80 + deter:usage 1 + components:DPTF|C_Burn 71 |
 | `C_Control` | `C_Control` | SETUP | **25** | — | $0.25 | deter:setup 5 + components:DPTF|C_Control 20 |
 | `C_DonateFees` | `C_SetFeeTarget` | FEE | **44** | — | $0.44 | deter:fee 25 + components:DPTF|C_SetFeeTarget 19 |
 | `C_Issue` | `C_Issue` | ISSUE | **≥ 1000** | 100 | COMPLEX | charge multiplies by an item count; legs: deter:issue-tf 1000 | STOA: stoa:issue-tf 100 |
@@ -636,7 +637,7 @@ another Talos wrapper, not a core op) or admin entrypoints that are exempt by ru
 | P\|A_SetIMP | admin entrypoint -- IGNIS + STOA free by owner rule, nothing to price |
 
 ---
-185 simple (exact price) · 134 complex (floor price) · 2 STOA-only · 118 exempt · 0 unresolved · 11 unpriced · 439 Talos client functions
+185 simple (exact price) · 135 complex (floor price) · 2 STOA-only · 118 exempt · 0 unresolved · 11 unpriced · 440 Talos client functions
 
 `×N` on a core op = the wrapper drives N priced core ops in a FIXED composition (still exactly knowable).
 

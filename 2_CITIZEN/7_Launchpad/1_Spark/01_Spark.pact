@@ -668,7 +668,7 @@
             )
             ;;PURE CITIZEN: six SOVEREIGN Talos ops, each self-collecting IGNIS on patron (Sigma-billed).
             ;;1]Move Wrapped Stoa to Target
-            (ref-TS01-C1::DPTF|C_Transfer patron wstoa-id redemption-payer account-to-redeem redemption-value true)
+            (ref-TS01-C1::DPTF|C_Transfer patron redemption-payer account-to-redeem wstoa-id redemption-value true)
             ;;2]Freeze <account-to-redeem>
             (ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron (DPTF.UR_Konto spark-id) account-to-redeem spark-id true)
             ;;3]Partial Wipe <spark-id>
@@ -705,7 +705,7 @@
             )
             ;;PURE CITIZEN: six SOVEREIGN Talos ops, each self-collecting IGNIS on patron (Sigma-billed).
             ;;1]Move Wrapped Stoa to Target
-            (ref-TS01-C1::DPTF|C_Transfer patron wstoa-id redemption-payer account-to-redeem redemption-value true)
+            (ref-TS01-C1::DPTF|C_Transfer patron redemption-payer account-to-redeem wstoa-id redemption-value true)
             ;;2]Freeze <account-to-redeem>
             (ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron (DPTF.UR_Konto spark-id) account-to-redeem spark-id true)
             ;;3]Partial Wipe <spark-id>
@@ -745,7 +745,7 @@
                 ;;1] SOVEREIGN deposit Talos op — buyer's STOA into the Launchpad; self-collects IGNIS on patron
                 (ref-TS02-DPAD::DEMIPAD|C_Deposit patron buyer spark-id pid type false max-cost)
                 ;;2] SOVEREIGN DPTF transfer Talos op — Sparks from the Launchpad SC to the buyer; self-collects IGNIS
-                (ref-TS01-C1::DPTF|C_Transfer patron spark-id DEMIPAD|SC_NAME buyer (dec sparks-amount) true)
+                (ref-TS01-C1::DPTF|C_Transfer patron DEMIPAD|SC_NAME buyer spark-id (dec sparks-amount) true)
                 (format "User {} succesfuly acquired {} {} Tokens" [sb sparks-amount spark-id])
             )
         )

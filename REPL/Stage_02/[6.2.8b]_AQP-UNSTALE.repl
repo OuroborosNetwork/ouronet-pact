@@ -65,7 +65,7 @@
         ]
     )
     ;; drop ANHD's EliteAuryn to ~1% of holdings → live Elite-DEB falls a tier ⇒ stored deb now stale
-    (ref-TS01-C1::DPTF|C_Transfer anhd ea-id anhd emma (floor (* ea-bal 0.99) 4) false)
+    (ref-TS01-C1::DPTF|C_Transfer anhd anhd emma ea-id (floor (* ea-bal 0.99) 4) false)
     (let
         (
             (deb-post:decimal (ref-DALOS::UR_Elite-DEB anhd))

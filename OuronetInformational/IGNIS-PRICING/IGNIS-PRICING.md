@@ -290,10 +290,10 @@ STOA; the constants-only conversion (65 table reads lifted); the `define-set` / 
 
 ## What is open
 
-**439** Talos client functions carry a price; **11** carry no row, and the sheet now says which:
+**440** Talos client functions carry a price; **11** carry no row, and the sheet now says which:
 
 ```
-185 exact  ·  134 floor  ·  2 STOA-only  ·  118 exempt  ·  0 unresolved  ·  11 unpriced
+185 exact  ·  135 floor  ·  2 STOA-only  ·  118 exempt  ·  0 unresolved  ·  11 unpriced
 ```
 
 MOVED AGAIN 2026-09-21, 441 → 439. One cause, and it is the DPTF change repeated on its twin:

@@ -1124,7 +1124,7 @@
                     ;;MISSING LEG FIXED (2026-09-14) — same defect as INFO_AQP-FVT|Inject, same cause.
                     ;;This quoted only RPS.URCi_Inject (the gas leg) while the exec also collects the
                     ;;custody transfer of the reward principal: XIv_FvtAddStream PHASE 1 runs
-                    ;;`(ref-TFT::C_Transfer reward-dptf-id patron AQP|SC_NAME amount true)` ahead of the
+                    ;;`(ref-TFT::C_Transfer patron patron AQP|SC_NAME reward-dptf-id amount true)` ahead of the
                     ;;gas leg, and that transfer carries its own cumulator. All FOUR members of the
                     ;;inject family shared this. Measured and pinned for CC_Inject at
                     ;;`Stage_02/[6.5.1]_AQP-INFO-GROUNDTRUTH.repl <<TX-INFO-GT-INJECT>>`; the other
@@ -1172,7 +1172,7 @@
                     ;;MISSING LEG FIXED (2026-09-14) — same defect as INFO_AQP-FVT|Inject, same cause.
                     ;;This quoted only RPS.URCi_Inject (the gas leg) while the exec also collects the
                     ;;custody transfer of the reward principal: XI_FvtInjectCore PHASE 1, via XE_XI_FvtInjectCore runs
-                    ;;`(ref-TFT::C_Transfer reward-dptf-id patron AQP|SC_NAME amount true)` ahead of the
+                    ;;`(ref-TFT::C_Transfer patron patron AQP|SC_NAME reward-dptf-id amount true)` ahead of the
                     ;;gas leg, and that transfer carries its own cumulator. All FOUR members of the
                     ;;inject family shared this. Measured and pinned for CC_Inject at
                     ;;`Stage_02/[6.5.1]_AQP-INFO-GROUNDTRUTH.repl <<TX-INFO-GT-INJECT>>`; the other
@@ -1501,7 +1501,7 @@
                     ;;MISSING LEG FIXED (2026-09-14) — same defect as INFO_AQP-FVT|Inject, same cause.
                     ;;This quoted only RPS.URCi_Inject (the gas leg) while the exec also collects the
                     ;;custody transfer of the reward principal: XI_FvtInjectCore PHASE 1, via XB_FvtInject runs
-                    ;;`(ref-TFT::C_Transfer reward-dptf-id patron AQP|SC_NAME amount true)` ahead of the
+                    ;;`(ref-TFT::C_Transfer patron patron AQP|SC_NAME reward-dptf-id amount true)` ahead of the
                     ;;gas leg, and that transfer carries its own cumulator. All FOUR members of the
                     ;;inject family shared this. Measured and pinned for CC_Inject at
                     ;;`Stage_02/[6.5.1]_AQP-INFO-GROUNDTRUTH.repl <<TX-INFO-GT-INJECT>>`; the other

@@ -331,7 +331,7 @@
         (e-auryn:string "ELITEAURYN-98c486052a51")
     )
     ;(format "Ouro FeePromile is {}" [id-fee])
-    (ref-TS01-C1::DPTF|C_Transfer patron ouro patron emma 1.0 false)
+    (ref-TS01-C1::DPTF|C_Transfer patron patron emma ouro 1.0 false)
 )
 
 (print "")
@@ -376,7 +376,7 @@
         (e-auryn:string "ELITEAURYN-98c486052a51")
     )
     ;(format "Ouro FeePromile is {}" [id-fee])
-    (ref-TS01-C1::DPTF|C_Transfer patron auryn patron emma 1.0 false)
+    (ref-TS01-C1::DPTF|C_Transfer patron patron emma auryn 1.0 false)
 )
 
 (print "")
@@ -421,7 +421,7 @@
         (e-auryn:string "ELITEAURYN-98c486052a51")
     )
     ;(format "Ouro FeePromile is {}" [id-fee])
-    (ref-TS01-C1::DPTF|C_Transfer patron e-auryn patron emma 1.0 false)
+    (ref-TS01-C1::DPTF|C_Transfer patron patron emma e-auryn 1.0 false)
 )
 
 (print "")
@@ -468,7 +468,7 @@
         (ignis:string "GAS-98c486052a51")
         (e-auryn:string "ELITEAURYN-98c486052a51")
     )
-    (ref-TS01-C1::DPTF|C_Transmute patron ignis patron 1200.0)
+    (ref-TS01-C1::DPTF|C_Transmute patron patron ignis 1200.0)
 )
 
 (print "")
@@ -511,7 +511,7 @@
         (ignis:string "GAS-98c486052a51")
         (e-auryn:string "ELITEAURYN-98c486052a51")
     )
-    (ref-TS01-C1::DPTF|C_Transmute patron e-auryn patron 1.0)
+    (ref-TS01-C1::DPTF|C_Transmute patron patron e-auryn 1.0)
 )
 
 (print "")

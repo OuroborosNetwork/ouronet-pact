@@ -72,7 +72,7 @@
                 ;;token's transfer role, or a frozen account, none of which is the guard under test.
                 (expect-failure "<<RT-D-001>> ATTACK REFUSED: paying the gas does not prove you own the sender"
                     "Keyset failure"
-                    (ref-TS01-C1::DPTF|C_Transfer attacker ouro victim attacker 100.0 true))
+                    (ref-TS01-C1::DPTF|C_Transfer attacker victim attacker ouro 100.0 true))
                 ;;...and the refusal is TOTAL, so nothing moved behind the abort.
                 (expect "<<RT-D-001>> ...and neither balance moved"
                     [victim-before attacker-before]
@@ -118,7 +118,7 @@
             (sponsor-ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply sponsor false))
             (owner-ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply owner false))
         )
-        (ref-TS01-C1::DPTF|C_Transfer sponsor ouro owner sponsor 100.0 true)
+        (ref-TS01-C1::DPTF|C_Transfer sponsor owner sponsor ouro 100.0 true)
         (map print
             [
                 (format "<<RT-D-001>> sponsored: owner OURO {} -> {} | sponsor IGNIS spent {} | owner IGNIS spent {}"
@@ -198,7 +198,7 @@
                 ;;wrong list argument would trip.
                 (expect-failure "<<RT-D-003>> ATTACK REFUSED: the plural door is shut too"
                     "Keyset failure"
-                    (ref-TS01-C1::DPTF|C_MultiTransfer attacker [ouro] victim attacker [100.0] true))
+                    (ref-TS01-C1::DPTF|C_MultiTransfer attacker victim attacker [ouro] [100.0] true))
                 ;;...and the refusal is TOTAL, so no leg of the batch moved behind the abort.
                 (expect "<<RT-D-003>> ...and neither balance moved"
                     [victim-before attacker-before]
@@ -237,7 +237,7 @@
             (owner-before:decimal (ref-DPTF::UR_AccountSupply ouro owner))
         )
         (print (format "<(RT-D-003b multi as owner)> => \"{}\""
-            [(ref-TS01-C1::DPTF|C_MultiTransfer sponsor [ouro] owner sponsor [100.0] true)]))
+            [(ref-TS01-C1::DPTF|C_MultiTransfer sponsor owner sponsor [ouro] [100.0] true)]))
         (map print
             [
                 ;;the same list, the same patron, the same receiver -- only the signature changed.

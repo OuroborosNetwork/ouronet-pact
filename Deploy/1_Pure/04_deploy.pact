@@ -1,8 +1,8 @@
 ;; ---------------------------------------------------------------------------
-;; OURONET DEPLOY -- file 4 of 22
-;; This is STEP 4 of 23 in the full sequence (see Deploy/MANIFEST.md).
+;; OURONET DEPLOY -- file 4 of 24
+;; This is STEP 4 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-3 must have run first, including the init steps between deploys.
-;; 2 source file(s), 261,798 gas measured in the REPL gas model, 207,703 bytes
+;; 2 source file(s), 261,798 gas measured in the REPL gas model, 212,211 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/09_TFT.pact
@@ -138,11 +138,11 @@
     ;;
     ;;  [C]
     ;;
-    (defun C_ClearDispo:object{IgnisCollectorV3.OutputCumulator} (patron:string account:string))
-    (defun C_Transmute:object{IgnisCollectorV3.OutputCumulator} (id:string transmuter:string transmute-amount:decimal))
-    (defun C_Transfer:object{IgnisCollectorV3.OutputCumulator} (id:string sender:string receiver:string transfer-amount:decimal method:bool))
-    (defun C_MultiTransfer:object{IgnisCollectorV3.OutputCumulator} (id-lst:[string] sender:string receiver:string transfer-amount-lst:[decimal] method:bool))
-    (defun C_MultiBulkTransfer:object{IgnisCollectorV3.OutputCumulator} (id-lst:[string] sender:string receiver-array:[[string]] transfer-amount-array:[[decimal]]))
+    (defun C_ClearDispo:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string))
+    (defun C_Transmute:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string transmute-amount:decimal))
+    (defun C_Transfer:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string transfer-amount:decimal method:bool))
+    (defun C_MultiTransfer:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id-lst:[string] transfer-amount-lst:[decimal] method:bool))
+    (defun C_MultiBulkTransfer:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee-array:[[string]] id-lst:[string] transfer-amount-array:[[decimal]]))
 
 )
 ;;
@@ -399,16 +399,35 @@
     ;;{C2}  Simple
     ;;{C3}  Composed
     ;;1]    Clear Dispo
-    (defcap DPTF|C>CLEAR-DISPO (account:string)
+    (defcap DPTF|C>CLEAR-DISPO (executor:string executee:string)
         @event
         (let
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ouro-id:string (ref-DALOS::UR_OuroborosID))
-                (ouro-amount:decimal (ref-DALOS::UR_TF_AccountSupply account true))
-                (treasury:string (at 0 (ref-DALOS::UR_DemiurgoiID)))
-                (account-type:bool (ref-DALOS::UR_AccountType account))
+                (ouro-amount:decimal (ref-DALOS::UR_TF_AccountSupply executee true))
+                (account-type:bool (ref-DALOS::UR_AccountType executee))
             )
+            ;;1]Ownership -- BOTH sides, and this is the SECURITY FIX of the canon sweep.
+            ;;Before the sweep this capability enforced ownership of NEITHER account, so any
+            ;;caller could clear any qualifying account's dispo -- which force-spends that
+            ;;account's Elite-Auryn (2.5x the debt, see C_ClearDispo's total-ea) to settle a
+            ;;debt it never asked to settle. Bob could liquidate Emma. The only thing that
+            ;;stopped it in practice was that the victim usually could not afford it, which is
+            ;;a balance, not a gate. Pinned by REPL/modules/DPTF.repl <<DPTF-G10c>>.
+            ;;
+            ;;Authorisation precedes validation (CLAUDE.md, owner ruling 2026-09-14): the two
+            ;;business enforces below are state-dependent and would otherwise SHADOW the gate --
+            ;;an account in credit is the normal state, so every attempt, owner or stranger,
+            ;;would be turned away by "requires Negative OURO" and the ownership check would
+            ;;never be reached. That is exactly the GOV|WIPE_ALL-TREASURY-DEBT shape.
+            (ref-DALOS::CAP_EnforceAccountOwnership executor)
+            (if (!= executor executee)
+                (ref-DALOS::CAP_EnforceAccountOwnership executee)
+                true
+            )
+            ;;2]Business rules
+            ;;#66L: dropped the dead `ouro-id` and `treasury` bindings -- bound here, referenced
+            ;;nowhere in this capability. Same class as the #58L/#61L removals.
             (enforce (< ouro-amount 0.0) "Dispo Clear requires Negative OURO")
             (enforce (not account-type) "Standard Dispo can only be cleared on Standard Ouronet Accounts")
             (compose-capability (P|DALOS|REMOTE-GOV))
@@ -1716,9 +1735,18 @@
     ;;
     ;;Clear Dispo
     (defun C_ClearDispo:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string account:string)
+        (patron:string executor:string executee:string)
+        @doc "Settles <executee>'s OURO dispo (a negative OURO balance) by force-converting \
+            \ 2.5x its Elite-Auryn equivalent, then zeroing the debt. \
+            \ \
+            \ Executor: ENFORCED DIRECTLY in DPTF|C>CLEAR-DISPO, and so is <executee> when the \
+            \ two differ -- clearing a dispo SPENDS the executee's Elite-Auryn, so a foreign \
+            \ clear needs both signatures. The self case (executor = executee, the Talos \
+            \ DPTF|C_ClearDispo wrapper) enforces once; the foreign case (DPTF|C_ClearDispoForeign) \
+            \ is the stranded-owner recipe: the executee hands their key to a friend who \
+            \ executes for them. (patron/executor canon 2.2.)"
         (P|UEV_IMC)
-        (with-capability (DPTF|C>CLEAR-DISPO account)
+        (with-capability (DPTF|C>CLEAR-DISPO executor executee)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
@@ -1729,10 +1757,10 @@
                     (ouro-id:string (ref-DALOS::UR_OuroborosID))
                     (a-id:string (ref-DALOS::UR_AurynID))
                     (ea-id:string (ref-DALOS::UR_EliteAurynID))
-                    (ouro-amount:decimal (abs (ref-DPTF::UR_AccountSupply ouro-id account)))
+                    (ouro-amount:decimal (abs (ref-DPTF::UR_AccountSupply ouro-id executee)))
                     ;;#58L fix: removed the dead `account-ea-supply` binding (bound, never
                     ;;referenced anywhere in the function body). No functional change.
-                    (frozen-state:bool (ref-DPTF::UR_AccountFrozenState ea-id account))
+                    (frozen-state:bool (ref-DPTF::UR_AccountFrozenState ea-id executee))
                     ;;
                     (auryndex:string (at 0 (ref-DPTF::UR_RewardToken ouro-id)))
                     (elite-auryndex:string (at 0 (ref-DPTF::UR_RewardToken a-id)))
@@ -1751,19 +1779,19 @@
                     ;;Ignis Cumulation
                     (ico1:object{IgnisCollectorV3.OutputCumulator}
                         (if (not frozen-state)
-                            (ref-DPTF::C_ToggleFreezeAccount patron (ref-DPTF::UR_Konto ea-id) account ea-id true)
+                            (ref-DPTF::C_ToggleFreezeAccount patron (ref-DPTF::UR_Konto ea-id) executee ea-id true)
                             EOC
                         )
                     )
                     (ico2:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-DPTF::C_WipeSlim patron (ref-DPTF::UR_Konto ea-id) account ea-id total-ea)
+                        (ref-DPTF::C_WipeSlim patron (ref-DPTF::UR_Konto ea-id) executee ea-id total-ea)
                     )
                     ;;#28M fix: only unfreeze if this function was the one that froze it (mirrors
                     ;;ico1's own condition) - otherwise a pre-existing, unrelated freeze on this
-                    ;;account gets silently lifted by ClearDispo.
+                    ;;executee gets silently lifted by ClearDispo.
                     (ico3:object{IgnisCollectorV3.OutputCumulator}
                         (if (not frozen-state)
-                            (ref-DPTF::C_ToggleFreezeAccount patron (ref-DPTF::UR_Konto ea-id) account ea-id false)
+                            (ref-DPTF::C_ToggleFreezeAccount patron (ref-DPTF::UR_Konto ea-id) executee ea-id false)
                             EOC
                         )
                     )
@@ -1774,11 +1802,11 @@
                         (ref-DPTF::C_Burn patron ats-sc ouro-id ouro-amount)
                     )
                 )
-            ;;1] Freeze EA on account
+            ;;1] Freeze EA on executee
                 ;;via ico1
-            ;;2] Partial Wipe EA on account
+            ;;2] Partial Wipe EA on executee
                 ;;via ico2
-            ;;3] Unfreeze EA on account
+            ;;3] Unfreeze EA on executee
                 ;;via ico3
             ;;4] <ATS|SC-NAME> burns <burn-auryn-amount> Auryn amount and decrease Resident Amount by it on <elite-auryndex>
                 ;via ico4
@@ -1798,18 +1826,18 @@
                 ;;This is the ONLY one-sided call to DALOS::XB_UpdateBalance in the tree; the
                 ;;other four sites are the two halves of a transfer, or DPTF's own dispatch.
                 ;;Pinned by RedTeam/[RT-J]_Conservation.repl <<RT-J-001c>>/<<RT-J-001d>>.
-                (ref-DALOS::XB_UpdateBalance account true 0.0)
+                (ref-DALOS::XB_UpdateBalance executee true 0.0)
                 (ref-DPTF::XBv_UpdateSupply ouro-id ouro-amount true)
             ;;7] Updating Elite Account and Constructing the Output: Pleasure doing business with you !
-                (XI_DirectUpdateEliteAccount account)
+                (XI_DirectUpdateEliteAccount executee)
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3  ico4 ico5] [])
             )
         )
     )
     ;;Transmute
     (defun C_Transmute:object{IgnisCollectorV3.OutputCumulator}
-        (id:string transmuter:string transmute-amount:decimal)
-        @doc "Convert <transmute-amount> of <id> out of <transmuter>'s balance and into the \
+        (patron:string executor:string id:string transmute-amount:decimal)
+        @doc "Convert <transmute-amount> of <id> out of <executor>'s balance and into the \
             \ protocol's primary fee pool -- a DEBIT plus XI_CreditPrimaryFee, which is exactly \
             \ what a collected fee does. That equivalence is the point: transmuting is how a \
             \ holder gives value to the protocol voluntarily. \
@@ -1837,71 +1865,88 @@
                 (iz-ea:bool (URC_IzTrueFungibleEliteAuryn id))
             )
             (if iz-ea
-                (with-capability (DPTF|C>ELITE-TRANSMUTE id transmuter transmute-amount)
-                    (XI_Transmute id transmuter transmute-amount)
-                    (XI_DirectUpdateEliteAccount transmuter)
-                    (URCi_LargeTransmuteCumulator id transmuter)
+                (with-capability (DPTF|C>ELITE-TRANSMUTE id executor transmute-amount)
+                    (XI_Transmute id executor transmute-amount)
+                    (XI_DirectUpdateEliteAccount executor)
+                    (URCi_LargeTransmuteCumulator id executor)
                 )
-                (with-capability (DPTF|C>TRANSMUTE id transmuter transmute-amount)
-                    (XI_Transmute id transmuter transmute-amount)
-                    (URCi_SmallTransmuteCumulator id transmuter)
+                (with-capability (DPTF|C>TRANSMUTE id executor transmute-amount)
+                    (XI_Transmute id executor transmute-amount)
+                    (URCi_SmallTransmuteCumulator id executor)
                 )
             )
         )
     )
     ;;Transfer
     (defun C_Transfer:object{IgnisCollectorV3.OutputCumulator}
-        (id:string sender:string receiver:string transfer-amount:decimal method:bool)
+        (patron:string executor:string executee:string id:string transfer-amount:decimal method:bool)
+        @doc "Moves <transfer-amount> of <id> from <executor> to <executee>, picking one of six \
+            \ transfer variants across three classes from URC_TransferClasses. \
+            \ \
+            \ Executor: ENFORCED DIRECTLY -- every branch composes DPTF|C>X-TRANSFER, which \
+            \ calls CAP_EnforceAccountOwnership on the executor unconditionally. \
+            \ Executee: ENFORCED CONDITIONALLY, in the same capability -- only when <method> is \
+            \ true AND the executee is a SMART account, because crediting a contract-owned \
+            \ account is an act upon that contract. A standard executee is merely credited and \
+            \ needs no signature. (patron/executor canon 2.2, conditional executee named.)"
         (P|UEV_IMC)
         (let
             (
-                (what-type:integer (at "type" (URC_TransferClasses id sender receiver transfer-amount)))
+                (what-type:integer (at "type" (URC_TransferClasses id executor executee transfer-amount)))
             )
             (cond
                 ((= what-type 1) 
-                    (with-capability (DPTF|C>CLASS-1-TRANSFER id sender receiver transfer-amount method)
-                        (XI_SimpleTransfer id sender receiver transfer-amount method)
+                    (with-capability (DPTF|C>CLASS-1-TRANSFER id executor executee transfer-amount method)
+                        (XI_SimpleTransfer id executor executee transfer-amount method)
                     )
                 )
                 ((= what-type 2) 
-                    (with-capability (DPTF|C>CLASS-1-TRANSFER-UNITY id sender receiver transfer-amount method)
-                        (XI_SimpleTransfer id sender receiver transfer-amount method)
+                    (with-capability (DPTF|C>CLASS-1-TRANSFER-UNITY id executor executee transfer-amount method)
+                        (XI_SimpleTransfer id executor executee transfer-amount method)
                     )
                 )
                 ((= what-type 3) 
-                    (with-capability (DPTF|C>CLASS-2-TRANSFER id sender receiver transfer-amount method)
-                        (XI_ComplexTransfer id sender receiver transfer-amount method)
+                    (with-capability (DPTF|C>CLASS-2-TRANSFER id executor executee transfer-amount method)
+                        (XI_ComplexTransfer id executor executee transfer-amount method)
                     )
                 )
                 ((= what-type 4) 
-                    (with-capability (DPTF|C>CLASS-2-TRANSFER-UNITY id sender receiver transfer-amount method)
-                        (XI_ComplexTransfer id sender receiver transfer-amount method)
+                    (with-capability (DPTF|C>CLASS-2-TRANSFER-UNITY id executor executee transfer-amount method)
+                        (XI_ComplexTransfer id executor executee transfer-amount method)
                     )
                 )
                 ((= what-type 5) 
-                    (with-capability (DPTF|C>CLASS-2-TRANSFER-ELITE id sender receiver transfer-amount method)    
-                        (XI_SimpleTransfer id sender receiver transfer-amount method)
-                        (XI_DynamicUpdateEliteAccount sender)
-                        (XI_DynamicUpdateEliteAccount receiver)
+                    (with-capability (DPTF|C>CLASS-2-TRANSFER-ELITE id executor executee transfer-amount method)    
+                        (XI_SimpleTransfer id executor executee transfer-amount method)
+                        (XI_DynamicUpdateEliteAccount executor)
+                        (XI_DynamicUpdateEliteAccount executee)
                     )
                 )
                 ((= what-type 6) 
-                    (with-capability (DPTF|C>CLASS-3-TRANSFER-ELITE id sender receiver transfer-amount method)   
-                        (XI_ComplexTransfer id sender receiver transfer-amount method)
-                        (XI_DynamicUpdateEliteAccount sender)
-                        (XI_DynamicUpdateEliteAccount receiver)
+                    (with-capability (DPTF|C>CLASS-3-TRANSFER-ELITE id executor executee transfer-amount method)   
+                        (XI_ComplexTransfer id executor executee transfer-amount method)
+                        (XI_DynamicUpdateEliteAccount executor)
+                        (XI_DynamicUpdateEliteAccount executee)
                     )
                 )
                 true
             )
-            (URCi_TransferCumulator what-type id sender receiver)
+            (URCi_TransferCumulator what-type id executor executee)
         )
     )
     ;;Multi Transfer
     (defun C_MultiTransfer:object{IgnisCollectorV3.OutputCumulator}
-        (id-lst:[string] sender:string receiver:string transfer-amount-lst:[decimal] method:bool)
+        (patron:string executor:string executee:string id-lst:[string] transfer-amount-lst:[decimal] method:bool)
+        @doc "Moves one amount of each <id-lst> token from <executor> to <executee> in a single \
+            \ transaction. \
+            \ \
+            \ Executor: ENFORCED INDIRECTLY -- DPTF|C>MULTI-TRANSFER says so in its own comment \
+            \ (\"sender ownership within the DPTF Debit Function\") and the path is \
+            \ DPTF::XB_DebitTrueFungible -> DPTF|C>DEBIT -> CAP_EnforceAccountOwnership, run \
+            \ once per leg. Executee: ENFORCED CONDITIONALLY in DPTF|C>MULTI-TRANSFER, on the \
+            \ same method-and-smart test C_Transfer uses. (patron/executor canon 2.2.)"
         (P|UEV_IMC)
-        (with-capability (DPTF|C>MULTI-TRANSFER id-lst sender receiver transfer-amount-lst method)
+        (with-capability (DPTF|C>MULTI-TRANSFER id-lst executor executee transfer-amount-lst method)
             (let
                 (
                     (ref-U|LST:module{StringProcessorV2} U|LST)
@@ -1917,26 +1962,26 @@
                                     (
                                         (id:string (at idx id-lst))
                                         (transfer-amount:decimal (at idx transfer-amount-lst))
-                                        (what-type-obj:object{TrueFungibleTransferV2.TransferClass} (URC_TransferClasses id sender receiver transfer-amount))
+                                        (what-type-obj:object{TrueFungibleTransferV2.TransferClass} (URC_TransferClasses id executor executee transfer-amount))
                                         (what-type:integer (at "type" what-type-obj))
                                         (ico:object{IgnisCollectorV3.OutputCumulator}
-                                            (URCi_TransferCumulator what-type id sender receiver)
+                                            (URCi_TransferCumulator what-type id executor executee)
                                         )
                                         (iz-simple-transfer:bool (at "iz-it-simple" what-type-obj))
                                         ;;#29M fix: recompute dispo-data fresh for EACH leg (was
                                         ;;snapshotted once before the fold and reused for every
                                         ;;leg) - otherwise an earlier/later leg in this same batch
-                                        ;;that reduces sender's Elite-Auryn holdings leaves this
+                                        ;;that reduces executor's Elite-Auryn holdings leaves this
                                         ;;leg's OURO-overdraft check using a stale, too-generous
                                         ;;dispo limit.
-                                        (dispo-data:object{UtilityDptfV2.DispoData} (UDC_GetDispoData sender))
+                                        (dispo-data:object{UtilityDptfV2.DispoData} (UDC_GetDispoData executor))
                                     )
                                     ;;Debit
-                                    (ref-DPTF::XB_DebitTrueFungible id sender transfer-amount dispo-data false)
+                                    (ref-DPTF::XB_DebitTrueFungible id executor transfer-amount dispo-data false)
                                     ;;Credit
                                     (if iz-simple-transfer
-                                        (ref-DPTF::XB_CreditTrueFungible id receiver transfer-amount)
-                                        (XI_ComplexCredit id receiver transfer-amount)
+                                        (ref-DPTF::XB_CreditTrueFungible id executee transfer-amount)
+                                        (XI_ComplexCredit id executee transfer-amount)
                                     )
                                     (ref-U|LST::UC_AppL acc ico)
                                 )
@@ -1948,8 +1993,8 @@
                 )
                 (if contains-eazs
                     (do
-                        (XI_DynamicUpdateEliteAccount sender)
-                        (XI_DynamicUpdateEliteAccount receiver)
+                        (XI_DynamicUpdateEliteAccount executor)
+                        (XI_DynamicUpdateEliteAccount executee)
                     )
                     true
                 )
@@ -1959,7 +2004,15 @@
     )
     ;;Bulk Transfer
     (defun C_MultiBulkTransfer:object{IgnisCollectorV3.OutputCumulator}
-        (id-lst:[string] sender:string receiver-array:[[string]] transfer-amount-array:[[decimal]])
+        (patron:string executor:string executee-array:[[string]] id-lst:[string] transfer-amount-array:[[decimal]])
+        @doc "Runs one bulk transfer per <id-lst> token: leg i sends <transfer-amount-array>[i] \
+            \ from <executor> to the receivers in <executee-array>[i]. \
+            \ \
+            \ Executor: ENFORCED INDIRECTLY -- each leg debits through \
+            \ DPTF::XB_DebitTrueFungible -> DPTF|C>DEBIT -> CAP_EnforceAccountOwnership. \
+            \ Executee: NOT enforced, and cannot be -- bulk receivers may never be smart \
+            \ accounts (that is why this entrypoint has no <method> parameter), so every \
+            \ executee is a standard account being credited. (patron/executor canon 2.2.)"
         (P|UEV_IMC)
         (let
             (
@@ -1975,61 +2028,61 @@
                             (let
                                 (
                                     (id:string (at idx id-lst))
-                                    (receiver-lst:[string] (at idx receiver-array))
+                                    (receiver-lst:[string] (at idx executee-array))
                                     (transfer-amount-lst:[decimal] (at idx transfer-amount-array))
                                     (size:integer (length receiver-lst))
                                     (what-type-obj:object{TrueFungibleTransferV2.TransferClass}
-                                        (URC_TransferClassesForBulk id sender transfer-amount-lst)
+                                        (URC_TransferClassesForBulk id executor transfer-amount-lst)
                                     )
                                     (what-type:integer (at "type" what-type-obj))
                                     (iz-it-simple:bool (at "iz-it-simple" what-type-obj))
                                     (total-debit:decimal (fold (+) 0.0 transfer-amount-lst))
                                     (ico:object{IgnisCollectorV3.OutputCumulator}
                                         (cond
-                                            ((contains what-type [1 4 5]) (URCi_ComplexBulkTransferCumulator id sender size))
-                                            ((= what-type 2) (URCi_UnityBulkTransferCumulator sender receiver-lst transfer-amount-lst))
-                                            ((= what-type 3) (URCi_SimpleBulkTransferCumulator id sender size))
-                                            ((= what-type 6) (URCi_EliteBulkTransferCumulator id sender size))
+                                            ((contains what-type [1 4 5]) (URCi_ComplexBulkTransferCumulator id executor size))
+                                            ((= what-type 2) (URCi_UnityBulkTransferCumulator executor receiver-lst transfer-amount-lst))
+                                            ((= what-type 3) (URCi_SimpleBulkTransferCumulator id executor size))
+                                            ((= what-type 6) (URCi_EliteBulkTransferCumulator id executor size))
                                             EOC
                                         )
                                     )
                                     ;;#29M fix: recompute dispo-data fresh for EACH leg, same
                                     ;;reasoning as C_MultiTransfer above.
-                                    (dispo-data:object{UtilityDptfV2.DispoData} (UDC_GetDispoData sender))
+                                    (dispo-data:object{UtilityDptfV2.DispoData} (UDC_GetDispoData executor))
                                 )
                                 ;;Debit
                                 (with-capability (P|TFT|CALLER)
-                                    (ref-DPTF::XB_DebitTrueFungible id sender total-debit dispo-data false)
+                                    (ref-DPTF::XB_DebitTrueFungible id executor total-debit dispo-data false)
                                 )
                                 ;;Credit
                                 (cond
                                     ((= what-type 1) 
-                                        (with-capability (DPTF|C>CLASS-0-BULK id sender receiver-lst transfer-amount-lst iz-it-simple) 
+                                        (with-capability (DPTF|C>CLASS-0-BULK id executor receiver-lst transfer-amount-lst iz-it-simple) 
                                             (XI_BulkCredit id receiver-lst transfer-amount-lst true false)
                                         )
                                     )
                                     ((= what-type 2) 
-                                        (with-capability (DPTF|C>CLASS-0-BULK-UNITY id sender receiver-lst transfer-amount-lst iz-it-simple)
+                                        (with-capability (DPTF|C>CLASS-0-BULK-UNITY id executor receiver-lst transfer-amount-lst iz-it-simple)
                                             (XI_BulkCredit id receiver-lst transfer-amount-lst true false)
                                         )
                                     )
                                     ((= what-type 3) 
-                                        (with-capability (DPTF|C>CLASS-1-BULK id sender receiver-lst transfer-amount-lst)
+                                        (with-capability (DPTF|C>CLASS-1-BULK id executor receiver-lst transfer-amount-lst)
                                             (XI_BulkCredit id receiver-lst transfer-amount-lst false false)
                                         )
                                     )
                                     ((= what-type 4) 
-                                        (with-capability (DPTF|C>CLASS-2-BULK id sender receiver-lst transfer-amount-lst)
+                                        (with-capability (DPTF|C>CLASS-2-BULK id executor receiver-lst transfer-amount-lst)
                                             (XI_BulkCredit id receiver-lst transfer-amount-lst true false)
                                         )
                                     )
                                     ((= what-type 5) 
-                                        (with-capability (DPTF|C>CLASS-2-BULK-ELITE id sender receiver-lst transfer-amount-lst)    
+                                        (with-capability (DPTF|C>CLASS-2-BULK-ELITE id executor receiver-lst transfer-amount-lst)    
                                             (XI_BulkCredit id receiver-lst transfer-amount-lst false true)
                                         )
                                     )
                                     ((= what-type 6) 
-                                        (with-capability (DPTF|C>CLASS-3-BULK-ELITE id sender receiver-lst transfer-amount-lst)    
+                                        (with-capability (DPTF|C>CLASS-3-BULK-ELITE id executor receiver-lst transfer-amount-lst)    
                                             (XI_BulkCredit id receiver-lst transfer-amount-lst true true)
                                         )
                                     )
@@ -2043,11 +2096,11 @@
                     )
                 )
             )
-            ;;Refresh the sender's own Elite tier once, if any leg touched an Elite-Auryn
+            ;;Refresh the executor's own Elite tier once, if any leg touched an Elite-Auryn
             ;;class token — the receiver side is already refreshed per-leg inside
             ;;XI_BulkCredit (via its `elite` flag -> XI_BulkUpdateElite).
             (if contains-eazs
-                (XI_DynamicUpdateEliteAccount sender)
+                (XI_DynamicUpdateEliteAccount executor)
                 true
             )
             (ref-IGNIS::UDC_ConcatenateOutputCumulators folded-obj [])
@@ -3442,7 +3495,7 @@
                             (do
                                 (ref-ATS::XE_UpdateRUR ats (at idx rt-lst) 1 true (at idx rt-amounts))
                                 (ref-U|LST::UC_AppL acc
-                                    (ref-TFT::C_Transfer (at idx rt-lst) kickstarter ATS|SC_NAME (at idx rt-amounts) true)
+                                    (ref-TFT::C_Transfer patron kickstarter ATS|SC_NAME (at idx rt-lst) (at idx rt-amounts) true)
                                 )
                             )
                         )
@@ -3457,7 +3510,7 @@
                     (ref-DPTF::C_Mint patron ATS|SC_NAME rbt-id rbt-request-amount false)
                 )
                 (ico3:object{IgnisCollectorV3.OutputCumulator}
-                    (ref-TFT::C_Transfer rbt-id ATS|SC_NAME kickstarter rbt-request-amount true)
+                    (ref-TFT::C_Transfer patron ATS|SC_NAME kickstarter rbt-id rbt-request-amount true)
                 )
                 (index:decimal (ref-ATS::URC_Index ats))
             )
@@ -3680,10 +3733,10 @@
                     )
                 )
                 (ico2:object{IgnisCollectorV3.OutputCumulator}
-                    (ref-TFT::C_Transfer reward-token ATS|SC_NAME remover remove-sum true)
+                    (ref-TFT::C_Transfer remover ATS|SC_NAME remover reward-token remove-sum true)
                 )
                 (ico3:object{IgnisCollectorV3.OutputCumulator}
-                    (ref-TFT::C_Transfer primal-rt remover ATS|SC_NAME remove-sum true)
+                    (ref-TFT::C_Transfer remover remover ATS|SC_NAME primal-rt remove-sum true)
                 )
             )
             ;;1]The RT to be removed, is transfered to the remover, from the ATS|SC_NAME
@@ -3779,9 +3832,10 @@
                 )
                 ;;2]Withdraw Royalties to Target - only the reward-tokens with a nonzero balance
                 (ref-TFT::C_MultiTransfer
-                    (map (lambda (index:integer) (at index reward-tokens)) nonzero-idx)
+                    target
                     ATS|SC_NAME
                     target
+                    (map (lambda (index:integer) (at index reward-tokens)) nonzero-idx)
                     (map (lambda (index:integer) (at index royalties)) nonzero-idx)
                     true
                 )
@@ -3808,7 +3862,7 @@
             )
             (with-capability (ATSU|C>FUEL ats reward-token)
                 (ref-ATS::XE_UpdateRUR ats reward-token 1 true amount)
-                (ref-TFT::C_Transfer reward-token fueler ATS|SC_NAME amount true)
+                (ref-TFT::C_Transfer fueler fueler ATS|SC_NAME reward-token amount true)
             )
         )
     )
@@ -3836,13 +3890,13 @@
                     (c-rbt-amount:decimal (at "rbt-amount" coil-data))
                     ;;
                     (ico1:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-TFT::C_Transfer rt coiler ATS|SC_NAME amount true)
+                        (ref-TFT::C_Transfer patron coiler ATS|SC_NAME rt amount true)
                     )
                     (ico2:object{IgnisCollectorV3.OutputCumulator}
                         (ref-DPTF::C_Mint patron ATS|SC_NAME c-rbt c-rbt-amount false)
                     )
                     (ico3:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-TFT::C_Transfer c-rbt ATS|SC_NAME coiler c-rbt-amount true)
+                        (ref-TFT::C_Transfer patron ATS|SC_NAME coiler c-rbt c-rbt-amount true)
                     )
                 )
                 (ref-ATS::XE_UpdateRUR ats rt 1 true input-amount)
@@ -3886,7 +3940,7 @@
                     (c-rbt2-amount:decimal (at "rbt-amount" coil2-data))
                     ;;
                     (ico1:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-TFT::C_Transfer rt curler ATS|SC_NAME amount true)
+                        (ref-TFT::C_Transfer patron curler ATS|SC_NAME rt amount true)
                     )
                     (ico2:object{IgnisCollectorV3.OutputCumulator}
                         (ref-DPTF::C_Mint patron ATS|SC_NAME c-rbt1 c-rbt1-amount false)
@@ -3895,7 +3949,7 @@
                         (ref-DPTF::C_Mint patron ATS|SC_NAME c-rbt2 c-rbt2-amount false)
                     )
                     (ico4:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-TFT::C_Transfer c-rbt2 ATS|SC_NAME curler c-rbt2-amount true)
+                        (ref-TFT::C_Transfer patron ATS|SC_NAME curler c-rbt2 c-rbt2-amount true)
                     )
                 )
                 (ref-ATS::XE_UpdateRUR ats1 rt 1 true input1-amount)
@@ -3960,7 +4014,7 @@
                                 (ref-IGNIS::UDC_ConstructOutputCumulator price ATS|SC_NAME trigger [])
                             )
                             (ico1:object{IgnisCollectorV3.OutputCumulator}
-                                (ref-TFT::C_Transfer c-rbt recoverer ATS|SC_NAME ra true)
+                                (ref-TFT::C_Transfer patron recoverer ATS|SC_NAME c-rbt ra true)
                             )
                             (ico2:object{IgnisCollectorV3.OutputCumulator}
                                 (ref-DPTF::C_Burn patron ATS|SC_NAME c-rbt ra)
@@ -4059,7 +4113,7 @@
                                     (if (!= (at idx cw) 0.0)
                                         (do
                                             (ref-ATS::XE_UpdateRUR ats (at idx rt-lst) 2 false (at idx cw))
-                                            (ref-TFT::C_Transfer (at idx rt-lst) ATS|SC_NAME culler (at idx cw) true)
+                                            (ref-TFT::C_Transfer culler ATS|SC_NAME culler (at idx rt-lst) (at idx cw) true)
                                         )
                                         EOC
                                     )
@@ -4117,7 +4171,7 @@
                             )
                         )
                         (ico2:object{IgnisCollectorV3.OutputCumulator}
-                            (ref-TFT::C_Transfer c-rbt recoverer ATS|SC_NAME ra true)
+                            (ref-TFT::C_Transfer patron recoverer ATS|SC_NAME c-rbt ra true)
                         )
                         (ico3:object{IgnisCollectorV3.OutputCumulator}
                             (ref-DPTF::C_Burn patron ATS|SC_NAME c-rbt ra)
@@ -4170,7 +4224,7 @@
                             (ref-DPTF::C_Mint patron ATS|SC_NAME c-rbt nonce-supply false)
                         )
                         (ico4:object{IgnisCollectorV3.OutputCumulator}
-                            (ref-TFT::C_Transfer c-rbt ATS|SC_NAME recoverer nonce-supply true)
+                            (ref-TFT::C_Transfer patron ATS|SC_NAME recoverer c-rbt nonce-supply true)
                         )
                     )
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3 ico4] [])
@@ -4239,7 +4293,7 @@
                             (ref-DPOF::C_Burn patron ATS|SC_NAME id nonce nonce-supply)
                         )
                         (ico3:object{IgnisCollectorV3.OutputCumulator}
-                            (ref-TFT::C_MultiTransfer rt-lst ATS|SC_NAME redeemer earned-rts true)
+                            (ref-TFT::C_MultiTransfer patron ATS|SC_NAME redeemer rt-lst earned-rts true)
                         )
                         (folded-obj:[object{IgnisCollectorV3.OutputCumulator}]
                             (if have-fee-rts
@@ -4313,11 +4367,11 @@
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators 
                     [
                         ;;1]Transfer c-rbt to ATS|SC_NAME
-                        (ref-TFT::C_Transfer c-rbt recoverer ATS|SC_NAME ra true)
+                        (ref-TFT::C_Transfer patron recoverer ATS|SC_NAME c-rbt ra true)
                         ;;2]Burn it
                         (ref-DPTF::C_Burn patron ATS|SC_NAME c-rbt ra)
                         ;;3]Release equivalnet RTs (minus fee)
-                        (ref-TFT::C_MultiTransfer reward-tokens ATS|SC_NAME recoverer release-amounts true)
+                        (ref-TFT::C_MultiTransfer patron ATS|SC_NAME recoverer reward-tokens release-amounts true)
                     ] 
                     []
                 )
@@ -4344,7 +4398,7 @@
                                     (if (> (at idx syphon-amounts) 0.0)
                                         (do
                                             (ref-ATS::XE_UpdateRUR ats (at idx rt-lst) 1 false (at idx syphon-amounts))
-                                            (ref-TFT::C_Transfer (at idx rt-lst) ATS|SC_NAME syphon-target (at idx syphon-amounts) true)
+                                            (ref-TFT::C_Transfer syphon-target ATS|SC_NAME syphon-target (at idx rt-lst) (at idx syphon-amounts) true)
                                         )
                                         EOC
                                     )

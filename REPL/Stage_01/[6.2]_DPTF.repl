@@ -128,7 +128,7 @@
         (receiver:string KST.EMMA)
         (ea-id:string "ELITEAURYN-98c486052a51")
     )
-    (ref-TS01-C1::DPTF|C_Transfer patron ea-id patron receiver 5000.0 false)
+    (ref-TS01-C1::DPTF|C_Transfer patron patron receiver ea-id 5000.0 false)
     (print "AH transfered 5000 EA to Emma")
 )
 (print "")
@@ -799,9 +799,7 @@
         (auryn:string "AURYN-98c486052a51")
         (auryndex:decimal (ref-ATS::URC_Index "EliteAuryndex-98c486052a51"))
     )
-    (ref-TS01-C1::DPTF|C_Transmute
-        patron auryn patron 1.0
-    )
+    (ref-TS01-C1::DPTF|C_Transmute patron patron auryn 1.0)
     (format "EliteAuryndex before is {} and after is {}" [auryndex (ref-ATS::URC_Index "EliteAuryndex-98c486052a51")])
 )
 
@@ -848,9 +846,7 @@
         (auryn:string "ELITEAURYN-98c486052a51")
         (eauryndex:decimal (ref-ATS::URC_Index "EliteAuryndex-98c486052a51"))
     )
-    (ref-TS01-C1::DPTF|C_Transmute
-        patron auryn patron 1.0
-    )
+    (ref-TS01-C1::DPTF|C_Transmute patron patron auryn 1.0)
     (format "EliteAuryndex before is {} and after is {}" [eauryndex (ref-ATS::URC_Index "EliteAuryndex-98c486052a51")])
 )
 
@@ -900,9 +896,7 @@
         (dalos-unity-supply:decimal (ref-DPTF::UR_AccountSupply unity dalos))
     )
     
-    (ref-TS01-C1::DPTF|C_Transmute
-        patron unity emma 120.0
-    )
+    (ref-TS01-C1::DPTF|C_Transmute patron emma unity 120.0)
     [
         (format "Dalos holds before {} and after {} Unity" [dalos-unity-supply (ref-DPTF::UR_AccountSupply unity dalos)])
         (format "Unity Target is {}" [(ref-DPTF::UR_FeeTarget unity)])
@@ -966,7 +960,7 @@
         (unity:string "UNITY-98c486052a51")
     )
     ;(format "Ouro FeePromile is {}" [id-fee])
-    (ref-TS01-C1::DPTF|C_Transfer patron ouro patron emma 1.0 false)
+    (ref-TS01-C1::DPTF|C_Transfer patron patron emma ouro 1.0 false)
     ;(ref-TFT::CX_Class1Transfer ouro patron emma 1.0 false)
     (format "Type OURO IZ {}" [(ref-TFT::URC_TransferClasses ouro patron emma 1.0)])
 )
@@ -1015,7 +1009,7 @@
         (unity:string "UNITY-98c486052a51")
     )
     ;(format "Ouro FeePromile is {}" [id-fee])
-    (ref-TS01-C1::DPTF|C_Transfer patron auryn patron emma 1.0 false)
+    (ref-TS01-C1::DPTF|C_Transfer patron patron emma auryn 1.0 false)
     (format "Type AURYN IZ {}" [(ref-TFT::URC_TransferClasses auryn patron emma 1.0)])
 )
 
@@ -1063,7 +1057,7 @@
         (unity:string "UNITY-98c486052a51")
     )
     ;(format "Ouro FeePromile is {}" [id-fee])
-    (ref-TS01-C1::DPTF|C_Transfer patron e-auryn patron emma 1.0 false)
+    (ref-TS01-C1::DPTF|C_Transfer patron patron emma e-auryn 1.0 false)
     (format "Type ELITEAURYN IZ {}" [(ref-TFT::URC_TransferClasses e-auryn patron emma 1.0)])
 )
 
@@ -1115,8 +1109,8 @@
         (unity:string "UNITY-98c486052a51")
     )
     ;(format "Ouro FeePromile is {}" [id-fee])
-    (ref-TS01-C1::DPTF|C_Transfer patron unity emma lumy 10000.0 false)
-    (ref-TS01-C1::DPTF|C_Transfer patron unity lumy patron 2500.0 false)
+    (ref-TS01-C1::DPTF|C_Transfer patron emma lumy unity 10000.0 false)
+    (ref-TS01-C1::DPTF|C_Transfer patron lumy patron unity 2500.0 false)
     [
         ;(format "Unity is {} and has Type {}" [(ref-DALOS::UR_UnityID) (ref-TFT::URC_TransferOneOfFour unity emma lumy)])
         ;(format "Unity is {} and has Type {}" [(ref-DALOS::UR_UnityID) (ref-TFT::URC_TransferOneOfFour unity lumy patron)])
@@ -1179,12 +1173,12 @@
     )
     (ref-TS01-C1::DPTF|C_MultiTransfer
         patron
+        patron
+        receiver
         [
             "BUSD-98c486052a51" "TUSD-98c486052a51" "USDT-98c486052a51" "USDC-98c486052a51" 
             "USDD-98c486052a51" "AUSD-98c486052a51" "CUSD-98c486052a51"
         ]
-        patron
-        receiver
         (make-list 7 10.0)
         false
     )
@@ -1244,14 +1238,14 @@
     )
     (ref-TS01-C1::DPTF|C_MultiTransfer
         patron
+        patron
+        receiver
         [
             "LI-98c486052a51" "MG-98c486052a51" "AL-98c486052a51" "TI-98c486052a51" "GE-98c486052a51" 
             "GA-98c486052a51" "IN-98c486052a51" "TE-98c486052a51" "BI-98c486052a51" "CO-98c486052a51"
             ;"CU-98c486052a51" "RU-98c486052a51" "PD-98c486052a51" "AG-98c486052a51" "OS-98c486052a51"
             ;"IR-98c486052a51" "PT-98c486052a51" "AU-98c486052a51" "HG-98c486052a51" "RE-98c486052a51"
         ]
-        patron
-        receiver
         (make-list 10 10.0)
         false
     )
@@ -1504,13 +1498,13 @@
     )
     (ref-TS01-C1::DPTF|C_MultiTransfer
         patron
+        patron
+        receiver
         [
             "LI-98c486052a51" "MG-98c486052a51" "AL-98c486052a51" "TI-98c486052a51" "GE-98c486052a51" 
             "GA-98c486052a51" "IN-98c486052a51" "TE-98c486052a51" "BI-98c486052a51" "CO-98c486052a51"
             ;"ELITEAURYN-98c486052a51"
         ]
-        patron
-        receiver
         (make-list 10 15.0)
         false
     )
@@ -1586,13 +1580,7 @@
         (ea:string "ELITEAURYN-98c486052a51")
         (u:string "UNITY-98c486052a51")
     )
-    (ref-TS01-C1::DPTF|C_BulkTransfer
-        patron
-        ouro
-        patron
-        receiver-lst
-        (make-list 9 17.0)
-    )
+    (ref-TS01-C1::DPTF|C_BulkTransfer patron patron receiver-lst ouro (make-list 9 17.0))
 )
 
 (print "")

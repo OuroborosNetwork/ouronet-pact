@@ -141,7 +141,7 @@
 (print "--- [RT-I-001a - BASELINE: the intended Case 3 shape is funded · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (env-data { "exec-code": ["(namespace \"ouronet-ns\")"
-                   "(TS01-C1.DPTF|C_Transmute \"Ѻ.attacker\" \"GAS-98c486052a51\" \"Ѻ.attacker\" 25.0)"
+                   "(TS01-C1.DPTF|C_Transmute \"Ѻ.attacker\" \"Ѻ.attacker\" \"GAS-98c486052a51\" 25.0)"
                    "(let ((x 1)) x)"] })
 (print
     (expect "<<RT-I-001>> BASELINE: the intended three-form Case 3 shape is funded"
@@ -185,7 +185,7 @@
 (print "--- [RT-I-001c - ATTACK: a fourth, unvalidated form · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (env-data { "exec-code": ["(namespace \"ouronet-ns\")"
-                   "(TS01-C1.DPTF|C_Transmute \"Ѻ.attacker\" \"GAS-98c486052a51\" \"Ѻ.attacker\" 25.0)"
+                   "(TS01-C1.DPTF|C_Transmute \"Ѻ.attacker\" \"Ѻ.attacker\" \"GAS-98c486052a51\" 25.0)"
                    "(let ((x 1)) x)"
                    "(bogus.thing)"] })
 (print
@@ -208,7 +208,7 @@
 (print "--- [RT-I-001d - ATTACK: the appended count is unbounded · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (env-data { "exec-code": ["(namespace \"ouronet-ns\")"
-                   "(TS01-C1.DPTF|C_Transmute \"Ѻ.attacker\" \"GAS-98c486052a51\" \"Ѻ.attacker\" 25.0)"
+                   "(TS01-C1.DPTF|C_Transmute \"Ѻ.attacker\" \"Ѻ.attacker\" \"GAS-98c486052a51\" 25.0)"
                    "(let ((x 1)) x)"
                    "(bogus.one)" "(bogus.two)" "(bogus.three)"] })
 (print
@@ -232,7 +232,7 @@
 (print "--- [RT-I-001e - ATTACK: form 2's body is unread · 01 · env-sigs (caps)] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (env-data { "exec-code": ["(namespace \"ouronet-ns\")"
-                   "(TS01-C1.DPTF|C_Transmute \"Ѻ.attacker\" \"GAS-98c486052a51\" \"Ѻ.attacker\" 25.0)"
+                   "(TS01-C1.DPTF|C_Transmute \"Ѻ.attacker\" \"Ѻ.attacker\" \"GAS-98c486052a51\" 25.0)"
                    "(let ((y 0)) (bogus.thing))"] })
 (print
     (expect "<<RT-I-001>> ATTACK: form 2 need only START with (let -- its body is unread"

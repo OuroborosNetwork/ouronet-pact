@@ -2065,7 +2065,7 @@
         (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
     )
     (let ((w:string (ref-DALOS::UR_WrappedStoaID)))
-        (ref-TS01-C1::DPTF|C_Transfer KST.ANHD w KST.ANHD KST.EMMA 1000.0 true)
+        (ref-TS01-C1::DPTF|C_Transfer KST.ANHD KST.ANHD KST.EMMA w 1000.0 true)
         (map print
             [
                 (expect "<<TX-SPK-02>> the payer is funded with wrapped STOA"

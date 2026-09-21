@@ -987,7 +987,7 @@
     )
     (if (< emma-ouro stake-e)
         (print (format "<(DPTF C_Transfer OURO ANHD→EMMA {})> => \"{}\"" [stake-e
-            (ref-TS01-C1::DPTF|C_Transfer patron ouro-id anhd emma stake-e true)
+            (ref-TS01-C1::DPTF|C_Transfer patron anhd emma ouro-id stake-e true)
         ]))
         true
     )

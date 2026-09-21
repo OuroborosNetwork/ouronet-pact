@@ -741,7 +741,7 @@
                             (lp-id:string (ref-SWP::UR_TokenLP swpair))
                             (ico1:object{IgnisCollectorV3.OutputCumulator}
                                 (if (!= primary 0.0)
-                                    (ref-TFT::C_Transfer lp-id SWP|SC_NAME account primary true)
+                                    (ref-TFT::C_Transfer patron SWP|SC_NAME account lp-id primary true)
                                     EOC
                                 )
                             )
@@ -845,7 +845,7 @@
                                 ;;
                                 ;;Move F|DPTF to vst-sc and burn it
                                 (ico1:object{IgnisCollectorV3.OutputCumulator}
-                                    (ref-TFT::C_Transfer frozen-dptf account vst-sc input-amount true)
+                                    (ref-TFT::C_Transfer patron account vst-sc frozen-dptf input-amount true)
                                 )
                                 (ico2:object{IgnisCollectorV3.OutputCumulator}
                                     (ref-DPTF::C_Burn patron vst-sc frozen-dptf input-amount)
@@ -1010,7 +1010,7 @@
                                 ;;
                                 ;;MOVE IGNIS to vst-sc, paying for the ignis-tax
                                 (ico4:object{IgnisCollectorV3.OutputCumulator}
-                                    (ref-TFT::C_Transfer ignis-id account vst-sc (at "total-ignis-tax-needed" clad) true)
+                                    (ref-TFT::C_Transfer patron account vst-sc ignis-id (at "total-ignis-tax-needed" clad) true)
                                 )
                             )
                             ;;lp-churn REMAINDER taken here, after validation -- see the twin

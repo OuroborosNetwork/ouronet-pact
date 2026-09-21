@@ -1375,7 +1375,7 @@
                             (do
                                 (ref-ATS::XE_UpdateRUR ats (at idx rt-lst) 1 true (at idx rt-amounts))
                                 (ref-U|LST::UC_AppL acc
-                                    (ref-TFT::C_Transfer (at idx rt-lst) kickstarter ATS|SC_NAME (at idx rt-amounts) true)
+                                    (ref-TFT::C_Transfer patron kickstarter ATS|SC_NAME (at idx rt-lst) (at idx rt-amounts) true)
                                 )
                             )
                         )
@@ -1390,7 +1390,7 @@
                     (ref-DPTF::C_Mint patron ATS|SC_NAME rbt-id rbt-request-amount false)
                 )
                 (ico3:object{IgnisCollectorV3.OutputCumulator}
-                    (ref-TFT::C_Transfer rbt-id ATS|SC_NAME kickstarter rbt-request-amount true)
+                    (ref-TFT::C_Transfer patron ATS|SC_NAME kickstarter rbt-id rbt-request-amount true)
                 )
                 (index:decimal (ref-ATS::URC_Index ats))
             )
@@ -1613,10 +1613,10 @@
                     )
                 )
                 (ico2:object{IgnisCollectorV3.OutputCumulator}
-                    (ref-TFT::C_Transfer reward-token ATS|SC_NAME remover remove-sum true)
+                    (ref-TFT::C_Transfer remover ATS|SC_NAME remover reward-token remove-sum true)
                 )
                 (ico3:object{IgnisCollectorV3.OutputCumulator}
-                    (ref-TFT::C_Transfer primal-rt remover ATS|SC_NAME remove-sum true)
+                    (ref-TFT::C_Transfer remover remover ATS|SC_NAME primal-rt remove-sum true)
                 )
             )
             ;;1]The RT to be removed, is transfered to the remover, from the ATS|SC_NAME
@@ -1712,9 +1712,10 @@
                 )
                 ;;2]Withdraw Royalties to Target - only the reward-tokens with a nonzero balance
                 (ref-TFT::C_MultiTransfer
-                    (map (lambda (index:integer) (at index reward-tokens)) nonzero-idx)
+                    target
                     ATS|SC_NAME
                     target
+                    (map (lambda (index:integer) (at index reward-tokens)) nonzero-idx)
                     (map (lambda (index:integer) (at index royalties)) nonzero-idx)
                     true
                 )
@@ -1741,7 +1742,7 @@
             )
             (with-capability (ATSU|C>FUEL ats reward-token)
                 (ref-ATS::XE_UpdateRUR ats reward-token 1 true amount)
-                (ref-TFT::C_Transfer reward-token fueler ATS|SC_NAME amount true)
+                (ref-TFT::C_Transfer fueler fueler ATS|SC_NAME reward-token amount true)
             )
         )
     )
@@ -1769,13 +1770,13 @@
                     (c-rbt-amount:decimal (at "rbt-amount" coil-data))
                     ;;
                     (ico1:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-TFT::C_Transfer rt coiler ATS|SC_NAME amount true)
+                        (ref-TFT::C_Transfer patron coiler ATS|SC_NAME rt amount true)
                     )
                     (ico2:object{IgnisCollectorV3.OutputCumulator}
                         (ref-DPTF::C_Mint patron ATS|SC_NAME c-rbt c-rbt-amount false)
                     )
                     (ico3:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-TFT::C_Transfer c-rbt ATS|SC_NAME coiler c-rbt-amount true)
+                        (ref-TFT::C_Transfer patron ATS|SC_NAME coiler c-rbt c-rbt-amount true)
                     )
                 )
                 (ref-ATS::XE_UpdateRUR ats rt 1 true input-amount)
@@ -1819,7 +1820,7 @@
                     (c-rbt2-amount:decimal (at "rbt-amount" coil2-data))
                     ;;
                     (ico1:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-TFT::C_Transfer rt curler ATS|SC_NAME amount true)
+                        (ref-TFT::C_Transfer patron curler ATS|SC_NAME rt amount true)
                     )
                     (ico2:object{IgnisCollectorV3.OutputCumulator}
                         (ref-DPTF::C_Mint patron ATS|SC_NAME c-rbt1 c-rbt1-amount false)
@@ -1828,7 +1829,7 @@
                         (ref-DPTF::C_Mint patron ATS|SC_NAME c-rbt2 c-rbt2-amount false)
                     )
                     (ico4:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-TFT::C_Transfer c-rbt2 ATS|SC_NAME curler c-rbt2-amount true)
+                        (ref-TFT::C_Transfer patron ATS|SC_NAME curler c-rbt2 c-rbt2-amount true)
                     )
                 )
                 (ref-ATS::XE_UpdateRUR ats1 rt 1 true input1-amount)
@@ -1893,7 +1894,7 @@
                                 (ref-IGNIS::UDC_ConstructOutputCumulator price ATS|SC_NAME trigger [])
                             )
                             (ico1:object{IgnisCollectorV3.OutputCumulator}
-                                (ref-TFT::C_Transfer c-rbt recoverer ATS|SC_NAME ra true)
+                                (ref-TFT::C_Transfer patron recoverer ATS|SC_NAME c-rbt ra true)
                             )
                             (ico2:object{IgnisCollectorV3.OutputCumulator}
                                 (ref-DPTF::C_Burn patron ATS|SC_NAME c-rbt ra)
@@ -1992,7 +1993,7 @@
                                     (if (!= (at idx cw) 0.0)
                                         (do
                                             (ref-ATS::XE_UpdateRUR ats (at idx rt-lst) 2 false (at idx cw))
-                                            (ref-TFT::C_Transfer (at idx rt-lst) ATS|SC_NAME culler (at idx cw) true)
+                                            (ref-TFT::C_Transfer culler ATS|SC_NAME culler (at idx rt-lst) (at idx cw) true)
                                         )
                                         EOC
                                     )
@@ -2050,7 +2051,7 @@
                             )
                         )
                         (ico2:object{IgnisCollectorV3.OutputCumulator}
-                            (ref-TFT::C_Transfer c-rbt recoverer ATS|SC_NAME ra true)
+                            (ref-TFT::C_Transfer patron recoverer ATS|SC_NAME c-rbt ra true)
                         )
                         (ico3:object{IgnisCollectorV3.OutputCumulator}
                             (ref-DPTF::C_Burn patron ATS|SC_NAME c-rbt ra)
@@ -2103,7 +2104,7 @@
                             (ref-DPTF::C_Mint patron ATS|SC_NAME c-rbt nonce-supply false)
                         )
                         (ico4:object{IgnisCollectorV3.OutputCumulator}
-                            (ref-TFT::C_Transfer c-rbt ATS|SC_NAME recoverer nonce-supply true)
+                            (ref-TFT::C_Transfer patron ATS|SC_NAME recoverer c-rbt nonce-supply true)
                         )
                     )
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3 ico4] [])
@@ -2172,7 +2173,7 @@
                             (ref-DPOF::C_Burn patron ATS|SC_NAME id nonce nonce-supply)
                         )
                         (ico3:object{IgnisCollectorV3.OutputCumulator}
-                            (ref-TFT::C_MultiTransfer rt-lst ATS|SC_NAME redeemer earned-rts true)
+                            (ref-TFT::C_MultiTransfer patron ATS|SC_NAME redeemer rt-lst earned-rts true)
                         )
                         (folded-obj:[object{IgnisCollectorV3.OutputCumulator}]
                             (if have-fee-rts
@@ -2246,11 +2247,11 @@
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators 
                     [
                         ;;1]Transfer c-rbt to ATS|SC_NAME
-                        (ref-TFT::C_Transfer c-rbt recoverer ATS|SC_NAME ra true)
+                        (ref-TFT::C_Transfer patron recoverer ATS|SC_NAME c-rbt ra true)
                         ;;2]Burn it
                         (ref-DPTF::C_Burn patron ATS|SC_NAME c-rbt ra)
                         ;;3]Release equivalnet RTs (minus fee)
-                        (ref-TFT::C_MultiTransfer reward-tokens ATS|SC_NAME recoverer release-amounts true)
+                        (ref-TFT::C_MultiTransfer patron ATS|SC_NAME recoverer reward-tokens release-amounts true)
                     ] 
                     []
                 )
@@ -2277,7 +2278,7 @@
                                     (if (> (at idx syphon-amounts) 0.0)
                                         (do
                                             (ref-ATS::XE_UpdateRUR ats (at idx rt-lst) 1 false (at idx syphon-amounts))
-                                            (ref-TFT::C_Transfer (at idx rt-lst) ATS|SC_NAME syphon-target (at idx syphon-amounts) true)
+                                            (ref-TFT::C_Transfer syphon-target ATS|SC_NAME syphon-target (at idx rt-lst) (at idx syphon-amounts) true)
                                         )
                                         EOC
                                     )

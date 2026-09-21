@@ -547,14 +547,7 @@
     (
         (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
     )
-    (ref-TS01-C1::DPTF|C_Transfer 
-        KST.ANHD
-        "OURO-98c486052a51"
-        KST.ANHD
-        KST.AOZT
-        50000.0
-        false
-    )
+    (ref-TS01-C1::DPTF|C_Transfer KST.ANHD KST.ANHD KST.AOZT "OURO-98c486052a51" 50000.0 false)
 )
     
 (print "")

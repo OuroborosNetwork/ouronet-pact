@@ -137,7 +137,7 @@
             (p0:decimal (ref-DPTF::UR_AccountSupply a patron))
             (e0:decimal (try 0.0 (ref-DPTF::UR_AccountSupply a emma)))
         )
-        (ref-TS01-C1::DPTF|C_Transfer patron a patron emma 100.0 false)
+        (ref-TS01-C1::DPTF|C_Transfer patron patron emma a 100.0 false)
         (map print
             [
                 (expect "<<DPTF-03>> C_Transfer debited the sender by exactly the amount"
@@ -441,7 +441,7 @@
         ;;("Incompatible Transfer Roles"). That is the op behaving correctly.
         (ref-TS01-C1::DPTF|C_ToggleTransferRole patron (DPTF.UR_Konto a) lumy a true)
         ;;one token, two receivers, in a single call
-        (ref-TS01-C1::DPTF|C_MultiBulkTransfer patron [a] patron [[emma lumy]] [[10.0 20.0]])
+        (ref-TS01-C1::DPTF|C_MultiBulkTransfer patron patron [[emma lumy]] [a] [[10.0 20.0]])
         (map print
             [
                 (expect "<<DPTF-08>> first receiver credited exactly its leg"
@@ -1254,7 +1254,11 @@
 ;;whole premise -- there is nothing to clear on an account in credit.
 ;;==== DPTF-G10 — clearing a dispo: the two preconditions, and the smart-account exclusion · 01 · env-sigs (caps) ==== 
 (print "--- [DPTF-G10 — clearing a dispo: the two preconditions, and the smart-account exclusion · 01 · env-sigs (caps)] ---")
-(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;BOTH principals sign, because after the patron/executor canon sweep every clear below is a
+;;SELF clear and each one must prove its own ownership. Before the sweep DPTF|C>CLEAR-DISPO
+;;enforced ownership of NOBODY and ANHD's single signature carried EMMA's clear too -- see
+;;DPTF-G10c, which is the assertion that would have caught it.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }, { "key": "PK_Emma", "caps": [] }])
 ;;==== DPTF-G10 — clearing a dispo: the two preconditions, and the smart-account exclusion · 02 · let / invocation ==== 
 (print "--- [DPTF-G10 — clearing a dispo: the two preconditions, and the smart-account exclusion · 02 · let / invocation] ---")
 (let
@@ -1290,10 +1294,17 @@
         ;;Why the exclusion exists: a smart account's debt is settled by its owning contract's own
         ;;logic (A_WipeTreasuryDebt for the treasury, pinned by DPTF-G6), not by the generic
         ;;standard-account dispo path -- so the generic path refuses rather than half-settling it.
+        ;;GUARD 2 NOW SITS BEHIND AN OWNERSHIP GATE, so the fixture has to satisfy the gate to
+        ;;reach the guard -- the CLAUDE.md rule "a fixture that satisfies the first guard exposes
+        ;;BOTH", rather than reordering the capability to expose one at a time. Ownership of a
+        ;;SMART account is enforce-one over {account-guard, sovereign-guard, governor}; pointing
+        ;;the treasury's GOVERNOR at ANHD's guard is the cheapest of the three to satisfy and is
+        ;;rolled back with everything else in this tx (DPTF-G10b is the leakage check).
         (env-module-admin DALOS)
         (update ref-DALOS::DALOS|AccountTable treasury
             { "ouroboros" :
-                (+ { "balance" : -500.0 } (ref-DALOS::UR_TrueFungible treasury true)) })
+                (+ { "balance" : -500.0 } (ref-DALOS::UR_TrueFungible treasury true))
+            , "governor" : (ref-DALOS::UR_AccountGuard KST.ANHD) })
         (map print
             [
                 (expect "<<DPTF-G10>> the treasury is SMART and now in debt -- past guard 1"
@@ -1303,6 +1314,10 @@
                 (expect-failure "<<DPTF-G10>> ...so guard 2 answers: a SMART account's dispo is not clearable here"
                     "Standard Dispo can only be cleared on Standard Ouronet Accounts"
                     (ref-TS01-C1::DPTF|C_ClearDispo KST.ANHD treasury))
+                ;;...and the message is the POINT, not the refusal. Reaching guard 2 at all proves
+                ;;the ownership gate above it passed; if the governor line were dropped from the
+                ;;fixture this same call would still fail, on "Keyset failure", and a test that
+                ;;only asserted "it failed" could not tell the two apart.
                 ;;...and the SAME debt on a STANDARD account CLEARS. Without this the assertion above
                 ;;would also pass if clear-dispo were broken for every account, and the pair is what
                 ;;shows guard 2 is about the account TYPE rather than about the debt. The clear mints
@@ -1323,6 +1338,11 @@
                 ;;for a clear to succeed, and the two guards above say nothing about the third condition.
                 (expect "<<DPTF-G10>> EMMA holds no ELITEAURYN, which is what a clear is paid in"
                     0.0 (ref-DPTF::UR_AccountSupply (ref-DALOS::UR_EliteAurynID) KST.EMMA))
+                ;;NOTE THE EXECUTOR. Pre-sweep this line read `DPTF|C_ClearDispo KST.ANHD KST.EMMA`
+                ;;-- ANHD, holding only ANHD's key, clearing EMMA's dispo -- and it got as far as
+                ;;EMMA's EliteAuryn balance. It is EMMA's own clear now, and ANHD remains the
+                ;;PATRON, which is the separation the canon is for: paying for an operation and
+                ;;being its subject are different things.
                 (expect-failure "<<DPTF-G10>> ...so her debt cannot be cleared, on cost rather than on type"
                     "Cannot Debit DPTF"
                     (let ((ignore0 (update ref-DALOS::DALOS|AccountTable KST.EMMA
@@ -1361,6 +1381,96 @@
 
 ;;|| NEXT >
 ;;
+(begin-tx "DPTF-G10c — a foreign dispo clear needs the SUBJECT's signature, not just the executor's")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;THE SECURITY FIX OF THE PATRON/EXECUTOR CANON SWEEP, pinned in both directions.
+;;
+;;Clearing a dispo is not a favour. It force-converts the subject's Elite-Auryn at 2.5x the debt
+;;(C_ClearDispo's `total-ea`) and burns it. Before the sweep, DPTF|C>CLEAR-DISPO enforced ownership
+;;of NEITHER party -- it checked only that the target was standard and in debt -- so ANY caller
+;;could liquidate ANY qualifying account's Elite-Auryn. DPTF-G10 above had in fact been driving
+;;exactly that call since it was written (`DPTF|C_ClearDispo KST.ANHD KST.EMMA`, one signature,
+;;two accounts) and reported a PASS, because the only thing that refused was EMMA's empty balance.
+;;A balance is not a gate: fund the victim and the attack works.
+;;
+;;The core now takes patron/executor/executee and Talos exposes two doors:
+;;    DPTF|C_ClearDispo        (patron executor)           self  -- one ownership
+;;    DPTF|C_ClearDispoForeign (patron executor executee)   foreign -- BOTH ownerships
+;;The foreign door grants no authority the self door does not (anyone able to sign for the
+;;executee could simply BE the executor); what it adds is an audit trail naming who executed.
+;;
+;;Both directions are asserted, which is the part that matters. "ANHD is refused" alone would also
+;;pass if the operation were broken for everyone -- so the same call, with EMMA's signature added,
+;;is driven past the gate and onto the cost floor underneath it.
+;;==== DPTF-G10c · 01 · env-sigs (caps) ==== =====================================================
+(print "--- [DPTF-G10c · 01 · env-sigs (caps)] ---")
+;;ANHD alone. He is the patron AND the executor; EMMA is the subject and has signed nothing.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== DPTF-G10c · 02 · let / invocation ==== ====================================================
+(print "--- [DPTF-G10c · 02 · let / invocation] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+    )
+    (let
+        (
+            (ouro:string (ref-DALOS::UR_OuroborosID))
+        )
+        ;;Put EMMA in debt so the business guards are SATISFIED -- the refusal below must be the
+        ;;ownership gate and nothing else. Same fabricate-and-roll-back discipline as DPTF-G10.
+        (env-module-admin DALOS)
+        (update ref-DALOS::DALOS|AccountTable KST.EMMA
+            { "ouroboros" :
+                (+ { "balance" : -500.0 } (ref-DALOS::UR_TrueFungible KST.EMMA true)) })
+        (map print
+            [
+                (expect "<<DPTF-G10c>> EMMA is STANDARD and in debt -- both business guards pass"
+                    [false -500.0]
+                    [(ref-DALOS::UR_AccountType KST.EMMA)
+                     (ref-DPTF::UR_AccountSupply ouro KST.EMMA)])
+                ;;THE ATTACK. Nothing about EMMA refuses this except her signature.
+                (expect-failure "<<DPTF-G10c>> ANHD cannot clear EMMA's dispo: her ownership is enforced"
+                    "Keyset failure"
+                    (ref-TS01-C1::DPTF|C_ClearDispoForeign KST.ANHD KST.ANHD KST.EMMA))
+                ;;...and the SELF door is no way around it either: the executor is the subject there,
+                ;;so an unsigned subject is refused by the very same gate.
+                (expect-failure "<<DPTF-G10c>> ...and the self door refuses him too, for the same reason"
+                    "Keyset failure"
+                    (ref-TS01-C1::DPTF|C_ClearDispo KST.ANHD KST.EMMA))
+            ]
+        )
+    )
+    ""
+)
+;;NOW ADD EMMA'S SIGNATURE and nothing else. If the refusals above were caused by anything other
+;;than the missing signature, this call refuses identically and the pair proves nothing.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }, { "key": "PK_Emma", "caps": [] }])
+;;==== DPTF-G10c · 03 · the same call, with the subject's signature ==== ==========================
+(print "--- [DPTF-G10c · 03 · the same call, with the subject's signature] ---")
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+    )
+    (map print
+        [
+            ;;It gets PAST ownership and dies on the EliteAuryn cost floor instead -- a different
+            ;;message from a deeper layer, which is what shows the gate was the only thing in the way.
+            (expect-failure "<<DPTF-G10c>> ...with EMMA signing, the gate opens and the COST refuses instead"
+                "Cannot Debit DPTF"
+                (ref-TS01-C1::DPTF|C_ClearDispoForeign KST.ANHD KST.ANHD KST.EMMA))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+;;this tx fabricated debt on EMMA
+(rollback-tx)
+
+;;|| NEXT >
+;;
 (begin-tx "DPTF-G11 — the multi-transfer list parity check")
 (env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
 (namespace "ouronet-ns")
@@ -1389,15 +1499,15 @@
         [
             (expect-failure "<<DPTF-G11>> two tokens against one amount is refused"
                 "Invalid Multi Transfer Lists"
-                (ref-TS01-C1::DPTF|C_MultiTransfer KST.ANHD [a b] KST.ANHD KST.EMMA [1.0] false))
+                (ref-TS01-C1::DPTF|C_MultiTransfer KST.ANHD KST.ANHD KST.EMMA [a b] [1.0] false))
             (expect-failure "<<DPTF-G11>> ...and so is one token against two amounts"
                 "Invalid Multi Transfer Lists"
-                (ref-TS01-C1::DPTF|C_MultiTransfer KST.ANHD [a] KST.ANHD KST.EMMA [1.0 2.0] false))
+                (ref-TS01-C1::DPTF|C_MultiTransfer KST.ANHD KST.ANHD KST.EMMA [a] [1.0 2.0] false))
             ;;...and a DUPLICATE id is caught earlier, by the uniqueness check, even though the lists
             ;;are the same length. This is what shows the parity guard is not doing the uniqueness work.
             (expect-failure "<<DPTF-G11>> ...while a duplicated token is caught by uniqueness first"
                 "Unique"
-                (ref-TS01-C1::DPTF|C_MultiTransfer KST.ANHD [a a] KST.ANHD KST.EMMA [1.0 2.0] false))
+                (ref-TS01-C1::DPTF|C_MultiTransfer KST.ANHD KST.ANHD KST.EMMA [a a] [1.0 2.0] false))
         ]
     )
     ""
@@ -1773,7 +1883,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|Transfer patron a patron lumy 10.0))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C1::DPTF|C_Transfer patron a patron lumy 10.0 false))
+            (m (ref-TS01-C1::DPTF|C_Transfer patron patron lumy a 10.0 false))
         )
         (map print
             [
@@ -2144,7 +2254,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|BulkTransfer patron a patron [lumy] [10.0]))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C1::DPTF|C_BulkTransfer patron a patron [lumy] [10.0]))
+            (m (ref-TS01-C1::DPTF|C_BulkTransfer patron patron [lumy] a [10.0]))
         )
         (map print
             [
@@ -2393,7 +2503,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|MultiTransfer patron [a] patron lumy [10.0]))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C1::DPTF|C_MultiTransfer patron [a] patron lumy [10.0] false))
+            (m (ref-TS01-C1::DPTF|C_MultiTransfer patron patron lumy [a] [10.0] false))
         )
         (map print
             [
@@ -2433,7 +2543,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|MultiBulkTransfer patron [a] patron [[lumy]] [[10.0]]))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C1::DPTF|C_MultiBulkTransfer patron [a] patron [[lumy]] [[10.0]]))
+            (m (ref-TS01-C1::DPTF|C_MultiBulkTransfer patron patron [[lumy]] [a] [[10.0]]))
         )
         (map print
             [
@@ -2965,7 +3075,7 @@
                     true (> (ref-DPTF::UR_AccountSupply elite-auryn KST.ANHD) 0.0))
             ]
         )
-        (ref-TS01-C1::DPTF|C_MultiTransfer KST.ANHD [ouro] KST.ANHD KST.EMMA [overdraft] false)
+        (ref-TS01-C1::DPTF|C_MultiTransfer KST.ANHD KST.ANHD KST.EMMA [ouro] [overdraft] false)
         (map print
             [
                 (expect "<<DPTF-G14>> CONTROL: the overdraft ALONE is permitted, backed by the Elite-Auryn"
@@ -3005,9 +3115,7 @@
             [
                 (expect-failure "<<DPTF-G14>> M5: an EA-draining leg makes the NEXT leg's overdraft fail"
                     "Cannot Debit OURO from"
-                    (ref-TS01-C1::DPTF|C_MultiTransfer KST.ANHD
-                        [elite-auryn ouro] KST.ANHD KST.EMMA
-                        [(ref-DPTF::UR_AccountSupply elite-auryn KST.ANHD) overdraft] false))
+                    (ref-TS01-C1::DPTF|C_MultiTransfer KST.ANHD KST.ANHD KST.EMMA [elite-auryn ouro] [(ref-DPTF::UR_AccountSupply elite-auryn KST.ANHD) overdraft] false))
             ]
         )
     )

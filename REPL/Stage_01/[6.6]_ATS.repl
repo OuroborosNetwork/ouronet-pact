@@ -2122,9 +2122,9 @@
         (INFO-ONE.INFO_DPTF|Transfer patron auryn patron emma 22.0 )
         (ref-TS01-C1::DPTF|C_Transfer
             "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî"
-            "DWK-98c486052a51"
             "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî"
             "Ѻ.œâσzüştŒhłσćØTöõúoвþçЧлρËШđюλ2ÙPeжŘťȚŤtθËûrólþŘß₿øuŁdáNÎČȘřΦĘbχλΩĄ¢ц2ŹθõĐLcÑÁäăå₿ξЭжулxòΘηĂœŞÝUËcω∇ß$ωoñД7θÁяЯéEU¢CЮxÃэJĘčÎΠ£αöŮЖбlćшbăÙЦÎAдŃЭб$ĞцFδŃËúHãjÁÝàĘSt"
+            "DWK-98c486052a51"
             25.0
             false
         )
@@ -2255,7 +2255,7 @@
     )
     [
         [
-            (ref-TS01-C1::DPTF|C_Transfer patron sstoa patron emma 150.0 false)
+            (ref-TS01-C1::DPTF|C_Transfer patron patron emma sstoa 150.0 false)
             (format "User AH has SSTOA {}" [(DPTF.UR_AccountSupply sstoa patron)])
             (format "User EMMA has SSTOA {}" [(DPTF.UR_AccountSupply sstoa emma)])
             (format "User LUMY has SSTOA {}" [(DPTF.UR_AccountSupply sstoa lumy)])
@@ -2468,7 +2468,7 @@
     )
     [
         [
-            (ref-TS01-C1::DPTF|C_Transfer patron sstoa patron emma 150.0 false)
+            (ref-TS01-C1::DPTF|C_Transfer patron patron emma sstoa 150.0 false)
             (format "User AH has SSTOA {}" [(DPTF.UR_AccountSupply sstoa patron)])
             (format "User EMMA has SSTOA {}" [(DPTF.UR_AccountSupply sstoa emma)])
             (format "User LUMY has SSTOA {}" [(DPTF.UR_AccountSupply sstoa lumy)])
@@ -2603,7 +2603,7 @@
     )
     [
         [
-            (ref-TS01-C1::DPTF|C_Transfer patron sstoa patron emma 150.0 false)
+            (ref-TS01-C1::DPTF|C_Transfer patron patron emma sstoa 150.0 false)
             (format "User AH has SSTOA {}" [(DPTF.UR_AccountSupply sstoa patron)])
             (format "User EMMA has SSTOA {}" [(DPTF.UR_AccountSupply sstoa emma)])
             (format "User LUMY has SSTOA {}" [(DPTF.UR_AccountSupply sstoa lumy)])

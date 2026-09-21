@@ -713,10 +713,10 @@
             (with-capability (IGNIS|XB>COMPRESS client)
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
                     [
-                        (ref-TFT::C_Transfer ignis-id client ORBR|SC_NAME ignis-amount true)
+                        (ref-TFT::C_Transfer patron client ORBR|SC_NAME ignis-id ignis-amount true)
                         (ref-DPTF::C_Burn patron ORBR|SC_NAME ignis-id ignis-amount)
                         (ref-DPTF::C_Mint patron ORBR|SC_NAME ouro-id ouro-remainder-amount false)
-                        (ref-TFT::C_Transfer ouro-id ORBR|SC_NAME client ouro-remainder-amount true)
+                        (ref-TFT::C_Transfer patron ORBR|SC_NAME client ouro-id ouro-remainder-amount true)
                     ]
                     [ouro-remainder-amount]
                 )
@@ -746,13 +746,13 @@
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
                     [
                         ;;01]Client sends GAS(Ignis) <ignis-amount> to the Ouroboros Smart Ouronet Account
-                        (ref-TFT::C_Transfer ignis-id client ORBR|SC_NAME ignis-amount true)
+                        (ref-TFT::C_Transfer client client ORBR|SC_NAME ignis-id ignis-amount true)
                         ;;02]Ouroboros burns GAS(Ignis) <ignis-amount>
                         (ref-DPTF::C_Burn client ORBR|SC_NAME ignis-id ignis-amount)
                         ;;03]Ouroboros mints OURO <ouro-remainder-amount>
                         (ref-DPTF::C_Mint client ORBR|SC_NAME ouro-id ouro-remainder-amount false)
                         ;;04]Ouroboros transfers OURO <ouro-remainder-amount> to <client>
-                        (ref-TFT::C_Transfer ouro-id ORBR|SC_NAME client ouro-remainder-amount true)
+                        (ref-TFT::C_Transfer client ORBR|SC_NAME client ouro-id ouro-remainder-amount true)
                     ]
                     [ouro-remainder-amount]
                 )
@@ -822,13 +822,13 @@
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
                     [
                         ;;01]Client sends OURO <ouro-amount> to the Ouroboros Smart Ouronet Account
-                        (ref-TFT::C_Transfer ouro-id client ORBR|SC_NAME ouro-amount true)
+                        (ref-TFT::C_Transfer client client ORBR|SC_NAME ouro-id ouro-amount true)
                         ;;02]Ouroboros burns OURO <ouro-amount>
                         (ref-DPTF::C_Burn client ORBR|SC_NAME ouro-id ouro-amount)
                         ;;03]Ouroboros mints GAS(Ignis) <ignis-amount>
                         (ref-DPTF::C_Mint client ORBR|SC_NAME ignis-id ignis-amount false)
                         ;;04]Ouroboros transfers GAS(Ignis) <ignis-amount> to <target>
-                        (ref-TFT::C_Transfer ignis-id ORBR|SC_NAME target ignis-amount true)
+                        (ref-TFT::C_Transfer client ORBR|SC_NAME target ignis-id ignis-amount true)
                     ]
                     [ignis-amount]
                 )
@@ -870,7 +870,7 @@
                         ;;04]Ouroboros mints GAS(Ignis) <ignis-amount>
                         (ref-DPTF::C_Mint client ORBR|SC_NAME ignis-id ignis-amount false)
                         ;;05]Ouroboros transfers GAS(Ignis) <ignis-amount> to <target>
-                        (ref-TFT::C_Transfer ignis-id ORBR|SC_NAME target ignis-amount true)
+                        (ref-TFT::C_Transfer client ORBR|SC_NAME target ignis-id ignis-amount true)
                     ]
                     [ignis-amount]
                 )
@@ -896,7 +896,7 @@
                         ;;00]Compose base withdraw IGNIS Price
                         (ref-IGNIS::UDC_ConstructOutputCumulator price ORBR|SC_NAME trigger [])
                         ;;01]Patron withdraws Fees from Ouroboros Smart DALOS Account to a target Normal Ouronet Account
-                        (ref-TFT::C_Transfer id ORBR|SC_NAME target withdraw-amount true)
+                        (ref-TFT::C_Transfer target ORBR|SC_NAME target id withdraw-amount true)
                     ]
                     []
                 )

@@ -101,7 +101,7 @@
         (ea-bal:decimal (ref-DPTF::UR_AccountSupply ea-id anhd))
     )
     ;; drop ANHD's EliteAuryn to ~1% of holdings → live deb falls a tier or more
-    (ref-TS01-C1::DPTF|C_Transfer anhd ea-id anhd emma (floor (* ea-bal 0.99) 4) false)
+    (ref-TS01-C1::DPTF|C_Transfer anhd anhd emma ea-id (floor (* ea-bal 0.99) 4) false)
     (let
         (
             (deb-post:decimal (ref-DALOS::UR_Elite-DEB anhd))
@@ -610,7 +610,7 @@
         (ea-bal:decimal (ref-DPTF::UR_AccountSupply ea-id anhd))
         (deb-pre:decimal (ref-DALOS::UR_Elite-DEB anhd))
     )
-    (ref-TS01-C1::DPTF|C_Transfer anhd ea-id anhd emma (floor (* ea-bal 0.99) 4) false)
+    (ref-TS01-C1::DPTF|C_Transfer anhd anhd emma ea-id (floor (* ea-bal 0.99) 4) false)
     (map print
         [
             (format "<(DEB08 elite-deb {} -> {})> " [deb-pre (ref-DALOS::UR_Elite-DEB anhd)])
@@ -957,7 +957,7 @@
     ;; 1] re-stale ANHD's farm member: pull EliteAuryn back from EMMA → Elite-DEB moves → stale
     (let ((emma-ea:decimal (ref-DPTF::UR_AccountSupply ea-id emma)))
         (if (> emma-ea 0.0)
-            (ref-TS01-C1::DPTF|C_Transfer emma ea-id emma anhd (floor (* emma-ea 0.99) 4) false)
+            (ref-TS01-C1::DPTF|C_Transfer emma emma anhd ea-id (floor (* emma-ea 0.99) 4) false)
             true))
     (let
         (

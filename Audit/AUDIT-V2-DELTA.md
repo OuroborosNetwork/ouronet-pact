@@ -104,6 +104,86 @@ DALOS's admin band.
 - Token ids (`reward-token`, `hot-rbt`) sit where a receiver would but are **entities, not
   accounts** — not executees. A reviewer reading positionally would get this wrong.
 
+### 09_TFT.pact
+5 entrypoints — the transfer engine, and the widest cascade so far: **193 core call sites plus
+207 Talos wrapper sites**, because `TFT::C_Transfer` is both a client entrypoint and the movement
+primitive every other module composes with.
+
+**THE ONE SECURITY FINDING OF THE SWEEP SO FAR, and it is not a refactor artefact — it is a
+pre-existing hole the canon exposed.**
+
+`DPTF|C>CLEAR-DISPO` enforced ownership of **neither** party. It checked only that the target was
+a STANDARD account holding a NEGATIVE OURO balance, then composed `P|DALOS|REMOTE-GOV`,
+`P|ATS|REMOTE-GOV` and `P|SECURE-CALLER` — all module-policy grants, none of them about the
+caller's relationship to the account. So **any caller could clear any qualifying account's
+dispo**, and clearing a dispo is not a favour: it force-converts the subject's Elite-Auryn at
+**2.5×** the debt (`C_ClearDispo`'s `total-ea`) and burns it. Bob could liquidate Emma.
+
+Three things the audit should record about *how it survived*, because each is a reusable lesson:
+
+1. **A test was driving the attack and reporting a PASS.** `REPL/modules/DPTF.repl` `<<DPTF-G10>>`
+   called `DPTF|C_ClearDispo KST.ANHD KST.EMMA` — one signature, two accounts — and asserted the
+   refusal message `"Cannot Debit DPTF"`. That refusal is EMMA's empty Elite-Auryn balance. **A
+   balance is not a gate**: fund the victim and the attack works. The assertion was true and its
+   subject was a hole.
+2. **The v1 attack register never reached it**, because the operation does not *look* like an
+   asset move — its parameters are `(patron account)` and its name says "clear", not "spend".
+3. **Nothing static could have found it.** `_authsurface.py` reports what each entrypoint
+   enforces; it cannot know that this one *should* have enforced something. Only assigning the
+   `executor` role forced the question "whose ownership proves this?" — which is the canon's
+   actual value, distinct from its readability.
+
+**Resolution (owner ruling, 2026-09-21).** `account` is BOTH the executor and the executee: the
+subject requests the clear for themselves. The core becomes `(patron executor executee)` and
+enforces **both** ownerships (once, when they are equal). Talos exposes two doors:
+
+| | | |
+|---|---|---|
+| `DPTF\|C_ClearDispo` | `(patron executor)` | self — arity unchanged, no client breakage |
+| `DPTF\|C_ClearDispoForeign` | `(patron executor executee)` | **NEW** — delegated, both signatures |
+
+The foreign door grants no new authority (anyone able to sign for the executee could have BEEN the
+executor); it adds an audit trail naming who executed. Canonised as the **self/foreign pair** in
+`StoicSyntax-Prefixes.md` §2.2.
+
+**v2 must re-verify, and these are new assertions, not re-pointed ones:**
+- `<<DPTF-G10c>>` — the fix, pinned in **both directions**: ANHD is refused on `"Keyset failure"`
+  with EMMA's business guards deliberately SATISFIED (she is standard and in debt, so only the
+  signature can be refusing); then the identical call with EMMA's signature added reaches the cost
+  floor underneath. One direction alone would also pass if the op were broken for everybody.
+- `<<DPTF-G10>>` guard 2 (the smart-account exclusion) now sits **behind** the ownership gate, so
+  the fixture must satisfy ownership to reach it — done by pointing the treasury's `governor` at
+  ANHD's guard, per CLAUDE.md's *"a fixture that satisfies the first guard exposes BOTH"*, rather
+  than reordering the capability. **The audit should note the technique**; it is the alternative
+  to the reordering the 2026-09-17 engineering position warns against.
+
+Also in this module:
+- **Ownership now precedes validation** in `DPTF|C>CLEAR-DISPO`, per the 2026-09-14 ruling. The
+  old order was the `GOV|WIPE_ALL-TREASURY-DEBT` shape exactly: an account in credit is the normal
+  state, so `"requires Negative OURO"` would have turned away owner and stranger alike and the new
+  gate would never have been reached.
+- `C_Transfer`'s executee is the canon's **conditional** case and now says so in its `@doc`:
+  `DPTF|C>X-TRANSFER` enforces the executor unconditionally and the executee **only when `method`
+  is true AND the executee is a SMART account**. v2 needs an attack that credits a smart account
+  with `method = false` to show the branch is the gate.
+- `C_MultiBulkTransfer`'s executee **cannot** be enforced and the `@doc` states why: bulk receivers
+  may never be smart accounts, which is why that entrypoint has no `method` parameter at all.
+- `C_Transmute`'s executor is enforced **indirectly** —
+  `XI_Transmute → DPTF::XB_DebitTrueFungible → DPTF|C>DEBIT → CAP_EnforceAccountOwnership`. Named
+  in the `@doc` as the canon requires. The audit should treat the indirect route as acceptable
+  here (unlike `DALOS::A_UpdatePublicKey`) because the debit is the operation's own first act.
+- **Dead bindings removed** from `DPTF|C>CLEAR-DISPO` (`ouro-id`, `treasury` — bound, never read),
+  same class as the earlier `#58L`/`#61L` removals.
+
+**PROVISIONAL PATRON SLOTS — 14 call sites the audit must not read as final.** Thirteen enclosing
+functions in five not-yet-swept modules had no `patron` to thread, so the patron slot carries the
+account that initiates the operation instead (`client` in OUROBOROS, `culler`/`fueler`/`remover`
+in ATSU, `account` in SWPLC, `owner-id` in AQP, `AQP|SC_NAME` in VCT). This follows a convention
+the codebase already used — `ORBR::C_Compress` passes `client` into `DPTF::C_Burn`'s patron slot —
+and is inert today because `TFT::C_Transfer` does not read its patron. **Each is re-pointed at that
+module's own turn.** The registry is in the migration script and listed in the handoff; an auditor
+finding `client` where `patron` belongs is looking at a known intermediate state, not a defect.
+
 ---
 
 ## Changed as a DOWNSTREAM CONSEQUENCE — not yet swept in their own right
@@ -120,7 +200,7 @@ They are listed here so no auditor mistakes silence for "unchanged", and so the 
 signatures are not read as final. Each will get its own block when its turn is taken.
 
 ```
-STAGE_01 core      07_ELITE  09_TFT  10_ATSU  11_VST  12_LIQUID  13_OUROBOROS  14_SWPT
+STAGE_01 core      07_ELITE  10_ATSU  11_VST  12_LIQUID  13_OUROBOROS  14_SWPT
                    15_SWP  16_SWPI  17_SWPL  18_SWPLC  19_SWPU  20_MTX-SWP  21_CODEX  22_PYTHIA
 STAGE_01 Talos     01_TS01-A  02_TS01-C1  03_TS01-C2  04_TS01-C3  05_TS01-P  06_TS01-C4
 STAGE_02 DPDC      01_DPDC-UDC  02_DPDC  03_DPDC-C  04_DPDC-I  05_DPDC-R  06_DPDC-MNG

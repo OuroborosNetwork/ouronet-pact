@@ -1432,7 +1432,7 @@
             (emma-bal:decimal (ref-DPTF::UR_AccountSupply ouro-id owner-b))
         )
         (if (< emma-bal stake-amount)
-            (ref-TS01-C1::DPTF|C_Transfer patron ouro-id owner-a owner-b stake-amount true)
+            (ref-TS01-C1::DPTF|C_Transfer patron owner-a owner-b ouro-id stake-amount true)
             true
         )
     )
@@ -1545,7 +1545,7 @@
             (emma-bal:decimal (ref-DPTF::UR_AccountSupply ouro-id owner-b))
         )
         (if (< emma-bal stake-amount)
-            (ref-TS01-C1::DPTF|C_Transfer patron ouro-id owner-a owner-b stake-amount true)
+            (ref-TS01-C1::DPTF|C_Transfer patron owner-a owner-b ouro-id stake-amount true)
             true
         )
     )

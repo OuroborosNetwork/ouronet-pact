@@ -84,7 +84,7 @@
         (patron:string KST.ANHD)
         (p-k:string "PKOSON-98c486052a51")
     )
-    (ref-TS01-C1::DPTF|C_Transfer aoz p-k aoz patron 60.0 false)
+    (ref-TS01-C1::DPTF|C_Transfer aoz aoz patron p-k 60.0 false)
 )
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>

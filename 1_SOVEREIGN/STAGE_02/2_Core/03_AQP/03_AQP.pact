@@ -2950,8 +2950,8 @@
                     (vault:string AQP|SC_NAME)
                 )
                 (if direction
-                    (ref-TFT::C_Transfer dptf-id owner-id vault amount true)
-                    (ref-TFT::C_Transfer dptf-id vault owner-id amount true)
+                    (ref-TFT::C_Transfer owner-id owner-id vault dptf-id amount true)
+                    (ref-TFT::C_Transfer owner-id vault owner-id dptf-id amount true)
                 )
             )
         )

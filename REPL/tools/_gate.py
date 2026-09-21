@@ -465,6 +465,19 @@ def main():
         print(_ca.stdout + _ca.stderr)
         sys.exit("GATE FAILED: a call site passes the wrong number of arguments -- see _callarity.py.")
 
+    # PATRON SLOTS -- fatal only on UNREGISTERED. `_callarity.py` above proves a call passes the
+    # right NUMBER of arguments; this proves the FIRST one is the right KIND. During the sweep a
+    # caller in a not-yet-swept module has no `patron` to thread, so the slot carries the
+    # initiating account instead -- correct for now, wrong after that module's turn, and
+    # completely invisible: arity is right, the value is unused by every swept callee, and no
+    # assertion can reach it. The registry in _patronslots.py names all 25; the gate's job is
+    # only to refuse a TWENTY-SIXTH that nobody wrote down.
+    _ps = subprocess.run([sys.executable, "tools/_patronslots.py"],
+                         capture_output=True, text=True)
+    if _ps.returncode != 0:
+        print(_ps.stdout + _ps.stderr)
+        sys.exit("GATE FAILED: an unexplained patron slot -- see _patronslots.py.")
+
     # MODREF MEMBERS -- fatal only on LIVE class-B: a `(ref-X::member ...)` call where `member` is
     # defined NOWHERE in the module implementing X. Pact 5 resolves modref members DYNAMICALLY, so
     # such a call loads and runs, and only raises if that branch is ever taken -- invisible to every

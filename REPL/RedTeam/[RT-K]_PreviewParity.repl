@@ -249,7 +249,7 @@
             (expect-failure
                 "<<RT-K-002e>> ...while the EXEC refuses it outright -- the divergence, recorded not judged"
                 "Cannot Debit DPTF"
-                (r::DPTF|C_Transfer KST.ANHD real KST.ANHD KST.EMMA big true))
+                (r::DPTF|C_Transfer KST.ANHD KST.ANHD KST.EMMA real big true))
         ])
     ""
 )

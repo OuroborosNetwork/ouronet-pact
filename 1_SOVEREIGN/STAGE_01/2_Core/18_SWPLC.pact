@@ -1121,7 +1121,7 @@
             (if direct-or-indirect
                 (with-capability (SWPLC|C>DIRECT-FUEL account swpair input-ids-for-transfer input-amounts-for-transfer)
                     (ref-SWP::XE_UpdateSupplies swpair new-balances)
-                    (ref-TFT::C_MultiTransfer input-ids-for-transfer account SWP|SC_NAME input-amounts-for-transfer true)
+                    (ref-TFT::C_MultiTransfer account account SWP|SC_NAME input-ids-for-transfer input-amounts-for-transfer true)
                 )
                 (with-capability (SWPLC|C>INDIRECT-FUEL account swpair input-ids-for-transfer input-amounts-for-transfer)
                     (ref-SWP::XE_UpdateSupplies swpair new-balances)
@@ -1164,7 +1164,7 @@
                     (let
                         (
                             (ico2:object{IgnisCollectorV3.OutputCumulator}
-                                (ref-TFT::C_Transfer lp-id SWP|SC_NAME account native-lp-transfer-amount true)
+                                (ref-TFT::C_Transfer patron SWP|SC_NAME account lp-id native-lp-transfer-amount true)
                             )
                         )
                         ;;Autonomous Swap Mangement
@@ -1219,7 +1219,7 @@
                     (let
                         (
                             (ico2:object{IgnisCollectorV3.OutputCumulator}
-                                (ref-TFT::C_Transfer lp-id SWP|SC_NAME account native-lp-transfer-amount true)
+                                (ref-TFT::C_Transfer patron SWP|SC_NAME account lp-id native-lp-transfer-amount true)
                             )
                             (ico3:object{IgnisCollectorV3.OutputCumulator}
                                 (ref-VST::C_Freeze patron SWP|SC_NAME account lp-id frozen-lp-transfer-amount)
@@ -1278,7 +1278,7 @@
                         (
                             (ico2:object{IgnisCollectorV3.OutputCumulator}
                                 (if (!= native-lp-transfer-amount 0.0)
-                                    (ref-TFT::C_Transfer lp-id SWP|SC_NAME account native-lp-transfer-amount true)
+                                    (ref-TFT::C_Transfer patron SWP|SC_NAME account lp-id native-lp-transfer-amount true)
                                     EOC
                                 )
                             )
@@ -1333,7 +1333,7 @@
                         ;;
                         ;;Move F|DPTF to vst-sc and burn it
                         (ico1:object{IgnisCollectorV3.OutputCumulator}
-                            (ref-TFT::C_Transfer frozen-dptf account vst-sc input-amount true)
+                            (ref-TFT::C_Transfer patron account vst-sc frozen-dptf input-amount true)
                         )
                         (ico2:object{IgnisCollectorV3.OutputCumulator}
                             (ref-DPTF::C_Burn patron vst-sc frozen-dptf input-amount)
@@ -1423,7 +1423,7 @@
                         ;;
                         ;;MOVE IGNIS to vst-sc, paying for the ignis-tax
                         (ico3:object{IgnisCollectorV3.OutputCumulator}
-                            (ref-TFT::C_Transfer ignis-id account vst-sc (at "total-ignis-tax-needed" clad) true)
+                            (ref-TFT::C_Transfer patron account vst-sc ignis-id (at "total-ignis-tax-needed" clad) true)
                         )
                         ;;
                         (ico4:object{IgnisCollectorV3.OutputCumulator}
@@ -1490,13 +1490,13 @@
                     )
                     ;;
                     (ico1:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-TFT::C_Transfer lp-id account SWP|SC_NAME lp-amount true)
+                        (ref-TFT::C_Transfer patron account SWP|SC_NAME lp-id lp-amount true)
                     )
                     (ico2:object{IgnisCollectorV3.OutputCumulator}
                         (ref-DPTF::C_Burn patron SWP|SC_NAME lp-id lp-amount)
                     )
                     (ico3:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-TFT::C_MultiTransfer pool-token-ids SWP|SC_NAME account pt-output-amounts true)
+                        (ref-TFT::C_MultiTransfer patron SWP|SC_NAME account pool-token-ids pt-output-amounts true)
                     )
                 )
                 ;;Updates Pool Supplies

@@ -123,6 +123,15 @@ It caught real drift the hour it was added — two batches stale from a function
 "every source change must be carried into the deploy pipeline byte for byte" is now mechanical
 rather than remembered; `--write` to refresh.
 
+**Patron slots are gate-enforced, since 2026-09-21.** `REPL/tools/_patronslots.py` answers the
+question `_callarity.py` cannot: a call can pass the right NUMBER of arguments and still pass the
+wrong KIND in slot 0. During the executor sweep a caller in a not-yet-swept module has no `patron`
+to thread, so the slot carries the initiating account instead (`client`, `culler`, `AQP|SC_NAME`).
+That is correct today and wrong after that module's turn, and it is **invisible** — arity is right,
+the value is unused by every swept callee, and no assertion can reach it. The tool carries a
+registry of all 25 such sites (13 permanent — the patronless OUROBOROS family — and 12
+provisional, listed per module), and is fatal **only on an unregistered twenty-sixth**.
+
 **Tool paths are gate-enforced too.** `REPL/tools/_toolpaths.py --check` statically resolves every
 hard-coded path literal in every tool. If you move a tool, this is what tells you what you broke —
 the 2026-09-14 move killed eleven tools that died at *import*, so nothing that diffed their output
@@ -190,6 +199,15 @@ to spare, and the ordering constraint below is driven by **dependency order**, n
 `REPL/tools/_deploybundle.py` therefore caps emitted transactions at a **conservative 320,000
 bytes**, justified by evidence (`04_RPS.pact` is 304,738 bytes and deploys) rather than by a
 specification, and now checks the **emitted** file size rather than the planned module bytes.
+
+CORRECTED 2026-09-21 — checking the emitted size was not enough, because the check only PRINTED.
+The planner budgets on the size of the module **sources**; what ships is sources + this tool's
+header − whatever `create-table` forms upgrade mode strips, a net running from −3,380 to +4,857
+bytes across the 22 files measured. When the header grew (to list interfaces/modules/tables
+instead of file paths) two transactions went over the cap and the only thing that noticed was a
+line in a passing run. Now: the planner reserves `HEADER_RESERVE = 6_000`, and an emitted file
+over `maxbytes` is **fatal**. A proxy that is CHECKED against the real thing is fine; a proxy
+whose check is advisory is not a budget. The round emits **24** transactions.
 
 - Cross-module calls use **module references** with `::` (e.g. `(ref-M::some-fun ...)`), not `module.function`, so only the used interface members matter for coupling.
 - Interfaces (`V1`, `V2`, `V3`, …) carry nearly the full public API. Interface names always end in a version suffix; each revision advances the suffix by **exactly one**.

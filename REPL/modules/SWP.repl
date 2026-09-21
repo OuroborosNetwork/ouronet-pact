@@ -5399,7 +5399,7 @@
             (ouro:string (ref-DALOS::UR_OuroborosID))
             (ignis:string (ref-DALOS::UR_IgnisID))
         )
-        (ref-TS01-C1::DPTF|C_Transfer KST.BYTA ouro KST.BYTA KST.ANHD 21.0 false)
+        (ref-TS01-C1::DPTF|C_Transfer KST.BYTA KST.BYTA KST.ANHD ouro 21.0 false)
         (map print
             [
                 (format "<<SWPX-14a>> BYTA ouro={} ignis={}"

@@ -493,6 +493,50 @@ been given a different bespoke name almost every time: `kickstarter`, `curler`, 
 A function that cannot state where its executor's ownership is proven does not satisfy this canon,
 even if it happens to be safe.
 
+### ADMIN OPS HAVE AN EXECUTOR TOO — and it is the account, not the key (owner ruling, 2026-09-21)
+
+**An `A_` that merely toggles a switch still takes an `executor`, and that executor is the Ouronet
+account performing the execution** — enforced directly, *in addition to* whatever key or guard the
+operation already requires. The two checks are separate and both run:
+
+- the **governing key/guard** answers *may this be done at all?*
+- the **executor's ownership** answers *who did it?*
+
+Any account may be the executor, provided the transaction also satisfies the governing check. So
+this adds no authority — anyone who can pass the admin gate could pass it under any executor name
+— and that is the point: **it costs nothing and it buys an audit trail.** "The dispo was cleared"
+becomes "account X cleared it", on-chain, in the event.
+
+The alternative, an admin op with no executor, is indistinguishable in the ledger from any other
+admin op: the only identity recorded is a key that several people may hold and that says nothing
+about which of them acted.
+
+### Self / foreign entrypoint pairs (owner ruling, 2026-09-21)
+
+When the core takes `(patron executor executee)` but the overwhelmingly common case is
+`executor = executee`, Talos exposes **two named doors over the one core function**:
+
+```pact
+(defun MOD|C_DoThing        (patron:string executor:string))                      ;; self
+(defun MOD|C_DoThingForeign (patron:string executor:string executee:string))      ;; delegated
+```
+
+The self door passes the executor twice. The reason to split rather than make every caller write
+the same account twice is that **a two-argument call cannot be got wrong the way a three-argument
+call can** — and the self case is the one real users make.
+
+The foreign door **grants no authority the self door does not**: both ownerships are enforced, so
+anyone able to sign for the executee could simply have been the executor. What it adds is the
+audit trail, exactly as in the admin ruling above. Its use case is narrow and worth writing into
+the `@doc` when you build one — the owner's was *"friend is stranded, left me his ownership, and
+wants me to clear it for him, he can't have access to internet."*
+
+Applied first to `TFT::C_ClearDispo` → `DPTF|C_ClearDispo` / `DPTF|C_ClearDispoForeign`.
+
+**Do not reach for this pair by default.** It is right when the two roles are genuinely the same
+account almost always; it is wrong when they are usually different, where one three-role
+entrypoint is clearer than two.
+
 ## 3. Migration mapping (old → new)
 
 The heavy-read letter changed from `D` (which collided with `D`=Data in `UDC_`, and was not

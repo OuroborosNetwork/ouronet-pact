@@ -3468,8 +3468,8 @@
                             ;; homogeneous (default): bronze → token-0 raw, silver → token-1 (coil), gold → token-2 (curl)
                             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                                 [
-                                    (if (> amt-b 0.0) (ref-TFT::C_Transfer token-0 AQP|SC_NAME collector amt-b true) (UC_EmptyOc))
-                                    (if (> fund-sg 0.0) (ref-TFT::C_Transfer token-0 AQP|SC_NAME collector fund-sg true) (UC_EmptyOc))
+                                    (if (> amt-b 0.0) (ref-TFT::C_Transfer patron AQP|SC_NAME collector token-0 amt-b true) (UC_EmptyOc))
+                                    (if (> fund-sg 0.0) (ref-TFT::C_Transfer patron AQP|SC_NAME collector token-0 fund-sg true) (UC_EmptyOc))
                                     (if coil-s-ok (ref-ATSU::C_Coil patron collector ats-01 token-0 amt-s) (UC_EmptyOc))
                                     (if curl-g-ok (ref-ATSU::C_Curl patron collector ats-01 ats-12 token-0 amt-g) (UC_EmptyOc))
                                 ]
@@ -3477,7 +3477,7 @@
                             )
                         )
                     )
-                    (ref-TFT::C_Transfer reward-dptf-id AQP|SC_NAME collector payout true)
+                    (ref-TFT::C_Transfer patron AQP|SC_NAME collector reward-dptf-id payout true)
                 )
             )
         )
@@ -4450,7 +4450,7 @@
                     ;; a freshly-released lane — a live stream + an instant inject in the same tx compose correctly.
                     (XI_ReleaseStream fvt-id reward-dptf-id)
                     ;;===>PHASE 1=== custody transfer · UrStoa ≡ C_Transfer / C_Transmit
-                    (ref-TFT::C_Transfer reward-dptf-id injector AQP|SC_NAME amount true)
+                    (ref-TFT::C_Transfer patron injector AQP|SC_NAME reward-dptf-id amount true)
                     ;;===>PHASE 2+3=== escrow-aware distribute + available-rewards (shared with the stream drip).
                     ;; Reward tokens are ALREADY in custody. XI_DistributeInjectAmount handles both the FLUSH
                     ;; (divisor > 0 → farm split-at-inject / vault G bump, available-rewards += R_eff, zombie→0) and
@@ -4499,7 +4499,7 @@
                     [
                         drip-oc
                         ;; PHASE 1 — custody transfer `amount` into AQP|SC_NAME (held until dripped)
-                        (ref-TFT::C_Transfer reward-dptf-id injector AQP|SC_NAME amount true)
+                        (ref-TFT::C_Transfer patron injector AQP|SC_NAME reward-dptf-id amount true)
                         ;; PHASE 2 — append the stream at the next compacted position + bump the lane cursor
                         (let*
                             (
@@ -4872,8 +4872,8 @@
             )
             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                 [
-                    (if (> total-t0 0.0) (ref-TFT::C_Transfer token-0 AQP|SC_NAME patron total-t0 true) (UC_EmptyOc))
-                    (if (> fund-12 0.0) (ref-TFT::C_Transfer token-0 AQP|SC_NAME patron fund-12 true) (UC_EmptyOc))
+                    (if (> total-t0 0.0) (ref-TFT::C_Transfer patron AQP|SC_NAME patron token-0 total-t0 true) (UC_EmptyOc))
+                    (if (> fund-12 0.0) (ref-TFT::C_Transfer patron AQP|SC_NAME patron token-0 fund-12 true) (UC_EmptyOc))
                     (if coil-ok (ref-ATSU::C_Coil patron patron ats-01 token-0 total-t1) (UC_EmptyOc))
                     (if curl-ok (ref-ATSU::C_Curl patron patron ats-01 ats-12 token-0 total-t2) (UC_EmptyOc))
                 ]
@@ -5066,7 +5066,7 @@
                     )
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators
                         [ (at "oc" norm)
-                          (ref-TFT::C_Transfer (at "token" norm) AQP|SC_NAME destination (at "amount" norm) true) ]
+                          (ref-TFT::C_Transfer patron AQP|SC_NAME destination (at "token" norm) (at "amount" norm) true) ]
                         [destination])
                 )
             )

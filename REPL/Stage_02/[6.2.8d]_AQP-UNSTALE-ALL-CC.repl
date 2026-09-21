@@ -69,7 +69,7 @@
         ]
     )
     ;; drop ANHD's EliteAuryn to ~1% → live Elite-DEB falls a tier ⇒ his treasury scores go stale
-    (ref-TS01-C1::DPTF|C_Transfer anhd ea-id anhd emma (floor (* ea-bal 0.99) 4) false)
+    (ref-TS01-C1::DPTF|C_Transfer anhd anhd emma ea-id (floor (* ea-bal 0.99) 4) false)
     (map print
         [
             (format "<(UNSTALEALL01 post-move: elite-deb {} -> {} · stale present users = {})>" [deb-pre (ref-DALOS::UR_Elite-DEB anhd) (length (ref-FVT::URH_FvtStalePresentUsers fvt-id))])

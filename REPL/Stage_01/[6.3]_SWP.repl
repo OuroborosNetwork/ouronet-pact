@@ -223,14 +223,7 @@
     (
         (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
     )
-    (ref-TS01-C1::DPTF|C_Transfer 
-        KST.ANHD
-        "OURO-98c486052a51"
-        KST.ANHD
-        KST.AOZT
-        50000.0
-        false
-    )
+    (ref-TS01-C1::DPTF|C_Transfer KST.ANHD KST.ANHD KST.AOZT "OURO-98c486052a51" 50000.0 false)
 )
     
 (print "")
@@ -2267,12 +2260,7 @@
         ;(format "Burn role for LP on SWP-SC is {}" [(ref-DPTF::UR_AccountRoleBurn pool8-lp swp-sc)])
         ;(format "Mint role for LP on SWP-SC is {}" [(ref-DPTF::UR_AccountRoleMint pool8-lp swp-sc)])
         ;(format "Pool8-LP Owner is {}" [(ref-DPTF::UR_Konto pool8-lp)])
-        (ref-TS01-C1::DPTF|C_MultiTransfer patron 
-            ["OURO-98c486052a51" "TEUR-98c486052a51" "EURT-98c486052a51" "EURC-98c486052a51" "EURD-98c486052a51" "AEUR-98c486052a51" "CEUR-98c486052a51"]
-            patron emma
-            [730.0 277.0 330.0 450.0 554.0 332.0 170.0]
-            false
-        )
+        (ref-TS01-C1::DPTF|C_MultiTransfer patron patron emma ["OURO-98c486052a51" "TEUR-98c486052a51" "EURT-98c486052a51" "EURC-98c486052a51" "EURD-98c486052a51" "AEUR-98c486052a51" "CEUR-98c486052a51"] [730.0 277.0 330.0 450.0 554.0 332.0 170.0] false)
     ]
     
 )
@@ -2798,7 +2786,7 @@
         ;;Transfer Role set to true to Smart Account.
         (ref-TS01-C1::DPTF|C_ToggleTransferRole patron (DPTF.UR_Konto ROuroID) smart-patron ROuroID true)
         ;;Send 15 R|Ouro to Smart Account
-        (ref-TS01-C1::DPTF|C_Transfer patron ROuroID patron smart-patron 15.0 true)
+        (ref-TS01-C1::DPTF|C_Transfer patron patron smart-patron ROuroID 15.0 true)
         ;;Smart Account unreserves 10 Ouro
         (ref-TS01-C2::VST|C_Unreserve patron smart-patron ROuroID 10.0)
 
@@ -7912,40 +7900,12 @@
     (ref-TS01-C1::DPTF|C_Mint
         patron patron b-vst 5000000.0 true
     )
-    (ref-TS01-C1::DPTF|C_Transfer 
-        patron 
-        b-vst
-        patron
-        emma
-        1000000.0
-        false
-    )
-    (ref-TS01-C1::DPTF|C_Transfer 
-        patron 
-        b-vst
-        emma
-        lumy
-        400000.0
-        false
-    )
+    (ref-TS01-C1::DPTF|C_Transfer patron patron emma b-vst 1000000.0 false)
+    (ref-TS01-C1::DPTF|C_Transfer patron emma lumy b-vst 400000.0 false)
     (ref-TS01-C1::DPTF|C_DonateFees patron (DPTF.UR_Konto b-vst) b-vst)
-    (ref-TS01-C1::DPTF|C_Transfer 
-        patron 
-        b-vst
-        emma
-        lumy
-        200000.0
-        false
-    )
+    (ref-TS01-C1::DPTF|C_Transfer patron emma lumy b-vst 200000.0 false)
     (ref-TS01-C1::DPTF|C_SetFeeTarget patron (DPTF.UR_Konto b-vst) b-vst coca)
-    (ref-TS01-C1::DPTF|C_Transfer 
-        patron 
-        b-vst
-        emma
-        lumy
-        100000.0
-        false
-    )
+    (ref-TS01-C1::DPTF|C_Transfer patron emma lumy b-vst 100000.0 false)
     (ref-TS01-C2::ORBR|C_WithdrawFees patron b-vst kiss)
     [   
         (format "AH has {} {}" [(ref-DPTF::UR_AccountSupply b-vst patron) b-vst])
@@ -8109,7 +8069,7 @@
         ;(migration-target:string "k:163320715f95957d1a15ea664fa6bd46f4c59dbb804f793ae93662a4c90b3189")
         ;(dwk:string "DWK-98c486052a51")
     )
-    (ref-TS01-C1::DPTF|C_Transfer patron ouro treasury emma 250000.0 false)
+    (ref-TS01-C1::DPTF|C_Transfer patron treasury emma ouro 250000.0 false)
     (ref-TS01-A::DPTF|A_WipeTreasuryDebtPartial KST.ANHD 100000.0)
     (ref-TS01-A::DPTF|A_WipeTreasuryDebt KST.ANHD)
     (ref-TS01-A::DPTF|A_UpdateTreasuryDispoParameters KST.ANHD 2 12.0 24.0)
@@ -8236,10 +8196,10 @@
         (v2:decimal (floor (+ (fold (*) 1.0 [a d-computed nn]) (/ (^ d-computed np1) (* nn product))) 24))
     )
     ;(ref-TS01-A::SWP|A_UpdateLiquidBoost true)
-    (ref-TS01-C1::DPTF|C_Transfer patron ouro patron nani 1600.0 false)
-    (ref-TS01-C1::DPTF|C_Transfer patron busd patron nani 50000.0 false)
-    (ref-TS01-C1::DPTF|C_Transfer patron tusd patron nani 50000.0 false)
-    (ref-TS01-C1::DPTF|C_Transfer patron vst patron nani 500000.0 false)
+    (ref-TS01-C1::DPTF|C_Transfer patron patron nani ouro 1600.0 false)
+    (ref-TS01-C1::DPTF|C_Transfer patron patron nani busd 50000.0 false)
+    (ref-TS01-C1::DPTF|C_Transfer patron patron nani tusd 50000.0 false)
+    (ref-TS01-C1::DPTF|C_Transfer patron patron nani vst 500000.0 false)
     
     [
         [   
@@ -8446,8 +8406,8 @@
         (emma-ignis:decimal (ref-DPTF::UR_AccountSupply ignis emma))
         (emma-ouro:decimal (ref-DPTF::UR_AccountSupply ouro emma))
     )
-    (ref-TS01-C1::DPTF|C_Transfer patron ignis emma treasury emma-ignis true)
-    (ref-TS01-C1::DPTF|C_Transfer patron ouro emma treasury emma-ouro true)
+    (ref-TS01-C1::DPTF|C_Transfer patron emma treasury ignis emma-ignis true)
+    (ref-TS01-C1::DPTF|C_Transfer patron emma treasury ouro emma-ouro true)
     [   
         (format "Emma has {} IGNIS" [(ref-DPTF::UR_AccountSupply ignis emma)])
         (format "Emma has {} OURO" [(ref-DPTF::UR_AccountSupply ouro emma)])
@@ -8577,7 +8537,7 @@
         (emma:string KST.EMMA)
     )
     [
-        (ref-TS01-C1::DPTF|C_Transfer patron ouro patron emma 500.0 false)
+        (ref-TS01-C1::DPTF|C_Transfer patron patron emma ouro 500.0 false)
         (ref-DPTF::UR_AccountSupply "OURO-98c486052a51" emma)
     ]
 )

@@ -1,58 +1,33 @@
 ;; ---------------------------------------------------------------------------
-;; OURONET DEPLOY -- file 11 of 22
-;; This is STEP 11 of 23 in the full sequence (see Deploy/MANIFEST.md).
+;; OURONET DEPLOY -- file 11 of 24
+;; This is STEP 11 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-10 must have run first, including the init steps between deploys.
-;; 6 source file(s), 350,541 gas measured in the REPL gas model, 300,337 bytes
+;; 3 source file(s), 457,539 gas measured in the REPL gas model, 287,298 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
-;;   1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/02_DPDC.pact
-;;   1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/03_DPDC-C.pact
-;;   1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/04_DPDC-I.pact
-;;   1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/05_DPDC-R.pact
-;;   1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/06_DPDC-MNG.pact
-;;   1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/07_DPDC-T.pact
+;;   1_SOVEREIGN/STAGE_01/Z_Reads/02_INFO-ONE+.pact
+;;   2_CITIZEN/1_AOZ/01_AOZ+.pact
+;;   1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/01_DPDC-UDC.pact
 ;;
-;; TOTAL: 7 interface(s), 6 module(s), 22 table(s)
+;; TOTAL: 3 interface(s), 3 module(s), 10 table(s)
 ;; What it DEPLOYS, in load order:
-;;   -- 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/02_DPDC.pact
-;;      interface  BrandingUsageTertiaryV2
-;;      interface  DpdcV2
-;;      module     DPDC
-;;      table      P|T
-;;      table      P|MT
-;;      table      DPSF|T|Properties
-;;      table      DPSF|T|Nonces
-;;      table      DPSF|T|VerumRoles
-;;      table      DPSF|T|Account
-;;      table      DPSF|T|AccountSupplies
-;;      table      DPNF|T|Properties
-;;      table      DPNF|T|Nonces
-;;      table      DPNF|T|VerumRoles
-;;      table      DPNF|T|Account
-;;      table      DPNF|T|AccountSupplies
-;;   -- 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/03_DPDC-C.pact
-;;      interface  DpdcCreateV2
-;;      module     DPDC-C
-;;      table      P|T
-;;      table      P|MT
-;;   -- 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/04_DPDC-I.pact
-;;      interface  DpdcIssueV2
-;;      module     DPDC-I
-;;      table      P|T
-;;      table      P|MT
-;;   -- 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/05_DPDC-R.pact
-;;      interface  DpdcRolesV2
-;;      module     DPDC-R
-;;      table      P|T
-;;      table      P|MT
-;;   -- 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/06_DPDC-MNG.pact
-;;      interface  DpdcManagementV2
-;;      module     DPDC-MNG
-;;      table      P|T
-;;      table      P|MT
-;;   -- 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/07_DPDC-T.pact
-;;      interface  DpdcTransferV2
-;;      module     DPDC-T
+;;   -- 1_SOVEREIGN/STAGE_01/Z_Reads/02_INFO-ONE+.pact
+;;      interface  InfoOneV2
+;;      module     INFO-ONE
+;;   -- 2_CITIZEN/1_AOZ/01_AOZ+.pact
+;;      interface  AgeOfZalmoxis
+;;      module     AOZ
+;;      table      AOZ|T|AssetCounter
+;;      table      AOZ|T|PrimalTrueFungibles
+;;      table      AOZ|T|PrimalOrtoFungibles
+;;      table      AOZ|T|AutostakePairs
+;;      table      AOZ|T|TrueFungibles
+;;      table      AOZ|T|OrtoFungibles
+;;      table      AOZ|T|SemiFungibles
+;;      table      AOZ|T|NonFungibles
+;;   -- 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/01_DPDC-UDC.pact
+;;      interface  DpdcUdcV2
+;;      module     DPDC-UDC
 ;;      table      P|T
 ;;      table      P|MT
 ;;
@@ -62,13 +37,10 @@
 
 (namespace "ouronet-ns")
 
-;; ===== 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/02_DPDC.pact ============
-;; Deploy: load THIS file — interface(s) + module ship together.
-;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/02_Core.pact
-;;
+;; ===== 1_SOVEREIGN/STAGE_01/Z_Reads/02_INFO-ONE+.pact ==============
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface BrandingUsageTertiaryV2
-    @doc "Exposes Branding Functions for Semi-Fungibles (S) and Non-Fungibles (N)"
+(interface InfoOneV2
+    @doc "Exposes Functions from Information One Module"
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -103,278 +75,241 @@
     ;;{5}  FUNCTIONS
     ;;{5.1}  Construct [CT/UDC]
     ;;{5.2}  Compute [UC]
+    ;;
+    ;;
+    ;;  [UC] Functions
+    ;;
+    (defun UC_GasPrice:decimal (full-price:decimal trigger:bool))
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;
+    ;;
+    ;;  [SIP|URC] Functions
+    ;;
+    ;;
+    ;;
+    ;;  [SKP|URC] Functions
+    ;;
+    ;;
+    ;;
+    ;;  [INFO] Functions
+    ;;
+    (defun INFO_DPTF|UpdatePendingBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string))
+    (defun INFO_DPTF|UpgradeBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string months:integer))
+    (defun INFO_DPTF|Burn:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string amount:decimal))
+    (defun INFO_DPTF|Control:object{OuronetInfoV2.ClientInfo} (patron:string id:string))
+    (defun INFO_DPTF|DeployAccount:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string))
+    (defun INFO_DPTF|DonateFees:object{OuronetInfoV2.ClientInfo} (patron:string id:string))
+    (defun INFO_DPTF|Issue:object{OuronetInfoV2.ClientInfo} (patron:string account:string name:[string]))
+    (defun INFO_DPTF|Mint:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string amount:decimal origin:bool))
+    (defun INFO_DPTF|ResetFeeTarget:object{OuronetInfoV2.ClientInfo} (patron:string id:string))
+    (defun INFO_DPTF|RotateOwnership:object{OuronetInfoV2.ClientInfo} (patron:string id:string new-owner:string))
+    (defun INFO_DPTF|SetFee:object{OuronetInfoV2.ClientInfo} (patron:string id:string fee:decimal))
+    (defun INFO_DPTF|SetFeeTarget:object{OuronetInfoV2.ClientInfo} (patron:string id:string target:string))
+    (defun INFO_DPTF|SetMinMove:object{OuronetInfoV2.ClientInfo} (patron:string id:string min-move-value:decimal))
+    (defun INFO_DPTF|ToggleFee:object{OuronetInfoV2.ClientInfo} (patron:string id:string toggle:bool))
+    (defun INFO_DPTF|ToggleFeeLock:object{OuronetInfoV2.ClientInfo} (patron:string id:string toggle:bool fee-unlocks:integer))
+    (defun INFO_DPTF|ToggleFreezeAccount:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool))
+    (defun INFO_DPTF|TogglePause:object{OuronetInfoV2.ClientInfo} (patron:string id:string toggle:bool))
+    (defun INFO_DPTF|ToggleReservation:object{OuronetInfoV2.ClientInfo} (patron:string id:string toggle:bool))
+    (defun INFO_DPTF|ToggleTransferRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool))
+    (defun INFO_DPTF|Wipe:object{OuronetInfoV2.ClientInfo} (patron:string id:string atbw:string))
+    (defun INFO_DPTF|WipeSlim:object{OuronetInfoV2.ClientInfo} (patron:string id:string atbw:string amtbw:decimal))
+    (defun INFO_DPTF|ToggleBurnRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool))
+    (defun INFO_DPTF|ToggleMintRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool))
+    (defun INFO_DPTF|ToggleFeeExemptionRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool))
+    (defun INFO_DPTF|Transmute:object{OuronetInfoV2.ClientInfo} (patron:string id:string transmuter:string transmute-amount:decimal))
+    (defun INFO_DPTF|ClearDispo:object{OuronetInfoV2.ClientInfo} (patron:string account:string))
+    (defun INFO_DPTF|Transfer:object{OuronetInfoV2.ClientInfo} (patron:string id:string sender:string receiver:string transfer-amount:decimal))
+    (defun INFO_DPTF|MultiTransfer:object{OuronetInfoV2.ClientInfo} (patron:string id-lst:[string] sender:string receiver:string transfer-amount-lst:[decimal]))
+    (defun INFO_DPTF|BulkTransfer:object{OuronetInfoV2.ClientInfo} (patron:string id:string sender:string receiver-lst:[string] transfer-amount-lst:[decimal]))
+    (defun INFO_DPTF|MultiBulkTransfer:object{OuronetInfoV2.ClientInfo} (patron:string id-lst:[string] sender:string receiver-array:[[string]] transfer-amount-array:[[decimal]]))
+    ;;
+    (defun INFO_DPOF|UpdatePendingBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string))
+    (defun INFO_DPOF|UpgradeBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string months:integer))
+    (defun INFO_DPOF|AddQuantity:object{OuronetInfoV2.ClientInfo} (patron:string id:string nonce:integer account:string amount:decimal))
+    (defun INFO_DPOF|Burn:object{OuronetInfoV2.ClientInfo} (patron:string id:string nonce:integer account:string amount:decimal))
+    (defun INFO_DPOF|Control:object{OuronetInfoV2.ClientInfo} (patron:string id:string))
+    (defun INFO_DPOF|DeployAccount:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string))
+    (defun INFO_DPOF|Issue:object{OuronetInfoV2.ClientInfo} (patron:string account:string name:[string]))
+    (defun INFO_DPOF|Mint:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string amount:decimal))
+    (defun INFO_DPOF|RotateOwnership:object{OuronetInfoV2.ClientInfo} (patron:string id:string new-owner:string))
+    (defun INFO_DPOF|MoveCreateRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string receiver:string))
+    (defun INFO_DPOF|ToggleAddQuantityRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool))
+    (defun INFO_DPOF|ToggleBurnRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool))
+    (defun INFO_DPOF|ToggleFreezeAccount:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool))
+    (defun INFO_DPOF|TogglePause:object{OuronetInfoV2.ClientInfo} (patron:string id:string toggle:bool))
+    (defun INFO_DPOF|ToggleTransferRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool))
+    (defun INFO_DPOF|Transfer:object{OuronetInfoV2.ClientInfo} (patron:string id:string nonces:[integer] sender:string receiver:string method:bool))
+    (defun INFO_DPOF|Transmit:object{OuronetInfoV2.ClientInfo} (patron:string id:string nonces:[integer] amounts:[decimal] sender:string receiver:string method:bool))
+    (defun INFO_DPOF|BulkTransfer:object{OuronetInfoV2.ClientInfo} (patron:string id:string nonces-array:[[integer]] sender:string receiver-lst:[string] method:bool))
+    (defun INFO_DPOF|WipeSlim:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string nonce:integer amount:decimal))
+    (defun INFO_DPOF|WipePure:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces}))
+    (defun INFO_DPOF|WipeHeavy:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string))
+    (defun INFO_DPOF|WipeClean:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string nonces:[integer]))
+    (defun INFO_DPOF|WipeSlice:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces}))
+    (defun INFO_DPOF|WipeFull:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string plan:object{DpofUdcV2.DPOF|WipeSlicePlan}))
+    ;;
+    (defun INFO_VST|CreateFrozenLink:object{OuronetInfoV2.ClientInfo} (patron:string dptf:string))
+    (defun INFO_VST|CreateReservationLink:object{OuronetInfoV2.ClientInfo} (patron:string dptf:string))
+    (defun INFO_VST|CreateVestingLink:object{OuronetInfoV2.ClientInfo} (patron:string dptf:string))
+    (defun INFO_VST|CreateSleepingLink:object{OuronetInfoV2.ClientInfo} (patron:string dptf:string))
+    (defun INFO_VST|CreateHibernatingLink:object{OuronetInfoV2.ClientInfo} (patron:string dptf:string))
+    (defun INFO_VST|Freeze:object{OuronetInfoV2.ClientInfo} (patron:string freezer:string freeze-output:string dptf:string amount:decimal))
+    (defun INFO_VST|RepurposeFrozen:object{OuronetInfoV2.ClientInfo} (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string))
+    (defun INFO_VST|ToggleTransferRoleFrozenDPTF:object{OuronetInfoV2.ClientInfo} (patron:string s-dptf:string target:string toggle:bool))
+    (defun INFO_VST|Reserve:object{OuronetInfoV2.ClientInfo} (patron:string reserver:string dptf:string amount:decimal))
+    (defun INFO_VST|Unreserve:object{OuronetInfoV2.ClientInfo} (patron:string unreserver:string r-dptf:string amount:decimal))
+    (defun INFO_VST|RepurposeReserved:object{OuronetInfoV2.ClientInfo} (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string))
+    (defun INFO_VST|ToggleTransferRoleReservedDPTF:object{OuronetInfoV2.ClientInfo} (patron:string s-dptf:string target:string toggle:bool))
+    (defun INFO_VST|Vest:object{OuronetInfoV2.ClientInfo} (patron:string vester:string target-account:string dptf:string amount:decimal offset:integer seconds:integer milestones:integer))
+    (defun INFO_VST|Unvest:object{OuronetInfoV2.ClientInfo} (patron:string unvester:string dpof:string nonce:integer))
+    (defun INFO_VST|RepurposeVested:object{OuronetInfoV2.ClientInfo} (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
+    (defun INFO_VST|Sleep:object{OuronetInfoV2.ClientInfo} (patron:string sleeper:string target-account:string dptf:string amount:decimal seconds:integer))
+    (defun INFO_VST|Unsleep:object{OuronetInfoV2.ClientInfo} (patron:string unsleeper:string dpof:string nonce:integer))
+    (defun INFO_VST|Merge:object{OuronetInfoV2.ClientInfo} (patron:string merger:string dpof:string nonces:[integer]))
+    (defun INFO_VST|RepurposeMerge:object{OuronetInfoV2.ClientInfo} (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string))
+    (defun INFO_VST|RepurposeSleeping:object{OuronetInfoV2.ClientInfo} (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
+    (defun INFO_VST|ToggleTransferRoleSleepingDPOF:object{OuronetInfoV2.ClientInfo} (patron:string s-dpof:string target:string toggle:bool))
+    (defun INFO_VST|Hibernate:object{OuronetInfoV2.ClientInfo} (patron:string hibernator:string target-account:string dptf:string amount:decimal dayz:integer))
+    (defun INFO_VST|Awake:object{OuronetInfoV2.ClientInfo} (patron:string awaker:string dpof:string nonce:integer))
+    (defun INFO_VST|Slumber:object{OuronetInfoV2.ClientInfo} (patron:string merger:string dpof:string nonces:[integer]))
+    (defun INFO_VST|RepurposeSlumber:object{OuronetInfoV2.ClientInfo} (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string))
+    (defun INFO_VST|RepurposeHibernating:object{OuronetInfoV2.ClientInfo} (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
+    (defun INFO_VST|ToggleTransferRoleHibernatingDPOF:object{OuronetInfoV2.ClientInfo} (patron:string s-dpof:string target:string toggle:bool))
+    ;;
+    (defun INFO_ATS|Coil:object{OuronetInfoV2.ClientInfo} (patron:string coiler:string ats:string rt:string amount:decimal))
+    (defun INFO_ATS|Constrict:object{OuronetInfoV2.ClientInfo} (patron:string constricter:string ats:string rt:string amount:decimal dayz:integer))
+    (defun INFO_ATS|Curl:object{OuronetInfoV2.ClientInfo} (patron:string curler:string ats1:string ats2:string rt:string amount:decimal))
+    (defun INFO_ATS|Brumate:object{OuronetInfoV2.ClientInfo} (patron:string brumator:string ats1:string ats2:string rt:string amount:decimal dayz:integer))
+    (defun INFO_ATS|ColdRecovery:object{OuronetInfoV2.ClientInfo} (patron:string recoverer:string ats:string ra:decimal))
+    (defun INFO_ATS|Cull:object{OuronetInfoV2.ClientInfo} (patron:string culler:string ats:string))
+    (defun INFO_ATS|DirectRecovery:object{OuronetInfoV2.ClientInfo} (patron:string recoverer:string ats:string ra:decimal))
+    (defun INFO_ATS|RotateOwnership:object{OuronetInfoV2.ClientInfo} (patron:string ats:string new-owner:string))
+    (defun INFO_ATS|Control:object{OuronetInfoV2.ClientInfo} (patron:string ats:string can-change-owner:bool syphoning:bool hibernate:bool))
+    (defun INFO_ATS|UpdateRoyalty:object{OuronetInfoV2.ClientInfo} (patron:string ats:string royalty:decimal))
+    (defun INFO_ATS|UpdateSyphon:object{OuronetInfoV2.ClientInfo} (patron:string ats:string syphon:decimal))
+    (defun INFO_ATS|SetHibernationFees:object{OuronetInfoV2.ClientInfo} (patron:string ats:string peak:decimal decay:decimal))
+    (defun INFO_ATS|ToggleParameterLock:object{OuronetInfoV2.ClientInfo} (patron:string ats:string toggle:bool))
+    (defun INFO_ATS|AddSecondary:object{OuronetInfoV2.ClientInfo} (patron:string ats:string reward-token:string rt-nfr:bool))
+    (defun INFO_ATS|ControlColdRecoveryFees:object{OuronetInfoV2.ClientInfo} (patron:string ats:string c-nfr:bool c-fr:bool))
+    (defun INFO_ATS|SetColdRecoveryFees:object{OuronetInfoV2.ClientInfo} (patron:string ats:string fee-positions:integer fee-thresholds:[decimal] fee-array:[[decimal]]))
+    (defun INFO_ATS|SetColdRecoveryDuration:object{OuronetInfoV2.ClientInfo} (patron:string ats:string soft-or-hard:bool base:integer growth:integer))
+    (defun INFO_ATS|ToggleElite:object{OuronetInfoV2.ClientInfo} (patron:string ats:string toggle:bool))
+    (defun INFO_ATS|ToggleUpgrade:object{OuronetInfoV2.ClientInfo} (patron:string ats:string toggle:bool))
+    (defun INFO_ATS|SwitchColdRecovery:object{OuronetInfoV2.ClientInfo} (patron:string ats:string toggle:bool))
+    (defun INFO_ATS|ControlHotRecoveryFee:object{OuronetInfoV2.ClientInfo} (patron:string ats:string h-fr:bool))
+    (defun INFO_ATS|SetHotRecoveryFee:object{OuronetInfoV2.ClientInfo} (patron:string ats:string promile:decimal decay:integer))
+    (defun INFO_ATS|SwitchHotRecovery:object{OuronetInfoV2.ClientInfo} (patron:string ats:string toggle:bool))
+    (defun INFO_ATS|SetDirectRecoveryFee:object{OuronetInfoV2.ClientInfo} (patron:string ats:string promile:decimal))
+    (defun INFO_ATS|SwitchDirectRecovery:object{OuronetInfoV2.ClientInfo} (patron:string ats:string toggle:bool))
+    (defun INFO_ATS|UpdatePendingBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string))
+    (defun INFO_ATS|UpgradeBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string months:integer))
+    (defun INFO_ATS|Issue:object{OuronetInfoV2.ClientInfo} (patron:string account:string ats:[string]))
+    (defun INFO_ATS|Fuel:object{OuronetInfoV2.ClientInfo} (patron:string fueler:string ats:string reward-token:string amount:decimal))
+    (defun INFO_ATS|HotRecovery:object{OuronetInfoV2.ClientInfo} (patron:string recoverer:string ats:string ra:decimal))
+    (defun INFO_ATS|KickStart:object{OuronetInfoV2.ClientInfo} (patron:string kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
+    (defun INFO_ATS|Redeem:object{OuronetInfoV2.ClientInfo} (patron:string redeemer:string id:string nonce:integer))
+    (defun INFO_ATS|Reverse:object{OuronetInfoV2.ClientInfo} (patron:string recoverer:string id:string nonce:integer))
+    (defun INFO_ATS|Syphon:object{OuronetInfoV2.ClientInfo} (patron:string syphon-target:string ats:string syphon-amounts:[decimal]))
+    (defun INFO_ATS|WithdrawRoyalties:object{OuronetInfoV2.ClientInfo} (patron:string ats:string target:string))
+    (defun INFO_ATS|VestedCoil:object{OuronetInfoV2.ClientInfo} (patron:string coiler-vester:string ats:string coil-token:string amount:decimal target-account:string offset:integer duration:integer milestones:integer))
+    (defun INFO_ATS|VestedCurl:object{OuronetInfoV2.ClientInfo} (patron:string curler-vester:string ats1:string ats2:string curl-token:string amount:decimal target-account:string offset:integer duration:integer milestones:integer))
+    (defun INFO_ATS|HOT-RBT|UpdatePendingBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string))
+    (defun INFO_ATS|HOT-RBT|UpgradeBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string months:integer))
+    (defun INFO_ATS|HOT-RBT|Repurpose:object{OuronetInfoV2.ClientInfo} (patron:string hot-rbt:string nonce:integer repurpose-to:string))
+    (defun INFO_ATS|AddHotRBT:object{OuronetInfoV2.ClientInfo} (patron:string ats:string hot-rbt:string))
+    (defun INFO_ATS|RemoveSecondary:object{OuronetInfoV2.ClientInfo} (patron:string remover:string ats:string reward-token:string))
+    ;;
+    (defun INFO_SWP|ChangeOwnership:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string new-owner:string))
+    (defun INFO_SWP|ModifyCanChangeOwner:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string new-boolean:bool))
+    (defun INFO_SWP|ModifyWeights:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string new-weights:[decimal]))
+    (defun INFO_SWP|ToggleAddLiquidity:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string toggle:bool))
+    (defun INFO_SWP|ToggleSwapCapability:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string toggle:bool))
+    (defun INFO_SWP|EnableFrozenLP:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string))
+    (defun INFO_SWP|EnableSleepingLP:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string))
+    (defun INFO_SWP|UpdateAmplifier:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string amp:decimal))
+    (defun INFO_SWP|UpdateFee:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string new-fee:decimal lp-or-special:bool))
+    (defun INFO_SWP|UpdateSpecialFeeTargets:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string targets:[string]))
+    (defun INFO_SWP|ToggleFeeLock:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string toggle:bool))
+    (defun INFO_SWP|UpdatePendingBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string))
+    (defun INFO_SWP|UpgradeBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string months:integer))
+    (defun INFO_SWP|UpdatePendingBrandingLPs:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string entity-pos:integer))
+    (defun INFO_SWP|UpgradeBrandingLPs:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string entity-pos:integer months:integer))
+    (defun INFO_SWP|AddLiquidity:object{OuronetInfoV2.ClientInfo} (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
+    (defun INFO_SWP|AddStandardLiquidity:object{OuronetInfoV2.ClientInfo} (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
+    (defun INFO_SWP|AddIcedLiquidity:object{OuronetInfoV2.ClientInfo} (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
+    (defun INFO_SWP|AddGlacialLiquidity:object{OuronetInfoV2.ClientInfo} (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
+    (defun INFO_SWP|AddFrozenLiquidity:object{OuronetInfoV2.ClientInfo} (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal))
+    (defun INFO_SWP|AddSleepingLiquidity:object{OuronetInfoV2.ClientInfo} (patron:string account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal))
+    (defun INFO_SWP|RemoveLiquidity:object{OuronetInfoV2.ClientInfo} (patron:string account:string swpair:string lp-amount:decimal))
+    (defun INFO_SWP|Fuel:object{OuronetInfoV2.ClientInfo} (patron:string account:string swpair:string input-amounts:[decimal]))
+    (defun INFO_SWP|Firestarter:object{OuronetInfoV2.ClientInfo} (firestarter:string))
+    (defun INFO_SWP|IssueStable:object{OuronetInfoV2.ClientInfo} (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal amp:decimal p:bool))
+    (defun INFO_SWP|IssueStandard:object{OuronetInfoV2.ClientInfo} (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal p:bool))
+    (defun INFO_SWP|IssueWeighted:object{OuronetInfoV2.ClientInfo} (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool))
+    (defun INFO_SWP|IssueStablePool:object{OuronetInfoV2.ClientInfo} (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal amp:decimal p:bool))
+    (defun INFO_SWP|IssueStandardPool:object{OuronetInfoV2.ClientInfo} (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal p:bool))
+    (defun INFO_SWP|IssueWeightedPool:object{OuronetInfoV2.ClientInfo} (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool))
+    (defun INFO_SWP|SingleSwapNoSlippage:object{OuronetInfoV2.ClientInfo} (patron:string account:string swpair:string input-id:string input-amount:decimal output-id:string))
+    (defun INFO_SWP|SingleSwapWithSlippage:object{OuronetInfoV2.ClientInfo} (patron:string account:string swpair:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV3.Slippage}))
+    (defun INFO_SWP|MultiSwapNoSlippage:object{OuronetInfoV2.ClientInfo} (patron:string account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string))
+    (defun INFO_SWP|MultiSwapWithSlippage:object{OuronetInfoV2.ClientInfo} (patron:string account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage-bounds:object{SwapperUsageV3.Slippage}))
+    (defun INFO_SWP|SmartSwapNoSlippage:object{OuronetInfoV2.ClientInfo} (patron:string account:string input-id:string input-amount:decimal output-id:string))
+    (defun INFO_SWP|SmartSwapWithSlippage:object{OuronetInfoV2.ClientInfo} (patron:string account:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV3.Slippage}))
+    (defun INFO_SWP|SmartSwapNoSlippageBundle:object{OuronetInfoV2.ClientInfo} (patron:string account:string input-id:string input-amount:decimal output-id:string bundle:object{SwapperUsageV3.SmartSwapPathBundle}))
+    (defun INFO_SWP|SmartSwapWithSlippageBundle:object{OuronetInfoV2.ClientInfo} (patron:string account:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV3.Slippage} bundle:object{SwapperUsageV3.SmartSwapPathBundle}))
+    (defun INFO_LIQUID|WrapStoa:object{OuronetInfoV2.ClientInfo} (patron:string wrapper:string amount:decimal))
+    (defun INFO_LIQUID|UnwrapStoa:object{OuronetInfoV2.ClientInfo} (patron:string unwrapper:string amount:decimal))
+    (defun INFO_LIQUID|WrapUrStoa:object{OuronetInfoV2.ClientInfo} (patron:string wrapper:string amount:decimal))
+    (defun INFO_LIQUID|UnwrapUrStoa:object{OuronetInfoV2.ClientInfo} (patron:string unwrapper:string amount:decimal))
+    (defun INFO_ORBR|Compress:object{OuronetInfoV2.ClientInfo} (client:string ignis-amount:decimal))
+    (defun INFO_ORBR|Sublimate:object{OuronetInfoV2.ClientInfo} (client:string target:string ouro-amount:decimal))
+    (defun INFO_ORBR|SublimateV2:object{OuronetInfoV2.ClientInfo} (client:string target:string ouro-amount:decimal))
+    (defun INFO_ORBR|WithdrawFees:object{OuronetInfoV2.ClientInfo} (patron:string id:string target:string))
+    ;;
+    ;;  [DALOS-INFO]  (relocated from the now-tombstoned INFO-ZERO; DALOS client-op previews wrapping IGNIS's DALOS|URCi_*)
+    ;;
+    (defun INFO_DALOS|ControlSmartAccount:object{OuronetInfoV2.ClientInfo} (patron:string account:string))
+    (defun INFO_DALOS|DeploySmartAccount:object{OuronetInfoV2.ClientInfo} (account:string))
+    (defun INFO_DALOS|DeployStandardAccount:object{OuronetInfoV2.ClientInfo} (account:string))
+    (defun INFO_DALOS|RotateGovernor:object{OuronetInfoV2.ClientInfo} (patron:string account:string))
+    (defun INFO_DALOS|RotateGuard:object{OuronetInfoV2.ClientInfo} (patron:string account:string))
+    (defun INFO_DALOS|RotateStoa:object{OuronetInfoV2.ClientInfo} (patron:string account:string))
+    (defun INFO_DALOS|RotateSovereign:object{OuronetInfoV2.ClientInfo} (patron:string account:string))
+    (defun INFO_DALOS|UpdateEliteAccount:object{OuronetInfoV2.ClientInfo} (patron:string account:string))
+    (defun INFO_DALOS|UpdateEliteAccountSquared:object{OuronetInfoV2.ClientInfo} (patron:string sender:string receiver:string))
     ;;{5.4}  Validate [UEV/CAP]
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     ;;{5.7}  User [A/C]
-    ;;
-    (defun C_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator} (entity-id:string son:bool logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
-    (defun C_UpgradeBranding (patron:string entity-id:string son:bool months:integer))
 
 )
-
-;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface DpdcV2
-    @doc "Exposes Collectables Functions"
-
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;{G2}  schemas
-    ;;{G3}  tables  ⟨cannot exist in an interface⟩
-    ;;{G4}  capabilities
-    ;;{G5}  functions
-    (defun GOV|DPDC|SC_NAME ())
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    ;;{P2}  schemas
-    ;;{P3}  tables  ⟨cannot exist in an interface⟩
-    ;;{P4}  capabilities
-    ;;{P5}  functions
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    ;;{3.2}  schemas
-    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    ;;
-    ;; [UDC]
-    ;;
-    (defun UDC_Control:object{DpdcUdcV2.DPDC|Properties} (id:string son:bool cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool))
-    ;;{5.2}  Compute [UC]
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;
-    ;;  [UR]
-    ;;
-    ;;  [1]
-    (defun UR_Properties:object{DpdcUdcV2.DPDC|Properties} (id:string son:bool))
-    (defun UR_OwnerKonto:string (id:string son:bool))
-    (defun UR_CreatorKonto:string (id:string son:bool))
-    (defun UR_Name:string (id:string son:bool))
-    (defun UR_Ticker:string (id:string son:bool))
-    (defun UR_CanUpgrade:bool (id:string son:bool))
-    (defun UR_CanChangeOwner:bool (id:string son:bool))
-    (defun UR_CanChangeCreator:bool (id:string son:bool))
-    (defun UR_CanAddSpecialRole:bool (id:string son:bool))
-    (defun UR_CanTransferNftCreateRole:bool (id:string son:bool))
-    (defun UR_CanFreeze:bool (id:string son:bool))
-    (defun UR_CanWipe:bool (id:string son:bool))
-    (defun UR_CanPause:bool (id:string son:bool))
-    (defun UR_IsPaused:bool (id:string son:bool))
-    (defun UR_NoncesUsed:integer (id:string son:bool))
-    (defun UR_SetClassesUsed:integer (id:string son:bool))
-    ;;  [2]
-    (defun UR_NonceElement:object{DpdcUdcV2.DPDC|NonceElement} (id:string son:bool nonce:integer))
-    (defun UR_NonceClass:integer (id:string son:bool nonce:integer))
-    (defun UR_NonceValue:integer (id:string son:bool nonce:integer))
-    (defun UR_NonceSupply:integer (id:string son:bool nonce:integer))
-    (defun UR_NonceHolder:string (id:string son:bool nonce:integer))
-    (defun UR_NativeNonceData:object{DpdcUdcV2.DPDC|NonceData} (id:string son:bool nonce:integer))
-    (defun UR_SplitNonceData:object{DpdcUdcV2.DPDC|NonceData} (id:string son:bool nonce:integer))
-    (defun UR_NonceData:object{DpdcUdcV2.DPDC|NonceData} (id:string son:bool nonce:integer))
-    ;;  [2.1]
-    (defun UR_N|Royalty:decimal (n:object{DpdcUdcV2.DPDC|NonceData}))
-    (defun UR_N|IgnisRoyalty:decimal (n:object{DpdcUdcV2.DPDC|NonceData}))
-    (defun UR_N|Name:string (n:object{DpdcUdcV2.DPDC|NonceData}))
-    (defun UR_N|Description:string (n:object{DpdcUdcV2.DPDC|NonceData}))
-    (defun UR_N|MetaData:object{DpdcUdcV2.NonceMetaData} (n:object{DpdcUdcV2.DPDC|NonceData}))
-    (defun UR_N|AssetType:object{DpdcUdcV2.URI|Type} (n:object{DpdcUdcV2.DPDC|NonceData}))
-    (defun UR_N|Primary:object{DpdcUdcV2.URI|Data} (n:object{DpdcUdcV2.DPDC|NonceData}))
-    (defun UR_N|Secondary:object{DpdcUdcV2.URI|Data} (n:object{DpdcUdcV2.DPDC|NonceData}))
-    (defun UR_N|Tertiary:object{DpdcUdcV2.URI|Data} (n:object{DpdcUdcV2.DPDC|NonceData}))
-    ;;  [2.1.1]
-    (defun UR_N|RawScore:decimal (n:object{DpdcUdcV2.DPDC|NonceData}))
-    (defun UR_N|Composition:[integer] (n:object{DpdcUdcV2.DPDC|NonceData}))
-    (defun UR_N|RawMetaData:object (n:object{DpdcUdcV2.DPDC|NonceData}))
-    ;;  [3]
-    (defun UR_VerumRoles:object{DpdcUdcV2.DPDC|VerumRoles} (id:string son:bool))
-    (defun UR_Verum1:[string] (id:string son:bool))
-    (defun UR_Verum2:[string] (id:string son:bool))
-    (defun UR_Verum3:[string] (id:string son:bool))
-    (defun UR_Verum4:[string] (id:string son:bool))
-    (defun UR_Verum5:string (id:string son:bool))
-    (defun UR_Verum6:string (id:string son:bool))
-    (defun UR_Verum7:[string] (id:string son:bool))
-    (defun UR_Verum8:[string] (id:string son:bool))
-    (defun UR_Verum9:[string] (id:string son:bool))
-    (defun UR_Verum10:string (id:string son:bool))
-    (defun UR_Verum11:[string] (id:string son:bool))
-    (defun URv_GetVerumChain:[string] (id:string son:bool rp:integer))
-    ;;  [4]
-    (defun UR_IzAccount:bool (account:string id:string son:bool))
-    (defun UR_CA|R:object{DpdcUdcV2.AccountRoles} (id:string son:bool account:string))
-    (defun UR_CA|R-AddQuantity:bool (id:string account:string))
-    (defun UR_CA|R-Frozen:bool (id:string son:bool account:string))
-    (defun UR_CA|R-Exemption:bool (id:string son:bool account:string))
-    (defun UR_CA|R-Burn:bool (id:string son:bool account:string))
-    (defun UR_CA|R-Create:bool (id:string son:bool account:string))
-    (defun UR_CA|R-Recreate:bool (id:string son:bool account:string))
-    (defun UR_CA|R-Update:bool (id:string son:bool account:string))
-    (defun UR_CA|R-ModifyCreator:bool (id:string son:bool account:string))
-    (defun UR_CA|R-ModifyRoyalties:bool (id:string son:bool account:string))
-    (defun UR_CA|R-SetUri:bool (id:string son:bool account:string))
-    (defun UR_CA|R-Transfer:bool (id:string son:bool account:string))
-    ;;  [5]
-    (defun UR_AccountSupply:object{DpdcUdcV2.DPDC|AccountSupply} (account:string id:string son:bool nonce:integer))
-    (defun UR_AccountNonceSupply:integer (account:string id:string son:bool nonce:integer))
-    (defun UR_AccountNoncesSupplies:[integer] (account:string id:string son:bool nonces:[integer]))
-    ;;
-    (defun URH_HeldCollectables:[string] (account:string son:bool))
-    (defun URH_ExistingCollectables:[string] (dpdc:string son:bool))
-    (defun URH_OwnedCollectables:[string] (account:string son:bool))
-    (defun URH_AccountNonces:[integer] (account:string id:string son:bool))
-    (defun URH_AccountNoncesWithSupplies:[object] (account:string id:string son:bool))
-    ;;
-    ;;  [URCi]  Branding cost readers — single source for exec billing + INFO preview
-    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator} (entity-id:string son:bool))
-    (defun URCi_UpgradeBranding:decimal (months:integer))
-    ;;{5.4}  Validate [UEV/CAP]
-    ;;
-    ;;  [UEV]
-    ;;
-    (defun UEV_id (id:string son:bool))
-    (defun UEV_NonceMapper (id:string son:bool nonces:[integer]))
-    (defun UEV_Nonce (id:string son:bool nonce:integer))
-        ;;
-    (defun UEV_CanUpgradeON (id:string son:bool))
-    (defun UEV_CanPauseON (id:string son:bool))
-    (defun UEV_CanAddSpecialRoleON (id:string son:bool))
-    (defun UEV_ToggleSpecialRole (id:string son:bool toggle:bool))
-    (defun UEV_CanFreezeON (id:string son:bool))
-    (defun UEV_CanWipeON (id:string son:bool))
-    (defun UEV_PauseState (id:string son:bool state:bool))
-    (defun UEV_AccountAddQuantityState (id:string account:string state:bool))
-    (defun UEV_AccountFreezeState (id:string son:bool account:string state:bool))
-    (defun UEV_AccountExemptionState (id:string son:bool account:string state:bool))
-    (defun UEV_AccountBurnState (id:string son:bool account:string state:bool))
-    (defun UEV_AccountUpdateState (id:string son:bool account:string state:bool))
-    (defun UEV_AccountModifyCreatorState (id:string son:bool account:string state:bool))
-    (defun UEV_AccountModifyRoyaltiesState (id:string son:bool account:string state:bool))
-    (defun UEV_AccountTransferState (id:string son:bool account:string state:bool))
-    (defun UEV_AccountCreateState (id:string son:bool account:string state:bool))
-    (defun UEV_AccountRecreateState (id:string son:bool account:string state:bool))
-    (defun UEV_AccountSetUriState (id:string son:bool account:string state:bool))
-    (defun UEV_Royalty (royalty:decimal))
-    (defun UEV_IgnisRoyalty (royalty:decimal))
-    (defun UEV_Name (name:string))
-    (defun UEV_Description (description:string))
-    (defun UEV_MetaDataBag (meta-data:object))
-    (defun UEV_AssetType (asset-type:object{DpdcUdcV2.URI|Type}))
-    (defun UEV_UriData (u:object{DpdcUdcV2.URI|Data}))
-    (defun UEV_NftNonceExistance (id:string nonce:integer existance:bool))
-    (defun UEV_NonceQuantityInclusion (account:string id:string son:bool nonce:integer amount:integer))
-    (defun UEV_NonceQuantityInclusionMapper (account:string id:string son:bool nonces:[integer] amounts:[integer]))
-    ;;
-    ;;  [CAP]
-    ;;
-    (defun CAP_Owner (id:string son:bool))
-    (defun CAP_Creator (id:string son:bool))
-    (defun CAP_OwnerOrCreator (id:string son:bool))
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;
-    ;;  [X]
-    ;;
-    ;; [<AccountsTable> Writings] [0]
-    ;;
-    (defun XBv_DeployAccountSFT
-        (
-            account:string id:string
-            input-rnaq:bool f:bool re:bool rnb:bool rnc:bool rnr:bool
-            rnu:bool rmc:bool rmr:bool rsnu:bool rt:bool
-        )
-    )
-    (defun XBv_DeployAccountNFT 
-        (
-            account:string id:string
-            f:bool re:bool rnb:bool rnc:bool rnr:bool
-            rnu:bool rmc:bool rmr:bool rsnu:bool rt:bool
-        )
-    )
-    (defun XE_DeployAccountWNE (account:string id:string son:bool))
-    (defun XE_U|Rnaq (id:string account:string toggle))
-    (defun XI_U|AccountRoles (id:string son:bool account:string new-roles:object{DpdcUdcV2.AccountRoles}))
-    ;;
-    ;; [<PropertiesTable> Writings] [1]
-    ;;
-    (defun XE_I|Collection (id:string son:bool idp:object{DpdcUdcV2.DPDC|Properties}))
-    (defun XE_U|Specs (id:string son:bool specs:object{DpdcUdcV2.DPDC|Properties}))
-    (defun XE_U|IsPaused (id:string son:bool toggle:bool))
-    (defun XE_U|NoncesUsed (id:string son:bool new-nv:integer))
-    (defun XE_U|SetClassesUsed (id:string son:bool new-nsc:integer))
-    ;;
-    ;; [<NoncesTable> Writings] [2]
-    ;;
-    (defun XE_I|CollectionElement (id:string son:bool nonce-value:integer ned:object{DpdcUdcV2.DPDC|NonceElement}))
-    (defun XE_U|NonceSupply (id:string nonce-value:integer new-supply:integer))
-    (defun XE_U|NonceHolder (id:string nonce-value:integer new-holder-account:string))
-    (defun XE_U|NonceOrSplitData (id:string son:bool nonce-value:integer nos:bool nd:object{DpdcUdcV2.DPDC|NonceData}))
-    ;;
-    ;; [<VerumRolesTable> Writings] [3]
-    ;;
-    (defun XE_I|VerumRoles (id:string son:bool verum-chain:object{DpdcUdcV2.DPDC|VerumRoles}))
-    ;;
-    ;;  [Indirect Writings]
-    ;;
-    (defun XE_U|Frozen (id:string son:bool account:string toggle:bool))
-    (defun XE_U|Exemption (id:string son:bool account:string toggle:bool))
-    (defun XE_U|Burn (id:string son:bool account:string toggle:bool))
-    (defun XE_U|Create (id:string son:bool account:string toggle:bool))
-    (defun XE_U|Recreate (id:string son:bool account:string toggle:bool))
-    (defun XE_U|Update (id:string son:bool account:string toggle:bool))
-    (defun XE_U|ModifyCreator (id:string son:bool account:string toggle:bool))
-    (defun XE_U|ModifyRoyalties (id:string son:bool account:string toggle:bool))
-    (defun XE_U|SetNewUri (id:string son:bool account:string toggle:bool))
-    (defun XE_U|Transfer (id:string son:bool account:string toggle:bool))
-    (defun XE_U|VerumRoles (id:string son:bool rp:integer aor:bool account:string))
-    ;;
-    ;; [<AccountSuppliesTable> Writings] [4]
-    ;;
-    (defun XE_W|Supply (account:string id:string son:bool nonce-value:integer amount:integer))
-    ;;{5.7}  User [A/C]
-
-)
-;;
-(module DPDC GOV
-    @doc "DPDC is the central collectables (NFT/SFT) state module, implementing DpdcV2, \
-        \ BrandingUsageTertiaryV2 and OuronetPolicyV2. It owns all the domain tables — \
-        \ separate DPSF (SFT) and DPNF (NFT) tables for Properties, Nonces, VerumRoles, \
-        \ per-account Roles and AccountSupplies — and is the sole home of the UR_/URH_ \
-        \ readers, UEV_ validators, CAP_Owner/Creator gates, and the XE_/XI_/XB_ write \
-        \ primitives every other DPDC module routes persistence through. It also handles \
-        \ collection branding and exposes the DPDC smart-account governor."
+;;INFO_LIQUID|UnwrapStoa
+;;INFO_LIQUID|WrapStoa
+;;INFO_LIQUID|UnwrapUrStoa
+(module INFO-ONE GOV
+    @doc "INFO-ONE (InfoOneV2) is a read-only Stage-1 UI info module exposing INFO_ preview \
+        \ functions that return ClientInfo objects (operation description, result text, \
+        \ IGNIS/STOA cost estimates) for client operations across DALOS, DPTF, DPOF, VST, \
+        \ ATS, SWP, LIQUID and ORBR. It re-derives costs purely via gas-price helpers and \
+        \ each core module's URCi_ cost readers, with UC helpers for gas-price triggering \
+        \ and output formatting; it performs no state writes."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
-    (implements OuronetPolicyV2)
-    (implements BrandingUsageTertiaryV2)
-    (implements DpdcV2)
+    (implements InfoOneV2)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
     ;;
-    (defconst GOV|MD_DPDC                               (keyset-ref-guard (GOV|Demiurgoi)))
+    (defconst GOV|MD_INFO|DPTF                          (keyset-ref-guard (GOV|Demiurgoi)))
     ;;{G2}  schemas
     ;;{G3}  tables
     ;;{G4}  capabilities
-    (defcap GOV ()                                      (compose-capability (GOV|DPDC_ADMIN)))
-    (defcap GOV|DPDC_ADMIN ()                           (enforce-guard GOV|MD_DPDC))
+    (defcap GOV ()                                      (compose-capability (GOV|INFO|DPTF_ADMIN)))
+    (defcap GOV|INFO|DPTF_ADMIN ()                      (enforce-guard GOV|MD_INFO|DPTF))
     ;;{G5}  functions
     (defun GOV|Demiurgoi ()
         (let
@@ -384,221 +319,4125 @@
             (ref-DALOS::GOV|Demiurgoi)
         )
     )
-    (defun GOV|CollectiblesKey ()                       (+ (CT_Namespace) ".dh_sc_dpdc-keyset"))
-    ;;
-    ;; [SC-Names]
-    (defun GOV|DPDC|SC_NAME ()                          (at 0 ["Σ.μЖâAáпδÃàźфнMAŸôIÌjȘЛδεЬÍБЮoзξ4κΩøΠÒçѺłœщÌĘчoãueUøVlßHšδLτε£σž£ЙLÛòCÎcďьčfğÅηвČïnÊвÞIwÇÝмÉŠвRмWć5íЮzGWYвьżΨπûEÃdйdGЫŁŤČçПχĘŚślьЙŤğLУ0SýЭψȘÔÜнìÆkČѺȘÍÍΛ4шεнÄtИςȘ4"]))
-    ;;
-    ;;
-    ;; [PBLs]
-    (defun GOV|DPDC|PBL ()                              (at 0 ["9G.2j95rkomKqd207CDg5yycyKcAy1AqFhjy6D0rCr0Kbwe9E6libtveIHsAIw9F2c43v6IHILIBf62r2LD58xHE09kypyoevL62E81wHL4zj9tIyspf5df82upuBGGKmIsHGuvH86fHMMi99n0htsypL9h3dMHFCIx8ogeynkmCIghxK871rlkas8iDfce7AwAbiajr7H1LHi17mLD7aJu6m7xmcAABkhxtwb4Kqbk8xLpehakyu3AvajgJvtfeysoH67irvplA0as86Jls1r3d3oHms9Maaja9856wzybpthMGs6qDAzacE24skcA30wvm77BLhrdh0ymkl3vbJ9lG641J7ofg5K9gEbHD4ioFHLEajL28qsD4cFEhdDthDzwF8EnBBc74Dikqn9xixFap5Jxhl7D0owz5d9MDJzfjgx3jbdpD3zglsq83iC4fhcpbz3KeAi11Ig2pgIqnmwwqA0Exr5073w7lgzlrw3Ff7Co9uuxbnLuJvlFzgfGeIwM2Dmev1JskqEGK0Ck0B87iagsHFI76HC6sKnwrHnkl0sl8pAf0pbBaw9MbqLs"]))
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    (defconst P|I                                       (P|Info))
-    ;;{P2}  schemas
-    ;;{P3}  tables
-    ;;
-    (deftable P|T:{OuronetPolicyV2.P|S})
-    (deftable P|MT:{OuronetPolicyV2.P|MS})
-    ;;{P4}  capabilities
-    (defcap P|DPDC|CALLER ()
-        true
-    )
-    (defcap P|SECURE-CALLER ()
-        (compose-capability (P|DPDC|CALLER))
-        (compose-capability (SECURE))
-    )
-    ;;{P5}  functions
-    (defun P|Info ()
+    (defun GOV|SWP|SC_NAME ()
         (let
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
-            (ref-DALOS::P|Info)
+            (ref-DALOS::GOV|SWP|SC_NAME)
         )
     )
-    (defun P|UR:guard (policy-name:string)
-        (at "policy" (read P|T policy-name ["policy"]))
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    (defconst BAR                                       (CT_Bar))
+    (defconst EOC                                       (CT_EmptyCumulator))
+    (defconst SWP|SC_NAME                               (GOV|SWP|SC_NAME))
+    ;;{3.2}  schemas
+    ;;
+    ;;
+    (defschema HibernatedNoncesView
+        nonce:integer
+        nonce-supply:decimal
+        mint-time:time
+        release-time:time
+        hibernating-fee-promile:decimal
+        remainder:decimal
+        hibernating-fee:decimal
     )
-    (defun P|UR_IMP:[guard] ()
-        ;;DEFAULT ADDED 2026-09-14 (owner ruling). This was a bare `read`, which RAISES
-        ;;`No value found in table <M>_P|MT for key: InterModulePolicies` when the row does not
-        ;;exist -- i.e. before ANY module has registered. P|UEV_IMC is built on this, so in that
-        ;;window the inter-module gate answered with a raw table error naming a row key instead of
-        ;;refusing cleanly. Surfaced by the X-01 repair, which removed the harness registration
-        ;;that had been creating the row as a side effect.
-        ;;
-        ;;The default is the module's OWN SECURE capability guard, which is exactly what
-        ;;P|A_AddIMP already seeds the row with. So reader and writer now agree on what an
-        ;;unregistered policy list contains, and the gate's answer is the same before and after
-        ;;the first registration: satisfiable only from inside this module.
-        (with-default-read P|MT P|I
-            {"m-policies" : [(create-capability-guard (SECURE))]}
-            {"m-policies" := mp}
-            mp
-        )
-    )
-    (defun P|UEV_IMC ()
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    (defun CT_Bar ()
         (let
             (
-                (ref-U|G:module{OuronetGuardsV2} U|G)
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
             )
-            (ref-U|G::UEV_Any (P|UR_IMP))
+            (ref-U|CT::CT_BAR)
         )
     )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|DPDC_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
+    (defun CT_EmptyCumulator ()
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+            )
+            (ref-IGNIS::UDC_EmptyOutputCumulatorV2)
+        )
+    )
+    ;;
+    ;;
+    ;;
+    ;;{5.2}  Compute [UC]
+    (defun UC_GasPrice:decimal (full-price:decimal trigger:bool)
+        (if trigger 0.0 full-price)
+    )
+    ;;
+    (defun UC_TrimDecimalTrailingZeros:string (number:decimal)
+        @doc "Trims trailing zeros from a decimal number"
+        (let* 
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (number-as-string:string (format "{}" [number]))
+                (split-nas:[string] (ref-U|LST::UC_SplitString "." number-as-string))
+                (integer-part:string (at 0 split-nas))
+                (decimal-part:string (at 1 split-nas))
+                (ldp:integer (length decimal-part))
+                ;;
+                (trimmed-decimal-part:string
+                    (fold
+                        (lambda
+                            (acc:string idx:integer)
+                            (if (= (take -1 acc) "0")
+                                (drop -1 acc)
+                                acc
+                            )    
+                        )
+                        decimal-part
+                        (enumerate 0 (- ldp 1))
+                    )
+                )
+                (resulted-string:string
+                    (if (= trimmed-decimal-part "")
+                        (+ integer-part ".0")
+                        (concat [integer-part "." trimmed-decimal-part])
+                    )
+                )
+            )
+            resulted-string
+        )
+    )
+    ;;
+    (defun UC_LiquidityTaxDeclaration:[string]
+        (clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData})
+        @doc "The pre-text lines that DECLARE what an add-liquidity takes BEYOND its gas quote. \
+            \ Adding liquidity charges the caller TWO different ways. Gas travels through the \
+            \ OutputCumulator and lands in <ignis-need>, which every INFO_ already reports. The \
+            \ Asymmetric-Liquidity TAX does not: it is IGNIS moved as PRINCIPAL (and LP \
+            \ relinquished to the pool), so it never touches a cumulator and no ClientInfo field \
+            \ saw it. Until 2026-09-14 that made the add-liquidity previews quote a number that \
+            \ was correct and incomplete at the same time -- measured at modules/SWP.repl \
+            \ <<SWP-I14>>, where 1118.83 was quoted and 1318.83 left the account. \
+            \ The CLAD already computes both the figures and the per-leg wording; this only \
+            \ presents them, which is why it is a UC_ over an argument and reads nothing. \
+            \ NOTE the gaseous leg is NOT part of the tax total: it is billed as gas and is \
+            \ therefore already inside <ignis-need>. Its text is carried for completeness."
+        (let
+            (
+                (tax:decimal (at "total-ignis-tax-needed" clad))
+                (relinquish:decimal (at "relinquish-lp" clad))
+            )
+            (+
+                [
+                    (if (> tax 0.0)
+                        (format "PRINCIPAL, NOT included in the IGNIS cost below: {} IGNIS of Asymmetric-Liquidity TAX, transferred out of the account on top of the gas."
+                            [tax])
+                        "No Asymmetric-Liquidity TAX: this addition costs gas only."
+                    )
+                ]
+                (+
+                    (if (> relinquish 0.0)
+                        [(format "PRINCIPAL, NOT included in the IGNIS cost below: {} LP relinquished to the pool."
+                            [relinquish])]
+                        []
+                    )
+                    [
+                        (at "gaseous-text" clad)
+                        (at "deficit-text" clad)
+                        (at "special-text" clad)
+                        (at "lqboost-text" clad)
+                        (at "fueling-text" clad)
+                    ]
+                )
             )
         )
     )
-    (defun P|A_AddIMP (policy-guard:guard)
-        @doc "Registers <policy-guard> as a trusted inter-module caller of this module. \
-            \ IDEMPOTENT: a guard already in the chain is left alone rather than appended \
-            \ a second time. See OuronetPolicyV2 for why that is load-bearing."
-        (with-capability (GOV|DPDC_ADMIN)
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;
+    ;;  [SIP|URC] - Simple Ignis Price >> dependent on a single trigger
+    ;;
+    ;;
+    ;;  [SKP|URC] - Simple Stoa Price 
+    ;;
+    ;;
+    ;;  [INFO] - Informational URC Functions
+    ;;
+    ;;  [DPTF]
+    (defun INFO_DPTF|UpdatePendingBranding:object{OuronetInfoV2.ClientInfo}
+        (patron:string entity-id:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Update Pending Branding for {} DPTF" [entity-id])]
+                [(format "Pending Branding for DPTF {} updated succesfully" [entity-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPTF::URCi_UpdatePendingBranding entity-id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun INFO_DPTF|UpgradeBranding:object{OuronetInfoV2.ClientInfo}
+        (patron:string entity-id:string months:integer)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Upgrade Branding for {} DPTF for {} month(s)" [entity-id months])]
+                [(format "DPTF {} succesfully upgraded for {} months(s)!" [entity-id months])]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-DPTF::URCi_UpgradeBranding months))
+                []
+            )
+        )
+    )
+    (defun INFO_DPTF|Burn:object{OuronetInfoV2.ClientInfo}
+        (patron:string id:string account:string amount:decimal)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                ;;
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Burn {} {} on Account {}" [amount id sa])]
+                [(format "Succesfully burned {} {} on Account {}" [amount id sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPTF::URCi_Burn id account)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [amount]
+            )
+        )
+    )
+    (defun INFO_DPTF|Control:object{OuronetInfoV2.ClientInfo}
+        (patron:string id:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Control DPTF {} Boolean Properties" [id])]
+                [(format "Succesfully controlled Properties of {}" [id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPTF::URCi_Control id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun INFO_DPTF|DeployAccount:object{OuronetInfoV2.ClientInfo}
+        (patron:string id:string account:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                ;;
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [
+                    (format "Operation: Deploys a new {} DPTF Account." [id])
+                    (format "Deploys Token {} on the Ouronet Account {}" [id sa])
+                ]
+                [(format "DPTF {} added to {} Ouronet Account succesfully!" [id sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPTF::URCi_DeployAccount account)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun INFO_DPTF|DonateFees:object{OuronetInfoV2.ClientInfo}
+        (patron:string id:string)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                ;;
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount (ref-DALOS::GOV|DALOS|SC_NAME)))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [
+                    (format "Operation: Donates {} collected Fees" [id])
+                    (format "Collection Location: Ouronet Gas Station: {}" [sa])
+                ]
+                [(format "Fee Collection succesfully set to {}" [sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPTF::URCi_SetFeeTarget id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun INFO_DPTF|Issue:object{OuronetInfoV2.ClientInfo}
+        (patron:string account:string name:[string])
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                ;;
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [
+                    (format "Operation: Issues {} DPTF(s)" [name])
+                    (format "Also issues DPTF Accounts on {} Account" [sa])
+                ]
+                [(format "DPTF Issuance of {} succesfully completed" [name])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-DPTF::URCi_IssueGas (length name)))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-DPTF::URCi_IssueStoa (length name)))
+                []
+            )
+        )
+    )
+    (defun INFO_DPTF|Mint:object{OuronetInfoV2.ClientInfo}
+        (patron:string id:string account:string amount:decimal origin:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                ;;
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [
+                    (if origin
+                        (format "Operation: Premine {} {} on Account {}" [amount id sa])
+                        (format "Operation: Mint {} {} on Account {}" [amount id sa])
+                    )
+                ]
+                [
+                    (if origin
+                        (format "Succesfully premined {} {} on Account {}" [amount id sa])
+                        (format "Succesfully minted {} {} on Account {}" [amount id sa])
+                    )
+                ]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPTF::URCi_Mint id account origin)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [amount]
+            )
+        )
+    )
+    (defun INFO_DPTF|ResetFeeTarget:object{OuronetInfoV2.ClientInfo}
+        (patron:string id:string)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                ;;
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount (ref-DALOS::GOV|OUROBOROS|SC_NAME)))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [
+                    (format "Operation: Resets Collection of Fees for {}" [id])
+                    (format "Collection Location: Ouroboros Smart Ouronet Account {}" [sa])
+                ]
+                [(format "Fee Collection succesfully set to {}" [sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPTF::URCi_SetFeeTarget id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun INFO_DPTF|RotateOwnership:object{OuronetInfoV2.ClientInfo}
+        (patron:string id:string new-owner:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                ;;
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount new-owner))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Changes Ownership for {} to {}" [id sa])]
+                [(format "ID {} Ownership succesfully set to {}" [id sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPTF::URCi_RotateOwnership id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun INFO_DPTF|SetFee:object{OuronetInfoV2.ClientInfo}
+        (patron:string id:string fee:decimal)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Sets fee for {} to {} Promille" [id fee])]
+                [(format "Fee Promille succesfully set to {} Promille for {}" [fee id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPTF::URCi_SetFee id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [fee]
+            )
+        )
+    )
+    (defun INFO_DPTF|SetFeeTarget:object{OuronetInfoV2.ClientInfo}
+        (patron:string id:string target:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                ;;
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount target))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Sets fee target for {} to {} " [id sa])]
+                [(format "Fee Target succesfully set for {} to {}" [id sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPTF::URCi_SetFeeTarget id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [target]
+            )
+        )
+    )
+    (defun INFO_DPTF|SetMinMove:object{OuronetInfoV2.ClientInfo}
+        (patron:string id:string min-move-value:decimal)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Sets MinMove Value target for {} to {} " [id min-move-value])]
+                [(format "MinMove Value succesfully set for {} to {}" [id min-move-value])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPTF::URCi_SetMinMove id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [min-move-value]
+            )
+        )
+    )
+    (defun INFO_DPTF|ToggleFee:object{OuronetInfoV2.ClientInfo}
+        (patron:string id:string toggle:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [
+                    (if toggle
+                        (format "Operation: Activates Fee Collection for {}" [id])
+                        (format "Operation: Deactivates Fee Collection for {}" [id])
+                    )
+                ]
+                [
+                    (if toggle
+                        (format "Fee Collection activated succesfully for {}" [id])
+                        (format "Fee Collection deactivated succesfully for {}" [id])
+                    )
+                ]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPTF::URCi_ToggleFee id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [toggle]
+            )
+        )
+    )
+    (defun INFO_DPTF|ToggleFeeLock:object{OuronetInfoV2.ClientInfo}
+        (patron:string id:string toggle:bool fee-unlocks:integer)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [
+                    (if toggle
+                        (format "Operation: Locks Fee Settings for {}" [id])
+                        (format "Operation: Unlocks Fee Collection for {}" [id])
+                    )
+                ]
+                [
+                    (if toggle
+                        (format "Fee Settings succesfully locked for {}" [id])
+                        (format "Fee Settings succesfully unlocked  for {}" [id])
+                    )
+                ]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPTF::URCi_ToggleFeeLock id toggle)))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-DPTF::URCi_ToggleFeeLockStoa id toggle))
+                [toggle]
+            )
+        )
+    )
+    (defun INFO_DPTF|ToggleFreezeAccount:object{OuronetInfoV2.ClientInfo}
+        (patron:string id:string account:string toggle:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                ;;
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [
+                    (if toggle
+                        (format "Operation: Freezes ID {} on Account" [id sa])
+                        (format "Operation: Unfreezes ID {} on Account" [id sa])
+                    )
+                ]
+                [
+                    (if toggle
+                        (format "Account {} succesfully frozen for {}" [sa id])
+                        (format "Account {} succesfuly unfrozen for {}" [sa id])
+                    )
+                ]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPTF::URCi_ToggleFreezeAccount id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [toggle]
+            )
+        )
+    )
+    (defun INFO_DPTF|TogglePause:object{OuronetInfoV2.ClientInfo}
+        (patron:string id:string toggle:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [
+                    (if toggle
+                        (format "Operation: Pauses ID {}" [id])
+                        (format "Operation: Unpauses ID {}" [id])
+                    )
+                ]
+                [
+                    (if toggle
+                        (format "ID {} succesfully pauses" [id])
+                        (format "ID {} succesfully unpauses" [id])
+                    )
+                ]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPTF::URCi_TogglePause id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [toggle]
+            )
+        )
+    )
+    (defun INFO_DPTF|ToggleReservation:object{OuronetInfoV2.ClientInfo}
+        (patron:string id:string toggle:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [
+                    (if toggle
+                        (format "Operation: Opens Reservations for {}" [id])
+                        (format "Operation: Closes Reservations for {}" [id])
+                    )
+                ]
+                [
+                    (if toggle
+                        (format "Reservations succesfully opened for {}" [id])
+                        (format "Reservations succesfully closed for {}" [id])
+                    )
+                ]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPTF::URCi_ToggleReservation id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [toggle]
+            )
+        )
+    )
+    (defun INFO_DPTF|ToggleTransferRole:object{OuronetInfoV2.ClientInfo}
+        (patron:string id:string account:string toggle:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                ;;
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [
+                    (if toggle
+                        (format "Operation: Adds Transfer Role for {} to {}" [id sa])
+                        (format "Operation: Removes Transfer Role for {} to {}" [id sa])
+                    )
+                ]
+                [
+                    (if toggle
+                        (format "Transfer Role succesfuly added for {} to {}" [id sa])
+                        (format "Transfer Role succesfuly removed for {} to {}" [id sa])
+                    )
+                ]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPTF::URCi_ToggleTransferRole id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [toggle]
+            )
+        )
+    )
+    (defun INFO_DPTF|Wipe:object{OuronetInfoV2.ClientInfo}
+        (patron:string id:string atbw:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                ;;
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount atbw))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Wipes all {} from account {}" [id sa])]
+                [(format "Succesfully wiped all {} from account {}" [id sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPTF::URCi_Wipe id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [atbw]
+            )
+        )
+    )
+    (defun INFO_DPTF|WipeSlim:object{OuronetInfoV2.ClientInfo}
+        (patron:string id:string atbw:string amtbw:decimal)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                ;;
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount atbw))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Wipes {} {} from account {}" [amtbw id sa])]
+                [(format "Succesfully wiped {} {} from account {}" [amtbw id sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPTF::URCi_WipeSlim id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [atbw amtbw]
+            )
+        )
+    )
+    (defun INFO_DPTF|Transfer:object{OuronetInfoV2.ClientInfo}
+        (patron:string id:string sender:string receiver:string transfer-amount:decimal)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                ;;
+                (what-type:integer (at "type" (ref-TFT::URC_TransferClasses id sender receiver transfer-amount)))
+                (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ref-TFT::URCi_TransferCumulator what-type id sender receiver)
+                )
+                (receiver-amount:decimal (ref-TFT::URC_ReceiverAmount id sender receiver transfer-amount))
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico))
+                ;;
+                (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount sender))
+                (sa-r:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
+                ;;
+                (ea:string (ref-DALOS::UR_EliteAurynID))
+                (ouro:string (ref-DALOS::UR_OuroborosID))
+                (sender-ouro-supply:decimal (ref-DALOS::UR_TF_AccountSupply sender true))
+                (dispo-check:bool (fold (and) true [(= id ea) (< sender-ouro-supply 0.0)]))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                (if dispo-check
+                    [
+                        (format "Operation: Attempts to transfer {} {} from {} to {}" [transfer-amount id sa-s sa-r])
+                        (format "This operation cannot execute for {} when {} {} Supply is Negative (current supply {})" [ea sa-s ouro sender-ouro-supply])
+                        (format "In order to transfer {}, an {} supply of at least 0.0 is required." [ea ouro])
+                    ]
+                    [
+                        (format "Operation: Transfers {} {} from {} to {}" [transfer-amount id sa-s sa-r])
+                        (if (= receiver-amount transfer-amount)
+                            (format "Receiver will receiver the full amount of {} {}" [transfer-amount id])
+                            (format "Due to Fee Settings, Receiver will receive only {} {}" [receiver-amount id])
+                        )
+                    ]
+                )
+                [
+                    (if (= receiver-amount transfer-amount)
+                        (format "Succesfully transfered {} {} from {} to {}, moving the Full Amount to the Receiver" [transfer-amount id sa-s sa-r])
+                        (format "Succesfully transfered {} {} from {} to {}, moving only {} to the Receiver due to DPTF Fee Settings" [transfer-amount id sa-s sa-r receiver-amount])
+                    )
+                ]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [(ref-I|OURONET::OI|UC_FormatTokenAmount receiver-amount)]
+            )
+        )
+    )
+    (defun INFO_DPTF|MultiTransfer:object{OuronetInfoV2.ClientInfo}
+        (patron:string id-lst:[string] sender:string receiver:string transfer-amount-lst:[decimal])
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ref-TFT::URCi_MultiTransferCumulator id-lst sender receiver transfer-amount-lst)
+                )
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico))
+                ;;
+                (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount sender))
+                (sa-r:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
+                ;;
+                (ea:string (ref-DALOS::UR_EliteAurynID))
+                (ouro:string (ref-DALOS::UR_OuroborosID))
+                (sender-ouro-supply:decimal (ref-DALOS::UR_TF_AccountSupply sender true))
+                (has-ea:bool (contains ea id-lst))
+                (dispo-check:bool (fold (and) true [has-ea (< sender-ouro-supply 0.0)]))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                (if dispo-check
+                    [
+                        (format "Operation: Transfers {} DPTFs as a Multi-Transfer" [(length id-lst)])
+                        (format "DPTFs are: {}" [id-lst])
+                        (format "Transfer cannot execute, as moving {} requires at least 0.0 {} Balance on {}" [ea ouro sa-s])
+                        (format "To proceed, either remove {} from the list, or bring the {} Balance on {} to at least 0.0" [ea ouro sa-s])
+                    ]
+                    [
+                        (format "Operation: Transfers {} DPTFs as a Multi-Transfer" [(length id-lst)])
+                        (format "DPTFs are: {}" [id-lst])
+                        (format "Amounts are in their order: {}" [transfer-amount-lst])
+                        (format "Movement occurs from {} to {}" [sa-s sa-r])
+                    ]
+                )
+                
+                [(format "Succesfully multi-transfered {} DPTFs from {} to {}" [(length id-lst) sa-s sa-r])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [id-lst transfer-amount-lst]
+            )
+        )
+    )
+    (defun INFO_DPTF|BulkTransfer:object{OuronetInfoV2.ClientInfo}
+        (patron:string id:string sender:string receiver-lst:[string] transfer-amount-lst:[decimal])
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                ;;
+                (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ref-TFT::URCi_BulkTransferCumulator id sender receiver-lst transfer-amount-lst)
+                )
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico))
+                (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount sender))
+                ;;
+                (ea:string (ref-DALOS::UR_EliteAurynID))
+                (ouro:string (ref-DALOS::UR_OuroborosID))
+                (sender-ouro-supply:decimal (ref-DALOS::UR_TF_AccountSupply sender true))
+                (dispo-check:bool (fold (and) true [(= id ea) (< sender-ouro-supply 0.0)]))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                (if dispo-check
+                    [
+                        (format "Operation: Transfers {} DPTF in Bulk" [id])
+                        (format "Operation cannot execute, as moving {} requires at least 0.0 {} Balance on {}" [ea ouro sa-s])
+                        (format "To proceed, bring the {} Balance on {} to at least 0.0" [ouro sa-s])
+                    ]
+                    [
+                        (format "Operation: Transfers {} DPTF in Bulk" [id])
+                        (format "Bulk Transfer means from one Sender, {} to multiple receivers" [sa-s])
+                    ]
+                )
+                [(format "Succesfully bulk-transfered {} DPTF from {} to {} Receivers" [id sa-s (length receiver-lst)])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [receiver-lst transfer-amount-lst]
+            )
+        )
+    )
+    (defun INFO_DPTF|MultiBulkTransfer:object{OuronetInfoV2.ClientInfo}
+        (patron:string id-lst:[string] sender:string receiver-array:[[string]] transfer-amount-array:[[decimal]])
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                ;;
+                (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ref-TFT::URCi_MultiBulkTransferCumulator id-lst sender receiver-array transfer-amount-array)
+                )
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico))
+                (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount sender))
+                ;;
+                (ea:string (ref-DALOS::UR_EliteAurynID))
+                (ouro:string (ref-DALOS::UR_OuroborosID))
+                (sender-ouro-supply:decimal (ref-DALOS::UR_TF_AccountSupply sender true))
+                (has-ea:bool (contains ea id-lst))
+                (dispo-check:bool (fold (and) true [has-ea (< sender-ouro-supply 0.0)]))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                (if dispo-check
+                    [
+                        (format "Operation: Transfers {} DPTFs in MultiBulk at once" [(length id-lst)])
+                        (format "DPTFs are: {}" [id-lst])
+                        (format "MultiBulkTransfer cannot execute, as moving {} requires at least 0.0 {} Balance on {}" [ea ouro sa-s])
+                        (format "To proceed, either remove {} from the list, or bring the {} Balance on {} to at least 0.0" [ea ouro sa-s])
+                    ]
+                    [
+                        (format "Operation: Transfers {} DPTFs in Bulk at once" [(length id-lst)])
+                        (format "DPTFs are: {}" [id-lst])
+                        (format "Transfer occurs from Sender, {} to multiple receivers, specific for each DPTF" [sa-s])
+                        (format "Bulk Transfer DPTFs are {}" [id-lst])
+                    ]
+                )
+                [(format "Succesfully multi-bulk-transfered {} DPTFs from Sender {} to {} Individual Receiver Lists" [(length id-lst) sa-s (length receiver-array)])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [id-lst receiver-array transfer-amount-array]
+            )
+        )
+    )
+    (defun INFO_DPTF|ClearDispo:object{OuronetInfoV2.ClientInfo}
+        (patron:string account:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                ;;
+                (ouro-id:string (ref-DALOS::UR_OuroborosID))
+                (a-id:string (ref-DALOS::UR_AurynID))
+                (ea-id:string (ref-DALOS::UR_EliteAurynID))
+                (ouro-a:decimal (ref-DPTF::UR_AccountSupply ouro-id account))
+                (ouro-amount:decimal (abs ouro-a))
+            )
+            (enforce (< ouro-a 0.0) "Dispo Clear requires Negative OURO")
             (let
                 (
-                    (ref-U|LST:module{StringProcessorV2} U|LST)
                     ;;
-                    (dg:guard (create-capability-guard (SECURE)))
+                    (auryndex:string (at 0 (ref-DPTF::UR_RewardToken ouro-id)))
+                    (elite-auryndex:string (at 0 (ref-DPTF::UR_RewardToken a-id)))
+                    (auryndex-value:decimal (ref-ATS::URC_Index auryndex))
+                    (elite-auryndex-value:decimal (ref-ATS::URC_Index elite-auryndex))
+                    ;;
+                    (a-prec:integer (ref-DPTF::UR_Decimals a-id))
+                    (ea-prec:integer (ref-DPTF::UR_Decimals ea-id))
+                    ;;
+                    (burn-auryn-amount:decimal (floor (/ ouro-amount auryndex-value) a-prec))
+                    (burn-elite-auryn-amount:decimal (floor (/ burn-auryn-amount elite-auryndex-value) ea-prec))
+                    (total-ea:decimal (floor (* burn-elite-auryn-amount 2.5) ea-prec))
+                    ;;
+                    (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-TFT::URCi_ClearDispo account)))
                 )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" :
-                            (if (contains policy-guard mp)
-                                mp
-                                (ref-U|LST::UC_AppL mp policy-guard)
+                (ref-I|OURONET::OI|UDC_ClientInfo
+                    [
+                        (format "Operation: Clear the Negative Dispo of {} {} by leveraging EliteAuryn Supply" [ouro-amount ouro-id])
+                        (format "{} {} is used to cover the Debt" [burn-elite-auryn-amount ea-id])
+                        (format "{} {} is used as extra cost for the operation set to increase the {} Index" [(- total-ea burn-elite-auryn-amount) ea-id elite-auryndex])
+                    ]
+                    [(format "Succesfully cleared negative {} using {} {}" [ouro-id total-ea ea-id])]
+                    (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                    (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                    []
+                )
+            )
+        )
+    )
+    (defun INFO_DPTF|ToggleBurnRole:object{OuronetInfoV2.ClientInfo}
+        (patron:string id:string account:string toggle:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                ;;
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(if toggle (format "Operation: Adds Burn Role for {} to {}" [id sa]) (format "Operation: Removes Burn Role for {} to {}" [id sa]))]
+                [(if toggle (format "Burn Role succesfuly added for {} to {}" [id sa]) (format "Burn Role succesfuly removed for {} to {}" [id sa]))]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPTF::URCi_ToggleBurnRole id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [toggle]
+            )
+        )
+    )
+    (defun INFO_DPTF|ToggleMintRole:object{OuronetInfoV2.ClientInfo}
+        (patron:string id:string account:string toggle:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                ;;
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(if toggle (format "Operation: Adds Mint Role for {} to {}" [id sa]) (format "Operation: Removes Mint Role for {} to {}" [id sa]))]
+                [(if toggle (format "Mint Role succesfuly added for {} to {}" [id sa]) (format "Mint Role succesfuly removed for {} to {}" [id sa]))]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPTF::URCi_ToggleMintRole id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [toggle]
+            )
+        )
+    )
+    (defun INFO_DPTF|ToggleFeeExemptionRole:object{OuronetInfoV2.ClientInfo}
+        (patron:string id:string account:string toggle:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                ;;
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(if toggle (format "Operation: Adds Fee-Exemption Role for {} to {}" [id sa]) (format "Operation: Removes Fee-Exemption Role for {} to {}" [id sa]))]
+                [(if toggle (format "Fee-Exemption Role succesfuly added for {} to {}" [id sa]) (format "Fee-Exemption Role succesfuly removed for {} to {}" [id sa]))]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPTF::URCi_ToggleFeeExemptionRole id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [toggle]
+            )
+        )
+    )
+    (defun INFO_DPTF|Transmute:object{OuronetInfoV2.ClientInfo}
+        (patron:string id:string transmuter:string transmute-amount:decimal)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                ;;
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount transmuter))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Transmutes {} {} on Account {}" [transmute-amount id sa])]
+                [(format "Succesfully transmuted {} {} on Account {}" [transmute-amount id sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-TFT::URCi_Transmute id transmuter)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [(ref-I|OURONET::OI|UC_FormatTokenAmount transmute-amount)]
+            )
+        )
+    )
+    ;;  [DPOF]
+    (defun INFO_DPOF|UpdatePendingBranding:object{OuronetInfoV2.ClientInfo}
+        (patron:string entity-id:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Update Pending Branding for {} DPOF" [entity-id])]
+                [(format "Pending Branding for DPOF {} updated succesfully" [entity-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_UpdatePendingBranding entity-id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun INFO_DPOF|UpgradeBranding:object{OuronetInfoV2.ClientInfo}
+        (patron:string entity-id:string months:integer)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Upgrade Branding for {} DPOF for {} month(s)" [entity-id months])]
+                [(format "DPOF {} succesfully upgraded for {} months(s)!" [entity-id months])]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-DPOF::URCi_UpgradeBranding months))
+                []
+            )
+        )
+    )
+    (defun INFO_DPOF|AddQuantity:object{OuronetInfoV2.ClientInfo}
+        (patron:string id:string nonce:integer account:string amount:decimal)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                ;;
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Adds {} to DPOF {} Nonce {} on Account {}" [amount id nonce sa])]
+                [(format "Succesfully increased DPOF {} nonce {} quantity on Account {} by {}" [id nonce sa amount])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_AddQuantity id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [amount]
+            )
+        )
+    )
+    (defun INFO_DPOF|Burn:object{OuronetInfoV2.ClientInfo}
+        (patron:string id:string nonce:integer account:string amount:decimal)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                ;;
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Burns {} Units of DPOF {} Nonce {} on Account {}" [amount id nonce sa])]
+                [(format "Succesfully burned {} Units of DPOF {} Nonce {} on Account {}" [amount id nonce sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_Burn id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [amount]
+            )
+        )
+    )
+    (defun INFO_DPOF|Control:object{OuronetInfoV2.ClientInfo}
+        (patron:string id:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Controls DPOF {} Boolean Properties" [id])]
+                [(format "Succesfully controlled DPOF {} Boolean Properties" [id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_Control id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    ;; NOTE: the former INFO_DPOF|Create was an orphan preview — DPOF has no C_Create client
+    ;; op (create-without-quantity is not a gas-funded path; Mint creates+adds in one op).
+    ;; Dropped in the URCi rehaul; re-add alongside a real client op if one is ever introduced.
+    (defun INFO_DPOF|DeployAccount:object{OuronetInfoV2.ClientInfo}
+        (patron:string id:string account:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                ;;
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            ;;The op's own existence check. Without it this preview returned a full quote narrating
+            ;;"Succesfully deployed a New DPOF Account for DPOF NOSUCHOFT-98c486052a51 ..." for a
+            ;;token that does not exist -- the wrapper only ever FORMATS <id>, so nothing here
+            ;;touched it. Same function the exec calls, so the refusal is identical by construction.
+            ;;Pinned by RedTeam/[RT-K]_PreviewParity.repl <<RT-K-003a>>.
+            (ref-DPOF::UEV_id id)
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Deploy a DPOF Account for DPOF {} on Ouronet Account {}" [id sa])]
+                [(format "Succesfully deployed a New DPOF Account for DPOF {} on Ouronet Account {}" [id sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_DeployAccount account)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun INFO_DPOF|Issue:object{OuronetInfoV2.ClientInfo}
+        (patron:string account:string name:[string])
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                ;;
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [
+                    (format "Operation: Issues {} DPOF(s)" [name])
+                    (format "Also issues DPTF Accounts on {} Account" [sa])
+                ]
+                [(format "DPOF Issuance of {} succesfully completed" [name])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-DPOF::URCi_IssueGas (length name)))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-DPOF::URCi_IssueStoa (length name)))
+                []
+            )
+        )
+    )
+    (defun INFO_DPOF|Mint:object{OuronetInfoV2.ClientInfo}
+        (patron:string id:string account:string amount:decimal)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                ;;
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_Mint id)))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Mint {} {} on Account {}, on a new Nonce" [amount id sa])]
+                [(format "Succesfully minted {} {} on Account {}, on a new Nonce" [amount id sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [(ref-I|OURONET::OI|UC_FormatTokenAmount amount)]
+            )
+        )
+    )
+    ;; ---- DPOF entity-completion: ownership/role toggles (1:1 URCi) ----
+    (defun INFO_DPOF|RotateOwnership:object{OuronetInfoV2.ClientInfo} (patron:string id:string new-owner:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount new-owner))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Changes Ownership for DPOF {} to {}" [id sa])]
+                [(format "DPOF {} Ownership succesfully set to {}" [id sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_RotateOwnership id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun INFO_DPOF|MoveCreateRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string receiver:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Moves the Create-Role of DPOF {} to {}" [id sa])]
+                [(format "Create-Role of DPOF {} succesfully moved to {}" [id sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_MoveCreateRole id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun INFO_DPOF|ToggleAddQuantityRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(if toggle (format "Operation: Adds Add-Quantity Role for {} to {}" [id sa]) (format "Operation: Removes Add-Quantity Role for {} to {}" [id sa]))]
+                [(if toggle (format "Add-Quantity Role added for {} to {}" [id sa]) (format "Add-Quantity Role removed for {} to {}" [id sa]))]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_ToggleAddQuantityRole id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [toggle]
+            )
+        )
+    )
+    (defun INFO_DPOF|ToggleBurnRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(if toggle (format "Operation: Adds Burn Role for {} to {}" [id sa]) (format "Operation: Removes Burn Role for {} to {}" [id sa]))]
+                [(if toggle (format "Burn Role added for {} to {}" [id sa]) (format "Burn Role removed for {} to {}" [id sa]))]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_ToggleBurnRole id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [toggle]
+            )
+        )
+    )
+    (defun INFO_DPOF|ToggleFreezeAccount:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(if toggle (format "Operation: Freezes DPOF {} on Account {}" [id sa]) (format "Operation: Unfreezes DPOF {} on Account {}" [id sa]))]
+                [(if toggle (format "Account {} succesfully frozen for {}" [sa id]) (format "Account {} succesfully unfrozen for {}" [sa id]))]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_ToggleFreezeAccount id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [toggle]
+            )
+        )
+    )
+    (defun INFO_DPOF|TogglePause:object{OuronetInfoV2.ClientInfo} (patron:string id:string toggle:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(if toggle (format "Operation: Pauses DPOF {}" [id]) (format "Operation: Unpauses DPOF {}" [id]))]
+                [(if toggle (format "DPOF {} succesfully paused" [id]) (format "DPOF {} succesfully unpaused" [id]))]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_TogglePause id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [toggle]
+            )
+        )
+    )
+    (defun INFO_DPOF|ToggleTransferRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(if toggle (format "Operation: Adds Transfer Role for {} to {}" [id sa]) (format "Operation: Removes Transfer Role for {} to {}" [id sa]))]
+                [(if toggle (format "Transfer Role added for {} to {}" [id sa]) (format "Transfer Role removed for {} to {}" [id sa]))]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_ToggleTransferRole id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [toggle]
+            )
+        )
+    )
+    ;; ---- DPOF entity-completion: transfer family (URCi_MoveCumulator: transmit=ignis|small, transfer=ignis|smallest per nonce) ----
+    (defun INFO_DPOF|Transfer:object{OuronetInfoV2.ClientInfo} (patron:string id:string nonces:[integer] sender:string receiver:string method:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount sender))
+                (sa-r:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Transfers DPOF {} Nonces {} from {} to {}" [id nonces sa-s sa-r])]
+                [(format "Succesfully transferred DPOF {} Nonces {} from {} to {}" [id nonces sa-s sa-r])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_MoveCumulator id nonces false)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [nonces]
+            )
+        )
+    )
+    (defun INFO_DPOF|Transmit:object{OuronetInfoV2.ClientInfo} (patron:string id:string nonces:[integer] amounts:[decimal] sender:string receiver:string method:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount sender))
+                (sa-r:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Transmits DPOF {} Nonces {} Amounts {} from {} to {}" [id nonces amounts sa-s sa-r])]
+                [(format "Succesfully transmitted DPOF {} Nonces {} from {} to {}" [id nonces sa-s sa-r])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_MoveCumulator id nonces true)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [nonces amounts]
+            )
+        )
+    )
+    (defun INFO_DPOF|BulkTransfer:object{OuronetInfoV2.ClientInfo} (patron:string id:string nonces-array:[[integer]] sender:string receiver-lst:[string] method:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount sender))
+                (all-nonces:[integer] (fold (+) [] nonces-array))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Bulk-transfers DPOF {} from {} to {} Receivers" [id sa-s (length receiver-lst)])]
+                [(format "Succesfully bulk-transferred DPOF {} from {} to {} Receivers" [id sa-s (length receiver-lst)])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_MoveCumulator id all-nonces false)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [receiver-lst]
+            )
+        )
+    )
+    ;; ---- DPOF entity-completion: wipe family (WipeSlim flat; Pure/Heavy/Clean per-nonce via URCi_WipeCumulator) ----
+    (defun INFO_DPOF|WipeSlim:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string nonce:integer amount:decimal)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Wipes {} of DPOF {} Nonce {} from Account {}" [amount id nonce sa])]
+                [(format "Succesfully wiped {} of DPOF {} Nonce {} from Account {}" [amount id nonce sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_WipeSlim id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [amount]
+            )
+        )
+    )
+    (defun INFO_DPOF|WipePure:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces})
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Pure-wipes DPOF {} on Account {} (pre-read removable nonces)" [id sa])]
+                [(format "Succesfully pure-wiped DPOF {} on Account {}" [id sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_WipeCumulator id removable-nonces-obj)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun INFO_DPOF|WipeHeavy:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Heavy-wipes all viable DPOF {} Nonces from Account {}" [id sa])]
+                [(format "Succesfully heavy-wiped DPOF {} from Account {}" [id sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_WipeCumulator id (ref-DPOF::URHC_WipePure account id))))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun INFO_DPOF|WipeClean:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string nonces:[integer])
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Clean-wipes DPOF {} Nonces {} from Account {}" [id nonces sa])]
+                [(format "Succesfully clean-wiped DPOF {} Nonces {} from Account {}" [id nonces sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_WipeCumulator id (ref-DPOF::UDC_RemovableNonces nonces (ref-DPOF::UR_NoncesSupplies id nonces)))))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [nonces]
+            )
+        )
+    )
+    (defun INFO_DPOF|WipeSlice:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces})
+        @doc "Hydra wipe SLICE preview: exact IGNIS cost of one <Cp_WipeSlice> tx, computed \
+            \ from the slice's own payload via the same URCi the executor bills from."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                (n:integer (length (at "r-nonces" removable-nonces-obj)))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Hydra wipe slice of {} DPOF {} Nonce(s) from Account {}" [n id sa])]
+                [(format "Succesfully sliced-wiped {} DPOF {} Nonce(s) from Account {}" [n id sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_WipeCumulator id removable-nonces-obj)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [n]
+            )
+        )
+    )
+    (defun INFO_DPOF|WipeFull:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string plan:object{DpofUdcV2.DPOF|WipeSlicePlan})
+        @doc "Hydra wipe FULL preview: grand-total IGNIS across the whole <URHC_BuildWipeSlicePlan> \
+            \ plan = the sum of every slice's own <INFO_DPOF|WipeSlice> cost (per-slice ifp sums \
+            \ mirror the executor byte-for-byte)."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                (slices:[object{DpofUdcV2.RemovableNonces}] (at "slices" plan))
+                (total-ifp:decimal
+                    (fold (+) 0.0
+                        (map
+                            (lambda
+                                (slice:object{DpofUdcV2.RemovableNonces})
+                                (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_WipeCumulator id slice))
                             )
-                        }
+                            slices
+                        )
                     )
                 )
             )
-        )
-    )
-    (defun P|A_RemoveIMP (policy-guard:guard)
-        @doc "Revokes <policy-guard> from this module's guard chain. Removes EVERY occurrence, so \
-            \ it doubles as the cleanup for duplicates left behind by the pre-idempotence append. \
-            \ Refuses to drop this module's own SECURE seed -- see OuronetPolicyV2."
-        (with-capability (GOV|DPDC_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV2} U|LST)
-                    ;;
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (enforce (!= policy-guard dg) "The module's own SECURE seed cannot be revoked")
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_RemoveItem mp policy-guard)}
-                    )
-                )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Hydra wipe campaign of DPOF {} on Account {} over {} slice tx(s)" [id sa (at "slice-count" plan)])]
+                [(format "Succesfully hydra-wiped DPOF {} on Account {} in {} slice tx(s)" [id sa (at "slice-count" plan)])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron total-ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [(at "slice-count" plan)]
             )
         )
     )
-    (defun P|A_SetIMP (policy-guards:[guard])
-        @doc "Replaces this module's whole guard chain in one write -- the recovery hatch. \
-            \ Deduplicates, and enforces that the module's own SECURE seed survives: without it \
-            \ the module can no longer reach its own P|UEV_IMC-gated functions."
-        (with-capability (GOV|DPDC_ADMIN)
-            (let
-                (
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (enforce (contains dg policy-guards) "The module's own SECURE seed must be present")
-                (write P|MT P|I
-                    {"m-policies" : (distinct policy-guards)}
-                )
-            )
-        )
-    )
-    (defun P|A_Define ()
+    ;;  [VST]
+    (defun INFO_VST|Hibernate:object{OuronetInfoV2.ClientInfo}
+        (patron:string hibernator:string target-account:string dptf:string amount:decimal dayz:integer)
         (let
             (
-                (ref-P|DALOS:module{OuronetPolicyV2} DALOS)
-                (ref-P|BRD:module{OuronetPolicyV2} BRD)
-                (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
-                (mg:guard (create-capability-guard (P|DPDC|CALLER)))
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-VST:module{VestingV2} VST)
+                ;;
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_Hibernate hibernator target-account dptf amount dayz)))
+                (sa-hibernator:string (ref-I|OURONET::OI|UC_ShortAccount hibernator))
             )
-            (ref-P|DALOS::P|A_AddIMP mg)
-            (ref-P|BRD::P|A_AddIMP mg)
-            (ref-P|IGNIS::P|A_AddIMP mg)
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [
+                    (format "Operation: Hibernates {} {} for {} Days" [amount dptf dayz])
+                ]
+                [
+                    (format "Sucesfully hibernated {} {} on Account {} for a Duration of {} days." [amount dptf sa-hibernator dayz])
+                ]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [(ref-I|OURONET::OI|UC_FormatTokenAmount amount) dayz]
+            )
         )
     )
+    (defun INFO_VST|Awake:object{OuronetInfoV2.ClientInfo}
+        (patron:string awaker:string dpof:string nonce:integer)
+        (let
+            (
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-VST:module{VestingV2} VST)
+                ;;
+                (dptf-id:string (ref-DPOF::UR_Hibernation dpof))
+                (precision:integer (ref-DPOF::UR_Decimals dpof))
+                (nonce-supply:decimal (ref-DPOF::UR_NonceSupply dpof nonce))
+                (meta-data-chain:[object] (ref-DPOF::UR_NonceMetaData dpof nonce))
+                ;;
+                (mint-time:time (at "mint-time" (at 0 meta-data-chain)))
+                (release-time:time (at "release-date" (at 0 meta-data-chain)))
+                (hibernating-period:decimal (diff-time release-time mint-time))
+                ;;
+                (present-time:time (at "block-time" (chain-data)))
+                (elapsed-time:decimal (diff-time present-time mint-time))
+                ;;
+                (hibernating-fee-promile:decimal
+                    (if (>= elapsed-time hibernating-period)
+                        0.0
+                        (floor (- 800.0 (* 800.0 (/ elapsed-time hibernating-period))) 4)
+                    )
+                )
+                (remainder:decimal
+                    (if (= hibernating-fee-promile 0.0)
+                        nonce-supply
+                        (at 0 (ref-U|ATS::UC_PromilleSplit hibernating-fee-promile nonce-supply precision))
+                    )
+                )
+                (hibernating-fee:decimal (- nonce-supply remainder))
+                ;;
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_Awake awaker dpof nonce)))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [
+                    (format "Operation: Awakens {} Nonce {}, returning its underlying DPTF, {}." [dpof nonce dptf-id])
+                    (format "The maximum awakening fee of 800‰ (promille) is currently at {}‰." [hibernating-fee-promile])
+                    (if (= hibernating-fee 0.0)
+                        (format "This will release {} DPTF Tokens, with no awakening fee." [remainder])  
+                        (format "This will release {} DPTF Tokens, while witholding {} as awakening fee." [remainder hibernating-fee])
+                    )
+                ]
+                [
+                    (format "Succesfully awakend {} Nonce {} returning {} {}." [dpof nonce dptf-id remainder])
+                ]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun INFO_VST|Slumber:object{OuronetInfoV2.ClientInfo}
+        (patron:string merger:string dpof:string nonces:[integer])
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-VST:module{VestingV2} VST)
+                ;;
+                (dptf:string (ref-DPOF::UR_Hibernation dpof))
+                (sm:string (ref-I|OURONET::OI|UC_ShortAccount merger))
+                ;;
+                (nonces-supplies:[decimal] (ref-DPOF::UR_NoncesSupplies dpof nonces))
+                (how-many:decimal (dec (length nonces)))
+                ;;
+                (stu:[decimal] (ref-VST::URC_SecondsToUnlock dpof nonces))
+                (compute-merge-all:[decimal] (ref-VST::UC_MergeAll nonces-supplies stu))
+                ;;
+                (free-amount:decimal (at 0 compute-merge-all))
+                (locked-amount:decimal (at 1 compute-merge-all))
+                (weigthed-locked-amount-in-seconds:integer (floor (at 2 compute-merge-all)))
+                ;;
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_MergeNonces dpof merger nonces 3)))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [
+                    (format "Operation: Slumbers {} {} Nonces {}, merging and awakening then." [how-many dpof nonces])
+                    (format "Awakening happens automatically for all nonces at {}% fee" [0.0])
+                    (if (!= free-amount 0.0)
+                        (format "Released Amount will be {}!" [free-amount])
+                        "There will be no release amount, as none of the selected Nonces are ripe!"
+                    )
+                    (if (!= locked-amount 0.0)
+                        (let
+                            (
+                                (ref-U|VST:module{UtilityVstV2} U|VST)
+                                (release-date:time (at 0 (ref-U|VST::UC_MakeVestingDateList 0 weigthed-locked-amount-in-seconds 1)))
+                            )
+                            (format "An amount of {} due for release at {} still remains locked!" [locked-amount release-date])
+                        )
+                        "There will be no locked amount, as all selected Nonces are ripe!"
+                    )
+                ]
+                [
+                    (format "Succesfully merged Hibernated DPOF {} Nonces {} to Account {}" [dpof nonces sm])
+                ]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    ;; ---- Special-link creation ----
+    ;;DEFECT FIXED 2026-09-14. This block used to be headed "(IGNIS only; STOA auto-fuel is protocol,
+    ;;not a patron charge)" and all five previews returned OI|UDC_NoStoaCosts on the strength of it.
+    ;;The comment conflates two different things. The PROTOCOL auto-fuel (TS01-A::XB_DynamicFuelSTOA)
+    ;;really is not a patron charge -- and is inert anyway while <native-gas-pump> is false. But
+    ;;XI_CreateSpecialTrueFungibleLink (11_VST.pact:1489) and XI_CreateSpecialOrtoFungibleLink
+    ;;(11_VST.pact:1553) each run `(ref-IGNIS::XE_CollectStoa patron stoa-costs)` -- a direct,
+    ;;discounted charge to the patron of UR_UsagePrice "dptf"/"dpmf". So all five ops DO cost STOA,
+    ;;and every one of them was previewed as free. `REPL/modules/VST.repl` proved it the whole time:
+    ;;VST-02 cannot run without signing four managed coin.TRANSFER caps built from
+    ;;`URC_SplitSTOAPrices patron (UR_UsagePrice "dpmf")`.
+    ;;Same shape as INFO_EQUITY|IssueCompany, INFO_SWP|ToggleFeeLock and INFO_ATS|ToggleParameterLock.
+    ;;Pinned by `REPL/modules/VST.repl <<VST-I1>>`.
+    (defun INFO_VST|CreateFrozenLink:object{OuronetInfoV2.ClientInfo} (patron:string dptf:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-VST:module{VestingV2} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_CreateSpecialTrueFungibleLink dptf)))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Creates the Frozen Special-DPTF link for {}" [dptf])]
+                [(format "Frozen Special-DPTF link for {} created succesfully" [dptf])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-VST::URCi_CreateSpecialTrueFungibleLinkStoa))
+                []
+            )
+        )
+    )
+    (defun INFO_VST|CreateReservationLink:object{OuronetInfoV2.ClientInfo} (patron:string dptf:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-VST:module{VestingV2} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_CreateSpecialTrueFungibleLink dptf)))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Creates the Reservation Special-DPTF link for {}" [dptf])]
+                [(format "Reservation Special-DPTF link for {} created succesfully" [dptf])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-VST::URCi_CreateSpecialTrueFungibleLinkStoa))
+                []
+            )
+        )
+    )
+    (defun INFO_VST|CreateVestingLink:object{OuronetInfoV2.ClientInfo} (patron:string dptf:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-VST:module{VestingV2} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_CreateSpecialOrtoFungibleLink dptf 1)))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Creates the Vesting Special-DPOF link for {}" [dptf])]
+                [(format "Vesting Special-DPOF link for {} created succesfully" [dptf])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-VST::URCi_CreateSpecialOrtoFungibleLinkStoa))
+                []
+            )
+        )
+    )
+    (defun INFO_VST|CreateSleepingLink:object{OuronetInfoV2.ClientInfo} (patron:string dptf:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-VST:module{VestingV2} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_CreateSpecialOrtoFungibleLink dptf 2)))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Creates the Sleeping Special-DPOF link for {}" [dptf])]
+                [(format "Sleeping Special-DPOF link for {} created succesfully" [dptf])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-VST::URCi_CreateSpecialOrtoFungibleLinkStoa))
+                []
+            )
+        )
+    )
+    (defun INFO_VST|CreateHibernatingLink:object{OuronetInfoV2.ClientInfo} (patron:string dptf:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-VST:module{VestingV2} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_CreateSpecialOrtoFungibleLink dptf 3)))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Creates the Hibernating Special-DPOF link for {}" [dptf])]
+                [(format "Hibernating Special-DPOF link for {} created succesfully" [dptf])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-VST::URCi_CreateSpecialOrtoFungibleLinkStoa))
+                []
+            )
+        )
+    )
+    ;; ---- Frozen family ----
+    (defun INFO_VST|Freeze:object{OuronetInfoV2.ClientInfo} (patron:string freezer:string freeze-output:string dptf:string amount:decimal)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-VST:module{VestingV2} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_Freeze freezer freeze-output dptf amount)))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount freezer))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Freezes {} {} on Account {}" [amount dptf sa])]
+                [(format "Succesfully froze {} {} on Account {}" [amount dptf sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [(ref-I|OURONET::OI|UC_FormatTokenAmount amount)]
+            )
+        )
+    )
+    (defun INFO_VST|RepurposeFrozen:object{OuronetInfoV2.ClientInfo} (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-VST:module{VestingV2} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_RepurposeTrueFungible dptf-to-repurpose repurpose-from repurpose-to)))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Repurposes Frozen {} from {} to {}" [dptf-to-repurpose repurpose-from repurpose-to])]
+                [(format "Frozen {} repurposed from {} to {} succesfully" [dptf-to-repurpose repurpose-from repurpose-to])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun INFO_VST|ToggleTransferRoleFrozenDPTF:object{OuronetInfoV2.ClientInfo} (patron:string s-dptf:string target:string toggle:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-VST:module{VestingV2} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_ToggleTransferRoleFrozenDPTF s-dptf)))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount target))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(if toggle (format "Operation: Adds Transfer Role for Frozen {} to {}" [s-dptf sa]) (format "Operation: Removes Transfer Role for Frozen {} to {}" [s-dptf sa]))]
+                [(if toggle (format "Transfer Role for Frozen {} added to {}" [s-dptf sa]) (format "Transfer Role for Frozen {} removed from {}" [s-dptf sa]))]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [toggle]
+            )
+        )
+    )
+    ;; ---- Reserved family ----
+    (defun INFO_VST|Reserve:object{OuronetInfoV2.ClientInfo} (patron:string reserver:string dptf:string amount:decimal)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-VST:module{VestingV2} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_Reserve reserver dptf amount)))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount reserver))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Reserves {} {} on Account {}" [amount dptf sa])]
+                [(format "Succesfully reserved {} {} on Account {}" [amount dptf sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [(ref-I|OURONET::OI|UC_FormatTokenAmount amount)]
+            )
+        )
+    )
+    (defun INFO_VST|Unreserve:object{OuronetInfoV2.ClientInfo} (patron:string unreserver:string r-dptf:string amount:decimal)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-VST:module{VestingV2} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_Unreserve unreserver r-dptf amount)))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount unreserver))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Unreserves {} {} on Account {}" [amount r-dptf sa])]
+                [(format "Succesfully unreserved {} {} on Account {}" [amount r-dptf sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [(ref-I|OURONET::OI|UC_FormatTokenAmount amount)]
+            )
+        )
+    )
+    (defun INFO_VST|RepurposeReserved:object{OuronetInfoV2.ClientInfo} (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-VST:module{VestingV2} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_RepurposeTrueFungible dptf-to-repurpose repurpose-from repurpose-to)))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Repurposes Reserved {} from {} to {}" [dptf-to-repurpose repurpose-from repurpose-to])]
+                [(format "Reserved {} repurposed from {} to {} succesfully" [dptf-to-repurpose repurpose-from repurpose-to])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun INFO_VST|ToggleTransferRoleReservedDPTF:object{OuronetInfoV2.ClientInfo} (patron:string s-dptf:string target:string toggle:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-VST:module{VestingV2} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_ToggleTransferRoleReservedDPTF s-dptf)))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount target))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(if toggle (format "Operation: Adds Transfer Role for Reserved {} to {}" [s-dptf sa]) (format "Operation: Removes Transfer Role for Reserved {} to {}" [s-dptf sa]))]
+                [(if toggle (format "Transfer Role for Reserved {} added to {}" [s-dptf sa]) (format "Transfer Role for Reserved {} removed from {}" [s-dptf sa]))]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [toggle]
+            )
+        )
+    )
+    ;; ---- Vested family ----
+    (defun INFO_VST|Vest:object{OuronetInfoV2.ClientInfo} (patron:string vester:string target-account:string dptf:string amount:decimal offset:integer seconds:integer milestones:integer)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-VST:module{VestingV2} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_Vest vester target-account dptf amount offset seconds milestones)))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount target-account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Vests {} {} to {} across {} milestone(s)" [amount dptf sa milestones])]
+                [(format "Succesfully vested {} {} to {} across {} milestone(s)" [amount dptf sa milestones])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [(ref-I|OURONET::OI|UC_FormatTokenAmount amount) milestones]
+            )
+        )
+    )
+    (defun INFO_VST|Unvest:object{OuronetInfoV2.ClientInfo} (patron:string unvester:string dpof:string nonce:integer)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-VST:module{VestingV2} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_Unvest unvester dpof nonce)))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Unvests {} Nonce {}, releasing its matured underlying DPTF" [dpof nonce])]
+                [(format "Succesfully unvested {} Nonce {}" [dpof nonce])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun INFO_VST|RepurposeVested:object{OuronetInfoV2.ClientInfo} (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-VST:module{VestingV2} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_RepurposeOrtoFungible dpof-to-repurpose nonce repurpose-from repurpose-to)))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Repurposes Vested {} Nonce {} from {} to {}" [dpof-to-repurpose nonce repurpose-from repurpose-to])]
+                [(format "Vested {} Nonce {} repurposed from {} to {} succesfully" [dpof-to-repurpose nonce repurpose-from repurpose-to])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    ;; ---- Sleeping family ----
+    (defun INFO_VST|Sleep:object{OuronetInfoV2.ClientInfo} (patron:string sleeper:string target-account:string dptf:string amount:decimal seconds:integer)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-VST:module{VestingV2} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_Sleep sleeper target-account dptf amount seconds)))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount target-account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Sleeps {} {} to {} for {} second(s)" [amount dptf sa seconds])]
+                [(format "Succesfully slept {} {} to {} for {} second(s)" [amount dptf sa seconds])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [(ref-I|OURONET::OI|UC_FormatTokenAmount amount) seconds]
+            )
+        )
+    )
+    (defun INFO_VST|Unsleep:object{OuronetInfoV2.ClientInfo} (patron:string unsleeper:string dpof:string nonce:integer)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-VST:module{VestingV2} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_Unsleep unsleeper dpof nonce)))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Unsleeps {} Nonce {}, returning its underlying DPTF" [dpof nonce])]
+                [(format "Succesfully unslept {} Nonce {}" [dpof nonce])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun INFO_VST|Merge:object{OuronetInfoV2.ClientInfo} (patron:string merger:string dpof:string nonces:[integer])
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-VST:module{VestingV2} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_MergeNonces dpof merger nonces 2)))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount merger))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Merges Sleeping {} Nonces {} on Account {}" [dpof nonces sa])]
+                [(format "Succesfully merged Sleeping {} Nonces {} on Account {}" [dpof nonces sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun INFO_VST|RepurposeMerge:object{OuronetInfoV2.ClientInfo} (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-VST:module{VestingV2} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_MergeNonces dpof-to-repurpose repurpose-to nonces 2)))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Repurposes-merges Sleeping {} Nonces {} from {} to {}" [dpof-to-repurpose nonces repurpose-from repurpose-to])]
+                [(format "Sleeping {} Nonces {} repurpose-merged from {} to {} succesfully" [dpof-to-repurpose nonces repurpose-from repurpose-to])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun INFO_VST|RepurposeSleeping:object{OuronetInfoV2.ClientInfo} (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-VST:module{VestingV2} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_RepurposeOrtoFungible dpof-to-repurpose nonce repurpose-from repurpose-to)))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Repurposes Sleeping {} Nonce {} from {} to {}" [dpof-to-repurpose nonce repurpose-from repurpose-to])]
+                [(format "Sleeping {} Nonce {} repurposed from {} to {} succesfully" [dpof-to-repurpose nonce repurpose-from repurpose-to])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun INFO_VST|ToggleTransferRoleSleepingDPOF:object{OuronetInfoV2.ClientInfo} (patron:string s-dpof:string target:string toggle:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-VST:module{VestingV2} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_ToggleTransferRoleSleepingDPOF s-dpof)))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount target))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(if toggle (format "Operation: Adds Transfer Role for Sleeping {} to {}" [s-dpof sa]) (format "Operation: Removes Transfer Role for Sleeping {} to {}" [s-dpof sa]))]
+                [(if toggle (format "Transfer Role for Sleeping {} added to {}" [s-dpof sa]) (format "Transfer Role for Sleeping {} removed from {}" [s-dpof sa]))]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [toggle]
+            )
+        )
+    )
+    ;; ---- Hibernating family (Hibernate/Awake/Slumber above) ----
+    (defun INFO_VST|RepurposeSlumber:object{OuronetInfoV2.ClientInfo} (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-VST:module{VestingV2} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_MergeNonces dpof-to-repurpose repurpose-to nonces 3)))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Repurposes-slumbers Hibernating {} Nonces {} from {} to {}" [dpof-to-repurpose nonces repurpose-from repurpose-to])]
+                [(format "Hibernating {} Nonces {} repurpose-slumbered from {} to {} succesfully" [dpof-to-repurpose nonces repurpose-from repurpose-to])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun INFO_VST|RepurposeHibernating:object{OuronetInfoV2.ClientInfo} (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-VST:module{VestingV2} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_RepurposeOrtoFungible dpof-to-repurpose nonce repurpose-from repurpose-to)))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Repurposes Hibernating {} Nonce {} from {} to {}" [dpof-to-repurpose nonce repurpose-from repurpose-to])]
+                [(format "Hibernating {} Nonce {} repurposed from {} to {} succesfully" [dpof-to-repurpose nonce repurpose-from repurpose-to])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun INFO_VST|ToggleTransferRoleHibernatingDPOF:object{OuronetInfoV2.ClientInfo} (patron:string s-dpof:string target:string toggle:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-VST:module{VestingV2} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_ToggleTransferRoleHibernatingDPOF s-dpof)))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount target))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(if toggle (format "Operation: Adds Transfer Role for Hibernating {} to {}" [s-dpof sa]) (format "Operation: Removes Transfer Role for Hibernating {} to {}" [s-dpof sa]))]
+                [(if toggle (format "Transfer Role for Hibernating {} added to {}" [s-dpof sa]) (format "Transfer Role for Hibernating {} removed from {}" [s-dpof sa]))]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [toggle]
+            )
+        )
+    )
+    (defun UDC_HibernatedNoncesView:object{HibernatedNoncesView}
+        (n:integer a:decimal b:time c:time d:decimal e:decimal f:decimal)
+        {"nonce"                    : n
+        ,"nonce-supply"             : a
+        ,"mint-time"                : b
+        ,"release-time"             : c
+        ,"hibernating-fee-promile"  : d
+        ,"remainder"                : e
+        ,"hibernating-fee"          : f}
+    )
+    (defun INFO_VST|HibernatedNoncesDisplay:[object{HibernatedNoncesView}]
+        (account:string dpof:string)
+        (let
+            (
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                ;;
+                (owned-nonces:[integer] (sort (ref-DPOF::URH_AccountNonces account dpof)))
+                (l:integer (length owned-nonces))
+            )
+            (map
+                (lambda
+                    (idx:integer)
+                    (INFO_VST|HibernatedNonceDisplay dpof (at idx owned-nonces))
+                )
+                (enumerate 0 (- l 1))
+            )
+        )
+    )
+    (defun INFO_VST|HibernatedNonceDisplay:object{HibernatedNoncesView}
+        (dpof:string nonce:integer)
+        (let
+            (
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                ;;
+                (precision:integer (ref-DPOF::UR_Decimals dpof))
+                (nonce-supply:decimal (ref-DPOF::UR_NonceSupply dpof nonce))
+                (meta-data-chain:[object] (ref-DPOF::UR_NonceMetaData dpof nonce))
+                ;;
+                (mint-time:time (at "mint-time" (at 0 meta-data-chain)))
+                (release-time:time (at "release-date" (at 0 meta-data-chain)))
+                (hibernating-period:decimal (diff-time release-time mint-time))
+                ;;
+                (present-time:time (at "block-time" (chain-data)))
+                (elapsed-time:decimal (diff-time present-time mint-time))
+                ;;
+                (hibernating-fee-promile:decimal
+                    (if (>= elapsed-time hibernating-period)
+                        0.0
+                        (floor (- 800.0 (* 800.0 (/ elapsed-time hibernating-period))) 4)
+                    )
+                )
+                (remainder:decimal 
+                    (if (= hibernating-fee-promile 0.0)
+                        nonce-supply
+                        (at 0 (ref-U|ATS::UC_PromilleSplit hibernating-fee-promile nonce-supply precision))
+                    )
+                )
+                (hibernating-fee:decimal (- nonce-supply remainder))
+            )
+            (UDC_HibernatedNoncesView
+                nonce nonce-supply mint-time release-time hibernating-fee-promile remainder hibernating-fee
+            )
+        )
+    )
+    ;;  [ATS]
+    (defun INFO_ATS|Coil:object{OuronetInfoV2.ClientInfo}
+        (patron:string coiler:string ats:string rt:string amount:decimal)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                ;;
+                (coil-data:object{AutostakeV3.CoilData}
+                    (ref-ATS::URC_RewardBearingTokenAmounts ats rt amount)
+                )
+                (royalty-fee:decimal (at "royalty-fee" coil-data))
+                (c-rbt:string (at "rbt-id" coil-data))
+                (c-rbt-amount:decimal (at "rbt-amount" coil-data))
+                ;;
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_Coil coiler ats rt amount)))
+                (sa-coiler:string (ref-I|OURONET::OI|UC_ShortAccount coiler))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [
+                    ;;<ATS1>
+                    (format "Operation: Autostakes {} {} on the {} ATS-Pair." [amount rt ats])
+                    (if (= royalty-fee 0.0)
+                        (format "Deposit will be executed without any {} Royalty." [rt])
+                        (format "{} {} will be retained as Royalty on the Autostake Pool." [royalty-fee rt])
+                    )
+                    (format "Coil will generate {} {} as final output." [c-rbt-amount c-rbt])
+                ]
+                [
+                    (format "Succesfully coiled {} {} on ATS-Pair {} generating {} {} on {} Account." [amount rt ats c-rbt-amount c-rbt sa-coiler])
+                ]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [(ref-I|OURONET::OI|UC_FormatTokenAmount c-rbt-amount)]
+            )
+        )
+    )
+    (defun INFO_ATS|Constrict:object{OuronetInfoV2.ClientInfo}
+        (patron:string constricter:string ats:string rt:string amount:decimal dayz:integer)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-VST:module{VestingV2} VST)
+                ;;
+                (coil-data:object{AutostakeV3.CoilData}
+                    (ref-ATS::URC_RewardBearingTokenAmountsWithHibernation ats rt amount dayz)
+                )
+                (royalty-fee:decimal (at "royalty-fee" coil-data))
+                (c-rbt:string (at "rbt-id" coil-data))
+                (c-rbt-amount:decimal (at "rbt-amount" coil-data))
+                ;;
+                (peak:decimal (ref-ATS::UR_PeakHibernatePromile ats))
+                (decay:decimal (ref-ATS::UR_HibernateDecay ats))
+                (v2:decimal (- peak (* (dec dayz) decay)))
+                (fee-promile:decimal
+                    (if (<= v2 0.0)
+                        0.0
+                        v2
+                    )
+                )
+                (hibernate-entry-percent:string (format "{}%" [(/ fee-promile 10.0)]))
+                ;;
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_Constrict constricter ats rt amount dayz)))
+                (sa-constricter:string (ref-I|OURONET::OI|UC_ShortAccount constricter))
+                (ht:string (ref-DPTF::UR_Hibernation c-rbt))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [
+                    ;;<ATS1>
+                    (format "Operation: Autostakes {} {} on the {} ATS-Pair." [amount rt ats])
+                    (if (= royalty-fee 0.0)
+                        (format "Deposit will be executed without any {} Royalty." [rt])
+                        (format "{} {} will be retained as Royalty on the Autostake Pool." [royalty-fee rt])
+                    )
+                    (format "Constricting for {} Days will incurr a hibernation fee of {} on the Input {} after Royalty" [dayz hibernate-entry-percent c-rbt])
+                    (format "Constricting will generate {} {} as final output." [c-rbt-amount ht])
+                ]
+                [
+                    (format "Succesfully constricted {} {} on ATS-Pair {} generating {} {} on {} Account." [amount rt ats c-rbt-amount ht sa-constricter])
+                ]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [(ref-I|OURONET::OI|UC_FormatTokenAmount c-rbt-amount)]
+            )
+        )
+    )
+    (defun INFO_ATS|Curl:object{OuronetInfoV2.ClientInfo}
+        (patron:string curler:string ats1:string ats2:string rt:string amount:decimal)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                ;;
+                ;;<ats1>
+                (coil1-data:object{AutostakeV3.CoilData}
+                    (ref-ATS::URC_RewardBearingTokenAmounts ats1 rt amount)
+                )
+                (royalty1-fee:decimal (at "royalty-fee" coil1-data))
+                (c-rbt1:string (at "rbt-id" coil1-data))
+                (c-rbt1-amount:decimal (at "rbt-amount" coil1-data))
+                ;;
+                ;;<ats2>
+                (coil2-data:object{AutostakeV3.CoilData}
+                    (ref-ATS::URC_RewardBearingTokenAmounts ats2 c-rbt1 c-rbt1-amount)
+                )
+                (royalty2-fee:decimal (at "royalty-fee" coil2-data))
+                (c-rbt2:string (at "rbt-id" coil2-data))
+                (c-rbt2-amount:decimal (at "rbt-amount" coil2-data))
+                ;;
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_Curl curler ats1 ats2 rt amount)))
+                (sa-curler:string (ref-I|OURONET::OI|UC_ShortAccount curler))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [
+                    ;;<ATS1>
+                    (format "Operation: Autostakes {} {} on the {} ATS-Pair." [amount rt ats1])
+                    (if (= royalty1-fee 0.0)
+                        (format "Deposit in the first Autostake Pool will be executed without any {} Royalty." [rt])
+                        (format "{} {} will be retained as Royalty on the First Autostake Pool." [royalty1-fee rt])
+                    )
+                    (format "An Intermediary Output of {} {} will be generated" [c-rbt1-amount c-rbt1])
+                    ;;<ATS2>
+                    (format "The Output {} will then be further autostaked on the second ATS-Pair, the {}." [c-rbt1 ats2])
+                    (if (= royalty2-fee 0.0)
+                        (format "Deposit in the second Autostake Pool will be executed without any {} Royalty." [c-rbt1])
+                        (format "{} {} will be retained as Royalty on the Second Autostake Pool." [royalty2-fee c-rbt1])
+                    )
+                    (format "Curl will generate {} {} as final output." [c-rbt2-amount c-rbt2])
+                ]
+                [
+                    (format "Succesfully curled {} {} on ATS-Pairs {} and {} generating {} {} on {} Account." [amount rt ats1 ats2 c-rbt2-amount c-rbt2 sa-curler])
+                ]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [(ref-I|OURONET::OI|UC_FormatTokenAmount c-rbt2-amount)]
+            )
+        )
+    )
+    (defun INFO_ATS|Brumate:object{OuronetInfoV2.ClientInfo}
+        (patron:string brumator:string ats1:string ats2:string rt:string amount:decimal dayz:integer)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-VST:module{VestingV2} VST)
+                ;;
+                ;;<ats1>
+                (coil1-data:object{AutostakeV3.CoilData}
+                    (ref-ATS::URC_RewardBearingTokenAmounts ats1 rt amount)
+                )
+                (royalty1-fee:decimal (at "royalty-fee" coil1-data))
+                (c-rbt1:string (at "rbt-id" coil1-data))
+                (c-rbt1-amount:decimal (at "rbt-amount" coil1-data))
+                ;;
+                ;;<ats2>
+                (coil2-data:object{AutostakeV3.CoilData}
+                    (ref-ATS::URC_RewardBearingTokenAmountsWithHibernation ats2 c-rbt1 c-rbt1-amount dayz)
+                )
+                (royalty2-fee:decimal (at "royalty-fee" coil2-data))
+                (c-rbt2:string (at "rbt-id" coil2-data))
+                (c-rbt2-amount:decimal (at "rbt-amount" coil2-data))
+                ;;
+                (peak:decimal (ref-ATS::UR_PeakHibernatePromile ats2))
+                (decay:decimal (ref-ATS::UR_HibernateDecay ats2))
+                (v2:decimal (- peak (* (dec dayz) decay)))
+                (fee-promile:decimal
+                    (if (<= v2 0.0)
+                        0.0
+                        v2
+                    )
+                )
+                (hibernate-entry-percent:string (format "{}%" [(/ fee-promile 10.0)]))
+                ;;
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_Brumate brumator ats1 ats2 rt amount dayz)))
+                (sa-brumator:string (ref-I|OURONET::OI|UC_ShortAccount brumator))
+                (ht:string (ref-DPTF::UR_Hibernation c-rbt2))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [
+                    ;;<ATS1>
+                    (format "Operation: Autostakes {} {} on the {} ATS-Pair." [amount rt ats1])
+                    (if (= royalty1-fee 0.0)
+                        (format "Deposit in the first Autostake Pool will be executed without any {} Royalty." [rt])
+                        (format "{} {} will be retained as Royalty on the First Autostake Pool." [royalty1-fee rt])
+                    )
+                    (format "An Intermediary Output of {} {} will be generated" [c-rbt1-amount c-rbt1])
+                    ;;<ATS2>
+                    (format "The Output {} will then be further autostaked on the second ATS-Pair, the {}." [c-rbt1 ats2])
+                    (if (= royalty2-fee 0.0)
+                        (format "Deposit in the second Autostake Pool will be executed without any {} Royalty." [c-rbt1])
+                        (format "{} {} will be retained as Royalty on the Second Autostake Pool." [royalty2-fee c-rbt1])
+                    )
+                    (format "Brumating for {} Days will incurr a hibernation fee of {} on the Input {} after Royalty" [dayz hibernate-entry-percent c-rbt1])
+                    (format "Brumating will generate {} {} as final output." [c-rbt2-amount ht])
+                ]
+                [
+                    (format "Succesfully brumated {} {} on ATS-Pairs {} and {} generating {} {} on {} Account." [amount rt ats1 ats2 c-rbt2-amount ht sa-brumator])
+                ]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [(ref-I|OURONET::OI|UC_FormatTokenAmount c-rbt2-amount)]
+            )
+        )
+    )
+    (defun INFO_ATS|ColdRecovery:object{OuronetInfoV2.ClientInfo}
+        (patron:string recoverer:string ats:string ra:decimal)
+        (let
+            (
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                ;;
+                (index-name:string (ref-ATS::UR_IndexName ats))
+                (rt-lst:[string] (ref-ATS::UR_RewardTokenList ats))
+                (c-rbt:string (ref-ATS::UR_ColdRewardBearingToken ats))
+                (c-fr:bool (ref-ATS::UR_ColdRecoveryFeeRedirection ats))
+                (elite:bool (ref-ATS::UR_EliteMode ats))
+                ;;
+                (c-rbt-precision:integer (ref-DPTF::UR_Decimals c-rbt))
+                (usable-cold-recovery-position:integer (ref-ATS::URC_WhichPosition ats ra recoverer))
+                (fee-promile:decimal (ref-ATS::URCv_ColdRecoveryFee ats ra usable-cold-recovery-position))
+                (c-rbt-fee-split:[decimal] (ref-U|ATS::UC_PromilleSplit fee-promile ra c-rbt-precision))
+                (c-rbt-remainder:decimal (at 0 c-rbt-fee-split))
+                (c-rbt-fee:decimal (at 1 c-rbt-fee-split))
+                ;;
+                ;;Time Computation for Cold Recovery (display: recoverable-after hours)
+                (major:integer (ref-DALOS::UR_Elite-Tier-Major recoverer))
+                (minor:integer (ref-DALOS::UR_Elite-Tier-Minor recoverer))
+                (position:integer
+                    (if (= major 0)
+                        0
+                        (+ (* (- major 1) 7) minor)
+                    )
+                )
+                (crd:[integer] (ref-ATS::UR_ColdRecoveryDuration ats))
+                (h:integer (at position crd))
+                ;;
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_ColdRecovery recoverer ats ra)))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [
+                    (format "Operation: Places {} {} into Cold Recovery" [ra c-rbt])
+                    (if (= usable-cold-recovery-position -1)
+                        (format "You have {} Recovery Slots" [250])
+                        (if elite
+                            (format "You have up to {} Recovery Slots" [7])
+                            (format "You have {} Recovery Slots" [7])
+                        )
+                    )
+                    (if (!= c-rbt-fee 0.0)
+                        (format "{}\n{}\n{}"
+                            [
+                                (format "Cold Recovery will incurr a Cold-Recovery-Fee of {}‰ (promile)" [fee-promile])
+                                (if c-fr
+                                    (format "This Fee is collected by strengthening the {}" [index-name])
+                                    (format "This Fee is collected by burning the Reward Tokens {}" [rt-lst])
+                                )
+                                (format "And Amounts to {} {}" [(ref-ATS::URCv_RTSplitAmounts ats c-rbt-fee) rt-lst])
+                            ]
+                        )
+                        (format "Cold Recovery will be executed {} Cold-Recovery-Fee" [0])
+                    )
+                    (format "{} {} will be recovarable after {} hour(s)" [(ref-ATS::URCv_RTSplitAmounts ats c-rbt-remainder) rt-lst h])
+                ]
+                [
+                    (format "Succesfully placed {} {} ATS-Pair RBT into Cold Recovery" [ra ats])
+                ]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [(ref-I|OURONET::OI|UC_FormatTokenAmount ra)]
+            )
+        )
+    )
+    (defun INFO_ATS|Cull:object{OuronetInfoV2.ClientInfo}
+        (patron:string culler:string ats:string)
+        (let
+            (
+                (ref-U|DEC:module{OuronetDecimalsV2} U|DEC)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                ;;
+                (c0:[decimal] (at "summed-culled-values" (ref-ATSU::URC_MultiCull ats culler)))
+                (c1:[decimal] (ref-ATSU::URC_SingleCull ats culler 1))
+                (c2:[decimal] (ref-ATSU::URC_SingleCull ats culler 2))
+                (c3:[decimal] (ref-ATSU::URC_SingleCull ats culler 3))
+                (c4:[decimal] (ref-ATSU::URC_SingleCull ats culler 4))
+                (c5:[decimal] (ref-ATSU::URC_SingleCull ats culler 5))
+                (c6:[decimal] (ref-ATSU::URC_SingleCull ats culler 6))
+                (c7:[decimal] (ref-ATSU::URC_SingleCull ats culler 7))
+                (ca:[[decimal]] [c0 c1 c2 c3 c4 c5 c6 c7])
+                (cw:[decimal] (ref-U|DEC::UC_AddHybridArray ca))
+                ;;
+                (rt-lst:[string] (ref-ATS::UR_RewardTokenList ats))
+                (how-many-tokens:integer (length rt-lst))
+                (empty:[decimal] (make-list how-many-tokens 0.0))
+                ;;
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_Cull culler ats)))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [
+                    "Operation: Culls the Cold Recovery Positions, recovering RTs"
+                    (if (= cw empty)
+                        "Currently no RTs can be collected"
+                        (format "Currently RTs {} can be recovered with amounts of: {}" [rt-lst cw])
+                    )
+                ]
+                [
+                    (format "Succesfully Culled {} RT(s) Tokens with amounts of {} from ATS-Pair {}" [how-many-tokens cw ats])
+                ]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [(map (ref-I|OURONET::OI|UC_FormatTokenAmount) cw)]
+            )
+        )
+    )
+    (defun INFO_ATS|DirectRecovery:object{OuronetInfoV2.ClientInfo}
+        (patron:string recoverer:string ats:string ra:decimal)
+        (let
+            (
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                ;;
+                ;;THE COST READER IS BOUND FIRST, and that ordering is load-bearing. URCi_
+                ;;DirectRecovery carries the op's own state guard, so binding it first makes this
+                ;;preview refuse exactly where C_DirectRecovery refuses. Bound last -- as it was --
+                ;;the derivations below ran first and a pair with a zero index died on
+                ;;"Arithmetic exception: div by zero, decimal" while the op itself gives a clean
+                ;;refusal. Pinned by RedTeam/[RT-K]_PreviewParity.repl <<RT-K-001f>>.
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_DirectRecovery recoverer ats ra)))
+                ;;
+                (c-rbt:string (ref-ATS::UR_ColdRewardBearingToken ats))
+                (fee:decimal (ref-ATS::UR_DirectRecoveryFee ats))
+                (c-rbt-remainder:decimal
+                    (if (= fee 0.0)
+                        ra
+                        (at 0 (ref-U|ATS::UC_PromilleSplit fee ra (ref-DPTF::UR_Decimals c-rbt)))
+                    )
+                )
+                (reward-tokens:[string] (ref-ATS::UR_RewardTokenList ats))
+                (release-amounts:[decimal] (ref-ATS::URCv_RTSplitAmounts ats c-rbt-remainder))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [
+                    (format "Operation: Directly Recovers {} {}" [ra c-rbt])
+                    (if (= fee 0.0)
+                        "Direct Recovery will be executed without any Direct-Recovery Fee"
+                        (format "Direct Recovery will be executed with {}‰ (promile) Direct Recovery Fee" [fee])
+                    )
+                    (format "Direct Recovery will yield {} {} Tokens" [release-amounts reward-tokens])
+                ]
+                [
+                    (format "Succesfully recovered directly {} RBT Token on ATS-Pair" [ra ats])
+                ]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [(map (ref-I|OURONET::OI|UC_FormatTokenAmount) release-amounts)]
+            )
+        )
+    )
+    ;; ---- ATS entity-completion: pool config ops (1:1 ATS URCi, IGNIS) ----
+    (defun INFO_ATS|RotateOwnership:object{OuronetInfoV2.ClientInfo} (patron:string ats:string new-owner:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount new-owner))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Changes Ownership of ATS-Pair {} to {}" [ats sa])]
+                [(format "ATS-Pair {} Ownership succesfully set to {}" [ats sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_RotateOwnership ats)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
+    (defun INFO_ATS|Control:object{OuronetInfoV2.ClientInfo} (patron:string ats:string can-change-owner:bool syphoning:bool hibernate:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Controls Boolean Properties of ATS-Pair {}" [ats])]
+                [(format "Succesfully controlled Properties of ATS-Pair {}" [ats])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_Control ats)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
+    (defun INFO_ATS|UpdateRoyalty:object{OuronetInfoV2.ClientInfo} (patron:string ats:string royalty:decimal)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Sets Royalty of ATS-Pair {} to {}" [ats royalty])]
+                [(format "Royalty of ATS-Pair {} succesfully set to {}" [ats royalty])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_UpdateRoyalty ats)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [royalty])
+        ))
+    (defun INFO_ATS|UpdateSyphon:object{OuronetInfoV2.ClientInfo} (patron:string ats:string syphon:decimal)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Sets Syphon of ATS-Pair {} to {}" [ats syphon])]
+                [(format "Syphon of ATS-Pair {} succesfully set to {}" [ats syphon])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_UpdateSyphon ats)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [syphon])
+        ))
+    (defun INFO_ATS|SetHibernationFees:object{OuronetInfoV2.ClientInfo} (patron:string ats:string peak:decimal decay:decimal)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Sets Hibernation Fees of ATS-Pair {} (peak {}, decay {})" [ats peak decay])]
+                [(format "Hibernation Fees of ATS-Pair {} succesfully set" [ats])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_SetHibernationFees ats)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [peak decay])
+        ))
+    (defun INFO_ATS|ToggleParameterLock:object{OuronetInfoV2.ClientInfo} (patron:string ats:string toggle:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(if toggle (format "Operation: Locks Parameters of ATS-Pair {}" [ats]) (format "Operation: Unlocks Parameters of ATS-Pair {}" [ats]))]
+                [(if toggle (format "Parameters of ATS-Pair {} succesfully locked" [ats]) (format "Parameters of ATS-Pair {} succesfully unlocked" [ats]))]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_ToggleParameterLock ats toggle)))
+                ;;UNLOCKING is not free: ATS::C_ToggleParameterLock hands XI_ToggleParameterLock's
+                ;;STOA leg to XE_CollectStoa. Previously hardcoded NoStoaCosts.
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-ATS::URCi_ToggleParameterLockStoa ats toggle)) [toggle])
+        ))
+    (defun INFO_ATS|AddSecondary:object{OuronetInfoV2.ClientInfo} (patron:string ats:string reward-token:string rt-nfr:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Adds Secondary Reward-Token {} to ATS-Pair {}" [reward-token ats])]
+                [(format "Secondary Reward-Token {} succesfully added to ATS-Pair {}" [reward-token ats])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_AddSecondary)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
+    (defun INFO_ATS|ControlColdRecoveryFees:object{OuronetInfoV2.ClientInfo} (patron:string ats:string c-nfr:bool c-fr:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Controls Cold-Recovery Fee flags of ATS-Pair {}" [ats])]
+                [(format "Cold-Recovery Fee flags of ATS-Pair {} succesfully controlled" [ats])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_ControlColdRecoveryFees ats)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
+    (defun INFO_ATS|SetColdRecoveryFees:object{OuronetInfoV2.ClientInfo} (patron:string ats:string fee-positions:integer fee-thresholds:[decimal] fee-array:[[decimal]])
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Sets the {} Cold-Recovery Fee positions of ATS-Pair {}" [fee-positions ats])]
+                [(format "Cold-Recovery Fees of ATS-Pair {} succesfully set" [ats])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_SetColdRecoveryFees)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
+    (defun INFO_ATS|SetColdRecoveryDuration:object{OuronetInfoV2.ClientInfo} (patron:string ats:string soft-or-hard:bool base:integer growth:integer)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Sets Cold-Recovery Duration of ATS-Pair {} (base {}, growth {})" [ats base growth])]
+                [(format "Cold-Recovery Duration of ATS-Pair {} succesfully set" [ats])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_SetColdRecoveryDuration ats)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
+    (defun INFO_ATS|ToggleElite:object{OuronetInfoV2.ClientInfo} (patron:string ats:string toggle:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(if toggle (format "Operation: Enables Elite Mode on ATS-Pair {}" [ats]) (format "Operation: Disables Elite Mode on ATS-Pair {}" [ats]))]
+                [(if toggle (format "Elite Mode enabled on ATS-Pair {}" [ats]) (format "Elite Mode disabled on ATS-Pair {}" [ats]))]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_ToggleElite ats)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [toggle])
+        ))
+    (defun INFO_ATS|ToggleUpgrade:object{OuronetInfoV2.ClientInfo} (patron:string ats:string toggle:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(if toggle (format "Operation: Enables Upgradeability on ATS-Pair {}" [ats]) (format "Operation: Disables Upgradeability on ATS-Pair {}" [ats]))]
+                [(if toggle (format "Upgradeability enabled on ATS-Pair {}" [ats]) (format "Upgradeability disabled on ATS-Pair {}" [ats]))]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_ToggleUpgrade ats)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [toggle])
+        ))
+    (defun INFO_ATS|SwitchColdRecovery:object{OuronetInfoV2.ClientInfo} (patron:string ats:string toggle:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(if toggle (format "Operation: Enables Cold-Recovery on ATS-Pair {}" [ats]) (format "Operation: Disables Cold-Recovery on ATS-Pair {}" [ats]))]
+                [(if toggle (format "Cold-Recovery enabled on ATS-Pair {}" [ats]) (format "Cold-Recovery disabled on ATS-Pair {}" [ats]))]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_SwitchColdRecovery ats)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [toggle])
+        ))
+    (defun INFO_ATS|ControlHotRecoveryFee:object{OuronetInfoV2.ClientInfo} (patron:string ats:string h-fr:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Controls Hot-Recovery Fee flag of ATS-Pair {}" [ats])]
+                [(format "Hot-Recovery Fee flag of ATS-Pair {} succesfully controlled" [ats])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_ControlHotRecoveryFee ats)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
+    (defun INFO_ATS|SetHotRecoveryFee:object{OuronetInfoV2.ClientInfo} (patron:string ats:string promile:decimal decay:integer)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Sets Hot-Recovery Fee of ATS-Pair {} ({}‰, decay {})" [ats promile decay])]
+                [(format "Hot-Recovery Fee of ATS-Pair {} succesfully set" [ats])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_SetHotRecoveryFees ats)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [promile])
+        ))
+    (defun INFO_ATS|SwitchHotRecovery:object{OuronetInfoV2.ClientInfo} (patron:string ats:string toggle:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(if toggle (format "Operation: Enables Hot-Recovery on ATS-Pair {}" [ats]) (format "Operation: Disables Hot-Recovery on ATS-Pair {}" [ats]))]
+                [(if toggle (format "Hot-Recovery enabled on ATS-Pair {}" [ats]) (format "Hot-Recovery disabled on ATS-Pair {}" [ats]))]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_SwitchHotRecovery ats)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [toggle])
+        ))
+    (defun INFO_ATS|SetDirectRecoveryFee:object{OuronetInfoV2.ClientInfo} (patron:string ats:string promile:decimal)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Sets Direct-Recovery Fee of ATS-Pair {} to {}‰" [ats promile])]
+                [(format "Direct-Recovery Fee of ATS-Pair {} succesfully set to {}‰" [ats promile])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_SetDirectRecoveryFee ats)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [promile])
+        ))
+    (defun INFO_ATS|SwitchDirectRecovery:object{OuronetInfoV2.ClientInfo} (patron:string ats:string toggle:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(if toggle (format "Operation: Enables Direct-Recovery on ATS-Pair {}" [ats]) (format "Operation: Disables Direct-Recovery on ATS-Pair {}" [ats]))]
+                [(if toggle (format "Direct-Recovery enabled on ATS-Pair {}" [ats]) (format "Direct-Recovery disabled on ATS-Pair {}" [ats]))]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_SwitchDirectRecovery ats)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [toggle])
+        ))
+    (defun INFO_ATS|UpdatePendingBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Updates Pending Branding for ATS-Pair {}" [entity-id])]
+                [(format "Pending Branding for ATS-Pair {} updated succesfully" [entity-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_UpdatePendingBranding entity-id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
+    (defun INFO_ATS|UpgradeBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string months:integer)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Upgrades Branding for ATS-Pair {} for {} month(s)" [entity-id months])]
+                [(format "ATS-Pair {} succesfully upgraded for {} month(s)!" [entity-id months])]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-ATS::URCi_UpgradeBranding months)) [])
+        ))
+    (defun INFO_ATS|Issue:object{OuronetInfoV2.ClientInfo} (patron:string account:string ats:[string])
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Issues {} ATS-Pair(s) on Account {}" [(length ats) sa])]
+                [(format "ATS-Pair Issuance of {} succesfully completed" [ats])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-ATS::URCi_IssueGas (length ats)))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-ATS::URCi_IssueStoa (length ats))) [])
+        ))
+    ;; ---- ATS entity-completion: staking / recovery ops (1:1 ATSU URCi, IGNIS) ----
+    (defun INFO_ATS|Fuel:object{OuronetInfoV2.ClientInfo} (patron:string fueler:string ats:string reward-token:string amount:decimal)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount fueler))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Fuels {} {} into ATS-Pair {}" [amount reward-token ats])]
+                [(format "Succesfully fueled {} {} into ATS-Pair {} from Account {}" [amount reward-token ats sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_Fuel fueler ats reward-token amount)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [(ref-I|OURONET::OI|UC_FormatTokenAmount amount)])
+        ))
+    (defun INFO_ATS|HotRecovery:object{OuronetInfoV2.ClientInfo} (patron:string recoverer:string ats:string ra:decimal)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATSU:module{AutostakeUsageV2} ATSU)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Places {} into Hot Recovery on ATS-Pair {}" [ra ats])]
+                [(format "Succesfully placed {} into Hot Recovery on ATS-Pair {}" [ra ats])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_HotRecovery recoverer ats ra)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [(ref-I|OURONET::OI|UC_FormatTokenAmount ra)])
+        ))
+    (defun INFO_ATS|KickStart:object{OuronetInfoV2.ClientInfo} (patron:string kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATSU:module{AutostakeUsageV2} ATSU)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: KickStarts ATS-Pair {} with RT amounts {} for {} RBT" [ats rt-amounts rbt-request-amount])]
+                [(format "Succesfully kickstarted ATS-Pair {}" [ats])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_KickStart kickstarter ats rt-amounts rbt-request-amount)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [(ref-I|OURONET::OI|UC_FormatTokenAmount rbt-request-amount)])
+        ))
+    (defun INFO_ATS|Redeem:object{OuronetInfoV2.ClientInfo} (patron:string redeemer:string id:string nonce:integer)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATSU:module{AutostakeUsageV2} ATSU)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Redeems {} Nonce {} on its ATS-Pair" [id nonce])]
+                [(format "Succesfully redeemed {} Nonce {}" [id nonce])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_Redeem redeemer id nonce)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
+    (defun INFO_ATS|Reverse:object{OuronetInfoV2.ClientInfo} (patron:string recoverer:string id:string nonce:integer)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATSU:module{AutostakeUsageV2} ATSU)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Reverses (Recovers) {} Nonce {}" [id nonce])]
+                [(format "Succesfully reversed {} Nonce {}" [id nonce])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_Recover recoverer id nonce)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
+    (defun INFO_ATS|Syphon:object{OuronetInfoV2.ClientInfo} (patron:string syphon-target:string ats:string syphon-amounts:[decimal])
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount syphon-target))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Syphons {} from ATS-Pair {} to {}" [syphon-amounts ats sa])]
+                [(format "Succesfully syphoned from ATS-Pair {} to {}" [ats sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_Syphon syphon-target ats syphon-amounts)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [syphon-amounts])
+        ))
+    (defun INFO_ATS|WithdrawRoyalties:object{OuronetInfoV2.ClientInfo} (patron:string ats:string target:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount target))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Withdraws accrued Royalties of ATS-Pair {} to {}" [ats sa])]
+                [(format "Succesfully withdrew Royalties of ATS-Pair {} to {}" [ats sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_WithdrawRoyalties ats target)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
+    ;; ---- ATS entity-completion: composite / hot-rbt ops (reuse existing readers) ----
+    (defun INFO_ATS|VestedCoil:object{OuronetInfoV2.ClientInfo}
+        (patron:string coiler-vester:string ats:string coil-token:string amount:decimal target-account:string offset:integer duration:integer milestones:integer)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                (ref-VST:module{VestingV2} VST)
+                ;;
+                (coil-data:object{AutostakeV3.CoilData} (ref-ATS::URC_RewardBearingTokenAmounts ats coil-token amount))
+                (c-rbt:string (at "rbt-id" coil-data))
+                (c-rbt-amount:decimal (at "rbt-amount" coil-data))
+                (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                        [ (ref-ATSU::URCi_Coil coiler-vester ats coil-token amount)
+                          (ref-VST::URCi_Vest coiler-vester target-account c-rbt c-rbt-amount offset duration milestones) ] []))
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount target-account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Coils {} {} on ATS-Pair {} and Vests the {} output to {} across {} milestone(s)" [amount coil-token ats c-rbt sa milestones])]
+                [(format "Succesfully coiled and vested {} {} generating {} {} to {}" [amount coil-token c-rbt-amount c-rbt sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [(ref-I|OURONET::OI|UC_FormatTokenAmount c-rbt-amount) milestones])
+        ))
+    (defun INFO_ATS|VestedCurl:object{OuronetInfoV2.ClientInfo}
+        (patron:string curler-vester:string ats1:string ats2:string curl-token:string amount:decimal target-account:string offset:integer duration:integer milestones:integer)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                (ref-VST:module{VestingV2} VST)
+                ;;
+                (coil1-data:object{AutostakeV3.CoilData} (ref-ATS::URC_RewardBearingTokenAmounts ats1 curl-token amount))
+                (coil2-data:object{AutostakeV3.CoilData} (ref-ATS::URC_RewardBearingTokenAmounts ats2 (at "rbt-id" coil1-data) (at "rbt-amount" coil1-data)))
+                (c-rbt2:string (at "rbt-id" coil2-data))
+                (c-rbt2-amount:decimal (at "rbt-amount" coil2-data))
+                (ico:object{IgnisCollectorV3.OutputCumulator}
+                    (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                        [ (ref-ATSU::URCi_Curl curler-vester ats1 ats2 curl-token amount)
+                          (ref-VST::URCi_Vest curler-vester target-account c-rbt2 c-rbt2-amount offset duration milestones) ] []))
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount target-account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Curls {} {} across ATS-Pairs {} and {} and Vests the {} output to {} across {} milestone(s)" [amount curl-token ats1 ats2 c-rbt2 sa milestones])]
+                [(format "Succesfully curled and vested {} {} generating {} {} to {}" [amount curl-token c-rbt2-amount c-rbt2 sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [(ref-I|OURONET::OI|UC_FormatTokenAmount c-rbt2-amount) milestones])
+        ))
+    (defun INFO_ATS|HOT-RBT|UpdatePendingBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Updates Pending Branding for Hot-RBT {}" [entity-id])]
+                [(format "Pending Branding for Hot-RBT {} updated succesfully" [entity-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_UpdatePendingBranding entity-id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
+    (defun INFO_ATS|HOT-RBT|UpgradeBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string months:integer)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Upgrades Branding for Hot-RBT {} for {} month(s)" [entity-id months])]
+                [(format "Hot-RBT {} succesfully upgraded for {} month(s)!" [entity-id months])]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-DPOF::URCi_UpgradeBranding months)) [])
+        ))
+    (defun INFO_ATS|HOT-RBT|Repurpose:object{OuronetInfoV2.ClientInfo} (patron:string hot-rbt:string nonce:integer repurpose-to:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-VST:module{VestingV2} VST)
+                (nonce-holder:string (ref-DPOF::UR_NonceHolder hot-rbt nonce))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Repurposes Hot-RBT {} Nonce {} to {}" [hot-rbt nonce sa])]
+                [(format "Hot-RBT {} Nonce {} succesfully repurposed to {}" [hot-rbt nonce sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_RepurposeOrtoFungible hot-rbt nonce nonce-holder repurpose-to)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
+    (defun INFO_ATS|AddHotRBT:object{OuronetInfoV2.ClientInfo} (patron:string ats:string hot-rbt:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATS:module{AutostakeV3} ATS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Adds Hot-RBT {} to ATS-Pair {}" [hot-rbt ats])]
+                [(format "Hot-RBT {} succesfully added to ATS-Pair {}" [hot-rbt ats])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_AddHotRBT ats hot-rbt)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
+    (defun INFO_ATS|RemoveSecondary:object{OuronetInfoV2.ClientInfo} (patron:string remover:string ats:string reward-token:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ATSU:module{AutostakeUsageV2} ATSU)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount remover))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Removes Secondary Reward-Token {} from ATS-Pair {}" [reward-token ats])]
+                [(format "Secondary Reward-Token {} succesfully removed from ATS-Pair {} (balance returned to {})" [reward-token ats sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_RemoveSecondary remover ats reward-token)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
+    ;; [LIQUID]
+    (defun INFO_LIQUID|UnwrapUrStoa:object{OuronetInfoV2.ClientInfo}
+        (patron:string unwrapper:string amount:decimal)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
+                (uw:string (ref-I|OURONET::OI|UC_ShortAccount unwrapper))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Unwraps {} UrStoa to the Payment Key of the Unwrapper {}" [amount uw])]
+                [(format "Succesfully unwrapped {} UrStoa to the Payment Key of the Unwrapper {}" [amount uw])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-LIQUID::URCi_UnwrapUrStoa unwrapper amount)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
+    (defun INFO_LIQUID|WrapUrStoa:object{OuronetInfoV2.ClientInfo}
+        (patron:string wrapper:string amount:decimal)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
+                (uw:string (ref-I|OURONET::OI|UC_ShortAccount wrapper))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Wraps {} UrStoa to the Payment Key of the Wrapper {}" [amount uw])]
+                [(format "Succesfully wrapped {} UrStoa to the Payment Key of the Wrapper {}" [amount uw])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-LIQUID::URCi_WrapUrStoa wrapper amount)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
+    (defun INFO_LIQUID|UnwrapStoa:object{OuronetInfoV2.ClientInfo}
+        (patron:string unwrapper:string amount:decimal)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
+                (uw:string (ref-I|OURONET::OI|UC_ShortAccount unwrapper))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Unwraps {} Stoa to the Payment Key of the Unwrapper {}" [amount uw])]
+                [(format "Succesfully unwrapped {} Stoa to the Payment Key of the Unwrapper {}" [amount uw])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-LIQUID::URCi_UnwrapStoa unwrapper amount)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
+    (defun INFO_LIQUID|WrapStoa:object{OuronetInfoV2.ClientInfo}
+        (patron:string wrapper:string amount:decimal)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
+                (uw:string (ref-I|OURONET::OI|UC_ShortAccount wrapper))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Wraps {} Stoa to the Payment Key of the Wrapper {}" [amount uw])]
+                [(format "Succesfully wrapped {} Stoa to the Payment Key of the Wrapper {}" [amount uw])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-LIQUID::URCi_WrapStoa wrapper amount)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
+    ;;
+    (defun INFO_ORBR|Compress:object{OuronetInfoV2.ClientInfo}
+        (client:string ignis-amount:decimal)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ORBR:module{OuroborosV2} OUROBOROS)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount client))
+                (ignis-to-ouro:[decimal] (ref-ORBR::URCv_Compress ignis-amount))
+                (ouro-remainder-amount:decimal (at 0 ignis-to-ouro))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [
+                    (format "Operation: Compresses {} Ignis GAS generating Ouroboros on {} with 98.5% efficiency; 1.5% is lost as Compression Fee" [ignis-amount sa])
+                    "Only whole Ignis GAS Amounts greater than or equal to 1.0 can be used for Compression"
+                    "Output depends on Ouroboros Price. A price of less than 1.00$ is treated as 1.00$ for Compression Math."
+                ]
+                [(format "Succesfully compressed {} Ignis GAS generating {} Ouroboros on {}" [ignis-amount ouro-remainder-amount sa])]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun INFO_ORBR|Sublimate:object{OuronetInfoV2.ClientInfo}
+        (client:string target:string ouro-amount:decimal)
+        (let
+            (
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-ORBR:module{OuroborosV2} OUROBOROS)
+                (sa1:string (ref-I|OURONET::OI|UC_ShortAccount client))
+                (sa2:string (ref-I|OURONET::OI|UC_ShortAccount target))
+                ;;
+                (ouro-id:string (ref-DALOS::UR_OuroborosID))
+                (ouro-precision:integer (ref-DPTF::UR_Decimals ouro-id))
+                (ouro-split:[decimal] (ref-U|ATS::UC_PromilleSplit 10.0 ouro-amount ouro-precision))
+                (ouro-remainder-amount:decimal (at 0 ouro-split))
+                (ignis-amount:decimal (ref-ORBR::URCv_Sublimate ouro-remainder-amount))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [
+                    (if (= client target)
+                        (format "Operation: Sublimates {} Ouroboros from {} for self usage, generating IGNIS with 99.0% efficiency; 1.0% is lost as Sublimation Fee" [ouro-amount sa1])
+                        (format "Operation: Sublimates {} Ouroboros from {}, generating IGNIS on {} with 99.0% efficiency; 1.0% is lost as Sublimation Fee." [ouro-amount sa1 sa2])
+                    )
+                    "Only Ouroboros Amounts greater than or equal to 1.0 can be used for Sublimation"
+                    "Output depends on Ouroboros Price. A price of less than 1.00$ is treated as 1.00$ for Sublimation Math."
+                ]
+                [
+                    (if (= client target)
+                        (format "Succesfully sublimated {} Ouro for self usage, generating {} Ignis GAS on {}" [ouro-amount ignis-amount sa1])
+                        (format "Succesfully sublimated {} Ouro from {} to {}, generating {} Ignis GAS" [ouro-amount sa1 sa2 ignis-amount])
+                    )
+                   
+                ]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun INFO_ORBR|SublimateV2:object{OuronetInfoV2.ClientInfo}
+        (client:string target:string ouro-amount:decimal)
+        (let
+            (
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-ORBR:module{OuroborosV2} OUROBOROS)
+                (sa1:string (ref-I|OURONET::OI|UC_ShortAccount client))
+                (sa2:string (ref-I|OURONET::OI|UC_ShortAccount target))
+                ;;
+                (ouro-id:string (ref-DALOS::UR_OuroborosID))
+                (ouro-remainder-amount:decimal (at 0 (ref-U|ATS::UC_PromilleSplit 10.0 ouro-amount (ref-DPTF::UR_Decimals ouro-id))))
+                (ignis-amount:decimal (ref-ORBR::URCv_Sublimate ouro-remainder-amount))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Sublimates {} Ouroboros (positive-supply V2) from {} generating IGNIS on {} at 99.0% efficiency; 1.0% Sublimation Fee" [ouro-amount sa1 sa2])]
+                [(format "Succesfully sublimated {} Ouro from {} to {}, generating {} Ignis GAS" [ouro-amount sa1 sa2 ignis-amount])]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun INFO_ORBR|WithdrawFees:object{OuronetInfoV2.ClientInfo}
+        (patron:string id:string target:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-ORBR:module{OuroborosV2} OUROBOROS)
+                (st:string (ref-I|OURONET::OI|UC_ShortAccount target))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Withdraws collected standard-mode DPTF Fees of {} to {}" [id st])]
+                [(format "Succesfully withdrew DPTF Fees for {} to Account {}" [id st])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ORBR::URCi_WithdrawFees id target)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    ;;  [SWP]
+    (defun INFO_SWP|ChangeOwnership:object{OuronetInfoV2.ClientInfo}
+        (patron:string swpair:string new-owner:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWP:module{SwapperV4} SWP)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount new-owner))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Changes Ownership of SWP-Pair {} to {}" [swpair sa])]
+                [(format "Succesfully changed ownership of SWP-Pair {} to {}" [swpair sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWP::URCi_ChangeOwnership swpair)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun INFO_SWP|ModifyCanChangeOwner:object{OuronetInfoV2.ClientInfo}
+        (patron:string swpair:string new-boolean:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWP:module{SwapperV4} SWP)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Modifies <can-change-owner> of SWP-Pair {} to {}" [swpair new-boolean])]
+                [(format "Succesfully updated <can-change-owner> of SWP-Pair {} to {}" [swpair new-boolean])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWP::URCi_ModifyCanChangeOwner swpair)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun INFO_SWP|ModifyWeights:object{OuronetInfoV2.ClientInfo}
+        (patron:string swpair:string new-weights:[decimal])
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWP:module{SwapperV4} SWP)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Modifies weights of SWP-Pair {} to {}" [swpair new-weights])]
+                [(format "Succesfully updated SWP-Pair {} weights to {}" [swpair new-weights])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWP::URCi_ModifyWeights swpair)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun INFO_SWP|ToggleAddLiquidity:object{OuronetInfoV2.ClientInfo}
+        (patron:string swpair:string toggle:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_ToggleAddLiquidity swpair toggle)))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [
+                    (if toggle
+                        (format "Operation: Enables adding liquidity for SWP-Pair {}" [swpair])
+                        (format "Operation: Disables adding liquidity for SWP-Pair {}" [swpair])
+                    )
+                ]
+                [
+                    (if toggle
+                        (format "Succesfully enabled adding liquidity for SWP-Pair {}" [swpair])
+                        (format "Succesfully disabled adding liquidity for SWP-Pair {}" [swpair])
+                    )
+                ]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [toggle]
+            )
+        )
+    )
+    (defun INFO_SWP|ToggleSwapCapability:object{OuronetInfoV2.ClientInfo}
+        (patron:string swpair:string toggle:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWPU:module{SwapperUsageV3} SWPU)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPU::URCi_ToggleSwapCapability swpair toggle)))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [
+                    (if toggle
+                        (format "Operation: Enables swapping for SWP-Pair {}" [swpair])
+                        (format "Operation: Disables swapping for SWP-Pair {}" [swpair])
+                    )
+                ]
+                [
+                    (if toggle
+                        (format "Succesfully enabled swapping for SWP-Pair {}" [swpair])
+                        (format "Succesfully disabled swapping for SWP-Pair {}" [swpair])
+                    )
+                ]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [toggle]
+            )
+        )
+    )
+    (defun INFO_SWP|EnableFrozenLP:object{OuronetInfoV2.ClientInfo}
+        (patron:string swpair:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-SWP:module{SwapperV4} SWP)
+                ;;
+                (lp-id:string (ref-SWP::UR_TokenLP swpair))
+                (current-frozen-link:string (ref-DPTF::UR_Frozen lp-id))
+                (is-stoa-zero:bool (ref-IGNIS::URC_IsNativeGasZero))
+                ;;
+                (kfp-issue:decimal (ref-DALOS::UR_UsagePrice "dptf"))
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWP::URCi_EnableFrozenLP patron swpair)))
+                (kfp:decimal
+                    (if is-stoa-zero
+                        0.0
+                        (if (= current-frozen-link BAR)
+                            kfp-issue 0.0
+                        )
+                    )
+                )
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [
+                    
+                    (format "Operation: Enables the Frozen LP Functionality for the SWP-Pair {} " [swpair])
+                    (if (= current-frozen-link BAR)
+                        (format "Also Issues a Frozen Link for the LP {}" [lp-id])
+                        (format "Doesnt Issue a Frozen Link for the LP {} as it already exists with {}" 
+                            [lp-id current-frozen-link]
+                        )
+                    )
+                ]
+                [
+                    (if (= current-frozen-link BAR)
+                        (format 
+                            "Succesfully Issued Frozen LP and enabled Frozen LP Functionality on SWP-Pair {}" 
+                            [swpair]
+                        )
+                        (format 
+                            "Succesfully enabled Frozen LP Functionality on SWP-Pair {}, without issuing a Frozen LP, as it allready exists with id {}" 
+                            [swpair current-frozen-link]
+                        )
+                    )
+                ]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron kfp)
+                []
+            )
+        )
+    )
+    (defun INFO_SWP|EnableSleepingLP:object{OuronetInfoV2.ClientInfo}
+        (patron:string swpair:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-SWP:module{SwapperV4} SWP)
+                ;;
+                (lp-id:string (ref-SWP::UR_TokenLP swpair))
+                (current-sleeping-link:string (ref-DPTF::UR_Sleeping lp-id))
+                (is-stoa-zero:bool (ref-IGNIS::URC_IsNativeGasZero))
+                ;;
+                (kfp-issue:decimal (ref-DALOS::UR_UsagePrice "dpmf"))
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWP::URCi_EnableSleepingLP patron swpair)))
+                (kfp:decimal
+                    (if is-stoa-zero
+                        0.0
+                        (if (= current-sleeping-link BAR)
+                            kfp-issue 0.0
+                        )
+                    )
+                )
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [
+                    
+                    (format "Operation: Enables the Sleeping LP Functionality for the SWP-Pair {} " [swpair])
+                    (if (= current-sleeping-link BAR)
+                        (format "Also Issues a Sleeping Link for the LP {}" [lp-id])
+                        (format "Doesnt Issue a Sleeping Link for the LP {} as it already exists with {}" 
+                            [lp-id current-sleeping-link]
+                        )
+                    )
+                ]
+                [
+                    (if (= current-sleeping-link BAR)
+                        (format 
+                            "Succesfully Issued Sleeping LP and enabled Sleeping LP Functionality on SWP-Pair {}" 
+                            [swpair]
+                        )
+                        (format 
+                            "Succesfully enabled Sleeping LP Functionality on SWP-Pair {}, without issuing a Sleeping LP, as it allready exists with id {}" 
+                            [swpair current-sleeping-link]
+                        )
+                    )
+                ]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron kfp)
+                []
+            )
+        )
+    )
+    (defun INFO_SWP|UpdateAmplifier:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string amp:decimal)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWP:module{SwapperV4} SWP)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Updates Amplifier of SWP-Pair {} to {}" [swpair amp])]
+                [(format "Amplifier of SWP-Pair {} succesfully set to {}" [swpair amp])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWP::URCi_UpdateAmplifier swpair)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [amp])
+        ))
+    (defun INFO_SWP|UpdateFee:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string new-fee:decimal lp-or-special:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWP:module{SwapperV4} SWP)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Updates {} Fee of SWP-Pair {} to {}" [(if lp-or-special "LP" "Special") swpair new-fee])]
+                [(format "Fee of SWP-Pair {} succesfully set to {}" [swpair new-fee])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWP::URCi_UpdateFee swpair)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [new-fee])
+        ))
+    (defun INFO_SWP|UpdateSpecialFeeTargets:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string targets:[string])
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWP:module{SwapperV4} SWP)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Updates Special-Fee targets of SWP-Pair {} to {}" [swpair targets])]
+                [(format "Special-Fee targets of SWP-Pair {} succesfully updated" [swpair])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWP::URCi_UpdateSpecialFeeTargets swpair)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [targets])
+        ))
+    (defun INFO_SWP|ToggleFeeLock:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string toggle:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWP:module{SwapperV4} SWP)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(if toggle (format "Operation: Locks Fee Settings of SWP-Pair {}" [swpair]) (format "Operation: Unlocks Fee Settings of SWP-Pair {}" [swpair]))]
+                [(if toggle (format "Fee Settings of SWP-Pair {} succesfully locked" [swpair]) (format "Fee Settings of SWP-Pair {} succesfully unlocked" [swpair]))]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWP::URCi_ToggleFeeLock swpair toggle)))
+                ;;UNLOCKING is not free: SWP::C_ToggleFeeLock hands XI_ToggleFeeLock's STOA leg to
+                ;;XE_CollectStoa. Previously hardcoded NoStoaCosts, which quoted the unlock as free.
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-SWP::URCi_ToggleFeeLockStoa swpair toggle)) [toggle])
+        ))
+    (defun INFO_SWP|UpdatePendingBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWP:module{SwapperV4} SWP)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Updates Pending Branding for SWP-Pair {}" [entity-id])]
+                [(format "Pending Branding for SWP-Pair {} updated succesfully" [entity-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWP::URCi_UpdatePendingBranding entity-id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
+    (defun INFO_SWP|UpgradeBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string months:integer)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWP:module{SwapperV4} SWP)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Upgrades Branding for SWP-Pair {} for {} month(s)" [entity-id months])]
+                [(format "SWP-Pair {} succesfully upgraded for {} month(s)!" [entity-id months])]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-SWP::URCi_UpgradeBranding months)) [])
+        ))
+    (defun INFO_SWP|UpdatePendingBrandingLPs:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string entity-pos:integer)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Updates Pending LP-Branding for SWP-Pair {} entity-position {}" [swpair entity-pos])]
+                [(format "Pending LP-Branding for SWP-Pair {} entity-position {} updated" [swpair entity-pos])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_UpdatePendingBrandingLPs swpair entity-pos)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
+    (defun INFO_SWP|UpgradeBrandingLPs:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string entity-pos:integer months:integer)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Upgrades LP-Branding for SWP-Pair {} entity-position {} for {} month(s)" [swpair entity-pos months])]
+                [(format "LP-Branding for SWP-Pair {} entity-position {} upgraded for {} month(s)!" [swpair entity-pos months])]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-SWPLC::URCi_UpgradeBrandingLPs months)) [])
+        ))
+    (defun INFO_SWP|Fuel:object{OuronetInfoV2.ClientInfo}
+        (patron:string account:string swpair:string input-amounts:[decimal])
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWP:module{SwapperV4} SWP)
+                (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+                ;;
+                (pool-tokens:[string] (ref-SWP::UR_PoolTokens swpair))
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_Fuel account swpair input-amounts true)))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [
+                    
+                    (format "Operation: Fuels SWP-Pair {} " [swpair])
+                    (format "Fueling with {} {} without issuing LP Tokens, increases LP Value" [input-amounts pool-tokens])
+                    "WARNING: Spent tokens can never be recovered, permanently increasing LP Value"
+                ]
+                [(format "Succesfully fueled SWP-Pair {} with Token Amounts {}" [swpair input-amounts])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun INFO_SWP|Firestarter:object{OuronetInfoV2.ClientInfo}
+        (firestarter:string)
+        (let
+            (
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
+                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-ORBR:module{OuroborosV2} OUROBOROS)
+                (ref-SWP:module{SwapperV4} SWP)
+                (ref-SWPI:module{SwapperIssueV4} SWPI)
+                (ref-SWPL:module{SwapperLiquidityV2} SWPL)
+                ;;
+                (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
+                (ouro-id:string (ref-DALOS::UR_OuroborosID))
+                (ignis-id:string (ref-DALOS::UR_IgnisID))
+                ;;
+                (input-ids:[string] [wstoa-id])
+                (input-amounts:[decimal] [10.0])
+                (output-id:string ouro-id)
+                ;;
+                (swpair:string (ref-SWP::UR_PrimordialPool))
+                (pool-type:string (ref-U|SWP::UC_PoolType swpair))
+                (dsid:object{UtilitySwpV2.DirectSwapInputData}
+                    (ref-U|SWP::UDC_DirectSwapInputData input-ids input-amounts output-id)
+                )
+                ;;
+                (fees:object{UtilitySwpV2.SwapFeez} (ref-SWPL::UDC_PoolFees swpair))
+                (A:decimal (ref-SWP::UR_Amplifier swpair))
+                (X:[decimal] (ref-SWP::UR_PoolTokenSupplies swpair))
+                (X-prec:[integer] (ref-SWP::UR_PoolTokenPrecisions swpair))
+                
+                (input-positions:[integer] (ref-SWPI::URCv_PoolTokenPositions swpair input-ids))
+                (output-position:integer (ref-SWP::URv_PoolTokenPosition swpair output-id))
+                (W:[decimal] (ref-SWP::UR_Weigths swpair))
+                (dtso:object{UtilitySwpV2.DirectTaxedSwapOutput}
+                    (ref-SWPI::UC_BareboneSwapWithFeez firestarter pool-type dsid fees A X X-prec input-positions output-position W)
+                )
+                (gained-ouro:decimal (at "o-id-netto" dtso))
+                ;;
+                (ouro-precision:integer (ref-DPTF::UR_Decimals ouro-id))
+                (ouro-split:[decimal] (ref-U|ATS::UC_PromilleSplit 10.0 gained-ouro ouro-precision))
+                (ouro-remainder-amount:decimal (at 0 ouro-split))
+                (ignis-amount:decimal (ref-ORBR::URCv_Sublimate ouro-remainder-amount))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Uses 10 Native Stoa as Fuel to create Ignis GAS"]
+                [(format "Succesfully used 10 Stoa to generate {} IGNIS with no IGNIS Costs" [ignis-amount])]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    ;;
+    ;; ---- SWP entity-completion: issue ops (all share SWPI|URCi_Issue [IGNIS] + dptf+swp [STOA]) ----
+    (defun INFO_SWP|IssueStable:object{OuronetInfoV2.ClientInfo}
+        (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal amp:decimal p:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWPI:module{SwapperIssueV4} SWPI)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Issues a Stable SWP-Pair with {} pool-tokens on Account {}" [(length pool-tokens) sa])]
+                [(format "Stable SWP-Pair issued succesfully on Account {}" [sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPI::URCi_Issue account pool-tokens)))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron
+                    ;;OVER-QUOTE FIXED (2026-09-14). This quoted (+ UsagePrice "dptf" "swp") -- the
+                    ;;figure the DEFPACT pool-issue path (MTX-SWP) charges -- while the SINGLE-TX path
+                    ;;this previews charges UC_StoaPrice "issue-swp-pair" via SWPI::C_Issue. Measured
+                    ;;600.0 quoted against 500.0 charged. The three *Pool previews keep the MTX figure,
+                    ;;because for them it is the right one. Pinned by
+                    ;;`Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl <<SWP-ISSUE-INFO>>`.
+                    (ref-SWPI::URCi_IssueStoa)) [])
+        ))
+    (defun INFO_SWP|IssueStandard:object{OuronetInfoV2.ClientInfo}
+        (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal p:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWPI:module{SwapperIssueV4} SWPI)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Issues a Standard SWP-Pair with {} pool-tokens on Account {}" [(length pool-tokens) sa])]
+                [(format "Standard SWP-Pair issued succesfully on Account {}" [sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPI::URCi_Issue account pool-tokens)))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron
+                    ;;OVER-QUOTE FIXED (2026-09-14). This quoted (+ UsagePrice "dptf" "swp") -- the
+                    ;;figure the DEFPACT pool-issue path (MTX-SWP) charges -- while the SINGLE-TX path
+                    ;;this previews charges UC_StoaPrice "issue-swp-pair" via SWPI::C_Issue. Measured
+                    ;;600.0 quoted against 500.0 charged. The three *Pool previews keep the MTX figure,
+                    ;;because for them it is the right one. Pinned by
+                    ;;`Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl <<SWP-ISSUE-INFO>>`.
+                    (ref-SWPI::URCi_IssueStoa)) [])
+        ))
+    (defun INFO_SWP|IssueWeighted:object{OuronetInfoV2.ClientInfo}
+        (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWPI:module{SwapperIssueV4} SWPI)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Issues a Weighted SWP-Pair with {} pool-tokens on Account {}" [(length pool-tokens) sa])]
+                [(format "Weighted SWP-Pair issued succesfully on Account {}" [sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPI::URCi_Issue account pool-tokens)))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron
+                    ;;OVER-QUOTE FIXED (2026-09-14). This quoted (+ UsagePrice "dptf" "swp") -- the
+                    ;;figure the DEFPACT pool-issue path (MTX-SWP) charges -- while the SINGLE-TX path
+                    ;;this previews charges UC_StoaPrice "issue-swp-pair" via SWPI::C_Issue. Measured
+                    ;;600.0 quoted against 500.0 charged. The three *Pool previews keep the MTX figure,
+                    ;;because for them it is the right one. Pinned by
+                    ;;`Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl <<SWP-ISSUE-INFO>>`.
+                    (ref-SWPI::URCi_IssueStoa)) [])
+        ))
+    (defun INFO_SWP|IssueStablePool:object{OuronetInfoV2.ClientInfo}
+        (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal amp:decimal p:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-SWPI:module{SwapperIssueV4} SWPI)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Issues a Stable SWP-Pair (multistep) with {} pool-tokens on Account {}" [(length pool-tokens) sa])]
+                [(format "Stable SWP-Pair issued succesfully on Account {}" [sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPI::URCi_IssuePool account pool-tokens)))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))) [])
+        ))
+    (defun INFO_SWP|IssueStandardPool:object{OuronetInfoV2.ClientInfo}
+        (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal p:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-SWPI:module{SwapperIssueV4} SWPI)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Issues a Standard SWP-Pair (multistep) with {} pool-tokens on Account {}" [(length pool-tokens) sa])]
+                [(format "Standard SWP-Pair issued succesfully on Account {}" [sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPI::URCi_IssuePool account pool-tokens)))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))) [])
+        ))
+    (defun INFO_SWP|IssueWeightedPool:object{OuronetInfoV2.ClientInfo}
+        (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-SWPI:module{SwapperIssueV4} SWPI)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Issues a Weighted SWP-Pair (multistep) with {} pool-tokens on Account {}" [(length pool-tokens) sa])]
+                [(format "Weighted SWP-Pair issued succesfully on Account {}" [sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPI::URCi_IssuePool account pool-tokens)))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))) [])
+        ))
+    ;; ---- SWP entity-completion: swaps (direct -> SWPU|URCi_Swap ; smart -> URCi_SmartSwap / URCi_SmartSwapWithBundle) ----
+    (defun INFO_SWP|SingleSwapNoSlippage:object{OuronetInfoV2.ClientInfo}
+        (patron:string account:string swpair:string input-id:string input-amount:decimal output-id:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWPU:module{SwapperUsageV3} SWPU)
+                (bounds:object{SwapperUsageV3.Slippage} (ref-SWPU::UDC_SpawnSlippageBounds swpair [input-id] [input-amount] output-id -1.0))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Swaps {} {} to {} on SWP-Pair {} (no slippage protection)" [input-amount input-id output-id swpair])]
+                [(format "Succesfully swapped {} {} to {} on SWP-Pair {}" [input-amount input-id output-id swpair])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPU::URCi_Swap account swpair [input-id] [input-amount] output-id -1.0 bounds)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
+    (defun INFO_SWP|SingleSwapWithSlippage:object{OuronetInfoV2.ClientInfo}
+        (patron:string account:string swpair:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV3.Slippage})
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWPU:module{SwapperUsageV3} SWPU)
+                (slippage:decimal (at "slippage-percent" slippage-bounds))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Swaps {} {} to {} on SWP-Pair {} (slippage {}%)" [input-amount input-id output-id swpair slippage])]
+                [(format "Succesfully swapped {} {} to {} on SWP-Pair {}" [input-amount input-id output-id swpair])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPU::URCi_Swap account swpair [input-id] [input-amount] output-id slippage slippage-bounds)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
+    (defun INFO_SWP|MultiSwapNoSlippage:object{OuronetInfoV2.ClientInfo}
+        (patron:string account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWPU:module{SwapperUsageV3} SWPU)
+                (bounds:object{SwapperUsageV3.Slippage} (ref-SWPU::UDC_SpawnSlippageBounds swpair input-ids input-amounts output-id -1.0))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Multi-swaps {} to {} on SWP-Pair {} (no slippage protection)" [input-ids output-id swpair])]
+                [(format "Succesfully multi-swapped {} to {} on SWP-Pair {}" [input-ids output-id swpair])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPU::URCi_Swap account swpair input-ids input-amounts output-id -1.0 bounds)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
+    (defun INFO_SWP|MultiSwapWithSlippage:object{OuronetInfoV2.ClientInfo}
+        (patron:string account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage-bounds:object{SwapperUsageV3.Slippage})
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWPU:module{SwapperUsageV3} SWPU)
+                (slippage:decimal (at "slippage-percent" slippage-bounds))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Multi-swaps {} to {} on SWP-Pair {} (slippage {}%)" [input-ids output-id swpair slippage])]
+                [(format "Succesfully multi-swapped {} to {} on SWP-Pair {}" [input-ids output-id swpair])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPU::URCi_Swap account swpair input-ids input-amounts output-id slippage slippage-bounds)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
+    (defun INFO_SWP|SmartSwapNoSlippage:object{OuronetInfoV2.ClientInfo}
+        (patron:string account:string input-id:string input-amount:decimal output-id:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWPU:module{SwapperUsageV3} SWPU)
+                (bounds:object{SwapperUsageV3.Slippage} (ref-SWPU::UDC_SpawnSmartSwapSlippageBounds input-id input-amount output-id -1.0))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Smart-swaps {} {} to {} (auto-routed, no slippage protection)" [input-amount input-id output-id])]
+                [(format "Succesfully smart-swapped {} {} to {}" [input-amount input-id output-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPU::URCi_SmartSwap account input-id input-amount output-id -1.0 bounds)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
+    (defun INFO_SWP|SmartSwapWithSlippage:object{OuronetInfoV2.ClientInfo}
+        (patron:string account:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV3.Slippage})
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWPU:module{SwapperUsageV3} SWPU)
+                (slippage:decimal (at "slippage-percent" slippage-bounds))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Smart-swaps {} {} to {} (auto-routed, slippage {}%)" [input-amount input-id output-id slippage])]
+                [(format "Succesfully smart-swapped {} {} to {}" [input-amount input-id output-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPU::URCi_SmartSwap account input-id input-amount output-id slippage slippage-bounds)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
+    (defun INFO_SWP|SmartSwapNoSlippageBundle:object{OuronetInfoV2.ClientInfo}
+        (patron:string account:string input-id:string input-amount:decimal output-id:string bundle:object{SwapperUsageV3.SmartSwapPathBundle})
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWPU:module{SwapperUsageV3} SWPU)
+                (bounds:object{SwapperUsageV3.Slippage} (ref-SWPU::UDC_Slippage 0.0 0 0.0))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Smart-swaps {} {} to {} via a provided route bundle (no slippage protection)" [input-amount input-id output-id])]
+                [(format "Succesfully smart-swapped {} {} to {} via bundle" [input-amount input-id output-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPU::URCi_SmartSwapWithBundle account input-id input-amount output-id -1.0 bounds bundle)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
+    (defun INFO_SWP|SmartSwapWithSlippageBundle:object{OuronetInfoV2.ClientInfo}
+        (patron:string account:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV3.Slippage} bundle:object{SwapperUsageV3.SmartSwapPathBundle})
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWPU:module{SwapperUsageV3} SWPU)
+                (slippage:decimal (at "slippage-percent" slippage-bounds))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Smart-swaps {} {} to {} via a provided route bundle (slippage {}%)" [input-amount input-id output-id slippage])]
+                [(format "Succesfully smart-swapped {} {} to {} via bundle" [input-amount input-id output-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPU::URCi_SmartSwapWithBundle account input-id input-amount output-id slippage slippage-bounds bundle)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])
+        ))
+    ;;
+    (defun INFO_SWP|AddLiquidity:object{OuronetInfoV2.ClientInfo}
+        (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                ;;the CLAD is read from SWPLC's own twin of the pricing reader, so the DECLARED tax
+                ;;and the CHARGED tax come from one place and the two collection flags are never
+                ;;restated here. See UC_LiquidityTaxDeclaration.
+                (clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
+                    (ref-SWPLC::URCi_AddStandardLiquidityClad account swpair input-amounts stoa-pid))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                (+ [(format "Operation: Adds Standard (native-LP) Liquidity to SWP-Pair {} with amounts {}" [swpair input-amounts])]
+                   (UC_LiquidityTaxDeclaration clad))
+                [(format "Succesfully added Standard Liquidity to SWP-Pair {} from Account {}" [swpair sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_AddStandardLiquidity account swpair input-amounts stoa-pid)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [input-amounts])
+        ))
+    (defun INFO_SWP|AddStandardLiquidity:object{OuronetInfoV2.ClientInfo}
+        (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                ;;the CLAD is read from SWPLC's own twin of the pricing reader, so the DECLARED tax
+                ;;and the CHARGED tax come from one place and the two collection flags are never
+                ;;restated here. See UC_LiquidityTaxDeclaration.
+                (clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
+                    (ref-SWPLC::URCi_AddStandardLiquidityClad account swpair input-amounts stoa-pid))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                (+ [(format "Operation: Adds Standard (native-LP) Liquidity to SWP-Pair {} with amounts {} (multistep)" [swpair input-amounts])]
+                   (UC_LiquidityTaxDeclaration clad))
+                [(format "Succesfully added Standard Liquidity to SWP-Pair {} from Account {}" [swpair sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_AddStandardLiquidity account swpair input-amounts stoa-pid)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [input-amounts])
+        ))
+    (defun INFO_SWP|AddIcedLiquidity:object{OuronetInfoV2.ClientInfo}
+        (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
+        ;;THE POOL'S OWN GATE, RUN BEFORE THE QUOTE IS PRICED. `UEV_AddChilledLiquidity` refuses
+        ;;this door on a pair without frozen LP, with the message reproduced below -- but it refuses
+        ;;in STEP 1 of the defpact, after step 0 has already collected the initiation fee. So the
+        ;;quote is the only chance the caller has to learn the door is shut before paying for it.
+        ;;Until this line, the preview instead died on `DPTF ID | does not exist`: with frozen LP
+        ;;off, the frozen-token getter returns the BAR sentinel and it reached a token-existence
+        ;;check -- true, and naming the separator as if it were a token.
+        ;;It must precede the binding group below, which prices the CLAD and reads that very token.
+        ;;Only the frozen-LP half is checked here: the asymmetry half of UEV_AddChilledLiquidity
+        ;;depends on the amounts, which is transient, and family K validates what the caller cannot
+        ;;change. Pinned by RedTeam/[RT-K]_PreviewParity.repl <<RT-K-005a/b>>.
+        (let
+            (
+                (ref-SWP:module{SwapperV4} SWP)
+            )
+            (enforce
+                (ref-SWP::UR_IzFrozenLP swpair)
+                (format "Frozen LP Functionality is not enabled on Swpair {}" [swpair])
+            )
+        )
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                ;;the CLAD is read from SWPLC's own twin of the pricing reader, so the DECLARED tax
+                ;;and the CHARGED tax come from one place and the two collection flags are never
+                ;;restated here. See UC_LiquidityTaxDeclaration.
+                (clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
+                    (ref-SWPLC::URCi_AddIcedLiquidityClad account swpair input-amounts stoa-pid))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                (+ [(format "Operation: Adds Iced Liquidity to SWP-Pair {} with amounts {}" [swpair input-amounts])]
+                   (UC_LiquidityTaxDeclaration clad))
+                [(format "Succesfully added Iced Liquidity to SWP-Pair {} from Account {}" [swpair sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_AddIcedLiquidity account swpair input-amounts stoa-pid)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [input-amounts])
+        ))
+    (defun INFO_SWP|AddGlacialLiquidity:object{OuronetInfoV2.ClientInfo}
+        (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
+        ;;THE POOL'S OWN GATE, RUN BEFORE THE QUOTE IS PRICED. `UEV_AddChilledLiquidity` refuses
+        ;;this door on a pair without frozen LP, with the message reproduced below -- but it refuses
+        ;;in STEP 1 of the defpact, after step 0 has already collected the initiation fee. So the
+        ;;quote is the only chance the caller has to learn the door is shut before paying for it.
+        ;;Until this line, the preview instead died on `DPTF ID | does not exist`: with frozen LP
+        ;;off, the frozen-token getter returns the BAR sentinel and it reached a token-existence
+        ;;check -- true, and naming the separator as if it were a token.
+        ;;It must precede the binding group below, which prices the CLAD and reads that very token.
+        ;;Only the frozen-LP half is checked here: the asymmetry half of UEV_AddChilledLiquidity
+        ;;depends on the amounts, which is transient, and family K validates what the caller cannot
+        ;;change. Pinned by RedTeam/[RT-K]_PreviewParity.repl <<RT-K-005a/b>>.
+        (let
+            (
+                (ref-SWP:module{SwapperV4} SWP)
+            )
+            (enforce
+                (ref-SWP::UR_IzFrozenLP swpair)
+                (format "Frozen LP Functionality is not enabled on Swpair {}" [swpair])
+            )
+        )
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                ;;the CLAD is read from SWPLC's own twin of the pricing reader, so the DECLARED tax
+                ;;and the CHARGED tax come from one place and the two collection flags are never
+                ;;restated here. See UC_LiquidityTaxDeclaration.
+                (clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
+                    (ref-SWPLC::URCi_AddGlacialLiquidityClad account swpair input-amounts stoa-pid))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                (+ [(format "Operation: Adds Glacial Liquidity to SWP-Pair {} with amounts {}" [swpair input-amounts])]
+                   (UC_LiquidityTaxDeclaration clad))
+                [(format "Succesfully added Glacial Liquidity to SWP-Pair {} from Account {}" [swpair sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_AddGlacialLiquidity account swpair input-amounts stoa-pid)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [input-amounts])
+        ))
+    (defun INFO_SWP|AddFrozenLiquidity:object{OuronetInfoV2.ClientInfo}
+        (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                ;;the CLAD is read from SWPLC's own twin of the pricing reader, so the DECLARED tax
+                ;;and the CHARGED tax come from one place and the two collection flags are never
+                ;;restated here. See UC_LiquidityTaxDeclaration.
+                (clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
+                    (ref-SWPLC::URCi_AddFrozenLiquidityClad account swpair frozen-dptf input-amount stoa-pid))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                (+ [(format "Operation: Adds Frozen Liquidity ({} {}) to SWP-Pair {}" [input-amount frozen-dptf swpair])]
+                   (UC_LiquidityTaxDeclaration clad))
+                [(format "Succesfully added Frozen Liquidity to SWP-Pair {} from Account {}" [swpair sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_AddFrozenLiquidity account swpair frozen-dptf input-amount stoa-pid)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [(ref-I|OURONET::OI|UC_FormatTokenAmount input-amount)])
+        ))
+    (defun INFO_SWP|AddSleepingLiquidity:object{OuronetInfoV2.ClientInfo}
+        (patron:string account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                ;;the CLAD is read from SWPLC's own twin of the pricing reader, so the DECLARED tax
+                ;;and the CHARGED tax come from one place and the two collection flags are never
+                ;;restated here. See UC_LiquidityTaxDeclaration.
+                (clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
+                    (ref-SWPLC::URCi_AddSleepingLiquidityClad account swpair sleeping-dpof nonce stoa-pid))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                (+ [(format "Operation: Adds Sleeping Liquidity ({} Nonce {}) to SWP-Pair {}" [sleeping-dpof nonce swpair])]
+                   (UC_LiquidityTaxDeclaration clad))
+                [(format "Succesfully added Sleeping Liquidity to SWP-Pair {} from Account {}" [swpair sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_AddSleepingLiquidity account swpair sleeping-dpof nonce stoa-pid)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [nonce])
+        ))
+    (defun INFO_SWP|RemoveLiquidity:object{OuronetInfoV2.ClientInfo}
+        (patron:string account:string swpair:string lp-amount:decimal)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-SWP:module{SwapperV4} SWP)
+                (ref-SWPL:module{SwapperLiquidityV2} SWPL)
+                (ref-SWPLC:module{SwapperLiquidityClientV2} SWPLC)
+                ;;
+                (pool-token-ids:[string] (ref-SWP::UR_PoolTokens swpair))
+                (lp-id:string (ref-SWP::UR_TokenLP swpair))
+                (pt-output-amounts:[decimal] (ref-SWPL::URC_LpBreakAmounts swpair lp-amount))
+                ;;
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_RemoveLiquidity account swpair lp-amount)))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [
+                    
+                    (format "Operation: Removes Liquidity on SWP-Pair {}" [swpair])
+                    (format "Unfolding {} {} (LP-Tokens)." [lp-amount lp-id])
+                    (format "This generates {} {}" [pt-output-amounts pool-token-ids])
+                ]
+                [(format "Removed {} LP Tokens from SWP-Pair {}, yielding {} of all Pool Tokens" [lp-amount swpair pt-output-amounts])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    ;;
+    ;;[DALOS-INFO] — relocated from INFO-ZERO (Phase 1.2). Pure presentation; wrap IGNIS's DALOS|URCi_*.
+    (defun INFO_DALOS|ControlSmartAccount:object{OuronetInfoV2.ClientInfo} (patron:string account:string)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                ;;
+                (is-ignis-zero:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-IGNIS::DALOS|URCi_ControlSmartAccount account)))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Execute Smart Account Control."]
+                [(format "Smart Ouronet Account {} controlled succesfully" [sa])]
+                (if is-ignis-zero (ref-I|OURONET::OI|UDC_NoIgnisCosts) (ref-I|OURONET::OI|UDC_IgnisCosts patron ifp))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun INFO_DALOS|DeploySmartAccount:object{OuronetInfoV2.ClientInfo} (account:string)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                ;;
+                (is-stoa-zero:bool (ref-IGNIS::URC_IsNativeGasZero))
+                (kfp:decimal (ref-IGNIS::DALOS|URCi_DeploySmartAccount))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Deploy a Smart Ouronet Account."]
+                [(format "Smart Ouronet Account {} deployed succesfully" [sa])]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (if is-stoa-zero (ref-I|OURONET::OI|UDC_NoStoaCosts) (ref-I|OURONET::OI|UDC_FullStoaCosts kfp))
+                []
+            )
+        )
+    )
+    (defun INFO_DALOS|DeployStandardAccount:object{OuronetInfoV2.ClientInfo} (account:string)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                ;;
+                (is-stoa-zero:bool (ref-IGNIS::URC_IsNativeGasZero))
+                (kfp:decimal (ref-IGNIS::DALOS|URCi_DeployStandardAccount))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Deploy a Standard Ouronet Account."]
+                [(format "Standard Ouronet Account {} deployed succesfully" [sa])]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (if is-stoa-zero (ref-I|OURONET::OI|UDC_NoStoaCosts) (ref-I|OURONET::OI|UDC_FullStoaCosts kfp))
+                []
+            )
+        )
+    )
+    (defun INFO_DALOS|RotateGovernor:object{OuronetInfoV2.ClientInfo} (patron:string account:string)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                ;;
+                (is-ignis-zero:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-IGNIS::DALOS|URCi_RotateGovernor account)))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Rotate the Governor-Guard of an Ouronet Account."]
+                [(format "Ouronet Account {} Governor-Guard rotated succesfully!" [sa])]
+                (if is-ignis-zero (ref-I|OURONET::OI|UDC_NoIgnisCosts) (ref-I|OURONET::OI|UDC_IgnisCosts patron ifp))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun INFO_DALOS|RotateGuard:object{OuronetInfoV2.ClientInfo} (patron:string account:string)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                ;;
+                (is-ignis-zero:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-IGNIS::DALOS|URCi_RotateGuard account)))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Rotate the Primary-Guard of an Ouronet Account."]
+                [(format "Ouronet Account {} Primary-Guard rotated succesfully!" [sa])]
+                (if is-ignis-zero (ref-I|OURONET::OI|UDC_NoIgnisCosts) (ref-I|OURONET::OI|UDC_IgnisCosts patron ifp))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun INFO_DALOS|RotateStoa:object{OuronetInfoV2.ClientInfo} (patron:string account:string)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                ;;
+                (is-ignis-zero:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-IGNIS::DALOS|URCi_RotateStoa account)))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Rotate the Attached STOA-Address of an Ouronet Account."]
+                [(format "Ouronet Account {} Attached Stoa-Address rotated succesfully!" [sa])]
+                (if is-ignis-zero (ref-I|OURONET::OI|UDC_NoIgnisCosts) (ref-I|OURONET::OI|UDC_IgnisCosts patron ifp))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun INFO_DALOS|RotateSovereign:object{OuronetInfoV2.ClientInfo} (patron:string account:string)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                ;;
+                (is-ignis-zero:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-IGNIS::DALOS|URCi_RotateSovereign account)))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Rotate the Sovereign of a Smart Ouronet Account."]
+                [(format "Smart Ouronet Account {} Sovereign rotated succesfully!" [sa])]
+                (if is-ignis-zero (ref-I|OURONET::OI|UDC_NoIgnisCosts) (ref-I|OURONET::OI|UDC_IgnisCosts patron ifp))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun INFO_DALOS|UpdateEliteAccount:object{OuronetInfoV2.ClientInfo} (patron:string account:string)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                ;;
+                (is-ignis-zero:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-IGNIS::DALOS|URCi_UpdateEliteAccount patron)))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Update Elite Account Data for a single Ouronet Account"]
+                [(format "Elite Account Data for {} updated succesfully!" [sa])]
+                (if is-ignis-zero (ref-I|OURONET::OI|UDC_NoIgnisCosts) (ref-I|OURONET::OI|UDC_IgnisCosts patron ifp))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun INFO_DALOS|UpdateEliteAccountSquared:object{OuronetInfoV2.ClientInfo} (patron:string sender:string receiver:string)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                ;;
+                (is-ignis-zero:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-IGNIS::DALOS|URCi_UpdateEliteAccountSquared patron)))
+                (sa1:string (ref-I|OURONET::OI|UC_ShortAccount sender))
+                (sa2:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Update Elite Account Data for a two Ouronet Accounts"]
+                [(format "Elite Account Data for {} and {} updated succesfully!" [sa1 sa2])]
+                (if is-ignis-zero (ref-I|OURONET::OI|UDC_NoIgnisCosts) (ref-I|OURONET::OI|UDC_IgnisCosts patron ifp))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+
+)
+
+;; ===== 2_CITIZEN/1_AOZ/01_AOZ+.pact ================================
+(interface AgeOfZalmoxis
+
+
+
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables  ⟨cannot exist in an interface⟩
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables  ⟨cannot exist in an interface⟩
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;
+    ;;  [UR]
+    ;;
+    (defun UR_CountPrimalTrueFungibles:integer ())
+    (defun UR_CountPrimalOrtoFungibles:integer ())
+    (defun UR_CountATSPairs:integer ())
+    (defun UR_CountTrueFungibles:integer ())
+    (defun UR_CountOrtoFungibles:integer ())
+    (defun UR_CountSemiFungibles:integer ())
+    (defun UR_CountNonFungibles:integer ())
+    ;;
+    (defun UR_PrimalTrueFungible:string (position:integer))
+    (defun UR_PrimalOrtoFungible:string (position:integer))
+    (defun UR_AutostakePair:string (position:integer))
+    (defun UR_TrueFungible:string (position:integer))
+    (defun UR_OrtoFungible:string (position:integer))
+    (defun UR_SemiFungible:string (position:integer))
+    (defun UR_NonFungible:string (position:integer))
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+    ;;
+    ;;  [A]
+    ;;
+    (defun A_InitialiseCounters ())
+    (defun A_RegisterPrimalTrueFungible (id:string))
+    (defun A_RegisterPrimalOrtoFungible (id:string))
+    (defun A_RegisterAutostakePair (id:string))
+    (defun A_RegisterTrueFungible (id:string))
+    (defun A_RegisterOrtoFungible (id:string))
+    (defun A_RegisterSemiFungible (id:string))
+    (defun A_RegisterNonFungible (id:string))
+    ;;
+    ;;  [C]
+    ;;
+    (defun C_SetupKosonicATS (index-name:string hot-rbt:string decay:integer))
+
+)
+(module AOZ GOV
+
+
+
+
+
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
+    ;;
+    (implements AgeOfZalmoxis)
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;
+    (defconst GOV|MD_AOZ                                (keyset-ref-guard (GOV|Demiurgoi)))
+    (defconst GOV|SC_AOZ                                (keyset-ref-guard AOZ|SC_KEY))
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    (defcap GOV ()                                      (compose-capability (GOV|AOZ_ADMIN)))
+    (defcap GOV|AOZ_ADMIN ()
+        (enforce-one
+            "AOZ Admin not satisfed"
+            [
+                (enforce-guard GOV|MD_AOZ)
+                (enforce-guard GOV|SC_AOZ)
+            ]
+        )
+    )
+    ;;{G5}  functions
+    (defun GOV|Demiurgoi ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::GOV|Demiurgoi)
+        )
+    )
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
 
     ;;<=========================================================================>
     ;;{3}  CST
     ;;{3.1}  constants
     ;;
-    (defconst DPDC|SC_KEY                               (GOV|CollectiblesKey))
-    (defconst DPDC|SC_NAME                              (GOV|DPDC|SC_NAME))
-    (defconst DPDC|SC_STOA-NAME                         "k:xxx")
-    (defconst BAR                                       (CT_Bar))
-    (defconst FRG                                       1000)
+    (defconst AOZ|SC_KEY                                (+ (CT_Namespace) ".us-0000_aozt-keyset"))
+    (defconst AOZ|SC_NAME                               "Ѻ.ÅτhGźνΣhςвiàÁĘĚДÏWÉΨTěCÃŒnæi9цéŘQí¢лΞÛIчмfÓeżÜýЯàDÖ5αȚÞVđσγ₱0ęЬÔĄsĄLлKùvåH£ΞMFУûÊyđÜqdŽŚЖsĘъsПÂÔØŹÞŮγŚΣЧ6Ïж¢чPyòлБ14ÚęŃĄåîêтηΛbΦđkûÇĂζsБúĎdŸUЛзÙÂÚJηXťćж¥zщòÁŸRĘ")
+    (defconst AOZ|SC_STOA-NAME                          "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf")
+    (defconst AOZ|PBL                                   "9G.29k17uqiwBF7mbc3rzr5gz228lxepz7a0fwrja2Bgzk1czjCLja3wg9q1ey10ftFhxIAiFBHCtvotkmKIIxFisMni8EA6esncL3lg2uLLH2u89Er9sgbeGmK0k7b63xujf1nAIf5GB583fcE6pzFak2CwhEi1dHzI0F14tvtxv4H8r1ABk5weoJ7HfCoadMm1h8MjIwjzbDKo80H25AJL8I1JiFF66Iwjcj3sFrD9xaqz1ziEEBJICF2k81pG9ABpDk2rK4ooglCK3kmC0h7yvvakjIvMpGp00jnw2Cpg1HoxjK0HoqzuKciIIczGsEzCjoB43x7lKsxkzAm7op2urv0I85Kon7uIBmg328cuKMc8driw8boAFnrdqHEFhx4sFjm8DM44FutCykKGx7GGLnoeJLaC707lot9tM51krmp6KDG8Ii318fIc1L5iuzqEwDnkro35JthzlDD1GkJaGgze3kDApAckn3uMcBypdz4LxbDGrg5K2GdiFBdFHqdpHyssrH8t694BkBtM9EB3yI3ojbnrbKrEM8fMaHAH2zl4x5gdkHnpjAeo8nz")
+    (defconst AOZ|COUNTER "AOZ-AssetCount")
     ;;{3.2}  schemas
+    ;;
+    ;;
+    ;;
+    (defschema AOZ|AssetCounter
+        primal-tfs:integer
+        primal-ofs:integer
+        atspairs:integer
+        tfs:integer
+        ofs:integer
+        sfs:integer
+        nfs:integer
+    )
+    (defschema AOZ|PrimalTrueFungibles
+        primal-tf-id:string
+    )
+    (defschema AOZ|PrimalOrtoFungibles
+        primal-of-id:string
+    )
+    (defschema AOZ|AutostakePairs
+        atspair-id:string
+    )
+    (defschema AOZ|TrueFungibles
+        tf-asset:string
+    )
+    (defschema AOZ|OrtoFungibles
+        of-asset:string
+    )
+    (defschema AOZ|SemiFungibles
+        sf-asset:string
+    )
+    (defschema AOZ|NonFungibles
+        nf-asset:string
+    )
     ;;{3.3}  tables
-    ;;
-    (deftable DPSF|T|Properties:{DpdcUdcV2.DPDC|Properties})            ;;Key = <DPSF-id>      
-    (deftable DPSF|T|Nonces:{DpdcUdcV2.DPDC|NonceElement})              ;;Key = <DPSF-id> + BAR + <nonce>
-    (deftable DPSF|T|VerumRoles:{DpdcUdcV2.DPDC|VerumRoles})            ;;Key = <DPSF-id>
-    (deftable DPSF|T|Account:{DpdcUdcV2.DPSF|AccountRoles})             ;;Key = <DPSF-id> + BAR + <account>
-    (deftable DPSF|T|AccountSupplies:{DpdcUdcV2.DPDC|AccountSupply})    ;;Key = <account> + BAR + <DPSF-id> + BAR + <nonce>
-    ;;
-    (deftable DPNF|T|Properties:{DpdcUdcV2.DPDC|Properties})            ;;Key = <DPNF-id>      
-    (deftable DPNF|T|Nonces:{DpdcUdcV2.DPDC|NonceElement})              ;;Key = <DSNF-id> + BAR + <nonce>
-    (deftable DPNF|T|VerumRoles:{DpdcUdcV2.DPDC|VerumRoles})            ;;Key = <DPNF-id>
-    (deftable DPNF|T|Account:{DpdcUdcV2.DPNF|AccountRoles})             ;;Key = <DPNF-id> + BAR + <account> 
-    (deftable DPNF|T|AccountSupplies:{DpdcUdcV2.DPDC|AccountSupply})    ;;Key = <account> + BAR + <DPNF-id> + BAR + <nonce>
+    (deftable AOZ|T|AssetCounter:{AOZ|AssetCounter})                ;;Key = FIXED
+    (deftable AOZ|T|PrimalTrueFungibles:{AOZ|PrimalTrueFungibles})  ;;Key = <position>
+    (deftable AOZ|T|PrimalOrtoFungibles:{AOZ|PrimalOrtoFungibles})  ;;Key = <position>
+    (deftable AOZ|T|AutostakePairs:{AOZ|AutostakePairs})            ;;Key = <position>
+    (deftable AOZ|T|TrueFungibles:{AOZ|TrueFungibles})              ;;Key = <position>
+    (deftable AOZ|T|OrtoFungibles:{AOZ|OrtoFungibles})              ;;Key = <position>
+    (deftable AOZ|T|SemiFungibles:{AOZ|SemiFungibles})              ;;Key = <position>
+    (deftable AOZ|T|NonFungibles:{AOZ|NonFungibles})                ;;Key = <position>
 
     ;;<=========================================================================>
     ;;{4}  CAPABILITIES
     ;;{C1}  Trivial [bronze]
-    (defcap DPDC|GOV ()
-        @doc "Governor Capability for the DPDC Smart DALOS Account"
-        true
-    )
     ;;
     (defcap SECURE ()
         true
     )
     ;;{C2}  Simple
     ;;{C3}  Composed
-    ;;
-    ;;
-    (defcap AHU ()
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ah:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
-            )
-            (ref-DALOS::CAP_EnforceAccountOwnership ah)
-            (compose-capability (SECURE))
-        )
-    )
-    (defcap DPDC|C>UPDATE-BRD (entity-id:string son:bool)
-        @event
-        (CAP_Owner entity-id son)
-        (compose-capability (P|DPDC|CALLER))
-    )
-    (defcap DPDC|C>UPGRADE-BRD (entity-id:string son:bool)
-        @event
-        (CAP_Owner entity-id son)
-        (compose-capability (P|DPDC|CALLER))
+    (defcap SECURE-ADMIN ()
+        (compose-capability (SECURE))
+        (compose-capability (GOV|AOZ_ADMIN))
     )
     ;;{C4}  Ownership [gold]
 
     ;;<=========================================================================>
     ;;{5}  FUNCTIONS
     ;;{5.1}  Construct [CT/UDC]
-    ;;
-    ;; [Keys]
     (defun CT_Namespace ()
         (let
             (
@@ -607,1495 +4446,284 @@
             (ref-U|CT::CT_NS_USE)
         )
     )
-    (defun CT_Bar ()
-        (let
-            (
-                (ref-U|CT:module{OuronetConstantsV2} U|CT)
-            )
-            (ref-U|CT::CT_BAR)
-        )
-    )
-    ;;
-    (defun UDC_Control:object{DpdcUdcV2.DPDC|Properties}
-        (id:string son:bool cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool)
-        (let
-            (
-                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-            )
-            (ref-DPDC-UDC::UDC_DPDC|Properties
-                id
-                (UR_OwnerKonto id son)
-                (UR_CreatorKonto id son)
-                (UR_Name id son)
-                (UR_Ticker id son)
-                cu cco ccc casr ctncr cf cw cp
-                (UR_IsPaused id son)
-                (UR_NoncesUsed id son)
-                (UR_SetClassesUsed id son)
-            )
-        )
-    )
     ;;{5.2}  Compute [UC]
-    (defun UC_ParseSignedInteger:integer (value:string)
-        @doc "Converts an integer written as string, to integer, working for negative values aswell."
-        (let
-            (
-                (is-negative:bool (= (take 1 value) "-"))
-                (abs-str:string (if is-negative (drop 1 value) value))
-                (parsed-int:integer (str-to-int abs-str))
-            )
-            (if is-negative
-                (- parsed-int)
-                parsed-int
-            )
-        )
+    ;;
+    (defun UC_Str:string (n:integer)
+        (int-to-str 10 n)
     )
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;prefix (dirty/scan-tier reads), not UR_ (point reads); matches this file's other URH_* scans.
-    (defun URH_AS-Keys:[string] (son:bool)
-        (keys (if son DPSF|T|AccountSupplies DPNF|T|AccountSupplies))
+    (defun UR_CountPrimalTrueFungibles:integer ()
+        (at "primal-tfs" (read AOZ|T|AssetCounter AOZ|COUNTER ["primal-tfs"]))
+    )
+    (defun UR_CountPrimalOrtoFungibles:integer ()
+        (at "primal-ofs" (read AOZ|T|AssetCounter AOZ|COUNTER ["primal-ofs"]))
+    )
+    (defun UR_CountATSPairs:integer ()
+        (at "atspairs" (read AOZ|T|AssetCounter AOZ|COUNTER ["atspairs"]))
+    )
+    (defun UR_CountTrueFungibles:integer ()
+        (at "tfs" (read AOZ|T|AssetCounter AOZ|COUNTER ["tfs"]))
+    )
+    (defun UR_CountOrtoFungibles:integer ()
+        (at "ofs" (read AOZ|T|AssetCounter AOZ|COUNTER ["ofs"]))
+    )
+    (defun UR_CountSemiFungibles:integer ()
+        (at "sfs" (read AOZ|T|AssetCounter AOZ|COUNTER ["sfs"]))
+    )
+    (defun UR_CountNonFungibles:integer ()
+        (at "nfs" (read AOZ|T|AssetCounter AOZ|COUNTER ["nfs"]))
     )
     ;;
-    ;; [1] - [Properties]
-    (defun UR_Properties:object{DpdcUdcV2.DPDC|Properties} (id:string son:bool)
-        (read (if son DPSF|T|Properties DPNF|T|Properties) id)
-    )
-    (defun UR_OwnerKonto:string (id:string son:bool)
-        (at "owner-konto" (UR_Properties id son))
-    )
-    (defun UR_CreatorKonto:string (id:string son:bool)
-        (at "creator-konto" (UR_Properties id son))
-    )
-    (defun UR_Name:string (id:string son:bool)
-        (at "name" (UR_Properties id son))
-    )
-    (defun UR_Ticker:string (id:string son:bool)
-        (at "ticker" (UR_Properties id son))
-    )
-    (defun UR_CanUpgrade:bool (id:string son:bool)
-        (at "can-upgrade" (UR_Properties id son))
-    )
-    (defun UR_CanChangeOwner:bool (id:string son:bool)
-        (at "can-change-owner" (UR_Properties id son))
-    )
-    (defun UR_CanChangeCreator:bool (id:string son:bool)
-        (at "can-change-creator" (UR_Properties id son))
-    )
-    (defun UR_CanAddSpecialRole:bool (id:string son:bool)
-        (at "can-add-special-role" (UR_Properties id son))
-    )
-    (defun UR_CanTransferNftCreateRole:bool (id:string son:bool)
-        (at "can-transfer-nft-create-role" (UR_Properties id son))
-    )
-    (defun UR_CanFreeze:bool (id:string son:bool)
-        (at "can-freeze" (UR_Properties id son))
-    )
-    (defun UR_CanWipe:bool (id:string son:bool)
-        (at "can-wipe" (UR_Properties id son))
-    )
-    (defun UR_CanPause:bool (id:string son:bool)
-        (at "can-pause" (UR_Properties id son))
-    )
-    (defun UR_IsPaused:bool (id:string son:bool)
-        (at "is-paused" (UR_Properties id son))
-    )
-    (defun UR_NoncesUsed:integer (id:string son:bool)
-        (at "nonces-used" (UR_Properties id son))
-    )
-    (defun UR_SetClassesUsed:integer (id:string son:bool)
-        (at "set-classes-used" (UR_Properties id son))
-    )
-    ;; [2] - [Nonce Element] - Only positive nonces can be read this way; Negative Nonces will error out except for <UR_NonceSupply>
-    (defun UR_NonceElement:object{DpdcUdcV2.DPDC|NonceElement} (id:string son:bool nonce:integer)
-        (read (if son DPSF|T|Nonces DPNF|T|Nonces) (concat [id BAR (format "{}" [nonce])]))
-    )
-    (defun UR_NonceClass:integer (id:string son:bool nonce:integer)
-        (at "nonce-class" (UR_NonceElement id son (abs nonce)))
-    )
-    (defun UR_NonceValue:integer (id:string son:bool nonce:integer)
-        (at "nonce-value" (UR_NonceElement id son nonce))
-    )
-    (defun UR_NonceSupply:integer (id:string son:bool nonce:integer)
-        @doc "Can be used with negative Nonce Value"
-        (if son
-            (if (< nonce 0)
-                (* FRG (UR_AccountNonceSupply DPDC|SC_NAME id son (abs nonce)))
-                (at "nonce-supply" (UR_NonceElement id son (abs nonce)))
-            )
-            (if (< nonce 0)
-                FRG
-                (at "nonce-supply" (UR_NonceElement id son (abs nonce)))
-            )
-        )
-    )
-    (defun UR_NonceHolder:string (id:string son:bool nonce:integer)
-        (at "nonce-holder" (UR_NonceElement id son nonce))
-    )
-    (defun UR_NativeNonceData:object{DpdcUdcV2.DPDC|NonceData} (id:string son:bool nonce:integer)
-        (at "nonce-data" (UR_NonceElement id son nonce))
-    )
-    (defun UR_SplitNonceData:object{DpdcUdcV2.DPDC|NonceData} (id:string son:bool nonce:integer)
-        (at "split-data" (UR_NonceElement id son nonce))
-    )
-    (defun UR_NonceData:object{DpdcUdcV2.DPDC|NonceData} (id:string son:bool nonce:integer)
-        (if (< nonce 0)
-            (UR_SplitNonceData id son (abs nonce))
-            (UR_NativeNonceData id son nonce)
-        )
-    )
-    ;;
-    ;; [2.1] - [Generic Nonce-Data Read]
-    (defun UR_N|Royalty:decimal (n:object{DpdcUdcV2.DPDC|NonceData})
-        @doc "Forward-looking hook for the upcoming Escrow/NFT marketplace (not yet built) — no on-chain \
-            \ consumer reads this today, unlike UR_N|IgnisRoyalty below, which DPDC-T's transfer pricing \
-            \ actively consumes. Confirmed intentional, not dead/unfinished code. DPDC Audit #26M."
-        (at "royalty" n)
-    )
-    (defun UR_N|IgnisRoyalty:decimal (n:object{DpdcUdcV2.DPDC|NonceData})
-        (at "ignis" n)
-    )
-    (defun UR_N|Name:string (n:object{DpdcUdcV2.DPDC|NonceData})
-        (at "name" n)
-    )
-    (defun UR_N|Description:string (n:object{DpdcUdcV2.DPDC|NonceData})
-        (at "description" n)
-    )
-    (defun UR_N|MetaData:object{DpdcUdcV2.NonceMetaData} (n:object{DpdcUdcV2.DPDC|NonceData})
-        (at "meta-data" n)
-    )
-    (defun UR_N|AssetType:object{DpdcUdcV2.URI|Type} (n:object{DpdcUdcV2.DPDC|NonceData})
-        (at "asset-type" n)
-    )
-    (defun UR_N|Primary:object{DpdcUdcV2.URI|Data} (n:object{DpdcUdcV2.DPDC|NonceData})
-        (at "uri-primary" n)
-    )
-    (defun UR_N|Secondary:object{DpdcUdcV2.URI|Data} (n:object{DpdcUdcV2.DPDC|NonceData})
-        (at "uri-secondary" n)
-    )
-    (defun UR_N|Tertiary:object{DpdcUdcV2.URI|Data} (n:object{DpdcUdcV2.DPDC|NonceData})
-        (at "uri-tertiary" n)
-    )
-    ;;  [2.1.1] - [Generic Nonce-MetaData Read]
-    (defun UR_N|RawScore:decimal (n:object{DpdcUdcV2.DPDC|NonceData})
-        (at "score" (UR_N|MetaData n))
-    )
-    (defun UR_N|Composition:[integer] (n:object{DpdcUdcV2.DPDC|NonceData})
-        (at "composition" (UR_N|MetaData n))
-    )
-    (defun UR_N|RawMetaData:object (n:object{DpdcUdcV2.DPDC|NonceData})
-        (at "meta-data" (UR_N|MetaData n))
-    )
-    ;;  [2.2] - [Existing Nonce-Data Read]
-    ;;  [Uses Above Functions, instead of <n> would use <(UR_NativeNonceData id son nonce)> or <(UR_SplitNonceData id son nonce)>]
-    ;;
-    ;;  [3] - [VerumRoles]
-    (defun UR_VerumRoles:object{DpdcUdcV2.DPDC|VerumRoles} (id:string son:bool)
-        (if son
-            (read DPSF|T|VerumRoles id)
-            (read DPNF|T|VerumRoles id)
-        )
-    )
-    (defun UR_Verum1:[string] (id:string son:bool)
-        (at "a-frozen" (UR_VerumRoles id son))
-    )
-    (defun UR_Verum2:[string] (id:string son:bool)
-        (at "r-exemption" (UR_VerumRoles id son))
-    )
-    (defun UR_Verum3:[string] (id:string son:bool)
-        (at "r-nft-add-quantity" (UR_VerumRoles id son))
-    )
-    (defun UR_Verum4:[string] (id:string son:bool)
-        (at "r-nft-burn" (UR_VerumRoles id son))
-    )
-    (defun UR_Verum5:string (id:string son:bool)
-        (at "r-nft-create" (UR_VerumRoles id son))
-    )
-    (defun UR_Verum6:string (id:string son:bool)
-        (at "r-nft-recreate" (UR_VerumRoles id son))
-    )
-    (defun UR_Verum7:[string] (id:string son:bool)
-        (at "r-nft-update" (UR_VerumRoles id son))
-    )
-    (defun UR_Verum8:[string] (id:string son:bool)
-        (at "r-modify-creator" (UR_VerumRoles id son))
-    )
-    (defun UR_Verum9:[string] (id:string son:bool)
-        (at "r-modify-royalties" (UR_VerumRoles id son))
-    )
-    (defun UR_Verum10:string (id:string son:bool)
-        (at "r-set-new-uri" (UR_VerumRoles id son))
-    )
-    (defun UR_Verum11:[string] (id:string son:bool)
-        (at "r-transfer" (UR_VerumRoles id son))
-    )
-    (defun URv_GetVerumChain:[string] (id:string son:bool rp:integer)
-        (enforce (contains rp [1 2 3 4 7 8 9 11]) "Invalid Position for Multi Verum")
-        (cond
-            ((= rp 1) (UR_Verum1 id son))
-            ((= rp 2) (UR_Verum2 id son))
-            ((= rp 3) (UR_Verum3 id son))
-            ((= rp 4) (UR_Verum4 id son))
-            ((= rp 7) (UR_Verum7 id son))
-            ((= rp 8) (UR_Verum8 id son))
-            ((= rp 9) (UR_Verum9 id son))
-            ((= rp 11) (UR_Verum11 id son))
-            [BAR]
-        )
-    )
-    ;; [4] - [Account]
-    (defun UR_IzAccount:bool (account:string id:string son:bool)
-        (let
-            (
-                (trial 
-                    (if son
-                        (try false (read DPSF|T|Account (concat [id BAR account])))
-                        (try false (read DPNF|T|Account (concat [id BAR account])))
-                    )
-                ) 
-            )
-            (if (= (typeof trial) "bool") false true)
-        )
-    )
-    (defun UR_CA|R:object{DpdcUdcV2.AccountRoles} (id:string son:bool account:string)
-        (let
-            (
-                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-                (f:bool false)
-            )
-            (if son
-                (with-default-read DPSF|T|Account (concat [id BAR account])
-                    { "roles" : (ref-DPDC-UDC::UDC_AccountRoles f f f f f f f f f f)}
-                    { "roles" := rolez}
-                    rolez
-                )
-                (with-default-read DPNF|T|Account (concat [id BAR account])
-                    { "roles" : (ref-DPDC-UDC::UDC_AccountRoles f f f f f f f f f f)}
-                    { "roles" := rolez}
-                    rolez
-                )
-            )
-        )
-    )
-    (defun UR_CA|R-AddQuantity:bool (id:string account:string)
-        (with-default-read DPSF|T|Account (concat [id BAR account])
-            { "role-nft-add-quantity" : false}
-            { "role-nft-add-quantity" := rnaq }
-            rnaq
-        )
-    )
-    (defun UR_CA|R-Frozen:bool (id:string son:bool account:string)
-        (at "frozen" (UR_CA|R id son account))
-    )
-    (defun UR_CA|R-Exemption:bool (id:string son:bool account:string)
-        (at "role-exemption" (UR_CA|R id son account))
-    )
-    (defun UR_CA|R-Burn:bool (id:string son:bool account:string)
-        (at "role-nft-burn" (UR_CA|R id son account))
-    )
-    (defun UR_CA|R-Create:bool (id:string son:bool account:string)
-        (at "role-nft-create" (UR_CA|R id son account))
-    )
-    (defun UR_CA|R-Recreate:bool (id:string son:bool account:string)
-        (at "role-nft-recreate" (UR_CA|R id son account))
-    )
-    (defun UR_CA|R-Update:bool (id:string son:bool account:string)
-        (at "role-nft-update" (UR_CA|R id son account))
-    )
-    (defun UR_CA|R-ModifyCreator:bool (id:string son:bool account:string)
-        (at "role-modify-creator" (UR_CA|R id son account))
-    )
-    (defun UR_CA|R-ModifyRoyalties:bool (id:string son:bool account:string)
-        (at "role-modify-royalties" (UR_CA|R id son account))
-    )
-    (defun UR_CA|R-SetUri:bool (id:string son:bool account:string)
-        (at "role-set-new-uri" (UR_CA|R id son account))
-    )
-    (defun UR_CA|R-Transfer:bool (id:string son:bool account:string)
-        (at "role-transfer" (UR_CA|R id son account))
-    )
-    ;; [5] - [AccountSupplies]
-    (defun UR_AccountSupply:object{DpdcUdcV2.DPDC|AccountSupply} (account:string id:string son:bool nonce:integer)
-        (read
-            (if son DPSF|T|AccountSupplies DPNF|T|AccountSupplies)
-            (concat [account BAR id BAR (format "{}" [nonce])])
-        )
-    )
-    (defun UR_AccountNonceSupply:integer (account:string id:string son:bool nonce:integer)
-        @doc "Returns the Supply of a Nonce on an account, returning -1 if no supply is detected \
-        \ If the Account exists and has no supply, it would return as 0."
-        (let
-            (
-                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-                (zs:object{DpdcUdcV2.DPDC|AccountSupply} (ref-DPDC-UDC::UDC_DPDC|AccountSupply BAR BAR -1 -1))
-            )
-            (at "supply" (try zs (UR_AccountSupply account id son nonce)))
-        )
-    )
-    (defun UR_AccountNoncesSupplies:[integer] (account:string id:string son:bool nonces:[integer])
-        @doc "Returns the Supplies of the <nonces> used in the input"
-        (let
-            (
-                (ref-U|LST:module{StringProcessorV2} U|LST)
-            )
-            (fold
-                (lambda
-                    (acc:[integer] element:integer)
-                    (ref-U|LST::UC_AppL acc (UR_AccountNonceSupply account id son element))
-                )
-                []
-                nonces
-            )
-        ) 
-    )
-    ;;
-    ;;  [URD]
-    ;;
-    ;;1] Returns Collectables held by Account
-    (defun URH_HeldCollectables:[string] (account:string son:bool)
-        @doc "Returns all Collectables that are registered for a given <account>"
-        (map (at "id")
-            (select (if son DPSF|T|Account DPNF|T|Account) ["id"]
-                (where "account" (= account))
-            )
-        )
-    )
-    ;;2]Returns Accounts that are registered for a given Collectable
-    (defun URH_ExistingCollectables:[string] (dpdc:string son:bool)
-        @doc "Returns all Ouronet Accounts that are registered for a given <dpdc>"
-        (map (at "account")
-            (select (if son DPSF|T|Account DPNF|T|Account) ["account"]
-                (where "id" (= dpdc))
-            )
-        )
-    )
-    ;;3]Returns a List of DPTFs that are owned by a given Account for Management Purposes
-    (defun URH_OwnedCollectables:[string] (account:string son:bool)
-        @doc "Returns all Collectables that can be managed by the given <account>"
-        (map (at "id")
-            (select (if son DPSF|T|Properties DPNF|T|Properties) ["id"]
-                (where "owner-konto" (= account))
-            )
-        )
-    )
-    ;;
-    (defun URH_AccountNonces:[integer] (account:string id:string son:bool)
-        (let 
-            (
-                (tbl (if son DPSF|T|AccountSupplies DPNF|T|AccountSupplies))
-                (results 
-                    (map (at "nonce")
-                        (filter
-                            (lambda (x) (> (at "supply" x) 0))
-                            (select tbl ["nonce" "supply"]
-                                (and?
-                                    (where "id" (= id))
-                                    (where "account" (= account))
-                                )
-                            )
-                        )
-                        
-                    )
-                )
-            )
-            (if (= (length results) 0) 
-                [] 
-                results
-            )
-        )
-    )
-    (defun URH_AccountNoncesWithSupplies:[object] (account:string id:string son:bool)
-        @doc "Returns an object with keys <nonce> and <supply> with the required data"
-        (let 
-            (
-                (tbl (if son DPSF|T|AccountSupplies DPNF|T|AccountSupplies))
-                (results 
-                    (select tbl ["nonce" "supply"]
-                        (and?
-                            (where "id" (= id))
-                            (where "account" (= account))
-                        )
-                    )
-                )
-            )
-            ;;DPDC Audit #34M: was [{}] (a 1-element list of an empty object with no "nonce"/"supply"
-            ;;keys) -- a phantom result that inflates any caller's (length ...) count by 1 for an
-            ;;account holding zero nonces. Mirror URH_AccountNonces's correct [] for the empty case.
-            (if (= (length results) 0)
-                []
-                (filter (lambda (x) (> (at "supply" x) 0)) results)
-            )
-        )
-    )
-    ;;
-    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator}
-        (entity-id:string son:bool)
-        @doc "Cost preview for C_UpdatePendingBranding (Branding tier; son->4.0 else 5.0)."
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (owner:string (UR_OwnerKonto entity-id son))
-                (multiplier:decimal (if son 4.0 5.0))
-            )
-            (ref-IGNIS::UDC_BrandingCumulator owner multiplier)
-        )
-    )
-    (defun URCi_UpgradeBranding:decimal (months:integer)
-        @doc "Cost preview for C_UpgradeBranding (delegates to BRD single source; \
-            \ the exec path bills the same value via ref-BRD::XE_UpgradeBranding)."
-        (let
-            (
-                (ref-BRD:module{BrandingV2} BRD)
-            )
-            (ref-BRD::URCi_UpgradeBranding months)
-        )
+    (defun UR_PrimalTrueFungible:string (position:integer)
+        (at "primal-tf-id" (read AOZ|T|PrimalTrueFungibles (UC_Str position) ["primal-tf-id"]))
+    )
+    (defun UR_PrimalOrtoFungible:string (position:integer)
+        (at "primal-of-id" (read AOZ|T|PrimalOrtoFungibles (UC_Str position) ["primal-of-id"]))
+    )
+    (defun UR_AutostakePair:string (position:integer)
+        (at "atspair-id" (read AOZ|T|AutostakePairs (UC_Str position) ["atspair-id"]))
+    )
+    (defun UR_TrueFungible:string (position:integer)
+        (at "tf-asset" (read AOZ|T|TrueFungibles (UC_Str position) ["tf-asset"]))
+    )
+    (defun UR_OrtoFungible:string (position:integer)
+        (at "of-asset" (read AOZ|T|OrtoFungibles (UC_Str position) ["of-asset"]))
+    )
+    (defun UR_SemiFungible:string (position:integer)
+        (at "sf-asset" (read AOZ|T|SemiFungibles (UC_Str position) ["sf-asset"]))
+    )
+    (defun UR_NonFungible:string (position:integer)
+        @doc "FIXED 2026-09-14: this projected \"sf-asset\" -- the SemiFungible column, copy-pasted \
+            \ from the reader directly above -- out of AOZ|T|NonFungibles, whose schema field is \
+            \ <nf-asset> and whose writer XI_W|NonFungible writes <nf-asset>. A projecting `read` \
+            \ does not reject an unknown column, it returns {}, so this died with \
+            \ `Key \"sf-asset\" not found in object: {}` for EVERY position, always. The NonFungible \
+            \ registry was therefore write-only through the public interface. It survived because \
+            \ nothing in the suite called either half; pinned now by modules/AOZ.repl <<AOZ-06>>."
+        (at "nf-asset" (read AOZ|T|NonFungibles (UC_Str position) ["nf-asset"]))
     )
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_id (id:string son:bool)
-        (if son
-            (with-default-read DPSF|T|Properties id
-                { "nonces-used"   : -1 }
-                { "nonces-used"   := ne }
-                (enforce (>= ne 0) (format "DPSF ID {} does not exist" [id]))
-            )
-            (with-default-read DPNF|T|Properties id
-                { "nonces-used"   : -1 }
-                { "nonces-used"   := ne }
-                (enforce (>= ne 0) (format "DPNF ID {} does not exist" [id]))
-            )
-        )
-    )
-    (defun UEV_NonceMapper (id:string son:bool nonces:[integer])
-        (map
-            (lambda
-                (idx:integer)
-                (UEV_Nonce id son (at idx nonces))
-            )
-            (enumerate 0 (- (length nonces) 1))
-        )
-    )
-    (defun UEV_Nonce (id:string son:bool nonce:integer)
-        @doc "Validates a nonce for the given DPDC id. \
-            \ SHADOWED-GUARD FIX: all three predicates used to sit in ONE enforce BELOW a \
-            \ <UR_NonceValue> binding. That reader hard-reads DPSF|T|Nonces / DPNF|T|Nonces \
-            \ keyed by the nonce itself, and Pact evaluates let bindings before the body - so \
-            \ nonce 0 or any nonce above <nonces-used> aborted on 'row not found' and NONE of \
-            \ the three predicates was reachable for any input. \
-            \ The two INPUT guards now run before the keyed read; the third is kept after it as \
-            \ a data-integrity assertion. Message is unchanged on every path."
-        (let
-            (
-                (an:integer (abs nonce))
-                (nu:integer (UR_NoncesUsed id son))
-            )
-            ;;Split rather than folded into one enforce on purpose: the second predicate needs a
-            ;;read keyed BY <an>, so it can only be evaluated once <an> is known to be in range.
-            (enforce (and (!= an 0) (<= an nu)) "Invalid Nonce Value")
-            (enforce (= an (UR_NonceValue id son an)) "Invalid Nonce Value")
-        )
-    )
-    (defun UEV_CanUpgradeON (id:string son:bool)
-        (let
-            (
-                (x:bool (UR_CanUpgrade id son))
-            )
-            (enforce x (format "{} properties cannot be upgraded" [id]))
-        )
-    )
-    (defun UEV_CanPauseON (id:string son:bool)
-        (let
-            (
-                (x:bool (UR_CanPause id son))
-            )
-            (enforce x (format "{} cannot be paused" [id]))
-        )
-    )
-    (defun UEV_CanAddSpecialRoleON (id:string son:bool)
-        (let
-            (
-                (x:bool (UR_CanAddSpecialRole id son))
-            )
-            (enforce x (format "For {} no special roles can be added" [id]))
-        )
-    )
-    (defun UEV_ToggleSpecialRole (id:string son:bool toggle:bool)
-        (if toggle
-            (UEV_CanAddSpecialRoleON id son)
-            true
-        )
-    )
-    (defun UEV_CanFreezeON (id:string son:bool)
-        (let
-            (
-                (x:bool (UR_CanFreeze id son))
-            )
-            (enforce x (format "{} cannot be freezed" [id]))
-        )
-    )
-    (defun UEV_CanWipeON (id:string son:bool)
-        (let
-            (
-                (x:bool (UR_CanWipe id son))
-            )
-            (enforce x (format "{} cannot be wiped" [id]))
-        )
-    )
-    (defun UEV_PauseState (id:string son:bool state:bool)
-        (let
-            (
-                (x:bool (UR_IsPaused id son)) ;;false
-            )
-            (if state
-                (enforce x (format "{} is already unpaused" [id]))
-                (enforce (not x) (format "{} is already paused" [id]))
-            )
-        )
-    )
-    (defun UEV_AccountAddQuantityState (id:string account:string state:bool)
-        (let
-            (
-                (x:bool (UR_CA|R-AddQuantity id account))
-            )
-            (enforce (= x state) (format "Add Quantity Role for {} on Account {} must be set to {} for exec" [id account state]))
-        )
-    )
-    (defun UEV_AccountFreezeState (id:string son:bool account:string state:bool)
-        (let
-            (
-                (x:bool (UR_CA|R-Frozen id son account))
-            )
-            (enforce (= x state) (format "Frozen for {} on Account {} must be set to {} for exec" [id account state]))
-        )
-    )
-    (defun UEV_AccountExemptionState (id:string son:bool account:string state:bool)
-        (let
-            (
-                (x:bool (UR_CA|R-Exemption id son account))
-            )
-            (enforce (= x state) (format "Exemption Role for {} on Account {} must be set to {} for exec" [id account state]))
-        )
-    )
-    (defun UEV_AccountBurnState (id:string son:bool account:string state:bool)
-        (let
-            (
-                (x:bool (UR_CA|R-Burn id son account))
-            )
-            (enforce (= x state) (format "NFT Burn Role for {} on Account {} must be set to {} for exec" [id account state]))
-        )
-    )
-    (defun UEV_AccountUpdateState (id:string son:bool account:string state:bool)
-        (let
-            (
-                (x:bool (UR_CA|R-Update id son account))
-            )
-            (enforce (= x state) (format "NFT Update Role for {} on Account {} must be set to {} for exec" [id account state]))
-        )
-    )
-    (defun UEV_AccountModifyCreatorState (id:string son:bool account:string state:bool)
-        (let
-            (
-                (x:bool (UR_CA|R-ModifyCreator id son account))
-            )
-            (enforce (= x state) (format "Modify Creator Role for {} on Account {} must be set to {} for exec" [id account state]))
-        )
-    )
-    (defun UEV_AccountModifyRoyaltiesState (id:string son:bool account:string state:bool)
-        (let
-            (
-                (x:bool (UR_CA|R-ModifyRoyalties id son account))
-            )
-            (enforce (= x state) (format "Modify Royalties Role for {} on Account {} must be set to {} for exec" [id account state]))
-        )
-    )
-    (defun UEV_AccountTransferState (id:string son:bool account:string state:bool)
-        (let
-            (
-                (x:bool (UR_CA|R-Transfer id son account))
-            )
-            (enforce (= x state) (format "Transfer Role for {} on Account {} must be set to {} for exec" [id account state]))
-        )
-    )
-    (defun UEV_AccountCreateState (id:string son:bool account:string state:bool)
-        (let
-            (
-                (x:bool (UR_CA|R-Create id son account))
-            )
-            (enforce (= x state) (format "Create Role for {} on Account {} must be set to {} for exec" [id account state]))
-        )
-    )
-    (defun UEV_AccountRecreateState (id:string son:bool account:string state:bool)
-        (let
-            (
-                (x:bool (UR_CA|R-Recreate id son account))
-            )
-            (enforce (= x state) (format "Recreate Role for {} on Account {} must be set to {} for exec" [id account state]))
-        )
-    )
-    (defun UEV_AccountSetUriState (id:string son:bool account:string state:bool)
-        (let
-            (
-                (x:bool (UR_CA|R-SetUri id son account))
-            )
-            (enforce (= x state) (format "Set Uri Role for {} on Account {} must be set to {} for exec" [id account state]))
-        )
-    )
-    (defun UEV_Royalty (royalty:decimal)
-        (let
-            (
-                (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-            )
-            (ref-U|DALOS::UEV_Fee royalty)
-        )
-    )
-    (defun UEV_IgnisRoyalty (royalty:decimal)
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                ;;
-                (ignis-id:string (ref-DALOS::UR_IgnisID))
-                (ignis-pr:integer (ref-DPTF::UR_Decimals ignis-id))
-            )
-            (enforce
-                (= (floor royalty ignis-pr) royalty)
-                (format "The Ignis input amount of {} is not conform with its precision" [royalty])
-            )
-        )
-    )
-    (defun UEV_Name (name:string)
-        @doc "Bounds a nonce's free-text name. See DPDC Audit #12Hb."
-        (enforce
-            (<= (length name) 256)
-            (format "Nonce name cannot exceed 256 characters (got {})" [(length name)])
-        )
-    )
-    (defun UEV_Description (description:string)
-        @doc "Bounds a nonce's free-text description: max 1024 words, max 256 characters per \
-            \ word. See DPDC Audit #12Hb."
-        (let*
-            (
-                (ref-U|LST:module{StringProcessorV2} U|LST)
-                (words:[string]
-                    (if (= (length description) 0)
-                        []
-                        (ref-U|LST::UC_SplitString " " description)
-                    )
-                )
-                (word-count:integer (length words))
-            )
-            (enforce
-                (<= word-count 1024)
-                (format "Nonce description cannot exceed 1024 words (got {})" [word-count])
-            )
-            (enforce
-                (fold (and) true (map (lambda (w:string) (<= (length w) 256)) words))
-                "Every word in a nonce description must be 256 characters or fewer"
-            )
-        )
-    )
-    (defun UEV_MetaDataBag (meta-data:object)
-        @doc "Coarse anti-bloat ceiling on the free-form NFT trait bag consumed by AQP-ANK/AQP-SCORE \
-            \ for trait scoring — total serialized size, since Pact cannot enumerate an untyped \
-            \ object's keys for a precise per-key/per-value check. See DPDC Audit #12Hb."
-        (enforce
-            (<= (length (format "{}" [meta-data])) 8192)
-            "Nonce meta-data is too large (8192 character serialized ceiling)"
-        )
-    )
-    (defun UEV_AssetType (asset-type:object{DpdcUdcV2.URI|Type})
-        @doc "At least one of the 7 asset-type flags must be set; any combination up to all 7 \
-            \ simultaneously is valid. See DPDC Audit #12Hb."
-        (enforce
-            (fold (or) false
-                [
-                    (at "image" asset-type)    (at "audio" asset-type)
-                    (at "video" asset-type)    (at "document" asset-type)
-                    (at "archive" asset-type)  (at "model" asset-type)
-                    (at "exotic" asset-type)
-                ]
-            )
-            "At least one asset-type flag must be set"
-        )
-    )
-    (defun UEV_UriData (u:object{DpdcUdcV2.URI|Data})
-        @doc "Bounds every link string in a URI|Data bundle (uri-primary/secondary/tertiary each \
-            \ carry one — primary/high-res/thumbnail tiers of the same element) to 2048 characters — \
-            \ generous for any real link/CID, blocks raw payloads hiding in a link field. \
-            \ See DPDC Audit #12Hb."
-        (enforce
-            (fold (and) true
-                (map (lambda (l:string) (<= (length l) 2048))
-                    [
-                        (at "image" u)    (at "audio" u)
-                        (at "video" u)    (at "document" u)
-                        (at "archive" u)  (at "model" u)
-                        (at "exotic" u)
-                    ]
-                )
-            )
-            "A URI link string exceeds the 2048 character limit"
-        )
-    )
-    (defun UEV_NftNonceExistance (id:string nonce:integer existance:bool)
-        (let
-            (
-                (x:string (UR_NonceHolder id false nonce))
-                (ft:string (format "NFT {} Nonce {} must have Existance set to {} for Operation" [id nonce existance]))
-            )
-            (if (> nonce 0)
-                (if existance
-                    (enforce (!= x BAR) ft)
-                    (enforce (= x BAR) ft)
-                )
-                (let
-                    (
-                        (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-                        (split-data:object{DpdcUdcV2.DPDC|NonceData} (UR_SplitNonceData id false nonce))
-                        (znd:object{DpdcUdcV2.DPDC|NonceData} (ref-DPDC-UDC::UDC_ZeroNonceData))
-                    )
-                    (if existance
-                        (enforce (!= split-data znd) ft)
-                        (enforce (= split-data znd) ft)
-                    )
-                )
-            )
-        )
-    )
-    (defun UEV_NonceQuantityInclusion (account:string id:string son:bool nonce:integer amount:integer)
-        (let
-            (
-                (nonce-supply:integer (UR_AccountNonceSupply account id son nonce))
-            )
-            (if (or son (< nonce 0))
-                (enforce 
-                    (<= amount nonce-supply) 
-                    (format 
-                        "Account {} doesnt hold {} {} Nonce {} in sufficient quantity for Operation!" 
-                        [account (if son "SFT" "NFT") id nonce]
-                    )
-                )
-                (let
-                    (
-                        (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                        (nft-holder:string (UR_NonceHolder id false nonce))
-                        (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
-                    )
-                    ;;1] ACTIVE-NONCE check, and the ORIGINAL check on this branch. Kept FIRST and
-                    ;;with its ORIGINAL MESSAGE, so every refusal that fired here before still fires
-                    ;;here, with the same wording: [6.4]_AQP-EXHAUSTIVE-DPNF <<TX-AQP-NF01>> pins it
-                    ;;by message, and reordering these two broke that pin the first time round. It
-                    ;;is also the only check that distinguishes an INACTIVATED nonce, which stores
-                    ;;BAR here. But it must never be the ONLY gate, because it compares an
-                    ;;ABBREVIATION, not an identity. <nonce-holder> stores
-                    ;;OI|UC_ShortAccount = (take 5) + "..." + (take -3) = 11 characters, two of
-                    ;;which are the fixed `Ѻ.` prefix. Any two glyph-valid accounts sharing three
-                    ;;leading and three trailing body characters are IDENTICAL to it, and the
-                    ;;account string is chosen freely by whoever deploys it -- GLYPH|UEV_DalosAccount
-                    ;;checks length, prefix, separator and charset, and does not bind the string to
-                    ;;the guard.
-                    ;;2] FULL-ACCOUNT possession, and the fix. <nonce-supply> is read from the
-                    ;;AccountSupplies table, whose key carries the COMPLETE 162-character account
-                    ;;string, so it is the only value in scope that can tell two accounts apart. It
-                    ;;was already bound at the top of this function and, on this branch alone, was
-                    ;;never spent. Added AFTER line 1 and with a DISTINCT message, so the two
-                    ;;refusals stay tellable apart -- the RT-C-001 lesson.
-                    ;;Pinned by RedTeam/[RT-D2]_Ownership-Collectables.repl <<RT-D-002d>>.
-                    (enforce (= sa nft-holder)
-                        (format "Account {} doesnt hold NFT {} Nonce {}" [account id nonce]))
-                    (enforce (<= amount nonce-supply)
-                        (format "Account {} is not the full-account holder of NFT {} Nonce {}"
-                            [account id nonce]))
-                )
-            )
-        )
-    )
-    (defun UEV_NonceQuantityInclusionMapper (account:string id:string son:bool nonces:[integer] amounts:[integer])
-        (map
-            (lambda
-                (idx:integer)
-                (UEV_NonceQuantityInclusion account id son (at idx nonces) (at idx amounts))
-            )
-            (enumerate 0 (- (length nonces) 1))
-        )
-    )
-    ;;
-    (defun CAP_Owner (id:string son:bool)
-        @doc "Enforces DPSF or DPNF Token ID Ownership"
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-            )
-            (ref-DALOS::CAP_EnforceAccountOwnership (UR_OwnerKonto id son))
-        )
-    )
-    (defun CAP_Creator (id:string son:bool)
-        @doc "Enforces DPSF or DPNF Token ID Creator Ownership"
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-            )
-            (ref-DALOS::CAP_EnforceAccountOwnership (UR_CreatorKonto id son))
-        )
-    )
-    (defun CAP_OwnerOrCreator (id:string son:bool)
-        @doc "Enforces DPSF or DPNF Token ID Owner or Creator Ownership"
-        (enforce-one
-            (format "Owner or Creator for {} {} not verified" [(if son "DPSF" "DPNF") id])
-            [
-                (enforce-guard (create-user-guard (CAP_Owner id son)))
-                (enforce-guard (create-user-guard (CAP_Creator id son)))
-            ]
-        )
-    )
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     ;;
-    ;; [<AccountsTable> Writings] [0]
-    ;;Enforce: 5 call sites (C_IssueDigitalCollection, A_RegisterAssetToLaunchpad, XE_DeployAccountWNE,
-    ;;          DPDC-I, TS02-DPAD) -- relocating UEV_EnforceAccountExists duplicates it 5x.
-    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
-    (defun XBv_DeployAccountSFT
-        (
-            account:string id:string
-            input-rnaq:bool f:bool re:bool rnb:bool rnc:bool rnr:bool
-            rnu:bool rmc:bool rmr:bool rsnu:bool rt:bool
-        )
-        (P|UEV_IMC)
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-            )
-            (ref-DALOS::UEV_EnforceAccountExists account)
-            (UEV_id id true)
-            (with-default-read DPSF|T|Account (concat [id BAR account])
-                (ref-DPDC-UDC::UDC_DPSF|AccountRoles
-                    (ref-DPDC-UDC::UDC_AccountRoles f re rnb rnc rnr rnu rmc rmr rsnu rt)
-                    input-rnaq
-                    id account
-                )
-                {"roles"                    := r
-                ,"role-nft-add-quantity"    := rnaq
-                ,"id"                       := i
-                ,"account"                  := a}
-                (write DPSF|T|Account (concat [id BAR account])
-                    (ref-DPDC-UDC::UDC_DPSF|AccountRoles r rnaq i a)
-                )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_IncrementPrimalTrueFungiblesCounter ()
+        (require-capability (SECURE))
+        (with-read AOZ|T|AssetCounter AOZ|COUNTER
+            { "primal-tfs" := x }
+            (update AOZ|T|AssetCounter AOZ|COUNTER
+                {"primal-tfs" : (+ x 1)}
             )
         )
     )
-    ;;Enforce: 5 call sites (C_IssueDigitalCollection, A_RegisterAssetToLaunchpad, XE_DeployAccountWNE,
-    ;;          DPDC-I, TS02-DPAD) -- relocating UEV_EnforceAccountExists duplicates it 5x.
-    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
-    (defun XBv_DeployAccountNFT 
-        (
-            account:string id:string
-            f:bool re:bool rnb:bool rnc:bool rnr:bool
-            rnu:bool rmc:bool rmr:bool rsnu:bool rt:bool
-        )
-        (P|UEV_IMC)
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-            )
-            (ref-DALOS::UEV_EnforceAccountExists account)
-            (UEV_id id false)
-            (with-default-read DPNF|T|Account (concat [id BAR account])
-                (ref-DPDC-UDC::UDC_DPNF|AccountRoles
-                    (ref-DPDC-UDC::UDC_AccountRoles f re rnb rnc rnr rnu rmc rmr rsnu rt)
-                    id account
-                )
-                {"roles"                    := r
-                ,"id"                       := i
-                ,"account"                  := a}
-                (write DPNF|T|Account (concat [id BAR account])
-                    (ref-DPDC-UDC::UDC_DPNF|AccountRoles r i a)
-                )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_IncrementPrimalOrtoFungiblesCounter ()
+        (require-capability (SECURE))
+        (with-read AOZ|T|AssetCounter AOZ|COUNTER
+            { "primal-ofs" := x }
+            (update AOZ|T|AssetCounter AOZ|COUNTER
+                {"primal-ofs" : (+ x 1)}
             )
         )
     )
-    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
-    (defun XE_DeployAccountWNE (account:string id:string son:bool)
-        (P|UEV_IMC)
-        (let
-            (
-                (collection-account-exists:bool (UR_IzAccount account id son))
-                (f:bool false)
+    ;;Protection: Class 2 — SECURE
+    (defun XI_IncrementATSPairsCounter ()
+        (require-capability (SECURE))
+        (with-read AOZ|T|AssetCounter AOZ|COUNTER
+            { "atspairs" := x }
+            (update AOZ|T|AssetCounter AOZ|COUNTER
+                {"atspairs" : (+ x 1)}
             )
-            (if (not collection-account-exists)
-                (if son
-                    (XBv_DeployAccountSFT account id f f f f f f f f f f f)
-                    (XBv_DeployAccountNFT account id f f f f f f f f f f)
-                )
-                true
+        )
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_IncrementTrueFungiblesCounter ()
+        (require-capability (SECURE))
+        (with-read AOZ|T|AssetCounter AOZ|COUNTER
+            { "tfs" := x }
+            (update AOZ|T|AssetCounter AOZ|COUNTER
+                {"tfs" : (+ x 1)}
+            )
+        )
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_IncrementOrtoFungiblesCounter ()
+        (require-capability (SECURE))
+        (with-read AOZ|T|AssetCounter AOZ|COUNTER
+            { "ofs" := x }
+            (update AOZ|T|AssetCounter AOZ|COUNTER
+                {"ofs" : (+ x 1)}
+            )
+        )
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_IncrementSemiFungiblesCounter ()
+        (require-capability (SECURE))
+        (with-read AOZ|T|AssetCounter AOZ|COUNTER
+            { "sfs" := x }
+            (update AOZ|T|AssetCounter AOZ|COUNTER
+                {"sfs" : (+ x 1)}
+            )
+        )
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_IncrementNonFungiblesCounter ()
+        (require-capability (SECURE))
+        (with-read AOZ|T|AssetCounter AOZ|COUNTER
+            { "nfs" := x }
+            (update AOZ|T|AssetCounter AOZ|COUNTER
+                {"nfs" : (+ x 1)}
             )
         )
     )
     ;;
-    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
-    (defun XE_U|Rnaq (id:string account:string toggle)
-        (P|UEV_IMC)
-        (update DPSF|T|Account (concat [id BAR account])
-            {"role-nft-add-quantity" : toggle}
+    ;;Protection: Class 2 — SECURE
+    (defun XI_W|PrimalTrueFungible (id:string position:integer)
+        (require-capability (SECURE))      
+        (write AOZ|T|PrimalTrueFungibles (UC_Str position)
+            {"primal-tf-id" : id}
         )
     )
     ;;Protection: Class 2 — SECURE
-    (defun XI_U|AccountRoles (id:string son:bool account:string new-roles:object{DpdcUdcV2.AccountRoles})
-        (require-capability (SECURE))
-        (if son
-            (update DPSF|T|Account (concat [id BAR account])
-                {"roles" : new-roles}
-            )
-            (update DPNF|T|Account (concat [id BAR account])
-                {"roles" : new-roles}
-            )
-        )
-    )
-    ;; [<PropertiesTable> Writings] [1]
-    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
-    (defun XE_I|Collection
-        (id:string son:bool idp:object{DpdcUdcV2.DPDC|Properties})
-        (P|UEV_IMC)
-        (if son
-            (insert DPSF|T|Properties id idp)
-            (insert DPNF|T|Properties id idp)
-        )
-    )
-    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
-    (defun XE_U|Specs (id:string son:bool specs:object{DpdcUdcV2.DPDC|Properties})
-        (P|UEV_IMC)
-        (if son
-            (update DPSF|T|Properties id specs)
-            (update DPNF|T|Properties id specs)
-        )
-    )
-    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
-    (defun XE_U|IsPaused (id:string son:bool toggle:bool)
-        (P|UEV_IMC)
-        (if son
-            (update DPSF|T|Properties id {"is-paused" : toggle})
-            (update DPNF|T|Properties id {"is-paused" : toggle})
-        )
-    )
-    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
-    (defun XE_U|NoncesUsed (id:string son:bool new-nv:integer)
-        (P|UEV_IMC)
-        (if son
-            (update DPSF|T|Properties id {"nonces-used" : new-nv})
-            (update DPNF|T|Properties id {"nonces-used" : new-nv})
-        )
-    )
-    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
-    (defun XE_U|SetClassesUsed (id:string son:bool new-nsc:integer)
-        (P|UEV_IMC)
-        (if son
-            (update DPSF|T|Properties id {"set-classes-used" : new-nsc})
-            (update DPNF|T|Properties id {"set-classes-used" : new-nsc})
-        )
-    )
-    ;; [<NoncesTable> Writings] [2]
-    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
-    (defun XE_I|CollectionElement (id:string son:bool nonce-value:integer ned:object{DpdcUdcV2.DPDC|NonceElement})
-        (P|UEV_IMC)
-        (if son
-            (insert DPSF|T|Nonces (concat [id BAR (format "{}" [nonce-value])]) ned)
-            (insert DPNF|T|Nonces (concat [id BAR (format "{}" [nonce-value])]) ned)
-        )
-    )
-    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
-    (defun XE_U|NonceSupply (id:string nonce-value:integer new-supply:integer)
-        (P|UEV_IMC)
-        (update DPSF|T|Nonces (concat [id BAR (format "{}" [nonce-value])]) {"nonce-supply" : new-supply})
-    )
-    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
-    (defun XE_U|NonceHolder (id:string nonce-value:integer new-holder-account:string)
-        (P|UEV_IMC)
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (iz-bar:bool (if (= new-holder-account BAR) true false))
-                (sh:string
-                    (if iz-bar
-                        BAR
-                        (ref-I|OURONET::OI|UC_ShortAccount new-holder-account)
-                    )
-                )
-            )
-            (update DPNF|T|Nonces (concat [id BAR (format "{}" [nonce-value])]) {"nonce-holder" : sh})
-        )
-    )
-    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
-    (defun XE_U|NonceOrSplitData (id:string son:bool nonce-value:integer nos:bool nd:object{DpdcUdcV2.DPDC|NonceData} )
-        (P|UEV_IMC)
-        (if nos
-            (if son
-                (update DPSF|T|Nonces (concat [id BAR (format "{}" [nonce-value])]) {"nonce-data" : nd})
-                (update DPNF|T|Nonces (concat [id BAR (format "{}" [nonce-value])]) {"nonce-data" : nd})
-            )
-            (if son
-                (update DPSF|T|Nonces (concat [id BAR (format "{}" [nonce-value])]) {"split-data" : nd})
-                (update DPNF|T|Nonces (concat [id BAR (format "{}" [nonce-value])]) {"split-data" : nd})
-            )
-        )
-    )
-    ;; [<VerumRolesTable> Writings] [3]
-    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
-    (defun XE_I|VerumRoles (id:string son:bool verum-chain:object{DpdcUdcV2.DPDC|VerumRoles})
-        (P|UEV_IMC)
-        (if son
-            (insert DPSF|T|VerumRoles id verum-chain)
-            (insert DPNF|T|VerumRoles id verum-chain)
+    (defun XI_W|PrimalOrtoFungible (id:string position:integer)
+        (require-capability (SECURE))      
+        (write AOZ|T|PrimalOrtoFungibles (UC_Str position)
+            {"primal-of-id" : id}
         )
     )
     ;;Protection: Class 2 — SECURE
-    (defun XI_U|VerumRole1 (id:string son:bool ul:[string])
-        (require-capability (SECURE))
-        (if son
-            (update DPSF|T|VerumRoles id {"a-frozen" : ul})
-            (update DPNF|T|VerumRoles id {"a-frozen" : ul})
+    (defun XI_W|AutostakePair (id:string position:integer)
+        (require-capability (SECURE))      
+        (write AOZ|T|AutostakePairs (UC_Str position)
+            {"atspair-id" : id}
         )
     )
     ;;Protection: Class 2 — SECURE
-    (defun XI_U|VerumRole2 (id:string son:bool ul:[string])
-        (require-capability (SECURE))
-        (if son
-            (update DPSF|T|VerumRoles id {"r-exemption" : ul})
-            (update DPNF|T|VerumRoles id {"r-exemption" : ul})
+    (defun XI_W|TrueFungible (id:string position:integer)
+        (require-capability (SECURE))      
+        (write AOZ|T|TrueFungibles (UC_Str position)
+            {"tf-asset" : id}
         )
     )
     ;;Protection: Class 2 — SECURE
-    (defun XI_U|VerumRole3 (id:string son:bool ul:[string])
-        (require-capability (SECURE))
-        (if son
-            (update DPSF|T|VerumRoles id {"r-nft-add-quantity" : ul})
-            (update DPNF|T|VerumRoles id {"r-nft-add-quantity" : ul})
+    (defun XI_W|OrtoFungible (id:string position:integer)
+        (require-capability (SECURE))      
+        (write AOZ|T|OrtoFungibles (UC_Str position)
+            {"of-asset" : id}
         )
     )
     ;;Protection: Class 2 — SECURE
-    (defun XI_U|VerumRole4 (id:string son:bool ul:[string])
-        (require-capability (SECURE))
-        (if son
-            (update DPSF|T|VerumRoles id {"r-nft-burn" : ul})
-            (update DPNF|T|VerumRoles id {"r-nft-burn" : ul})
+    (defun XI_W|SemiFungible (id:string position:integer)
+        (require-capability (SECURE))      
+        (write AOZ|T|SemiFungibles (UC_Str position)
+            {"sf-asset" : id}
         )
     )
     ;;Protection: Class 2 — SECURE
-    (defun XI_U|VerumRole5 (id:string son:bool ul:string)
-        (require-capability (SECURE))
-        (if son
-            (update DPSF|T|VerumRoles id {"r-nft-create" : ul})
-            (update DPNF|T|VerumRoles id {"r-nft-create" : ul})
-        )
-    )
-    ;;Protection: Class 2 — SECURE
-    (defun XI_U|VerumRole6 (id:string son:bool ul:string)
-        (require-capability (SECURE))
-        (if son
-            (update DPSF|T|VerumRoles id {"r-nft-recreate" : ul})
-            (update DPNF|T|VerumRoles id {"r-nft-recreate" : ul})
-        )
-    )
-    ;;Protection: Class 2 — SECURE
-    (defun XI_U|VerumRole7 (id:string son:bool ul:[string])
-        (require-capability (SECURE))
-        (if son
-            (update DPSF|T|VerumRoles id {"r-nft-update" : ul})
-            (update DPNF|T|VerumRoles id {"r-nft-update" : ul})
-        )
-    )
-    ;;Protection: Class 2 — SECURE
-    (defun XI_U|VerumRole8 (id:string son:bool ul:[string])
-        (require-capability (SECURE))
-        (if son
-            (update DPSF|T|VerumRoles id {"r-modify-creator" : ul})
-            (update DPNF|T|VerumRoles id {"r-modify-creator" : ul})
-        )
-    )
-    ;;Protection: Class 2 — SECURE
-    (defun XI_U|VerumRole9 (id:string son:bool ul:[string])
-        (require-capability (SECURE))
-        (if son
-            (update DPSF|T|VerumRoles id {"r-modify-royalties" : ul})
-            (update DPNF|T|VerumRoles id {"r-modify-royalties" : ul})
-        )
-    )
-    ;;Protection: Class 2 — SECURE
-    (defun XI_U|VerumRole10 (id:string son:bool ul:string)
-        (require-capability (SECURE))
-        (if son
-            (update DPSF|T|VerumRoles id {"r-set-new-uri" : ul})
-            (update DPNF|T|VerumRoles id {"r-set-new-uri" : ul})
-        )
-    )
-    ;;Protection: Class 2 — SECURE
-    (defun XI_U|VerumRole11 (id:string son:bool ul:[string])
-        (require-capability (SECURE))
-        (if son
-            (update DPSF|T|VerumRoles id {"r-transfer" : ul})
-            (update DPNF|T|VerumRoles id {"r-transfer" : ul})
-        )
-    )
-    ;;
-    ;;  [Indirect Writings]
-    ;;
-    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
-    (defun XE_U|Frozen (id:string son:bool account:string toggle:bool)
-        (P|UEV_IMC)
-        (with-capability (SECURE) 
-            (XI_U|AccountRoles id son account
-                (+
-                    {"frozen" : toggle}
-                    (remove "frozen" (UR_CA|R id son account))
-                )
-            )
-        )
-    )
-    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
-    (defun XE_U|Exemption (id:string son:bool account:string toggle:bool)
-        (P|UEV_IMC)
-        (with-capability (SECURE) 
-            (XI_U|AccountRoles id son account
-                (+
-                    {"role-exemption" : toggle}
-                    (remove "role-exemption" (UR_CA|R id son account))
-                )
-            )
-        )
-    )
-    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
-    (defun XE_U|Burn (id:string son:bool account:string toggle:bool)
-        (P|UEV_IMC)
-        (with-capability (SECURE) 
-            (XI_U|AccountRoles id son account
-                (+
-                    {"role-nft-burn" : toggle}
-                    (remove "role-nft-burn" (UR_CA|R id son account))
-                )
-            )
-        )
-    )
-    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
-    (defun XE_U|Create (id:string son:bool account:string toggle:bool)
-        (P|UEV_IMC)
-        (with-capability (SECURE) 
-            (XI_U|AccountRoles id son account
-                (+
-                    {"role-nft-create" : toggle}
-                    (remove "role-nft-create" (UR_CA|R id son account))
-                )
-            )
-        )
-    )
-    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
-    (defun XE_U|Recreate (id:string son:bool account:string toggle:bool)
-        (P|UEV_IMC)
-        (with-capability (SECURE) 
-            (XI_U|AccountRoles id son account
-                (+
-                    {"role-nft-recreate" : toggle}
-                    (remove "role-nft-recreate" (UR_CA|R id son account))
-                )
-            )
-        )
-    )
-    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
-    (defun XE_U|Update (id:string son:bool account:string toggle:bool)
-        (P|UEV_IMC)
-        (with-capability (SECURE) 
-            (XI_U|AccountRoles id son account
-                (+
-                    {"role-nft-update" : toggle}
-                    (remove "role-nft-update" (UR_CA|R id son account))
-                )
-            )
-        )
-    )
-    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
-    (defun XE_U|ModifyCreator (id:string son:bool account:string toggle:bool)
-        (P|UEV_IMC)
-        (with-capability (SECURE) 
-            (XI_U|AccountRoles id son account
-                (+
-                    {"role-modify-creator" : toggle}
-                    (remove "role-modify-creator" (UR_CA|R id son account))
-                )
-            )
-        )
-    )
-    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
-    (defun XE_U|ModifyRoyalties (id:string son:bool account:string toggle:bool)
-        (P|UEV_IMC)
-        (with-capability (SECURE) 
-            (XI_U|AccountRoles id son account
-                (+
-                    {"role-modify-royalties" : toggle}
-                    (remove "role-modify-royalties" (UR_CA|R id son account))
-                )
-            )
-        )
-    )
-    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
-    (defun XE_U|SetNewUri (id:string son:bool account:string toggle:bool)
-        (P|UEV_IMC)
-        (with-capability (SECURE) 
-            (XI_U|AccountRoles id son account
-                (+
-                    {"role-set-new-uri" : toggle}
-                    (remove "role-set-new-uri" (UR_CA|R id son account))
-                )
-            )
-        )
-    )
-    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
-    (defun XE_U|Transfer (id:string son:bool account:string toggle:bool)
-        (P|UEV_IMC)
-        (with-capability (SECURE) 
-            (XI_U|AccountRoles id son account
-                (+
-                    {"role-transfer" : toggle}
-                    (remove "role-transfer" (UR_CA|R id son account))
-                )
-            )
-        )
-    )
-    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
-    (defun XE_U|VerumRoles (id:string son:bool rp:integer aor:bool account:string)
-        (P|UEV_IMC)
-        (if (contains rp [5 6 10])
-            (if aor
-                (with-capability (SECURE)
-                    (cond
-                        ((= rp 5) (XI_U|VerumRole5 id son account))
-                        ((= rp 6) (XI_U|VerumRole6 id son account))
-                        ((= rp 10) (XI_U|VerumRole10 id son account))
-                        true
-                    )
-                )
-                true
-            )
-            (let
-                (
-                    (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                    (current-verum-chain:[string] (URv_GetVerumChain id son rp))
-                    (ul:[string] (ref-U|DALOS::UCv_NewRoleList current-verum-chain account aor))
-                )
-                (with-capability (SECURE)
-                    (cond
-                        ((= rp 1) (XI_U|VerumRole1 id son ul))
-                        ((= rp 2) (XI_U|VerumRole2 id son ul))
-                        ((= rp 3) (XI_U|VerumRole3 id son ul))
-                        ((= rp 4) (XI_U|VerumRole4 id son ul))
-                        ((= rp 7) (XI_U|VerumRole7 id son ul))
-                        ((= rp 8) (XI_U|VerumRole8 id son ul))
-                        ((= rp 9) (XI_U|VerumRole9 id son ul))
-                        ((= rp 11) (XI_U|VerumRole11 id son ul))
-                        true
-                    )
-                )
-            )
-        )
-    )
-    ;;
-    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
-    (defun XE_W|Supply (account:string id:string son:bool nonce-value:integer amount:integer)
-        (P|UEV_IMC)
-        (let
-            (
-                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-                (tbl (if son DPSF|T|AccountSupplies DPNF|T|AccountSupplies))
-                (ki:string (concat [account BAR id BAR (format "{}" [nonce-value])]) )
-            )
-            (with-default-read tbl ki
-                (ref-DPDC-UDC::UDC_DPDC|AccountSupply account id nonce-value -1)
-                {"account"  := a
-                ,"id"       := b
-                ,"nonce"    := c
-                ,"supply"   := d}
-                (write tbl ki
-                    (ref-DPDC-UDC::UDC_DPDC|AccountSupply a b c amount)
-                )
-            )
-            
+    (defun XI_W|NonFungible (id:string position:integer)
+        (require-capability (SECURE))      
+        (write AOZ|T|NonFungibles (UC_Str position)
+            {"nf-asset" : id}
         )
     )
     ;;{5.7}  User [A/C]
-    ;;get keys with (URH_AS-Keys son)
-    (defun AU_SFTs (kis:[string])
-        (with-capability (AHU)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV2} U|LST)
-                )
-                (map
-                    (lambda
-                        (ki:string)
-                        (let
-                            (
-                                (str-lst:[string] (ref-U|LST::UC_SplitString BAR ki))
-                                (l:integer (length str-lst))
-                                (account:string 
-                                    (at 0 str-lst))
-                                
-                                (id:string 
-                                    (if (= l 3)
-                                        (at 1 str-lst)
-                                        (concat [(at 1 str-lst) BAR (at 2 str-lst)])
-                                    )
-                                )
-                                (read-nonce:string
-                                    (if (= l 3)
-                                        (at 2 str-lst)
-                                        (at 3 str-lst)
-                                    )
-                                )   
-                                (nonce:integer (UC_ParseSignedInteger read-nonce))
-                            )
-                            (update DPSF|T|AccountSupplies ki
-                                {"account"  : account
-                                ,"id"       : id
-                                ,"nonce"    : nonce}
-                            )
-                        )
-                    )
-                    kis
-                )
+    ;;
+    ;;
+    (defun A_InitialiseCounters ()
+        (with-capability (GOV|AOZ_ADMIN)
+            (insert AOZ|T|AssetCounter AOZ|COUNTER
+                {"primal-tfs"   : 0
+                ,"primal-ofs"   : 0
+                ,"atspairs"     : 0
+                ,"tfs"          : 0
+                ,"ofs"          : 0
+                ,"sfs"          : 0
+                ,"nfs"          : 0
+                }
             )
         )
     )
-    (defun AU_NFTs (kis:[string])
-        (with-capability (AHU)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV2} U|LST)
-                )
-                (map
-                    (lambda
-                        (ki:string)
-                        (let
-                            (
-                                (str-lst:[string] (ref-U|LST::UC_SplitString BAR ki))
-                                (account:string (at 0 str-lst))
-                                (id:string  (at 1 str-lst)) 
-                                (nonce:integer (UC_ParseSignedInteger (at 2 str-lst)))
-                            )
-                            (update DPNF|T|AccountSupplies ki
-                                {"account"  : account
-                                ,"id"       : id
-                                ,"nonce"    : nonce}
-                            )
-                        )
-                    )
-                    kis
-                )
-            )
+    (defun A_RegisterPrimalTrueFungible (id:string)
+        (with-capability (SECURE-ADMIN)
+            (XI_W|PrimalTrueFungible id (+ (UR_CountPrimalTrueFungibles) 1))
+            (XI_IncrementPrimalTrueFungiblesCounter)
         )
     )
-    (defun AU_Accounts (keyz:[string] son:bool)
-        @doc "Get <keyz> with <(keys (if son DPSF|T|Account DPNF|T|Account))>, or update one a time"
-        (with-capability (AHU)
-            (map
-                (lambda
-                    (idx:integer)
-                    (AU_Account (at idx keyz) son)
-                )
-                (enumerate 0 (- (length keyz) 1))
-            )
+    (defun A_RegisterPrimalOrtoFungible (id:string)
+        (with-capability (SECURE-ADMIN)
+            (XI_W|PrimalOrtoFungible id (+ (UR_CountPrimalOrtoFungibles) 1))
+            (XI_IncrementPrimalOrtoFungiblesCounter)
         )
     )
-    (defun AU_Account (ky:string son:bool)
-        (require-capability (SECURE))
-        (update (if son DPSF|T|Account DPNF|T|Account) ky
-            {"id"       : (drop -163 ky)
-            ,"account"  : (take -162 ky)}
+    (defun A_RegisterAutostakePair (id:string)
+        (with-capability (SECURE-ADMIN)
+            (XI_W|AutostakePair id (+ (UR_CountATSPairs) 1))
+            (XI_IncrementATSPairsCounter)
         )
     )
-    (defun AU_Properties (ids:[string] son:bool)
-        @doc "Get <ids> with <(keys (if son DPSF|T|Properties DPNF|T|Properties))>, or update one a time"
-        (with-capability (AHU)
-            (map
-                (lambda
-                    (idx:integer)
-                    (AU_Property (at idx ids) son)
-                )
-                (enumerate 0 (- (length ids) 1))
-            )
+    (defun A_RegisterTrueFungible (id:string)
+        (with-capability (SECURE-ADMIN)
+            (XI_W|TrueFungible id (+ (UR_CountTrueFungibles) 1))
+            (XI_IncrementTrueFungiblesCounter)
         )
     )
-    (defun AU_Property (id:string son:bool)
-        (require-capability (SECURE))
-        (update (if son DPSF|T|Properties DPNF|T|Properties) id
-            {"id"       : id}
+    (defun A_RegisterOrtoFungible (id:string)
+        (with-capability (SECURE-ADMIN)
+            (XI_W|OrtoFungible id (+ (UR_CountOrtoFungibles) 1))
+            (XI_IncrementOrtoFungiblesCounter)
         )
     )
-    (defun C_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator}
-        (entity-id:string son:bool logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
-        (P|UEV_IMC)
+    (defun A_RegisterSemiFungible (id:string)
+        (with-capability (SECURE-ADMIN)
+            (XI_W|SemiFungible id (+ (UR_CountSemiFungibles) 1))
+            (XI_IncrementSemiFungiblesCounter)
+        )
+    )
+    (defun A_RegisterNonFungible (id:string)
+        (with-capability (SECURE-ADMIN)
+            (XI_W|NonFungible id (+ (UR_CountNonFungibles) 1))
+            (XI_IncrementNonFungiblesCounter)
+        )
+    )
+    (defun C_SetupKosonicATS (index-name:string hot-rbt:string decay:integer)
         (let
             (
-                (ref-BRD:module{BrandingV2} BRD)
-                (owner:string (UR_OwnerKonto entity-id son))
-                (multiplier:decimal (if son 4.0 5.0))
+                (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+                (patron:string AOZ|SC_NAME)
+                (EsothericKosonID:string (UR_PrimalTrueFungible 2))
+                (AncientKosonID:string (UR_PrimalTrueFungible 3))
             )
-            (with-capability (DPDC|C>UPDATE-BRD entity-id son)
-                (ref-BRD::XE_UpdatePendingBranding entity-id logo description website social)
-                (URCi_UpdatePendingBranding entity-id son)
+            (ref-TS01-C2::ATS|C_AddSecondary patron (ATS.UR_OwnerKonto index-name) index-name EsothericKosonID false)
+            (ref-TS01-C2::ATS|C_AddSecondary patron (ATS.UR_OwnerKonto index-name) index-name AncientKosonID false)
+            (ref-TS01-C2::ATS|C_AddHotRBT patron (ATS.UR_OwnerKonto index-name) index-name hot-rbt)
+            (if (!= decay 0)
+                (ref-TS01-C2::ATS|C_SetHotRecoveryFee patron (ATS.UR_OwnerKonto index-name) index-name 900.0 decay)
+                true
             )
-        )
-    )
-    (defun C_UpgradeBranding (patron:string entity-id:string son:bool months:integer)
-        (P|UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-BRD:module{BrandingV2} BRD)
-                (owner:string (UR_OwnerKonto entity-id son))
-                (stoa-payment:decimal
-                    (with-capability (DPDC|C>UPGRADE-BRD entity-id son)
-                        (ref-BRD::XE_UpgradeBranding entity-id owner months)
-                    )
-                )
-            )
-            (ref-IGNIS::XB_CollectStoaWithTrigger patron stoa-payment false)
+            (ref-TS01-C2::ATS|C_SwitchHotRecovery patron (ATS.UR_OwnerKonto index-name) index-name true)
         )
     )
 
 )
 
-
-
-;;DPSF
-
-
-
-
-
-;;DPNF
-
-;; --- tables for 02_DPDC.pact (12 defined) ---
+;; --- tables for 01_AOZ+.pact (8 defined) ---
 ;; UPGRADE MODE: this module is assumed already deployed, so its
 ;; tables already exist and (create-table) would ABORT the whole
 ;; transaction. They are listed here, commented, for reference.
 ;; If any of these is NEW since the last deploy, uncomment JUST it.
-;; (create-table P|T)
-;; (create-table P|MT)
-;; (create-table DPSF|T|Properties)
-;; (create-table DPSF|T|Nonces)
-;; (create-table DPSF|T|VerumRoles)
-;; (create-table DPSF|T|Account)
-;; (create-table DPSF|T|AccountSupplies)
-;; (create-table DPNF|T|Properties)
-;; (create-table DPNF|T|Nonces)
-;; (create-table DPNF|T|VerumRoles)
-;; (create-table DPNF|T|Account)
-;; (create-table DPNF|T|AccountSupplies)
+;; (create-table AOZ|T|AssetCounter)
+;; (create-table AOZ|T|PrimalTrueFungibles)
+;; (create-table AOZ|T|PrimalOrtoFungibles)
+;; (create-table AOZ|T|AutostakePairs)
+;; (create-table AOZ|T|TrueFungibles)
+;; (create-table AOZ|T|OrtoFungibles)
+;; (create-table AOZ|T|SemiFungibles)
+;; (create-table AOZ|T|NonFungibles)
 
-;; ===== 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/03_DPDC-C.pact ==========
-;; Deploy: load THIS file — interface(s) + module ship together.
-;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/02_Core.pact
-;;
+;; ===== 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/01_DPDC-UDC.pact ========
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface DpdcCreateV2
-    @doc "Exposes Collectables Create Functions, containining the Credit and Debit Variants"
+(interface DpdcUdcV2
+    @doc "Exposes Collectables UDC Constructors"
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
@@ -2117,3874 +4745,170 @@
     ;;{3}  CST
     ;;{3.1}  constants
     ;;{3.2}  schemas
-    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    ;;{5.2}  Compute [UC]
     ;;
-    ;;  [UC]
+    ;;  [1]
     ;;
-    (defun UC_AndTruths:bool (truths:[bool]))
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;
-    ;;  [URCi]
-    ;;
-    (defun URCi_RegisterCollectablesPrice:decimal (id:string son:bool amounts:[integer]))
-    (defun URCi_CreateNewNonces:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool amounts:[integer]))
-    ;;{5.4}  Validate [UEV/CAP]
-    ;;
-    ;;  [UEV]
-    ;;
-    (defun UEV_NonceDataForCreation (ind:object{DpdcUdcV2.DPDC|NonceData}))
-    (defun UEV_NonceType (nonce:integer fragments-or-native:bool))
-    (defun UEV_NonceTypeMapper (nonces:[integer] fragments-or-native:bool))
-    (defun UEV_HybridNonces:object{OuronetIntegersV2.SplitIntegers} (nonces:[integer]))
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;
-    ;;  [X]
-    ;;
-    (defun XE_CreditSFT-FragmentNonce (account:string id:string nonce:integer amount:integer))
-    (defun XE_CreditNFT-FragmentNonce (account:string id:string nonce:integer amount:integer))
-    (defun XE_DebitSFT-FragmentNonce (account:string id:string nonce:integer amount:integer wipe-mode:bool))
-    (defun XE_DebitNFT-FragmentNonce (account:string id:string nonce:integer amount:integer wipe-mode:bool))
-    ;;
-    (defun XB_CreditSFT-Nonce (account:string id:string nonce:integer amount:integer))
-    (defun XB_CreditNFT-Nonce (account:string id:string nonce:integer amount:integer))
-    (defun XE_DebitSFT-Nonce (account:string id:string nonce:integer amount:integer wipe-mode:bool))
-    (defun XE_DebitNFT-Nonce (account:string id:string nonce:integer amount:integer wipe-mode:bool))
-    ;;
-    (defun XE_CreditSFT-FragmentNonces (account:string id:string nonces:[integer] amounts:[integer]))
-    (defun XE_CreditNFT-FragmentNonces (account:string id:string nonces:[integer] amounts:[integer]))
-    (defun XE_DebitSFT-FragmentNonces (account:string id:string nonces:[integer] amounts:[integer] wipe-mode:bool))
-    (defun XE_DebitNFT-FragmentNonces (account:string id:string nonces:[integer] amounts:[integer] wipe-mode:bool))
-    ;;
-    (defun XB_CreditSFT-Nonces (account:string id:string nonces:[integer] amounts:[integer]))
-    (defun XB_CreditNFT-Nonces (account:string id:string nonces:[integer] amounts:[integer]))
-    (defun XE_DebitSFT-Nonces (account:string id:string nonces:[integer] amounts:[integer] wipe-mode:bool))
-    (defun XE_DebitNFT-Nonces (account:string id:string nonces:[integer] amounts:[integer] wipe-mode:bool))
-    ;;
-    (defun XE_CreditSFT-HybridNonces (account:string id:string nonces:[integer] amounts:[integer]))
-    (defun XE_CreditNFT-HybridNonces (account:string id:string nonces:[integer] amounts:[integer]))
-    (defun XE_DebitSFT-HybridNonces (account:string id:string nonces:[integer] amounts:[integer]))
-    (defun XE_DebitNFT-HybridNonces (account:string id:string nonces:[integer] amounts:[integer]))
-    ;;{5.7}  User [A/C]
-    ;;
-    ;;  [C]
-    ;;
-    (defun C_CreateNewNonce:object{IgnisCollectorV3.OutputCumulator}
-        (
-            id:string son:bool nonce-class:integer amount:integer
-            input-nonce-data:object{DpdcUdcV2.DPDC|NonceData} sft-set-mode:bool
-        )
-    )
-    (defun C_CreateNewNonces:object{IgnisCollectorV3.OutputCumulator}
-        (
-            id:string son:bool amounts:[integer]
-            input-nonce-datas:[object{DpdcUdcV2.DPDC|NonceData}]
-        )
-    )
-
-)
-;;
-(module DPDC-C GOV
-    @doc "DPDC-C is the collectables create/credit/debit engine, implementing DpdcCreateV2 \
-        \ and OuronetPolicyV2. It registers new nonces on a collection \
-        \ (C_CreateNewNonce/C_CreateNewNonces) and provides the XE_/XB_ credit and debit \
-        \ primitives for native and fragment (negative, /1000) nonces across SFT and NFT, \
-        \ single/multi/hybrid, with a capability-dispatch matrix that selects the right \
-        \ guard per nonce/amount shape. Supply writes go through DPDC and NFT-holder \
-        \ updates; it returns IGNIS OutputCumulators for billing."
-
-    ;;<=========================================================================>
-    ;;{0}  IMPLEMENTERS
-    ;;
-    (implements OuronetPolicyV2)
-    (implements DpdcCreateV2)
-
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;
-    (defconst GOV|MD_DPDC-C                             (keyset-ref-guard (GOV|Demiurgoi)))
-    ;;{G2}  schemas
-    ;;{G3}  tables
-    ;;{G4}  capabilities
-    (defcap GOV ()                                      (compose-capability (GOV|DPDC-C_ADMIN)))
-    (defcap GOV|DPDC-C_ADMIN ()                         (enforce-guard GOV|MD_DPDC-C))
-    ;;{G5}  functions
-    (defun GOV|Demiurgoi ()
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-            )
-            (ref-DALOS::GOV|Demiurgoi)
-        )
-    )
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    (defconst P|I                                       (P|Info))
-    ;;{P2}  schemas
-    ;;{P3}  tables
-    ;;
-    (deftable P|T:{OuronetPolicyV2.P|S})
-    (deftable P|MT:{OuronetPolicyV2.P|MS})
-    ;;{P4}  capabilities
-    (defcap P|DPDC-C|CALLER ()
-        true
-    )
-    (defcap P|SECURE-CALLER ()
-        (compose-capability (P|DPDC-C|CALLER))
-        (compose-capability (SECURE))
-    )
-    ;;{P5}  functions
-    (defun P|Info ()
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-            )
-            (ref-DALOS::P|Info)
-        )
-    )
-    (defun P|UR:guard (policy-name:string)
-        (at "policy" (read P|T policy-name ["policy"]))
-    )
-    (defun P|UR_IMP:[guard] ()
-        ;;DEFAULT ADDED 2026-09-14 (owner ruling). This was a bare `read`, which RAISES
-        ;;`No value found in table <M>_P|MT for key: InterModulePolicies` when the row does not
-        ;;exist -- i.e. before ANY module has registered. P|UEV_IMC is built on this, so in that
-        ;;window the inter-module gate answered with a raw table error naming a row key instead of
-        ;;refusing cleanly. Surfaced by the X-01 repair, which removed the harness registration
-        ;;that had been creating the row as a side effect.
+    (defschema DPDC|Properties
+        id:string
+        owner-konto:string
+        creator-konto:string
+        name:string
+        ticker:string
         ;;
-        ;;The default is the module's OWN SECURE capability guard, which is exactly what
-        ;;P|A_AddIMP already seeds the row with. So reader and writer now agree on what an
-        ;;unregistered policy list contains, and the gate's answer is the same before and after
-        ;;the first registration: satisfiable only from inside this module.
-        (with-default-read P|MT P|I
-            {"m-policies" : [(create-capability-guard (SECURE))]}
-            {"m-policies" := mp}
-            mp
-        )
-    )
-    (defun P|UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV2} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|DPDC-C_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun P|A_AddIMP (policy-guard:guard)
-        @doc "Registers <policy-guard> as a trusted inter-module caller of this module. \
-            \ IDEMPOTENT: a guard already in the chain is left alone rather than appended \
-            \ a second time. See OuronetPolicyV2 for why that is load-bearing."
-        (with-capability (GOV|DPDC-C_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV2} U|LST)
-                    ;;
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" :
-                            (if (contains policy-guard mp)
-                                mp
-                                (ref-U|LST::UC_AppL mp policy-guard)
-                            )
-                        }
-                    )
-                )
-            )
-        )
-    )
-    (defun P|A_RemoveIMP (policy-guard:guard)
-        @doc "Revokes <policy-guard> from this module's guard chain. Removes EVERY occurrence, so \
-            \ it doubles as the cleanup for duplicates left behind by the pre-idempotence append. \
-            \ Refuses to drop this module's own SECURE seed -- see OuronetPolicyV2."
-        (with-capability (GOV|DPDC-C_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV2} U|LST)
-                    ;;
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (enforce (!= policy-guard dg) "The module's own SECURE seed cannot be revoked")
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_RemoveItem mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun P|A_SetIMP (policy-guards:[guard])
-        @doc "Replaces this module's whole guard chain in one write -- the recovery hatch. \
-            \ Deduplicates, and enforces that the module's own SECURE seed survives: without it \
-            \ the module can no longer reach its own P|UEV_IMC-gated functions."
-        (with-capability (GOV|DPDC-C_ADMIN)
-            (let
-                (
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (enforce (contains dg policy-guards) "The module's own SECURE seed must be present")
-                (write P|MT P|I
-                    {"m-policies" : (distinct policy-guards)}
-                )
-            )
-        )
-    )
-    (defun P|A_Define ()
-        (let
-            (
-                (ref-P|DPDC:module{OuronetPolicyV2} DPDC)
-                (mg:guard (create-capability-guard (P|DPDC-C|CALLER)))
-            )
-            (ref-P|DPDC::P|A_AddIMP mg)
-        )
-    )
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    (defconst BAR                                       (CT_Bar))
-    ;;{3.2}  schemas
-    ;;{3.3}  tables
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;
-    (defcap SECURE ()
-        true
-    )
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    ;;Register Nonces
-    (defcap DPDC-C|C>REGISTER-SINGLE-NONCE
-        (id:string son:bool amount:integer ind:object{DpdcUdcV2.DPDC|NonceData} sft-set-mode:bool)
-        @event
-        (compose-capability (DPDC-C|C>REGISTER-NONCES  id son [amount] [ind] sft-set-mode))
-    )
-    (defcap DPDC-C|C>REGISTER-MULTIPLE-NONCES
-        (id:string son:bool amounts:[integer] input-nonce-datas:[object{DpdcUdcV2.DPDC|NonceData}])
-        @event
-        (let
-            (
-                (l1:integer (length amounts))
-            )
-            (enforce (> l1 1) "Invalid Input variable length for a Multi Nonce Creation Capability")
-            (compose-capability (DPDC-C|C>REGISTER-NONCES id son amounts input-nonce-datas false))
-        )
-    )
-    (defcap DPDC-C|C>REGISTER-NONCES
-        (id:string son:bool amounts:[integer] input-nonce-datas:[object{DpdcUdcV2.DPDC|NonceData}] sft-set-mode:bool)
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-                ;;
-                (l1:integer (length amounts))
-                (l2:integer (length input-nonce-datas))
-                (msg:string
-                    (if (= l1 1)
-                        "a single Nonce"
-                        "multiple Nonces"
-                    )
-                )
-                (r-nft-create-account:string (ref-DPDC::UR_Verum5 id son))
-            )
-            (enforce (= l1 l2) (format "Incompatible Input Data for Registering {}" [msg]))
-            (map
-                (lambda
-                    (idx:integer)
-                    (let
-                        (
-                            (amount:integer (at idx amounts))
-                            (input-nonce-data:object{DpdcUdcV2.DPDC|NonceData} (at idx input-nonce-datas))
-                        )
-                        (UEV_NonceDataForCreation input-nonce-data)
-                        ;;Amount enforcement
-                        (if son
-                            (if sft-set-mode
-                                ;;UNREACHABLE -- needs son=TRUE *and* sft-set-mode=TRUE, a combination
-                                ;;no caller passes: the only sft-set-mode=TRUE site is the NFT set path
-                                ;;(08_DPDC-S.pact:1345), where son is FALSE. And the SFT set path does
-                                ;;not come through here at all -- C_MakeSemiFungibleSet credits an
-                                ;;already-existing set nonce via XB_CreditSFT-Nonce rather than creating
-                                ;;one, so the case this guard names is handled by another function.
-                                ;;Proof in REPL/modules/DPDC.repl, the note after <<DPDC-G15>>.
-                                (enforce (= amount 0) (format "When Defining an SFT Set, {} must be equal to 0" [amount]))
-                                (enforce (>= amount 0) (format "For an SFT Collectable the {} must be greater or equal to 0" [amount]))
-                            )
-                            ;;UNREACHABLE -- needs son=FALSE with amount != 1, and both son=FALSE
-                            ;;callers pass the LITERAL 1 (TS02-C2.pact:397 and 08_DPDC-S.pact:1345).
-                            ;;Proof in REPL/modules/DPDC.repl, the note after <<DPDC-G15>>.
-                            (enforce (= amount 1) (format "For an NFT Collectable the {} must be equal to 1" [amount]))
-                        )
-                    )
-                )
-                (enumerate 0 (- l2 1))
-            )
-            (if (not (and (not son) sft-set-mode))
-                (ref-DALOS::CAP_EnforceAccountOwnership r-nft-create-account)                    
-                true
-            )
-            (compose-capability (P|DPDC-C|CALLER))
-        )
-    )
-    ;;Single-Credit
-    (defcap DPSF|C>CREDIT-FRAGMENT-NONCE (id:string nonce:integer)
-        (compose-capability (DPDC-C|C>SINGLE-CREDIT id true nonce true))
-    )
-    (defcap DPNF|C>CREDIT-FRAGMENT-NONCE (id:string nonce:integer amount:integer)
-        (UEV_FragmentCreditAmount amount)
-        (compose-capability (DPDC-C|C>SINGLE-CREDIT id false nonce true))
-    )
-    (defcap DPSF|C>CREDIT-NONCE (id:string nonce:integer)
-        (compose-capability (DPDC-C|C>SINGLE-CREDIT id true nonce false))
-    )
-    (defcap DPNF|C>CREDIT-NONCE (id:string nonce:integer amount:integer)
-        (enforce (= amount 1) "Credit amount is must be 1 for NFTs")
-        (compose-capability (DPDC-C|C>SINGLE-CREDIT id false nonce false))
-    )
-    (defcap DPDC-C|C>SINGLE-CREDIT (id:string son:bool nonce:integer fragments-or-native:bool)
-        (UEV_NonceType nonce fragments-or-native)
-        (compose-capability (P|DPDC-C|CALLER))
-    )
-    ;;
-    ;;Multi-Credit
-    (defcap DPSF|C>CREDIT-FRAGMENT-NONCES (id:string nonces:[integer] amounts:[integer])
-        (compose-capability (DPDC-C|C>MULTI-CREDIT id true nonces amounts true))
-    )
-    (defcap DPNF|C>CREDIT-FRAGMENT-NONCES (id:string nonces:[integer] amounts:[integer])
-        (map (lambda (a:integer) (UEV_FragmentCreditAmount a)) amounts)
-        (compose-capability (DPDC-C|C>MULTI-CREDIT id false nonces amounts true))
-    )
-    (defcap DPSF|C>CREDIT-NONCES (id:string nonces:[integer] amounts:[integer])
-        (compose-capability (DPDC-C|C>MULTI-CREDIT id true nonces amounts false))
-    )
-    (defcap DPNF|C>CREDIT-NONCES (id:string nonces:[integer] amounts:[integer])
-        (compose-capability (DPDC-C|C>MULTI-CREDIT id false nonces amounts false))
-        (enforce (= amounts (make-list (length amounts) 1)) "Invalid Amounts for NFT Crediting")
-    )
-    (defcap DPDC-C|C>MULTI-CREDIT (id:string son:bool nonces:[integer] amounts:[integer] fragments-or-native:bool)
-        (UEV_NonceTypeMapper nonces fragments-or-native)
-        (compose-capability (DPDC-C|CX>MULTI-CREDIT id son nonces amounts))
-    )
-    ;;
-    ;;Hybrid Multi Credit
-    (defcap DPSF|C>CREDIT-HYBRID-NONCES (id:string nonces:[integer] amounts:[integer])
-        (compose-capability (DPDC|C>HYBRID-MULTI-CREDIT id true nonces amounts))
-    )
-    (defcap DPNF|C>CREDIT-HYBRID-NONCES (id:string nonces:[integer] amounts:[integer])
-        ;; DPDC Audit #24M: only the fragment (negative) legs carry a real, amount-driven credit —
-        ;; the native (positive) legs are unaffected by <amounts> here (XI_MappedUpdateOwnerNFT hardcodes
-        ;; native NFT supply to 1 regardless of the input value), so only the fragment legs need the
-        ;; positive-multiple-of-1000 check.
-        (map
-            (lambda
-                (idx:integer)
-                (if (< (at idx nonces) 0)
-                    (UEV_FragmentCreditAmount (at idx amounts))
-                    true
-                )
-            )
-            (enumerate 0 (- (length nonces) 1))
-        )
-        (compose-capability (DPDC|C>HYBRID-MULTI-CREDIT id false nonces amounts))
-    )
-    (defcap DPDC|C>HYBRID-MULTI-CREDIT (id:string son:bool nonces:[integer] amounts:[integer])
-        (UEV_HybridNonces nonces)
-        (compose-capability (DPDC-C|CX>MULTI-CREDIT id son nonces amounts))
-    )
-    (defcap DPDC-C|CX>MULTI-CREDIT (id:string son:bool nonces:[integer] amounts:[integer])
-        (let
-            (
-                (l1:integer (length nonces))
-                (l2:integer (length amounts))
-            )
-            (enforce (= l1 l2) (format "Nonces {} are incompatible with {} Amounts for Crediting" [nonces amounts]))
-            (compose-capability (P|DPDC-C|CALLER))
-        )
-    )
-    ;;
-    ;;
-    ;;Single Debit
-    (defcap DPSF|C>DEBIT-FRAGMENT-NONCE (account:string id:string nonce:integer amount:integer wipe-mode:bool)
-        (compose-capability (DPDC-C|C>SINGLE-DEBIT account id true nonce amount true wipe-mode))
-    )
-    (defcap DPNF|C>DEBIT-FRAGMENT-NONCE (account:string id:string nonce:integer amount:integer wipe-mode:bool)
-        (compose-capability (DPDC-C|C>SINGLE-DEBIT account id false nonce amount true wipe-mode))
-    )
-    ;;
-    (defcap DPSF|C>DEBIT-NONCE (account:string id:string nonce:integer amount:integer wipe-mode:bool)
-        (compose-capability (DPDC-C|C>SINGLE-DEBIT account id true nonce amount false wipe-mode))
-    )
-    (defcap DPNF|C>DEBIT-NONCE (account:string id:string nonce:integer amount:integer wipe-mode:bool)
-        (compose-capability (DPDC-C|C>SINGLE-DEBIT account id false nonce amount false wipe-mode))
-    )
-    (defcap DPDC-C|C>SINGLE-DEBIT 
-        (account:string id:string son:bool nonce:integer amount:integer fragments-or-native:bool wipe-mode:bool)
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (if wipe-mode
-                (ref-DPDC::CAP_Owner id son)
-                (ref-DALOS::CAP_EnforceAccountOwnership account)
-            )
-            (ref-DPDC::UEV_NonceQuantityInclusion account id son nonce amount)
-            ;;
-            (UEV_NonceType nonce fragments-or-native)
-            ;;
-            (compose-capability (P|DPDC-C|CALLER))
-        )
-    )
-    ;;Multi-Debit
-    (defcap DPSF|C>DEBIT-FRAGMENT-NONCES (account:string id:string nonces:[integer] amounts:[integer] wipe-mode:bool)
-        (compose-capability (DPDC|C>MULTI-DEBIT account id true nonces amounts true wipe-mode))
-    )
-    (defcap DPNF|C>DEBIT-FRAGMENT-NONCES (account:string id:string nonces:[integer] amounts:[integer] wipe-mode:bool)
-        (compose-capability (DPDC|C>MULTI-DEBIT account id false nonces amounts true wipe-mode))
-    )
-    (defcap DPSF|C>DEBIT-NONCES (account:string id:string nonces:[integer] amounts:[integer] wipe-mode:bool)
-        (compose-capability (DPDC|C>MULTI-DEBIT account id true nonces amounts false wipe-mode))
-    )
-    (defcap DPNF|C>DEBIT-NONCES (account:string id:string nonces:[integer] amounts:[integer] wipe-mode:bool)
-        (compose-capability (DPDC|C>MULTI-DEBIT account id false nonces amounts false wipe-mode))
-    )
-    (defcap DPDC|C>MULTI-DEBIT 
-        (account:string id:string son:bool nonces:[integer] amounts:[integer] fragments-or-native:bool wipe-mode:bool)
-        (UEV_NonceTypeMapper nonces fragments-or-native)
-        (compose-capability (DPDC|CX>MULTI-DEBIT account id son nonces amounts wipe-mode))
-        
-    )
-    ;;Hybrid Multi Debit
-    (defcap DPSF|C>DEBIT-HYBRID-NONCES (account:string id:string nonces:[integer] amounts:[integer])
-        (compose-capability (DPDC|CX>MULTI-DEBIT account id true nonces amounts false))
-    )
-    (defcap DPNF|C>DEBIT-HYBRID-NONCES (account:string id:string nonces:[integer] amounts:[integer])
-        (compose-capability (DPDC|CX>MULTI-DEBIT account id false nonces amounts false))
-    )
-    (defcap DPDC|CX>MULTI-DEBIT 
-        (account:string id:string son:bool nonces:[integer] amounts:[integer] wipe-mode:bool)
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-                ;;
-                (l1:integer (length nonces))
-                (l2:integer (length amounts))
-            )
-            (enforce (= l1 l2) (format "Nonces {} and Amounts {} are invalid for Operation" [nonces amounts]))
-            (if wipe-mode
-                (ref-DPDC::CAP_Owner id son)
-                (ref-DALOS::CAP_EnforceAccountOwnership account)
-            )
-            (ref-DPDC::UEV_NonceQuantityInclusionMapper account id son nonces amounts)
-            (compose-capability (P|DPDC-C|CALLER))
-        )
-    )
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    ;;
-    (defun CT_Bar ()
-        (let
-            (
-                (ref-U|CT:module{OuronetConstantsV2} U|CT)
-            )
-            (ref-U|CT::CT_BAR)
-        )
-    )
-    ;;{5.2}  Compute [UC]
-    ;;
-    (defun UC_AndTruths:bool (truths:[bool])
-        (fold (and) true truths)
-    )
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;
-    (defun URCi_RegisterCollectablesPrice:decimal
-        (id:string son:bool amounts:[integer])
-        @doc "Single-source issue price for collectable creation: \
-            \ smallest * sum(amounts), with a /1000 discount for a first Elite (E|) \
-            \ SFT nonce (son & NoncesUsed = 0). Used by both the XI_RegisterCollectables \
-            \ exec write and the INFO preview."
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (nu:integer (ref-DPDC::UR_NoncesUsed id son))
-                (s-amounts:integer (fold (+) 0 amounts))
-                (smallest:decimal (ref-IGNIS::UC_IgnisLeg "tier-smallest"))
-                (ft:string (take 2 id))
-                (raw-price:decimal (* smallest (dec s-amounts)))
-            )
-            (if (fold (and) true [(= ft "E|") son (= nu 0)])
-                (/ raw-price 1000.0)
-                raw-price
-            )
-        )
-    )
-    (defun URCi_CreateNewNonces:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool amounts:[integer])
-        @doc "Cost preview for C_CreateNewNonce/C_CreateNewNonces: issue construct \
-            \ priced via URCi_RegisterCollectablesPrice on the owner-konto payer, \
-            \ empty output list (created collectable names are exec-only write products)."
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (ref-IGNIS::UDC_ConstructOutputCumulator
-                (URCi_RegisterCollectablesPrice id son amounts)
-                (ref-DPDC::UR_OwnerKonto id son)
-                (ref-IGNIS::URC_IsVirtualGasZero)
-                []
-            )
-        )
-    )
-    ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_NonceDataForCreation (ind:object{DpdcUdcV2.DPDC|NonceData})
-        @doc "Validates the ind for creation of new nonce"
-        (let
-            (
-                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-                (ref-DPDC:module{DpdcV2} DPDC)
-                ;;
-                (empty-data-dc:object{DpdcUdcV2.DPDC|NonceData}
-                    (ref-DPDC-UDC::UDC_ZeroNonceData)
-                )
-                (royalty:decimal (at "royalty" ind))
-                (ignis:decimal (at "ignis" ind))
-            )
-            (enforce (!= empty-data-dc ind) "Incorrect Fragmentation Data")
-            (ref-DPDC::UEV_Royalty royalty)     ;; Royalty can be set at -1.0 enabling Volumetric Royalty Fee.
-            (ref-DPDC::UEV_IgnisRoyalty ignis)
-            ;; DPDC Audit #12Hb — bound the previously-unvalidated free-text/metadata fields.
-            (ref-DPDC::UEV_Name (at "name" ind))
-            (ref-DPDC::UEV_Description (at "description" ind))
-            (ref-DPDC::UEV_MetaDataBag (at "meta-data" (at "meta-data" ind)))
-            (ref-DPDC::UEV_AssetType (at "asset-type" ind))
-            (ref-DPDC::UEV_UriData (at "uri-primary" ind))
-            (ref-DPDC::UEV_UriData (at "uri-secondary" ind))
-            (ref-DPDC::UEV_UriData (at "uri-tertiary" ind))
-        )
-    )
-    ;;
-    (defun UEV_NonceType (nonce:integer fragments-or-native:bool)
-        (if fragments-or-native
-            (enforce (< nonce 0) "Only Negative Nonces Allowed for Operation")
-            (enforce (> nonce 0) "Only Positive Nonces Allowed for Operation")
-        )
-    )
-    ;;
-    (defun UEV_NonceTypeMapper (nonces:[integer] fragments-or-native:bool)
-        (map
-            (lambda
-                (idx:integer)
-                (UEV_NonceType (at idx nonces) fragments-or-native)
-            )
-            (enumerate 0 (- (length nonces) 1))
-        )
-    )
-    (defun UEV_HybridNonces:object{OuronetIntegersV2.SplitIntegers} (nonces:[integer])
-        (let
-            (
-                (ref-U|INT:module{OuronetIntegersV2} U|INT)
-                ;;
-                (split-nonces:object{OuronetIntegersV2.SplitIntegers} (ref-U|INT::UC_SplitIntegerList nonces))
-                (negative-nonces:[integer] (at "negative" split-nonces))
-                (positive-nonces:[integer] (at "positive" split-nonces))
-                (l3:integer (length negative-nonces))
-                (l4:integer (length positive-nonces))
-            )
-            (enforce (and (!= l3 0) (!= l4 0)) (format "Nonces {} are invalid Hybrid Nonces" [nonces]))
-            split-nonces
-        )
-    )
-    (defun UEV_Amount (amount:integer)
-        @doc "Floor for every SFT/fragment credit or debit quantity. Zero is legal (nonce-creation \
-            \ genesis supply, e.g. EQUITY's zero-initial-supply tier nonces) — negative is never legal, \
-            \ it inverts the credit/debit direction in XIv_CreditOrDebitDPDC. See DPDC Audit #1C."
-        (enforce (>= amount 0) "Amount cannot be negative")
-    )
-    (defun UEV_FragmentCreditAmount (amount:integer)
-        @doc "An NFT itself is always quantity 1, but its fragments exist in units of 1000 per whole \
-            \ NFT (see DPDC-F::C_MakeFragments' <f-amount = 1000 * amount>) — every NFT fragment \
-            \ credit amount must be a positive multiple of 1000. Today's only caller (C_MakeFragments) \
-            \ can only ever produce exactly 1000 (forced by the upstream native amount=1 rule), so this \
-            \ is a defense-in-depth backstop, not a live-exploit fix. See DPDC Audit #24M."
-        (enforce
-            (and (> amount 0) (= (mod amount 1000) 0))
-            (format "NFT fragment credit amount of {} must be a positive multiple of 1000" [amount])
-        )
-    )
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;T3x20
-    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
-    ;;Protection:          DPSF|C>CREDIT-FRAGMENT-NONCE
-    (defun XE_CreditSFT-FragmentNonce (account:string id:string nonce:integer amount:integer)
-        (P|UEV_IMC)
-        (with-capability (DPSF|C>CREDIT-FRAGMENT-NONCE id nonce)
-            (XI_CreditSFT account id [nonce] [amount])
-        )
-    )
-    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
-    ;;Protection:          DPNF|C>CREDIT-FRAGMENT-NONCE
-    (defun XE_CreditNFT-FragmentNonce (account:string id:string nonce:integer amount:integer)
-        (P|UEV_IMC)
-        (with-capability (DPNF|C>CREDIT-FRAGMENT-NONCE id nonce amount)
-            (XI_CreditNFT account id [nonce] [amount])
-        )
-    )
-    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
-    ;;Protection:          DPSF|C>DEBIT-FRAGMENT-NONCE
-    (defun XE_DebitSFT-FragmentNonce (account:string id:string nonce:integer amount:integer wipe-mode:bool)
-        (P|UEV_IMC)
-        (with-capability (DPSF|C>DEBIT-FRAGMENT-NONCE account id nonce amount wipe-mode)
-            (XI_DebitSFT account id [nonce] [amount] wipe-mode)
-        )
-    )
-    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
-    ;;Protection:          DPNF|C>DEBIT-FRAGMENT-NONCE
-    (defun XE_DebitNFT-FragmentNonce (account:string id:string nonce:integer amount:integer wipe-mode:bool)
-        (P|UEV_IMC)
-        (with-capability (DPNF|C>DEBIT-FRAGMENT-NONCE account id nonce amount wipe-mode)
-            (XI_DebitNFT account id [nonce] [amount] wipe-mode)
-        )
-    )
-    ;;
-    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
-    ;;Protection:          DPSF|C>CREDIT-NONCE
-    (defun XB_CreditSFT-Nonce (account:string id:string nonce:integer amount:integer)
-        (P|UEV_IMC)
-        (with-capability (DPSF|C>CREDIT-NONCE id nonce)
-            (XI_CreditSFT account id [nonce] [amount])
-        )
-    )
-    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
-    ;;Protection:          DPNF|C>CREDIT-NONCE
-    (defun XB_CreditNFT-Nonce (account:string id:string nonce:integer amount:integer)
-        (P|UEV_IMC)
-        (with-capability (DPNF|C>CREDIT-NONCE id nonce amount)
-            (XI_CreditNFT account id [nonce] [amount])
-        )
-    )
-    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
-    ;;Protection:          DPSF|C>DEBIT-NONCE
-    (defun XE_DebitSFT-Nonce (account:string id:string nonce:integer amount:integer wipe-mode:bool)
-        (P|UEV_IMC)
-        (with-capability (DPSF|C>DEBIT-NONCE account id nonce amount wipe-mode)
-            (XI_DebitSFT account id [nonce] [amount] wipe-mode)
-        )
-    )
-    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
-    ;;Protection:          DPNF|C>DEBIT-NONCE
-    (defun XE_DebitNFT-Nonce (account:string id:string nonce:integer amount:integer wipe-mode:bool)
-        (P|UEV_IMC)
-        (with-capability (DPNF|C>DEBIT-NONCE account id nonce amount wipe-mode)
-            (XI_DebitNFT account id [nonce] [amount] wipe-mode)
-        )
-    )
-    ;;
-    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
-    ;;Protection:          DPSF|C>CREDIT-FRAGMENT-NONCES
-    (defun XE_CreditSFT-FragmentNonces (account:string id:string nonces:[integer] amounts:[integer])
-        (P|UEV_IMC)
-        (with-capability (DPSF|C>CREDIT-FRAGMENT-NONCES id nonces amounts)
-            (XI_CreditSFT account id nonces amounts)
-        )
-    )
-    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
-    ;;Protection:          DPNF|C>CREDIT-FRAGMENT-NONCES
-    (defun XE_CreditNFT-FragmentNonces (account:string id:string nonces:[integer] amounts:[integer])
-        (P|UEV_IMC)
-        (with-capability (DPNF|C>CREDIT-FRAGMENT-NONCES id nonces amounts)
-            (XI_CreditNFT account id nonces amounts)
-        )
-    )
-    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
-    ;;Protection:          DPSF|C>DEBIT-FRAGMENT-NONCES
-    (defun XE_DebitSFT-FragmentNonces (account:string id:string nonces:[integer] amounts:[integer] wipe-mode:bool)
-        (P|UEV_IMC)
-        (with-capability (DPSF|C>DEBIT-FRAGMENT-NONCES account id nonces amounts wipe-mode)
-            (XI_DebitSFT account id nonces amounts wipe-mode)
-        )
-    )
-    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
-    ;;Protection:          DPNF|C>DEBIT-FRAGMENT-NONCES
-    (defun XE_DebitNFT-FragmentNonces (account:string id:string nonces:[integer] amounts:[integer] wipe-mode:bool)
-        (P|UEV_IMC)
-        (with-capability (DPNF|C>DEBIT-FRAGMENT-NONCES account id nonces amounts wipe-mode)
-            (XI_DebitNFT account id nonces amounts wipe-mode)
-        )
-    )
-    ;;
-    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
-    ;;Protection:          DPSF|C>CREDIT-NONCES
-    (defun XB_CreditSFT-Nonces (account:string id:string nonces:[integer] amounts:[integer])
-        (P|UEV_IMC)
-        (with-capability (DPSF|C>CREDIT-NONCES id nonces amounts)
-            (XI_CreditSFT account id nonces amounts)
-        )
-    )
-    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
-    ;;Protection:          DPNF|C>CREDIT-NONCES
-    (defun XB_CreditNFT-Nonces (account:string id:string nonces:[integer] amounts:[integer])
-        (P|UEV_IMC)
-        (with-capability (DPNF|C>CREDIT-NONCES id nonces amounts)
-            (XI_CreditNFT account id nonces amounts)
-        )
-    )
-    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
-    ;;Protection:          DPSF|C>DEBIT-NONCES
-    (defun XE_DebitSFT-Nonces (account:string id:string nonces:[integer] amounts:[integer] wipe-mode:bool)
-        (P|UEV_IMC)
-        (with-capability (DPSF|C>DEBIT-NONCES account id nonces amounts wipe-mode)
-            (XI_DebitSFT account id nonces amounts wipe-mode)
-        )
-    )
-    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
-    ;;Protection:          DPNF|C>DEBIT-NONCES
-    (defun XE_DebitNFT-Nonces (account:string id:string nonces:[integer] amounts:[integer] wipe-mode:bool)
-        (P|UEV_IMC)
-        (with-capability (DPNF|C>DEBIT-NONCES account id nonces amounts wipe-mode)
-            (XI_DebitNFT account id nonces amounts wipe-mode)
-        )
-    )
-    ;;
-    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
-    ;;Protection:          DPSF|C>CREDIT-HYBRID-NONCES
-    (defun XE_CreditSFT-HybridNonces (account:string id:string nonces:[integer] amounts:[integer])
-        (P|UEV_IMC)
-        (with-capability (DPSF|C>CREDIT-HYBRID-NONCES id nonces amounts)
-            (XI_CreditSFT account id nonces amounts)
-        )
-    )
-    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
-    ;;Protection:          DPNF|C>CREDIT-HYBRID-NONCES
-    (defun XE_CreditNFT-HybridNonces (account:string id:string nonces:[integer] amounts:[integer])
-        (P|UEV_IMC)
-        (with-capability (DPNF|C>CREDIT-HYBRID-NONCES id nonces amounts)
-            (XI_CreditNFT account id nonces amounts)
-        )
-    )
-    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
-    ;;Protection:          DPSF|C>DEBIT-HYBRID-NONCES
-    (defun XE_DebitSFT-HybridNonces (account:string id:string nonces:[integer] amounts:[integer])
-        (P|UEV_IMC)
-        (with-capability (DPSF|C>DEBIT-HYBRID-NONCES account id nonces amounts)
-            (XI_DebitSFT account id nonces amounts false)
-        )
-    )
-    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
-    ;;Protection:          DPNF|C>DEBIT-HYBRID-NONCES
-    (defun XE_DebitNFT-HybridNonces (account:string id:string nonces:[integer] amounts:[integer])
-        (P|UEV_IMC)
-        (with-capability (DPNF|C>DEBIT-HYBRID-NONCES account id nonces amounts)
-            (XI_DebitNFT account id nonces amounts false)
-        )
-    )
-    ;;
-    ;;T2x4
-    ;;Protection: Class 1 — Innate protection offered by XI_CreditCollectables
-    (defun XI_CreditSFT (account:string id:string nonces:[integer] amounts:[integer])
-        (XI_CreditCollectables account id true nonces amounts)
-    )
-    ;;Protection: Class 1 — Innate protection offered by XI_CreditCollectables
-    (defun XI_CreditNFT (account:string id:string nonces:[integer] amounts:[integer])
-        (XI_CreditCollectables account id false nonces amounts)
-    )
-    ;;
-    ;;Protection: Class 1 — Innate protection offered by XI_DebitCollectables
-    (defun XI_DebitSFT (account:string id:string nonces:[integer] amounts:[integer] wipe-mode:bool)
-        (XI_DebitCollectables account id true nonces amounts wipe-mode)
-    )
-    ;;Protection: Class 1 — Innate protection offered by XI_DebitCollectables
-    (defun XI_DebitNFT (account:string id:string nonces:[integer] amounts:[integer] wipe-mode:bool)
-        (XI_DebitCollectables account id false nonces amounts wipe-mode)
-    )
-    ;;T1x2
-    ;;Protection: Class 1 — Innate protection offered by XI_CreditOrDebitCollectables
-    (defun XI_CreditCollectables (account:string id:string son:bool nonces:[integer] amounts:[integer])
-        (XI_CreditOrDebitCollectables account id son nonces amounts true false)
-    )
-    ;;Protection: Class 1 — Innate protection offered by XI_CreditOrDebitCollectables
-    (defun XI_DebitCollectables (account:string id:string son:bool nonces:[integer] amounts:[integer] wipe-mode:bool)
-        (XI_CreditOrDebitCollectables account id son nonces amounts false wipe-mode)
-    )
-    ;;T0x1
-    ;;Protection: Class 3 — Custom: DPNF|C>CREDIT-FRAGMENT-NONCE,
-    ;;Protection:          DPNF|C>CREDIT-FRAGMENT-NONCES, DPNF|C>CREDIT-HYBRID-NONCES,
-    ;;Protection:          DPNF|C>CREDIT-NONCE, DPNF|C>CREDIT-NONCES,
-    ;;Protection:          DPNF|C>DEBIT-FRAGMENT-NONCE, DPNF|C>DEBIT-FRAGMENT-NONCES,
-    ;;Protection:          DPNF|C>DEBIT-HYBRID-NONCES, DPNF|C>DEBIT-NONCE,
-    ;;Protection:          DPNF|C>DEBIT-NONCES, DPSF|C>CREDIT-FRAGMENT-NONCE,
-    ;;Protection:          DPSF|C>CREDIT-FRAGMENT-NONCES, DPSF|C>CREDIT-HYBRID-NONCES,
-    ;;Protection:          DPSF|C>CREDIT-NONCE, DPSF|C>CREDIT-NONCES,
-    ;;Protection:          DPSF|C>DEBIT-FRAGMENT-NONCE, DPSF|C>DEBIT-FRAGMENT-NONCES,
-    ;;Protection:          DPSF|C>DEBIT-HYBRID-NONCES, DPSF|C>DEBIT-NONCE,
-    ;;Protection:          DPSF|C>DEBIT-NONCES
-    (defun XI_CreditOrDebitCollectables (account:string id:string son:bool nonces:[integer] amounts:[integer] cod:bool wipe-mode:bool)
-        (let
-            (
-                (ref-U|INT:module{OuronetIntegersV2} U|INT)
-                (ref-DPDC:module{DpdcV2} DPDC)
-                ;;
-                (split:object{OuronetIntegersV2.NonceSplitter} (ref-U|INT::UC_NonceSplitter nonces amounts))
-                (negative-nonces:[integer] (at "negative-nonces" split))
-                (positive-nonces:[integer] (at "positive-nonces" split))
-                (negative-counterparts:[integer] (at "negative-counterparts" split))
-                (positive-counterparts:[integer] (at "positive-counterparts" split))
-                ;;
-                (n0:integer (at 0 nonces))
-                (a0:integer (at 0 amounts))
-                (l1:integer (length nonces))
-                (l2:integer (length amounts))
-                (negatives:integer (length negative-nonces))
-                (positives:integer (length positive-nonces))
-                ;;
-                (isg:bool (and (= l1 1) (= l2 1)))                  ;;iz-single
-                (inn:bool (< n0 0))                                 ;;iz-nonce-negative
-                (ong:bool (and (> negatives 0) (= positives 0)))    ;;only-negatives
-                (onp:bool (and (> positives 0) (= negatives 0)))    ;;only-positives
-            )
-            (cond
-                ;;SINGLE
-                ;;Native Nonce
-                ((UC_AndTruths [isg (not inn) cod son])                             (require-capability (DPSF|C>CREDIT-NONCE id n0)))
-                ((UC_AndTruths [isg (not inn) cod (not son)])                       (require-capability (DPNF|C>CREDIT-NONCE id n0 a0)))
-                ((UC_AndTruths [isg (not inn) (not cod) son])                       (require-capability (DPSF|C>DEBIT-NONCE account id n0 a0 wipe-mode)))
-                ((UC_AndTruths [isg (not inn) (not cod) (not son)])                 (require-capability (DPNF|C>DEBIT-NONCE account id n0 a0 wipe-mode)))
-                ;;Fragment Nonce
-                ((UC_AndTruths [isg inn cod son])                                   (require-capability (DPSF|C>CREDIT-FRAGMENT-NONCE id n0)))
-                ((UC_AndTruths [isg inn cod (not son)])                             (require-capability (DPNF|C>CREDIT-FRAGMENT-NONCE id n0 a0)))
-                ((UC_AndTruths [isg inn (not cod) son])                             (require-capability (DPSF|C>DEBIT-FRAGMENT-NONCE account id n0 a0 wipe-mode)))
-                ((UC_AndTruths [isg inn (not cod) (not son)])                       (require-capability (DPNF|C>DEBIT-FRAGMENT-NONCE account id n0 a0 wipe-mode)))
-                ;;
-                ;;MULTI
-                ;;Native Nonces
-                ((UC_AndTruths [(not isg) (not ong) onp cod son])                   (require-capability (DPSF|C>CREDIT-NONCES id nonces amounts)))
-                ((UC_AndTruths [(not isg) (not ong) onp cod (not son)])             (require-capability (DPNF|C>CREDIT-NONCES id nonces amounts)))
-                ((UC_AndTruths [(not isg) (not ong) onp (not cod) son])             (require-capability (DPSF|C>DEBIT-NONCES account id nonces amounts wipe-mode)))
-                ((UC_AndTruths [(not isg) (not ong) onp (not cod) (not son)])       (require-capability (DPNF|C>DEBIT-NONCES account id nonces amounts wipe-mode)))
-                ;;Fragment Nonces
-                ((UC_AndTruths [(not isg) ong cod son])                             (require-capability (DPSF|C>CREDIT-FRAGMENT-NONCES id nonces amounts)))
-                ((UC_AndTruths [(not isg) ong cod (not son)])                       (require-capability (DPNF|C>CREDIT-FRAGMENT-NONCES id nonces amounts)))
-                ((UC_AndTruths [(not isg) ong (not cod) son])                       (require-capability (DPSF|C>DEBIT-FRAGMENT-NONCES account id nonces amounts wipe-mode)))
-                ((UC_AndTruths [(not isg) ong (not cod) (not son)])                 (require-capability (DPNF|C>DEBIT-FRAGMENT-NONCES account id nonces amounts wipe-mode)))
-                ;;Hybrid (Native and Fragment) Nonces
-                ((UC_AndTruths [(not isg) (not ong) (not onp) cod son])             (require-capability (DPSF|C>CREDIT-HYBRID-NONCES id nonces amounts)))
-                ((UC_AndTruths [(not isg) (not ong) (not onp) cod (not son)])       (require-capability (DPNF|C>CREDIT-HYBRID-NONCES id nonces amounts)))
-                ((UC_AndTruths [(not isg) (not ong) (not onp) (not cod) son])       (require-capability (DPSF|C>DEBIT-HYBRID-NONCES account id nonces amounts)))
-                ((UC_AndTruths [(not isg) (not ong) (not onp) (not cod) (not son)]) (require-capability (DPNF|C>DEBIT-HYBRID-NONCES account id nonces amounts)))
-                ;; DPDC Audit #23M: fail closed, not open. The 16 branches above are exhaustive given
-                ;; today's upstream invariants (UEV_NonceType/UEV_NonceTypeMapper) — this default only
-                ;; fires if a future change weakens that guarantee, and it must hard-abort rather than
-                ;; silently skip every require-capability check above and fall through to the write.
-                ;;UNREACHABLE: an (enforce false) fail-closed DEFAULT. The 16 branches above are
-                ;;exhaustive under UEV_NonceType / UEV_NonceTypeMapper, so no input reaches it --
-                ;;which is the sanctioned failsafe shape (owner ruling, 2026-09-10: a default that
-                ;;fires only if a branch is ever missed). Correct as written and not coverage.
-                (enforce false (format "Unreachable nonce/amount shape for {} {}" [nonces amounts]))
-            )
-            (if cod
-                (ref-DPDC::XE_DeployAccountWNE account id son)
-                true
-            )
-            (if (and (> negatives 0) (= positives 0))
-                ;; only negative nonces
-                (XIv_MappedCreditOrDebitDPDC account id son negative-nonces negative-counterparts cod)
-                (if (and (> positives 0) (= negatives 0))
-                    ;;only positive nonces
-                    (if son
-                        ;;If SFT
-                        (XIv_MappedCreditOrDebitDPDC account id son positive-nonces positive-counterparts cod)
-                        ;;If NFT
-                        (if cod
-                            ;;If Credit
-                            (XI_MappedUpdateOwnerNFT id positive-nonces account false)
-                            ;;If Debit
-                            (XI_MappedUpdateOwnerNFT id positive-nonces account true)
-                        )
-                    )
-                    ;;positive and negative nonces
-                    (do
-                        (XIv_MappedCreditOrDebitDPDC account id son negative-nonces negative-counterparts cod)
-                        (if son
-                            (XIv_MappedCreditOrDebitDPDC account id son positive-nonces positive-counterparts cod)
-                            (if cod
-                                (XI_MappedUpdateOwnerNFT id positive-nonces account false)
-                                (XI_MappedUpdateOwnerNFT id positive-nonces account true)
-                            )
-                        )
-                    )
-                )
-            )
-        )
-    )
-    ;;
-    ;;Protection: Class 1 — Innate protection offered by XI_RegisterSingleNonce,
-    ;;Protection:          XI_RegisterMultipleNonces, XB_CreditSFT-Nonce,
-    ;;Protection:          XB_CreditNFT-Nonce, XB_CreditSFT-Nonces, XB_CreditNFT-Nonces
-    (defun XI_RegisterCollectables:object{IgnisCollectorV3.OutputCumulator}
-        (
-            id:string son:bool nonce-classes:[integer] amounts:[integer]
-            input-nonce-datas:[object{DpdcUdcV2.DPDC|NonceData}] sft-set-mode:bool
-        )
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (owner:string (ref-DPDC::UR_OwnerKonto id son))
-                ;;
-                (l:integer (length amounts))
-                (fnc:integer (at 0 nonce-classes))
-                (isg:bool (= l 1))
-                (output-account:string
-                    (if (!= fnc 0)
-                        (ref-DPDC::GOV|DPDC|SC_NAME)
-                        (ref-DPDC::UR_Verum5 id son)
-                    )
-                )
-                ;;
-                ;;Compute Cumulator Parameters (price single-sourced via URCi)
-                (price:decimal (URCi_RegisterCollectablesPrice id son amounts))
-                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                ;;
-                ;;Computing Nonces that will be generated
-                (current-nonce:integer (ref-DPDC::UR_NoncesUsed id son))
-                (nonces-to-be-created:[integer]
-                    (take (- 0 l) (enumerate 0 (+ current-nonce l)))
-                )
-                (n0:integer (at 0 nonces-to-be-created))
-                (a0:integer (at 0 amounts))
-                ;;
-                ;;Generating Collection Elements Names, by registering them
-                (collectable-names:[string]
-                    (if (= l 1)
-                        [(XI_RegisterSingleNonce id son fnc (at 0 amounts) (at 0 input-nonce-datas) sft-set-mode)]
-                        (XI_RegisterMultipleNonces id son nonce-classes amounts input-nonce-datas)
-                    )
-                )
-            )
-            ;;Credit Created Elements to <output-account>, which is either <creator-account> or <dpdc> account
-            (cond
-                ((UC_AndTruths [isg son ])              (XB_CreditSFT-Nonce output-account id n0 a0))
-                ((UC_AndTruths [isg (not son)])         (XB_CreditNFT-Nonce output-account id n0 a0))
-                ((UC_AndTruths [(not isg) son])         (XB_CreditSFT-Nonces output-account id nonces-to-be-created amounts))
-                ((UC_AndTruths [(not isg) (not son)])   (XB_CreditNFT-Nonces output-account id nonces-to-be-created amounts))
-                true
-            )
-            (ref-IGNIS::UDC_ConstructOutputCumulator price owner trigger collectable-names)
-        )
-    )
-    ;;Protection: Class 3 — Custom: DPDC-C|C>REGISTER-MULTIPLE-NONCES
-    (defun XI_RegisterMultipleNonces:[string]
-        (
-            id:string son:bool nonce-classes:[integer] amounts:[integer]
-            input-nonce-datas:[object{DpdcUdcV2.DPDC|NonceData}]
-        )
-        (require-capability (DPDC-C|C>REGISTER-MULTIPLE-NONCES id son amounts input-nonce-datas))
-        (with-capability (SECURE)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV2} U|LST)
-                )
-                (fold
-                    (lambda
-                        (acc:[string] idx:integer)
-                        (let
-                            (
-                                (nonce-class:integer (at idx nonce-classes))
-                                (amount:integer (at idx amounts))
-                                (input-nonce-data:object{DpdcUdcV2.DPDC|NonceData} (at idx input-nonce-datas))
-                            )
-                            (ref-U|LST::UC_AppL acc
-                                (XI_RegisterCollectionElement id son nonce-class amount input-nonce-data)
-                            )
-                        )
-                    )
-                    []
-                    (enumerate 0 (- (length amounts) 1))
-                )
-            )
-        )
-    )
-    ;;Protection: Class 3 — Custom: DPDC-C|C>REGISTER-SINGLE-NONCE
-    (defun XI_RegisterSingleNonce:string
-        (
-            id:string son:bool nonce-class:integer amount:integer
-            input-nonce-data:object{DpdcUdcV2.DPDC|NonceData} sft-set-mode:bool
-        )
-        (require-capability (DPDC-C|C>REGISTER-SINGLE-NONCE id son amount input-nonce-data sft-set-mode))
-        (with-capability (SECURE)
-            (XI_RegisterCollectionElement id son nonce-class amount input-nonce-data)
-        )
-    )
-    ;;Protection: Class 2 — SECURE
-    (defun XI_RegisterCollectionElement:string
-        (
-            id:string son:bool nonce-class:integer amount:integer
-            input-nonce-data:object{DpdcUdcV2.DPDC|NonceData}
-        )
-        (require-capability (SECURE))
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (new-element-nonce:integer (+ (ref-DPDC::UR_NoncesUsed id son) 1))
-                (account-for-supply-registering:string (ref-DPDC::UR_Verum5 id son))
-                (nonce-holder:string
-                    (if son
-                        BAR
-                        (ref-I|OURONET::OI|UC_ShortAccount account-for-supply-registering)
-                    )
-                )
-                (element:object{DpdcUdcV2.DPDC|NonceElement} 
-                    (ref-DPDC-UDC::UDC_NonceElement
-                        nonce-class
-                        new-element-nonce
-                        amount
-                        nonce-holder
-                        input-nonce-data
-                        (ref-DPDC-UDC::UDC_ZeroNonceData)
-                    )
-                )
-            )
-            (ref-DPDC::XE_I|CollectionElement id son new-element-nonce element)
-            (ref-DPDC::XE_U|NoncesUsed id son new-element-nonce)
-            (format "{} <{}>" [amount (at "name" input-nonce-data)])
-        )
-    )
-    ;;===========================================
-    ;;
-    ;;Protection: Class 1 — Innate protection offered by XE_U|NonceHolder, XE_W|Supply
-    (defun XI_MappedUpdateOwnerNFT (id:string nonces:[integer] account:string iz-bar:bool)
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (new-owner:string
-                    (if iz-bar
-                        BAR
-                        account
-                    )
-                )
-                (supply:integer
-                    (if iz-bar 0 1)
-                )
-            )
-            (map
-                (lambda
-                    (element:integer)
-                    (do
-                        (ref-DPDC::XE_U|NonceHolder id element new-owner)
-                        (ref-DPDC::XE_W|Supply account id false element supply)
-                        ;;
-                    )
-                    
-                )
-                nonces
-                ;(enumerate 0 (- (length nonces) 1))
-            )
-        )
-    )
-    ;;Must account for exist/not-exist
-    ;;Enforce: per-element-in-map -- XIv_MappedCreditOrDebitDPDC maps this over (at idx amounts), so
-    ;;          UEV_Amount validates one element. Upstream, XI_CreditOrDebitCollectables dispatches to 16
-    ;;          different require-capability branches; relocating would duplicate the check 16x.
-    ;;Protection: Class 1 — Innate protection offered by XE_W|Supply
-    (defun XIv_CreditOrDebitDPDC (account:string id:string son:bool nonce:integer amount:integer cod:bool)
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (read-current-supply:integer (ref-DPDC::UR_AccountNonceSupply account id son nonce))
-                (current-supply:integer 
-                    (if (= read-current-supply -1)
-                        0
-                        read-current-supply
-                    )
-                )
-                (new-supply:integer
-                    (if cod
-                        (+ current-supply amount)
-                        (- current-supply amount)
-                    )
-                )
-            )
-            (UEV_Amount amount)
-            (if (= current-supply 0)
-                (enforce cod "Cannot Debit 0 Amounts!")
-                true
-            )
-            (ref-DPDC::XE_W|Supply account id son nonce new-supply)
-        )
-    )
-    ;;Enforce: 4 call sites inside XI_CreditOrDebitCollectables -- relocating the (= l1 l2) length check
-    ;;          duplicates it 4x, which is strictly more code.
-    ;;Protection: Class 1 — Innate protection offered by XIv_CreditOrDebitDPDC
-    (defun XIv_MappedCreditOrDebitDPDC (account:string id:string son:bool nonces:[integer] amounts:[integer] cod:bool)
-        (let
-            (
-                (l1:integer (length nonces))
-                (l2:integer (length amounts))
-            )
-            (enforce (= l1 l2) "Invalid <nonces> and <amounts> lengths for CreditOrDebit Operation")
-            (map
-                (lambda
-                    (idx:integer)
-                    (XIv_CreditOrDebitDPDC account id son (at idx nonces) (at idx amounts) cod)
-                )
-                (enumerate 0 (- l1 1))
-            )
-        )
-    )
-    ;;{5.7}  User [A/C]
-    (defun C_CreateNewNonce:object{IgnisCollectorV3.OutputCumulator}
-        (
-            id:string son:bool nonce-class:integer amount:integer
-            input-nonce-data:object{DpdcUdcV2.DPDC|NonceData} sft-set-mode:bool
-        )
-        (P|UEV_IMC)
-        (with-capability (DPDC-C|C>REGISTER-SINGLE-NONCE id son amount input-nonce-data sft-set-mode)
-            (XI_RegisterCollectables id son [nonce-class] [amount] [input-nonce-data] sft-set-mode)
-        )
-    )
-    (defun C_CreateNewNonces:object{IgnisCollectorV3.OutputCumulator}
-        (
-            id:string son:bool amounts:[integer]
-            input-nonce-datas:[object{DpdcUdcV2.DPDC|NonceData}]
-        )
-        (P|UEV_IMC)
-        (with-capability (DPDC-C|C>REGISTER-MULTIPLE-NONCES id son amounts input-nonce-datas)
-            (XI_RegisterCollectables id son 
-                (make-list (length input-nonce-datas) 0) 
-                amounts input-nonce-datas false
-            )
-        )
-    )
-
-)
-
-;; --- tables for 03_DPDC-C.pact (2 defined) ---
-;; UPGRADE MODE: this module is assumed already deployed, so its
-;; tables already exist and (create-table) would ABORT the whole
-;; transaction. They are listed here, commented, for reference.
-;; If any of these is NEW since the last deploy, uncomment JUST it.
-;; (create-table P|T)
-;; (create-table P|MT)
-
-;; ===== 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/04_DPDC-I.pact ==========
-;; Deploy: load THIS file — interface(s) + module ship together.
-;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/02_Core.pact
-;;
-;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface DpdcIssueV2
-    @doc "Exposes Collectables Issue Functions"
-
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;{G2}  schemas
-    ;;{G3}  tables  ⟨cannot exist in an interface⟩
-    ;;{G4}  capabilities
-    ;;{G5}  functions
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    ;;{P2}  schemas
-    ;;{P3}  tables  ⟨cannot exist in an interface⟩
-    ;;{P4}  capabilities
-    ;;{P5}  functions
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    ;;{3.2}  schemas
-    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    ;;{5.2}  Compute [UC]
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;
-    ;;  [URCi]
-    ;;
-    (defun URCi_IssueCollectionPrice:decimal (son:bool))
-    (defun URCi_IssueCollectionStoa:decimal (son:bool))
-    (defun URCi_IssueDigitalCollection:object{IgnisCollectorV3.OutputCumulator} (son:bool owner-account:string))
-    ;;{5.4}  Validate [UEV/CAP]
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;{5.7}  User [A/C]
-    ;;
-    ;;  [C]
-    ;;
-    ;; C_DeployAccountSFT/NFT removed — DPDC Audit #35M: standalone deployment, reachable via a public
-    ;; Talos entrypoint with no ownership check, let any signer force any existing account to associate
-    ;; with any collection. Real auto-association always calls DPDC::XBv_DeployAccountSFT/NFT directly,
-    ;; module-to-module (see DPDC-C/DPDC-F/DPDC-R/DPDC-S and this module's own Issue flow below).
-    (defun C_IssueDigitalCollection:object{IgnisCollectorV3.OutputCumulator}
-        (
-            patron:string son:bool
-            owner-account:string creator-account:string collection-name:string collection-ticker:string
-            can-upgrade:bool can-change-owner:bool can-change-creator:bool can-add-special-role:bool
-            can-transfer-nft-create-role:bool can-freeze:bool can-wipe:bool can-pause:bool
-            iz-special:bool
-        )
-    )
-
-)
-;;
-(module DPDC-I GOV
-    @doc "DPDC-I is the Collectables Issue module of the DPDC family, implementing \
-        \ DpdcIssueV2 and OuronetPolicyV2. Its flagship entrypoint C_IssueDigitalCollection \
-        \ creates a new digital collection (SFT if son=true, else NFT): it charges IGNIS and \
-        \ STOA usage fees, writes the collection record and its initial Verum role-chain via \
-        \ DPDC, and auto-deploys owner and creator collection accounts with distinct default \
-        \ role sets. URCi_ functions provide cost previews; it manages only its own policy \
-        \ tables and gates issuance on owner-account ownership."
-
-    ;;<=========================================================================>
-    ;;{0}  IMPLEMENTERS
-    ;;
-    (implements OuronetPolicyV2)
-    (implements DpdcIssueV2)
-
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;
-    (defconst GOV|MD_DPDC-I                             (keyset-ref-guard (GOV|Demiurgoi)))
-    ;;{G2}  schemas
-    ;;{G3}  tables
-    ;;{G4}  capabilities
-    (defcap GOV ()                                      (compose-capability (GOV|DPDC-I_ADMIN)))
-    (defcap GOV|DPDC-I_ADMIN ()                         (enforce-guard GOV|MD_DPDC-I))
-    ;;{G5}  functions
-    (defun GOV|Demiurgoi ()
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-            )
-            (ref-DALOS::GOV|Demiurgoi)
-        )
-    )
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    (defconst P|I                                       (P|Info))
-    ;;{P2}  schemas
-    ;;{P3}  tables
-    ;;
-    (deftable P|T:{OuronetPolicyV2.P|S})
-    (deftable P|MT:{OuronetPolicyV2.P|MS})
-    ;;{P4}  capabilities
-    (defcap P|DPDC-I|CALLER ()
-        true
-    )
-    (defcap P|SECURE-CALLER ()
-        (compose-capability (P|DPDC-I|CALLER))
-        (compose-capability (SECURE))
-    )
-    ;;{P5}  functions
-    (defun P|Info ()
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-            )
-            (ref-DALOS::P|Info)
-        )
-    )
-    (defun P|UR:guard (policy-name:string)
-        (at "policy" (read P|T policy-name ["policy"]))
-    )
-    (defun P|UR_IMP:[guard] ()
-        ;;DEFAULT ADDED 2026-09-14 (owner ruling). This was a bare `read`, which RAISES
-        ;;`No value found in table <M>_P|MT for key: InterModulePolicies` when the row does not
-        ;;exist -- i.e. before ANY module has registered. P|UEV_IMC is built on this, so in that
-        ;;window the inter-module gate answered with a raw table error naming a row key instead of
-        ;;refusing cleanly. Surfaced by the X-01 repair, which removed the harness registration
-        ;;that had been creating the row as a side effect.
+        can-upgrade:bool
+        can-change-owner:bool
+        can-change-creator:bool
+        can-add-special-role:bool
+        can-transfer-nft-create-role:bool
+        can-freeze:bool
+        can-wipe:bool
+        can-pause:bool
         ;;
-        ;;The default is the module's OWN SECURE capability guard, which is exactly what
-        ;;P|A_AddIMP already seeds the row with. So reader and writer now agree on what an
-        ;;unregistered policy list contains, and the gate's answer is the same before and after
-        ;;the first registration: satisfiable only from inside this module.
-        (with-default-read P|MT P|I
-            {"m-policies" : [(create-capability-guard (SECURE))]}
-            {"m-policies" := mp}
-            mp
-        )
+        is-paused:bool
+        nonces-used:integer
+        set-classes-used:integer
     )
-    (defun P|UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV2} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|DPDC-I_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun P|A_AddIMP (policy-guard:guard)
-        @doc "Registers <policy-guard> as a trusted inter-module caller of this module. \
-            \ IDEMPOTENT: a guard already in the chain is left alone rather than appended \
-            \ a second time. See OuronetPolicyV2 for why that is load-bearing."
-        (with-capability (GOV|DPDC-I_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV2} U|LST)
-                    ;;
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" :
-                            (if (contains policy-guard mp)
-                                mp
-                                (ref-U|LST::UC_AppL mp policy-guard)
-                            )
-                        }
-                    )
-                )
-            )
-        )
-    )
-    (defun P|A_RemoveIMP (policy-guard:guard)
-        @doc "Revokes <policy-guard> from this module's guard chain. Removes EVERY occurrence, so \
-            \ it doubles as the cleanup for duplicates left behind by the pre-idempotence append. \
-            \ Refuses to drop this module's own SECURE seed -- see OuronetPolicyV2."
-        (with-capability (GOV|DPDC-I_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV2} U|LST)
-                    ;;
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (enforce (!= policy-guard dg) "The module's own SECURE seed cannot be revoked")
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_RemoveItem mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun P|A_SetIMP (policy-guards:[guard])
-        @doc "Replaces this module's whole guard chain in one write -- the recovery hatch. \
-            \ Deduplicates, and enforces that the module's own SECURE seed survives: without it \
-            \ the module can no longer reach its own P|UEV_IMC-gated functions."
-        (with-capability (GOV|DPDC-I_ADMIN)
-            (let
-                (
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (enforce (contains dg policy-guards) "The module's own SECURE seed must be present")
-                (write P|MT P|I
-                    {"m-policies" : (distinct policy-guards)}
-                )
-            )
-        )
-    )
-    (defun P|A_Define ()
-        (let
-            (
-                (ref-P|BRD:module{OuronetPolicyV2} BRD)
-                (ref-P|DPDC:module{OuronetPolicyV2} DPDC)
-                (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
-                (mg:guard (create-capability-guard (P|DPDC-I|CALLER)))
-            )
-            (ref-P|BRD::P|A_AddIMP mg)
-            (ref-P|DPDC::P|A_AddIMP mg)
-            (ref-P|IGNIS::P|A_AddIMP mg)
-        )
-    )
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    (defconst BAR                                       (CT_Bar))
-    ;;{3.2}  schemas
-    ;;{3.3}  tables
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
     ;;
-    (defcap SECURE ()
-        true
-    )
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    (defcap DPDC-I|C>ISSUE (owner-account:string creator-account:string collection-name:string collection-ticker:string iz-special:bool)
-        @doc "DPDC Audit #53L: <creator-account> is intentionally NOT ownership-checked, unlike \
-            \ <owner-account> (real CAP_EnforceAccountOwnership below). The collection owner is meant \
-            \ to be able to freely designate any account -- e.g. a trusted associate -- as the \
-            \ collection's creator without that account's separate consent/signature, the same way an \
-            \ owner has complete dominion over their own collection's admin structure elsewhere in this \
-            \ module family (#4C/#17H/#20H/#25M). Only the type/prefix is validated \
-            \ (UEV_EnforceAccountType) so <creator-account> is at least a real, well-formed account."
-        @event
-        (let
-            (
-                (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-            )
-            (ref-U|DALOS::UEV_NameOrTicker collection-name true iz-special)
-            (ref-U|DALOS::UEV_NameOrTicker collection-ticker false iz-special)
-            (ref-DALOS::CAP_EnforceAccountOwnership owner-account)
-            (ref-DALOS::UEV_EnforceAccountType creator-account false)
-            (compose-capability (P|SECURE-CALLER))
-        )
-    )
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
+    ;;  [2]
     ;;
-    (defun CT_Bar ()
-        (let
-            (
-                (ref-U|CT:module{OuronetConstantsV2} U|CT)
-            )
-            (ref-U|CT::CT_BAR)
-        )
-    )
-    ;;{5.2}  Compute [UC]
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;
-    ;;
-    ;;
-    (defun URCi_IssueCollectionPrice:decimal
-        (son:bool)
-        @doc "IGNIS issue price for a digital collection, from the CENTRAL IG|DETER map in the \
-            \ IGNIS module (rehaul substage 5, 1 ignis = 1 cent): son=true (SFT) = $20 = 2000 \
-            \ ignis, son=false (NFT) = $25 = 2500 ignis (owner 2026-09-05). \
-            \ Single source for the exec construct and the INFO preview."
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-            )
-            (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_Issue" "issue-sft")
-                    (ref-IGNIS::UC_IgnisPrice "DPNF|C_Issue" "issue-nft"))
-        )
-    )
-    (defun URCi_IssueCollectionStoa:decimal
-        (son:bool)
-        @doc "STOA side-cost for a digital-collection issue (dpsf for SFT, dpnf for NFT). \
-            \ Single source for XE_CollectStoa and the INFO preview."
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-            )
-            (if son (ref-IGNIS::UC_StoaPrice "issue-sft") (ref-IGNIS::UC_StoaPrice "issue-nft"))
-        )
-    )
-    (defun URCi_IssueDigitalCollection:object{IgnisCollectorV3.OutputCumulator}
-        (son:bool owner-account:string)
-        @doc "Cost preview for C_IssueDigitalCollection: IGNIS construct priced via \
-            \ URCi_IssueCollectionPrice on the owner payer, empty output (the created \
-            \ collection id is an exec-only write product). The STOA side-cost previews \
-            \ separately via URCi_IssueCollectionStoa."
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-            )
-            (ref-IGNIS::UDC_ConstructOutputCumulator
-                (URCi_IssueCollectionPrice son)
-                owner-account
-                (ref-IGNIS::URC_IsVirtualGasZero)
-                []
-            )
-        )
-    )
-    ;;{5.4}  Validate [UEV/CAP]
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;Protection: Class 3 — Custom: DPDC-I|C>ISSUE
-    (defun XI_IssueDigitalCollection:string
-        (
-            son:bool
-            owner-account:string creator-account:string collection-name:string collection-ticker:string
-            can-upgrade:bool can-change-owner:bool can-change-creator:bool can-add-special-role:bool
-            can-transfer-nft-create-role:bool can-freeze:bool can-wipe:bool can-pause:bool
-            iz-special:bool
-        )
-        (require-capability (DPDC-I|C>ISSUE owner-account creator-account collection-name collection-ticker iz-special))
-        (let
-            (
-                (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (id:string (ref-U|DALOS::UDC_Makeid collection-ticker))
-                (specifications:object{DpdcUdcV2.DPDC|Properties}
-                    (ref-DPDC-UDC::UDC_DPDC|Properties
-                        id owner-account creator-account collection-name collection-ticker
-                        can-upgrade can-change-owner can-change-creator can-add-special-role
-                        can-transfer-nft-create-role can-freeze can-wipe can-pause
-                        false 0 0
-                    )
-                )
-                (zne:[object{DpdcUdcV2.DPDC|NonceElement}]
-                    [(ref-DPDC-UDC::UDC_ZeroNonceElement)]
-                )
-                (ca:string creator-account)
-                (oa:string owner-account)
-                (verum-chain:object{DpdcUdcV2.DPDC|VerumRoles}
-                    (if son
-                        (if (!= owner-account creator-account)
-                            (ref-DPDC-UDC::UDC_DPDC|VerumRoles 
-                                [BAR]   ;;a-frozen
-                                [ca]    ;;r-exemption
-                                [oa]    ;;r-nft-add-quantity
-                                [oa]    ;;r-nft-burn
-                                ca      ;;r-nft-create
-                                ca      ;;r-nft-recreate
-                                [ca oa] ;;r-nft-update
-                                [ca]    ;;r-modify-creator
-                                [ca]    ;;r-modify-royalties
-                                ca      ;;r-set-new-uri
-                                [BAR]   ;;r-transfer
-                            )
-                            (ref-DPDC-UDC::UDC_DPDC|VerumRoles 
-                                [BAR]   ;;a-frozen
-                                [oa]    ;;r-exemption
-                                [oa]    ;;r-nft-add-quantity
-                                [oa]    ;;r-nft-burn
-                                oa      ;;r-nft-create
-                                oa      ;;r-nft-recreate
-                                [oa] ;;r-nft-update
-                                [oa]    ;;r-modify-creator
-                                [oa]    ;;r-modify-royalties
-                                oa      ;;r-set-new-uri
-                                [BAR]   ;;r-transfer
-                            )
-                        )
-                        (if (!= owner-account creator-account)
-                            (ref-DPDC-UDC::UDC_DPDC|VerumRoles 
-                                [BAR]   ;;a-frozen
-                                [ca]    ;;r-exemption
-                                [BAR]   ;;r-nft-add-quantity
-                                [oa]    ;;r-nft-burn
-                                ca      ;;r-nft-create
-                                ca      ;;r-nft-recreate
-                                [ca oa] ;;r-nft-update
-                                [ca]    ;;r-modify-creator
-                                [ca]    ;;r-modify-royalties
-                                ca      ;;r-set-new-uri
-                                [BAR]   ;;r-transfer
-                            )
-                            (ref-DPDC-UDC::UDC_DPDC|VerumRoles 
-                                [BAR]   ;;a-frozen
-                                [oa]    ;;r-exemption
-                                [BAR]   ;;r-nft-add-quantity
-                                [oa]    ;;r-nft-burn
-                                oa      ;;r-nft-create
-                                oa      ;;r-nft-recreate
-                                [oa]    ;;r-nft-update
-                                [oa]    ;;r-modify-creator
-                                [oa]    ;;r-modify-royalties
-                                oa      ;;r-set-new-uri
-                                [BAR]   ;;r-transfer
-                            )
-                        )
-                        
-                    )
-                )
-            )
-            (ref-DPDC::XE_I|Collection id son specifications)
-            (ref-DPDC::XE_I|VerumRoles id son verum-chain)
-            id
-        )
-    )
-    ;;{5.7}  User [A/C]
-    ;; C_DeployAccountSFT/NFT removed — DPDC Audit #35M: see interface-side removal note above.
-    (defun C_IssueDigitalCollection:object{IgnisCollectorV3.OutputCumulator}
-        (
-            patron:string son:bool
-            owner-account:string creator-account:string collection-name:string collection-ticker:string
-            can-upgrade:bool can-change-owner:bool can-change-creator:bool can-add-special-role:bool
-            can-transfer-nft-create-role:bool can-freeze:bool can-wipe:bool can-pause:bool
-            iz-special:bool
-        )
-        (P|UEV_IMC)
-        (with-capability (DPDC-I|C>ISSUE owner-account creator-account collection-name collection-ticker iz-special)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-BRD:module{BrandingV2} BRD)
-                    (ref-DPDC:module{DpdcV2} DPDC)
-                    ;;
-                    (ignis-price:decimal (URCi_IssueCollectionPrice son))
-                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                    ;;
-                    (stoa-cost:decimal (URCi_IssueCollectionStoa son))
-                    (id:string
-                        (XI_IssueDigitalCollection
-                            son
-                            owner-account creator-account collection-name collection-ticker
-                            can-upgrade can-change-owner can-change-creator can-add-special-role 
-                            can-transfer-nft-create-role can-freeze can-wipe can-pause
-                            iz-special
-                        )
-                    )
-                    (t:bool true)
-                    (f:bool false)
-                )
-                (ref-BRD::XE_Issue id)
-                ;;Deploy Collection Accounts for Owner and Creator
-                (if son
-                    ;;SFT New Account Roles
-                    (if (!= owner-account creator-account)
-                        (do
-                            (ref-DPDC::XBv_DeployAccountSFT owner-account id
-                                true    ;;role-nft-add-quantity
-                                false   ;;frozen
-                                false   ;;role-exemption
-                                true    ;;role-nft-burn
-                                false   ;;role-nft-create
-                                false   ;;role-nft-recreate
-                                true    ;;role-nft-update
-                                false   ;;role-modify-creator
-                                false   ;;role-modify-royalties
-                                false   ;;role-set-new-uri
-                                false   ;;role-transfer
-                            )
-                            (ref-DPDC::XBv_DeployAccountSFT creator-account id
-                                false   ;;role-nft-add-quantity
-                                false   ;;frozen
-                                true    ;;role-exemption
-                                false   ;;role-nft-burn
-                                true    ;;role-nft-create
-                                true    ;;role-nft-recreate
-                                true    ;;role-nft-update
-                                true    ;;role-modify-creator
-                                true    ;;role-modify-royalties
-                                true    ;;role-set-new-uri
-                                false   ;;role-transfer
-                            )
-                        )
-                        (ref-DPDC::XBv_DeployAccountSFT owner-account id
-                            true    ;;role-nft-add-quantity
-                            false   ;;frozen
-                            true    ;;role-exemption
-                            true    ;;role-nft-burn
-                            true    ;;role-nft-create
-                            true    ;;role-nft-recreate
-                            true    ;;role-nft-update
-                            true    ;;role-modify-creator
-                            true    ;;role-modify-royalties
-                            true    ;;role-set-new-uri
-                            false   ;;role-transfer
-                        )
-                    )
-                    (if (!= owner-account creator-account)
-                        (do
-                            (ref-DPDC::XBv_DeployAccountNFT owner-account id
-                                false   ;;frozen
-                                false   ;;role-exemption
-                                true    ;;role-nft-burn
-                                false   ;;role-nft-create
-                                false   ;;role-nft-recreate
-                                true    ;;role-nft-update
-                                false   ;;role-modify-creator
-                                false   ;;role-modify-royalties
-                                false   ;;role-set-new-uri
-                                false   ;;role-transfer
-                            )
-                            (ref-DPDC::XBv_DeployAccountNFT creator-account id
-                                false   ;;frozen
-                                true    ;;role-exemption
-                                false   ;;role-nft-burn
-                                true    ;;role-nft-create
-                                true    ;;role-nft-recreate
-                                true    ;;role-nft-update
-                                true    ;;role-modify-creator
-                                true    ;;role-modify-royalties
-                                true    ;;role-set-new-uri
-                                false   ;;role-transfer
-                            )
-                        )
-                        (ref-DPDC::XBv_DeployAccountNFT owner-account id
-                            false   ;;frozen
-                            true    ;;role-exemption
-                            true    ;;role-nft-burn
-                            true    ;;role-nft-create
-                            true    ;;role-nft-recreate
-                            true    ;;role-nft-update
-                            true    ;;role-modify-creator
-                            true    ;;role-modify-royalties
-                            true    ;;role-set-new-uri
-                            false   ;;role-transfer
-                        )
-                    )
-                )
-                (ref-IGNIS::XE_CollectStoa patron stoa-cost)
-                (ref-IGNIS::UDC_ConstructOutputCumulator ignis-price owner-account trigger [id])
-            )
-        )
-    )
-
-)
-
-;; --- tables for 04_DPDC-I.pact (2 defined) ---
-;; UPGRADE MODE: this module is assumed already deployed, so its
-;; tables already exist and (create-table) would ABORT the whole
-;; transaction. They are listed here, commented, for reference.
-;; If any of these is NEW since the last deploy, uncomment JUST it.
-;; (create-table P|T)
-;; (create-table P|MT)
-
-;; ===== 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/05_DPDC-R.pact ==========
-;; Deploy: load THIS file — interface(s) + module ship together.
-;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/02_Core.pact
-;;
-;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface DpdcRolesV2
-    @doc "Exposes Collectables Role Functions"
-
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;{G2}  schemas
-    ;;{G3}  tables  ⟨cannot exist in an interface⟩
-    ;;{G4}  capabilities
-    ;;{G5}  functions
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    ;;{P2}  schemas
-    ;;{P3}  tables  ⟨cannot exist in an interface⟩
-    ;;{P4}  capabilities
-    ;;{P5}  functions
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    ;;{3.2}  schemas
-    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    ;;{5.2}  Compute [UC]
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;
-    ;;  [URCi]
-    ;;
-    (defun URCi_ToggleAddQuantityRole:object{IgnisCollectorV3.OutputCumulator} (id:string))
-    (defun URCi_ToggleFreezeAccount:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
-    (defun URCi_ToggleExemptionRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
-    (defun URCi_ToggleBurnRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
-    (defun URCi_ToggleUpdateRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
-    (defun URCi_ToggleModifyCreatorRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
-    (defun URCi_ToggleModifyRoyaltiesRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
-    (defun URCi_ToggleTransferRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
-    (defun URCi_MoveCreateRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
-    (defun URCi_MoveRecreateRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
-    (defun URCi_MoveSetUriRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
-    ;;{5.4}  Validate [UEV/CAP]
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;{5.7}  User [A/C]
-    ;;
-    ;;  [C]
-    ;;
-    (defun C_ToggleAddQuantityRole:object{IgnisCollectorV3.OutputCumulator} (id:string account:string toggle:bool))
-    (defun C_ToggleFreezeAccount:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool account:string toggle:bool))
-    (defun C_ToggleExemptionRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool account:string toggle:bool))
-    (defun C_ToggleBurnRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool account:string toggle:bool))
-    (defun C_ToggleUpdateRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool account:string toggle:bool))
-    (defun C_ToggleModifyCreatorRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool account:string toggle:bool))
-    (defun C_ToggleModifyRoyaltiesRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool account:string toggle:bool))
-    (defun C_ToggleTransferRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool account:string toggle:bool))
-    (defun C_MoveCreateRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool new-account:string))
-    (defun C_MoveRecreateRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool new-account:string))
-    (defun C_MoveSetUriRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool new-account:string))
-
-)
-;;
-(module DPDC-R GOV
-    @doc "DPDC-R is the Collectables Roles module of the DPDC family, implementing \
-        \ DpdcRolesV2 and OuronetPolicyV2, managing the special roles on a collection's \
-        \ accounts. Its C_ entrypoints toggle per-account roles (add-quantity, freeze, \
-        \ exemption, burn, update, modify-creator, modify-royalties, transfer) and move \
-        \ singleton roles (create, recreate, set-URI) between accounts. Each op is \
-        \ owner-gated via DPDC::CAP_Owner plus role/state validators, ensures the target \
-        \ account is deployed, then writes state and updates the Verum role-chain through \
-        \ DPDC; URCi_ give IGNIS cost previews."
-
-    ;;<=========================================================================>
-    ;;{0}  IMPLEMENTERS
-    ;;
-    (implements OuronetPolicyV2)
-    (implements DpdcRolesV2)
-
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;
-    (defconst GOV|MD_DPDC-R                             (keyset-ref-guard (GOV|Demiurgoi)))
-    ;;{G2}  schemas
-    ;;{G3}  tables
-    ;;{G4}  capabilities
-    (defcap GOV ()                                      (compose-capability (GOV|DPDC-R_ADMIN)))
-    (defcap GOV|DPDC-R_ADMIN ()                         (enforce-guard GOV|MD_DPDC-R))
-    ;;{G5}  functions
-    (defun GOV|Demiurgoi ()
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-            )
-            (ref-DALOS::GOV|Demiurgoi)
-        )
-    )
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    (defconst P|I                                       (P|Info))
-    ;;{P2}  schemas
-    ;;{P3}  tables
-    ;;
-    (deftable P|T:{OuronetPolicyV2.P|S})
-    (deftable P|MT:{OuronetPolicyV2.P|MS})
-    ;;{P4}  capabilities
-    (defcap P|DPDC-R|CALLER ()
-        true
-    )
-    (defcap P|SECURE-CALLER ()
-        (compose-capability (P|DPDC-R|CALLER))
-        (compose-capability (SECURE))
-    )
-    ;;{P5}  functions
-    (defun P|Info ()
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-            )
-            (ref-DALOS::P|Info)
-        )
-    )
-    (defun P|UR:guard (policy-name:string)
-        (at "policy" (read P|T policy-name ["policy"]))
-    )
-    (defun P|UR_IMP:[guard] ()
-        ;;DEFAULT ADDED 2026-09-14 (owner ruling). This was a bare `read`, which RAISES
-        ;;`No value found in table <M>_P|MT for key: InterModulePolicies` when the row does not
-        ;;exist -- i.e. before ANY module has registered. P|UEV_IMC is built on this, so in that
-        ;;window the inter-module gate answered with a raw table error naming a row key instead of
-        ;;refusing cleanly. Surfaced by the X-01 repair, which removed the harness registration
-        ;;that had been creating the row as a side effect.
+    (defschema DPDC|NonceElement
+        nonce-class:integer                 ;;Class 0 for Primordial Nonces, non-zero for Composite Nonces
+                                            ;;For Composite Nonces, <nonce-class> is the <set-class>
+        nonce-value:integer                 ;;Nonce Value of the Collection Element.
+        nonce-supply:integer                ;;Collection Element Supply; Always 1 for NFT, even when burned or wiped.
+        nonce-holder:string                 ;;Stores the <OuronetAccount> holding the Nonce
+                                            ;;Only Applies to NFT Nonces, SFT Nonces cant have an unique Holder, and would store BAR instead (unmodifieable for SFTs)
+                                            ;;For an NFT, storing <BAR> here, means the nonce is inactivated.
+                                            ;;Once an NFT Nonce is inactivated, in can only be activated again bz the Colletion owner if its <nonce-class> is 0
+                                            ;;This Creates the NFT on the Creator Account
         ;;
-        ;;The default is the module's OWN SECURE capability guard, which is exactly what
-        ;;P|A_AddIMP already seeds the row with. So reader and writer now agree on what an
-        ;;unregistered policy list contains, and the gate's answer is the same before and after
-        ;;the first registration: satisfiable only from inside this module.
-        (with-default-read P|MT P|I
-            {"m-policies" : [(create-capability-guard (SECURE))]}
-            {"m-policies" := mp}
-            mp
-        )
+        nonce-data:object{DPDC|NonceData}   ;;Data of the Nonce Element
+        split-data:object{DPDC|NonceData}   ;;Data of the Nonce Fragment Elements
     )
-    (defun P|UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV2} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
+    (defschema DPDC|NonceData
+        royalty:decimal   ;;Forward-looking hook for the upcoming Escrow/NFT marketplace (not yet built) —
+                          ;;no on-chain consumer reads this today, unlike its sibling <ignis> below, which
+                          ;;is actively consumed by DPDC-T's transfer pricing. DPDC Audit #26M.
+        ignis:decimal
+        name:string
+        description:string
+        meta-data:object{NonceMetaData}
+        asset-type:object{URI|Type}
+        uri-primary:object{URI|Data}
+        uri-secondary:object{URI|Data}
+        uri-tertiary:object{URI|Data}
     )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|DPDC-R_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
+    (defschema NonceMetaData
+        score:decimal
+        composition:[integer]
+        meta-data:object
     )
-    (defun P|A_AddIMP (policy-guard:guard)
-        @doc "Registers <policy-guard> as a trusted inter-module caller of this module. \
-            \ IDEMPOTENT: a guard already in the chain is left alone rather than appended \
-            \ a second time. See OuronetPolicyV2 for why that is load-bearing."
-        (with-capability (GOV|DPDC-R_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV2} U|LST)
-                    ;;
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" :
-                            (if (contains policy-guard mp)
-                                mp
-                                (ref-U|LST::UC_AppL mp policy-guard)
-                            )
-                        }
-                    )
-                )
-            )
-        )
+    (defschema URI|Type
+        image:bool
+        audio:bool
+        video:bool
+        document:bool
+        archive:bool
+        model:bool
+        exotic:bool
     )
-    (defun P|A_RemoveIMP (policy-guard:guard)
-        @doc "Revokes <policy-guard> from this module's guard chain. Removes EVERY occurrence, so \
-            \ it doubles as the cleanup for duplicates left behind by the pre-idempotence append. \
-            \ Refuses to drop this module's own SECURE seed -- see OuronetPolicyV2."
-        (with-capability (GOV|DPDC-R_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV2} U|LST)
-                    ;;
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (enforce (!= policy-guard dg) "The module's own SECURE seed cannot be revoked")
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_RemoveItem mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun P|A_SetIMP (policy-guards:[guard])
-        @doc "Replaces this module's whole guard chain in one write -- the recovery hatch. \
-            \ Deduplicates, and enforces that the module's own SECURE seed survives: without it \
-            \ the module can no longer reach its own P|UEV_IMC-gated functions."
-        (with-capability (GOV|DPDC-R_ADMIN)
-            (let
-                (
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (enforce (contains dg policy-guards) "The module's own SECURE seed must be present")
-                (write P|MT P|I
-                    {"m-policies" : (distinct policy-guards)}
-                )
-            )
-        )
-    )
-    (defun P|A_Define ()
-        (let
-            (
-                (ref-P|DPDC:module{OuronetPolicyV2} DPDC)
-                (mg:guard (create-capability-guard (P|DPDC-R|CALLER)))
-            )
-            (ref-P|DPDC::P|A_AddIMP mg)
-        )
-    )
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    (defconst BAR                                       (CT_Bar))
-    ;;{3.2}  schemas
-    ;;{3.3}  tables
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;
-    (defcap SECURE ()
-        true
-    )
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    (defcap DPDC|C>TG_ADD-QTY-R (id:string account:string toggle:bool)
-        @event
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (ref-DPDC::UEV_ToggleSpecialRole id true toggle)
-            (ref-DPDC::UEV_AccountAddQuantityState id account (not toggle))
-            (ref-DPDC::CAP_Owner id true)
-            (compose-capability (P|DPDC-R|CALLER))
-        )
-    )
-    (defcap DPDC|C>FRZ-ACC (id:string son:bool account:string frozen:bool)
-        @event
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            ;; DPDC Audit #13H: <can-freeze> gates new freezes only — unfreeze is a release valve and
-            ;; must stay available even after <can-freeze> has been renounced, or an already-frozen
-            ;; account (combined with <can-upgrade=false>) would be bricked with no recovery path.
-            (if frozen
-                (ref-DPDC::UEV_CanFreezeON id son)
-                true
-            )
-            (ref-DPDC::UEV_AccountFreezeState id son account (not frozen))
-            (ref-DPDC::CAP_Owner id son)
-            (compose-capability (P|DPDC-R|CALLER))
-        )
-    )
-    (defcap DPDC|C>TG_EXEMPTION-R (id:string son:bool account:string toggle:bool)
-        @event
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (type:bool (ref-DALOS::UR_AccountType account))
-            )
-            (enforce type "Only Smart Ouronet Accounts can get this role")
-            (ref-DPDC::UEV_AccountExemptionState id son account (not toggle))
-            (ref-DPDC::CAP_Owner id son)
-            (compose-capability (P|DPDC-R|CALLER))
-        )
-    )
-    (defcap DPDC|C>TG_BURN-R (id:string son:bool account:string toggle:bool)
-        @event
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (ref-DPDC::UEV_ToggleSpecialRole id son toggle)
-            (ref-DPDC::UEV_AccountBurnState id son account (not toggle))
-            (ref-DPDC::CAP_Owner id son)
-            (compose-capability (P|DPDC-R|CALLER))
-        )
-    )
-    (defcap DPDC|C>TG_UPDATE-R (id:string son:bool account:string toggle:bool)
-        @event
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (ref-DPDC::UEV_ToggleSpecialRole id son toggle)
-            (ref-DPDC::UEV_AccountUpdateState id son account (not toggle))
-            (ref-DPDC::CAP_Owner id son)
-            (compose-capability (P|DPDC-R|CALLER))
-        )
-    )
-    (defcap DPDC|C>TG_MODIFY-CREATOR-R (id:string son:bool account:string toggle:bool)
-        @event
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (ref-DPDC::UEV_ToggleSpecialRole id son toggle)
-            (ref-DPDC::UEV_AccountModifyCreatorState id son account (not toggle))
-            (ref-DPDC::CAP_Owner id son)
-            (compose-capability (P|DPDC-R|CALLER))
-        )
-    )
-    (defcap DPDC|C>TG_MODIFY-ROYALTIES-R (id:string son:bool account:string toggle:bool)
-        @event
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (ref-DPDC::UEV_ToggleSpecialRole id son toggle)
-            (ref-DPDC::UEV_AccountModifyRoyaltiesState id son account (not toggle))
-            (ref-DPDC::CAP_Owner id son)
-            (compose-capability (P|DPDC-R|CALLER))
-        )
-    )
-    (defcap DPDC|C>TG_TRANSFER-R (id:string son:bool account:string toggle:bool)
-        @event
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (ref-DPDC::UEV_ToggleSpecialRole id son toggle)
-            (ref-DPDC::UEV_AccountTransferState id son account (not toggle))
-            (ref-DPDC::CAP_Owner id son)
-            (compose-capability (P|DPDC-R|CALLER))
-        )
+    (defschema URI|Data
+        image:string
+        audio:string
+        video:string
+        document:string
+        archive:string
+        model:string
+        exotic:string
     )
     ;;
-    (defcap DPDC|C>MV_CREATE-R (id:string son:bool old-account:string new-account:string)
-        @event
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (ref-DPDC::UEV_CanAddSpecialRoleON id son)
-            (ref-DPDC::UEV_AccountCreateState id son old-account true)
-            (ref-DPDC::UEV_AccountCreateState id son new-account false)
-            (ref-DPDC::CAP_Owner id son)
-            (compose-capability (P|DPDC-R|CALLER))
-        )
-    )
-    (defcap DPDC|C>MV_RECREATE-R (id:string son:bool old-account:string new-account:string)
-        @event
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (ref-DPDC::UEV_CanAddSpecialRoleON id son)
-            (ref-DPDC::UEV_AccountRecreateState id son old-account true)
-            (ref-DPDC::UEV_AccountRecreateState id son new-account false)
-            (ref-DPDC::CAP_Owner id son)
-            (compose-capability (P|DPDC-R|CALLER))
-        ) 
-    )
-    (defcap DPDC|C>MV_SET-URI-R (id:string son:bool old-account:string new-account:string)
-        @event
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (ref-DPDC::UEV_CanAddSpecialRoleON id son)
-            (ref-DPDC::UEV_AccountSetUriState id son old-account true)
-            (ref-DPDC::UEV_AccountSetUriState id son new-account false)
-            (ref-DPDC::CAP_Owner id son)
-            (compose-capability (P|DPDC-R|CALLER))
-        )
-    )
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
+    ;;  [3]
     ;;
-    (defun CT_Bar ()
-        (let
-            (
-                (ref-U|CT:module{OuronetConstantsV2} U|CT)
-            )
-            (ref-U|CT::CT_BAR)
-        )
-    )
-    ;;{5.2}  Compute [UC]
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;
-    ;;
-    (defun URCi_ToggleAddQuantityRole:object{IgnisCollectorV3.OutputCumulator}
-        (id:string)
-        @doc "Cost preview for C_ToggleAddQuantityRole (Big tier on owner-konto)."
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (ref-IGNIS::UDC_ConstructOutputCumulator
-                (ref-IGNIS::UC_IgnisPrice "DPSF|C_ToggleAddQuantityRole" "auth")
-                (ref-DPDC::UR_OwnerKonto id true) (ref-IGNIS::URC_IsVirtualGasZero) [])
-        )
-    )
-    (defun URCi_ToggleFreezeAccount:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool)
-        @doc "Cost preview for C_ToggleFreezeAccount (Biggest tier on owner-konto)."
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (ref-IGNIS::UDC_ConstructOutputCumulator
-                (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_ToggleFreezeAccount" "setup")
-                       (ref-IGNIS::UC_IgnisPrice "DPNF|C_ToggleFreezeAccount" "setup"))
-                (ref-DPDC::UR_OwnerKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
-        )
-    )
-    (defun URCi_ToggleExemptionRole:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool)
-        @doc "Cost preview for C_ToggleExemptionRole (Biggest tier on owner-konto)."
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (ref-IGNIS::UDC_ConstructOutputCumulator
-                (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_ToggleExemptionRole" "auth")
-                       (ref-IGNIS::UC_IgnisPrice "DPNF|C_ToggleExemptionRole" "auth"))
-                (ref-DPDC::UR_OwnerKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
-        )
-    )
-    (defun URCi_ToggleBurnRole:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool)
-        @doc "Cost preview for C_ToggleBurnRole (Big tier on owner-konto)."
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (ref-IGNIS::UDC_ConstructOutputCumulator
-                (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_ToggleBurnRole" "auth")
-                       (ref-IGNIS::UC_IgnisPrice "DPNF|C_ToggleBurnRole" "auth"))
-                (ref-DPDC::UR_OwnerKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
-        )
-    )
-    (defun URCi_ToggleUpdateRole:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool)
-        @doc "Cost preview for C_ToggleUpdateRole (Big tier on owner-konto)."
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (ref-IGNIS::UDC_ConstructOutputCumulator
-                (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_ToggleUpdateRole" "auth")
-                       (ref-IGNIS::UC_IgnisPrice "DPNF|C_ToggleUpdateRole" "auth"))
-                (ref-DPDC::UR_OwnerKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
-        )
-    )
-    (defun URCi_ToggleModifyCreatorRole:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool)
-        @doc "Cost preview for C_ToggleModifyCreatorRole (Big tier on owner-konto)."
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (ref-IGNIS::UDC_ConstructOutputCumulator
-                (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_ToggleModifyCreatorRole" "auth")
-                       (ref-IGNIS::UC_IgnisPrice "DPNF|C_ToggleModifyCreatorRole" "auth"))
-                (ref-DPDC::UR_OwnerKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
-        )
-    )
-    (defun URCi_ToggleModifyRoyaltiesRole:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool)
-        @doc "Cost preview for C_ToggleModifyRoyaltiesRole (Big tier on owner-konto)."
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (ref-IGNIS::UDC_ConstructOutputCumulator
-                (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_ToggleModifyRoyaltiesRole" "fee")
-                       (ref-IGNIS::UC_IgnisPrice "DPNF|C_ToggleModifyRoyaltiesRole" "fee"))
-                (ref-DPDC::UR_OwnerKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
-        )
-    )
-    (defun URCi_ToggleTransferRole:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool)
-        @doc "Cost preview for C_ToggleTransferRole (Big tier on owner-konto)."
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (ref-IGNIS::UDC_ConstructOutputCumulator
-                (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_ToggleTransferRole" "usage")
-                       (ref-IGNIS::UC_IgnisPrice "DPNF|C_ToggleTransferRole" "usage"))
-                (ref-DPDC::UR_OwnerKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
-        )
-    )
-    (defun URCi_MoveCreateRole:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool)
-        @doc "Cost preview for C_MoveCreateRole (Biggest tier on owner-konto)."
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (ref-IGNIS::UDC_ConstructOutputCumulator
-                (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_MoveCreateRole" "auth")
-                       (ref-IGNIS::UC_IgnisPrice "DPNF|C_MoveCreateRole" "auth"))
-                (ref-DPDC::UR_OwnerKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
-        )
-    )
-    (defun URCi_MoveRecreateRole:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool)
-        @doc "Cost preview for C_MoveRecreateRole (Biggest tier on owner-konto)."
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (ref-IGNIS::UDC_ConstructOutputCumulator
-                (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_MoveRecreateRole" "auth")
-                       (ref-IGNIS::UC_IgnisPrice "DPNF|C_MoveRecreateRole" "auth"))
-                (ref-DPDC::UR_OwnerKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
-        )
-    )
-    (defun URCi_MoveSetUriRole:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool)
-        @doc "Cost preview for C_MoveSetUriRole (Biggest tier on owner-konto)."
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (ref-IGNIS::UDC_ConstructOutputCumulator
-                (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_MoveSetUriRole" "auth")
-                       (ref-IGNIS::UC_IgnisPrice "DPNF|C_MoveSetUriRole" "auth"))
-                (ref-DPDC::UR_OwnerKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
-        )
-    )
-    ;;{5.4}  Validate [UEV/CAP]
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;Protection: Class 3 — Custom: DPDC|C>TG_ADD-QTY-R
-    (defun XI_ToggleAddQuantityRole (id:string account:string toggle:bool)
-        (require-capability (DPDC|C>TG_ADD-QTY-R id account toggle))
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (ref-DPDC::XE_U|Rnaq id account toggle)
-            (ref-DPDC::XE_U|VerumRoles id true 3 toggle account)
-        )
-    )
-    ;;Protection: Class 3 — Custom: DPDC|C>FRZ-ACC
-    (defun XI_ToggleFreezeAccount (id:string son:bool account:string toggle:bool)
-        (require-capability (DPDC|C>FRZ-ACC id son account toggle))
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-                ;;
-            )
-            (ref-DPDC::XE_U|Frozen id son account toggle)
-            (ref-DPDC::XE_U|VerumRoles id son 1 toggle account)
-        )
-    )
-    ;;Protection: Class 3 — Custom: DPDC|C>TG_EXEMPTION-R
-    (defun XI_ToggleExemptionRole (id:string son:bool account:string toggle:bool)
-        (require-capability (DPDC|C>TG_EXEMPTION-R id son account toggle))
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-                ;;
-            )
-            (ref-DPDC::XE_U|Exemption id son account toggle)
-            (ref-DPDC::XE_U|VerumRoles id son 2 toggle account)
-        )
-    )
-    ;;Protection: Class 3 — Custom: DPDC|C>TG_BURN-R
-    (defun XI_ToggleBurnRole (id:string son:bool account:string toggle:bool)
-        (require-capability (DPDC|C>TG_BURN-R id son account toggle))
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (ref-DPDC::XE_U|Burn id son account toggle)
-            (ref-DPDC::XE_U|VerumRoles id son 4 toggle account)
-        )
-    )
-    ;;Protection: Class 3 — Custom: DPDC|C>TG_UPDATE-R
-    (defun XI_ToggleUpdateRole (id:string son:bool account:string toggle:bool)
-        (require-capability (DPDC|C>TG_UPDATE-R id son account toggle))
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (ref-DPDC::XE_U|Update id son account toggle)
-            (ref-DPDC::XE_U|VerumRoles id son 7 toggle account)
-        )
-    )
-    ;;Protection: Class 3 — Custom: DPDC|C>TG_MODIFY-CREATOR-R
-    (defun XI_ToggleModifyCreatorRole (id:string son:bool account:string toggle:bool)
-        (require-capability (DPDC|C>TG_MODIFY-CREATOR-R id son account toggle))
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (ref-DPDC::XE_U|ModifyCreator id son account toggle)
-            (ref-DPDC::XE_U|VerumRoles id son 8 toggle account)
-        )
-    )
-    ;;Protection: Class 3 — Custom: DPDC|C>TG_MODIFY-ROYALTIES-R
-    (defun XI_ToggleModifyRoyaltiesRole (id:string son:bool account:string toggle:bool)
-        (require-capability (DPDC|C>TG_MODIFY-ROYALTIES-R id son account toggle))
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (ref-DPDC::XE_U|ModifyRoyalties id son account toggle)
-            (ref-DPDC::XE_U|VerumRoles id son 9 toggle account)
-        )
-    )
-    ;;Protection: Class 3 — Custom: DPDC|C>TG_TRANSFER-R
-    (defun XI_ToggleTransferRole (id:string son:bool account:string toggle:bool)
-        (require-capability (DPDC|C>TG_TRANSFER-R id son account toggle))
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (ref-DPDC::XE_U|Transfer id son account toggle)
-            (ref-DPDC::XE_U|VerumRoles id son 11 toggle account)
-        )
+    (defschema DPDC|VerumRoles
+        a-frozen:[string]
+        r-exemption:[string]
+        r-nft-add-quantity:[string]
+        r-nft-burn:[string]
+        r-nft-create:string
+        r-nft-recreate:string
+        r-nft-update:[string]
+        r-modify-creator:[string]
+        r-modify-royalties:[string]
+        r-set-new-uri:string
+        r-transfer:[string]
     )
     ;;
-    ;;Protection: Class 3 — Custom: DPDC|C>MV_CREATE-R
-    (defun XI_MoveCreateRole (id:string son:bool old-account:string new-account:string)
-        (require-capability (DPDC|C>MV_CREATE-R id son old-account new-account))
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (ref-DPDC::XE_U|Create id son old-account false)
-            (ref-DPDC::XE_U|VerumRoles id son 5 false old-account)
-            (ref-DPDC::XE_U|Create id son new-account true)
-            (ref-DPDC::XE_U|VerumRoles id son 5 true new-account)
-        )
+    ;;  [4]
+    ;;
+    (defschema DPSF|AccountRoles
+        @doc "Key = <DPSF-id> + BAR + <account>"
+        roles:object{AccountRoles}
+        role-nft-add-quantity:bool
+        ;;
+        ;;ForSelect, store Key Make-up
+        id:string
+        account:string
     )
-    ;;Protection: Class 3 — Custom: DPDC|C>MV_RECREATE-R
-    (defun XI_MoveRecreateRole (id:string son:bool old-account:string new-account:string)
-        (require-capability (DPDC|C>MV_RECREATE-R id son old-account new-account))
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (ref-DPDC::XE_U|Recreate id son old-account false)
-            (ref-DPDC::XE_U|VerumRoles id son 6 false old-account)
-            (ref-DPDC::XE_U|Recreate id son new-account true)
-            (ref-DPDC::XE_U|VerumRoles id son 6 true new-account)
-        )
+    (defschema DPNF|AccountRoles
+        @doc "Key = <DPNF-id> + BAR + <account>"
+        roles:object{AccountRoles}
+        ;;
+        ;;ForSelect, store Key Make-up
+        id:string
+        account:string
     )
-    ;;Protection: Class 3 — Custom: DPDC|C>MV_SET-URI-R
-    (defun XI_MoveSetUriRole (id:string son:bool old-account:string new-account:string)
-        (require-capability (DPDC|C>MV_SET-URI-R id son old-account new-account))
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (ref-DPDC::XE_U|SetNewUri id son old-account false)
-            (ref-DPDC::XE_U|VerumRoles id son 10 false old-account)
-            (ref-DPDC::XE_U|SetNewUri id son new-account true)
-            (ref-DPDC::XE_U|VerumRoles id son 10 true new-account)
-        )
-    )
-    ;;{5.7}  User [A/C]
-    ;;Role Toggling
-    (defun C_ToggleAddQuantityRole:object{IgnisCollectorV3.OutputCumulator}
-        (id:string account:string toggle:bool)
-        (P|UEV_IMC)
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (with-capability (DPDC|C>TG_ADD-QTY-R id account toggle)
-                (ref-DPDC::XE_DeployAccountWNE account id true)
-                (XI_ToggleAddQuantityRole id account toggle)
-                (URCi_ToggleAddQuantityRole id)
-            )
-        )
-    )
-    (defun C_ToggleFreezeAccount:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool account:string toggle:bool)
-        (P|UEV_IMC)
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (with-capability (DPDC|C>FRZ-ACC id son account toggle)
-                (ref-DPDC::XE_DeployAccountWNE account id son)
-                (XI_ToggleFreezeAccount id son account toggle)
-                (URCi_ToggleFreezeAccount id son)
-            )
-        )
-    )
-    (defun C_ToggleExemptionRole:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool account:string toggle:bool)
-        (P|UEV_IMC)
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (with-capability (DPDC|C>TG_EXEMPTION-R id son account toggle)
-                (ref-DPDC::XE_DeployAccountWNE account id son)
-                (XI_ToggleExemptionRole id son account toggle)
-                (URCi_ToggleExemptionRole id son)
-            )
-        )
-    )
-    (defun C_ToggleBurnRole:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool account:string toggle:bool)
-        (P|UEV_IMC)
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (with-capability (DPDC|C>TG_BURN-R id son account toggle)
-                (ref-DPDC::XE_DeployAccountWNE account id son)
-                (XI_ToggleBurnRole id son account toggle)
-                (URCi_ToggleBurnRole id son)
-            )
-        )
-    )
-    (defun C_ToggleUpdateRole:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool account:string toggle:bool)
-        (P|UEV_IMC)
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (with-capability (DPDC|C>TG_UPDATE-R id son account toggle)
-                (ref-DPDC::XE_DeployAccountWNE account id son)
-                (XI_ToggleUpdateRole id son account toggle)
-                (URCi_ToggleUpdateRole id son)
-            )
-        )
-    )
-    (defun C_ToggleModifyCreatorRole:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool account:string toggle:bool)
-        (P|UEV_IMC)
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (with-capability (DPDC|C>TG_MODIFY-CREATOR-R id son account toggle)
-                (ref-DPDC::XE_DeployAccountWNE account id son)
-                (XI_ToggleModifyCreatorRole id son account toggle)
-                (URCi_ToggleModifyCreatorRole id son)
-            )
-        )
-    )
-    (defun C_ToggleModifyRoyaltiesRole:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool account:string toggle:bool)
-        (P|UEV_IMC)
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (with-capability (DPDC|C>TG_MODIFY-ROYALTIES-R id son account toggle)
-                (ref-DPDC::XE_DeployAccountWNE account id son)
-                (XI_ToggleModifyRoyaltiesRole id son account toggle)
-                (URCi_ToggleModifyRoyaltiesRole id son)
-            )
-        )
-    )
-    (defun C_ToggleTransferRole:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool account:string toggle:bool)
-        (P|UEV_IMC)
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (with-capability (DPDC|C>TG_TRANSFER-R id son account toggle)
-                (ref-DPDC::XE_DeployAccountWNE account id son)
-                (XI_ToggleTransferRole id son account toggle)
-                (URCi_ToggleTransferRole id son)
-            )
-        )
+    (defschema AccountRoles
+        frozen:bool                         ;; multiple
+        role-exemption:bool                 ;; multiple
+        role-nft-burn:bool                  ;; multiple
+        role-nft-create:bool                ;; single       ;;new
+        role-nft-recreate:bool              ;; single       ;;whole nonce-data
+        role-nft-update:bool                ;; multiple     ;;name, description, score, meta-data
+        role-modify-creator:bool            ;; multiple     ;;change-cretor-account
+        role-modify-royalties:bool          ;; multiple     ;;royalty ignis-royalty
+        role-set-new-uri:bool               ;; single       ;;uri
+        role-transfer:bool                  ;; multiple
     )
     ;;
-    (defun C_MoveCreateRole:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool new-account:string)
-        (P|UEV_IMC)
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (old-account:string (ref-DPDC::UR_Verum5 id son))
-            )
-            (with-capability (DPDC|C>MV_CREATE-R id son old-account new-account)
-                (ref-DPDC::XE_DeployAccountWNE new-account id son)
-                (XI_MoveCreateRole id son old-account new-account)
-                (URCi_MoveCreateRole id son)
-            )
-        )
-    )
-    (defun C_MoveRecreateRole:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool new-account:string)
-        (P|UEV_IMC)
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (old-account:string (ref-DPDC::UR_Verum6 id son))
-            )
-            (with-capability (DPDC|C>MV_RECREATE-R id son old-account new-account)
-                (ref-DPDC::XE_DeployAccountWNE new-account id son)
-                (XI_MoveRecreateRole id son old-account new-account)
-                (URCi_MoveRecreateRole id son)
-            )
-        )
-    )
-    (defun C_MoveSetUriRole:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool new-account:string)
-        (P|UEV_IMC)
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (old-account:string (ref-DPDC::UR_Verum10 id son))
-            )
-            (with-capability (DPDC|C>MV_SET-URI-R id son old-account new-account)
-                (ref-DPDC::XE_DeployAccountWNE new-account id son)
-                (XI_MoveSetUriRole id son old-account new-account)
-                (URCi_MoveSetUriRole id son)
-            )
-        )
-    )
-
-)
-
-;; --- tables for 05_DPDC-R.pact (2 defined) ---
-;; UPGRADE MODE: this module is assumed already deployed, so its
-;; tables already exist and (create-table) would ABORT the whole
-;; transaction. They are listed here, commented, for reference.
-;; If any of these is NEW since the last deploy, uncomment JUST it.
-;; (create-table P|T)
-;; (create-table P|MT)
-
-;; ===== 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/06_DPDC-MNG.pact ========
-;; Deploy: load THIS file — interface(s) + module ship together.
-;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/02_Core.pact
-;;
-;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface DpdcManagementV2
-    @doc "Exposes Collectables Management Functions"
-
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;{G2}  schemas
-    ;;{G3}  tables  ⟨cannot exist in an interface⟩
-    ;;{G4}  capabilities
-    ;;{G5}  functions
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    ;;{P2}  schemas
-    ;;{P3}  tables  ⟨cannot exist in an interface⟩
-    ;;{P4}  capabilities
-    ;;{P5}  functions
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    ;;{3.2}  schemas
+    ;;  [5]
     ;;
-    (defschema RemovableNonces
-        @doc "Removable Nonces are Class 0 Nonces held by a given Account with greater than 0 supply \
-        \ Given an <account>, a dpdc <id>, and a list of <nonces>, they can be filtered to Removable Nonces"
-        r-nonces:[integer]
-        r-amounts:[integer]
-    )
-    (defschema DPDC-MNG|WipeSlicePlan
-        @doc "Hydra wipe slice plan: the URHC_WipePure output partitioned into <slice-count> \
-        \ disjoint contiguous |RemovableNonces| slices, each fed to one <Cp_WipeSlice> tx. \
-        \ Offline plan only (UI dirty-read) — never persisted on-chain."
+    (defschema DPDC|AccountSupply
+        @doc "Key = <account> + BAR + <DPSF|DPNF-id> + BAR + <nonce>"
         account:string
         id:string
-        son:bool
-        slice-count:integer
-        slices:[object{RemovableNonces}]
+        nonce:integer
+        supply:integer
     )
-    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    (defun UDC_RemovableNonces:object{RemovableNonces} (a:[integer] b:[integer]))
-    (defun UDC_WipeSlicePlan:object{DPDC-MNG|WipeSlicePlan}
-        (a:string b:string c:bool d:integer e:[object{RemovableNonces}]))
-    ;;{5.2}  Compute [UC]
-    (defun UC_ComputeMinWipeSliceCount:integer (nonce-count:integer))
-    (defun UC_BuildWipeSlicePlan:object{DPDC-MNG|WipeSlicePlan}
-        (account:string id:string son:bool removable-nonces-obj:object{RemovableNonces} slice-count:integer))
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;
-    ;;  [URCi]
+    ;;  [6]
     ;;
-    (defun URCi_Control:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
-    (defun URCi_TogglePause:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
-    (defun URCi_AddQuantity:object{IgnisCollectorV3.OutputCumulator} (id:string))
-    (defun URCi_RespawnNFT:object{IgnisCollectorV3.OutputCumulator} (id:string))
-    (defun URCi_BurnSFT:object{IgnisCollectorV3.OutputCumulator} (id:string))
-    (defun URCi_WipeSlim:object{IgnisCollectorV3.OutputCumulator} (id:string))
-    (defun URCi_BurnNFT:object{IgnisCollectorV3.OutputCumulator} (id:string))
-    (defun URCi_WipeNonce:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool))
-    (defun URCi_WipeCumulator:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool removable-nonces-obj:object{RemovableNonces}))
-    ;;
-    ;;  [URDC/URC/UDC]  RemovableNonces builders (dirty-read helpers, also used by INFO preview)
-    (defun URHC_WipePure:object{RemovableNonces} (account:string id:string son:bool))
-    (defun URHC_BuildWipeSlicePlan:object{DPDC-MNG|WipeSlicePlan} (account:string id:string son:bool slice-count:integer))
-    (defun URC_FilterAccountViableNonces:object{RemovableNonces} (account:string id:string son:bool nonces:[integer]))
-    ;;{5.4}  Validate [UEV/CAP]
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;{5.7}  User [A/C]
-    ;;
-    ;; [C]
-    ;;
-    (defun C_Control:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool))
-    (defun C_TogglePause:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool toggle:bool))
-    ;;
-    ;;  [CREDIT-SINGLE]
-    ;;  [SFT]
-    (defun C_AddQuantity:object{IgnisCollectorV3.OutputCumulator} (account:string id:string nonce:integer amount:integer))
-    ;;  [NFT]
-    (defun C_RespawnNFT:object{IgnisCollectorV3.OutputCumulator} (account:string id:string nonce:integer))
-    ;;
-    ;;  [DEBIT-SINGLE]
-    ;;  [SFT]
-    (defun C_BurnSFT:object{IgnisCollectorV3.OutputCumulator} (account:string id:string nonce:integer amount:integer))
-    (defun C_WipeSlim:object{IgnisCollectorV3.OutputCumulator} (account:string id:string nonce:integer amount:integer))
-    ;;  [NFT]
-    (defun C_BurnNFT:object{IgnisCollectorV3.OutputCumulator} (account:string id:string nonce:integer))
-    ;;  [SFT+NFT]
-    (defun C_WipeNonce:object{IgnisCollectorV3.OutputCumulator} (account:string id:string son:bool nonce:integer))
-    ;;
-    ;;  [DEBIT-MULTIPLE]
-    ;;  [SFT+NFT]
-    (defun CC_WipeHeavy:object{IgnisCollectorV3.OutputCumulator} (account:string id:string son:bool))
-    (defun C_WipePure:object{IgnisCollectorV3.OutputCumulator} (account:string id:string son:bool removable-nonces-obj:object{RemovableNonces}))
-    (defun C_WipeClean:object{IgnisCollectorV3.OutputCumulator} (account:string id:string son:bool nonces:[integer]))
-    (defun C_WipeDirty:object{IgnisCollectorV3.OutputCumulator} (account:string id:string son:bool nonces:[integer]))
-    (defun Cp_WipeSlice:object{IgnisCollectorV3.OutputCumulator} (account:string id:string son:bool removable-nonces-obj:object{RemovableNonces}))
-
-)
-;;
-(module DPDC-MNG GOV
-    @doc "Management module for the DPDC collectables (NFT/SFT) family, implementing \
-        \ DpdcManagementV2 and OuronetPolicyV2. Its client entrypoints let a collectable \
-        \ owner control specs and roles (C_Control, C_TogglePause), credit supply \
-        \ (C_AddQuantity for SFTs, C_RespawnNFT), and debit/burn/wipe holdings (C_BurnSFT, \
-        \ C_BurnNFT, C_WipeSlim, C_WipeNonce, plus multi-nonce wipes). It only operates on \
-        \ Class-0 nonces, updates nonce supplies via DPDC-C, guards the DPDC system account \
-        \ against wiping collateral backing outstanding fragments, and returns IGNIS gas \
-        \ cumulators."
-
-    ;;<=========================================================================>
-    ;;{0}  IMPLEMENTERS
-    ;;
-    (implements OuronetPolicyV2)
-    (implements DpdcManagementV2)
-
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;
-    (defconst GOV|MD_DPDC-MNG                           (keyset-ref-guard (GOV|Demiurgoi)))
-    ;;{G2}  schemas
-    ;;{G3}  tables
-    ;;{G4}  capabilities
-    (defcap GOV ()                                      (compose-capability (GOV|DPDC-MNG_ADMIN)))
-    (defcap GOV|DPDC-MNG_ADMIN ()                       (enforce-guard GOV|MD_DPDC-MNG))
-    ;;{G5}  functions
-    (defun GOV|Demiurgoi ()
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-            )
-            (ref-DALOS::GOV|Demiurgoi)
-        )
-    )
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    (defconst P|I                                       (P|Info))
-    ;;{P2}  schemas
-    ;;{P3}  tables
-    ;;
-    (deftable P|T:{OuronetPolicyV2.P|S})
-    (deftable P|MT:{OuronetPolicyV2.P|MS})
-    ;;{P4}  capabilities
-    (defcap P|DPDC-MNG|CALLER ()
-        true
-    )
-    (defcap P|SECURE-CALLER ()
-        (compose-capability (P|DPDC-MNG|CALLER))
-        (compose-capability (SECURE))
-    )
-    ;;{P5}  functions
-    (defun P|Info ()
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-            )
-            (ref-DALOS::P|Info)
-        )
-    )
-    (defun P|UR:guard (policy-name:string)
-        (at "policy" (read P|T policy-name ["policy"]))
-    )
-    (defun P|UR_IMP:[guard] ()
-        ;;DEFAULT ADDED 2026-09-14 (owner ruling). This was a bare `read`, which RAISES
-        ;;`No value found in table <M>_P|MT for key: InterModulePolicies` when the row does not
-        ;;exist -- i.e. before ANY module has registered. P|UEV_IMC is built on this, so in that
-        ;;window the inter-module gate answered with a raw table error naming a row key instead of
-        ;;refusing cleanly. Surfaced by the X-01 repair, which removed the harness registration
-        ;;that had been creating the row as a side effect.
+    (defschema DPDC|Set
+        set-class:integer
+        set-name:string
+        set-score-multiplier:decimal        ;;Stores Set NFT Score Multiplier, default to 1.0
+        nonce-of-set:integer                ;;Saves the Nonce of the Set; 
+                                            ;;Only for SFT, since they get their own nonce at definition
+                                            ;;For NFT has no use and is filled with 0
+        ;;                                  
+        iz-active:bool                      ;;Inactive Sets cannot be composed, but can be decomposed
+        primordial:bool                     ;;primordial sets are composed of specific class 0 nonces
+        composite:bool                      ;;composite  sets are composed of non-specific class non-zero nonces
+                                            ;;if both are true, the set is hybrid, and then both of the field below
+                                            ;;would have to be filled with correct data.
         ;;
-        ;;The default is the module's OWN SECURE capability guard, which is exactly what
-        ;;P|A_AddIMP already seeds the row with. So reader and writer now agree on what an
-        ;;unregistered policy list contains, and the gate's answer is the same before and after
-        ;;the first registration: satisfiable only from inside this module.
-        (with-default-read P|MT P|I
-            {"m-policies" : [(create-capability-guard (SECURE))]}
-            {"m-policies" := mp}
-            mp
-        )
+        primordial-set-definition:[object{DPDC|AllowedNonceForSetPosition}]
+        ;;If <primordial> is true, a valid object will be stored here, otherwise [[0]] will be stored
+        composite-set-definition:[object{DPDC|AllowedClassForSetPosition}]
+        ;;If <composite> is true, a valid object will be stored here, otherwise [[-1]] will be stored
+        ;;
+        nonce-data:object{DPDC|NonceData}   ;;Data for the Set Nonce
+        split-data:object{DPDC|NonceData}   ;;Data for the Fragment of the Set Nonce
     )
-    (defun P|UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV2} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
+    (defschema DPDC|AllowedNonceForSetPosition
+        allowed-nonces:[integer]
     )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|DPDC-MNG_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun P|A_AddIMP (policy-guard:guard)
-        @doc "Registers <policy-guard> as a trusted inter-module caller of this module. \
-            \ IDEMPOTENT: a guard already in the chain is left alone rather than appended \
-            \ a second time. See OuronetPolicyV2 for why that is load-bearing."
-        (with-capability (GOV|DPDC-MNG_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV2} U|LST)
-                    ;;
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" :
-                            (if (contains policy-guard mp)
-                                mp
-                                (ref-U|LST::UC_AppL mp policy-guard)
-                            )
-                        }
-                    )
-                )
-            )
-        )
-    )
-    (defun P|A_RemoveIMP (policy-guard:guard)
-        @doc "Revokes <policy-guard> from this module's guard chain. Removes EVERY occurrence, so \
-            \ it doubles as the cleanup for duplicates left behind by the pre-idempotence append. \
-            \ Refuses to drop this module's own SECURE seed -- see OuronetPolicyV2."
-        (with-capability (GOV|DPDC-MNG_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV2} U|LST)
-                    ;;
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (enforce (!= policy-guard dg) "The module's own SECURE seed cannot be revoked")
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_RemoveItem mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun P|A_SetIMP (policy-guards:[guard])
-        @doc "Replaces this module's whole guard chain in one write -- the recovery hatch. \
-            \ Deduplicates, and enforces that the module's own SECURE seed survives: without it \
-            \ the module can no longer reach its own P|UEV_IMC-gated functions."
-        (with-capability (GOV|DPDC-MNG_ADMIN)
-            (let
-                (
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (enforce (contains dg policy-guards) "The module's own SECURE seed must be present")
-                (write P|MT P|I
-                    {"m-policies" : (distinct policy-guards)}
-                )
-            )
-        )
-    )
-    (defun P|A_Define ()
-        (let
-            (
-                (ref-P|DPDC:module{OuronetPolicyV2} DPDC)
-                (ref-P|DPDC-C:module{OuronetPolicyV2} DPDC-C)
-                (mg:guard (create-capability-guard (P|DPDC-MNG|CALLER)))
-            )
-            (ref-P|DPDC::P|A_AddIMP mg)
-            (ref-P|DPDC-C::P|A_AddIMP mg)
-        )
-    )
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    (defconst BAR                                       (CT_Bar))
-    (defconst WIPE-SLICE-MAX-NONCES                     500
-        "Hydra wipe: max nonces per <Cp_WipeSlice> tx. UI SEED + generous backstop, NOT the \
-        \ optimizer — the UI /local-simulates each slice and adds slices when one does not fit; \
-        \ the node gas meter is the real enforcement (an oversized slice aborts atomically). \
-        \ CALIBRATED REPL/Kursan/DPDC-scale-wipe.repl: measured 952.4 gas per nonce wiped => ~2091 nonces fit a \
-        \ 2,000,000-gas tx. Set well under that because the probe used the LIGHTEST possible \
-        \ nonces (zero URI data, no metadata); real nonces carry more payload per row.")
-    ;;{3.2}  schemas
-    ;;{3.3}  tables
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;
-    (defcap SECURE ()
-        true
-    )
-    ;;{C2}  Simple
-    (defcap DPDC-MNG|S>CTRL (id:string son:bool)
-        @event
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (ref-DPDC::CAP_Owner id son)
-            (ref-DPDC::UEV_CanUpgradeON id son)
-        )
-    )
-    (defcap DPDC-MNG|S>TG_PAUSE (id:string son:bool toggle:bool)
-        @event
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (if toggle
-                (ref-DPDC::UEV_CanPauseON id son)
-                true
-            )
-            (ref-DPDC::CAP_Owner id son)
-            (ref-DPDC::UEV_PauseState id son (not toggle))
-        )
-    )
-    (defcap DPDC-MNG|C>IZ-CLASS-ZERO (id:string son:bool nonces:[integer])
-        (let
-            (
-                (class-zero-nonces:[integer] (URC_FilterClassZeroNonces id son nonces))
-            )
-            (enforce (= nonces class-zero-nonces) "Invalid Class Zero Nonces")
-        )
-    )
-    ;;{C3}  Composed
-    (defcap DPDC-MNG|C>ADD-QUANTITY (account:string id:string nonce:integer amount:integer)
-        @event
-        ;;PARTIALLY-SHADOWED GUARD FIX: <nonce> used to be validated INSIDE the let, below the
-        ;;UR_NonceClass binding. That reader hard-reads keyed by the nonce, so nonce 0 aborted on
-        ;;'row not found' and never reached the guard. (A NEGATIVE nonce did reach it, because
-        ;;UR_NonceClass keys on (abs nonce) and so reads a row that exists - which is why only the
-        ;;zero case was shadowed, not the whole predicate.) Hoisted; message unchanged on every
-        ;;path, so only its reachability at nonce=0 changed.
-        (enforce (> nonce 0) "Invalid Data for Adding Quantity for an SFT Nonce")
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (nonce-class:integer (ref-DPDC::UR_NonceClass id true nonce))
-            )
-            (enforce
-                (and
-                    (> amount 0)
-                    (= nonce-class 0)
-                )
-                "Invalid Data for Adding Quantity for an SFT Nonce"
-            )
-            ;;Account Ownership
-            (ref-DALOS::CAP_EnforceAccountOwnership account)
-            ;;Correct add quantity role
-            (ref-DPDC::UEV_AccountAddQuantityState id account true)
-            ;;Req cap
-            (compose-capability (P|DPDC-MNG|CALLER))
-        )
-    )
-    (defcap DPDC-MNG|C>BURN-SFT (account:string id:string nonce:integer amount:integer)
-        @event
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            ;;Account Ownership - via Debit Function
-            ;;Correct burn role
-            (ref-DPDC::UEV_AccountBurnState id true account true)
-            ;;Remove Nonces Capability (also enforces nonces are held by account)
-            (compose-capability (DPDC-MNG|C>REMOVE-CLASS-ZERO-NONCES account id true [nonce] [amount]))
-        )
-    )
-    (defcap DPDC-MNG|C>WIPE-SFT-NONCE-PARTIALLY (account:string id:string nonce:integer amount:integer)
-        @event
-        (compose-capability (DPDC-MNG|C>WIPE-SFT account id [nonce] [amount]))
-    )
-    (defcap DPDC-MNG|C>WIPE-SFT-NONCE-TOTALLY (account:string id:string nonce:integer amount:integer)
-        @event
-        (compose-capability (DPDC-MNG|C>WIPE-SFT account id [nonce] [amount]))
-    )
-    (defcap DPDC-MNG|C>WIPE-SFT-NONCES (account:string id:string nonces:[integer])
-        @event
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (amounts:[integer] (ref-DPDC::UR_AccountNoncesSupplies account id true nonces))
-            )
-            (compose-capability (DPDC-MNG|C>WIPE-SFT account id nonces amounts))
-        )
-    )
-    (defcap DPDC-MNG|C>WIPE-SFT (account:string id:string nonces:[integer] amounts:[integer])
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            ;;Semi-Fungible <id> is frozen on <account>
-            (ref-DPDC::UEV_AccountFreezeState id true account true)
-            ;;Semi-Fungible has <can-wipe> set to ON
-            (ref-DPDC::UEV_CanWipeON id true)
-            ;;Wiping requires <id> ownership via debit function
-            ;;Remove Nonces Capability (also enforces nonces are held by account)
-            (compose-capability (DPDC-MNG|C>REMOVE-CLASS-ZERO-NONCES account id true nonces amounts))
-        )
-    )
-    ;;
-    ;;
-    (defcap DPDC-MNG|C>RESPAWN-NFT (account:string id:string nonce:integer)
-        @event
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            ;;Account Ownership
-            (ref-DALOS::CAP_EnforceAccountOwnership account)
-            ;;Correct Role
-            (ref-DPDC::UEV_AccountCreateState id false account true)
-            ;;NFT Nonce must not exist, to respawn it
-            (ref-DPDC::UEV_NftNonceExistance id nonce false)
-            ;;Req Cap
-            (compose-capability (P|DPDC-MNG|CALLER))
-        )
-    )
-    (defcap DPDC-MNG|C>BURN-NFT (account:string id:string nonce:integer)
-        @event
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            ;;Collection Must Exist. Placed FIRST because the role check below reports on a
-            ;;collection it has not established: for an id that does not exist it answered
-            ;;"NFT Burn Role for <id> on Account <acct> must be set to true for exec", which is
-            ;;true and useless -- there is no collection to hold a role on. It also disagreed with
-            ;;INFO_DPNF|Burn, which died on a raw DPNF|T|Properties read at the same input.
-            ;;Pinned by RedTeam/[RT-K]_PreviewParity.repl <<RT-K-004a/b>>.
-            (ref-DPDC::UEV_id id false)
-            ;;Account Ownership - via Debit Function
-            ;;Correct Role
-            (ref-DPDC::UEV_AccountBurnState id false account true)
-            ;;Nonce Must Exist to Burn it
-            (ref-DPDC::UEV_NftNonceExistance id nonce true)
-            ;;Remove Nonces Capability (also enforces nonces are held by account)
-            (compose-capability (DPDC-MNG|C>REMOVE-CLASS-ZERO-NONCES account id false [nonce] [1]))
-        )
-    )
-    (defcap DPDC-MNG|C>WIPE-NFT-NONCE (account:string id:string nonce:integer)
-        @event
-        (compose-capability (DPDC-MNG|C>WIPE-NFT account id [nonce] [1]))
-    )
-    (defcap DPDC-MNG|C>WIPE-NFT-NONCES (account:string id:string nonces:[integer])
-        @event
-        (compose-capability (DPDC-MNG|C>WIPE-NFT account id nonces (make-list (length nonces) 1)))
-    )
-    (defcap DPDC-MNG|C>WIPE-NFT (account:string id:string nonces:[integer] amounts:[integer])
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            ;;Semi-Fungible <id> is frozen on <account>
-            (ref-DPDC::UEV_AccountFreezeState id false account true)
-            ;;Semi-Fungible has <can-wipe> set to ON
-            (ref-DPDC::UEV_CanWipeON id false)
-            ;;Wiping requires <id> ownership - via Debit Function
-            ;;Remove Nonces Capability (also enforces nonces are held by account)
-            (compose-capability (DPDC-MNG|C>REMOVE-CLASS-ZERO-NONCES account id false nonces amounts))
-        )
-    )
-    ;;
-    ;;
-    (defcap DPDC-MNG|C>REMOVE-CLASS-ZERO-NONCES
-        (account:string id:string son:bool nonces:[integer] amounts:[integer])
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
-                (l1:integer (length nonces))
-                (l2:integer (length amounts))
-                (zd:object{DpdcUdcV2.DPDC|NonceData} (ref-DPDC-UDC::UDC_ZeroNonceData))
-            )
-            (enforce (= l1 l2) "Invalid Nonces and Amount for Class Zero Nonce Removal")
-            ;; DPDC Audit #5C follow-up: the DPDC system account is only protected from burn/wipe when
-            ;; the nonce being removed is currently backing an outstanding fragment claim -- that's the
-            ;; actual invariant #5C protects (burning collateral out from under fragment holders). EQUITY
-            ;; legitimately uses <dpdc> as a same-transaction escrow for its Convert/Break package-share
-            ;; flows (transfer in, burn old tier, credit new tier, transfer out) -- never fragmentation --
-            ;; and must not be blocked by this check. This capability only ever handles Class-0 nonces
-            ;; (enforced below, via the composed DPDC-MNG|C>IZ-CLASS-ZERO), so "is it fragmented" reduces
-            ;; to "does it have non-zero split-data" — checked directly here, without needing a forward
-            ;; reference to DPDC-F (which deploys after this module and cannot be referenced by interface
-            ;; type this early — confirmed live: referencing module{DpdcFragmentsV2} here throws "Cannot
-            ;; find module" at DPDC-MNG's own deploy step).
-            (if (= account (ref-DPDC::GOV|DPDC|SC_NAME))
-                (enforce
-                    (not
-                        (fold (or) false
-                            (map
-                                (lambda (n:integer) (!= (ref-DPDC::UR_SplitNonceData id son n) zd))
-                                nonces
-                            )
-                        )
-                    )
-                    "Not allowed for the DPDC system account when backing outstanding fragments"
-                )
-                true
-            )
-            (map
-                (lambda
-                    (idx:integer)
-                    (let
-                        (
-                            (nonce:integer (at idx nonces))
-                            (amount:integer (at idx amounts))
-                            (account-nonce-supply:integer (ref-DPDC::UR_AccountNonceSupply account id son nonce))
-                        )
-                        (enforce
-                            (and
-                                (> amount 0)
-                                (<= amount account-nonce-supply)
-                            )
-                            (format "Amount {} is invalid for Debiting Nonce {} of {} on Account" [amount nonce id account])
-                        )
-                    )
-                )
-                (enumerate 0 (- l1 1))
-            )
-            (compose-capability (DPDC-MNG|C>IZ-CLASS-ZERO id son nonces))
-            (compose-capability (P|SECURE-CALLER))
-        )
-    )
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    ;;
-    (defun CT_Bar ()
-        (let
-            (
-                (ref-U|CT:module{OuronetConstantsV2} U|CT)
-            )
-            (ref-U|CT::CT_BAR)
-        )
-    )
-    ;;
-    (defun UDC_RemovableNonces:object{DpdcManagementV2.RemovableNonces}
-        (a:[integer] b:[integer])
-        {"r-nonces"     : a
-        ,"r-amounts"    : b}
-    )
-    (defun UDC_WipeSlicePlan:object{DpdcManagementV2.DPDC-MNG|WipeSlicePlan}
-        (a:string b:string c:bool d:integer e:[object{DpdcManagementV2.RemovableNonces}])
-        {"account"      : a
-        ,"id"           : b
-        ,"son"          : c
-        ,"slice-count"  : d
-        ,"slices"       : e}
-    )
-    ;;{5.2}  Compute [UC]
-    (defun UCv_TakePureWipe:object{DpdcManagementV2.RemovableNonces} (input:object{DpdcManagementV2.RemovableNonces} size:integer)
-        @doc "Takes <size> and returns a smaller |object{DpdcManagementV2.RemovableNonces}|"
-        (let
-            (
-                (nonces:[integer] (at "r-nonces" input))
-                (amounts:[integer] (at "r-amounts" input))
-                (l:integer (length nonces))
-            )
-            (enforce (< size l) (format "Size of {} is larger than the Data set of the Removable Nonces Object" [size]))
-            (UDC_RemovableNonces
-                (take size nonces)
-                (take size amounts)
-            )
-        )
-    )
-    (defun UC_CeilDiv:integer (numerator:integer denominator:integer)
-        @doc "Integer ceiling division: smallest integer >= numerator/denominator."
-        (if (= (mod numerator denominator) 0)
-            (/ numerator denominator)
-            (+ 1 (/ numerator denominator))
-        )
-    )
-    (defun UC_ComputeMinWipeSliceCount:integer (nonce-count:integer)
-        @doc "Hydra wipe UI SEED: the minimum <Cp_WipeSlice> count for <nonce-count> nonces \
-            \ under the <WIPE-SLICE-MAX-NONCES> per-tx backstop; minimum 1. NOT the optimizer — \
-            \ the UI /local-simulates each candidate slice and adds slices when one does not fit."
-        (let
-            (
-                (raw:integer (UC_CeilDiv nonce-count WIPE-SLICE-MAX-NONCES))
-            )
-            (if (> raw 1) raw 1)
-        )
-    )
-    (defun UC_BuildWipeSlicePlan:object{DpdcManagementV2.DPDC-MNG|WipeSlicePlan}
-        (account:string id:string son:bool removable-nonces-obj:object{DpdcManagementV2.RemovableNonces} slice-count:integer)
-        @doc "Hydra wipe partitioner (pure compute, no table reads): splits a |RemovableNonces| \
-            \ object into disjoint CONTIGUOUS slices via take/drop index ranges. The requested \
-            \ <slice-count> is clamped to [1, nonce-count] and then recomputed from the per-slice \
-            \ width, so the returned plan NEVER contains an empty slice (an empty nonce list \
-            \ aborts the executor); the plan's own <slice-count> field is the authoritative count."
-        (let*
-            (
-                (nonces:[integer] (at "r-nonces" removable-nonces-obj))
-                (amounts:[integer] (at "r-amounts" removable-nonces-obj))
-                (l:integer (length nonces))
-                (n-clamped:integer (if (< slice-count 1) 1 (if (> slice-count l) (if (> l 0) l 1) slice-count)))
-                (per-slice:integer (UC_CeilDiv (if (> l 0) l 1) n-clamped))
-                (n-final:integer (UC_CeilDiv (if (> l 0) l 1) per-slice))
-            )
-            (UDC_WipeSlicePlan account id son n-final
-                (map
-                    (lambda
-                        (slice-idx:integer)
-                        (let*
-                            (
-                                (start:integer (* slice-idx per-slice))
-                                (rest:integer (- l start))
-                                (count:integer (if (< per-slice rest) per-slice rest))
-                            )
-                            (UDC_RemovableNonces
-                                (take count (drop start nonces))
-                                (take count (drop start amounts))
-                            )
-                        )
-                    )
-                    (enumerate 0 (- n-final 1))
-                )
-            )
-        )
-    )
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    (defun URCi_WipeCumulator:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool removable-nonces-obj:object{DpdcManagementV2.RemovableNonces})
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (no-of-nonces:integer (length (at "r-nonces" removable-nonces-obj)))
-            )
-            (ref-IGNIS::UDC_ConstructOutputCumulator
-                (*  ;;5 IGNIS per nonce wiped (owner 2026-09-05; central IG|WEIGHTS wipe-nonce).
-                    ;;Collectible wipe MIRRORS the DPOF ortofungible rule, per owner confirmation.
-                    (ref-IGNIS::UC_IgnisWeight "wipe-nonce")
-                    (dec no-of-nonces)
-                )
-                (ref-DPDC::UR_OwnerKonto id son)
-                (ref-IGNIS::URC_IsVirtualGasZero)
-                [removable-nonces-obj]
-            )
-        )
-    )
-    (defun URHC_WipePure:object{DpdcManagementV2.RemovableNonces} (account:string id:string son:bool)
-        @doc "Uses Expensive Read Functions to obtain a |object{DpdcManagementV2.RemovableNonces}| that can be used \
-        \ to execute a <C_WipePure>, bypassing the expensive gas costs of using (keys...) or (select...) functions"
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (URC_FilterAccountViableNonces account id son (ref-DPDC::URH_AccountNonces account id son))
-        )
-    )
-    (defun URHC_BuildWipeSlicePlan:object{DpdcManagementV2.DPDC-MNG|WipeSlicePlan}
-        (account:string id:string son:bool slice-count:integer)
-        @doc "Hydra wipe PREFLIGHT (UI /local ONLY — the one heavy read of the flow): dirty-reads \
-            \ the full viable wipeable set via <URHC_WipePure> and partitions it into the slice \
-            \ plan. The UI fires one <Cp_WipeSlice> tx per slice, all in parallel; a re-read after \
-            \ a partial campaign naturally returns the outstanding remains (re-plan is implicit). \
-            \ Seed <slice-count> with <UC_ComputeMinWipeSliceCount>."
-        (UC_BuildWipeSlicePlan account id son (URHC_WipePure account id son) slice-count)
-    )
-    (defun URC_FilterClassZeroNonces:[integer] (id:string son:bool nonces:[integer])
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (filter 
-                (lambda 
-                    (element:integer)
-                    (= (ref-DPDC::UR_NonceClass id son element) 0)
-                ) 
-                nonces
-            )
-        )
-    )
-    (defun URC_FilterAccountViableNonces:object{DpdcManagementV2.RemovableNonces}
-        (account:string id:string son:bool nonces:[integer])
-        ;;Empty input short-circuit: (enumerate 0 -1) DESCENDS ([0 -1]), so the fold below
-        ;;would (at 0) an empty list. A finished Hydra campaign re-reads to an empty object.
-        (if (= (length nonces) 0)
-        (UDC_RemovableNonces [] [])
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (ref-U|LST:module{StringProcessorV2} U|LST)
-                (matrix:[[integer]]
-                    (fold
-                        (lambda
-                            (acc:[[integer]] idx:integer)
-                            (let
-                                (
-                                    (acc-nonces:[integer] (at 0 acc))
-                                    (acc-amounts:[integer] (at 1 acc))
-                                    (nonce:integer (at idx nonces))
-                                    (nonce-class:integer (ref-DPDC::UR_NonceClass id son nonce))
-                                    (account-nonce-supply:integer (ref-DPDC::UR_AccountNonceSupply account id son nonce))
-                                )
-                                (if
-                                    (and
-                                        (= nonce-class 0)
-                                        (> account-nonce-supply 0)
-                                    )
-                                    [
-                                        (ref-U|LST::UC_AppL acc-nonces nonce)
-                                        (ref-U|LST::UC_AppL acc-amounts account-nonce-supply)
-                                    ]
-                                    [
-                                        acc-nonces
-                                        acc-amounts
-                                    ]
-                                )
-                            )
-                        )
-                        [[][]]
-                        (enumerate 0 (- (length nonces) 1))
-                    )
-                )
-            )
-            (UDC_RemovableNonces
-                (at 0 matrix)
-                (at 1 matrix)
-            )
-        )
-        )
-    )
-    ;;
-    ;;  (URCi_WipeCumulator, above, covers the multiple-debit wipe family.)
-    (defun URCi_Control:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool)
-        @doc "Cost preview for C_Control (Big if son else Biggest, on owner-konto)."
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (owner:string (ref-DPDC::UR_OwnerKonto id son))
-            )
-            (ref-IGNIS::UDC_ConstructOutputCumulator
-                (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_Control" "setup")
-                        (ref-IGNIS::UC_IgnisPrice "DPNF|C_Control" "setup"))
-                owner (ref-IGNIS::URC_IsVirtualGasZero) [])
-        )
-    )
-    (defun URCi_TogglePause:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool)
-        @doc "Cost preview for C_TogglePause (Medium on owner-konto)."
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (ref-IGNIS::UDC_ConstructOutputCumulator
-                (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_TogglePause" "setup")
-                       (ref-IGNIS::UC_IgnisPrice "DPNF|C_TogglePause" "setup"))
-                (ref-DPDC::UR_OwnerKonto id son) (ref-IGNIS::URC_IsVirtualGasZero) [])
-        )
-    )
-    (defun URCi_AddQuantity:object{IgnisCollectorV3.OutputCumulator}
-        (id:string)
-        @doc "Cost preview for C_AddQuantity (Small on SFT owner-konto)."
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (ref-IGNIS::UDC_ConstructOutputCumulator
-                ;;minting-type op: NO special issuance price (owner 2026-09-06) — generic tier
-                (ref-IGNIS::UC_IgnisPrice "DPSF|C_AddQuantity" "setup")
-                (ref-DPDC::UR_OwnerKonto id true) (ref-IGNIS::URC_IsVirtualGasZero) [])
-        )
-    )
-    (defun URCi_RespawnNFT:object{IgnisCollectorV3.OutputCumulator}
-        (id:string)
-        @doc "Cost preview for C_RespawnNFT (Medium on NFT owner-konto)."
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (ref-IGNIS::UDC_ConstructOutputCumulator
-                ;;minting-type op: NO special issuance price (owner 2026-09-06) — generic tier
-                (ref-IGNIS::UC_IgnisPrice "DPNF|C_Respawn" "setup")
-                (ref-DPDC::UR_OwnerKonto id false) (ref-IGNIS::URC_IsVirtualGasZero) [])
-        )
-    )
-    (defun URCi_BurnSFT:object{IgnisCollectorV3.OutputCumulator}
-        (id:string)
-        @doc "Cost preview for C_BurnSFT (Small on SFT owner-konto)."
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (ref-IGNIS::UDC_ConstructOutputCumulator
-                ;;NOTE: core reader name != Talos op name — billed as DPSF|C_Burn
-                (ref-IGNIS::UC_IgnisPrice "DPSF|C_Burn" "setup")
-                (ref-DPDC::UR_OwnerKonto id true) (ref-IGNIS::URC_IsVirtualGasZero) [])
-        )
-    )
-    (defun URCi_WipeSlim:object{IgnisCollectorV3.OutputCumulator}
-        (id:string)
-        @doc "Cost preview for C_WipeSlim (Smallest on SFT owner-konto)."
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (ref-IGNIS::UDC_ConstructOutputCumulator
-                ;;NOTE: core reader name != Talos op name — billed as DPSF|C_WipeNoncePartialy
-                (ref-IGNIS::UC_IgnisPrice "DPSF|C_WipeNoncePartialy" "setup")
-                (ref-DPDC::UR_OwnerKonto id true) (ref-IGNIS::URC_IsVirtualGasZero) [])
-        )
-    )
-    (defun URCi_BurnNFT:object{IgnisCollectorV3.OutputCumulator}
-        (id:string)
-        @doc "Cost preview for C_BurnNFT (Medium on NFT owner-konto)."
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (ref-IGNIS::UDC_ConstructOutputCumulator
-                ;;NOTE: core reader name != Talos op name — billed as DPNF|C_Burn
-                (ref-IGNIS::UC_IgnisPrice "DPNF|C_Burn" "setup")
-                (ref-DPDC::UR_OwnerKonto id false) (ref-IGNIS::URC_IsVirtualGasZero) [])
-        )
-    )
-    (defun URCi_WipeNonce:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool)
-        @doc "Cost preview for C_WipeNonce (Small if son else Big, on owner-konto)."
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (owner:string (ref-DPDC::UR_OwnerKonto id son))
-            )
-            (ref-IGNIS::UDC_ConstructOutputCumulator
-                (if son (ref-IGNIS::UC_IgnisPrice "DPSF|C_WipeNonce" "setup")
-                        (ref-IGNIS::UC_IgnisPrice "DPNF|C_WipeNonce" "setup"))
-                owner (ref-IGNIS::URC_IsVirtualGasZero) [])
-        )
-    )
-    ;;{5.4}  Validate [UEV/CAP]
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;Protection: Class 3 — Custom: DPDC-MNG|S>CTRL
-    (defun XI_Control (id:string son:bool cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool)
-        (require-capability (DPDC-MNG|S>CTRL id son))
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (ref-DPDC::XE_U|Specs id son 
-                (ref-DPDC::UDC_Control id son cu cco ccc casr ctncr cf cw cp)
-            )
-        )
-    )
-    ;;Protection: Class 3 — Custom: DPDC-MNG|S>TG_PAUSE
-    (defun XI_TogglePause (id:string son:bool toggle:bool)
-        (require-capability (DPDC-MNG|S>TG_PAUSE id son toggle))
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (ref-DPDC::XE_U|IsPaused id son toggle)
-        )
-    )
-    ;;
-    ;;Protection: Class 3 — Custom: DPDC-MNG|C>ADD-QUANTITY
-    (defun XI_IncreaseClassZeroSemiFungible (account:string id:string nonce:integer amount:integer)
-        (require-capability (DPDC-MNG|C>ADD-QUANTITY account id nonce amount))
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
-                (nonce-supply:integer (ref-DPDC::UR_NonceSupply id true nonce))
-            )
-            ;;Credit SFT Nonce
-            (ref-DPDC-C::XB_CreditSFT-Nonce account id nonce amount)
-            ;;Update Nonce Supplies
-            (ref-DPDC::XE_U|NonceSupply id nonce (+ amount nonce-supply))
-        )
-    )
-    ;;Protection: Class 3 — Custom: DPDC-MNG|C>IZ-CLASS-ZERO
-    (defun XI_DecreaseClassZeroSemiFungibles
-        (account:string id:string nonces:[integer] amounts:[integer] wipe-mode:bool)
-        @doc "Only Positive, Class 0 Nonces can be burned directly with this function \
-            \ Negative (Fragment Nonces) and Class Non-0 Nonces (Set Nonces) are protected by direct burning."
-        (require-capability (DPDC-MNG|C>IZ-CLASS-ZERO id true nonces))
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
-                ;;
-                (l1:integer (length nonces))
-            )
-            ;;Debit SFT Nonce(s)
-            (if (= l1 1)
-                (ref-DPDC-C::XE_DebitSFT-Nonce account id (at 0 nonces) (at 0 amounts) wipe-mode)
-                (ref-DPDC-C::XE_DebitSFT-Nonces account id nonces amounts wipe-mode)
-            )
-            ;;Update Nonce Supplies
-            (map
-                (lambda
-                    (idx:integer)
-                    (let
-                        (
-                            (nonce:integer (at idx nonces))
-                            (amount:integer (at idx amounts))
-                            (nonce-supply:integer (ref-DPDC::UR_NonceSupply id true nonce))
-                        )
-                        ;;Update Nonce Supply
-                        (ref-DPDC::XE_U|NonceSupply id nonce (- nonce-supply amount))
-                    )
-                )
-                (enumerate 0 (- l1 1))
-            )
-        )
-    )
-    ;;
-    ;;Protection: Class 3 — Custom: DPDC-MNG|C>IZ-CLASS-ZERO
-    (defun XI_DecreaseClassZeroNonFungibles
-        (account:string id:string nonces:[integer] wipe-mode:bool)
-        (require-capability (DPDC-MNG|C>IZ-CLASS-ZERO id false nonces))
-        (let
-            (
-                (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
-                ;;
-                (l1:integer (length nonces))
-            )
-            ;;Debit NFT Nonce(s)
-            (if (= l1 1)
-                (ref-DPDC-C::XE_DebitNFT-Nonce account id (at 0 nonces) 1 wipe-mode)
-                (ref-DPDC-C::XE_DebitNFT-Nonces account id nonces (make-list l1 1) wipe-mode)
-            )
-        )
-    )
-    ;;{5.7}  User [A/C]
-    (defun C_Control:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool)
-        (P|UEV_IMC)
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (owner:string (ref-DPDC::UR_OwnerKonto id son))
-            )
-            (with-capability (DPDC-MNG|S>CTRL id son)
-                (XI_Control id son cu cco ccc casr ctncr cf cw cp)
-                (URCi_Control id son)
-            )
-        )
-    )
-    (defun C_TogglePause:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool toggle:bool)
-        (P|UEV_IMC)
-        (with-capability (DPDC-MNG|S>TG_PAUSE id son toggle)
-            (XI_TogglePause id son toggle)
-            (URCi_TogglePause id son)
-        )
-    )
-    ;;
-    ;;  [CREDIT-SINGLE]
-    ;;  [SFT]
-    (defun C_AddQuantity:object{IgnisCollectorV3.OutputCumulator}
-        (account:string id:string nonce:integer amount:integer)
-        @doc "Add Quantity for an SFT"
-        (P|UEV_IMC)
-        (with-capability (DPDC-MNG|C>ADD-QUANTITY account id nonce amount)
-            (XI_IncreaseClassZeroSemiFungible account id nonce amount)
-            (URCi_AddQuantity id)
-        )
-    )
-    ;;  [NFT]
-    (defun C_RespawnNFT:object{IgnisCollectorV3.OutputCumulator} (account:string id:string nonce:integer)
-        @doc "Respawns a previously burned NFT"
-        (P|UEV_IMC)
-        (let
-            (
-                (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
-            )
-            (with-capability (DPDC-MNG|C>RESPAWN-NFT account id nonce)
-                (ref-DPDC-C::XB_CreditNFT-Nonce account id nonce 1)
-                (URCi_RespawnNFT id)
-            )
-        )
-    )
-    ;;
-    ;;  [DEBIT-SINGLE]
-    ;;  [SFT]
-    (defun C_BurnSFT:object{IgnisCollectorV3.OutputCumulator}
-        (account:string id:string nonce:integer amount:integer)
-        (P|UEV_IMC)
-        (with-capability (DPDC-MNG|C>BURN-SFT account id nonce amount)
-            ;;Burn Semifungible and Update Supplies
-            (XI_DecreaseClassZeroSemiFungibles account id [nonce] [amount] false)
-            ;;Costs 2 IGNIS per Burn Event
-            (URCi_BurnSFT id)
-        )
-    )
-    (defun C_WipeSlim:object{IgnisCollectorV3.OutputCumulator}
-        (account:string id:string nonce:integer amount:integer)
-        (P|UEV_IMC)
-        (with-capability (DPDC-MNG|C>WIPE-SFT-NONCE-PARTIALLY account id nonce amount)
-            ;;Burn Semifungible and Update Supplies
-            (XI_DecreaseClassZeroSemiFungibles account id [nonce] [amount] true)
-            ;;Costs 1 IGNIS for Partial Nonce Wipe Event
-            (URCi_WipeSlim id)
-        )
-    )
-    ;;  [NFT]
-    (defun C_BurnNFT:object{IgnisCollectorV3.OutputCumulator} (account:string id:string nonce:integer)
-        (P|UEV_IMC)
-        (with-capability (DPDC-MNG|C>BURN-NFT account id nonce)
-            ;; #79: TWO latent bugs here, never triggered because DPNF|C_Burn had no test coverage:
-            ;;  (1) called via ref-DPDC-C:: but XI_DecreaseClassZeroNonFungibles is a LOCAL XI_ of
-            ;;      DPDC-MNG (defined above) — must be a local call;
-            ;;  (2) args were (id account …) but the signature is (account id nonces wipe-mode), so
-            ;;      account/id were swapped → the composed IZ-CLASS-ZERO cap check used the account
-            ;;      as the collection id and failed. Correct order is account first, then id.
-            (XI_DecreaseClassZeroNonFungibles account id [nonce] false)
-            (URCi_BurnNFT id)
-        )
-    )
-    ;;  [SFT+NFT]
-    (defun C_WipeNonce:object{IgnisCollectorV3.OutputCumulator}
-        (account:string id:string son:bool nonce:integer)
-        @doc "Wipes a viable SFT or NFT Nonce in its entirety"
-        (P|UEV_IMC)
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (owner:string (ref-DPDC::UR_OwnerKonto id son))
-            )
-            (if son
-                (let
-                    (
-                        (amount:integer (ref-DPDC::UR_AccountNonceSupply account id true nonce))
-                    )
-                    (with-capability (DPDC-MNG|C>WIPE-SFT-NONCE-TOTALLY account id nonce amount)
-                        (XI_DecreaseClassZeroSemiFungibles account id [nonce] [amount] true)
-                        (URCi_WipeNonce id son)
-                    )
-                )
-                (with-capability (DPDC-MNG|C>WIPE-NFT-NONCE account id nonce)
-                    (XI_DecreaseClassZeroNonFungibles account id [nonce] true)
-                    (URCi_WipeNonce id son)
-                )
-            )
-        )
-    )
-    ;;
-    ;;  [DEBIT-MULTIPLE]
-    ;;  [SFT+NFT]
-    (defun CC_WipeHeavy:object{IgnisCollectorV3.OutputCumulator}
-        (account:string id:string son:bool)
-        @doc "Wipes all viable <id> Nonces of an SFT or NFT <account> \
-            \ \
-            \ |Heavy| reffers to the usage of expensive functions like <select> or <keys> \
-            \ (that arent meant to be used in transactional context) to get the Account Nonces; \
-            \ May fit in a single Transaction for Small Data Sets"
-        (P|UEV_IMC)
-        (C_WipePure account id son (URHC_WipePure account id son))
-    )
-    (defun C_WipePure:object{IgnisCollectorV3.OutputCumulator}
-        (account:string id:string son:bool removable-nonces-obj:object{DpdcManagementV2.RemovableNonces})
-        @doc "Wipes all <id> Nonces of an SFT or NFT <account>, presented via an <removable-nonces-obj> object \
-            \ \
-            \ The object must be pre-read (dirty read) \
-            \ \
-            \ Example to retrieve the <removable-nonces-obj> \
-            \ <(URHC_WipePure account id son)> ; to get the whole object \
-            \ <(UCv_TakePureWipe (URHC_WipePure account id son) 165)> ; to get only the first 165 units \
-            \ Aproximately 167 Individual Wipes fit inside one TX (for NFTs)."
-        (P|UEV_IMC)
-        (let
-            (
-                (viable-nonces:[integer] (at "r-nonces" removable-nonces-obj))
-                (viable-amounts:[integer] (at "r-amounts" removable-nonces-obj))
-            )
-            (if son
-                (with-capability (DPDC-MNG|C>WIPE-SFT-NONCES account id viable-nonces)
-                    ;;Burn SemiFungible and Update Nonce Supplies
-                    (XI_DecreaseClassZeroSemiFungibles account id viable-nonces viable-amounts true)
-                )
-                (with-capability (DPDC-MNG|C>WIPE-NFT-NONCES account id viable-nonces)
-                    ;;Burn NonFungible
-                    (XI_DecreaseClassZeroNonFungibles account id viable-nonces true)
-                )
-            )
-            ;;Costs 2 IGNIS per Nonce Wiped
-            (URCi_WipeCumulator id son removable-nonces-obj)
-        )
-    )
-    (defun C_WipeClean:object{IgnisCollectorV3.OutputCumulator}
-        (account:string id:string son:bool nonces:[integer])
-        @doc "Wipes <id> select viable <nonces> of an SFT or NFT <account> \
-            \ Fails if a single nonce is not viable"
-        (P|UEV_IMC)
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-            )
-            (C_WipePure account id son
-                (UDC_RemovableNonces
-                    nonces
-                    (ref-DPDC::UR_AccountNoncesSupplies account id son nonces)
-                )
-            )
-        )
-    )
-    (defun C_WipeDirty:object{IgnisCollectorV3.OutputCumulator}
-        (account:string id:string son:bool nonces:[integer])
-        @doc "Wipes <id> select <nonces> of an SFT or NFT <account> (at least 1 nonce must be viable)"
-        (P|UEV_IMC)
-        (C_WipePure account id son (URC_FilterAccountViableNonces account id son nonces))
-    )
-    (defun Cp_WipeSlice:object{IgnisCollectorV3.OutputCumulator}
-        (account:string id:string son:bool removable-nonces-obj:object{DpdcManagementV2.RemovableNonces})
-        @doc "Hydra parallel wipe slice: wipes exactly ONE <URHC_BuildWipeSlicePlan> slice of \
-            \ <account>'s <id> nonces (SFT if <son>, else NFT). Order-independent and retryable: \
-            \ slices are disjoint by construction, the frozen target account cannot move nonces \
-            \ mid-campaign, and a replayed/duplicate slice REVERTS (a wiped nonce's account \
-            \ supply is 0, failing the 0 < amount enforce in REMOVE-CLASS-ZERO-NONCES) — no job \
-            \ state, the live table is the completion ledger. Same authority chain as \
-            \ <C_WipePure>: collection owner via wipe-mode debit, can-wipe ON, target frozen, \
-            \ escrow split-data guard intact. True Cp_ — no heavy read anywhere in its tree \
-            \ (SFT amounts are re-read LIVE inside the cap; a stale plan cannot over-wipe)."
-        (P|UEV_IMC)
-        (let
-            (
-                (viable-nonces:[integer] (at "r-nonces" removable-nonces-obj))
-                (viable-amounts:[integer] (at "r-amounts" removable-nonces-obj))
-            )
-            (if son
-                (with-capability (DPDC-MNG|C>WIPE-SFT-NONCES account id viable-nonces)
-                    ;;Burn SemiFungible and Update Nonce Supplies
-                    (XI_DecreaseClassZeroSemiFungibles account id viable-nonces viable-amounts true)
-                )
-                (with-capability (DPDC-MNG|C>WIPE-NFT-NONCES account id viable-nonces)
-                    ;;Burn NonFungible
-                    (XI_DecreaseClassZeroNonFungibles account id viable-nonces true)
-                )
-            )
-            ;;Costs 2 IGNIS per Nonce Wiped
-            (URCi_WipeCumulator id son removable-nonces-obj)
-        )
-    )
-
-)
-
-;; --- tables for 06_DPDC-MNG.pact (2 defined) ---
-;; UPGRADE MODE: this module is assumed already deployed, so its
-;; tables already exist and (create-table) would ABORT the whole
-;; transaction. They are listed here, commented, for reference.
-;; If any of these is NEW since the last deploy, uncomment JUST it.
-;; (create-table P|T)
-;; (create-table P|MT)
-
-;; ===== 1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/07_DPDC-T.pact ==========
-;; Deploy: load THIS file — interface(s) + module ship together.
-;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/02_Core.pact
-;;
-;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface DpdcTransferV2
-    @doc "Exposes Collectables Transfer Functions"
-
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;{G2}  schemas
-    ;;{G3}  tables  ⟨cannot exist in an interface⟩
-    ;;{G4}  capabilities
-    ;;{G5}  functions
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    ;;{P2}  schemas
-    ;;{P3}  tables  ⟨cannot exist in an interface⟩
-    ;;{P4}  capabilities
-    ;;{P5}  functions
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    ;;{3.2}  schemas
-    ;;
-    ;;  [Schemas]
-    ;;
-    (defschema AggregatedRoyalties
-        creators:[string]
-        ignis-royalties:[decimal]
+    (defschema DPDC|AllowedClassForSetPosition
+        allowed-sclass:integer
     )
     ;;{3.3}  tables  ⟨cannot exist in an interface⟩
 
@@ -5998,73 +4922,123 @@
     ;;<=========================================================================>
     ;;{5}  FUNCTIONS
     ;;{5.1}  Construct [CT/UDC]
-    ;;{5.2}  Compute [UC]
-    ;;
-    (defun UC_AndTruths:bool (truths:[bool]))
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;
-    ;;  [URC]
-    ;;
-    (defun URC_TransferRoleChecker:bool (id:string son:bool sender:string))
-    (defun URC_SummedIgnisRoyalty:decimal (sender:string id:string son:bool nonces:[integer] amounts:[integer]))
-    (defun URC_TotalTransferPrice:decimal (id:string son:bool nonces:[integer] amounts:[integer]))
     ;;
     ;;  [UDC]
     ;;
-    (defun URCi_MultiTransferCumulator:object{IgnisCollectorV3.OutputCumulator} (ids:[string] sons:[bool] sender:string receiver:string nonces-array:[[integer]] amounts-array:[[integer]]))
-    (defun URCi_RepurposeCollectable:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool amounts:[integer]))
-    (defun URCi_BulkTransferCumulator:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool sender:string receiver-lst:[string] nonces-array:[[integer]] amounts-array:[[integer]])
+    ;;  [1]
+    ;;
+    (defun UDC_DPDC|Properties:object{DPDC|Properties}
+        (
+            a:string b:string c:string d:string e:string
+            f:bool g:bool h:bool i:bool
+            j:bool k:bool l:bool m:bool
+            n:bool o:integer p:integer
+        )
     )
+    ;;
+    ;;  [2]
+    ;;
+    (defun UDC_NonceElement:object{DPDC|NonceElement} 
+        (   
+            a:integer b:integer c:integer d:string
+            e:object{DPDC|NonceData}
+            f:object{DPDC|NonceData}
+        )
+    )
+    (defun UDC_NonceData:object{DPDC|NonceData} 
+        (
+            a:decimal b:decimal c:string d:string 
+            e:object{NonceMetaData}
+            f:object{URI|Type}
+            g:object{URI|Data}
+            h:object{URI|Data}
+            i:object{URI|Data}
+        )
+    )
+    (defun UDC_NonceMetaData:object{NonceMetaData} (a:decimal b:[integer] c:object))
+    (defun UDC_URI|Type:object{URI|Type} (a:bool b:bool c:bool d:bool e:bool f:bool g:bool))
+    (defun UDC_URI|Data:object{URI|Data} (a:string b:string c:string d:string e:string f:string g:string))
+    ;;
+    ;;  [3]
+    ;;
+    (defun UDC_DPDC|VerumRoles:object{DPDC|VerumRoles} 
+        (a:[string] b:[string] c:[string] d:[string] e:string f:string g:[string] h:[string] i:[string] j:string k:[string])
+    )
+    ;;
+    ;;  [4]
+    ;;
+    (defun UDC_DPSF|AccountRoles:object{DPSF|AccountRoles} (a:object{AccountRoles} b:bool c:string d:string))
+    (defun UDC_DPNF|AccountRoles:object{DPNF|AccountRoles} (a:object{AccountRoles} b:string c:string))
+    (defun UDC_AccountRoles:object{AccountRoles} (a:bool b:bool c:bool d:bool e:bool f:bool g:bool h:bool i:bool j:bool))
+    ;;
+    ;;  [5]
+    ;;
+    (defun UDC_DPDC|AccountSupply:object{DPDC|AccountSupply} (a:string b:string c:integer d:integer))
+    ;;
+    ;;  [6]
+    ;;
+    (defun UDC_DPDC|AllowedClassForSetPosition:object{DPDC|AllowedClassForSetPosition} (a:integer))
+    (defun UDC_DPDC|AllowedNonceForSetPosition:object{DPDC|AllowedNonceForSetPosition} (a:[integer]))
+    (defun UDC_DPDC|Set:object{DPDC|Set}
+        (
+            a:integer b:string c:decimal d:integer e:bool f:bool g:bool
+            h:[object{DPDC|AllowedNonceForSetPosition}]
+            i:[object{DPDC|AllowedClassForSetPosition}]
+            j:object{DPDC|NonceData}
+            k:object{DPDC|NonceData}
+        )
+    )
+    ;;
+    ;;  [CUSTOM]
+    ;;
+    ;;  [2]
+    (defun UDC_ZeroNonceElement:object{DPDC|NonceElement} ())
+    (defun UDC_ZeroNonceData:object{DPDC|NonceData} ())
+    (defun UDC_NoMetaData:object{NonceMetaData} ())
+    (defun UDC_MetaData:object{NonceMetaData} (meta-data:object))
+    ;; UDC_ScoreMetaData removed — DPDC Audit #45L: dead code, zero callers. The real score-mutation
+    ;; path (DPDC-N::XI_U|NonceScore) correctly preserves an existing nonce's composition via a targeted
+    ;; merge; this constructor hardcoded composition=[0], which would have silently reset a real set
+    ;; instance's composition if ever wired in as originally suggested — removal, not rewiring, is safe.
+    (defun UDC_ZeroURI|Type:object{URI|Type} ())
+    (defun UDC_ZeroURI|Data:object{URI|Data} ())
+    ;;  [6]
+    (defun UDC_NoPrimordialSet:[object{DPDC|AllowedNonceForSetPosition}] ())
+    (defun UDC_NoCompositeSet:[object{DPDC|AllowedClassForSetPosition}] ())
+    ;;{5.2}  Compute [UC]
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
     ;;{5.4}  Validate [UEV/CAP]
-    ;;
-    ;;  [UEV]
-    ;;
-    (defun UEV_TransferRoles (id:string son:bool sender:string receiver:string))
-    (defun UEV_TransferRoleChecker (trc:bool s:bool r:bool))
-    (defun UEV_AmountsForTransfer (id:string son:bool nonces:[integer] amounts:[integer]))
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     ;;{5.7}  User [A/C]
-    ;;
-    ;;  [C]
-    ;;
-    (defun C_RepurposeCollectable:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer])
-    )
-    (defun C_Transfer:object{IgnisCollectorV3.OutputCumulator} (ids:[string] sons:[bool] sender:string receiver:string nonces-array:[[integer]] amounts-array:[[integer]] method:bool))
-    (defun C_IgnisRoyaltyCollector:object{AggregatedRoyalties} (patron:string sender:string ids:[string] sons:[bool] nonces-array:[[integer]] amounts-array:[[integer]]))
-    (defun C_BulkTransfer:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool nonces-array:[[integer]] amounts-array:[[integer]] sender:string receiver-lst:[string] method:bool)
-    )
 
 )
-;;
-(module DPDC-T GOV
-    @doc "Transfer module for the DPDC collectables (NFT/SFT) family, implementing \
-        \ DpdcTransferV2 and OuronetPolicyV2. Client entrypoints move native and fragment \
-        \ nonces between accounts: C_Transfer (multi id/son, single receiver), \
-        \ C_BulkTransfer (one id/son, many receivers), and C_RepurposeCollectable. It \
-        \ enforces transfer roles, pause/freeze states, transferability and account \
-        \ ownership, computes and collects IGNIS creator royalties \
-        \ (C_IgnisRoyaltyCollector), and returns IGNIS gas cumulators."
+
+(module DPDC-UDC GOV
+    @doc "DPDC-UDC is the data-construction module for the DPDC collectables family, \
+        \ implementing DpdcUdcV2 and OuronetPolicyV2. It defines the core collectables \
+        \ schemas (Properties, NonceElement/NonceData, VerumRoles, per-account roles, \
+        \ AccountSupply, Set definitions, URI type/data, metadata) and exposes named UDC_ \
+        \ constructors for each — including zero/default builders. It holds no domain tables \
+        \ (only its policy tables), serving purely as the shared object-builder layer other \
+        \ DPDC modules call."
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements DpdcTransferV2)
+    (implements DpdcUdcV2)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
     ;;
-    (defconst GOV|MD_DPDC-T                             (keyset-ref-guard (GOV|Demiurgoi)))
+    (defconst GOV|MD_DPDC-UDC                           (keyset-ref-guard (GOV|Demiurgoi)))
     ;;{G2}  schemas
     ;;{G3}  tables
     ;;{G4}  capabilities
-    (defcap GOV ()                                      (compose-capability (GOV|DPDC-T_ADMIN)))
-    (defcap GOV|DPDC-T_ADMIN ()                         (enforce-guard GOV|MD_DPDC-T))
+    (defcap GOV ()                                      (compose-capability (GOV|DPDC-UDC_ADMIN)))
+    (defcap GOV|DPDC-UDC_ADMIN ()                       (enforce-guard GOV|MD_DPDC-UDC))
     ;;{G5}  functions
     (defun GOV|Demiurgoi ()
         (let
@@ -6085,11 +5059,11 @@
     (deftable P|T:{OuronetPolicyV2.P|S})
     (deftable P|MT:{OuronetPolicyV2.P|MS})
     ;;{P4}  capabilities
-    (defcap P|DPDC-T|CALLER ()
+    (defcap P|DPDC-UDC|CALLER ()
         true
     )
     (defcap P|SECURE-CALLER ()
-        (compose-capability (P|DPDC-T|CALLER))
+        (compose-capability (P|DPDC-UDC|CALLER))
         (compose-capability (SECURE))
     )
     ;;{P5}  functions
@@ -6131,7 +5105,7 @@
         )
     )
     (defun P|A_Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|DPDC-T_ADMIN)
+        (with-capability (GOV|DPDC-UDC_ADMIN)
             (write P|T policy-name
                 {"policy" : policy-guard}
             )
@@ -6141,7 +5115,7 @@
         @doc "Registers <policy-guard> as a trusted inter-module caller of this module. \
             \ IDEMPOTENT: a guard already in the chain is left alone rather than appended \
             \ a second time. See OuronetPolicyV2 for why that is load-bearing."
-        (with-capability (GOV|DPDC-T_ADMIN)
+        (with-capability (GOV|DPDC-UDC_ADMIN)
             (let
                 (
                     (ref-U|LST:module{StringProcessorV2} U|LST)
@@ -6167,7 +5141,7 @@
         @doc "Revokes <policy-guard> from this module's guard chain. Removes EVERY occurrence, so \
             \ it doubles as the cleanup for duplicates left behind by the pre-idempotence append. \
             \ Refuses to drop this module's own SECURE seed -- see OuronetPolicyV2."
-        (with-capability (GOV|DPDC-T_ADMIN)
+        (with-capability (GOV|DPDC-UDC_ADMIN)
             (let
                 (
                     (ref-U|LST:module{StringProcessorV2} U|LST)
@@ -6189,7 +5163,7 @@
         @doc "Replaces this module's whole guard chain in one write -- the recovery hatch. \
             \ Deduplicates, and enforces that the module's own SECURE seed survives: without it \
             \ the module can no longer reach its own P|UEV_IMC-gated functions."
-        (with-capability (GOV|DPDC-T_ADMIN)
+        (with-capability (GOV|DPDC-UDC_ADMIN)
             (let
                 (
                     (dg:guard (create-capability-guard (SECURE)))
@@ -6205,11 +5179,9 @@
         (let
             (
                 (ref-P|DALOS:module{OuronetPolicyV2} DALOS)
-                (ref-P|DPDC-C:module{OuronetPolicyV2} DPDC-C)
-                (mg:guard (create-capability-guard (P|DPDC-T|CALLER)))
+                (mg:guard (create-capability-guard (P|DPDC-UDC|CALLER)))
             )
             (ref-P|DALOS::P|A_AddIMP mg)
-            (ref-P|DPDC-C::P|A_AddIMP mg)
         )
     )
 
@@ -6227,177 +5199,8 @@
     (defcap SECURE ()
         true
     )
-    (defcap IGNIS|C>NO-ROYALTY ()
-        true
-    )
     ;;{C2}  Simple
-    (defcap DPDC-T|C>REPURPOSE (id:string son:bool repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer])
-        @event
-        (let
-            (
-                (l1:integer (length nonces))
-                (l2:integer (length amounts))
-            )
-            (enforce (= l1 l2) "Invalid Repurpose data")
-        )
-    )
-    (defcap DPDC-T|S>BULK-TRANSFER
-        (id:string son:bool sender:string receiver-lst:[string] method:bool)
-        @doc "Bulk transfer guards — same family as DPDC-T|C>TRANSFER over receiver-lst. \
-            \ Standard Ouronet accounts only (no smart accounts in receiver-lst)."
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (ref-U|LST:module{StringProcessorV2} U|LST)
-                ;;
-                (l:integer (length receiver-lst))
-            )
-            (ref-U|LST::UEV_IzUnique receiver-lst)
-            (ref-DPDC::UEV_PauseState id son false)
-            (ref-DPDC::UEV_AccountFreezeState id son sender false)
-            (map
-                (lambda (idx:integer)
-                    (let
-                        (
-                            (receiver:string (at idx receiver-lst))
-                        )
-                        (ref-DALOS::UEV_EnforceAccountType receiver false)
-                        (ref-DALOS::UEV_EnforceTransferability sender receiver method)
-                        (ref-DPDC::UEV_AccountFreezeState id son receiver false)
-                        (UEV_TransferRoles id son sender receiver)
-                    )
-                )
-                (enumerate 0 (- l 1))
-            )
-        )
-    )
     ;;{C3}  Composed
-    (defcap DPDC-T|C>TRANSFER (ids:[string] sons:[bool] sender:string receiver:string nonces-array:[[integer]] amounts-array:[[integer]] method:bool)
-        @event
-        (let
-            (
-                (ref-U|INT:module{OuronetIntegersV2} U|INT)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (l1:integer (length ids))
-                (l2:integer (length sons))
-                (l3:integer (length nonces-array))
-                (l4:integer (length amounts-array))
-            )
-            ;;Single
-            (ref-U|INT::UEV_UniformList [l1 l2 l3 l4])
-            (if (and method (ref-DALOS::UR_AccountType receiver))
-                (ref-DALOS::CAP_EnforceAccountOwnership receiver)
-                true
-            )
-            (ref-DALOS::CAP_EnforceAccountOwnership sender)
-            (ref-DALOS::UEV_EnforceTransferability sender receiver method)
-            ;;Multi
-            (map
-                (lambda
-                    (idx:integer)
-                    (let
-                        (
-                            (id:string (at idx ids))
-                            (son:bool (at idx sons))
-                            (nonces:[integer] (at idx nonces-array))
-                            (amounts:[integer] (at idx amounts-array))
-                        )
-                        (ref-DPDC::UEV_PauseState id son false)
-                        (ref-DPDC::UEV_AccountFreezeState id son sender false)
-                        (ref-DPDC::UEV_AccountFreezeState id son receiver false)
-                        (UEV_TransferRoles id son sender receiver)
-                        (UEV_AmountsForTransfer id son nonces amounts)
-                    )
-                )
-                (enumerate 0 (- l1 1))
-            )
-            ;;Capabilities
-            (compose-capability (P|SECURE-CALLER))
-        )
-    )
-    (defcap DPDC-T|C>BULK-TRANSFER
-        (id:string son:bool nonces-array:[[integer]] amounts-array:[[integer]] sender:string receiver-lst:[string] method:bool)
-        @doc "Bulk collectable transfer (one id/son, many receivers). Composes DPDC-T|S>BULK-TRANSFER like C>TRANSFER."
-        @event
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                ;;
-                (l:integer (length receiver-lst))
-            )
-            (ref-DALOS::CAP_EnforceAccountOwnership sender)
-            (enforce
-                (fold (and) true
-                    [
-                        (> l 0)
-                        (= l (length nonces-array))
-                        (= l (length amounts-array))
-                    ]
-                )
-                "Invalid DPDC bulk transfer: receiver/nonces/amounts legs"
-            )
-            (map
-                (lambda (idx:integer)
-                    (UEV_AmountsForTransfer
-                        id
-                        son
-                        (at idx nonces-array)
-                        (at idx amounts-array)
-                    )
-                )
-                (enumerate 0 (- l 1))
-            )
-            (compose-capability (DPDC-T|S>BULK-TRANSFER id son sender receiver-lst method))
-            (compose-capability (P|SECURE-CALLER))
-        )
-    )
-    (defcap IGNIS|C>ROYALTY (sender:string receiver:string ta:decimal)
-        @event
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-            )
-            (enforce (!= sender receiver) "Sender and Receiver must be different")
-            ;;`ta` is not a client argument. The ONLY acquirer is C_IgnisRoyaltyCollector, which
-            ;;reaches this cap through two filters that together make a non-positive `ta` impossible:
-            ;;  1. `(if (or ivgz (= sum 0.0)) <NO-ROYALTY branch> ...)` -- a zero TOTAL never gets here;
-            ;;  2. `UC_CleanseAggregatedRoyalties` drops every entry whose royalty is 0.0, so the
-            ;;     per-creator amounts this cap is handed are all non-zero by construction.
-            ;;Royalties are summed from unsigned per-nonce prices, so non-zero means positive.
-            ;;Kept as defence-in-depth for a future acquirer that does not cleanse first.
-            ;;Pinned by REPL/modules/DPDC.repl <<DPDC-G16>>, which drives the cleanse directly -- pure
-            ;;compute, no fixture -- so this annotation cannot rot if the filter is ever weakened.
-            ;;UNREACHABLE via its only caller.
-            (enforce (> ta 0.0) "Cannot debit|credit 0.0 or negative IGNIS amounts")
-            (ref-IGNIS::UEV_TwentyFourPrecision ta)
-            (compose-capability (IGNIS|C>DEBIT sender ta))
-            (compose-capability (IGNIS|C>CREDIT receiver))
-        )
-    )
-    (defcap IGNIS|C>CREDIT (receiver:string)
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-            )
-            (ref-DALOS::UEV_EnforceAccountExists receiver)
-            (compose-capability (P|DPDC-T|CALLER))
-        )
-    )
-    (defcap IGNIS|C>DEBIT (sender:string ta:decimal)
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (read-gas:decimal (ref-DALOS::UR_TF_AccountSupply sender false))
-            )
-            (enforce (<= ta read-gas) "Insufficient IGNIS for Debiting")
-            (ref-DALOS::UEV_EnforceAccountExists sender)
-            (ref-DALOS::UEV_EnforceAccountType sender false)
-            (ref-DALOS::CAP_EnforceAccountOwnership sender)
-            (compose-capability (P|DPDC-T|CALLER))
-        )
-    )
     ;;{C4}  Ownership [gold]
 
     ;;<=========================================================================>
@@ -6412,615 +5215,238 @@
             (ref-U|CT::CT_BAR)
         )
     )
-    (defun UDCx_AggregatedRoyalties:object{DpdcTransferV2.AggregatedRoyalties}
-        (a:[string] b:[decimal])
-        {"creators"         : a
-        ,"ignis-royalties"  : b}
+    ;;
+    ;;Properties UDCs
+    ;;
+    ;;  [1]
+    ;;
+    (defun UDC_DPDC|Properties:object{DpdcUdcV2.DPDC|Properties}
+        (
+            a:string b:string c:string d:string e:string
+            f:bool g:bool h:bool i:bool
+            j:bool k:bool l:bool m:bool
+            n:bool o:integer p:integer
+        )
+        {"id"                           : a
+        ,"owner-konto"                  : b
+        ,"creator-konto"                : c
+        ,"name"                         : d
+        ,"ticker"                       : e
+        ,"can-upgrade"                  : f
+        ,"can-change-owner"             : g
+        ,"can-change-creator"           : h
+        ,"can-add-special-role"         : i
+        ,"can-transfer-nft-create-role" : j
+        ,"can-freeze"                   : k
+        ,"can-wipe"                     : l
+        ,"can-pause"                    : m
+        ,"is-paused"                    : n
+        ,"nonces-used"                  : o
+        ,"set-classes-used"             : p}
+    )
+    ;;
+    ;;  [2]
+    ;;
+    (defun UDC_NonceElement:object{DpdcUdcV2.DPDC|NonceElement} 
+        (   
+            a:integer b:integer c:integer d:string
+            e:object{DpdcUdcV2.DPDC|NonceData}
+            f:object{DpdcUdcV2.DPDC|NonceData}
+        )
+        {"nonce-class"      : a
+        ,"nonce-value"      : b
+        ,"nonce-supply"     : c
+        ,"nonce-holder"     : d
+        ,"nonce-data"       : e
+        ,"split-data"       : f}
+    )
+    (defun UDC_NonceData:object{DpdcUdcV2.DPDC|NonceData} 
+        (
+            a:decimal b:decimal c:string d:string 
+            e:object{DpdcUdcV2.NonceMetaData}
+            f:object{DpdcUdcV2.URI|Type}
+            g:object{DpdcUdcV2.URI|Data}
+            h:object{DpdcUdcV2.URI|Data}
+            i:object{DpdcUdcV2.URI|Data}
+        )
+        {"royalty"          : a
+        ,"ignis"            : b
+        ,"name"             : c
+        ,"description"      : d
+        ,"meta-data"        : e
+        ,"asset-type"       : f
+        ,"uri-primary"      : g
+        ,"uri-secondary"    : h
+        ,"uri-tertiary"     : i}
+    )
+    (defun UDC_NonceMetaData:object{DpdcUdcV2.NonceMetaData}
+        (a:decimal b:[integer] c:object)
+        {"score"            : a
+        ,"composition"      : b
+        ,"meta-data"        : c}
+    )
+    (defun UDC_URI|Type:object{DpdcUdcV2.URI|Type}
+        (a:bool b:bool c:bool d:bool e:bool f:bool g:bool)
+        {"image"            : a
+        ,"audio"            : b
+        ,"video"            : c
+        ,"document"         : d
+        ,"archive"          : e
+        ,"model"            : f
+        ,"exotic"           : g}
+    )
+    (defun UDC_URI|Data:object{DpdcUdcV2.URI|Data}
+        (a:string b:string c:string d:string e:string f:string g:string)
+        {"image"            : a
+        ,"audio"            : b
+        ,"video"            : c
+        ,"document"         : d
+        ,"archive"          : e
+        ,"model"            : f
+        ,"exotic"           : g}
+    )
+    ;;
+    ;;  [3]
+    ;;
+    (defun UDC_DPDC|VerumRoles:object{DpdcUdcV2.DPDC|VerumRoles}
+        (a:[string] b:[string] c:[string] d:[string] e:string f:string g:[string] h:[string] i:[string] j:string k:[string])
+        {"a-frozen"                 : a
+        ,"r-exemption"              : b
+        ,"r-nft-add-quantity"       : c
+        ,"r-nft-burn"               : d
+        ,"r-nft-create"             : e
+        ,"r-nft-recreate"           : f
+        ,"r-nft-update"             : g
+        ,"r-modify-creator"         : h
+        ,"r-modify-royalties"       : i
+        ,"r-set-new-uri"            : j
+        ,"r-transfer"               : k}
+    )
+    ;;
+    ;;  [4]
+    ;;
+    (defun UDC_DPSF|AccountRoles:object{DpdcUdcV2.DPSF|AccountRoles}
+        (a:object{DpdcUdcV2.AccountRoles} b:bool c:string d:string)
+        {"roles"                : a
+        ,"role-nft-add-quantity": b
+        ,"id"                   : c
+        ,"account"              : d}
+    )
+    (defun UDC_DPNF|AccountRoles:object{DpdcUdcV2.DPNF|AccountRoles}
+        (a:object{DpdcUdcV2.AccountRoles} b:string c:string)
+        {"roles"                : a
+        ,"id"                   : b
+        ,"account"              : c}
+    )
+    (defun UDC_AccountRoles:object{DpdcUdcV2.AccountRoles}
+        (a:bool b:bool c:bool d:bool e:bool f:bool g:bool h:bool i:bool j:bool)
+        {"frozen"               : a
+        ,"role-exemption"       : b
+        ,"role-nft-burn"        : c
+        ,"role-nft-create"      : d
+        ,"role-nft-recreate"    : e
+        ,"role-nft-update"      : f
+        ,"role-modify-creator"  : g
+        ,"role-modify-royalties": h
+        ,"role-set-new-uri"     : i
+        ,"role-transfer"        : j}
+    )
+    ;;
+    ;;  [5]
+    ;;
+    (defun UDC_DPDC|AccountSupply:object{DpdcUdcV2.DPDC|AccountSupply} 
+        (a:string b:string c:integer d:integer)
+        {"account"  : a
+        ,"id"       : b
+        ,"nonce"    : c
+        ,"supply"   : d}
+    )
+    ;;
+    ;;  [6]
+    ;;
+    (defun UDC_DPDC|AllowedClassForSetPosition:object{DpdcUdcV2.DPDC|AllowedClassForSetPosition} 
+        (a:integer)
+        @doc "<C> = AllowedClassForSetPosition"
+        {"allowed-sclass"   : a}
+    )
+    (defun UDC_DPDC|AllowedNonceForSetPosition:object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition} 
+        (a:[integer])
+        @doc "<N> = AllowedNonceForSetPosition"
+        {"allowed-nonces"   : a}
+    )
+    (defun UDC_DPDC|Set:object{DpdcUdcV2.DPDC|Set}
+        (
+            a:integer b:string c:decimal d:integer e:bool f:bool g:bool
+            h:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}]
+            i:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}]
+            j:object{DpdcUdcV2.DPDC|NonceData}
+            k:object{DpdcUdcV2.DPDC|NonceData}
+        )
+        @doc "<S> = Set"
+        {"set-class"                    : a
+        ,"set-name"                     : b
+        ,"set-score-multiplier"         : c
+        ,"nonce-of-set"                 : d
+        ,"iz-active"                    : e
+        ,"primordial"                   : f
+        ,"composite"                    : g
+        ,"primordial-set-definition"    : h
+        ,"composite-set-definition"     : i
+        ,"nonce-data"                   : j
+        ,"split-data"                   : k}
+    )
+    ;;
+    ;;  [CUSTOM]
+    ;;
+    ;;  [2]
+    ;;
+    (defun UDC_ZeroNonceElement:object{DpdcUdcV2.DPDC|NonceElement} ()
+        (UDC_NonceElement
+            0 0 0 BAR
+            (UDC_ZeroNonceData)
+            (UDC_ZeroNonceData)
+        )
+    )
+    (defun UDC_ZeroNonceData:object{DpdcUdcV2.DPDC|NonceData} ()
+        (UDC_NonceData
+            0.0 0.0 BAR BAR (UDC_NoMetaData)
+            (UDC_ZeroURI|Type) (UDC_ZeroURI|Data)
+            (UDC_ZeroURI|Data) (UDC_ZeroURI|Data)
+        )
+    )
+    (defun UDC_NoMetaData:object{DpdcUdcV2.NonceMetaData} ()
+        (UDC_MetaData {})
+    )
+    (defun UDC_MetaData:object{DpdcUdcV2.NonceMetaData}
+        (meta-data:object)
+        (UDC_NonceMetaData -1.0 [0] meta-data)
+    )
+    ;; UDC_ScoreMetaData removed — DPDC Audit #45L: see interface-side removal note above.
+    (defun UDC_ZeroURI|Type:object{DpdcUdcV2.URI|Type} ()
+        (UDC_URI|Type false false false false false false false)
+    )
+    (defun UDC_ZeroURI|Data:object{DpdcUdcV2.URI|Data} ()
+        (UDC_URI|Data BAR BAR BAR BAR BAR BAR BAR)
+    )
+    ;;
+    ;;  [6]
+    ;;
+    (defun UDC_NoPrimordialSet:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}] ()
+        [(UDC_DPDC|AllowedNonceForSetPosition [0])]
+    )
+    (defun UDC_NoCompositeSet:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}] ()
+        [(UDC_DPDC|AllowedClassForSetPosition -1)]
     )
     ;;{5.2}  Compute [UC]
-    ;;
-    (defun UC_AndTruths:bool (truths:[bool])
-        (fold (and) true truths)
-    )
-    (defun UC_CleanseAggregatedRoyalties:object{DpdcTransferV2.AggregatedRoyalties} (agg:object{DpdcTransferV2.AggregatedRoyalties})
-        (let
-            (
-                (agg-creators:[string] (at "creators" agg))
-                (agg-royalties:[decimal] (at "ignis-royalties" agg))
-                (non-zero-indices:[integer]
-                    (filter
-                        (lambda 
-                            (idx:integer) 
-                            (!= (at idx agg-royalties) 0.0)
-                        )
-                        (enumerate 0 (- (length agg-royalties) 1))
-                    )
-                )
-                (how-many-non-zeroes:integer (length non-zero-indices))
-                (how-many-zeroes:integer (- (length agg-royalties) how-many-non-zeroes))
-            )
-            (if (= how-many-zeroes 0)
-                agg
-                (UDCx_AggregatedRoyalties
-                    ;;Creators
-                    (map
-                        (lambda (idx:integer) (at idx agg-creators))
-                        non-zero-indices
-                    )
-                    ;;Royalties
-                    (map
-                        (lambda (idx:integer) (at idx agg-royalties))
-                        non-zero-indices
-                    )
-                )
-            )
-        )
-    )
-    (defun UC_AggregateRoyalties:object{DpdcTransferV2.AggregatedRoyalties}
-        (creators:[string] id-ignis-royalties:[decimal])
-        (let
-            (
-                (ref-U|LST:module{StringProcessorV2} U|LST)
-                (d-creators:[string] (distinct creators))
-            )
-            (UDCx_AggregatedRoyalties
-                d-creators
-                (fold
-                    (lambda
-                        (acc:[decimal] idx:integer)
-                        (let
-                            (
-                                (creator:string (at idx d-creators))
-                                (c-idxes:[integer] (ref-U|LST::UC_Search creators creator))
-                            )
-                            (ref-U|LST::UC_AppL acc
-                                (fold
-                                    (lambda
-                                        (accc:decimal idx:integer)
-                                        (+ accc (at (at idx c-idxes) id-ignis-royalties))
-                                    )
-                                    0.0
-                                    (enumerate 0 (- (length c-idxes) 1))
-                                )
-                            )
-                        )
-                    )
-                    []
-                    (enumerate 0 (- (length d-creators) 1))
-                )
-            )
-        )
-    )
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    (defun URC_TransferRoleChecker:bool (id:string son:bool sender:string)
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
-                (verum:[string] (ref-DPDC::UR_Verum11 id son))
-                (lv:integer (length verum))
-                (tra:integer
-                    (if (and (= lv 1) (= verum [BAR]))
-                        0
-                        lv
-                    )
-                )
-            )
-            (and
-                (> tra 0)
-                (not (= sender dpdc))
-            )
-        )
-    )
-    (defun URC_SummedIgnisRoyalty:decimal (sender:string id:string son:bool nonces:[integer] amounts:[integer])
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (creator:string (ref-DPDC::UR_CreatorKonto id son))
-            )
-            (if (= sender creator)
-                0.0
-                (fold
-                    (lambda
-                        (acc:decimal idx:integer)
-                        (+ 
-                            acc 
-                            (* 
-                                (dec (at idx amounts)) 
-                                (ref-DPDC::UR_N|IgnisRoyalty (ref-DPDC::UR_NonceData id son (at idx nonces)))
-                            )
-                        )
-                    )
-                    0.0
-                    (enumerate 0 (- (length nonces) 1))
-                )
-            )
-        )
-    )
-    (defun URC_TotalTransferPrice:decimal
-        (id:string son:bool nonces:[integer] amounts:[integer])
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ft:string (take 2 id))
-                (sh:string "E|")
-                (sl:decimal (ref-IGNIS::UC_IgnisLeg "tier-smallest"))
-                (s:decimal (ref-IGNIS::UC_IgnisLeg "tier-small"))
-                (m:decimal (ref-IGNIS::UC_IgnisLeg "tier-medium"))
-                (th:decimal (/ sl 1000.0))
-            )
-            (fold
-                (lambda
-                    (acc:decimal idx:integer)
-                    (let
-                        (
-                            (nonce:integer (at idx nonces))
-                            (amount:integer (at idx amounts))
-                            (price-per-nonce:decimal
-                                (if (or (< nonce 0) (fold (and) true [(= ft sh) son (= nonce 1)]))
-                                    th
-                                    (if son s m)
-                                )
-                            )
-                            (total-price-per-nonce:decimal (* price-per-nonce (dec amount)))
-                            (flat-price-per-nonce:decimal
-                                (if (> nonce 0)
-                                    0.0
-                                    (if (= (mod amount 1000) 0)
-                                        (dec (/ amount 1000))
-                                        (dec (+ (/ amount 1000) 1))
-                                    )
-                                )
-                            )
-                        )
-                        (fold (+) 0.0 [acc total-price-per-nonce flat-price-per-nonce])
-                    )
-                )
-                0.0
-                (enumerate 0 (- (length nonces) 1))
-            )
-        )
-    )
-    (defun URCi_MultiTransferCumulator:object{IgnisCollectorV3.OutputCumulator}
-        (ids:[string] sons:[bool] sender:string receiver:string nonces-array:[[integer]] amounts-array:[[integer]])
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-            )
-            (ref-IGNIS::UDC_ConstructOutputCumulator
-                (fold
-                    (lambda
-                        (acc:decimal idx:integer)
-                        (+ acc (URC_TotalTransferPrice (at idx ids) (at idx sons) (at idx nonces-array) (at idx amounts-array)))
-                    )
-                    0.0
-                    (enumerate 0 (- (length ids) 1))
-                )
-                sender
-                (ref-IGNIS::URC_ZeroEliteGAZ sender receiver) []
-            )
-        )
-    )
-    (defun URCi_BulkTransferCumulator:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool sender:string receiver-lst:[string] nonces-array:[[integer]] amounts-array:[[integer]])
-        @doc "Single IGNIS output for bulk transfer — sum URC_TotalTransferPrice per receiver leg once."
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                ;;
-                (l:integer (length receiver-lst))
-                ;;FIXED 2026-09-12: the fold is guarded on l=0.
-                ;;`(enumerate 0 (- l 1))` for l=0 is `[0, -1]` -- a DESCENDING PAIR, not an empty
-                ;;list -- so an empty receiver list indexed `(at 0 nonces-array)` on empty arrays and
-                ;;raised `Array index out of bounds. Length (0), Index (0)` out of a COST PREVIEW.
-                ;;This is a `URCi_` reader, so it must stay a pure derivation and cannot `enforce`
-                ;;(StoicSyntax: validation belongs in the defcap). Making it TOTAL is the correct
-                ;;shape: an empty bulk transfer has no legs, so it has no cost. The CLIENT still
-                ;;refuses the input -- DPDC-T|C>BULK-TRANSFER's shape guard now answers, since
-                ;;TS02-C1 calls the core before deriving anything (both fixed in the same pass).
-                (total:decimal
-                    (if (= l 0)
-                        0.0
-                        (fold
-                            (lambda (acc:decimal idx:integer)
-                                (+ acc
-                                    (URC_TotalTransferPrice
-                                        id
-                                        son
-                                        (at idx nonces-array)
-                                        (at idx amounts-array)
-                                    )
-                                )
-                            )
-                            0.0
-                            (enumerate 0 (- l 1))
-                        )
-                    )
-                )
-                ;;FIXED 2026-09-12, same cause as `total` above: this mapped over
-                ;;`(enumerate 0 (- l 1))` purely to index back into `receiver-lst`, so an empty list
-                ;;became `[0, -1]` and `(at 0 receiver-lst)` faulted. There is nothing to zip here --
-                ;;only one list is read -- so mapping over `receiver-lst` ITSELF is both simpler and
-                ;;total. `(fold (or) false [])` is correctly `false`: no receivers, no zero-elite leg.
-                (zero-elite:bool
-                    (fold
-                        (or)
-                        false
-                        (map
-                            (lambda (rcv:string)
-                                (ref-IGNIS::URC_ZeroEliteGAZ sender rcv)
-                            )
-                            receiver-lst
-                        )
-                    )
-                )
-            )
-            (ref-IGNIS::UDC_ConstructOutputCumulator total sender zero-elite [])
-        )
-    )
-    ;;
-    ;;  (URCi_MultiTransferCumulator / URCi_BulkTransferCumulator, below, cover the transfers.)
-    (defun URCi_RepurposeCollectable:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool amounts:[integer])
-        @doc "Cost preview for C_RepurposeCollectable: per-nonce construct priced \
-            \ (if son small else medium) * (1 + sum amounts) on owner-konto, empty output."
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (owner:string (ref-DPDC::UR_OwnerKonto id son))
-                (p:decimal (if son (ref-IGNIS::UC_IgnisLeg "tier-small") (ref-IGNIS::UC_IgnisLeg "tier-medium")))
-                (sum-amounts:decimal (dec (fold (+) 1 amounts)))
-                (price:decimal (* p sum-amounts))
-            )
-            (ref-IGNIS::UDC_ConstructOutputCumulator price owner (ref-IGNIS::URC_IsVirtualGasZero) [])
-        )
-    )
     ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_TransferRoles (id:string son:bool sender:string receiver:string)
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (trc:bool (URC_TransferRoleChecker id son sender))
-                (s:bool (ref-DPDC::UR_CA|R-Transfer id son sender))
-                ;; DPDC Audit #16H: was reading <sender> twice (copy-paste) — the receiver-side check
-                ;; needs the receiver's own role, matching DPOF's correct sibling pattern
-                ;; (UEV_MoveRoleCheck, 06_DPOF.pact:1618-1619).
-                (r:bool (ref-DPDC::UR_CA|R-Transfer id son receiver))
-            )
-            (UEV_TransferRoleChecker trc s r)
-        )
-    )
-    (defun UEV_TransferRoleChecker (trc:bool s:bool r:bool)
-        (if
-            trc
-            (enforce-one
-                "Invalid TR"
-                [
-                    (enforce s "Invalid TR Sender")
-                    (enforce r "Invalid TR Receiver")
-                ]
-            )
-            true
-        )
-    )
-    (defun UEV_AmountsForTransfer (id:string son:bool nonces:[integer] amounts:[integer])
-        (let
-            (
-                (ref-DPDC:module{DpdcV2} DPDC)
-                (l1:integer (length nonces))
-                (l2:integer (length amounts))
-            )
-            (enforce (= l1 l2) "Invalid Nonces|Amounts Pair for Collectable Transfer")
-            (map
-                (lambda
-                    (idx:integer)
-                    (let
-                        (
-                            (nonce:integer (at idx nonces))
-                            (amount:integer (at idx amounts))
-                            (nonce-supply:integer (ref-DPDC::UR_NonceSupply id son nonce))
-                        )
-                        (if (and (not son) (> nonce 0))
-                            (enforce (= amount 1) "When transfering Native NFT Nonces, their amount must be 1")
-                            true
-                        )
-                    )
-                )
-                (enumerate 0 (- (length nonces) 1))
-            )
-        )
-    )
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
-    ;;Protection: Class 1 — Innate protection offered by XE_DebitSFT-Nonce,
-    ;;Protection:          XB_CreditSFT-Nonce, XE_DebitNFT-Nonce, XB_CreditNFT-Nonce,
-    ;;Protection:          XE_DebitSFT-FragmentNonce, XE_CreditSFT-FragmentNonce,
-    ;;Protection:          XE_DebitNFT-FragmentNonce, XE_CreditNFT-FragmentNonce,
-    ;;Protection:          XE_DebitSFT-Nonces, XB_CreditSFT-Nonces, XE_DebitNFT-Nonces,
-    ;;Protection:          XB_CreditNFT-Nonces, XE_DebitSFT-FragmentNonces,
-    ;;Protection:          XE_CreditSFT-FragmentNonces, XE_DebitNFT-FragmentNonces,
-    ;;Protection:          XE_CreditNFT-FragmentNonces, XE_DebitSFT-HybridNonces,
-    ;;Protection:          XE_CreditSFT-HybridNonces, XE_DebitNFT-HybridNonces,
-    ;;Protection:          XE_CreditNFT-HybridNonces
-    (defun XI_TransferNonces (id:string son:bool sender:string receiver:string nonces:[integer] amounts:[integer])
-        (let
-            (
-                (ref-U|INT:module{OuronetIntegersV2} U|INT)
-                (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
-                ;;
-                (split:object{OuronetIntegersV2.NonceSplitter} (ref-U|INT::UC_NonceSplitter nonces amounts))
-                (negative-nonces:[integer] (at "negative-nonces" split))
-                (positive-nonces:[integer] (at "positive-nonces" split))
-                (negative-counterparts:[integer] (at "negative-counterparts" split))
-                (positive-counterparts:[integer] (at "positive-counterparts" split))
-                ;;
-                (n0:integer (at 0 nonces))
-                (a0:integer (at 0 amounts))
-                (l1:integer (length nonces))
-                (l2:integer (length amounts))
-                (negatives:integer (length negative-nonces))
-                (positives:integer (length positive-nonces))
-                ;;
-                (isg:bool (and (= l1 1) (= l2 1)))                  ;;iz-single
-                (inn:bool (< n0 0))                                 ;;iz-nonce-negative
-                (ong:bool (and (> negatives 0) (= positives 0)))    ;;only-negatives
-                (onp:bool (and (> positives 0) (= negatives 0)))    ;;only-positives
-            )
-            (cond
-                ;;SINGLE
-                ;;Transfer Native Nonce
-                ((UC_AndTruths [isg (not inn) son])
-                    (do
-                        (ref-DPDC-C::XE_DebitSFT-Nonce sender id n0 a0 false)
-                        (ref-DPDC-C::XB_CreditSFT-Nonce receiver id n0 a0)
-                    )
-                )
-                ((UC_AndTruths [isg (not inn) (not son)])
-                    (do
-                        (ref-DPDC-C::XE_DebitNFT-Nonce sender id n0 a0 false)
-                        (ref-DPDC-C::XB_CreditNFT-Nonce receiver id n0 a0)
-                    )
-                )
-                ;;Trasnfer Fragment Nonce
-                ((UC_AndTruths [isg inn son])
-                    (do
-                        (ref-DPDC-C::XE_DebitSFT-FragmentNonce sender id n0 a0 false)
-                        (ref-DPDC-C::XE_CreditSFT-FragmentNonce receiver id n0 a0)
-                    )
-                )
-                ((UC_AndTruths [isg inn (not son)])
-                    (do
-                        (ref-DPDC-C::XE_DebitNFT-FragmentNonce sender id n0 a0 false)
-                        (ref-DPDC-C::XE_CreditNFT-FragmentNonce receiver id n0 a0)
-                    )
-                )
-                ;;
-                ;;MULTI
-                ;;Transfer Native Nonces
-                ((UC_AndTruths [(not isg) (not ong) onp son])
-                    (do
-                        (ref-DPDC-C::XE_DebitSFT-Nonces sender id nonces amounts false)
-                        (ref-DPDC-C::XB_CreditSFT-Nonces receiver id nonces amounts)
-                    )
-                )
-                ((UC_AndTruths [(not isg) (not ong) onp (not son)])
-                    (do
-                        (ref-DPDC-C::XE_DebitNFT-Nonces sender id nonces amounts false)
-                        (ref-DPDC-C::XB_CreditNFT-Nonces receiver id nonces amounts)
-                    )
-                )
-                ;;Transfer Fragment Nonces
-                ((UC_AndTruths [(not isg) ong son])
-                    (do
-                        (ref-DPDC-C::XE_DebitSFT-FragmentNonces sender id nonces amounts false)
-                        (ref-DPDC-C::XE_CreditSFT-FragmentNonces receiver id nonces amounts)
-                    )
-                )
-                ((UC_AndTruths [(not isg) ong (not son)])
-                    (do
-                        (ref-DPDC-C::XE_DebitNFT-FragmentNonces sender id nonces amounts false)
-                        (ref-DPDC-C::XE_CreditNFT-FragmentNonces receiver id nonces amounts)
-                    )
-                )
-                ;;Transfer Hybrid (Native and Fragment) Nonces
-                ((UC_AndTruths [(not isg) (not ong) (not onp) son])
-                    (do
-                        (ref-DPDC-C::XE_DebitSFT-HybridNonces sender id nonces amounts)
-                        (ref-DPDC-C::XE_CreditSFT-HybridNonces receiver id nonces amounts)
-                    )
-                )
-                ((UC_AndTruths [(not isg) (not ong) (not onp) (not son)])
-                    (do
-                        (ref-DPDC-C::XE_DebitNFT-HybridNonces sender id nonces amounts)
-                        (ref-DPDC-C::XE_CreditNFT-HybridNonces receiver id nonces amounts)
-                    )
-                )
-            )
-        )
-    )
-    ;;
-    ;;Protection: Class 3 — Custom: IGNIS|C>ROYALTY
-    (defun XI_IgnisTransfer (sender:string receiver:string ta:decimal)
-        (require-capability (IGNIS|C>ROYALTY sender receiver ta))
-        (XI_IgnisDebit sender ta)
-        (XI_IgnisCredit receiver ta)
-    )
-    ;;Protection: Class 3 — Custom: IGNIS|C>CREDIT
-    (defun XI_IgnisCredit (receiver:string ta:decimal)
-        (require-capability (IGNIS|C>CREDIT receiver))
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-            )
-            (ref-DALOS::XB_UpdateBalance receiver false (+ (ref-DALOS::UR_TF_AccountSupply receiver false) ta))
-        )
-    )
-    ;;Protection: Class 3 — Custom: IGNIS|C>DEBIT
-    (defun XI_IgnisDebit (sender:string ta:decimal)
-        (require-capability (IGNIS|C>DEBIT sender ta))
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-            )
-            (ref-DALOS::XB_UpdateBalance sender false (- (ref-DALOS::UR_TF_AccountSupply sender false) ta))
-        )
-    )
     ;;{5.7}  User [A/C]
-    (defun C_RepurposeCollectable:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer])
-        (P|UEV_IMC)
-        (with-capability (DPDC-T|C>REPURPOSE id son repurpose-from repurpose-to nonces amounts)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC:module{DpdcV2} DPDC)
-                    (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
-                    ;;
-                    (l:integer (length nonces))
-                    (owner:string (ref-DPDC::UR_OwnerKonto id son))
-                    (s:decimal (ref-IGNIS::UC_IgnisLeg "tier-small"))
-                    (m:decimal (ref-IGNIS::UC_IgnisLeg "tier-medium"))
-                    (p:decimal (if son s m))
-                    (sum-amounts:decimal (dec (fold (+) 1 amounts)))
-                    (price:decimal (* p sum-amounts))
-                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                )
-                (if (= l 1)
-                    ;;Single Mode
-                    (let
-                        (
-                            (nonce:integer (at 0 nonces))
-                            (amount:integer (at 0 amounts))
-                        )
-                        ;;1]Debit from <repurpose-from>
-                        (if son
-                            (ref-DPDC-C::XE_DebitSFT-Nonce repurpose-from id nonce amount true)
-                            (ref-DPDC-C::XE_DebitNFT-Nonce repurpose-from id nonce amount true)
-                        )
-                        ;;2]Credit to <repurpose-to>
-                        (if son
-                            (ref-DPDC-C::XB_CreditSFT-Nonce repurpose-to id nonce amount)
-                            (ref-DPDC-C::XB_CreditNFT-Nonce repurpose-to id nonce amount)
-                        )
-                    )
-                    ;;Multi Mode
-                    (do
-                        (if son
-                            ;;1]Debit from <repurpose-from>
-                            (ref-DPDC-C::XE_DebitSFT-Nonces repurpose-from id nonces amounts true)
-                            (ref-DPDC-C::XE_DebitNFT-Nonces repurpose-from id nonces amounts true)
-                        )
-                        (if son
-                            ;;2]Credit to <repurpose-to>
-                            (ref-DPDC-C::XB_CreditSFT-Nonces repurpose-to id nonces amounts)
-                            (ref-DPDC-C::XB_CreditNFT-Nonces repurpose-to id nonces amounts)
-                        )
-                    )
-                )
-                ;;3]Output Cumulator
-                (URCi_RepurposeCollectable id son amounts)
-            )
-        )
-    )
-    (defun C_Transfer:object{IgnisCollectorV3.OutputCumulator}
-        (ids:[string] sons:[bool] sender:string receiver:string nonces-array:[[integer]] amounts-array:[[integer]] method:bool)
-        (P|UEV_IMC)
-        (with-capability (DPDC-T|C>TRANSFER ids sons sender receiver nonces-array amounts-array method)
-            (map
-                (lambda
-                    (idx:integer)
-                    (XI_TransferNonces (at idx ids) (at idx sons) sender receiver (at idx nonces-array) (at idx amounts-array))
-                )
-                (enumerate 0 (- (length ids) 1))
-            )
-            (URCi_MultiTransferCumulator ids sons sender receiver nonces-array amounts-array)
-        )
-    )
-    (defun C_BulkTransfer:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool nonces-array:[[integer]] amounts-array:[[integer]] sender:string receiver-lst:[string] method:bool)
-        @doc "Bulk collectable transfer: one id/son, one sender, many standard-account receivers (DpdcTransferV2). \
-            \ Arg order mirrors C_Transfer: id/son, slice arrays, sender, receiver-lst, method."
-        (P|UEV_IMC)
-        (with-capability
-            (DPDC-T|C>BULK-TRANSFER id son nonces-array amounts-array sender receiver-lst method)
-            (do
-                (map
-                    (lambda (idx:integer)
-                        (XI_TransferNonces
-                            id
-                            son
-                            sender
-                            (at idx receiver-lst)
-                            (at idx nonces-array)
-                            (at idx amounts-array)
-                        )
-                    )
-                    (enumerate 0 (- (length receiver-lst) 1))
-                )
-                (URCi_BulkTransferCumulator id son sender receiver-lst nonces-array amounts-array)
-            )
-        )
-    )
-    (defun C_IgnisRoyaltyCollector:object{DpdcTransferV2.AggregatedRoyalties}
-        (patron:string sender:string ids:[string] sons:[bool] nonces-array:[[integer]] amounts-array:[[integer]])
-        (P|UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPDC:module{DpdcV2} DPDC)
-                ;;
-                (ivgz:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                ;;
-                (creators:[string]
-                    (map
-                        (lambda
-                            (idx:integer)
-                            (ref-DPDC::UR_CreatorKonto (at idx ids) (at idx sons))
-                        )
-                        (enumerate 0 (- (length ids) 1))
-                    )
-                )
-                (ids-ignis-royalties:[decimal]
-                    (map
-                        (lambda
-                            (idx:integer)
-                            (URC_SummedIgnisRoyalty sender (at idx ids) (at idx sons) (at idx nonces-array) (at idx amounts-array))
-                        )
-                        (enumerate 0 (- (length ids) 1))
-                    )
-                )
-                (sum:decimal (fold (+) 0.0 ids-ignis-royalties))
-            )
-            (if (or ivgz (= sum 0.0))
-                (with-capability (IGNIS|C>NO-ROYALTY )
-                    (UDCx_AggregatedRoyalties [""] [0.0])
-                )
-                (let
-                    (
-                        (agg:object{DpdcTransferV2.AggregatedRoyalties} (UC_AggregateRoyalties creators ids-ignis-royalties))
-                        (cleansed-agg:object{DpdcTransferV2.AggregatedRoyalties} (UC_CleanseAggregatedRoyalties agg))
-                        (agg-creators:[string] (at "creators" cleansed-agg))
-                        (agg-royalties:[decimal] (at "ignis-royalties" cleansed-agg))
-                    )
-                    (map
-                        (lambda
-                            (idx:integer)
-                            (with-capability (IGNIS|C>ROYALTY patron (at idx agg-creators) (at idx agg-royalties))
-                                (XI_IgnisTransfer patron (at idx agg-creators) (at idx agg-royalties))
-                            )
-                        )
-                        (enumerate 0 (- (length agg-creators) 1))
-                    )
-                    (UDCx_AggregatedRoyalties agg-creators agg-royalties)
-                )
-            )
-        )
-    )
 
 )
 
-;; --- tables for 07_DPDC-T.pact (2 defined) ---
+;; --- tables for 01_DPDC-UDC.pact (2 defined) ---
 ;; UPGRADE MODE: this module is assumed already deployed, so its
 ;; tables already exist and (create-table) would ABORT the whole
 ;; transaction. They are listed here, commented, for reference.

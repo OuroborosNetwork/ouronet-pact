@@ -119,7 +119,7 @@
     (VCTGAS.XI_TfStakeOnly patron pool-id ouro-id 50 2.0)
     ;; mint EliteAuryn to patron, then GIVE 100000 to each synth → Elite-DEB rises → stored deb stale
     (ref-TS01-C1::DPTF|C_Mint patron patron elite-id 10000000.0 true)
-    (map (lambda (i:integer) (ref-TS01-C1::DPTF|C_Transfer patron elite-id patron (VCTGAS.UC_SynthAccount i) 100000.0 true)) (enumerate 1 50))
+    (map (lambda (i:integer) (ref-TS01-C1::DPTF|C_Transfer patron patron (VCTGAS.UC_SynthAccount i) elite-id 100000.0 true)) (enumerate 1 50))
     (let
         (
             (u1:string (VCTGAS.UC_SynthAccount 1))

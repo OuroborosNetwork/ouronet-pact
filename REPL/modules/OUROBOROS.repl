@@ -132,7 +132,7 @@
 ;;Give an account Elite-Auryn, then have it SUBLIMATE OURO against a zero balance -- sublimation
 ;;spends OURO it does not have, and the overdraft is exactly the Dispo the Elite-Auryn backs.
 ;;Reusing that recipe is the whole reason this pin cost one pass instead of several.
-(TS01-C1.DPTF|C_Transfer KST.ANHD "ELITEAURYN-98c486052a51" KST.ANHD KST.EMMA 5000.0 false)
+(TS01-C1.DPTF|C_Transfer KST.ANHD KST.ANHD KST.EMMA "ELITEAURYN-98c486052a51" 5000.0 false)
 (commit-tx)
 
 ;;|| NEXT >
@@ -171,7 +171,7 @@
     [
         (expect-failure "<<ORBR-G2>> a negative-OURO account cannot move its Elite-Auryn"
             "When Account has negative OURO, Elite-Auryn is dispo-locked and cannot be moved"
-            (TS01-C1.DPTF|C_Transfer KST.EMMA "ELITEAURYN-98c486052a51" KST.EMMA KST.LUMY 10.0 false))
+            (TS01-C1.DPTF|C_Transfer KST.EMMA KST.EMMA KST.LUMY "ELITEAURYN-98c486052a51" 10.0 false))
     ]
 )
 (commit-tx)
@@ -190,7 +190,7 @@
 ;;==== ORBR-G2d -- ...while a SOLVENT account moves the same token freely · 02 · let / invocation ==== 
 (print "--- [ORBR-G2d -- ...while a SOLVENT account moves the same token freely · 02 · let / invocation] ---")
 (let ((before:decimal (DPTF.UR_AccountSupply "ELITEAURYN-98c486052a51" KST.LUMY)))
-    (TS01-C1.DPTF|C_Transfer KST.ANHD "ELITEAURYN-98c486052a51" KST.ANHD KST.LUMY 10.0 false)
+    (TS01-C1.DPTF|C_Transfer KST.ANHD KST.ANHD KST.LUMY "ELITEAURYN-98c486052a51" 10.0 false)
     (map print
         [
             ;;9.0 of 10.0, not 10.0: Elite-Auryn carries a transfer fee, so the receiver nets the
@@ -514,7 +514,7 @@
             (predicted:object{OuronetInfoV2.ClientInfo}
                 (INFO-ONE.INFO_DPTF|Transmute patron auryn patron 1.0))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C1::DPTF|C_Transmute patron auryn patron 1.0))
+            (m (ref-TS01-C1::DPTF|C_Transmute patron patron auryn 1.0))
         )
         (map print
             [
