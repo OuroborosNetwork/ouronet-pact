@@ -286,6 +286,53 @@ not a mechanical one.
 
 ---
 
+### 11_VST.pact — IN PROGRESS (18 of 29 entrypoints, 2026-09-21)
+
+**What v1 asserted that is now wrong.** Every VST client call site has moved. 18 of 29 entrypoints
+have a changed signature; the remaining 11 (`C_Repurpose*` ×7, `C_ToggleTransferRole*` ×4) are
+unchanged so far and will move at the same turn.
+
+**13 were RENAMES the plan called ADD — and that is the finding an auditor should look at first.**
+`freezer`, `reserver`, `unreserver`, `vester`, `unvester`, `sleeper`, `unsleeper`, `hibernator`,
+`awaker`, `constricter`, `brumator`, and `merger` twice, were already executors under bespoke names.
+`_executorplan.py` classified eleven of them `ADD` because its `ACCT` list is hardcoded and had
+never seen VST's vocabulary. Following it would have produced **two account parameters** on each.
+Fixed in the tool (new `REVIEW` state, commit `8063bde`); **36 entrypoints tree-wide were in that
+state**, so this is not a VST-only correction and the same misclassification is pending in
+13_OUROBOROS, 15_SWP, 03_TS01-C2, 06_TS01-C4, 04_DPDC-I, 00_Demipad, 05_FVT, 01_TS02-C1,
+04_TS02-C3 and 05_TS02-DPAD.
+
+**5 genuinely gained an executor**: the link creators (`C_CreateFrozenLink`,
+`C_CreateReservationLink`, `C_CreateVestingLink`, `C_CreateSleepingLink`,
+`C_CreateHibernatingLink`). `VST|C>LINK` proved `DPTF::CAP_Owner dptf` — AUTHORITY — and named no
+ACTOR: HANDOFF §4g's "authority proven, actor unrecorded", now the fourth instance in four modules.
+`DPTF::UEV_ExecutorIsKonto executor dptf` supplies the other half. **The ownership enforce was kept,
+not replaced.** `_modulecomplete` check 7 reports 18 proven / 0 unproven — no decorative executors.
+
+**New adversarial coverage v1 did not have.** The link creators now refuse a caller who names an
+account that is not the token's owner. **v1 had no such assertion because the parameter did not
+exist**, so there is nothing to re-point — this is a new gate and needs a new negative test.
+
+**TWO PROVISIONAL EXECUTOR SLOTS (HANDOFF §4e) — re-point these at 15_SWP's turn:**
+
+| site | slot passed | why |
+|---|---|---|
+| `15_SWP.pact` `C_EnableFrozenLP` → `VST::C_CreateFrozenLink` | `(ref-DPTF::UR_Konto lp-id)` | SWP is module 13; no `executor` exists there yet |
+| `15_SWP.pact` `C_EnableSleepingLP` → `VST::C_CreateSleepingLink` | `(ref-DPTF::UR_Konto lp-id)` | twin of the above |
+
+**Both were wrong on the first attempt, and the suite caught it.** They were filled with
+`(UR_OwnerKonto swpair)` — the POOL owner, which is what "the account that initiates" reads like —
+and `[RT-F]_Griefing.repl` refused with *"Executor is not the Token Owner"*. An LP token is held by
+a **smart** account; the swpair's owner-konto is the human. That is the handoff's own
+*"executor = patron is not a safe default"* warning one level along, and it is worth an auditor's
+attention because **both readings are defensible in prose and only one satisfies the binder.**
+
+**Call sites re-pointed: 33** across 11 files, including `[4.0]_Sovereign-Executor.repl`,
+`[6.3]_SWP.repl`, `[5.3]_Launchpad.repl`, `modules/VST.repl`, `modules/ATS.repl`, `modules/SWP.repl`
+and three archived scratch harnesses. Test executors are **derived** — `(ouronet-ns.DPTF.UR_Konto
+<id>)` — never hardcoded to the patron, for the reason above.
+
+
 ## Changed as a DOWNSTREAM CONSEQUENCE — not yet swept in their own right
 
 These files have a changed client surface **because a module they call was swept**, not because

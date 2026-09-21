@@ -112,7 +112,7 @@
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_VST|CreateFrozenLink patron a))
             (stoa-before:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (created:[string] (ref-TS01-C2::VST|C_CreateFrozenLink patron a))
+            (created:[string] (ref-TS01-C2::VST|C_CreateFrozenLink patron (ouronet-ns.DPTF.UR_Konto a) a))
          )
         (print (format "<(VST|C_CreateFrozenLink)> => {}" [created]))
         (map print
@@ -351,7 +351,7 @@
                 (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
                     "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 sp)) ] } ]))
     ;;build the reserved token through the ORDINARY client path -- nothing forced here
-    (ref-TS01-C2::VST|C_CreateReservationLink KST.ANHD a)
+    (ref-TS01-C2::VST|C_CreateReservationLink KST.ANHD (ouronet-ns.DPTF.UR_Konto a) a)
     ;;ownership only: the wrapper belongs to the VST smart-contract account, whose module guard no
     ;;key can satisfy, and CAP_Owner runs before the rule. Same obstacle as VST-G8.
     (env-module-admin DPTF)
@@ -368,11 +368,11 @@
             ;;THE ITEM
             (expect-failure "<<VST-G9>> a SPECIAL token cannot be given a frozen link"
                 "When setting a Frozen Link, the main DPTF R|MOCKA-98c486052a51 cannot be a Special Token"
-                (ref-TS01-C2::VST|C_CreateFrozenLink KST.ANHD "R|MOCKA-98c486052a51"))
+                (ref-TS01-C2::VST|C_CreateFrozenLink KST.ANHD (ouronet-ns.DPTF.UR_Konto "R|MOCKA-98c486052a51") "R|MOCKA-98c486052a51"))
             ;;CONTRAST 1 -- an ORDINARY token takes a frozen link, so the refusal is about the prefix
             ;;and not about the operation.
             (expect "<<VST-G9>> ...while an ordinary token takes one"
-                true (!= "" (format "{}" [(ref-TS01-C2::VST|C_CreateFrozenLink KST.ANHD b)])))
+                true (!= "" (format "{}" [(ref-TS01-C2::VST|C_CreateFrozenLink KST.ANHD (ouronet-ns.DPTF.UR_Konto b) b)])))
             ;;CONTRAST 2 -- the ALREADY-FROZEN token gets the OTHER message, which is what shows the
             ;;two guards are distinct rather than one wording covering both cases. It has to be
             ;;`F|MOCKA` and not `MOCKA`: pointing the client at MOCKA makes it try to ISSUE a wrapper
@@ -381,7 +381,7 @@
             ;;and confusing it for this one is easy -- the first draft did exactly that.
             (expect-failure "<<VST-G9>> ...and an already-linked token gets the immutability message instead"
                 "Special True Fungible Links (Frozen or Reserved) are immutable !"
-                (ref-TS01-C2::VST|C_CreateFrozenLink KST.ANHD "F|MOCKA-98c486052a51"))
+                (ref-TS01-C2::VST|C_CreateFrozenLink KST.ANHD (ouronet-ns.DPTF.UR_Konto "F|MOCKA-98c486052a51") "F|MOCKA-98c486052a51"))
         ]
     )
     ""
@@ -455,7 +455,7 @@
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_VST|CreateHibernatingLink patron a))
             (stoa-before:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (created:[string] (ref-TS01-C2::VST|C_CreateHibernatingLink patron a))
+            (created:[string] (ref-TS01-C2::VST|C_CreateHibernatingLink patron (ouronet-ns.DPTF.UR_Konto a) a))
          )
         (print (format "<(VST|C_CreateHibernatingLink)> => {}" [created]))
         (print (format "<<VST-I1c>> IGNIS predicted={} real={} | STOA predicted={} real={}"
@@ -593,7 +593,7 @@
             }
         ]
     )
-    (ref-TS01-C2::VST|C_CreateSleepingLink patron a)
+    (ref-TS01-C2::VST|C_CreateSleepingLink patron (ouronet-ns.DPTF.UR_Konto a) a)
     (map print
         [
             (expect "<<VST-06>> C_CreateSleepingLink registered the sleeping link"
@@ -1428,7 +1428,7 @@
     [
         (expect-failure "<<VST-G4>> a NON-owner cannot create a FROZEN link on someone else's DPTF"
             "Keyset failure (keys-all)"
-            (TS01-C2.VST|C_CreateFrozenLink KST.EMMA "MOCKB-98c486052a51"))
+            (TS01-C2.VST|C_CreateFrozenLink KST.EMMA (ouronet-ns.DPTF.UR_Konto "MOCKB-98c486052a51") "MOCKB-98c486052a51"))
     ]
 )
 (commit-tx)
@@ -1449,7 +1449,7 @@
     [
         (expect-failure "<<VST-G4>> a NON-owner cannot create a RESERVATION link either"
             "Keyset failure (keys-all)"
-            (TS01-C2.VST|C_CreateReservationLink KST.EMMA "MOCKB-98c486052a51"))
+            (TS01-C2.VST|C_CreateReservationLink KST.EMMA (ouronet-ns.DPTF.UR_Konto "MOCKB-98c486052a51") "MOCKB-98c486052a51"))
     ]
 )
 (commit-tx)
@@ -1466,7 +1466,7 @@
     [
         (expect-failure "<<VST-G4>> a NON-owner cannot create a VESTING link either"
             "Keyset failure (keys-all)"
-            (TS01-C2.VST|C_CreateVestingLink KST.EMMA "MOCKB-98c486052a51"))
+            (TS01-C2.VST|C_CreateVestingLink KST.EMMA (ouronet-ns.DPTF.UR_Konto "MOCKB-98c486052a51") "MOCKB-98c486052a51"))
     ]
 )
 (commit-tx)
@@ -1500,7 +1500,7 @@
     [
         (expect-failure "<<VST-G5>> a sleeping link cannot be re-created -- it is immutable"
             "Value already found while in Insert mode"
-            (TS01-C2.VST|C_CreateSleepingLink KST.ANHD "MOCKA-98c486052a51"))
+            (TS01-C2.VST|C_CreateSleepingLink KST.ANHD (ouronet-ns.DPTF.UR_Konto "MOCKA-98c486052a51") "MOCKA-98c486052a51"))
     ]
 )
 (commit-tx)
@@ -1520,7 +1520,7 @@
     [
         (expect-failure "<<VST-G5>> a hibernating link cannot be re-created either"
             "Value already found while in Insert mode"
-            (TS01-C2.VST|C_CreateHibernatingLink KST.ANHD "MOCKA-98c486052a51"))
+            (TS01-C2.VST|C_CreateHibernatingLink KST.ANHD (ouronet-ns.DPTF.UR_Konto "MOCKA-98c486052a51") "MOCKA-98c486052a51"))
     ]
 )
 (commit-tx)

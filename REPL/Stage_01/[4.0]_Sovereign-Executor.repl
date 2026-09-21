@@ -805,9 +805,9 @@
         (AurynID:string (ref-DALOS::UR_AurynID))
         (EliteAurynID:string (ref-DALOS::UR_EliteAurynID))
         ;;
-        (VestedOuroID:string (at 1 (ref-TS01-C2::VST|C_CreateVestingLink patron OuroID)))
-        (VestedAurynID:string (at 1 (ref-TS01-C2::VST|C_CreateVestingLink patron AurynID)))
-        (VestedEliteAurynID:string (at 1 (ref-TS01-C2::VST|C_CreateVestingLink patron EliteAurynID)))
+        (VestedOuroID:string (at 1 (ref-TS01-C2::VST|C_CreateVestingLink patron (ouronet-ns.DPTF.UR_Konto OuroID) OuroID)))
+        (VestedAurynID:string (at 1 (ref-TS01-C2::VST|C_CreateVestingLink patron (ouronet-ns.DPTF.UR_Konto AurynID) AurynID)))
+        (VestedEliteAurynID:string (at 1 (ref-TS01-C2::VST|C_CreateVestingLink patron (ouronet-ns.DPTF.UR_Konto EliteAurynID) EliteAurynID)))
     )
     [VestedOuroID VestedAurynID VestedEliteAurynID]
 )
@@ -1498,9 +1498,9 @@
             )
         )
         (VestaID:string (at 0 ids))
-        (FrozenVestaID:string (at 1 (ref-TS01-C2::VST|C_CreateFrozenLink patron VestaID)))
-        (SleepingVestaID:string (at 1 (ref-TS01-C2::VST|C_CreateSleepingLink patron VestaID)))
-        (ReservedOuroID:string (at 1 (ref-TS01-C2::VST|C_CreateReservationLink patron OuroID)))
+        (FrozenVestaID:string (at 1 (ref-TS01-C2::VST|C_CreateFrozenLink patron (ouronet-ns.DPTF.UR_Konto VestaID) VestaID)))
+        (SleepingVestaID:string (at 1 (ref-TS01-C2::VST|C_CreateSleepingLink patron (ouronet-ns.DPTF.UR_Konto VestaID) VestaID)))
+        (ReservedOuroID:string (at 1 (ref-TS01-C2::VST|C_CreateReservationLink patron (ouronet-ns.DPTF.UR_Konto OuroID) OuroID)))
     )
     [VestaID FrozenVestaID SleepingVestaID ReservedOuroID]
 )
@@ -1799,7 +1799,7 @@
             )
             (PensionID:string (at 0 ids))
             (HibernatedPensionID:string 
-                (at 1 (ref-TS01-C2::VST|C_CreateHibernatingLink patron PensionID))
+                (at 1 (ref-TS01-C2::VST|C_CreateHibernatingLink patron (ouronet-ns.DPTF.UR_Konto PensionID) PensionID))
             )
             (KoriID:string
                 (at 0

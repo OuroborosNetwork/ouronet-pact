@@ -100,11 +100,11 @@
     (defun ATS|C_DirectRecovery (patron:string executor:string ats:string ra:decimal))
     ;;
     ;;
-    (defun VST|C_CreateFrozenLink:[string] (patron:string dptf:string))
-    (defun VST|C_CreateReservationLink:[string] (patron:string dptf:string))
-    (defun VST|C_CreateVestingLink:[string] (patron:string dptf:string))
-    (defun VST|C_CreateSleepingLink:[string] (patron:string dptf:string))
-    (defun VST|C_CreateHibernatingLink:[string] (patron:string dptf:string))
+    (defun VST|C_CreateFrozenLink:[string] (patron:string executor:string dptf:string))
+    (defun VST|C_CreateReservationLink:[string] (patron:string executor:string dptf:string))
+    (defun VST|C_CreateVestingLink:[string] (patron:string executor:string dptf:string))
+    (defun VST|C_CreateSleepingLink:[string] (patron:string executor:string dptf:string))
+    (defun VST|C_CreateHibernatingLink:[string] (patron:string executor:string dptf:string))
         ;;Frozen
     (defun VST|C_Freeze (patron:string freezer:string freeze-output:string dptf:string amount:decimal))
     (defun VST|C_RepurposeFrozen (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string))
@@ -1148,7 +1148,7 @@
         )
     )
     ;;  [VST_Client]
-    (defun VST|C_CreateFrozenLink:[string] (patron:string dptf:string)
+    (defun VST|C_CreateFrozenLink:[string] (patron:string executor:string dptf:string)
         @doc "Creates a Frozen Link, issuing a Special-DPTF as a frozen counterpart for another DPTF \
             \ A Frozen Link is immutable, and noted in the Token Properties of both DPTFs \
             \ A Special DPTF of the Frozen variety, is used for implementing the FROZEN Functionality for a DPTF Token \
@@ -1173,7 +1173,7 @@
                     (ref-VST:module{VestingV2} VST)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-VST::C_CreateFrozenLink patron dptf)
+                        (ref-VST::C_CreateFrozenLink patron executor dptf)
                     )
                     (output-id:string (at 0 (at "output" ico)))
                 )
@@ -1189,7 +1189,7 @@
             )
         )
     )
-    (defun VST|C_CreateReservationLink:[string] (patron:string dptf:string)
+    (defun VST|C_CreateReservationLink:[string] (patron:string executor:string dptf:string)
         @doc "Creates a Reservation Link, issuing a Special-DPTF as a reserved counterpart for another DPTF \
             \ A Reservation Link is immutable, and noted in the Token Properties of both DPTFs \
             \ A Special DPTF of the Reserved variety, is used for implementing the RESERVED Functionality for a DPTF Token \
@@ -1213,7 +1213,7 @@
                     (ref-VST:module{VestingV2} VST)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-VST::C_CreateReservationLink patron dptf)
+                        (ref-VST::C_CreateReservationLink patron executor dptf)
                     )
                     (output-id:string (at 0 (at "output" ico)))
                 )
@@ -1229,7 +1229,7 @@
             )
         )
     )
-    (defun VST|C_CreateVestingLink:[string] (patron:string dptf:string)
+    (defun VST|C_CreateVestingLink:[string] (patron:string executor:string dptf:string)
         @doc "Creates a Vesting Link, issuing a Special-DPOF as a vested counterpart for another DPTF \
             \ A Vesting Link is immutable, and noted in the Token Properties of both the DPTF and the Special DPOF \
             \ A Special DPOF of the Vested variety, is used for implementing the Vesting Functionality for a DPTF Token \
@@ -1252,7 +1252,7 @@
                     (ref-VST:module{VestingV2} VST)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-VST::C_CreateVestingLink patron dptf)
+                        (ref-VST::C_CreateVestingLink patron executor dptf)
                     )
                     (output-id:string (at 0 (at "output" ico)))
                 )
@@ -1268,7 +1268,7 @@
             )
         )
     )
-    (defun VST|C_CreateSleepingLink:[string] (patron:string dptf:string)
+    (defun VST|C_CreateSleepingLink:[string] (patron:string executor:string dptf:string)
         @doc "Creates a Sleeping Link, issuing a Special-DPOF as a sleeping counterpart for another DPTF \
             \ A Sleeping Link is immutable, and noted in the Token Properties of both the DPTF and the Special DPOF \
             \ A Special DPOF of the Sleeping variety, is used for implementing the Sleeping Functionality for a DPTF Token \
@@ -1291,7 +1291,7 @@
                     (ref-VST:module{VestingV2} VST)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-VST::C_CreateSleepingLink patron dptf)
+                        (ref-VST::C_CreateSleepingLink patron executor dptf)
                     )
                     (output-id:string (at 0 (at "output" ico)))
                 )
@@ -1307,7 +1307,7 @@
             )
         )
     )
-    (defun VST|C_CreateHibernatingLink:[string] (patron:string dptf:string)
+    (defun VST|C_CreateHibernatingLink:[string] (patron:string executor:string dptf:string)
         @doc "Creates a Hibernating Link, issuing a Special-DPOF as a hibernating counterpart for another DPTF \
             \ A Hibernating Link is immutable, and noted in the Token Properties of both DPTF and the Special DPOF \
             \ A Special DPOF of the Hibernating variety, is used for implementing the Hibernating Functionality for a DPTF Token \
@@ -1327,7 +1327,7 @@
                     (ref-VST:module{VestingV2} VST)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-VST::C_CreateHibernatingLink patron dptf)
+                        (ref-VST::C_CreateHibernatingLink patron executor dptf)
                     )
                     (output-id:string (at 0 (at "output" ico)))
                 )

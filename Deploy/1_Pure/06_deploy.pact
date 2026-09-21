@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 6 of 24
 ;; This is STEP 6 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-5 must have run first, including the init steps between deploys.
-;; 3 source file(s), 231,586 gas measured in the REPL gas model, 219,001 bytes
+;; 3 source file(s), 231,586 gas measured in the REPL gas model, 220,327 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/13_OUROBOROS.pact
@@ -4498,7 +4498,12 @@
                 )
                 (XI_EnableFrozenLP swpair)
                 (if (= current-frozen-link BAR)
-                    (ref-VST::C_CreateFrozenLink patron lp-id)    
+                    ;;PROVISIONAL EXECUTOR SLOT (HANDOFF 4e) -- twin of the one in
+                    ;;C_EnableSleepingLP below; same reasoning, same account (the LP TOKEN's
+                    ;;owner, not the pool's -- see there). Found by
+                    ;;_callarity.py, NOT by the grep that found its twin: that grep was truncated
+                    ;;with `head -4` and this line sat past the cut. Re-pointed at 15_SWP's turn.
+                    (ref-VST::C_CreateFrozenLink patron (ref-DPTF::UR_Konto lp-id) lp-id)
                     (ref-IGNIS::UDC_ConstructOutputCumulator
                         (ref-IGNIS::UC_IgnisLeg "tier-medium")
                         (UR_OwnerKonto swpair)
@@ -4523,7 +4528,16 @@
                 )
                 (XI_EnableSleepingLP swpair)
                 (if (= current-sleeping-link BAR)
-                    (ref-VST::C_CreateSleepingLink patron lp-id)
+                    ;;PROVISIONAL EXECUTOR SLOT (HANDOFF 4e) -- 15_SWP's own turn is module 13
+                    ;;and has not come, so there is no `executor` here to thread. The rule is to
+                    ;;pass the account that actually INITIATES, never a placeholder: that is the
+                    ;;LP TOKEN's owner. NOT the pool owner -- that was the first guess and the
+                    ;;suite refused it with "Executor is not the Token Owner": VST's binder
+                    ;;enforces executor == (UR_Konto lp-id), and an LP token is held by a SMART
+                    ;;account while the swpair's owner-konto is the human. Exactly the handoff's
+                    ;;"executor = patron is not a safe default" warning, one level along.
+                    ;;Re-pointed at 15_SWP's turn; listed in AUDIT-V2-DELTA.
+                    (ref-VST::C_CreateSleepingLink patron (ref-DPTF::UR_Konto lp-id) lp-id)
                     (ref-IGNIS::UDC_ConstructOutputCumulator
                         (ref-IGNIS::UC_IgnisLeg "tier-medium")
                         (UR_OwnerKonto swpair)

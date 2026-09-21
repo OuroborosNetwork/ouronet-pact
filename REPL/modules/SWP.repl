@@ -2241,7 +2241,7 @@
                   "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
               (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
                   "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa)) ] } ])
-    (let ((created:[string] (TS01-C2.VST|C_CreateSleepingLink KST.ANHD lp)))
+    (let ((created:[string] (TS01-C2.VST|C_CreateSleepingLink KST.ANHD (ouronet-ns.DPTF.UR_Konto lp) lp)))
         (map print
             [
                 ;;the sleeping counterpart of an LP token is itself double-prefixed
@@ -5194,7 +5194,7 @@
         (patron:string KST.ANHD)
     )
     (if (= (ref-DPTF::UR_Frozen busd) (ref-U|CT2::CT_BAR))
-        (ref-TS01-C2::VST|C_CreateFrozenLink patron busd)
+        (ref-TS01-C2::VST|C_CreateFrozenLink patron (ouronet-ns.DPTF.UR_Konto busd) busd)
         "frozen link already exists")
     (ref-TS01-C2::VST|C_Freeze patron patron patron busd 100.0)
     (let
@@ -5283,7 +5283,7 @@
         (patron:string KST.ANHD)
     )
     (if (= (ref-DPTF::UR_Sleeping vst) (ref-U|CT2::CT_BAR))
-        (ref-TS01-C2::VST|C_CreateSleepingLink patron vst)
+        (ref-TS01-C2::VST|C_CreateSleepingLink patron (ouronet-ns.DPTF.UR_Konto vst) vst)
         "sleeping link already exists")
     (ref-TS01-C2::VST|C_Sleep patron patron patron vst 100.0 3600)
     (let

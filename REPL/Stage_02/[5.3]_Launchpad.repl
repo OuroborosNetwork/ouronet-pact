@@ -273,7 +273,7 @@
                 }
             ]
         )
-        (ref-TS01-C2::VST|C_CreateFrozenLink patron SparkID)
+        (ref-TS01-C2::VST|C_CreateFrozenLink patron (ouronet-ns.DPTF.UR_Konto SparkID) SparkID)
     )
     
 (print "")

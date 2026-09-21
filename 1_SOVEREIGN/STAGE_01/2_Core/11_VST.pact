@@ -100,11 +100,11 @@
     ;;
     ;;  [C]
     ;;
-    (defun C_CreateFrozenLink:object{IgnisCollectorV3.OutputCumulator} (patron:string dptf:string))
-    (defun C_CreateReservationLink:object{IgnisCollectorV3.OutputCumulator} (patron:string dptf:string))
-    (defun C_CreateVestingLink:object{IgnisCollectorV3.OutputCumulator} (patron:string dptf:string))
-    (defun C_CreateSleepingLink:object{IgnisCollectorV3.OutputCumulator} (patron:string dptf:string))
-    (defun C_CreateHibernatingLink:object{IgnisCollectorV3.OutputCumulator} (patron:string dptf:string))
+    (defun C_CreateFrozenLink:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string dptf:string))
+    (defun C_CreateReservationLink:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string dptf:string))
+    (defun C_CreateVestingLink:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string dptf:string))
+    (defun C_CreateSleepingLink:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string dptf:string))
+    (defun C_CreateHibernatingLink:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string dptf:string))
         ;;
     (defun C_Freeze:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string freeze-output:string dptf:string amount:decimal))
     (defun C_RepurposeFrozen:object{IgnisCollectorV3.OutputCumulator} (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string))
@@ -388,9 +388,9 @@
     )
     ;;{C2}  Simple
     ;;{C3}  Composed
-    (defcap VST|C>FROZEN-LINK (dptf:string)
+    (defcap VST|C>FROZEN-LINK (executor:string dptf:string)
         @event
-        (compose-capability (VST|C>LINK dptf))
+        (compose-capability (VST|C>LINK executor dptf))
     )
     (defcap VST|C>FREEZE (executor:string freeze-output:string dptf:string amount:decimal)
         @event
@@ -405,9 +405,9 @@
         )
     )
     ;;
-    (defcap VST|C>RESERVATION-LINK (dptf:string)
+    (defcap VST|C>RESERVATION-LINK (executor:string dptf:string)
         @event
-        (compose-capability (VST|C>LINK dptf))
+        (compose-capability (VST|C>LINK executor dptf))
     )
     (defcap VST|C>RESERVE (executor:string dptf:string amount:decimal)
         @event
@@ -438,9 +438,9 @@
         )
     )
     ;;
-    (defcap VST|C>VESTING-LINK (dptf:string)
+    (defcap VST|C>VESTING-LINK (executor:string dptf:string)
         @event
-        (compose-capability (VST|C>LINK dptf))
+        (compose-capability (VST|C>LINK executor dptf))
     )
     (defcap VST|C>VEST (executor:string target-account:string dptf:string amount:decimal offset:integer duration:integer milestones:integer)
         @event
@@ -472,9 +472,9 @@
         )
     )
     ;;
-    (defcap VST|C>SLEEPING-LINK (dptf:string)
+    (defcap VST|C>SLEEPING-LINK (executor:string dptf:string)
         @event
-        (compose-capability (VST|C>LINK dptf))
+        (compose-capability (VST|C>LINK executor dptf))
     )
     (defcap VST|C>SLEEP (executor:string target-account:string dptf:string amount:decimal duration:integer)
         @event
@@ -715,12 +715,18 @@
         )
     )
     ;;
-    (defcap VST|C>LINK (dptf:string)
+    (defcap VST|C>LINK (executor:string dptf:string)
+        @doc "ATTRIBUTION (patron/executor canon 2.2, 2026-09-21). <CAP_Owner dptf> proved the \
+            \ AUTHORITY -- that whoever called owns the token -- but named no ACTOR, the shape \
+            \ HANDOFF 4g calls 'authority proven, actor unrecorded' and the third instance of \
+            \ in three modules. <UEV_ExecutorIsKonto> supplies the other half: that the account \
+            \ the caller NAMED is that same owner. The ownership enforce is kept, not replaced."
         (let
             (
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
             )
             (ref-DPTF::CAP_Owner dptf)
+            (ref-DPTF::UEV_ExecutorIsKonto executor dptf)
         )
         (compose-capability (P|TT))
     )
@@ -1888,37 +1894,37 @@
     )
     ;;{5.7}  User [A/C]
     (defun C_CreateFrozenLink:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string dptf:string)
+        (patron:string executor:string dptf:string)
         (P|UEV_IMC)
-        (with-capability (VST|C>FROZEN-LINK dptf)
+        (with-capability (VST|C>FROZEN-LINK executor dptf)
             (XI_CreateSpecialTrueFungibleLink patron dptf 1)
         )
     )
     (defun C_CreateReservationLink:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string dptf:string)
+        (patron:string executor:string dptf:string)
         (P|UEV_IMC)
-        (with-capability (VST|C>RESERVATION-LINK dptf)
+        (with-capability (VST|C>RESERVATION-LINK executor dptf)
             (XI_CreateSpecialTrueFungibleLink patron dptf 2)
         )
     )
     (defun C_CreateVestingLink:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string dptf:string)
+        (patron:string executor:string dptf:string)
         (P|UEV_IMC)
-        (with-capability (VST|C>VESTING-LINK dptf)
+        (with-capability (VST|C>VESTING-LINK executor dptf)
             (XI_CreateSpecialOrtoFungibleLink patron dptf 1)
         )
     )
     (defun C_CreateSleepingLink:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string dptf:string)
+        (patron:string executor:string dptf:string)
         (P|UEV_IMC)
-        (with-capability (VST|C>SLEEPING-LINK dptf)
+        (with-capability (VST|C>SLEEPING-LINK executor dptf)
             (XI_CreateSpecialOrtoFungibleLink patron dptf 2)
         )
     )
     (defun C_CreateHibernatingLink:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string dptf:string)
+        (patron:string executor:string dptf:string)
         (P|UEV_IMC)
-        (with-capability (VST|C>SLEEPING-LINK dptf)
+        (with-capability (VST|C>SLEEPING-LINK executor dptf)
             (XI_CreateSpecialOrtoFungibleLink patron dptf 3)
         )
     )

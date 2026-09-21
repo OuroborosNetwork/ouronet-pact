@@ -55,7 +55,7 @@
         (auryn-id:string (ref-DALOS::UR_AurynID))
     )
     ;; Auryndex's RBT (Auryn) needs a hibernation link before Control can flip hibernation ON
-    (ref-TS01-C2::VST|C_CreateHibernatingLink patron auryn-id)
+    (ref-TS01-C2::VST|C_CreateHibernatingLink patron (ouronet-ns.DPTF.UR_Konto auryn-id) auryn-id)
     ;; turn hibernation ON via Control (preserve the pool's can-change-owner + syphoning settings)
     (ref-TS01-C2::ATS|C_Control patron (ATS.UR_OwnerKonto auryndex) auryndex
         (ref-ATS::UR_CanChangeOwner auryndex) (ref-ATS::UR_Syphoning auryndex) true)

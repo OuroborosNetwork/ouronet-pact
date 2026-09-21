@@ -65,7 +65,7 @@
             (auryn-id:string (ref-DALOS::UR_AurynID))
         )
         ;;The RBT needs a hibernation link before Control can flip hibernation ON.
-        (ref-TS01-C2::VST|C_CreateHibernatingLink patron auryn-id)
+        (ref-TS01-C2::VST|C_CreateHibernatingLink patron (ouronet-ns.DPTF.UR_Konto auryn-id) auryn-id)
         (map print
             [
                 (expect "<<ATS-CNS>> C_CreateHibernatingLink registered the link on the RBT"
@@ -4318,7 +4318,7 @@
     ;;`08_ATS.pact:593` runs `DPTF::UEV_Hibernation <ats2 cold-rbt> true`, and a freshly issued DPTF
     ;;has no `H|` twin. `VST|C_CreateHibernatingLink` mints one; it is a STOA-charging op measured on
     ;;its own at `modules/VST.repl <<VST-I1>>`, and closes before the window opens.
-    (ref-TS01-C2::VST|C_CreateHibernatingLink aozt "GTX2-98c486052a51")
+    (ref-TS01-C2::VST|C_CreateHibernatingLink aozt (ouronet-ns.DPTF.UR_Konto "GTX2-98c486052a51") "GTX2-98c486052a51")
     (ref-TS01-C2::ATS|C_Control aozt (ATS.UR_OwnerKonto p2) p2 (ref-ATS::UR_CanChangeOwner p2) (ref-ATS::UR_Syphoning p2) true)
     (let
         (
@@ -4418,7 +4418,7 @@
     ;;lands the position in pair 2, and the vest then wraps THAT token, so the `V|` link must exist
     ;;before the op rather than on pair 1's side. It is a STOA-charging op measured at
     ;;`modules/VST.repl <<VST-I1>>` and closes before the window.
-    (ref-TS01-C2::VST|C_CreateVestingLink aozt "GTX2-98c486052a51")
+    (ref-TS01-C2::VST|C_CreateVestingLink aozt (ouronet-ns.DPTF.UR_Konto "GTX2-98c486052a51") "GTX2-98c486052a51")
     (let
         (
             ;;the coil above put 5.0 PKOSON into pair 1; curl a fraction of it so the position survives

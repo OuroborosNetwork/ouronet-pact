@@ -3340,7 +3340,7 @@
             }
         ]
     )
-    (ref-TS01-C2::VST|C_CreateSleepingLink emma ouro-id)
+    (ref-TS01-C2::VST|C_CreateSleepingLink emma (ouronet-ns.DPTF.UR_Konto ouro-id) ouro-id)
     (ref-TS01-C3::SWP|C_EnableFrozenLP emma pool)
     (ref-TS01-C3::SWP|C_EnableFrozenLP emma pool8)
     (ref-TS01-C3::SWP|C_EnableSleepingLP emma pool)

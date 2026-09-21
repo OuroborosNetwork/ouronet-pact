@@ -74,9 +74,9 @@
             )
         )
         (before:string (ref-DPTF::UR_Hibernation dptf-id))
-        (call1 (ref-TS01-C2::VST|C_CreateHibernatingLink patron dptf-id))
+        (call1 (ref-TS01-C2::VST|C_CreateHibernatingLink patron (ouronet-ns.DPTF.UR_Konto dptf-id) dptf-id))
         (first-link:string (ref-DPTF::UR_Hibernation dptf-id))
-        (call2 (ref-TS01-C2::VST|C_CreateHibernatingLink patron dptf-id))
+        (call2 (ref-TS01-C2::VST|C_CreateHibernatingLink patron (ouronet-ns.DPTF.UR_Konto dptf-id) dptf-id))
         (after:string (ref-DPTF::UR_Hibernation dptf-id))
     )
     (map print
