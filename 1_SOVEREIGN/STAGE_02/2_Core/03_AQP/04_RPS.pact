@@ -46,11 +46,11 @@
     (defun UR_FVT|MembershipMode:string (fvt-id:string))
     (defun UR_FVT|Mosaic:bool (fvt-id:string))
     (defun UR_FVT|OwnerKonto:string (fvt-id:string))
-    (defun XE_BurnRoyalty:object{IgnisCollectorV3.OutputCumulator} (fvt-id:string reward-dptf-id:string))
-    (defun XE_FuelRoyalty:object{IgnisCollectorV3.OutputCumulator} (fvt-id:string reward-dptf-id:string swpair:string))
+    (defun XE_BurnRoyalty:object{IgnisCollectorV3.OutputCumulator} (patron:string fvt-id:string reward-dptf-id:string))
+    (defun XE_FuelRoyalty:object{IgnisCollectorV3.OutputCumulator} (patron:string fvt-id:string reward-dptf-id:string swpair:string))
     (defun XE_FvtSweepRecomputeChunk:object{IgnisCollectorV3.OutputCumulator} (fvt-id:string score-entity-id:string swept-boost-class-id:string users:[string]))
     (defun XE_SetAgencyFee:string (fvt-id:string score-entity-id:string operator-konto:string fee-per-mille:integer))
-    (defun XE_WithdrawRoyalty:object{IgnisCollectorV3.OutputCumulator} (fvt-id:string reward-dptf-id:string destination:string))
+    (defun XE_WithdrawRoyalty:object{IgnisCollectorV3.OutputCumulator} (patron:string fvt-id:string reward-dptf-id:string destination:string))
     (defun XE_WI_QualitySplit:string (fvt-id:string dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer]))
     (defun XE_WU_FvtForcedFixCount|Zero:string (fvt-id:string dptf-id:string user-id:string))
     (defun XE_WU_MemberVault|AvailableRewards:string (fvt-id:string score-entity-id:string dptf-id:string available-rewards:decimal))
@@ -3470,8 +3470,8 @@
                                 [
                                     (if (> amt-b 0.0) (ref-TFT::C_Transfer token-0 AQP|SC_NAME collector amt-b true) (UC_EmptyOc))
                                     (if (> fund-sg 0.0) (ref-TFT::C_Transfer token-0 AQP|SC_NAME collector fund-sg true) (UC_EmptyOc))
-                                    (if coil-s-ok (ref-ATSU::C_Coil collector ats-01 token-0 amt-s) (UC_EmptyOc))
-                                    (if curl-g-ok (ref-ATSU::C_Curl collector ats-01 ats-12 token-0 amt-g) (UC_EmptyOc))
+                                    (if coil-s-ok (ref-ATSU::C_Coil patron collector ats-01 token-0 amt-s) (UC_EmptyOc))
+                                    (if curl-g-ok (ref-ATSU::C_Curl patron collector ats-01 ats-12 token-0 amt-g) (UC_EmptyOc))
                                 ]
                                 []
                             )
@@ -4874,8 +4874,8 @@
                 [
                     (if (> total-t0 0.0) (ref-TFT::C_Transfer token-0 AQP|SC_NAME patron total-t0 true) (UC_EmptyOc))
                     (if (> fund-12 0.0) (ref-TFT::C_Transfer token-0 AQP|SC_NAME patron fund-12 true) (UC_EmptyOc))
-                    (if coil-ok (ref-ATSU::C_Coil patron ats-01 token-0 total-t1) (UC_EmptyOc))
-                    (if curl-ok (ref-ATSU::C_Curl patron ats-01 ats-12 token-0 total-t2) (UC_EmptyOc))
+                    (if coil-ok (ref-ATSU::C_Coil patron patron ats-01 token-0 total-t1) (UC_EmptyOc))
+                    (if curl-ok (ref-ATSU::C_Curl patron patron ats-01 ats-12 token-0 total-t2) (UC_EmptyOc))
                 ]
                 []
             )
@@ -4883,7 +4883,7 @@
     )
 
     ;;Protection: Class 2 — SECURE
-    (defun XI_NormalizeRoyalty:object (reward-dptf-id:string amount:decimal)
+    (defun XI_NormalizeRoyalty:object (patron:string reward-dptf-id:string amount:decimal)
         @doc "IGNIS pre-normalization for a royalty disposal: if the royalty leg is IGNIS, COMPRESS it to OURO in \
             \ AQP|SC_NAME custody (OUROBOROS::XB_Compress, 98.5%) and return {token: OURO, amount: OURO-received, \
             \ oc: compress-cumulator}; else return {token, amount, oc: empty} unchanged. The disposal then moves \
@@ -4902,7 +4902,7 @@
                     )
                     {"token"  : (ref-DALOS::UR_OuroborosID)
                     ,"amount" : (at 0 (ref-ORBR::URCv_Compress amount))
-                    ,"oc"     : (ref-ORBR::XB_Compress AQP|SC_NAME amount)}
+                    ,"oc"     : (ref-ORBR::XB_Compress patron AQP|SC_NAME amount)}
                 )
                 {"token" : reward-dptf-id, "amount" : amount, "oc" : (UC_EmptyOc)}
             )
@@ -5045,7 +5045,7 @@
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          FVT|XE>DISPOSE-ROYALTY
     (defun XE_WithdrawRoyalty:object{IgnisCollectorV3.OutputCumulator}
-        (fvt-id:string reward-dptf-id:string destination:string)
+        (patron:string fvt-id:string reward-dptf-id:string destination:string)
         @doc "DSA royalty disposal (WITHDRAW): zero the royalty pool (reward-dptf) of <fvt-id>, IGNIS-normalize it \
             \ to OURO if needed, and move the whole balance OUT of the AQP pool-vault custody (AQP|SC_NAME) to \
             \ <destination> via TFT. P|UEV_IMC + FVT|XE>DISPOSE-ROYALTY (composes P|SECURE-CALLER + P|RPS|REMOTE-GOV \
@@ -5062,7 +5062,7 @@
                 (WU_RpsGlobal|RoyaltyRewards fvt-id reward-dptf-id 0.0)
                 (let
                     (
-                        (norm:object (XI_NormalizeRoyalty reward-dptf-id royalty))
+                        (norm:object (XI_NormalizeRoyalty patron reward-dptf-id royalty))
                     )
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators
                         [ (at "oc" norm)
@@ -5076,7 +5076,7 @@
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          FVT|XE>DISPOSE-ROYALTY
     (defun XE_BurnRoyalty:object{IgnisCollectorV3.OutputCumulator}
-        (fvt-id:string reward-dptf-id:string)
+        (patron:string fvt-id:string reward-dptf-id:string)
         @doc "DSA royalty disposal (BURN): zero the royalty pool (reward-dptf) of <fvt-id>, IGNIS-normalize it to \
             \ OURO if needed, and BURN the whole balance in place from the AQP pool-vault custody (AQP|SC_NAME — \
             \ which holds the autonomic burn role via DALOS UR_AutonomicRoles; FVT is a registered DPTF IMC caller). \
@@ -5092,11 +5092,11 @@
                 (WU_RpsGlobal|RoyaltyRewards fvt-id reward-dptf-id 0.0)
                 (let
                     (
-                        (norm:object (XI_NormalizeRoyalty reward-dptf-id royalty))
+                        (norm:object (XI_NormalizeRoyalty patron reward-dptf-id royalty))
                     )
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators
                         [ (at "oc" norm)
-                          (ref-DPTF::C_Burn (at "token" norm) AQP|SC_NAME (at "amount" norm)) ]
+                          (ref-DPTF::C_Burn patron AQP|SC_NAME (at "token" norm) (at "amount" norm)) ]
                         [reward-dptf-id])
                 )
             )
@@ -5106,7 +5106,7 @@
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          FVT|XE>DISPOSE-ROYALTY
     (defun XE_FuelRoyalty:object{IgnisCollectorV3.OutputCumulator}
-        (fvt-id:string reward-dptf-id:string swpair:string)
+        (patron:string fvt-id:string reward-dptf-id:string swpair:string)
         @doc "DSA royalty disposal (FUEL): zero the royalty pool (reward-dptf) of <fvt-id>, IGNIS-normalize it to \
             \ OURO if needed, and FUEL <swpair> with the whole balance from the AQP pool-vault custody — adds \
             \ liquidity WITHOUT minting LP (SWPLC::C_Fuel), boosting LP value. The NORMALIZED token must be one of \
@@ -5125,7 +5125,7 @@
                 (WU_RpsGlobal|RoyaltyRewards fvt-id reward-dptf-id 0.0)
                 (let
                     (
-                        (norm:object (XI_NormalizeRoyalty reward-dptf-id royalty))
+                        (norm:object (XI_NormalizeRoyalty patron reward-dptf-id royalty))
                         (pool-tokens:[string] (ref-SWP::UR_PoolTokens swpair))
                     )
                     (enforce (contains (at "token" norm) pool-tokens) "Normalized royalty token is not a token of the swpair")

@@ -3527,7 +3527,7 @@
         (dd-k:string "DDKOSON-98c486052a51")
     )
     (ref-TS01-C2::ATS|HOT-RBT|C_UpdatePendingBranding
-        aoz
+        aoz (DPOF.URC_BrandingKonto dd-k)
         dd-k
         "https://example.com/thrbt-logo.png"
         "Denarius Debilis Hot-RBT test branding"
@@ -3617,7 +3617,7 @@
             (dd-k:string "DDKOSON-98c486052a51")
             (flag-before:integer (ref-BRD::UR_Flag dd-k false))
         )
-        (ref-TS01-C2::ATS|HOT-RBT|C_UpgradeBranding aoz dd-k months)
+        (ref-TS01-C2::ATS|HOT-RBT|C_UpgradeBranding aoz (DPOF.URC_BrandingKonto dd-k) dd-k months)
         (map print
             [
                 (format "flag was {} (3 = Gray) before upgrade" [flag-before])

@@ -271,29 +271,29 @@
         (StrategonDrachmaID:string  (ref-AOZ::UR_PrimalTrueFungible 8))
         (BasileonAsID:string        (ref-AOZ::UR_PrimalTrueFungible 9))        
     )
-    (ref-TS01-C1::DPTF|C_SetFee patron PlebiumDenariusID 10.0)
-    (ref-TS01-C1::DPTF|C_ToggleFee patron PlebiumDenariusID true)
-    (ref-TS01-C1::DPTF|C_ToggleFeeLock patron PlebiumDenariusID true)
+    (ref-TS01-C1::DPTF|C_SetFee patron (DPTF.UR_Konto PlebiumDenariusID) PlebiumDenariusID 10.0)
+    (ref-TS01-C1::DPTF|C_ToggleFee patron (DPTF.UR_Konto PlebiumDenariusID) PlebiumDenariusID true)
+    (ref-TS01-C1::DPTF|C_ToggleFeeLock patron (DPTF.UR_Konto PlebiumDenariusID) PlebiumDenariusID true)
 
-    (ref-TS01-C1::DPTF|C_SetFee patron ComatusAureusID 20.0)
-    (ref-TS01-C1::DPTF|C_ToggleFee patron ComatusAureusID true)
-    (ref-TS01-C1::DPTF|C_ToggleFeeLock patron ComatusAureusID true)
+    (ref-TS01-C1::DPTF|C_SetFee patron (DPTF.UR_Konto ComatusAureusID) ComatusAureusID 20.0)
+    (ref-TS01-C1::DPTF|C_ToggleFee patron (DPTF.UR_Konto ComatusAureusID) ComatusAureusID true)
+    (ref-TS01-C1::DPTF|C_ToggleFeeLock patron (DPTF.UR_Konto ComatusAureusID) ComatusAureusID true)
 
-    (ref-TS01-C1::DPTF|C_SetFee patron PileatusSolidusID 30.0)
-    (ref-TS01-C1::DPTF|C_ToggleFee patron PileatusSolidusID true)
-    (ref-TS01-C1::DPTF|C_ToggleFeeLock patron PileatusSolidusID true)
+    (ref-TS01-C1::DPTF|C_SetFee patron (DPTF.UR_Konto PileatusSolidusID) PileatusSolidusID 30.0)
+    (ref-TS01-C1::DPTF|C_ToggleFee patron (DPTF.UR_Konto PileatusSolidusID) PileatusSolidusID true)
+    (ref-TS01-C1::DPTF|C_ToggleFeeLock patron (DPTF.UR_Konto PileatusSolidusID) PileatusSolidusID true)
 
-    (ref-TS01-C1::DPTF|C_SetFee patron TarabostesStaterID 40.0)
-    (ref-TS01-C1::DPTF|C_ToggleFee patron TarabostesStaterID true)
-    (ref-TS01-C1::DPTF|C_ToggleFeeLock patron TarabostesStaterID true)
+    (ref-TS01-C1::DPTF|C_SetFee patron (DPTF.UR_Konto TarabostesStaterID) TarabostesStaterID 40.0)
+    (ref-TS01-C1::DPTF|C_ToggleFee patron (DPTF.UR_Konto TarabostesStaterID) TarabostesStaterID true)
+    (ref-TS01-C1::DPTF|C_ToggleFeeLock patron (DPTF.UR_Konto TarabostesStaterID) TarabostesStaterID true)
 
-    (ref-TS01-C1::DPTF|C_SetFee patron StrategonDrachmaID 50.0)
-    (ref-TS01-C1::DPTF|C_ToggleFee patron StrategonDrachmaID true)
-    (ref-TS01-C1::DPTF|C_ToggleFeeLock patron StrategonDrachmaID true)
+    (ref-TS01-C1::DPTF|C_SetFee patron (DPTF.UR_Konto StrategonDrachmaID) StrategonDrachmaID 50.0)
+    (ref-TS01-C1::DPTF|C_ToggleFee patron (DPTF.UR_Konto StrategonDrachmaID) StrategonDrachmaID true)
+    (ref-TS01-C1::DPTF|C_ToggleFeeLock patron (DPTF.UR_Konto StrategonDrachmaID) StrategonDrachmaID true)
 
-    (ref-TS01-C1::DPTF|C_SetFee patron BasileonAsID 60.0)
-    (ref-TS01-C1::DPTF|C_ToggleFee patron BasileonAsID true)
-    (ref-TS01-C1::DPTF|C_ToggleFeeLock patron BasileonAsID true)    
+    (ref-TS01-C1::DPTF|C_SetFee patron (DPTF.UR_Konto BasileonAsID) BasileonAsID 60.0)
+    (ref-TS01-C1::DPTF|C_ToggleFee patron (DPTF.UR_Konto BasileonAsID) BasileonAsID true)
+    (ref-TS01-C1::DPTF|C_ToggleFeeLock patron (DPTF.UR_Konto BasileonAsID) BasileonAsID true)    
 
 )
 
@@ -955,9 +955,9 @@
         (ak-amount:decimal 50000.0)     ;;Differs on Main-Net
 
     )
-    (ref-TS01-C1::DPTF|C_Mint patron PrimordialKosonID  patron pk-amount true)
-    (ref-TS01-C1::DPTF|C_Mint patron EsothericKosonID   patron ek-amount true)
-    (ref-TS01-C1::DPTF|C_Mint patron AncientKosonID     patron ak-amount true)
+    (ref-TS01-C1::DPTF|C_Mint patron patron PrimordialKosonID pk-amount true)
+    (ref-TS01-C1::DPTF|C_Mint patron patron EsothericKosonID ek-amount true)
+    (ref-TS01-C1::DPTF|C_Mint patron patron AncientKosonID ak-amount true)
 )
 
 ;;==== TX-15 [3.14] - AOZ Init [14]: Mint Kosons · 03 · gas echo ==== =============================

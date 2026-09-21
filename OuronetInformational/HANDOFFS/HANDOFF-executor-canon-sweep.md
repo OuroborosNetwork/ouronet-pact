@@ -9,7 +9,7 @@ session must be able to see what is done by reading this file, without reconstru
 `git log`. If the table and `_executorplan.py` disagree, **the tool is right** — regenerate.
 
 **Status:** preparation complete, sweep starting at `01_DALOS`.
-**125 done · 675 remaining · 46 modules · 3 swept (01_DALOS, 02_IGNIS, 04_BRD).**
+**149 done · 634 remaining · 46 modules · 4 swept (01_DALOS, 02_IGNIS, 04_BRD, 05_DPTF) · 1 archived (00_DPMF).**
 
 ---
 
@@ -227,8 +227,8 @@ same tools with those three properties.
 | [x] 1 | `01_DALOS.pact` | 0 | 0 | 18 | **18** | `OuronetDalosV2`, `OuronetPolicyV2` |
 | [x] 2 | `02_IGNIS.pact` | 0 | 1 | 5 | **6** | `IgnisCollectorV3` |
 | [x] 3 | `04_BRD.pact` | 0 | 0 | 2 | **2** | `BrandingV2` |
-| [ ] 4 | `05_DPTF.pact` | 0 | 2 | 22 | **24** | `BrandingUsagePrimaryV2`, `DemiourgosPactTrueFungibleV2` |
-| [ ] 5 | `00_DPMF.pact` | 0 | 1 | 16 | **17** | `DemiourgosPactMetaFungibleV7` |
+| [x] 4 | `05_DPTF.pact` | 0 | 2 | 22 | **24** | `BrandingUsagePrimaryV2`, `DemiourgosPactTrueFungibleV2` |
+| [—] 5 | `00_DPMF.pact` | — | — | — | — | **ARCHIVED**, not swept — read-only retirement, StoicSyntax 7.21 |
 | [ ] 6 | `06_DPOF.pact` | 0 | 1 | 20 | **21** | `DemiourgosPactOrtoFungibleV2`, `DpofUdcV2` — **also do `C_DeployAccount` → `XB_DeployAccount`**, see note below |
 | [ ] 7 | `08_ATS.pact` | 0 | 3 | 21 | **24** | `AutostakeV3` |
 | [ ] 8 | `09_TFT.pact` | 0 | 0 | 5 | **5** | `TrueFungibleTransferV2` |

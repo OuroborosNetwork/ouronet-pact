@@ -89,7 +89,7 @@
                 (diff-time (BRD.UR_PremiumUntil id false) (at "block-time" (chain-data))))
         )
         (if (< remaining 1296000.0)
-            (ref-TS01-C1::DPOF|C_UpgradeBranding patron id 1)
+            (ref-TS01-C1::DPOF|C_UpgradeBranding patron (DPOF.URC_BrandingKonto id) id 1)
             (print (format "<<TX-OF-001>> UpgradeBranding SKIPPED — {} s premium remain (BRD allows under 1296000 s)"
                 [remaining]))
         )

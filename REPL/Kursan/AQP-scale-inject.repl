@@ -118,7 +118,7 @@
     ;; stake 50 synth (2 OURO each) at Elite-DEB=1.0 → deb stored on the 1.0 basis
     (VCTGAS.XI_TfStakeOnly patron pool-id ouro-id 50 2.0)
     ;; mint EliteAuryn to patron, then GIVE 100000 to each synth → Elite-DEB rises → stored deb stale
-    (ref-TS01-C1::DPTF|C_Mint patron elite-id patron 10000000.0 true)
+    (ref-TS01-C1::DPTF|C_Mint patron patron elite-id 10000000.0 true)
     (map (lambda (i:integer) (ref-TS01-C1::DPTF|C_Transfer patron elite-id patron (VCTGAS.UC_SynthAccount i) 100000.0 true)) (enumerate 1 50))
     (let
         (

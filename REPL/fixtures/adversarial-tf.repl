@@ -118,13 +118,13 @@
     ;;origin=true is the once-only mint. Spending it here is the WHOLE POINT of this fixture:
     ;;it moves ADVO into the state DPTF|C>MINT's <UEV_Virgin> guard exists to reject. ADVF is
     ;;deliberately left untouched so the tester has the accepting side of the same guard.
-    (ref-TS01-C1::DPTF|C_Mint patron (ref-U|DALOS::UDC_Makeid "ADVO") patron 1000.0 true)
+    (ref-TS01-C1::DPTF|C_Mint patron patron (ref-U|DALOS::UDC_Makeid "ADVO") 1000.0 true)
     ;;LOCK ADVL. DPTF|S>CONTROL acquires UEV_CanUpgradeON, which still passes here because
     ;;can-upgrade is true AT ACQUISITION -- the write that turns it false lands afterwards. That
     ;;makes this call the last Control this token can ever accept, which is exactly the state the
     ;;UEV_CanUpgradeON / UEV_CanChangeOwnerON guards exist to reject.
     ;;                                                cu    cco   casr  cf     cw     cp
-    (ref-TS01-C1::DPTF|C_Control patron (ref-U|DALOS::UDC_Makeid "ADVL") false false true false false true)
+    (ref-TS01-C1::DPTF|C_Control patron (DPTF.UR_Konto (ref-U|DALOS::UDC_Makeid "ADVL")) (ref-U|DALOS::UDC_Makeid "ADVL") false false true false false true)
     ""
 )
 (env-sigs [])

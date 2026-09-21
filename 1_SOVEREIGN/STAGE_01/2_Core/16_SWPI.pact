@@ -214,7 +214,7 @@
     ;;so C_Issue can still aggregate every sub-call's own cumulator into its single
     ;;billed response exactly as before, while MTX|C_Issue (which already bills
     ;;separately in its own Step 2) can just take swpair/token-lp and ignore the rest.
-    (defun XE_IssueWrite:list (account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool))
+    (defun XE_IssueWrite:list (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool))
     ;;{5.7}  User [A/C]
     ;;
     ;;
@@ -2701,7 +2701,7 @@
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          SWPI|XE>ISSUE-WRITE
     (defun XE_IssueWrite:list
-        (account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool)
+        (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool)
         @doc "#36M/M5 fix: forward-module entrypoint holding the ONE shared pool-issuance \
             \ write sequence — mint the LP token, register the pool, transfer pool tokens \
             \ in, mint genesis LP supply, transfer LP out to the account, register the \
@@ -2741,7 +2741,7 @@
                             (ref-TFT::C_MultiTransfer pool-token-ids account SWP|SC_NAME pool-token-amounts true)
                         )
                         (ico-mint:object{IgnisCollectorV3.OutputCumulator}
-                            (ref-DPTF::C_Mint token-lp SWP|SC_NAME GENESIS_LP_SUPPLY true)
+                            (ref-DPTF::C_Mint patron SWP|SC_NAME token-lp GENESIS_LP_SUPPLY true)
                         )
                         (ico-transfer-out:object{IgnisCollectorV3.OutputCumulator}
                             (ref-TFT::C_Transfer token-lp SWP|SC_NAME account GENESIS_LP_SUPPLY true)
@@ -2809,7 +2809,7 @@
                     (stoa-costs:decimal (ref-IGNIS::UC_StoaPrice "issue-swp-pair"))
                     (gas-swp-cost:decimal (ref-IGNIS::UC_IgnisDeter "issue-swp-pair"))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                    (write-result:list (XE_IssueWrite executor pool-tokens fee-lp weights amp p))
+                    (write-result:list (XE_IssueWrite patron executor pool-tokens fee-lp weights amp p))
                     (swpair:string (at 0 write-result))
                     (token-lp:string (at 1 write-result))
                     (ico1:object{IgnisCollectorV3.OutputCumulator} (at 2 write-result))

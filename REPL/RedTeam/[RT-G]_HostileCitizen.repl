@@ -58,7 +58,7 @@
     (let ((ico (ouronet-ns.TFT.C_Transfer id sender receiver amount true)))
       "UNBILLED TRANSFER WENT THROUGH"))
   (defun call-mint (id:string account:string)
-    (let ((ico (ouronet-ns.DPTF.C_Mint id account 1000.0 false)))
+    (let ((ico (ouronet-ns.DPTF.C_Mint account account id 1000.0 false)))
       "UNBILLED MINT WENT THROUGH"))
   (defun read-supply:decimal (id:string account:string)
     (ouronet-ns.DPTF.UR_AccountSupply id account))

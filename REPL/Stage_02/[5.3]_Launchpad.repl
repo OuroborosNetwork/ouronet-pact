@@ -343,9 +343,9 @@
             ;;Check Role
             (format "Frozen Token Role on VST|SC_NAME after issue is {}" [tr])
             ;;Permissions
-            (ref-TS01-C1::DPTF|C_Mint patron SparkID lpad-sc 35000.0 true)
-            (ref-TS01-C1::DPTF|C_ToggleMintRole patron SparkID lpad-sc true)
-            (ref-TS01-C1::DPTF|C_ToggleBurnRole patron SparkID lpad-sc true)
+            (ref-TS01-C1::DPTF|C_Mint patron lpad-sc SparkID 35000.0 true)
+            (ref-TS01-C1::DPTF|C_ToggleMintRole patron (DPTF.UR_Konto SparkID) lpad-sc SparkID true)
+            (ref-TS01-C1::DPTF|C_ToggleBurnRole patron (DPTF.UR_Konto SparkID) lpad-sc SparkID true)
             ;;REPL-VARIANT:
             (acquire-module-admin ouronet-ns.DEMIPAD-SPARK)
             ;;MAIN-NET VARIANT
@@ -999,8 +999,8 @@
             ;;
             ;;
             ;;Permissions
-            (ref-TS01-C1::DPTF|C_Mint patron KpayID lpad-sc 250000000.0 true)
-            (ref-TS01-C1::DPTF|C_ToggleBurnRole patron KpayID lpad-sc true)
+            (ref-TS01-C1::DPTF|C_Mint patron lpad-sc KpayID 250000000.0 true)
+            (ref-TS01-C1::DPTF|C_ToggleBurnRole patron (DPTF.UR_Konto KpayID) lpad-sc KpayID true)
             ;;REPL-VARIANT:
             (acquire-module-admin ouronet-ns.DEMIPAD-STOICPAY)
             ;;MAIN-NET VARIANT

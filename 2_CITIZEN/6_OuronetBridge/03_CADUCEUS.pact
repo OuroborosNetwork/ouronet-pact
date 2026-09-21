@@ -294,9 +294,9 @@
                     ;;requires the caller to own <account>. Running this still requires
                     ;;holding both GOV|CADUCEUS_ADMIN and TS01-A's own admin keyset.
                     (ref-TS01-A::DPTF|A_DeployAccount patron dptf-id bridge-account)
-                    (ref-TS01-C1::DPTF|C_ToggleMintRole patron dptf-id bridge-account true)
-                    (ref-TS01-C1::DPTF|C_ToggleBurnRole patron dptf-id bridge-account true)
-                    (ref-TS01-C1::DPTF|C_ToggleTransferRole patron dptf-id bridge-account true)
+                    (ref-TS01-C1::DPTF|C_ToggleMintRole patron (DPTF.UR_Konto dptf-id) bridge-account dptf-id true)
+                    (ref-TS01-C1::DPTF|C_ToggleBurnRole patron (DPTF.UR_Konto dptf-id) bridge-account dptf-id true)
+                    (ref-TS01-C1::DPTF|C_ToggleTransferRole patron (DPTF.UR_Konto dptf-id) bridge-account dptf-id true)
                 ]
             )
         )
@@ -321,7 +321,7 @@
                 (UEV_Ready)
                 (UEV_Active)
                 (UEV_FreshSignal signal-id)
-                (ref-TS01-C1::DPTF|C_Mint patron dptf-id bridge-account amount false)
+                (ref-TS01-C1::DPTF|C_Mint patron bridge-account dptf-id amount false)
                 (ref-TS01-C1::DPTF|C_Transfer patron dptf-id bridge-account receiver amount true)
                 (write CADUCEUS|SignalTable signal-id
                     {
@@ -357,7 +357,7 @@
                 (UEV_Ready)
                 (UEV_Active)
                 (UEV_FreshSignal signal-id)
-                (ref-TS01-C1::DPTF|C_Burn patron dptf-id bridge-account amount)
+                (ref-TS01-C1::DPTF|C_Burn patron bridge-account dptf-id amount)
                 (write CADUCEUS|SignalTable signal-id
                     {
                         "signal-id"      : signal-id

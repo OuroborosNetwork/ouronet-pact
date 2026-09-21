@@ -66,9 +66,9 @@
     (defun BRD|A_SetFlag (executor:string entity-id:string flag:integer))
     ;;
     ;;
-    (defun DPTF|A_UpdateTreasuryDispoParameters (type:integer tdp:decimal tds:decimal))
-    (defun DPTF|A_WipeTreasuryDebt ())
-    (defun DPTF|A_WipeTreasuryDebtPartial (debt-to-be-wiped:decimal))
+    (defun DPTF|A_UpdateTreasuryDispoParameters (executor:string type:integer tdp:decimal tds:decimal))
+    (defun DPTF|A_WipeTreasuryDebt (executor:string))
+    (defun DPTF|A_WipeTreasuryDebtPartial (executor:string debt-to-be-wiped:decimal))
     (defun DPTF|A_DeployAccount (patron:string id:string account:string))
     ;;
     (defun DPOF|A_DeployAccount (patron:string id:string account:string))
@@ -373,7 +373,7 @@
                 (ref-ORBR:module{OuroborosV2} OUROBOROS)
             )
             (with-capability (P|TS)
-                (ref-ORBR::C_Fuel)
+                (ref-ORBR::C_Fuel GASLESS-PATRON)
             )
         )
     )
@@ -578,7 +578,7 @@
         )
     )
     ;;  [DPTF_Administrator]
-    (defun DPTF|A_UpdateTreasuryDispoParameters (type:integer tdp:decimal tds:decimal)
+    (defun DPTF|A_UpdateTreasuryDispoParameters (executor:string type:integer tdp:decimal tds:decimal)
         @doc "Updates Treasury Dispo Parameters, that dictate how much OURO Debt the Treasury can incurr \
             \ Type can only be 0 1 2 3 \
             \ Type 0 = No Treasury Dispo \
@@ -590,11 +590,11 @@
                 (
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 )
-                (ref-DPTF::A_UpdateTreasury type tdp tds)
+                (ref-DPTF::A_UpdateTreasury GASLESS-PATRON executor type tdp tds)
             )
         )
     )
-    (defun DPTF|A_WipeTreasuryDebt ()
+    (defun DPTF|A_WipeTreasuryDebt (executor:string)
         @doc "Wipes all Treasury Debt, increasing OURO supply by the Debt Amount, \
             \ and setting Treasury Dispo Parameters to neutral (no overspend capability)"
         (with-capability (P|TS)
@@ -602,11 +602,11 @@
                 (
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 )
-                (ref-DPTF::A_WipeTreasuryDebt)
+                (ref-DPTF::A_WipeTreasuryDebt GASLESS-PATRON executor)
             )
         )
     )
-    (defun DPTF|A_WipeTreasuryDebtPartial (debt-to-be-wiped:decimal)
+    (defun DPTF|A_WipeTreasuryDebtPartial (executor:string debt-to-be-wiped:decimal)
         @doc "Wipes all partialy the Treasury Debt, increasing OURO supply by the <debt-to-be-wiped> amount \
         \ Treasury Dispo Parameters are left as they are, this function simply wipe a part of the Treasury Debt through mint."
         (with-capability (P|TS)
@@ -614,7 +614,7 @@
                 (
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 )
-                (ref-DPTF::A_WipeTreasuryDebtPartial debt-to-be-wiped)
+                (ref-DPTF::A_WipeTreasuryDebtPartial GASLESS-PATRON executor debt-to-be-wiped)
             )
         )
     )
@@ -844,7 +844,7 @@
                 (
                     (ref-SWP:module{SwapperV4} SWP)
                 )
-                (ref-SWP::A_ToggleAsymetricLiquidityAddition toggle)
+                (ref-SWP::A_ToggleAsymetricLiquidityAddition GASLESS-PATRON toggle)
             )
         )
     )

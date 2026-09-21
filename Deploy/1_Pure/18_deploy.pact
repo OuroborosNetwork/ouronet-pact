@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 18 of 22
 ;; This is STEP 18 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-17 must have run first, including the init steps between deploys.
-;; 3 source file(s), 849,276 gas measured in the REPL gas model, 258,941 bytes
+;; 3 source file(s), 849,276 gas measured in the REPL gas model, 258,962 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/06_VCT.pact
@@ -4982,7 +4982,7 @@
                 )
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
                     [ (URCi_WithdrawRoyalty patron [fvt-id])
-                      (RPS.XE_WithdrawRoyalty fvt-id reward-dptf-id (RPS.UR_FVT|OwnerKonto fvt-id)) ]
+                      (RPS.XE_WithdrawRoyalty patron fvt-id reward-dptf-id (RPS.UR_FVT|OwnerKonto fvt-id)) ]
                     [fvt-id])
             )
         )
@@ -5000,7 +5000,7 @@
                 )
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
                     [ (URCi_BurnRoyalty patron [fvt-id])
-                      (RPS.XE_BurnRoyalty fvt-id reward-dptf-id) ]
+                      (RPS.XE_BurnRoyalty patron fvt-id reward-dptf-id) ]
                     [fvt-id])
             )
         )
@@ -5018,7 +5018,7 @@
                 )
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
                     [ (URCi_FuelRoyalty patron [fvt-id])
-                      (RPS.XE_FuelRoyalty fvt-id reward-dptf-id swpair) ]
+                      (RPS.XE_FuelRoyalty patron fvt-id reward-dptf-id swpair) ]
                     [fvt-id])
             )
         )

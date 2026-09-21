@@ -113,7 +113,7 @@
             ;;IS THE PROOF: nothing else about this call changed.
             (expect-failure "<<RT-C-001>> the treasury wipe now refuses on AUTHORISATION, not solvency"
                 "DPTF Ownership not verified"
-                (ref-TS01-A::DPTF|A_WipeTreasuryDebt))
+                (ref-TS01-A::DPTF|A_WipeTreasuryDebt KST.EMMA))
         ]
     )
     ""

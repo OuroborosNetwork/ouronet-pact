@@ -72,7 +72,7 @@
                 ;;behaviour the guard actually protects: no second origin mint, ever.
                 (expect-failure "<<ADV-01>> a SECOND origin mint is refused through Talos"
                     "Origin Mint for"
-                    (ref-TS01-C1::DPTF|C_Mint patron spent patron 1.0 true))
+                    (ref-TS01-C1::DPTF|C_Mint patron patron spent 1.0 true))
                 ;;...and the refused call minted nothing.
                 (expect "<<ADV-01>> the refused mint left the origin amount untouched"
                     1000.0 (ref-DPTF::UR_OriginAmount spent))
@@ -144,7 +144,7 @@
                 ;;already pinned unambiguously by the direct ref-DPTF:: probe two lines above.
                 (expect-failure "<<ADV-02>> the lock is IRREVERSIBLE -- C_Control is refused on ADVL"
                     "properties cannot be upgraded"
-                    (ref-TS01-C1::DPTF|C_Control KST.ANHD locked true true true false false true))
+                    (ref-TS01-C1::DPTF|C_Control KST.ANHD (DPTF.UR_Konto locked) locked true true true false false true))
             ]
         )
         ""

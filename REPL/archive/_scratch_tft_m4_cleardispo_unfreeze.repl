@@ -64,7 +64,7 @@
         ]
     )
     ;;Freeze emma's EA for an unrelated reason (e.g. an admin compliance freeze), BEFORE ClearDispo
-    (ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron ea-id receiver true)
+    (ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron (DPTF.UR_Konto ea-id) receiver ea-id true)
     (print (format "Emma's EA frozen-state BEFORE ClearDispo (unrelated freeze applied): {}" [(ref-DPTF::UR_AccountFrozenState ea-id receiver)]))
     (ref-TS01-C1::DPTF|C_ClearDispo patron receiver)
     (print (format "Emma's EA frozen-state AFTER ClearDispo (THE CLAIMED BUG: if false, the unrelated freeze was incorrectly lifted): {}" [(ref-DPTF::UR_AccountFrozenState ea-id receiver)]))

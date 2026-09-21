@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 3 of 22
 ;; This is STEP 3 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-2 must have run first, including the init steps between deploys.
-;; 3 source file(s), 350,668 gas measured in the REPL gas model, 298,056 bytes
+;; 3 source file(s), 350,668 gas measured in the REPL gas model, 301,399 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/06_DPOF.pact
@@ -328,6 +328,7 @@
     (defun URC_HasSleeping:bool (id:string))
     (defun URC_HasHibernation:bool (id:string))
     (defun URCv_Parent:string (dpof:string))
+    (defun URC_BrandingKonto:string (entity-id:string))
     ;;
     ;;  [URD]
     ;;
@@ -342,6 +343,7 @@
     (defun UEV_id (id:string))
     (defun UEV_NoncesCirculating (id:string nonces:[integer]))
     (defun UEV_ParentOwnership (id:string))
+    (defun UEV_ExecutorIsParentKonto (executor:string entity-id:string))
     (defun UEV_NoncesToAccount (id:string account:string nonces:[integer]))
     (defun UEV_Amount (id:string amount:decimal))
         ;;
@@ -1841,6 +1843,27 @@
             )
         )
     )
+    (defun URC_BrandingKonto:string (entity-id:string)
+        @doc "The account with BRANDING AUTHORITY over <entity-id>: the PARENT token's owner, \
+            \ or the entity's own owner when it IS its own parent. \
+            \ \
+            \ Exists because that rule was being retyped at call sites, and got retyped WRONG: \
+            \ the patron/executor migration inserted `(UR_Konto (URCv_Parent x))` as the \
+            \ executor for the branding entrypoints, which is right only for a PURE entity. \
+            \ For a derived one -- `Z|VST-...` -- the parent is a DPTF id, so the read hit \
+            \ DPOF's own properties table and died with \
+            \ `No value found in table ... for key: VST-...`. \
+            \ UEV_ExecutorIsParentKonto already computed this correctly; this is that \
+            \ computation, named once and callable, so a call site never has to branch."
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (parent:string (URCv_Parent entity-id))
+            )
+            (if (= parent entity-id) (UR_Konto entity-id) (ref-DPTF::UR_Konto parent))
+        )
+    )
+
     ;;
     ;;  [URD]
     ;;
@@ -2103,6 +2126,13 @@
             )
             nonces
         )
+    )
+    (defun UEV_ExecutorIsParentKonto (executor:string entity-id:string)
+        @doc "BINDS <executor> to the branding authority for <entity-id>: the PARENT token's \
+            \ owner, or the entity's own owner when it IS its own parent. Ownership is proven \
+            \ by UEV_ParentOwnership inside the branding capability; this supplies the other \
+            \ half -- that the account the caller NAMED is that owner."
+        (enforce (= executor (URC_BrandingKonto entity-id)) "Executor is not the Parent Token Owner")
     )
     (defun UEV_ParentOwnership (id:string)
         @doc "Enforces: \
@@ -2979,8 +3009,13 @@
         )
     )
     (defun C_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator}
-        (entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+        (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+        @doc "Updates <entity-id>'s pending branding. <executor> is bound to the PARENT token's \
+            \ owner -- branding a derived entity is the parent owner's right. Ownership itself \
+            \ is proven by DPOF|C>UPDATE-BRD via UEV_ParentOwnership; the binding is what keeps \
+            \ the named executor from being a name nobody reads."
         (P|UEV_IMC)
+        (UEV_ExecutorIsParentKonto executor entity-id)
         (let
             (
                 (ref-BRD:module{BrandingV2} BRD)
@@ -2991,8 +3026,9 @@
             )
         )
     )
-    (defun C_UpgradeBranding (patron:string entity-id:string months:integer)
+    (defun C_UpgradeBranding (patron:string executor:string entity-id:string months:integer)
         (P|UEV_IMC)
+        (UEV_ExecutorIsParentKonto executor entity-id)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
@@ -3008,7 +3044,7 @@
             )
             ;;Perform the branding upgrade (side effect); bill the STOA via the URCi (== XE_UpgradeBranding's price)
             (with-capability (DPOF|C>UPGRADE-BRD entity-id)
-                (ref-BRD::XE_UpgradeBranding entity-id parent-owner months)
+                (ref-BRD::XE_UpgradeBranding entity-id executor months)
             )
             (ref-IGNIS::XB_CollectStoaWithTrigger patron (URCi_UpgradeBranding months) false)
         )
@@ -4051,6 +4087,7 @@
     ;;
     ;;  [UEV]
     ;;
+    (defun UEV_ExecutorIsOwnerKonto (executor:string entity-id:string))
     (defun UEV_id (atspair:string))
     (defun UEV_CanUpgradeON (atspair:string))
     (defun UEV_CanChangeOwnerON (atspair:string))
@@ -4087,8 +4124,8 @@
     ;;
     ;;  [C]
     ;;
-    (defun HOT-RBT|C_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator} (entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
-    (defun HOT-RBT|C_UpgradeBranding (patron:string entity-id:string months:integer))
+    (defun HOT-RBT|C_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
+    (defun HOT-RBT|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer))
     (defun HOT-RBT|C_Repurpose:object{IgnisCollectorV3.OutputCumulator} (hot-rbt:string nonce:integer repurpose-to:string))
         ;;
     (defun C_Issue:object{IgnisCollectorV3.OutputCumulator}
@@ -6867,9 +6904,19 @@
             {"id"       : id}
         )
     )
+    (defun UEV_ExecutorIsOwnerKonto (executor:string entity-id:string)
+        @doc "BINDS <executor> to <entity-id>'s owner. Ownership is proven INDIRECTLY by the \
+            \ branding capability; this supplies the other half -- that the account the caller \
+            \ NAMED is that owner. (patron/executor canon 2.2, indirect route named.)"
+        (enforce (= executor (UR_OwnerKonto entity-id)) "Executor is not the Entity Owner")
+    )
     (defun C_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator}
-        (entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+        (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+        @doc "Updates <entity-id>'s pending branding. <executor> is bound to the entity OWNER; \
+            \ ownership itself is proven by ATS|C>UPDATE-BRD. The binding is what keeps the \
+            \ parameter from being a name nobody reads."
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor entity-id)
         (let
             (
                 (ref-BRD:module{BrandingV2} BRD)
@@ -6880,42 +6927,42 @@
             )
         )
     )
-    (defun C_UpgradeBranding (patron:string entity-id:string months:integer)
+    (defun C_UpgradeBranding (patron:string executor:string entity-id:string months:integer)
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor entity-id)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-BRD:module{BrandingV2} BRD)
-                (owner:string (UR_OwnerKonto entity-id))
             )
             ;;Perform the branding upgrade (side effect); bill the STOA via the URCi (== XE_UpgradeBranding's price)
             (with-capability (ATS|C>UPGRADE-BRD entity-id)
-                (ref-BRD::XE_UpgradeBranding entity-id owner months)
+                (ref-BRD::XE_UpgradeBranding entity-id executor months)
             )
             (ref-IGNIS::XB_CollectStoaWithTrigger patron (URCi_UpgradeBranding months) false)
         )
     )
     ;;Hot RBT Management
     (defun HOT-RBT|C_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator}
-        (entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+        (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
         (P|UEV_IMC)
         (let
             (
                 (ref-B|DPOF:module{BrandingUsagePrimaryV2} DPOF)
             )
             (with-capability (ATS|C>HOT-RBT-UPDATE-BRD entity-id)
-                (ref-B|DPOF::C_UpdatePendingBranding entity-id logo description website social)
+                (ref-B|DPOF::C_UpdatePendingBranding patron executor entity-id logo description website social)
             )
         )
     )
-    (defun HOT-RBT|C_UpgradeBranding (patron:string entity-id:string months:integer)
+    (defun HOT-RBT|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer)
         (P|UEV_IMC)
         (let
             (
                 (ref-B|DPOF:module{BrandingUsagePrimaryV2} DPOF)
             )
             (with-capability (ATS|C>HOT-RBT-UPGRADE-BRD entity-id)
-                (ref-B|DPOF::C_UpgradeBranding patron entity-id months)
+                (ref-B|DPOF::C_UpgradeBranding patron executor entity-id months)
             )
         )
     )

@@ -56,35 +56,35 @@
     (defun DALOS|C_UpdateEliteAccountSquared (patron:string sender:string receiver:string))
     ;;
     ;;
-    (defun DPTF|C_UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
-    (defun DPTF|C_UpgradeBranding (patron:string entity-id:string months:integer))
+    (defun DPTF|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
+    (defun DPTF|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer))
     ;;
     (defun DPTF|C_Issue:list (patron:string account:string name:[string] ticker:[string] decimals:[integer] can-change-owner:[bool] can-upgrade:[bool] can-add-special-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool]))
-    (defun DPTF|C_RotateOwnership (patron:string id:string new-owner:string))
-    (defun DPTF|C_Control (patron:string id:string cu:bool cco:bool casr:bool cf:bool cw:bool cp:bool))
-    (defun DPTF|C_TogglePause (patron:string id:string toggle:bool))
-    (defun DPTF|C_ToggleReservation (patron:string id:string toggle:bool))
+    (defun DPTF|C_RotateOwnership (patron:string executor:string executee:string id:string))
+    (defun DPTF|C_Control (patron:string executor:string id:string cu:bool cco:bool casr:bool cf:bool cw:bool cp:bool))
+    (defun DPTF|C_TogglePause (patron:string executor:string id:string toggle:bool))
+    (defun DPTF|C_ToggleReservation (patron:string executor:string id:string toggle:bool))
         ;;
-    (defun DPTF|C_ToggleFee (patron:string id:string toggle:bool))
-    (defun DPTF|C_SetMinMove (patron:string id:string min-move-value:decimal))
-    (defun DPTF|C_SetFee (patron:string id:string fee:decimal))
-    (defun DPTF|C_SetFeeTarget (patron:string id:string target:string))
-    (defun DPTF|C_DonateFees (patron:string id:string))
-    (defun DPTF|C_ResetFeeTarget (patron:string id:string))
-    (defun DPTF|C_ToggleFeeLock (patron:string id:string toggle:bool))
+    (defun DPTF|C_ToggleFee (patron:string executor:string id:string toggle:bool))
+    (defun DPTF|C_SetMinMove (patron:string executor:string id:string min-move-value:decimal))
+    (defun DPTF|C_SetFee (patron:string executor:string id:string fee:decimal))
+    (defun DPTF|C_SetFeeTarget (patron:string executor:string id:string target:string))
+    (defun DPTF|C_DonateFees (patron:string executor:string id:string))
+    (defun DPTF|C_ResetFeeTarget (patron:string executor:string id:string))
+    (defun DPTF|C_ToggleFeeLock (patron:string executor:string id:string toggle:bool))
         ;;
     (defun DPTF|C_DeployAccount (patron:string id:string account:string))
-    (defun DPTF|C_ToggleFreezeAccount (patron:string id:string account:string toggle:bool))
-    (defun DPTF|C_ToggleBurnRole (patron:string id:string account:string toggle:bool))
-    (defun DPTF|C_ToggleMintRole (patron:string id:string account:string toggle:bool))
-    (defun DPTF|C_ToggleFeeExemptionRole (patron:string id:string account:string toggle:bool))
-    (defun DPTF|C_ToggleTransferRole (patron:string id:string account:string toggle:bool))
+    (defun DPTF|C_ToggleFreezeAccount (patron:string executor:string executee:string id:string toggle:bool))
+    (defun DPTF|C_ToggleBurnRole (patron:string executor:string executee:string id:string toggle:bool))
+    (defun DPTF|C_ToggleMintRole (patron:string executor:string executee:string id:string toggle:bool))
+    (defun DPTF|C_ToggleFeeExemptionRole (patron:string executor:string executee:string id:string toggle:bool))
+    (defun DPTF|C_ToggleTransferRole (patron:string executor:string executee:string id:string toggle:bool))
         ;;
     (defun DPTF|C_ClearDispo (patron:string account:string))
-    (defun DPTF|C_Burn (patron:string id:string account:string amount:decimal))
-    (defun DPTF|C_Mint (patron:string id:string account:string amount:decimal origin:bool))
-    (defun DPTF|C_WipeSlim (patron:string id:string atbw:string amtbw:decimal))
-    (defun DPTF|C_Wipe (patron:string id:string atbw:string))
+    (defun DPTF|C_Burn (patron:string executor:string id:string amount:decimal))
+    (defun DPTF|C_Mint (patron:string executor:string id:string amount:decimal origin:bool))
+    (defun DPTF|C_WipeSlim (patron:string executor:string executee:string id:string amtbw:decimal))
+    (defun DPTF|C_Wipe (patron:string executor:string executee:string id:string))
         ;;
     (defun DPTF|C_Transmute (patron:string id:string transmuter:string transmute-amount:decimal))
     (defun DPTF|C_Transfer (patron:string id:string sender:string receiver:string transfer-amount:decimal method:bool))
@@ -93,8 +93,8 @@
     (defun DPTF|C_MultiBulkTransfer (patron:string id:[string] sender:string receiver-array:[[string]] transfer-amount-array:[[decimal]]))
     ;;
     ;;
-    (defun DPOF|C_UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
-    (defun DPOF|C_UpgradeBranding (patron:string entity-id:string months:integer))
+    (defun DPOF|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
+    (defun DPOF|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer))
     ;;
     (defun DPOF|C_Issue:list (patron:string account:string name:[string] ticker:[string] decimals:[integer] can-upgrade:[bool] can-change-owner:[bool] can-add-special-role:[bool] can-transfer-oft-create-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool]))
     (defun DPOF|C_RotateOwnership (patron:string id:string new-owner:string))
@@ -493,7 +493,7 @@
         )
     )
     ;;  [DPTF_Client]
-    (defun DPTF|C_UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+    (defun DPTF|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
         @doc "Updates <pending-branding> for DPTF Token <entity-id> costing 100 IGNIS"
         (with-capability (P|TS)
             (let
@@ -502,13 +502,13 @@
                     (ref-B|DPTF:module{BrandingUsagePrimaryV2} DPTF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-B|DPTF::C_UpdatePendingBranding entity-id logo description website social)
+                    (ref-B|DPTF::C_UpdatePendingBranding patron executor entity-id logo description website social)
                 )
                 (format "Pending Branding for DPTF {} updated succesfully" [entity-id])
             )
         )
     )
-    (defun DPTF|C_UpgradeBranding (patron:string entity-id:string months:integer)
+    (defun DPTF|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer)
         @doc "Upgrades Branding for DPTF Token, making it a premium BrandingV2. \
             \ Also sets pending-branding to live branding if its branding is not live yet"
         (with-capability (P|TS)
@@ -517,7 +517,7 @@
                     (ref-B|DPTF:module{BrandingUsagePrimaryV2} DPTF)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
-                (ref-B|DPTF::C_UpgradeBranding patron entity-id months)
+                (ref-B|DPTF::C_UpgradeBranding patron executor entity-id months)
                 (ref-TS01-A::XB_DynamicFuelSTOA)
                 (format "DPTF {} succesfully upgraded for {} months(s)!" [entity-id months])
             )
@@ -543,7 +543,7 @@
             )
         )
     )
-    (defun DPTF|C_RotateOwnership (patron:string id:string new-owner:string)
+    (defun DPTF|C_RotateOwnership (patron:string executor:string executee:string id:string)
         @doc "Rotates DPTF ID Ownership"
         (with-capability (P|TS)
             (let
@@ -551,16 +551,16 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount new-owner))
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPTF::C_RotateOwnership id new-owner)
+                    (ref-DPTF::C_RotateOwnership patron executor executee id)
                 )
                 (format "ID {} Ownership succesfully set to {}" [id sa])
             )
         )
     )
-    (defun DPTF|C_Control (patron:string id:string cu:bool cco:bool casr:bool cf:bool cw:bool cp:bool)
+    (defun DPTF|C_Control (patron:string executor:string id:string cu:bool cco:bool casr:bool cf:bool cw:bool cp:bool)
         @doc "Controls the properties of a DPTF Token \
             \ <can-change-owner> <can-upgrade> <can-add-special-role> <can-freeze> <can-wipe> <can-pause>"
         (with-capability (P|TS)
@@ -570,13 +570,13 @@
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPTF::C_Control id cu cco casr cf cw cp)
+                    (ref-DPTF::C_Control patron executor id cu cco casr cf cw cp)
                 )
                 (format "Succesfully controlled Properties of {}" [id])
             )
         )
     )
-    (defun DPTF|C_TogglePause (patron:string id:string toggle:bool)
+    (defun DPTF|C_TogglePause (patron:string executor:string id:string toggle:bool)
         @doc "Toggles Pause for a DPTF Token"
         (with-capability (P|TS)
             (let
@@ -585,7 +585,7 @@
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPTF::C_TogglePause id toggle)
+                    (ref-DPTF::C_TogglePause patron executor id toggle)
                 )
                 (if toggle
                     (format "ID {} succesfully pauses" [id])
@@ -594,7 +594,7 @@
             )
         )
     )
-    (defun DPTF|C_ToggleReservation (patron:string id:string toggle:bool)
+    (defun DPTF|C_ToggleReservation (patron:string executor:string id:string toggle:bool)
         @doc "Toggles Reservations for a DPTF Token"
         (with-capability (P|TS)
             (let
@@ -603,7 +603,7 @@
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPTF::C_ToggleReservation id toggle)
+                    (ref-DPTF::C_ToggleReservation patron executor id toggle)
                 )
                 (if toggle
                     (format "Reservations succesfully opened for {}" [id])
@@ -613,7 +613,7 @@
         )
     )
     ;;
-    (defun DPTF|C_ToggleFee (patron:string id:string toggle:bool)
+    (defun DPTF|C_ToggleFee (patron:string executor:string id:string toggle:bool)
         @doc "Toggles Fee collection for a DPTF Token. When a DPTF Token is setup with a transfer fee, \
             \ it will come in effect only when the toggle is on(true)"
         (with-capability (P|TS)
@@ -623,7 +623,7 @@
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPTF::C_ToggleFee id toggle)
+                    (ref-DPTF::C_ToggleFee patron executor id toggle)
                 )
                 (if toggle
                     (format "Fee Collection activated succesfully for {}" [id])
@@ -632,7 +632,7 @@
             )
         )
     )
-    (defun DPTF|C_SetMinMove (patron:string id:string min-move-value:decimal)
+    (defun DPTF|C_SetMinMove (patron:string executor:string id:string min-move-value:decimal)
         @doc "Sets the minimum amount needed to transfer a DPTF Token"
         (with-capability (P|TS)
             (let
@@ -641,13 +641,13 @@
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPTF::C_SetMinMove id min-move-value)
+                    (ref-DPTF::C_SetMinMove patron executor id min-move-value)
                 )
                 (format "MinMove Value succesfully set for {} to {}" [id min-move-value])
             )
         )
     )
-    (defun DPTF|C_SetFee (patron:string id:string fee:decimal)
+    (defun DPTF|C_SetFee (patron:string executor:string id:string fee:decimal)
         @doc "Sets a transfer fee for the DPTF Token"
         (with-capability (P|TS)
             (let
@@ -656,13 +656,13 @@
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPTF::C_SetFee id fee)
+                    (ref-DPTF::C_SetFee patron executor id fee)
                 )
                 (format "Fee Promille succesfully set to {} Promille for {}" [fee id])
             )
         )
     )
-    (defun DPTF|C_SetFeeTarget (patron:string id:string target:string)
+    (defun DPTF|C_SetFeeTarget (patron:string executor:string id:string target:string)
         @doc "Sets the Fee Collection Target for a DPTF"
         (with-capability (P|TS)
             (let
@@ -673,13 +673,13 @@
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount target))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPTF::C_SetFeeTarget id target)
+                    (ref-DPTF::C_SetFeeTarget patron executor id target)
                 )
                 (format "Fee Target succesfully set for {} to {}" [id sa])
             )
         )
     )
-    (defun DPTF|C_DonateFees (patron:string id:string)
+    (defun DPTF|C_DonateFees (patron:string executor:string id:string)
         @doc "Sets the Fee Collection target to the DALOS|SC_NAME \
         \ When DPTF Fees collect here, the will be earned by Ouronet Custodians"
         (with-capability (P|TS)
@@ -692,13 +692,13 @@
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount (ref-DALOS::GOV|DALOS|SC_NAME)))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPTF::C_SetFeeTarget id (ref-DALOS::GOV|DALOS|SC_NAME))
+                    (ref-DPTF::C_SetFeeTarget patron executor id (ref-DALOS::GOV|DALOS|SC_NAME))
                 )
                 (format "Fee Collection succesfully set to {}" [sa])
             )
         )
     )
-    (defun DPTF|C_ResetFeeTarget (patron:string id:string)
+    (defun DPTF|C_ResetFeeTarget (patron:string executor:string id:string)
         @doc "Sets the Fee Collection target to the OUROBOROS|SC_NAME \
         \ Fees can then be collected by <DPTF|C_WithdrawFees>"
         (with-capability (P|TS)
@@ -711,13 +711,13 @@
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount (ref-DALOS::GOV|OUROBOROS|SC_NAME)))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPTF::C_SetFeeTarget id (ref-DALOS::GOV|OUROBOROS|SC_NAME))
+                    (ref-DPTF::C_SetFeeTarget patron executor id (ref-DALOS::GOV|OUROBOROS|SC_NAME))
                 )
                 (format "Fee Collection succesfully set to {}" [sa])
             )
         )
     )
-    (defun DPTF|C_ToggleFeeLock (patron:string id:string toggle:bool)
+    (defun DPTF|C_ToggleFeeLock (patron:string executor:string id:string toggle:bool)
         @doc "Toggles DPTF Fee Settings Lock"
         (with-capability (P|TS)
             (let
@@ -726,7 +726,7 @@
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-DPTF::C_ToggleFeeLock patron id toggle)
+                        (ref-DPTF::C_ToggleFeeLock patron executor id toggle)
                     )
                     (collect:bool (at 0 (at "output" ico)))
                 )
@@ -768,7 +768,7 @@
             )
         )
     )
-    (defun DPTF|C_ToggleFreezeAccount (patron:string id:string account:string toggle:bool)
+    (defun DPTF|C_ToggleFreezeAccount (patron:string executor:string executee:string id:string toggle:bool)
         @doc "Toggles Freezing of a DPTF Account"
         (with-capability (P|TS)
             (let
@@ -776,10 +776,10 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPTF::C_ToggleFreezeAccount id account toggle)
+                    (ref-DPTF::C_ToggleFreezeAccount patron executor executee id toggle)
                 )
                 (if toggle
                     (format "Account {} succesfully frozen for {}" [sa id])
@@ -788,8 +788,8 @@
             )
         )
     )
-    (defun DPTF|C_ToggleBurnRole (patron:string id:string account:string toggle:bool)
-        @doc "Toggles <burn-role> for a DPTF Token <id> on a specific <account>"
+    (defun DPTF|C_ToggleBurnRole (patron:string executor:string executee:string id:string toggle:bool)
+        @doc "Toggles <burn-role> for a DPTF Token <id> on a specific <executee>"
         (with-capability (P|TS)
             (let
                 (
@@ -797,13 +797,13 @@
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPTF::C_ToggleBurnRole id account toggle)
+                    (ref-DPTF::C_ToggleBurnRole patron executor executee id toggle)
                 )
             )
         )
     )
-    (defun DPTF|C_ToggleMintRole (patron:string id:string account:string toggle:bool)
-        @doc "Toggles <mint-role> for a DPTF Token <id> on a specific <account>"
+    (defun DPTF|C_ToggleMintRole (patron:string executor:string executee:string id:string toggle:bool)
+        @doc "Toggles <mint-role> for a DPTF Token <id> on a specific <executee>"
         (with-capability (P|TS)
             (let
                 (
@@ -811,13 +811,13 @@
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPTF::C_ToggleMintRole id account toggle)
+                    (ref-DPTF::C_ToggleMintRole patron executor executee id toggle)
                 )
             )
         )
     )
-    (defun DPTF|C_ToggleFeeExemptionRole (patron:string id:string account:string toggle:bool)
-        @doc "Toggles <fee-exemption-role> for a DPTF Token <id> on a specific <account>"
+    (defun DPTF|C_ToggleFeeExemptionRole (patron:string executor:string executee:string id:string toggle:bool)
+        @doc "Toggles <fee-exemption-role> for a DPTF Token <id> on a specific <executee>"
         (with-capability (P|TS)
             (let
                 (
@@ -825,23 +825,23 @@
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPTF::C_ToggleFeeExemptionRole id account toggle)
+                    (ref-DPTF::C_ToggleFeeExemptionRole patron executor executee id toggle)
                 )
             )
         )
     )
-    (defun DPTF|C_ToggleTransferRole (patron:string id:string account:string toggle:bool)
-        @doc "Toggles <transfer-role> for a DPTF Token <id> on a specific <account>"
+    (defun DPTF|C_ToggleTransferRole (patron:string executor:string executee:string id:string toggle:bool)
+        @doc "Toggles <transfer-role> for a DPTF Token <id> on a specific <executee>"
         (with-capability (P|TS)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPTF::C_ToggleTransferRole id account toggle)
+                    (ref-DPTF::C_ToggleTransferRole patron executor executee id toggle)
                 )
                 (if toggle
                     (format "Transfer Role succesfuly added for {} to {}" [id sa])
@@ -860,29 +860,29 @@
                     (ref-TFT:module{TrueFungibleTransferV2} TFT)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-TFT::C_ClearDispo account)
+                    (ref-TFT::C_ClearDispo patron account)
                 )
             )
         )
     )
-    (defun DPTF|C_Burn (patron:string id:string account:string amount:decimal)
-        @doc "Burns a DPTF Token from an account"
+    (defun DPTF|C_Burn (patron:string executor:string id:string amount:decimal)
+        @doc "Burns a DPTF Token from an executor"
         (with-capability (P|TS)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPTF::C_Burn id account amount)
+                    (ref-DPTF::C_Burn patron executor id amount)
                 )
                 (format "Succesfully burned {} {} on Account {}" [amount id sa])
             )
         )
     )
-    (defun DPTF|C_Mint (patron:string id:string account:string amount:decimal origin:bool)
+    (defun DPTF|C_Mint (patron:string executor:string id:string amount:decimal origin:bool)
         @doc "Mints a DPTF Token"
         (with-capability (P|TS)
             (let
@@ -890,10 +890,10 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPTF::C_Mint id account amount origin)
+                    (ref-DPTF::C_Mint patron executor id amount origin)
                 )
                 (if origin
                     (format "Succesfully premined {} {} on Account {}" [amount id sa])
@@ -902,7 +902,7 @@
             )
         )
     )
-    (defun DPTF|C_WipeSlim (patron:string id:string atbw:string amtbw:decimal)
+    (defun DPTF|C_WipeSlim (patron:string executor:string executee:string id:string amtbw:decimal)
         @doc "Similar to <DPTF|C_Wipe>, but doesnt wipe the whole existing amount"
         (with-capability (P|TS)
             (let
@@ -911,18 +911,18 @@
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                     (ref-ELITE:module{EliteV2} ELITE)
-                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount atbw))
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPTF::C_WipeSlim id atbw amtbw)
+                    (ref-DPTF::C_WipeSlim patron executor executee id amtbw)
                 )
                 ;;Update Elite Account
-                (ref-ELITE::XE_UpdateEliteSingle id atbw)
+                (ref-ELITE::XE_UpdateEliteSingle id executee)
                 (format "Succesfully wiped {} {} from account {}" [amtbw id sa])
             )
         )
     )
-    (defun DPTF|C_Wipe (patron:string id:string atbw:string)
+    (defun DPTF|C_Wipe (patron:string executor:string executee:string id:string)
         @doc "Wipes a DPTF Token from a given account in its entirety \
         \ Only works for positive existing amounts"
         (with-capability (P|TS)
@@ -932,13 +932,13 @@
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                     (ref-ELITE:module{EliteV2} ELITE)
-                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount atbw))
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPTF::C_Wipe id atbw)
+                    (ref-DPTF::C_Wipe patron executor executee id)
                 )
                 ;;Update Elite Account
-                (ref-ELITE::XE_UpdateEliteSingle id atbw)
+                (ref-ELITE::XE_UpdateEliteSingle id executee)
                 (format "Succesfully wiped all {} from account {}" [id sa])
             )
         )
@@ -1070,7 +1070,7 @@
         )
     )
     ;;  [DPOF_Client]
-    (defun DPOF|C_UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+    (defun DPOF|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
         @doc "Updates <pending-branding> for DPOF Token <entity-id> costing 150 IGNIS"
         (with-capability (P|TS)
             (let
@@ -1079,13 +1079,13 @@
                     (ref-B|DPOF:module{BrandingUsagePrimaryV2} DPOF)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-B|DPOF::C_UpdatePendingBranding entity-id logo description website social)
+                    (ref-B|DPOF::C_UpdatePendingBranding patron executor entity-id logo description website social)
                 )
                 (format "Pending Branding for DPOF {} updated succesfully" [entity-id])
             )
         )
     )
-    (defun DPOF|C_UpgradeBranding (patron:string entity-id:string months:integer)
+    (defun DPOF|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer)
         @doc "Similar to its DPTF Variant"
         (with-capability (P|TS)
             (let
@@ -1093,7 +1093,7 @@
                     (ref-B|DPOF:module{BrandingUsagePrimaryV2} DPOF)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
-                (ref-B|DPOF::C_UpgradeBranding patron entity-id months)
+                (ref-B|DPOF::C_UpgradeBranding patron executor entity-id months)
                 (ref-TS01-A::XB_DynamicFuelSTOA)
                 (format "DPOF {} succesfully upgraded for {} months(s)!" [entity-id months])
             )

@@ -909,7 +909,7 @@
                         (ref-TS01-C2::VST|C_Reserve patron emma ouro 10.0))
                 ]
             )
-            (ref-TS01-C1::DPTF|C_ToggleReservation patron ouro true)
+            (ref-TS01-C1::DPTF|C_ToggleReservation patron (DPTF.UR_Konto ouro) ouro true)
             (map print
                 [
                     (expect "<<VST-10>> C_ToggleReservation opened it"
@@ -2482,7 +2482,7 @@
     ;;SETUP, outside the measurement window — give the smart account a reserved balance to release.
     ;;This is the same three-step hand-off `Stage_01/[6.3]_SWP.repl:2624-2629` performs.
     (ref-TS01-C1::DPTF|C_DeployAccount patron r bj)
-    (ref-TS01-C1::DPTF|C_ToggleTransferRole patron r bj true)
+    (ref-TS01-C1::DPTF|C_ToggleTransferRole patron (DPTF.UR_Konto r) bj r true)
     (ref-TS01-C1::DPTF|C_Transfer patron r patron bj 20.0 true)
     (let
         (
@@ -3059,7 +3059,7 @@
     (
         (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
     )
-    (ref-TS01-C1::DPTF|C_Control KST.ANHD "MOCKA-98c486052a51" true true true true true true)
+    (ref-TS01-C1::DPTF|C_Control KST.ANHD (DPTF.UR_Konto "MOCKA-98c486052a51") "MOCKA-98c486052a51" true true true true true true)
     ""
 )
 (env-sigs [{ "key": "PK_Emma", "caps": [] } { "key": "PK_AncientHodler", "caps": [] }])

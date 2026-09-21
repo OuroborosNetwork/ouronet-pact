@@ -37,7 +37,7 @@
                 ;;2026-09-14 authorise-first sweep put the admin gate first, and the message this
                 ;;call now returns is the one the description always promised.
                 "DPTF Ownership not verified"
-            (ref-TS01-A::DPTF|A_WipeTreasuryDebtPartial 1.0)
+            (ref-TS01-A::DPTF|A_WipeTreasuryDebtPartial KST.LUMY 1.0)
         )
     )
 )

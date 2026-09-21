@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 20 of 22
 ;; This is STEP 20 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-19 must have run first, including the init steps between deploys.
-;; 7 source file(s), 221,896 gas measured in the REPL gas model, 318,440 bytes
+;; 7 source file(s), 221,896 gas measured in the REPL gas model, 318,697 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact
@@ -3125,7 +3125,7 @@
                     (sd:string (ref-I|OURONET::OI|UC_ShortAccount donor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DEMIPAD::C_Deposit donor asset-id amount-in-dollars type direct-injection max-cost)
+                    (ref-DEMIPAD::C_Deposit patron donor asset-id amount-in-dollars type direct-injection max-cost)
                 )
                 (format "Succesfuly deposited {} $ worth against {} into Demipad from {}." [amount-in-dollars asset-id sd])
             )
@@ -3950,13 +3950,13 @@
             ;;1]Move Wrapped Stoa to Target
             (ref-TS01-C1::DPTF|C_Transfer patron wstoa-id redemption-payer account-to-redeem redemption-value true)
             ;;2]Freeze <account-to-redeem>
-            (ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron spark-id account-to-redeem true)
+            (ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron (DPTF.UR_Konto spark-id) account-to-redeem spark-id true)
             ;;3]Partial Wipe <spark-id>
-            (ref-TS01-C1::DPTF|C_WipeSlim patron spark-id account-to-redeem redemption-quantity)
+            (ref-TS01-C1::DPTF|C_WipeSlim patron (DPTF.UR_Konto spark-id) account-to-redeem spark-id redemption-quantity)
             ;;4]Unfreeze <account-to-redeem>
-            (ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron spark-id account-to-redeem false)
+            (ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron (DPTF.UR_Konto spark-id) account-to-redeem spark-id false)
             ;;5]Remint wiped amount to <DEMIPAD|SC_NAME>
-            (ref-TS01-C1::DPTF|C_Mint patron spark-id DEMIPAD|SC_NAME redemption-quantity false)
+            (ref-TS01-C1::DPTF|C_Mint patron DEMIPAD|SC_NAME spark-id redemption-quantity false)
             ;;6]Freeze it back to <account-to-redeem>
             (ref-TS01-C2::VST|C_Freeze patron DEMIPAD|SC_NAME account-to-redeem spark-id redemption-quantity)
             (format "Succesfully Redeemed {} {} for {} {} on Account {}"
@@ -3987,13 +3987,13 @@
             ;;1]Move Wrapped Stoa to Target
             (ref-TS01-C1::DPTF|C_Transfer patron wstoa-id redemption-payer account-to-redeem redemption-value true)
             ;;2]Freeze <account-to-redeem>
-            (ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron spark-id account-to-redeem true)
+            (ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron (DPTF.UR_Konto spark-id) account-to-redeem spark-id true)
             ;;3]Partial Wipe <spark-id>
-            (ref-TS01-C1::DPTF|C_WipeSlim patron spark-id account-to-redeem redemption-quantity)
+            (ref-TS01-C1::DPTF|C_WipeSlim patron (DPTF.UR_Konto spark-id) account-to-redeem spark-id redemption-quantity)
             ;;4]Unfreeze <account-to-redeem>
-            (ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron spark-id account-to-redeem false)
+            (ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron (DPTF.UR_Konto spark-id) account-to-redeem spark-id false)
             ;;5]Remint wiped amount to <DEMIPAD|SC_NAME>
-            (ref-TS01-C1::DPTF|C_Mint patron spark-id DEMIPAD|SC_NAME redemption-quantity false)
+            (ref-TS01-C1::DPTF|C_Mint patron DEMIPAD|SC_NAME spark-id redemption-quantity false)
             ;;6]Freeze it back to <account-to-redeem>
             (ref-TS01-C2::VST|C_Freeze patron DEMIPAD|SC_NAME account-to-redeem spark-id redemption-quantity)
             (format "Succesfully Redeemed {} {} for {} {} on Account {}"
@@ -6501,7 +6501,7 @@
             ;;of <unclaimed-count> and lets the next round open.
             (if (!= urSTOA-supply 0.0)
                 (do
-                    (ref-TS01-C1::DPTF|C_Mint patron urSTOA-id DEMIPAD|SC_NAME urSTOA-supply false)
+                    (ref-TS01-C1::DPTF|C_Mint patron DEMIPAD|SC_NAME urSTOA-id urSTOA-supply false)
                     (if (!= wSTOA-supply 0.0)
                         (ref-TS01-C1::DPTF|C_MultiTransfer patron
                             [wSTOA-id urSTOA-id] DEMIPAD|SC_NAME account
@@ -6801,12 +6801,12 @@
                 ;;1]Issue wURSTOA as DPTF
                 ;;2]Issue vUSD as mockup virtual Dollarz
                 ;;3]Toggle mint and burn roles
-                (ref-TS01-C1::DPTF|C_ToggleMintRole account vusd-id DEMIPAD|SC_NAME true)
-                (ref-TS01-C1::DPTF|C_ToggleBurnRole account vusd-id DEMIPAD|SC_NAME true)
-                (ref-TS01-C1::DPTF|C_ToggleMintRole account wstoa-id account true)
-                (ref-TS01-C1::DPTF|C_ToggleMintRole account wurstoa-id DEMIPAD|SC_NAME true)
+                (ref-TS01-C1::DPTF|C_ToggleMintRole account (DPTF.UR_Konto vusd-id) DEMIPAD|SC_NAME vusd-id true)
+                (ref-TS01-C1::DPTF|C_ToggleBurnRole account (DPTF.UR_Konto vusd-id) DEMIPAD|SC_NAME vusd-id true)
+                (ref-TS01-C1::DPTF|C_ToggleMintRole account (DPTF.UR_Konto wstoa-id) account wstoa-id true)
+                (ref-TS01-C1::DPTF|C_ToggleMintRole account (DPTF.UR_Konto wurstoa-id) DEMIPAD|SC_NAME wurstoa-id true)
                 ;;4]Mint 10 mil wSTOA (injection will follow after ICO concludes)    
-                (ref-TS01-C1::DPTF|C_Mint account wstoa-id account 10000000.0 true)
+                (ref-TS01-C1::DPTF|C_Mint account account wstoa-id 10000000.0 true)
                 ;;5]Initialises the distribution Vault
                 (XI_InitialiseDistributionVault [wstoa-id wurstoa-id vusd-id])
                 ;;6]Output Message
@@ -6883,7 +6883,7 @@
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
                 ;;0]Mint the v-USD amount to the <DEMIPAD|SC_NAME>
-                (ref-TS01-C1::DPTF|C_Mint patron v-usd-id DEMIPAD|SC_NAME v-usd-amount false)
+                (ref-TS01-C1::DPTF|C_Mint patron DEMIPAD|SC_NAME v-usd-id v-usd-amount false)
                 ;;0.1]If New Account
                 (if (not (UR_IzAccount account))
                     (do
@@ -6937,7 +6937,7 @@
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
                 ;;0]Burn the v-USD amount from the <DEMIPAD|SC_NAME> that is to be removed
-                (ref-TS01-C1::DPTF|C_Burn patron v-usd-id DEMIPAD|SC_NAME v-usd-amount)
+                (ref-TS01-C1::DPTF|C_Burn patron DEMIPAD|SC_NAME v-usd-id v-usd-amount)
                 ;;1.1]Update Pending Rewards
                 (XI_UpdatePendingRewards account)
                 ;;1.2]If remaining <user-score> becomes 0, decrement <nzs-count>

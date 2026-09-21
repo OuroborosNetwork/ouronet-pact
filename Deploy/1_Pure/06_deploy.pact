@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 6 of 22
 ;; This is STEP 6 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-5 must have run first, including the init steps between deploys.
-;; 2 source file(s), 254,885 gas measured in the REPL gas model, 250,841 bytes
+;; 2 source file(s), 254,885 gas measured in the REPL gas model, 252,064 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact
@@ -164,6 +164,7 @@
     (defun URCi_UpgradeBranding:decimal (months:integer))
     ;;{5.4}  Validate [UEV/CAP]
     ;;
+    (defun UEV_ExecutorIsOwnerKonto (executor:string entity-id:string))
     (defun UEV_FeeSplit (input:object{FeeSplit}))
     (defun UEV_id (swpair:string))
     (defun UEV_CanChangeOwnerON (swpair:string))
@@ -194,14 +195,14 @@
     (defun A_UpdateLimit (limit:decimal spawn:bool))
     (defun A_UpdateLiquidBoost (new-boost-variable:bool))
     (defun A_DefinePrimordialPool (primordial-pool:string))
-    (defun A_ToggleAsymetricLiquidityAddition (toggle:bool))
+    (defun A_ToggleAsymetricLiquidityAddition (patron:string toggle:bool))
     ;;
     (defun C_ChangeOwnership:object{IgnisCollectorV3.OutputCumulator} (swpair:string new-owner:string))
     (defun C_EnableFrozenLP:object{IgnisCollectorV3.OutputCumulator} (patron:string swpair:string))
     (defun C_EnableSleepingLP:object{IgnisCollectorV3.OutputCumulator} (patron:string swpair:string))
     (defun C_ModifyCanChangeOwner:object{IgnisCollectorV3.OutputCumulator} (swpair:string new-boolean:bool))
     (defun C_ModifyWeights:object{IgnisCollectorV3.OutputCumulator} (swpair:string new-weights:[decimal]))
-    (defun C_ToggleAddOrSwap:object{IgnisCollectorV3.OutputCumulator} (swpair:string toggle:bool add-or-swap:bool))
+    (defun C_ToggleAddOrSwap:object{IgnisCollectorV3.OutputCumulator} (patron:string swpair:string toggle:bool add-or-swap:bool))
     (defun C_ToggleFeeLock:object{IgnisCollectorV3.OutputCumulator} (patron:string swpair:string toggle:bool))
     (defun C_UpdateAmplifier:object{IgnisCollectorV3.OutputCumulator} (swpair:string amp:decimal))
     (defun C_UpdateFee:object{IgnisCollectorV3.OutputCumulator} (swpair:string new-fee:decimal lp-or-special:bool))
@@ -2097,7 +2098,7 @@
             )
         )
     )
-    (defun A_ToggleAsymetricLiquidityAddition (toggle:bool)
+    (defun A_ToggleAsymetricLiquidityAddition (patron:string toggle:bool)
         (P|UEV_IMC)
         (with-capability (SWP|C>TG-ASYMETRIC-LQ toggle)
             (let
@@ -2115,19 +2116,19 @@
                     (ignis-fee-exemption-roleV2:bool (ref-DPTF::UR_AccountRoleFeeExemption ignis-id vst-sc))
                 )
                 (if (not ignis-burn-role)
-                    (ref-DPTF::C_ToggleBurnRole ignis-id SWP|SC_NAME true)
+                    (ref-DPTF::C_ToggleBurnRole patron (ref-DPTF::UR_Konto ignis-id) SWP|SC_NAME ignis-id true)
                     true
                 )
                 (if (not ouro-mint-role)
-                    (ref-DPTF::C_ToggleMintRole ouro-id SWP|SC_NAME true)
+                    (ref-DPTF::C_ToggleMintRole patron (ref-DPTF::UR_Konto ouro-id) SWP|SC_NAME ouro-id true)
                     true
                 )
                 (if (not ignis-fee-exemption-role)
-                    (ref-DPTF::C_ToggleFeeExemptionRole ignis-id SWP|SC_NAME true)
+                    (ref-DPTF::C_ToggleFeeExemptionRole patron (ref-DPTF::UR_Konto ignis-id) SWP|SC_NAME ignis-id true)
                     true
                 )
                 (if (not ignis-fee-exemption-role)
-                    (ref-DPTF::C_ToggleFeeExemptionRole ignis-id vst-sc true)
+                    (ref-DPTF::C_ToggleFeeExemptionRole patron (ref-DPTF::UR_Konto ignis-id) vst-sc ignis-id true)
                     true
                 )
                 (update SWP|Asymmetry SWP|INFO
@@ -2136,9 +2137,19 @@
             )
         )
     )
+    (defun UEV_ExecutorIsOwnerKonto (executor:string entity-id:string)
+        @doc "BINDS <executor> to <entity-id>'s owner. Ownership is proven INDIRECTLY by the \
+            \ branding capability; this supplies the other half -- that the account the caller \
+            \ NAMED is that owner. (patron/executor canon 2.2, indirect route named.)"
+        (enforce (= executor (UR_OwnerKonto entity-id)) "Executor is not the Entity Owner")
+    )
     (defun C_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator}
-        (entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+        (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+        @doc "Updates <entity-id>'s pending branding. <executor> is bound to the entity OWNER; \
+            \ ownership itself is proven by SWP|C>UPDATE-BRD. The binding is what keeps the \
+            \ parameter from being a name nobody reads."
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor entity-id)
         (let
             (
                 (ref-BRD:module{BrandingV2} BRD)
@@ -2149,17 +2160,17 @@
             )
         )
     )
-    (defun C_UpgradeBranding (patron:string entity-id:string months:integer)
+    (defun C_UpgradeBranding (patron:string executor:string entity-id:string months:integer)
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor entity-id)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-BRD:module{BrandingV2} BRD)
-                (owner:string (UR_OwnerKonto entity-id))
             )
             ;;Perform the branding upgrade (side effect); bill the STOA via the URCi (== XE_UpgradeBranding's price)
             (with-capability (SWP|C>UPGRADE-BRD entity-id)
-                (ref-BRD::XE_UpgradeBranding entity-id owner months)
+                (ref-BRD::XE_UpgradeBranding entity-id executor months)
             )
             (ref-IGNIS::XB_CollectStoaWithTrigger patron (URCi_UpgradeBranding months) false)
         )
@@ -2240,7 +2251,7 @@
         )
     )
     (defun C_ToggleAddOrSwap:object{IgnisCollectorV3.OutputCumulator}
-        (swpair:string toggle:bool add-or-swap:bool)
+        (patron:string swpair:string toggle:bool add-or-swap:bool)
         @doc "#71L: called directly (cross-module C_->C_) by SWPU::C_ToggleSwapCapability and \
             \ SWPLC::C_ToggleAddLiquidity, instead of through an XE_* forward entrypoint — \
             \ intentional, DESIGN-accepted, not an oversight. This function is not a plain \
@@ -2284,13 +2295,13 @@
                                     (lp-mint-role:bool (ref-DPTF::UR_AccountRoleMint lp-id SWP|SC_NAME))
                                     (ico2:object{IgnisCollectorV3.OutputCumulator}
                                         (if (not lp-burn-role)
-                                            (ref-DPTF::C_ToggleBurnRole lp-id SWP|SC_NAME true)
+                                            (ref-DPTF::C_ToggleBurnRole patron (ref-DPTF::UR_Konto lp-id) SWP|SC_NAME lp-id true)
                                             EOC
                                         )
                                     )
                                     (ico3:object{IgnisCollectorV3.OutputCumulator}
                                         (if (not lp-mint-role)
-                                            (ref-DPTF::C_ToggleMintRole lp-id SWP|SC_NAME true)
+                                            (ref-DPTF::C_ToggleMintRole patron (ref-DPTF::UR_Konto lp-id) SWP|SC_NAME lp-id true)
                                             EOC
                                         )
                                     )
@@ -2301,7 +2312,7 @@
                                                 (ref-U|LST::UC_AppL
                                                     acc
                                                     (if (not (ref-DPTF::UR_AccountRoleFeeExemption (at idx ptts) SWP|SC_NAME))
-                                                        (ref-DPTF::C_ToggleFeeExemptionRole (at idx ptts) SWP|SC_NAME true)
+                                                        (ref-DPTF::C_ToggleFeeExemptionRole patron (ref-DPTF::UR_Konto (at idx ptts)) SWP|SC_NAME (at idx ptts) true)
                                                         EOC
                                                     )
                                                 )
@@ -2619,7 +2630,7 @@
     ;;so C_Issue can still aggregate every sub-call's own cumulator into its single
     ;;billed response exactly as before, while MTX|C_Issue (which already bills
     ;;separately in its own Step 2) can just take swpair/token-lp and ignore the rest.
-    (defun XE_IssueWrite:list (account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool))
+    (defun XE_IssueWrite:list (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool))
     ;;{5.7}  User [A/C]
     ;;
     ;;
@@ -5106,7 +5117,7 @@
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          SWPI|XE>ISSUE-WRITE
     (defun XE_IssueWrite:list
-        (account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool)
+        (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool)
         @doc "#36M/M5 fix: forward-module entrypoint holding the ONE shared pool-issuance \
             \ write sequence — mint the LP token, register the pool, transfer pool tokens \
             \ in, mint genesis LP supply, transfer LP out to the account, register the \
@@ -5146,7 +5157,7 @@
                             (ref-TFT::C_MultiTransfer pool-token-ids account SWP|SC_NAME pool-token-amounts true)
                         )
                         (ico-mint:object{IgnisCollectorV3.OutputCumulator}
-                            (ref-DPTF::C_Mint token-lp SWP|SC_NAME GENESIS_LP_SUPPLY true)
+                            (ref-DPTF::C_Mint patron SWP|SC_NAME token-lp GENESIS_LP_SUPPLY true)
                         )
                         (ico-transfer-out:object{IgnisCollectorV3.OutputCumulator}
                             (ref-TFT::C_Transfer token-lp SWP|SC_NAME account GENESIS_LP_SUPPLY true)
@@ -5214,7 +5225,7 @@
                     (stoa-costs:decimal (ref-IGNIS::UC_StoaPrice "issue-swp-pair"))
                     (gas-swp-cost:decimal (ref-IGNIS::UC_IgnisDeter "issue-swp-pair"))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                    (write-result:list (XE_IssueWrite executor pool-tokens fee-lp weights amp p))
+                    (write-result:list (XE_IssueWrite patron executor pool-tokens fee-lp weights amp p))
                     (swpair:string (at 0 write-result))
                     (token-lp:string (at 1 write-result))
                     (ico1:object{IgnisCollectorV3.OutputCumulator} (at 2 write-result))

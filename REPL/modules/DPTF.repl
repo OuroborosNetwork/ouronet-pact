@@ -86,19 +86,19 @@
                 (expect-failure
                     "<<DPTF-02>> non-origin C_Mint is rejected while the mint role is unset"
                     "must be set to true for exec"
-                    (ref-TS01-C1::DPTF|C_Mint patron a patron 500.0 false))
+                    (ref-TS01-C1::DPTF|C_Mint patron patron a 500.0 false))
                 (expect "<<DPTF-02>> mint role starts unset"
                     false (ref-DPTF::UR_AccountRoleMint a patron))
             ]
         )
-        (ref-TS01-C1::DPTF|C_ToggleMintRole patron a patron true)
+        (ref-TS01-C1::DPTF|C_ToggleMintRole patron (DPTF.UR_Konto a) patron a true)
         (map print
             [
                 (expect "<<DPTF-02>> C_ToggleMintRole granted the role"
                     true (ref-DPTF::UR_AccountRoleMint a patron))
             ]
         )
-        (ref-TS01-C1::DPTF|C_Mint patron a patron 500.0 false)
+        (ref-TS01-C1::DPTF|C_Mint patron patron a 500.0 false)
         (map print
             [
                 (expect "<<DPTF-02>> C_Mint raised total supply by exactly the minted amount"
@@ -182,19 +182,19 @@
                 (expect-failure
                     "<<DPTF-04>> C_Burn is rejected while the burn role is unset"
                     "must be set to true for exec"
-                    (ref-TS01-C1::DPTF|C_Burn patron a patron 50.0))
+                    (ref-TS01-C1::DPTF|C_Burn patron patron a 50.0))
                 (expect "<<DPTF-04>> burn role starts unset"
                     false (ref-DPTF::UR_AccountRoleBurn a patron))
             ]
         )
-        (ref-TS01-C1::DPTF|C_ToggleBurnRole patron a patron true)
+        (ref-TS01-C1::DPTF|C_ToggleBurnRole patron (DPTF.UR_Konto a) patron a true)
         (map print
             [
                 (expect "<<DPTF-04>> C_ToggleBurnRole granted the role"
                     true (ref-DPTF::UR_AccountRoleBurn a patron))
             ]
         )
-        (ref-TS01-C1::DPTF|C_Burn patron a patron 50.0)
+        (ref-TS01-C1::DPTF|C_Burn patron patron a 50.0)
         (map print
             [
                 (expect "<<DPTF-04>> C_Burn lowered total supply by exactly the burned amount"
@@ -228,9 +228,9 @@
         (emma:string KST.EMMA)
     )
     (let ((target0:string (ref-DPTF::UR_FeeTarget a)))
-    (ref-TS01-C1::DPTF|C_SetFee patron a 25.0)
-    (ref-TS01-C1::DPTF|C_ToggleFee patron a true)
-    (ref-TS01-C1::DPTF|C_SetFeeTarget patron a emma)
+    (ref-TS01-C1::DPTF|C_SetFee patron (DPTF.UR_Konto a) a 25.0)
+    (ref-TS01-C1::DPTF|C_ToggleFee patron (DPTF.UR_Konto a) a true)
+    (ref-TS01-C1::DPTF|C_SetFeeTarget patron (DPTF.UR_Konto a) a emma)
     (map print
         [
             (expect "<<DPTF-05>> C_SetFee stored the fee promile"     25.0 (ref-DPTF::UR_FeePromile a))
@@ -241,10 +241,10 @@
             ;;proved it is <emma>, so passing <emma> again is the guard's one live input.
             (expect-failure "<<DPTF-05>> C_SetFeeTarget rejects re-setting the target it already has"
                 "New Fee Target must be different than the current"
-                (ref-TS01-C1::DPTF|C_SetFeeTarget patron a emma))
+                (ref-TS01-C1::DPTF|C_SetFeeTarget patron (DPTF.UR_Konto a) a emma))
         ]
     )
-    (ref-TS01-C1::DPTF|C_ResetFeeTarget patron a)
+    (ref-TS01-C1::DPTF|C_ResetFeeTarget patron (DPTF.UR_Konto a) a)
     (map print
         [
             ;;METAMORPHIC: set-then-reset must restore the ORIGINAL target, whatever it was.
@@ -257,7 +257,7 @@
                 25.0 (ref-DPTF::UR_FeePromile a))
         ]
     )
-    (ref-TS01-C1::DPTF|C_ToggleFee patron a false)
+    (ref-TS01-C1::DPTF|C_ToggleFee patron (DPTF.UR_Konto a) a false)
     (map print [(expect "<<DPTF-05>> C_ToggleFee turned the fee OFF again"
                     false (ref-DPTF::UR_FeeToggle a))])
     "")
@@ -283,8 +283,8 @@
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
     )
-    (ref-TS01-C1::DPTF|C_SetMinMove patron a 7.0)
-    (ref-TS01-C1::DPTF|C_ToggleTransferRole patron a emma true)
+    (ref-TS01-C1::DPTF|C_SetMinMove patron (DPTF.UR_Konto a) a 7.0)
+    (ref-TS01-C1::DPTF|C_ToggleTransferRole patron (DPTF.UR_Konto a) emma a true)
 
     (map print
         [
@@ -294,23 +294,23 @@
             ;;is pinned at in DPTF-G1, asserted here against the MIN-MOVE path instead.
             (expect-failure "<<DPTF-06>> C_SetMinMove rejects one more decimal than the token has"
                 "does not conform with the"
-                (ref-TS01-C1::DPTF|C_SetMinMove patron a 0.0000000000000000000000001))
+                (ref-TS01-C1::DPTF|C_SetMinMove patron (DPTF.UR_Konto a) a 0.0000000000000000000000001))
             ;;GUARD 2: -1.0 (disabled) or strictly positive. 0.0 clears guard 1 -- (floor 0.0 24)
             ;;is 0.0 -- so it reaches guard 2 and is the input that isolates it.
             (expect-failure "<<DPTF-06>> C_SetMinMove rejects a zero minimum move"
                 "Min-Move Value does not compute"
-                (ref-TS01-C1::DPTF|C_SetMinMove patron a 0.0))
+                (ref-TS01-C1::DPTF|C_SetMinMove patron (DPTF.UR_Konto a) a 0.0))
             (expect "<<DPTF-06>> ...and the rejected calls left the stored value untouched"
                 7.0 (ref-DPTF::UR_MinMove a))
             (expect "<<DPTF-06>> C_ToggleTransferRole granted transfer" true (ref-DPTF::UR_AccountRoleTransfer a emma))
             ;;GATE: the fee-exemption role targets a SMART account only.
             (expect-failure "<<DPTF-06>> C_ToggleFeeExemptionRole on a STANDARD account is rejected"
                 "Operation requires a Smart DALOS Account"
-                (ref-TS01-C1::DPTF|C_ToggleFeeExemptionRole patron a emma true))
+                (ref-TS01-C1::DPTF|C_ToggleFeeExemptionRole patron (DPTF.UR_Konto a) emma a true))
             (expect "<<DPTF-06>> token starts unpaused"                 false (ref-DPTF::UR_Paused a))
         ]
     )
-    (ref-TS01-C1::DPTF|C_TogglePause patron a true)
+    (ref-TS01-C1::DPTF|C_TogglePause patron (DPTF.UR_Konto a) a true)
     (map print
         [
             (expect "<<DPTF-06>> C_TogglePause paused the token" true (ref-DPTF::UR_Paused a))
@@ -325,7 +325,7 @@
                 true (!= "" (format "{}" [(ref-DPTF::UEV_PauseState a true)])))
         ]
     )
-    (ref-TS01-C1::DPTF|C_TogglePause patron a false)
+    (ref-TS01-C1::DPTF|C_TogglePause patron (DPTF.UR_Konto a) a false)
     (map print [(expect "<<DPTF-06>> C_TogglePause unpaused the token" false (ref-DPTF::UR_Paused a))])
     ""
 )
@@ -351,7 +351,7 @@
         (emma:string KST.EMMA)
     )
     ;;C_Control (cu cco casr cf cw cp) — turn can-pause OFF on MOCKB, leave the rest as issued
-    (ref-TS01-C1::DPTF|C_Control patron b true true true false false false)
+    (ref-TS01-C1::DPTF|C_Control patron (DPTF.UR_Konto b) b true true true false false false)
     (map print
         [
             (expect "<<DPTF-07>> C_Control turned can-pause OFF"   false (ref-DPTF::UR_CanPause b))
@@ -364,7 +364,7 @@
     ;;these flips are REVERSIBLE -- which is what makes them usable here. UEV_CanAddSpecialRoleON
     ;;and UEV_ReservationState's <state>=false arm have no other live input anywhere in the
     ;;suite: every token is issued with special roles allowed and reservations closed.
-    (ref-TS01-C1::DPTF|C_Control patron b true true false false false false)
+    (ref-TS01-C1::DPTF|C_Control patron (DPTF.UR_Konto b) b true true false false false false)
     (map print
         [
             (expect "<<DPTF-07>> can-add-special-role is now OFF on MOCKB"
@@ -373,7 +373,7 @@
                 "no special roles can be added" (ref-DPTF::UEV_CanAddSpecialRoleON b))
         ]
     )
-    (ref-TS01-C1::DPTF|C_ToggleReservation patron b true)
+    (ref-TS01-C1::DPTF|C_ToggleReservation patron (DPTF.UR_Konto b) b true)
     (map print
         [
             (expect "<<DPTF-07>> reservations are now OPEN on MOCKB"
@@ -385,8 +385,8 @@
         ]
     )
     ;;RESTORE, so DPTF-G1 further down still sees the state it asserts.
-    (ref-TS01-C1::DPTF|C_ToggleReservation patron b false)
-    (ref-TS01-C1::DPTF|C_Control patron b true true true false false false)
+    (ref-TS01-C1::DPTF|C_ToggleReservation patron (DPTF.UR_Konto b) b false)
+    (ref-TS01-C1::DPTF|C_Control patron (DPTF.UR_Konto b) b true true true false false false)
     (map print
         [
             (expect "<<DPTF-07>> reservations restored to CLOSED" false (ref-DPTF::UR_IzReservationOpen b))
@@ -396,7 +396,7 @@
     ;;NOTE: the smart-account requirement belongs to the FEE-EXEMPTION role (DPTF-06), NOT to
     ;;ownership rotation -- rotation to a standard account is legitimate. An earlier draft of
     ;;this file asserted the opposite and the suite corrected it.
-    (ref-TS01-C1::DPTF|C_RotateOwnership patron b emma)
+    (ref-TS01-C1::DPTF|C_RotateOwnership patron (DPTF.UR_Konto b) emma b)
     (map print
         [
             (expect "<<DPTF-07>> C_RotateOwnership moved the konto to the new owner"
@@ -439,7 +439,7 @@
         ;;Both receivers need the transfer role: DPTF-06 granted it to EMMA only, and the
         ;;multi-bulk path checks EVERY leg, so an ungranted receiver rejects the whole call
         ;;("Incompatible Transfer Roles"). That is the op behaving correctly.
-        (ref-TS01-C1::DPTF|C_ToggleTransferRole patron a lumy true)
+        (ref-TS01-C1::DPTF|C_ToggleTransferRole patron (DPTF.UR_Konto a) lumy a true)
         ;;one token, two receivers, in a single call
         (ref-TS01-C1::DPTF|C_MultiBulkTransfer patron [a] patron [[emma lumy]] [[10.0 20.0]])
         (map print
@@ -489,7 +489,7 @@
         ]
     )
     ;;C_Control (cu cco casr cf cw cp) — turn can-freeze AND can-wipe ON
-    (ref-TS01-C1::DPTF|C_Control patron a true true true true true true)
+    (ref-TS01-C1::DPTF|C_Control patron (DPTF.UR_Konto a) a true true true true true true)
     (map print
         [
             (expect "<<DPTF-09>> C_Control turned can-wipe ON"   true (ref-DPTF::UR_CanWipe a))
@@ -502,7 +502,7 @@
             (expect-failure "<<DPTF-09>> can-wipe ON is NOT sufficient -- the account must be frozen"
                 ;;a complete fixed run; the old text spliced the token id across a {} hole
                 "on Account"
-                (ref-TS01-C1::DPTF|C_Wipe patron a emma))
+                (ref-TS01-C1::DPTF|C_Wipe patron (DPTF.UR_Konto a) emma a))
         ]
     )
     ""
@@ -528,8 +528,8 @@
                     true (> e0 0.0))
             ]
         )
-        (ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron a emma true)
-        (ref-TS01-C1::DPTF|C_Wipe patron a emma)
+        (ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron (DPTF.UR_Konto a) emma a true)
+        (ref-TS01-C1::DPTF|C_Wipe patron (DPTF.UR_Konto a) emma a)
         (map print
             [
                 (expect "<<DPTF-09>> the wiped account is emptied to exactly zero"
@@ -822,13 +822,13 @@
             ;;--- the dispo type is a four-value enum; 9 is outside it
             (expect-failure "<<DPTF-G4b>> a treasury dispo type outside 0..3 is refused"
                 "Treasury Dispo Type can only be 0, 1, 2 or 3!"
-                (ref-TS01-A::DPTF|A_UpdateTreasuryDispoParameters 9 1.0 1.0))
+                (ref-TS01-A::DPTF|A_UpdateTreasuryDispoParameters KST.ANHD 9 1.0 1.0))
             ;;--- a SMART account may be a fee target only if it is DALOS or OUROBOROS. Fees accrue
             ;;to the target, and an arbitrary smart contract has no mechanism to disburse them —
             ;;so the whitelist is what stops fees being routed somewhere they can never leave.
             (expect-failure "<<DPTF-G4b>> an arbitrary SMART account cannot be made a fee target"
                 "As Smart OURONET Accounts, only DALOS and OUROBOROS can be set as as fee Target"
-                (ref-TS01-C1::DPTF|C_SetFeeTarget KST.ANHD "MOCKA-98c486052a51"
+                (ref-TS01-C1::DPTF|C_SetFeeTarget KST.ANHD (DPTF.UR_Konto "MOCKA-98c486052a51") "MOCKA-98c486052a51"
                     (ref-DALOS::GOV|VST|SC_NAME)))
         ]
     )
@@ -910,10 +910,10 @@
                 (expect "<<DPTF-G6>> the treasury starts in credit, at exactly zero"
                     0.0 (ref-DPTF::UR_AccountSupply ouro treasury))
                 (expect-failure "<<DPTF-G6>> wiping ALL debt is refused while the treasury is in credit"
-                    "Cannot Wipe Positive Treasury Balance" (ref-TS01-A::DPTF|A_WipeTreasuryDebt))
+                    "Cannot Wipe Positive Treasury Balance" (ref-TS01-A::DPTF|A_WipeTreasuryDebt KST.ANHD))
                 (expect-failure "<<DPTF-G6>> ...and so is wiping PART of it, with the same message"
                     "Cannot Wipe Positive Treasury Balance"
-                    (ref-TS01-A::DPTF|A_WipeTreasuryDebtPartial 1.0))
+                    (ref-TS01-A::DPTF|A_WipeTreasuryDebtPartial KST.ANHD 1.0))
             ]
         )
         (print "--- [DPTF-G6 · 02 · put the treasury 1,000,000 OURO into debt] ---")
@@ -931,19 +931,19 @@
                 ;;    <= -1,000,000.0, so it fires.
                 (expect-failure "<<DPTF-G6>> a dispo ceiling too small to cover the debt is refused"
                     "A Type 3 Treasury Dispo cannot be set at 1.0 because it surpases the Current Treasury Value of -1000000.0"
-                    (ref-TS01-A::DPTF|A_UpdateTreasuryDispoParameters 3 1.0 1.0))
+                    (ref-TS01-A::DPTF|A_UpdateTreasuryDispoParameters KST.ANHD 3 1.0 1.0))
                 ;;...and the CONTRAST that makes it a threshold rather than "type 3 is broken". A
                 ;;type-1 dispo is the whole OURO supply (1,986,000), which does cover the debt, so
                 ;;the identical call shape is ACCEPTED in the identical state. Without this the
                 ;;assertion above would also pass if the guard rejected everything.
                 (expect "<<DPTF-G6>> ...while a ceiling that DOES cover it is accepted in the same state"
-                    "Write succeeded" (ref-TS01-A::DPTF|A_UpdateTreasuryDispoParameters 1 0.0 0.0))
+                    "Write succeeded" (ref-TS01-A::DPTF|A_UpdateTreasuryDispoParameters KST.ANHD 1 0.0 0.0))
                 ;;--- GUARD 2, previously unreachable. Now that the treasury is in debt the
                 ;;    positive-balance guard passes and the debt-SIZE guard finally answers. 0.1
                 ;;    over the debt is enough: this is a boundary, not a magnitude test.
                 (expect-failure "<<DPTF-G6>> wiping more than the actual debt is refused"
                     "Debt to be wiped must be smaller than or equal to the absolute value of the current Treasury Debt"
-                    (ref-TS01-A::DPTF|A_WipeTreasuryDebtPartial 1000000.1))
+                    (ref-TS01-A::DPTF|A_WipeTreasuryDebtPartial KST.ANHD 1000000.1))
             ]
         )
         (print "--- [DPTF-G6 · 03 · the wipe paths actually execute] ---")
@@ -956,13 +956,13 @@
                 ;;"it returned something".
                 (expect "<<DPTF-G6>> a partial wipe reduces the debt by exactly the amount wiped"
                     -600000.0
-                    (let ((ignore (ref-TS01-A::DPTF|A_WipeTreasuryDebtPartial 400000.0)))
+                    (let ((ignore (ref-TS01-A::DPTF|A_WipeTreasuryDebtPartial KST.ANHD 400000.0)))
                         (ref-DPTF::UR_AccountSupply ouro treasury)))
                 ;;...and a full wipe clears whatever remains, to exactly zero. It mints
                 ;;(abs treasury-supply), so the result is 0.0 for any starting debt.
                 (expect "<<DPTF-G6>> a full wipe clears the remaining debt to exactly zero"
                     0.0
-                    (let ((ignore (ref-TS01-A::DPTF|A_WipeTreasuryDebt)))
+                    (let ((ignore (ref-TS01-A::DPTF|A_WipeTreasuryDebt KST.ANHD)))
                         (ref-DPTF::UR_AccountSupply ouro treasury)))
                 ;;A_WipeTreasuryDebt also resets the dispo parameters via XE_UpdateTreasury 0 0.0
                 ;;0.0 -- which is the whole reason this transaction must not commit. DPTF-G6b is
@@ -1096,7 +1096,7 @@
         )
         ;;the wipe refuses outright on an unfrozen account, so freeze first. That refusal is pinned
         ;;elsewhere; here it is just a precondition.
-        (ref-TS01-C1::DPTF|C_ToggleFreezeAccount KST.ANHD ouro KST.ANHD true)
+        (ref-TS01-C1::DPTF|C_ToggleFreezeAccount KST.ANHD (DPTF.UR_Konto ouro) KST.ANHD ouro true)
         (map print
             [
                 (expect "<<DPTF-G7>> the account is now frozen, which is what the wipe requires"
@@ -1105,13 +1105,13 @@
                 ;;debit-result to roughly -7.4M, far under the 0.0 floor.
                 (expect-failure "<<DPTF-G7>> wiping more OURO than the dispo floor allows is refused"
                     "dispo capabilities exceeded!"
-                    (ref-TS01-C1::DPTF|C_WipeSlim KST.ANHD ouro KST.ANHD 9000000.0))
+                    (ref-TS01-C1::DPTF|C_WipeSlim KST.ANHD (DPTF.UR_Konto ouro) KST.ANHD ouro 9000000.0))
                 ;;...and the contrast, so the assertion is a threshold and not "wipes never work".
                 ;;Wiping exactly 1.0 keeps debit-result positive, so the floor is not reached.
                 (expect "<<DPTF-G7>> ...while a wipe that stays above the floor succeeds"
                     true
                     (let ((before:decimal (ref-DPTF::UR_AccountSupply ouro KST.ANHD)))
-                        (ref-TS01-C1::DPTF|C_WipeSlim KST.ANHD ouro KST.ANHD 1.0)
+                        (ref-TS01-C1::DPTF|C_WipeSlim KST.ANHD (DPTF.UR_Konto ouro) KST.ANHD ouro 1.0)
                         (= (- before 1.0) (ref-DPTF::UR_AccountSupply ouro KST.ANHD))))
             ]
         )
@@ -1146,15 +1146,15 @@
                     true (ref-DALOS::UR_AccountType treasury))
                 (expect-failure "<<DPTF-G7>> (c) ...so it can never be frozen, hence never wiped"
                     "Non Smart Ouronet Accounts required for exec"
-                    (ref-TS01-C1::DPTF|C_ToggleFreezeAccount KST.ANHD ouro treasury true))
+                    (ref-TS01-C1::DPTF|C_ToggleFreezeAccount KST.ANHD (DPTF.UR_Konto ouro) treasury ouro true))
                 ;;(d) the amount gate that closes the last door, asserted on both a zero and a
                 ;;negative amount since the guard would need one of them.
                 (expect-failure "<<DPTF-G7>> (d) a zero-amount wipe is refused before any dispo math"
                     "is not a Valid Transaction amount"
-                    (ref-TS01-C1::DPTF|C_WipeSlim KST.ANHD ouro KST.ANHD 0.0))
+                    (ref-TS01-C1::DPTF|C_WipeSlim KST.ANHD (DPTF.UR_Konto ouro) KST.ANHD ouro 0.0))
                 (expect-failure "<<DPTF-G7>> (d) ...and so is a negative one"
                     "is not a Valid Transaction amount"
-                    (ref-TS01-C1::DPTF|C_WipeSlim KST.ANHD ouro KST.ANHD -5.0))
+                    (ref-TS01-C1::DPTF|C_WipeSlim KST.ANHD (DPTF.UR_Konto ouro) KST.ANHD ouro -5.0))
             ]
         )
     )
@@ -1201,14 +1201,14 @@
         [
             (expect-failure "<<DPTF-G8>> fee collection cannot be turned on with an out-of-band promile"
                 "Please Set up Fee Promile before Turning Fee Collection on !"
-                (TS01-C1.DPTF|C_ToggleFee KST.ANHD tok true))
+                (TS01-C1.DPTF|C_ToggleFee KST.ANHD (DPTF.UR_Konto tok) tok true))
             ;;the -1.0 SENTINEL is explicitly allowed by the same condition -- it means "fee not
             ;;configured", and the guard's own message reads as if it should reject that. It does
             ;;not. Pinned because the message is misleading about what it enforces.
             (expect "<<DPTF-G8>> ...and the -1.0 sentinel IS accepted, despite what the message says"
                 true
                 (let ((ignore (update DPTF.DPTF|PropertiesTable tok { "fee-promile" : -1.0 })))
-                    (!= "" (TS01-C1.DPTF|C_ToggleFee KST.ANHD tok true))))
+                    (!= "" (TS01-C1.DPTF|C_ToggleFee KST.ANHD (DPTF.UR_Konto tok) tok true))))
         ]
     )
     ""
@@ -1457,11 +1457,11 @@
             ;;enforce. That is what makes it worth executing rather than annotating away.
             (expect-failure "<<DPTF-G12>> burning more than exists is stopped by the supply backstop"
                 "DPTF Token Supply cannot be updated to negative values!"
-                (ref-TS01-C1::DPTF|C_Burn KST.ANHD a KST.ANHD (+ (ref-DPTF::UR_Supply a) 500.0)))
+                (ref-TS01-C1::DPTF|C_Burn KST.ANHD KST.ANHD a (+ (ref-DPTF::UR_Supply a) 500.0)))
             ;;...and a burn WITHIN the real supply still works, so the backstop is a bound and not a
             ;;blanket refusal introduced by the forced state.
             (expect "<<DPTF-G12>> ...while a burn within the real supply still succeeds"
-                true (!= "" (format "{}" [(ref-TS01-C1::DPTF|C_Burn KST.ANHD a KST.ANHD 1.0)])))
+                true (!= "" (format "{}" [(ref-TS01-C1::DPTF|C_Burn KST.ANHD KST.ANHD a 1.0)])))
         ]
     )
     ""
@@ -1546,7 +1546,7 @@
             (predicted:object{OuronetInfoV2.ClientInfo}
                 (INFO-ONE.INFO_DPTF|ToggleFeeExemptionRole patron a smart true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (msg:string (ref-TS01-C1::DPTF|C_ToggleFeeExemptionRole patron a smart true))
+            (msg:string (ref-TS01-C1::DPTF|C_ToggleFeeExemptionRole patron (DPTF.UR_Konto a) smart a true))
         )
         (map print
             [
@@ -1564,7 +1564,7 @@
         )
     )
     ;;3] and it is reversible — the revoke arm of the same toggle, which no test had reached either
-    (ref-TS01-C1::DPTF|C_ToggleFeeExemptionRole patron a smart false)
+    (ref-TS01-C1::DPTF|C_ToggleFeeExemptionRole patron (DPTF.UR_Konto a) smart a false)
     (map print
         [
             (expect "<<DPTF-I1>> ...and the role can be revoked again"
@@ -1639,7 +1639,7 @@
             (
                 (stoa-before:decimal (coin.get-balance stoa-acct))
                 (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-                (msg:string (ref-TS01-C1::DPTF|C_UpgradeBranding patron a months))
+                (msg:string (ref-TS01-C1::DPTF|C_UpgradeBranding patron (DPTF.UR_Konto (DPTF.URCv_Parent a)) a months))
             )
             (map print
                 [
@@ -1688,7 +1688,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|Mint patron a patron 1.0 false))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C1::DPTF|C_Mint patron a patron 1.0 false))
+            (m (ref-TS01-C1::DPTF|C_Mint patron patron a 1.0 false))
         )
         (map print
             [
@@ -1730,7 +1730,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|Burn patron a patron 1.0))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C1::DPTF|C_Burn patron a patron 1.0))
+            (m (ref-TS01-C1::DPTF|C_Burn patron patron a 1.0))
         )
         (map print
             [
@@ -1817,7 +1817,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|SetFee patron a 30.0))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C1::DPTF|C_SetFee patron a 30.0))
+            (m (ref-TS01-C1::DPTF|C_SetFee patron (DPTF.UR_Konto a) a 30.0))
         )
         (map print
             [
@@ -1858,7 +1858,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|ToggleFee patron a true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C1::DPTF|C_ToggleFee patron a true))
+            (m (ref-TS01-C1::DPTF|C_ToggleFee patron (DPTF.UR_Konto a) a true))
         )
         (map print
             [
@@ -1899,7 +1899,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|SetMinMove patron a 5.0))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C1::DPTF|C_SetMinMove patron a 5.0))
+            (m (ref-TS01-C1::DPTF|C_SetMinMove patron (DPTF.UR_Konto a) a 5.0))
         )
         (map print
             [
@@ -1940,7 +1940,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|TogglePause patron a true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C1::DPTF|C_TogglePause patron a true))
+            (m (ref-TS01-C1::DPTF|C_TogglePause patron (DPTF.UR_Konto a) a true))
         )
         (map print
             [
@@ -1981,7 +1981,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|ToggleReservation patron a true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C1::DPTF|C_ToggleReservation patron a true))
+            (m (ref-TS01-C1::DPTF|C_ToggleReservation patron (DPTF.UR_Konto a) a true))
         )
         (map print
             [
@@ -2021,7 +2021,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|ToggleBurnRole patron a lumy true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C1::DPTF|C_ToggleBurnRole patron a lumy true))
+            (m (ref-TS01-C1::DPTF|C_ToggleBurnRole patron (DPTF.UR_Konto a) lumy a true))
         )
         (map print
             [
@@ -2062,7 +2062,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|ToggleMintRole patron a lumy true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C1::DPTF|C_ToggleMintRole patron a lumy true))
+            (m (ref-TS01-C1::DPTF|C_ToggleMintRole patron (DPTF.UR_Konto a) lumy a true))
         )
         (map print
             [
@@ -2103,7 +2103,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|ToggleFreezeAccount patron a lumy true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron a lumy true))
+            (m (ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron (DPTF.UR_Konto a) lumy a true))
         )
         (map print
             [
@@ -2186,7 +2186,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|UpdatePendingBranding patron a))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C1::DPTF|C_UpdatePendingBranding patron a "ipfs://logo" "desc" "https://site.example" []))
+            (m (ref-TS01-C1::DPTF|C_UpdatePendingBranding patron (DPTF.UR_Konto (DPTF.URCv_Parent a)) a "ipfs://logo" "desc" "https://site.example" []))
         )
         (map print
             [
@@ -2226,7 +2226,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|SetFeeTarget patron a emma))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C1::DPTF|C_SetFeeTarget patron a emma))
+            (m (ref-TS01-C1::DPTF|C_SetFeeTarget patron (DPTF.UR_Konto a) a emma))
         )
         (map print
             [
@@ -2269,7 +2269,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|DonateFees patron a))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C1::DPTF|C_DonateFees patron a))
+            (m (ref-TS01-C1::DPTF|C_DonateFees patron (DPTF.UR_Konto a) a))
         )
         (map print
             [
@@ -2309,7 +2309,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|RotateOwnership patron a emma))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C1::DPTF|C_RotateOwnership patron a emma))
+            (m (ref-TS01-C1::DPTF|C_RotateOwnership patron (DPTF.UR_Konto a) emma a))
         )
         (map print
             [
@@ -2351,7 +2351,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|ToggleTransferRole patron a coca true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C1::DPTF|C_ToggleTransferRole patron a coca true))
+            (m (ref-TS01-C1::DPTF|C_ToggleTransferRole patron (DPTF.UR_Konto a) coca a true))
         )
         (map print
             [
@@ -2471,12 +2471,12 @@
     ;;SETUP, outside the measurement window — `DPTF|C>X_WIPE` requires the target account FROZEN.
     ;;LUMY holds 20.0 MOCKA; EMMA is unusable here because DPTF-09 froze her permanently and left
     ;;her at zero. The freeze is a billed op, so it closes before `ignis-before` is read.
-    (ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron a lumy true)
+    (ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron (DPTF.UR_Konto a) lumy a true)
     (let
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|Wipe patron a lumy))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C1::DPTF|C_Wipe patron a lumy))
+            (m (ref-TS01-C1::DPTF|C_Wipe patron (DPTF.UR_Konto a) lumy a))
         )
         (map print
             [
@@ -2514,12 +2514,12 @@
     ;;SETUP, outside the measurement window — `DPTF|C>X_WIPE` requires the target account FROZEN.
     ;;LUMY holds 20.0 MOCKA; EMMA is unusable here because DPTF-09 froze her permanently and left
     ;;her at zero. The freeze is a billed op, so it closes before `ignis-before` is read.
-    (ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron a lumy true)
+    (ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron (DPTF.UR_Konto a) lumy a true)
     (let
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|WipeSlim patron a lumy 5.0))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C1::DPTF|C_WipeSlim patron a lumy 5.0))
+            (m (ref-TS01-C1::DPTF|C_WipeSlim patron (DPTF.UR_Konto a) lumy a 5.0))
         )
         (map print
             [
@@ -2645,7 +2645,7 @@
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|UpgradeBranding patron a 1))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (stoa-before:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
-            (m (ref-TS01-C1::DPTF|C_UpgradeBranding patron a 1))
+            (m (ref-TS01-C1::DPTF|C_UpgradeBranding patron (DPTF.UR_Konto (DPTF.URCv_Parent a)) a 1))
         )
         (map print
             [
@@ -2713,13 +2713,13 @@
         (lumy:string KST.LUMY)
     )
     ;;SETUP — lock first, on the FREE direction, so the unlock below has something to release.
-    (ref-TS01-C1::DPTF|C_ToggleFeeLock patron a true)
+    (ref-TS01-C1::DPTF|C_ToggleFeeLock patron (DPTF.UR_Konto a) a true)
     (let
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPTF|ToggleFeeLock patron a false 0))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (stoa-before:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
-            (m (ref-TS01-C1::DPTF|C_ToggleFeeLock patron a false))
+            (m (ref-TS01-C1::DPTF|C_ToggleFeeLock patron (DPTF.UR_Konto a) a false))
         )
         (map print
             [
@@ -2804,13 +2804,13 @@
                 ;;THE THREE REFUSALS.
                 (expect-failure "<<DPTF-G13>> a non-owner cannot set the min-move"
                     "Ownership could not be verified"
-                    (ref-TS01-C1::DPTF|C_SetMinMove attacker ouro -1.0))
+                    (ref-TS01-C1::DPTF|C_SetMinMove attacker (DPTF.UR_Konto ouro) ouro -1.0))
                 (expect-failure "<<DPTF-G13>> a non-owner cannot redirect the fee target"
                     "Ownership could not be verified"
-                    (ref-TS01-C1::DPTF|C_SetFeeTarget attacker ouro attacker))
+                    (ref-TS01-C1::DPTF|C_SetFeeTarget attacker (DPTF.UR_Konto ouro) ouro attacker))
                 (expect-failure "<<DPTF-G13>> a non-owner cannot toggle fee collection"
                     "Ownership could not be verified"
-                    (ref-TS01-C1::DPTF|C_ToggleFee attacker ouro true))
+                    (ref-TS01-C1::DPTF|C_ToggleFee attacker (DPTF.UR_Konto ouro) ouro true))
                 ;;...and all three refusals were TOTAL.
                 (expect "<<DPTF-G13>> ...and none of the three changed anything"
                     [minmove-before target-before]

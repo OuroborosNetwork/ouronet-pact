@@ -83,19 +83,19 @@
     )
     (defun C_WithdrawRoyalties:object{IgnisCollectorV3.OutputCumulator}(ats:string target:string))
         ;;
-    (defun C_KickStart:object{IgnisCollectorV3.OutputCumulator} (kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
+    (defun C_KickStart:object{IgnisCollectorV3.OutputCumulator} (patron:string kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
     (defun C_Fuel:object{IgnisCollectorV3.OutputCumulator} (fueler:string ats:string reward-token:string amount:decimal))
-    (defun C_Coil:object{IgnisCollectorV3.OutputCumulator} (coiler:string ats:string rt:string amount:decimal))
-    (defun C_Curl:object{IgnisCollectorV3.OutputCumulator} (curler:string ats1:string ats2:string rt:string amount:decimal))
+    (defun C_Coil:object{IgnisCollectorV3.OutputCumulator} (patron:string coiler:string ats:string rt:string amount:decimal))
+    (defun C_Curl:object{IgnisCollectorV3.OutputCumulator} (patron:string curler:string ats1:string ats2:string rt:string amount:decimal))
         ;;
-    (defun C_ColdRecovery:object{IgnisCollectorV3.OutputCumulator} (recoverer:string ats:string ra:decimal))
+    (defun C_ColdRecovery:object{IgnisCollectorV3.OutputCumulator} (patron:string recoverer:string ats:string ra:decimal))
     (defun C_Cull:object{IgnisCollectorV3.OutputCumulator}(culler:string ats:string))
         ;;
-    (defun C_HotRecovery:object{IgnisCollectorV3.OutputCumulator} (recoverer:string ats:string ra:decimal))
-    (defun C_Recover:object{IgnisCollectorV3.OutputCumulator} (recoverer:string id:string nonce:integer))
-    (defun C_Redeem:object{IgnisCollectorV3.OutputCumulator} (redeemer:string id:string nonce:integer))
+    (defun C_HotRecovery:object{IgnisCollectorV3.OutputCumulator} (patron:string recoverer:string ats:string ra:decimal))
+    (defun C_Recover:object{IgnisCollectorV3.OutputCumulator} (patron:string recoverer:string id:string nonce:integer))
+    (defun C_Redeem:object{IgnisCollectorV3.OutputCumulator} (patron:string redeemer:string id:string nonce:integer))
         ;;
-    (defun C_DirectRecovery:object{IgnisCollectorV3.OutputCumulator} (recoverer:string ats:string ra:decimal))
+    (defun C_DirectRecovery:object{IgnisCollectorV3.OutputCumulator} (patron:string recoverer:string ats:string ra:decimal))
         ;;
     (defun C_Syphon:object{IgnisCollectorV3.OutputCumulator} (syphon-target:string ats:string syphon-amounts:[decimal]))
 
@@ -1351,7 +1351,7 @@
     ;;{5.6}  Aux/X
     ;;Protection: Class 2 — SECURE
     (defun XI_KickStart:object{IgnisCollectorV3.OutputCumulator}
-        (kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
+        (patron:string kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
         @doc "Shared write path for both the owner (C_KickStart) and administrative \
             \ (A_KickStart) entrypoints (audit finding #11M / M2 fix). All bound and \
             \ authorization checks live in the composed capability chain \
@@ -1387,7 +1387,7 @@
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators folded-obj [])
                 )
                 (ico2:object{IgnisCollectorV3.OutputCumulator}
-                    (ref-DPTF::C_Mint rbt-id ATS|SC_NAME rbt-request-amount false)
+                    (ref-DPTF::C_Mint patron ATS|SC_NAME rbt-id rbt-request-amount false)
                 )
                 (ico3:object{IgnisCollectorV3.OutputCumulator}
                     (ref-TFT::C_Transfer rbt-id ATS|SC_NAME kickstarter rbt-request-amount true)
@@ -1666,7 +1666,7 @@
             \ the shared 0.1 floor, no ceiling - for legitimate ratios above 100.0."
         (P|UEV_IMC)
         (with-capability (ATSU|C>ADMINISTRATIVE-KICKSTART executor ats rt-amounts rbt-request-amount)
-            (XI_KickStart executor ats rt-amounts rbt-request-amount)
+            (XI_KickStart patron executor ats rt-amounts rbt-request-amount)
         )
     )
     (defun CC_RemoveSecondary:object{IgnisCollectorV3.OutputCumulator}
@@ -1722,12 +1722,12 @@
         )
     )
     (defun C_KickStart:object{IgnisCollectorV3.OutputCumulator}
-        (kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
+        (patron:string kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
         @doc "Owner-facing variant. Fix (audit finding #11M / M2): resulting index now \
             \ bounded to [0.1, 100.0] via ATSU|C>KICKSTART / ATSU|C>X_KICKSTART."
         (P|UEV_IMC)
         (with-capability (ATSU|C>KICKSTART kickstarter ats rt-amounts rbt-request-amount)
-            (XI_KickStart kickstarter ats rt-amounts rbt-request-amount)
+            (XI_KickStart patron kickstarter ats rt-amounts rbt-request-amount)
         )
     )
     (defun C_Fuel:object{IgnisCollectorV3.OutputCumulator}
@@ -1746,7 +1746,7 @@
         )
     )
     (defun C_Coil:object{IgnisCollectorV3.OutputCumulator}
-        (coiler:string ats:string rt:string amount:decimal)
+        (patron:string coiler:string ats:string rt:string amount:decimal)
         @doc "Autostakes an <rt> Token on <ats> ATS-Pair. \
             \ If Hibernate is on, retains the <c-rbt-amount>, which will then be hibernated \
             \ from the TALOS module, and sent as Hibernated H| Token to the <coiler>"
@@ -1772,7 +1772,7 @@
                         (ref-TFT::C_Transfer rt coiler ATS|SC_NAME amount true)
                     )
                     (ico2:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-DPTF::C_Mint c-rbt ATS|SC_NAME c-rbt-amount false)
+                        (ref-DPTF::C_Mint patron ATS|SC_NAME c-rbt c-rbt-amount false)
                     )
                     (ico3:object{IgnisCollectorV3.OutputCumulator}
                         (ref-TFT::C_Transfer c-rbt ATS|SC_NAME coiler c-rbt-amount true)
@@ -1788,7 +1788,7 @@
         )
     )
     (defun C_Curl:object{IgnisCollectorV3.OutputCumulator}
-        (curler:string ats1:string ats2:string rt:string amount:decimal)
+        (patron:string curler:string ats1:string ats2:string rt:string amount:decimal)
         @doc "Coils through 2 ATS-Pairs, outputting the <c-rbt2> to the <curler> \
             \ Both <ats1> and <ats2> must have <hibernation> off"
         (P|UEV_IMC)
@@ -1822,10 +1822,10 @@
                         (ref-TFT::C_Transfer rt curler ATS|SC_NAME amount true)
                     )
                     (ico2:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-DPTF::C_Mint c-rbt1 ATS|SC_NAME c-rbt1-amount false)
+                        (ref-DPTF::C_Mint patron ATS|SC_NAME c-rbt1 c-rbt1-amount false)
                     )
                     (ico3:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-DPTF::C_Mint c-rbt2 ATS|SC_NAME c-rbt2-amount false)
+                        (ref-DPTF::C_Mint patron ATS|SC_NAME c-rbt2 c-rbt2-amount false)
                     )
                     (ico4:object{IgnisCollectorV3.OutputCumulator}
                         (ref-TFT::C_Transfer c-rbt2 ATS|SC_NAME curler c-rbt2-amount true)
@@ -1846,7 +1846,7 @@
         )
     )
     (defun C_ColdRecovery:object{IgnisCollectorV3.OutputCumulator}
-        (recoverer:string ats:string ra:decimal)
+        (patron:string recoverer:string ats:string ra:decimal)
         (P|UEV_IMC)
         (with-capability (ATSU|C>DEPLOY ats recoverer)
             (XI_DeployAccount ats recoverer)
@@ -1896,7 +1896,7 @@
                                 (ref-TFT::C_Transfer c-rbt recoverer ATS|SC_NAME ra true)
                             )
                             (ico2:object{IgnisCollectorV3.OutputCumulator}
-                                (ref-DPTF::C_Burn c-rbt ATS|SC_NAME ra)
+                                (ref-DPTF::C_Burn patron ATS|SC_NAME c-rbt ra)
                             )
                             ;;
                             (c-fr:bool (ref-ATS::UR_ColdRecoveryFeeRedirection ats))
@@ -1921,7 +1921,7 @@
                                                     (do
                                                         (ref-ATS::XE_UpdateRUR ats (at idx rt-lst) 1 false (at idx ng-c-fr))
                                                         (ref-U|LST::UC_AppL acc 
-                                                            (ref-DPTF::C_Burn (at idx rt-lst) ATS|SC_NAME (at idx ng-c-fr))
+                                                            (ref-DPTF::C_Burn patron ATS|SC_NAME (at idx rt-lst) (at idx ng-c-fr))
                                                         )
                                                     )
                                                 )
@@ -2012,7 +2012,7 @@
         )
     )
     (defun C_HotRecovery:object{IgnisCollectorV3.OutputCumulator}
-        (recoverer:string ats:string ra:decimal)
+        (patron:string recoverer:string ats:string ra:decimal)
         (P|UEV_IMC)
         ;;THE CAPABILITY IS ACQUIRED BEFORE THE `let`, and that ordering is load-bearing -- the same
         ;;repair C_Recover received on 2026-09-12, for the same reason, twenty lines below.
@@ -2053,7 +2053,7 @@
                             (ref-TFT::C_Transfer c-rbt recoverer ATS|SC_NAME ra true)
                         )
                         (ico3:object{IgnisCollectorV3.OutputCumulator}
-                            (ref-DPTF::C_Burn c-rbt ATS|SC_NAME ra)
+                            (ref-DPTF::C_Burn patron ATS|SC_NAME c-rbt ra)
                         )
                         (ico4:object{IgnisCollectorV3.OutputCumulator}
                             (ref-DPOF::C_Mint h-rbt ATS|SC_NAME ra [meta-data-obj])
@@ -2068,7 +2068,7 @@
         )
     )
     (defun C_Recover:object{IgnisCollectorV3.OutputCumulator}
-        (recoverer:string id:string nonce:integer)
+        (patron:string recoverer:string id:string nonce:integer)
         (P|UEV_IMC)
         ;;THE CAPABILITY IS ACQUIRED BEFORE THE `let`, and that ordering is load-bearing.
         ;;FIXED 2026-09-12: it used to sit INSIDE the let body, so the eager binding group ran first
@@ -2100,7 +2100,7 @@
                             (ref-DPOF::C_Burn id ATS|SC_NAME nonce nonce-supply)
                         )
                         (ico3:object{IgnisCollectorV3.OutputCumulator}
-                            (ref-DPTF::C_Mint c-rbt ATS|SC_NAME nonce-supply false)
+                            (ref-DPTF::C_Mint patron ATS|SC_NAME c-rbt nonce-supply false)
                         )
                         (ico4:object{IgnisCollectorV3.OutputCumulator}
                             (ref-TFT::C_Transfer c-rbt ATS|SC_NAME recoverer nonce-supply true)
@@ -2112,7 +2112,7 @@
         )
     )
     (defun C_Redeem:object{IgnisCollectorV3.OutputCumulator}
-        (redeemer:string id:string nonce:integer)
+        (patron:string redeemer:string id:string nonce:integer)
         (P|UEV_IMC)
         ;;CAPABILITY BEFORE THE `let` -- same fix as C_Recover above, same cause.
         ;;FIXED 2026-09-12: it used to sit inside the let body, and the eager binding group reads
@@ -2182,7 +2182,7 @@
                                         (do
                                             (ref-ATS::XE_UpdateRUR ats (at idx rt-lst) 1 false (at idx fee-rts))
                                             (ref-U|LST::UC_AppL acc
-                                                (ref-DPTF::C_Burn (at idx rt-lst) ATS|SC_NAME (at idx fee-rts))
+                                                (ref-DPTF::C_Burn patron ATS|SC_NAME (at idx rt-lst) (at idx fee-rts))
                                             )
                                         )
                                     )
@@ -2212,7 +2212,7 @@
         )
     )
     (defun C_DirectRecovery:object{IgnisCollectorV3.OutputCumulator}
-        (recoverer:string ats:string ra:decimal)
+        (patron:string recoverer:string ats:string ra:decimal)
         (P|UEV_IMC)
         (with-capability (ATS|C>DIRECT_RECOVERY recoverer ats ra)
             (let
@@ -2248,7 +2248,7 @@
                         ;;1]Transfer c-rbt to ATS|SC_NAME
                         (ref-TFT::C_Transfer c-rbt recoverer ATS|SC_NAME ra true)
                         ;;2]Burn it
-                        (ref-DPTF::C_Burn c-rbt ATS|SC_NAME ra)
+                        (ref-DPTF::C_Burn patron ATS|SC_NAME c-rbt ra)
                         ;;3]Release equivalnet RTs (minus fee)
                         (ref-TFT::C_MultiTransfer reward-tokens ATS|SC_NAME recoverer release-amounts true)
                     ] 

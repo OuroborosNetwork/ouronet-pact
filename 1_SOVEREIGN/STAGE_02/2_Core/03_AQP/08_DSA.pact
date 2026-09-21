@@ -866,7 +866,7 @@
                 )
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
                     [ (URCi_WithdrawRoyalty patron [fvt-id])
-                      (RPS.XE_WithdrawRoyalty fvt-id reward-dptf-id (RPS.UR_FVT|OwnerKonto fvt-id)) ]
+                      (RPS.XE_WithdrawRoyalty patron fvt-id reward-dptf-id (RPS.UR_FVT|OwnerKonto fvt-id)) ]
                     [fvt-id])
             )
         )
@@ -884,7 +884,7 @@
                 )
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
                     [ (URCi_BurnRoyalty patron [fvt-id])
-                      (RPS.XE_BurnRoyalty fvt-id reward-dptf-id) ]
+                      (RPS.XE_BurnRoyalty patron fvt-id reward-dptf-id) ]
                     [fvt-id])
             )
         )
@@ -902,7 +902,7 @@
                 )
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
                     [ (URCi_FuelRoyalty patron [fvt-id])
-                      (RPS.XE_FuelRoyalty fvt-id reward-dptf-id swpair) ]
+                      (RPS.XE_FuelRoyalty patron fvt-id reward-dptf-id swpair) ]
                     [fvt-id])
             )
         )

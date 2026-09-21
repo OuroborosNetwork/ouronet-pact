@@ -67,8 +67,8 @@
     ;;
     ;;  [C]
     ;;
-    (defun C_UnwrapStoa:object{IgnisCollectorV3.OutputCumulator} (unwrapper:string amount:decimal))
-    (defun C_WrapStoa:object{IgnisCollectorV3.OutputCumulator} (wrapper:string amount:decimal))
+    (defun C_UnwrapStoa:object{IgnisCollectorV3.OutputCumulator} (patron:string unwrapper:string amount:decimal))
+    (defun C_WrapStoa:object{IgnisCollectorV3.OutputCumulator} (patron:string wrapper:string amount:decimal))
     ;;
     ;;#13H fix: C_RegisterOuronetAccountForUrstoaHoldings removed (2026-08-27) - it took a
     ;;caller-supplied <guard> for an arbitrary <ouronet-account> with no ownership check
@@ -76,8 +76,8 @@
     ;;handled by UI-constructed Pact code using the real signer's own (read-keyset "ks"), the
     ;;same established pattern already used for native Stoa unwrap - see
     ;;OuronetInformational/memories/2026-08-27-urstoa-account-creation-is-ui-constructed.md.
-    (defun C_UnwrapUrStoa:object{IgnisCollectorV3.OutputCumulator} (unwrapper:string amount:decimal))
-    (defun C_WrapUrStoa:object{IgnisCollectorV3.OutputCumulator} (wrapper:string amount:decimal))
+    (defun C_UnwrapUrStoa:object{IgnisCollectorV3.OutputCumulator} (patron:string unwrapper:string amount:decimal))
+    (defun C_WrapUrStoa:object{IgnisCollectorV3.OutputCumulator} (patron:string wrapper:string amount:decimal))
 
 )
 ;;
@@ -555,7 +555,7 @@
         )
     )
     (defun C_UnwrapStoa:object{IgnisCollectorV3.OutputCumulator}
-        (unwrapper:string amount:decimal)
+        (patron:string unwrapper:string amount:decimal)
         (P|UEV_IMC)
         (let
             (
@@ -576,7 +576,7 @@
                             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                                 [
                                     (ref-TFT::C_Transfer w-stoa-id unwrapper lq-sc amount true)
-                                    (ref-DPTF::C_Burn w-stoa-id lq-sc amount)
+                                    (ref-DPTF::C_Burn patron lq-sc w-stoa-id amount)
                                 ]
                                 []
                             )
@@ -592,7 +592,7 @@
         )
     )
     (defun C_WrapStoa:object{IgnisCollectorV3.OutputCumulator}
-        (wrapper:string amount:decimal)
+        (patron:string wrapper:string amount:decimal)
         (P|UEV_IMC)
         (let
             (
@@ -611,7 +611,7 @@
                         (output:object{IgnisCollectorV3.OutputCumulator}
                             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                                 [
-                                    (ref-DPTF::C_Mint w-stoa-id lq-sc amount false)
+                                    (ref-DPTF::C_Mint patron lq-sc w-stoa-id amount false)
                                     (ref-TFT::C_Transfer w-stoa-id lq-sc wrapper amount true)
                                 ]
                                 []
@@ -625,7 +625,7 @@
         )
     )
     (defun C_UnwrapUrStoa:object{IgnisCollectorV3.OutputCumulator}
-        (unwrapper:string amount:decimal)
+        (patron:string unwrapper:string amount:decimal)
         @doc "Unwrapper is the Ouronet Account doing the Unwrapping. \
             \ Its attached Stoa address k:xxx must be registered in the UrStoa Account Table for this to work. \
             \ If its not registered there yet, the UI constructs a bespoke tx that creates the \
@@ -652,7 +652,7 @@
                             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                                 [
                                     (ref-TFT::C_Transfer w-ur-stoa-id unwrapper lq-sc amount true)
-                                    (ref-DPTF::C_Burn w-ur-stoa-id lq-sc amount)
+                                    (ref-DPTF::C_Burn patron lq-sc w-ur-stoa-id amount)
                                 ]
                                 []
                             )
@@ -668,7 +668,7 @@
         )
     )
     (defun C_WrapUrStoa:object{IgnisCollectorV3.OutputCumulator}
-        (wrapper:string amount:decimal)
+        (patron:string wrapper:string amount:decimal)
         @doc "Wrapper is the Ouronet Account doing the Wrapping. \
             \ Its attached Stoa address k:xxx must be registered in the UrStoa Account Table for this to work. \
             \ If its not registered there yet, the UI constructs a bespoke tx that creates the \
@@ -694,7 +694,7 @@
                         (output:object{IgnisCollectorV3.OutputCumulator}
                             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                                 [
-                                    (ref-DPTF::C_Mint w-ur-stoa-id lq-sc amount false)
+                                    (ref-DPTF::C_Mint patron lq-sc w-ur-stoa-id amount false)
                                     (ref-TFT::C_Transfer w-ur-stoa-id lq-sc wrapper amount true)
                                 ]
                                 []

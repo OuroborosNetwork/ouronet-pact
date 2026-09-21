@@ -58,12 +58,12 @@
     (defun UEV_Exchange ())
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
-    (defun XB_Compress:object{IgnisCollectorV3.OutputCumulator} (client:string ignis-amount:decimal))
+    (defun XB_Compress:object{IgnisCollectorV3.OutputCumulator} (patron:string client:string ignis-amount:decimal))
     ;;{5.7}  User [A/C]
     ;;
     ;;
     (defun C_Compress:object{IgnisCollectorV3.OutputCumulator} (client:string ignis-amount:decimal))
-    (defun C_Fuel:object{IgnisCollectorV3.OutputCumulator} ())
+    (defun C_Fuel:object{IgnisCollectorV3.OutputCumulator} (patron:string ))
     (defun C_Sublimate:object{IgnisCollectorV3.OutputCumulator} (client:string target:string ouro-amount:decimal))
     ;;#23H fix: C_SublimateV2 was already live/actively-used (TS01-C2's ORBR|C_SublimateV2,
     ;;TS01-C3's Firestarter path) but missing from its own interface. Cheaper alternative to
@@ -691,7 +691,7 @@
     ;;{5.6}  Aux/X
     ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XB_Compress:object{IgnisCollectorV3.OutputCumulator}
-        (client:string ignis-amount:decimal)
+        (patron:string client:string ignis-amount:decimal)
         @doc "SC-account-tolerant IGNIS→OURO compress for INTERNAL module callers (registered OUROBOROS IMC). Same \
             \ conversion + fee as C_Compress (98.5% efficiency), but authorized by IGNIS|XB>COMPRESS which OMITS the \
             \ standard-account restriction — so a SMART account (e.g. AQP|SC_NAME custody) may normalize an IGNIS \
@@ -714,8 +714,8 @@
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
                     [
                         (ref-TFT::C_Transfer ignis-id client ORBR|SC_NAME ignis-amount true)
-                        (ref-DPTF::C_Burn ignis-id ORBR|SC_NAME ignis-amount)
-                        (ref-DPTF::C_Mint ouro-id ORBR|SC_NAME ouro-remainder-amount false)
+                        (ref-DPTF::C_Burn patron ORBR|SC_NAME ignis-id ignis-amount)
+                        (ref-DPTF::C_Mint patron ORBR|SC_NAME ouro-id ouro-remainder-amount false)
                         (ref-TFT::C_Transfer ouro-id ORBR|SC_NAME client ouro-remainder-amount true)
                     ]
                     [ouro-remainder-amount]
@@ -748,9 +748,9 @@
                         ;;01]Client sends GAS(Ignis) <ignis-amount> to the Ouroboros Smart Ouronet Account
                         (ref-TFT::C_Transfer ignis-id client ORBR|SC_NAME ignis-amount true)
                         ;;02]Ouroboros burns GAS(Ignis) <ignis-amount>
-                        (ref-DPTF::C_Burn ignis-id ORBR|SC_NAME ignis-amount)
+                        (ref-DPTF::C_Burn client ORBR|SC_NAME ignis-id ignis-amount)
                         ;;03]Ouroboros mints OURO <ouro-remainder-amount>
-                        (ref-DPTF::C_Mint ouro-id ORBR|SC_NAME ouro-remainder-amount false)
+                        (ref-DPTF::C_Mint client ORBR|SC_NAME ouro-id ouro-remainder-amount false)
                         ;;04]Ouroboros transfers OURO <ouro-remainder-amount> to <client>
                         (ref-TFT::C_Transfer ouro-id ORBR|SC_NAME client ouro-remainder-amount true)
                     ]
@@ -759,7 +759,7 @@
             )
         )
     )
-    (defun C_Fuel:object{IgnisCollectorV3.OutputCumulator} ()
+    (defun C_Fuel:object{IgnisCollectorV3.OutputCumulator} (patron:string )
         (P|UEV_IMC)
         (let
             (
@@ -786,7 +786,7 @@
                             (install-capability (ref-coin::TRANSFER orb-stoa lq-stoa present-stoa-balance))
                             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                                 [
-                                    (ref-LIQUID::C_WrapStoa orb-sc present-stoa-balance)
+                                    (ref-LIQUID::C_WrapStoa patron orb-sc present-stoa-balance)
                                     (ref-ATSU::C_Fuel orb-sc liquid-idx w-stoa present-stoa-balance)
                                 ]
                                 []
@@ -824,9 +824,9 @@
                         ;;01]Client sends OURO <ouro-amount> to the Ouroboros Smart Ouronet Account
                         (ref-TFT::C_Transfer ouro-id client ORBR|SC_NAME ouro-amount true)
                         ;;02]Ouroboros burns OURO <ouro-amount>
-                        (ref-DPTF::C_Burn ouro-id ORBR|SC_NAME ouro-amount)
+                        (ref-DPTF::C_Burn client ORBR|SC_NAME ouro-id ouro-amount)
                         ;;03]Ouroboros mints GAS(Ignis) <ignis-amount>
-                        (ref-DPTF::C_Mint ignis-id ORBR|SC_NAME ignis-amount false)
+                        (ref-DPTF::C_Mint client ORBR|SC_NAME ignis-id ignis-amount false)
                         ;;04]Ouroboros transfers GAS(Ignis) <ignis-amount> to <target>
                         (ref-TFT::C_Transfer ignis-id ORBR|SC_NAME target ignis-amount true)
                     ]
@@ -860,15 +860,15 @@
                     [
                         ;;01]Freeze Client Account for Ouro if not already frozen
                         (if (not frozen-state)
-                            (ref-DPTF::C_ToggleFreezeAccount ouro-id client true)
+                            (ref-DPTF::C_ToggleFreezeAccount client (ref-DPTF::UR_Konto ouro-id) client ouro-id true)
                             EOC
                         )
                         ;;02]Partialy wipe the required OURO
-                        (ref-DPTF::C_WipeSlim ouro-id client ouro-amount)
+                        (ref-DPTF::C_WipeSlim client (ref-DPTF::UR_Konto ouro-id) client ouro-id ouro-amount)
                         ;;03]Unfreeze Client Account
-                        (ref-DPTF::C_ToggleFreezeAccount ouro-id client false)
+                        (ref-DPTF::C_ToggleFreezeAccount client (ref-DPTF::UR_Konto ouro-id) client ouro-id false)
                         ;;04]Ouroboros mints GAS(Ignis) <ignis-amount>
-                        (ref-DPTF::C_Mint ignis-id ORBR|SC_NAME ignis-amount false)
+                        (ref-DPTF::C_Mint client ORBR|SC_NAME ignis-id ignis-amount false)
                         ;;05]Ouroboros transfers GAS(Ignis) <ignis-amount> to <target>
                         (ref-TFT::C_Transfer ignis-id ORBR|SC_NAME target ignis-amount true)
                     ]

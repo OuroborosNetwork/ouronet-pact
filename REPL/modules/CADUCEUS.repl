@@ -285,7 +285,7 @@
             (mocka:string (ref-U|DALOS::UDC_Makeid "MOCKA"))
             (bridge:string (CADUCEUS.UR_BridgeAccount))
         )
-        (TS01-C1.DPTF|C_Mint KST.ANHD mocka bridge 20.0 false)
+        (TS01-C1.DPTF|C_Mint KST.ANHD bridge mocka 20.0 false)
         (map print
             [
                 (expect "<<CAD-G5>> the bridge is funded, so the burn has something to burn"

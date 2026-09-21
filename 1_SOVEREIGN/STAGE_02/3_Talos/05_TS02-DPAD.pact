@@ -389,7 +389,7 @@
                     (sd:string (ref-I|OURONET::OI|UC_ShortAccount donor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DEMIPAD::C_Deposit donor asset-id amount-in-dollars type direct-injection max-cost)
+                    (ref-DEMIPAD::C_Deposit patron donor asset-id amount-in-dollars type direct-injection max-cost)
                 )
                 (format "Succesfuly deposited {} $ worth against {} into Demipad from {}." [amount-in-dollars asset-id sd])
             )

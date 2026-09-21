@@ -187,6 +187,7 @@
     ;;
     ;;  [UEV]
     ;;
+    (defun UEV_ExecutorIsOwnerKonto (executor:string entity-id:string))
     (defun UEV_id (atspair:string))
     (defun UEV_CanUpgradeON (atspair:string))
     (defun UEV_CanChangeOwnerON (atspair:string))
@@ -223,8 +224,8 @@
     ;;
     ;;  [C]
     ;;
-    (defun HOT-RBT|C_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator} (entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
-    (defun HOT-RBT|C_UpgradeBranding (patron:string entity-id:string months:integer))
+    (defun HOT-RBT|C_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
+    (defun HOT-RBT|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer))
     (defun HOT-RBT|C_Repurpose:object{IgnisCollectorV3.OutputCumulator} (hot-rbt:string nonce:integer repurpose-to:string))
         ;;
     (defun C_Issue:object{IgnisCollectorV3.OutputCumulator}
@@ -3003,9 +3004,19 @@
             {"id"       : id}
         )
     )
+    (defun UEV_ExecutorIsOwnerKonto (executor:string entity-id:string)
+        @doc "BINDS <executor> to <entity-id>'s owner. Ownership is proven INDIRECTLY by the \
+            \ branding capability; this supplies the other half -- that the account the caller \
+            \ NAMED is that owner. (patron/executor canon 2.2, indirect route named.)"
+        (enforce (= executor (UR_OwnerKonto entity-id)) "Executor is not the Entity Owner")
+    )
     (defun C_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator}
-        (entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+        (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+        @doc "Updates <entity-id>'s pending branding. <executor> is bound to the entity OWNER; \
+            \ ownership itself is proven by ATS|C>UPDATE-BRD. The binding is what keeps the \
+            \ parameter from being a name nobody reads."
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor entity-id)
         (let
             (
                 (ref-BRD:module{BrandingV2} BRD)
@@ -3016,42 +3027,42 @@
             )
         )
     )
-    (defun C_UpgradeBranding (patron:string entity-id:string months:integer)
+    (defun C_UpgradeBranding (patron:string executor:string entity-id:string months:integer)
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor entity-id)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-BRD:module{BrandingV2} BRD)
-                (owner:string (UR_OwnerKonto entity-id))
             )
             ;;Perform the branding upgrade (side effect); bill the STOA via the URCi (== XE_UpgradeBranding's price)
             (with-capability (ATS|C>UPGRADE-BRD entity-id)
-                (ref-BRD::XE_UpgradeBranding entity-id owner months)
+                (ref-BRD::XE_UpgradeBranding entity-id executor months)
             )
             (ref-IGNIS::XB_CollectStoaWithTrigger patron (URCi_UpgradeBranding months) false)
         )
     )
     ;;Hot RBT Management
     (defun HOT-RBT|C_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator}
-        (entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+        (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
         (P|UEV_IMC)
         (let
             (
                 (ref-B|DPOF:module{BrandingUsagePrimaryV2} DPOF)
             )
             (with-capability (ATS|C>HOT-RBT-UPDATE-BRD entity-id)
-                (ref-B|DPOF::C_UpdatePendingBranding entity-id logo description website social)
+                (ref-B|DPOF::C_UpdatePendingBranding patron executor entity-id logo description website social)
             )
         )
     )
-    (defun HOT-RBT|C_UpgradeBranding (patron:string entity-id:string months:integer)
+    (defun HOT-RBT|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer)
         (P|UEV_IMC)
         (let
             (
                 (ref-B|DPOF:module{BrandingUsagePrimaryV2} DPOF)
             )
             (with-capability (ATS|C>HOT-RBT-UPGRADE-BRD entity-id)
-                (ref-B|DPOF::C_UpgradeBranding patron entity-id months)
+                (ref-B|DPOF::C_UpgradeBranding patron executor entity-id months)
             )
         )
     )

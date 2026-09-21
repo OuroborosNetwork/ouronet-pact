@@ -39,7 +39,7 @@
     ;; Vest: patron owns OURO (CAP_Owner) — vest 100 OURO to the patron over 30 days, single milestone
     (ref-TS01-C2::VST|C_Vest patron patron patron ouro-id 100.0 0 2592000 1)
     ;; Reserve: open reservation on OURO first (RESERVE cap gates on UR_IzReservationOpen), then reserve
-    (ref-TS01-C1::DPTF|C_ToggleReservation patron ouro-id true)
+    (ref-TS01-C1::DPTF|C_ToggleReservation patron (DPTF.UR_Konto ouro-id) ouro-id true)
     (ref-TS01-C2::VST|C_Reserve patron patron ouro-id 100.0)
     (print "<<TX-VSTH-001>> VST|C_Vest + ToggleReservation + VST|C_Reserve OK")
 )

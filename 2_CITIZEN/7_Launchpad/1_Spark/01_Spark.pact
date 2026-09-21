@@ -670,13 +670,13 @@
             ;;1]Move Wrapped Stoa to Target
             (ref-TS01-C1::DPTF|C_Transfer patron wstoa-id redemption-payer account-to-redeem redemption-value true)
             ;;2]Freeze <account-to-redeem>
-            (ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron spark-id account-to-redeem true)
+            (ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron (DPTF.UR_Konto spark-id) account-to-redeem spark-id true)
             ;;3]Partial Wipe <spark-id>
-            (ref-TS01-C1::DPTF|C_WipeSlim patron spark-id account-to-redeem redemption-quantity)
+            (ref-TS01-C1::DPTF|C_WipeSlim patron (DPTF.UR_Konto spark-id) account-to-redeem spark-id redemption-quantity)
             ;;4]Unfreeze <account-to-redeem>
-            (ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron spark-id account-to-redeem false)
+            (ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron (DPTF.UR_Konto spark-id) account-to-redeem spark-id false)
             ;;5]Remint wiped amount to <DEMIPAD|SC_NAME>
-            (ref-TS01-C1::DPTF|C_Mint patron spark-id DEMIPAD|SC_NAME redemption-quantity false)
+            (ref-TS01-C1::DPTF|C_Mint patron DEMIPAD|SC_NAME spark-id redemption-quantity false)
             ;;6]Freeze it back to <account-to-redeem>
             (ref-TS01-C2::VST|C_Freeze patron DEMIPAD|SC_NAME account-to-redeem spark-id redemption-quantity)
             (format "Succesfully Redeemed {} {} for {} {} on Account {}"
@@ -707,13 +707,13 @@
             ;;1]Move Wrapped Stoa to Target
             (ref-TS01-C1::DPTF|C_Transfer patron wstoa-id redemption-payer account-to-redeem redemption-value true)
             ;;2]Freeze <account-to-redeem>
-            (ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron spark-id account-to-redeem true)
+            (ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron (DPTF.UR_Konto spark-id) account-to-redeem spark-id true)
             ;;3]Partial Wipe <spark-id>
-            (ref-TS01-C1::DPTF|C_WipeSlim patron spark-id account-to-redeem redemption-quantity)
+            (ref-TS01-C1::DPTF|C_WipeSlim patron (DPTF.UR_Konto spark-id) account-to-redeem spark-id redemption-quantity)
             ;;4]Unfreeze <account-to-redeem>
-            (ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron spark-id account-to-redeem false)
+            (ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron (DPTF.UR_Konto spark-id) account-to-redeem spark-id false)
             ;;5]Remint wiped amount to <DEMIPAD|SC_NAME>
-            (ref-TS01-C1::DPTF|C_Mint patron spark-id DEMIPAD|SC_NAME redemption-quantity false)
+            (ref-TS01-C1::DPTF|C_Mint patron DEMIPAD|SC_NAME spark-id redemption-quantity false)
             ;;6]Freeze it back to <account-to-redeem>
             (ref-TS01-C2::VST|C_Freeze patron DEMIPAD|SC_NAME account-to-redeem spark-id redemption-quantity)
             (format "Succesfully Redeemed {} {} for {} {} on Account {}"

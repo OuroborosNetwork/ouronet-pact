@@ -224,11 +224,11 @@
             (expect-failure "<<RT-K-002b>> Burn · PREVIEW refuses a non-existent token" "does not exist"
                 (ouronet-ns.INFO-ONE.INFO_DPTF|Burn KST.ANHD bad KST.ANHD 1.0))
             (expect-failure "<<RT-K-002b>> Burn · EXEC   (same message)" "does not exist"
-                (r::DPTF|C_Burn KST.ANHD bad KST.ANHD 1.0))
+                (r::DPTF|C_Burn KST.ANHD KST.ANHD bad 1.0))
             (expect-failure "<<RT-K-002c>> Mint · PREVIEW refuses a non-existent token" "does not exist"
                 (ouronet-ns.INFO-ONE.INFO_DPTF|Mint KST.ANHD bad KST.ANHD 1.0 false))
             (expect-failure "<<RT-K-002c>> Mint · EXEC   (same message)" "does not exist"
-                (r::DPTF|C_Mint KST.ANHD bad KST.ANHD 1.0 false))
+                (r::DPTF|C_Mint KST.ANHD KST.ANHD bad 1.0 false))
             ;;NON-VACUITY: the guard must not have turned these previews into functions that always
             ;;throw. On a REAL token the quote still comes back.
             (expect

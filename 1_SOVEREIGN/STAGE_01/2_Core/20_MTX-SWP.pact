@@ -684,20 +684,20 @@
                         (with-capability (MTX-SWP|C>ADD-STANDARD-LQ swpair ld)
                             ;;<asymmetric-collection=true> <gaseous-collection=true>
                             (ref-SWPL::XE_STOA-PID|AddLiquidity 
-                                account swpair asymmetric-collection gaseous-collection stoa-pid ld clad
+                                patron account swpair asymmetric-collection gaseous-collection stoa-pid ld clad
                             )
                         )
                         (if gaseous-collection
                             (with-capability (MTX-SWP|C>ADD-ICED-LQ swpair ld)
                                 ;;<asymmetric-collection=false> <gaseous-collection=true>
                                 (ref-SWPL::XE_STOA-PID|AddLiquidity 
-                                    account swpair asymmetric-collection gaseous-collection stoa-pid ld clad
+                                    patron account swpair asymmetric-collection gaseous-collection stoa-pid ld clad
                                 )
                             )
                             (with-capability (MTX-SWP|C>ADD-GLACIAL-LQ swpair ld)
                                 ;;<asymmetric-collection=false> <gaseous-collection=false>
                                 (ref-SWPL::XE_STOA-PID|AddLiquidity 
-                                    account swpair asymmetric-collection gaseous-collection stoa-pid ld clad
+                                    patron account swpair asymmetric-collection gaseous-collection stoa-pid ld clad
                                 )
                             )
                         )
@@ -747,7 +747,7 @@
                             )
                             (ico2:object{IgnisCollectorV3.OutputCumulator}
                                 (if (not asymmetric-collection)
-                                    (ref-VST::C_Freeze SWP|SC_NAME account lp-id secondary)
+                                    (ref-VST::C_Freeze patron SWP|SC_NAME account lp-id secondary)
                                     EOC
                                 )
                             )
@@ -848,7 +848,7 @@
                                     (ref-TFT::C_Transfer frozen-dptf account vst-sc input-amount true)
                                 )
                                 (ico2:object{IgnisCollectorV3.OutputCumulator}
-                                    (ref-DPTF::C_Burn frozen-dptf vst-sc input-amount)
+                                    (ref-DPTF::C_Burn patron vst-sc frozen-dptf input-amount)
                                 )
                                 (ico3:object{IgnisCollectorV3.OutputCumulator}
                                     (at "perfect-ignis-fee" (at "clad-op" clad))
@@ -864,7 +864,7 @@
                                     )
                                 )
                             )
-                            (ref-SWPL::XE_STOA-PID|AddLiquidity vst-sc swpair false false stoa-pid ld clad)
+                            (ref-SWPL::XE_STOA-PID|AddLiquidity patron vst-sc swpair false false stoa-pid ld clad)
                             (yield
                                 {"secondary-lp-amount"  : secondary}
                             )
@@ -901,7 +901,7 @@
                             ;;
                             (lp-id:string (ref-SWP::UR_TokenLP swpair))
                             (ico:object{IgnisCollectorV3.OutputCumulator}
-                                (ref-VST::C_Freeze SWP|SC_NAME account lp-id secondary)
+                                (ref-VST::C_Freeze patron SWP|SC_NAME account lp-id secondary)
                             )
                         )
                         ;;Autonomous Swap Mangement
@@ -1023,7 +1023,7 @@
                                     )
                                 )
                             )
-                            (ref-SWPL::XE_STOA-PID|AddLiquidity vst-sc swpair true true stoa-pid ld clad)
+                            (ref-SWPL::XE_STOA-PID|AddLiquidity patron vst-sc swpair true true stoa-pid ld clad)
                             (yield
                                 {"primary-lp-amount"    : primary
                                 ,"time-diff"            : dt}
@@ -1159,7 +1159,7 @@
                     (if auto-fuel
                         (do
                             (with-capability (P|DT)
-                                (ref-ORBR::C_Fuel)
+                                (ref-ORBR::C_Fuel patron)
                             )
                             (format "{} IGNIS and {} STOA collected (raising SSTOA Index) succesfully; 2|3" [sum-ignis stoa-costs])
                         )
@@ -1195,7 +1195,7 @@
                 (let
                     (
                         (ref-SWPI:module{SwapperIssueV4} SWPI)
-                        (write-result:list (ref-SWPI::XE_IssueWrite account pool-tokens fee-lp weights amp p))
+                        (write-result:list (ref-SWPI::XE_IssueWrite patron account pool-tokens fee-lp weights amp p))
                         (swpair:string (at 0 write-result))
                         (token-lp:string (at 1 write-result))
                     )

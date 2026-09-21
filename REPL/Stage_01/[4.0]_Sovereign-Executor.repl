@@ -745,19 +745,19 @@
             }
         )
         ;;Set Token Roles Part I
-        (ref-TS01-C1::DPTF|C_SetFee patron AurynID 50.0)
-        (ref-TS01-C1::DPTF|C_SetFee patron EliteAurynID 100.0)
-        (ref-TS01-C1::DPTF|C_ToggleFee patron AurynID true)
-        (ref-TS01-C1::DPTF|C_ToggleFee patron EliteAurynID true)
-        (ref-TS01-C1::DPTF|C_ToggleFeeLock patron AurynID true)
-        (ref-TS01-C1::DPTF|C_ToggleFeeLock patron EliteAurynID true)
+        (ref-TS01-C1::DPTF|C_SetFee patron (DPTF.UR_Konto AurynID) AurynID 50.0)
+        (ref-TS01-C1::DPTF|C_SetFee patron (DPTF.UR_Konto EliteAurynID) EliteAurynID 100.0)
+        (ref-TS01-C1::DPTF|C_ToggleFee patron (DPTF.UR_Konto AurynID) AurynID true)
+        (ref-TS01-C1::DPTF|C_ToggleFee patron (DPTF.UR_Konto EliteAurynID) EliteAurynID true)
+        (ref-TS01-C1::DPTF|C_ToggleFeeLock patron (DPTF.UR_Konto AurynID) AurynID true)
+        (ref-TS01-C1::DPTF|C_ToggleFeeLock patron (DPTF.UR_Konto EliteAurynID) EliteAurynID true)
         ;;
         ;;Set Token Roles Part II
-        (ref-TS01-C1::DPTF|C_SetMinMove patron GasID 1000.0)
-        (ref-TS01-C1::DPTF|C_SetFee patron GasID -1.0)
-        (ref-TS01-C1::DPTF|C_SetFeeTarget patron GasID dalos)
-        (ref-TS01-C1::DPTF|C_ToggleFee patron GasID true)
-        (ref-TS01-C1::DPTF|C_ToggleFeeLock patron GasID true)
+        (ref-TS01-C1::DPTF|C_SetMinMove patron (DPTF.UR_Konto GasID) GasID 1000.0)
+        (ref-TS01-C1::DPTF|C_SetFee patron (DPTF.UR_Konto GasID) GasID -1.0)
+        (ref-TS01-C1::DPTF|C_SetFeeTarget patron (DPTF.UR_Konto GasID) GasID dalos)
+        (ref-TS01-C1::DPTF|C_ToggleFee patron (DPTF.UR_Konto GasID) GasID true)
+        (ref-TS01-C1::DPTF|C_ToggleFeeLock patron (DPTF.UR_Konto GasID) GasID true)
         ;(ref-TS01-C1::DPTF|C_ToggleBurnRole patron GasID ouroboros true)
         ;(ref-TS01-C1::DPTF|C_ToggleBurnRole patron OuroID ouroboros true)
         ;(ref-TS01-C1::DPTF|C_ToggleMintRole patron GasID ouroboros true)
@@ -933,11 +933,7 @@
         (ouro-amount:decimal 2000000.0)     ;;Main-Net Value Different
     )
     (ref-TS01-C1::DPTF|C_Mint
-        patron
-        (ref-DALOS::UR_OuroborosID)
-        patron
-        ouro-amount
-        true
+        patron patron (ref-DALOS::UR_OuroborosID) ouro-amount true
     )
 )
 
@@ -1042,9 +1038,9 @@
         ;; wrapped-UrStoa (DUK) — same liquid-SC holding account as native wrapped-Stoa (DWK)
         (ref-TS01-A::DPTF|A_DeployAccount patron (ref-DALOS::UR_UrStoaID) liquid)
         ;;Set Token Roles Part III
-        (ref-TS01-C1::DPTF|C_SetFee patron StakedStoaID -1.0)
-        (ref-TS01-C1::DPTF|C_ToggleFee patron StakedStoaID true)
-        (ref-TS01-C1::DPTF|C_ToggleFeeLock patron StakedStoaID true)
+        (ref-TS01-C1::DPTF|C_SetFee patron (DPTF.UR_Konto StakedStoaID) StakedStoaID -1.0)
+        (ref-TS01-C1::DPTF|C_ToggleFee patron (DPTF.UR_Konto StakedStoaID) StakedStoaID true)
+        (ref-TS01-C1::DPTF|C_ToggleFeeLock patron (DPTF.UR_Konto StakedStoaID) StakedStoaID true)
         ;(ref-TS01-C1::DPTF|C_ToggleBurnRole patron WrappedStoaID liquid true)
         ;(ref-TS01-C1::DPTF|C_ToggleMintRole patron WrappedStoaID liquid true)
     ]

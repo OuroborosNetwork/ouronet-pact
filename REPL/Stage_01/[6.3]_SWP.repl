@@ -783,7 +783,7 @@
         (patron:string KST.ANHD)
     )
     ;;Mint 100 mil VST
-    (ref-TS01-C1::DPTF|C_Mint patron vst patron 200000000.0 true)
+    (ref-TS01-C1::DPTF|C_Mint patron patron vst 200000000.0 true)
 )
 
 (print "")
@@ -1703,7 +1703,7 @@
         (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
     )
-    (ref-TS01-C1::DPTF|C_Mint patron "TSTY-98c486052a51" patron 100000.0 true)
+    (ref-TS01-C1::DPTF|C_Mint patron patron "TSTY-98c486052a51" 100000.0 true)
     (format "AH has {} TSTY" [(ref-DPTF::UR_AccountSupply "TSTY-98c486052a51" KST.ANHD)])
 )
 (print "")
@@ -2786,7 +2786,7 @@
         (emma:string KST.EMMA)
     )
     ;;Turn ON Reserve Functionality
-    (ref-TS01-C1::DPTF|C_ToggleReservation patron OuroID true)
+    (ref-TS01-C1::DPTF|C_ToggleReservation patron (DPTF.UR_Konto OuroID) OuroID true)
     ;;Standard Account makes 15 R|Ouro
     (ref-TS01-C2::VST|C_Reserve patron patron OuroID 15.0)
     (let
@@ -2796,7 +2796,7 @@
         ;;Deploy Account for ROuroID on Smart-Patron
         (ref-TS01-C1::DPTF|C_DeployAccount patron ROuroID smart-patron)
         ;;Transfer Role set to true to Smart Account.
-        (ref-TS01-C1::DPTF|C_ToggleTransferRole patron ROuroID smart-patron true)
+        (ref-TS01-C1::DPTF|C_ToggleTransferRole patron (DPTF.UR_Konto ROuroID) smart-patron ROuroID true)
         ;;Send 15 R|Ouro to Smart Account
         (ref-TS01-C1::DPTF|C_Transfer patron ROuroID patron smart-patron 15.0 true)
         ;;Smart Account unreserves 10 Ouro
@@ -3641,9 +3641,9 @@
         (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
     )
-    (ref-TS01-C1::DPTF|C_Mint patron "TSTC-98c486052a51" patron 1000000.0 true)
-    (ref-TS01-C1::DPTF|C_Mint patron "TSTD-98c486052a51" patron 1000000.0 true)
-    (ref-TS01-C1::DPTF|C_Mint patron "TSTZ-98c486052a51" patron 1000000.0 true)
+    (ref-TS01-C1::DPTF|C_Mint patron patron "TSTC-98c486052a51" 1000000.0 true)
+    (ref-TS01-C1::DPTF|C_Mint patron patron "TSTD-98c486052a51" 1000000.0 true)
+    (ref-TS01-C1::DPTF|C_Mint patron patron "TSTZ-98c486052a51" 1000000.0 true)
     (format "AH has {} TSTC / {} TSTD / {} TSTZ" [
         (ref-DPTF::UR_AccountSupply "TSTC-98c486052a51" KST.ANHD)
         (ref-DPTF::UR_AccountSupply "TSTD-98c486052a51" KST.ANHD)
@@ -4041,9 +4041,9 @@
         (patron:string KST.ANHD)
         (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
     )
-    (ref-TS01-C1::DPTF|C_Mint patron "TSTN-98c486052a51" patron 10000.0 true)
-    (ref-TS01-C1::DPTF|C_Mint patron "TSTM-98c486052a51" patron 10000.0 true)
-    (ref-TS01-C1::DPTF|C_Mint patron "TSTQ-98c486052a51" patron 10000.0 true)
+    (ref-TS01-C1::DPTF|C_Mint patron patron "TSTN-98c486052a51" 10000.0 true)
+    (ref-TS01-C1::DPTF|C_Mint patron patron "TSTM-98c486052a51" 10000.0 true)
+    (ref-TS01-C1::DPTF|C_Mint patron patron "TSTQ-98c486052a51" 10000.0 true)
 )
 (print "")
 (print "")
@@ -4398,7 +4398,7 @@
     )
     (map
         (lambda (t:string)
-            (ref-TS01-C1::DPTF|C_Mint patron (format "{}-98c486052a51" [t]) patron 10000.0 true)
+            (ref-TS01-C1::DPTF|C_Mint patron patron (format "{}-98c486052a51" [t]) 10000.0 true)
         )
         tickers
     )
@@ -5072,7 +5072,7 @@
             (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
             (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
         )
-        (map (lambda (t:string) (ref-TS01-C1::DPTF|C_Mint patron t patron 1000.0 true)) tok-ids)
+        (map (lambda (t:string) (ref-TS01-C1::DPTF|C_Mint patron patron t 1000.0 true)) tok-ids)
         ;;permissioned=true (skips the issuance-time worth/spawn-limit search only —
         ;;irrelevant for these noise pools; SWP|C_ToggleSwapCapability's own worth
         ;;check below is unconditional regardless and still runs).
@@ -6381,7 +6381,7 @@
             (ref-TS01-C3:module{TalosStageOne_ClientThreeV4} TS01-C3)
             (ref-SWP:module{SwapperV4} SWP)
         )
-    (ref-TS01-C1::DPTF|C_Mint patron "MPTEST-98c486052a51" patron 10000.0 true)
+    (ref-TS01-C1::DPTF|C_Mint patron patron "MPTEST-98c486052a51" 10000.0 true)
     (ref-TS01-A::SWP|A_UpdatePrincipal "MPTEST-98c486052a51" true)
     (print (format "Principal count after adding MPTEST: {}" [(length (ref-SWP::UR_Principals))]))
     ;;P-type pool, MPTEST first (the pool WILL fail issuance if MPTEST weren't already a
@@ -7906,15 +7906,11 @@
 
     )
     ;(ref-TS01-A::DALOS|A_ToggleGAP true)
-    (ref-TS01-C1::DPTF|C_SetFee patron b-vst 250.0)
-    (ref-TS01-C1::DPTF|C_ToggleFee patron b-vst true)
+    (ref-TS01-C1::DPTF|C_SetFee patron (DPTF.UR_Konto b-vst) b-vst 250.0)
+    (ref-TS01-C1::DPTF|C_ToggleFee patron (DPTF.UR_Konto b-vst) b-vst true)
     ;(ref-TS01-C1::DPTF|C_ToggleFeeLock patron b-vst true)
     (ref-TS01-C1::DPTF|C_Mint
-        patron
-        b-vst
-        patron
-        5000000.0
-        true
+        patron patron b-vst 5000000.0 true
     )
     (ref-TS01-C1::DPTF|C_Transfer 
         patron 
@@ -7932,7 +7928,7 @@
         400000.0
         false
     )
-    (ref-TS01-C1::DPTF|C_DonateFees patron b-vst)
+    (ref-TS01-C1::DPTF|C_DonateFees patron (DPTF.UR_Konto b-vst) b-vst)
     (ref-TS01-C1::DPTF|C_Transfer 
         patron 
         b-vst
@@ -7941,7 +7937,7 @@
         200000.0
         false
     )
-    (ref-TS01-C1::DPTF|C_SetFeeTarget patron b-vst coca)
+    (ref-TS01-C1::DPTF|C_SetFeeTarget patron (DPTF.UR_Konto b-vst) b-vst coca)
     (ref-TS01-C1::DPTF|C_Transfer 
         patron 
         b-vst
@@ -8114,9 +8110,9 @@
         ;(dwk:string "DWK-98c486052a51")
     )
     (ref-TS01-C1::DPTF|C_Transfer patron ouro treasury emma 250000.0 false)
-    (ref-TS01-A::DPTF|A_WipeTreasuryDebtPartial 100000.0)
-    (ref-TS01-A::DPTF|A_WipeTreasuryDebt)
-    (ref-TS01-A::DPTF|A_UpdateTreasuryDispoParameters 2 12.0 24.0)
+    (ref-TS01-A::DPTF|A_WipeTreasuryDebtPartial KST.ANHD 100000.0)
+    (ref-TS01-A::DPTF|A_WipeTreasuryDebt KST.ANHD)
+    (ref-TS01-A::DPTF|A_UpdateTreasuryDispoParameters KST.ANHD 2 12.0 24.0)
     [   
         (format "Treasury OURO Supply is {}" [(ref-DPTF::UR_AccountSupply ouro treasury)])
         (format "Emma OURO Supply is {}" [(ref-DPTF::UR_AccountSupply ouro emma)])
@@ -8753,9 +8749,9 @@
         (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
     )
-    (ref-TS01-C1::DPTF|C_Mint patron "TSTE-98c486052a51" patron 1000000.0 true)
+    (ref-TS01-C1::DPTF|C_Mint patron patron "TSTE-98c486052a51" 1000000.0 true)
     ;;TSTF's own first hop needs 9000.0 — mint generously above that.
-    (ref-TS01-C1::DPTF|C_Mint patron "TSTF-98c486052a51" patron 5000000.0 true)
+    (ref-TS01-C1::DPTF|C_Mint patron patron "TSTF-98c486052a51" 5000000.0 true)
     ;;TSTZ already exists (032c/032d) — re-minting it hit DPTF's per-account mint-role
     ;;permission model (its origin mint was one-time-only, and the follow-up mint
     ;;role for this account isn't separately enabled here) — rather than chase that
@@ -9891,7 +9887,7 @@
             (expect-failure
                 "<<SWP|TX 057-03>> DPTF refuses a role toggle on the SWP contract account, owner or not"
                 "Non Smart Ouronet Accounts required for exec"
-                (ref-TS01-C1::DPTF|C_ToggleFeeExemptionRole KST.ANHD tstn KST.SWAPR false))
+                (ref-TS01-C1::DPTF|C_ToggleFeeExemptionRole KST.ANHD (DPTF.UR_Konto tstn) KST.SWAPR tstn false))
         ]
     )
     ""

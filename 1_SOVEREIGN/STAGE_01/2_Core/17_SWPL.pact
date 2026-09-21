@@ -197,7 +197,7 @@
     (defun UEV_BalancedLiquidity (swpair:string input-id:string input-amount:decimal))
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
-    (defun XE_STOA-PID|AddLiquidity (account:string swpair:string asymmetric-collection:bool gaseous-collection:bool stoa-pid:decimal ld:object{LiquidityData} clad:object{CompleteLiquidityAdditionData}))
+    (defun XE_STOA-PID|AddLiquidity (patron:string account:string swpair:string asymmetric-collection:bool gaseous-collection:bool stoa-pid:decimal ld:object{LiquidityData} clad:object{CompleteLiquidityAdditionData}))
     (defun XE_AutonomousSwapManagement (swpair:string))
     ;;{5.7}  User [A/C]
 
@@ -1914,7 +1914,7 @@
     ;;
     ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
     (defun XE_STOA-PID|AddLiquidity
-        (
+        (patron:string 
             account:string swpair:string asymmetric-collection:bool gaseous-collection:bool stoa-pid:decimal
             ld:object{SwapperLiquidityV2.LiquidityData} clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
         )
@@ -2006,7 +2006,7 @@
                                 (bk-ids:[string] (at "bk-ids" (at "clad-op" clad)))
                                 (bk-amt:[decimal] (at "bk-amt" (at "clad-op" clad)))
                             )
-                            (with-capability (SECURE) (XI_AddLiqSendAndMint account lp-id lp-to-mint clad))
+                            (with-capability (SECURE) (XI_AddLiqSendAndMint patron account lp-id lp-to-mint clad))
                             ;;Handle Special Targets
                             (if (!= bk-ids [BAR])
                                 (ref-TFT::C_MultiBulkTransfer
@@ -2020,9 +2020,9 @@
                             ;;Handle Liquid Boost
                             (if (!= lqboost-ignis-tax 0.0)
                                 (do
-                                    (ref-DPTF::C_Burn ignis-id SWP|SC_NAME lqboost-ignis-tax)
-                                    (ref-DPTF::C_Mint ouro-id SWP|SC_NAME ouro-mint-amount false)
-                                    (ref-DPTF::C_Burn sstoa-id SWP|SC_NAME sstoa-burn-amount)
+                                    (ref-DPTF::C_Burn patron SWP|SC_NAME ignis-id lqboost-ignis-tax)
+                                    (ref-DPTF::C_Mint patron SWP|SC_NAME ouro-id ouro-mint-amount false)
+                                    (ref-DPTF::C_Burn patron SWP|SC_NAME sstoa-id sstoa-burn-amount)
                                     (ref-SWP::XE_UpdateSupplies 
                                         primordial-swpair 
                                         (zip (+) primordial-supplies [(- 0.0 sstoa-burn-amount) ouro-mint-amount 0.0])
@@ -2035,7 +2035,7 @@
                             (with-capability (SWPL|S>ASYMMETRIC-LQ-SPECIAL-TAX (at "special-text" clad)) true)
                             (with-capability (SWPL|S>ASYMMETRIC-LQ-LQBOOST-TAX (at "lqboost-text" clad)) true)
                         )
-                        (with-capability (SECURE) (XI_AddLiqSendAndMint account lp-id lp-to-mint clad))
+                        (with-capability (SECURE) (XI_AddLiqSendAndMint patron account lp-id lp-to-mint clad))
                     )
                 )
                 (with-capability (SWPL|S>ADD_BALANCED-LQ account swpair balanced-liquidity)
@@ -2044,14 +2044,14 @@
                         true
                     )
                     (ref-SWP::XE_UpdateSupplies swpair (at "ppb" (at "clad-op" clad)))
-                    (with-capability (SECURE) (XI_AddLiqSendAndMint account lp-id lp-to-mint clad))
+                    (with-capability (SECURE) (XI_AddLiqSendAndMint patron account lp-id lp-to-mint clad))
                 )
             )
         )
     )
     ;;Protection: Class 2 — SECURE
     (defun XI_AddLiqSendAndMint 
-        (
+        (patron:string 
             account:string lp-id:string lp-amount:decimal 
             clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
         )
@@ -2067,7 +2067,7 @@
                 (at "mt-amt" (at "clad-op" clad))
                 true
             )
-            (ref-DPTF::C_Mint lp-id SWP|SC_NAME lp-amount false)
+            (ref-DPTF::C_Mint patron SWP|SC_NAME lp-id lp-amount false)
         )
     )
     ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)

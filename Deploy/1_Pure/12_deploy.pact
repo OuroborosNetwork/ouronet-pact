@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 12 of 22
 ;; This is STEP 12 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-11 must have run first, including the init steps between deploys.
-;; 5 source file(s), 320,565 gas measured in the REPL gas model, 260,082 bytes
+;; 5 source file(s), 320,565 gas measured in the REPL gas model, 260,124 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/08_DPDC-S.pact
@@ -4221,7 +4221,7 @@
     ;;  [C]
     ;;
     (defun C_Deposit:object{IgnisCollectorV3.OutputCumulator}
-        (donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal)
+        (patron:string donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal)
     )
     (defun C_Withdraw (patron:string asset-id:string type:integer destination:string)
     )
@@ -5557,7 +5557,7 @@
         )
     )
     (defun C_Deposit:object{IgnisCollectorV3.OutputCumulator}
-        (donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal)
+        (patron:string donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal)
         @doc "Deposits Funds into the Launchpad, for a registered Asset \
             \ Type 0 = Native Stoa \
             \ Type 1 = WSTOA \
@@ -5600,13 +5600,13 @@
                     ;;
                     (ico1:object{IgnisCollectorV3.OutputCumulator}
                         (if (= type 0)
-                            (ref-LIQUID::C_WrapStoa donor non-enviroment)
+                            (ref-LIQUID::C_WrapStoa patron donor non-enviroment)
                             EOC
                         )
                     )
                     (ico2:object{IgnisCollectorV3.OutputCumulator}
                         (if (= type 1)
-                            (ref-LIQUID::C_UnwrapStoa donor env)
+                            (ref-LIQUID::C_UnwrapStoa patron donor env)
                             EOC
                         )
                     )

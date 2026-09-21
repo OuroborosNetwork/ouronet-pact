@@ -423,7 +423,7 @@
                     "No stoicism to mint or distribute"
                     [
                       ;;Mints Stoicism
-                      (ref-TS01-C1::DPTF|C_Mint GASLESS-PATRON stoicism-id dispenser total-stoicism-amount false)
+                      (ref-TS01-C1::DPTF|C_Mint GASLESS-PATRON dispenser stoicism-id total-stoicism-amount false)
                       ;;Moves Stoicism to Targets
                       (ref-TS01-C1::DPTF|C_BulkTransfer GASLESS-PATRON stoicism-id dispenser stoicism-targets stoicism-amounts)
                     ]
@@ -463,7 +463,7 @@
                     (elite-auryndex:string (at 0 (ref-DPTF::UR_RewardBearingToken elite-auryn)))
                 )
                 ;;Mints whole daily on Dispencer
-                (ref-TS01-C1::DPTF|C_Mint GASLESS-PATRON ouro dispenser daily false)
+                (ref-TS01-C1::DPTF|C_Mint GASLESS-PATRON dispenser ouro daily false)
                 ;;Moves 10% To Treasury and 20% to Validators
                 (ref-TS01-C1::DPTF|C_BulkTransfer GASLESS-PATRON ouro dispenser [treasury validators] [s1-10p s1-20p])
                 ;;Uses 30% to Fuel the Auryndex
@@ -583,7 +583,7 @@
                 (enforce (= (length fvt-ids) 4)
                     "Stage Two expects fvt-ids x4: [custodians shareholders farm subsidiary]")
                 ;;1. Mint the whole daily emission on the Dispenser
-                (ref-TS01-C1::DPTF|C_Mint GASLESS-PATRON ouro dispenser daily false)
+                (ref-TS01-C1::DPTF|C_Mint GASLESS-PATRON dispenser ouro daily false)
                 ;;2. 10% to the Demiourgos Treasury, as pure OURO
                 (ref-TS01-C1::DPTF|C_BulkTransfer GASLESS-PATRON ouro dispenser [treasury] [s2-treasury])
                 ;;3. 20% into the Custodians vault. Injected as OURO; the multiplet ladder pays each
@@ -636,8 +636,8 @@
                     (dispenser:string DSP1|SC_NAME)
                 )
                 ;;Mints Primordial Koson and Esoteric Koson Amounts
-                (ref-TS01-C1::DPTF|C_Mint GASLESS-PATRON PrimordialKosonID dispenser (at 0 daily) false)
-                (ref-TS01-C1::DPTF|C_Mint GASLESS-PATRON EsothericKosonID dispenser (at 1 daily) false)
+                (ref-TS01-C1::DPTF|C_Mint GASLESS-PATRON dispenser PrimordialKosonID (at 0 daily) false)
+                (ref-TS01-C1::DPTF|C_Mint GASLESS-PATRON dispenser EsothericKosonID (at 1 daily) false)
                 ;;Moves Primordial Kosons: 10% To Standard-Treasury, 20% to Smart-Treasury, 40% to Custodians(Validators)
                 ;;Leaving 30% of the Primordial Kosons to <dispenser>
                 (let
@@ -701,8 +701,8 @@
                     (dispenser:string DSP1|SC_NAME)
                 )
                 ;;Mints Primordial Koson and Esoteric Koson Amounts
-                (ref-TS01-C1::DPTF|C_Mint GASLESS-PATRON PrimordialKosonID dispenser (at 0 daily) false)
-                (ref-TS01-C1::DPTF|C_Mint GASLESS-PATRON EsothericKosonID dispenser (at 1 daily) false)
+                (ref-TS01-C1::DPTF|C_Mint GASLESS-PATRON dispenser PrimordialKosonID (at 0 daily) false)
+                (ref-TS01-C1::DPTF|C_Mint GASLESS-PATRON dispenser EsothericKosonID (at 1 daily) false)
                 ;;Moves Primordial Kosons: 10% To Standard-Treasury, 20% to Smart-Treasury, 40% to Custodians(Validators)
                 (ref-TS01-C1::DPTF|C_BulkTransfer GASLESS-PATRON PrimordialKosonID dispenser [standard-treasury validators] [ps10 ps40])
                 (ref-TS01-C1::DPTF|C_Transfer GASLESS-PATRON PrimordialKosonID dispenser smart-treasury ps20 true)

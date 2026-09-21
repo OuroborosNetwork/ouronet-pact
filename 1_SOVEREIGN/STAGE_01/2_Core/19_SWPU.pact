@@ -147,19 +147,19 @@
     ;;  []C] Functions
     ;;
     ;;
-    (defun C_ToggleSwapCapability:object{IgnisCollectorV3.OutputCumulator} (swpair:string toggle:bool))
-    (defun CC_SmartSwap:object{IgnisCollectorV3.OutputCumulator} (account:string input-id:string input-amount:decimal output-id:string slippage:decimal stoa-pid:decimal slippage-bounds:object{Slippage}))
+    (defun C_ToggleSwapCapability:object{IgnisCollectorV3.OutputCumulator} (patron:string swpair:string toggle:bool))
+    (defun CC_SmartSwap:object{IgnisCollectorV3.OutputCumulator} (patron:string account:string input-id:string input-amount:decimal output-id:string slippage:decimal stoa-pid:decimal slippage-bounds:object{Slippage}))
     ;;#34 Phase 8: the bundle-based, dirty-read-injected SmartSwap — performs zero
     ;;internal searching (route, boost-path and stoa-paths are all supplied by the
     ;;caller, per SmartSwapPathBundle), built alongside CC_SmartSwap for direct gas
     ;;comparison, not replacing it.
     (defun C_SmartSwap:list
-        (
+        (patron:string 
             account:string input-id:string input-amount:decimal output-id:string slippage:decimal
             stoa-pid:decimal slippage-bounds:object{Slippage} bundle:object{SmartSwapPathBundle}
         )
     )
-    (defun C_Swap:object{IgnisCollectorV3.OutputCumulator} (account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage:decimal stoa-pid:decimal slippage-bounds:object{Slippage}))
+    (defun C_Swap:object{IgnisCollectorV3.OutputCumulator} (patron:string account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage:decimal stoa-pid:decimal slippage-bounds:object{Slippage}))
 
 )
 ;;
@@ -1370,7 +1370,7 @@
     ;;{5.6}  Aux/X
     ;;Protection: Class 2 — SECURE
     (defun XI_SmartSwapAndRegister:list
-        (
+        (patron:string 
             account:string input-id:string input-amount:decimal output-id:string slippage:decimal
             stoa-pid:decimal slippage-bounds:object{SwapperUsageV3.Slippage} bundle:object{SwapperUsageV3.SmartSwapPathBundle}
         )
@@ -1382,7 +1382,7 @@
         (let*
             (
                 (ico:object{IgnisCollectorV3.OutputCumulator}
-                    (XI_SmartSwapExplicitRoute account input-id input-amount output-id slippage stoa-pid slippage-bounds bundle)
+                    (XI_SmartSwapExplicitRoute patron account input-id input-amount output-id slippage stoa-pid slippage-bounds bundle)
                 )
                 (out:list (at "output" ico))
                 ;;A slippage-exceeded soft-fail (matching CC_SmartSwap's own established
@@ -1406,7 +1406,7 @@
     )
     ;;Protection: Class 2 — SECURE
     (defun XI_SmartSwapRouter:object{IgnisCollectorV3.OutputCumulator}
-        (
+        (patron:string 
             account:string input-id:string input-amount:decimal output-id:string slippage:decimal
             stoa-pid:decimal slippage-bounds:object{SwapperUsageV3.Slippage} h-obj:object{SwapperIssueV4.Hopper}
         )
@@ -1447,19 +1447,19 @@
                     (if
                         (>= feeless-final min)
                         ;;(<= feeless-final max)
-                        (XI_SmartSwap account input-id input-amount output-id nodes edges stoa-pid NO_PATH)
+                        (XI_SmartSwap patron account input-id input-amount output-id nodes edges stoa-pid NO_PATH)
                         ;;#66L fix: named UDC_* constructor instead of a hand-built object literal —
                         ;;trigger=true reproduces the exact same {"ignis":0.0,"interactor":BAR} shape.
                         (ref-IGNIS::UDC_ConstructOutputCumulator 0.0 BAR true [exceed-message])
                     )
                 )
-                (XI_SmartSwap account input-id input-amount output-id nodes edges stoa-pid NO_PATH)
+                (XI_SmartSwap patron account input-id input-amount output-id nodes edges stoa-pid NO_PATH)
             )
         )
     )
     ;;Protection: Class 2 — SECURE
     (defun XI_SmartSwapExplicitRoute:object{IgnisCollectorV3.OutputCumulator}
-        (
+        (patron:string 
             account:string input-id:string input-amount:decimal output-id:string slippage:decimal
             stoa-pid:decimal slippage-bounds:object{SwapperUsageV3.Slippage} bundle:object{SwapperUsageV3.SmartSwapPathBundle}
         )
@@ -1497,13 +1497,13 @@
                     ;;function's own comment for the full rationale, unchanged here.
                     (if
                         (>= feeless-final min)
-                        (XI_SmartSwap account input-id input-amount output-id nodes edges stoa-pid (at "boost-path" bundle))
+                        (XI_SmartSwap patron account input-id input-amount output-id nodes edges stoa-pid (at "boost-path" bundle))
                         ;;#66L fix: named UDC_* constructor instead of a hand-built object literal —
                         ;;trigger=true reproduces the exact same {"ignis":0.0,"interactor":BAR} shape.
                         (ref-IGNIS::UDC_ConstructOutputCumulator 0.0 BAR true [exceed-message])
                     )
                 )
-                (XI_SmartSwap account input-id input-amount output-id nodes edges stoa-pid (at "boost-path" bundle))
+                (XI_SmartSwap patron account input-id input-amount output-id nodes edges stoa-pid (at "boost-path" bundle))
             )
         )
     )
@@ -1621,7 +1621,7 @@
     )
     ;;Protection: Class 2 — SECURE
     (defun XI_SmartSwap:object{IgnisCollectorV3.OutputCumulator}
-        (
+        (patron:string 
             account:string input-id:string input-amount:decimal output-id:string
             nodes:[string] edges:[string] stoa-pid:decimal boost-path:object{SwapperUsageV3.CachedPathOrMiss}
         )
@@ -1643,7 +1643,7 @@
                     (ref-TFT::C_Transfer input-id account SWP|SC_NAME input-amount true)
                 )
                 (hop-result:list
-                    (XI_SmartSwapCore account input-amount ico-input nodes edges boost-path)
+                    (XI_SmartSwapCore patron account input-amount ico-input nodes edges boost-path)
                 )
                 (final-netto:decimal (at 0 hop-result))
                 (all-icos:[object{IgnisCollectorV3.OutputCumulator}] (at 1 hop-result))
@@ -1677,7 +1677,7 @@
     )
     ;;Protection: Class 2 — SECURE
     (defun XI_SmartSwapCore:list
-        (
+        (patron:string 
             account:string input-amount:decimal ico-input:object{IgnisCollectorV3.OutputCumulator}
             nodes:[string] edges:[string] boost-path:object{SwapperUsageV3.CachedPathOrMiss}
         )
@@ -1880,7 +1880,7 @@
                                     ;;every earlier hop just carries it forward (above), no
                                     ;;search fired.
                                     (if (and iz-last (!= carried-boost-out 0.0))
-                                        (XI_LiquidIndexPump o-id carried-boost-out boost-path)
+                                        (XI_LiquidIndexPump patron o-id carried-boost-out boost-path)
                                         EOC
                                     )
                                 ]
@@ -1899,7 +1899,7 @@
     )
     ;;Protection: Class 1 — Innate protection offered by XI_Swap
     (defun XI_STOA-PID|Swap:object{IgnisCollectorV3.OutputCumulator}
-        (
+        (patron:string 
             account:string swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData}
             slippage:decimal stoa-pid:decimal slippage-bounds:object{SwapperUsageV3.Slippage}
         )
@@ -1908,7 +1908,7 @@
             (
                 (ico:object{IgnisCollectorV3.OutputCumulator}
                     (if (= slippage -1.0)
-                        (XI_Swap account swpair dsid)
+                        (XI_Swap patron account swpair dsid)
                         (let
                             (
                                 (ref-SWPI:module{SwapperIssueV4} SWPI)
@@ -1959,7 +1959,7 @@
                             (if
                                 (>= max-toa min)
                                 ;;(<= max-toa max)
-                                (XI_Swap account swpair dsid)
+                                (XI_Swap patron account swpair dsid)
                                 ;;#66L fix: named UDC_* constructor instead of a hand-built object
                                 ;;literal — trigger=true reproduces the exact same
                                 ;;{"ignis":0.0,"interactor":BAR} shape.
@@ -1978,7 +1978,7 @@
     )
     ;;Protection: Class 3 — Custom: SWPU|X>SWAP
     (defun XI_Swap:object{IgnisCollectorV3.OutputCumulator}
-        (account:string swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData})
+        (patron:string account:string swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData})
         (require-capability (SWPU|X>SWAP swpair dsid))
         (let
             (
@@ -2070,7 +2070,7 @@
                         ;;from (that's a SmartSwap-only concept) — always the NO_PATH
                         ;;sentinel here, meaning "search internally", exactly matching
                         ;;this call's own pre-Phase-8 behavior unchanged.
-                        (XI_LiquidIndexPump output-id o-id-liquid NO_PATH)
+                        (XI_LiquidIndexPump patron output-id o-id-liquid NO_PATH)
                         EOC
                     )
                 ] 
@@ -2080,7 +2080,7 @@
     )
     ;;Protection: Class 2 — SECURE
     (defun XI_LiquidIndexPump:object{IgnisCollectorV3.OutputCumulator}
-        (id:string amount:decimal boost-path:object{SwapperUsageV3.CachedPathOrMiss})
+        (patron:string id:string amount:decimal boost-path:object{SwapperUsageV3.CachedPathOrMiss})
         @doc "#34 Phase 8: <boost-path> passthrough — NO_PATH sentinel from the \
             \ self-searching caller, or a real bundle-supplied path from the new \
             \ dirty-read-injected caller. See XI_RawLiquidPump's doc for validation."
@@ -2088,7 +2088,7 @@
         (let
             (
                 (ico:object{IgnisCollectorV3.OutputCumulator}
-                    (XI_RawLiquidPump id amount boost-path)
+                    (XI_RawLiquidPump patron id amount boost-path)
                 )
                 (raw-liquid-pump-data:list (at "output" ico))
             )
@@ -2115,7 +2115,7 @@
     )
     ;;Protection: Class 2 — SECURE
     (defun XI_RawLiquidPump:object{IgnisCollectorV3.OutputCumulator}
-        (id:string amount:decimal boost-path:object{SwapperUsageV3.CachedPathOrMiss})
+        (patron:string id:string amount:decimal boost-path:object{SwapperUsageV3.CachedPathOrMiss})
         @doc "Operation that pumps LiquidIndex, returns the Pump Increment in the output object \
             \ Can be used for a Pool Token that already exists in the SWP|SC_NAME. \
             \ P0.6 fix (SWP exhaustive-path-search HANDOFF doc): routes via \
@@ -2145,7 +2145,7 @@
             )
             (if (= id sstoa)
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
-                    [(ref-DPTF::C_Burn sstoa SWP|SC_NAME amount)]
+                    [(ref-DPTF::C_Burn patron SWP|SC_NAME sstoa amount)]
                     [(- (ref-ATS::URC_Index liquidindex) lqi)]
                 )
                 (let
@@ -2209,7 +2209,7 @@
                             (
                                 (final-boost-output:decimal (at 0 (take -1 ovs)))
                                 (ico:object{IgnisCollectorV3.OutputCumulator}
-                                    (ref-DPTF::C_Burn sstoa SWP|SC_NAME final-boost-output)
+                                    (ref-DPTF::C_Burn patron SWP|SC_NAME sstoa final-boost-output)
                                 )
                             )
                             (ref-IGNIS::UDC_ConcatenateOutputCumulators
@@ -2301,19 +2301,19 @@
     )
     ;;{5.7}  User [A/C]
     (defun C_ToggleSwapCapability:object{IgnisCollectorV3.OutputCumulator}
-        (swpair:string toggle:bool)
+        (patron:string swpair:string toggle:bool)
         (P|UEV_IMC)
         (let
             (
                 (ref-SWP:module{SwapperV4} SWP)
             )
             (with-capability (SPWU|C>TOGGLE-SWAP swpair toggle)
-                (ref-SWP::C_ToggleAddOrSwap swpair toggle false)
+                (ref-SWP::C_ToggleAddOrSwap patron swpair toggle false)
             )
         )
     )
     (defun CC_SmartSwap:object{IgnisCollectorV3.OutputCumulator}
-        (account:string input-id:string input-amount:decimal output-id:string slippage:decimal stoa-pid:decimal slippage-bounds:object{SwapperUsageV3.Slippage})
+        (patron:string account:string input-id:string input-amount:decimal output-id:string slippage:decimal stoa-pid:decimal slippage-bounds:object{SwapperUsageV3.Slippage})
         @doc "Executes a Smart Swap from <input-id> to <output-id> across multiple pools using BFS path tracing. \
             \ Each hop executes a full swap with fees (LP, special, boost via Option B). \
             \ When slippage != -1.0, slippage-bounds must be the pre-computed object from UDC_SpawnSmartSwapSlippageBounds. \
@@ -2332,16 +2332,16 @@
             )
             (if (!= slippage -1.0)
                 (with-capability (SWPU|C>SMART-SWAP-WITH-SLIPPAGE account input-id input-amount output-id slippage slippage-bounds h-obj)
-                    (XI_SmartSwapRouter account input-id input-amount output-id slippage stoa-pid slippage-bounds h-obj)
+                    (XI_SmartSwapRouter patron account input-id input-amount output-id slippage stoa-pid slippage-bounds h-obj)
                 )
                 (with-capability (SWPU|C>SMART-SWAP-NO-SLIPPAGE account input-id input-amount output-id slippage h-obj)
-                    (XI_SmartSwapRouter account input-id input-amount output-id slippage stoa-pid slippage-bounds h-obj)
+                    (XI_SmartSwapRouter patron account input-id input-amount output-id slippage stoa-pid slippage-bounds h-obj)
                 )
             )
         )
     )
     (defun C_SmartSwap:list
-        (
+        (patron:string 
             account:string input-id:string input-amount:decimal output-id:string slippage:decimal
             stoa-pid:decimal slippage-bounds:object{SwapperUsageV3.Slippage} bundle:object{SwapperUsageV3.SmartSwapPathBundle}
         )
@@ -2379,16 +2379,16 @@
         (if (!= slippage -1.0)
             (with-capability
                 (SWPU|C>SMART-SWAP-EXPLICIT-ROUTE-WITH-SLIPPAGE account input-id input-amount output-id slippage slippage-bounds bundle)
-                (XI_SmartSwapAndRegister account input-id input-amount output-id slippage stoa-pid slippage-bounds bundle)
+                (XI_SmartSwapAndRegister patron account input-id input-amount output-id slippage stoa-pid slippage-bounds bundle)
             )
             (with-capability
                 (SWPU|C>SMART-SWAP-EXPLICIT-ROUTE-NO-SLIPPAGE account input-id input-amount output-id slippage bundle)
-                (XI_SmartSwapAndRegister account input-id input-amount output-id slippage stoa-pid slippage-bounds bundle)
+                (XI_SmartSwapAndRegister patron account input-id input-amount output-id slippage stoa-pid slippage-bounds bundle)
             )
         )
     )
     (defun C_Swap:object{IgnisCollectorV3.OutputCumulator}
-        (account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage:decimal stoa-pid:decimal slippage-bounds:object{SwapperUsageV3.Slippage})
+        (patron:string account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage:decimal stoa-pid:decimal slippage-bounds:object{SwapperUsageV3.Slippage})
         @doc "Execute swap. When slippage != -1.0, slippage-bounds must be the pre-computed slippage object from quote time (e.g. UDC_SlippageObject); when slippage == -1.0, pass a dummy object (e.g. UDC_Slippage 0.0 0 0.0)."
         (P|UEV_IMC)
         (let
@@ -2406,36 +2406,36 @@
                 (if s-or-m
                     (if (!= slippage -1.0)
                         (with-capability (SWPU|OPU|C>SINGL-SWAP-WITH-SLIPPAGE account swpair dsid slippage slippage-bounds)
-                            (XI_STOA-PID|Swap account swpair dsid slippage stoa-pid slippage-bounds)
+                            (XI_STOA-PID|Swap patron account swpair dsid slippage stoa-pid slippage-bounds)
                         )
                         (with-capability (SWPU|OPU|C>SINGL-SWAP-NO-SLIPPAGE account swpair dsid slippage)
-                            (XI_STOA-PID|Swap account swpair dsid slippage stoa-pid slippage-bounds)
+                            (XI_STOA-PID|Swap patron account swpair dsid slippage stoa-pid slippage-bounds)
                         )
                     )
                     (if (!= slippage -1.0)
                         (with-capability (SWPU|OPU|C>MULTI-SWAP-WITH-SLIPPAGE account swpair dsid slippage slippage-bounds)
-                            (XI_STOA-PID|Swap account swpair dsid slippage stoa-pid slippage-bounds)
+                            (XI_STOA-PID|Swap patron account swpair dsid slippage stoa-pid slippage-bounds)
                         )
                         (with-capability (SWPU|OPU|C>MULTI-SWAP-NO-SLIPPAGE account swpair dsid slippage)
-                            (XI_STOA-PID|Swap account swpair dsid slippage stoa-pid slippage-bounds)
+                            (XI_STOA-PID|Swap patron account swpair dsid slippage stoa-pid slippage-bounds)
                         )
                     )
                 )
                 (if s-or-m
                     (if (!= slippage -1.0)
                         (with-capability (SWPU|C>SINGL-SWAP-WITH-SLIPPAGE account swpair dsid slippage slippage-bounds)
-                            (XI_STOA-PID|Swap account swpair dsid slippage -1.0 slippage-bounds)
+                            (XI_STOA-PID|Swap patron account swpair dsid slippage -1.0 slippage-bounds)
                         )
                         (with-capability (SWPU|C>SINGL-SWAP-NO-SLIPPAGE account swpair dsid slippage)
-                            (XI_STOA-PID|Swap account swpair dsid slippage -1.0 slippage-bounds)
+                            (XI_STOA-PID|Swap patron account swpair dsid slippage -1.0 slippage-bounds)
                         )
                     )
                     (if (!= slippage -1.0)
                         (with-capability (SWPU|C>MULTI-SWAP-WITH-SLIPPAGE account swpair dsid slippage slippage-bounds)
-                            (XI_STOA-PID|Swap account swpair dsid slippage -1.0 slippage-bounds)
+                            (XI_STOA-PID|Swap patron account swpair dsid slippage -1.0 slippage-bounds)
                         )
                         (with-capability (SWPU|C>MULTI-SWAP-NO-SLIPPAGE account swpair dsid slippage)
-                            (XI_STOA-PID|Swap account swpair dsid slippage -1.0 slippage-bounds)
+                            (XI_STOA-PID|Swap patron account swpair dsid slippage -1.0 slippage-bounds)
                         )
                     )
                 )

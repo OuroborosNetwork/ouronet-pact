@@ -45,12 +45,12 @@
     ;;{5.6}  Aux/X
     ;;{5.7}  User [A/C]
     ;;
-    (defun ATS|C_UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
-    (defun ATS|C_UpgradeBranding (patron:string entity-id:string months:integer))
+    (defun ATS|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
+    (defun ATS|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer))
     ;;
     ;;Hot Rbt Management
-    (defun ATS|HOT-RBT|C_UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
-    (defun ATS|HOT-RBT|C_UpgradeBranding (patron:string entity-id:string months:integer))
+    (defun ATS|HOT-RBT|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
+    (defun ATS|HOT-RBT|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer))
     (defun ATS|HOT-RBT|C_Repurpose (patron:string hot-rbt:string nonce:integer repurpose-to:string))
         ;;
     (defun ATS|C_Issue:list (patron:string account:string ats:[string] index-decimals:[integer] reward-token:[string] rt-nfr:[bool] reward-bearing-token:[string] rbt-nfr:[bool]))
@@ -387,7 +387,7 @@
     ;;
     ;;
     ;;  [ATS_Client]
-    (defun ATS|C_UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+    (defun ATS|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
         @doc "Updates <pending-branding> for ATSPair <entity-id> costing 500 IGNIS"
         (with-capability (P|TS)
             (let
@@ -396,12 +396,12 @@
                     (ref-B|ATS:module{BrandingUsagePrimaryV2} ATS)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-B|ATS::C_UpdatePendingBranding entity-id logo description website social)
+                    (ref-B|ATS::C_UpdatePendingBranding patron executor entity-id logo description website social)
                 )
             )
         )
     )
-    (defun ATS|C_UpgradeBranding (patron:string entity-id:string months:integer)
+    (defun ATS|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer)
         @doc "Similar to its DPTF, DPOF Variants"
         (with-capability (P|TS)
             (let
@@ -409,13 +409,13 @@
                     (ref-B|ATS:module{BrandingUsagePrimaryV2} ATS)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
-                (ref-B|ATS::C_UpgradeBranding patron entity-id months)
+                (ref-B|ATS::C_UpgradeBranding patron executor entity-id months)
                 (ref-TS01-A::XB_DynamicFuelSTOA)
             )
         )
     )
     ;;
-    (defun ATS|HOT-RBT|C_UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+    (defun ATS|HOT-RBT|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
         @doc "Updates <pending-branding> for a HOT-RBT <entity-id> costing 150 IGNIS (Standard DPOF Costs)"
         (with-capability (P|TS)
             (let
@@ -424,12 +424,12 @@
                     (ref-ATS:module{AutostakeV3} ATS)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATS::HOT-RBT|C_UpdatePendingBranding entity-id logo description website social)
+                    (ref-ATS::HOT-RBT|C_UpdatePendingBranding patron executor entity-id logo description website social)
                 )
             )
         )
     )
-    (defun ATS|HOT-RBT|C_UpgradeBranding (patron:string entity-id:string months:integer)
+    (defun ATS|HOT-RBT|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer)
         @doc "Similar to its DPTF, DPOF Variants"
         (with-capability (P|TS)
             (let
@@ -437,7 +437,7 @@
                     (ref-ATS:module{AutostakeV3} ATS)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
-                (ref-ATS::HOT-RBT|C_UpgradeBranding patron entity-id months)
+                (ref-ATS::HOT-RBT|C_UpgradeBranding patron executor entity-id months)
                 (ref-TS01-A::XB_DynamicFuelSTOA)
             )
         )
@@ -842,7 +842,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-ATSU:module{AutostakeUsageV2} ATSU)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-ATSU::C_KickStart kickstarter ats rt-amounts rbt-request-amount)
+                        (ref-ATSU::C_KickStart patron kickstarter ats rt-amounts rbt-request-amount)
                     )
                 )
                 (ref-IGNIS::XE_CollectIgnis patron ico)
@@ -878,7 +878,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-ATSU:module{AutostakeUsageV2} ATSU)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-ATSU::C_Coil coiler ats rt amount)
+                        (ref-ATSU::C_Coil patron coiler ats rt amount)
                     )
                 )
                 (ref-IGNIS::XE_CollectIgnis patron ico)
@@ -896,7 +896,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-ATSU:module{AutostakeUsageV2} ATSU)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-ATSU::C_Curl curler ats1 ats2 rt amount)
+                        (ref-ATSU::C_Curl patron curler ats1 ats2 rt amount)
                     )
                 )
                 (ref-IGNIS::XE_CollectIgnis patron ico)
@@ -932,7 +932,7 @@
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators
                         [
-                            (ref-ATSU::C_Coil coiler-vester ats coil-token amount)
+                            (ref-ATSU::C_Coil patron coiler-vester ats coil-token amount)
                             (ref-VST::C_Vest coiler-vester target-account c-rbt c-rbt-amount offset duration milestones)
                         ]
                         []
@@ -969,7 +969,7 @@
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators
                         [
-                            (ref-ATSU::C_Curl curler-vester ats1 ats2 curl-token amount)
+                            (ref-ATSU::C_Curl patron curler-vester ats1 ats2 curl-token amount)
                             (ref-VST::C_Vest curler-vester target-account (at "rbt-id" coil2-data) c-rbt2-amount offset duration milestones)
                         ]
                         []
@@ -990,7 +990,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-VST:module{VestingV2} VST)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-VST::C_Constrict constricter ats rt amount dayz)
+                        (ref-VST::C_Constrict patron constricter ats rt amount dayz)
                     )
                 )
                 (ref-IGNIS::XE_CollectIgnis patron ico)
@@ -1010,7 +1010,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-VST:module{VestingV2} VST)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-VST::C_Brumate brumator ats1 ats2 rt amount dayz)
+                        (ref-VST::C_Brumate patron brumator ats1 ats2 rt amount dayz)
                     )
                 )
                 (ref-IGNIS::XE_CollectIgnis patron ico)
@@ -1049,7 +1049,7 @@
                     (ref-ATSU:module{AutostakeUsageV2} ATSU)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATSU::C_ColdRecovery recoverer ats ra)
+                    (ref-ATSU::C_ColdRecovery patron recoverer ats ra)
                 )
                 (format "Succesfully placed {} {} ATS-Pair RBT into Cold Recovery" [ra ats])
             )
@@ -1090,7 +1090,7 @@
                     (ref-ATSU:module{AutostakeUsageV2} ATSU)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATSU::C_HotRecovery recoverer ats ra)
+                    (ref-ATSU::C_HotRecovery patron recoverer ats ra)
                 )
                 (format "Succesfully converted {} RBT to Hot-RBT on ATS-Pair {}" [ra ats])
             )
@@ -1108,7 +1108,7 @@
                     (ats:string (ref-DPOF::UR_RewardBearingToken id))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATSU::C_Recover recoverer id nonce)
+                    (ref-ATSU::C_Recover patron recoverer id nonce)
                 )
                 (format "Succesfully Converted Hot-RBT {} Nonce {} back into the Native RBT of ATS-Pair {}" [id nonce ats])
             )
@@ -1125,7 +1125,7 @@
                     (ats:string (ref-DPOF::UR_RewardBearingToken id))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATSU::C_Redeem redeemer id nonce)
+                    (ref-ATSU::C_Redeem patron redeemer id nonce)
                 )
                 (format "Succesfully Redeemed Hot-RBT {} Nonce {} back in RTs for ATS-Pair {}" [id nonce ats])
             )
@@ -1141,7 +1141,7 @@
                     (ref-ATSU:module{AutostakeUsageV2} ATSU)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATSU::C_DirectRecovery recoverer ats ra)
+                    (ref-ATSU::C_DirectRecovery patron recoverer ats ra)
                 )
                 (format "Succesfully recovered directly {} RBT Token on ATS-Pair" [ra ats])
             )
@@ -1354,7 +1354,7 @@
                     (sfa:string (ref-I|OURONET::OI|UC_ShortAccount freeze-output))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_Freeze freezer freeze-output dptf amount)
+                    (ref-VST::C_Freeze patron freezer freeze-output dptf amount)
                 )
                 (format "Succesfully freeze {} DPTF {} to Account {}" [amount dptf sfa])
             )
@@ -1372,7 +1372,7 @@
                     (srt:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_RepurposeFrozen dptf-to-repurpose repurpose-from repurpose-to)
+                    (ref-VST::C_RepurposeFrozen patron dptf-to-repurpose repurpose-from repurpose-to)
                 )
                 (format "Succesfully repurposed Frozen DPTF {} from {} to {}" [dptf-to-repurpose srf srt])
             )
@@ -1387,7 +1387,7 @@
                     (ref-VST:module{VestingV2} VST)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_ToggleTransferRoleFrozenDPTF s-dptf target toggle)
+                    (ref-VST::C_ToggleTransferRoleFrozenDPTF patron s-dptf target toggle)
                 )
                 (format "Succefully toggled Transfer Role for the Frozen DPTF {}" [s-dptf])
             )
@@ -1405,7 +1405,7 @@
                     (sr:string (ref-I|OURONET::OI|UC_ShortAccount reserver))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_Reserve reserver dptf amount)
+                    (ref-VST::C_Reserve patron reserver dptf amount)
                 )
                 (format "Account {} succesfully reserved {} {} Tokens" [sr amount dptf])
             )
@@ -1422,7 +1422,7 @@
                     (su:string (ref-I|OURONET::OI|UC_ShortAccount unreserver))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_Unreserve unreserver r-dptf amount)
+                    (ref-VST::C_Unreserve patron unreserver r-dptf amount)
                 )
                 (format "Account {} succesfully unreserved {} {} Tokens" [su amount r-dptf])
             )
@@ -1440,7 +1440,7 @@
                     (srt:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_RepurposeReserved dptf-to-repurpose repurpose-from repurpose-to)
+                    (ref-VST::C_RepurposeReserved patron dptf-to-repurpose repurpose-from repurpose-to)
                 )
                 (format "Succesfully repurposed Reserved DPTF {} from {} to {}" [dptf-to-repurpose srf srt])
             )
@@ -1455,7 +1455,7 @@
                     (ref-VST:module{VestingV2} VST)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_ToggleTransferRoleReservedDPTF s-dptf target toggle)
+                    (ref-VST::C_ToggleTransferRoleReservedDPTF patron s-dptf target toggle)
                 )
                 (format "Succefully toggled Transfer Role for the Reserved DPTF {}" [s-dptf])
             )
@@ -1652,7 +1652,7 @@
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount awaker))
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-VST::C_Awake awaker dpof nonce)
+                        (ref-VST::C_Awake patron awaker dpof nonce)
                     )
                     (output:list (at "output" ico))
                     (v1:decimal (at 0 output))
@@ -1753,7 +1753,7 @@
                     (su:string (ref-I|OURONET::OI|UC_ShortAccount unwrapper))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-LIQUID::C_UnwrapStoa unwrapper amount)
+                    (ref-LIQUID::C_UnwrapStoa patron unwrapper amount)
                 )
                 (format "Succesfully Unwrapped {} STOA on Account {}" [amount su])
             )
@@ -1770,7 +1770,7 @@
                     (sw:string (ref-I|OURONET::OI|UC_ShortAccount wrapper))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-LIQUID::C_WrapStoa wrapper amount)
+                    (ref-LIQUID::C_WrapStoa patron wrapper amount)
                 )
                 (format "Succesfully Wrapped {} STOA on Account {}" [amount sw])
             )
@@ -1794,7 +1794,7 @@
                     (su:string (ref-I|OURONET::OI|UC_ShortAccount unwrapper))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-LIQUID::C_UnwrapUrStoa unwrapper amount)
+                    (ref-LIQUID::C_UnwrapUrStoa patron unwrapper amount)
                 )
                 (format "Succesfully Unwrapped {} URSTOA on Account {}" [amount su])
             )
@@ -1818,7 +1818,7 @@
                     (sw:string (ref-I|OURONET::OI|UC_ShortAccount wrapper))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-LIQUID::C_WrapUrStoa wrapper amount)
+                    (ref-LIQUID::C_WrapUrStoa patron wrapper amount)
                 )
                 (format "Succesfully Wrapped {} URSTOA on Account {}" [amount sw])
             )

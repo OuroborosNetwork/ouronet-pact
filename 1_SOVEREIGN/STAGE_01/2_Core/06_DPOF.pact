@@ -284,6 +284,7 @@
     (defun URC_HasSleeping:bool (id:string))
     (defun URC_HasHibernation:bool (id:string))
     (defun URCv_Parent:string (dpof:string))
+    (defun URC_BrandingKonto:string (entity-id:string))
     ;;
     ;;  [URD]
     ;;
@@ -298,6 +299,7 @@
     (defun UEV_id (id:string))
     (defun UEV_NoncesCirculating (id:string nonces:[integer]))
     (defun UEV_ParentOwnership (id:string))
+    (defun UEV_ExecutorIsParentKonto (executor:string entity-id:string))
     (defun UEV_NoncesToAccount (id:string account:string nonces:[integer]))
     (defun UEV_Amount (id:string amount:decimal))
         ;;
@@ -1797,6 +1799,27 @@
             )
         )
     )
+    (defun URC_BrandingKonto:string (entity-id:string)
+        @doc "The account with BRANDING AUTHORITY over <entity-id>: the PARENT token's owner, \
+            \ or the entity's own owner when it IS its own parent. \
+            \ \
+            \ Exists because that rule was being retyped at call sites, and got retyped WRONG: \
+            \ the patron/executor migration inserted `(UR_Konto (URCv_Parent x))` as the \
+            \ executor for the branding entrypoints, which is right only for a PURE entity. \
+            \ For a derived one -- `Z|VST-...` -- the parent is a DPTF id, so the read hit \
+            \ DPOF's own properties table and died with \
+            \ `No value found in table ... for key: VST-...`. \
+            \ UEV_ExecutorIsParentKonto already computed this correctly; this is that \
+            \ computation, named once and callable, so a call site never has to branch."
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (parent:string (URCv_Parent entity-id))
+            )
+            (if (= parent entity-id) (UR_Konto entity-id) (ref-DPTF::UR_Konto parent))
+        )
+    )
+
     ;;
     ;;  [URD]
     ;;
@@ -2059,6 +2082,13 @@
             )
             nonces
         )
+    )
+    (defun UEV_ExecutorIsParentKonto (executor:string entity-id:string)
+        @doc "BINDS <executor> to the branding authority for <entity-id>: the PARENT token's \
+            \ owner, or the entity's own owner when it IS its own parent. Ownership is proven \
+            \ by UEV_ParentOwnership inside the branding capability; this supplies the other \
+            \ half -- that the account the caller NAMED is that owner."
+        (enforce (= executor (URC_BrandingKonto entity-id)) "Executor is not the Parent Token Owner")
     )
     (defun UEV_ParentOwnership (id:string)
         @doc "Enforces: \
@@ -2935,8 +2965,13 @@
         )
     )
     (defun C_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator}
-        (entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+        (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+        @doc "Updates <entity-id>'s pending branding. <executor> is bound to the PARENT token's \
+            \ owner -- branding a derived entity is the parent owner's right. Ownership itself \
+            \ is proven by DPOF|C>UPDATE-BRD via UEV_ParentOwnership; the binding is what keeps \
+            \ the named executor from being a name nobody reads."
         (P|UEV_IMC)
+        (UEV_ExecutorIsParentKonto executor entity-id)
         (let
             (
                 (ref-BRD:module{BrandingV2} BRD)
@@ -2947,8 +2982,9 @@
             )
         )
     )
-    (defun C_UpgradeBranding (patron:string entity-id:string months:integer)
+    (defun C_UpgradeBranding (patron:string executor:string entity-id:string months:integer)
         (P|UEV_IMC)
+        (UEV_ExecutorIsParentKonto executor entity-id)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
@@ -2964,7 +3000,7 @@
             )
             ;;Perform the branding upgrade (side effect); bill the STOA via the URCi (== XE_UpgradeBranding's price)
             (with-capability (DPOF|C>UPGRADE-BRD entity-id)
-                (ref-BRD::XE_UpgradeBranding entity-id parent-owner months)
+                (ref-BRD::XE_UpgradeBranding entity-id executor months)
             )
             (ref-IGNIS::XB_CollectStoaWithTrigger patron (URCi_UpgradeBranding months) false)
         )

@@ -134,7 +134,7 @@
         (auryndex:string "Auryndex-98c486052a51")
     )
     (let ((f0:integer (at "flag" (ref-BRD::UR_Branding auryndex false))))
-        (ref-TS01-C2::ATS|C_UpgradeBranding patron auryndex 3)
+        (ref-TS01-C2::ATS|C_UpgradeBranding patron (ATS.UR_OwnerKonto auryndex) auryndex 3)
         (let ((b:object{BrandingV2.Schema} (ref-BRD::UR_Branding auryndex false)))
             (map print
                 [
@@ -247,7 +247,7 @@
         (
             (live0:object{BrandingV2.Schema} (ref-BRD::UR_Branding auryndex false))
         )
-        (ref-TS01-C2::ATS|C_UpdatePendingBranding patron auryndex
+        (ref-TS01-C2::ATS|C_UpdatePendingBranding patron (ATS.UR_OwnerKonto auryndex) auryndex
             "ipfs://pending-logo" "a pending description" "https://pending.example"
             [ { "social-media-name": "x", "social-media-link": "https://x.example/ouronet" } ])
         (let
@@ -3312,7 +3312,7 @@
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|UpgradeBranding patron aur 1))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (stoa-before:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
-            (m (ref-TS01-C2::ATS|C_UpgradeBranding patron aur 1))
+            (m (ref-TS01-C2::ATS|C_UpgradeBranding patron (ATS.UR_OwnerKonto aur) aur 1))
         )
         (map print
             [
@@ -3393,7 +3393,7 @@
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|HOT-RBT|UpgradeBranding aozt ddk 1))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply aozt false))
             (stoa-before:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa aozt)))
-            (m (ref-TS01-C2::ATS|HOT-RBT|C_UpgradeBranding aozt ddk 1))
+            (m (ref-TS01-C2::ATS|HOT-RBT|C_UpgradeBranding aozt (DPOF.URC_BrandingKonto ddk) ddk 1))
         )
         (map print
             [
@@ -3468,7 +3468,7 @@
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|HOT-RBT|UpdatePendingBranding aozt ddk))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply aozt false))
             (stoa-before:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa aozt)))
-            (m (ref-TS01-C2::ATS|HOT-RBT|C_UpdatePendingBranding aozt ddk "ipfs://probe-logo" "cost probe" "https://probe.example" []))
+            (m (ref-TS01-C2::ATS|HOT-RBT|C_UpdatePendingBranding aozt (DPOF.URC_BrandingKonto ddk) ddk "ipfs://probe-logo" "cost probe" "https://probe.example" []))
         )
         (map print
             [
@@ -5110,7 +5110,7 @@
                 (expect-failure "<<ATS-G30>> a non-owner cannot brand someone else's Hot-RBT (#5C)"
                     "Keyset failure (keys-all): [PK_AOZ...]"
                     (ref-TS01-C2::ATS|HOT-RBT|C_UpdatePendingBranding
-                        KST.EMMA hot-rbt "logo" "desc" "site" []))
+                        KST.EMMA (DPOF.URC_BrandingKonto hot-rbt) hot-rbt "logo" "desc" "site" []))
             ]
         )
     )
@@ -5129,7 +5129,7 @@
             (expect "<<ATS-G30>> ...while the pair owner can, so the refusal was the gate"
                 true (!= "" (format "{}"
                     [(ref-TS01-C2::ATS|HOT-RBT|C_UpdatePendingBranding
-                        KST.EMMA (ref-ATS::UR_HotRewardBearingToken "TestKickPair-98c486052a51")
+                        KST.EMMA (DPOF.UR_Konto (DPOF.URCv_Parent (ref-ATS::UR_HotRewardBearingToken "TestKickPair-98c486052a51"))) (ref-ATS::UR_HotRewardBearingToken "TestKickPair-98c486052a51")
                         "logo" "desc" "site" [])])))
         ]
     )

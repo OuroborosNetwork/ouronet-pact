@@ -108,7 +108,7 @@
     ;;
     ;;  [C]
     ;;
-    (defun C_ClearDispo:object{IgnisCollectorV3.OutputCumulator} (account:string))
+    (defun C_ClearDispo:object{IgnisCollectorV3.OutputCumulator} (patron:string account:string))
     (defun C_Transmute:object{IgnisCollectorV3.OutputCumulator} (id:string transmuter:string transmute-amount:decimal))
     (defun C_Transfer:object{IgnisCollectorV3.OutputCumulator} (id:string sender:string receiver:string transfer-amount:decimal method:bool))
     (defun C_MultiTransfer:object{IgnisCollectorV3.OutputCumulator} (id-lst:[string] sender:string receiver:string transfer-amount-lst:[decimal] method:bool))
@@ -1686,7 +1686,7 @@
     ;;
     ;;Clear Dispo
     (defun C_ClearDispo:object{IgnisCollectorV3.OutputCumulator}
-        (account:string)
+        (patron:string account:string)
         (P|UEV_IMC)
         (with-capability (DPTF|C>CLEAR-DISPO account)
             (let
@@ -1721,27 +1721,27 @@
                     ;;Ignis Cumulation
                     (ico1:object{IgnisCollectorV3.OutputCumulator}
                         (if (not frozen-state)
-                            (ref-DPTF::C_ToggleFreezeAccount ea-id account true)
+                            (ref-DPTF::C_ToggleFreezeAccount patron (ref-DPTF::UR_Konto ea-id) account ea-id true)
                             EOC
                         )
                     )
                     (ico2:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-DPTF::C_WipeSlim ea-id account total-ea)
+                        (ref-DPTF::C_WipeSlim patron (ref-DPTF::UR_Konto ea-id) account ea-id total-ea)
                     )
                     ;;#28M fix: only unfreeze if this function was the one that froze it (mirrors
                     ;;ico1's own condition) - otherwise a pre-existing, unrelated freeze on this
                     ;;account gets silently lifted by ClearDispo.
                     (ico3:object{IgnisCollectorV3.OutputCumulator}
                         (if (not frozen-state)
-                            (ref-DPTF::C_ToggleFreezeAccount ea-id account false)
+                            (ref-DPTF::C_ToggleFreezeAccount patron (ref-DPTF::UR_Konto ea-id) account ea-id false)
                             EOC
                         )
                     )
                     (ico4:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-DPTF::C_Burn a-id ats-sc burn-auryn-amount)
+                        (ref-DPTF::C_Burn patron ats-sc a-id burn-auryn-amount)
                     )
                     (ico5:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-DPTF::C_Burn ouro-id ats-sc ouro-amount)
+                        (ref-DPTF::C_Burn patron ats-sc ouro-id ouro-amount)
                     )
                 )
             ;;1] Freeze EA on account

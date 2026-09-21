@@ -83,7 +83,6 @@ RULES = {
     # is branded by the pure token's owner -- which is why they read through URCv_Parent.
     "DPTF|C_UpdatePendingBranding": (7, "(DPTF.UR_Konto (DPTF.URCv_Parent {1}))"),
     "DPTF|C_UpgradeBranding":      (4, "(DPTF.UR_Konto (DPTF.URCv_Parent {1}))"),
-    "DPTF|C_RotateOwnership":      (4, "(DPTF.UR_Konto {1})"),
     "DPTF|C_Control":              (9, "(DPTF.UR_Konto {1})"),
     "DPTF|C_TogglePause":          (4, "(DPTF.UR_Konto {1})"),
     "DPTF|C_ToggleReservation":    (4, "(DPTF.UR_Konto {1})"),
@@ -94,18 +93,25 @@ RULES = {
     "DPTF|C_DonateFees":           (3, "(DPTF.UR_Konto {1})"),
     "DPTF|C_ResetFeeTarget":       (3, "(DPTF.UR_Konto {1})"),
     "DPTF|C_ToggleFeeLock":        (4, "(DPTF.UR_Konto {1})"),
-    "DPTF|C_ToggleFreezeAccount":  (5, "(DPTF.UR_Konto {1})"),
-    "DPTF|C_ToggleBurnRole":       (5, "(DPTF.UR_Konto {1})"),
-    "DPTF|C_ToggleMintRole":       (5, "(DPTF.UR_Konto {1})"),
-    "DPTF|C_ToggleFeeExemptionRole":(5,"(DPTF.UR_Konto {1})"),
-    "DPTF|C_ToggleTransferRole":   (5, "(DPTF.UR_Konto {1})"),
-    "DPTF|C_Mint":                 (6, "(DPTF.UR_Konto {1})"),
-    "DPTF|C_WipeSlim":             (5, "(DPTF.UR_Konto {1})"),
-    "DPTF|C_Wipe":                 (4, "(DPTF.UR_Konto {1})"),
-    # NOT here, deliberately -- DPTF|C_Burn and DPTF|C_DeployAccount keep their arity and MOVE
-    # an argument instead (their `account` WAS the executor), and the three DPTF|A_ wrappers have
-    # no patron in slot 0 at all. This tool only inserts after slot 0; a reorder or a
-    # patronless signature is a different edit and gets its own pass.
+    # ---- the BrandingUsagePrimaryV2 cascade (sweep 4/46). DPTF's branding pair gained an
+    # executor, and the interface is shared, so DPOF / ATS / SWP moved with it. The authority
+    # differs per module and so does the reader: DPOF brands through the PARENT token's owner
+    # (an f|/r| variant is the pure parent's right), ATS and SWP through the entity owner.
+    "DPOF|C_UpdatePendingBranding": (7, "(DPOF.URC_BrandingKonto {1})"),
+    "DPOF|C_UpgradeBranding":       (4, "(DPOF.URC_BrandingKonto {1})"),
+    "ATS|C_UpdatePendingBranding":  (7, "(ATS.UR_OwnerKonto {1})"),
+    "ATS|C_UpgradeBranding":        (4, "(ATS.UR_OwnerKonto {1})"),
+    "SWP|C_UpdatePendingBranding":  (7, "(SWP.UR_OwnerKonto {1})"),
+    "SWP|C_UpgradeBranding":        (4, "(SWP.UR_OwnerKonto {1})"),
+    # the HOT-RBT pair delegates into DPOF's branding, so the authority is DPOF's parent owner
+    "ATS|HOT-RBT|C_UpdatePendingBranding": (7, "(DPOF.URC_BrandingKonto {1})"),
+    "ATS|HOT-RBT|C_UpgradeBranding":       (4, "(DPOF.URC_BrandingKonto {1})"),
+    # THE EXECUTEE GROUP IS NOT HERE, and cannot be. This tool only INSERTS after slot 0.
+    # C_Wipe / C_WipeSlim / C_RotateOwnership / the four role toggles / C_ToggleFreezeAccount
+    # all gained a third-position `executee`, which MOVES the entity id to slot 4 -- a reorder.
+    # C_Mint and C_Burn are renames: their `account` WAS the executor, so it moves to slot 2
+    # rather than a new argument being added. And the three DPTF|A_ wrappers have no patron in
+    # slot 0 at all. Each of those is a different edit; they get their own pass.
     # RotateOwnership: the executor is the CURRENT owner. `new-owner-konto` is the RECIPIENT --
     # naming it `executor` was the error a blind Band 2 rename would have made here.
     "AQP-FVT|C_RotateOwnership":        (4, "(AQP-FVT.UR_FVT|OwnerKonto {1})"),
@@ -230,6 +236,16 @@ def scan(path, apply_):
                 continue
             op = s.rfind("(", 0, j)
             if op < 0:
+                i = j + 1
+                continue
+            # A DEFINITION IS NOT A CALL SITE. `(defun DPTF|C_Mint (patron:string executor:string
+            # id:string ...) @doc "..." (with-capability ...))` splits into a head plus N forms,
+            # and N can equal the arity a rule expects -- so a rule could rewrite the FUNCTION
+            # DEFINITION, reordering its parameter list and body. Found 2026-09-21 while dry-
+            # running the DPTF reorder pass, which matched all four of its targets' `defun`s and
+            # not one real call. The head text is the discriminator: a call is `(fn ...)` or
+            # `(ref-M::fn ...)`, a definition is `(defun fn ...)`.
+            if s[op + 1:j].strip() in ("defun", "defcap", "defpact", "defschema", "defconst"):
                 i = j + 1
                 continue
             args, end = split_form(s, op)

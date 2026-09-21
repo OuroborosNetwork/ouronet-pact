@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 2 of 22
 ;; This is STEP 2 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-1 must have run first, including the init steps between deploys.
-;; 3 source file(s), 267,241 gas measured in the REPL gas model, 262,822 bytes
+;; 3 source file(s), 267,241 gas measured in the REPL gas model, 266,523 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/02_IGNIS.pact
@@ -2828,8 +2828,8 @@
     ;;{5.6}  Aux/X
     ;;{5.7}  User [A/C]
     ;;
-    (defun C_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator} (entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
-    (defun C_UpgradeBranding (patron:string entity-id:string months:integer))
+    (defun C_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
+    (defun C_UpgradeBranding (patron:string executor:string entity-id:string months:integer))
 
 )
 
@@ -2989,6 +2989,8 @@
     ;;  [UEV]
     ;;
     (defun UEV_ParentOwnership (dptf:string))
+    (defun UEV_ExecutorIsKonto (executor:string id:string))
+    (defun UEV_ExecutorIsParentKonto (executor:string entity-id:string))
     (defun UEV_id (id:string))
     (defun UEV_CheckID:bool (id:string))
     (defun UEV_Amount (id:string amount:decimal))
@@ -3062,9 +3064,9 @@
     ;;
     ;;  [A]
     ;;
-    (defun A_UpdateTreasury (type:integer tdp:decimal tds:decimal))
-    (defun A_WipeTreasuryDebt ())
-    (defun A_WipeTreasuryDebtPartial (debt-to-be-wiped:decimal))
+    (defun A_UpdateTreasury (patron:string executor:string type:integer tdp:decimal tds:decimal))
+    (defun A_WipeTreasuryDebt (patron:string executor:string))
+    (defun A_WipeTreasuryDebtPartial (patron:string executor:string debt-to-be-wiped:decimal))
     ;;
     ;;  [C]
     ;;
@@ -3076,27 +3078,27 @@
             can-freeze:[bool] can-wipe:[bool] can-pause:[bool]
         )
     )
-    (defun C_RotateOwnership:object{IgnisCollectorV3.OutputCumulator} (id:string new-owner:string))
-    (defun C_Control:object{IgnisCollectorV3.OutputCumulator} (id:string cu:bool cco:bool casr:bool cf:bool cw:bool cp:bool))
-    (defun C_TogglePause:object{IgnisCollectorV3.OutputCumulator} (id:string toggle:bool))
-    (defun C_ToggleReservation:object{IgnisCollectorV3.OutputCumulator} (id:string toggle:bool))
+    (defun C_RotateOwnership:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string))
+    (defun C_Control:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string cu:bool cco:bool casr:bool cf:bool cw:bool cp:bool))
+    (defun C_TogglePause:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string toggle:bool))
+    (defun C_ToggleReservation:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string toggle:bool))
         ;;
-    (defun C_ToggleFee:object{IgnisCollectorV3.OutputCumulator} (id:string toggle:bool))
-    (defun C_SetMinMove:object{IgnisCollectorV3.OutputCumulator} (id:string min-move-value:decimal))
-    (defun C_SetFee:object{IgnisCollectorV3.OutputCumulator} (id:string fee:decimal))
-    (defun C_SetFeeTarget:object{IgnisCollectorV3.OutputCumulator} (id:string target:string))
-    (defun C_ToggleFeeLock:object{IgnisCollectorV3.OutputCumulator} (patron:string id:string toggle:bool))
+    (defun C_ToggleFee:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string toggle:bool))
+    (defun C_SetMinMove:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string min-move-value:decimal))
+    (defun C_SetFee:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string fee:decimal))
+    (defun C_SetFeeTarget:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string target:string))
+    (defun C_ToggleFeeLock:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string toggle:bool))
         ;;
-    (defun C_ToggleFreezeAccount:object{IgnisCollectorV3.OutputCumulator} (id:string account:string toggle:bool))
-    (defun C_ToggleBurnRole:object{IgnisCollectorV3.OutputCumulator} (id:string account:string toggle:bool))
-    (defun C_ToggleMintRole:object{IgnisCollectorV3.OutputCumulator} (id:string account:string toggle:bool))
-    (defun C_ToggleFeeExemptionRole:object{IgnisCollectorV3.OutputCumulator} (id:string account:string toggle:bool))
-    (defun C_ToggleTransferRole:object{IgnisCollectorV3.OutputCumulator} (id:string account:string toggle:bool))
+    (defun C_ToggleFreezeAccount:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string toggle:bool))
+    (defun C_ToggleBurnRole:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string toggle:bool))
+    (defun C_ToggleMintRole:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string toggle:bool))
+    (defun C_ToggleFeeExemptionRole:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string toggle:bool))
+    (defun C_ToggleTransferRole:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string toggle:bool))
         ;;
-    (defun C_Burn:object{IgnisCollectorV3.OutputCumulator} (id:string account:string amount:decimal))
-    (defun C_Mint:object{IgnisCollectorV3.OutputCumulator} (id:string account:string amount:decimal origin:bool))
-    (defun C_WipeSlim:object{IgnisCollectorV3.OutputCumulator} (id:string account-to-be-wiped:string amount-to-be-wiped:decimal))
-    (defun C_Wipe:object{IgnisCollectorV3.OutputCumulator} (id:string account-to-be-wiped:string))
+    (defun C_Burn:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string amount:decimal))
+    (defun C_Mint:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string amount:decimal origin:bool))
+    (defun C_WipeSlim:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string amount-to-be-wiped:decimal))
+    (defun C_Wipe:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string))
 
 )
 ;;
@@ -4707,6 +4709,28 @@
             \ While ensuring a Frozen LP cant be used for this operation."
         (CAP_Owner (URCv_Parent dptf))
     )
+    (defun UEV_ExecutorIsKonto (executor:string id:string)
+        @doc "BINDS the named <executor> to DPTF <id>'s owner. \
+            \ \
+            \ Ownership of <executor> is proven INDIRECTLY: every entrypoint that calls this \
+            \ reaches <CAP_Owner id>, which enforces ownership of <(UR_Konto id)>. This supplies \
+            \ the other half -- that the account the caller NAMED is that same owner. Without \
+            \ it the executor parameter would be DECORATIVE, a name the function never reads, \
+            \ which is worse than absent because it reads as verified. \
+            \ (patron/executor canon 2.2: an indirect route is permitted and MUST be named.) \
+            \ \
+            \ NOT used by C_Mint / C_Burn. Their capabilities enforce \
+            \ CAP_EnforceAccountOwnership on the executor DIRECTLY and unconditionally, so the \
+            \ executor is already proven there and a binding would re-check a settled fact."
+        (enforce (= executor (UR_Konto id)) "Executor is not the Token Owner")
+    )
+    (defun UEV_ExecutorIsParentKonto (executor:string entity-id:string)
+        @doc "The <UEV_ExecutorIsKonto> binding for the BRANDING entrypoints, whose authority is \
+            \ the PARENT token's owner rather than the entity's own -- branding an f|/r| variant \
+            \ is the pure parent's right. Mirrors <UEV_ParentOwnership>, which is the capability \
+            \ half of the same pair."
+        (enforce (= executor (UR_Konto (URCv_Parent entity-id))) "Executor is not the Parent Token Owner")
+    )
     (defun UEV_id (id:string)
         (with-default-read DPTF|PropertiesTable id
             { "supply" : -1.0 }
@@ -5659,7 +5683,7 @@
     )
     ;;{5.7}  User [A/C]
     ;;
-    (defun A_UpdateTreasury (type:integer tdp:decimal tds:decimal)
+    (defun A_UpdateTreasury (patron:string executor:string type:integer tdp:decimal tds:decimal)
         (P|UEV_IMC)
         (let
             (
@@ -5670,7 +5694,7 @@
             )
         )
     )
-    (defun A_WipeTreasuryDebt ()
+    (defun A_WipeTreasuryDebt (patron:string executor:string)
         (P|UEV_IMC)
         (let
             (
@@ -5680,12 +5704,12 @@
                 (treasury-supply:decimal (UR_AccountSupply ouro treasury))
             )
             (with-capability (GOV|WIPE_ALL-TREASURY-DEBT)
-                (C_Mint ouro treasury (abs treasury-supply) false)
+                (C_Mint patron treasury ouro (abs treasury-supply) false)
                 (ref-DALOS::XE_UpdateTreasury 0 0.0 0.0)
             )
         )
     )
-    (defun A_WipeTreasuryDebtPartial (debt-to-be-wiped:decimal)
+    (defun A_WipeTreasuryDebtPartial (patron:string executor:string debt-to-be-wiped:decimal)
         (P|UEV_IMC)
         (let
             (
@@ -5695,7 +5719,7 @@
                 (treasury-supply:decimal (UR_AccountSupply ouro treasury))
             )
             (with-capability (GOV|WIPE_PARTIAL-TREASURY-DEBT debt-to-be-wiped)
-                (C_Mint ouro treasury debt-to-be-wiped false)
+                (C_Mint patron treasury ouro debt-to-be-wiped false)
             )
         )
     )
@@ -5746,8 +5770,9 @@
         )
     )
     (defun C_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator}
-        (entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+        (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
         (P|UEV_IMC)
+        (UEV_ExecutorIsParentKonto executor entity-id)
         (let
             (
                 (ref-BRD:module{BrandingV2} BRD)
@@ -5758,8 +5783,9 @@
             )
         )
     )
-    (defun C_UpgradeBranding (patron:string entity-id:string months:integer)
+    (defun C_UpgradeBranding (patron:string executor:string entity-id:string months:integer)
         (P|UEV_IMC)
+        (UEV_ExecutorIsParentKonto executor entity-id)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
@@ -5795,32 +5821,36 @@
         )
     )
     (defun C_RotateOwnership:object{IgnisCollectorV3.OutputCumulator}
-        (id:string new-owner:string)
+        (patron:string executor:string executee:string id:string)
         (P|UEV_IMC)
-        (with-capability (DPTF|S>ROTATE-OWNERSHIP id new-owner)
-            (XI_ChangeOwnership id new-owner)
+        (UEV_ExecutorIsKonto executor id)
+        (with-capability (DPTF|S>ROTATE-OWNERSHIP id executee)
+            (XI_ChangeOwnership id executee)
             (URCi_RotateOwnership id)
         )
     )
     (defun C_Control:object{IgnisCollectorV3.OutputCumulator}
-        (id:string cu:bool cco:bool casr:bool cf:bool cw:bool cp:bool)
+        (patron:string executor:string id:string cu:bool cco:bool casr:bool cf:bool cw:bool cp:bool)
         (P|UEV_IMC)
+        (UEV_ExecutorIsKonto executor id)
         (with-capability (DPTF|S>CONTROL id)
             (XI_Control id cu cco casr cf cw cp)
             (URCi_Control id)
         )
     )
     (defun C_TogglePause:object{IgnisCollectorV3.OutputCumulator}
-        (id:string toggle:bool)
+        (patron:string executor:string id:string toggle:bool)
         (P|UEV_IMC)
+        (UEV_ExecutorIsKonto executor id)
         (with-capability (DPTF|S>TOGGLE_PAUSE id toggle)
             (XI_TogglePause id toggle)
             (URCi_TogglePause id)
         )
     )
     (defun C_ToggleReservation:object{IgnisCollectorV3.OutputCumulator}
-        (id:string toggle:bool)
+        (patron:string executor:string id:string toggle:bool)
         (P|UEV_IMC)
+        (UEV_ExecutorIsKonto executor id)
         (with-capability (DPTF|S>TOGGLE_RESERVATION id toggle)
             (XI_ToggleReservation id toggle)
             (URCi_ToggleReservation id)
@@ -5828,40 +5858,45 @@
     )
     ;;
     (defun C_ToggleFee:object{IgnisCollectorV3.OutputCumulator}
-        (id:string toggle:bool)
+        (patron:string executor:string id:string toggle:bool)
         (P|UEV_IMC)
+        (UEV_ExecutorIsKonto executor id)
         (with-capability (DPTF|S>TOGGLE_FEE id toggle)
             (XI_ToggleFee id toggle)
             (URCi_ToggleFee id)
         )
     )
     (defun C_SetMinMove:object{IgnisCollectorV3.OutputCumulator}
-        (id:string min-move-value:decimal)
+        (patron:string executor:string id:string min-move-value:decimal)
         (P|UEV_IMC)
+        (UEV_ExecutorIsKonto executor id)
         (with-capability (DPTF|S>SET_MIN-MOVE id min-move-value)
             (XI_SetMinMove id min-move-value)
             (URCi_SetMinMove id)
         )
     )
     (defun C_SetFee:object{IgnisCollectorV3.OutputCumulator}
-        (id:string fee:decimal)
+        (patron:string executor:string id:string fee:decimal)
         (P|UEV_IMC)
+        (UEV_ExecutorIsKonto executor id)
         (with-capability (DPTF|S>SET_FEE id fee)
             (XI_SetFee id fee)
             (URCi_SetFee id)
         )
     )
     (defun C_SetFeeTarget:object{IgnisCollectorV3.OutputCumulator}
-        (id:string target:string)
+        (patron:string executor:string id:string target:string)
         (P|UEV_IMC)
+        (UEV_ExecutorIsKonto executor id)
         (with-capability (DPTF|S>SET_FEE-TARGET id target)
             (XI_SetFeeTarget id target)
             (URCi_SetFeeTarget id)
         )
     )
     (defun C_ToggleFeeLock:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string id:string toggle:bool)
+        (patron:string executor:string id:string toggle:bool)
         (P|UEV_IMC)
+        (UEV_ExecutorIsKonto executor id)
         (with-capability (DPTF|C>TOGGLE_FEE-LOCK id toggle)
             (let
                 (
@@ -5884,66 +5919,69 @@
     )
     ;;
     (defun C_ToggleFreezeAccount:object{IgnisCollectorV3.OutputCumulator}
-        (id:string account:string toggle:bool)
+        (patron:string executor:string executee:string id:string toggle:bool)
         @doc "Toggle Verum 1"
         (P|UEV_IMC)
-        (with-capability (DPTF|C>FREEZE id account toggle)
+        (UEV_ExecutorIsKonto executor id)
+        (with-capability (DPTF|C>FREEZE id executee toggle)
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
                     (verum-one:[string] (UR_Verum1 id))
-                    (updated-verum-one:[string] (ref-U|DALOS::UCv_NewRoleList verum-one account toggle))
+                    (updated-verum-one:[string] (ref-U|DALOS::UCv_NewRoleList verum-one executee toggle))
                 )
                 ;;Deploy WNE
-                (XB_DeployAccountWNE account id)
+                (XB_DeployAccountWNE executee id)
                 ;;Update Verum Roles
                 (XI_UpdateVerum1 id updated-verum-one)
                 ;;Update Account Roles
-                (XI_ToggleFreezeAccount id account toggle)
+                (XI_ToggleFreezeAccount id executee toggle)
                 ;;Output
                 (URCi_ToggleFreezeAccount id)
             )
         )
     )
     (defun C_ToggleBurnRole:object{IgnisCollectorV3.OutputCumulator}
-        (id:string account:string toggle:bool)
+        (patron:string executor:string executee:string id:string toggle:bool)
         @doc "Toggle Verum 2"
         (P|UEV_IMC)
-        (with-capability (DPTF|C>TOGGLE-BURN-ROLE id account toggle)
+        (UEV_ExecutorIsKonto executor id)
+        (with-capability (DPTF|C>TOGGLE-BURN-ROLE id executee toggle)
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
                     (verum-two:[string] (UR_Verum2 id))
-                    (updated-verum-two:[string] (ref-U|DALOS::UCv_NewRoleList verum-two account toggle))
+                    (updated-verum-two:[string] (ref-U|DALOS::UCv_NewRoleList verum-two executee toggle))
                 )
                 ;;Deploy WNE
-                (XB_DeployAccountWNE account id)
+                (XB_DeployAccountWNE executee id)
                 ;;Update Verum Roles
                 (XI_UpdateVerum2 id updated-verum-two)
                 ;;Update Account Roles
-                (XI_ToggleBurnRole id account toggle)
+                (XI_ToggleBurnRole id executee toggle)
                 ;;Output
                 (URCi_ToggleBurnRole id)
             )
         )
     )
     (defun C_ToggleMintRole:object{IgnisCollectorV3.OutputCumulator}
-        (id:string account:string toggle:bool)
+        (patron:string executor:string executee:string id:string toggle:bool)
         @doc "Toggle Verum 3"
         (P|UEV_IMC)
-        (with-capability (DPTF|C>TOGGLE-MINT-ROLE id account toggle)
+        (UEV_ExecutorIsKonto executor id)
+        (with-capability (DPTF|C>TOGGLE-MINT-ROLE id executee toggle)
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
                     (verum-three:[string] (UR_Verum3 id))
-                    (updated-verum-three:[string] (ref-U|DALOS::UCv_NewRoleList verum-three account toggle))
+                    (updated-verum-three:[string] (ref-U|DALOS::UCv_NewRoleList verum-three executee toggle))
                 )
                 ;;Deploy WNE
-                (XB_DeployAccountWNE account id)
+                (XB_DeployAccountWNE executee id)
                 ;;Update Verum Roles
                 (XI_UpdateVerum3 id updated-verum-three)
                 ;;Update Account Roles
-                (XI_ToggleMintRole id account toggle)
+                (XI_ToggleMintRole id executee toggle)
                 ;;Output
                 (URCi_ToggleMintRole id)
             )
@@ -5951,22 +5989,23 @@
     )
     ;;Toggle Verum 4
     (defun C_ToggleFeeExemptionRole:object{IgnisCollectorV3.OutputCumulator}
-        (id:string account:string toggle:bool)
+        (patron:string executor:string executee:string id:string toggle:bool)
         @doc "Toggle Verum 4"
         (P|UEV_IMC)
-        (with-capability (DPTF|C>TOGGLE-FEE-EXEMPTION-ROLE id account toggle)
+        (UEV_ExecutorIsKonto executor id)
+        (with-capability (DPTF|C>TOGGLE-FEE-EXEMPTION-ROLE id executee toggle)
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
                     (verum-four:[string] (UR_Verum4 id))
-                    (updated-verum-four:[string] (ref-U|DALOS::UCv_NewRoleList verum-four account toggle))
+                    (updated-verum-four:[string] (ref-U|DALOS::UCv_NewRoleList verum-four executee toggle))
                 )
                 ;;Deploy WNE
-                (XB_DeployAccountWNE account id)
+                (XB_DeployAccountWNE executee id)
                 ;;Update Verum Roles
                 (XI_UpdateVerum4 id updated-verum-four)
                 ;;Update Account Roles
-                (XI_ToggleFeeExemptionRole id account toggle)
+                (XI_ToggleFeeExemptionRole id executee toggle)
                 ;;Output
                 (URCi_ToggleFeeExemptionRole id)
             )
@@ -5974,22 +6013,23 @@
     )
     ;;Toggle Verum 5
     (defun C_ToggleTransferRole:object{IgnisCollectorV3.OutputCumulator}
-        (id:string account:string toggle:bool)
+        (patron:string executor:string executee:string id:string toggle:bool)
         @doc "Toggle Verum 5"
         (P|UEV_IMC)
-        (with-capability (DPTF|C>TOGGLE_TRANSFER-ROLE id account toggle)
+        (UEV_ExecutorIsKonto executor id)
+        (with-capability (DPTF|C>TOGGLE_TRANSFER-ROLE id executee toggle)
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
                     (verum-five:[string] (UR_Verum5 id))
-                    (updated-verum-five:[string] (ref-U|DALOS::UCv_NewRoleList verum-five account toggle))
+                    (updated-verum-five:[string] (ref-U|DALOS::UCv_NewRoleList verum-five executee toggle))
                 )
                 ;;Deploy WNE
-                (XB_DeployAccountWNE account id)
+                (XB_DeployAccountWNE executee id)
                 ;;Update Verum Roles
                 (XI_UpdateVerum5 id updated-verum-five)
                 ;;Update Account Roles
-                (XI_ToggleTransferRole id account toggle)
+                (XI_ToggleTransferRole id executee toggle)
                 ;;Output
                 (URCi_ToggleTransferRole id)
             )
@@ -5997,24 +6037,24 @@
     )
     ;;
     (defun C_Burn:object{IgnisCollectorV3.OutputCumulator}
-        (id:string account:string amount:decimal)
+        (patron:string executor:string id:string amount:decimal)
         (P|UEV_IMC)
         (let
             (
                 (ref-U|DPTF:module{UtilityDptfV2} U|DPTF)
             )
-            (with-capability (DPTF|C>BURN id account amount)
-                (XB_DebitTrueFungible id account amount (ref-U|DPTF::UDC_EmptyDispo) false)
+            (with-capability (DPTF|C>BURN id executor amount)
+                (XB_DebitTrueFungible id executor amount (ref-U|DPTF::UDC_EmptyDispo) false)
                 (XBv_UpdateSupply id amount false)
-                (URCi_Burn id account)
+                (URCi_Burn id executor)
             )
         )
     )
     (defun C_Mint:object{IgnisCollectorV3.OutputCumulator}
-        (id:string account:string amount:decimal origin:bool)
+        (patron:string executor:string id:string amount:decimal origin:bool)
         (P|UEV_IMC)
-        (with-capability (DPTF|C>MINT id account amount origin)
-            (XB_CreditTrueFungible id account amount)
+        (with-capability (DPTF|C>MINT id executor amount origin)
+            (XB_CreditTrueFungible id executor amount)
             (XBv_UpdateSupply id amount true)
             (if origin
                 (update DPTF|PropertiesTable id
@@ -6023,34 +6063,36 @@
                 )
                 true
             )
-            (URCi_Mint id account origin)
+            (URCi_Mint id executor origin)
         )
     )
     ;;
     (defun C_WipeSlim:object{IgnisCollectorV3.OutputCumulator}
-        (id:string account-to-be-wiped:string amount-to-be-wiped:decimal)
+        (patron:string executor:string executee:string id:string amount-to-be-wiped:decimal)
         (P|UEV_IMC)
+        (UEV_ExecutorIsKonto executor id)
         (let
             (
                 (ref-U|DPTF:module{UtilityDptfV2} U|DPTF)
             )
-            (with-capability (DPTF|C>WIPE-SLIM id account-to-be-wiped amount-to-be-wiped)
-                (XB_DebitTrueFungible id account-to-be-wiped amount-to-be-wiped (ref-U|DPTF::UDC_EmptyDispo) true)
+            (with-capability (DPTF|C>WIPE-SLIM id executee amount-to-be-wiped)
+                (XB_DebitTrueFungible id executee amount-to-be-wiped (ref-U|DPTF::UDC_EmptyDispo) true)
                 (XBv_UpdateSupply id amount-to-be-wiped false)
                 (URCi_WipeSlim id)
             )
         )
     )
     (defun C_Wipe:object{IgnisCollectorV3.OutputCumulator}
-        (id:string account-to-be-wiped:string)
+        (patron:string executor:string executee:string id:string)
         (P|UEV_IMC)
+        (UEV_ExecutorIsKonto executor id)
         (let
             (
                 (ref-U|DPTF:module{UtilityDptfV2} U|DPTF)
-                (amount-to-be-wiped:decimal (UR_AccountSupply id account-to-be-wiped))
+                (amount-to-be-wiped:decimal (UR_AccountSupply id executee))
             )
-            (with-capability (DPTF|C>WIPE id account-to-be-wiped)
-                (XB_DebitTrueFungible id account-to-be-wiped amount-to-be-wiped (ref-U|DPTF::UDC_EmptyDispo) true)
+            (with-capability (DPTF|C>WIPE id executee)
+                (XB_DebitTrueFungible id executee amount-to-be-wiped (ref-U|DPTF::UDC_EmptyDispo) true)
                 (XBv_UpdateSupply id amount-to-be-wiped false)
                 (URCi_Wipe id)
             )

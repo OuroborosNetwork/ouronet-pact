@@ -22,6 +22,15 @@ USAGE
     python3 REPL/tools/_callarity.py --fn C_Mint     check one function everywhere
 
 WHAT IT CANNOT SEE, stated so the green is honest:
+  * UNQUALIFIED intra-module calls -- `(C_Mint ouro treasury amt false)` inside DPTF itself.
+    The pattern below matches `ref-X::fn` and `MOD.fn`; a bare `(fn ...)` is indistinguishable
+    from a local binding without resolving scope. This is not hypothetical: 05_DPTF's two
+    treasury wipes self-call C_Mint, they kept the old arity through the whole sweep, and this
+    tool reported CLEAN while the suite failed with "argument is decimal, but expected type
+    string". The compiler does not catch it either (modref arity is a RUNTIME check), so the
+    only detector is running the suite. Sovereign modules are supposed to have ZERO self-C-calls
+    (CLAUDE.md), which is what would make this blind spot harmless -- these two are a known
+    deviation, recorded in the sweep handoff.
   * partial application -- `(map (ref-X::fn) xs)` is a legitimate 0-arg call site, reported
     separately rather than as a mismatch;
   * a function name that exists on MORE THAN ONE module (`XE_Issue` is on BRD and SWP). Those
@@ -72,7 +81,12 @@ def signatures():
     return sigs, owners
 
 
-CALL_PAT = re.compile(r'\(\s*(?:ref-[A-Za-z0-9|_\-]+::|[A-Za-z0-9|_\-]+\.)([A-Za-z0-9|_\-]+)[\s\)]')
+# `ouronet-ns.DPTF.C_Mint` is a NAMESPACE-qualified call and the old pattern missed it: the
+# `MOD.` alternative consumed `ouronet-ns.` and captured `DPTF` as the function name. The
+# hostile-citizen red team calls that way -- from a module in the open `user` namespace, which
+# is the whole point of the test -- so its stale C_Mint arity went unreported while the suite
+# failed with a typecheck error instead of the guard refusal it asserts.
+CALL_PAT = re.compile(r'\(\s*(?:ref-[A-Za-z0-9|_\-]+::|(?:[A-Za-z0-9|_\-]+\.)+)([A-Za-z0-9|_\-]+)[\s\)]')
 
 
 def scan(paths, sigs, owners, want_fns):
@@ -88,24 +102,51 @@ def scan(paths, sigs, owners, want_fns):
             mods = owners.get(fn, set())
             if not mods:
                 continue
+            # RESOLVE THROUGH THE ALIAS FIRST. `(ref-ATSU::C_Fuel ...)` names its module right
+            # there in the prefix, and the binding convention in this tree is
+            # `(ref-<MODULE>:module{Iface} <MODULE>)` -- the alias IS the module name. Ignoring
+            # it sent every multi-module name to UNCHECKED, and `C_Fuel` lives on three modules
+            # with three different arities (ATSU 4, OUROBOROS 1, SWPLC 5). A bare-name threading
+            # pass gave all three's call sites a patron; only OUROBOROS's could take one, and
+            # this tool reported clean while four suites broke on
+            # "Attempted to apply a closure to too many arguments".
+            alias = None
+            am = re.match(r'\(\s*ref-([A-Za-z0-9|_\-]+)::', src[m.start():m.start() + 60])
+            if am and am.group(1) in sigs and fn in sigs[am.group(1)]:
+                alias = am.group(1)
             # A name on several modules is still checkable when EVERY definition agrees on
             # arity -- which is the case for the `P|` policy boilerplate each of the 59 modules
             # carries. That collapsed 607 "unchecked" sites to the handful that genuinely differ.
             # Only a name whose arity DIFFERS between modules needs the modref binding resolved,
             # and those are left unchecked rather than guessed: guessing which module owned
             # `XE_Issue` (BRD or SWP) is what put a stray argument on the wrong one.
-            arities = {sigs[m][fn] for m in mods}
-            if len(arities) != 1:
-                unchecked[fn] += 1
-                continue
-            want = next(iter(arities))
+            if alias:
+                want = sigs[alias][fn]
+            else:
+                arities = {sigs[mm][fn] for mm in mods}
+                if len(arities) != 1:
+                    unchecked[fn] += 1
+                    continue
+                want = next(iter(arities))
             op = m.start()
             args, _ = split_form(src, op)
             got = len(args) - 1
             hits += 1
             if got == 0 and want > 0:
-                partial += 1          # (map (ref-X::fn) xs) -- legitimate partial application
-                continue
+                # PARTIAL APPLICATION ONLY INSIDE A HIGHER-ORDER FORM. `(map (ref-X::fn) xs)` is
+                # legitimate; a BARE `(ref-X::fn)` in statement position is a short call, and
+                # Pact answers it by returning a CLOSURE rather than raising -- which an
+                # `expect-failure` then swallows. Treating every 0-arg call as partial
+                # application hid four real ones in DPTF-G6 and RT-C: the suite reported
+                # "Expected Pact Value, got closure or table reference" while this tool said
+                # clean. The enclosing form's head is the discriminator.
+                outer = src.rfind("(", 0, op)
+                head = ""
+                if outer >= 0:
+                    head = src[outer + 1:op].strip().split()[0] if src[outer + 1:op].strip() else ""
+                if head in ("map", "fold", "filter", "zip", "and?", "or?", "not?", "select"):
+                    partial += 1
+                    continue
             if got != want:
                 line = src[:op].count("\n") + 1
                 mismatches.append((os.path.relpath(p, ROOT), line, fn, want, got,
@@ -129,8 +170,14 @@ def main():
             print(f"no module {only_mod!r}; known: {', '.join(sorted(sigs)[:12])} ...")
             return 1
     else:
-        want_fns = {f for m in sigs for f in sigs[m]
-                    if re.match(r'(A|AA|C|CC)_|\|(A|AA|C|CC)_', f) or "|" in f}
+        # EVERY function, not just the A_/C_ entrypoint surface. The original filter kept
+        # `A_`/`C_`/`CC_` and anything carrying a `|`, which silently excluded the whole `X_`
+        # band -- and a signature change propagates through `X_` exactly as readily. RPS's
+        # XE_WithdrawRoyalty / XE_BurnRoyalty / XE_FuelRoyalty gained a patron, their three
+        # callers in 08_DSA did not, and this tool reported CLEAN on the default scope while
+        # `--fn XE_WithdrawRoyalty` found the mismatch immediately. Arity is arity; there is no
+        # band for which a wrong call count is acceptable.
+        want_fns = {f for m in sigs for f in sigs[m]}
 
     paths = (glob.glob(os.path.join(ROOT, "1_SOVEREIGN", "**", "*.pact"), recursive=True)
              + glob.glob(os.path.join(ROOT, "2_CITIZEN", "**", "*.pact"), recursive=True)

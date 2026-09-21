@@ -505,7 +505,7 @@
                             3 f0)
                     ]
                 )
-                (ref-TS01-C3::SWP|C_UpgradeBranding KST.ANHD sp 2)
+                (ref-TS01-C3::SWP|C_UpgradeBranding KST.ANHD (SWP.UR_OwnerKonto sp) sp 2)
                 (let ((b:object{BrandingV2.Schema} (ref-BRD::UR_Branding sp false)))
                     (map print
                         [
@@ -2393,11 +2393,11 @@
             ;;99 months exceeds any tier's allowance.
             (expect-failure "<<SWP-G24>> more months than the owner's tier allows is refused"
                 "Invalid Months Integer"
-                (TS01-C3.SWP|C_UpgradeBranding KST.ANHD sp 99))
+                (TS01-C3.SWP|C_UpgradeBranding KST.ANHD (SWP.UR_OwnerKonto sp) sp 99))
             ;;...and the bound is the tier value itself, not some larger cap: one over it fails too.
             (expect-failure "<<SWP-G24>> ...and the bound is exactly the tier allowance, not a looser cap"
                 "Invalid Months Integer"
-                (TS01-C3.SWP|C_UpgradeBranding KST.ANHD sp
+                (TS01-C3.SWP|C_UpgradeBranding KST.ANHD (SWP.UR_OwnerKonto sp) sp
                     (+ 1 (BRD.URC_MaxBluePayment KST.ANHD))))
         ]
     )
@@ -2406,13 +2406,13 @@
     (print
         (expect-failure "<<SWP-G24>> a GOLDEN flag cannot be upgraded -- Blue is below it"
             "Golden Flag cannot be upgraded"
-            (TS01-C3.SWP|C_UpgradeBranding KST.ANHD sp 1)))
+            (TS01-C3.SWP|C_UpgradeBranding KST.ANHD (SWP.UR_OwnerKonto sp) sp 1)))
     ;;GUARD 4 -- RED is the excluded flag; it is not a rung on the ladder at all.
     (TS01-A.BRD|A_SetFlag KST.ANHD sp 4)
     (print
         (expect-failure "<<SWP-G24>> ...and a RED flag cannot be upgraded either"
             "Red Flag cannot be upgraded"
-            (TS01-C3.SWP|C_UpgradeBranding KST.ANHD sp 1)))
+            (TS01-C3.SWP|C_UpgradeBranding KST.ANHD (SWP.UR_OwnerKonto sp) sp 1)))
     (print "--- [SWP-G24 · 02 · the 15-day rule, created by a successful upgrade] ---")
     ;;GUARD 5 is the interesting one: it cannot be reached without FIRST succeeding. A Blue flag may be
     ;;extended only when less than 15 days of premium remain, so the refusal needs premium time on the
@@ -2475,7 +2475,7 @@
                         true (< (diff-time before now) 0.0))
                 ]
             )
-            (TS01-C3.SWP|C_UpgradeBranding KST.ANHD sp 1)
+            (TS01-C3.SWP|C_UpgradeBranding KST.ANHD (SWP.UR_OwnerKonto sp) sp 1)
             (map print
                 [
                     (expect "<<SWP-G24>> the upgrade moved the pair to a BLUE flag (1)"
@@ -2504,7 +2504,7 @@
                     ;;One fix, one guard off the worklist.
                     (expect-failure "<<SWP-G24>> a Blue flag with over 15 days left cannot be extended again"
                         "Blue Flag has more than 15 days remainig!"
-                        (TS01-C3.SWP|C_UpgradeBranding KST.ANHD sp 1))
+                        (TS01-C3.SWP|C_UpgradeBranding KST.ANHD (SWP.UR_OwnerKonto sp) sp 1))
                 ]
             )
             (print "--- [SWP-G24 · 03 · a LIVE subscription renews without losing its days] ---")
@@ -2522,7 +2522,7 @@
                         864000.0 (diff-time (BRD.UR_PremiumUntil sp false)
                                             (at "block-time" (chain-data))))
                     (expect "<<SWP-G24>> ...which is under the threshold, so the renewal is allowed"
-                        true (!= "" (TS01-C3.SWP|C_UpgradeBranding KST.ANHD sp 1)))
+                        true (!= "" (TS01-C3.SWP|C_UpgradeBranding KST.ANHD (SWP.UR_OwnerKonto sp) sp 1)))
                     ;;the renewal added 30 days to the STORED date, not to now -- so the entity keeps
                     ;;its 10 remaining days PLUS the 30 it just bought, 40 in total. Had the clamp
                     ;;been unconditional this would read 30, and the 10 days would be confiscated.
@@ -3813,7 +3813,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_SWP|UpdatePendingBranding patron wp))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C3::SWP|C_UpdatePendingBranding patron wp "ipfs://probe-logo" "cost probe" "https://probe.example" []))
+            (m (ref-TS01-C3::SWP|C_UpdatePendingBranding patron (SWP.UR_OwnerKonto wp) wp "ipfs://probe-logo" "cost probe" "https://probe.example" []))
         )
         (map print
             [
@@ -4875,7 +4875,7 @@
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_SWP|UpgradeBranding patron wp 1))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (stoa-before:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
-            (m (ref-TS01-C3::SWP|C_UpgradeBranding patron wp 1))
+            (m (ref-TS01-C3::SWP|C_UpgradeBranding patron (SWP.UR_OwnerKonto wp) wp 1))
         )
         (map print
             [

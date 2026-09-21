@@ -630,7 +630,7 @@
             ;;of <unclaimed-count> and lets the next round open.
             (if (!= urSTOA-supply 0.0)
                 (do
-                    (ref-TS01-C1::DPTF|C_Mint patron urSTOA-id DEMIPAD|SC_NAME urSTOA-supply false)
+                    (ref-TS01-C1::DPTF|C_Mint patron DEMIPAD|SC_NAME urSTOA-id urSTOA-supply false)
                     (if (!= wSTOA-supply 0.0)
                         (ref-TS01-C1::DPTF|C_MultiTransfer patron
                             [wSTOA-id urSTOA-id] DEMIPAD|SC_NAME account
@@ -930,12 +930,12 @@
                 ;;1]Issue wURSTOA as DPTF
                 ;;2]Issue vUSD as mockup virtual Dollarz
                 ;;3]Toggle mint and burn roles
-                (ref-TS01-C1::DPTF|C_ToggleMintRole account vusd-id DEMIPAD|SC_NAME true)
-                (ref-TS01-C1::DPTF|C_ToggleBurnRole account vusd-id DEMIPAD|SC_NAME true)
-                (ref-TS01-C1::DPTF|C_ToggleMintRole account wstoa-id account true)
-                (ref-TS01-C1::DPTF|C_ToggleMintRole account wurstoa-id DEMIPAD|SC_NAME true)
+                (ref-TS01-C1::DPTF|C_ToggleMintRole account (DPTF.UR_Konto vusd-id) DEMIPAD|SC_NAME vusd-id true)
+                (ref-TS01-C1::DPTF|C_ToggleBurnRole account (DPTF.UR_Konto vusd-id) DEMIPAD|SC_NAME vusd-id true)
+                (ref-TS01-C1::DPTF|C_ToggleMintRole account (DPTF.UR_Konto wstoa-id) account wstoa-id true)
+                (ref-TS01-C1::DPTF|C_ToggleMintRole account (DPTF.UR_Konto wurstoa-id) DEMIPAD|SC_NAME wurstoa-id true)
                 ;;4]Mint 10 mil wSTOA (injection will follow after ICO concludes)    
-                (ref-TS01-C1::DPTF|C_Mint account wstoa-id account 10000000.0 true)
+                (ref-TS01-C1::DPTF|C_Mint account account wstoa-id 10000000.0 true)
                 ;;5]Initialises the distribution Vault
                 (XI_InitialiseDistributionVault [wstoa-id wurstoa-id vusd-id])
                 ;;6]Output Message
@@ -1012,7 +1012,7 @@
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
                 ;;0]Mint the v-USD amount to the <DEMIPAD|SC_NAME>
-                (ref-TS01-C1::DPTF|C_Mint patron v-usd-id DEMIPAD|SC_NAME v-usd-amount false)
+                (ref-TS01-C1::DPTF|C_Mint patron DEMIPAD|SC_NAME v-usd-id v-usd-amount false)
                 ;;0.1]If New Account
                 (if (not (UR_IzAccount account))
                     (do
@@ -1066,7 +1066,7 @@
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
                 ;;0]Burn the v-USD amount from the <DEMIPAD|SC_NAME> that is to be removed
-                (ref-TS01-C1::DPTF|C_Burn patron v-usd-id DEMIPAD|SC_NAME v-usd-amount)
+                (ref-TS01-C1::DPTF|C_Burn patron DEMIPAD|SC_NAME v-usd-id v-usd-amount)
                 ;;1.1]Update Pending Rewards
                 (XI_UpdatePendingRewards account)
                 ;;1.2]If remaining <user-score> becomes 0, decrement <nzs-count>
