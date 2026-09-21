@@ -3026,6 +3026,13 @@
             can-upgrade:[bool] can-change-owner:[bool] can-add-special-role:[bool] can-transfer-oft-create-role:[bool]
             can-freeze:[bool] can-wipe:[bool] can-pause:[bool]
         )
+        @doc "Issues one or more DPOF tokens owned by <executor>, charging STOA to <patron>. \
+            \ \
+            \ Executor: ENFORCED INDIRECTLY -- XB_IssueFree -> DPOF|C>ISSUE -> \
+            \ CAP_EnforceAccountOwnership <executor>. Note that the (SECURE) capability wrapping \
+            \ the call provides NO protection (SECURE is `true`); the real gate is the one named \
+            \ above, inside XB_IssueFree. Without it anyone could issue a token into someone \
+            \ else's ownership. (patron/executor canon 2.2, indirect route named.)"
         (P|UEV_IMC)
         (let
             (

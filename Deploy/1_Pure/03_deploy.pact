@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 3 of 24
 ;; This is STEP 3 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-2 must have run first, including the init steps between deploys.
-;; 3 source file(s), 350,668 gas measured in the REPL gas model, 308,390 bytes
+;; 3 source file(s), 350,668 gas measured in the REPL gas model, 308,959 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/06_DPOF.pact
@@ -3070,6 +3070,13 @@
             can-upgrade:[bool] can-change-owner:[bool] can-add-special-role:[bool] can-transfer-oft-create-role:[bool]
             can-freeze:[bool] can-wipe:[bool] can-pause:[bool]
         )
+        @doc "Issues one or more DPOF tokens owned by <executor>, charging STOA to <patron>. \
+            \ \
+            \ Executor: ENFORCED INDIRECTLY -- XB_IssueFree -> DPOF|C>ISSUE -> \
+            \ CAP_EnforceAccountOwnership <executor>. Note that the (SECURE) capability wrapping \
+            \ the call provides NO protection (SECURE is `true`); the real gate is the one named \
+            \ above, inside XB_IssueFree. Without it anyone could issue a token into someone \
+            \ else's ownership. (patron/executor canon 2.2, indirect route named.)"
         (P|UEV_IMC)
         (let
             (

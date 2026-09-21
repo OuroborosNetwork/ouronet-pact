@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 4 of 24
 ;; This is STEP 4 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-3 must have run first, including the init steps between deploys.
-;; 2 source file(s), 261,798 gas measured in the REPL gas model, 212,211 bytes
+;; 2 source file(s), 261,798 gas measured in the REPL gas model, 212,585 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/09_TFT.pact
@@ -1838,7 +1838,14 @@
     (defun C_Transmute:object{IgnisCollectorV3.OutputCumulator}
         (patron:string executor:string id:string transmute-amount:decimal)
         @doc "Convert <transmute-amount> of <id> out of <executor>'s balance and into the \
-            \ protocol's primary fee pool -- a DEBIT plus XI_CreditPrimaryFee, which is exactly \
+            \ protocol's primary fee pool. \
+            \ \
+            \ Executor: ENFORCED INDIRECTLY, by the debit that is this operation's own first act \
+            \ -- XI_Transmute -> DPTF::XB_DebitTrueFungible -> DPTF|C>DEBIT -> \
+            \ CAP_EnforceAccountOwnership. No executee. (patron/executor canon 2.2, indirect \
+            \ route named.) \
+            \ \
+            \ What the operation IS: a DEBIT plus XI_CreditPrimaryFee, which is exactly \
             \ what a collected fee does. That equivalence is the point: transmuting is how a \
             \ holder gives value to the protocol voluntarily. \
             \ \

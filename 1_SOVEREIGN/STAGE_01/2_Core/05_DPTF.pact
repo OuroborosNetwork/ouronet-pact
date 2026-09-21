@@ -2901,17 +2901,30 @@
     ;;{5.7}  User [A/C]
     ;;
     (defun A_UpdateTreasury (patron:string executor:string type:integer tdp:decimal tds:decimal)
+        @doc "ADMIN op. Executor: ENFORCED DIRECTLY below -- and it is enforced for \
+            \ ATTRIBUTION, not for authority: the GOV|*_ADMIN gate inside the capability decides \
+            \ WHETHER this may happen, while <executor> records WHO made it happen. Before the \
+            \ 2026-09-21 attribution ruling this parameter was present and never checked, which \
+            \ is strictly worse than absent -- the caller could name any account and the event \
+            \ would implicate it. (patron/executor canon 2.2.)"
         (P|UEV_IMC)
         (let
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
+            (ref-DALOS::CAP_EnforceAccountOwnership executor)
             (with-capability (GOV|SET_TREASURY-DISPO type tdp tds)
                 (ref-DALOS::XE_UpdateTreasury type tdp tds)
             )
         )
     )
     (defun A_WipeTreasuryDebt (patron:string executor:string)
+        @doc "ADMIN op. Executor: ENFORCED DIRECTLY below -- and it is enforced for \
+            \ ATTRIBUTION, not for authority: the GOV|*_ADMIN gate inside the capability decides \
+            \ WHETHER this may happen, while <executor> records WHO made it happen. Before the \
+            \ 2026-09-21 attribution ruling this parameter was present and never checked, which \
+            \ is strictly worse than absent -- the caller could name any account and the event \
+            \ would implicate it. (patron/executor canon 2.2.)"
         (P|UEV_IMC)
         (let
             (
@@ -2920,6 +2933,7 @@
                 (treasury:string (at 0 (ref-DALOS::UR_DemiurgoiID)))
                 (treasury-supply:decimal (UR_AccountSupply ouro treasury))
             )
+            (ref-DALOS::CAP_EnforceAccountOwnership executor)
             (with-capability (GOV|WIPE_ALL-TREASURY-DEBT)
                 (C_Mint patron treasury ouro (abs treasury-supply) false)
                 (ref-DALOS::XE_UpdateTreasury 0 0.0 0.0)
@@ -2927,6 +2941,12 @@
         )
     )
     (defun A_WipeTreasuryDebtPartial (patron:string executor:string debt-to-be-wiped:decimal)
+        @doc "ADMIN op. Executor: ENFORCED DIRECTLY below -- and it is enforced for \
+            \ ATTRIBUTION, not for authority: the GOV|*_ADMIN gate inside the capability decides \
+            \ WHETHER this may happen, while <executor> records WHO made it happen. Before the \
+            \ 2026-09-21 attribution ruling this parameter was present and never checked, which \
+            \ is strictly worse than absent -- the caller could name any account and the event \
+            \ would implicate it. (patron/executor canon 2.2.)"
         (P|UEV_IMC)
         (let
             (
@@ -2935,6 +2955,7 @@
                 (treasury:string (at 0 (ref-DALOS::UR_DemiurgoiID)))
                 (treasury-supply:decimal (UR_AccountSupply ouro treasury))
             )
+            (ref-DALOS::CAP_EnforceAccountOwnership executor)
             (with-capability (GOV|WIPE_PARTIAL-TREASURY-DEBT debt-to-be-wiped)
                 (C_Mint patron treasury ouro debt-to-be-wiped false)
             )
@@ -3020,6 +3041,13 @@
     ;;
     (defun C_Issue:object{IgnisCollectorV3.OutputCumulator}
         (patron:string executor:string name:[string] ticker:[string] decimals:[integer] can-upgrade:[bool] can-change-owner:[bool] can-add-special-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool])
+        @doc "Issues one or more DPTF tokens owned by <executor>, charging STOA to <patron>. \
+            \ \
+            \ Executor: ENFORCED INDIRECTLY -- XB_IssueFree -> DPTF|C>ISSUE -> \
+            \ CAP_EnforceAccountOwnership <executor>. Note that the (SECURE) capability wrapping \
+            \ the call provides NO protection (SECURE is `true`); the real gate is the one named \
+            \ above, inside XB_IssueFree. Without it anyone could mint a token into someone \
+            \ else's ownership. (patron/executor canon 2.2, indirect route named.)"
         (P|UEV_IMC)
         (let
             (

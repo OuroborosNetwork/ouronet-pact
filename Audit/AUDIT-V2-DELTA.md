@@ -31,6 +31,24 @@ module with a changed surface has no block. Neither half pretends to be the othe
    caller compiles, deploys and waits. v1 had no check for this.
 5. **`_modulecomplete.py`** is how a module's turn is certified; the audit can cite it per module
    rather than re-deriving completeness.
+6. **THE ATTRIBUTION RULE (owner ruling, 2026-09-21) — state it as a system property, because it
+   is one.** Every `A_`/`C_` names the Ouronet account performing the execution, *unconditionally*,
+   and for a reason that is not authorisation: **so the ledger can answer "who did what" from the
+   operation's own arguments.** The executor requirement is orthogonal to every other check and
+   never replaced by one — a keyset says *this was permitted*, never *by whom*, and several people
+   may hold one key. Consequences the audit should assert directly:
+   - **there are exactly two doors into the system** — the normal paths (every `A_`/`C_`, through
+     Talos), which always require an Ouronet account, and **direct module governance**
+     (`GOV|*_ADMIN` applied to the module), which does not and is deliberately the escape hatch;
+   - **admins are users too.** `A_` and `C_` are named for Admin and Client, and both must supply
+     an account. v1 had no such claim and several admin ops did not satisfy it;
+   - **an UNENFORCED executor is worse than none.** A parameter nobody checks is one the caller
+     picks, so the emitted event can implicate an account that was never involved. v2 must treat a
+     decorative executor as a **finding**, not a style issue.
+   - New gate-fatal instrument for Part IV: **`_executorenforced.py`**, `_modulecomplete.py`'s
+     check 7. It proves each executor is enforced directly, forwarded, or reached by an indirect
+     route **the function's own `@doc` names** — which is the canon's "the path MUST be named"
+     clause made mechanical. Its first run found three.
 
 ---
 
@@ -104,6 +122,28 @@ DALOS's admin band.
 - Token ids (`reward-token`, `hot-rbt`) sit where a receiver would but are **entities, not
   accounts** — not executees. A reviewer reading positionally would get this wrong.
 
+### 05_DPTF.pact — ADDENDUM (2026-09-21, the attribution ruling)
+Three treasury admin ops — `A_UpdateTreasury`, `A_WipeTreasuryDebt`, `A_WipeTreasuryDebtPartial` —
+took `executor` and **never mentioned it again**. Authorisation was `GOV|*_ADMIN` alone, so the
+parameter was decorative: the admin could write any account into it and the event would name that
+account. Now `CAP_EnforceAccountOwnership executor` runs before the admin capability.
+
+**This is a BEHAVIOUR CHANGE on already-published surface** and the audit must say so plainly: the
+caller must now hold *both* the module admin key *and* an owned Ouronet account. Every existing
+fixture already satisfied it (all five call sites sign for the account they name), so nothing in
+the suite moved — but a live admin script that passed a bare label will now fail, and that is the
+intended effect.
+
+Both adversarial tests keep refusing at the gate they name rather than the new one:
+`RT-C-001` signs as EMMA and names EMMA, so ownership passes and `GOV|DPTF_ADMIN` still does the
+refusing (`"DPTF Ownership not verified"`); `_scratch_ts01a_n3` does the same with LUMY. That is
+the shadowing check CLAUDE.md demands whenever a gate is added in front of another.
+
+Also: `C_Issue` (DPTF and DPOF) had a real indirect route — `XB_IssueFree -> MOD|C>ISSUE ->
+CAP_EnforceAccountOwnership` — and no `@doc` saying so. Both now name it, and both note that the
+`(SECURE)` capability wrapping the call is **not** protection (`SECURE` is `true`) — a reading
+error worth pinning, since `with-capability (SECURE)` looks like a gate and is not.
+
 ### 09_TFT.pact
 5 entrypoints — the transfer engine, and the widest cascade so far: **193 core call sites plus
 207 Talos wrapper sites**, because `TFT::C_Transfer` is both a client entrypoint and the movement
@@ -170,7 +210,10 @@ Also in this module:
   may never be smart accounts, which is why that entrypoint has no `method` parameter at all.
 - `C_Transmute`'s executor is enforced **indirectly** —
   `XI_Transmute → DPTF::XB_DebitTrueFungible → DPTF|C>DEBIT → CAP_EnforceAccountOwnership`. Named
-  in the `@doc` as the canon requires. The audit should treat the indirect route as acceptable
+  in the `@doc` as the canon requires — *though only after `_executorenforced.py` caught that this
+  very line had claimed it before it was true. Recorded rather than quietly corrected: the delta
+  is an audit input, and an audit input that was once wrong about its own subject is worth one
+  sentence.* The audit should treat the indirect route as acceptable
   here (unlike `DALOS::A_UpdatePublicKey`) because the debit is the operation's own first act.
 - **Dead bindings removed** from `DPTF|C>CLEAR-DISPO` (`ouro-id`, `treasury` — bound, never read),
   same class as the earlier `#58L`/`#61L` removals.

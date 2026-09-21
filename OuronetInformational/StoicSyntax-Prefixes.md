@@ -371,6 +371,82 @@ ownership is not always required. A **transfer** is the canonical case:
 — where the receiver needs an ownership check **only when `method` is true AND the receiver is a
 smart Ouronet account**. That condition belongs in the `@doc`, not in a reader's head.
 
+### WHY THE EXECUTOR IS UNCONDITIONAL — the attribution rule (owner ruling, 2026-09-21)
+
+**Every `A_` and `C_` function names an executor. No exceptions.** The executor is *the Ouronet
+account performing the execution* — and the reason it is unconditional is not authorisation, it is
+**attribution**:
+
+> Making every function have one, we can clearly see which account triggered the execution.
+
+Read that as the design goal it is. Ouronet's ledger should be able to answer **"who did what"**
+for every operation it ever performed, by reading the operation's own arguments. A function with no
+executor is one the ledger cannot attribute, and there is no such thing as an operation nobody
+performed.
+
+**The executor requirement is ORTHOGONAL to every other check, and never replaced by one.** An
+operation may additionally require ownership of other accounts, a raw `enforce-guard`, a keyset, a
+module `GOV|*_ADMIN` — any of these, several of these. **None of them removes the need to name an
+executor**, because none of them answers the attribution question. A keyset says *this was
+permitted*; it does not say *by whom*, and several people may hold one key.
+
+So **even an admin must supply an Ouronet account.** `A_` and `C_` are named for the two kinds of
+*user* — Admin and Client — and both are users.
+
+#### The consequence: an Ouronet account is the price of entry
+
+There are exactly **two doors** into the system:
+
+| door | needs an Ouronet account? | |
+|---|---|---|
+| the **normal paths** — every `A_` / `C_`, i.e. everything through Talos | **yes, always** | attribution holds |
+| **direct module governance** — the `GOV\|*_ADMIN` keys, applied to the module itself | no | outside the canon; this is the escape hatch, and it is *supposed* to be one |
+
+Which means: **before anything can be done on Ouronet, the actor must have an Ouronet account.**
+Admin included. From a cold start the first act is therefore *deploying an account* — through the
+**administrative path, which is gasless** — and only then does the normal surface become usable.
+
+#### The base case, and why it does not break the rule
+
+Account deployment is where the induction bottoms out: the *first* account cannot name a
+pre-existing Ouronet account as its executor. That is precisely what the governance door is for —
+genesis runs `DALOS.A_Deploy*Account` **directly on the module under module admin**, not through
+Talos (see `REPL/Stage_01/[2.1]_Dalos.repl`). The rule is about the normal paths, and genesis is by
+definition not one.
+
+**This is the frame for the whole patron/executor/executee structure.** Three roles, three
+questions, and each is answered by naming an account rather than by inspecting a signature list:
+
+| | question it answers |
+|---|---|
+| `patron` | **who paid for this?** |
+| `executor` | **who did this?** |
+| `executee` | **who was it done to?** |
+
+#### An UNENFORCED executor is worse than none
+
+The corollary, and the one that makes this a hard rule rather than a documentation convention:
+**the executor is only an audit trail if its ownership is enforced.** A parameter nobody checks is
+a parameter the caller chooses freely — so an entrypoint that takes `executor` and never proves it
+does not record who acted, it records **whoever the caller felt like naming**, and the event it
+emits can implicate an account that was nowhere near the transaction.
+
+That is strictly worse than having no executor at all, because a missing one is visibly missing
+while a decorative one looks like attribution. An admin op authorised purely by a `GOV|*_ADMIN`
+keyset is exactly where this goes wrong: the key already opened the door, so the executor feels
+like a label, and a label is what it becomes.
+
+So for every `A_`/`C_`, one of these must be true and **checkable**:
+
+1. `CAP_EnforceAccountOwnership executor` (or a `UEV_Executor*` binder) runs in the function or in
+   a capability it acquires; **or**
+2. the enforcement is reached indirectly and the route is **named in the `@doc`** — e.g.
+   `TFT::C_Transmute`, whose executor is proven by
+   `XI_Transmute -> DPTF::XB_DebitTrueFungible -> DPTF|C>DEBIT -> CAP_EnforceAccountOwnership`.
+
+Enforced by `REPL/tools/_executorenforced.py`, which is `_modulecomplete.py`'s check 7: a module's
+turn is not done while it holds an executor nobody proves.
+
 ### Talos is where the two paths diverge
 
 | | module signature | Talos wrapper |
@@ -431,9 +507,18 @@ Two consequences:
 - `IGNIS::C_TransferDalosFuel` is the odd one out in this file: it is a genuine **transfer** of the
   gas source, so it is patronless with `sender` = executor and `receiver` = executee.
 
-**This is an engineering inference, not an owner ruling.** It follows the `CLAUDE.md` note that
-these primitives "*are* the collectors and cannot collect from themselves", but the owner has not
-ruled on it. If it is wrong, the fix is confined to six functions in one module.
+**SUPERSEDED 2026-09-21 — and the category is gone twice over.** It was an engineering inference,
+never an owner ruling, and the owner has now ruled the other way: *every* `A_`/`C_` names an
+executor, no exceptions (see the attribution rule above). It is moot in any case, because the
+functions it described **were reclassified out of the `A_`/`C_` band entirely** on 2026-09-20 —
+`C_Collect` and the `STOA|C_Collect*` family became `XE_CollectIgnis` / `XE_CollectStoa` /
+`XB_Collect*` behind `P|UEV_IMC`, and an `X_` is outside this canon to begin with.
+
+Both routes reach the same place, which is worth noticing: a category invented to explain functions
+that did not fit their own prefix was describing **a naming error, not a shape**. `EXECUTORLESS` is
+kept as an empty tombstone in `_executorplan.py` so the name cannot be quietly revived; the section
+is kept here for the same reason. Contrast `PATRONLESS`, which IS an owner ruling and IS a real
+shape — there genuinely is no payer at the moment an account is deployed or IGNIS is created.
 
 ### EXECUTEE IS RARE
 
@@ -493,7 +578,10 @@ been given a different bespoke name almost every time: `kickstarter`, `curler`, 
 A function that cannot state where its executor's ownership is proven does not satisfy this canon,
 even if it happens to be safe.
 
-### ADMIN OPS HAVE AN EXECUTOR TOO — and it is the account, not the key (owner ruling, 2026-09-21)
+### ADMIN OPS HAVE AN EXECUTOR TOO — the corollary, worked through (owner ruling, 2026-09-21)
+
+*A special case of the attribution rule above, kept because it is where the question first came up
+and because "it only flips a boolean" is the most tempting place to skip the executor.*
 
 **An `A_` that merely toggles a switch still takes an `executor`, and that executor is the Ouronet
 account performing the execution** — enforced directly, *in addition to* whatever key or guard the

@@ -380,6 +380,36 @@ modules whose own turn has not come, so they have no `patron` to pass. The rule:
 TFT's 14 sites (13 functions, 5 modules — ATSU, OUROBOROS, SWPLC, AQP, VCT) are listed in the
 `09_TFT` block of `Audit/AUDIT-V2-DELTA.md`. Each is re-pointed at that module's turn.
 
+### 4f. THE ATTRIBUTION RULE — why the executor is unconditional (owner, 2026-09-21)
+
+The owner stated the principle behind the whole canon, and it reframes what the sweep is *for*:
+
+> every `C_` or `A_` function must have an executor no matter what — that is the Ouronet account
+> doing the execution. Making every function have one, we can clearly see which account triggered
+> the execution.
+
+So the executor is not an authorisation device. It is an **attribution** device, and it is
+**orthogonal to every other check**: an op may also need ownership of other accounts, a raw guard,
+a keyset, a `GOV|*_ADMIN` — none of those removes the need to name an executor, because none of
+them says *who*. A key says the act was permitted; several people may hold it.
+
+Two consequences to carry into every remaining module:
+
+1. **Admins are users.** `A_` and `C_` are named for Admin and Client. An admin must supply an
+   Ouronet account like anyone else. The only door that needs no account is **direct module
+   governance**, which is outside the canon and is meant to be the escape hatch.
+2. **An unenforced executor is WORSE than none.** A parameter nobody checks is one the caller
+   picks freely — so the emitted event names whoever they typed. A missing executor is visibly
+   missing; a decorative one looks like attribution and is not.
+
+(2) is now checked: **`_executorenforced.py`, wired as `_modulecomplete.py` check 7.** Every
+executor must be proven directly, forwarded to a module that proves it, or reached by an indirect
+route **named in the function's own `@doc`**. Its first run over the seven swept modules found
+**three** decorative executors in DPTF's treasury admin ops and **one `@doc` that claimed a route
+it did not state** — mine, written the same day. Do not trust a route you have not grepped for.
+
+Full statement: `StoicSyntax-Prefixes.md` §2.2, *"WHY THE EXECUTOR IS UNCONDITIONAL"*.
+
 ## 4.1 PATRONLESS BY DESIGN — the correction that changes what "conforming" means
 
 **Owner correction, 2026-09-20, mid-sweep.** `patronless` and `gasless` are different things:

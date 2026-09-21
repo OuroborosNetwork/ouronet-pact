@@ -187,6 +187,23 @@ def main():
             for l in (rr.stdout + rr.stderr).splitlines()[-4:]:
                 print("        " + l)
 
+    # 7] EVERY EXECUTOR IS PROVEN -- module-scoped, because the canon's "enforced directly or
+    #    indirectly with the route named in the @doc" was written down and never checked. The
+    #    first run of this found three DPTF admin ops whose `executor` appeared in the signature
+    #    and nowhere else, which is worse than having none: the caller picks the name, so the
+    #    event implicates whoever they typed.
+    rr = subprocess.run([sys.executable, os.path.join(ROOT, "REPL/tools/_executorenforced.py"),
+                         "--module", os.path.basename(path)],
+                        capture_output=True, text=True, cwd=ROOT)
+    ok7 = rr.returncode == 0
+    head = (rr.stdout + rr.stderr).splitlines()
+    print(f"  [{'PASS' if ok7 else 'FAIL'}] 7. every executor is PROVEN  "
+          f"({head[0].split(':', 1)[1].strip() if head and ':' in head[0] else '?'})")
+    if not ok7:
+        fails.append("an executor nobody proves")
+    for l in head[1:]:
+        if l.strip(): print("        " + l)
+
     print()
     if fails:
         print(f"  MODULE NOT COMPLETE -- {len(fails)} obligation(s) unmet: {', '.join(fails)}")
