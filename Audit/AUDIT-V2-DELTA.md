@@ -239,6 +239,51 @@ and is inert today because `TFT::C_Transfer` does not read its patron. **Each is
 module's own turn.** The registry is in the migration script and listed in the handoff; an auditor
 finding `client` where `patron` belongs is looking at a known intermediate state, not a defect.
 
+### 10_ATSU.pact
+15 entrypoints. Two of them were **three-role functions that read as two-role**, and the
+capabilities are the only place that says so.
+
+**`C_WithdrawRoyalties (ats target)` and `C_Syphon (syphon-target ats amounts)`.** Both capabilities
+enforce `ATS::CAP_Owner ats` — which resolves to `CAP_EnforceAccountOwnership (UR_OwnerKonto ats)`,
+the **pool owner**. So authority was proven and the acting account appeared in the signature
+**nowhere at all**; the parameter that looked like an actor (`target`, `syphon-target`) is the
+RECIPIENT. Now `(patron executor executee ats …)`, with `ATS::UEV_ExecutorIsOwnerKonto` binding the
+named executor to the pool owner.
+
+This is the **third instance** of one shape — after DPTF's treasury ops and TFT's `C_ClearDispo` —
+and the audit should name the shape rather than the instances: **authority proven, actor
+unrecorded.** It is invisible to a reader because the capability *does* enforce ownership; it is
+just ownership of somebody the signature never mentions.
+
+- **`AA_RemoveSecondary`** is `GOV|ATSU_ADMIN`-only and its executor was decorative, exactly like
+  DPTF's treasury ops. Now enforced in `ATSU|C>ADMINISTRATIVE-REMOVE-SECONDARY` **before** the
+  admin composition. Same behaviour-change note: admin key AND an owned account.
+- **`CC_RemoveSecondary`** is the same operation on the owner path; the binder applies there.
+- **The two `KickStart` variants carry TWO authorities and they are not the same account.** The
+  capability's `CAP_Owner` (owner path) / `GOV|ATSU_ADMIN` (admin path) decides *whether the pool
+  may be kickstarted*; the executor *funds* it and is proven by the transfer that spends its
+  tokens (`XI_KickStart → TFT::C_Transfer`, executor is the SENDER). Both must sign. The `@doc`s
+  now say so, because a reviewer who sees `CAP_Owner` in the capability will otherwise conclude
+  the executor is checked — **which is what `_executorenforced.py` itself concluded** until it was
+  made position-aware (below).
+- Four more indirect routes, all legitimate and all now named: `C_Coil`, `C_Curl`, `C_Recover`,
+  `C_Redeem` have no ownership in their capability and are proven by the debit that is each
+  operation's first act.
+
+**v2 must re-verify:** `<<ATS-G9>>` was re-pointed. It passed `KST.ANHD` in the actor slot while
+the transaction signed as the pair's real owner — harmless when the slot was named `remover` and
+nobody read it, and now a refusal that would have **shadowed the primal-RT rule the assertion is
+about**. Fixed by naming the owner, per CLAUDE.md's preference for a fixture that satisfies the
+first guard over a capability reorder. ANHD remains the PATRON, which is the separation on display.
+
+**A METHOD FINDING worth carrying into the remaining 36 modules.** `CC_RemoveSecondary`'s call
+sites did not change arity — `(patron remover ats rt)` and `(patron executor ats rt)` are the same
+shape — so `_callarity.py` saw nothing and the migration script correctly skipped them. But the
+MEANING of position 1 changed from an unread label to a bound, enforced executor. **A rename that
+adds enforcement is invisible to an arity check**, and only the full suite caught it. Any module
+whose sweep turns a decorative parameter into an enforced one needs a deliberate call-site review,
+not a mechanical one.
+
 ---
 
 ## Changed as a DOWNSTREAM CONSEQUENCE — not yet swept in their own right
@@ -255,7 +300,7 @@ They are listed here so no auditor mistakes silence for "unchanged", and so the 
 signatures are not read as final. Each will get its own block when its turn is taken.
 
 ```
-STAGE_01 core      07_ELITE  10_ATSU  11_VST  12_LIQUID  13_OUROBOROS  14_SWPT
+STAGE_01 core      07_ELITE  11_VST  12_LIQUID  13_OUROBOROS  14_SWPT
                    15_SWP  16_SWPI  17_SWPL  18_SWPLC  19_SWPU  20_MTX-SWP  21_CODEX  22_PYTHIA
 STAGE_01 Talos     01_TS01-A  02_TS01-C1  03_TS01-C2  04_TS01-C3  05_TS01-P  06_TS01-C4
 STAGE_02 DPDC      01_DPDC-UDC  02_DPDC  03_DPDC-C  04_DPDC-I  05_DPDC-R  06_DPDC-MNG

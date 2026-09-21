@@ -99,9 +99,7 @@
         (expect-failure "<<TFT-MT2>> ...while the CLIENT refuses deliberately, and says why"
             "No Royalties to withdraw for ATS-Pair Auryndex-98c486052a51"
             (TS01-C2.ATS|C_WithdrawRoyalties
-                KST.ANHD
-                (at 0 (DPTF.UR_RewardBearingToken (DALOS.UR_AurynID)))
-                KST.ANHD))
+                KST.ANHD (ATS.UR_OwnerKonto (at 0 (DPTF.UR_RewardBearingToken (DALOS.UR_AurynID)))) KST.ANHD (at 0 (DPTF.UR_RewardBearingToken (DALOS.UR_AurynID)))))
     ]
 )
 (commit-tx)

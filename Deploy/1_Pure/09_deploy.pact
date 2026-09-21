@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 9 of 24
 ;; This is STEP 9 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-8 must have run first, including the init steps between deploys.
-;; 4 source file(s), 252,440 gas measured in the REPL gas model, 238,174 bytes
+;; 4 source file(s), 252,440 gas measured in the REPL gas model, 238,184 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/21_CODEX.pact
@@ -3087,7 +3087,7 @@
     ;;
     (defun DPOF|A_DeployAccount (patron:string id:string account:string))
     ;;
-    (defun ATS|AA_RemoveSecondary (patron:string remover:string ats:string reward-token:string accounts-with-ats-data:[string]))
+    (defun ATS|AA_RemoveSecondary (patron:string executor:string ats:string reward-token:string accounts-with-ats-data:[string]))
     (defun ATS|A_KickStart (executor:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
     ;;
     (defun LIQUID|A_MigrateLiquidFunds:decimal (migration-target-stoa-account:string))
@@ -3690,7 +3690,7 @@
         )
     )
     ;;  [ATS_Administrator]
-    (defun ATS|AA_RemoveSecondary (patron:string remover:string ats:string reward-token:string accounts-with-ats-data:[string])
+    (defun ATS|AA_RemoveSecondary (patron:string executor:string ats:string reward-token:string accounts-with-ats-data:[string])
         @doc "Administrative Variant, queries <accounts-with-ats-data> via <DPTF-DPOF-ATS|UR_FilterKeysForInfo>"
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
@@ -3699,7 +3699,7 @@
                     (ref-ATSU:module{AutostakeUsageV2} ATSU)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATSU::AA_RemoveSecondary remover ats reward-token accounts-with-ats-data)
+                    (ref-ATSU::AA_RemoveSecondary patron executor ats reward-token accounts-with-ats-data)
                 )
             )
         )

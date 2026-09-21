@@ -448,7 +448,7 @@
             (expect "<<ATS-G2>> syphoning is OFF on Auryndex" false (ref-ATS::UR_Syphoning ps))
             (expect-failure "<<ATS-G2>> C_Syphon is refused while syphoning is off"
                 "Syphoning must be turned ON for exec"
-                (ref-TS01-C2::ATS|C_Syphon patron patron ps [1.0]))
+                (ref-TS01-C2::ATS|C_Syphon patron (ATS.UR_OwnerKonto ps) patron ps [1.0]))
             ;;...and the rejected call wrote nothing.
             (expect "<<ATS-G2>> syphoning is still OFF after the rejection"
                 false (ref-ATS::UR_Syphoning ps))
@@ -475,12 +475,12 @@
                 ;;the rule the day a reward token is added.
                 (expect-failure "<<ATS-G2>> a syphon-amounts list of the wrong length is refused"
                     "Invalid Amounts of Syphon Values"
-                    (ref-TS01-C2::ATS|C_Syphon patron patron ps (make-list (+ rts 1) 1.0)))
+                    (ref-TS01-C2::ATS|C_Syphon patron (ATS.UR_OwnerKonto ps) patron ps (make-list (+ rts 1) 1.0)))
                 ;;GUARD 3: correct length, but nothing actually syphoned. Isolates the sum rule --
                 ;;guard 2 cannot fire on this input.
                 (expect-failure "<<ATS-G2>> an all-zero syphon is refused as a no-op"
                     "Invalid Syphon Amounts"
-                    (ref-TS01-C2::ATS|C_Syphon patron patron ps (make-list rts 0.0)))
+                    (ref-TS01-C2::ATS|C_Syphon patron (ATS.UR_OwnerKonto ps) patron ps (make-list rts 0.0)))
                 ;;GUARD 4 (per-element non-negativity) IS NOT REACHABLE ON THIS PAIR, and the
                 ;;reason is structural rather than a fixture gap. It sits below guard 3
                 ;;(<sum> > 0.0), so the input must carry a negative element AND still total
@@ -732,7 +732,7 @@
                 0.0 (fold (+) 0.0 (ref-ATS::UR_RewardTokenRUR ps 3)))
             (expect-failure "<<ATS-G6>> withdrawing from a pair with zero royalties is refused"
                 "No Royalties to withdraw for ATS-Pair"
-                (ref-TS01-C2::ATS|C_WithdrawRoyalties KST.ANHD ps KST.ANHD))
+                (ref-TS01-C2::ATS|C_WithdrawRoyalties KST.ANHD (ATS.UR_OwnerKonto ps) KST.ANHD ps))
         ]
     )
     ""
@@ -804,11 +804,11 @@
                 true (> (fold (+) 0.0 mixed) 0.0))
             (expect-failure "<<ATS-G7b>> a negative element inside a positive-sum list is refused"
                 "Unallowed Negative Syphon Values Detected"
-                (ref-TS01-C2::ATS|C_Syphon KST.ANHD KST.ANHD ps mixed))
+                (ref-TS01-C2::ATS|C_Syphon KST.ANHD (ATS.UR_OwnerKonto ps) KST.ANHD ps mixed))
             ;;all positive, correct length, but far beyond what the pair's Syphon-Index permits
             (expect-failure "<<ATS-G7b>> ...and an all-positive list beyond the Syphon-Index ceiling"
                 "Syphon Amounts surpassing pairs Syphon-Index"
-                (ref-TS01-C2::ATS|C_Syphon KST.ANHD KST.ANHD ps (make-list n 1000000.0)))
+                (ref-TS01-C2::ATS|C_Syphon KST.ANHD (ATS.UR_OwnerKonto ps) KST.ANHD ps (make-list n 1000000.0)))
         ]
     )
     ""
@@ -939,9 +939,17 @@
                  (ref-ATS::URCv_RewardTokenPosition ps (at 2 rts))])
             ;;--- the primal RT defines the pair; removing it would leave a pair whose stake
             ;;accounting has no base token to convert into the RBT.
+            ;;THE EXECUTOR MUST BE THE POOL OWNER, and naming it is what the canon sweep added.
+            ;;Before it, this line read `… KST.ANHD KST.ANHD ps primal` -- ANHD in the actor slot
+            ;;while the tx signed as the pair's real owner, because that slot was called `remover`
+            ;;and nothing read it. UEV_ExecutorIsOwnerKonto now binds it, and an unbound executor
+            ;;would refuse HERE, SHADOWING the primal-RT rule this assertion is about. Satisfying
+            ;;the first guard exposes BOTH, which is CLAUDE.md's stated preference over reordering
+            ;;the capability. ANHD stays the PATRON -- paying for an operation and being its actor
+            ;;are different things, which is the whole point of the separation.
             (expect-failure "<<ATS-G9>> the PRIMAL reward token cannot be removed"
                 "Primal RT cannot be removed"
-                (ref-TS01-C2::ATS|CC_RemoveSecondary KST.ANHD KST.ANHD ps primal))
+                (ref-TS01-C2::ATS|CC_RemoveSecondary KST.ANHD (ref-ATS::UR_OwnerKonto ps) ps primal))
             ;;--- audit fix #11M / M2. The opening index prices every later stake, so an owner who
             ;;could kickstart at an arbitrary ratio could mint themselves an unbounded claim
             ;;against everyone who coils in afterwards. 100.0 is the owner-path ceiling; a higher
@@ -1823,13 +1831,13 @@
                 ;;THE ITEM -- leg 0 asks for more than exists, legs 1 and 2 ask for nothing
                 (expect-failure "<<ATS-G21>> syphoning more than a leg's resident amount is refused"
                     "Invalid syphon amounts surpassing present resident Amounts"
-                    (ref-TS01-C2::ATS|C_Syphon KST.ANHD KST.AOZT ps [300.0 0.0 0.0]))
+                    (ref-TS01-C2::ATS|C_Syphon KST.ANHD (ATS.UR_OwnerKonto ps) KST.AOZT ps [300.0 0.0 0.0]))
                 ;;...and a leg WITHIN its resident amount clears this rule. It does not necessarily
                 ;;succeed outright -- what matters is that the resident bound stops answering, which
                 ;;is what makes the refusal above about the amount and not about syphoning at all.
                 (expect "<<ATS-G21>> ...while a leg within its resident amount is admitted"
                     true (!= "" (format "{}"
-                        [(ref-TS01-C2::ATS|C_Syphon KST.ANHD KST.AOZT ps [1.0 0.0 0.0])])))
+                        [(ref-TS01-C2::ATS|C_Syphon KST.ANHD (ATS.UR_OwnerKonto ps) KST.AOZT ps [1.0 0.0 0.0])])))
             ]
         )
         ""
@@ -2715,7 +2723,7 @@
             (predicted:object{OuronetInfoV2.ClientInfo}
                 (INFO-ONE.INFO_ATS|Syphon patron target ps amounts))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C2::ATS|C_Syphon patron target ps amounts))
+            (m (ref-TS01-C2::ATS|C_Syphon patron (ATS.UR_OwnerKonto ps) target ps amounts))
         )
         (map print
             [
@@ -4507,7 +4515,7 @@
             )
             (let
                 (
-                    (m (ref-TS01-C2::ATS|C_WithdrawRoyalties aozt pair aozt))
+                    (m (ref-TS01-C2::ATS|C_WithdrawRoyalties aozt (ATS.UR_OwnerKonto pair) aozt pair))
                 )
                 (map print
                     [

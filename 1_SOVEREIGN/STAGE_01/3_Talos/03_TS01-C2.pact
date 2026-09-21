@@ -78,26 +78,26 @@
     (defun ATS|C_SetDirectRecoveryFee (patron:string executor:string ats:string promile:decimal))
     (defun ATS|C_SwitchDirectRecovery (patron:string executor:string ats:string toggle:bool))
         ;;
-    (defun ATS|CC_RemoveSecondary (patron:string remover:string ats:string reward-token:string))
-    (defun ATS|C_WithdrawRoyalties (patron:string ats:string target:string))
-    (defun ATS|C_KickStart (patron:string kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
-    (defun ATS|C_Fuel (patron:string fueler:string ats:string reward-token:string amount:decimal))
-    (defun ATS|C_Coil (patron:string coiler:string ats:string rt:string amount:decimal))
-    (defun ATS|C_Curl (patron:string curler:string ats1:string ats2:string rt:string amount:decimal))
-    (defun ATS|C_VestedCoil (patron:string coiler-vester:string ats:string coil-token:string amount:decimal target-account:string offset:integer duration:integer milestones:integer))
-    (defun ATS|C_VestedCurl (patron:string curler-vester:string ats1:string ats2:string curl-token:string amount:decimal target-account:string offset:integer duration:integer milestones:integer))
+    (defun ATS|CC_RemoveSecondary (patron:string executor:string ats:string reward-token:string))
+    (defun ATS|C_WithdrawRoyalties (patron:string executor:string executee:string ats:string))
+    (defun ATS|C_KickStart (patron:string executor:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
+    (defun ATS|C_Fuel (patron:string executor:string ats:string reward-token:string amount:decimal))
+    (defun ATS|C_Coil (patron:string executor:string ats:string rt:string amount:decimal))
+    (defun ATS|C_Curl (patron:string executor:string ats1:string ats2:string rt:string amount:decimal))
+    (defun ATS|C_VestedCoil (patron:string executor:string ats:string coil-token:string amount:decimal target-account:string offset:integer duration:integer milestones:integer))
+    (defun ATS|C_VestedCurl (patron:string executor:string ats1:string ats2:string curl-token:string amount:decimal target-account:string offset:integer duration:integer milestones:integer))
     (defun ATS|C_Constrict (patron:string constricter:string ats:string rt:string amount:decimal dayz:integer))
     (defun ATS|C_Brumate (patron:string brumator:string ats1:string ats2:string rt:string amount:decimal dayz:integer))
-    (defun ATS|C_Syphon (patron:string syphon-target:string ats:string syphon-amounts:[decimal]))
+    (defun ATS|C_Syphon (patron:string executor:string executee:string ats:string syphon-amounts:[decimal]))
         ;;
-    (defun ATS|C_ColdRecovery (patron:string recoverer:string ats:string ra:decimal))
-    (defun ATS|C_Cull (patron:string culler:string ats:string))
+    (defun ATS|C_ColdRecovery (patron:string executor:string ats:string ra:decimal))
+    (defun ATS|C_Cull (patron:string executor:string ats:string))
         ;;
-    (defun ATS|C_HotRecovery (patron:string recoverer:string ats:string ra:decimal))
-    (defun ATS|C_Reverse (patron:string recoverer:string id:string nonce:integer))
-    (defun ATS|C_Redeem (patron:string redeemer:string id:string nonce:integer))
+    (defun ATS|C_HotRecovery (patron:string executor:string ats:string ra:decimal))
+    (defun ATS|C_Reverse (patron:string executor:string id:string nonce:integer))
+    (defun ATS|C_Redeem (patron:string executor:string id:string nonce:integer))
         ;;
-    (defun ATS|C_DirectRecovery (patron:string recoverer:string ats:string ra:decimal))
+    (defun ATS|C_DirectRecovery (patron:string executor:string ats:string ra:decimal))
     ;;
     ;;
     (defun VST|C_CreateFrozenLink:[string] (patron:string dptf:string))
@@ -801,7 +801,7 @@
     )
     ;;
     ;;
-    (defun ATS|CC_RemoveSecondary (patron:string remover:string ats:string reward-token:string)
+    (defun ATS|CC_RemoveSecondary (patron:string executor:string ats:string reward-token:string)
         @doc "Controls Direct Recovery Fees"
         (with-capability (P|TS)
             (let
@@ -810,13 +810,13 @@
                     (ref-ATSU:module{AutostakeUsageV2} ATSU)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATSU::CC_RemoveSecondary remover ats reward-token)
+                    (ref-ATSU::CC_RemoveSecondary patron executor ats reward-token)
                 )
                 (format "Succesfully removed RT {} from ATS-Pair" [reward-token ats])
             )
         )
     )
-    (defun ATS|C_WithdrawRoyalties (patron:string ats:string target:string)
+    (defun ATS|C_WithdrawRoyalties (patron:string executor:string executee:string ats:string)
         @doc "Withdraws ATS-Pair Royalties, if non-zero"
         (with-capability (P|TS)
             (let
@@ -824,16 +824,16 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-ATSU:module{AutostakeUsageV2} ATSU)
-                    (st:string (ref-I|OURONET::OI|UC_ShortAccount target))
+                    (st:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATSU::C_WithdrawRoyalties ats target)
+                    (ref-ATSU::C_WithdrawRoyalties patron executor executee ats)
                 )
                 (format "Succesfully withdrawn Royalties from ATS-Pair {} to Account {}" [ats st])
             )
         )
     )
-    (defun ATS|C_KickStart (patron:string kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
+    (defun ATS|C_KickStart (patron:string executor:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
         @doc "Kickstarst an ATSPair, so that it starts at a given Index \
             \ Can only be done on a freshly created ATS-Pair"
         (with-capability (P|TS)
@@ -842,7 +842,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-ATSU:module{AutostakeUsageV2} ATSU)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-ATSU::C_KickStart patron kickstarter ats rt-amounts rbt-request-amount)
+                        (ref-ATSU::C_KickStart patron executor ats rt-amounts rbt-request-amount)
                     )
                 )
                 (ref-IGNIS::XE_CollectIgnis patron ico)
@@ -850,7 +850,7 @@
             )
         )
     )
-    (defun ATS|C_Fuel (patron:string fueler:string ats:string reward-token:string amount:decimal)
+    (defun ATS|C_Fuel (patron:string executor:string ats:string reward-token:string amount:decimal)
         @doc "Fuels an ATSPair with RT Tokens, increasing its Index"
         (with-capability (P|TS)
             (let
@@ -861,7 +861,7 @@
                     (prev-index:decimal (ref-ATS::URC_Index ats))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATSU::C_Fuel fueler ats reward-token amount)
+                    (ref-ATSU::C_Fuel patron executor ats reward-token amount)
                 )
                 (format "Succesfully fueld ATS-Pair {} increasing its index by {}"
                     [ats (- (ref-ATS::URC_Index ats) prev-index)]
@@ -869,7 +869,7 @@
             )
         )
     )
-    (defun ATS|C_Coil (patron:string coiler:string ats:string rt:string amount:decimal)
+    (defun ATS|C_Coil (patron:string executor:string ats:string rt:string amount:decimal)
         @doc "Coils an RT Token from a specific ATS-Pair, generating a RBT Token \
         \ Only works if <ats> has hibernation off."
         (with-capability (P|TS)
@@ -878,7 +878,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-ATSU:module{AutostakeUsageV2} ATSU)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-ATSU::C_Coil patron coiler ats rt amount)
+                        (ref-ATSU::C_Coil patron executor ats rt amount)
                     )
                 )
                 (ref-IGNIS::XE_CollectIgnis patron ico)
@@ -886,7 +886,7 @@
             )
         )
     )
-    (defun ATS|C_Curl (patron:string curler:string ats1:string ats2:string rt:string amount:decimal)
+    (defun ATS|C_Curl (patron:string executor:string ats1:string ats2:string rt:string amount:decimal)
         @doc "Curl double coils an RT Token in 2 chained ATS-Pairs \
             \ The RBT Token of <ats1> must be RBT Token in <ats2> \
             \ Both ATS-Pairs must have hibernation off for this to work."
@@ -896,7 +896,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-ATSU:module{AutostakeUsageV2} ATSU)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-ATSU::C_Curl patron curler ats1 ats2 rt amount)
+                        (ref-ATSU::C_Curl patron executor ats1 ats2 rt amount)
                     )
                 )
                 (ref-IGNIS::XE_CollectIgnis patron ico)
@@ -906,7 +906,7 @@
             )
         )
     )
-    (defun ATS|C_VestedCoil (patron:string coiler-vester:string ats:string coil-token:string amount:decimal target-account:string offset:integer duration:integer milestones:integer)
+    (defun ATS|C_VestedCoil (patron:string executor:string ats:string coil-token:string amount:decimal target-account:string offset:integer duration:integer milestones:integer)
         @doc "Coils a DPTF Token and Vests its output to <target-account> \
             \ Requires that: \
             \ *]Input DPTF is part of an ATSPair, the <ats> \
@@ -932,8 +932,8 @@
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators
                         [
-                            (ref-ATSU::C_Coil patron coiler-vester ats coil-token amount)
-                            (ref-VST::C_Vest patron coiler-vester target-account c-rbt c-rbt-amount offset duration milestones)
+                            (ref-ATSU::C_Coil patron executor ats coil-token amount)
+                            (ref-VST::C_Vest patron executor target-account c-rbt c-rbt-amount offset duration milestones)
                         ]
                         []
                     )
@@ -942,7 +942,7 @@
             )
         )
     )
-    (defun ATS|C_VestedCurl (patron:string curler-vester:string ats1:string ats2:string curl-token:string amount:decimal target-account:string offset:integer duration:integer milestones:integer)
+    (defun ATS|C_VestedCurl (patron:string executor:string ats1:string ats2:string curl-token:string amount:decimal target-account:string offset:integer duration:integer milestones:integer)
         @doc "Same as <ATS|C_VestedCoil> but instead Curls the input Token. \
             \ Requires that : \
             \ *]Input DPTF is part of an ATSPair, the <ats1> \
@@ -969,8 +969,8 @@
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators
                         [
-                            (ref-ATSU::C_Curl patron curler-vester ats1 ats2 curl-token amount)
-                            (ref-VST::C_Vest patron curler-vester target-account (at "rbt-id" coil2-data) c-rbt2-amount offset duration milestones)
+                            (ref-ATSU::C_Curl patron executor ats1 ats2 curl-token amount)
+                            (ref-VST::C_Vest patron executor target-account (at "rbt-id" coil2-data) c-rbt2-amount offset duration milestones)
                         ]
                         []
                     )
@@ -1020,7 +1020,7 @@
             )
         )
     )
-    (defun ATS|C_Syphon (patron:string syphon-target:string ats:string syphon-amounts:[decimal])
+    (defun ATS|C_Syphon (patron:string executor:string executee:string ats:string syphon-amounts:[decimal])
         @doc "Syphons from an ATS Pair, extracting RTs and decreasing ATSPair Index. \
             \ Syphoning can be executed until the set up Syphon limit is achieved"
         (with-capability (P|TS)
@@ -1029,17 +1029,17 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-ATSU:module{AutostakeUsageV2} ATSU)
-                    (st:string (ref-I|OURONET::OI|UC_ShortAccount syphon-target))
+                    (st:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATSU::C_Syphon syphon-target ats syphon-amounts)
+                    (ref-ATSU::C_Syphon patron executor executee ats syphon-amounts)
                 )
                 (format "Succesfully syphoned {} RT Amount(s) from ATS-Pair {} to Target {}" [syphon-amounts ats st])
             )
         )
     )
     ;;
-    (defun ATS|C_ColdRecovery (patron:string recoverer:string ats:string ra:decimal)
+    (defun ATS|C_ColdRecovery (patron:string executor:string ats:string ra:decimal)
         @doc "Recovers Cold-RBT, disolving it, generating RTs cullable in the future. \
         \ Amount of RTs is determined by the ATS-Pair Index at the Cold Recovery Moment"
         (with-capability (P|TS)
@@ -1049,13 +1049,13 @@
                     (ref-ATSU:module{AutostakeUsageV2} ATSU)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATSU::C_ColdRecovery patron recoverer ats ra)
+                    (ref-ATSU::C_ColdRecovery patron executor ats ra)
                 )
                 (format "Succesfully placed {} {} ATS-Pair RBT into Cold Recovery" [ra ats])
             )
         )
     )
-    (defun ATS|C_Cull (patron:string culler:string ats:string)
+    (defun ATS|C_Cull (patron:string executor:string ats:string)
         @doc "Culls an ATSPair, extracting RTs that are cullable. Fix (audit finding \
             \ #32N / N1): reports a distinct 'nothing to cull yet' message when nothing \
             \ was actually culled, instead of always claiming success - the underlying \
@@ -1066,7 +1066,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-ATSU:module{AutostakeUsageV2} ATSU)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-ATSU::C_Cull culler ats)
+                        (ref-ATSU::C_Cull patron executor ats)
                     )
                     (cw:[decimal] (at "output" ico))
                     (how-many-tokens:integer (length cw))
@@ -1081,7 +1081,7 @@
         )
     )
     ;;
-    (defun ATS|C_HotRecovery (patron:string recoverer:string ats:string ra:decimal)
+    (defun ATS|C_HotRecovery (patron:string executor:string ats:string ra:decimal)
         @doc "Converts a Cold-RBT to a Hot-RBT, preparing it for Hot Recovery"
         (with-capability (P|TS)
             (let
@@ -1090,13 +1090,13 @@
                     (ref-ATSU:module{AutostakeUsageV2} ATSU)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATSU::C_HotRecovery patron recoverer ats ra)
+                    (ref-ATSU::C_HotRecovery patron executor ats ra)
                 )
                 (format "Succesfully converted {} RBT to Hot-RBT on ATS-Pair {}" [ra ats])
             )
         )
     )
-    (defun ATS|C_Reverse (patron:string recoverer:string id:string nonce:integer)
+    (defun ATS|C_Reverse (patron:string executor:string id:string nonce:integer)
         @doc "Reverses a Hot-RBT Nonce, converting it to Cold-RBT in its entirety \
             \ as the Hot-RBT doesnt have segmentation turned on"
         (with-capability (P|TS)
@@ -1108,13 +1108,13 @@
                     (ats:string (ref-DPOF::UR_RewardBearingToken id))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATSU::C_Recover patron recoverer id nonce)
+                    (ref-ATSU::C_Recover patron executor id nonce)
                 )
                 (format "Succesfully Converted Hot-RBT {} Nonce {} back into the Native RBT of ATS-Pair {}" [id nonce ats])
             )
         )
     )
-    (defun ATS|C_Redeem (patron:string redeemer:string id:string nonce:integer)
+    (defun ATS|C_Redeem (patron:string executor:string id:string nonce:integer)
         @doc "Redeems a Hot-RBT, recovering RTs"
         (with-capability (P|TS)
             (let
@@ -1125,14 +1125,14 @@
                     (ats:string (ref-DPOF::UR_RewardBearingToken id))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATSU::C_Redeem patron redeemer id nonce)
+                    (ref-ATSU::C_Redeem patron executor id nonce)
                 )
                 (format "Succesfully Redeemed Hot-RBT {} Nonce {} back in RTs for ATS-Pair {}" [id nonce ats])
             )
         )
     )
     ;;
-    (defun ATS|C_DirectRecovery (patron:string recoverer:string ats:string ra:decimal)
+    (defun ATS|C_DirectRecovery (patron:string executor:string ats:string ra:decimal)
         @doc "Directly Recovers RBT to RTs using Direct Recovery"
         (with-capability (P|TS)
             (let
@@ -1141,7 +1141,7 @@
                     (ref-ATSU:module{AutostakeUsageV2} ATSU)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATSU::C_DirectRecovery patron recoverer ats ra)
+                    (ref-ATSU::C_DirectRecovery patron executor ats ra)
                 )
                 (format "Succesfully recovered directly {} RBT Token on ATS-Pair" [ra ats])
             )

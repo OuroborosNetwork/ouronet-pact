@@ -48,11 +48,10 @@ REGISTRY = {
  ("13_OUROBOROS.pact", "C_Sublimate"):    ("client", "patronless, as C_Compress", None),
  ("13_OUROBOROS.pact", "C_SublimateV2"):  ("client", "patronless, as C_Compress", None),
  ("13_OUROBOROS.pact", "C_WithdrawFees"): ("target", "provisional", "13_OUROBOROS"),
- ("10_ATSU.pact", "C_Cull"):              ("culler", "provisional", "10_ATSU"),
- ("10_ATSU.pact", "C_Fuel"):              ("fueler", "provisional", "10_ATSU"),
- ("10_ATSU.pact", "C_Syphon"):            ("syphon-target", "provisional", "10_ATSU"),
- ("10_ATSU.pact", "C_WithdrawRoyalties"): ("target", "provisional", "10_ATSU"),
- ("10_ATSU.pact", "XI_RemoveSecondary"):  ("remover", "provisional", "10_ATSU"),
+ # 10_ATSU's five entries were CLEARED at its turn (2026-09-21): C_Cull, C_Fuel, C_Syphon,
+ # C_WithdrawRoyalties and XI_RemoveSecondary all gained a real `patron` and their TFT call
+ # sites were re-pointed to it. Removed rather than commented, which is the point of the
+ # `clears-at` column -- it names the turn that retires the entry.
  ("18_SWPLC.pact", "C_Fuel"):             ("account", "provisional", "18_SWPLC"),
  ("03_AQP.pact", "XE_TrueFungibleTransfer"): ("owner-id", "provisional", "03_AQP"),
  ("06_VCT.pact", "XI_VacateTrueFungibleFromLegs"):

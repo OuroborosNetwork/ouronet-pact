@@ -40,7 +40,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 
 # Modules whose sweep turn is DONE -- the only ones this is fair to judge. Grown per turn.
 SWEPT = ["01_DALOS.pact", "02_IGNIS.pact", "04_BRD.pact", "05_DPTF.pact", "06_DPOF.pact",
-         "08_ATS.pact", "09_TFT.pact"]
+         "08_ATS.pact", "09_TFT.pact", "10_ATSU.pact"]
 
 # INDIRECT routes: fn -> the substring its @doc must contain. Registering a route here is not a
 # waiver; the tool still requires the function to SAY it, so the justification lives next to the
@@ -50,6 +50,13 @@ INDIRECT = {
     "A_UpdatePublicKey":      "GOV|DALOS_ADMIN",
     "C_DonateStoa":           "EXECUTOR",
     "C_Issue":                "executor",
+    # ATSU's two KickStart variants. The executor FUNDS the kickstart and is proven by the
+    # transfer that spends its tokens; the capability's CAP_Owner (owner path) / GOV|ATSU_ADMIN
+    # (admin path) is a SEPARATE authority, over the POOL, held by a different account.
+    # Conflating those two is exactly what the position-aware matcher was added to stop -- it
+    # passed C_KickStart for a day on the strength of a CAP_Owner two arguments away.
+    "C_KickStart":            "XI_KickStart",
+    "A_KickStart":            "XI_KickStart",
 }
 
 # SELF-PROVING AT CREATION -- the base case of the attribution rule, resolved by the owner on
@@ -106,6 +113,35 @@ def forms(src, kind):
             j += 1
 
 
+def _cap_params(ct):
+    m = re.match(r'\s*\(defcap\s+[A-Za-z0-9|_\->]+\s*\(([^)]*)\)', ct, re.S)
+    if not m: return []
+    return [p.split(":")[0] for p in m.group(1).split()]
+
+
+def _proves(caps, cname, pos, seen):
+    """Does capability `cname` enforce ownership of ITS OWN parameter at index `pos`?
+    Follows compose-capability one hop at a time, RE-MAPPING the position at each hop."""
+    if pos is None or cname in seen: return None
+    seen = seen | {cname}
+    ct = caps.get(cname, "")
+    if not ct: return None
+    params = _cap_params(ct)
+    if pos >= len(params): return None
+    nm = params[pos]
+    if re.search(r'(CAP_EnforceAccountOwnership|UEV_StandardAccOwn|UEV_SmartAccOwn)\s+'
+                 + re.escape(nm) + r'(?![A-Za-z0-9_\-])', ct):
+        return f"via {cname} ({nm})"
+    if re.search(r'UEV_Executor\w*\s+' + re.escape(nm) + r'(?![A-Za-z0-9_\-])', ct):
+        return f"via {cname} (bound: {nm})"
+    for sm in re.finditer(r'compose-capability\s*\(([A-Za-z0-9|_\->]+)([^\n]*)', ct):
+        sub, sargs = sm.group(1), sm.group(2)
+        spos = next((k for k, v in enumerate(sargs.replace(")", " ").split()) if v == nm), None)
+        got = _proves(caps, sub, spos, seen)
+        if got: return f"via {cname} -> " + got[4:]
+    return None
+
+
 def classify(name, body, caps):
     """-> (verdict, detail). verdict in DIRECT / cap:… / FORWARDED / INDIRECT / UNPROVEN."""
     if re.search(OWN.pattern + r'\s+executor', body):
@@ -113,12 +149,16 @@ def classify(name, body, caps):
     for cm in re.finditer(r'with-capability\s*\(([A-Za-z0-9|_\->]+)([^\n]*)', body):
         cname, cargs = cm.group(1), cm.group(2)
         if not re.search(EXEC, cargs): continue
-        ct = caps.get(cname, "")
-        if OWN.search(ct):
-            return "DIRECT", f"via {cname}"
-        for sub in re.findall(r'compose-capability\s*\(([A-Za-z0-9|_\->]+)', ct):
-            if OWN.search(caps.get(sub, "")):
-                return "DIRECT", f"via {cname} -> {sub}"
+        # WHICH capability parameter did `executor` land in? Matching an ownership call
+        # anywhere in the capability is not good enough -- `CAP_Owner ats` proves the POOL
+        # OWNER while the executor sits unproven two arguments away, which is precisely the
+        # "authority proven, actor unnamed" shape this tool exists to catch. It passed
+        # ATSU::C_KickStart on that basis until 2026-09-21.
+        pos = next((k for k, v in enumerate(cargs.replace(")", " ").split())
+                    if v == "executor"), None)
+        hit = _proves(caps, cname, pos, set())
+        if hit:
+            return "DIRECT", hit
     if re.search(r'ref-[A-Za-z0-9|_\-]+::[A-Za-z0-9|_]+\s+[\w\-|]+\s+executor', body):
         return "FORWARDED", ""
     bare = name.split("|")[-1]

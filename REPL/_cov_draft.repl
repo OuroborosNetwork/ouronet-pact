@@ -186,7 +186,7 @@
     (ref-TS01-C2::ATS|C_SwitchColdRecovery aoz (ATS.UR_OwnerKonto ps) ps true)
     (ref-TS01-C2::ATS|C_Coil aoz aoz ps pd-k 1.0)
     (print (format "ps royalty accrued: {}" [(ATS.UR_RewardTokenRUR ps 3)]))
-    (ref-TS01-C2::ATS|C_WithdrawRoyalties aoz ps aoz)
+    (ref-TS01-C2::ATS|C_WithdrawRoyalties aoz (ATS.UR_OwnerKonto ps) aoz ps)
     (print "royalties withdrawn")
     ;; DirectRecovery
     (ref-TS01-C2::ATS|C_SetDirectRecoveryFee aoz (ATS.UR_OwnerKonto ps) ps 5.0)

@@ -787,7 +787,7 @@
                             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                                 [
                                     (ref-LIQUID::C_WrapStoa patron orb-sc present-stoa-balance)
-                                    (ref-ATSU::C_Fuel orb-sc liquid-idx w-stoa present-stoa-balance)
+                                    (ref-ATSU::C_Fuel patron orb-sc liquid-idx w-stoa present-stoa-balance)
                                 ]
                                 []
                             )

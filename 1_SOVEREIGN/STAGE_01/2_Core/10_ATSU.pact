@@ -70,7 +70,7 @@
     ;;  [A]
     ;;
     (defun AA_RemoveSecondary:object{IgnisCollectorV3.OutputCumulator}
-        (remover:string ats:string reward-token:string accounts-with-ats-data:[string])
+        (patron:string executor:string ats:string reward-token:string accounts-with-ats-data:[string])
     )
     (defun A_KickStart:object{IgnisCollectorV3.OutputCumulator}
         (patron:string executor:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
@@ -79,25 +79,25 @@
     ;;  [C]
     ;;
     (defun CC_RemoveSecondary:object{IgnisCollectorV3.OutputCumulator}
-        (remover:string ats:string reward-token:string)
+        (patron:string executor:string ats:string reward-token:string)
     )
-    (defun C_WithdrawRoyalties:object{IgnisCollectorV3.OutputCumulator}(ats:string target:string))
+    (defun C_WithdrawRoyalties:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string ats:string))
         ;;
-    (defun C_KickStart:object{IgnisCollectorV3.OutputCumulator} (patron:string kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
-    (defun C_Fuel:object{IgnisCollectorV3.OutputCumulator} (fueler:string ats:string reward-token:string amount:decimal))
-    (defun C_Coil:object{IgnisCollectorV3.OutputCumulator} (patron:string coiler:string ats:string rt:string amount:decimal))
-    (defun C_Curl:object{IgnisCollectorV3.OutputCumulator} (patron:string curler:string ats1:string ats2:string rt:string amount:decimal))
+    (defun C_KickStart:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
+    (defun C_Fuel:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string ats:string reward-token:string amount:decimal))
+    (defun C_Coil:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string ats:string rt:string amount:decimal))
+    (defun C_Curl:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string ats1:string ats2:string rt:string amount:decimal))
         ;;
-    (defun C_ColdRecovery:object{IgnisCollectorV3.OutputCumulator} (patron:string recoverer:string ats:string ra:decimal))
-    (defun C_Cull:object{IgnisCollectorV3.OutputCumulator}(culler:string ats:string))
+    (defun C_ColdRecovery:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string ats:string ra:decimal))
+    (defun C_Cull:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string ats:string))
         ;;
-    (defun C_HotRecovery:object{IgnisCollectorV3.OutputCumulator} (patron:string recoverer:string ats:string ra:decimal))
-    (defun C_Recover:object{IgnisCollectorV3.OutputCumulator} (patron:string recoverer:string id:string nonce:integer))
-    (defun C_Redeem:object{IgnisCollectorV3.OutputCumulator} (patron:string redeemer:string id:string nonce:integer))
+    (defun C_HotRecovery:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string ats:string ra:decimal))
+    (defun C_Recover:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string nonce:integer))
+    (defun C_Redeem:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string nonce:integer))
         ;;
-    (defun C_DirectRecovery:object{IgnisCollectorV3.OutputCumulator} (patron:string recoverer:string ats:string ra:decimal))
+    (defun C_DirectRecovery:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string ats:string ra:decimal))
         ;;
-    (defun C_Syphon:object{IgnisCollectorV3.OutputCumulator} (syphon-target:string ats:string syphon-amounts:[decimal]))
+    (defun C_Syphon:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string ats:string syphon-amounts:[decimal]))
 
 )
 ;;
@@ -340,18 +340,34 @@
     )
     ;;{C2}  Simple
     ;;{C3}  Composed
-    (defcap ATSU|C>ADMINISTRATIVE-REMOVE-SECONDARY (ats:string reward-token:string)
+    (defcap ATSU|C>ADMINISTRATIVE-REMOVE-SECONDARY (executor:string ats:string reward-token:string)
         @event
-        (compose-capability (GOV|ATSU_ADMIN))
-        (compose-capability (ATSU|C>X_REMOVE-SECONDARY ats reward-token))
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            ;;ATTRIBUTION, not authority. GOV|ATSU_ADMIN below decides WHETHER this may happen;
+            ;;<executor> records WHO made it happen, and is enforced so the record cannot be a
+            ;;name the caller invented. An admin op is exactly where this is tempting to skip --
+            ;;the key has already opened the door -- and exactly where the audit trail is worth
+            ;;most, because one key may be held by several people. (owner ruling 2026-09-21.)
+            (ref-DALOS::CAP_EnforceAccountOwnership executor)
+            (compose-capability (GOV|ATSU_ADMIN))
+            (compose-capability (ATSU|C>X_REMOVE-SECONDARY ats reward-token))
+        )
     )
-    (defcap ATSU|C>REMOVE-SECONDARY (ats:string reward-token:string)
+    (defcap ATSU|C>REMOVE-SECONDARY (executor:string ats:string reward-token:string)
         @event
         (let
             (
                 (ref-ATS:module{AutostakeV3} ATS)
             )
             (ref-ATS::CAP_Owner ats)
+            ;;BINDS the NAMED executor to the pool owner. CAP_Owner proves that SOMEBODY holding
+            ;;the pool owner's key is calling; this proves the account the caller WROTE DOWN is
+            ;;that owner. Without it the executor is decorative and the event names whoever the
+            ;;caller typed -- see StoicSyntax 2.2, "an UNENFORCED executor is worse than none".
+            (ref-ATS::UEV_ExecutorIsOwnerKonto executor ats)
             (compose-capability (ATSU|C>X_REMOVE-SECONDARY ats reward-token))
         )
     )
@@ -369,7 +385,7 @@
             (compose-capability (P|TT))
         )
     )
-    (defcap ATSU|C>WITHDRAW-ROYALTIES (ats:string target:string)
+    (defcap ATSU|C>WITHDRAW-ROYALTIES (executor:string executee:string ats:string)
         (let
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -377,8 +393,18 @@
                 (royalties:[decimal] (ref-ATS::UR_RewardTokenRUR ats 3))
                 (sum:decimal (fold (+) 0.0 royalties))
             )
-            (ref-DALOS::UEV_EnforceAccountType target false)
+            ;;THREE ROLES, and only two of them used to be visible. <executee> is where the
+            ;;royalties GO -- it is checked for account TYPE and nothing else, deliberately: the
+            ;;pool owner may pay their royalties to whomever they choose. The account that ACTS is
+            ;;the pool owner, proven by CAP_Owner below and, before this sweep, named nowhere at
+            ;;all. (patron/executor canon 2.2.)
+            (ref-DALOS::UEV_EnforceAccountType executee false)
             (ref-ATS::CAP_Owner ats)
+            ;;BINDS the NAMED executor to the pool owner. CAP_Owner proves that SOMEBODY holding
+            ;;the pool owner's key is calling; this proves the account the caller WROTE DOWN is
+            ;;that owner. Without it the executor is decorative and the event names whoever the
+            ;;caller typed -- see StoicSyntax 2.2, "an UNENFORCED executor is worse than none".
+            (ref-ATS::UEV_ExecutorIsOwnerKonto executor ats)
             (enforce (!= sum 0.0) (format "No Royalties to withdraw for ATS-Pair {}" [ats]))
             (compose-capability (P|DT2))
         )
@@ -627,7 +653,7 @@
         )
     )
     ;;
-    (defcap ATSU|C>SYPHON (ats:string syphon-amounts:[decimal])
+    (defcap ATSU|C>SYPHON (executor:string ats:string syphon-amounts:[decimal])
         @event
         (let
             (
@@ -645,6 +671,11 @@
                 (tr-nr:integer (length (ref-U|LST::UC_Search supply-check true)))
             )
             (ref-ATS::CAP_Owner ats)
+            ;;BINDS the NAMED executor to the pool owner. CAP_Owner proves that SOMEBODY holding
+            ;;the pool owner's key is calling; this proves the account the caller WROTE DOWN is
+            ;;that owner. Without it the executor is decorative and the event names whoever the
+            ;;caller typed -- see StoicSyntax 2.2, "an UNENFORCED executor is worse than none".
+            (ref-ATS::UEV_ExecutorIsOwnerKonto executor ats)
             (enforce syphoning "Syphoning must be turned ON for exec")
             (enforce (= l0 l1) "Invalid Amounts of Syphon Values")
             (enforce (> input-syphon-sum 0.0) "Invalid Syphon Amounts")
@@ -1575,7 +1606,7 @@
     )
     ;;Protection: Class 2 — SECURE
     (defun XI_RemoveSecondary:object{IgnisCollectorV3.OutputCumulator}
-        (remover:string ats:string reward-token:string)
+        (patron:string remover:string ats:string reward-token:string)
         @doc "Fix (audit finding #1C / C2): (1) the account list to reshape is ALWAYS derived on-chain \
             \ here via <ATS.URH_ExistingAutostakePairs ats> — never trusted from a caller — so removal can \
             \ no longer skip an account and leave its stored positions desynced from the live reward-token \
@@ -1613,10 +1644,10 @@
                     )
                 )
                 (ico2:object{IgnisCollectorV3.OutputCumulator}
-                    (ref-TFT::C_Transfer remover ATS|SC_NAME remover reward-token remove-sum true)
+                    (ref-TFT::C_Transfer patron ATS|SC_NAME remover reward-token remove-sum true)
                 )
                 (ico3:object{IgnisCollectorV3.OutputCumulator}
-                    (ref-TFT::C_Transfer remover remover ATS|SC_NAME primal-rt remove-sum true)
+                    (ref-TFT::C_Transfer patron remover ATS|SC_NAME primal-rt remove-sum true)
                 )
             )
             ;;1]The RT to be removed, is transfered to the remover, from the ATS|SC_NAME
@@ -1647,7 +1678,7 @@
     ;;{5.7}  User [A/C]
     ;;
     (defun AA_RemoveSecondary:object{IgnisCollectorV3.OutputCumulator}
-        (remover:string ats:string reward-token:string accounts-with-ats-data:[string])
+        (patron:string executor:string ats:string reward-token:string accounts-with-ats-data:[string])
         @doc "Administrative Variant. Fix (audit finding #1C / C2b): <accounts-with-ats-data> is now \
             \ IGNORED — XI_RemoveSecondary always re-derives the complete account list on-chain via \
             \ <ATS.URH_ExistingAutostakePairs ats> itself, so a caller-supplied list can no longer be \
@@ -1655,31 +1686,41 @@
             \ only for interface-signature compatibility (AutostakeUsageV2 is unchanged); do not rely on \
             \ its contents."
         (P|UEV_IMC)
-        (with-capability (ATSU|C>ADMINISTRATIVE-REMOVE-SECONDARY ats reward-token)
-            (XI_RemoveSecondary remover ats reward-token)
+        (with-capability (ATSU|C>ADMINISTRATIVE-REMOVE-SECONDARY executor ats reward-token)
+            (XI_RemoveSecondary patron executor ats reward-token)
         )
     )
     (defun A_KickStart:object{IgnisCollectorV3.OutputCumulator}
         (patron:string executor:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
         @doc "Administrative variant (audit finding #11M / M2): forgoes pool ownership \
             \ for module governance (GOV|ATSU_ADMIN); resulting index is only bound by \
-            \ the shared 0.1 floor, no ceiling - for legitimate ratios above 100.0."
+            \ the shared 0.1 floor, no ceiling - for legitimate ratios above 100.0. \
+            \ \
+            \ Executor: ENFORCED INDIRECTLY, by the operation's own first act -- XI_KickStart \
+            \ sends the reward tokens with TFT::C_Transfer, where <executor> is the SENDER, so \
+            \ DPTF|C>X-TRANSFER -> CAP_EnforceAccountOwnership proves it. \
+            \ \
+            \ NOTE THE TWO AUTHORITIES, which are easy to conflate: the capability's own \
+            \ CAP_Owner (owner path) / GOV|ATSU_ADMIN (admin path) decides WHETHER the pool may \
+            \ be kickstarted and says nothing about the executor -- they are different accounts \
+            \ and both must sign. <executor> FUNDS it; the pool authority PERMITS it. \
+            \ (patron/executor canon 2.2, indirect route named.)"
         (P|UEV_IMC)
         (with-capability (ATSU|C>ADMINISTRATIVE-KICKSTART executor ats rt-amounts rbt-request-amount)
             (XI_KickStart patron executor ats rt-amounts rbt-request-amount)
         )
     )
     (defun CC_RemoveSecondary:object{IgnisCollectorV3.OutputCumulator}
-        (remover:string ats:string reward-token:string)
+        (patron:string executor:string ats:string reward-token:string)
         @doc "Client Variant. XI_RemoveSecondary derives the complete account list itself via \
             \ <ATS.URH_ExistingAutostakePairs ats>."
         (P|UEV_IMC)
-        (with-capability (ATSU|C>REMOVE-SECONDARY ats reward-token)
-            (XI_RemoveSecondary remover ats reward-token)
+        (with-capability (ATSU|C>REMOVE-SECONDARY executor ats reward-token)
+            (XI_RemoveSecondary patron executor ats reward-token)
         )
     )
     (defun C_WithdrawRoyalties:object{IgnisCollectorV3.OutputCumulator}
-        (ats:string target:string)
+        (patron:string executor:string executee:string ats:string)
         @doc "Fix (audit finding #33N): C_MultiTransfer debits every leg unconditionally - a \
             \ reward-token with a zero accrued royalty (routine whenever a pool has more than \
             \ one registered RT and royalty hasn't accrued evenly across all of them) hit \
@@ -1688,7 +1729,7 @@
             \ handing off to C_MultiTransfer - the RUR-reset loop below still zeroes every RT's \
             \ bucket, zero or not, so no accounting is skipped, only the doomed zero-amount leg."
         (P|UEV_IMC)
-        (with-capability (ATSU|C>WITHDRAW-ROYALTIES ats target)
+        (with-capability (ATSU|C>WITHDRAW-ROYALTIES executor executee ats)
             (let
                 (
                     (ref-ATS:module{AutostakeV3} ATS)
@@ -1712,9 +1753,9 @@
                 )
                 ;;2]Withdraw Royalties to Target - only the reward-tokens with a nonzero balance
                 (ref-TFT::C_MultiTransfer
-                    target
+                    patron
                     ATS|SC_NAME
-                    target
+                    executee
                     (map (lambda (index:integer) (at index reward-tokens)) nonzero-idx)
                     (map (lambda (index:integer) (at index royalties)) nonzero-idx)
                     true
@@ -1723,16 +1764,26 @@
         )
     )
     (defun C_KickStart:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
+        (patron:string executor:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
         @doc "Owner-facing variant. Fix (audit finding #11M / M2): resulting index now \
-            \ bounded to [0.1, 100.0] via ATSU|C>KICKSTART / ATSU|C>X_KICKSTART."
+            \ bounded to [0.1, 100.0] via ATSU|C>KICKSTART / ATSU|C>X_KICKSTART. \
+            \ \
+            \ Executor: ENFORCED INDIRECTLY, by the operation's own first act -- XI_KickStart \
+            \ sends the reward tokens with TFT::C_Transfer, where <executor> is the SENDER, so \
+            \ DPTF|C>X-TRANSFER -> CAP_EnforceAccountOwnership proves it. \
+            \ \
+            \ NOTE THE TWO AUTHORITIES, which are easy to conflate: the capability's own \
+            \ CAP_Owner (owner path) / GOV|ATSU_ADMIN (admin path) decides WHETHER the pool may \
+            \ be kickstarted and says nothing about the executor -- they are different accounts \
+            \ and both must sign. <executor> FUNDS it; the pool authority PERMITS it. \
+            \ (patron/executor canon 2.2, indirect route named.)"
         (P|UEV_IMC)
-        (with-capability (ATSU|C>KICKSTART kickstarter ats rt-amounts rbt-request-amount)
-            (XI_KickStart patron kickstarter ats rt-amounts rbt-request-amount)
+        (with-capability (ATSU|C>KICKSTART executor ats rt-amounts rbt-request-amount)
+            (XI_KickStart patron executor ats rt-amounts rbt-request-amount)
         )
     )
     (defun C_Fuel:object{IgnisCollectorV3.OutputCumulator}
-        (fueler:string ats:string reward-token:string amount:decimal)
+        (patron:string executor:string ats:string reward-token:string amount:decimal)
         @doc "Fuels an <ats> ATS-Pair, increasing it Index."
         (P|UEV_IMC)
         (let
@@ -1742,15 +1793,15 @@
             )
             (with-capability (ATSU|C>FUEL ats reward-token)
                 (ref-ATS::XE_UpdateRUR ats reward-token 1 true amount)
-                (ref-TFT::C_Transfer fueler fueler ATS|SC_NAME reward-token amount true)
+                (ref-TFT::C_Transfer patron executor ATS|SC_NAME reward-token amount true)
             )
         )
     )
     (defun C_Coil:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string coiler:string ats:string rt:string amount:decimal)
+        (patron:string executor:string ats:string rt:string amount:decimal)
         @doc "Autostakes an <rt> Token on <ats> ATS-Pair. \
             \ If Hibernate is on, retains the <c-rbt-amount>, which will then be hibernated \
-            \ from the TALOS module, and sent as Hibernated H| Token to the <coiler>"
+            \ from the TALOS module, and sent as Hibernated H| Token to the <executor>"
         (P|UEV_IMC)
         (with-capability (ATSU|C>COIL ats rt)
             (let
@@ -1770,13 +1821,13 @@
                     (c-rbt-amount:decimal (at "rbt-amount" coil-data))
                     ;;
                     (ico1:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-TFT::C_Transfer patron coiler ATS|SC_NAME rt amount true)
+                        (ref-TFT::C_Transfer patron executor ATS|SC_NAME rt amount true)
                     )
                     (ico2:object{IgnisCollectorV3.OutputCumulator}
                         (ref-DPTF::C_Mint patron ATS|SC_NAME c-rbt c-rbt-amount false)
                     )
                     (ico3:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-TFT::C_Transfer patron ATS|SC_NAME coiler c-rbt c-rbt-amount true)
+                        (ref-TFT::C_Transfer patron ATS|SC_NAME executor c-rbt c-rbt-amount true)
                     )
                 )
                 (ref-ATS::XE_UpdateRUR ats rt 1 true input-amount)
@@ -1789,8 +1840,8 @@
         )
     )
     (defun C_Curl:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string curler:string ats1:string ats2:string rt:string amount:decimal)
-        @doc "Coils through 2 ATS-Pairs, outputting the <c-rbt2> to the <curler> \
+        (patron:string executor:string ats1:string ats2:string rt:string amount:decimal)
+        @doc "Coils through 2 ATS-Pairs, outputting the <c-rbt2> to the <executor> \
             \ Both <ats1> and <ats2> must have <hibernation> off"
         (P|UEV_IMC)
         (with-capability (ATSU|C>CURL ats1 ats2 rt)
@@ -1820,7 +1871,7 @@
                     (c-rbt2-amount:decimal (at "rbt-amount" coil2-data))
                     ;;
                     (ico1:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-TFT::C_Transfer patron curler ATS|SC_NAME rt amount true)
+                        (ref-TFT::C_Transfer patron executor ATS|SC_NAME rt amount true)
                     )
                     (ico2:object{IgnisCollectorV3.OutputCumulator}
                         (ref-DPTF::C_Mint patron ATS|SC_NAME c-rbt1 c-rbt1-amount false)
@@ -1829,7 +1880,7 @@
                         (ref-DPTF::C_Mint patron ATS|SC_NAME c-rbt2 c-rbt2-amount false)
                     )
                     (ico4:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-TFT::C_Transfer patron ATS|SC_NAME curler c-rbt2 c-rbt2-amount true)
+                        (ref-TFT::C_Transfer patron ATS|SC_NAME executor c-rbt2 c-rbt2-amount true)
                     )
                 )
                 (ref-ATS::XE_UpdateRUR ats1 rt 1 true input1-amount)
@@ -1847,17 +1898,17 @@
         )
     )
     (defun C_ColdRecovery:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string recoverer:string ats:string ra:decimal)
+        (patron:string executor:string ats:string ra:decimal)
         (P|UEV_IMC)
-        (with-capability (ATSU|C>DEPLOY ats recoverer)
-            (XI_DeployAccount ats recoverer)
+        (with-capability (ATSU|C>DEPLOY ats executor)
+            (XI_DeployAccount ats executor)
             (let
                 (
                     (ref-ATS:module{AutostakeV3} ATS)
-                    (usable-cold-recovery-position:integer (ref-ATS::URC_WhichPosition ats ra recoverer))
+                    (usable-cold-recovery-position:integer (ref-ATS::URC_WhichPosition ats ra executor))
                 )
                 (enforce (!= usable-cold-recovery-position 0) "Cold Recovery Unavailable! All existing Positions are used!")
-                (with-capability (ATSU|C>COLD_RECOVERY recoverer ats ra usable-cold-recovery-position)
+                (with-capability (ATSU|C>COLD_RECOVERY executor ats ra usable-cold-recovery-position)
                     (let
                         (
                             (ref-U|LST:module{StringProcessorV2} U|LST)
@@ -1894,19 +1945,19 @@
                                 (ref-IGNIS::UDC_ConstructOutputCumulator price ATS|SC_NAME trigger [])
                             )
                             (ico1:object{IgnisCollectorV3.OutputCumulator}
-                                (ref-TFT::C_Transfer patron recoverer ATS|SC_NAME c-rbt ra true)
+                                (ref-TFT::C_Transfer patron executor ATS|SC_NAME c-rbt ra true)
                             )
                             (ico2:object{IgnisCollectorV3.OutputCumulator}
                                 (ref-DPTF::C_Burn patron ATS|SC_NAME c-rbt ra)
                             )
                             ;;
                             (c-fr:bool (ref-ATS::UR_ColdRecoveryFeeRedirection ats))
-                            (cull-time:time (ref-ATS::URC_CullColdRecoveryTime ats recoverer))
+                            (cull-time:time (ref-ATS::URC_CullColdRecoveryTime ats executor))
                             ;;
                             (ico3:object{IgnisCollectorV3.OutputCumulator}
                                 (if (!= usable-cold-recovery-position -1)
                                     EOC
-                                    (URCi_UnlimitedUncoilCumulator ats recoverer)
+                                    (URCi_UnlimitedUncoilCumulator ats executor)
                                 )
                             )
                             (ico4:object{IgnisCollectorV3.OutputCumulator}
@@ -1944,11 +1995,11 @@
                             )
                             (enumerate 0 (- (length rt-lst) 1))
                         )
-                        (XIv_StoreUnstakeObject ats recoverer usable-cold-recovery-position
+                        (XIv_StoreUnstakeObject ats executor usable-cold-recovery-position
                             { "reward-tokens"   : positive-c-fr
                             , "cull-time"       : cull-time}
                         )
-                        (XI_Normalize ats recoverer)
+                        (XI_Normalize ats executor)
                         (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico0 ico1 ico2 ico3 ico4] [])
                     )
                 )
@@ -1956,9 +2007,9 @@
         )
     )
     (defun C_Cull:object{IgnisCollectorV3.OutputCumulator}
-        (culler:string ats:string)
+        (patron:string executor:string ats:string)
         (P|UEV_IMC)
-        (with-capability (ATSU|C>CULL culler ats)
+        (with-capability (ATSU|C>CULL executor ats)
             (let
                 (
                     (ref-U|LST:module{StringProcessorV2} U|LST)
@@ -1968,14 +2019,14 @@
                     (ref-TFT:module{TrueFungibleTransferV2} TFT)
                     ;;
                     (rt-lst:[string] (ref-ATS::UR_RewardTokenList ats))
-                    (c0:[decimal] (XI_MultiCull ats culler))
-                    (c1:[decimal] (XI_SingleCull ats culler 1))
-                    (c2:[decimal] (XI_SingleCull ats culler 2))
-                    (c3:[decimal] (XI_SingleCull ats culler 3))
-                    (c4:[decimal] (XI_SingleCull ats culler 4))
-                    (c5:[decimal] (XI_SingleCull ats culler 5))
-                    (c6:[decimal] (XI_SingleCull ats culler 6))
-                    (c7:[decimal] (XI_SingleCull ats culler 7))
+                    (c0:[decimal] (XI_MultiCull ats executor))
+                    (c1:[decimal] (XI_SingleCull ats executor 1))
+                    (c2:[decimal] (XI_SingleCull ats executor 2))
+                    (c3:[decimal] (XI_SingleCull ats executor 3))
+                    (c4:[decimal] (XI_SingleCull ats executor 4))
+                    (c5:[decimal] (XI_SingleCull ats executor 5))
+                    (c6:[decimal] (XI_SingleCull ats executor 6))
+                    (c7:[decimal] (XI_SingleCull ats executor 7))
                     (ca:[[decimal]] [c0 c1 c2 c3 c4 c5 c6 c7])
                     (cw:[decimal] (ref-U|DEC::UC_AddHybridArray ca))
                     ;;
@@ -1993,7 +2044,7 @@
                                     (if (!= (at idx cw) 0.0)
                                         (do
                                             (ref-ATS::XE_UpdateRUR ats (at idx rt-lst) 2 false (at idx cw))
-                                            (ref-TFT::C_Transfer culler ATS|SC_NAME culler (at idx rt-lst) (at idx cw) true)
+                                            (ref-TFT::C_Transfer patron ATS|SC_NAME executor (at idx rt-lst) (at idx cw) true)
                                         )
                                         EOC
                                     )
@@ -2007,13 +2058,13 @@
                         (ref-IGNIS::UDC_ConcatenateOutputCumulators folded-obj [])
                     )
                 )
-                (XI_Normalize ats culler)
+                (XI_Normalize ats executor)
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2] cw)
             )
         )
     )
     (defun C_HotRecovery:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string recoverer:string ats:string ra:decimal)
+        (patron:string executor:string ats:string ra:decimal)
         (P|UEV_IMC)
         ;;THE CAPABILITY IS ACQUIRED BEFORE THE `let`, and that ordering is load-bearing -- the same
         ;;repair C_Recover received on 2026-09-12, for the same reason, twenty lines below.
@@ -2024,7 +2075,7 @@
         ;;plain defun parameters, so hoisting costs nothing and is the shape StoicSyntax asks for:
         ;;validation in the defcap, work in the body.
         ;;Pinned by RedTeam/[RT-H]_InputDomain.repl <<RT-H-003c>>/<<RT-H-003e>>.
-        (with-capability (ATS|C>HOT_RECOVERY recoverer ats ra)
+        (with-capability (ATS|C>HOT_RECOVERY executor ats ra)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
@@ -2051,7 +2102,7 @@
                             )
                         )
                         (ico2:object{IgnisCollectorV3.OutputCumulator}
-                            (ref-TFT::C_Transfer patron recoverer ATS|SC_NAME c-rbt ra true)
+                            (ref-TFT::C_Transfer patron executor ATS|SC_NAME c-rbt ra true)
                         )
                         (ico3:object{IgnisCollectorV3.OutputCumulator}
                             (ref-DPTF::C_Burn patron ATS|SC_NAME c-rbt ra)
@@ -2060,7 +2111,7 @@
                             (ref-DPOF::C_Mint patron ATS|SC_NAME h-rbt ra [meta-data-obj])
                         )
                         (ico5:object{IgnisCollectorV3.OutputCumulator}
-                            (ref-DPOF::C_Transfer patron ATS|SC_NAME recoverer h-rbt [new-nonce] true)
+                            (ref-DPOF::C_Transfer patron ATS|SC_NAME executor h-rbt [new-nonce] true)
                         )
                     )
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3 ico4 ico5] [])
@@ -2069,7 +2120,7 @@
         )
     )
     (defun C_Recover:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string recoverer:string id:string nonce:integer)
+        (patron:string executor:string id:string nonce:integer)
         (P|UEV_IMC)
         ;;THE CAPABILITY IS ACQUIRED BEFORE THE `let`, and that ordering is load-bearing.
         ;;FIXED 2026-09-12: it used to sit INSIDE the let body, so the eager binding group ran first
@@ -2079,7 +2130,7 @@
         ;;`(enforce iz-rbt "Invalid Hot-RBT")` -- written for exactly that input -- was never reached.
         ;;Both cap arguments are plain defun parameters, so hoisting costs nothing, and it is also the
         ;;shape StoicSyntax asks for: validation in the defcap, work in the body.
-        (with-capability (ATS|C>RECOVER recoverer id nonce)
+        (with-capability (ATS|C>RECOVER executor id nonce)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
@@ -2095,7 +2146,7 @@
                 (let
                     (
                         (ico1:object{IgnisCollectorV3.OutputCumulator}
-                            (ref-DPOF::C_Transfer patron recoverer ATS|SC_NAME id [nonce] true)
+                            (ref-DPOF::C_Transfer patron executor ATS|SC_NAME id [nonce] true)
                         )
                         (ico2:object{IgnisCollectorV3.OutputCumulator}
                             (ref-DPOF::C_Burn patron ATS|SC_NAME id nonce nonce-supply)
@@ -2104,7 +2155,7 @@
                             (ref-DPTF::C_Mint patron ATS|SC_NAME c-rbt nonce-supply false)
                         )
                         (ico4:object{IgnisCollectorV3.OutputCumulator}
-                            (ref-TFT::C_Transfer patron ATS|SC_NAME recoverer c-rbt nonce-supply true)
+                            (ref-TFT::C_Transfer patron ATS|SC_NAME executor c-rbt nonce-supply true)
                         )
                     )
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3 ico4] [])
@@ -2113,7 +2164,7 @@
         )
     )
     (defun C_Redeem:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string redeemer:string id:string nonce:integer)
+        (patron:string executor:string id:string nonce:integer)
         (P|UEV_IMC)
         ;;CAPABILITY BEFORE THE `let` -- same fix as C_Recover above, same cause.
         ;;FIXED 2026-09-12: it used to sit inside the let body, and the eager binding group reads
@@ -2121,7 +2172,7 @@
         ;;For a token that is not reward-bearing `ats` is the BAR sentinel, so that second read looks
         ;;up ATS pair `|` and aborts before the cap can raise its own "Invalid Hot-RBT". Both cap
         ;;arguments are plain defun parameters, so the hoist is free.
-        (with-capability (ATSU|C>REDEEM redeemer id)
+        (with-capability (ATSU|C>REDEEM executor id)
         (let
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
@@ -2167,13 +2218,13 @@
                 (let
                     (
                         (ico1:object{IgnisCollectorV3.OutputCumulator}
-                            (ref-DPOF::C_Transfer patron redeemer ATS|SC_NAME id [nonce] true)
+                            (ref-DPOF::C_Transfer patron executor ATS|SC_NAME id [nonce] true)
                         )
                         (ico2:object{IgnisCollectorV3.OutputCumulator}
                             (ref-DPOF::C_Burn patron ATS|SC_NAME id nonce nonce-supply)
                         )
                         (ico3:object{IgnisCollectorV3.OutputCumulator}
-                            (ref-TFT::C_MultiTransfer patron ATS|SC_NAME redeemer rt-lst earned-rts true)
+                            (ref-TFT::C_MultiTransfer patron ATS|SC_NAME executor rt-lst earned-rts true)
                         )
                         (folded-obj:[object{IgnisCollectorV3.OutputCumulator}]
                             (if have-fee-rts
@@ -2213,9 +2264,9 @@
         )
     )
     (defun C_DirectRecovery:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string recoverer:string ats:string ra:decimal)
+        (patron:string executor:string ats:string ra:decimal)
         (P|UEV_IMC)
-        (with-capability (ATS|C>DIRECT_RECOVERY recoverer ats ra)
+        (with-capability (ATS|C>DIRECT_RECOVERY executor ats ra)
             (let
                 (
                     (ref-U|ATS:module{UtilityAtsV3} U|ATS)
@@ -2247,11 +2298,11 @@
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators 
                     [
                         ;;1]Transfer c-rbt to ATS|SC_NAME
-                        (ref-TFT::C_Transfer patron recoverer ATS|SC_NAME c-rbt ra true)
+                        (ref-TFT::C_Transfer patron executor ATS|SC_NAME c-rbt ra true)
                         ;;2]Burn it
                         (ref-DPTF::C_Burn patron ATS|SC_NAME c-rbt ra)
                         ;;3]Release equivalnet RTs (minus fee)
-                        (ref-TFT::C_MultiTransfer patron ATS|SC_NAME recoverer reward-tokens release-amounts true)
+                        (ref-TFT::C_MultiTransfer patron ATS|SC_NAME executor reward-tokens release-amounts true)
                     ] 
                     []
                 )
@@ -2259,9 +2310,9 @@
         )
     )
     (defun C_Syphon:object{IgnisCollectorV3.OutputCumulator}
-        (syphon-target:string ats:string syphon-amounts:[decimal])
+        (patron:string executor:string executee:string ats:string syphon-amounts:[decimal])
         (P|UEV_IMC)
-        (with-capability (ATSU|C>SYPHON ats syphon-amounts)
+        (with-capability (ATSU|C>SYPHON executor ats syphon-amounts)
             (let
                 (
                     (ref-U|LST:module{StringProcessorV2} U|LST)
@@ -2278,7 +2329,7 @@
                                     (if (> (at idx syphon-amounts) 0.0)
                                         (do
                                             (ref-ATS::XE_UpdateRUR ats (at idx rt-lst) 1 false (at idx syphon-amounts))
-                                            (ref-TFT::C_Transfer syphon-target ATS|SC_NAME syphon-target (at idx rt-lst) (at idx syphon-amounts) true)
+                                            (ref-TFT::C_Transfer patron ATS|SC_NAME executee (at idx rt-lst) (at idx syphon-amounts) true)
                                         )
                                         EOC
                                     )

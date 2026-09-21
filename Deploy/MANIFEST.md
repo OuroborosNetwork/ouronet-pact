@@ -88,8 +88,8 @@ Read top to bottom. **`step`** is the position in the full sequence; **`file`** 
 | 2 | **02** | DEPLOY 3 modules: 01_DALOS, 02_IGNIS, 04_BRD | 198,069 | `Deploy/1_Pure/02_deploy.pact` |
 | 3 | **03** | DEPLOY 3 modules: 05_DPTF, 06_DPOF, 07_ELITE | 332,277 | `Deploy/1_Pure/03_deploy.pact` |
 | 4 | **04** | DEPLOY 2 modules: 08_ATS, 09_TFT | 285,032 | `Deploy/1_Pure/04_deploy.pact` |
-| 5 | **05** | DEPLOY 4 modules: 10_ATSU, 11_VST, 12_LIQUID, 13_OUROBOROS | 397,481 | `Deploy/1_Pure/05_deploy.pact` |
-| 6 | **06** | DEPLOY 2 modules: 14_SWPT, 15_SWP | 176,138 | `Deploy/1_Pure/06_deploy.pact` |
+| 5 | **05** | DEPLOY 3 modules: 10_ATSU, 11_VST, 12_LIQUID | 342,033 | `Deploy/1_Pure/05_deploy.pact` |
+| 6 | **06** | DEPLOY 3 modules: 13_OUROBOROS, 14_SWPT, 15_SWP | 231,586 | `Deploy/1_Pure/06_deploy.pact` |
 | 7 | **07** | DEPLOY 2 modules: 16_SWPI, 17_SWPL | 235,153 | `Deploy/1_Pure/07_deploy.pact` |
 | 8 | **08** | DEPLOY 3 modules: 18_SWPLC, 19_SWPU, 20_MTX-SWP | 323,224 | `Deploy/1_Pure/08_deploy.pact` |
 | 9 | **09** | DEPLOY 4 modules: 21_CODEX, 22_PYTHIA, 01_TS01-A, 02_TS01-C1 | 252,440 | `Deploy/1_Pure/09_deploy.pact` |

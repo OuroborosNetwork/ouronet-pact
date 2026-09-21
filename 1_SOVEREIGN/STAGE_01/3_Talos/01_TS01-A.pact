@@ -73,7 +73,7 @@
     ;;
     (defun DPOF|A_DeployAccount (patron:string id:string account:string))
     ;;
-    (defun ATS|AA_RemoveSecondary (patron:string remover:string ats:string reward-token:string accounts-with-ats-data:[string]))
+    (defun ATS|AA_RemoveSecondary (patron:string executor:string ats:string reward-token:string accounts-with-ats-data:[string]))
     (defun ATS|A_KickStart (executor:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
     ;;
     (defun LIQUID|A_MigrateLiquidFunds:decimal (migration-target-stoa-account:string))
@@ -676,7 +676,7 @@
         )
     )
     ;;  [ATS_Administrator]
-    (defun ATS|AA_RemoveSecondary (patron:string remover:string ats:string reward-token:string accounts-with-ats-data:[string])
+    (defun ATS|AA_RemoveSecondary (patron:string executor:string ats:string reward-token:string accounts-with-ats-data:[string])
         @doc "Administrative Variant, queries <accounts-with-ats-data> via <DPTF-DPOF-ATS|UR_FilterKeysForInfo>"
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
@@ -685,7 +685,7 @@
                     (ref-ATSU:module{AutostakeUsageV2} ATSU)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATSU::AA_RemoveSecondary remover ats reward-token accounts-with-ats-data)
+                    (ref-ATSU::AA_RemoveSecondary patron executor ats reward-token accounts-with-ats-data)
                 )
             )
         )

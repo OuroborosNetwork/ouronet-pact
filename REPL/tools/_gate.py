@@ -459,6 +459,17 @@ def main():
     # yet isolated". The cause was the arity. That is why this is gate-fatal rather than a report:
     # the sweep changes signatures module by module, and a caller no test exercises is exactly the
     # one that will not be found by running anything.
+    # STRING CONTINUATIONS FIRST -- it is the cheapest check in the gate and it guards against
+    # the only failure that makes every OTHER check meaningless: a module that does not load.
+    # A malformed `\` inside a string is a LOAD error, so 86 suites report BROKEN with zero
+    # assertions; _modulecomplete cheerfully reported 7/7 on such a file on 2026-09-21. Run it
+    # before anything expensive.
+    _ds = subprocess.run([sys.executable, "tools/_docstrings.py"],
+                         capture_output=True, text=True)
+    if _ds.returncode != 0:
+        print(_ds.stdout + _ds.stderr)
+        sys.exit("GATE FAILED: a malformed string continuation -- the module will not load.")
+
     _ca = subprocess.run([sys.executable, "tools/_callarity.py"],
                          capture_output=True, text=True)
     if _ca.returncode != 0:

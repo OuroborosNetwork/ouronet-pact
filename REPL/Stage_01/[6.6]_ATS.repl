@@ -1196,7 +1196,7 @@
         (ouro:string "OURO-98c486052a51")
     )
 
-    (ref-TS01-C2::ATS|C_Syphon patron emma ps [17.647058823529411764705882 5.294117647058823529411765 7.058823529411764705882353])
+    (ref-TS01-C2::ATS|C_Syphon patron (ATS.UR_OwnerKonto ps) emma ps [17.647058823529411764705882 5.294117647058823529411765 7.058823529411764705882353])
     (ref-TS01-C2::ATS|C_ToggleParameterLock patron (ATS.UR_OwnerKonto ps) ps true)
     [
         (format "Plebeic Strength Setting Lock state is {}" [(ref-ATS::UR_Lock ps)])
@@ -3821,7 +3821,7 @@
                 (expect "royalty accrued from the Coil above (nonzero)" true (> royalty-sum-before 0.0))
             ]
         )
-        (ref-TS01-C2::ATS|C_WithdrawRoyalties aoz ps emma)
+        (ref-TS01-C2::ATS|C_WithdrawRoyalties aoz (ATS.UR_OwnerKonto ps) emma ps)
         (map print
             [
                 (expect "all royalty buckets reset to 0.0 after withdrawal"

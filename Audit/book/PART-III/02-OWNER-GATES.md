@@ -185,8 +185,9 @@ plainly because an audit that only lists solved problems is not telling you wher
 
 A DALOS account row carries a `public` field. It is **not** the account's Kadena signing key. The
 Kadena key is 64 hex characters and lives inside the account's `guard`; `public` is a **574–576
-character** string over a 50-symbol alphabet with a `9G.` / `9H.` version prefix — an Ouronet
-keypair of its own, used off-chain by the client for the account's key material.
+character** string over a 50-symbol alphabet with a `9G.` / `9H.` version prefix — the public half
+of an Ouronet keypair of its own, against which the client verifies **Schnorr signatures** made
+with the account's private half. A wrong string does not weaken that verification; it breaks it.
 
 It is written once, at deployment, by whoever calls the deploy entrypoint. Nothing reads it back
 for validation. The only path that can change it afterwards is `DALOS::A_UpdatePublicKey`, which is
@@ -221,7 +222,7 @@ else**, which would publish a recipient the account's owner cannot read.
 
 The loss is borne by the account itself in the first case and by its correspondents in the second.
 No funds are reachable through it: `public` gates nothing on-chain, holds no authority, and is
-consulted by no capability. It is a *correctness* property of account identity, not an
+consulted by no capability — the Schnorr verification it serves happens off-chain, in the client. It is a *correctness* property of account identity, not an
 authorisation one — which is why the system stays safe without it and merely becomes wrong for that
 account.
 

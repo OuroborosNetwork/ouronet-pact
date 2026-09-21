@@ -9,7 +9,7 @@ session must be able to see what is done by reading this file, without reconstru
 `git log`. If the table and `_executorplan.py` disagree, **the tool is right** — regenerate.
 
 **Status:** preparation complete, sweep starting at `01_DALOS`.
-**273 done · 503 remaining · 46 modules · 7 swept (01_DALOS, 02_IGNIS, 04_BRD, 05_DPTF, 06_DPOF, 08_ATS, 09_TFT) · 1 archived (00_DPMF).**
+**302 done · 474 remaining · 46 modules · 8 swept (01_DALOS, 02_IGNIS, 04_BRD, 05_DPTF, 06_DPOF, 08_ATS, 09_TFT, 10_ATSU) · 1 archived (00_DPMF).**
 (Ground truth is `python3 REPL/tools/_executorplan.py`, never this line.)
 
 ---
@@ -259,7 +259,7 @@ same tools with those three properties.
 | [x] 6 | `06_DPOF.pact` | 0 | 1 | 20 | **21** | `DemiourgosPactOrtoFungibleV2`, `DpofUdcV2` — done, incl. `XBv_DeployAccount` |
 | [x] 7 | `08_ATS.pact` | 0 | 3 | 21 | **24** | `AutostakeV3` |
 | [x] 8 | `09_TFT.pact` | 0 | 0 | 5 | **5** | `TrueFungibleTransferV2` — done; +`DPTF\|C_ClearDispoForeign`. **Found a live security hole**, see §4d |
-| [ ] 9 | `10_ATSU.pact` | 0 | 0 | 14 | **14** | `AutostakeUsageV2` |
+| [x] 9 | `10_ATSU.pact` | 2 | 1 | 12 | **15** | `AutostakeUsageV2` — done; 2 three-role functions the plan could not see, see §4g |
 | [ ] 10 | `11_VST.pact` | 0 | 5 | 24 | **29** | `VestingV2` |
 | [ ] 11 | `12_LIQUID.pact` | 0 | 0 | 5 | **5** | `StoaLiquidStakingV2` |
 | [ ] 12 | `13_OUROBOROS.pact` | 0 | 0 | 5 | **5** | `OuroborosV2` |
@@ -425,6 +425,46 @@ not exist.
 
 Full statement: `StoicSyntax-Prefixes.md` §2.2, *"WHY THE EXECUTOR IS UNCONDITIONAL"* and its
 *"base case"* subsection.
+
+### 4g. LESSON FROM MODULE 9 — "AUTHORITY PROVEN, ACTOR UNRECORDED" IS A RECURRING SHAPE
+
+Third instance in three modules, so it is a shape and not a coincidence:
+
+| module | entrypoint | what the capability proved | who was named |
+|---|---|---|---|
+| 05_DPTF | `A_WipeTreasuryDebt` + 2 | `GOV\|DPTF_ADMIN` | nobody — executor decorative |
+| 09_TFT | `C_ClearDispo` | nothing at all | nobody |
+| 10_ATSU | `C_WithdrawRoyalties`, `C_Syphon` | `CAP_Owner ats` — the POOL OWNER | the RECIPIENT |
+
+**How to spot it fast.** Read the capability for an ownership call whose argument is *derived*
+(`(UR_OwnerKonto ats)`, `(UR_Konto id)`) rather than a parameter the entrypoint took. If the
+enforcement is on a derived account, the ACTING account is not in the signature — and the
+parameter that looks like an actor is usually the recipient. The fix is the same every time:
+name the executor, bind it with `UEV_ExecutorIs*`, demote the old parameter to `executee`.
+
+**And it fools tools, not just readers.** `_executorenforced.py` PASSED `ATSU::C_KickStart`
+because `CAP_Owner` appeared somewhere in a capability that also received `executor` — two
+arguments away from anything that proved it. It is now position-aware: it finds which capability
+PARAMETER the executor landed in and requires the enforcement to be on THAT name, re-mapping the
+position at each `compose-capability` hop. Re-run after the change, it immediately found both
+KickStart variants.
+
+### 4h. TWO THINGS THAT COST A GATE RUN EACH, AND THE CHECKS THAT NOW CATCH THEM
+
+1. **A malformed `@doc` string continuation is a LOAD error.** Appending to an existing `@doc` by
+   naive concatenation produces `… text.            \ \` on one line; `\ ` is not a valid escape,
+   the module does not compile, and **86 suites report BROKEN with zero assertions** — which looks
+   nothing like a test failure. It happened TWICE on 2026-09-21 (DALOS, then ATSU) and
+   `_modulecomplete.py` reported **7/7 on a file that could not load**. Now:
+   `REPL/tools/_docstrings.py`, wired FIRST in the gate because it is the cheapest check there and
+   it guards the one failure that makes every other check meaningless. **When appending to a
+   `@doc`, the join is `. \` + newline — never bare concatenation.**
+2. **A rename that adds enforcement is invisible to an arity check.** `CC_RemoveSecondary` went
+   `(patron remover …)` → `(patron executor …)`: same arity, same positions, so `_callarity.py`
+   saw nothing and the call-site migration correctly skipped it. But position 1 went from an
+   unread label to a bound executor, and one fixture had been passing a different account there
+   for as long as it existed. Only the full suite caught it. **When a sweep turns a decorative
+   parameter into an enforced one, review its call sites by hand.**
 
 ## 4.1 PATRONLESS BY DESIGN — the correction that changes what "conforming" means
 
