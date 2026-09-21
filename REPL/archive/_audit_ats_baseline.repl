@@ -130,8 +130,8 @@
         (aoz:string KST.AOZT)
     )
     ;; Toggles must be off for RemoveSecondary's guard.
-    (ref-TS01-C2::ATS|C_SwitchColdRecovery aoz ps false)
-    (ref-TS01-C2::ATS|C_SwitchHotRecovery aoz ps false)
+    (ref-TS01-C2::ATS|C_SwitchColdRecovery aoz (ATS.UR_OwnerKonto ps) ps false)
+    (ref-TS01-C2::ATS|C_SwitchHotRecovery aoz (ATS.UR_OwnerKonto ps) ps false)
 )
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -314,7 +314,7 @@
         (ps:string "PlebeicStrength-98c486052a51")
     )
     (print (format "lock before: {}" [(ATS.UR_Lock ps)]))
-    (ref-TS01-C2::ATS|C_UpdateRoyalty aoz ps 40.0)
+    (ref-TS01-C2::ATS|C_UpdateRoyalty aoz (ATS.UR_OwnerKonto ps) ps 40.0)
     (print (format "PROOF: royalty update succeeds while unlocked — new royalty-promile: {}" [(ATS.UR_Royalty ps)]))
 )
 (commit-tx)
@@ -330,8 +330,8 @@
         (aoz:string KST.AOZT)
         (ps:string "PlebeicStrength-98c486052a51")
     )
-    (ref-TS01-C2::ATS|C_SwitchColdRecovery aoz ps true)
-    (ref-TS01-C2::ATS|C_ToggleParameterLock aoz ps true)
+    (ref-TS01-C2::ATS|C_SwitchColdRecovery aoz (ATS.UR_OwnerKonto ps) ps true)
+    (ref-TS01-C2::ATS|C_ToggleParameterLock aoz (ATS.UR_OwnerKonto ps) ps true)
     (print (format "lock now: {}" [(ATS.UR_Lock ps)]))
 )
 (commit-tx)
@@ -348,14 +348,14 @@
         (ps:string "PlebeicStrength-98c486052a51")
     )
     (print (expect-failure "royalty update rejected while parameter-lock is ON"
-        (ref-TS01-C2::ATS|C_UpdateRoyalty aoz ps 50.0)
+        (ref-TS01-C2::ATS|C_UpdateRoyalty aoz (ATS.UR_OwnerKonto ps) ps 50.0)
     ))
     ;; SetHibernationFees is SEPARATELY broken by #10M (malformed predicate, always fails) — this proof
     ;; only checks it's rejected AT ALL while locked; it cannot prove "would succeed if unlocked" until
     ;; #10M is fixed too. The point here is only that THIS fix's gate fires before ever reaching #10M's
     ;; broken validator.
     (print (expect-failure "hibernation-fees update rejected while parameter-lock is ON"
-        (ref-TS01-C2::ATS|C_SetHibernationFees aoz ps 100.0 0.01)
+        (ref-TS01-C2::ATS|C_SetHibernationFees aoz (ATS.UR_OwnerKonto ps) ps 100.0 0.01)
     ))
 )
 (commit-tx)
@@ -558,21 +558,21 @@
     ;; Non-owner cannot toggle upgrade
     (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
     (print (expect-failure "non-owner (patron) cannot toggle can-upgrade for a pair they don't own"
-        (ref-TS01-C2::ATS|C_ToggleUpgrade patron ps false)
+        (ref-TS01-C2::ATS|C_ToggleUpgrade patron (ATS.UR_OwnerKonto ps) ps false)
     ))
     ;; Real owner turns can-upgrade OFF
     (env-sigs [ { "key": "PK_AOZ", "caps": [] } ])
-    (ref-TS01-C2::ATS|C_ToggleUpgrade aoz ps false)
+    (ref-TS01-C2::ATS|C_ToggleUpgrade aoz (ATS.UR_OwnerKonto ps) ps false)
     (print (format "PROOF: can-upgrade now false: {}" [(ATS.UR_CanUpgrade ps)]))
     ;; C_Control now blocked, even for the real owner, with unchanged (same-value) params
     (print (expect-failure "C_Control blocked while can-upgrade is false, even for the real owner"
-        (ref-TS01-C2::ATS|C_Control aoz ps cco syph hib)
+        (ref-TS01-C2::ATS|C_Control aoz (ATS.UR_OwnerKonto ps) ps cco syph hib)
     ))
     ;; Real owner turns can-upgrade back ON
-    (ref-TS01-C2::ATS|C_ToggleUpgrade aoz ps true)
+    (ref-TS01-C2::ATS|C_ToggleUpgrade aoz (ATS.UR_OwnerKonto ps) ps true)
     (print (format "PROOF: can-upgrade restored to true: {}" [(ATS.UR_CanUpgrade ps)]))
     ;; C_Control works again with the same params
-    (ref-TS01-C2::ATS|C_Control aoz ps cco syph hib)
+    (ref-TS01-C2::ATS|C_Control aoz (ATS.UR_OwnerKonto ps) ps cco syph hib)
     (print "PROOF: C_Control works again once can-upgrade is restored")
 )
 (commit-tx)

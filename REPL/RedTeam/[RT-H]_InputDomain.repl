@@ -372,7 +372,7 @@
         (pool:string "Bisthanium-98c486052a51")
         (r:module{TalosStageOne_ClientTwoV2} TS01-C2)
     )
-    (r::ATS|C_SwitchHotRecovery KST.ANHD pool true)
+    (r::ATS|C_SwitchHotRecovery KST.ANHD (ATS.UR_OwnerKonto pool) pool true)
     (map print
         [
             (expect
@@ -390,7 +390,7 @@
                 (ouronet-ns.INFO-ONE.INFO_ATS|HotRecovery KST.ANHD KST.ANHD pool 1.0))
         ])
     ;;Leave the pair as it was found.
-    (r::ATS|C_SwitchHotRecovery KST.ANHD pool false)
+    (r::ATS|C_SwitchHotRecovery KST.ANHD (ATS.UR_OwnerKonto pool) pool false)
     ""
 )
 (env-sigs [])

@@ -710,7 +710,7 @@
 
     )
     (ref-AOZ::C_SetupKosonicATS PlebeicStrengthID DenariusDebilisID decay)
-    (ref-TS01-C2::ATS|C_SwitchColdRecovery patron PlebeicStrengthID true)  ;;REPL-ONLY >> When deploying on mainnet must be removed
+    (ref-TS01-C2::ATS|C_SwitchColdRecovery patron (ATS.UR_OwnerKonto PlebeicStrengthID) PlebeicStrengthID true)  ;;REPL-ONLY >> When deploying on mainnet must be removed
 )
 
 ;;==== TX-09 [3.8] - AOZ Init [08]: Setup ATS-Pair 1 · 03 · gas echo ==== =========================

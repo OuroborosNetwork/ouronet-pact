@@ -45,7 +45,7 @@ Two different questions, two different numbers — quoting the wrong one oversta
 | &nbsp;&nbsp;positive (`expect`) | 20,531 |
 | &nbsp;&nbsp;negative (`expect-failure`) | 5,090 |
 | gate entrypoints | 92 |
-| per-function rows | 5,496 |
+| per-function rows | 5,497 |
 
 *Executed* exceeds *distinct* because shared files run once per entrypoint that loads them. **Quote the distinct figure for "how many tests exist"**; the executed figure answers "how much ran".
 
@@ -70,36 +70,36 @@ Two denominators, and mixing them is how this gets misreported. **All defined fu
 
 | | all defined | client-reachable |
 |---|---:|---:|
-| functions | **5,496** | **4,643** |
+| functions | **5,497** | **4,644** |
 | named directly by a test | 2,411 | 2,384 |
-| reached only *through* another function | 2,165 | 1,452 |
-| **reached at all** | 4,576 | **3,836 (83%)** |
+| reached only *through* another function | 2,166 | 1,453 |
+| **reached at all** | 4,577 | **3,837 (83%)** |
 | never reached | 920 | 807 |
 
-**Total function invocations across the suite, duplicates included: 17,287.** That is every call site in every `.repl`, so a function called in 20 files counts 20 times — it answers "how much testing happens", not "how much is covered".
+**Total function invocations across the suite, duplicates included: 17,425.** That is every call site in every `.repl`, so a function called in 20 files counts 20 times — it answers "how much testing happens", not "how much is covered".
 
 ### How often a tested function is tested
 
 | times called | functions |
 |---|---:|
 | 1 | 869 |
-| 2-5 | 1,019 |
+| 2-5 | 1,018 |
 | 6-20 | 412 |
 | 21-100 | 94 |
-| 101-500 | 14 |
+| 101-500 | 15 |
 | 500+ | 3 |
 
 ### By prefix
 
 | prefix | called / defined | call sites |
 |---|---:|---:|
-| `UR_` | 520 / 830 | 6,377 |
+| `UR_` | 520 / 830 | 6,515 |
 | `C_` | 410 / 692 | 3,481 |
 | `A_` | 170 / 458 | 527 |
 | `INFO_` | 416 / 427 | 562 |
 | `URC_` | 184 / 418 | 1,241 |
 | `XI_` | 6 / 386 | 13 |
-| `UEV_` | 201 / 344 | 611 |
+| `UEV_` | 201 / 345 | 611 |
 | `URCi_` | 151 / 323 | 248 |
 | `UC_` | 79 / 258 | 502 |
 | `other_` | 43 / 258 | 83 |
@@ -141,9 +141,9 @@ The **live worklist** is the figure to size remaining work by. It is NOT `_cheap
 
 | dimension | figure | tool |
 |---|---:|---|
-| guards pinned by a negative test (unambiguous) | 711 | `_enforce_coverage.py` |
-| guards pinned (upper bound, incl. shared wording) | 758 | `_enforce_coverage.py` |
-| **guards still to pin (live worklist)** | **127** | `_enforce_coverage.py` |
+| guards pinned by a negative test (unambiguous) | 712 | `_enforce_coverage.py` |
+| guards pinned (upper bound, incl. shared wording) | 756 | `_enforce_coverage.py` |
+| **guards still to pin (live worklist)** | **130** | `_enforce_coverage.py` |
 | &nbsp;&nbsp;excluded: in the DEAD `00_DPMF` module | 3 | |
 | &nbsp;&nbsp;excluded: unreachable inside an `enforce-one` | 37 | |
 | &nbsp;&nbsp;excluded: proven unreachable and annotated | 31 | |
@@ -158,7 +158,7 @@ The **live worklist** is the figure to size remaining work by. It is NOT `_cheap
 
 ## 5. Every function and how many times it is tested
 
-`calls` = times a `.repl` names it directly. `reach` = **DIRECT** (named by a test), **VIA** (only executed through another function), **-** (never reached). All 5,496 rows, most-tested first.
+`calls` = times a `.repl` names it directly. `reach` = **DIRECT** (named by a test), **VIA** (only executed through another function), **-** (never reached). All 5,497 rows, most-tested first.
 
 | calls | reach | file | module | function |
 |---:|---|---|---|---|
@@ -174,6 +174,7 @@ The **live worklist** is the figure to size remaining work by. It is NOT `_cheap
 | 193 | DIRECT | `05_DPTF.pact` | `DPTF` | `UR_Konto` |
 | 157 | DIRECT | `03_AQP.pact` | `AQP-POOL` | `URC_AqpOwnerKonto` |
 | 153 | DIRECT | `02_IGNIS.pact` | `IGNIS` | `UC_IgnisPrice` |
+| 139 | DIRECT | `08_ATS.pact` | `ATS` | `UR_OwnerKonto` |
 | 136 | DIRECT | `01_DPDC-UDC.pact` | `DPDC-UDC` | `UDC_NoMetaData` |
 | 132 | DIRECT | `01_DPDC-UDC.pact` | `DPDC-UDC` | `UDC_URI|Type` |
 | 131 | DIRECT | `01_DPDC-UDC.pact` | `DPDC-UDC` | `UDC_NonceData` |
@@ -392,6 +393,7 @@ The **live worklist** is the figure to size remaining work by. It is NOT `_cheap
 | 11 | DIRECT | `00_Demipad.pact` | `DEMIPAD` | `GOV|DEMIPAD|SC_NAME` |
 | 11 | DIRECT | `06_DPDC-MNG.pact` | `DPDC-MNG` | `UDC_RemovableNonces` |
 | 11 | DIRECT | `06_DPOF.pact` | `DPOF` | `URC_BrandingKonto` |
+| 11 | DIRECT | `06_DPOF.pact` | `DPOF` | `UR_RewardBearingToken` |
 | 11 | DIRECT | `02_IGNIS.pact` | `IGNIS` | `URC_IsVirtualGasZero` |
 | 11 | DIRECT | `02_TS01-C1.pact` | `TS01-C1` | `DPOF|C_ToggleAddQuantityRole` |
 | 11 | DIRECT | `02_TS01-C1.pact` | `TS01-C1` | `DPTF|C_Transmute` |
@@ -501,7 +503,6 @@ The **live worklist** is the figure to size remaining work by. It is NOT `_cheap
 | 8 | DIRECT | `02_DPDC.pact` | `DPDC` | `UEV_id` |
 | 8 | DIRECT | `02_DPDC.pact` | `DPDC` | `UR_NonceHolder` |
 | 8 | DIRECT | `03_DPDC-C.pact` | `DPDC-C` | `URCi_RegisterCollectablesPrice` |
-| 8 | DIRECT | `06_DPOF.pact` | `DPOF` | `UR_RewardBearingToken` |
 | 8 | DIRECT | `05_DPTF.pact` | `DPTF` | `UR_Reservation` |
 | 8 | DIRECT | `02_IGNIS.pact` | `IGNIS` | `UDC_ConstructOutputCumulator` |
 | 8 | DIRECT | `02_IGNIS.pact` | `IGNIS` | `UDC_MakeModularCumulator` |
@@ -822,7 +823,6 @@ The **live worklist** is the figure to size remaining work by. It is NOT `_cheap
 | 4 | DIRECT | `08_ATS.pact` | `ATS` | `URC_WhichPosition` |
 | 4 | DIRECT | `08_ATS.pact` | `ATS` | `URCx_PosSt` |
 | 4 | DIRECT | `08_ATS.pact` | `ATS` | `UR_EliteMode` |
-| 4 | DIRECT | `08_ATS.pact` | `ATS` | `UR_OwnerKonto` |
 | 4 | DIRECT | `01_BSD-L.pact` | `BLOODSHED-L` | `UCv_OrderMultiplier` |
 | 4 | DIRECT | `04_BRD.pact` | `BRD` | `UDC_BrandingFlag` |
 | 4 | DIRECT | `04_BRD.pact` | `BRD` | `UR_Description` |
@@ -3210,6 +3210,7 @@ The **live worklist** is the figure to size remaining work by. It is NOT `_cheap
 | 0 | VIA | `08_ATS.pact` | `ATS` | `UEV_ColdRecoveryState` |
 | 0 | VIA | `08_ATS.pact` | `ATS` | `UEV_DirectRecoveryState` |
 | 0 | - | `08_ATS.pact` | `ATS` | `UEV_EliteState` |
+| 0 | VIA | `08_ATS.pact` | `ATS` | `UEV_ExecutorIsHotRbtOwner` |
 | 0 | VIA | `08_ATS.pact` | `ATS` | `UEV_ExecutorIsOwnerKonto` |
 | 0 | VIA | `08_ATS.pact` | `ATS` | `UEV_HotRecoveryState` |
 | 0 | VIA | `08_ATS.pact` | `ATS` | `UEV_id` |

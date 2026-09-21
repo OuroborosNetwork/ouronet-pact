@@ -51,32 +51,32 @@
     ;;Hot Rbt Management
     (defun ATS|HOT-RBT|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
     (defun ATS|HOT-RBT|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer))
-    (defun ATS|HOT-RBT|C_Repurpose (patron:string hot-rbt:string nonce:integer repurpose-to:string))
+    (defun ATS|HOT-RBT|C_Repurpose (patron:string executor:string executee:string hot-rbt:string nonce:integer))
         ;;
     (defun ATS|C_Issue:list (patron:string account:string ats:[string] index-decimals:[integer] reward-token:[string] rt-nfr:[bool] reward-bearing-token:[string] rbt-nfr:[bool]))
-    (defun ATS|C_RotateOwnership (patron:string ats:string new-owner:string))
-    (defun ATS|C_Control (patron:string ats:string can-change-owner:bool syphoning:bool hibernate:bool))
-    (defun ATS|C_UpdateRoyalty (patron:string ats:string royalty:decimal))
-    (defun ATS|C_UpdateSyphon (patron:string ats:string syphon:decimal))
-    (defun ATS|C_SetHibernationFees (patron:string ats:string peak:decimal decay:decimal))
+    (defun ATS|C_RotateOwnership (patron:string executor:string executee:string ats:string))
+    (defun ATS|C_Control (patron:string executor:string ats:string can-change-owner:bool syphoning:bool hibernate:bool))
+    (defun ATS|C_UpdateRoyalty (patron:string executor:string ats:string royalty:decimal))
+    (defun ATS|C_UpdateSyphon (patron:string executor:string ats:string syphon:decimal))
+    (defun ATS|C_SetHibernationFees (patron:string executor:string ats:string peak:decimal decay:decimal))
         ;;
-    (defun ATS|C_ToggleParameterLock (patron:string ats:string toggle:bool))
-    (defun ATS|C_AddSecondary (patron:string ats:string reward-token:string rt-nfr:bool))
+    (defun ATS|C_ToggleParameterLock (patron:string executor:string ats:string toggle:bool))
+    (defun ATS|C_AddSecondary (patron:string executor:string ats:string reward-token:string rt-nfr:bool))
         ;;
-    (defun ATS|C_ControlColdRecoveryFees (patron:string ats:string c-nfr:bool c-fr:bool))
-    (defun ATS|C_SetColdRecoveryFees (patron:string ats:string fee-positions:integer fee-thresholds:[decimal] fee-array:[[decimal]]))
-    (defun ATS|C_SetColdRecoveryDuration (patron:string ats:string soft-or-hard:bool base:integer growth:integer))
-    (defun ATS|C_ToggleElite (patron:string ats:string toggle:bool))
-    (defun ATS|C_ToggleUpgrade (patron:string ats:string toggle:bool))
-    (defun ATS|C_SwitchColdRecovery (patron:string ats:string toggle:bool))
+    (defun ATS|C_ControlColdRecoveryFees (patron:string executor:string ats:string c-nfr:bool c-fr:bool))
+    (defun ATS|C_SetColdRecoveryFees (patron:string executor:string ats:string fee-positions:integer fee-thresholds:[decimal] fee-array:[[decimal]]))
+    (defun ATS|C_SetColdRecoveryDuration (patron:string executor:string ats:string soft-or-hard:bool base:integer growth:integer))
+    (defun ATS|C_ToggleElite (patron:string executor:string ats:string toggle:bool))
+    (defun ATS|C_ToggleUpgrade (patron:string executor:string ats:string toggle:bool))
+    (defun ATS|C_SwitchColdRecovery (patron:string executor:string ats:string toggle:bool))
         ;;
-    (defun ATS|C_AddHotRBT (patron:string ats:string hot-rbt:string))
-    (defun ATS|C_ControlHotRecoveryFee (patron:string ats:string h-fr:bool))
-    (defun ATS|C_SetHotRecoveryFee (patron:string ats:string promile:decimal decay:integer))
-    (defun ATS|C_SwitchHotRecovery (patron:string ats:string toggle:bool))
+    (defun ATS|C_AddHotRBT (patron:string executor:string ats:string hot-rbt:string))
+    (defun ATS|C_ControlHotRecoveryFee (patron:string executor:string ats:string h-fr:bool))
+    (defun ATS|C_SetHotRecoveryFee (patron:string executor:string ats:string promile:decimal decay:integer))
+    (defun ATS|C_SwitchHotRecovery (patron:string executor:string ats:string toggle:bool))
         ;;
-    (defun ATS|C_SetDirectRecoveryFee (patron:string ats:string promile:decimal))
-    (defun ATS|C_SwitchDirectRecovery (patron:string ats:string toggle:bool))
+    (defun ATS|C_SetDirectRecoveryFee (patron:string executor:string ats:string promile:decimal))
+    (defun ATS|C_SwitchDirectRecovery (patron:string executor:string ats:string toggle:bool))
         ;;
     (defun ATS|CC_RemoveSecondary (patron:string remover:string ats:string reward-token:string))
     (defun ATS|C_WithdrawRoyalties (patron:string ats:string target:string))
@@ -442,7 +442,7 @@
             )
         )
     )
-    (defun ATS|HOT-RBT|C_Repurpose (patron:string hot-rbt:string nonce:integer repurpose-to:string)
+    (defun ATS|HOT-RBT|C_Repurpose (patron:string executor:string executee:string hot-rbt:string nonce:integer)
         @doc "Repurposes a Hot-Rbt to a another Account, Can only be done by atspair owner"
         (with-capability (P|TS)
             (let
@@ -450,10 +450,10 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-ATS:module{AutostakeV3} ATS)
-                    (srt:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
+                    (srt:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATS::HOT-RBT|C_Repurpose patron hot-rbt nonce repurpose-to)
+                    (ref-ATS::HOT-RBT|C_Repurpose patron executor executee hot-rbt nonce)
                 )
                 (format "Succesfully repurposed HOT-RBT {} Nonce {} to Account {}" [hot-rbt nonce srt])
             )
@@ -478,7 +478,7 @@
             )
         )
     )
-    (defun ATS|C_RotateOwnership (patron:string ats:string new-owner:string)
+    (defun ATS|C_RotateOwnership (patron:string executor:string executee:string ats:string)
         @doc "Rotates ATSPair Ownership"
         (with-capability (P|TS)
             (let
@@ -487,13 +487,13 @@
                     (ref-ATS:module{AutostakeV3} ATS)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATS::C_RotateOwnership ats new-owner)
+                    (ref-ATS::C_RotateOwnership patron executor executee ats)
                 )
                 (format "Succesfully changed ownership for ATS-Pair {}" [ats])
             )
         )
     )
-    (defun ATS|C_Control (patron:string ats:string can-change-owner:bool syphoning:bool hibernate:bool)
+    (defun ATS|C_Control (patron:string executor:string ats:string can-change-owner:bool syphoning:bool hibernate:bool)
         @doc "Controls the Properties of an ATS-Pair"
         (with-capability (P|TS)
             (let
@@ -502,13 +502,13 @@
                     (ref-ATS:module{AutostakeV3} ATS)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATS::C_Control ats can-change-owner syphoning hibernate)
+                    (ref-ATS::C_Control patron executor ats can-change-owner syphoning hibernate)
                 )
                 (format "Succesfully controlled ATS-Pair {}" [ats])
             )
         )
     )
-    (defun ATS|C_UpdateRoyalty (patron:string ats:string royalty:decimal)
+    (defun ATS|C_UpdateRoyalty (patron:string executor:string ats:string royalty:decimal)
         @doc "Updates the Royalty value for an ATS-Pair"
         (with-capability (P|TS)
             (let
@@ -517,13 +517,13 @@
                     (ref-ATS:module{AutostakeV3} ATS)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATS::C_UpdateRoyalty ats royalty)
+                    (ref-ATS::C_UpdateRoyalty patron executor ats royalty)
                 )
                 (format "Royalty for ATS-Pair {} updated Succesfully to {} Promile" [ats royalty])
             )
         )
     )
-    (defun ATS|C_UpdateSyphon (patron:string ats:string syphon:decimal)
+    (defun ATS|C_UpdateSyphon (patron:string executor:string ats:string syphon:decimal)
         @doc "Updates the Syphoning Index value for an ATS-Pair"
         (with-capability (P|TS)
             (let
@@ -532,13 +532,13 @@
                     (ref-ATS:module{AutostakeV3} ATS)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATS::C_UpdateSyphon ats syphon)
+                    (ref-ATS::C_UpdateSyphon patron executor ats syphon)
                 )
                 (format "Syphon Index for ATS-Pair {} updated Succesfully to {}" [ats syphon])
             )
         )
     )
-    (defun ATS|C_SetHibernationFees (patron:string ats:string peak:decimal decay:decimal)
+    (defun ATS|C_SetHibernationFees (patron:string executor:string ats:string peak:decimal decay:decimal)
         @doc "Updates the Hibernation Fees an ATS-Pair"
         (with-capability (P|TS)
             (let
@@ -547,14 +547,14 @@
                     (ref-ATS:module{AutostakeV3} ATS)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATS::C_SetHibernationFees ats peak decay)
+                    (ref-ATS::C_SetHibernationFees patron executor ats peak decay)
                 )
                 (format "Hibernation Fees for ATS-Pair {} set to {} Promile-Peak and {} Promile-Decay per Day" [ats peak decay])
             )
         )
     )
     ;;
-    (defun ATS|C_ToggleParameterLock (patron:string ats:string toggle:bool)
+    (defun ATS|C_ToggleParameterLock (patron:string executor:string ats:string toggle:bool)
         @doc "Toggle ATSPair Parameter Lock"
         (with-capability (P|TS)
             (let
@@ -563,7 +563,7 @@
                     (ref-ATS:module{AutostakeV3} ATS)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-ATS::C_ToggleParameterLock patron ats toggle)
+                        (ref-ATS::C_ToggleParameterLock patron executor ats toggle)
                     )
                     (collect:bool (at 0 (at "output" ico)))
                 )
@@ -572,7 +572,7 @@
             )
         )
     )
-    (defun ATS|C_AddSecondary (patron:string ats:string reward-token:string rt-nfr:bool)
+    (defun ATS|C_AddSecondary (patron:string executor:string ats:string reward-token:string rt-nfr:bool)
         @doc "Adds a Secondary RT to an ATSPair"
         (with-capability (P|TS)
             (let
@@ -581,7 +581,7 @@
                     (ref-ATS:module{AutostakeV3} ATS)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATS::C_AddSecondary ats reward-token rt-nfr)
+                    (ref-ATS::C_AddSecondary patron executor ats reward-token rt-nfr)
                 )
                 (if rt-nfr
                     (format "Succesfully Added {} as a secondndary Reward Token for the ATS-Pair {} with Native-Fee-Recovery" [ats reward-token])
@@ -592,7 +592,7 @@
         )
     )
     ;;
-    (defun ATS|C_ControlColdRecoveryFees (patron:string ats:string c-nfr:bool c-fr:bool)
+    (defun ATS|C_ControlColdRecoveryFees (patron:string executor:string ats:string c-nfr:bool c-fr:bool)
         @doc "Adds a Secondary RT to an ATSPair"
         (with-capability (P|TS)
             (let
@@ -601,14 +601,14 @@
                     (ref-ATS:module{AutostakeV3} ATS)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATS::C_ControlColdRecoveryFees ats c-nfr c-fr)
+                    (ref-ATS::C_ControlColdRecoveryFees patron executor ats c-nfr c-fr)
                 )
                 (format "Succesfully controlled Cold Recovery Fees for ATS-Pair {}" [ats])
                 
             )
         )
     )
-    (defun ATS|C_SetColdRecoveryFees (patron:string ats:string fee-positions:integer fee-thresholds:[decimal] fee-array:[[decimal]])
+    (defun ATS|C_SetColdRecoveryFees (patron:string executor:string ats:string fee-positions:integer fee-thresholds:[decimal] fee-array:[[decimal]])
         @doc "Adds a Secondary RT to an ATSPair"
         (with-capability (P|TS)
             (let
@@ -617,14 +617,14 @@
                     (ref-ATS:module{AutostakeV3} ATS)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATS::C_SetColdRecoveryFees ats fee-positions fee-thresholds fee-array)
+                    (ref-ATS::C_SetColdRecoveryFees patron executor ats fee-positions fee-thresholds fee-array)
                 )
                 (format "Succesfully set Cold Recovery Fees for ATS-Pair {}" [ats])
                 
             )
         )
     )
-    (defun ATS|C_SetColdRecoveryDuration (patron:string ats:string soft-or-hard:bool base:integer growth:integer)
+    (defun ATS|C_SetColdRecoveryDuration (patron:string executor:string ats:string soft-or-hard:bool base:integer growth:integer)
         @doc "Adds a Secondary RT to an ATSPair"
         (with-capability (P|TS)
             (let
@@ -633,14 +633,14 @@
                     (ref-ATS:module{AutostakeV3} ATS)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATS::C_SetColdRecoveryDuration ats soft-or-hard base growth)
+                    (ref-ATS::C_SetColdRecoveryDuration patron executor ats soft-or-hard base growth)
                 )
                 (format "Succesfully set Cold Recovery Duration for ATS-Pair {}" [ats])
                 
             )
         )
     )
-    (defun ATS|C_ToggleElite (patron:string ats:string toggle:bool)
+    (defun ATS|C_ToggleElite (patron:string executor:string ats:string toggle:bool)
         @doc "Toggles ATSPair Elite Functionality"
         (with-capability (P|TS)
             (let
@@ -649,7 +649,7 @@
                     (ref-ATS:module{AutostakeV3} ATS)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATS::C_ToggleElite ats toggle)
+                    (ref-ATS::C_ToggleElite patron executor ats toggle)
                 )
                 (if toggle
                     (format "Succesfully switched on Elite Mode for ATS-Pair {}" [ats])
@@ -658,7 +658,7 @@
             )
         )
     )
-    (defun ATS|C_ToggleUpgrade (patron:string ats:string toggle:bool)
+    (defun ATS|C_ToggleUpgrade (patron:string executor:string ats:string toggle:bool)
         @doc "Sets can-upgrade for an ATS-Pair (audit finding #21L / L3). Gates C_Control \
             \ (can-change-owner/syphoning/hibernate) - false blocks C_Control entirely \
             \ until set back to true."
@@ -669,7 +669,7 @@
                     (ref-ATS:module{AutostakeV3} ATS)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATS::C_ToggleUpgrade ats toggle)
+                    (ref-ATS::C_ToggleUpgrade patron executor ats toggle)
                 )
                 (if toggle
                     (format "Succesfully allowed further Property Upgrades (can-upgrade) for ATS-Pair {}" [ats])
@@ -678,7 +678,7 @@
             )
         )
     )
-    (defun ATS|C_SwitchColdRecovery (patron:string ats:string toggle:bool)
+    (defun ATS|C_SwitchColdRecovery (patron:string executor:string ats:string toggle:bool)
         @doc "Switches on or off Cold Recovery"
         (with-capability (P|TS)
             (let
@@ -687,7 +687,7 @@
                     (ref-ATS:module{AutostakeV3} ATS)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATS::C_SwitchColdRecovery ats toggle)
+                    (ref-ATS::C_SwitchColdRecovery patron executor ats toggle)
                 )
                 (if toggle
                     (format "Succesfully switched on Cold Recovery for ATS-Pair {}" [ats])
@@ -698,7 +698,7 @@
         )
     )
     ;;
-    (defun ATS|C_AddHotRBT (patron:string ats:string hot-rbt:string)
+    (defun ATS|C_AddHotRBT (patron:string executor:string ats:string hot-rbt:string)
         @doc "Adds a Hot-RBT to an ATS-Pair immutably \
             \ Must be a non special DPOF Token with zero Supply \
             \ Ownership of this Token is transfered to the ATS|SC_NAME"
@@ -709,13 +709,13 @@
                     (ref-ATS:module{AutostakeV3} ATS)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATS::C_AddHotRBT patron ats hot-rbt)
+                    (ref-ATS::C_AddHotRBT patron executor ats hot-rbt)
                 )
                 (format "Succesfully added DPOF {} as Hot-RBT for ATS-Pair {}" [hot-rbt ats])
             )
         )
     )
-    (defun ATS|C_ControlHotRecoveryFee (patron:string ats:string h-fr:bool)
+    (defun ATS|C_ControlHotRecoveryFee (patron:string executor:string ats:string h-fr:bool)
         @doc "Controls Hot Recovery Fees"
         (with-capability (P|TS)
             (let
@@ -724,13 +724,13 @@
                     (ref-ATS:module{AutostakeV3} ATS)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATS::C_ControlHotRecoveryFee ats h-fr)
+                    (ref-ATS::C_ControlHotRecoveryFee patron executor ats h-fr)
                 )
                 (format "Succesfully controlled Hot-Recovery Fee for ATS-Pair {}" [ats])
             )
         )
     )
-    (defun ATS|C_SetHotRecoveryFee (patron:string ats:string promile:decimal decay:integer)
+    (defun ATS|C_SetHotRecoveryFee (patron:string executor:string ats:string promile:decimal decay:integer)
         @doc "Controls Hot Recovery Fees"
         (with-capability (P|TS)
             (let
@@ -739,13 +739,13 @@
                     (ref-ATS:module{AutostakeV3} ATS)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATS::C_SetHotRecoveryFees ats promile decay)
+                    (ref-ATS::C_SetHotRecoveryFees patron executor ats promile decay)
                 )
                 (format "Succesfully set Hot-Recovery Fees for ATS-Pair {} to {} Promile and {} Days-Decay" [ats promile decay])
             )
         )
     )
-    (defun ATS|C_SwitchHotRecovery (patron:string ats:string toggle:bool)
+    (defun ATS|C_SwitchHotRecovery (patron:string executor:string ats:string toggle:bool)
         @doc "Switches on or off Hot Recovery"
         (with-capability (P|TS)
             (let
@@ -754,7 +754,7 @@
                     (ref-ATS:module{AutostakeV3} ATS)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATS::C_SwitchHotRecovery ats toggle)
+                    (ref-ATS::C_SwitchHotRecovery patron executor ats toggle)
                 )
                 (if toggle
                     (format "Succesfully switched on Hot Recovery for ATS-Pair {}" [ats])
@@ -765,7 +765,7 @@
         )
     )
     ;;
-    (defun ATS|C_SetDirectRecoveryFee (patron:string ats:string promile:decimal)
+    (defun ATS|C_SetDirectRecoveryFee (patron:string executor:string ats:string promile:decimal)
         @doc "Controls Direct Recovery Fees"
         (with-capability (P|TS)
             (let
@@ -774,13 +774,13 @@
                     (ref-ATS:module{AutostakeV3} ATS)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATS::C_SetDirectRecoveryFee ats promile)
+                    (ref-ATS::C_SetDirectRecoveryFee patron executor ats promile)
                 )
                 (format "Succesfully set Direct-Recovery Fees for ATS-Pair {} to {} Promile" [ats promile])
             )
         )
     )
-    (defun ATS|C_SwitchDirectRecovery (patron:string ats:string toggle:bool)
+    (defun ATS|C_SwitchDirectRecovery (patron:string executor:string ats:string toggle:bool)
         @doc "Switches on or off Direct Recovery"
         (with-capability (P|TS)
             (let
@@ -789,7 +789,7 @@
                     (ref-ATS:module{AutostakeV3} ATS)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATS::C_SwitchDirectRecovery ats toggle)
+                    (ref-ATS::C_SwitchDirectRecovery patron executor ats toggle)
                 )
                 (if toggle
                     (format "Succesfully switched on Direct Recovery for ATS-Pair {}" [ats])

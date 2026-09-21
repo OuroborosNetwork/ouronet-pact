@@ -258,7 +258,7 @@
         ;;caller gets a real sentence. So the function is not simply unguarded.
         (expect-failure "<<EL-5>> fully-empty input gets a deliberate, readable refusal"
             "Fee Position 0 is invalid"
-            (TS01-C2.ATS|C_SetColdRecoveryFees KST.ANHD "Auryndex-98c486052a51" 0 [] []))
+            (TS01-C2.ATS|C_SetColdRecoveryFees KST.ANHD (ATS.UR_OwnerKonto "Auryndex-98c486052a51") "Auryndex-98c486052a51" 0 [] []))
     ]
 )
 (commit-tx)
@@ -283,7 +283,7 @@
     [
         (expect-failure "<<EL-5b>> FINDING: a length mismatch faults on the index, not on the message written for it"
             "Array index out of bounds. Length (0), Index (0)"
-            (TS01-C2.ATS|C_SetColdRecoveryFees KST.ANHD "Auryndex-98c486052a51" 1 [10.0] []))
+            (TS01-C2.ATS|C_SetColdRecoveryFees KST.ANHD (ATS.UR_OwnerKonto "Auryndex-98c486052a51") "Auryndex-98c486052a51" 1 [10.0] []))
     ]
 )
 (commit-tx)

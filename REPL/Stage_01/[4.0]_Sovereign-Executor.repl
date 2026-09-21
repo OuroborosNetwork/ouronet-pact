@@ -869,7 +869,7 @@
     )
     [
         ;;Set Up <Auryndex> 4795
-        (ref-TS01-C2::ATS|C_SetColdRecoveryFees patron Auryndex
+        (ref-TS01-C2::ATS|C_SetColdRecoveryFees patron (ATS.UR_OwnerKonto Auryndex) Auryndex
             7
             [50.0 100.0 200.0 350.0 550.0 800.0]
             [
@@ -882,16 +882,16 @@
                 [14.0 13.0 12.0 11.0 10.0 9.0 8.0]
             ]
         )
-        (ref-TS01-C2::ATS|C_SwitchColdRecovery patron Auryndex true)
+        (ref-TS01-C2::ATS|C_SwitchColdRecovery patron (ATS.UR_OwnerKonto Auryndex) Auryndex true)
         ;;Set Up <EliteAuryndex>
-        (ref-TS01-C2::ATS|C_SetColdRecoveryFees patron Elite-Auryndex 7 [0.0] [[0.0]])
-        (ref-TS01-C2::ATS|C_SetColdRecoveryDuration patron Elite-Auryndex false 360 24)
-        (ref-TS01-C2::ATS|C_ToggleElite patron Elite-Auryndex true)
-        (ref-TS01-C2::ATS|C_SwitchColdRecovery patron Elite-Auryndex true)
+        (ref-TS01-C2::ATS|C_SetColdRecoveryFees patron (ATS.UR_OwnerKonto Elite-Auryndex) Elite-Auryndex 7 [0.0] [[0.0]])
+        (ref-TS01-C2::ATS|C_SetColdRecoveryDuration patron (ATS.UR_OwnerKonto Elite-Auryndex) Elite-Auryndex false 360 24)
+        (ref-TS01-C2::ATS|C_ToggleElite patron (ATS.UR_OwnerKonto Elite-Auryndex) Elite-Auryndex true)
+        (ref-TS01-C2::ATS|C_SwitchColdRecovery patron (ATS.UR_OwnerKonto Elite-Auryndex) Elite-Auryndex true)
         ;;Set Up <StoaLiquindex>
-        (ref-TS01-C2::ATS|C_SetColdRecoveryFees patron Stoa-Liquid-Index -1 [0.0] [[0.0]])
-        (ref-TS01-C2::ATS|C_SetColdRecoveryDuration patron Stoa-Liquid-Index false 12 6)
-        (ref-TS01-C2::ATS|C_SwitchColdRecovery patron Stoa-Liquid-Index true)
+        (ref-TS01-C2::ATS|C_SetColdRecoveryFees patron (ATS.UR_OwnerKonto Stoa-Liquid-Index) Stoa-Liquid-Index -1 [0.0] [[0.0]])
+        (ref-TS01-C2::ATS|C_SetColdRecoveryDuration patron (ATS.UR_OwnerKonto Stoa-Liquid-Index) Stoa-Liquid-Index false 12 6)
+        (ref-TS01-C2::ATS|C_SwitchColdRecovery patron (ATS.UR_OwnerKonto Stoa-Liquid-Index) Stoa-Liquid-Index true)
         ats-ids
     ]
 )
@@ -1846,10 +1846,10 @@
                 PensionID HibernatedPensionID KoriID
             ]
             [
-                (ref-TS01-C2::ATS|C_SwitchDirectRecovery patron KoriID true)
-                (ref-TS01-C2::ATS|C_Control patron KoriID true false true)
-                (ref-TS01-C2::ATS|C_UpdateRoyalty patron KoriID 10.0)
-                (ref-TS01-C2::ATS|C_SetDirectRecoveryFee patron KoriID 100.0)
+                (ref-TS01-C2::ATS|C_SwitchDirectRecovery patron (ATS.UR_OwnerKonto KoriID) KoriID true)
+                (ref-TS01-C2::ATS|C_Control patron (ATS.UR_OwnerKonto KoriID) KoriID true false true)
+                (ref-TS01-C2::ATS|C_UpdateRoyalty patron (ATS.UR_OwnerKonto KoriID) KoriID 10.0)
+                (ref-TS01-C2::ATS|C_SetDirectRecoveryFee patron (ATS.UR_OwnerKonto KoriID) KoriID 100.0)
             ]
         ]
     )

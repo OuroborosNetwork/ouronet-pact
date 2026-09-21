@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 3 of 22
 ;; This is STEP 3 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-2 must have run first, including the init steps between deploys.
-;; 3 source file(s), 350,668 gas measured in the REPL gas model, 305,021 bytes
+;; 3 source file(s), 350,668 gas measured in the REPL gas model, 308,356 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/06_DPOF.pact
@@ -4123,6 +4123,7 @@
     ;;  [UEV]
     ;;
     (defun UEV_ExecutorIsOwnerKonto (executor:string entity-id:string))
+    (defun UEV_ExecutorIsHotRbtOwner (executor:string hot-rbt:string))
     (defun UEV_id (atspair:string))
     (defun UEV_CanUpgradeON (atspair:string))
     (defun UEV_CanChangeOwnerON (atspair:string))
@@ -4161,7 +4162,7 @@
     ;;
     (defun HOT-RBT|C_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
     (defun HOT-RBT|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer))
-    (defun HOT-RBT|C_Repurpose:object{IgnisCollectorV3.OutputCumulator} (patron:string hot-rbt:string nonce:integer repurpose-to:string))
+    (defun HOT-RBT|C_Repurpose:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string hot-rbt:string nonce:integer))
         ;;
     (defun C_Issue:object{IgnisCollectorV3.OutputCumulator}
         (
@@ -4175,29 +4176,29 @@
             rbt-nfr:[bool]
         )
     )
-    (defun C_RotateOwnership:object{IgnisCollectorV3.OutputCumulator} (atspair:string new-owner:string))
-    (defun C_Control:object{IgnisCollectorV3.OutputCumulator} (atspair:string can-change-owner:bool syphoning:bool hibernate:bool))
-    (defun C_UpdateRoyalty:object{IgnisCollectorV3.OutputCumulator} (atspair:string royalty:decimal))
-    (defun C_UpdateSyphon:object{IgnisCollectorV3.OutputCumulator} (atspair:string syphon:decimal))
-    (defun C_SetHibernationFees:object{IgnisCollectorV3.OutputCumulator} (atspair:string peak:decimal decay:decimal))
+    (defun C_RotateOwnership:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string atspair:string))
+    (defun C_Control:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string atspair:string can-change-owner:bool syphoning:bool hibernate:bool))
+    (defun C_UpdateRoyalty:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string atspair:string royalty:decimal))
+    (defun C_UpdateSyphon:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string atspair:string syphon:decimal))
+    (defun C_SetHibernationFees:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string atspair:string peak:decimal decay:decimal))
         ;;
-    (defun C_ToggleParameterLock:object{IgnisCollectorV3.OutputCumulator} (patron:string atspair:string toggle:bool))
-    (defun C_AddSecondary:object{IgnisCollectorV3.OutputCumulator} (atspair:string reward-token:string rt-nfr:bool))
+    (defun C_ToggleParameterLock:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string atspair:string toggle:bool))
+    (defun C_AddSecondary:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string atspair:string reward-token:string rt-nfr:bool))
         ;;
-    (defun C_ControlColdRecoveryFees:object{IgnisCollectorV3.OutputCumulator} (atspair:string c-nfr:bool c-fr:bool))
-    (defun C_SetColdRecoveryFees:object{IgnisCollectorV3.OutputCumulator} (atspair:string fee-positions:integer fee-thresholds:[decimal] fee-array:[[decimal]]))
-    (defun C_SetColdRecoveryDuration:object{IgnisCollectorV3.OutputCumulator} (atspair:string soft-or-hard:bool base:integer growth:integer))
-    (defun C_ToggleElite:object{IgnisCollectorV3.OutputCumulator} (atspair:string toggle:bool))
-    (defun C_ToggleUpgrade:object{IgnisCollectorV3.OutputCumulator} (atspair:string toggle:bool))
-    (defun C_SwitchColdRecovery:object{IgnisCollectorV3.OutputCumulator} (atspair:string toggle:bool))
+    (defun C_ControlColdRecoveryFees:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string atspair:string c-nfr:bool c-fr:bool))
+    (defun C_SetColdRecoveryFees:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string atspair:string fee-positions:integer fee-thresholds:[decimal] fee-array:[[decimal]]))
+    (defun C_SetColdRecoveryDuration:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string atspair:string soft-or-hard:bool base:integer growth:integer))
+    (defun C_ToggleElite:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string atspair:string toggle:bool))
+    (defun C_ToggleUpgrade:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string atspair:string toggle:bool))
+    (defun C_SwitchColdRecovery:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string atspair:string toggle:bool))
         ;;
-    (defun C_AddHotRBT:object{IgnisCollectorV3.OutputCumulator} (patron:string atspair:string hot-rbt:string))
-    (defun C_ControlHotRecoveryFee:object{IgnisCollectorV3.OutputCumulator} (atspair:string h-fr:bool))
-    (defun C_SetHotRecoveryFees:object{IgnisCollectorV3.OutputCumulator} (atspair:string promile:decimal decay:integer))
-    (defun C_SwitchHotRecovery:object{IgnisCollectorV3.OutputCumulator} (atspair:string toggle:bool))
+    (defun C_AddHotRBT:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string atspair:string hot-rbt:string))
+    (defun C_ControlHotRecoveryFee:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string atspair:string h-fr:bool))
+    (defun C_SetHotRecoveryFees:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string atspair:string promile:decimal decay:integer))
+    (defun C_SwitchHotRecovery:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string atspair:string toggle:bool))
         ;;
-    (defun C_SetDirectRecoveryFee:object{IgnisCollectorV3.OutputCumulator} (atspair:string promile:decimal))
-    (defun C_SwitchDirectRecovery:object{IgnisCollectorV3.OutputCumulator} (atspair:string toggle:bool))
+    (defun C_SetDirectRecoveryFee:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string atspair:string promile:decimal))
+    (defun C_SwitchDirectRecovery:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string atspair:string toggle:bool))
 
 )
 ;;
@@ -6944,7 +6945,27 @@
             \ branding capability; this supplies the other half -- that the account the caller \
             \ NAMED is that owner. (patron/executor canon 2.2, indirect route named.)"
         (enforce (= executor (UR_OwnerKonto entity-id)) "Executor is not the Entity Owner")
+    )    (defun UEV_ExecutorIsHotRbtOwner (executor:string hot-rbt:string)
+        @doc "BINDS <executor> to the owner of the ATS pair that issued <hot-rbt>. \
+            \ \
+            \ A hot-RBT does not name its pool directly -- the pool is read back through DPOF \
+            \ (<UR_RewardBearingToken>), which is exactly what ATS|C>REPURPOSE-HOT-RBT does \
+            \ before its <CAP_Owner atspair>. That capability gates WHICH CALLER may act; the \
+            \ <ATS|GOV> it then composes supplies the MODULE authority, needed because the \
+            \ hot-RBT's DPOF owner-konto is ATS|SC_NAME and only ATS's own code can prove that. \
+            \ Two different jobs, and only the first one is about the executor. \
+            \ This supplies the binding half: that the account the caller NAMED is that owner."
+        (let
+            (
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+            )
+            (enforce
+                (= executor (UR_OwnerKonto (ref-DPOF::UR_RewardBearingToken hot-rbt)))
+                "Executor is not the ATS-Pair Owner"
+            )
+        )
     )
+
     (defun C_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator}
         (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
         @doc "Updates <entity-id>'s pending branding. <executor> is bound to the entity OWNER; \
@@ -7002,7 +7023,7 @@
         )
     )
     (defun HOT-RBT|C_Repurpose:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string hot-rbt:string nonce:integer repurpose-to:string)
+        (patron:string executor:string executee:string hot-rbt:string nonce:integer)
         @doc "Fix (audit finding #22L test-coverage sweep): UR_NonceMetaData was called \
             \ with zero arguments where it requires (id nonce) - an unconditional crash, \
             \ never caught because this function had zero test coverage before now. \
@@ -7010,6 +7031,7 @@
             \ forward the same mint-time (and any other metadata-derived math stays \
             \ correct) rather than fabricating fresh metadata for a seized position."
         (P|UEV_IMC)
+        (UEV_ExecutorIsHotRbtOwner executor hot-rbt)
         (with-capability (ATS|C>REPURPOSE-HOT-RBT hot-rbt)
             (let
                 (
@@ -7031,8 +7053,8 @@
                         (ref-DPOF::C_ToggleFreezeAccount patron (ref-DPOF::UR_Konto hot-rbt) nonce-holder hot-rbt false)
                         ;;4]Mint new DPOF on ATS|SC_NAME
                         (ref-DPOF::C_Mint patron ATS|SC_NAME hot-rbt nonce-supply nonce-meta-data-chain)
-                        ;;5]Transfer it to <repurpose-to>
-                        (ref-DPOF::C_Transfer patron ATS|SC_NAME repurpose-to hot-rbt [(+ nonces-used 1)] true)
+                        ;;5]Transfer it to <executee>
+                        (ref-DPOF::C_Transfer patron ATS|SC_NAME executee hot-rbt [(+ nonces-used 1)] true)
                     ] 
                     []
                 )
@@ -7071,32 +7093,36 @@
         )
     )
     (defun C_RotateOwnership:object{IgnisCollectorV3.OutputCumulator}
-        (atspair:string new-owner:string)
+        (patron:string executor:string executee:string atspair:string)
         (P|UEV_IMC)
-        (with-capability (ATS|S>ROTATE_OWNERSHIP atspair new-owner)
-            (XI_ChangeOwnership atspair new-owner)
+        (UEV_ExecutorIsOwnerKonto executor atspair)
+        (with-capability (ATS|S>ROTATE_OWNERSHIP atspair executee)
+            (XI_ChangeOwnership atspair executee)
             (URCi_RotateOwnership atspair)
         )
     )
     (defun C_Control:object{IgnisCollectorV3.OutputCumulator}
-        (atspair:string can-change-owner:bool syphoning:bool hibernate:bool)
+        (patron:string executor:string atspair:string can-change-owner:bool syphoning:bool hibernate:bool)
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor atspair)
         (with-capability (ATS|S>CONTROL atspair hibernate)
             (XI_Control atspair can-change-owner syphoning hibernate)
             (URCi_Control atspair)
         )
     )
     (defun C_UpdateRoyalty:object{IgnisCollectorV3.OutputCumulator}
-        (atspair:string royalty:decimal)
+        (patron:string executor:string atspair:string royalty:decimal)
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor atspair)
         (with-capability (ATS|S>ROYALTY atspair royalty)
             (XI_UpdateRoyalty atspair royalty)
             (URCi_UpdateRoyalty atspair)
         )
     )
     (defun C_UpdateSyphon:object{IgnisCollectorV3.OutputCumulator}
-        (atspair:string syphon:decimal)
+        (patron:string executor:string atspair:string syphon:decimal)
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor atspair)
         (with-capability (ATS|S>SYPHON atspair syphon)
             (XI_UpdateSyphon atspair syphon)
             (URCi_UpdateSyphon atspair)
@@ -7104,8 +7130,9 @@
     )
     ;;
     (defun C_SetHibernationFees:object{IgnisCollectorV3.OutputCumulator}
-        (atspair:string peak:decimal decay:decimal)
+        (patron:string executor:string atspair:string peak:decimal decay:decimal)
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor atspair)
         (with-capability (ATS|S>SET-HIBERNATION-FEES atspair peak decay)
             (XI_SetHibernationFees atspair peak decay)
             (URCi_SetHibernationFees atspair)
@@ -7113,8 +7140,9 @@
     )
     ;;
     (defun C_ToggleParameterLock:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string atspair:string toggle:bool)
+        (patron:string executor:string atspair:string toggle:bool)
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor atspair)
         (with-capability (ATS|C>TOGGLE-PARAMETER-LOCK atspair toggle)
             (let
                 (
@@ -7136,8 +7164,9 @@
         )
     )
     (defun C_AddSecondary:object{IgnisCollectorV3.OutputCumulator}
-        (atspair:string reward-token:string rt-nfr:bool)
+        (patron:string executor:string atspair:string reward-token:string rt-nfr:bool)
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor atspair)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
@@ -7156,16 +7185,18 @@
     )
     ;;Cold Recovery Management
     (defun C_ControlColdRecoveryFees:object{IgnisCollectorV3.OutputCumulator} 
-        (atspair:string c-nfr:bool c-fr:bool)
+        (patron:string executor:string atspair:string c-nfr:bool c-fr:bool)
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor atspair)
         (with-capability (ATS|C>CONTROL-COLD-FEES atspair)
             (XI_ControlColdFees atspair c-nfr c-fr)
             (URCi_ControlColdRecoveryFees atspair)
         )
     )
     (defun C_SetColdRecoveryFees:object{IgnisCollectorV3.OutputCumulator}
-        (atspair:string fee-positions:integer fee-thresholds:[decimal] fee-array:[[decimal]])
+        (patron:string executor:string atspair:string fee-positions:integer fee-thresholds:[decimal] fee-array:[[decimal]])
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor atspair)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
@@ -7179,35 +7210,39 @@
         )
     )
     (defun C_SetColdRecoveryDuration:object{IgnisCollectorV3.OutputCumulator}
-        (atspair:string soft-or-hard:bool base:integer growth:integer)
+        (patron:string executor:string atspair:string soft-or-hard:bool base:integer growth:integer)
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor atspair)
         (with-capability (ATS|C>SET_COLD-DURATION atspair soft-or-hard base growth)
             (XI_SetCRD atspair soft-or-hard base growth)
             (URCi_SetColdRecoveryDuration atspair)
         )
     )
     (defun C_ToggleElite:object{IgnisCollectorV3.OutputCumulator}
-        (atspair:string toggle:bool)
+        (patron:string executor:string atspair:string toggle:bool)
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor atspair)
         (with-capability (ATS|C>TOGGLE_ELITE atspair toggle)
             (XI_ToggleElite atspair toggle)
             (URCi_ToggleElite atspair)
         )
     )
     (defun C_ToggleUpgrade:object{IgnisCollectorV3.OutputCumulator}
-        (atspair:string toggle:bool)
+        (patron:string executor:string atspair:string toggle:bool)
         @doc "Fix (audit finding #21L / L3): sets can-upgrade, which was previously \
             \ permanently true with no setter. Gates C_Control (can-change-owner/ \
             \ syphoning/hibernate) - false blocks C_Control entirely until true again."
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor atspair)
         (with-capability (ATS|C>TOGGLE_UPGRADE atspair toggle)
             (XI_ToggleUpgrade atspair toggle)
             (URCi_ToggleUpgrade atspair)
         )
     )
     (defun C_SwitchColdRecovery:object{IgnisCollectorV3.OutputCumulator}
-        (atspair:string toggle:bool)
+        (patron:string executor:string atspair:string toggle:bool)
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor atspair)
         (with-capability (ATS|S>SWITCH-COLD-RECOVERY atspair toggle)
             (XI_SwitchColdRecovery atspair toggle)
             (URCi_SwitchColdRecovery atspair)
@@ -7216,8 +7251,9 @@
     ;;Hot Recovery Management
     ;;Must be modified to either add a 0 supply Orto Fungible or Issue One
     (defun C_AddHotRBT:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string atspair:string hot-rbt:string)
+        (patron:string executor:string atspair:string hot-rbt:string)
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor atspair)
         (with-capability (ATS|C>ADD-HOT-RBT atspair hot-rbt)
             (let
                 (
@@ -7252,24 +7288,27 @@
         )
     )
     (defun C_ControlHotRecoveryFee:object{IgnisCollectorV3.OutputCumulator} 
-        (atspair:string h-fr:bool)
+        (patron:string executor:string atspair:string h-fr:bool)
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor atspair)
         (with-capability (ATS|C>CONTROL-HOT-FEE atspair)
             (XI_ControlHotFee atspair h-fr)
             (URCi_ControlHotRecoveryFee atspair)
         )
     )
     (defun C_SetHotRecoveryFees:object{IgnisCollectorV3.OutputCumulator}
-        (atspair:string promile:decimal decay:integer)
+        (patron:string executor:string atspair:string promile:decimal decay:integer)
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor atspair)
         (with-capability (ATS|C>SET_HOT_FEES atspair promile decay)
             (XI_SetHotFees atspair promile decay)
             (URCi_SetHotRecoveryFees atspair)
         )
     )
     (defun C_SwitchHotRecovery:object{IgnisCollectorV3.OutputCumulator}
-        (atspair:string toggle:bool)
+        (patron:string executor:string atspair:string toggle:bool)
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor atspair)
         (with-capability (ATS|S>SWITCH-HOT-RECOVERY atspair toggle)
             (XI_SwitchHotRecovery atspair toggle)
             (URCi_SwitchHotRecovery atspair)
@@ -7277,16 +7316,18 @@
     )
     ;;Direct Recovery Management
     (defun C_SetDirectRecoveryFee:object{IgnisCollectorV3.OutputCumulator}
-        (atspair:string promile:decimal)
+        (patron:string executor:string atspair:string promile:decimal)
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor atspair)
         (with-capability (ATS|C>SET_DIRECT_FEE atspair promile)
             (XI_SetDirectFee atspair promile)
             (URCi_SetDirectRecoveryFee atspair)
         )
     )
     (defun C_SwitchDirectRecovery:object{IgnisCollectorV3.OutputCumulator}
-        (atspair:string toggle:bool)
+        (patron:string executor:string atspair:string toggle:bool)
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor atspair)
         (with-capability (ATS|S>SWITCH-DIRECT-RECOVERY atspair toggle)
             (XI_SwitchDirectRecovery atspair toggle)
             (URCi_SwitchDirectRecovery atspair)

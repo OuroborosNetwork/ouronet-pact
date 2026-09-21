@@ -57,10 +57,10 @@
     ;; Auryndex's RBT (Auryn) needs a hibernation link before Control can flip hibernation ON
     (ref-TS01-C2::VST|C_CreateHibernatingLink patron auryn-id)
     ;; turn hibernation ON via Control (preserve the pool's can-change-owner + syphoning settings)
-    (ref-TS01-C2::ATS|C_Control patron auryndex
+    (ref-TS01-C2::ATS|C_Control patron (ATS.UR_OwnerKonto auryndex) auryndex
         (ref-ATS::UR_CanChangeOwner auryndex) (ref-ATS::UR_Syphoning auryndex) true)
     ;; set hibernation fees (peak in (0,800], decay in (0,1), prec-4) — used by the coil calc
-    (ref-TS01-C2::ATS|C_SetHibernationFees patron auryndex 100.0 0.008)
+    (ref-TS01-C2::ATS|C_SetHibernationFees patron (ATS.UR_OwnerKonto auryndex) auryndex 100.0 0.008)
     ;; Constrict OURO (the pool's input/reward token, held by the patron) for 30 days
     (print (ref-TS01-C2::ATS|C_Constrict patron patron auryndex ouro-id 100.0 30))
     (print "<<TX-CNS-001>> CreateHibernatingLink + Control(hibernate) + SetHibernationFees + Constrict OK")

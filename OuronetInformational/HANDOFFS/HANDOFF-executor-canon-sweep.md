@@ -9,7 +9,7 @@ session must be able to see what is done by reading this file, without reconstru
 `git log`. If the table and `_executorplan.py` disagree, **the tool is right** — regenerate.
 
 **Status:** preparation complete, sweep starting at `01_DALOS`.
-**215 done · 560 remaining · 46 modules · 5 swept (01_DALOS, 02_IGNIS, 04_BRD, 05_DPTF, 06_DPOF) · 1 archived (00_DPMF).**
+**235 done · 540 remaining · 46 modules · 6 swept (01_DALOS, 02_IGNIS, 04_BRD, 05_DPTF, 06_DPOF, 08_ATS) · 1 archived (00_DPMF).**
 
 ---
 
@@ -230,7 +230,7 @@ same tools with those three properties.
 | [x] 4 | `05_DPTF.pact` | 0 | 2 | 22 | **24** | `BrandingUsagePrimaryV2`, `DemiourgosPactTrueFungibleV2` |
 | [—] 5 | `00_DPMF.pact` | — | — | — | — | **ARCHIVED**, not swept — read-only retirement, StoicSyntax 7.21 |
 | [x] 6 | `06_DPOF.pact` | 0 | 1 | 20 | **21** | `DemiourgosPactOrtoFungibleV2`, `DpofUdcV2` — done, incl. `XBv_DeployAccount` |
-| [ ] 7 | `08_ATS.pact` | 0 | 3 | 21 | **24** | `AutostakeV3` |
+| [x] 7 | `08_ATS.pact` | 0 | 3 | 21 | **24** | `AutostakeV3` |
 | [ ] 8 | `09_TFT.pact` | 0 | 0 | 5 | **5** | `TrueFungibleTransferV2` |
 | [ ] 9 | `10_ATSU.pact` | 0 | 0 | 14 | **14** | `AutostakeUsageV2` |
 | [ ] 10 | `11_VST.pact` | 0 | 5 | 24 | **29** | `VestingV2` |
@@ -389,6 +389,12 @@ Per module, in order:
 - **Negative probes keep plain accounts** — they must fail on the guard under test, not on arity.
 - Where a guard is added, add a test that **fails without it**. A guard nothing ever fails on is
   indistinguishable from an absent one.
+- **A RULE WITH THE WRONG ARITY MATCHES NOTHING.** Added 2026-09-21. `_executormigrate.scan`
+  fires on `len(vals) == arity - 1`, so an off-by-one entry in `RULES` skips every call site
+  while the tool reports success -- `ATS|C_Control` was entered as 7 against a real 6 and
+  silently missed 16 sites. Same shape as an incomplete registry: not an error, just a rule that
+  quietly does not apply. The tool now validates every rule's arity against the real signature
+  and REFUSES to run if any cannot fire. Verified by corrupting one and watching it refuse.
 - **An arity-PRESERVING reorder is not idempotent. Run it exactly ONCE.** Added 2026-09-21 after
   it cost most of `06_DPOF`. A pass that MOVES arguments without changing their count is a
   permutation, so applying it twice composes the permutation with itself. For a simple swap

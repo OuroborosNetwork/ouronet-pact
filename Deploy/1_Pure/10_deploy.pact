@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 10 of 22
 ;; This is STEP 10 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-9 must have run first, including the init steps between deploys.
-;; 3 source file(s), 457,539 gas measured in the REPL gas model, 287,143 bytes
+;; 3 source file(s), 457,539 gas measured in the REPL gas model, 287,298 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/Z_Reads/02_INFO-ONE+.pact
@@ -4693,14 +4693,14 @@
                 (EsothericKosonID:string (UR_PrimalTrueFungible 2))
                 (AncientKosonID:string (UR_PrimalTrueFungible 3))
             )
-            (ref-TS01-C2::ATS|C_AddSecondary patron index-name EsothericKosonID false)
-            (ref-TS01-C2::ATS|C_AddSecondary patron index-name AncientKosonID false)
-            (ref-TS01-C2::ATS|C_AddHotRBT patron index-name hot-rbt)
+            (ref-TS01-C2::ATS|C_AddSecondary patron (ATS.UR_OwnerKonto index-name) index-name EsothericKosonID false)
+            (ref-TS01-C2::ATS|C_AddSecondary patron (ATS.UR_OwnerKonto index-name) index-name AncientKosonID false)
+            (ref-TS01-C2::ATS|C_AddHotRBT patron (ATS.UR_OwnerKonto index-name) index-name hot-rbt)
             (if (!= decay 0)
-                (ref-TS01-C2::ATS|C_SetHotRecoveryFee patron index-name 900.0 decay)
+                (ref-TS01-C2::ATS|C_SetHotRecoveryFee patron (ATS.UR_OwnerKonto index-name) index-name 900.0 decay)
                 true
             )
-            (ref-TS01-C2::ATS|C_SwitchHotRecovery patron index-name true)
+            (ref-TS01-C2::ATS|C_SwitchHotRecovery patron (ATS.UR_OwnerKonto index-name) index-name true)
         )
     )
 

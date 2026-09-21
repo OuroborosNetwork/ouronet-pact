@@ -72,9 +72,9 @@
                     true (ref-DPTF::URC_HasHibernation auryn-id))
             ]
         )
-        (ref-TS01-C2::ATS|C_Control patron auryndex
+        (ref-TS01-C2::ATS|C_Control patron (ATS.UR_OwnerKonto auryndex) auryndex
             (ref-ATS::UR_CanChangeOwner auryndex) (ref-ATS::UR_Syphoning auryndex) true)
-        (ref-TS01-C2::ATS|C_SetHibernationFees patron auryndex 100.0 0.008)
+        (ref-TS01-C2::ATS|C_SetHibernationFees patron (ATS.UR_OwnerKonto auryndex) auryndex 100.0 0.008)
         (let ((bal0:decimal (ref-DPTF::UR_AccountSupply ouro-id patron)))
             (ref-TS01-C2::ATS|C_Constrict patron patron auryndex ouro-id 100.0 30)
             (map print
@@ -466,7 +466,7 @@
             (hib:bool (ref-ATS::UR_Hibernate ps))
             (rts:integer (length (ref-ATS::UR_RewardTokenList ps)))
         )
-        (ref-TS01-C2::ATS|C_Control patron ps cco true hib)
+        (ref-TS01-C2::ATS|C_Control patron (ATS.UR_OwnerKonto ps) ps cco true hib)
         (map print
             [
                 (expect "<<ATS-G2>> syphoning is now ON" true (ref-ATS::UR_Syphoning ps))
@@ -495,7 +495,7 @@
             ]
         )
         ;;RESTORE
-        (ref-TS01-C2::ATS|C_Control patron ps cco false hib)
+        (ref-TS01-C2::ATS|C_Control patron (ATS.UR_OwnerKonto ps) ps cco false hib)
         (map print
             [
                 (expect "<<ATS-G2>> syphoning restored to OFF" false (ref-ATS::UR_Syphoning ps))
@@ -763,7 +763,7 @@
         (ref-ATS:module{AutostakeV3} ATS)
         (ps:string "PlebeicStrength-98c486052a51")
     )
-    (ref-TS01-C2::ATS|C_Control KST.ANHD ps
+    (ref-TS01-C2::ATS|C_Control KST.ANHD (ATS.UR_OwnerKonto ps) ps
         (ref-ATS::UR_CanChangeOwner ps) true (ref-ATS::UR_Hibernate ps))
     (map print
         [
@@ -832,7 +832,7 @@
         (ref-ATS:module{AutostakeV3} ATS)
         (ps:string "PlebeicStrength-98c486052a51")
     )
-    (ref-TS01-C2::ATS|C_Control KST.ANHD ps
+    (ref-TS01-C2::ATS|C_Control KST.ANHD (ATS.UR_OwnerKonto ps) ps
         (ref-ATS::UR_CanChangeOwner ps) false (ref-ATS::UR_Hibernate ps))
     (map print
         [
@@ -886,7 +886,7 @@
             ;;--- the syphon index has a hard floor of 0.1
             (expect-failure "<<ATS-G8>> a syphon index below 0.1 is refused"
                 "Syphon cannot be set lower than 0.1"
-                (ref-TS01-C2::ATS|C_UpdateSyphon KST.ANHD ps 0.05))
+                (ref-TS01-C2::ATS|C_UpdateSyphon KST.ANHD (ATS.UR_OwnerKonto ps) ps 0.05))
         ]
     )
     ""
@@ -1247,7 +1247,7 @@
                         (ref-ATS::UR_ColdRecoveryPositions a)])
             (expect-failure "<<ATS-G15>> elite mode cannot be turned on without seven positions"
                 "Turning Elite Mode requires 7 Cold Recovery Positions"
-                (ref-TS01-C2::ATS|C_ToggleElite KST.ANHD k true))
+                (ref-TS01-C2::ATS|C_ToggleElite KST.ANHD (ATS.UR_OwnerKonto k) k true))
             ;;INDEX PRECISION. The syphon value must be representable in the pair's own index decimals
             ;;-- 24 here -- so a 25-decimal value is refused. The guard is a `floor`-equality test,
             ;;which is how this codebase spells "no hidden rounding": accepting the value would
@@ -1256,11 +1256,11 @@
                 24 (ref-ATS::UR_IndexDecimals a))
             (expect-failure "<<ATS-G15>> a syphon value with 25 decimals is refused, and quoted back"
                 "The syphon value of 0.1234567890123456789012345 is not a valid Index Value for the Auryndex-98c486052a51 ATS Pair"
-                (ref-TS01-C2::ATS|C_UpdateSyphon KST.ANHD a 0.1234567890123456789012345))
+                (ref-TS01-C2::ATS|C_UpdateSyphon KST.ANHD (ATS.UR_OwnerKonto a) a 0.1234567890123456789012345))
             ;;...and the same value truncated to 24 decimals is ACCEPTED, so the bound is the pair's
             ;;precision and not "long decimals are suspicious".
             (expect "<<ATS-G15>> ...while 24 decimals is accepted, so the bound IS the precision"
-                true (!= "" (ref-TS01-C2::ATS|C_UpdateSyphon KST.ANHD a 0.123456789012345678901234)))
+                true (!= "" (ref-TS01-C2::ATS|C_UpdateSyphon KST.ANHD (ATS.UR_OwnerKonto a) a 0.123456789012345678901234)))
         ]
     )
     (print "--- [ATS-G15 · 02 · the Hot-RBT prefix exclusion, and the hole in it] ---")
@@ -1276,10 +1276,10 @@
         [
             (expect-failure "<<ATS-G15>> a VESTING (V|) ortofungible is refused as a Hot-RBT"
                 "Special Orto-Fungibles cannot be registered as Hot-RBTs"
-                (ref-TS01-C2::ATS|C_AddHotRBT KST.ANHD a "V|AURYN-98c486052a51"))
+                (ref-TS01-C2::ATS|C_AddHotRBT KST.ANHD (ATS.UR_OwnerKonto a) a "V|AURYN-98c486052a51"))
             (expect-failure "<<ATS-G15>> ...and so is a SLEEPING (Z|) one"
                 "Special Orto-Fungibles cannot be registered as Hot-RBTs"
-                (ref-TS01-C2::ATS|C_AddHotRBT KST.ANHD a "Z|VST-98c486052a51"))
+                (ref-TS01-C2::ATS|C_AddHotRBT KST.ANHD (ATS.UR_OwnerKonto a) a "Z|VST-98c486052a51"))
             ;;FIXED 2026-09-12, owner-ruled. The third entry in the exclusion list was "H" -- ONE
             ;;character -- while the value tested against it is `(take 2 hot-rbt)`, always TWO. So
             ;;`(contains "H|" ["V|" "Z|" "H"])` was FALSE and HIBERNATION tokens were not excluded at
@@ -1300,7 +1300,7 @@
                 true (> (DPOF.UR_Supply "H|AURYN-98c486052a51") 0.0))
             (expect-failure "<<ATS-G15>> ...but the PREFIX guard now answers first, as its comment always said"
                 "Special Orto-Fungibles cannot be registered as Hot-RBTs"
-                (ref-TS01-C2::ATS|C_AddHotRBT KST.ANHD a "H|AURYN-98c486052a51"))
+                (ref-TS01-C2::ATS|C_AddHotRBT KST.ANHD (ATS.UR_OwnerKonto a) a "H|AURYN-98c486052a51"))
             ;;--- THE BLOCKERS FOR `06_DPOF.pact:2608` ("RBT-Data for DPOF {} is already set as
             ;;    ATS-Pair {}"), asserted rather than described, because they are FIXTURE facts and
             ;;    fixtures change.
@@ -1343,7 +1343,7 @@
                  (> (DPOF.UR_Supply "DDKOSON-98c486052a51") 0.0)])
             (expect-failure "<<ATS-G15>> ...so it clears the prefix rule and is refused on SUPPLY"
                 "Cannot Add OrtoFungible with non Zero Supply as ATS-Pair Hot RBT"
-                (ref-TS01-C2::ATS|C_AddHotRBT KST.ANHD a "DDKOSON-98c486052a51"))
+                (ref-TS01-C2::ATS|C_AddHotRBT KST.ANHD (ATS.UR_OwnerKonto a) a "DDKOSON-98c486052a51"))
         ]
     )
     ""
@@ -1411,18 +1411,18 @@
             ;;three recovery flags, so reaching its own message means all three branches failed.
             (expect-failure "<<ATS-G16>> a pair with no recovery at all cannot be locked"
                 "When Parameter Lock is set to true, at least One Recovery must be on"
-                (ref-TS01-C2::ATS|C_ToggleParameterLock KST.ANHD t true))
+                (ref-TS01-C2::ATS|C_ToggleParameterLock KST.ANHD (ATS.UR_OwnerKonto t) t true))
             ;;...and Auryndex, which HAS a recovery, locks fine -- so guard 1 is about the recovery
             ;;flags and not about locking being refused generally.
             (expect "<<ATS-G16>> ...while a pair WITH a recovery locks successfully"
-                true (!= "" (ref-TS01-C2::ATS|C_ToggleParameterLock KST.ANHD a true)))
+                true (!= "" (ref-TS01-C2::ATS|C_ToggleParameterLock KST.ANHD (ATS.UR_OwnerKonto a) a true)))
             (expect "<<ATS-G16>> ...and the lock really took"
                 true (ref-ATS::UR_Lock a))
             ;;GUARD 2 -- the mirror. Now that Auryndex is locked, unlocking it is refused because its
             ;;cold recovery is still on. Same pair, same flags, opposite direction.
             (expect-failure "<<ATS-G16>> ...but it cannot be UNLOCKED while that recovery is live"
                 "ATSPair Auryndex-98c486052a51 Recoveries must be stopped for exec"
-                (ref-TS01-C2::ATS|C_ToggleParameterLock KST.ANHD a false))
+                (ref-TS01-C2::ATS|C_ToggleParameterLock KST.ANHD (ATS.UR_OwnerKonto a) a false))
         ]
     )
     (print "--- [ATS-G16 · 02 · the seven-reward-token ceiling] ---")
@@ -1445,7 +1445,7 @@
                 7 (length (ref-ATS::UR_RewardTokens a)))
             (expect-failure "<<ATS-G16>> ...so an eighth is refused"
                 "An ATS Pair can have a maximum of 7 RTs"
-                (ref-TS01-C2::ATS|C_AddSecondary KST.ANHD a "AKOSON-98c486052a51" false))
+                (ref-TS01-C2::ATS|C_AddSecondary KST.ANHD (ATS.UR_OwnerKonto a) a "AKOSON-98c486052a51" false))
         ]
     )
     ""
@@ -1806,7 +1806,7 @@
         (ps:string "PlebeicStrength-98c486052a51")
     )
     ;;turn syphoning on through the ordinary control client (AOZ owns this pair)
-    (ref-TS01-C2::ATS|C_Control KST.AOZT ps false true false)
+    (ref-TS01-C2::ATS|C_Control KST.AOZT (ATS.UR_OwnerKonto ps) ps false true false)
     (let
         (
             (residents:[decimal] (ref-ATS::UR_RewardTokenRUR ps 1))
@@ -1878,7 +1878,7 @@
                 [false true]
                 [(ref-ATS::UR_ToggleColdRecovery kor) (ref-ATS::UR_ToggleDirectRecovery kor)])
             (format "<(ATS|C_SwitchDirectRecovery off)> => \"{}\""
-                [(ref-TS01-C2::ATS|C_SwitchDirectRecovery KST.ANHD kor false)])
+                [(ref-TS01-C2::ATS|C_SwitchDirectRecovery KST.ANHD (ATS.UR_OwnerKonto kor) kor false)])
         ]
     )
     ""
@@ -1941,7 +1941,7 @@
             ;;rule answered.
             (expect-failure "<<ATS-G23>> so re-registering it is refused by the can-upgrade latch, NOT the RBT rule"
                 "Orto-Fungible THRBT-98c486052a51 properties cannot be upgraded"
-                (ref-TS01-C2::ATS|C_AddHotRBT KST.ANHD kor thrbt))
+                (ref-TS01-C2::ATS|C_AddHotRBT KST.ANHD (ATS.UR_OwnerKonto kor) kor thrbt))
         ]
     )
     ""
@@ -1969,7 +1969,7 @@
     (map print
         [
             (format "<(ATS|C_SwitchDirectRecovery on)> => \"{}\""
-                [(ref-TS01-C2::ATS|C_SwitchDirectRecovery KST.ANHD kor true)])
+                [(ref-TS01-C2::ATS|C_SwitchDirectRecovery KST.ANHD (ATS.UR_OwnerKonto kor) kor true)])
             (expect "<<ATS-G23c>> KORIndex is back as the suite found it"
                 true (ref-ATS::UR_ToggleDirectRecovery kor))
         ]
@@ -2218,10 +2218,10 @@
                 (if (not (or (ref-ATS::UR_ToggleColdRecovery ps)
                              (or (ref-ATS::UR_ToggleHotRecovery ps)
                                  (ref-ATS::UR_ToggleDirectRecovery ps))))
-                    (ref-TS01-C2::ATS|C_SwitchColdRecovery patron ps true)
+                    (ref-TS01-C2::ATS|C_SwitchColdRecovery patron (ATS.UR_OwnerKonto ps) ps true)
                     "a recovery is already on"
                 )
-                (ref-TS01-C2::ATS|C_ToggleParameterLock patron ps true)
+                (ref-TS01-C2::ATS|C_ToggleParameterLock patron (ATS.UR_OwnerKonto ps) ps true)
             )
             "already locked"
         )
@@ -2229,11 +2229,11 @@
         ;;(verified: no XE_CollectStoa anywhere in C_Switch*Recovery), so they cannot pollute the
         ;;measurement either.
         (if (ref-ATS::UR_ToggleColdRecovery ps)
-            (ref-TS01-C2::ATS|C_SwitchColdRecovery patron ps false) "cold already off")
+            (ref-TS01-C2::ATS|C_SwitchColdRecovery patron (ATS.UR_OwnerKonto ps) ps false) "cold already off")
         (if (ref-ATS::UR_ToggleHotRecovery ps)
-            (ref-TS01-C2::ATS|C_SwitchHotRecovery patron ps false) "hot already off")
+            (ref-TS01-C2::ATS|C_SwitchHotRecovery patron (ATS.UR_OwnerKonto ps) ps false) "hot already off")
         (if (ref-ATS::UR_ToggleDirectRecovery ps)
-            (ref-TS01-C2::ATS|C_SwitchDirectRecovery patron ps false) "direct already off")
+            (ref-TS01-C2::ATS|C_SwitchDirectRecovery patron (ATS.UR_OwnerKonto ps) ps false) "direct already off")
         (let
             (
                 (stoa-acct:string (ref-DALOS::UR_AccountStoa patron))
@@ -2251,7 +2251,7 @@
                         (predicted-stoa:decimal (at "stoa-need" (at "stoa" predicted)))
                         (predicted-ignis:decimal (at "ignis-need" (at "ignis" predicted)))
                     )
-                    (ref-TS01-C2::ATS|C_ToggleParameterLock patron ps false)
+                    (ref-TS01-C2::ATS|C_ToggleParameterLock patron (ATS.UR_OwnerKonto ps) ps false)
                     (let
                         (
                             (real-stoa:decimal (- stoa-before (coin.get-balance stoa-acct)))
@@ -2307,7 +2307,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|UpdateRoyalty patron aur 10.0))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C2::ATS|C_UpdateRoyalty patron aur 10.0))
+            (m (ref-TS01-C2::ATS|C_UpdateRoyalty patron (ATS.UR_OwnerKonto aur) aur 10.0))
         )
         (map print
             [
@@ -2348,7 +2348,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|UpdateSyphon patron aur 0.1))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C2::ATS|C_UpdateSyphon patron aur 0.1))
+            (m (ref-TS01-C2::ATS|C_UpdateSyphon patron (ATS.UR_OwnerKonto aur) aur 0.1))
         )
         (map print
             [
@@ -2389,7 +2389,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|SetHibernationFees patron aur 100.0 0.008))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C2::ATS|C_SetHibernationFees patron aur 100.0 0.008))
+            (m (ref-TS01-C2::ATS|C_SetHibernationFees patron (ATS.UR_OwnerKonto aur) aur 100.0 0.008))
         )
         (map print
             [
@@ -2432,7 +2432,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|SwitchColdRecovery patron kor true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C2::ATS|C_SwitchColdRecovery patron kor true))
+            (m (ref-TS01-C2::ATS|C_SwitchColdRecovery patron (ATS.UR_OwnerKonto kor) kor true))
         )
         (map print
             [
@@ -2474,7 +2474,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|SwitchDirectRecovery patron kor false))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C2::ATS|C_SwitchDirectRecovery patron kor false))
+            (m (ref-TS01-C2::ATS|C_SwitchDirectRecovery patron (ATS.UR_OwnerKonto kor) kor false))
         )
         (map print
             [
@@ -2515,7 +2515,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|ControlHotRecoveryFee patron aur true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C2::ATS|C_ControlHotRecoveryFee patron aur true))
+            (m (ref-TS01-C2::ATS|C_ControlHotRecoveryFee patron (ATS.UR_OwnerKonto aur) aur true))
         )
         (map print
             [
@@ -2556,7 +2556,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|RotateOwnership patron aur lumy))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C2::ATS|C_RotateOwnership patron aur lumy))
+            (m (ref-TS01-C2::ATS|C_RotateOwnership patron (ATS.UR_OwnerKonto aur) lumy aur))
         )
         (map print
             [
@@ -2708,7 +2708,7 @@
         (amounts:[decimal] [10.0 0.0 5.0])
     )
     ;;setup, OUTSIDE the measurement window
-    (ref-TS01-C2::ATS|C_Control patron ps
+    (ref-TS01-C2::ATS|C_Control patron (ATS.UR_OwnerKonto ps) ps
         (ref-ATS::UR_CanChangeOwner ps) true (ref-ATS::UR_Hibernate ps))
     (let
         (
@@ -2771,7 +2771,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|Control patron ps (ref-ATS::UR_CanChangeOwner ps) true (ref-ATS::UR_Hibernate ps)))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C2::ATS|C_Control patron ps (ref-ATS::UR_CanChangeOwner ps) true (ref-ATS::UR_Hibernate ps)))
+            (m (ref-TS01-C2::ATS|C_Control patron (ATS.UR_OwnerKonto ps) ps (ref-ATS::UR_CanChangeOwner ps) true (ref-ATS::UR_Hibernate ps)))
         )
         (map print
             [
@@ -2818,7 +2818,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|ControlColdRecoveryFees patron kor true false))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C2::ATS|C_ControlColdRecoveryFees patron kor true false))
+            (m (ref-TS01-C2::ATS|C_ControlColdRecoveryFees patron (ATS.UR_OwnerKonto kor) kor true false))
         )
         (map print
             [
@@ -2865,7 +2865,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|SetColdRecoveryDuration patron kor true 24 6))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C2::ATS|C_SetColdRecoveryDuration patron kor true 24 6))
+            (m (ref-TS01-C2::ATS|C_SetColdRecoveryDuration patron (ATS.UR_OwnerKonto kor) kor true 24 6))
         )
         (map print
             [
@@ -2910,7 +2910,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|SetDirectRecoveryFee patron kor 10.0))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C2::ATS|C_SetDirectRecoveryFee patron kor 10.0))
+            (m (ref-TS01-C2::ATS|C_SetDirectRecoveryFee patron (ATS.UR_OwnerKonto kor) kor 10.0))
         )
         (map print
             [
@@ -2955,7 +2955,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|SwitchHotRecovery patron aur (not (ref-ATS::UR_ToggleHotRecovery aur))))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C2::ATS|C_SwitchHotRecovery patron aur (not (ref-ATS::UR_ToggleHotRecovery aur))))
+            (m (ref-TS01-C2::ATS|C_SwitchHotRecovery patron (ATS.UR_OwnerKonto aur) aur (not (ref-ATS::UR_ToggleHotRecovery aur))))
         )
         (map print
             [
@@ -3004,12 +3004,12 @@
     ;;AND cold recovery switched OFF, and no pair in the file satisfies both at once: Auryndex has the
     ;;positions but runs cold recovery. Switching it off is itself a billed op (measured separately at
     ;;<<ATS-I6>>), so it closes here before `ignis-before` is read.
-    (ref-TS01-C2::ATS|C_SwitchColdRecovery patron aur false)
+    (ref-TS01-C2::ATS|C_SwitchColdRecovery patron (ATS.UR_OwnerKonto aur) aur false)
     (let
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|ToggleElite patron aur (not (ref-ATS::UR_EliteMode aur))))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C2::ATS|C_ToggleElite patron aur (not (ref-ATS::UR_EliteMode aur))))
+            (m (ref-TS01-C2::ATS|C_ToggleElite patron (ATS.UR_OwnerKonto aur) aur (not (ref-ATS::UR_EliteMode aur))))
         )
         (map print
             [
@@ -3054,7 +3054,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|ToggleUpgrade patron aur (not (ref-ATS::UR_CanUpgrade aur))))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C2::ATS|C_ToggleUpgrade patron aur (not (ref-ATS::UR_CanUpgrade aur))))
+            (m (ref-TS01-C2::ATS|C_ToggleUpgrade patron (ATS.UR_OwnerKonto aur) aur (not (ref-ATS::UR_CanUpgrade aur))))
         )
         (map print
             [
@@ -3543,9 +3543,9 @@
     ;;point in the chain. They fail one at a time, so the first error names cold recovery and hides the
     ;;other two — all three are switched here. Each switch is itself a billed op (measured separately at
     ;;<<ATS-I6>> and <<ATS-I7>>), so they close before `ignis-before` is read.
-    (ref-TS01-C2::ATS|C_SwitchColdRecovery aozt ps false)
-    (ref-TS01-C2::ATS|C_SwitchHotRecovery aozt ps false)
-    (ref-TS01-C2::ATS|C_SwitchDirectRecovery aozt ps false)
+    (ref-TS01-C2::ATS|C_SwitchColdRecovery aozt (ATS.UR_OwnerKonto ps) ps false)
+    (ref-TS01-C2::ATS|C_SwitchHotRecovery aozt (ATS.UR_OwnerKonto ps) ps false)
+    (ref-TS01-C2::ATS|C_SwitchDirectRecovery aozt (ATS.UR_OwnerKonto ps) ps false)
     (let
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|RemoveSecondary aozt aozt ps (at 1 (ref-ATS::UR_RewardTokenList ps))))
@@ -3736,7 +3736,7 @@
             (
                 (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_ATS|HOT-RBT|Repurpose aozt ddk n emma))
                 (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply aozt false))
-                (m (ref-TS01-C2::ATS|HOT-RBT|C_Repurpose aozt ddk n emma))
+                (m (ref-TS01-C2::ATS|HOT-RBT|C_Repurpose aozt (ATS.UR_OwnerKonto (DPOF.UR_RewardBearingToken ddk)) emma ddk n))
             )
             (map print
                 [
@@ -3791,7 +3791,7 @@
     )
     (ref-TS01-C2::ATS|C_Coil aozt aozt ps (at 0 (ref-ATS::UR_RewardTokenList ps)) 5.0)
     (if (not (ref-ATS::UR_ToggleDirectRecovery ps))
-        (ref-TS01-C2::ATS|C_SwitchDirectRecovery aozt ps true)
+        (ref-TS01-C2::ATS|C_SwitchDirectRecovery aozt (ATS.UR_OwnerKonto ps) ps true)
         "direct recovery already on")
     (let
         (
@@ -3978,7 +3978,7 @@
             )
             (let
                 (
-                    (m (ref-TS01-C2::ATS|C_AddHotRBT aozt pair hot))
+                    (m (ref-TS01-C2::ATS|C_AddHotRBT aozt (ATS.UR_OwnerKonto pair) pair hot))
                 )
                 (map print
                     [
@@ -4127,13 +4127,13 @@
     )
     ;;SETUP — the ladder may only be rewritten while cold recovery is OFF (`08_ATS.pact:2360`), and
     ;;Auryndex runs it. The switch is itself a billed op, measured at <<ATS-I6>>, and closes here.
-    (ref-TS01-C2::ATS|C_SwitchColdRecovery patron aur false)
+    (ref-TS01-C2::ATS|C_SwitchColdRecovery patron (ATS.UR_OwnerKonto aur) aur false)
     (let
         (
             (predicted:object{OuronetInfoV2.ClientInfo}
                 (INFO-ONE.INFO_ATS|SetColdRecoveryFees patron aur 7 thresholds ladder))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C2::ATS|C_SetColdRecoveryFees patron aur 7 thresholds ladder))
+            (m (ref-TS01-C2::ATS|C_SetColdRecoveryFees patron (ATS.UR_OwnerKonto aur) aur 7 thresholds ladder))
         )
         (map print
             [
@@ -4311,7 +4311,7 @@
     ;;has no `H|` twin. `VST|C_CreateHibernatingLink` mints one; it is a STOA-charging op measured on
     ;;its own at `modules/VST.repl <<VST-I1>>`, and closes before the window opens.
     (ref-TS01-C2::VST|C_CreateHibernatingLink aozt "GTX2-98c486052a51")
-    (ref-TS01-C2::ATS|C_Control aozt p2 (ref-ATS::UR_CanChangeOwner p2) (ref-ATS::UR_Syphoning p2) true)
+    (ref-TS01-C2::ATS|C_Control aozt (ATS.UR_OwnerKonto p2) p2 (ref-ATS::UR_CanChangeOwner p2) (ref-ATS::UR_Syphoning p2) true)
     (let
         (
             ;;the coil above put 5.0 PKOSON into pair 1; curl a fraction of it so the position survives
@@ -4493,7 +4493,7 @@
     (ref-TS01-C1::DPTF|C_Issue aozt aozt ["GtRoyaltyRbtProbe"] ["GTRY"] [24] [true] [true] [true] [true] [true] [true])
     (ref-TS01-C2::ATS|C_Issue aozt aozt ["GtRoyaltyPairProbe"] [24]
         [(at 0 (ref-ATS::UR_RewardTokenList ps))] [false] ["GTRY-98c486052a51"] [true])
-    (ref-TS01-C2::ATS|C_UpdateRoyalty aozt pair 100.0)
+    (ref-TS01-C2::ATS|C_UpdateRoyalty aozt (ATS.UR_OwnerKonto pair) pair 100.0)
     (ref-TS01-C2::ATS|C_Coil aozt aozt pair (at 0 (ref-ATS::UR_RewardTokenList ps)) 100.0)
     (let
         (
@@ -4589,10 +4589,10 @@
                                 (let ((z:string "UNLOCKED")) (ref-ATS::UEV_ParameterLockState pair false) z)))
                         (expect-failure "<<ATS-G24>> a non-owner cannot set the royalty"
                             "Keyset failure (keys-all): [PK_Ancie...]"
-                            (ref-TS01-C2::ATS|C_UpdateRoyalty attacker pair 100.0))
+                            (ref-TS01-C2::ATS|C_UpdateRoyalty attacker (ATS.UR_OwnerKonto pair) pair 100.0))
                         (expect-failure "<<ATS-G24>> a non-owner cannot set the syphon"
                             "Keyset failure (keys-all): [PK_Ancie...]"
-                            (ref-TS01-C2::ATS|C_UpdateSyphon attacker pair 1.0))
+                            (ref-TS01-C2::ATS|C_UpdateSyphon attacker (ATS.UR_OwnerKonto pair) pair 1.0))
                         ;;...and both refusals were total.
                         (expect "<<ATS-G24>> ...and neither parameter moved"
                             [royalty-before syphon-before]
@@ -4748,12 +4748,12 @@
             ;;gate spoke. It is asserted to document that the obvious test is the unattributable one.
             (expect-failure "<<ATS-G26>> a token she does not own is refused -- but by WHICH gate is unknowable here"
                 "Keyset failure (keys-all): [PK_Ancie...]"
-                (ref-TS01-C2::ATS|C_AddSecondary attacker kor "PSTOA-98c486052a51" false))
+                (ref-TS01-C2::ATS|C_AddSecondary attacker (ATS.UR_OwnerKonto kor) kor "PSTOA-98c486052a51" false))
             ;;ATTRIBUTABLE. Same attacker, same pair, same message -- but now the token is hers, so
             ;;`DPTF::CAP_Owner reward-token` cannot be the refuser. Only `CAP_Owner atspair` remains.
             (expect-failure "<<ATS-G26>> owning the token does NOT let you attach it to someone else's pair"
                 "Keyset failure (keys-all): [PK_Ancie...]"
-                (ref-TS01-C2::ATS|C_AddSecondary attacker kor "EMCO-98c486052a51" false))
+                (ref-TS01-C2::ATS|C_AddSecondary attacker (ATS.UR_OwnerKonto kor) kor "EMCO-98c486052a51" false))
             ;;...and the refusal was TOTAL.
             (expect "<<ATS-G26>> ...and no reward token was attached"
                 1 (length (ref-ATS::UR_RewardTokens kor)))
@@ -4782,9 +4782,9 @@
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
         (kor:string "KORIndex-98c486052a51")
     )
-    (ref-TS01-C2::ATS|C_SwitchDirectRecovery KST.ANHD kor false)
+    (ref-TS01-C2::ATS|C_SwitchDirectRecovery KST.ANHD (ATS.UR_OwnerKonto kor) kor false)
     (print (format "<(ATS|C_AddSecondary by the pair owner)> => \"{}\""
-        [(ref-TS01-C2::ATS|C_AddSecondary KST.ANHD kor "VST-98c486052a51" false)]))
+        [(ref-TS01-C2::ATS|C_AddSecondary KST.ANHD (ATS.UR_OwnerKonto kor) kor "VST-98c486052a51" false)]))
     (map print
         [
             (expect "<<ATS-G26>> with the pair owner signing, the identical op succeeds"
@@ -4995,19 +4995,19 @@
             [
                 (expect "<<ATS-G28>> UNLOCKED, the owner can set the royalty"
                     true (contains "Royalty"
-                        (ref-TS01-C2::ATS|C_UpdateRoyalty KST.ANHD pair 100.0)))
+                        (ref-TS01-C2::ATS|C_UpdateRoyalty KST.ANHD (ATS.UR_OwnerKonto pair) pair 100.0)))
             ]
         )
-        (ref-TS01-C2::ATS|C_ToggleParameterLock KST.ANHD pair true)
+        (ref-TS01-C2::ATS|C_ToggleParameterLock KST.ANHD (ATS.UR_OwnerKonto pair) pair true)
         (map print
             [
                 ;;THE FIX, both setters. Everything but the lock is unchanged from the line above.
                 (expect-failure "<<ATS-G28>> LOCKED, the same owner cannot set the royalty (#6H)"
                     "Parameter-lock for ATS Pair"
-                    (ref-TS01-C2::ATS|C_UpdateRoyalty KST.ANHD pair 120.0))
+                    (ref-TS01-C2::ATS|C_UpdateRoyalty KST.ANHD (ATS.UR_OwnerKonto pair) pair 120.0))
                 (expect-failure "<<ATS-G28>> ...nor the hibernation fees, the fix's other half"
                     "Parameter-lock for ATS Pair"
-                    (ref-TS01-C2::ATS|C_SetHibernationFees KST.ANHD pair 10.0 1.0))
+                    (ref-TS01-C2::ATS|C_SetHibernationFees KST.ANHD (ATS.UR_OwnerKonto pair) pair 10.0 1.0))
                 ;;...and the lock really is what changed.
                 ;;...and the lock really is what changed. `UEV_ParameterLockState` is the only
                 ;;reader of this flag on the interface, so it is probed the way <<ATS-G24>> does:

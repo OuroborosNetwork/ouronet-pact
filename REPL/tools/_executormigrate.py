@@ -106,6 +106,27 @@ RULES = {
     # the HOT-RBT pair delegates into DPOF's branding, so the authority is DPOF's parent owner
     "ATS|HOT-RBT|C_UpdatePendingBranding": (7, "(DPOF.URC_BrandingKonto {1})"),
     "ATS|HOT-RBT|C_UpgradeBranding":       (4, "(DPOF.URC_BrandingKonto {1})"),
+    # ---- 08_ATS (sweep 7/46). Every atspair-keyed entrypoint resolves to CAP_Owner <atspair>,
+    # so the executor is the POOL OWNER, read at the call site. These are INSERTS (arity grows by
+    # one), which makes them self-protecting: a second run cannot re-match.
+    "ATS|C_Control":                (6, "(ATS.UR_OwnerKonto {1})"),
+    "ATS|C_UpdateRoyalty":          (4, "(ATS.UR_OwnerKonto {1})"),
+    "ATS|C_UpdateSyphon":           (4, "(ATS.UR_OwnerKonto {1})"),
+    "ATS|C_SetHibernationFees":     (5, "(ATS.UR_OwnerKonto {1})"),
+    "ATS|C_ToggleParameterLock":    (4, "(ATS.UR_OwnerKonto {1})"),
+    "ATS|C_AddSecondary":           (5, "(ATS.UR_OwnerKonto {1})"),
+    "ATS|C_ControlColdRecoveryFees":(5, "(ATS.UR_OwnerKonto {1})"),
+    "ATS|C_SetColdRecoveryFees":    (6, "(ATS.UR_OwnerKonto {1})"),
+    "ATS|C_SetColdRecoveryDuration":(6, "(ATS.UR_OwnerKonto {1})"),
+    "ATS|C_ToggleElite":            (4, "(ATS.UR_OwnerKonto {1})"),
+    "ATS|C_ToggleUpgrade":          (4, "(ATS.UR_OwnerKonto {1})"),
+    "ATS|C_SwitchColdRecovery":     (4, "(ATS.UR_OwnerKonto {1})"),
+    "ATS|C_AddHotRBT":              (4, "(ATS.UR_OwnerKonto {1})"),
+    "ATS|C_ControlHotRecoveryFee":  (4, "(ATS.UR_OwnerKonto {1})"),
+    "ATS|C_SetHotRecoveryFee":      (5, "(ATS.UR_OwnerKonto {1})"),
+    "ATS|C_SwitchHotRecovery":      (4, "(ATS.UR_OwnerKonto {1})"),
+    "ATS|C_SetDirectRecoveryFee":   (4, "(ATS.UR_OwnerKonto {1})"),
+    "ATS|C_SwitchDirectRecovery":   (4, "(ATS.UR_OwnerKonto {1})"),
     # THE EXECUTEE GROUP IS NOT HERE, and cannot be. This tool only INSERTS after slot 0.
     # C_Wipe / C_WipeSlim / C_RotateOwnership / the four role toggles / C_ToggleFreezeAccount
     # all gained a third-position `executee`, which MOVES the entity id to slot 4 -- a reorder.
@@ -273,8 +294,41 @@ def scan(path, apply_):
     return len(edits)
 
 
+def check_rule_arities():
+    """Every RULES arity must equal the function's REAL parameter count.
+
+    A rule whose arity is wrong matches NOTHING -- `scan` fires on `len(vals) == arity - 1`, so
+    an off-by-one rule silently skips every call site while the tool reports success. That is the
+    same failure shape as an incomplete registry: not an error, just a rule that quietly does not
+    apply. `ATS|C_Control` was entered as 7 against a real 6 and skipped 16 call sites, found only
+    because `_callarity` flagged them afterwards. Checked here so the tool cannot lie about its
+    own coverage.
+    """
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(
+        "_ca", os.path.join(ROOT, "REPL", "tools", "_callarity.py"))
+    ca = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(ca)
+    sigs, owners = ca.signatures()
+    bad = []
+    for fn, (arity, _t) in RULES.items():
+        mods = [m for m in owners.get(fn, ()) if fn in sigs[m]]
+        if not mods:
+            continue
+        real = sigs[mods[0]][fn]
+        if real != arity:
+            bad.append((fn, arity, real))
+    return bad
+
+
 def main():
     apply_ = "--apply" in sys.argv
+    _bad = check_rule_arities()
+    if _bad:
+        print("RULE ARITY MISMATCH -- these rules would silently match nothing:")
+        for fn, declared, real in _bad:
+            print(f"   {fn:36s} rule says {declared}, real signature is {real}")
+        sys.exit("refusing to run with rules that cannot fire")
     total = 0
     files = 0
     for pat in SCAN:

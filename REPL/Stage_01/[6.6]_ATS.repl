@@ -995,8 +995,8 @@
         ;"block-time": (time "2024-10-28T00:00:00Z")}
     )
     ;(ref-TS01-C2::ATS|C_ModifyCanChangeOwner patron a-idx false)
-    (ref-TS01-C2::ATS|C_RotateOwnership patron a-idx emma)
-    (ref-TS01-C2::ATS|C_RotateOwnership emma a-idx patron)
+    (ref-TS01-C2::ATS|C_RotateOwnership patron (ATS.UR_OwnerKonto a-idx) emma a-idx)
+    (ref-TS01-C2::ATS|C_RotateOwnership emma (ATS.UR_OwnerKonto a-idx) patron a-idx)
     [
         (format "Can Change Owner for Auryndex is {}" [(ref-ATS::UR_CanChangeOwner a-idx)])
         (format "Curling 100 OURO Returns {} EA" [(ref-TS01-C2::ATS|C_Curl patron patron a-idx ea-idx ouro 100.0)])
@@ -1102,9 +1102,9 @@
         (ea-idx:string "EliteAuryndex-98c486052a51")
         (ouro:string "OURO-98c486052a51")
     )
-    (ref-TS01-C2::ATS|C_UpdateSyphon patron ps 0.6)
+    (ref-TS01-C2::ATS|C_UpdateSyphon patron (ATS.UR_OwnerKonto ps) ps 0.6)
     ;;Toggle Syphoning
-    (ref-TS01-C2::ATS|C_Control patron ps true true false)    ;;second true turns syphoning on
+    (ref-TS01-C2::ATS|C_Control patron (ATS.UR_OwnerKonto ps) ps true true false)    ;;second true turns syphoning on
     [
         (format "Plebeic Strength Setting Lock state is {}" [(ref-ATS::UR_Lock ps)])
         (format "Emma has before spyhoning {} p-k |{} e-k |{} a-k " 
@@ -1197,7 +1197,7 @@
     )
 
     (ref-TS01-C2::ATS|C_Syphon patron emma ps [17.647058823529411764705882 5.294117647058823529411765 7.058823529411764705882353])
-    (ref-TS01-C2::ATS|C_ToggleParameterLock patron ps true)
+    (ref-TS01-C2::ATS|C_ToggleParameterLock patron (ATS.UR_OwnerKonto ps) ps true)
     [
         (format "Plebeic Strength Setting Lock state is {}" [(ref-ATS::UR_Lock ps)])
         (format "Emma has after spyhoning {} p-k |{} e-k |{} a-k " 
@@ -1349,9 +1349,9 @@
                 (ref-ATS::UR_ToggleDirectRecovery ps)
             ]
         )
-        (ref-TS01-C2::ATS|C_SwitchColdRecovery aoz ps false)
-        (ref-TS01-C2::ATS|C_SwitchHotRecovery aoz ps false)
-        (ref-TS01-C2::ATS|C_ToggleParameterLock aoz ps false)
+        (ref-TS01-C2::ATS|C_SwitchColdRecovery aoz (ATS.UR_OwnerKonto ps) ps false)
+        (ref-TS01-C2::ATS|C_SwitchHotRecovery aoz (ATS.UR_OwnerKonto ps) ps false)
+        (ref-TS01-C2::ATS|C_ToggleParameterLock aoz (ATS.UR_OwnerKonto ps) ps false)
     ]
     
     
@@ -1397,8 +1397,8 @@
             (ps:string "PlebeicStrength-98c486052a51")
         )
         [
-            (ref-TS01-C2::ATS|C_SwitchColdRecovery aoz ps true)
-            (ref-TS01-C2::ATS|C_SwitchHotRecovery aoz ps true)
+            (ref-TS01-C2::ATS|C_SwitchColdRecovery aoz (ATS.UR_OwnerKonto ps) ps true)
+            (ref-TS01-C2::ATS|C_SwitchHotRecovery aoz (ATS.UR_OwnerKonto ps) ps true)
         ]
     )
 
@@ -1639,8 +1639,8 @@
     )
     (print "Begining with removal of RT++++++++++++++++++++")
 
-    (ref-TS01-C2::ATS|C_SwitchColdRecovery aoz ps false)
-    (ref-TS01-C2::ATS|C_SwitchHotRecovery aoz ps false)
+    (ref-TS01-C2::ATS|C_SwitchColdRecovery aoz (ATS.UR_OwnerKonto ps) ps false)
+    (ref-TS01-C2::ATS|C_SwitchHotRecovery aoz (ATS.UR_OwnerKonto ps) ps false)
 )
 
 (print "")
@@ -1901,7 +1901,7 @@
         (ouro:string "OURO-98c486052a51")
     )
     (ref-TS01-C2::ATS|C_Coil aoz aoz ps e-k 250.0)
-    (ref-TS01-C2::ATS|C_AddSecondary aoz ps a-k false)
+    (ref-TS01-C2::ATS|C_AddSecondary aoz (ATS.UR_OwnerKonto ps) ps a-k false)
     (ref-TS01-C2::ATS|C_Fuel aoz aoz ps a-k 500.0)
 
 
@@ -1983,8 +1983,8 @@
         (ouro:string "OURO-98c486052a51")
     )
     (print "Turning Recovery On Again++++++++++++++++++++")
-    (ref-TS01-C2::ATS|C_SwitchColdRecovery aoz ps true)
-    (ref-TS01-C2::ATS|C_SwitchHotRecovery aoz ps true)
+    (ref-TS01-C2::ATS|C_SwitchColdRecovery aoz (ATS.UR_OwnerKonto ps) ps true)
+    (ref-TS01-C2::ATS|C_SwitchHotRecovery aoz (ATS.UR_OwnerKonto ps) ps true)
     (print "Cold Recovery Again++++++++++++++++++++")
     (ref-TS01-C2::ATS|C_ColdRecovery aoz aoz ps 25.0)
     (ref-TS01-C2::ATS|C_ColdRecovery aoz aoz ps 64.0)
@@ -2092,14 +2092,14 @@
         "block-time": (time "2024-11-22T00:00:00Z")}
     )
 
-    (ref-TS01-C2::ATS|C_SwitchColdRecovery aoz ps false)
-    (ref-TS01-C2::ATS|C_SwitchHotRecovery aoz ps false)
+    (ref-TS01-C2::ATS|C_SwitchColdRecovery aoz (ATS.UR_OwnerKonto ps) ps false)
+    (ref-TS01-C2::ATS|C_SwitchHotRecovery aoz (ATS.UR_OwnerKonto ps) ps false)
 
-    (ref-TS01-C2::ATS|C_ControlColdRecoveryFees aoz ps false false)
-    (ref-TS01-C2::ATS|C_ControlHotRecoveryFee aoz ps false)
+    (ref-TS01-C2::ATS|C_ControlColdRecoveryFees aoz (ATS.UR_OwnerKonto ps) ps false false)
+    (ref-TS01-C2::ATS|C_ControlHotRecoveryFee aoz (ATS.UR_OwnerKonto ps) ps false)
 
-    (ref-TS01-C2::ATS|C_SwitchColdRecovery aoz ps true)
-    (ref-TS01-C2::ATS|C_SwitchHotRecovery aoz ps true)
+    (ref-TS01-C2::ATS|C_SwitchColdRecovery aoz (ATS.UR_OwnerKonto ps) ps true)
+    (ref-TS01-C2::ATS|C_SwitchHotRecovery aoz (ATS.UR_OwnerKonto ps) ps true)
 
     [
         (format "{} Index is {};" [ps (ref-ATS::URC_Index ps)])
@@ -2829,13 +2829,13 @@
         (aoz:string KST.AOZT)
         (ps:string "PlebeicStrength-98c486052a51")
     )
-    (ref-TS01-C2::ATS|C_ToggleUpgrade aoz ps false)
+    (ref-TS01-C2::ATS|C_ToggleUpgrade aoz (ATS.UR_OwnerKonto ps) ps false)
     (map print
         [
             (expect "can-upgrade is now false" false (ref-ATS::UR_CanUpgrade ps))
             (expect-failure (format "{} properties cannot be upgraded" [ps])
                 "PlebeicStrength-98c486052a51 properties cannot be upgraded"
-                (ref-TS01-C2::ATS|C_Control aoz ps false false false)
+                (ref-TS01-C2::ATS|C_Control aoz (ATS.UR_OwnerKonto ps) ps false false false)
             )
         ]
     )
@@ -2879,8 +2879,8 @@
         (aoz:string KST.AOZT)
         (ps:string "PlebeicStrength-98c486052a51")
     )
-    (ref-TS01-C2::ATS|C_ToggleUpgrade aoz ps true)
-    (ref-TS01-C2::ATS|C_Control aoz ps false false false)
+    (ref-TS01-C2::ATS|C_ToggleUpgrade aoz (ATS.UR_OwnerKonto ps) ps true)
+    (ref-TS01-C2::ATS|C_Control aoz (ATS.UR_OwnerKonto ps) ps false false false)
     (map print
         [
             (expect "can-upgrade is now true" true (ref-ATS::UR_CanUpgrade ps))
@@ -2932,7 +2932,7 @@
         (peak-before:decimal (ref-ATS::UR_PeakHibernatePromile ps))
         (decay-before:decimal (ref-ATS::UR_HibernateDecay ps))
     )
-    (ref-TS01-C2::ATS|C_SetHibernationFees aoz ps 160.0 0.01)
+    (ref-TS01-C2::ATS|C_SetHibernationFees aoz (ATS.UR_OwnerKonto ps) ps 160.0 0.01)
     (map print
         [
             (format "peak-hibernate-promile was {}, decay was {}" [peak-before decay-before])
@@ -3240,7 +3240,7 @@
             (expect "no Hot-RBT registered yet (sentinel \"|\")" "|" (ref-ATS::UR_HotRewardBearingToken tkp))
         ]
     )
-    (ref-TS01-C2::ATS|C_AddHotRBT aoz tkp thrbt)
+    (ref-TS01-C2::ATS|C_AddHotRBT aoz (ATS.UR_OwnerKonto tkp) tkp thrbt)
     (map print
         [
             (expect "THRBT is now the registered Hot-RBT for TestKickPair" thrbt (ref-ATS::UR_HotRewardBearingToken tkp))
@@ -3354,7 +3354,7 @@
         (tkp:string "TestKickPair-98c486052a51")
         (e-k:string "EKOSON-98c486052a51")
     )
-    (ref-TS01-C2::ATS|C_AddSecondary aoz tkp e-k false)
+    (ref-TS01-C2::ATS|C_AddSecondary aoz (ATS.UR_OwnerKonto tkp) tkp e-k false)
     (map print
         [
             (expect "EKOSON is now a registered RT for TestKickPair" true (contains e-k (ref-ATS::UR_RewardTokenList tkp)))
@@ -3466,8 +3466,8 @@
         (decay-before:integer (ref-ATS::UR_HotRecoveryDecayPeriod ps))
         (nonces-before:integer (ref-DPOF::UR_NoncesUsed dd-k))
     )
-    (ref-TS01-C2::ATS|C_SwitchHotRecovery aoz ps false)
-    (ref-TS01-C2::ATS|C_SetHotRecoveryFee aoz ps 500.0 30)
+    (ref-TS01-C2::ATS|C_SwitchHotRecovery aoz (ATS.UR_OwnerKonto ps) ps false)
+    (ref-TS01-C2::ATS|C_SetHotRecoveryFee aoz (ATS.UR_OwnerKonto ps) ps 500.0 30)
     (map print
         [
             (format "h-promile was {}, h-decay was {}" [promile-before decay-before])
@@ -3475,7 +3475,7 @@
             (expect "h-decay updated to 30" 30 (ref-ATS::UR_HotRecoveryDecayPeriod ps))
         ]
     )
-    (ref-TS01-C2::ATS|C_SwitchHotRecovery aoz ps true)
+    (ref-TS01-C2::ATS|C_SwitchHotRecovery aoz (ATS.UR_OwnerKonto ps) ps true)
     (ref-TS01-C2::ATS|C_HotRecovery aoz aoz ps 25.0)
     (map print
         [
@@ -3679,7 +3679,7 @@
         (nonce-3-supply:decimal (ref-DPOF::UR_NonceSupply dd-k 3))
         (nonce-3-mint-time:time (at "mint-time" (at 0 (ref-DPOF::UR_NonceMetaData dd-k 3))))
     )
-    (ref-TS01-C2::ATS|HOT-RBT|C_Repurpose aoz dd-k 3 emma)
+    (ref-TS01-C2::ATS|HOT-RBT|C_Repurpose aoz (ATS.UR_OwnerKonto (DPOF.UR_RewardBearingToken dd-k)) emma dd-k 3)
     (map print
         [
             (expect "nonce 3 wiped — DPOF supply now the not-exists sentinel" -1.0 (ref-DPOF::UR_NonceSupply dd-k 3))
@@ -3809,7 +3809,7 @@
         (ps:string "PlebeicStrength-98c486052a51")
         (p-k:string "PKOSON-98c486052a51")
     )
-    (ref-TS01-C2::ATS|C_UpdateRoyalty aoz ps 15.0)
+    (ref-TS01-C2::ATS|C_UpdateRoyalty aoz (ATS.UR_OwnerKonto ps) ps 15.0)
     (ref-TS01-C2::ATS|C_Coil aoz aoz ps p-k 200.0)
     (let
         (
@@ -3880,7 +3880,7 @@
         (ps:string "PlebeicStrength-98c486052a51")
         (pd-k:string "PDKOSON-98c486052a51")
     )
-    (ref-TS01-C2::ATS|C_SwitchDirectRecovery aoz ps true)
+    (ref-TS01-C2::ATS|C_SwitchDirectRecovery aoz (ATS.UR_OwnerKonto ps) ps true)
     (let
         (
             (rt-lst:[string] (ref-ATS::UR_RewardTokenList ps))
@@ -3964,21 +3964,21 @@
         [
             (expect-failure "royalty above the new 500.0 ceiling (999.0, the old ceiling) is rejected"
                 "Royalty cannot exceed 500.0 promile (50%)"
-                (ref-TS01-C2::ATS|C_UpdateRoyalty aoz ps 999.0)
+                (ref-TS01-C2::ATS|C_UpdateRoyalty aoz (ATS.UR_OwnerKonto ps) ps 999.0)
             )
             (expect-failure "royalty just above the new ceiling (500.0001) is rejected"
                 "Royalty cannot exceed 500.0 promile (50%)"
-                (ref-TS01-C2::ATS|C_UpdateRoyalty aoz ps 500.0001)
+                (ref-TS01-C2::ATS|C_UpdateRoyalty aoz (ATS.UR_OwnerKonto ps) ps 500.0001)
             )
         ]
     )
-    (ref-TS01-C2::ATS|C_UpdateRoyalty aoz ps 500.0)
+    (ref-TS01-C2::ATS|C_UpdateRoyalty aoz (ATS.UR_OwnerKonto ps) ps 500.0)
     (map print
         [
             (expect "royalty exactly at the new 500.0 ceiling is accepted" 500.0 (ref-ATS::UR_Royalty ps))
         ]
     )
-    (ref-TS01-C2::ATS|C_UpdateRoyalty aoz ps -1.0)
+    (ref-TS01-C2::ATS|C_UpdateRoyalty aoz (ATS.UR_OwnerKonto ps) ps -1.0)
     (map print
         [
             ;; UR_Royalty (08_ATS.pact:870-873) already normalizes a stored -1.0 to read back as
@@ -3987,7 +3987,7 @@
             (expect "-1.0 remains a valid \"off\" sentinel (reads back normalized to 0.0), unaffected by the ceiling" 0.0 (ref-ATS::UR_Royalty ps))
         ]
     )
-    (ref-TS01-C2::ATS|C_UpdateRoyalty aoz ps 0.0)
+    (ref-TS01-C2::ATS|C_UpdateRoyalty aoz (ATS.UR_OwnerKonto ps) ps 0.0)
     (map print
         [
             (expect "0.0 remains a valid \"off\" sentinel, unaffected by the ceiling" 0.0 (ref-ATS::UR_Royalty ps))
