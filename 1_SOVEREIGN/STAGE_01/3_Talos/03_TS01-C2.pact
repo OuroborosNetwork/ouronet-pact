@@ -108,12 +108,12 @@
         ;;Frozen
     (defun VST|C_Freeze (patron:string freezer:string freeze-output:string dptf:string amount:decimal))
     (defun VST|C_RepurposeFrozen (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string))
-    (defun VST|C_ToggleTransferRoleFrozenDPTF (patron:string s-dptf:string target:string toggle:bool))
+    (defun VST|C_ToggleTransferRoleFrozenDPTF (patron:string executor:string s-dptf:string target:string toggle:bool))
         ;;Reservation
     (defun VST|C_Reserve (patron:string reserver:string dptf:string amount:decimal))
     (defun VST|C_Unreserve (patron:string unreserver:string r-dptf:string amount:decimal))
     (defun VST|C_RepurposeReserved (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string))
-    (defun VST|C_ToggleTransferRoleReservedDPTF (patron:string s-dptf:string target:string toggle:bool))
+    (defun VST|C_ToggleTransferRoleReservedDPTF (patron:string executor:string s-dptf:string target:string toggle:bool))
         ;;Vesting
     (defun VST|C_Vest (patron:string vester:string target-account:string dptf:string amount:decimal offset:integer seconds:integer milestones:integer))
     (defun VST|C_Unvest (patron:string unvester:string dpof:string nonce:integer))
@@ -124,14 +124,14 @@
     (defun VST|C_Merge(patron:string merger:string dpof:string nonces:[integer]))
     (defun VST|C_RepurposeMerge (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string))
     (defun VST|C_RepurposeSleeping (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
-    (defun VST|C_ToggleTransferRoleSleepingDPOF (patron:string s-dpof:string target:string toggle:bool))
+    (defun VST|C_ToggleTransferRoleSleepingDPOF (patron:string executor:string s-dpof:string target:string toggle:bool))
         ;;Hibernating
     (defun VST|C_Hibernate (patron:string hibernator:string target-account:string dptf:string amount:decimal dayz:integer))
     (defun VST|C_Awake (patron:string awaker:string dpof:string nonce:integer))
     (defun VST|C_Slumber (patron:string merger:string dpof:string nonces:[integer]))
     (defun VST|C_RepurposeSlumber (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string))
     (defun VST|C_RepurposeHibernating (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
-    (defun VST|C_ToggleTransferRoleHibernatingDPOF (patron:string s-dpof:string target:string toggle:bool))
+    (defun VST|C_ToggleTransferRoleHibernatingDPOF (patron:string executor:string s-dpof:string target:string toggle:bool))
     ;;
     ;;
     (defun LQD|C_UnwrapStoa (patron:string unwrapper:string amount:decimal))
@@ -1378,7 +1378,7 @@
             )
         )
     )
-    (defun VST|C_ToggleTransferRoleFrozenDPTF (patron:string s-dptf:string target:string toggle:bool)
+    (defun VST|C_ToggleTransferRoleFrozenDPTF (patron:string executor:string s-dptf:string target:string toggle:bool)
         @doc "Toggles Transfer Role for a Frozen DPTF"
         (with-capability (P|TS)
             (let
@@ -1387,7 +1387,7 @@
                     (ref-VST:module{VestingV2} VST)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_ToggleTransferRoleFrozenDPTF patron s-dptf target toggle)
+                    (ref-VST::C_ToggleTransferRoleFrozenDPTF patron executor s-dptf target toggle)
                 )
                 (format "Succefully toggled Transfer Role for the Frozen DPTF {}" [s-dptf])
             )
@@ -1446,7 +1446,7 @@
             )
         )
     )
-    (defun VST|C_ToggleTransferRoleReservedDPTF (patron:string s-dptf:string target:string toggle:bool)
+    (defun VST|C_ToggleTransferRoleReservedDPTF (patron:string executor:string s-dptf:string target:string toggle:bool)
         @doc "Toggles Transfer Role for a Reserved DPTF"
         (with-capability (P|TS)
             (let
@@ -1455,7 +1455,7 @@
                     (ref-VST:module{VestingV2} VST)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_ToggleTransferRoleReservedDPTF patron s-dptf target toggle)
+                    (ref-VST::C_ToggleTransferRoleReservedDPTF patron executor s-dptf target toggle)
                 )
                 (format "Succefully toggled Transfer Role for the Reserved DPTF {}" [s-dptf])
             )
@@ -1609,7 +1609,7 @@
             )
         )
     )
-    (defun VST|C_ToggleTransferRoleSleepingDPOF (patron:string s-dpof:string target:string toggle:bool)
+    (defun VST|C_ToggleTransferRoleSleepingDPOF (patron:string executor:string s-dpof:string target:string toggle:bool)
         @doc "Toggles Transfer Role for a Sleeping DPOF"
         (with-capability (P|TS)
             (let
@@ -1618,7 +1618,7 @@
                     (ref-VST:module{VestingV2} VST)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_ToggleTransferRoleSleepingDPOF patron s-dpof target toggle)
+                    (ref-VST::C_ToggleTransferRoleSleepingDPOF patron executor s-dpof target toggle)
                 )
                 (format "Succefully toggled Transfer Role for the Sleeping DPTF {}" [s-dpof])
             )
@@ -1726,7 +1726,7 @@
             )
         )
     )
-    (defun VST|C_ToggleTransferRoleHibernatingDPOF (patron:string s-dpof:string target:string toggle:bool)
+    (defun VST|C_ToggleTransferRoleHibernatingDPOF (patron:string executor:string s-dpof:string target:string toggle:bool)
         @doc "Toggles Transfer Role for a Hibernating DPOF"
         (with-capability (P|TS)
             (let
@@ -1735,7 +1735,7 @@
                     (ref-VST:module{VestingV2} VST)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_ToggleTransferRoleHibernatingDPOF patron s-dpof target toggle)
+                    (ref-VST::C_ToggleTransferRoleHibernatingDPOF patron executor s-dpof target toggle)
                 )
                 (format "Succefully toggled Transfer Role for the Hibernating DPTF {}" [s-dpof])
             )

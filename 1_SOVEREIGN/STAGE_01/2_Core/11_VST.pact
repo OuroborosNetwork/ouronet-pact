@@ -73,6 +73,7 @@
     (defun URCi_RepurposeTrueFungible:object{IgnisCollectorV3.OutputCumulator} (dptf-to-repurpose:string repurpose-from:string repurpose-to:string))
     (defun URCi_RepurposeOrtoFungible:object{IgnisCollectorV3.OutputCumulator} (dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
     (defun URCi_MergeNonces:object{IgnisCollectorV3.OutputCumulator} (dpof:string target:string nonces:[integer] vzh-tag:integer))
+    (defun URC_SpecialTransferRoleKonto:string (s-token:string))
     (defun URCi_Unvest:object{IgnisCollectorV3.OutputCumulator} (unvester:string dpof:string nonce:integer))
     (defun URCi_Awake:object{IgnisCollectorV3.OutputCumulator} (awaker:string dpof:string nonce:integer))
     (defun URCi_Constrict:object{IgnisCollectorV3.OutputCumulator} (constricter:string ats:string rt:string amount:decimal dayz:integer))
@@ -108,12 +109,12 @@
         ;;
     (defun C_Freeze:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string freeze-output:string dptf:string amount:decimal))
     (defun C_RepurposeFrozen:object{IgnisCollectorV3.OutputCumulator} (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string))
-    (defun C_ToggleTransferRoleFrozenDPTF:object{IgnisCollectorV3.OutputCumulator} (patron:string s-dptf:string target:string toggle:bool))
+    (defun C_ToggleTransferRoleFrozenDPTF:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string s-dptf:string target:string toggle:bool))
         ;;
     (defun C_Reserve:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string dptf:string amount:decimal))
     (defun C_Unreserve:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string r-dptf:string amount:decimal))
     (defun C_RepurposeReserved:object{IgnisCollectorV3.OutputCumulator} (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string))
-    (defun C_ToggleTransferRoleReservedDPTF:object{IgnisCollectorV3.OutputCumulator} (patron:string s-dptf:string target:string toggle:bool))
+    (defun C_ToggleTransferRoleReservedDPTF:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string s-dptf:string target:string toggle:bool))
         ;;
     (defun C_Vest:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string target-account:string dptf:string amount:decimal offset:integer duration:integer milestones:integer))
     (defun C_Unvest:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string dpof:string nonce:integer))
@@ -124,14 +125,14 @@
     (defun C_Merge:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string dpof:string nonces:[integer]))
     (defun C_RepurposeMerge:object{IgnisCollectorV3.OutputCumulator} (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string))
     (defun C_RepurposeSleeping:object{IgnisCollectorV3.OutputCumulator} (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
-    (defun C_ToggleTransferRoleSleepingDPOF:object{IgnisCollectorV3.OutputCumulator} (patron:string s-dpof:string target:string toggle:bool))
+    (defun C_ToggleTransferRoleSleepingDPOF:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string s-dpof:string target:string toggle:bool))
     ;;
     (defun C_Hibernate:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string target-account:string dptf:string amount:decimal dayz:integer))
     (defun C_Awake:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string dpof:string nonce:integer))
     (defun C_Slumber:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string dpof:string nonces:[integer]))
     (defun C_RepurposeSlumber:object{IgnisCollectorV3.OutputCumulator} (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string))
     (defun C_RepurposeHibernating:object{IgnisCollectorV3.OutputCumulator} (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
-    (defun C_ToggleTransferRoleHibernatingDPOF:object{IgnisCollectorV3.OutputCumulator} (patron:string s-dpof:string target:string toggle:bool))
+    (defun C_ToggleTransferRoleHibernatingDPOF:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string s-dpof:string target:string toggle:bool))
     ;;
     (defun C_Constrict:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string ats:string rt:string amount:decimal dayz:integer))
     (defun C_Brumate:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string ats1:string ats2:string rt:string amount:decimal dayz:integer))
@@ -671,33 +672,38 @@
     )
     ;;
     ;;
-    (defcap VST|C>TOGGLE-FROZEN-TF-TR (s-dptf:string target:string)
+    (defcap VST|C>TOGGLE-FROZEN-TF-TR (executor:string s-dptf:string target:string)
         @event
-        (compose-capability (VST|X>TOGGLE-SPECIAL-TF-TR s-dptf target))
+        (compose-capability (VST|X>TOGGLE-SPECIAL-TF-TR executor s-dptf target))
     )
-    (defcap VST|C>TOGGLE-RESERVED-TF-TR (s-dptf:string target:string)
+    (defcap VST|C>TOGGLE-RESERVED-TF-TR (executor:string s-dptf:string target:string)
         @event
-        (compose-capability (VST|X>TOGGLE-SPECIAL-TF-TR s-dptf target))
+        (compose-capability (VST|X>TOGGLE-SPECIAL-TF-TR executor s-dptf target))
     )
-    (defcap VST|X>TOGGLE-SPECIAL-TF-TR (s-dptf:string target:string)
+    (defcap VST|X>TOGGLE-SPECIAL-TF-TR (executor:string s-dptf:string target:string)
+        @doc "ATTRIBUTION (canon 2.2). <UEV_ParentOwnership> proved the AUTHORITY -- that the \
+            \ caller owns the PARENT of this special token -- and named no actor. \
+            \ <UEV_ExecutorIsParentKonto> binds the account the caller NAMED to that same parent \
+            \ owner. The ownership enforce is kept, not replaced."
         (let
             (
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
             )
             (ref-DPTF::UEV_ParentOwnership s-dptf)
+            (ref-DPTF::UEV_ExecutorIsParentKonto executor s-dptf)
             (compose-capability (P|TT))
         )
     )
     ;;
-    (defcap VST|C>TOGGLE-SLEEPING-OF-TR (s-dpof:string target:string)
+    (defcap VST|C>TOGGLE-SLEEPING-OF-TR (executor:string s-dpof:string target:string)
         @event
-        (compose-capability (VST|X>TOGGLE-SPECIAL-OF-TR s-dpof target))
+        (compose-capability (VST|X>TOGGLE-SPECIAL-OF-TR executor s-dpof target))
     )
-    (defcap VST|C>TOGGLE-HIBERNATING-OF-TR (s-dpof:string target:string)
+    (defcap VST|C>TOGGLE-HIBERNATING-OF-TR (executor:string s-dpof:string target:string)
         @event
-        (compose-capability (VST|X>TOGGLE-SPECIAL-OF-TR s-dpof target))
+        (compose-capability (VST|X>TOGGLE-SPECIAL-OF-TR executor s-dpof target))
     )
-    (defcap VST|X>TOGGLE-SPECIAL-OF-TR (s-dpof:string target:string)
+    (defcap VST|X>TOGGLE-SPECIAL-OF-TR (executor:string s-dpof:string target:string)
         @doc "Parent ownership for transfer-role toggle. Sleeping LP (Z|W|/Z|S|/Z|P|) cannot use \
             \ DPOF::UEV_ParentOwnership; gate on native LP DPTF owner instead."
         (let
@@ -707,9 +713,20 @@
                 ;;
                 (fourth:string (drop 3 (take 4 s-dpof)))
             )
+            ;;ATTRIBUTION (canon 2.2). The binder MIRRORS the branch above account for account:
+            ;;a sleeping LP (Z|W|/Z|S|/Z|P|) is gated on the native LP DPTF's owner, everything
+            ;;else on the parent DPOF's. Binding to the other side of that `if` would name an
+            ;;account the authority check never proved -- which is how a decorative executor gets
+            ;;written without anyone noticing.
             (if (= fourth BAR)
-                (ref-DPTF::CAP_Owner (ref-DPOF::UR_Sleeping s-dpof))
-                (ref-DPOF::UEV_ParentOwnership s-dpof)
+                (do
+                    (ref-DPTF::CAP_Owner (ref-DPOF::UR_Sleeping s-dpof))
+                    (ref-DPTF::UEV_ExecutorIsKonto executor (ref-DPOF::UR_Sleeping s-dpof))
+                )
+                (do
+                    (ref-DPOF::UEV_ParentOwnership s-dpof)
+                    (ref-DPOF::UEV_ExecutorIsParentKonto executor s-dpof)
+                )
             )
             (compose-capability (P|TT))
         )
@@ -1893,6 +1910,45 @@
         )
     )
     ;;{5.7}  User [A/C]
+    (defun URC_SpecialTransferRoleKonto:string (s-token:string)
+        @doc "The account the transfer-role toggle caps require as <executor>, for a special \
+            \ token of EITHER family. \
+            \ \
+            \ Exists for the reason DPOF::URC_BrandingKonto exists, and it says so itself: that \
+            \ rule 'was being retyped at call sites, and got retyped WRONG' by an earlier pass of \
+            \ THIS migration. The toggle rule is worse, because it BRANCHES -- a sleeping LP \
+            \ (Z|W|/Z|S|/Z|P|) is gated on the native LP DPTF's owner, everything else on the \
+            \ parent's -- so retyping it across fifteen call sites is fifteen chances to pick the \
+            \ wrong side of an `if`. Encoded once, here, and called by the tests that must \
+            \ predict it. \
+            \ \
+            \ NOT used by the capabilities themselves: those keep their own inline branch so the \
+            \ AUTHORITY check and the ATTRIBUTION check cannot silently come to rest on \
+            \ different accounts. If this reader ever disagrees with them, the cap refuses and \
+            \ says so -- which is the failure anyone would want."
+        (let
+            (
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                ;;BOTH ortofungible prefixes. Written first as `= "Z|"` only, which sent every
+                ;;HIBERNATING token down the DPTF branch and died on
+                ;;"No value found in table DPTF|PropertiesTable for key: H|MOCKA-..." -- a DPOF id
+                ;;read from DPTF's table. This module's own comment at the Merge/Slumber guards
+                ;;says it plainly: test (take 2 dpof-id) against ["Z|" "H|"]. Sleeping and
+                ;;hibernating are two prefixes of ONE family.
+                (son:bool (contains (take 2 s-token) ["Z|" "H|"]))
+                (fourth:string (drop 3 (take 4 s-token)))
+            )
+            (if (and son (= fourth BAR))
+                (ref-DPTF::UR_Konto (ref-DPOF::UR_Sleeping s-token))
+                (if son
+                    (ref-DPOF::URC_BrandingKonto s-token)
+                    (ref-DPTF::UR_Konto (ref-DPTF::URCv_Parent s-token))
+                )
+            )
+        )
+    )
+
     (defun C_CreateFrozenLink:object{IgnisCollectorV3.OutputCumulator}
         (patron:string executor:string dptf:string)
         (P|UEV_IMC)
@@ -1964,9 +2020,9 @@
         )
     )
     (defun C_ToggleTransferRoleFrozenDPTF:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string s-dptf:string target:string toggle:bool)
+        (patron:string executor:string s-dptf:string target:string toggle:bool)
         (P|UEV_IMC)
-        (with-capability (VST|C>TOGGLE-FROZEN-TF-TR s-dptf target)
+        (with-capability (VST|C>TOGGLE-FROZEN-TF-TR executor s-dptf target)
             (let
                 (
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
@@ -2036,9 +2092,9 @@
         )
     )
     (defun C_ToggleTransferRoleReservedDPTF:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string s-dptf:string target:string toggle:bool)
+        (patron:string executor:string s-dptf:string target:string toggle:bool)
         (P|UEV_IMC)
-        (with-capability (VST|C>TOGGLE-RESERVED-TF-TR s-dptf target)
+        (with-capability (VST|C>TOGGLE-RESERVED-TF-TR executor s-dptf target)
             (let
                 (
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
@@ -2240,9 +2296,9 @@
         )
     )
     (defun C_ToggleTransferRoleSleepingDPOF:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string s-dpof:string target:string toggle:bool)
+        (patron:string executor:string s-dpof:string target:string toggle:bool)
         (P|UEV_IMC)
-        (with-capability (VST|C>TOGGLE-SLEEPING-OF-TR s-dpof target)
+        (with-capability (VST|C>TOGGLE-SLEEPING-OF-TR executor s-dpof target)
             (let
                 (
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
@@ -2372,9 +2428,9 @@
         )
     )
     (defun C_ToggleTransferRoleHibernatingDPOF:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string s-dpof:string target:string toggle:bool)
+        (patron:string executor:string s-dpof:string target:string toggle:bool)
         (P|UEV_IMC)
-        (with-capability (VST|C>TOGGLE-HIBERNATING-OF-TR s-dpof target)
+        (with-capability (VST|C>TOGGLE-HIBERNATING-OF-TR executor s-dpof target)
             (let
                 (
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)

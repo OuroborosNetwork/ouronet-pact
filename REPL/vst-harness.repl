@@ -226,9 +226,9 @@
         (ouro-id:string (ref-DALOS::UR_OuroborosID))
     )
     ;; grant the patron the transfer role on each special (frozen/reserved/sleeping) OURO token
-    (ref-TS01-C2::VST|C_ToggleTransferRoleFrozenDPTF patron (ref-DPTF::UR_Frozen ouro-id) patron true)
-    (ref-TS01-C2::VST|C_ToggleTransferRoleReservedDPTF patron (ref-DPTF::UR_Reservation ouro-id) patron true)
-    (ref-TS01-C2::VST|C_ToggleTransferRoleSleepingDPOF patron (ref-DPTF::UR_Sleeping ouro-id) patron true)
+    (ref-TS01-C2::VST|C_ToggleTransferRoleFrozenDPTF patron (ouronet-ns.VST.URC_SpecialTransferRoleKonto (ref-DPTF::UR_Frozen ouro-id)) (ref-DPTF::UR_Frozen ouro-id) patron true)
+    (ref-TS01-C2::VST|C_ToggleTransferRoleReservedDPTF patron (ouronet-ns.VST.URC_SpecialTransferRoleKonto (ref-DPTF::UR_Reservation ouro-id)) (ref-DPTF::UR_Reservation ouro-id) patron true)
+    (ref-TS01-C2::VST|C_ToggleTransferRoleSleepingDPOF patron (ouronet-ns.VST.URC_SpecialTransferRoleKonto (ref-DPTF::UR_Sleeping ouro-id)) (ref-DPTF::UR_Sleeping ouro-id) patron true)
     (print "<<TX-VSTH-005>> ToggleTransferRole Frozen/Reserved/Sleeping OK")
 )
 (print "===^^^===")

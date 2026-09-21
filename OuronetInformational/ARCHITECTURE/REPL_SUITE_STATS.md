@@ -45,7 +45,7 @@ Two different questions, two different numbers — quoting the wrong one oversta
 | &nbsp;&nbsp;positive (`expect`) | 20,532 |
 | &nbsp;&nbsp;negative (`expect-failure`) | 5,097 |
 | gate entrypoints | 92 |
-| per-function rows | 5,498 |
+| per-function rows | 5,499 |
 
 *Executed* exceeds *distinct* because shared files run once per entrypoint that loads them. **Quote the distinct figure for "how many tests exist"**; the executed figure answers "how much ran".
 
@@ -70,13 +70,13 @@ Two denominators, and mixing them is how this gets misreported. **All defined fu
 
 | | all defined | client-reachable |
 |---|---:|---:|
-| functions | **5,498** | **4,645** |
+| functions | **5,499** | **4,646** |
 | named directly by a test | 2,412 | 2,385 |
 | reached only *through* another function | 2,166 | 1,453 |
 | **reached at all** | 4,578 | **3,838 (83%)** |
-| never reached | 920 | 807 |
+| never reached | 921 | 808 |
 
-**Total function invocations across the suite, duplicates included: 17,457.** That is every call site in every `.repl`, so a function called in 20 files counts 20 times — it answers "how much testing happens", not "how much is covered".
+**Total function invocations across the suite, duplicates included: 17,460.** That is every call site in every `.repl`, so a function called in 20 files counts 20 times — it answers "how much testing happens", not "how much is covered".
 
 ### How often a tested function is tested
 
@@ -93,11 +93,11 @@ Two denominators, and mixing them is how this gets misreported. **All defined fu
 
 | prefix | called / defined | call sites |
 |---|---:|---:|
-| `UR_` | 520 / 830 | 6,540 |
+| `UR_` | 520 / 830 | 6,543 |
 | `C_` | 411 / 693 | 3,486 |
 | `A_` | 170 / 458 | 529 |
 | `INFO_` | 416 / 427 | 562 |
-| `URC_` | 184 / 418 | 1,241 |
+| `URC_` | 184 / 419 | 1,241 |
 | `XI_` | 6 / 386 | 13 |
 | `UEV_` | 201 / 345 | 611 |
 | `URCi_` | 151 / 323 | 248 |
@@ -158,7 +158,7 @@ The **live worklist** is the figure to size remaining work by. It is NOT `_cheap
 
 ## 5. Every function and how many times it is tested
 
-`calls` = times a `.repl` names it directly. `reach` = **DIRECT** (named by a test), **VIA** (only executed through another function), **-** (never reached). All 5,498 rows, most-tested first.
+`calls` = times a `.repl` names it directly. `reach` = **DIRECT** (named by a test), **VIA** (only executed through another function), **-** (never reached). All 5,499 rows, most-tested first.
 
 | calls | reach | file | module | function |
 |---:|---|---|---|---|
@@ -293,11 +293,11 @@ The **live worklist** is the figure to size remaining work by. It is NOT `_cheap
 | 19 | DIRECT | `01_TS01-A.pact` | `TS01-A` | `DALOS|A_ToggleGAP` |
 | 19 | DIRECT | `04_TS02-C3.pact` | `TS02-C3` | `AQP-POOL|CCp_BatchVacateTrueFungible` |
 | 18 | DIRECT | `05_FVT.pact` | `AQP-FVT` | `UR_FVT|FvtClass` |
+| 18 | DIRECT | `05_DPTF.pact` | `DPTF` | `UR_Sleeping` |
 | 18 | DIRECT | `03_TS01-C2.pact` | `TS01-C2` | `ATS|C_SwitchColdRecovery` |
 | 17 | DIRECT | `03_AQP.pact` | `AQP-POOL` | `UR_AQP|PoolAqpClass` |
 | 17 | DIRECT | `02_SCORE.pact` | `AQP-SCORE` | `UR_SCR|ScoreOwnerKonto` |
 | 17 | DIRECT | `01_DALOS.pact` | `DALOS` | `UR_Elite-DEB` |
-| 17 | DIRECT | `05_DPTF.pact` | `DPTF` | `UR_Sleeping` |
 | 17 | DIRECT | `22_PYTHIA.pact` | `PYTHIA` | `UR_Counterpart` |
 | 17 | DIRECT | `15_SWP.pact` | `SWP` | `URC_ActiveSwpairs` |
 | 17 | DIRECT | `01_TS01-A.pact` | `TS01-A` | `SWP|A_UpdatePrincipal` |
@@ -325,6 +325,7 @@ The **live worklist** is the figure to size remaining work by. It is NOT `_cheap
 | 15 | DIRECT | `03_AQP.pact` | `AQP-POOL` | `UR_AQP|DPOFTrackerBalance` |
 | 15 | DIRECT | `02_SCORE.pact` | `AQP-SCORE` | `UR_SCR|ScoreTotalDebScore` |
 | 15 | DIRECT | `06_DPOF.pact` | `DPOF` | `UR_Supply` |
+| 15 | DIRECT | `05_DPTF.pact` | `DPTF` | `UR_Frozen` |
 | 15 | DIRECT | `15_SWP.pact` | `SWP` | `UR_Amplifier` |
 | 15 | DIRECT | `02_TS01-C1.pact` | `TS01-C1` | `DPOF|C_Control` |
 | 15 | DIRECT | `04_TS01-C3.pact` | `TS01-C3` | `SWP|C_AddLiquidity` |
@@ -337,7 +338,6 @@ The **live worklist** is the figure to size remaining work by. It is NOT `_cheap
 | 14 | DIRECT | `08_ATS.pact` | `ATS` | `UR_Hibernate` |
 | 14 | DIRECT | `02_DPDC.pact` | `DPDC` | `UR_NativeNonceData` |
 | 14 | DIRECT | `06_DPOF.pact` | `DPOF` | `UR_NonceMetaData` |
-| 14 | DIRECT | `05_DPTF.pact` | `DPTF` | `UR_Frozen` |
 | 14 | DIRECT | `22_PYTHIA.pact` | `PYTHIA` | `UC_DualLinkKey` |
 | 14 | DIRECT | `15_SWP.pact` | `SWP` | `URC_Swpairs` |
 | 14 | DIRECT | `01_TS01-A.pact` | `TS01-A` | `DALOS|A_DeployStandardAccount` |
@@ -464,6 +464,7 @@ The **live worklist** is the figure to size remaining work by. It is NOT `_cheap
 | 9 | DIRECT | `05_DPTF.pact` | `DPTF` | `URCv_Parent` |
 | 9 | DIRECT | `05_DPTF.pact` | `DPTF` | `UR_AccountRoleMint` |
 | 9 | DIRECT | `05_DPTF.pact` | `DPTF` | `UR_FeeTarget` |
+| 9 | DIRECT | `05_DPTF.pact` | `DPTF` | `UR_Reservation` |
 | 9 | DIRECT | `12_LIQUID.pact` | `LIQUID` | `UEV_IzLiquidStakingLive` |
 | 9 | DIRECT | `05_STOAICO.pact` | `STOAICO` | `UR_Global4` |
 | 9 | DIRECT | `15_SWP.pact` | `SWP` | `UR_CanChangeOwner` |
@@ -503,7 +504,6 @@ The **live worklist** is the figure to size remaining work by. It is NOT `_cheap
 | 8 | DIRECT | `02_DPDC.pact` | `DPDC` | `UEV_id` |
 | 8 | DIRECT | `02_DPDC.pact` | `DPDC` | `UR_NonceHolder` |
 | 8 | DIRECT | `03_DPDC-C.pact` | `DPDC-C` | `URCi_RegisterCollectablesPrice` |
-| 8 | DIRECT | `05_DPTF.pact` | `DPTF` | `UR_Reservation` |
 | 8 | DIRECT | `02_IGNIS.pact` | `IGNIS` | `UDC_ConstructOutputCumulator` |
 | 8 | DIRECT | `02_IGNIS.pact` | `IGNIS` | `UDC_MakeModularCumulator` |
 | 8 | DIRECT | `22_PYTHIA.pact` | `PYTHIA` | `UR_DualLinkIzActive` |
@@ -5631,6 +5631,7 @@ The **live worklist** is the figure to size remaining work by. It is NOT `_cheap
 | 0 | - | `11_VST.pact` | `VST` | `UEV_NoncesForMerging` |
 | 0 | VIA | `11_VST.pact` | `VST` | `URC_CullMetaDataAmountWithObject` |
 | 0 | VIA | `11_VST.pact` | `VST` | `URC_SecondsToUnlock` |
+| 0 | - | `11_VST.pact` | `VST` | `URC_SpecialTransferRoleKonto` |
 | 0 | VIA | `11_VST.pact` | `VST` | `URCi_Awake` |
 | 0 | VIA | `11_VST.pact` | `VST` | `URCi_Brumate` |
 | 0 | VIA | `11_VST.pact` | `VST` | `URCi_Constrict` |

@@ -612,7 +612,7 @@
                 )
                 (enforce (!= z-lp-id bar) "CL05: sleeping LP link missing after EnableSleepingLP")
                 (print (format "<(VST|C_ToggleTransferRoleSleepingDPOF AQP SC)> => \"{}\"" [
-                    (ref-TS01-C2::VST|C_ToggleTransferRoleSleepingDPOF patron z-lp-id aqp-sc true)
+                    (ref-TS01-C2::VST|C_ToggleTransferRoleSleepingDPOF patron (ouronet-ns.VST.URC_SpecialTransferRoleKonto z-lp-id) z-lp-id aqp-sc true)
                 ]))
                 (if (< lp-free sleep-amt)
                     (print (format "<(SWP|C_AddLiquidity for sleep seed)> => \"{}\"" [

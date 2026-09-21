@@ -529,7 +529,7 @@
             ]
         )
         ;;the hibernating ortofungible is transfer-role gated; grant it to the receiver
-        (ref-TS01-C2::VST|C_ToggleTransferRoleHibernatingDPOF patron hib emma true)
+        (ref-TS01-C2::VST|C_ToggleTransferRoleHibernatingDPOF patron (ouronet-ns.VST.URC_SpecialTransferRoleKonto hib) hib emma true)
         (ref-TS01-C2::VST|C_RepurposeHibernating patron hib (+ n0 1) patron emma)
         ;;REPURPOSE IS NOT A TRANSFER. It DECOMMISSIONS the source nonce and MINTS A NEW ONE for
         ;;the target, conserving the value. A test asserting "the nonce moved" fails, and a test
@@ -663,7 +663,7 @@
             ]
         )
         ;;REPURPOSE the merged position to another account
-        (ref-TS01-C2::VST|C_ToggleTransferRoleSleepingDPOF patron slp emma true)
+        (ref-TS01-C2::VST|C_ToggleTransferRoleSleepingDPOF patron (ouronet-ns.VST.URC_SpecialTransferRoleKonto slp) slp emma true)
         (map print
             [
                 ;;GATE: the repurpose-MERGE forms re-issue several positions as one, so a single
@@ -723,7 +723,7 @@
                 ;;desired state (a common, reasonable pattern) breaks against this op.
                 (expect-failure "<<VST-08>> re-granting an already-granted transfer role is rejected"
                     "must be set to false for exec"
-                    (ref-TS01-C2::VST|C_ToggleTransferRoleHibernatingDPOF patron hib emma true))
+                    (ref-TS01-C2::VST|C_ToggleTransferRoleHibernatingDPOF patron (ouronet-ns.VST.URC_SpecialTransferRoleKonto hib) hib emma true))
             ]
         )
         (ref-TS01-C2::VST|C_RepurposeSlumber patron hib [(- n 1) n] patron emma)
@@ -1187,7 +1187,7 @@
                     false (ref-DPTF::UR_AccountRoleTransfer reserved lumy))
             ]
         )
-        (ref-TS01-C2::VST|C_ToggleTransferRoleFrozenDPTF patron frozen lumy true)
+        (ref-TS01-C2::VST|C_ToggleTransferRoleFrozenDPTF patron (ouronet-ns.VST.URC_SpecialTransferRoleKonto frozen) frozen lumy true)
         (map print
             [
                 (expect "<<VST-12>> the frozen-DPTF toggle granted it"
@@ -1197,7 +1197,7 @@
                     false (ref-DPTF::UR_AccountRoleTransfer reserved lumy))
             ]
         )
-        (ref-TS01-C2::VST|C_ToggleTransferRoleReservedDPTF patron reserved lumy true)
+        (ref-TS01-C2::VST|C_ToggleTransferRoleReservedDPTF patron (ouronet-ns.VST.URC_SpecialTransferRoleKonto reserved) reserved lumy true)
         (map print
             [
                 (expect "<<VST-12>> the reserved-DPTF toggle granted it"
@@ -1207,7 +1207,7 @@
             ]
         )
         ;;Revoking one must leave the other alone -- the mirror of the leak check above.
-        (ref-TS01-C2::VST|C_ToggleTransferRoleFrozenDPTF patron frozen lumy false)
+        (ref-TS01-C2::VST|C_ToggleTransferRoleFrozenDPTF patron (ouronet-ns.VST.URC_SpecialTransferRoleKonto frozen) frozen lumy false)
         (map print
             [
                 (expect "<<VST-12>> revoking the frozen role removed it"
@@ -2163,7 +2163,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_VST|ToggleTransferRoleFrozenDPTF patron f lumy true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m:string (ref-TS01-C2::VST|C_ToggleTransferRoleFrozenDPTF patron f lumy true))
+            (m:string (ref-TS01-C2::VST|C_ToggleTransferRoleFrozenDPTF patron (ouronet-ns.VST.URC_SpecialTransferRoleKonto f) f lumy true))
         )
         (map print
             [
@@ -2591,7 +2591,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_VST|ToggleTransferRoleReservedDPTF patron r lumy false))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C2::VST|C_ToggleTransferRoleReservedDPTF patron r lumy false))
+            (m (ref-TS01-C2::VST|C_ToggleTransferRoleReservedDPTF patron (ouronet-ns.VST.URC_SpecialTransferRoleKonto r) r lumy false))
         )
         (map print
             [
@@ -2751,7 +2751,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_VST|ToggleTransferRoleSleepingDPOF patron z emma false))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C2::VST|C_ToggleTransferRoleSleepingDPOF patron z emma false))
+            (m (ref-TS01-C2::VST|C_ToggleTransferRoleSleepingDPOF patron (ouronet-ns.VST.URC_SpecialTransferRoleKonto z) z emma false))
         )
         (map print
             [
@@ -2959,7 +2959,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_VST|ToggleTransferRoleHibernatingDPOF patron h emma false))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS01-C2::VST|C_ToggleTransferRoleHibernatingDPOF patron h emma false))
+            (m (ref-TS01-C2::VST|C_ToggleTransferRoleHibernatingDPOF patron (ouronet-ns.VST.URC_SpecialTransferRoleKonto h) h emma false))
         )
         (map print
             [
@@ -3167,7 +3167,7 @@
         (holder:string KST.EMMA)
         (receiver:string KST.LUMY)
     )
-    (ref-TS01-C2::VST|C_ToggleTransferRoleHibernatingDPOF KST.ANHD h receiver true)
+    (ref-TS01-C2::VST|C_ToggleTransferRoleHibernatingDPOF KST.ANHD (ouronet-ns.VST.URC_SpecialTransferRoleKonto h) h receiver true)
     (print (format "<(VST|C_RepurposeHibernating with the base token's owner signing)> => \"{}\""
         [(ref-TS01-C2::VST|C_RepurposeHibernating holder h 2 holder receiver)]))
     (map print

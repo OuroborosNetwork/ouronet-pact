@@ -80,9 +80,9 @@
             (format "Emma s-vst is {}" [(ref-DPTF::UR_IzAccount s-vst emma)])
         ]
         [
-            (ref-TS01-C2::VST|C_ToggleTransferRoleFrozenDPTF patron f-vst emma true)
-            (ref-TS01-C2::VST|C_ToggleTransferRoleReservedDPTF patron r-ouro emma true)
-            (ref-TS01-C2::VST|C_ToggleTransferRoleSleepingDPOF patron s-vst emma true)
+            (ref-TS01-C2::VST|C_ToggleTransferRoleFrozenDPTF patron (ouronet-ns.VST.URC_SpecialTransferRoleKonto f-vst) f-vst emma true)
+            (ref-TS01-C2::VST|C_ToggleTransferRoleReservedDPTF patron (ouronet-ns.VST.URC_SpecialTransferRoleKonto r-ouro) r-ouro emma true)
+            (ref-TS01-C2::VST|C_ToggleTransferRoleSleepingDPOF patron (ouronet-ns.VST.URC_SpecialTransferRoleKonto s-vst) s-vst emma true)
         ]
         [
             (format "Emma F-VST Transfer Role is {}" [(ref-DPTF::UR_AccountRoleTransfer f-vst emma)])

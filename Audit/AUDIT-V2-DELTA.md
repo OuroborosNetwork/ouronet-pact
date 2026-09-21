@@ -286,7 +286,7 @@ not a mechanical one.
 
 ---
 
-### 11_VST.pact — IN PROGRESS (18 of 29 entrypoints, 2026-09-21)
+### 11_VST.pact — IN PROGRESS (22 of 29 entrypoints, 2026-09-21)
 
 **What v1 asserted that is now wrong.** Every VST client call site has moved. 18 of 29 entrypoints
 have a changed signature; the remaining 11 (`C_Repurpose*` ×7, `C_ToggleTransferRole*` ×4) are
@@ -326,6 +326,26 @@ and `[RT-F]_Griefing.repl` refused with *"Executor is not the Token Owner"*. An 
 a **smart** account; the swpair's owner-konto is the human. That is the handoff's own
 *"executor = patron is not a safe default"* warning one level along, and it is worth an auditor's
 attention because **both readings are defensible in prose and only one satisfies the binder.**
+
+**4 transfer-role toggles** also gained a proven executor. `VST|X>TOGGLE-SPECIAL-TF-TR` proved
+`DPTF::UEV_ParentOwnership`; the OF twin BRANCHES — a sleeping LP (`Z|W|`/`Z|S|`/`Z|P|`) is gated on
+the native LP DPTF's owner, everything else on the parent's. **The binder mirrors that branch account
+for account**, because binding to the other side of the `if` would name an account the authority check
+never proved, which is how a decorative executor gets written without anyone noticing.
+
+**A new reader, `VST::URC_SpecialTransferRoleKonto`, and why it exists.** The toggle rule is
+branchy, and 18 call sites had to predict it. `DPOF::URC_BrandingKonto`'s own `@doc` records that
+the equivalent rule *"was being retyped at call sites, and got retyped WRONG"* — by an earlier pass
+of **this same migration**. So the rule is encoded once and the tests call it. The capabilities keep
+their own inline branch deliberately: if the reader and the caps ever disagree, the cap refuses and
+says so, which is the failure anyone would want.
+
+**It was wrong on the first write, and the suite caught it.** The reader detected the ortofungible
+family as `Z|` only, so every **hibernating** (`H|`) token took the DPTF branch and died on
+*"No value found in table DPTF|PropertiesTable for key: H|MOCKA-…"* — a DPOF id read from DPTF's
+table. This module's own comment at the Merge/Slumber guards states the rule plainly: test
+`(take 2 dpof-id)` against `["Z|" "H|"]`. **Sleeping and hibernating are two prefixes of one family**,
+and an auditor re-checking any special-token branch should confirm both are handled.
 
 **Call sites re-pointed: 33** across 11 files, including `[4.0]_Sovereign-Executor.repl`,
 `[6.3]_SWP.repl`, `[5.3]_Launchpad.repl`, `modules/VST.repl`, `modules/ATS.repl`, `modules/SWP.repl`
