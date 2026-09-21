@@ -93,6 +93,7 @@
         (ref-CODEX:module{CodexV2} CODEX)
         (reg-msg:string
             (ref-TS01-C4::CODEX|A_RegisterCodexIdentity
+                KST.ANHD
                 composite-id
                 public-standard
                 public-smart
@@ -169,7 +170,7 @@
             (CODEX.INFO_CODEX|RotateCodexGuard KST.ANHD composite-id))
         (ignis-before:decimal (DALOS.UR_TF_AccountSupply KST.ANHD false))
         (rot-msg:string
-            (ref-TS01-C4::CODEX|C_RotateCodexGuard KST.ANHD composite-id new-codex-guard)
+            (ref-TS01-C4::CODEX|C_RotateCodexGuard KST.ANHD KST.ANHD composite-id new-codex-guard)
         )
     )
     (map print
@@ -232,7 +233,7 @@
         (ref-TS01-C4:module{TalosStageOne_ClientFourV8} TS01-C4)
         (ref-CODEX:module{CodexV2} CODEX)
         (arw-msg:string
-            (ref-TS01-C4::CODEX|C_RecordArweaveUpload KST.ANHD composite-id arweave-tx-id uploaded-bytes)
+            (ref-TS01-C4::CODEX|C_RecordArweaveUpload KST.ANHD KST.ANHD composite-id arweave-tx-id uploaded-bytes)
         )
     )
     ;;==== TX003 · 02 · Talos C_RecordArweave ====
@@ -259,18 +260,18 @@
             ;;the argument under test.
             (expect-failure "<<TX003>> a tx-id of the wrong LENGTH is refused"
                 "Invalid arweave upload: bad tx-id format or non-positive uploaded-bytes"
-                (ref-TS01-C4::CODEX|C_RecordArweaveUpload KST.ANHD composite-id "tooshort" 1024))
+                (ref-TS01-C4::CODEX|C_RecordArweaveUpload KST.ANHD KST.ANHD composite-id "tooshort" 1024))
             ;;...a 43-character id with a character outside the base64url alphabet -- same length,
             ;;wrong charset. Driving this as well as the length case is what shows
             ;;UC_ValidateArweaveTxId checks both, not just the easy one.
             (expect-failure "<<TX003>> ...and so is a right-length id with a non-base64url character"
                 "Invalid arweave upload: bad tx-id format or non-positive uploaded-bytes"
-                (ref-TS01-C4::CODEX|C_RecordArweaveUpload KST.ANHD composite-id
+                (ref-TS01-C4::CODEX|C_RecordArweaveUpload KST.ANHD KST.ANHD composite-id
                     "+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" 1024))
             ;;...and the OTHER conjunct: a valid id with nothing uploaded.
             (expect-failure "<<TX003>> ...and so is a valid tx-id with zero uploaded bytes"
                 "Invalid arweave upload: bad tx-id format or non-positive uploaded-bytes"
-                (ref-TS01-C4::CODEX|C_RecordArweaveUpload KST.ANHD composite-id arweave-tx-id 0))
+                (ref-TS01-C4::CODEX|C_RecordArweaveUpload KST.ANHD KST.ANHD composite-id arweave-tx-id 0))
             (expect
                 "<<TX003>> UR_AWT|UploadedBytes 1024"
                 1024
@@ -349,7 +350,7 @@
                 (CODEX.INFO_CODEX|RegisterStoicTag patron tag-name account-address))
             (stoa-before:decimal (coin.get-balance patron-stoa))
             (stg-msg:string
-                (ref-TS01-C4::CODEX|C_RegisterStoicTag patron tag-name account-address)
+                (ref-TS01-C4::CODEX|C_RegisterStoicTag patron account-address tag-name)
             )
         )
         (map print
@@ -449,7 +450,7 @@
             (CODEX.INFO_CODEX|ReleaseStoicTag patron tag-name))
         (ignis-before:decimal (DALOS.UR_TF_AccountSupply patron false))
         (stoa-before:decimal (coin.get-balance (DALOS.UR_AccountStoa patron)))
-        (rel-msg:string (ref-TS01-C4::CODEX|C_ReleaseStoicTag patron tag-name))
+        (rel-msg:string (ref-TS01-C4::CODEX|C_ReleaseStoicTag patron (CODEX.UR_STG|AccountAddress tag-name) tag-name))
     )
     (map print
         [
@@ -563,7 +564,7 @@
     (let
         (
             (stg-msg:string
-                (ref-TS01-C4::CODEX|C_RegisterStoicTag patron tag-name account-address)
+                (ref-TS01-C4::CODEX|C_RegisterStoicTag patron account-address tag-name)
             )
         )
         ;;==== TX006 · 03 · Talos C_RegisterStoicTag (upsert path) ====

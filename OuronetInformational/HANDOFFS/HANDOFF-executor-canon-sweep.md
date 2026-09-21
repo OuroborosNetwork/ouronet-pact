@@ -268,7 +268,7 @@ same tools with those three properties.
 | [x] 15 | `18_SWPLC.pact` | 0 | 1 | 9 | **10** | `BrandingUsageSecondaryV2`, `SwapperLiquidityClientV2` |
 | [x] 16 | `19_SWPU.pact` | 0 | 0 | 4 | **4** | `SwapperUsageV3` |
 | [x] — | `20_MTX-SWP.pact` | — | — | — | — | *nothing to do* |
-| [ ] 17 | `21_CODEX.pact` | 0 | 0 | 5 | **5** | `CodexV2` |
+| [x] 17 | `21_CODEX.pact` | 0 | 0 | 5 | **5** | `CodexV2` |
 | [ ] 18 | `22_PYTHIA.pact` | 0 | 0 | 9 | **9** | `PythiaLedgerV3`, `PythiaV5` |
 | [ ] 19 | `01_TS01-A.pact` | 0 | 27 | 0 | **27** | `TalosStageOne_AdminV2` |
 | [ ] 20 | `02_TS01-C1.pact` | 10 | 49 | 2 | **61** | `TalosStageOne_ClientOneV2` |

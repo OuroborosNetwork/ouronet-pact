@@ -61,16 +61,52 @@
                 ;;--- NAME uniqueness: re-registering a live name.
                 (expect-failure "<<CODEX-G1>> a StoicTag name that is already active cannot be re-registered"
                     "StoicTag name is already active"
-                    (ref-TS01-C4::CODEX|C_RegisterStoicTag KST.ANHD tag holder))
+                    (ref-TS01-C4::CODEX|C_RegisterStoicTag KST.ANHD holder tag))
                 ;;--- ACCOUNT uniqueness: a DIFFERENT, unused name for the SAME account. The name
                 ;;    guard above provably passes here, so only the account side can answer.
                 (expect-failure "<<CODEX-G1>> ...and an account that already holds one cannot take a second"
                     "Account already has an active StoicTag"
-                    (ref-TS01-C4::CODEX|C_RegisterStoicTag KST.ANHD "codextest02" holder))
+                    (ref-TS01-C4::CODEX|C_RegisterStoicTag KST.ANHD holder "codextest02"))
                 ;;--- RELEASE, guard 1: a name with no row at all.
+                ;;THE EXECUTOR STAYS A PLAIN ACCOUNT HERE (2026-09-22, executor canon). The
+                ;;obvious migration was to read the holder -- (UR_STG|AccountAddress tag) -- but
+                ;;that is a RAW `read` and this tag has no row, so it would raise a table error
+                ;;and REPLACE the "StoicTag not found" refusal under test. A green test, proving
+                ;;something else. The same trap as VST-07, and the reason the binder was moved
+                ;;INSIDE CODEX|C>RELEASE-STOICTAG, behind the row-existence enforce.
                 (expect-failure "<<CODEX-G1>> releasing a StoicTag that was never registered is refused"
                     "StoicTag not found"
-                    (ref-TS01-C4::CODEX|C_ReleaseStoicTag KST.ANHD "nosuchtag999"))
+                    (ref-TS01-C4::CODEX|C_ReleaseStoicTag KST.ANHD KST.ANHD "nosuchtag999"))
+                ;;<<CODEX-G4>> THE ATTRIBUTION HALF, new with the executor canon (2026-09-22).
+                ;;
+                ;;C_RegisterStoicTag and C_ReleaseStoicTag sit on the same table and had opposite
+                ;;shapes: register took the account as a PARAMETER and proved that parameter,
+                ;;while release took only the tag name and proved ownership of an account it
+                ;;DERIVED from the row. Same authority, same enforce, and in one of them the
+                ;;actor was absent from the signature -- HANDOFF 4g, with its own sibling as the
+                ;;control.
+                ;;
+                ;;So this is the assertion the new parameter exists for: an account that can
+                ;;satisfy every OTHER check in the chain, named as the actor for a tag it does
+                ;;not hold. Only UEV_ExecutorIsTagAccount can refuse it, and the message says
+                ;;which half objected.
+                ;;
+                ;;WRITTEN WRONG FIRST, AND THE SUITE SAID SO. The obvious choice was KST.ANHD --
+                ;;the signer, the account every other CODEX assertion here uses. But ANHD IS the
+                ;;holder of the fixture tag, so the binder passed, the release SUCCEEDED, and the
+                ;;expect-failure reported "got result: StoicTag released". Vacuous AND
+                ;;destructive: it consumed the fixture CODEX-G2 needs. A negative test for an
+                ;;equality binder has to name an account that genuinely fails the equality, and
+                ;;the only way to know is to run it.
+                (expect "<<CODEX-G4>> precondition: EMMA is NOT the tag's holder"
+                    true (!= KST.EMMA holder))
+                (expect-failure "<<CODEX-G4>> a release may not be attributed to an account that does not hold the tag"
+                    "Executor is not the StoicTag account"
+                    (ref-TS01-C4::CODEX|C_ReleaseStoicTag KST.ANHD KST.EMMA tag))
+                ;;...and the refusal moved nothing, so the binder refused BEFORE the write.
+                ;;An expect-failure alone cannot tell "refused" from "succeeded, then raised".
+                (expect "<<CODEX-G4>> ...and the tag is still active after that refusal"
+                    true (ref-CODEX::UR_STG|IzActive tag))
             ]
         )
         ""
@@ -106,14 +142,14 @@
         (
             (holder:string (ref-CODEX::UR_STG|AccountAddress tag))
         )
-        (ref-TS01-C4::CODEX|C_ReleaseStoicTag KST.ANHD tag)
+        (ref-TS01-C4::CODEX|C_ReleaseStoicTag KST.ANHD holder tag)
         (map print
             [
                 (expect "<<CODEX-G2>> the tag is now released, but its row is KEPT"
                     [false true] [(ref-CODEX::UR_STG|IzActive tag) (!= holder "")])
                 (expect-failure "<<CODEX-G2>> releasing an already-released StoicTag is refused"
                     "StoicTag is not active"
-                    (ref-TS01-C4::CODEX|C_ReleaseStoicTag KST.ANHD tag))
+                    (ref-TS01-C4::CODEX|C_ReleaseStoicTag KST.ANHD holder tag))
             ]
         )
         ;;RE-REGISTERING COSTS STOA (1 per glyph), so the restore needs the four-way fee split
@@ -148,7 +184,7 @@
                 )
             )
         )
-        (ref-TS01-C4::CODEX|C_RegisterStoicTag KST.ANHD tag holder)
+        (ref-TS01-C4::CODEX|C_RegisterStoicTag KST.ANHD holder tag)
         (map print
             [
                 (expect "<<CODEX-G2>> ...and the tag is active again, bound to the same account"
@@ -188,14 +224,14 @@
             ;;REACHABLE 1 -- right length, wrong separator. The `iz-separator` conjunct answers.
             (expect-failure "<<CODEX-G3>> a composite with the wrong separator is refused"
                 "Invalid codex identity: composite Apollo codex-id or pubkey material"
-                (TS01-C4.CODEX|A_RegisterCodexIdentity bad-sep "p1" "p2"
+                (TS01-C4.CODEX|A_RegisterCodexIdentity KST.ANHD bad-sep "p1" "p2"
                     (read-keyset "CX_KS") KST.ANHD))
             ;;REACHABLE 2 -- right length, right separator, halves that are not valid Apollo accounts.
             ;;Driven as well as case 1 because the two exercise different conjuncts of the same fold,
             ;;and one message cannot tell them apart from the outside.
             (expect-failure "<<CODEX-G3>> ...and so is one whose halves are not Apollo accounts"
                 "Invalid codex identity: composite Apollo codex-id or pubkey material"
-                (TS01-C4.CODEX|A_RegisterCodexIdentity good-sep "p1" "p2"
+                (TS01-C4.CODEX|A_RegisterCodexIdentity KST.ANHD good-sep "p1" "p2"
                     (read-keyset "CX_KS") KST.ANHD))
         ]
     )
@@ -221,12 +257,12 @@
         [
             (expect-failure "<<CODEX-G3>> a short codex-id is refused by LENGTH, with a sentence"
                 "composite Apollo codex-id must be 325 characters"
-                (TS01-C4.CODEX|A_RegisterCodexIdentity "bad" "p1" "p2"
+                (TS01-C4.CODEX|A_RegisterCodexIdentity KST.ANHD "bad" "p1" "p2"
                     (read-keyset "CX_KS") KST.ANHD))
             ;;...and the empty id, the other truncation that used to fault, is named the same way.
             (expect-failure "<<CODEX-G3>> ...and so is an empty one"
                 "composite Apollo codex-id must be 325 characters"
-                (TS01-C4.CODEX|A_RegisterCodexIdentity "" "p1" "p2"
+                (TS01-C4.CODEX|A_RegisterCodexIdentity KST.ANHD "" "p1" "p2"
                     (read-keyset "CX_KS") KST.ANHD))
             ;;WORTH KEEPING: why there was no second way to observe the old defect. `try` returns its
             ;;FALLBACK on failure rather than the error text, and an index fault is a NATIVE fault
@@ -277,7 +313,7 @@
             (
                 (predicted-ignis:decimal (at "ignis-need" (at "ignis" predicted)))
             )
-            (ref-TS01-C4::CODEX|C_RecordArweaveUpload patron composite-id tx2 bytes)
+            (ref-TS01-C4::CODEX|C_RecordArweaveUpload patron patron composite-id tx2 bytes)
             (let
                 (
                     (real-ignis:decimal (- ignis-before (ref-DALOS::UR_TF_AccountSupply patron false)))

@@ -769,3 +769,71 @@ distance check — *if `(P|UEV_IMC)` is more than N characters from the head, yo
 function you think you are* — which also correctly flagged that `CC_SmartSwap` and `C_Swap`
 already **had** `@doc`s and needed extending rather than a second one.
 
+---
+
+### 21_CODEX.pact — COMPLETE (5 of 5 entrypoints, 2026-09-22)
+
+**What v1 asserted that is now wrong.** All five signatures moved. `C_RegisterStoicTag` also
+**shrank**: `(tag-name account-address)` → `(patron executor tag-name)`, because `account-address`
+*was already the executor*.
+
+**This module contains the sweep's cleanest illustration of §4g, because it supplies its own
+control.** Two functions sit on the same table:
+
+| | authority | actor in the signature? |
+|---|---|---|
+| `C_RegisterStoicTag` | `CAP_EnforceAccountOwnership` on the **parameter** `account-address` | **yes** — a direct proof, the rarest shape in this sweep |
+| `C_ReleaseStoicTag` | `CAP_EnforceAccountOwnership` on `(UR_STG|AccountAddress tag-name)` — **derived** | **no** |
+
+Same table, same enforce, same authority. The only difference is whether the account was *passed*
+or *looked up* — and that difference is the whole of §4g. Register was a rename; release needed a
+new parameter and `UEV_ExecutorIsTagAccount` to bind it.
+
+**Two entrypoints have no account in their authority path at all.** `C_RotateCodexGuard` and
+`C_RecordArweaveUpload` are gated by `CODEX|OWNER`, which `enforce-guard`s a **raw guard** stored
+on the codex row. There is nothing for a binder to bind to, so their executors are proven
+**directly** by `CAP_EnforceAccountOwnership` — recording which Ouronet account drove the change,
+which the guard alone cannot say. Both proofs are now required; §4f's orthogonality, in a module
+where the authority is not an account at all.
+
+**`registered-by` is NOT the executor, and saying so is the point.** It reads exactly like one,
+it is persisted, and it is readable via `UR_CIX|RegisteredBy` — but it appears in
+`CODEX|A>REGISTER-IDENTITY`'s parameter list and **nowhere in its body**, and the suite passes a
+human label (`"AncientHodler"`), not an account. It is the canon's decorative actor in its worst
+form: **a self-declared provenance field, written to a table, that looks verified and is not.**
+
+It is deliberately **left alone** rather than promoted. Enforcing it would change its *type* — an
+Ouronet account rather than a label — and require every Mnemosyne operator to hold one. A real,
+proven `executor` was added beside it instead, and the `@doc` now states that the row's provenance
+is unverified and the executor is the verified half. **An auditor reading `UR_CIX|RegisteredBy`
+should treat it as a claim, not as evidence.**
+
+---
+
+### THE BINDER'S POSITION WAS LOAD-BEARING, AND THE SUITE PROVED IT TWICE
+
+`UEV_ExecutorIsTagAccount` reads the tag row through a **raw `read`**, which raises on a missing
+key. Placed in the `defun` — the obvious spot, and where SWP's binders live — it would run *before*
+`CODEX|C>RELEASE-STOICTAG`'s `tag-row-found` enforce and kill the transaction with a table error on
+any unknown tag, **replacing the "StoicTag not found" refusal** the suite asserts. Moved inside the
+capability, behind the two existing enforces, where the row is known to exist.
+
+That is the VST-07 eager-read trap reached from the opposite direction: there a *test* computed a
+derived executor too early, here a *module* would have. The corresponding call site keeps a plain
+account for the same reason, and now says so.
+
+**And the new negative test was wrong on its first run — vacuously AND destructively.**
+`<<CODEX-G4>>` names an account that does not hold the tag. The obvious choice was `KST.ANHD`, the
+signer every other CODEX assertion uses. **ANHD *is* the fixture tag's holder**, so the binder
+passed, the release *succeeded*, and the `expect-failure` reported *"got result: StoicTag
+released"* — while consuming the fixture `<<CODEX-G2>>` depends on. A negative test for an equality
+binder has to name an account that genuinely fails the equality, and the only way to know which
+does is to **run it**. The test now asserts the precondition (`EMMA is NOT the holder`) explicitly,
+so it cannot silently become vacuous again if the fixture moves.
+
+**One load error worth recording.** The Talos `A_` wrapper needs the gasless patron, and
+`GASLESS-PATRON` is a `defconst` **local to `01_TS01-A`**. Writing the bare name in `06_TS01-C4`
+made Pact read it as a module reference — *"Cannot find module: ouronet-ns.GASLESS-PATRON"* — and
+the whole file stopped loading. Resolved from the same source `URC_Gassless` reads
+(`DALOS::GOV|DALOS|SC_NAME`) rather than re-declared, so the two cannot drift.
+

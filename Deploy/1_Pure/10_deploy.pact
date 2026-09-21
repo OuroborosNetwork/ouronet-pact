@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 10 of 24
 ;; This is STEP 10 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-9 must have run first, including the init steps between deploys.
-;; 5 source file(s), 228,598 gas measured in the REPL gas model, 202,302 bytes
+;; 5 source file(s), 228,598 gas measured in the REPL gas model, 203,141 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/3_Talos/03_TS01-C2.pact
@@ -3368,16 +3368,17 @@
     ;;
     (defun CODEX|A_RegisterCodexIdentity:string
         (
+            executor:string
             codex-id:string
             public-standard:string
             public-smart:string
             codex-guard:guard
             registered-by:string
         ))
-    (defun CODEX|C_RotateCodexGuard:string (patron:string codex-id:string new-codex-guard:guard))
-    (defun CODEX|C_RecordArweaveUpload:string (patron:string codex-id:string arweave-tx-id:string uploaded-bytes:integer))
-    (defun CODEX|C_RegisterStoicTag:string (patron:string tag-name:string account-address:string))
-    (defun CODEX|C_ReleaseStoicTag:string (patron:string tag-name:string))
+    (defun CODEX|C_RotateCodexGuard:string (patron:string executor:string codex-id:string new-codex-guard:guard))
+    (defun CODEX|C_RecordArweaveUpload:string (patron:string executor:string codex-id:string arweave-tx-id:string uploaded-bytes:integer))
+    (defun CODEX|C_RegisterStoicTag:string (patron:string executor:string tag-name:string))
+    (defun CODEX|C_ReleaseStoicTag:string (patron:string executor:string tag-name:string))
     ;;
     (defun PYTHIA|C_DeployApiKey:string
         (
@@ -3634,7 +3635,8 @@
     ;;
     ;;
     (defun CODEX|A_RegisterCodexIdentity:string
-        ( codex-id:string
+        ( executor:string
+          codex-id:string
           public-standard:string
           public-smart:string
           codex-guard:guard
@@ -3644,8 +3646,16 @@
             (let 
                 (
                     (ref-CODEX:module{CodexV2} CODEX)
+                    (ref-DALOS:module{OuronetDalosV2} DALOS)
                 )
+                ;;THE GASLESS PATRON, RESOLVED LOCALLY. `GASLESS-PATRON` is a defconst in
+                ;;01_TS01-A, not something every Talos module has -- writing the bare name here
+                ;;made Pact read it as a MODULE reference and the whole file stopped loading
+                ;;("Cannot find module: ouronet-ns.GASLESS-PATRON"). It is exactly what TS01-A's
+                ;;URC_Gassless returns, so it is read from the same source rather than
+                ;;re-declared: one definition, no chance of the two drifting.
                 (ref-CODEX::A_RegisterCodexIdentity
+                    (ref-DALOS::GOV|DALOS|SC_NAME) executor
                     codex-id public-standard public-smart codex-guard registered-by
                 )
             )
@@ -3707,7 +3717,7 @@
             )
         )
     )
-    (defun CODEX|C_RotateCodexGuard:string (patron:string codex-id:string new-codex-guard:guard)
+    (defun CODEX|C_RotateCodexGuard:string (patron:string executor:string codex-id:string new-codex-guard:guard)
         @doc "Rotate codex-guard for <codex-id>."
         (with-capability (P|TS)
             (let 
@@ -3715,14 +3725,14 @@
                     (ref-CODEX:module{CodexV2} CODEX)
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 )
-                (let ((msg:string (ref-CODEX::C_RotateCodexGuard codex-id new-codex-guard)))
+                (let ((msg:string (ref-CODEX::C_RotateCodexGuard patron executor codex-id new-codex-guard)))
                     (ref-IGNIS::XE_CollectIgnis patron (ref-CODEX::URCi_RotateCodexGuard patron))
                     msg
                 )
             )
         )
     )
-    (defun CODEX|C_RecordArweaveUpload:string (patron:string codex-id:string arweave-tx-id:string uploaded-bytes:integer)
+    (defun CODEX|C_RecordArweaveUpload:string (patron:string executor:string codex-id:string arweave-tx-id:string uploaded-bytes:integer)
         @doc "Append Arweave upload audit row for <codex-id>."
         (with-capability (P|TS)
             (let 
@@ -3730,14 +3740,14 @@
                     (ref-CODEX:module{CodexV2} CODEX)
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 )
-                (let ((msg:string (ref-CODEX::C_RecordArweaveUpload codex-id arweave-tx-id uploaded-bytes)))
+                (let ((msg:string (ref-CODEX::C_RecordArweaveUpload patron executor codex-id arweave-tx-id uploaded-bytes)))
                     (ref-IGNIS::XE_CollectIgnis patron (ref-CODEX::URCi_RecordArweaveUpload patron))
                     msg
                 )
             )
         )
     )
-    (defun CODEX|C_RegisterStoicTag:string (patron:string tag-name:string account-address:string)
+    (defun CODEX|C_RegisterStoicTag:string (patron:string executor:string tag-name:string)
         @doc "Register StoicTag; STOA from patron Stoa, Elite discount from account-address (XB_CollectStoaDiscountedFrom trigger false)."
         (with-capability (P|TS)
             (let
@@ -3746,15 +3756,15 @@
                     (ref-IGNIS|V2:module{IgnisCollectorV3} IGNIS)
                     (stoa-fee:decimal (ref-CODEX::URCi_RegisterStoicTag tag-name))
                     (msg:string
-                        (ref-CODEX::C_RegisterStoicTag tag-name account-address)
+                        (ref-CODEX::C_RegisterStoicTag patron executor tag-name)
                     )
                 )
-                (ref-IGNIS|V2::XB_CollectStoaDiscountedFrom patron account-address stoa-fee false)
+                (ref-IGNIS|V2::XB_CollectStoaDiscountedFrom patron executor stoa-fee false)
                 msg
             )
         )
     )
-    (defun CODEX|C_ReleaseStoicTag:string (patron:string tag-name:string)
+    (defun CODEX|C_ReleaseStoicTag:string (patron:string executor:string tag-name:string)
         @doc "Release StoicTag; collects UC_StoicTagStoaFee(tag-name) as IGNIS (1 per glyph) from patron."
         (with-capability (P|TS)
             (let
@@ -3762,7 +3772,7 @@
                     (ref-CODEX:module{CodexV2} CODEX)
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (tag-fee:decimal (ref-CODEX::URCi_ReleaseStoicTag tag-name))
-                    (msg:string (ref-CODEX::C_ReleaseStoicTag tag-name))
+                    (msg:string (ref-CODEX::C_ReleaseStoicTag patron executor tag-name))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-IGNIS::UDC_ConstructOutputCumulator

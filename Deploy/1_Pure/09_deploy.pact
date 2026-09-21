@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 9 of 24
 ;; This is STEP 9 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-8 must have run first, including the init steps between deploys.
-;; 4 source file(s), 252,440 gas measured in the REPL gas model, 238,561 bytes
+;; 4 source file(s), 252,440 gas measured in the REPL gas model, 244,935 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/21_CODEX.pact
@@ -153,6 +153,7 @@
     ;; [URC]
     (defun URC_AWT|LatestUpload:object (codex-id:string))
     ;;{5.4}  Validate [UEV/CAP]
+    (defun UEV_ExecutorIsTagAccount (executor:string tag-name:string))
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     ;;{5.7}  User [A/C]
@@ -160,7 +161,9 @@
     ;; interfaces); they live in the CODEX module's {5.3} Read block.
     ;;
     (defun A_RegisterCodexIdentity:string
-        ( codex-id:string
+        ( patron:string
+          executor:string
+          codex-id:string
           public-standard:string
           public-smart:string
           codex-guard:guard
@@ -170,10 +173,10 @@
     ;;ref, but missing from the interface itself. Added here, purely additive - the module already
     ;;implements all four with matching signatures.
     ;; [C]
-    (defun C_RotateCodexGuard:string (codex-id:string new-codex-guard:guard))
-    (defun C_RecordArweaveUpload:string (codex-id:string arweave-tx-id:string uploaded-bytes:integer))
-    (defun C_RegisterStoicTag:string (tag-name:string account-address:string))
-    (defun C_ReleaseStoicTag:string (tag-name:string))
+    (defun C_RotateCodexGuard:string (patron:string executor:string codex-id:string new-codex-guard:guard))
+    (defun C_RecordArweaveUpload:string (patron:string executor:string codex-id:string arweave-tx-id:string uploaded-bytes:integer))
+    (defun C_RegisterStoicTag:string (patron:string executor:string tag-name:string))
+    (defun C_ReleaseStoicTag:string (patron:string executor:string tag-name:string))
 
 )
 
@@ -529,7 +532,7 @@
             (compose-capability (SECURE))
         )
     )
-    (defcap CODEX|C>RELEASE-STOICTAG (tag-name:string)
+    (defcap CODEX|C>RELEASE-STOICTAG (executor:string tag-name:string)
         @doc "Release (deactivate) StoicTag: must exist and be active. Composes SECURE for XI."
         @event
         (let
@@ -550,6 +553,15 @@
             )
             (enforce tag-row-found "StoicTag not found")
             (enforce tag-iz-active "StoicTag is not active")
+            ;;THE BINDER RUNS HERE, NOT IN THE DEFUN, AND THE ORDER IS THE POINT (2026-09-22).
+            ;;UEV_ExecutorIsTagAccount reads the tag row through a RAW `read`, which RAISES on a
+            ;;missing key. Called before <tag-row-found> it would kill the transaction with a
+            ;;table error on any unknown tag -- replacing the "StoicTag not found" refusal the
+            ;;suite asserts, and leaving a green test that no longer tests what it says. Behind
+            ;;the two enforces above the row is known to exist, so the binder is safe.
+            ;;Same class as the VST-07 eager-read trap, reached from the opposite direction:
+            ;;there a derived executor was computed too early in a TEST, here in the MODULE.
+            (UEV_ExecutorIsTagAccount executor tag-name)
             (compose-capability (CODEX|STOICTAG-DALOS-OWNER account-address))
             (compose-capability (SECURE))
         )
@@ -1013,6 +1025,21 @@
         )
     )
     ;;{5.4}  Validate [UEV/CAP]
+    (defun UEV_ExecutorIsTagAccount (executor:string tag-name:string)
+        @doc "BINDS <executor> to the account that holds StoicTag <tag-name>. \
+            \ \
+            \ Ownership is proven INDIRECTLY: CODEX|C>RELEASE-STOICTAG composes \
+            \ CODEX|STOICTAG-DALOS-OWNER on (UR_STG|AccountAddress tag-name), which is \
+            \ CAP_EnforceAccountOwnership. This supplies the other half -- that the account the \
+            \ caller NAMED is that same holder. Without it the executor would be a name the \
+            \ function never reads, which is worse than absent because it reads as verified. \
+            \ \
+            \ Reads the row through UR_STG|AccountAddress rather than re-deriving it, so the \
+            \ binder and the capability cannot disagree about which account the tag belongs to. \
+            \ (patron/executor canon 2.2, indirect route named.)"
+        (enforce (= executor (UR_STG|AccountAddress tag-name))
+            "Executor is not the StoicTag account")
+    )
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     ;;Protection: Class 2 — SECURE
@@ -1085,13 +1112,36 @@
     )
     ;;{5.7}  User [A/C]
     (defun A_RegisterCodexIdentity:string
-        ( codex-id:string
+        ( patron:string
+          executor:string
+          codex-id:string
           public-standard:string
           public-smart:string
           codex-guard:guard
           registered-by:string )
-        @doc "ADMIN-only insert into CODEX|T|Identities; standard/smart halves derived from codex-id."
+        @doc "ADMIN-only insert into CODEX|T|Identities; standard/smart halves derived from codex-id. \
+            \ \
+            \ ATTRIBUTION (patron/executor canon 2.2, 2026-09-22). The AUTHORITY is the Mnemosyne \
+            \ keyset, composed as CODEX|ADMIN; <executor> is the ACTOR among its holders and is \
+            \ proven by CAP_EnforceAccountOwnership. Authority and attribution are orthogonal. \
+            \ \
+            \ <registered-by> IS NOT THE EXECUTOR, despite reading like one. It is a free-form \
+            \ operator LABEL -- the schema calls it an \"Operator observability string\" and the \
+            \ suite passes a human name -- and NOTHING enforces it: it appears in this \
+            \ capability's parameter list and nowhere in its body. It is nonetheless PERSISTED \
+            \ and readable via UR_CIX|RegisteredBy, which makes it the worst version of a \
+            \ decorative actor: a self-declared provenance field that looks verified and is \
+            \ not. It is deliberately left alone rather than promoted -- enforcing it would \
+            \ change its TYPE (an Ouronet account, not a label) and require every Mnemosyne \
+            \ operator to hold one. Treat the ROW's provenance as unverified; the executor \
+            \ above is the verified half."
         (P|UEV_IMC)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership executor)
+        )
         (with-capability (CODEX|A>REGISTER-IDENTITY codex-id public-standard public-smart codex-guard registered-by)
             (XI_InsertIdentity
                 codex-id public-standard public-smart codex-guard registered-by
@@ -1099,37 +1149,81 @@
         )
         (format "Codex Identity {} registered" [codex-id])
     )
-    (defun C_RotateCodexGuard:string (codex-id:string new-codex-guard:guard)
-        @doc "Rotate codex-guard; validation in CODEX|C>ROTATE-GUARD; XI writes only."
+    (defun C_RotateCodexGuard:string (patron:string executor:string codex-id:string new-codex-guard:guard)
+        @doc "Rotate codex-guard; validation in CODEX|C>ROTATE-GUARD; XI writes only. \
+            \ \
+            \ ATTRIBUTION (patron/executor canon 2.2, 2026-09-22). The AUTHORITY here is a raw \
+            \ GUARD -- CODEX|OWNER enforce-guards (UR_CIX|CodexGuard codex-id) -- so there is no \
+            \ account in the authority path at all, and no account for a binder to bind to. \
+            \ <executor> is therefore proven DIRECTLY, by CAP_EnforceAccountOwnership: it records \
+            \ which Ouronet account drove the rotation, which the guard alone cannot say. \
+            \ Orthogonal by construction -- holding the codex guard and owning the executor \
+            \ account are two separate proofs, and BOTH are now required."
         (P|UEV_IMC)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership executor)
+        )
         (with-capability (CODEX|C>ROTATE-GUARD codex-id new-codex-guard)
             (XI_UpdateCodexGuard codex-id new-codex-guard)
         )
         (format "Codex {} guard rotated" [codex-id])
     )
     ;;
-    (defun C_RecordArweaveUpload:string (codex-id:string arweave-tx-id:string uploaded-bytes:integer)
-        @doc "Append one row to CODEX|T|ArweaveTracker; validation in CODEX|C>RECORD-ARWEAVE."
+    (defun C_RecordArweaveUpload:string (patron:string executor:string codex-id:string arweave-tx-id:string uploaded-bytes:integer)
+        @doc "Append one row to CODEX|T|ArweaveTracker; validation in CODEX|C>RECORD-ARWEAVE. \
+            \ \
+            \ ATTRIBUTION: as C_RotateCodexGuard -- the authority is the codex GUARD, which names \
+            \ no account, so <executor> is proven directly by CAP_EnforceAccountOwnership. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership executor)
+        )
         (with-capability (CODEX|C>RECORD-ARWEAVE codex-id arweave-tx-id uploaded-bytes)
             (XI_InsertArweaveTracker codex-id arweave-tx-id uploaded-bytes)
         )
         (format "Upload recorded: {} -> {}" [codex-id arweave-tx-id])
     )
     ;;
-    (defun C_RegisterStoicTag:string (tag-name:string account-address:string)
-        @doc "Register StoicTag; validation in CODEX|C>REGISTER-STOICTAG; XI writes only (1 STOA/glyph fee in TS01-C4)."
+    (defun C_RegisterStoicTag:string (patron:string executor:string tag-name:string)
+        @doc "Register StoicTag; validation in CODEX|C>REGISTER-STOICTAG; XI writes only (1 STOA/glyph fee in TS01-C4). \
+            \ \
+            \ A RENAME, not an addition (patron/executor canon 2.2, 2026-09-22): the old \
+            \ <account-address> was ALREADY the executor. CODEX|C>REGISTER-STOICTAG composes \
+            \ CODEX|STOICTAG-DALOS-OWNER on it, which is CAP_EnforceAccountOwnership -- a \
+            \ PARAMETER, directly proven, which is the rarest shape in this sweep. \
+            \ \
+            \ It is the EXECUTOR and not an executee even though the tag is bestowed upon it, \
+            \ because an executee is merely credited and needs no signature, whereas this \
+            \ account must own itself to the chain. Actor and subject coincide here."
         (P|UEV_IMC)
-        (with-capability (CODEX|C>REGISTER-STOICTAG tag-name account-address)
-            (XI_UpsertStoicTag tag-name account-address)
+        (with-capability (CODEX|C>REGISTER-STOICTAG tag-name executor)
+            (XI_UpsertStoicTag tag-name executor)
         )
-        (format "StoicTag §{} registered to account {}" [tag-name account-address])
+        (format "StoicTag §{} registered to account {}" [tag-name executor])
     )
     ;;
-    (defun C_ReleaseStoicTag:string (tag-name:string)
-        @doc "Release StoicTag (iz-active false); validation in CODEX|C>RELEASE-STOICTAG; XI updates only."
+    (defun C_ReleaseStoicTag:string (patron:string executor:string tag-name:string)
+        @doc "Release StoicTag (iz-active false); validation in CODEX|C>RELEASE-STOICTAG; XI updates only. \
+            \ \
+            \ HANDOFF 4g, and the contrast with its own sibling is the clearest illustration of \
+            \ the shape in this codebase. C_RegisterStoicTag takes the account as a PARAMETER \
+            \ and CAP_EnforceAccountOwnership proves that parameter. This function takes only \
+            \ <tag-name>, and CODEX|C>RELEASE-STOICTAG DERIVES the account from the tag row -- \
+            \ (UR_STG|AccountAddress tag-name) -- then proves ownership of THAT. Same authority, \
+            \ same enforce, and the actor vanishes from the signature. Two functions on the same \
+            \ table, one attributed and one not, differing only in whether the account was \
+            \ passed or looked up. \
+            \ \
+            \ UEV_ExecutorIsTagAccount supplies the missing half; the derived enforce is KEPT."
         (P|UEV_IMC)
-        (with-capability (CODEX|C>RELEASE-STOICTAG tag-name)
+        (with-capability (CODEX|C>RELEASE-STOICTAG executor tag-name)
             (XI_DeactivateStoicTag tag-name)
         )
         (format "StoicTag §{} released" [tag-name])
