@@ -356,7 +356,25 @@ Per module, in order:
 4. Edit the **Talos wrapper(s)**: `C_` passes the caller's patron; `A_` drops patron and supplies
    `GASLESS-PATRON`.
 5. Add a rule to `_executormigrate.py`, run `--apply` for the call sites.
-6. `python3 REPL/tools/_callarity.py --module <MOD>` — **must report zero arity mismatches.**
+6. **`python3 REPL/tools/_modulecomplete.py <MOD>` — the turn is not finished until this is
+   6/6.** It is the whole of 4.2 as a checklist, and it exists because "I believe it is done"
+   is not a result anyone can audit. Six obligations: every entrypoint DONE in the plan; every
+   interface declaration matching its module defun TEXT for text; every call site of this
+   module's entrypoints AND its Talos wrappers resolved and correct; conformance; auth surface;
+   `Deploy/` fresh.
+
+   **Check 3 is the one that matters.** `_callarity` reporting *"no arity mismatches"* is NOT
+   the same as *"everything was checked"* — a call site it could not RESOLVE is silence, not a
+   pass. For the module under test, unresolved is a FAILURE. Writing this check found a stale
+   3-arg call to a 5-arg DPTF entrypoint that had been sitting inside an `expect-failure`,
+   green for the wrong reason, through two full gate runs.
+
+   Writing it also reproduced **§3's own bug verbatim**: `ENTRY.match(r'...|\|(A|AA|C|CC)_')`
+   anchors at position 0, so the `|`-alternative can only fire on a name starting with a bar —
+   every `ENTITY|C_Fn` Talos wrapper invisible. The first version verified 55 call sites for
+   ATS; with `.search` it verified 1,060. If a count looks small, it IS small.
+
+7. `python3 REPL/tools/_callarity.py --module <MOD>` — **must report zero arity mismatches.**
    This is the step that proves the FORWARD REFACTOR actually reached every caller, and nothing
    else does. **Pact checks modref call arity at RUNTIME, not at module load**, so a caller
    passing the old argument count compiles, deploys, and stays silent until something executes
@@ -366,18 +384,18 @@ Per module, in order:
    `Kursan/dsa-grand-tour.repl` carried one for weeks, written up as a *"native error, cause not
    yet isolated"* — the cause was the arity. Gate-fatal since 2026-09-21, but run it PER MODULE
    so the failure lands while the module is still in your head.
-7. `python3 REPL/tools/_deploybundle.py --write`.
-8. `python3 REPL/tools/_authsurface.py --check` — must report *no entrypoint weakened*.
+8. `python3 REPL/tools/_deploybundle.py --write`.
+9. `python3 REPL/tools/_authsurface.py --check` — must report *no entrypoint weakened*.
    Note what 6 and 8 each cover and what neither does: 6 proves the SHAPE of every call (right
    number of arguments), 8 proves no entrypoint LOST an ownership enforce. **Neither proves
    semantics** — the right account in a correctly-sized slot. That is what the suite is for, and
    it is why a module's turn still ends in a full gate rather than two clean tool runs.
-9. Full gate: `python3 REPL/tools/_gate.py`. Artefact chain if it complains:
+10. Full gate: `python3 REPL/tools/_gate.py`. Artefact chain if it complains:
    `_suite_stats.py` → `_figuresync.py --write` → `_auditbook.py --docx`.
-10. **Commit per module.**
-11. **Tick the module in §4's table** — `[ ]` → `[x]`, in the same commit. The plan IS the
+11. **Commit per module.**
+12. **Tick the module in §4's table** — `[ ]` → `[x]`, in the same commit. The plan IS the
     progress tracker: a cold session must be able to see what is done without reading git log.
-12. **Report to the owner**: *"processed module X, modified these functions, N in total, done,
+13. **Report to the owner**: *"processed module X, modified these functions, N in total, done,
     moving to next."*
 
 ### Rules that cost time when ignored

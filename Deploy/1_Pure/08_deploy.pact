@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 8 of 22
 ;; This is STEP 8 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-7 must have run first, including the init steps between deploys.
-;; 5 source file(s), 321,972 gas measured in the REPL gas model, 294,571 bytes
+;; 5 source file(s), 321,972 gas measured in the REPL gas model, 294,609 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/20_MTX-SWP.pact
@@ -5217,10 +5217,10 @@
     (defun DPOF|C_WipeClean (patron:string executor:string executee:string id:string nonces:[integer]))
     (defun DPOF|Cp_WipeSlice (patron:string id:string account:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces}))
         ;;
-    (defun DPOF|C_Transmit (patron:string sender:string receiver:string id:string nonces:[integer] amounts:[decimal] method:bool))
-    (defun DPOF|C_Transfer (patron:string sender:string receiver:string id:string nonces:[integer] method:bool))    
+    (defun DPOF|C_Transmit (patron:string executor:string executee:string id:string nonces:[integer] amounts:[decimal] method:bool))
+    (defun DPOF|C_Transfer (patron:string executor:string executee:string id:string nonces:[integer] method:bool))    
     (defun DPOF|C_BulkTransfer
-        (patron:string sender:string receiver-lst:[string] id:string nonces-array:[[integer]] method:bool)
+        (patron:string executor:string executee-lst:[string] id:string nonces-array:[[integer]] method:bool)
     )
 
 )
@@ -6529,9 +6529,9 @@
         )
     )
     ;;
-    (defun DPOF|C_Transmit (patron:string sender:string receiver:string id:string nonces:[integer] amounts:[decimal] method:bool)
-        @doc "Transfer DPOF <id> <nonces> from <sender> to <receiver> by a specific <amount> \
-            \ This debits the <sender> nonces by <amount> and creates new nonces on receiver of <amount> \
+    (defun DPOF|C_Transmit (patron:string executor:string executee:string id:string nonces:[integer] amounts:[decimal] method:bool)
+        @doc "Transfer DPOF <id> <nonces> from <executor> to <executee> by a specific <amount> \
+            \ This debits the <executor> nonces by <amount> and creates new nonces on executee of <amount> \
             \ Requires <segmentation> set to <true> \
             \ Using an <amount> equal to the nonce supply, will take nonce out of the circulation"
         (with-capability (P|TS)
@@ -6542,21 +6542,21 @@
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                     (ref-ELITE:module{EliteV2} ELITE)
                     ;;
-                    (ss:string (ref-I|OURONET::OI|UC_ShortAccount sender))
-                    (sr:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
+                    (ss:string (ref-I|OURONET::OI|UC_ShortAccount executor))
+                    (sr:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPOF::C_Transmit patron sender receiver id nonces amounts method)
+                    (ref-DPOF::C_Transmit patron executor executee id nonces amounts method)
                 )
-                (ref-ELITE::XE_UpdateElite id sender receiver)
+                (ref-ELITE::XE_UpdateElite id executor executee)
                 (format "Succesfuly Transmited DPOF {} Nonces {} with Amounts {} from Sender {} to Receiver {}"
                     [id nonces amounts ss sr]
                 )
             )
         )
     )
-    (defun DPOF|C_Transfer (patron:string sender:string receiver:string id:string nonces:[integer] method:bool)
-        @doc "Transfer DPOF <id> <nonces> from <sender> to <receiver> by changing their Ownership"
+    (defun DPOF|C_Transfer (patron:string executor:string executee:string id:string nonces:[integer] method:bool)
+        @doc "Transfer DPOF <id> <nonces> from <executor> to <executee> by changing their Ownership"
         (with-capability (P|TS)
             (let
                 (
@@ -6565,13 +6565,13 @@
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                     (ref-ELITE:module{EliteV2} ELITE)
                     ;;
-                    (ss:string (ref-I|OURONET::OI|UC_ShortAccount sender))
-                    (sr:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
+                    (ss:string (ref-I|OURONET::OI|UC_ShortAccount executor))
+                    (sr:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPOF::C_Transfer patron sender receiver id nonces method)
+                    (ref-DPOF::C_Transfer patron executor executee id nonces method)
                 )
-                (ref-ELITE::XE_UpdateElite id sender receiver)
+                (ref-ELITE::XE_UpdateElite id executor executee)
                 (format "Succesfuly Transmited DPOF {} Nonces {} from Sender {} to Receiver {}"
                     [id nonces ss sr]
                 )
@@ -6579,8 +6579,8 @@
         )
     )
     (defun DPOF|C_BulkTransfer
-        (patron:string sender:string receiver-lst:[string] id:string nonces-array:[[integer]] method:bool)
-        @doc "Bulk whole-nonce DPOF transfer — one sender, many standard-account receivers (TalosStageOne_ClientOneV2)."
+        (patron:string executor:string executee-lst:[string] id:string nonces-array:[[integer]] method:bool)
+        @doc "Bulk whole-nonce DPOF transfer — one executor, many standard-account receivers (TalosStageOne_ClientOneV2)."
         (with-capability (P|TS)
             (let
                 (
@@ -6589,15 +6589,15 @@
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                     (ref-ELITE:module{EliteV2} ELITE)
                     ;;
-                    (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount sender))
-                    (l:integer (length receiver-lst))
+                    (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount executor))
+                    (l:integer (length executee-lst))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPOF::C_BulkTransfer patron sender receiver-lst id nonces-array method)
+                    (ref-DPOF::C_BulkTransfer patron executor executee-lst id nonces-array method)
                 )
                 (map
                     (lambda (idx:integer)
-                        (ref-ELITE::XE_UpdateElite id sender (at idx receiver-lst))
+                        (ref-ELITE::XE_UpdateElite id executor (at idx executee-lst))
                     )
                     (enumerate 0 (- l 1))
                 )

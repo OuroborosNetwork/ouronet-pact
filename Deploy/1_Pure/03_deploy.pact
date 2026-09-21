@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 3 of 22
 ;; This is STEP 3 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-2 must have run first, including the init steps between deploys.
-;; 3 source file(s), 350,668 gas measured in the REPL gas model, 308,356 bytes
+;; 3 source file(s), 350,668 gas measured in the REPL gas model, 308,390 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/06_DPOF.pact
@@ -439,10 +439,10 @@
     (defun C_WipeClean:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string nonces:[integer]))
     (defun Cp_WipeSlice:object{IgnisCollectorV3.OutputCumulator} (id:string account:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces}))
         ;;
-    (defun C_Transmit:object{IgnisCollectorV3.OutputCumulator} (patron:string sender:string receiver:string id:string nonces:[integer] amounts:[decimal] method:bool))
-    (defun C_Transfer:object{IgnisCollectorV3.OutputCumulator} (patron:string sender:string receiver:string id:string nonces:[integer] method:bool))
+    (defun C_Transmit:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string nonces:[integer] amounts:[decimal] method:bool))
+    (defun C_Transfer:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string nonces:[integer] method:bool))
     (defun C_BulkTransfer:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string sender:string receiver-lst:[string] id:string nonces-array:[[integer]] method:bool)
+        (patron:string executor:string executee-lst:[string] id:string nonces-array:[[integer]] method:bool)
     )
 
 )
@@ -3441,9 +3441,9 @@
     )
     ;;Transfers
     (defun C_Transmit:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string sender:string receiver:string id:string nonces:[integer] amounts:[decimal] method:bool)
-        @doc "Transfer DPOF <id> <nonces> from <sender> to <receiver> by a specific <amount> \
-            \ This debits the <sender> nonces by <amount> and creates new nonces on receiver of <amount> \
+        (patron:string executor:string executee:string id:string nonces:[integer] amounts:[decimal] method:bool)
+        @doc "Transfer DPOF <id> <nonces> from <executor> to <executee> by a specific <amount> \
+            \ This debits the <executor> nonces by <amount> and creates new nonces on executee of <amount> \
             \ Requires <segmentation> set to <true> \
             \ Using an <amount> equal to the nonce supply, will take nonce out of the circulation"
         (P|UEV_IMC)
@@ -3457,33 +3457,33 @@
                     (UDCx_TransmitData nonces amounts output-nonces meta-data-array)
                 )
             )
-            (with-capability (DPOF|C>TRANSMIT id td sender receiver method)
-                ;;1]Debit sender
-                (XI_DebitNonces sender id nonces amounts false)
-                ;;2]Credit receiver
-                (XI_CreditNonces receiver id output-nonces amounts meta-data-array)
+            (with-capability (DPOF|C>TRANSMIT id td executor executee method)
+                ;;1]Debit executor
+                (XI_DebitNonces executor id nonces amounts false)
+                ;;2]Credit executee
+                (XI_CreditNonces executee id output-nonces amounts meta-data-array)
                 ;;3]Output Costs 2 IGNIS per Nonce Transmitted
                 (URCi_MoveCumulator id nonces true)
             )
         )
     )
     (defun C_Transfer:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string sender:string receiver:string id:string nonces:[integer] method:bool)
-        @doc "Transfer DPOF <id> <nonces> from <sender> to <receiver> by changing their Ownership"
+        (patron:string executor:string executee:string id:string nonces:[integer] method:bool)
+        @doc "Transfer DPOF <id> <nonces> from <executor> to <executee> by changing their Ownership"
         (P|UEV_IMC)
-        (with-capability (DPOF|C>TRANSFER id nonces sender receiver method)
+        (with-capability (DPOF|C>TRANSFER id nonces executor executee method)
             (do
-                (XI_TransferWholeNonces id sender receiver nonces)
+                (XI_TransferWholeNonces id executor executee nonces)
                 (URCi_MoveCumulator id nonces false)
             )
         )
     )
     (defun C_BulkTransfer:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string sender:string receiver-lst:[string] id:string nonces-array:[[integer]] method:bool)
-        @doc "Bulk whole-nonce transfer: one sender, many receivers (DemiourgosPactOrtoFungibleV2). \
+        (patron:string executor:string executee-lst:[string] id:string nonces-array:[[integer]] method:bool)
+        @doc "Bulk whole-nonce transfer: one executor, many receivers (DemiourgosPactOrtoFungibleV2). \
             \ One IGNIS cumulator for total nonce count — not N× C_Transfer collection overhead."
         (P|UEV_IMC)
-        (with-capability (DPOF|C>BULK-TRANSFER id nonces-array sender receiver-lst method)
+        (with-capability (DPOF|C>BULK-TRANSFER id nonces-array executor executee-lst method)
             (let
                 (
                     (all-nonces:[integer] (UC_FlattenNoncesArray nonces-array))
@@ -3493,12 +3493,12 @@
                         (lambda (idx:integer)
                             (XI_TransferWholeNonces
                                 id
-                                sender
-                                (at idx receiver-lst)
+                                executor
+                                (at idx executee-lst)
                                 (at idx nonces-array)
                             )
                         )
-                        (enumerate 0 (- (length receiver-lst) 1))
+                        (enumerate 0 (- (length executee-lst) 1))
                     )
                     (URCi_MoveCumulator id all-nonces false)
                 )

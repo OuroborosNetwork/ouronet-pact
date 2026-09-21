@@ -454,6 +454,28 @@ as a blanket rule rather than a per-function judgement: the prefix already carri
 
 **126 functions.** A tool that counts them as non-conforming is measuring the wrong surface.
 
+### `sender` / `receiver` → `executor` / `executee` (owner ruling, 2026-09-21)
+
+**In an ENTRYPOINT signature, wherever the pair `sender` / `receiver` appears, they become
+`executor` / `executee`.** A transfer is the canonical three-role case and it is named like one:
+
+```pact
+(defun C_Transfer (patron:string executor:string executee:string id:string ...))
+```
+
+**Internal functions and capabilities KEEP `sender` / `receiver`.** Parameter names are local, and
+those layers are where the domain meaning belongs — `DPOF|C>TRANSFER` still enforces ownership of
+its `sender`, `XI_Transfer` still moves from `sender` to `receiver`. Only the client-facing
+signature adopts the role vocabulary, because that is the surface the canon exists to make
+readable without reading.
+
+This settles the one sub-question left open when the canon was written. The canon's own worked
+example shows `(C_Transfer patron sender receiver amount method)` with the roles annotated
+beneath, while its Naming section lists `sender` among the bespoke names that "all become
+`executor`". The example was illustrating POSITION, not endorsing the names.
+
+Applies to every transfer surface: TFT, DPTF, DPOF, DPDC-T.
+
 ### Naming
 
 The executor is **usually the second parameter after the patron**, and across this codebase it has

@@ -89,10 +89,29 @@ def signatures():
 CALL_PAT = re.compile(r'\(\s*(?:ref-[A-Za-z0-9|_\-]+::|(?:[A-Za-z0-9|_\-]+\.)+)([A-Za-z0-9|_\-]+)[\s\)]')
 
 
+ALIAS_RE = re.compile(r'\(\s*(ref-[A-Za-z0-9|_\-]+)\s*:module\{[^}]*\}\s+([A-Za-z0-9|_\-\.]+)\s*\)')
+
+
+def alias_map(src):
+    """{alias -> module} from this file's own `(ref-X:module{Iface} MODULE)` bindings.
+
+    THE ALIAS IS NOT ALWAYS THE MODULE NAME. `(ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)`
+    binds `SCR` to `AQP-SCORE`; `ref-FVT` to `AQP-FVT`. Assuming alias == module resolved most
+    calls and quietly parked the abbreviated ones in UNCHECKED -- including call sites of
+    functions a sweep had just re-signed. Reading the binding is exact where the convention is
+    a guess, and it is what the compiler itself does.
+    """
+    out = {}
+    for m in ALIAS_RE.finditer(src):
+        out[m.group(1)] = m.group(2).split(".")[-1]
+    return out
+
+
 def scan(paths, sigs, owners, want_fns):
     hits, mismatches, unchecked, partial = 0, [], collections.Counter(), 0
     for p in paths:
         src = open(p, encoding="utf8", errors="replace").read()
+        amap = alias_map(src)
         for m in CALL_PAT.finditer(src):
             fn = m.group(1)
             if fn not in want_fns:
@@ -111,9 +130,12 @@ def scan(paths, sigs, owners, want_fns):
             # this tool reported clean while four suites broke on
             # "Attempted to apply a closure to too many arguments".
             alias = None
-            am = re.match(r'\(\s*ref-([A-Za-z0-9|_\-]+)::', src[m.start():m.start() + 60])
-            if am and am.group(1) in sigs and fn in sigs[am.group(1)]:
-                alias = am.group(1)
+            am = re.match(r'\(\s*(ref-[A-Za-z0-9|_\-]+)::', src[m.start():m.start() + 60])
+            if am:
+                # the file's own binding first (exact), then alias-as-module-name (convention)
+                cand = amap.get(am.group(1)) or am.group(1)[4:]
+                if cand in sigs and fn in sigs[cand]:
+                    alias = cand
             # A name on several modules is still checkable when EVERY definition agrees on
             # arity -- which is the case for the `P|` policy boilerplate each of the 59 modules
             # carries. That collapsed 607 "unchecked" sites to the handful that genuinely differ.

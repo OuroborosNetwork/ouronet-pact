@@ -94,7 +94,7 @@
         (emma:string KST.EMMA)
     )
     (print (expect-failure "direct core-module C_ToggleBurnRole call must be rejected by UEV_IMC (#9H) — pre-fix this succeeded outright, bypassing Talos entirely"
-        (DPTF.C_ToggleBurnRole id emma true)
+        (DPTF.C_ToggleBurnRole KST.ANHD (DPTF.UR_Konto id) emma id true)
     ))
     (print (format "burn-role state for emma, unchanged by the rejected call (expect false): {}" [(DPTF.UR_AccountRoleBurn id emma)]))
 )
