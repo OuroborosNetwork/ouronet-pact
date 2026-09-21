@@ -13,6 +13,32 @@ session must be able to see what is done by reading this file, without reconstru
 
 ---
 
+## 0. WHAT A MODULE'S TURN IS — the four obligations (owner, 2026-09-21)
+
+Stated by the owner so it never has to be asked again. **A module is not done until all four
+are.** Steps 1-3 are enforced by `_modulecomplete.py` + the gate; step 4 is enforced by
+`_auditdelta.py --check`.
+
+| | obligation | how it is CHECKED |
+|---|---|---|
+| **1** | **Process the module** — signatures, interface, Talos wrappers, bindings | `_modulecomplete.py <MOD>` checks 1-2 |
+| **2** | **Forward-refactor the WHOLE codebase, including every test** | `_modulecomplete.py` check 3: every call site of this module's entrypoints *and* its Talos wrappers, RESOLVED and correct. Unresolved is a FAILURE, not a shrug |
+| **3** | **Verify nothing is broken** | `_modulecomplete.py` checks 4-6 (conformance, auth surface, `Deploy/`) **and then the full gate** |
+| **4** | **Record what the v2 AUDIT must re-verify** | append the module's block to `Audit/AUDIT-V2-DELTA.md`; `_auditdelta.py --check` fails if a changed module has none |
+
+**Why 4 exists.** This sweep changes the client surface of every module, so the published audit
+is re-issued as **v2**. The signature delta is GENERATED from git against the pre-sweep baseline
+(`21fa54f`) — 236 entrypoints changed so far — but what an auditor actually needs is the
+*judgement*: which v1 assertions are invalidated, which findings were re-framed, which new gates
+need an adversarial test that did not exist before. That cannot be derived, so it is written per
+module as the turn is taken, while the reasoning is still in hand. Writing it afterwards, from
+memory, across 46 modules, is how an audit becomes fiction.
+
+**The single most important v2 fact:** every adversarial call site in v1's attack register has
+MOVED, because the client surface is positional. An attack that still passes without being
+re-pointed is passing on an arity error rather than on the guard it names — a failure this sweep
+hit six times, twice inside an `expect-failure` that looked green for weeks.
+
 ## 1. THE CANON (owner rulings, 2026-09-20)
 
 Authoritative copy: `OuronetInformational/StoicSyntax-Prefixes.md` §2.2. Summary:
@@ -393,9 +419,11 @@ Per module, in order:
 10. Full gate: `python3 REPL/tools/_gate.py`. Artefact chain if it complains:
    `_suite_stats.py` → `_figuresync.py --write` → `_auditbook.py --docx`.
 11. **Commit per module.**
-12. **Tick the module in §4's table** — `[ ]` → `[x]`, in the same commit. The plan IS the
+12. **Append the module's block to `Audit/AUDIT-V2-DELTA.md`** (obligation 4) and run
+    `python3 REPL/tools/_auditdelta.py --check`.
+13. **Tick the module in §4's table** — `[ ]` → `[x]`, in the same commit. The plan IS the
     progress tracker: a cold session must be able to see what is done without reading git log.
-13. **Report to the owner**: *"processed module X, modified these functions, N in total, done,
+14. **Report to the owner**: *"processed module X, modified these functions, N in total, done,
     moving to next."*
 
 ### Rules that cost time when ignored
