@@ -605,3 +605,39 @@ which the detector was not counting. And it claimed `lst` was read 7× when all 
 second flaw was also in `_deadbind.py`'s long-standing `scan()`, making its count a **floor**:
 fixing it moved 149 → 155. A detector's first output is a test of the detector.
 
+---
+
+### 16_SWPI.pact — COMPLETE (1 of 1 entrypoint, 2026-09-22)
+
+**What v1 asserted that is now wrong.** One signature: `A_RebuildGraph ()` → `(patron executor)`,
+with `CAP_EnforceAccountOwnership executor` ahead of `GOV|SWPI_ADMIN`. One call site
+(`[6.2+3]_DPTF-SWP_Issuance-Only.repl`, the #21H idempotency proof).
+
+**It keeps its own `patron`, and the reason is worth stating.** A Talos `A_` wrapper drops the
+patron because the blessed path supplies `GASLESS-PATRON`. `A_RebuildGraph` has **no Talos
+wrapper** — it is a one-shot migration an admin invokes directly — so the caller supplies both.
+The rule is "Talos wrappers drop the patron", not "admin functions drop the patron".
+
+**The module's real finding was in the entrypoint the plan already called DONE.** `C_Issue` had
+carried an `executor` since an earlier module's interface cascade, and `_modulecomplete` check 7
+refused it: *registered INDIRECT but its `@doc` does not name the route*. The tool is right, and
+this is the second time it has caught exactly this — the first was a route I claimed and had not
+stated.
+
+**The route, established by tracing rather than asserted.** `SWPI|C>ISSUE` does **not** prove the
+executor: its `UEV_Issue` is a SHAPE check on the pool, and its `GOV|SWPI_ADMIN` compose is
+conditional on `p` (primordial issuance only). The proof is one level down — `XE_IssueWrite`
+passes `executor` into `TFT::C_MultiTransfer`'s executor slot, moving the pool tokens **out of**
+that account, and `C_MultiTransfer` documents its own chain: `DPTF|C>MULTI-TRANSFER` →
+`XB_DebitTrueFungible` → `DPTF|C>DEBIT` → `CAP_EnforceAccountOwnership`, once per leg.
+
+**And it is unconditional for a reason worth an auditor's attention.** That call is a plain `let`
+binding, and **Pact's `let` is EAGER** — the same evaluation rule that is the root cause of the
+mute-guard class throughout this codebase is what makes the proof here unavoidable. The `@doc` now
+says so, and says what would falsify it: move that binding into a branch and the executor stops
+being proven on the other side.
+
+**The general point.** An executor added by a cascade arrives without its justification. Check 7
+is the only thing that notices, and it notices at the module's own turn — which is an argument for
+running it per module rather than once at the end.
+

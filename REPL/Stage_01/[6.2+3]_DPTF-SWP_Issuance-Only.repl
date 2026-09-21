@@ -3189,7 +3189,7 @@
         ;;against — not just "[] stays []" the way AG->CO would be at this point.
         (before:object{SwapperIssueV4.Hopper} (ref-SWPI::URC_HopperActive ouro ag 10.0))
     )
-    (ref-SWPI::A_RebuildGraph)
+    (ref-SWPI::A_RebuildGraph KST.ANHD KST.ANHD)
     (let
         (
             (after:object{SwapperIssueV4.Hopper} (ref-SWPI::URC_HopperActive ouro ag 10.0))

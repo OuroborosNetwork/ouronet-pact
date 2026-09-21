@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 7 of 24
 ;; This is STEP 7 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-6 must have run first, including the init steps between deploys.
-;; 2 source file(s), 235,153 gas measured in the REPL gas model, 252,613 bytes
+;; 2 source file(s), 235,153 gas measured in the REPL gas model, 254,738 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/16_SWPI.pact
@@ -2788,7 +2788,7 @@
     )
     ;;{5.7}  User [A/C]
     ;;
-    (defun A_RebuildGraph ()
+    (defun A_RebuildGraph (patron:string executor:string)
         @doc "One-time migration/backfill utility (#21H). Rebuilds SWPT's adjacency \
             \ graph (SwapTracerV3) from every currently-existing swpair \
             \ (SWP::URC_Swpairs()), by calling SWPT::XE_UpdateGraph exactly as normal \
@@ -2803,7 +2803,19 @@
             \ directly at issuance) are a no-op here. Intended to be run exactly once \
             \ by an admin immediately after deploying the #21H architecture change, to \
             \ backfill every pool that was issued under the old, now-removed \
-            \ principal-keyed SWPT|Tracer storage."
+            \ principal-keyed SWPT|Tracer storage. \
+            \ \
+            \ ATTRIBUTION (patron/executor canon 2.2, 2026-09-21). The AUTHORITY is the admin \
+            \ key, composed by GOV|SWPI_ADMIN; the executor is the ACTOR among the keyholders, \
+            \ proven by CAP_EnforceAccountOwnership. This entrypoint has NO Talos wrapper -- it \
+            \ is a one-shot migration an admin invokes directly -- so unlike a Talos A_ it keeps \
+            \ its own <patron> rather than being handed GASLESS-PATRON by the blessed path."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership executor)
+        )
         (with-capability (GOV|SWPI_ADMIN)
             ;;XE_UpdateGraph's own P|UEV_IMC checks that P|SWPI|CALLER (the guard SWPI
             ;;registers with SWPT via P|A_Define) is actively composed — true when
@@ -2827,7 +2839,25 @@
             \ the shared XE_IssueWrite — MTX-SWP::MTX|C_Issue's own Step 3 calls the same \
             \ function instead of independently reimplementing it. This function still \
             \ owns all of ITS OWN IGNIS billing/aggregation (MTX|C_Issue bills separately, \
-            \ in its own Step 2, before Step 3 ever runs)."
+            \ in its own Step 2, before Step 3 ever runs). \
+            \ \
+            \ Executor: ENFORCED INDIRECTLY, and this is the route the canon requires be \
+            \ written here rather than left to be rediscovered. SWPI|C>ISSUE does NOT prove \
+            \ the executor -- its UEV_Issue is a SHAPE check on the pool, and its admin \
+            \ compose is conditional on <p>. The proof is one level down: XE_IssueWrite calls \
+            \ TFT::C_MultiTransfer with <executor> in the executor slot, moving the pool \
+            \ tokens OUT of that account, and C_MultiTransfer's own @doc records its chain -- \
+            \ DPTF|C>MULTI-TRANSFER -> XB_DebitTrueFungible -> DPTF|C>DEBIT -> \
+            \ CAP_EnforceAccountOwnership, run once per leg. \
+            \ \
+            \ It is UNCONDITIONAL because that call is a plain <let> binding, and Pact's <let> \
+            \ is EAGER -- the same evaluation rule that is the root cause of the mute-guard \
+            \ class elsewhere in this codebase is what makes the proof here unavoidable. If \
+            \ that binding is ever moved into a branch, the executor stops being proven on the \
+            \ other side of it and this paragraph becomes false. \
+            \ (patron/executor canon 2.2; gap found by _modulecomplete check 7 at 16_SWPI's \
+            \ own turn, 2026-09-22 -- the executor was added in an earlier module's cascade \
+            \ and the route was never written down.)"
         (P|UEV_IMC)
         (with-capability (SWPI|C>ISSUE executor pool-tokens fee-lp weights amp p)
             (let
