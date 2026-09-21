@@ -106,7 +106,53 @@
     [
         (expect-failure "<<ORBR-FEE3>> a NON-owner cannot withdraw a token's collected fees"
             "Keyset failure (keys-all)"
-            (TS01-C2.ORBR|C_WithdrawFees KST.EMMA "OS-98c486052a51" KST.EMMA))
+            (TS01-C2.ORBR|C_WithdrawFees KST.EMMA KST.EMMA KST.EMMA "OS-98c486052a51"))
+    ]
+)
+(commit-tx)
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+
+(begin-tx "ORBR-FEE3b - the executor must BE the owner, not merely be named by one")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print "--- [ORBR-FEE3b . 01 . the ATTRIBUTION half of the gate] ---")
+;;NEW GATE, 2026-09-21 (patron/executor canon 2.2). ORBR-FEE3 above pins AUTHORITY: a non-owner
+;;is refused. It cannot pin ATTRIBUTION, because until this turn there was no executor parameter
+;;to get wrong -- OUROBOROS|C>WITHDRAW proved CAP_Owner on the token and the only account in the
+;;signature was the RECIPIENT. That is HANDOFF 4g's "authority proven, actor unrecorded".
+;;
+;;So this is the complement, and it is the assertion that makes the new parameter worth having.
+;;The OWNER signs -- CAP_Owner is satisfied and FEE3's refusal cannot fire -- while the executor
+;;names EMMA, who is not the owner. Only UEV_ExecutorIsKonto can refuse here.
+;;
+;;VERIFIED BY REMOVING IT, 2026-09-21, and the result was worse than predicted. I wrote here
+;;first that deleting the binder would turn this test red "while every other test in this file
+;;stays green". That was wrong, and running it is what said so: without the binder the
+;;withdrawal SUCCEEDS, so the fee purse is DRAINED inside the expect-failure, and FEE4 -- which
+;;needs accrued fees to measure anything -- loses its fixture too. The second assertion below is
+;;what caught it: `the refusal moved nothing` went `expected: true, received: false`.
+;;
+;;Two things follow. The binder is load-bearing over MONEY, not just over an event label: the
+;;owner could route a withdrawal while naming another account as the actor. And a refusal test
+;;needs a companion that checks the state DID NOT MOVE -- an `expect-failure` alone cannot tell
+;;"refused" from "succeeded, and something else raised afterwards".
+;;
+;;The distinct MESSAGES are the point: "Keyset failure (keys-all)" is the authority half,
+;;"Executor is not the Token Owner" is the attribution half. A test that only matched "failure"
+;;would pass against either and prove neither.
+(map print
+    [
+        (expect-failure "<<ORBR-FEE3b>> the OWNER may not attribute the withdrawal to someone else"
+            "Executor is not the Token Owner"
+            (TS01-C2.ORBR|C_WithdrawFees KST.ANHD KST.EMMA KST.ANHD "OS-98c486052a51"))
+        ;;...and the fee purse is untouched by the refusal, so FEE4 below still has something to
+        ;;withdraw. Without this, a refusal that had already moved money would look identical.
+        (expect "<<ORBR-FEE3b>> ...and the refusal moved nothing"
+            true (> (DPTF.UR_AccountSupply "OS-98c486052a51" OUROBOROS.ORBR|SC_NAME) 0.0))
     ]
 )
 (commit-tx)
@@ -136,7 +182,7 @@
        (predicted:decimal
            (at "ignis-need" (at "ignis" (INFO-ONE.INFO_ORBR|WithdrawFees KST.ANHD os KST.ANHD))))
        (ignis-before:decimal (DALOS.UR_TF_AccountSupply KST.ANHD false)))
-    (TS01-C2.ORBR|C_WithdrawFees KST.ANHD os KST.ANHD)
+    (TS01-C2.ORBR|C_WithdrawFees KST.ANHD KST.ANHD KST.ANHD os)
     (map print
         [
             (format "<<ORBR-FEE4>> INFO predicted={} real={}"
@@ -182,7 +228,7 @@
                 0.0 (DPTF.UR_AccountSupply os OUROBOROS.ORBR|SC_NAME))
             (expect-failure "<<ORBR-FEE5>> a second withdrawal is refused -- there is nothing to take"
                 "There are no OS-98c486052a51 fees to be withdrawn"
-                (TS01-C2.ORBR|C_WithdrawFees KST.ANHD os KST.ANHD))
+                (TS01-C2.ORBR|C_WithdrawFees KST.ANHD KST.ANHD KST.ANHD os))
         ]
     )
 )

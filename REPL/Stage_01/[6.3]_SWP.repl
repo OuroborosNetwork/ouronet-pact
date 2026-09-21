@@ -7906,7 +7906,7 @@
     (ref-TS01-C1::DPTF|C_Transfer patron emma lumy b-vst 200000.0 false)
     (ref-TS01-C1::DPTF|C_SetFeeTarget patron (DPTF.UR_Konto b-vst) b-vst coca)
     (ref-TS01-C1::DPTF|C_Transfer patron emma lumy b-vst 100000.0 false)
-    (ref-TS01-C2::ORBR|C_WithdrawFees patron b-vst kiss)
+    (ref-TS01-C2::ORBR|C_WithdrawFees patron (ref-DPTF::UR_Konto b-vst) kiss b-vst)
     [   
         (format "AH has {} {}" [(ref-DPTF::UR_AccountSupply b-vst patron) b-vst])
         (format "Emma has {} {}" [(ref-DPTF::UR_AccountSupply b-vst emma) b-vst])

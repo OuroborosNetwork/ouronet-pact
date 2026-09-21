@@ -36,18 +36,24 @@ SWEPT = {
     "DPOF": ["C_Transfer", "C_Mint", "C_Burn", "C_WipeClean", "C_ToggleFreezeAccount",
              "C_Control", "C_RotateOwnership"],
     "ATS":  ["C_Fuel"],
+    "OUROBOROS": ["C_WithdrawFees"],
 }
 
 # (file basename, enclosing function) -> (expression in the patron slot, why, clears-at)
 # `clears-at` is None for a PERMANENT entry and a module name for a PROVISIONAL one.
 REGISTRY = {
  ("13_OUROBOROS.pact", "C_Compress"):
-   ("client", "PATRONLESS by design -- IGNIS is being created, there is no patron yet. The "
+   ("executor", "PATRONLESS by design -- IGNIS is being created, there is no patron yet. The "
               "initiating client occupies the slot, which is the convention this file already "
               "used for DPTF::C_Burn / C_Mint before the sweep.", None),
- ("13_OUROBOROS.pact", "C_Sublimate"):    ("client", "patronless, as C_Compress", None),
- ("13_OUROBOROS.pact", "C_SublimateV2"):  ("client", "patronless, as C_Compress", None),
- ("13_OUROBOROS.pact", "C_WithdrawFees"): ("target", "provisional", "13_OUROBOROS"),
+ ("13_OUROBOROS.pact", "C_Sublimate"):    ("executor", "patronless, as C_Compress", None),
+ ("13_OUROBOROS.pact", "C_SublimateV2"):  ("executor", "patronless, as C_Compress", None),
+ # C_WithdrawFees's entry was CLEARED at 13_OUROBOROS's turn (2026-09-21): the function gained a
+ # real `patron` (with an `executor` and an `executee` beside it) and its TFT call site now threads
+ # it, so the slot no longer needs explaining. The three siblings above stay: they are PATRONLESS,
+ # which is a permanent design fact and not a turn waiting to happen. Their expression changed
+ # `client` -> `executor` because the PARAMETER was renamed, not because the design moved -- and
+ # the tool caught that itself, by refusing a registry whose text no longer matched the source.
  # 10_ATSU's five entries were CLEARED at its turn (2026-09-21): C_Cull, C_Fuel, C_Syphon,
  # C_WithdrawRoyalties and XI_RemoveSecondary all gained a real `patron` and their TFT call
  # sites were re-pointed to it. Removed rather than commented, which is the point of the

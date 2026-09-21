@@ -107,6 +107,28 @@ EXECUTORLESS = {
     # shape-B detector went on grepping for `C_Collect*` for a day after the rename and silently
     # stopped resolving three entrypoints. A rename pass has to carry the TOOLS that name the
     # old thing.
+    #
+    # ONE LIVE ENTRY, added 2026-09-21 at 13_OUROBOROS's turn. This is a DESIGN FACT with the
+    # evidence attached, not a fallback for "no executor was found" -- the distinction this file
+    # insists on everywhere else.
+    #
+    #   ORBR::C_Fuel sweeps the OUROBOROS smart account's OWN native STOA into the liquid index.
+    #   The acting account is ORBR|SC_NAME, a module CONSTANT, and it already occupies the
+    #   executor slot of both downstream calls -- LIQUID::C_WrapStoa, where LIQUID|C>X_WRAPPER
+    #   proves it with CAP_EnforceAccountOwnership, and ATSU::C_Fuel, where TFT proves it. So the
+    #   actor is named and proven; it simply is not a parameter, and making it one would create a
+    #   slot that can hold exactly one legal value. That is ceremony, not attribution, and the
+    #   canon's own rule -- "an unenforced executor is WORSE than none" -- is about attribution
+    #   being real.
+    #
+    #   OPEN FOR THE OWNER, NOT DECIDED HERE: `C_Fuel` looks like it is in the wrong BAND. It has
+    #   no Talos `C_` wrapper, it is reachable only from other sovereign modules (TS01-A's
+    #   XI_DirectFuelSTOA and 20_MTX-SWP's defpact step 2), and BOTH callers DISCARD its
+    #   OutputCumulator -- deliberately, since the gas station pays for the re-fuelling rather
+    #   than the user. That is an `XE_`, by exactly the reasoning the 2026-09-20 owner ruling used
+    #   to move the collectors out of the `C_` band. It is not changed here because a band change
+    #   cascades the `OuroborosV2` interface, and the last one of these was an owner ruling.
+    "13_OUROBOROS.pact::C_Fuel",
 }
 ACCT = re.compile(r'^(account|konto|owner|client|sender|receiver|beneficiary|staker|user|operator|'
                   r'holder|injector|collector|executor|recoverer|remover|merger|wrapper|unwrapper|'
@@ -180,11 +202,11 @@ def plan():
             if is_talos and is_admin:
                 rows.append((f, n, _slot(ps[0] if ps else ""), ps[0] if ps else ""))
                 continue
-            if n in EXECUTORLESS:
+            if n in EXECUTORLESS or f"{f}::{n}" in EXECUTORLESS:
                 rows.append((f, n, "DONE" if ps and ps[0] == "patron" else "PATRON",
                              ps[0] if ps else ""))
                 continue
-            if n in PATRONLESS:
+            if n in PATRONLESS or f"{f}::{n}" in PATRONLESS:
                 rows.append((f, n, _slot(ps[0] if ps else ""), ps[0] if ps else ""))
                 continue
             if not ps or ps[0] != "patron":
@@ -243,6 +265,22 @@ def selftest():
         if not ok:
             bad.append(f"   plan() classifies the executor slot inline (line {st.lineno}) "
                        f"instead of via _slot()")
+    # AMBIGUOUS BARE NAMES. Both registries are keyed by function name, and a name is not unique
+    # across 46 modules: `C_Fuel` exists in 10_ATSU (which HAS an executor), 13_OUROBOROS (which
+    # by design does not) and 18_SWPLC. Registering the bare name silenced ATSU's entrypoint
+    # through the wrong branch -- same verdict, wrong reason, and the verdict would have survived
+    # someone deleting ATSU's executor. A `file.pact::name` key is exact; this check is what stops
+    # the next bare one being added.
+    byname = collections.defaultdict(set)
+    for f, n, _, _ in plan():
+        byname[n].add(f)
+    for entry in sorted(EXECUTORLESS | PATRONLESS):
+        if "::" in entry:
+            continue
+        where = byname.get(entry, set())
+        if len(where) > 1:
+            bad.append(f"   registry key {entry!r} is ambiguous -- {sorted(where)}; "
+                       f"use a 'file.pact::{entry}' key")
     if bad:
         print("SELFTEST FAILED -- _executorplan\n" + "\n".join(bad))
         return 1

@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 10 of 24
 ;; This is STEP 10 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-9 must have run first, including the init steps between deploys.
-;; 5 source file(s), 228,598 gas measured in the REPL gas model, 201,630 bytes
+;; 5 source file(s), 228,598 gas measured in the REPL gas model, 201,716 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/3_Talos/03_TS01-C2.pact
@@ -187,10 +187,10 @@
     (defun LQD|C_WrapUrStoa (patron:string executor:string amount:decimal))
     ;;
     ;;
-    (defun ORBR|C_Compress (client:string ignis-amount:decimal))
-    (defun ORBR|C_Sublimate (client:string target:string ouro-amount:decimal))
-    (defun ORBR|C_SublimateV2 (client:string target:string ouro-amount:decimal))
-    (defun ORBR|C_WithdrawFees (patron:string id:string target:string))
+    (defun ORBR|C_Compress (executor:string ignis-amount:decimal))
+    (defun ORBR|C_Sublimate (executor:string executee:string ouro-amount:decimal))
+    (defun ORBR|C_SublimateV2 (executor:string executee:string ouro-amount:decimal))
+    (defun ORBR|C_WithdrawFees (patron:string executor:string executee:string id:string))
 
 )
 ;;
@@ -1870,7 +1870,7 @@
         )
     )
     ;;  [OUROBOROS_Client]
-    (defun ORBR|C_Compress (client:string ignis-amount:decimal)
+    (defun ORBR|C_Compress (executor:string ignis-amount:decimal)
         @doc "Compresses IGNIS - Ouronet Gas Token, generating OUROBOROS \
             \ Only whole IGNIS Amounts greater than or equal to 1.0 can be used for compression \
             \ Similar to Sublimation, the output amount is dependent on OUROBOROS price, set at a minimum of 1$ \
@@ -1880,14 +1880,14 @@
                 (
                     (ref-ORBR:module{OuroborosV2} OUROBOROS)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-ORBR::C_Compress client ignis-amount)
+                        (ref-ORBR::C_Compress executor ignis-amount)
                     )
                 )
                 (format "Succesfully compressed {} IGNIS to {} OUROBOROS" [ignis-amount (at 0 (at "output" ico))])
             )
         )
     )
-    (defun ORBR|C_Sublimate (client:string target:string ouro-amount:decimal)
+    (defun ORBR|C_Sublimate (executor:string executee:string ouro-amount:decimal)
         @doc "Sublimates OUROBOROS, generating Ouronet Gas, in form of IGNIS Token \
             \ A minimum amount of 1 input OUROBOROS is required. Amount of IGNIS generated depends on OUROBOROS Price in $, \
             \ with the minimum value being set at 1$ (in case the actual value is lower than 1$ \
@@ -1898,14 +1898,14 @@
                 (
                     (ref-ORBR:module{OuroborosV2} OUROBOROS)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-ORBR::C_Sublimate client target ouro-amount)
+                        (ref-ORBR::C_Sublimate executor executee ouro-amount)
                     )
                 )
                 (format "Succesfully sublimated {} OUROBOROS to {} IGNIS" [ouro-amount (at 0 (at "output" ico))])
             )
         )
     )
-    (defun ORBR|C_SublimateV2 (client:string target:string ouro-amount:decimal)
+    (defun ORBR|C_SublimateV2 (executor:string executee:string ouro-amount:decimal)
         @doc "Sublimates OUROBOROS, generating Ouronet Gas, in form of IGNIS Token \
             \ A minimum amount of 1 input OUROBOROS is required. Amount of IGNIS generated depends on OUROBOROS Price in $, \
             \ with the minimum value being set at 1$ (in case the actual value is lower than 1$ \
@@ -1916,7 +1916,7 @@
                 (
                     (ref-ORBR:module{OuroborosV2} OUROBOROS)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-ORBR::C_SublimateV2 client target ouro-amount)
+                        (ref-ORBR::C_SublimateV2 executor executee ouro-amount)
                     )
                 )
                 (format "Succesfully sublimated {} OUROBOROS to {} IGNIS" [ouro-amount (at 0 (at "output" ico))])
@@ -1924,7 +1924,7 @@
             )
         )
     )
-    (defun ORBR|C_WithdrawFees (patron:string id:string target:string)
+    (defun ORBR|C_WithdrawFees (patron:string executor:string executee:string id:string)
         @doc "Withdraws collected DPTF Fees collected in standard mode \
         \ DPTF Fees collected in standard mode cumullate on the OUROBOROS Smart Account \
         \ Only the Token Owner can withdraw these fees."
@@ -1934,10 +1934,10 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-ORBR:module{OuroborosV2} OUROBOROS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (st:string (ref-I|OURONET::OI|UC_ShortAccount target))
+                    (st:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ORBR::C_WithdrawFees id target)
+                    (ref-ORBR::C_WithdrawFees patron executor executee id)
                 )
                 (format "Succesfully withdrawn DPTF Fees for DPTF {} to Account {}" [id st])
             )

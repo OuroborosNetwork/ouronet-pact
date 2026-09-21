@@ -262,7 +262,7 @@ same tools with those three properties.
 | [x] 9 | `10_ATSU.pact` | 2 | 1 | 12 | **15** | `AutostakeUsageV2` — done; 2 three-role functions the plan could not see, see §4g |
 | [x] 10 | `11_VST.pact` | 0 | 5 | 24 | **29** | `VestingV2` |
 | [x] 11 | `12_LIQUID.pact` | 0 | 0 | 5 | **5** | `StoaLiquidStakingV2` |
-| [ ] 12 | `13_OUROBOROS.pact` | 0 | 0 | 5 | **5** | `OuroborosV2` |
+| [x] 12 | `13_OUROBOROS.pact` | 0 | 0 | 5 | **5** | `OuroborosV2` |
 | [ ] 13 | `15_SWP.pact` | 0 | 4 | 14 | **18** | `SwapperV4` |
 | [ ] 14 | `16_SWPI.pact` | 0 | 0 | 1 | **1** | — |
 | [ ] 15 | `18_SWPLC.pact` | 0 | 1 | 9 | **10** | `BrandingUsageSecondaryV2`, `SwapperLiquidityClientV2` |
@@ -551,13 +551,35 @@ Per module, in order:
    number of arguments), 8 proves no entrypoint LOST an ownership enforce. **Neither proves
    semantics** — the right account in a correctly-sized slot. That is what the suite is for, and
    it is why a module's turn still ends in a full gate rather than two clean tool runs.
-10. Full gate: `python3 REPL/tools/_gate.py`. Artefact chain if it complains:
-   `_suite_stats.py` → `_figuresync.py --write` → `_auditbook.py --docx`.
-11. **Commit per module.**
-12. **Append the module's block to `Audit/AUDIT-V2-DELTA.md`** (obligation 4) and run
-    `python3 REPL/tools/_auditdelta.py --check`.
-13. **Tick the module in §4's table** — `[ ]` → `[x]`, in the same commit. The plan IS the
-    progress tracker: a cold session must be able to see what is done without reading git log.
+10. **Write the delta block and tick §4 BEFORE the gate, not after.** Both feed
+    `_auditbook.py`, and the book is gate-checked, so doing them afterwards buys a second
+    five-minute run for nothing. Order: delta → tick → `_auditdelta.py --check` →
+    `_auditbook.py --docx` → gate → commit.
+11. **IF THE MODULE ADDED ANY ASSERTION, SYNC THE FIGURES FIRST — there is a THREE-WAY CIRCULAR
+    DEPENDENCY here and it cost three extra gate runs on 2026-09-21.** The gate fails when an
+    audit document quotes a figure `REPL_SUITE_STATS.md` does not support; the stats file is
+    refreshed by `_suite_stats.py --gate`; and **that tool REFUSES to generate from a failed gate
+    run**. So a stale figure deadlocks: the gate will not pass until the stats move, and the
+    stats will not move until the gate passes. Break it at the DOCUMENT, which is the only link
+    in the cycle you can edit directly:
+
+        1. edit the stale figure in Audit/records/REPL-ROUND-REPORT.md to match the CURRENT
+           stats file (not to what you think the new number will be)
+        2. cd REPL && python3 tools/_suite_stats.py --gate     # now permitted; writes the live count
+        3. carry the new numbers back into the report -- there are FOUR coupled rows, and the
+           gate reports them a batch at a time, so fix all four at once: distinct written,
+           executed per run, positive, negative
+        4. python3 REPL/tools/_figuresync.py                   # must say clean
+        5. _auditbook.py --docx, then the gate
+
+    Adding two assertions to one Kursan harness moved all four. The arithmetic is a useful
+    check on yourself: executed went 25,629 -> 25,631, exactly the two added, which is the
+    evidence that nothing else in the suite changed behaviour.
+12. Full gate: `python3 REPL/tools/_gate.py`. **Never pipe it to `tail` without `pipefail`** —
+    the pipeline's exit status is `tail`'s, so a run printing `GATE FAILED` exits 0 and reads as
+    a pass. (`sys.exit("msg")` in the gate exits 1; the 0 was the pipe.)
+13. **Commit per module**, with the delta block and the §4 tick in the SAME commit. The plan IS
+    the progress tracker: a cold session must be able to see what is done without reading git log.
 14. **Report to the owner**: *"processed module X, modified these functions, N in total, done,
     moving to next."*
 

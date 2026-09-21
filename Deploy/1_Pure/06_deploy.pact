@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 6 of 24
 ;; This is STEP 6 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-5 must have run first, including the init steps between deploys.
-;; 3 source file(s), 231,586 gas measured in the REPL gas model, 220,327 bytes
+;; 3 source file(s), 231,586 gas measured in the REPL gas model, 222,084 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/13_OUROBOROS.pact
@@ -106,15 +106,15 @@
     ;;{5.7}  User [A/C]
     ;;
     ;;
-    (defun C_Compress:object{IgnisCollectorV3.OutputCumulator} (client:string ignis-amount:decimal))
+    (defun C_Compress:object{IgnisCollectorV3.OutputCumulator} (executor:string ignis-amount:decimal))
     (defun C_Fuel:object{IgnisCollectorV3.OutputCumulator} (patron:string ))
-    (defun C_Sublimate:object{IgnisCollectorV3.OutputCumulator} (client:string target:string ouro-amount:decimal))
+    (defun C_Sublimate:object{IgnisCollectorV3.OutputCumulator} (executor:string executee:string ouro-amount:decimal))
     ;;#23H fix: C_SublimateV2 was already live/actively-used (TS01-C2's ORBR|C_SublimateV2,
     ;;TS01-C3's Firestarter path) but missing from its own interface. Cheaper alternative to
     ;;C_Sublimate (freeze+C_WipeSlim+unfreeze instead of transfer+burn) - added here, no
     ;;behavioral change, the module already implements this exact signature.
-    (defun C_SublimateV2:object{IgnisCollectorV3.OutputCumulator} (client:string target:string ouro-amount:decimal))
-    (defun C_WithdrawFees:object{IgnisCollectorV3.OutputCumulator} (id:string target:string))
+    (defun C_SublimateV2:object{IgnisCollectorV3.OutputCumulator} (executor:string executee:string ouro-amount:decimal))
+    (defun C_WithdrawFees:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string))
 
 )
 ;;
@@ -408,7 +408,13 @@
         (compose-capability (ORBR|GOV))
         (compose-capability (P|ORBR|CALLER))
     )
-    (defcap OUROBOROS|C>WITHDRAW (id:string target:string)
+    (defcap OUROBOROS|C>WITHDRAW (executor:string id:string target:string)
+        @doc "ATTRIBUTION (patron/executor canon 2.2, 2026-09-21). HANDOFF 4g, fifth instance: \
+            \ <CAP_Owner id> proved the AUTHORITY -- the token owner may empty the fee purse -- \
+            \ while the only account in the signature was <target>, the RECIPIENT. Authority \
+            \ proven, actor unrecorded. <UEV_ExecutorIsKonto> supplies the missing half and the \
+            \ ownership enforce is KEPT, not replaced: one proves the right exists, the other \
+            \ proves who exercised it."
         @event
         (let
             (
@@ -417,6 +423,7 @@
             )
             (ref-DALOS::UEV_EnforceAccountType target false)
             (ref-DPTF::CAP_Owner id)
+            (ref-DPTF::UEV_ExecutorIsKonto executor id)
             (compose-capability (ORBR|GOV))
             (compose-capability (P|ORBR|CALLER))
         )
@@ -769,7 +776,7 @@
     )
     ;;{5.7}  User [A/C]
     (defun C_Compress:object{IgnisCollectorV3.OutputCumulator}
-        (client:string ignis-amount:decimal)
+        (executor:string ignis-amount:decimal)
         (P|UEV_IMC)
         (let
             (
@@ -786,17 +793,17 @@
                 ;;anywhere in the function body - only `ouro-remainder-amount`, the first
                 ;;element, is actually minted/transferred). No functional change.
             )
-            (with-capability (IGNIS|C>COMPRESS client)
+            (with-capability (IGNIS|C>COMPRESS executor)
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
                     [
                         ;;01]Client sends GAS(Ignis) <ignis-amount> to the Ouroboros Smart Ouronet Account
-                        (ref-TFT::C_Transfer client client ORBR|SC_NAME ignis-id ignis-amount true)
+                        (ref-TFT::C_Transfer executor executor ORBR|SC_NAME ignis-id ignis-amount true)
                         ;;02]Ouroboros burns GAS(Ignis) <ignis-amount>
-                        (ref-DPTF::C_Burn client ORBR|SC_NAME ignis-id ignis-amount)
+                        (ref-DPTF::C_Burn executor ORBR|SC_NAME ignis-id ignis-amount)
                         ;;03]Ouroboros mints OURO <ouro-remainder-amount>
-                        (ref-DPTF::C_Mint client ORBR|SC_NAME ouro-id ouro-remainder-amount false)
-                        ;;04]Ouroboros transfers OURO <ouro-remainder-amount> to <client>
-                        (ref-TFT::C_Transfer client ORBR|SC_NAME client ouro-id ouro-remainder-amount true)
+                        (ref-DPTF::C_Mint executor ORBR|SC_NAME ouro-id ouro-remainder-amount false)
+                        ;;04]Ouroboros transfers OURO <ouro-remainder-amount> to <executor>
+                        (ref-TFT::C_Transfer executor ORBR|SC_NAME executor ouro-id ouro-remainder-amount true)
                     ]
                     [ouro-remainder-amount]
                 )
@@ -844,7 +851,7 @@
         )
     )
     (defun C_Sublimate:object{IgnisCollectorV3.OutputCumulator}
-        (client:string target:string ouro-amount:decimal)
+        (executor:string executee:string ouro-amount:decimal)
         (P|UEV_IMC)
         (let
             (
@@ -862,17 +869,17 @@
                 (ouro-remainder-amount:decimal (at 0 ouro-split))
                 (ignis-amount:decimal (URCv_Sublimate ouro-remainder-amount))
             )
-            (with-capability (IGNIS|C>SUBLIMATE client target)
+            (with-capability (IGNIS|C>SUBLIMATE executor executee)
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
                     [
                         ;;01]Client sends OURO <ouro-amount> to the Ouroboros Smart Ouronet Account
-                        (ref-TFT::C_Transfer client client ORBR|SC_NAME ouro-id ouro-amount true)
+                        (ref-TFT::C_Transfer executor executor ORBR|SC_NAME ouro-id ouro-amount true)
                         ;;02]Ouroboros burns OURO <ouro-amount>
-                        (ref-DPTF::C_Burn client ORBR|SC_NAME ouro-id ouro-amount)
+                        (ref-DPTF::C_Burn executor ORBR|SC_NAME ouro-id ouro-amount)
                         ;;03]Ouroboros mints GAS(Ignis) <ignis-amount>
-                        (ref-DPTF::C_Mint client ORBR|SC_NAME ignis-id ignis-amount false)
-                        ;;04]Ouroboros transfers GAS(Ignis) <ignis-amount> to <target>
-                        (ref-TFT::C_Transfer client ORBR|SC_NAME target ignis-id ignis-amount true)
+                        (ref-DPTF::C_Mint executor ORBR|SC_NAME ignis-id ignis-amount false)
+                        ;;04]Ouroboros transfers GAS(Ignis) <ignis-amount> to <executee>
+                        (ref-TFT::C_Transfer executor ORBR|SC_NAME executee ignis-id ignis-amount true)
                     ]
                     [ignis-amount]
                 )
@@ -880,7 +887,7 @@
         )
     )
     (defun C_SublimateV2:object{IgnisCollectorV3.OutputCumulator}
-        (client:string target:string ouro-amount:decimal)
+        (executor:string executee:string ouro-amount:decimal)
         (P|UEV_IMC)
         (let
             (
@@ -897,24 +904,24 @@
                 (ouro-split:[decimal] (ref-U|ATS::UC_PromilleSplit 10.0 ouro-amount ouro-precision))
                 (ouro-remainder-amount:decimal (at 0 ouro-split))
                 (ignis-amount:decimal (URCv_Sublimate ouro-remainder-amount))
-                (frozen-state:bool (ref-DPTF::UR_AccountFrozenState ouro-id client))
+                (frozen-state:bool (ref-DPTF::UR_AccountFrozenState ouro-id executor))
             )
-            (with-capability (IGNIS|C>SUBLIMATE client target)
+            (with-capability (IGNIS|C>SUBLIMATE executor executee)
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
                     [
                         ;;01]Freeze Client Account for Ouro if not already frozen
                         (if (not frozen-state)
-                            (ref-DPTF::C_ToggleFreezeAccount client (ref-DPTF::UR_Konto ouro-id) client ouro-id true)
+                            (ref-DPTF::C_ToggleFreezeAccount executor (ref-DPTF::UR_Konto ouro-id) executor ouro-id true)
                             EOC
                         )
                         ;;02]Partialy wipe the required OURO
-                        (ref-DPTF::C_WipeSlim client (ref-DPTF::UR_Konto ouro-id) client ouro-id ouro-amount)
+                        (ref-DPTF::C_WipeSlim executor (ref-DPTF::UR_Konto ouro-id) executor ouro-id ouro-amount)
                         ;;03]Unfreeze Client Account
-                        (ref-DPTF::C_ToggleFreezeAccount client (ref-DPTF::UR_Konto ouro-id) client ouro-id false)
+                        (ref-DPTF::C_ToggleFreezeAccount executor (ref-DPTF::UR_Konto ouro-id) executor ouro-id false)
                         ;;04]Ouroboros mints GAS(Ignis) <ignis-amount>
-                        (ref-DPTF::C_Mint client ORBR|SC_NAME ignis-id ignis-amount false)
-                        ;;05]Ouroboros transfers GAS(Ignis) <ignis-amount> to <target>
-                        (ref-TFT::C_Transfer client ORBR|SC_NAME target ignis-id ignis-amount true)
+                        (ref-DPTF::C_Mint executor ORBR|SC_NAME ignis-id ignis-amount false)
+                        ;;05]Ouroboros transfers GAS(Ignis) <ignis-amount> to <executee>
+                        (ref-TFT::C_Transfer executor ORBR|SC_NAME executee ignis-id ignis-amount true)
                     ]
                     [ignis-amount]
                 )
@@ -922,7 +929,12 @@
         )
     )
     (defun C_WithdrawFees:object{IgnisCollectorV3.OutputCumulator}
-        (id:string target:string)
+        (patron:string executor:string executee:string id:string)
+        @doc "Withdraws the DPTF fees accrued on the OUROBOROS smart account for <id>. \
+            \ Executor: the TOKEN OWNER, proven in OUROBOROS|C>WITHDRAW by CAP_Owner + \
+            \ UEV_ExecutorIsKonto. Executee: the account CREDITED, enforced to be a standard \
+            \ (non-smart) account -- it is merely credited and needs no signature, the same \
+            \ conditional TFT::C_Transfer states for its own executee."
         (P|UEV_IMC)
         (let
             (
@@ -934,13 +946,19 @@
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
             )
             (enforce (> withdraw-amount 0.0) (format "There are no {} fees to be withdrawn from {}" [id ORBR|SC_NAME]))
-            (with-capability (OUROBOROS|C>WITHDRAW id target)
+            (with-capability (OUROBOROS|C>WITHDRAW executor id executee)
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
                     [
                         ;;00]Compose base withdraw IGNIS Price
                         (ref-IGNIS::UDC_ConstructOutputCumulator price ORBR|SC_NAME trigger [])
-                        ;;01]Patron withdraws Fees from Ouroboros Smart DALOS Account to a target Normal Ouronet Account
-                        (ref-TFT::C_Transfer target ORBR|SC_NAME target id withdraw-amount true)
+                        ;;01]Fees move from the Ouroboros Smart DALOS Account to the executee's Normal Ouronet Account.
+                        ;;PROVISIONAL PATRON SLOT CLEARED (2026-09-21, _patronslots.py): this read
+                        ;;`C_Transfer target ...`, because at the time this module had no <patron>
+                        ;;parameter to thread and the recipient was the only account in scope. That
+                        ;;is invisible to _callarity (the arity was right) and to every assertion
+                        ;;(no swept callee read the slot), which is exactly why the registry
+                        ;;existed to remember it. It is now the real patron.
+                        (ref-TFT::C_Transfer patron ORBR|SC_NAME executee id withdraw-amount true)
                     ]
                     []
                 )

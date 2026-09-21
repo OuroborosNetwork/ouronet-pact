@@ -448,3 +448,61 @@ or type error would also raise — and would look exactly like a passing access-
 proving nothing"*, and `expect-failure` around a short modref call absorbs the arity error
 silently. Leaving it un-re-pointed would have left a green assertion proving nothing.
 
+---
+
+### 13_OUROBOROS.pact — COMPLETE (5 of 5 entrypoints, 2026-09-21)
+
+**What v1 asserted that is now wrong.** `C_WithdrawFees` went 2 arguments → 4 and **reordered**:
+`(id target)` → `(patron executor executee id)`, and its Talos wrapper `ORBR|C_WithdrawFees` went
+`(patron id target)` → `(patron executor executee id)`. Every call site of that op has moved. The
+other four changed name only: `client` → `executor`, `target` → `executee`.
+
+**`C_WithdrawFees` is HANDOFF §4g, fifth instance in five modules.** `OUROBOROS|C>WITHDRAW`
+proved `DPTF::CAP_Owner id` — the token owner may empty the fee purse — while the only account in
+the signature was `target`, the **recipient**. Authority proven, actor unrecorded. The spotting
+rule held again: the ownership call takes a *derived* account, `(UR_Konto id)`, not a parameter.
+`UEV_ExecutorIsKonto executor id` supplies the missing half and **`CAP_Owner` was kept, not
+replaced** — one proves the right exists, the other proves who exercised it.
+
+**The new gate is load-bearing over MONEY, and that was established by deleting it.**
+`<<ORBR-FEE3b>>` is new: the **owner** signs, so `CAP_Owner` is satisfied and the pre-existing
+`<<ORBR-FEE3>>` refusal cannot fire, while the executor names a different account. Removing
+`UEV_ExecutorIsKonto` from the capability does not merely change an event label — **the
+withdrawal succeeds and the fee purse drains**, so the owner could route a withdrawal while
+attributing it elsewhere. I predicted in the test's own comment that deleting the binder would
+"turn this test red while every other test in this file stays green"; running it showed the drain
+cascades into `<<ORBR-FEE4>>`'s fixture as well. The comment now records what was observed rather
+than what was expected.
+
+**Two messages, deliberately distinct.** `"Keyset failure (keys-all)"` is the authority half;
+`"Executor is not the Token Owner"` is the attribution half. A test matching only "failure" would
+pass against either and prove neither — the same trap `<<CONF-05>>` warns about for arity.
+
+**A refusal test needs a companion state assertion.** `<<ORBR-FEE3b>>` pairs its `expect-failure`
+with *"and the refusal moved nothing"*, and that second assertion is the one that caught the
+cascade. An `expect-failure` alone cannot distinguish "refused" from "succeeded, and something
+else raised afterwards".
+
+**A PROVISIONAL PATRON SLOT CLEARED (HANDOFF §4e).** `C_WithdrawFees` called
+`TFT::C_Transfer target …` — the recipient standing in the patron slot, because the module had no
+`patron` to thread. `_patronslots.py` carried it as provisional against this module's turn; it is
+now the real `patron`, and the registry entry is retired.
+
+**`C_Fuel` takes NO executor, and the reason is evidence rather than absence.** It sweeps the
+OUROBOROS smart account's own native STOA into the liquid index. The actor is `ORBR|SC_NAME`, a
+module **constant**, and it already occupies the executor slot of both downstream calls —
+`LIQUID::C_WrapStoa`, where `LIQUID|C>X_WRAPPER` proves it with `CAP_EnforceAccountOwnership`, and
+`ATSU::C_Fuel`, where TFT proves it. A parameter that can hold exactly one legal value is ceremony,
+not attribution.
+
+**OPEN FOR THE OWNER — `C_Fuel` looks like it is in the wrong BAND.** It has no Talos `C_`
+wrapper; it is reachable only from other sovereign modules (`TS01-A::XI_DirectFuelSTOA` and
+`20_MTX-SWP`'s defpact step 2); and **both callers discard its `OutputCumulator`** — deliberately,
+since the gas station pays for the protocol's own re-fuelling rather than the user. By the exact
+reasoning the 2026-09-20 owner ruling used to move the IGNIS collectors out of the `C_` band, this
+is an `XE_`. **Not changed here**: a band change cascades the `OuroborosV2` interface, and the last
+one of these was an owner ruling, not an engineering call.
+
+**Call sites re-pointed: 4** — `[6.3]_SWP.repl` ×1 and the `Kursan/` ORBR-FEE harness ×3, the
+latter being a gate entrypoint rather than a side script.
+
