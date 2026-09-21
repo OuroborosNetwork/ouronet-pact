@@ -2,23 +2,22 @@
 ;; OURONET DEPLOY -- file 7 of 24
 ;; This is STEP 7 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-6 must have run first, including the init steps between deploys.
-;; 2 source file(s), 212,803 gas measured in the REPL gas model, 179,119 bytes
+;; 2 source file(s), 235,153 gas measured in the REPL gas model, 252,613 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
+;;   1_SOVEREIGN/STAGE_01/2_Core/16_SWPI.pact
 ;;   1_SOVEREIGN/STAGE_01/2_Core/17_SWPL.pact
-;;   1_SOVEREIGN/STAGE_01/2_Core/18_SWPLC.pact
 ;;
-;; TOTAL: 3 interface(s), 2 module(s), 4 table(s)
+;; TOTAL: 2 interface(s), 2 module(s), 4 table(s)
 ;; What it DEPLOYS, in load order:
+;;   -- 1_SOVEREIGN/STAGE_01/2_Core/16_SWPI.pact
+;;      interface  SwapperIssueV4
+;;      module     SWPI
+;;      table      P|T
+;;      table      P|MT
 ;;   -- 1_SOVEREIGN/STAGE_01/2_Core/17_SWPL.pact
 ;;      interface  SwapperLiquidityV2
 ;;      module     SWPL
-;;      table      P|T
-;;      table      P|MT
-;;   -- 1_SOVEREIGN/STAGE_01/2_Core/18_SWPLC.pact
-;;      interface  BrandingUsageSecondaryV2
-;;      interface  SwapperLiquidityClientV2
-;;      module     SWPLC
 ;;      table      P|T
 ;;      table      P|MT
 ;;
@@ -27,6 +26,2845 @@
 ;; ---------------------------------------------------------------------------
 
 (namespace "ouronet-ns")
+
+;; ===== 1_SOVEREIGN/STAGE_01/2_Core/16_SWPI.pact ====================
+;; Deploy: load THIS file — interface(s) + module ship together.
+;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
+;;
+;; net: v3   ·   dev: v4   ;; bumped by the StoicSyntax refactor — deploy v4 then set net: v4
+(interface SwapperIssueV4
+    @doc "Exposes SWP Issuing Functions. \
+        \ Also contains Swap Computation Functions, and the Hopper Function. \
+        \ V3: UEV_Issue and C_Issue use SwapperV4.PoolTokens (bumped when Swapper row types moved to SwapperV4)."
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables  ⟨cannot exist in an interface⟩
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables  ⟨cannot exist in an interface⟩
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;
+    ;;
+    ;;  SCHEMAS
+    ;;
+    (defschema Hopper
+        nodes:[string]
+        edges:[string]
+        output-values:[decimal]    
+    )
+    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;
+    ;;
+    ;;  [UDC] Functions
+    ;;
+    (defun UDC_DirectRawSwapInput:object{UtilitySwpV2.DirectRawSwapInput} 
+        (dsid:object{UtilitySwpV2.DirectSwapInputData} A:decimal X:[decimal] input-positions:[integer] output-position:integer weights:[decimal])
+    )
+    (defun UDC_InverseRawSwapInput:object{UtilitySwpV2.InverseRawSwapInput} 
+        (rsid:object{UtilitySwpV2.ReverseSwapInputData} A:decimal X:[decimal] output-position:integer input-position:integer weights:[decimal])
+    )
+    (defun UDC_Hopper:object{Hopper} (a:[string] b:[string] c:[decimal]))
+    ;;{5.2}  Compute [UC]
+    ;;
+    ;;
+    ;;  [UC] Functions
+    ;;
+    (defun UCv_DeviationInValueShares:decimal (pool-reserves:[decimal] asymmetric-liq:[decimal] w:[decimal]))
+    (defun UC_DeviatedShares:[decimal] (pool-reserves:[decimal] pool-shares:[decimal] new-total-shares:decimal))
+    (defun UC_PoolShares:[decimal] (pool-reserves:[decimal] w:[decimal]))
+    (defun UC_VirtualSwap:object{UtilitySwpV2.VirtualSwapEngine} 
+        (vse:object{UtilitySwpV2.VirtualSwapEngine} dsid:object{UtilitySwpV2.DirectSwapInputData})
+    )
+    (defun UC_BareboneSwapWithFeez:object{UtilitySwpV2.DirectTaxedSwapOutput}
+        (
+            account:string pool-type:string 
+            dsid:object{UtilitySwpV2.DirectSwapInputData} fees:object{UtilitySwpV2.SwapFeez}
+            A:decimal X:[decimal] X-prec:[integer] input-positions:[integer] output-position:integer weights:[decimal]
+        )
+    )
+    (defun UC_InverseBareboneSwapWithFeez:object{UtilitySwpV2.InverseTaxedSwapOutput}
+        (
+            account:string pool-type:string 
+            rsid:object{UtilitySwpV2.ReverseSwapInputData} fees:object{UtilitySwpV2.SwapFeez}
+            A:decimal X:[decimal] X-prec:[integer] output-position:integer input-position:integer weights:[decimal]
+        )
+    )
+    (defun UCv_BareboneSwap:decimal (pool-type:string drsi:object{UtilitySwpV2.DirectRawSwapInput}))
+    (defun UC_BareboneInverseSwap:decimal (pool-type:string irsi:object{UtilitySwpV2.InverseRawSwapInput}))
+    (defun UCv_PoolTokenPositions:[integer] (swpair:string input-ids:[string]))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;
+    ;;
+    ;;  [URC] Functions
+    ;;
+    (defun URC_EliteFeeReduction:object{UtilitySwpV2.SwapFeez} (account:string fees:object{UtilitySwpV2.SwapFeez}))
+    (defun URCv_PoolTokenPositions:[integer] (swpair:string input-ids:[string]))
+    (defun URC_DirectRawSwapInput:object{UtilitySwpV2.DirectRawSwapInput} (swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData}))
+    (defun URC_InverseRawSwapInput:object{UtilitySwpV2.InverseRawSwapInput} (swpair:string rsid:object{UtilitySwpV2.ReverseSwapInputData}))
+        ;;
+    (defun URCv_Swap:decimal (swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData} validation:bool))
+    (defun URC_S-Swap:decimal (swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData}))
+    (defun URC_W-Swap:decimal (swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData}))
+    (defun URC_P-Swap:decimal (swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData}))
+        ;;
+    (defun URC_InverseSwap:decimal (swpair:string rsid:object{UtilitySwpV2.ReverseSwapInputData} validation:bool))
+    (defun URC_S-InverseSwap:decimal (swpair:string rsid:object{UtilitySwpV2.ReverseSwapInputData}))
+    (defun URC_W-InverseSwap:decimal (swpair:string rsid:object{UtilitySwpV2.ReverseSwapInputData}))
+    (defun URC_P-InverseSwap (swpair:string rsid:object{UtilitySwpV2.ReverseSwapInputData}))
+        ;;
+    (defun URC_Hopper:object{Hopper} (hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal))
+    (defun URC_HopperActive:object{Hopper} (hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal))
+    (defun URC_HopperActiveShortest:object{Hopper} (hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal))
+    ;;#65bL Phase 4: URC_Hopper, sourcing its graph from an ALREADY-FETCHED <raw-graph>
+    ;;(SWPT::URC_FetchRawGraph) instead of URCx_Hopper's own self-fetch — lets a caller
+    ;;doing MULTIPLE unrelated Hopper queries in the same transaction (e.g. the
+    ;;topology's raw graph exactly ONCE and reuse it across every query, instead of
+    ;;each query independently re-reading and rebuilding it.
+    (defun URC_HopperFromRaw:object{Hopper}
+        (hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal raw-graph:[object{SwapTracerV3.RawGraphNode}])
+    )
+    ;;#65bL Phase 7: URC_HopperFromRaw again, but sourcing its graph from an
+    ;;from <raw-graph> on every call — the STOA-repricing loop's own
+    ;;graph structure once per distinct pool touched; this lets that shared build
+    ;;happen once and be reused, same shape of win one layer deeper than Phase 4's
+    ;;raw-graph sharing.
+    (defun URC_HopperFromGraph:object{Hopper}
+        (
+            hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal
+            graph:[object{BreadthFirstSearchV2.GraphNode}]
+        )
+    )
+    ;;#34 Phase 11 — the original #34 ask: genuine exhaustive route discovery. Mirrors
+    ;;calls SWPT::URC_ComputeAllRoutes instead of the K=3-capped
+    ;;an off-chain caller can choose the routing universe (active-only, full, or any
+    ;;subset for Phase 12's varying-scale measurement) and search depth explicitly.
+    ;;Meant for off-chain dirty-read use only (see the defun's own @doc).
+    (defun URC_HopperExhaustive:object{Hopper}
+        (hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal swpairs:[string] max-attempts:integer)
+    )
+    ;;#34 Phase 7: active-required path validation — wraps SWPT's exists-only structural
+    ;;check with an extra can-swap pass. Lives here, not in SWPT, because SWPT deploys
+    ;;before SWP and can't reach SWP::UR_CanSwap directly (same reason URC_EdgesActive's
+    ;;own whitelist check couldn't live there either).
+    (defun URC_ValidatePathActive:bool (nodes:[string] edges:[string]))
+    ;;#34 Phase 8: computes a Hopper (feeless output-values) for an ALREADY-CHOSEN
+    ;;nodes+edges route (a dirty-read-injected bundle's swap-route or a pricing path),
+    ;;walking the EXACT supplied edges — unlike URCx_HopperForNodes (used by the
+    ;;self-searching URC_Hopper/URC_HopperActive), this never re-selects a "best" edge
+    ;;per hop, since the real execution will use these exact edges regardless. Caller's
+    ;;responsibility to validate nodes/edges first (URC_ValidatePathStructure/Active) —
+    ;;this function only computes, it does not validate.
+    (defun URC_HopperForKnownRoute:object{Hopper}
+        (nodes:[string] edges:[string] hopper-input-amount:decimal)
+    )
+    (defun URC_BestEdge:string (ia:decimal i:string o:string))
+    (defun URC_BestEdgeFiltered:string (ia:decimal i:string o:string swpairs:[string]))
+        ;;
+    (defun URC_OuroPrimordialPrice:decimal ())
+    ;;#73C fix: OURO's own worth in WSTOA, per unit — a real 1-unit weighted-pool swap
+    ;;through the primordial pool (URC_W-Swap), not the old hand-rolled reserve ratio
+    ;;(which silently ignored the pool's own weights). Still zero graph search — OURO
+    ;;and WSTOA sit in the same primordial pool, one hop. <ouro>/<wstoa> are accepted
+    ;;as params instead of self-fetched, so callers that already hold them (every real
+    ;;caller does, via DALOS::UR_CanonicalStoaIds) don't pay for a redundant read — the
+    ;;exact regression Phase 8b's own DALOS combined-reader fix was about avoiding.
+    ;;Used by URC_WorthWSTOA's own id==OURO shortcut (see that function's own doc).
+    (defun URC_SingleOuroWorthWSTOA:decimal (ouro:string wstoa:string))
+    ;;#65fL Phase 8b: SSTOA's own worth in WSTOA, per unit, via the ATS autostake index
+    ;;— extracted so URC_WorthWSTOA's own id==SSTOA branch and URCx_PrimordialValueAndOuroSupply
+    ;;share it without a static recursive-cycle compile error (see the defun's own doc).
+    (defun URC_SingleSSTOAWorthWSTOA:decimal ())
+    (defun URC_TokenDollarPrice (id:string stoa-pid:decimal))
+    (defun URC_SingleWorthWSTOA (id:string))
+    (defun URC_WorthWSTOA (id:string amount:decimal))
+    (defun URC_PoolValue:[decimal] (swpair:string))
+    ;;#65bL Phase 4: URC_WorthWSTOA/URC_PoolValue, sourcing any graph search they need
+    ;;via an ALREADY-FETCHED <raw-graph> instead of a fresh self-fetch per call — see
+    (defun URC_WorthWSTOAFromRaw (id:string amount:decimal raw-graph:[object{SwapTracerV3.RawGraphNode}]))
+    (defun URC_PoolValueFromRaw:[decimal] (swpair:string raw-graph:[object{SwapTracerV3.RawGraphNode}]))
+    ;;#65bL Phase 7: URC_WorthWSTOA/URC_PoolValue again, sourcing any graph search via
+    ;;an ALREADY-BUILT [GraphNode] instead of rebuilding it from <raw-graph> per
+    ;;call — see URC_HopperFromGraph's own doc for the full rationale.
+    (defun URC_WorthWSTOAFromGraph (id:string amount:decimal graph:[object{BreadthFirstSearchV2.GraphNode}]))
+    (defun URC_PoolValueFromGraph:[decimal] (swpair:string graph:[object{BreadthFirstSearchV2.GraphNode}]))
+        ;;
+    (defun URC_DirectRefillAmounts:[decimal] (swpair:string ids:[string] amounts:[decimal]))
+    (defun URC_IndirectRefillAmounts:[decimal] (X:[decimal] positions:[integer] amounts:[decimal]))
+    (defun URC_TrimIdsWithZeroAmounts:[string] (swpair:string input-amounts:[decimal]))
+    (defun URC_IssuePoolIgnis:decimal ())
+    (defun URCi_Issue:object{IgnisCollectorV3.OutputCumulator} (account:string pool-tokens:[object{SwapperV4.PoolTokens}]))
+    (defun URCi_IssuePool:object{IgnisCollectorV3.OutputCumulator} (account:string pool-tokens:[object{SwapperV4.PoolTokens}]))
+    (defun URCi_IssueStoa:decimal ())
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;
+    ;;
+    ;;  [UEV] Functions
+    ;;
+    (defun UEV_SwapData (swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData}))
+    (defun UEV_InverseSwapData (swpair:string rsid:object{UtilitySwpV2.ReverseSwapInputData}))
+        ;;
+    (defun UEV_Issue (account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool))
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;
+    ;;
+    ;;  [X] Functions
+    ;;
+    ;;#36M/M5 fix: forward-module entrypoint for the shared pool-issuance write
+    ;;sequence — SWPI's own C_Issue and MTX-SWP::MTX|C_Issue's Step 3 both call this
+    ;;instead of each independently reimplementing the same mint/transfer/tracker
+    ;;writes. Returns [swpair token-lp ico-lp ico-transfer-in ico-mint ico-transfer-out]
+    ;;— a wider list, not an IgnisCollectorV3.OutputCumulator (matches this codebase's
+    ;;XE_* convention: the forward module's own C_ composes IGNIS, not this function) —
+    ;;so C_Issue can still aggregate every sub-call's own cumulator into its single
+    ;;billed response exactly as before, while MTX|C_Issue (which already bills
+    ;;separately in its own Step 2) can just take swpair/token-lp and ignore the rest.
+    (defun XE_IssueWrite:list (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool))
+    ;;{5.7}  User [A/C]
+    ;;
+    ;;
+    ;;  []C] Functions
+    ;;
+    ;;
+    (defun C_Issue:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool))
+
+)
+;;
+(module SWPI GOV
+    @doc "SWPI (SwapperIssueV4) handles SWP pool issuance and the swap-math/pricing engine. \
+        \ It computes direct and inverse swaps with fees across Stable/Weighted/standard \
+        \ pool types, runs the Hopper multi-hop router (best-of-candidate selection), and \
+        \ prices tokens/pools in WSTOA. C_Issue/XE_IssueWrite mint the LP token and register \
+        \ the pool (folding in XE_AddLPTracker so every issuance path registers)."
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
+    ;;
+    (implements OuronetPolicyV2)
+    (implements SwapperIssueV4)
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;
+    (defconst GOV|MD_SWPI                               (keyset-ref-guard (GOV|Demiurgoi)))
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    (defcap GOV ()                                      (compose-capability (GOV|SWPI_ADMIN)))
+    (defcap GOV|SWPI_ADMIN ()                           (enforce-guard GOV|MD_SWPI))
+    ;;{G5}  functions
+    ;;
+    (defun GOV|SWP|SC_NAME ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::GOV|SWP|SC_NAME)
+        )
+    )
+    (defun GOV|Demiurgoi ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::GOV|Demiurgoi)
+        )
+    )
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    (defconst P|I                                       (P|Info))
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;
+    (deftable P|T:{OuronetPolicyV2.P|S})                        ;;Key = <policy-name>
+    (deftable P|MT:{OuronetPolicyV2.P|MS})                      ;;Key = P|I (module-identity singleton constant)
+    ;;{P4}  capabilities
+    (defcap P|SWPI|CALLER ()
+        true
+    )
+    (defcap P|SWPI|REMOTE-GOV ()
+        true
+    )
+    (defcap P|SECURE-CALLER ()
+        (compose-capability (P|SWPI|CALLER))
+        (compose-capability (SECURE))
+    )
+    (defcap P|DT ()
+        (compose-capability (P|SWPI|REMOTE-GOV))
+        (compose-capability (P|SWPI|CALLER))
+    )
+    ;;{P5}  functions
+    (defun P|Info ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::P|Info)
+        )
+    )
+    (defun P|UR:guard (policy-name:string)
+        (at "policy" (read P|T policy-name ["policy"]))
+    )
+    (defun P|UR_IMP:[guard] ()
+        ;;DEFAULT ADDED 2026-09-14 (owner ruling). This was a bare `read`, which RAISES
+        ;;`No value found in table <M>_P|MT for key: InterModulePolicies` when the row does not
+        ;;exist -- i.e. before ANY module has registered. P|UEV_IMC is built on this, so in that
+        ;;window the inter-module gate answered with a raw table error naming a row key instead of
+        ;;refusing cleanly. Surfaced by the X-01 repair, which removed the harness registration
+        ;;that had been creating the row as a side effect.
+        ;;
+        ;;The default is the module's OWN SECURE capability guard, which is exactly what
+        ;;P|A_AddIMP already seeds the row with. So reader and writer now agree on what an
+        ;;unregistered policy list contains, and the gate's answer is the same before and after
+        ;;the first registration: satisfiable only from inside this module.
+        (with-default-read P|MT P|I
+            {"m-policies" : [(create-capability-guard (SECURE))]}
+            {"m-policies" := mp}
+            mp
+        )
+    )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV2} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|SWPI_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        @doc "Registers <policy-guard> as a trusted inter-module caller of this module. \
+            \ IDEMPOTENT: a guard already in the chain is left alone rather than appended \
+            \ a second time. See OuronetPolicyV2 for why that is load-bearing."
+        (with-capability (GOV|SWPI_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
+                    ;;
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" :
+                            (if (contains policy-guard mp)
+                                mp
+                                (ref-U|LST::UC_AppL mp policy-guard)
+                            )
+                        }
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_RemoveIMP (policy-guard:guard)
+        @doc "Revokes <policy-guard> from this module's guard chain. Removes EVERY occurrence, so \
+            \ it doubles as the cleanup for duplicates left behind by the pre-idempotence append. \
+            \ Refuses to drop this module's own SECURE seed -- see OuronetPolicyV2."
+        (with-capability (GOV|SWPI_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
+                    ;;
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (enforce (!= policy-guard dg) "The module's own SECURE seed cannot be revoked")
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_RemoveItem mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_SetIMP (policy-guards:[guard])
+        @doc "Replaces this module's whole guard chain in one write -- the recovery hatch. \
+            \ Deduplicates, and enforces that the module's own SECURE seed survives: without it \
+            \ the module can no longer reach its own P|UEV_IMC-gated functions."
+        (with-capability (GOV|SWPI_ADMIN)
+            (let
+                (
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (enforce (contains dg policy-guards) "The module's own SECURE seed must be present")
+                (write P|MT P|I
+                    {"m-policies" : (distinct policy-guards)}
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|DALOS:module{OuronetPolicyV2} DALOS)
+                (ref-P|BRD:module{OuronetPolicyV2} BRD)
+                (ref-P|DPTF:module{OuronetPolicyV2} DPTF)
+                (ref-P|TFT:module{OuronetPolicyV2} TFT)
+                (ref-P|ORBR:module{OuronetPolicyV2} OUROBOROS)
+                (ref-P|SWP:module{OuronetPolicyV2} SWP)
+                (ref-P|SWPT:module{OuronetPolicyV2} SWPT)
+                (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
+                (mg:guard (create-capability-guard (P|SWPI|CALLER)))
+            )
+            (ref-P|SWP::P|A_Add
+                "SWPI|RemoteSwpGov"
+                (create-capability-guard (P|SWPI|REMOTE-GOV))
+            )
+            (ref-P|DALOS::P|A_AddIMP mg)
+            (ref-P|BRD::P|A_AddIMP mg)
+            (ref-P|DPTF::P|A_AddIMP mg)
+            (ref-P|TFT::P|A_AddIMP mg)
+            (ref-P|ORBR::P|A_AddIMP mg)
+            (ref-P|SWP::P|A_AddIMP mg)
+            (ref-P|SWPT::P|A_AddIMP mg)
+            (ref-P|IGNIS::P|A_AddIMP mg)
+        )
+    )
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    (defconst SWP|SC_NAME                               (GOV|SWP|SC_NAME))
+    ;;
+    (defconst EMPTY_HOPPER
+        [
+            {
+                "nodes" : [],
+                "edges" : [],
+                "output-values" : []
+            }
+        ]
+    )
+    (defconst BAR                                       (CT_Bar))
+    ;;#36M/M5 fix: named, single source of truth for the genesis LP mint amount —
+    ;;was a bare 10000000.0 literal duplicated independently in both C_Issue and
+    ;;MTX|C_Issue's own write sequences; now lives once, inside the shared
+    ;;XE_IssueWrite both call.
+    (defconst GENESIS_LP_SUPPLY                         10000000.0)
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;
+    (defcap SECURE ()
+        true
+    )
+    ;;#36M/M5 fix: local cap for XE_IssueWrite (forward-module entrypoint) — no
+    ;;checks of its own beyond P|UEV_IMC in the defun itself. Real validation
+    ;;(UEV_Issue) already ran in whichever caller's own defcap got here first
+    ;;(SWPI|C>ISSUE for C_Issue, or MTX-SWP's own Step 1) — this function only
+    ;;performs the already-validated writes, matching the XE_* contract of no
+    ;;enforce/UEV_* beyond P|UEV_IMC.
+    (defcap SWPI|XE>ISSUE-WRITE (account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool)
+        @event
+        true
+    )
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    (defcap SWPI|C>ISSUE (account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool)
+        @event
+        ;;CONDITIONAL authorisation, hoisted 2026-09-14: only a PRIMORDIAL issuance (p) needs the
+        ;;admin key, so this cannot become an unconditional gate -- but when it does apply it must
+        ;;apply BEFORE UEV_Issue, or a stranger's refusal comes from a shape rule and the admin
+        ;;check is never the thing that stopped them. The branch is preserved exactly.
+        (if p
+            (compose-capability (GOV|SWPI_ADMIN))
+            true
+        )
+        (UEV_Issue account pool-tokens fee-lp weights amp p)
+        (compose-capability (P|DT))
+    )
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    (defun CT_Bar ()
+        (let
+            (
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+            )
+            (ref-U|CT::CT_BAR)
+        )
+    )
+    ;;
+    (defun UDC_DirectRawSwapInput:object{UtilitySwpV2.DirectRawSwapInput}
+        (
+            dsid:object{UtilitySwpV2.DirectSwapInputData}
+            A:decimal X:[decimal] input-positions:[integer] output-position:integer weights:[decimal]
+        )
+        (let
+            (
+                ;;Unwrap Object Data
+                (input-amounts:[decimal] (at "input-amounts" dsid))
+                (output-id:string (at "output-id" dsid))
+                ;;
+                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+            )
+            (ref-U|SWP::UDC_DirectRawSwapInput
+                A
+                X
+                input-amounts 
+                input-positions
+                output-position
+                (ref-DPTF::UR_Decimals output-id)
+                weights
+            )
+        )
+    )
+    (defun UDC_InverseRawSwapInput:object{UtilitySwpV2.InverseRawSwapInput}
+        (
+            rsid:object{UtilitySwpV2.ReverseSwapInputData}
+            A:decimal X:[decimal] output-position:integer input-position:integer weights:[decimal]
+        )
+        (let
+            (
+                ;;Unwrap Object Data
+                (output-amount:decimal (at "output-amount" rsid))
+                (input-id:string (at "input-id" rsid))
+                ;;
+                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+            )
+            (ref-U|SWP::UDC_InverseRawSwapInput
+                A
+                X
+                output-amount
+                output-position
+                input-position
+                (ref-DPTF::UR_Decimals input-id)
+                weights
+            )
+        )
+    )
+    (defun UDC_Hopper:object{SwapperIssueV4.Hopper} (a:[string] b:[string] c:[decimal])
+        {"nodes"            : a
+        ,"edges"            : b
+        ,"output-values"    : c}
+    )
+    ;;{5.2}  Compute [UC]
+    (defun UCv_DeviationInValueShares:decimal (pool-reserves:[decimal] asymmetric-liq:[decimal] w:[decimal])
+        @doc "Maximum Pool Deviation is (n-1)/n, and max allowed deviation for asymmetric liq is 40% of this value"
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (ref-U|INT:module{OuronetIntegersV2} U|INT)
+                (l1:integer (length pool-reserves))
+                (l2:integer (length asymmetric-liq))
+                (l3:integer (length w))
+                (iz-asymmetric:bool (contains 0.0 asymmetric-liq))
+            )
+            (ref-U|INT::UEV_UniformList [l1 l2 l3])
+            (enforce iz-asymmetric "Invalid Values to Compute Deviation In Value Shares")
+            (let
+                (
+                    (ref-U|VST:module{UtilityVstV2} U|VST)
+                    (sw:decimal (fold (+) 0.0 w))
+                    (iz-weigthed:bool (if (= sw 1.0) true false))
+                    ;;
+                    (initial-shares:[decimal] (UC_PoolShares pool-reserves w))
+                    (asymmetric-shares:[decimal] (zip (*) initial-shares asymmetric-liq))
+                    (new-total-shares:decimal (+ 5040000.0 (fold (+) 0.0 asymmetric-shares)))
+                    (new-supply:[decimal] (zip (+) pool-reserves asymmetric-liq))
+                    ;;
+                    (aw:[decimal] (if iz-weigthed w (ref-U|VST::UCv_SplitBalanceForVesting 24 1.0 l1)))
+                    (deviated-shares:[decimal] (UC_DeviatedShares new-supply initial-shares new-total-shares))
+                    (diff-with-deviated-shares:[decimal] (zip (-) aw deviated-shares))
+                    (abs-dwds:[decimal]
+                        (fold
+                            (lambda
+                                (acc:[decimal] idx:integer)
+                                (ref-U|LST::UC_AppL acc (abs (at idx diff-with-deviated-shares )))
+                            )
+                            []
+                            (enumerate 0 (- l1 1))
+                        )
+                    )
+                    ;;Total Deviation must be divided by 2, to account for gain and losses in share variation
+                    (total-deviation:decimal (floor (/ (fold (+) 0.0 abs-dwds) 2.0) 24))
+                )
+                total-deviation
+            )
+        )
+    )
+    (defun UC_DeviatedShares:[decimal] (pool-reserves:[decimal] pool-shares:[decimal] new-total-shares:decimal)
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+            )
+            (fold
+                (lambda
+                    (acc:[decimal] idx:integer)
+                    (ref-U|LST::UC_AppL acc
+                        (floor (/ (* (at idx pool-reserves)(at idx pool-shares)) new-total-shares) 24)
+                    )
+                )
+                []
+                (enumerate 0 (- (length pool-reserves) 1))
+            )
+        )
+    )
+    (defun UC_PoolShares:[decimal] (pool-reserves:[decimal] w:[decimal])
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (size:decimal (dec (length pool-reserves)))
+                (sw:decimal (fold (+) 0.0 w))
+                (iz-weigthed:bool (if (= sw 1.0) true false))
+            )
+            (fold
+                (lambda
+                    (acc:[decimal] idx:integer)
+                    (let
+                        (
+                            (amount:decimal (at idx pool-reserves))
+                            (position-share:decimal
+                                (if iz-weigthed
+                                    (* 5040000.0 (at idx w))
+                                    (/ 5040000.0 size)
+                                )
+                            )
+                            (amount-share:decimal
+                                (floor (/ position-share amount) 24)
+                            )
+                        )
+                        (ref-U|LST::UC_AppL acc amount-share)
+                    )
+                )
+                []
+                (enumerate 0 (- (length w) 1))
+            )
+        )
+    )
+    (defun UC_VirtualSwap:object{UtilitySwpV2.VirtualSwapEngine} 
+        (vse:object{UtilitySwpV2.VirtualSwapEngine} dsid:object{UtilitySwpV2.DirectSwapInputData})
+        @doc "Executes a Virtual Swap, saving data in the Output Object"
+        (let
+            (
+                ;;Unwrap Input Objects
+                (v-tokens:[string] (at "v-tokens" vse))
+                (v-prec:[integer] (at "v-prec" vse))
+                (account:string (at "account" vse))
+                (account-supply:[decimal] (at "account-supply" vse))
+                (swpair:string (at "swpair" vse))
+                (X:[decimal] (at "X" vse))
+                (A:decimal (at "A" vse))
+                (W:[decimal] (at "W" vse))
+                (F:object{UtilitySwpV2.SwapFeez} (at "F" vse))
+                (fuel:[decimal] (at "fuel" vse))
+                (special:[decimal] (at "special" vse))
+                (boost:[decimal] (at "boost" vse))
+                (swaps:[object{UtilitySwpV2.DirectSwapInputData}] (at "swaps" vse))
+                ;;
+                (input-ids:[string] (at "input-ids" dsid))
+                (input-amounts:[decimal] (at "input-amounts" dsid))
+                (output-id:string (at "output-id" dsid))
+                ;;
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                ;;
+                (pool-type:string (ref-U|SWP::UC_PoolType swpair))
+                (input-positions:[integer] (UCv_PoolTokenPositions swpair input-ids))
+                (output-position:integer (at 0 (UCv_PoolTokenPositions swpair [output-id])))
+                ;;
+                (swap-result:object{UtilitySwpV2.DirectTaxedSwapOutput}
+                    (UC_BareboneSwapWithFeez account pool-type dsid F A X v-prec input-positions output-position W)
+                )
+                (tsoa:decimal (fold (+) 0.0 [(at "o-id-special" swap-result) (at "o-id-liquid" swap-result) (at "o-id-netto" swap-result)]))
+                (tsoa-filled:[decimal] (URC_IndirectRefillAmounts X [output-position] [tsoa]))
+                (remainder-filled:[decimal] (URC_IndirectRefillAmounts X [output-position] [(at "o-id-netto" swap-result)]))
+                (input-amounts-filled:[decimal] (URC_IndirectRefillAmounts X input-positions input-amounts))
+            )
+            (ref-U|SWP::UDC_VirtualSwapEngine
+                v-tokens v-prec account
+                (zip (+) remainder-filled (zip (-) account-supply input-amounts-filled)) 
+                swpair 
+                (zip (-) (zip (+) X input-amounts-filled) remainder-filled)
+                A W F
+                (zip (+) fuel (at "lp-fuel" swap-result))
+                (ref-U|LST::UC_ReplaceAt special output-position (+ (at output-position special) (at "o-id-special" swap-result)))
+                (ref-U|LST::UC_ReplaceAt boost output-position (+ (at output-position boost) (at "o-id-liquid" swap-result)))
+                (ref-U|LST::UC_AppL swaps dsid)
+            )
+        )
+    )
+    (defun UC_BareboneSwapWithFeez:object{UtilitySwpV2.DirectTaxedSwapOutput}
+        (
+            account:string pool-type:string 
+            dsid:object{UtilitySwpV2.DirectSwapInputData} fees:object{UtilitySwpV2.SwapFeez}
+            A:decimal X:[decimal] X-prec:[integer] input-positions:[integer] output-position:integer weights:[decimal]
+        )
+        @doc "Performs a Direct Swap with Fees Computation, outputing results in an object{UtilitySwpV2.DirectTaxedSwapOutput} \
+            \ Given proper inputs, can be used for an actual Swap Functions, to save redundant code."
+        (let
+            (
+                ;;Unwrap Object Data
+                (input-ids:[string] (at "input-ids" dsid))
+                (input-amounts:[decimal] (at "input-amounts" dsid))
+                (output-id:string (at "output-id" dsid))
+                ;;
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                ;;
+                ;;Get Working fees
+                (reduced-fees:object{UtilitySwpV2.SwapFeez} (URC_EliteFeeReduction account fees))
+                (f1:decimal (at "lp" reduced-fees))
+                (f2:decimal (at "special" reduced-fees))
+                (f3:decimal (at "boost" reduced-fees))
+                (o-prec:integer (at output-position X-prec))
+                ;;
+                ;;From the input amounts, compute FeeSharesExcludingLpFee <fselp>
+                (fselp:decimal (- 1000.0 f1))
+                (input-amounts-for-swap:[decimal]
+                    (fold
+                        (lambda
+                            (acc:[decimal] idx:integer)
+                            (ref-U|LST::UC_AppL
+                                acc
+                                (floor
+                                    (* (at idx input-amounts) (/ fselp 1000.0))
+                                    (at (at idx input-positions) X-prec)
+                                )
+                            )
+                        )
+                        []
+                        (enumerate 0 (- (length input-amounts) 1))
+                    )
+                )
+                (dsid-for-swap:object{UtilitySwpV2.DirectSwapInputData}
+                    (ref-U|SWP::UDC_DirectSwapInputData input-ids input-amounts-for-swap output-id)
+                )
+                (drsi:object{UtilitySwpV2.DirectRawSwapInput}
+                    (UDC_DirectRawSwapInput dsid-for-swap A X input-positions output-position weights)
+                )
+                (input-amounts-for-lp:[decimal] (zip (-) input-amounts input-amounts-for-swap))
+                (input-amounts-for-lp-filled:[decimal] (URC_IndirectRefillAmounts X input-positions input-amounts-for-lp))
+                ;;
+                ;;Total-Swap-Output-Amount <tsoa> is computed without them, then splited into 3 parts: 
+                ;;special, boost, remainder
+                (tsoa:decimal (UCv_BareboneSwap pool-type drsi))
+                (special:decimal (floor (* (/ f2 fselp) tsoa) o-prec))
+                (boost:decimal (floor (* (/ f3 fselp) tsoa) o-prec))
+                (remainder:decimal (- tsoa (+ special boost)))
+                (output:object{UtilitySwpV2.DirectTaxedSwapOutput}
+                    (ref-U|SWP::UDC_DirectTaxedSwapOutput
+                        input-amounts-for-lp-filled
+                        output-id
+                        special
+                        boost
+                        remainder
+                    )
+                )
+            )
+            output
+        )
+    )
+    (defun UC_InverseBareboneSwapWithFeez:object{UtilitySwpV2.InverseTaxedSwapOutput}
+        
+        (
+            account:string pool-type:string 
+            rsid:object{UtilitySwpV2.ReverseSwapInputData} fees:object{UtilitySwpV2.SwapFeez}
+            A:decimal X:[decimal] X-prec:[integer] output-position:integer input-position:integer weights:[decimal]
+        )
+        @doc "Performs a Reverse Swap with Fees Computation, outputing results in an object{UtilitySwpV2.InverseTaxedSwapOutput} \
+            \ Use Case is displaying Input Amounts for a Swap when the desired Output Amount of a Token is entered first. \
+            \ However not only the input required can be displayed, but also the susequent fees that would be incurred"
+        (let
+            (
+                ;;Unwrap Object Data
+                (output-id:string (at "output-id" rsid))
+                (output-amount:decimal (at "output-amount" rsid))
+                (input-id:string (at "input-id" rsid))
+                ;;
+                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                ;;
+                ;;Get Working fees
+                (reduced-fees:object{UtilitySwpV2.SwapFeez} (URC_EliteFeeReduction account fees))
+                (f1:decimal (at "lp" reduced-fees))
+                (f2:decimal (at "special" reduced-fees))
+                (f3:decimal (at "boost" reduced-fees))
+                (o-prec:integer (at output-position X-prec))
+                (i-prec:integer (at input-position X-prec))
+                ;;
+                ;;Star by computing the Output fee shares <ofs>
+                (ofs:decimal (- 1000.0 (fold (+) 0.0 [f1 f2 f3])))
+                ;;Compute Output-Amount per fee Share <oapfs>
+                (oapfs:decimal (floor (/ output-amount ofs) o-prec))
+                (boost:decimal (floor (* f3 oapfs) o-prec))
+                (special:decimal (floor (* f2 oapfs) o-prec))
+                ;;Then Compute Total-Swap-Output-Amount <tsoa>
+                (tsoa:decimal (fold (+) 0.0 [output-amount boost special]))
+                ;:Remake a new rsid
+                (new-rsid:object{UtilitySwpV2.ReverseSwapInputData} 
+                    (ref-U|SWP::UDC_ReverseSwapInputData output-id tsoa input-id)
+                )
+                (irsi:object{UtilitySwpV2.InverseRawSwapInput}
+                    (UDC_InverseRawSwapInput new-rsid A X output-position input-position weights)
+                )
+                ;;Now Compute the Input Amount needed to get the <tsoa>, the Partial-Input-Amount <pia>
+                ;;<pia> is part of the TotalInputAmount, that would be used for a direct swap, after LP fees have been retained
+                (pia:decimal (UC_BareboneInverseSwap pool-type irsi))
+                ;;Now Compute the Total-Input-Amouant <tia>
+                (tia:decimal (floor (/ (* 1000.0 pia) (- 1000.0 f1)) i-prec))
+                (output:object{UtilitySwpV2.InverseTaxedSwapOutput}
+                    (ref-U|SWP::UDC_InverseTaxedSwapOutput
+                        boost
+                        special
+                        (URC_IndirectRefillAmounts X [input-position] [(- tia pia)])
+                        input-id
+                        tia
+                    )
+                )
+            )
+            output
+        )
+    )
+    ;;
+    (defun UCv_BareboneSwap:decimal
+        (pool-type:string drsi:object{UtilitySwpV2.DirectRawSwapInput})
+        (let
+            (
+                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                (l1:integer (length (at "input-amounts" drsi)))
+            )
+            (if (= pool-type "S")
+                (enforce (= l1 1) "Only a single Input can be used in Stable Swap")
+                true
+            )
+            (cond
+                ((= pool-type "S") (ref-U|SWP::UC_ComputeY drsi))
+                ((= pool-type "W") (ref-U|SWP::UC_ComputeWP drsi))
+                ((= pool-type "P") (ref-U|SWP::UC_ComputeEP drsi))
+                -1.0
+            )
+        )
+    )
+    (defun UC_BareboneInverseSwap:decimal 
+        (pool-type:string irsi:object{UtilitySwpV2.InverseRawSwapInput})
+        (let
+            (
+                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+            )
+            (cond
+                ((= pool-type "S") (ref-U|SWP::UCv_ComputeInverseY irsi))
+                ((= pool-type "W") (ref-U|SWP::UC_ComputeInverseWP irsi))
+                ((= pool-type "P") (ref-U|SWP::UC_ComputeInverseEP irsi))
+                -1.0
+            )
+        )
+    )
+    (defun UCv_PoolTokenPositions:[integer] (swpair:string input-ids:[string])
+        @doc "Same result as <URCv_PoolTokenPositions> but being done without reading <swpair> data \
+        \ Result is simply computed, through the <swpair> string"
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                (ref-SWP:module{SwapperV4} SWP)
+                (pool-tokens:[string] (ref-U|SWP::UC_TokensFromSwpairString swpair))
+                (are-on-pool:bool (ref-SWP::UEV_CheckAgainst input-ids pool-tokens))
+            )
+            (enforce are-on-pool (format "Input Token IDs {} arent on pool {}" [input-ids swpair]))
+            (fold
+                (lambda
+                    (acc:[integer] idx:integer)
+                    (ref-U|LST::UC_AppL
+                        acc
+                        (ref-SWP::UCv_PoolTokenPosition swpair (at idx input-ids))
+                    )
+                )
+                []
+                (enumerate 0 (- (length input-ids) 1))
+            )
+        )
+    )
+    (defun UC_BestHopper:object{SwapperIssueV4.Hopper} (candidates:[object{SwapperIssueV4.Hopper}])
+        @doc "Picks the candidate Hopper with the highest final output value. \
+            \ <candidates> must be non-empty (caller's responsibility — <URCx_Hopper> \
+            \ only calls this once it has confirmed at least one route was found)."
+        (if (<= (length candidates) 1)
+            (at 0 candidates)
+            (fold
+                (lambda
+                    (best:object{SwapperIssueV4.Hopper} idx:integer)
+                    (let
+                        (
+                            (candidate:object{SwapperIssueV4.Hopper} (at idx candidates))
+                            (best-final:decimal (at 0 (take -1 (at "output-values" best))))
+                            (candidate-final:decimal (at 0 (take -1 (at "output-values" candidate))))
+                        )
+                        (if (> candidate-final best-final) candidate best)
+                    )
+                )
+                (at 0 candidates)
+                (enumerate 1 (- (length candidates) 1))
+            )
+        )
+    )
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    (defun URCx_Hopper:object{SwapperIssueV4.Hopper}
+        (hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal swpairs:[string])
+        @doc "Shared Hopper-computation core for <URC_Hopper>/<URC_HopperActive> — \
+            \ identical in every respect except which <swpairs> universe routing \
+            \ is allowed to consider. Internal only, not on <SwapperIssueV4>. \
+            \ #65bL Phase 5 fix: was best-of-3 via <SWPT::URC_ComputeAlternateRoutes> \
+            \ (#34M/M2's original fix). Measured directly against this codebase's \
+            \ real, organically-grown ~102-pool topology (not a hand-engineered one) \
+            \ across 7 representative pairs spanning 1-8 hops: best-of-3 found a \
+            \ better route than the single first-found one in ZERO of them — 0.0% \
+            \ difference every time. #34M/M2's own original proof that best-of-3 \
+            \ matters used a deliberately hand-built diamond topology (issuance order \
+            \ controlled specifically to make BFS's first-found route the weak one) \
+            \ to demonstrate the FAILURE MODE is real — it never claimed the failure \
+            \ mode manifests naturally at scale, and per this measurement, it \
+            \ doesn't, here: with dozens of parallel pools and organic swap activity \
+            \ pushing chronically-unbalanced pools back toward parity, first-found \
+            \ and best-of-3 converge. Switched to a single <SWPT::URC_ComputeGraphPath> \
+            \ call — the greedy, single-shot search <URC_HopperActiveShortest> \
+            \ already uses elsewhere. <SWPT::URC_ComputeAlternateRoutes> itself is \
+            \ NOT deleted (still correct, still tested, `SWP|TX 032c`-`032g`'s own \
+            \ adversarial proof of the original failure mode stays as regression \
+            \ coverage) — just no longer the default live-routing path. \
+            \ CAVEAT, worth stating plainly: URCx_HopperForNodes's own per-hop \
+            \ <URC_BestEdgeFiltered> selection is a GREEDY choice — picking the best \
+            \ available edge at each individual hop does not mathematically guarantee \
+            \ the overall path is the highest-value one achievable end to end (a \
+            \ locally-optimal choice at every step is not the same as a globally- \
+            \ optimal path). This was already true before this fix, at every K \
+            \ (including best-of-3) — this fix does not introduce that limitation, it \
+            \ was always structurally present; it only removes the (measured, at this \
+            \ topology, not currently earning its cost) 2-candidate cross-route \
+            \ comparison layered on top of it. \
+            \ #65bL Phase 1 fix: checks SWPT|PathCache (via URC_ReadPathCacheFresh) \
+            \ first — on a fresh hit, skips the live BFS search entirely and \
+            \ uses the cached node-path as the sole candidate. Safe because the real \
+            \ per-hop edge is always re-derived live downstream in \
+            \ URCx_HopperForNodes regardless of where the node-path came from — a \
+            \ cache hit only changes WHICH nodes get tried, never how an edge gets \
+            \ picked or validated. On a miss (or a stale entry, topology-version \
+            \ behind current), falls through to the unchanged live search."
+        (let
+            (
+                ;;#21H: SWPT no longer needs a principal list at all — the Tracer's
+                ;;storage is principal-agnostic (SwapTracerV3).
+                (ref-SWPT:module{SwapTracerV3} SWPT)
+                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                (cached:object{SwapTracerV3.PathCacheRow}
+                    (ref-SWPT::URC_ReadPathCacheFresh hopper-input-id hopper-output-id)
+                )
+                (cached-nodes:[string] (at "nodes" cached))
+                ;;Only computed on an actual cache miss — a `let` binding here would
+                ;;evaluate unconditionally even on a hit, silently paying for the live
+                ;;search Phase 1's whole point is to skip. Nested inside the `if`
+                ;;instead so a cache hit never touches SWPT::URC_ComputeGraphPathFromRaw.
+                (routes:[[string]]
+                    (if (!= cached-nodes [BAR])
+                        [cached-nodes]
+                        ;;#65bL Phase 5 fix: must go through the raw-graph-once path
+                        ;;(URC_FetchRawGraph + URC_ComputeGraphPathFromRaw), NOT the
+                        ;;plain self-fetching URC_ComputeGraphPath — that function was
+                        ;;never touched by Phase 2's optimization (it only ever makes
+                        ;;one call, so cross-attempt sharing never applied to it), so
+                        ;;using it here would mean a SINGLE search that's still paying
+                        ;;the pre-Phase-2 cost, while best-of-3's own first attempt
+                        ;;(via URC_ComputeAlternateRoutes's own internal fetch) is
+                        ;;already Phase-2-cheap. Measured directly: using the plain
+                        ;;self-fetching path here was NET MORE EXPENSIVE than
+                        ;;best-of-3, exactly backwards from the goal — caught before
+                        ;;shipping, not after.
+                        (let
+                            (
+                                (single-route:[string]
+                                    (ref-SWPT::URC_ComputeGraphPathFromRaw
+                                        hopper-input-id hopper-output-id swpairs
+                                        (ref-SWPT::URC_FetchRawGraph
+                                            (ref-U|SWP::UC_MakeGraphNodes hopper-input-id hopper-output-id swpairs)
+                                        )
+                                    )
+                                )
+                            )
+                            (if (= single-route [BAR]) [] [single-route])
+                        )
+                    )
+                )
+            )
+            (if (= (length routes) 0)
+                (at 0 EMPTY_HOPPER)
+                (let
+                    (
+                        (candidates:[object{SwapperIssueV4.Hopper}]
+                            (map
+                                (lambda (nodes:[string]) (URCx_HopperForNodes nodes hopper-input-amount swpairs))
+                                routes
+                            )
+                        )
+                    )
+                    (UC_BestHopper candidates)
+                )
+            )
+        )
+    )
+    (defun URCx_HopperFromRaw:object{SwapperIssueV4.Hopper}
+        (
+            hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal
+            swpairs:[string] raw-graph:[object{SwapTracerV3.RawGraphNode}]
+        )
+        @doc "#65bL Phase 4 fix: <URCx_Hopper>, sourcing its routing search via an \
+            \ ALREADY-FETCHED <raw-graph> (<SWPT::URC_FetchRawGraph>) instead of \
+            \ letting <SWPT::URC_ComputeGraphPathFromRaw> fetch its own — for a caller \
+            \ making MULTIPLE unrelated Hopper queries in one transaction (the \
+            \ STOA-repricing loop: one query per distinct pool touched, each to a \
+            \ different first-token but the SAME destination, WSTOA) who fetches the \
+            \ whole topology's raw graph exactly ONCE and reuses it across every \
+            \ query. Safe because <SWPT::UC_MakeGraphNodes> (the node-universe \
+            \ derivation both the fetch and every query rely on) is <input>/<output>- \
+            \ independent by construction — it derives every token appearing across \
+            \ the full <swpairs> list, regardless of which specific pair is being \
+            \ queried — so ONE raw-graph fetched against a given <swpairs> universe \
+            \ is valid for EVERY query against that same universe, not just the one \
+            \ it happened to be fetched for. Still checks SWPT|PathCache first, \
+            \ identically to <URCx_Hopper> — a cache hit is even cheaper than a \
+            \ shared-raw-graph live search, this doesn't replace that, it only makes \
+            \ the miss case cheaper too. \
+            \ #65bL Phase 5 fix: was best-of-3 via <SWPT::URC_ComputeAlternateRoutesFromRaw> \
+            \ — see <URCx_Hopper>'s own doc for the full measured rationale (identical \
+            \ here, same shared decision)."
+        (let
+            (
+                (ref-SWPT:module{SwapTracerV3} SWPT)
+                (cached:object{SwapTracerV3.PathCacheRow}
+                    (ref-SWPT::URC_ReadPathCacheFresh hopper-input-id hopper-output-id)
+                )
+                (cached-nodes:[string] (at "nodes" cached))
+                ;;Only computed on an actual cache miss — see URCx_Hopper's own comment
+                ;;on this exact same eager-`let`-evaluation trap.
+                (routes:[[string]]
+                    (if (!= cached-nodes [BAR])
+                        [cached-nodes]
+                        (let
+                            (
+                                (single-route:[string]
+                                    (ref-SWPT::URC_ComputeGraphPathFromRaw hopper-input-id hopper-output-id swpairs raw-graph)
+                                )
+                            )
+                            (if (= single-route [BAR]) [] [single-route])
+                        )
+                    )
+                )
+            )
+            (if (= (length routes) 0)
+                (at 0 EMPTY_HOPPER)
+                (let
+                    (
+                        (candidates:[object{SwapperIssueV4.Hopper}]
+                            (map
+                                (lambda (nodes:[string]) (URCx_HopperForNodes nodes hopper-input-amount swpairs))
+                                routes
+                            )
+                        )
+                    )
+                    (UC_BestHopper candidates)
+                )
+            )
+        )
+    )
+    (defun URCx_HopperFromGraph:object{SwapperIssueV4.Hopper}
+        (
+            hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal
+            swpairs:[string] graph:[object{BreadthFirstSearchV2.GraphNode}]
+        )
+        @doc "#65bL Phase 7 fix: <URCx_HopperFromRaw>, sourcing its routing search \
+            \ via an ALREADY-BUILT <graph> (<SWPT::UC_MakeGraphFromRaw>) instead of \
+            \ rebuilding it from <raw-graph> on every call — see \
+            \ <URC_HopperFromGraph>'s own doc for the full rationale (repricing- \
+            \ loop graph-build sharing, one layer deeper than Phase 4's raw-graph \
+            \ sharing). Still checks SWPT|PathCache first, identically to \
+            \ <URCx_Hopper>/<URCx_HopperFromRaw> — a cache hit is even cheaper than \
+            \ a shared-graph live search, this doesn't replace that, it only makes \
+            \ the miss case cheaper too."
+        (let
+            (
+                (ref-SWPT:module{SwapTracerV3} SWPT)
+                (cached:object{SwapTracerV3.PathCacheRow}
+                    (ref-SWPT::URC_ReadPathCacheFresh hopper-input-id hopper-output-id)
+                )
+                (cached-nodes:[string] (at "nodes" cached))
+                ;;Only computed on an actual cache miss — see URCx_Hopper's own comment
+                ;;on this exact same eager-`let`-evaluation trap.
+                (routes:[[string]]
+                    (if (!= cached-nodes [BAR])
+                        [cached-nodes]
+                        (let
+                            (
+                                (single-route:[string]
+                                    (ref-SWPT::URC_ComputeGraphPathFromGraph hopper-input-id hopper-output-id graph)
+                                )
+                            )
+                            (if (= single-route [BAR]) [] [single-route])
+                        )
+                    )
+                )
+            )
+            (if (= (length routes) 0)
+                (at 0 EMPTY_HOPPER)
+                (let
+                    (
+                        (candidates:[object{SwapperIssueV4.Hopper}]
+                            (map
+                                (lambda (nodes:[string]) (URCx_HopperForNodes nodes hopper-input-amount swpairs))
+                                routes
+                            )
+                        )
+                    )
+                    (UC_BestHopper candidates)
+                )
+            )
+        )
+    )
+    (defun URC_EliteFeeReduction:object{UtilitySwpV2.SwapFeez} (account:string fees:object{UtilitySwpV2.SwapFeez})
+        (let
+            (
+                (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (major:integer (ref-DALOS::UR_Elite-Tier-Major account))
+                (minor:integer (ref-DALOS::UR_Elite-Tier-Minor account))
+            )
+            (ref-U|SWP::UDC_SwapFeez
+                (ref-U|DALOS::UC_GasCost (at "lp" fees) major minor false)
+                (ref-U|DALOS::UC_GasCost (at "special" fees) major minor false)
+                (ref-U|DALOS::UC_GasCost (at "boost" fees) major minor false)
+            )
+        )
+    )
+    (defun URCv_PoolTokenPositions:[integer] (swpair:string input-ids:[string])
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (ref-SWP:module{SwapperV4} SWP)
+                (pool-tokens (ref-SWP::UR_PoolTokens swpair))
+                (are-on-pool:bool (ref-SWP::UEV_CheckAgainst input-ids pool-tokens))
+            )
+            (enforce are-on-pool (format "Input Token IDs {} arent on pool {}" [input-ids swpair]))
+            (fold
+                (lambda
+                    (acc:[integer] idx:integer)
+                    (ref-U|LST::UC_AppL
+                        acc
+                        (ref-SWP::URv_PoolTokenPosition swpair (at idx input-ids))
+                    )
+                )
+                []
+                (enumerate 0 (- (length input-ids) 1))
+            )
+        )
+    )
+    ;;
+    (defun URC_DirectRawSwapInput:object{UtilitySwpV2.DirectRawSwapInput}
+        (swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData})
+        (let
+            (
+                ;;Unwrap Object Data
+                (input-ids:[string] (at "input-ids" dsid))
+                (input-amounts:[decimal] (at "input-amounts" dsid))
+                (output-id:string (at "output-id" dsid))
+                ;;
+                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-SWP:module{SwapperV4} SWP)
+            )
+            (ref-U|SWP::UDC_DirectRawSwapInput
+                (ref-SWP::UR_Amplifier swpair)
+                (ref-SWP::UR_PoolTokenSupplies swpair)
+                input-amounts 
+                (URCv_PoolTokenPositions swpair input-ids)
+                (ref-SWP::URv_PoolTokenPosition swpair output-id)
+                (ref-DPTF::UR_Decimals output-id)
+                (ref-SWP::UR_Weigths swpair)
+            )
+        )
+    )
+    (defun URC_InverseRawSwapInput:object{UtilitySwpV2.InverseRawSwapInput}
+        (swpair:string rsid:object{UtilitySwpV2.ReverseSwapInputData})
+        (let
+            (
+                ;;Unwrap Object Data
+                (output-id:string (at "output-id" rsid))
+                (output-amount:decimal (at "output-amount" rsid))
+                (input-id:string (at "input-id" rsid))
+                ;;
+                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-SWP:module{SwapperV4} SWP)
+            )
+            (ref-U|SWP::UDC_InverseRawSwapInput
+                (ref-SWP::UR_Amplifier swpair)
+                (ref-SWP::UR_PoolTokenSupplies swpair)
+                output-amount
+                (ref-SWP::URv_PoolTokenPosition swpair output-id)
+                (ref-SWP::URv_PoolTokenPosition swpair input-id)
+                (ref-DPTF::UR_Decimals input-id)
+                (ref-SWP::UR_Weigths swpair)
+            )
+        )
+    )
+    ;;
+    (defun URCv_Swap:decimal 
+        (swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData} validation:bool)
+        (let
+            (
+                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                (pool-type:string (ref-U|SWP::UC_PoolType swpair))
+                (l1:integer (length (at "input-amounts" dsid)))
+            )
+            (if (= pool-type "S")
+                (enforce (= l1 1) "Only a single Input can be used in Stable Swap")
+                true
+            )
+            (if validation
+                (UEV_SwapData swpair dsid)
+                true
+            )
+            (cond
+                ((= pool-type "S") (URC_S-Swap swpair dsid))
+                ((= pool-type "W") (URC_W-Swap swpair dsid))
+                ((= pool-type "P") (URC_P-Swap swpair dsid))
+                -1.0
+            )
+        )
+    )
+    (defun URC_S-Swap:decimal (swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData})
+        @doc "Performs a Swap Computation in a Swable Pool. Data needed: \
+            \ <A> = Pool Amplifier\
+            \ <X> = Pool Token Supplies (must be read) \
+            \ <input-amounts> = Amounts of the Input Tokens that make the swap. They must be in the same order as the <input-ids> \
+            \ ip = Position of the input token (must be read) \
+            \ op = position in the pool of the output token (must be read) \
+            \ o-prec = precision of the output token (must be read) \
+            \ w = weigths of the swpair"
+        (let
+            (
+                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+            )
+            (ref-U|SWP::UC_ComputeY
+                (URC_DirectRawSwapInput swpair dsid)
+            )
+        )
+    )
+    (defun URC_W-Swap:decimal (swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData})
+        @doc "Performs a Swap Computation in a Weigthed Constant Product Pool. Data needed: \
+            \ <X> = Pool Token Supplies (must be read) \
+            \ <input-amounts> = Amounts of the Input Tokens that make the swap. They must be in the same order as the <input-ids> \
+            \ ip = list with the pool position of the input tokens (must be read) \
+            \ op = position in the pool of the output token (must be read) \
+            \ o-prec = precision of the output token (must be read) \
+            \ w = weigths of the swpair"
+        (let
+            (
+                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+            )
+            (ref-U|SWP::UC_ComputeWP
+                (URC_DirectRawSwapInput swpair dsid)
+            )
+        )
+    )
+    (defun URC_P-Swap:decimal (swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData})
+        @doc "Performs a Swap Computation in a Constant Product Pool. Data needed: \
+            \ <X> = Pool Token Supplies (must be read) \
+            \ <input-amounts> = Amounts of the Input Tokens that make the swap. They must be in the same order as the <input-ids> \
+            \ ip = list with the pool position of the input tokens (must be read) \
+            \ op = position in the pool of the output token (must be read) \
+            \ o-prec = precision of the output token (must be read)"
+        (let
+            (
+                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+            )
+            (ref-U|SWP::UC_ComputeEP
+                (URC_DirectRawSwapInput swpair dsid)
+            )
+        )
+    )
+    (defun URC_InverseSwap:decimal
+        (swpair:string rsid:object{UtilitySwpV2.ReverseSwapInputData} validation:bool)
+        (let
+            (
+                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                (pool-type:string (ref-U|SWP::UC_PoolType swpair))
+            )
+            (if validation
+                (UEV_InverseSwapData swpair rsid)
+                true
+            )
+            (cond
+                ((= pool-type "S") (URC_S-InverseSwap swpair rsid))
+                ((= pool-type "W") (URC_W-InverseSwap swpair rsid))
+                ((= pool-type "P") (URC_P-InverseSwap swpair rsid))
+                -1.0
+            )
+        )
+    )
+    (defun URC_S-InverseSwap:decimal (swpair:string rsid:object{UtilitySwpV2.ReverseSwapInputData})
+        @doc "Performs a Swap Computation in a Swable Pool. Data needed: \
+            \ <A> = Pool Amplifier\
+            \ <X> = Pool Token Supplies (must be read) \
+            \ <output-amount> = How much output must be achieved by swaping the input amount that must be solved for \
+            \ <op> = output position in the pool (must be read) \
+            \ <ip> = input position in the pool (must be read) \
+            \ <i-prec> = precision of the input token (must be read)"
+        (let
+            (
+                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+            )
+            (ref-U|SWP::UCv_ComputeInverseY
+                (URC_InverseRawSwapInput swpair rsid)
+            )
+        )
+    )
+    (defun URC_W-InverseSwap:decimal (swpair:string rsid:object{UtilitySwpV2.ReverseSwapInputData})
+        @doc "Inverse Swap solves how much of a given SINGLE input is needed to get a specific SINGLE output. Data needed: \
+            \ <X> = Pool Token Supplies (must be read) \
+            \ <output-amount> = How much output must be achieved by swaping the input amount that must be solved for \
+            \ <op> = output position in the pool (must be read) \
+            \ <ip> = input position in the pool (must be read) \
+            \ <i-prec> = precision of the input token (must be read) \
+            \ w = weigths of the swpair"
+        (let
+            (
+                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+            )
+            (ref-U|SWP::UC_ComputeInverseWP 
+                (URC_InverseRawSwapInput swpair rsid)
+            )
+        )
+    )
+    (defun URC_P-InverseSwap (swpair:string rsid:object{UtilitySwpV2.ReverseSwapInputData})
+        @doc "Inverse Swap solves how much of a given SINGLE input is needed to get a specific SINGLE output. Data needed: \
+            \ <X> = Pool Token Supplies (must be read) \
+            \ <output-amount> = How much output must be achieved by swaping the input amount that must be solved for \
+            \ <op> = output position in the pool (must be read) \
+            \ <ip> = input position in the pool (must be read) \
+            \ <i-prec> = precision of the input token (must be read)"
+        (let
+            (
+                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+            )
+            (ref-U|SWP::UC_ComputeInverseEP 
+                (URC_InverseRawSwapInput swpair rsid)
+            )
+        )
+    )
+    ;;
+    (defun URCx_HopperForNodes:object{SwapperIssueV4.Hopper}
+        (nodes:[string] hopper-input-amount:decimal swpairs:[string])
+        @doc "Computes the Hopper object (best per-hop edge + accumulated output) for \
+            \ an ALREADY-KNOWN <nodes> path. Split out of <URCx_Hopper> (#34M/M2 fix) \
+            \ so the identical per-hop best-edge computation can be run once per \
+            \ candidate route in <URCx_Hopper>'s best-of-K comparison, not just the \
+            \ single first-found route. Computes: \
+            \ 1] The hops along <nodes>, the <edges> as the highest-output edge from all available \
+            \ #49L fix: was 'cheapest available edge' — backwards framing (C1/#6C's own fix made \
+            \ this maximize output among parallel pools, not minimize cost) \
+            \ 2] The best <output> values using said best <edges>, given the <hopper-input-amount>"
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+            )
+            (if (!= nodes [BAR])
+                (let
+                    (
+                        (fl:[object{SwapperIssueV4.Hopper}]
+                            (fold
+                                (lambda
+                                    (acc:[object{SwapperIssueV4.Hopper}] idx:integer)
+                                    (ref-U|LST::UC_ReplaceAt
+                                        acc
+                                        0
+                                        (let
+                                            (
+                                                (input:decimal
+                                                    (if (= idx 0)
+                                                        hopper-input-amount
+                                                        (at 0 (take -1 (at "output-values" (at 0 acc))))
+                                                    )
+                                                )
+                                                (i-id:string (at idx nodes))
+                                                (o-id:string (at (+ idx 1) nodes))
+                                                ;;#19H fix: restrict edge candidates to this call's
+                                                ;;<swpairs> universe (full for <URC_Hopper>, active-only
+                                                ;;for <URC_HopperActive>) — a disabled parallel pool can
+                                                ;;never be chosen over an active one, or at all when
+                                                ;;routing active-only.
+                                                (best-edge:string (URC_BestEdgeFiltered input i-id o-id swpairs))
+                                                (dsid:object{UtilitySwpV2.DirectSwapInputData}
+                                                    (ref-U|SWP::UDC_DirectSwapInputData [i-id] [input] o-id)
+                                                )
+                                                (output:decimal (URCv_Swap best-edge dsid false))
+                                            )
+                                            (UDC_Hopper
+                                                nodes
+                                                (ref-U|LST::UC_AppL (at "edges" (at 0 acc)) best-edge)
+                                                (ref-U|LST::UC_AppL (at "output-values" (at 0 acc)) output)
+                                            )
+                                        )
+                                    )
+                                )
+                                EMPTY_HOPPER
+                                (enumerate 0 (- (length nodes) 2))
+                            )
+                        )
+                    )
+                    (at 0 fl)
+                )
+                (at 0 EMPTY_HOPPER)
+            )
+        )
+    )
+    (defun URC_HopperForKnownRoute:object{SwapperIssueV4.Hopper}
+        (nodes:[string] edges:[string] hopper-input-amount:decimal)
+        @doc "#34 Phase 8: like URCx_HopperForNodes, computes the feeless per-hop output \
+            \ chain for a KNOWN path — but walks the caller-supplied <edges> directly \
+            \ instead of re-deriving a 'best' edge per hop via URC_BestEdgeFiltered. \
+            \ This matters: a dirty-read-injected bundle's swap-route is what real \
+            \ execution (XI_SmartSwapCore) will actually walk, hop for hop — the feeless \
+            \ quote used for the slippage floor check must be computed against those SAME \
+            \ edges, not a possibly-different 'best' edge a live re-derivation might pick \
+            \ when parallel pools exist between the same two tokens (that mismatch could \
+            \ silently let a worse real execution slip past a floor check computed on a \
+            \ better hypothetical route). Also reused for pricing paths (boost-path, \
+            \ stoa-paths) where the caller-chosen edges are likewise the ones that matter, \
+            \ not a re-optimized alternative. Caller validates nodes/edges beforehand — \
+            \ this function trusts its input and only computes."
+        (if (!= nodes [BAR])
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
+                    (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                    (le:integer (length edges))
+                )
+                (if (= le 0)
+                    (UDC_Hopper nodes [] [])
+                    (let
+                        (
+                            (fl:[object{SwapperIssueV4.Hopper}]
+                                (fold
+                                    (lambda
+                                        (acc:[object{SwapperIssueV4.Hopper}] idx:integer)
+                                        (ref-U|LST::UC_ReplaceAt
+                                            acc
+                                            0
+                                            (let
+                                                (
+                                                    (input:decimal
+                                                        (if (= idx 0)
+                                                            hopper-input-amount
+                                                            (at 0 (take -1 (at "output-values" (at 0 acc))))
+                                                        )
+                                                    )
+                                                    (i-id:string (at idx nodes))
+                                                    (o-id:string (at (+ idx 1) nodes))
+                                                    (swpair:string (at idx edges))
+                                                    (dsid:object{UtilitySwpV2.DirectSwapInputData}
+                                                        (ref-U|SWP::UDC_DirectSwapInputData [i-id] [input] o-id)
+                                                    )
+                                                    (output:decimal (URCv_Swap swpair dsid false))
+                                                )
+                                                (UDC_Hopper
+                                                    nodes
+                                                    (ref-U|LST::UC_AppL (at "edges" (at 0 acc)) swpair)
+                                                    (ref-U|LST::UC_AppL (at "output-values" (at 0 acc)) output)
+                                                )
+                                            )
+                                        )
+                                    )
+                                    [(UDC_Hopper nodes [] [])]
+                                    (enumerate 0 (- le 1))
+                                )
+                            )
+                        )
+                        (at 0 fl)
+                    )
+                )
+            )
+            (at 0 EMPTY_HOPPER)
+        )
+    )
+    (defun URC_HopperExhaustive:object{SwapperIssueV4.Hopper}
+        (
+            hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal
+            swpairs:[string] max-attempts:integer
+        )
+        @doc "#34 Phase 11 — the original #34 ask: genuine exhaustive route discovery, \
+            \ not URCx_Hopper's fixed best-of-3 approximation. Identical shape to \
+            \ URCx_Hopper (route-then-price-then-pick-best) but sources candidate \
+            \ node-paths from SWPT::URC_ComputeAllRoutes (a real parameterized search \
+            \ up to <max-attempts>, P0.2's flat +1000 caller-side escalation pattern \
+            \ and P0.2/P0.4's outer-hard-stop/depth-cap already enforced inside that \
+            \ function) instead of the K=3-capped URC_ComputeAlternateRoutes. Reuses \
+            \ URCx_HopperForNodes (per-candidate feeless value) and UC_BestHopper (pick \
+            \ the genuinely highest-output candidate, P1.8's requirement — never by hop \
+            \ count as a proxy for cost) completely unchanged; no new value-computation \
+            \ logic needed, same division of labor URCx_Hopper already established. \
+            \ Exposes <swpairs> directly (unlike the hidden-universe URC_Hopper/ \
+            \ URC_HopperActive public wrappers) so a caller picks the routing universe \
+            \ explicitly — active-only for real swap discovery, or any subset for \
+            \ Phase 12's varying-scale measurement (P2.1). Off-chain dirty-read use \
+            \ only — never call this from a paid transaction, that defeats the entire \
+            \ point of the #34/#34M redesign."
+        (let
+            (
+                (ref-SWPT:module{SwapTracerV3} SWPT)
+                (routes:[[string]]
+                    (ref-SWPT::URC_ComputeAllRoutes hopper-input-id hopper-output-id swpairs max-attempts)
+                )
+            )
+            (if (= (length routes) 0)
+                (at 0 EMPTY_HOPPER)
+                (let
+                    (
+                        (candidates:[object{SwapperIssueV4.Hopper}]
+                            (map
+                                (lambda (nodes:[string]) (URCx_HopperForNodes nodes hopper-input-amount swpairs))
+                                routes
+                            )
+                        )
+                    )
+                    (UC_BestHopper candidates)
+                )
+            )
+        )
+    )
+    (defun URC_Hopper:object{SwapperIssueV4.Hopper}
+        (hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal)
+        @doc "Creates a Hopper Object routed over the FULL swpair universe, \
+            \ including <can-swap>=false pools. Used internally for issuance-time \
+            \ pricing (<URC_WorthWSTOA>, <UEV_Issue>'s principal-anchoring check), \
+            \ which must work even when neighboring pools aren't swap-enabled yet. \
+            \ Live swap-execution/quote callers must use <URC_HopperActive> \
+            \ instead (#19H) — routing a real user swap over disabled pools is \
+            \ the exact bug that fix closes."
+        (let
+            (
+                (ref-SWP:module{SwapperV4} SWP)
+            )
+            (URCx_Hopper hopper-input-id hopper-output-id hopper-input-amount (ref-SWP::URC_Swpairs))
+        )
+    )
+    (defun URC_HopperFromRaw:object{SwapperIssueV4.Hopper}
+        (
+            hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal
+            raw-graph:[object{SwapTracerV3.RawGraphNode}]
+        )
+        @doc "#65bL Phase 4 fix: <URC_Hopper>, sourcing its routing search via an \
+            \ ALREADY-FETCHED <raw-graph> instead of a fresh self-fetch — see \
+            \ <URCx_HopperFromRaw>'s own doc for the full rationale."
+        (let
+            (
+                (ref-SWP:module{SwapperV4} SWP)
+            )
+            (URCx_HopperFromRaw hopper-input-id hopper-output-id hopper-input-amount (ref-SWP::URC_Swpairs) raw-graph)
+        )
+    )
+    (defun URC_HopperFromGraph:object{SwapperIssueV4.Hopper}
+        (
+            hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal
+            graph:[object{BreadthFirstSearchV2.GraphNode}]
+        )
+        @doc "#65bL Phase 7 fix: <URC_HopperFromRaw>, sourcing its routing search \
+            \ via an ALREADY-BUILT <graph> instead of rebuilding it from \
+            \ <raw-graph> on every call — see <URCx_HopperFromGraph>'s own doc for \
+            \ the full rationale."
+        (let
+            (
+                (ref-SWP:module{SwapperV4} SWP)
+            )
+            (URCx_HopperFromGraph hopper-input-id hopper-output-id hopper-input-amount (ref-SWP::URC_Swpairs) graph)
+        )
+    )
+    (defun URC_HopperActive:object{SwapperIssueV4.Hopper}
+        (hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal)
+        @doc "Live-swap-execution routing entrypoint — restricts BFS routing to \
+            \ <can-swap>=true pools only, so a disabled pool can never be \
+            \ BFS-selected and then rejected downstream with no fallback (#19H). \
+            \ Used by SWPU's actual swap-execution and slippage-quote call sites."
+        (let
+            (
+                (ref-SWP:module{SwapperV4} SWP)
+            )
+            (URCx_Hopper hopper-input-id hopper-output-id hopper-input-amount (ref-SWP::URC_ActiveSwpairs))
+        )
+    )
+    (defun URC_HopperActiveShortest:object{SwapperIssueV4.Hopper}
+        (hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal)
+        @doc "Lightweight Hopper routing over <can-swap>=true pools only — a single \
+            \ shortest BFS route (<SWPT::URC_ComputeGraphPath>), never the best-of-3 \
+            \ alternate-route search <URC_HopperActive> runs (P0.6, SWP exhaustive- \
+            \ path-search HANDOFF doc). Built for <SWPU::XI_RawLiquidPump>'s Liquid \
+            \ Boost pump: that call only needs *a* valid route to SSTOA to price a \
+            \ small residual fee slice for burning, not the *optimal* one — but it \
+            \ fires once per SmartSwap hop, so routing it through the same up-to-3x \
+            \ alternate-route search real swap execution uses multiplies cost by \
+            \ hop-count x 3 for no pricing benefit worth the gas. Do not use this for \
+            \ any live user-facing quote/execution path — those must keep using \
+            \ <URC_HopperActive> so users still get the best available route. \
+            \ #65fL Phase 8a fix: this was the one Hopper variant left completely \
+            \ untouched by #65bL Phases 1-7 — no PathCache check, no shared \
+            \ raw-graph. Now checks SWPT|PathCache first (URC_ReadPathCacheFresh), \
+            \ identically to URCx_Hopper's own Phase 1 pattern — on a fresh hit, \
+            \ skips the live BFS entirely and uses the cached node-path as the \
+            \ sole candidate, safe for the same reason Phase 1 established (the \
+            \ real per-hop edge is always re-derived live downstream in \
+            \ URCx_HopperForNodes against the <swpairs> active-only universe, \
+            \ regardless of where the node-path came from). Especially valuable \
+            \ here since this targets exactly the pair a bundle-assisted swap's \
+            \ own <boost-path> already warms in this same cache (#65bL Phase 6) — \
+            \ a self-searching swap running after one for the same input token \
+            \ gets this for free. On a miss, falls through to the unchanged live \
+            \ search."
+        (let
+            (
+                (ref-SWP:module{SwapperV4} SWP)
+                (ref-SWPT:module{SwapTracerV3} SWPT)
+                (swpairs:[string] (ref-SWP::URC_ActiveSwpairs))
+                (cached:object{SwapTracerV3.PathCacheRow}
+                    (ref-SWPT::URC_ReadPathCacheFresh hopper-input-id hopper-output-id)
+                )
+                (cached-nodes:[string] (at "nodes" cached))
+                (nodes:[string]
+                    (if (!= cached-nodes [BAR])
+                        cached-nodes
+                        (ref-SWPT::URC_ComputeGraphPath hopper-input-id hopper-output-id swpairs)
+                    )
+                )
+            )
+            (URCx_HopperForNodes nodes hopper-input-amount swpairs)
+        )
+    )
+    (defun URC_ValidatePathActive:bool (nodes:[string] edges:[string])
+        @doc "#34 Phase 7: active-required validation for the A->B execution route — \
+            \ SWPT's exists-only structural check (real edges, correctly connected, \
+            \ within the depth cap) PLUS every edge must be <can-swap>=true, since this \
+            \ route is actually walked with real user funds, unlike the boost/stoa-value \
+            \ pricing paths (SWPT::URC_ValidatePathStructure alone, exists-only, is \
+            \ sufficient for those — see the P3.0 split in the exhaustive-path-search \
+            \ HANDOFF doc)."
+        (let
+            (
+                (ref-SWPT:module{SwapTracerV3} SWPT)
+            )
+            (if (not (ref-SWPT::URC_ValidatePathStructure nodes edges))
+                false
+                (if (= (length edges) 0)
+                    true
+                    (let
+                        (
+                            (ref-SWP:module{SwapperV4} SWP)
+                        )
+                        (fold
+                            (lambda (acc:bool e:string) (and acc (ref-SWP::UR_CanSwap e)))
+                            true
+                            edges
+                        )
+                    )
+                )
+            )
+        )
+    )
+    (defun URCx_BestEdgeOf:string (ia:decimal i:string o:string edges:[string])
+        @doc "Shared best-edge-selection core for <URC_BestEdge>/<URC_BestEdgeFiltered> \
+            \ — identical in every respect except which <edges> candidate list is \
+            \ passed in. Internal only, not on the interface."
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                (svl:[decimal]
+                    (fold
+                        (lambda
+                            (acc:[decimal] idx:integer)
+                            (ref-U|LST::UC_AppL
+                                acc
+                                (URCv_Swap (at idx edges) (ref-U|SWP::UDC_DirectSwapInputData [i] [ia] o) false)
+                            )
+                        )
+                        []
+                        (enumerate 0 (- (length edges) 1))
+                    )
+                )
+                ;;C1 fix: keep the index with the LARGER output (argmax), not smaller (argmin) — "best"
+                ;;edge for a fixed input means most output, matching URC_Hopper's own documented intent.
+                (sp:integer
+                    (fold
+                        (lambda
+                            (acc:integer idx:integer)
+                            (if (= idx 0)
+                                acc
+                                (if (> (at idx svl) (at acc svl))
+                                    idx
+                                    acc
+                                )
+                            )
+                        )
+                        0
+                        (enumerate 0 (- (length svl) 1))
+                    )
+                )
+            )
+            (at sp edges)
+        )
+    )
+    (defun URC_BestEdge:string (ia:decimal i:string o:string)
+        @doc "Best edge across ALL swpairs connecting <i>/<o>, including disabled \
+            \ ones — matches <URC_Hopper>'s full-universe scope. Live \
+            \ swap-execution callers should use <URC_BestEdgeFiltered> instead."
+        (let
+            (
+                ;;#21H: SWPT no longer needs a principal list.
+                (ref-SWPT:module{SwapTracerV3} SWPT)
+            )
+            (URCx_BestEdgeOf ia i o (ref-SWPT::URC_Edges i o))
+        )
+    )
+    (defun URC_BestEdgeFiltered:string (ia:decimal i:string o:string swpairs:[string])
+        @doc "Best edge restricted to swpairs also present in <swpairs> — used by \
+            \ <URCx_Hopper> so a disabled parallel pool between the same token \
+            \ pair is never selected as the executed hop, even when an active \
+            \ parallel pool exists between the same two tokens (#19H)."
+        (let
+            (
+                ;;#21H: SWPT no longer needs a principal list.
+                (ref-SWPT:module{SwapTracerV3} SWPT)
+            )
+            (URCx_BestEdgeOf ia i o (ref-SWPT::URC_EdgesActive i o swpairs))
+        )
+    )
+    ;;Value Computations
+    (defun URC_SingleSSTOAWorthWSTOA:decimal ()
+        @doc "#65fL Phase 8b: SSTOA's own worth in WSTOA terms, per unit — the ATS \
+            \ autostake index (the 'liquid staking conversion, backwards'), zero \
+            \ graph search. Extracted as its own function, mirroring \
+            \ <URC_SingleOuroWorthWSTOA>, so <URCx_PrimordialValueAndOuroSupply> can \
+            \ call it directly instead of going through <URC_SingleWorthWSTOA>/ \
+            \ <URC_WorthWSTOA> — routing through those would create a genuine STATIC \
+            \ recursive cycle at compile time (URC_WorthWSTOA's own id==OURO branch \
+            \ calls into URCx_PrimordialValueAndOuroSupply), caught by Pact 5's own \
+            \ cycle detector when this was first wired that way — even though the \
+            \ actual runtime call chain (always SSTOA's own id here, which never \
+            \ re-enters the OURO branch) would never truly recurse. <URC_WorthWSTOA>'s \
+            \ own id==SSTOA branch also uses this now, instead of its own inline copy \
+            \ of the same lookup."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-ATS:module{AutostakeV3} ATS)
+                (sstoa:string (ref-DALOS::UR_SilverStoaID))
+                (ats-pairs-with-sstoa-id:[string] (ref-DPTF::UR_RewardBearingToken sstoa))
+                (stoaliquindex:string (at 0 ats-pairs-with-sstoa-id))
+            )
+            (ref-ATS::URC_Index stoaliquindex)
+        )
+    )
+    (defun URCx_PrimordialValueAndOuroSupply:[decimal] ()
+        @doc "#65fL Phase 8b: shared core extracted from <URC_OuroPrimordialPrice> — \
+            \ [<primordial-wstoa-value> <ouro-supply>], where <primordial-wstoa-value> \
+            \ is the primordial pool's total value in WSTOA-equivalent terms (native \
+            \ WSTOA reserve plus the SSTOA reserve converted via its own cheap \
+            \ index-based shortcut, URC_SingleSSTOAWorthWSTOA — zero graph search either \
+            \ way). \
+            \ #73C fix, scope note: originally shared by BOTH <URC_OuroPrimordialPrice> \
+            \ (dollar-denominated) and <URC_SingleOuroWorthWSTOA> (WSTOA-denominated) — \
+            \ the WSTOA-denominated side moved to a real 1-unit weighted-pool swap \
+            \ instead (see <URC_SingleOuroWorthWSTOA>'s own doc for why: this helper's \
+            \ ratio ignores the primordial pool's own weights, undervaluing OURO). \
+            \ <URC_OuroPrimordialPrice> is the only remaining caller. Flagged, not \
+            \ fixed here (out of scope — the WSTOA-denominated case is what surfaced \
+            \ this): <URC_OuroPrimordialPrice>'s own final division likely has the \
+            \ identical weight-omission issue, unverified, left for a follow-up. \
+            \ Internal only, not on the public interface."
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-SWP:module{SwapperV4} SWP)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                ;;
+                (primordial:string (ref-SWP::UR_PrimordialPool))
+                (pts:[decimal] (ref-SWP::UR_PoolTokenSupplies primordial))
+                ;;
+                (sstoa:string (ref-DALOS::UR_SilverStoaID))
+                (sstoa-supply:decimal (at 0 pts))
+                (ouro-supply:decimal (at 1 pts))
+                (wstoa-supply:decimal (at 2 pts))
+                ;;
+                (sstoa-prec:integer (ref-DPTF::UR_Decimals sstoa))
+                (sstoa-in-wstoa:decimal (URC_SingleSSTOAWorthWSTOA))
+                (sstoa-in-wstoa-value (floor (* sstoa-supply sstoa-in-wstoa) sstoa-prec))
+                (primordial-wstoa-value:decimal (+ wstoa-supply sstoa-in-wstoa-value))
+            )
+            [primordial-wstoa-value ouro-supply]
+        )
+    )
+    (defun URC_OuroPrimordialPrice:decimal ()
+        @doc "OURO's price in dollars. \
+            \ #73C-TWIN FIX (2026-09-17): this used to compute its own flat reserve ratio -- \
+            \ (primordial-wstoa-value * stoa-pid) / ouro-supply -- which READ NO WEIGHT and so \
+            \ silently assumed the primordial pool was equal-weighted. It cannot be: \
+            \ SWP|C>DEFINE-PRIMORDIAL-POOL enforces a WEIGHTED pool of exactly three tokens, and \
+            \ genesis ships [SSTOA 0.3, OURO 0.5, WSTOA 0.2]. Measured before the fix, with \
+            \ reserves held constant and weights varied through the live C_ModifyWeights path, \
+            \ the old output was BIT-IDENTICAL across [0.4 0.4 0.2], [0.2 0.6 0.2] and genesis \
+            \ [0.3 0.5 0.2] -- it did not move one digit across three weightings of the pool it \
+            \ prices. Error at genesis weights: -38.65%, reproducing #73C's independently \
+            \ measured ~38% on the WSTOA twin, which is the same bug this is the twin of. \
+            \ It reached the OURO oracle write, DEMIPAD launchpad payments and the Explorer. \
+            \ The fix DELEGATES rather than re-deriving: URC_TokenDollarPrice -> \
+            \ URC_SingleWorthWSTOA -> URC_WorthWSTOA's OURO short-circuit -> \
+            \ URC_SingleOuroWorthWSTOA, a real 1-unit weighted swap through UC_ComputeWP -- the \
+            \ only math in the family that consumes (at \"weights\" drsi). That path is #73C's \
+            \ own repair, already live and already proven, so this carries no new arithmetic. \
+            \ See DEFECT-LEDGER 8.1."
+        (let
+            (
+                (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
+                (ids:object{OuronetDalosV2.CanonicalStoaIds} (ref-DALOS::UR_CanonicalStoaIds))
+            )
+            (URC_TokenDollarPrice (at "gas-source-id" ids) stoa-pid)
+        )
+    )
+    (defun URC_SingleOuroWorthWSTOA:decimal (ouro:string wstoa:string)
+        @doc "#73C fix: OURO's own worth in WSTOA, per unit — a real 1-unit swap \
+            \ through the primordial pool's own weighted-pool math (URC_W-Swap, the \
+            \ exact same UC_ComputeWP invariant a live swap would use), instead of the \
+            \ old hand-rolled <primordial-wstoa-value / ouro-supply> ratio. The old \
+            \ formula was mathematically wrong for THIS pool, not just approximate: it \
+            \ implicitly assumed every token in the primordial pool carries equal \
+            \ weight, but the pool is genuinely weighted (SSTOA 0.3 / OURO 0.5 / WSTOA \
+            \ 0.2 at issuance) — a weighted pool's real exchange rate depends on \
+            \ reserve/weight ratios, not a flat sum-of-other-reserves-over-own-reserve \
+            \ ratio. Confirmed live: the old formula returned 91.95 WSTOA for 100 OURO \
+            \ against real reserves [sstoa=3200.0 ouro=10002.0 wstoa=5997.009] and \
+            \ weights [0.3 0.5 0.2], while the weighted spot formula \
+            \ ((wstoa/wstoa_w)/(ouro/ouro_w)) gives ~149.9, matching the pre-existing \
+            \ graph-search fallback's 147.31 (the small remainder being real, correctly \
+            \ modeled AMM slippage from an actual ~1%-of-reserves trade — see \
+            \ URC_WorthWSTOA's own doc for why THAT part is now handled at the caller, \
+            \ not here). Still zero graph search: OURO and WSTOA are direct pool \
+            \ siblings in the SAME primordial pool, this is one single-hop direct-pool \
+            \ swap computation, not a BFS route search. <ouro>/<wstoa> passed in by the \
+            \ caller (not self-fetched) — every real caller already holds them via \
+            \ DALOS::UR_CanonicalStoaIds, so this adds no new read."
+        (let
+            (
+                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                (ref-SWP:module{SwapperV4} SWP)
+                (primordial:string (ref-SWP::UR_PrimordialPool))
+            )
+            (URC_W-Swap primordial (ref-U|SWP::UDC_DirectSwapInputData [ouro] [1.0] wstoa))
+        )
+    )
+    (defun URC_TokenDollarPrice (id:string stoa-pid:decimal)
+        @doc "Retrieves Token Price in Dollars, via DIA Oracle that outputs STOA Price"
+        ;;<stoa-pid> or <stoa-price-in-dollars> can be retrieved prior to the function call with:
+        ;;(at "value" (n_bfb76eab37bf8c84359d6552a1d96a309e030b71.dia-oracle.get-value "STOA/USD"))
+        ;;This function is structured like this, to allow price retrieval from any source.
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (id-in-stoa:decimal (URC_SingleWorthWSTOA id))
+                (id-precision:integer (ref-DPTF::UR_Decimals id))
+            )
+            (floor (* id-in-stoa stoa-pid) id-precision)
+        )
+    )
+    (defun URC_SingleWorthWSTOA (id:string)
+        (URC_WorthWSTOA id 1.0)
+    )
+    (defun URC_WorthWSTOA (id:string amount:decimal)
+        @doc "#65fL Phase 8b fix: added an id==OURO short-circuit (URC_SingleOuroWorthWSTOA, \
+            \ straight off the primordial pool's own reserves), zero graph search — same \
+            \ shape as the pre-existing id==SSTOA short-circuit below. WSTOA/SSTOA/OURO are the \
+            \ only tokens with a canonical zero-search pricing mechanism; every other id \
+            \ still falls through to the graph-search branch. The OURO shortcut only fires \
+            \ when a primordial pool has actually been defined (SWP::UR_PrimordialPool != \
+            \ BAR, checked via a short-circuited `and` so this extra read only happens for \
+            \ id==OURO, never for any other id) — SAFETY, not a guess: caught live, a real \
+            \ pre-bootstrap crash reading an unset primordial pool during that very pool's \
+            \ OWN issuance (UEV_Issue's spawn-limit check prices the first token before any \
+            \ primordial pool could exist yet). Falls through to the exact original \
+            \ graph-search behavior when unsafe — matches pre-Phase-8b behavior byte for \
+            \ byte in that edge case, not a new approximation. Fetches WSTOA/SSTOA/OURO via \
+            \ DALOS::UR_CanonicalStoaIds — ONE read for all 3, instead of 3 independent \
+            \ reads of the same DALOS row — caught live: adding a naive 3rd standalone \
+            \ UR_OuroborosID call regressed the P0.5/P2-scale worst-case checkpoints \
+            \ (measured +928 gas) despite neither pool ever pricing OURO/SSTOA in that \
+            \ scenario, isolated via git-stash bisection before this fix, not guessed. \
+            \ #73C fix: the graph-search fallback below now prices ONE unit and scales \
+            \ linearly, instead of simulating a swap of the full <amount> — see the \
+            \ fallback branch's own comment for why (depth-skew: 'worth of N tokens' is \
+            \ not N times 'worth of 1 token' once a simulated swap eats meaningfully into \
+            \ pool depth, and URC_PoolValue's own caller passes an ENTIRE pool reserve as \
+            \ <amount>, not a small swap-sized figure)."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-SWP:module{SwapperV4} SWP)
+                (ids:object{OuronetDalosV2.CanonicalStoaIds} (ref-DALOS::UR_CanonicalStoaIds))
+                (wstoa:string (at "wrapped-stoa-id" ids))
+                (sstoa:string (at "silver-stoa-id" ids))
+                (ouro:string (at "gas-source-id" ids))
+            )
+            (if (= id wstoa)
+                amount
+                (if (= id sstoa)
+                    (let
+                        (
+                            (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                            (index-value:decimal (URC_SingleSSTOAWorthWSTOA))
+                            (sstoa-prec:integer (ref-DPTF::UR_Decimals sstoa))
+                        )
+                        (floor (* amount index-value) sstoa-prec)
+                    )
+                    (if (and (= id ouro) (!= (ref-SWP::UR_PrimordialPool) BAR))
+                        (let
+                            (
+                                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                                (ouro-worth-per-unit:decimal (URC_SingleOuroWorthWSTOA ouro wstoa))
+                                (ouro-prec:integer (ref-DPTF::UR_Decimals ouro))
+                            )
+                            (floor (* amount ouro-worth-per-unit) ouro-prec)
+                        )
+                        ;;#73C fix: price ONE unit via the real route (URC_Hopper amount=1.0,
+                        ;;not <amount>), then scale linearly — never simulate a swap of the
+                        ;;full requested <amount>, since a real swap of a large amount eats
+                        ;;into pool depth (AMM slippage), so "worth of N" would come out
+                        ;;systematically LESS than N times "worth of 1," most severely
+                        ;;exactly where this function is actually called from
+                        ;;(URC_PoolValue prices a pool's ENTIRE first-token reserve this
+                        ;;way). "1 unit" is an accepted, unavoidable approximation of the
+                        ;;true marginal/instantaneous spot price (an exact closed-form
+                        ;;derivative isn't implemented anywhere in this codebase and isn't
+                        ;;worth building for this) — computing at a smaller-than-1 amount
+                        ;;isn't meaningful once atomic-unit precision is reached.
+                        (let
+                            (
+                                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                                (h-obj:object{SwapperIssueV4.Hopper} (URC_Hopper id wstoa 1.0))
+                                (ovs:[decimal] (at "output-values" h-obj))
+                                (per-unit-worth:decimal (if (= (length ovs) 0) 0.0 (at 0 (take -1 ovs))))
+                                (id-prec:integer (ref-DPTF::UR_Decimals id))
+                            )
+                            (floor (* amount per-unit-worth) id-prec)
+                        )
+                    )
+                )
+            )
+        )
+    )
+    (defun URC_WorthWSTOAFromRaw (id:string amount:decimal raw-graph:[object{SwapTracerV3.RawGraphNode}])
+        @doc "#65bL Phase 4 fix: <URC_WorthWSTOA>, sourcing any graph search it needs \
+            \ via an ALREADY-FETCHED <raw-graph> (<URC_HopperFromRaw>) instead of a \
+            \ fresh self-fetch — see <URCx_HopperFromRaw>'s own doc for the full \
+            \ rationale (repricing-loop sharing). The WSTOA/SSTOA short-circuit branches \
+            \ never needed a graph search to begin with and stay unchanged. \
+            \ #65fL Phase 8b fix: added the same id==OURO short-circuit \
+            \ <URC_WorthWSTOA> gained (URC_SingleOuroWorthWSTOA) — also never needed a \
+            \ graph search. Same pre-bootstrap safety guard too: only fires when \
+            \ a primordial pool has actually been defined, see <URC_WorthWSTOA>'s \
+            \ own doc for the crash this closes."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-SWP:module{SwapperV4} SWP)
+                (ids:object{OuronetDalosV2.CanonicalStoaIds} (ref-DALOS::UR_CanonicalStoaIds))
+                (wstoa:string (at "wrapped-stoa-id" ids))
+                (sstoa:string (at "silver-stoa-id" ids))
+                (ouro:string (at "gas-source-id" ids))
+            )
+            (if (= id wstoa)
+                amount
+                (if (= id sstoa)
+                    (let
+                        (
+                            (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                            (index-value:decimal (URC_SingleSSTOAWorthWSTOA))
+                            (sstoa-prec:integer (ref-DPTF::UR_Decimals sstoa))
+                        )
+                        (floor (* amount index-value) sstoa-prec)
+                    )
+                    (if (and (= id ouro) (!= (ref-SWP::UR_PrimordialPool) BAR))
+                        (let
+                            (
+                                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                                (ouro-worth-per-unit:decimal (URC_SingleOuroWorthWSTOA ouro wstoa))
+                                (ouro-prec:integer (ref-DPTF::UR_Decimals ouro))
+                            )
+                            (floor (* amount ouro-worth-per-unit) ouro-prec)
+                        )
+                        ;;#73C fix: price ONE unit, scale linearly — see URC_WorthWSTOA's
+                        ;;own comment on this same branch for the full rationale.
+                        (let
+                            (
+                                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                                (h-obj:object{SwapperIssueV4.Hopper} (URC_HopperFromRaw id wstoa 1.0 raw-graph))
+                                (ovs:[decimal] (at "output-values" h-obj))
+                                (per-unit-worth:decimal (if (= (length ovs) 0) 0.0 (at 0 (take -1 ovs))))
+                                (id-prec:integer (ref-DPTF::UR_Decimals id))
+                            )
+                            (floor (* amount per-unit-worth) id-prec)
+                        )
+                    )
+                )
+            )
+        )
+    )
+    (defun URC_WorthWSTOAFromGraph (id:string amount:decimal graph:[object{BreadthFirstSearchV2.GraphNode}])
+        @doc "#65bL Phase 7 fix: <URC_WorthWSTOA>, sourcing any graph search it needs \
+            \ via an ALREADY-BUILT <graph> (<URC_HopperFromGraph>) instead of \
+            \ rebuilding it from <raw-graph> per call — see \
+            \ <URCx_HopperFromGraph>'s own doc for the full rationale (repricing- \
+            \ loop graph-build sharing). The WSTOA/SSTOA short-circuit branches never \
+            \ needed a graph search to begin with and stay unchanged. \
+            \ #65fL Phase 8b fix: added the same id==OURO short-circuit \
+            \ <URC_WorthWSTOA> gained (URC_SingleOuroWorthWSTOA) — also never needed a \
+            \ graph search. Same pre-bootstrap safety guard too: only fires when \
+            \ a primordial pool has actually been defined, see <URC_WorthWSTOA>'s \
+            \ own doc for the crash this closes."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-SWP:module{SwapperV4} SWP)
+                (ids:object{OuronetDalosV2.CanonicalStoaIds} (ref-DALOS::UR_CanonicalStoaIds))
+                (wstoa:string (at "wrapped-stoa-id" ids))
+                (sstoa:string (at "silver-stoa-id" ids))
+                (ouro:string (at "gas-source-id" ids))
+            )
+            (if (= id wstoa)
+                amount
+                (if (= id sstoa)
+                    (let
+                        (
+                            (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                            (index-value:decimal (URC_SingleSSTOAWorthWSTOA))
+                            (sstoa-prec:integer (ref-DPTF::UR_Decimals sstoa))
+                        )
+                        (floor (* amount index-value) sstoa-prec)
+                    )
+                    (if (and (= id ouro) (!= (ref-SWP::UR_PrimordialPool) BAR))
+                        (let
+                            (
+                                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                                (ouro-worth-per-unit:decimal (URC_SingleOuroWorthWSTOA ouro wstoa))
+                                (ouro-prec:integer (ref-DPTF::UR_Decimals ouro))
+                            )
+                            (floor (* amount ouro-worth-per-unit) ouro-prec)
+                        )
+                        ;;#73C fix: price ONE unit, scale linearly — see URC_WorthWSTOA's
+                        ;;own comment on this same branch for the full rationale.
+                        (let
+                            (
+                                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                                (h-obj:object{SwapperIssueV4.Hopper} (URC_HopperFromGraph id wstoa 1.0 graph))
+                                (ovs:[decimal] (at "output-values" h-obj))
+                                (per-unit-worth:decimal (if (= (length ovs) 0) 0.0 (at 0 (take -1 ovs))))
+                                (id-prec:integer (ref-DPTF::UR_Decimals id))
+                            )
+                            (floor (* amount per-unit-worth) id-prec)
+                        )
+                    )
+                )
+            )
+        )
+    )
+    (defun URC_PoolValue:[decimal] (swpair:string)
+        @doc "Outputs the Pool Value in WSTOA. \
+            \ If the Pool is empty, even though its value is technically zero, \
+            \ The Value of the Genesis Initiation is outputed \
+            \ PoolValue includes two decimal values: \
+            \ 1st Value: Total Value of the Pool in WSTOA \
+            \ 2nd Value: Value of 1 LP Token in WSTOA"
+        (let
+            (
+                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-SWP:module{SwapperV4} SWP)
+                ;;
+                (current-lp-supply:decimal (ref-SWP::URC_LpCapacity swpair))
+                (lp-supply:decimal
+                    (if (= current-lp-supply 0.0)
+                        10000000.0
+                        current-lp-supply
+                    )
+                )
+                (pool-token-supplies:[decimal]
+                    (if (= current-lp-supply 0.0)
+                        (ref-SWP::UR_PoolGenesisSupplies swpair)
+                        (ref-SWP::UR_PoolTokenSupplies swpair)
+                    )
+                )
+                (w:[decimal]
+                    (if (= current-lp-supply 0.0)
+                        (ref-SWP::UR_GenesisWeigths swpair)
+                        (ref-SWP::UR_Weigths swpair)
+                    )
+                )
+                ;;
+                (pool-type:string (ref-U|SWP::UC_PoolType swpair))
+                (pool-tokens:[string] (ref-SWP::UR_PoolTokens swpair))
+                (how-many:integer (length pool-tokens))
+                (lp-prec:integer (ref-DPTF::UR_Decimals (ref-SWP::UR_TokenLP swpair)))
+                ;;
+                (first-token:string (at 0 pool-tokens))
+                (first-token-supply:decimal (at 0 pool-token-supplies))
+                (first-token-precision:integer (ref-DPTF::UR_Decimals first-token))
+                (first-weigth:decimal (at 0 w))
+                (first-worth:decimal (URC_WorthWSTOA first-token first-token-supply))
+                ;;
+                (pool-worth:decimal
+                    (if (or (= pool-type "S") (= pool-type "P"))
+                        (floor (* (dec how-many) first-worth) first-token-precision)
+                        (floor (/ first-worth first-weigth) first-token-precision)
+                    )
+                )
+                (lp-worth:decimal
+                    (floor (/ pool-worth lp-supply) lp-prec)
+                )
+            )
+            [pool-worth lp-worth]
+        )
+    )
+    (defun URC_PoolValueFromRaw:[decimal] (swpair:string raw-graph:[object{SwapTracerV3.RawGraphNode}])
+        @doc "#65bL Phase 4 fix: <URC_PoolValue>, sourcing its <URC_WorthWSTOA> call via \
+            \ an ALREADY-FETCHED <raw-graph> (<URC_WorthWSTOAFromRaw>) instead of a \
+            \ fresh self-fetch. Built for the STOA-repricing loop \
+            \ (TS01-C3::SWP|CC_SmartSwap{With,No}Slippage, one URC_PoolValue call per \
+            \ distinct pool a self-searching swap touched) — every call in that loop \
+            \ now shares ONE raw-graph fetch instead of each one independently \
+            \ re-reading and rebuilding the whole graph, same shape of win Phase 2 \
+            \ already proved for a single Hopper call's own best-of-3 attempts, \
+            \ extended here across the WHOLE loop's separate calls. Everything else \
+            \ (genesis-vs-live supply/weight selection, pool-worth/lp-worth formulas) \
+            \ is byte-for-byte identical to <URC_PoolValue> — only the one \
+            \ <first-worth> line changes."
+        (let
+            (
+                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-SWP:module{SwapperV4} SWP)
+                ;;
+                (current-lp-supply:decimal (ref-SWP::URC_LpCapacity swpair))
+                (lp-supply:decimal
+                    (if (= current-lp-supply 0.0)
+                        10000000.0
+                        current-lp-supply
+                    )
+                )
+                (pool-token-supplies:[decimal]
+                    (if (= current-lp-supply 0.0)
+                        (ref-SWP::UR_PoolGenesisSupplies swpair)
+                        (ref-SWP::UR_PoolTokenSupplies swpair)
+                    )
+                )
+                (w:[decimal]
+                    (if (= current-lp-supply 0.0)
+                        (ref-SWP::UR_GenesisWeigths swpair)
+                        (ref-SWP::UR_Weigths swpair)
+                    )
+                )
+                ;;
+                (pool-type:string (ref-U|SWP::UC_PoolType swpair))
+                (pool-tokens:[string] (ref-SWP::UR_PoolTokens swpair))
+                (how-many:integer (length pool-tokens))
+                (lp-prec:integer (ref-DPTF::UR_Decimals (ref-SWP::UR_TokenLP swpair)))
+                ;;
+                (first-token:string (at 0 pool-tokens))
+                (first-token-supply:decimal (at 0 pool-token-supplies))
+                (first-token-precision:integer (ref-DPTF::UR_Decimals first-token))
+                (first-weigth:decimal (at 0 w))
+                (first-worth:decimal (URC_WorthWSTOAFromRaw first-token first-token-supply raw-graph))
+                ;;
+                (pool-worth:decimal
+                    (if (or (= pool-type "S") (= pool-type "P"))
+                        (floor (* (dec how-many) first-worth) first-token-precision)
+                        (floor (/ first-worth first-weigth) first-token-precision)
+                    )
+                )
+                (lp-worth:decimal
+                    (floor (/ pool-worth lp-supply) lp-prec)
+                )
+            )
+            [pool-worth lp-worth]
+        )
+    )
+    (defun URC_PoolValueFromGraph:[decimal] (swpair:string graph:[object{BreadthFirstSearchV2.GraphNode}])
+        @doc "#65bL Phase 7 fix: <URC_PoolValue>, sourcing its <URC_WorthWSTOA> call via \
+            \ an ALREADY-BUILT <graph> (<URC_WorthWSTOAFromGraph>) instead of \
+            \ rebuilding it from <raw-graph> per call. Built for the STOA-repricing \
+            \ loop (TS01-C3::SWP|CC_SmartSwap{With,No}Slippage) — every call in that \
+            \ loop already shared ONE raw-graph fetch (Phase 4); this shares the \
+            \ downstream graph-BUILD too (SWPT::UC_MakeGraphFromRaw, a linear scan \
+            \ per node in the whole topology, previously rebuilt identically on \
+            \ every one of the loop's N distinct-first-token queries despite always \
+            \ producing byte-identical output for the same <raw-graph>/<swpairs> \
+            \ universe). Everything else (genesis-vs-live supply/weight selection, \
+            \ pool-worth/lp-worth formulas) is byte-for-byte identical to \
+            \ <URC_PoolValue>/<URC_PoolValueFromRaw> — only the one <first-worth> \
+            \ line changes."
+        (let
+            (
+                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-SWP:module{SwapperV4} SWP)
+                ;;
+                (current-lp-supply:decimal (ref-SWP::URC_LpCapacity swpair))
+                (lp-supply:decimal
+                    (if (= current-lp-supply 0.0)
+                        10000000.0
+                        current-lp-supply
+                    )
+                )
+                (pool-token-supplies:[decimal]
+                    (if (= current-lp-supply 0.0)
+                        (ref-SWP::UR_PoolGenesisSupplies swpair)
+                        (ref-SWP::UR_PoolTokenSupplies swpair)
+                    )
+                )
+                (w:[decimal]
+                    (if (= current-lp-supply 0.0)
+                        (ref-SWP::UR_GenesisWeigths swpair)
+                        (ref-SWP::UR_Weigths swpair)
+                    )
+                )
+                ;;
+                (pool-type:string (ref-U|SWP::UC_PoolType swpair))
+                (pool-tokens:[string] (ref-SWP::UR_PoolTokens swpair))
+                (how-many:integer (length pool-tokens))
+                (lp-prec:integer (ref-DPTF::UR_Decimals (ref-SWP::UR_TokenLP swpair)))
+                ;;
+                (first-token:string (at 0 pool-tokens))
+                (first-token-supply:decimal (at 0 pool-token-supplies))
+                (first-token-precision:integer (ref-DPTF::UR_Decimals first-token))
+                (first-weigth:decimal (at 0 w))
+                (first-worth:decimal (URC_WorthWSTOAFromGraph first-token first-token-supply graph))
+                ;;
+                (pool-worth:decimal
+                    (if (or (= pool-type "S") (= pool-type "P"))
+                        (floor (* (dec how-many) first-worth) first-token-precision)
+                        (floor (/ first-worth first-weigth) first-token-precision)
+                    )
+                )
+                (lp-worth:decimal
+                    (floor (/ pool-worth lp-supply) lp-prec)
+                )
+            )
+            [pool-worth lp-worth]
+        )
+    )
+    (defun URC_DirectRefillAmounts:[decimal] (swpair:string ids:[string] amounts:[decimal])
+        @doc "Refill incomplete amount values with zeros, to create an amount list equal to the <swpair> token number"
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (ref-SWP:module{SwapperV4} SWP)
+                (pool-tokens:[string] (ref-SWP::UR_PoolTokens swpair))
+            )
+            (fold
+                (lambda
+                    (acc:[decimal] idx:integer)
+                    (let
+                        (
+                            (pt:string (at idx pool-tokens))
+                            (spt:[integer] (ref-U|LST::UC_Search ids pt))
+                            (pos:integer
+                                (if (> (length spt) 0)
+                                    (at 0 spt)
+                                    -1
+                                )
+                            )
+                            (value:decimal
+                                (if (= pos -1)
+                                    0.0
+                                    (at pos amounts)
+                                )
+                            )
+                        )
+                        (ref-U|LST::UC_AppL acc value)
+                    )
+                )
+                []
+                (enumerate 0 (- (length pool-tokens) 1))
+            )
+        )
+    )
+    (defun URC_IndirectRefillAmounts:[decimal] (X:[decimal] positions:[integer] amounts:[decimal])
+        @doc "Refill incomplete amount values with zeros, to create an amount equal to the <X> positions number"
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+            )
+            (fold
+                (lambda
+                    (acc:[decimal] idx:integer)
+                    (let
+                        (
+                            (spt:[integer] (ref-U|LST::UC_Search positions idx))
+                            (pos:integer
+                                (if (> (length spt) 0)
+                                    (at 0 spt)
+                                    -1
+                                )
+                            )
+                            (value:decimal
+                                (if (= pos -1)
+                                    0.0
+                                    (at pos amounts)
+                                )
+                            )
+                        )
+                        (ref-U|LST::UC_AppL acc value)
+                    )
+                )
+                []
+                (enumerate 0 (- (length X) 1))
+            )
+        )
+    )
+    (defun URC_TrimIdsWithZeroAmounts:[string] (swpair:string input-amounts:[decimal])
+        @doc "From a complete list of input amounts, also containing zeroes, \
+            \ creates a list of Pool Token IDs for the amounts greater than zero."
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (ref-SWP:module{SwapperV4} SWP)
+                (pool-tokens:[string] (ref-SWP::UR_PoolTokens swpair))
+                (zero-positions:[integer] (ref-U|LST::UC_Search input-amounts 0.0))
+            )
+            (fold
+                (lambda
+                    (acc:[string] idx:integer)
+                    (let
+                        (
+                            (iz-index-zero:bool (contains idx zero-positions))
+                        )
+                        (if (not iz-index-zero)
+                            (ref-U|LST::UC_AppL
+                                acc
+                                (at idx pool-tokens)
+                            )
+                            acc
+                        )
+                    )
+                )
+                []
+                (enumerate 0 (- (length input-amounts) 1))
+            )
+        )
+    )
+    (defun URCi_IssueStoa:decimal ()
+        @doc "STOA leg of a SINGLE-TX swap-pair issue. Read-only twin of the <stoa-costs> that \
+            \ C_Issue hands to XE_CollectStoa, so the exec and its INFO_ previews are sourced from \
+            \ one place and cannot drift. \
+            \ NOTE this is deliberately NOT the same figure as the DEFPACT pool-issue path: \
+            \ MTX-SWP charges (+ UsagePrice \"dptf\" \"swp\") while this charges \
+            \ UC_StoaPrice \"issue-swp-pair\". The two paths really do cost different amounts, and \
+            \ all six INFO_SWP|Issue* previews used to quote the MTX figure for both -- over-quoting \
+            \ the single-tx path. Mirrors ATS::URCi_IssueStoa. \
+            \ Pinned by `Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl <<SWP-ISSUE-INFO>>`."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+            )
+            (ref-IGNIS::UC_StoaPrice "issue-swp-pair")
+        )
+    )
+    (defun URC_IssuePoolIgnis:decimal ()
+        @doc "The ONE-leg IGNIS total the MULTI-STEP (defpact) pool issuance bills in \
+            \ MTX-SWP::MTX|C_Issue step 2. Lives here, beside URCi_Issue, so the preview and the \
+            \ exec read the SAME number from the SAME place: MTX-SWP deploys after SWPI, so the \
+            \ exec can call down to this, and INFO_SWP|Issue*Pool previews through URCi_IssuePool. \
+            \ ADDED 2026-09-14 with the GS-04 repair -- see URCi_IssuePool."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+            )
+            (fold (+) 0.0
+                [
+                    (ref-IGNIS::UC_IgnisDeter "issue-swp-pair")
+                    (ref-IGNIS::UC_IgnisLeg "tier-token-issue")
+                    (ref-IGNIS::UC_IgnisLeg "tier-biggest")
+                    (ref-IGNIS::UC_IgnisLeg "tier-smallest")
+                ]
+            )
+        )
+    )
+    (defun URCi_IssuePool:object{IgnisCollectorV3.OutputCumulator}
+        (account:string pool-tokens:[object{SwapperV4.PoolTokens}])
+        @doc "Cost preview for the MULTI-STEP pool issuance -- MTX-SWP::MTX|C_Issue -- as opposed \
+            \ to URCi_Issue below, which previews the SINGLE-TX SWPI::C_Issue. TWO legs, matching \
+            \ that step's concat exactly: the folded one-leg total (URC_IssuePoolIgnis) and the \
+            \ account->SWP pool-token multi-transfer. \
+            \ GS-04 (2026-09-14): the three INFO_SWP|Issue*Pool previews used to route through \
+            \ URCi_Issue, which is tuned to the single-tx exec -- FOUR non-transfer legs totalling \
+            \ 6158 against the defpact's ONE leg of 5506, an over-quote of 652. The leg COUNT \
+            \ mattered independently: UDC_PrimeIgnisCumulator discounts and quarter-splits PER LEG, \
+            \ so even equal totals could round apart. The tell was a dead `op-key` parameter, still \
+            \ in URCi_Issue's signature and used nowhere in its body -- one reader serving two \
+            \ executions that bill differently, the same shape as the red team's RT-A-001. \
+            \ Measured, not reasoned about, at modules/DEFPACT-BILLING.repl <<DPB-02>>."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-SWP:module{SwapperV4} SWP)
+                ;;
+                (pool-token-ids:[string] (ref-SWP::UC_ExtractTokens pool-tokens))
+                (pool-token-amounts:[decimal] (ref-SWP::UC_ExtractTokenSupplies pool-tokens))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (ref-IGNIS::UDC_ConstructOutputCumulator
+                        (URC_IssuePoolIgnis) SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []
+                    )
+                    (ref-TFT::URCi_MultiTransferCumulator
+                        pool-token-ids account SWP|SC_NAME pool-token-amounts
+                    )
+                ]
+                []
+            )
+        )
+    )
+    (defun URCi_Issue:object{IgnisCollectorV3.OutputCumulator}
+        (account:string pool-tokens:[object{SwapperV4.PoolTokens}])
+        @doc "Cost preview for the SINGLE-TX C_Issue's IGNIS cumulator (the STOA dptf+swp usage prices are \
+            \ billed separately). Five legs, matching C_Issue's concat: \
+            \ ico1 = LP-token issue gas (URCi_IssueGas 1 on SWP); \
+            \ ico2 = the account->SWP pool-token multi-transfer (EXISTING tokens, real reader); \
+            \ ico3 = the genesis LP mint (origin -> biggest on SWP); \
+            \ ico4 = the SWP->account LP transfer-out (fresh LP is fee-toggle-off => class-1 \
+            \        Simple => smallest); \
+            \ ico5 = the flat swp-issue gas. \
+            \ ico3/ico4 are reconstructed from XE_IssueLP's FIXED LP invariants (issued via \
+            \ XB_IssueFree with fee-toggle off, so a fresh LP always transfers as class 1) rather \
+            \ than calling URCi_Mint/URCi_Transfer, because the LP id is a block-hash write product \
+            \ that does not exist at preview time. Every trigger reduces to the GLOBAL \
+            \ URC_IsVirtualGasZero: URC_IsVirtualGasZeroAbsolutely on a non-gas id is global, \
+            \ SWP is not in GAS_EXCEPTION, and <account> is a normal (non-exempt) account. \
+            \ Output ([swpair token-lp]) is empty here (write products)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-SWP:module{SwapperV4} SWP)
+                ;;
+                (pool-token-ids:[string] (ref-SWP::UC_ExtractTokens pool-tokens))
+                (pool-token-amounts:[decimal] (ref-SWP::UC_ExtractTokenSupplies pool-tokens))
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                (swp-sc:string SWP|SC_NAME)
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (ref-IGNIS::UDC_ConstructOutputCumulator (ref-DPTF::URCi_IssueGas 1) swp-sc trigger [])
+                    (ref-TFT::URCi_MultiTransferCumulator pool-token-ids account swp-sc pool-token-amounts)
+                    ;;ico3 — the genesis LP mint. The LP id is a block-hash write product that does
+                    ;;not exist at preview time, so we cannot call URCi_Mint on it; we charge the
+                    ;;SAME PRICE it would return. This MUST track DPTF|C_Mint: it was a hardcoded
+                    ;;"tier-biggest" (5) and silently desynced when C_Mint was re-priced to its real
+                    ;;computation (87), leaving the preview 82 BELOW what the exec charges.
+                    (ref-IGNIS::UDC_ConstructOutputCumulator
+                        (ref-IGNIS::UC_IgnisPrice "DPTF|C_Mint" "usage") swp-sc trigger [])
+                    ;;ico4 — the SWP->account LP transfer-out. A fresh LP is fee-toggle-off, so it
+                    ;;always transfers as class-1 Simple = smallest.
+                    (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisLeg "tier-smallest") swp-sc trigger [])
+                    ;;ico5 — MUST equal what C_Issue bills, which is the DETERRENCE ALONE. Using
+                    ;;UC_IgnisPrice here added the op's 35-point component cost to the preview only,
+                    ;;overstating it by 35. A preview's job is to equal the exec, not to be the
+                    ;;price we think the exec ought to charge.
+                    (ref-IGNIS::UDC_ConstructOutputCumulator
+                        (ref-IGNIS::UC_IgnisDeter "issue-swp-pair") swp-sc trigger [])
+                ]
+                []
+            )
+        )
+    )
+    ;;{5.4}  Validate [UEV/CAP]
+    (defun UEV_SwapData 
+        (swpair:string dsid:object{UtilitySwpV2.DirectSwapInputData})
+        (let
+            (
+                ;;Unwrap Object Data
+                (input-ids:[string] (at "input-ids" dsid))
+                (input-amounts:[decimal] (at "input-amounts" dsid))
+                (output-id:string (at "output-id" dsid))
+                ;;
+                (ref-U|INT:module{OuronetIntegersV2} U|INT)
+                (ref-SWP:module{SwapperV4} SWP)
+                (pool-tokens:[string] (ref-SWP::UR_PoolTokens swpair))
+                (l1:integer (length input-ids))
+                (l2:integer (length input-amounts))
+                (l3:integer (length pool-tokens))
+                (lengths:[integer] [l1 l2])
+                (iz-on-pool:bool (ref-SWP::UEV_CheckAgainst input-ids pool-tokens))
+                (t1:bool (contains output-id input-ids))
+                (t2:bool (contains output-id pool-tokens))
+            )
+            (ref-U|INT::UEV_UniformList lengths)
+            (enforce iz-on-pool "Input Tokens are not part of the pool")
+            (enforce (not t1) "Output-ID cannot be within the Input-IDs")
+            (enforce t2 "OutputID is not part of Swpair Tokens")
+            (enforce (and (>= l2 1) (< l2 l3)) "Incorrect amount of swap Tokens")
+        )
+    )
+    (defun UEV_InverseSwapData 
+        (swpair:string rsid:object{UtilitySwpV2.ReverseSwapInputData})
+        (let
+            (
+                ;;Unwrap Object Data
+                (output-id:string (at "output-id" rsid))
+                (output-amount:decimal (at "output-amount" rsid))
+                (input-id:string (at "input-id" rsid))
+                ;;
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-SWP:module{SwapperV4} SWP)
+                (pool-tokens:[string] (ref-SWP::UR_PoolTokens swpair))
+                (t1:bool (contains input-id pool-tokens))
+                (t2:bool (contains output-id pool-tokens))
+            )
+            (enforce (and t1 t2) "Invalid Pool Tokens")
+            (ref-DPTF::UEV_Amount output-id output-amount)
+        )
+    )
+    (defun UEV_Issue
+        (account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool)
+        @doc "#74 note (2026-08-29): deliberately does NOT enforce that <pool-tokens>' \
+            \ token IDs are distinct — that protection already exists, composed for \
+            \ free, one layer down. Both real issuance paths (this function, via \
+            \ XI_IssueWrite's SWPI|C>ISSUE, and MTX-SWP's defpact issuance) collect the \
+            \ caller's genesis deposits through the SAME shared XE_IssueWrite chokepoint \
+            \ (Fix #22/M5), which calls TFT::C_MultiTransfer — and C_MultiTransfer's own \
+            \ U|LST::UC_IzUnique check already rejects a repeated token ID in the \
+            \ transfer list ('Unique Items Required, duplicate item found: <id>'), for \
+            \ its own unrelated reason (a batched multi-transfer can't sensibly resolve \
+            \ two different amounts for the same ID). Confirmed live, not assumed: \
+            \ issuing [OURO, OURO, W1] as a nominal 3-token pool reverts cleanly \
+            \ (whole-tx atomicity, no partial/orphaned pool state) at \
+            \ TFT|C>MULTI-TRANSFER, before this function's own writes ever run. \
+            \ Duplicating that check HERE would be pure redundant gas cost for a \
+            \ property a composed dependency already guarantees on every real call \
+            \ path — the same 'no single non-tier choke point exists, OR one already \
+            \ does and it's downstream' reasoning StoicSyntax's `v`-specialization rule \
+            \ asks for before adding an intrinsic bounds guard (§6.1) applies in \
+            \ reverse here: the choke point already exists, just not in this module."
+        (let
+            (
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+                (ref-SWP:module{SwapperV4} SWP)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (fee-precision:integer (ref-U|CT::CT_FEE_PRECISION))
+                (principals:[string] (ref-SWP::UR_Principals))
+                (l1:integer (length pool-tokens))
+                (l2:integer (length weights))
+                (ws:decimal (fold (+) 0.0 weights))
+                (pt-ids:[string] (ref-SWP::UC_ExtractTokens pool-tokens))
+                (ptte:[string]
+                    (if (= amp -1.0)
+                        (drop 1 pt-ids)
+                        pt-ids
+                    )
+                )
+                (first-pool-token:string (at 0 pt-ids))
+                (iz-principal:bool (contains first-pool-token principals))
+                (contains-principals:bool
+                    (fold
+                        (lambda
+                            (acc:bool idx:integer)
+                            (or
+                                acc
+                                (contains (at idx pt-ids) principals)
+                            )
+                        )
+                        false
+                        (enumerate 0 (- (length pt-ids) 1))
+                    )
+                )
+            )
+            ;;Functions
+            (ref-SWP::UEV_PoolFee fee-lp)
+            (ref-SWP::UEV_New pt-ids weights amp)
+            ;;Mappings
+            (map
+                (lambda
+                    (id:string)
+                    (ref-DPTF::CAP_Owner id)
+                )
+                ptte
+            )
+            ;;#11C fix: real per-weight enforce — the original computed this exact precision check via
+            ;;`=` and discarded the result (same dead-map pattern independently flagged as H5/#23H;
+            ;;fixing this map in place closes both, since it's the one place the check lives). Combines
+            ;;the precision check with a >=0.1 floor per weight — rules out the 0.0-weight div-by-zero
+            ;;this finding is about, matching the floor already enforced for post-issuance reweights
+            ;;(SWP|S>WEIGHTS, C7/#8C fix) so issuance and modification agree on the same bound.
+            (map
+                (lambda
+                    (w:decimal)
+                    (enforce
+                        (fold (and) true [(= (floor w fee-precision) w) (>= w 0.1)])
+                        (format "Weight {} must respect fee precision and be at least 0.1" [w])
+                    )
+                )
+                weights
+            )
+
+            ;;Enforcements
+            (enforce (!= principals [BAR]) "Principals must be defined before a Swap Pair can be issued")
+            (enforce (or (= amp -1.0) (>= amp 1.0)) "Invalid amp value")
+            (enforce (and (>= l1 2) (<= l1 7)) "2 - 7 Tokens can be used to create a Swap Pair")
+            (enforce (= l1 l2) "Number of weigths does not concide with the pool-tokens Number")
+            (enforce-one
+                "Invalid Weight Values"
+                [
+                    (enforce (= ws 1.0) "Weights must add to exactly 1.0")
+                    (enforce (= ws (dec l1)) "Weights must all be 1.0")
+                ]
+            )
+            ;;Ifs
+            ;;On a W or P pool, first Pool Token must be a Principal Token
+            (if (= amp -1.0)
+                (enforce iz-principal "1st Token is not a Principal")
+                true
+            )
+            ;;#34bM fix: was checking multi-hop BFS connectivity to SSTOA specifically
+            ;;(SWPT::URC_Hopper, unbounded hop count, one hardcoded target token) —
+            ;;owner's actual design: if a Stable Pool's first Token isn't itself a
+            ;;Principal, it must be DIRECTLY pooled (one hop, an existing pool) with
+            ;;ANY current Principal — not transitively connected through a chain of
+            ;;non-Principal tokens, and not specifically SSTOA. Fixed to check the
+            ;;first Token's direct neighbours (SWPT::URC_TokenNeighbours, one hop,
+            ;;every existing pool regardless of type) against the full current
+            ;;<principals> list.
+            (if (and (> amp 0.0) (not contains-principals))
+                (let
+                    (
+                        (ref-SWPT:module{SwapTracerV3} SWPT)
+                        (neighbours:[string] (ref-SWPT::URC_TokenNeighbours first-pool-token))
+                        (has-principal-neighbour:bool
+                            (> (length (filter (lambda (n:string) (contains n principals)) neighbours)) 0)
+                        )
+                    )
+                    (enforce
+                        has-principal-neighbour
+                        (format "{} is not directly pooled with any Principal token" [first-pool-token])
+                    )
+                )
+                true
+            )
+            ;;If pool is not a principal pool, its initial liquidity must be worth at least <spawn-limit>
+            (if (not p)
+                (let
+                    (
+                        (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+                        (pt-amounts:[decimal] (ref-SWP::UC_ExtractTokenSupplies pool-tokens))
+                        (first-pool-token-amount:decimal (at 0 pt-amounts))
+                        (prefix:string (ref-U|SWP::UC_Prefix weights amp))
+                        (how-many:integer (length pool-tokens))
+                        ;;
+                        (first-worth:decimal (URC_WorthWSTOA first-pool-token first-pool-token-amount))
+                        (pool-worth-with-input-tokens-in-wstoa:decimal
+                            (if (or (= prefix "S") (= prefix "P"))
+                                (* (dec how-many) first-worth)
+                                (/ first-worth (at 0 weights))
+                            )
+                        )
+                        (spawn-limit:decimal (ref-SWP::UR_SpawnLimit))
+                    )
+                    (enforce (>= pool-worth-with-input-tokens-in-wstoa spawn-limit) "More liquidity is needed to open a new pool!")
+                )
+                true
+            )
+            (format "Validation prior to pool creation executed succesfully {}" ["!"])
+        )
+    )
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
+    ;;Protection:          SWPI|XE>ISSUE-WRITE
+    (defun XE_IssueWrite:list
+        (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool)
+        @doc "#36M/M5 fix: forward-module entrypoint holding the ONE shared pool-issuance \
+            \ write sequence — mint the LP token, register the pool, transfer pool tokens \
+            \ in, mint genesis LP supply, transfer LP out to the account, register the \
+            \ swap-tracer graph edge. Both SWPI::C_Issue (this module) and \
+            \ MTX-SWP::MTX|C_Issue's Step 3 (a different module, reached via a \
+            \ module{SwapperIssueV4} ref) call this instead of each independently \
+            \ reimplementing it. \
+            \ Returns [swpair token-lp ico-lp ico-transfer-in ico-mint ico-transfer-out] — \
+            \ a wider list, not an IgnisCollectorV3.OutputCumulator (this codebase's XE_* \
+            \ convention: the forward module's own C_ composes IGNIS, not this function). \
+            \ C_Issue aggregates all four sub-cumulators into its own single billed \
+            \ response; MTX|C_Issue's Step 3 only needs swpair/token-lp (it already billed \
+            \ separately, in its own Step 2, before Step 3 ever runs) and ignores the rest."
+        (P|UEV_IMC)
+        (with-capability (SWPI|XE>ISSUE-WRITE account pool-tokens fee-lp weights amp p)
+            (let
+                (
+                    (ref-BRD:module{BrandingV2} BRD)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                    ;;#21H: SWPT no longer needs a principal list.
+                    (ref-SWPT:module{SwapTracerV3} SWPT)
+                    (ref-SWP:module{SwapperV4} SWP)
+                    (pool-token-ids:[string] (ref-SWP::UC_ExtractTokens pool-tokens))
+                    (pool-token-amounts:[decimal] (ref-SWP::UC_ExtractTokenSupplies pool-tokens))
+                    (lp-name-ticker:[string] (ref-SWP::URC_LpComposer pool-tokens weights amp))
+                    (ico-lp:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-DPTF::XE_IssueLP (at 0 lp-name-ticker) (at 1 lp-name-ticker))
+                    )
+                    (token-lp:string (at 0 (at "output" ico-lp)))
+                    (swpair:string (ref-SWP::XE_Issue account pool-tokens token-lp fee-lp weights amp p))
+                )
+                (ref-BRD::XE_Issue swpair)
+                (let
+                    (
+                        (ico-transfer-in:object{IgnisCollectorV3.OutputCumulator}
+                            (ref-TFT::C_MultiTransfer patron account SWP|SC_NAME pool-token-ids pool-token-amounts true)
+                        )
+                        (ico-mint:object{IgnisCollectorV3.OutputCumulator}
+                            (ref-DPTF::C_Mint patron SWP|SC_NAME token-lp GENESIS_LP_SUPPLY true)
+                        )
+                        (ico-transfer-out:object{IgnisCollectorV3.OutputCumulator}
+                            (ref-TFT::C_Transfer patron SWP|SC_NAME account token-lp GENESIS_LP_SUPPLY true)
+                        )
+                    )
+                    ;;C9 fix (preserved): SWP|LP registration lives inside SWP::XE_Issue
+                    ;;itself (called above via <swpair>'s own binding) — not a standalone
+                    ;;call either caller needs to remember separately.
+                    (ref-SWPT::XE_UpdateGraph swpair)
+                    [swpair token-lp ico-lp ico-transfer-in ico-mint ico-transfer-out]
+                )
+            )
+        )
+    )
+    ;;{5.7}  User [A/C]
+    ;;
+    (defun A_RebuildGraph ()
+        @doc "One-time migration/backfill utility (#21H). Rebuilds SWPT's adjacency \
+            \ graph (SwapTracerV3) from every currently-existing swpair \
+            \ (SWP::URC_Swpairs()), by calling SWPT::XE_UpdateGraph exactly as normal \
+            \ issuance already does — just once per EXISTING pool instead of once for \
+            \ a newly-issued one. Lives here rather than in SWPT itself because SWPT \
+            \ deploys before SWP in this codebase's deploy order and can't hold a \
+            \ compile-time reference to SwapperV4; SWPI already deploys after both and \
+            \ is already a legitimate XE_UpdateGraph caller (C_Issue uses the same \
+            \ call). XE_UpdateGraph's own writes are idempotent (XI_UpdatePair only \
+            \ appends a swpair if not already present), so this is safe to re-run — \
+            \ pools issued after this upgrade (which already populate the graph \
+            \ directly at issuance) are a no-op here. Intended to be run exactly once \
+            \ by an admin immediately after deploying the #21H architecture change, to \
+            \ backfill every pool that was issued under the old, now-removed \
+            \ principal-keyed SWPT|Tracer storage."
+        (with-capability (GOV|SWPI_ADMIN)
+            ;;XE_UpdateGraph's own P|UEV_IMC checks that P|SWPI|CALLER (the guard SWPI
+            ;;registers with SWPT via P|A_Define) is actively composed — true when
+            ;;reached via C_Issue's cap chain (SWPI|C>ISSUE -> P|DT), not true by
+            ;;default just because this code happens to live in SWPI's module.
+            (with-capability (P|SECURE-CALLER)
+                (let
+                    (
+                        (ref-SWP:module{SwapperV4} SWP)
+                        (ref-SWPT:module{SwapTracerV3} SWPT)
+                    )
+                    (map (lambda (sp:string) (ref-SWPT::XE_UpdateGraph sp)) (ref-SWP::URC_Swpairs))
+                )
+            )
+        )
+    )
+    (defun C_Issue:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string executor:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool)
+        @doc "Issues a new SWPair (Liquidty Pool). \
+            \ #36M/M5 fix: the write sequence itself (mint/transfer/tracker) now lives in \
+            \ the shared XE_IssueWrite — MTX-SWP::MTX|C_Issue's own Step 3 calls the same \
+            \ function instead of independently reimplementing it. This function still \
+            \ owns all of ITS OWN IGNIS billing/aggregation (MTX|C_Issue bills separately, \
+            \ in its own Step 2, before Step 3 ever runs)."
+        (P|UEV_IMC)
+        (with-capability (SWPI|C>ISSUE executor pool-tokens fee-lp weights amp p)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    ;;STOA leg of a swap-pair issue: the SAME DOLLAR VALUE as its IGNIS deter
+                    ;;($50 => 500 STOA at the $0.10 peg), via UC_StoaPrice. Replaces the two
+                    ;;legacy sub-cent UsagePrice legs ("dptf" + "swp").
+                    (stoa-costs:decimal (ref-IGNIS::UC_StoaPrice "issue-swp-pair"))
+                    (gas-swp-cost:decimal (ref-IGNIS::UC_IgnisDeter "issue-swp-pair"))
+                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                    (write-result:list (XE_IssueWrite patron executor pool-tokens fee-lp weights amp p))
+                    (swpair:string (at 0 write-result))
+                    (token-lp:string (at 1 write-result))
+                    (ico1:object{IgnisCollectorV3.OutputCumulator} (at 2 write-result))
+                    (ico2:object{IgnisCollectorV3.OutputCumulator} (at 3 write-result))
+                    (ico3:object{IgnisCollectorV3.OutputCumulator} (at 4 write-result))
+                    (ico4:object{IgnisCollectorV3.OutputCumulator} (at 5 write-result))
+                    (ico5:object{IgnisCollectorV3.OutputCumulator}
+                        (ref-IGNIS::UDC_ConstructOutputCumulator gas-swp-cost SWP|SC_NAME trigger [])
+                    )
+                )
+                (ref-IGNIS::XE_CollectStoa patron stoa-costs)
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3 ico4 ico5] [swpair token-lp])
+            )
+        )
+    )
+
+)
+
+;; --- tables for 16_SWPI.pact (2 defined) ---
+;; UPGRADE MODE: this module is assumed already deployed, so its
+;; tables already exist and (create-table) would ABORT the whole
+;; transaction. They are listed here, commented, for reference.
+;; If any of these is NEW since the last deploy, uncomment JUST it.
+;; (create-table P|T)
+;; (create-table P|MT)
 
 ;; ===== 1_SOVEREIGN/STAGE_01/2_Core/17_SWPL.pact ====================
 ;; Deploy: load THIS file — interface(s) + module ship together.
@@ -2127,1528 +4965,6 @@
 )
 
 ;; --- tables for 17_SWPL.pact (2 defined) ---
-;; UPGRADE MODE: this module is assumed already deployed, so its
-;; tables already exist and (create-table) would ABORT the whole
-;; transaction. They are listed here, commented, for reference.
-;; If any of these is NEW since the last deploy, uncomment JUST it.
-;; (create-table P|T)
-;; (create-table P|MT)
-
-;; ===== 1_SOVEREIGN/STAGE_01/2_Core/18_SWPLC.pact ===================
-;; Deploy: load THIS file — interface(s) + module ship together.
-;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
-;;
-;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface BrandingUsageSecondaryV2
-    @doc "Exposes Branding Functions for True-Fungible LP Tokens \
-        \ <entity-pos>: 1 (Native LP), 2 (Freezing LP), 3 (Sleeping LP)"
-
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;{G2}  schemas
-    ;;{G3}  tables  ⟨cannot exist in an interface⟩
-    ;;{G4}  capabilities
-    ;;{G5}  functions
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    ;;{P2}  schemas
-    ;;{P3}  tables  ⟨cannot exist in an interface⟩
-    ;;{P4}  capabilities
-    ;;{P5}  functions
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    ;;{3.2}  schemas
-    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    ;;{5.2}  Compute [UC]
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;{5.4}  Validate [UEV/CAP]
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;{5.7}  User [A/C]
-    ;;
-    (defun C_UpdatePendingBrandingLPs:object{IgnisCollectorV3.OutputCumulator} (swpair:string entity-pos:integer logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
-    (defun C_UpgradeBrandingLPs (patron:string swpair:string entity-pos:integer months:integer))
-
-)
-;;
-;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface SwapperLiquidityClientV2
-    @doc "Exposes the Client Functions of Swapper Liquidity"
-
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;{G2}  schemas
-    ;;{G3}  tables  ⟨cannot exist in an interface⟩
-    ;;{G4}  capabilities
-    ;;{G5}  functions
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    ;;{P2}  schemas
-    ;;{P3}  tables  ⟨cannot exist in an interface⟩
-    ;;{P4}  capabilities
-    ;;{P5}  functions
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    ;;{3.2}  schemas
-    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    ;;{5.2}  Compute [UC]
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;
-    ;;
-    ;;  [URC] Functions
-    ;;
-    (defun URC_EntityPosToID:string (swpair:string entity-pos:integer))
-    (defun URCi_UpdatePendingBrandingLPs:object{IgnisCollectorV3.OutputCumulator} (swpair:string entity-pos:integer))
-    (defun URCi_UpgradeBrandingLPs:decimal (months:integer))
-    (defun URCi_ToggleAddLiquidity:object{IgnisCollectorV3.OutputCumulator} (swpair:string toggle:bool))
-    (defun URCi_Fuel:object{IgnisCollectorV3.OutputCumulator} (account:string swpair:string input-amounts:[decimal] direct-or-indirect:bool))
-    (defun URCi_AddStandardLiquidityClad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
-    (defun URCi_AddIcedLiquidityClad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
-    (defun URCi_AddGlacialLiquidityClad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
-    (defun URCi_AddFrozenLiquidityClad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData} (account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal))
-    (defun URCi_AddSleepingLiquidityClad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData} (account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal))
-    (defun URCi_AddStandardLiquidity:object{IgnisCollectorV3.OutputCumulator} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
-    (defun URCi_AddIcedLiquidity:object{IgnisCollectorV3.OutputCumulator} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
-    (defun URCi_AddGlacialLiquidity:object{IgnisCollectorV3.OutputCumulator} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
-    (defun URCi_AddFrozenLiquidity:object{IgnisCollectorV3.OutputCumulator} (account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal))
-    (defun URCi_AddSleepingLiquidity:object{IgnisCollectorV3.OutputCumulator} (account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal))
-    (defun URCi_RemoveLiquidity:object{IgnisCollectorV3.OutputCumulator} (account:string swpair:string lp-amount:decimal))
-    ;;{5.4}  Validate [UEV/CAP]
-    ;;
-    ;;
-    ;;  [UEV] Functions
-    ;;
-    (defun UEV_InputsForLP (swpair:string input-amounts:[decimal]))
-    (defun UEV_AddFrozenLiquidity (swpair:string frozen-dptf:string))
-    (defun UEV_AddSleepingLiquidity (account:string swpair:string sleeping-dpof:string nonce:integer))
-    (defun UEV_AddDormantLiquidity (swpair:string))
-    (defun UEV_AddChilledLiquidity (swpair:string ld:object{SwapperLiquidityV2.LiquidityData}))
-    (defun UEV_AddLiquidity (swpair:string ld:object{SwapperLiquidityV2.LiquidityData}))
-    (defun UEV_RemoveLiquidity (swpair:string lp-amount:decimal))
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;{5.7}  User [A/C]
-    ;;
-    ;;
-    ;;  []C] Functions
-    ;;
-    ;;
-    (defun C_ToggleAddLiquidity:object{IgnisCollectorV3.OutputCumulator} (patron:string swpair:string toggle:bool))
-    (defun C_Fuel:object{IgnisCollectorV3.OutputCumulator} (account:string swpair:string input-amounts:[decimal] direct-or-indirect:bool validation:bool))
-        ;;
-    (defun STOA-PID|C_AddStandardLiquidity:object{IgnisCollectorV3.OutputCumulator} (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
-    (defun STOA-PID|C_AddIcedLiquidity:object{IgnisCollectorV3.OutputCumulator} (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
-    (defun STOA-PID|C_AddGlacialLiquidity:object{IgnisCollectorV3.OutputCumulator} (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
-    (defun STOA-PID|C_AddFrozenLiquidity:object{IgnisCollectorV3.OutputCumulator} (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal))
-    (defun STOA-PID|C_AddSleepingLiquidity:object{IgnisCollectorV3.OutputCumulator} (patron:string account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal))
-        ;;
-    (defun C_RemoveLiquidity:object{IgnisCollectorV3.OutputCumulator} (patron:string account:string swpair:string lp-amount:decimal))
-
-)
-;;
-(module SWPLC GOV
-    @doc "SWPLC (SwapperLiquidityClientV2 + BrandingUsageSecondaryV2) is the \
-        \ liquidity-client module for SWP pools. It exposes C_ entrypoints to add liquidity \
-        \ in several modes (standard, iced, glacial, frozen, sleeping) and remove liquidity, \
-        \ plus fuel pools and update/upgrade LP-token branding, each with a matching URCi_ \
-        \ cost-preview reader that composes IGNIS OutputCumulators. It wires LP-token \
-        \ transfers, VST freeze/sleep, and complete-liquidity-addition-data fee handling, \
-        \ with UEV_ validators gating each liquidity path."
-
-    ;;<=========================================================================>
-    ;;{0}  IMPLEMENTERS
-    ;;
-    (implements OuronetPolicyV2)
-    (implements BrandingUsageSecondaryV2)
-    (implements SwapperLiquidityClientV2)
-
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;
-    (defconst GOV|MD_SWPLC                              (keyset-ref-guard (GOV|Demiurgoi)))
-    ;;{G2}  schemas
-    ;;{G3}  tables
-    ;;{G4}  capabilities
-    (defcap GOV ()                                      (compose-capability (GOV|SWPLC_ADMIN)))
-    (defcap GOV|SWPLC_ADMIN ()
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (master:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
-                (g1:guard GOV|MD_SWPLC)
-                (g2:guard (ref-DALOS::UR_AccountGuard master))
-            )
-            (enforce-one
-                "SWPLC Ownership not verified"
-                [
-                    (enforce-guard g1)
-                    (enforce-guard g2)
-                ]
-            )
-        )
-    )
-    ;;{G5}  functions
-    ;;
-    (defun GOV|SWP|SC_NAME ()
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-            )
-            (ref-DALOS::GOV|SWP|SC_NAME)
-        )
-    )
-    (defun GOV|Demiurgoi ()
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-            )
-            (ref-DALOS::GOV|Demiurgoi)
-        )
-    )
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    (defconst P|I                                       (P|Info))
-    ;;{P2}  schemas
-    ;;{P3}  tables
-    ;;
-    (deftable P|T:{OuronetPolicyV2.P|S})                        ;;Key = <policy-name>
-    (deftable P|MT:{OuronetPolicyV2.P|MS})                      ;;Key = P|I (module-identity singleton constant)
-    ;;{P4}  capabilities
-    (defcap P|SWPLC|CALLER ()
-        true
-    )
-    (defcap P|SWPLC|REMOTE-GOV ()
-        true
-    )
-    (defcap P|SECURE-CALLER ()
-        (compose-capability (P|SWPLC|CALLER))
-        (compose-capability (SECURE))
-    )
-    (defcap P|DT ()
-        (compose-capability (P|SWPLC|REMOTE-GOV))
-        (compose-capability (P|SWPLC|CALLER))
-    )
-    ;;{P5}  functions
-    (defun P|Info ()
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-            )
-            (ref-DALOS::P|Info)
-        )
-    )
-    (defun P|UR:guard (policy-name:string)
-        (at "policy" (read P|T policy-name ["policy"]))
-    )
-    (defun P|UR_IMP:[guard] ()
-        ;;DEFAULT ADDED 2026-09-14 (owner ruling). This was a bare `read`, which RAISES
-        ;;`No value found in table <M>_P|MT for key: InterModulePolicies` when the row does not
-        ;;exist -- i.e. before ANY module has registered. P|UEV_IMC is built on this, so in that
-        ;;window the inter-module gate answered with a raw table error naming a row key instead of
-        ;;refusing cleanly. Surfaced by the X-01 repair, which removed the harness registration
-        ;;that had been creating the row as a side effect.
-        ;;
-        ;;The default is the module's OWN SECURE capability guard, which is exactly what
-        ;;P|A_AddIMP already seeds the row with. So reader and writer now agree on what an
-        ;;unregistered policy list contains, and the gate's answer is the same before and after
-        ;;the first registration: satisfiable only from inside this module.
-        (with-default-read P|MT P|I
-            {"m-policies" : [(create-capability-guard (SECURE))]}
-            {"m-policies" := mp}
-            mp
-        )
-    )
-    (defun P|UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV2} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|SWPLC_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun P|A_AddIMP (policy-guard:guard)
-        @doc "Registers <policy-guard> as a trusted inter-module caller of this module. \
-            \ IDEMPOTENT: a guard already in the chain is left alone rather than appended \
-            \ a second time. See OuronetPolicyV2 for why that is load-bearing."
-        (with-capability (GOV|SWPLC_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV2} U|LST)
-                    ;;
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" :
-                            (if (contains policy-guard mp)
-                                mp
-                                (ref-U|LST::UC_AppL mp policy-guard)
-                            )
-                        }
-                    )
-                )
-            )
-        )
-    )
-    (defun P|A_RemoveIMP (policy-guard:guard)
-        @doc "Revokes <policy-guard> from this module's guard chain. Removes EVERY occurrence, so \
-            \ it doubles as the cleanup for duplicates left behind by the pre-idempotence append. \
-            \ Refuses to drop this module's own SECURE seed -- see OuronetPolicyV2."
-        (with-capability (GOV|SWPLC_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV2} U|LST)
-                    ;;
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (enforce (!= policy-guard dg) "The module's own SECURE seed cannot be revoked")
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_RemoveItem mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun P|A_SetIMP (policy-guards:[guard])
-        @doc "Replaces this module's whole guard chain in one write -- the recovery hatch. \
-            \ Deduplicates, and enforces that the module's own SECURE seed survives: without it \
-            \ the module can no longer reach its own P|UEV_IMC-gated functions."
-        (with-capability (GOV|SWPLC_ADMIN)
-            (let
-                (
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (enforce (contains dg policy-guards) "The module's own SECURE seed must be present")
-                (write P|MT P|I
-                    {"m-policies" : (distinct policy-guards)}
-                )
-            )
-        )
-    )
-    (defun P|A_Define ()
-        (let
-            (
-                (ref-P|BRD:module{OuronetPolicyV2} BRD)
-                (ref-P|DALOS:module{OuronetPolicyV2} DALOS)
-                (ref-P|DPTF:module{OuronetPolicyV2} DPTF)
-                (ref-P|DPOF:module{OuronetPolicyV2} DPOF)
-                (ref-P|TFT:module{OuronetPolicyV2} TFT)
-                (ref-P|VST:module{OuronetPolicyV2} VST)
-                (ref-P|SWP:module{OuronetPolicyV2} SWP)
-                (ref-P|SWPL:module{OuronetPolicyV2} SWPL)
-                (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
-                (mg:guard (create-capability-guard (P|SWPLC|CALLER)))
-            )
-            (ref-P|VST::P|A_Add
-                "SWPLC|RemoteSwpGov"
-                (create-capability-guard (P|SWPLC|REMOTE-GOV))
-            )
-            (ref-P|SWP::P|A_Add
-                "SWPLC|RemoteSwpGov"
-                (create-capability-guard (P|SWPLC|REMOTE-GOV))
-            )
-            (ref-P|DALOS::P|A_AddIMP mg)
-            (ref-P|BRD::P|A_AddIMP mg)
-            (ref-P|DPTF::P|A_AddIMP mg)
-            (ref-P|DPOF::P|A_AddIMP mg)
-            (ref-P|TFT::P|A_AddIMP mg)
-            (ref-P|VST::P|A_AddIMP mg)
-            (ref-P|SWP::P|A_AddIMP mg)
-            (ref-P|SWPL::P|A_AddIMP mg)
-            (ref-P|IGNIS::P|A_AddIMP mg)
-        )
-    )
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    (defconst SWP|SC_NAME                               (GOV|SWP|SC_NAME))
-    (defconst BAR                                       (CT_Bar))
-    (defconst EOC                                       (CT_EmptyCumulator))
-    ;;{3.2}  schemas
-    ;;{3.3}  tables
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;
-    (defcap SECURE ()
-        true
-    )
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    (defcap SWPLC|C>UPDATE-BRD (swpair:string)
-        @event
-        (let
-            (
-                (ref-SWP:module{SwapperV4} SWP)
-            )
-            (ref-SWP::CAP_Owner swpair)
-            (compose-capability (P|SWPLC|CALLER))
-        )
-    )
-    (defcap SWPLC|C>UPGRADE-BRD (swpair:string)
-        @event
-        (let
-            (
-                (ref-SWP:module{SwapperV4} SWP)
-            )
-            (ref-SWP::CAP_Owner swpair)
-            (compose-capability (P|SWPLC|CALLER))
-        )
-    )
-    ;;
-    (defcap SWPLC|C>INDIRECT-FUEL
-        (account:string swpair:string id-lst:[string] transfer-amount-lst:[decimal])
-        @event
-        (compose-capability (P|SWPLC|CALLER))
-    )
-    (defcap SWPLC|C>DIRECT-FUEL
-        (account:string swpair:string id-lst:[string] transfer-amount-lst:[decimal])
-        @event
-        (compose-capability (P|DT))
-    )
-    ;;
-    (defcap SWPLC|C>ADD-STANDARD-LQ (swpair:string ld:object{SwapperLiquidityV2.LiquidityData})
-        @event
-        (compose-capability (SWPLC|C>X-ADD-LQ swpair ld))
-    )
-    (defcap SWPLC|C>ADD-ICED-LQ (swpair:string ld:object{SwapperLiquidityV2.LiquidityData})
-        @event
-        (compose-capability (SWPLC|C-ADD-CHILLED-LQ swpair ld))
-    )
-    (defcap SWPLC|C>ADD-GLACIAL-LQ (swpair:string ld:object{SwapperLiquidityV2.LiquidityData})
-        @event
-        (compose-capability (SWPLC|C-ADD-CHILLED-LQ swpair ld))
-    )
-    (defcap SWPLC|C>ADD-FROZEN-LQ 
-        (swpair:string frozen-dptf:string ld:object{SwapperLiquidityV2.LiquidityData})
-        @event
-        (UEV_AddFrozenLiquidity swpair frozen-dptf)
-        (compose-capability (SWPLC|C-ADD-CHILLED-LQ swpair ld))
-        (compose-capability (P|SWPLC|REMOTE-GOV))
-    )
-    (defcap SWPLC|C>ADD-SLEEPING-LQ 
-        (account:string swpair:string sleeping-dpof:string nonce:integer ld:object{SwapperLiquidityV2.LiquidityData})
-        @event
-        (UEV_AddSleepingLiquidity account swpair sleeping-dpof nonce)
-        (compose-capability (SWPLC|C-ADD-DORMANT-LQ swpair ld))
-        (compose-capability (P|SWPLC|REMOTE-GOV))
-    )
-    (defcap SWPLC|C-ADD-DORMANT-LQ (swpair:string ld:object{SwapperLiquidityV2.LiquidityData})
-        (UEV_AddDormantLiquidity swpair)
-        (compose-capability (SWPLC|C>X-ADD-LQ swpair ld))
-    )
-    (defcap SWPLC|C-ADD-CHILLED-LQ (swpair:string ld:object{SwapperLiquidityV2.LiquidityData})
-        (UEV_AddChilledLiquidity swpair ld)
-        (compose-capability (SWPLC|C>X-ADD-LQ swpair ld))
-    )
-    (defcap SWPLC|C>X-ADD-LQ (swpair:string ld:object{SwapperLiquidityV2.LiquidityData})
-        (UEV_AddLiquidity swpair ld)
-        (compose-capability (P|SECURE-CALLER))
-        (compose-capability (P|SWPLC|REMOTE-GOV))
-    )
-    ;;
-    (defcap SWPLC|C>REMOVE_LQ (swpair:string lp-amount:decimal)
-        @event
-        (UEV_RemoveLiquidity swpair lp-amount)
-        (compose-capability (P|SECURE-CALLER))
-        (compose-capability (P|SWPLC|REMOTE-GOV))
-    )
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    ;;
-    (defun CT_Bar ()
-        (let
-            (
-                (ref-U|CT:module{OuronetConstantsV2} U|CT)
-            )
-            (ref-U|CT::CT_BAR)
-        )
-    )
-    (defun CT_EmptyCumulator ()
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-            )
-            (ref-IGNIS::UDC_EmptyOutputCumulatorV2)
-        )
-    )
-    ;;{5.2}  Compute [UC]
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;
-    (defun URC_EntityPosToID:string (swpair:string entity-pos:integer)
-        @doc "For the LP Branding Functions"
-        (let
-            (
-                (ref-U|INT:module{OuronetIntegersV2} U|INT)
-                (ref-SWP:module{SwapperV4} SWP)
-            )
-            (ref-U|INT::UEV_PositionalVariable entity-pos 3 "Invalid entity position")
-            (let
-                (
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                    (lp-id:string (ref-SWP::UR_TokenLP swpair))
-                )
-                (if (= entity-pos 1)
-                    lp-id
-                    (if (= entity-pos 2)
-                        (ref-DPTF::UR_Frozen lp-id)
-                        (ref-DPTF::UR_Sleeping lp-id)
-                    )
-                )
-            )
-        )
-    )
-    ;;
-    ;;LP DPTF Branding
-    (defun URCi_UpdatePendingBrandingLPs:object{IgnisCollectorV3.OutputCumulator}
-        (swpair:string entity-pos:integer)
-        @doc "Cost preview for C_UpdatePendingBrandingLPs: the fixed branding cumulator (2.0) \
-            \ billed on the entity owner, re-derived purely."
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                (entity-id:string (URC_EntityPosToID swpair entity-pos))
-                (entity-owner:string
-                    (if (= entity-pos 3)
-                        (ref-DPOF::UR_Konto entity-id)
-                        (ref-DPTF::UR_Konto entity-id)
-                    )
-                )
-            )
-            (ref-IGNIS::UDC_BrandingCumulator entity-owner 2.0)
-        )
-    )
-    (defun URCi_UpgradeBrandingLPs:decimal (months:integer)
-        @doc "STOA cost single-source for C_UpgradeBrandingLPs — months x branding price. \
-            \ Pure sibling of the impure XE_UpgradeBranding derivation the exec uses."
-        (let
-            (
-                (ref-BRD:module{BrandingV2} BRD)
-            )
-            (ref-BRD::URCi_UpgradeBranding months)
-        )
-    )
-    ;;LQ Functions
-    (defun URCi_ToggleAddLiquidity:object{IgnisCollectorV3.OutputCumulator}
-        (swpair:string toggle:bool)
-        @doc "Cost preview for C_ToggleAddLiquidity: delegates to SWP's add-or-swap toggle \
-            \ cost (add-or-swap = true)."
-        (let
-            (
-                (ref-SWP:module{SwapperV4} SWP)
-            )
-            (ref-SWP::URCi_ToggleAddOrSwap swpair toggle true)
-        )
-    )
-    (defun URCi_Fuel:object{IgnisCollectorV3.OutputCumulator}
-        (account:string swpair:string input-amounts:[decimal] direct-or-indirect:bool)
-        @doc "Cost preview for C_Fuel: a direct fuel bills the multi-transfer of the non-zero \
-            \ input tokens into the pool; an indirect fuel only updates supplies (EOC). The \
-            \ XE_UpdateSupplies aggregate write carries no cumulator cost. Re-derived purely."
-        (let
-            (
-                (ref-U|LST:module{StringProcessorV2} U|LST)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
-                (ref-SWP:module{SwapperV4} SWP)
-                (ref-SWPI:module{SwapperIssueV4} SWPI)
-                ;;
-                (pool-tokens:[string] (ref-SWP::UR_PoolTokens swpair))
-                (has-zeros:bool (contains 0.0 input-amounts))
-                (input-ids-for-transfer:[string]
-                    (if has-zeros
-                        (ref-SWPI::URC_TrimIdsWithZeroAmounts swpair input-amounts)
-                        pool-tokens
-                    )
-                )
-                (input-amounts-for-transfer:[decimal]
-                    (if has-zeros
-                        (ref-U|LST::UC_RemoveItem input-amounts 0.0)
-                        input-amounts
-                    )
-                )
-            )
-            (if direct-or-indirect
-                (ref-TFT::URCi_MultiTransferCumulator input-ids-for-transfer account SWP|SC_NAME input-amounts-for-transfer)
-                EOC
-            )
-        )
-    )
-    ;;  [URCi] — CLAD readers. SINGLE SOURCE (2026-09-14) for the five add-liquidity shapes.
-    ;;  Adding liquidity takes TWO different things from the caller: gas, which travels through the
-    ;;  OutputCumulator and lands in <ignis-need>, and an Asymmetric-Liquidity TAX, which is IGNIS
-    ;;  moved as PRINCIPAL and never enters a cumulator at all. The CLAD computes both, plus the
-    ;;  human wording for each tax leg. These readers exist so the INFO_ layer can DECLARE the tax
-    ;;  half without rebuilding the CLAD from scratch -- rebuilding it means restating the two
-    ;;  collection flags per variant, and a preview that guesses those flags describes a different
-    ;;  operation than the one it prices. Each URCi_Add*Liquidity below now reads its own twin.
-    (defun URCi_AddStandardLiquidityClad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
-        (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
-        @doc "The CLAD behind STOA-PID|C_AddStandardLiquidity: asymmetric-collection ON, \
-            \ gaseous-collection ON -- the one add shape that takes an IGNIS tax as PRINCIPAL."
-        (let
-            (
-                (ref-SWPL:module{SwapperLiquidityV2} SWPL)
-            )
-            (ref-SWPL::URC_STOA-PID|CLAD account swpair
-                (ref-SWPL::URC_LD swpair input-amounts) true true stoa-pid)
-        )
-    )
-    (defun URCi_AddIcedLiquidityClad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
-        (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
-        @doc "The CLAD behind STOA-PID|C_AddIcedLiquidity: asymmetric-collection OFF, \
-            \ gaseous-collection ON. No asymmetric collection means no IGNIS in <mt-ids> at all."
-        (let
-            (
-                (ref-SWPL:module{SwapperLiquidityV2} SWPL)
-            )
-            (ref-SWPL::URC_STOA-PID|CLAD account swpair
-                (ref-SWPL::URC_LD swpair input-amounts) false true stoa-pid)
-        )
-    )
-    (defun URCi_AddGlacialLiquidityClad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
-        (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
-        @doc "The CLAD behind STOA-PID|C_AddGlacialLiquidity: asymmetric-collection OFF, \
-            \ gaseous-collection OFF -- no IGNIS tax and no gaseous LP fee."
-        (let
-            (
-                (ref-SWPL:module{SwapperLiquidityV2} SWPL)
-            )
-            (ref-SWPL::URC_STOA-PID|CLAD account swpair
-                (ref-SWPL::URC_LD swpair input-amounts) false false stoa-pid)
-        )
-    )
-    (defun URCi_AddFrozenLiquidityClad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
-        (account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal)
-        @doc "The CLAD behind STOA-PID|C_AddFrozenLiquidity. The liquidity vector is built from \
-            \ the UNDERLYING token's pool position, and the adder of record is the VST smart \
-            \ account (it holds the position while the frozen wrapper is burnt), not <account>. \
-            \ Both collection flags OFF."
-        (let
-            (
-                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-SWP:module{SwapperV4} SWP)
-                (ref-SWPL:module{SwapperLiquidityV2} SWPL)
-                ;;
-                (dptf:string (ref-DPTF::UR_Frozen frozen-dptf))
-            )
-            (ref-SWPL::URC_STOA-PID|CLAD (ref-DALOS::GOV|VST|SC_NAME) swpair
-                (ref-SWPL::URC_LD swpair
-                    (ref-U|SWP::UC_MakeLiquidityList swpair
-                        (ref-SWP::URv_PoolTokenPosition swpair dptf) input-amount))
-                false false stoa-pid)
-        )
-    )
-    (defun URCi_AddSleepingLiquidityClad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
-        (account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal)
-        @doc "The CLAD behind STOA-PID|C_AddSleepingLiquidity. As the frozen twin, but the amount \
-            \ is the whole nonce supply rather than a caller-chosen figure. Both collection \
-            \ flags ON, so this shape DOES carry the IGNIS asymmetry tax."
-        (let
-            (
-                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                (ref-SWP:module{SwapperV4} SWP)
-                (ref-SWPL:module{SwapperLiquidityV2} SWPL)
-                ;;
-                (dptf:string (ref-DPOF::UR_Sleeping sleeping-dpof))
-            )
-            (ref-SWPL::URC_STOA-PID|CLAD (ref-DALOS::GOV|VST|SC_NAME) swpair
-                (ref-SWPL::URC_LD swpair
-                    (ref-U|SWP::UC_MakeLiquidityList swpair
-                        (ref-SWP::URv_PoolTokenPosition swpair dptf)
-                        (ref-DPOF::UR_NonceSupply sleeping-dpof nonce)))
-                true true stoa-pid)
-        )
-    )
-    (defun URCi_AddStandardLiquidity:object{IgnisCollectorV3.OutputCumulator}
-        (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
-        @doc "Cost preview for STOA-PID|C_AddStandardLiquidity: the CLAD perfect-ignis-fee + the \
-            \ SWP->account LP transfer. clad is a pure reader; the add-liquidity + autonomous- \
-            \ swap-management writes are free."
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
-                (ref-SWP:module{SwapperV4} SWP)
-                ;;
-                (lp-id:string (ref-SWP::UR_TokenLP swpair))
-                (clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
-                    (URCi_AddStandardLiquidityClad account swpair input-amounts stoa-pid))
-                (native-lp:decimal (at "primary-lp" clad))
-            )
-            (ref-IGNIS::UDC_ConcatenateOutputCumulators
-                [
-                    ;;LP churn deterrent (central IG|DETER lp-churn, owner 2026-09-05)
-                    (ref-IGNIS::UDC_ConstructOutputCumulator
-                (ref-IGNIS::UC_IgnisPrice "SWP|C_AddStandardLiquidity" "lp-churn")
-                SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
-                    (at "perfect-ignis-fee" (at "clad-op" clad))
-                    (ref-TFT::URCi_Transfer lp-id SWP|SC_NAME account native-lp)
-                ]
-                [native-lp]
-            )
-        )
-    )
-    (defun URCi_AddIcedLiquidity:object{IgnisCollectorV3.OutputCumulator}
-        (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
-        @doc "Cost preview for STOA-PID|C_AddIcedLiquidity: CLAD fee + native-LP transfer + \
-            \ freeze of the secondary (iced) LP to the account."
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
-                (ref-VST:module{VestingV2} VST)
-                (ref-SWP:module{SwapperV4} SWP)
-                ;;
-                (lp-id:string (ref-SWP::UR_TokenLP swpair))
-                (clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
-                    (URCi_AddIcedLiquidityClad account swpair input-amounts stoa-pid))
-                (native-lp:decimal (at "primary-lp" clad))
-                (frozen-lp:decimal (at "secondary-lp" clad))
-            )
-            (ref-IGNIS::UDC_ConcatenateOutputCumulators
-                [
-                    ;;LP churn deterrent (central IG|DETER lp-churn, owner 2026-09-05)
-                    (ref-IGNIS::UDC_ConstructOutputCumulator
-                (ref-IGNIS::UC_IgnisPrice "SWP|C_AddIcedLiquidity" "lp-churn")
-                SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
-                    (at "perfect-ignis-fee" (at "clad-op" clad))
-                    (ref-TFT::URCi_Transfer lp-id SWP|SC_NAME account native-lp)
-                    (ref-VST::URCi_Freeze SWP|SC_NAME account lp-id frozen-lp)
-                ]
-                [native-lp frozen-lp]
-            )
-        )
-    )
-    (defun URCi_AddGlacialLiquidity:object{IgnisCollectorV3.OutputCumulator}
-        (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
-        @doc "Cost preview for STOA-PID|C_AddGlacialLiquidity: CLAD fee + (conditional) native-LP \
-            \ transfer + freeze of the secondary (glacial) LP."
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
-                (ref-VST:module{VestingV2} VST)
-                (ref-SWP:module{SwapperV4} SWP)
-                ;;
-                (lp-id:string (ref-SWP::UR_TokenLP swpair))
-                (clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
-                    (URCi_AddGlacialLiquidityClad account swpair input-amounts stoa-pid))
-                (native-lp:decimal (at "primary-lp" clad))
-                (frozen-lp:decimal (at "secondary-lp" clad))
-            )
-            (ref-IGNIS::UDC_ConcatenateOutputCumulators
-                [
-                    ;;LP churn deterrent (central IG|DETER lp-churn, owner 2026-09-05)
-                    (ref-IGNIS::UDC_ConstructOutputCumulator
-                (ref-IGNIS::UC_IgnisPrice "SWP|C_AddGlacialLiquidity" "lp-churn")
-                SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
-                    (at "perfect-ignis-fee" (at "clad-op" clad))
-                    (if (!= native-lp 0.0)
-                        (ref-TFT::URCi_Transfer lp-id SWP|SC_NAME account native-lp)
-                        EOC
-                    )
-                    (ref-VST::URCi_Freeze SWP|SC_NAME account lp-id frozen-lp)
-                ]
-                [native-lp frozen-lp]
-            )
-        )
-    )
-    (defun URCi_AddFrozenLiquidity:object{IgnisCollectorV3.OutputCumulator}
-        (account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal)
-        @doc "Cost preview for STOA-PID|C_AddFrozenLiquidity: move the frozen DPTF to VST + burn + \
-            \ CLAD fee + re-freeze the resulting LP. Uses the frozen-token's underlying position."
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
-                (ref-VST:module{VestingV2} VST)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-SWP:module{SwapperV4} SWP)
-                ;;
-                (vst-sc:string (ref-DALOS::GOV|VST|SC_NAME))
-                (lp-id:string (ref-SWP::UR_TokenLP swpair))
-                (clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
-                    (URCi_AddFrozenLiquidityClad account swpair frozen-dptf input-amount stoa-pid))
-                (frozen-lp:decimal (at "secondary-lp" clad))
-            )
-            (ref-IGNIS::UDC_ConcatenateOutputCumulators
-                [
-                    ;;LP churn deterrent (central IG|DETER lp-churn, owner 2026-09-05)
-                    (ref-IGNIS::UDC_ConstructOutputCumulator
-                (ref-IGNIS::UC_IgnisPrice "SWP|C_AddFrozenLiquidity" "lp-churn")
-                SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
-                    (ref-TFT::URCi_Transfer frozen-dptf account vst-sc input-amount)
-                    (ref-DPTF::URCi_Burn frozen-dptf vst-sc)
-                    (at "perfect-ignis-fee" (at "clad-op" clad))
-                    (ref-VST::URCi_Freeze SWP|SC_NAME account lp-id frozen-lp)
-                ]
-                [frozen-lp]
-            )
-        )
-    )
-    (defun URCi_AddSleepingLiquidity:object{IgnisCollectorV3.OutputCumulator}
-        (account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal)
-        @doc "Cost preview for STOA-PID|C_AddSleepingLiquidity: move the sleeping nonce to VST + \
-            \ burn + IGNIS-tax transfer + CLAD fee + re-sleep the resulting LP over the remaining \
-            \ lock. Uses the sleeping-token's underlying position."
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
-                (ref-VST:module{VestingV2} VST)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                (ref-SWP:module{SwapperV4} SWP)
-                ;;
-                (vst-sc:string (ref-DALOS::GOV|VST|SC_NAME))
-                (ignis-id:string (ref-DALOS::UR_IgnisID))
-                (lp-id:string (ref-SWP::UR_TokenLP swpair))
-                (clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
-                    (URCi_AddSleepingLiquidityClad account swpair sleeping-dpof nonce stoa-pid))
-                (sleeping-lp:decimal (at "primary-lp" clad))
-                ;;
-                (release-date:time (at "release-date" (at 0 (ref-DPOF::UR_NonceMetaData sleeping-dpof nonce))))
-                (dt:integer (floor (diff-time release-date (at "block-time" (chain-data)))))
-            )
-            (ref-IGNIS::UDC_ConcatenateOutputCumulators
-                [
-                    ;;LP churn deterrent (central IG|DETER lp-churn, owner 2026-09-05)
-                    (ref-IGNIS::UDC_ConstructOutputCumulator
-                (ref-IGNIS::UC_IgnisPrice "SWP|C_AddSleepingLiquidity" "lp-churn")
-                SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
-                    (ref-DPOF::URCi_MoveCumulator sleeping-dpof [nonce] false)
-                    (ref-DPOF::URCi_Burn sleeping-dpof)
-                    (ref-TFT::URCi_Transfer ignis-id account vst-sc (at "total-ignis-tax-needed" clad))
-                    (at "perfect-ignis-fee" (at "clad-op" clad))
-                    (ref-VST::URCi_Sleep SWP|SC_NAME account lp-id sleeping-lp dt)
-                ]
-                [sleeping-lp]
-            )
-        )
-    )
-    ;;
-    (defun URCi_RemoveLiquidity:object{IgnisCollectorV3.OutputCumulator}
-        (account:string swpair:string lp-amount:decimal)
-        @doc "Cost preview for C_RemoveLiquidity: the flat 10$ (1000 IGNIS) removal fee + the \
-            \ account->SWP LP transfer + LP burn + SWP->account multi-transfer of the pool tokens \
-            \ at current ratio. Output == pt-output-amounts (URC_LpBreakAmounts), purely derived \
-            \ (the supply update + autonomous-swap-management writes carry no cumulator cost)."
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
-                (ref-SWP:module{SwapperV4} SWP)
-                (ref-SWPL:module{SwapperLiquidityV2} SWPL)
-                ;;
-                (pool-token-ids:[string] (ref-SWP::UR_PoolTokens swpair))
-                (lp-id:string (ref-SWP::UR_TokenLP swpair))
-                (pt-output-amounts:[decimal] (ref-SWPL::URC_LpBreakAmounts swpair lp-amount))
-                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-            )
-            (ref-IGNIS::UDC_ConcatenateOutputCumulators
-                [
-                    ;;LP add/remove churn deterrent. PRICE-SOURCE FIX (2026-09-14, owner ruling
-                    ;;"make them consistent"): preview and exec disagreed here -- the preview read
-                    ;;UC_IgnisPrice "SWP|C_RemoveLiquidity" "lp-churn" (1029.0 = the 1000.0 central
-                    ;;deterrent PLUS this op's own 29.0 component) while C_RemoveLiquidity's ico-flat
-                    ;;read the BARE UC_IgnisDeter "lp-churn" (1000.0), so every removal was over-quoted
-                    ;;by 29.0 raw IGNIS. The disagreement was SIDE-WIDE, not just preview-vs-exec: the
-                    ;;five ADD ops bill UC_IgnisPrice on BOTH sides (:546 / :1029 and siblings), so an
-                    ;;add paid deter+component while a remove paid deter alone and the 29.0 row sat in
-                    ;;the price table billed by nothing. Resolved toward the ADD side and toward
-                    ;;UC_IgnisPrice's own contract ("every URCi_* reader should bill through this"):
-                    ;;BOTH sides of remove now read UC_IgnisPrice, and the exec at :1333 reads it too.
-                    ;;Measured by modules/SWP.repl <<SWP-I25>>.
-                    (ref-IGNIS::UDC_ConstructOutputCumulator
-                        (ref-IGNIS::UC_IgnisPrice "SWP|C_RemoveLiquidity" "lp-churn")
-                        SWP|SC_NAME trigger [])
-                    (ref-TFT::URCi_Transfer lp-id account SWP|SC_NAME lp-amount)
-                    (ref-DPTF::URCi_Burn lp-id SWP|SC_NAME)
-                    (ref-TFT::URCi_MultiTransferCumulator pool-token-ids SWP|SC_NAME account pt-output-amounts)
-                ]
-                pt-output-amounts
-            )
-        )
-    )
-    ;;{5.4}  Validate [UEV/CAP]
-    (defun UEV_InputsForLP (swpair:string input-amounts:[decimal])
-        (let
-            (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-SWP:module{SwapperV4} SWP)
-                (pool-tokens:[string] (ref-SWP::UR_PoolTokens swpair))
-                (l1:integer (length input-amounts))
-                (l2:integer (length pool-tokens))
-                (sum:decimal (fold (+) 0.0 input-amounts))
-            )
-            (enforce (= l1 l2) "Invalid input amounts")
-            (enforce (>= sum 0.0) "Input amounts Sum must be greater than zero")
-            (map
-                (lambda
-                    (idx:integer)
-                    (let
-                        (
-                            (amount:decimal (at idx input-amounts))
-                            (pool-token:string (at idx pool-tokens))
-                        )
-                        (enforce (>= amount 0.0) "Amounts must be greater or equal to zero")
-                        (if (> amount 0.0)
-                            (ref-DPTF::UEV_Amount pool-token amount)
-                            true
-                        )
-                    )
-                )
-                (enumerate 0 (- l1 1))
-            )
-        )
-    )
-    (defun UEV_AddFrozenLiquidity
-        (swpair:string frozen-dptf:string)
-        (let
-            (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-SWP:module{SwapperV4} SWP)
-                ;;
-                (dptf:string (ref-DPTF::UR_Frozen frozen-dptf))
-                (pool-tokens:[string] (ref-SWP::UR_PoolTokens swpair))
-                (iz-frozen-dptf-compatible:bool (contains dptf pool-tokens))
-            )
-            (enforce iz-frozen-dptf-compatible (format "Frozen-DPTF {} isnt't compatible with Swpair {}" [frozen-dptf swpair]))
-        )
-    )
-    (defun UEV_AddSleepingLiquidity 
-        (account:string swpair:string sleeping-dpof:string nonce:integer)
-        (let
-            (
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                (ref-VST:module{VestingV2} VST)
-                (ref-SWP:module{SwapperV4} SWP)
-                ;;
-                (dptf:string (ref-DPOF::UR_Sleeping sleeping-dpof))
-                (pool-tokens:[string] (ref-SWP::UR_PoolTokens swpair))
-                (iz-sleeping-dpof-compatible:bool (contains dptf pool-tokens))
-            )
-            (enforce iz-sleeping-dpof-compatible (format "sleeping-dpof {} isnt't compatible with Swpair {}" [sleeping-dpof swpair]))
-            (ref-DPOF::UEV_NoncesToAccount sleeping-dpof account [nonce])
-            (ref-VST::UEV_StillHasSleeping sleeping-dpof nonce)
-        )
-    )
-    (defun UEV_AddDormantLiquidity (swpair:string)
-        (let
-            (
-                (ref-SWP:module{SwapperV4} SWP)
-                (iz-sleeping:bool (ref-SWP::UR_IzSleepingLP swpair))
-            )
-            (enforce iz-sleeping (format "Sleeping LP Functionality is not enabled on Swpair {}" [swpair]))
-        )
-    )
-    (defun UEV_AddChilledLiquidity (swpair:string ld:object{SwapperLiquidityV2.LiquidityData})
-        (let
-            (
-                (ref-SWP:module{SwapperV4} SWP)
-                (iz-frozen:bool (ref-SWP::UR_IzFrozenLP swpair))
-                (iz-asymmetric:bool (at "iz-asymmetric" (at "sorted-lq-type" ld)))
-            )
-            (enforce iz-asymmetric "Chilled Liquidity can only be added when asymtric liquidity exists")
-            ;;PRODUCED-TRIAGED (_eagerlet --produced, 2026-09-16): <iz-frozen> comes from a hard
-            ;;read, so for a swpair that does not exist the raw table error fires before this line.
-            ;;Left as is, deliberately. This message makes a STATE claim about a pool that exists;
-            ;;for a pool that does NOT exist, "Frozen LP Functionality is not enabled on Swpair X"
-            ;;is a MISLEADING answer -- it implies the pair is real and merely unconfigured. The raw
-            ;;"no value found" is the lesser evil, and defaulting the reader would manufacture
-            ;;exactly the wrong-diagnosis problem RT-K-004 found in DPDC. Same disposition as
-            ;;UEV_LockState / UEV_EliteState. The preview half was handled by RT-K-005.
-            (enforce iz-frozen (format "Frozen LP Functionality is not enabled on Swpair {}" [swpair]))
-        )
-    )
-    (defun UEV_AddLiquidity (swpair:string ld:object{SwapperLiquidityV2.LiquidityData})
-        (let
-            (
-                (ref-SWP:module{SwapperV4} SWP)
-                ;;
-                (can-add:bool (ref-SWP::UR_CanAdd swpair))
-                (read-lp-supply:decimal (ref-SWP::URC_LpCapacity swpair))
-                (iz-asymmetric:bool (at "iz-asymmetric" (at "sorted-lq-type" ld)))
-                (iz-balanced:bool (at "iz-balanced" (at "sorted-lq-type" ld)))
-                (iz-asymmetric-allowed:bool (ref-SWP::UR_Asymetric))
-            )
-            (if iz-asymmetric
-                (enforce iz-asymmetric-allowed "Asymetric Liquidity Addition isn't enabled by an Ouronet Administrator")
-                true
-            )
-            (if (= read-lp-supply 0.0)
-                (enforce iz-balanced
-                    "Liquidity Addition on an empty Pool must have a Balanced Part present!"
-                )
-                true
-            )
-            (enforce can-add (format "Adding|Removing Liquidity isn't enabled on pool {}" [swpair]))
-        )
-    )
-    (defun UEV_RemoveLiquidity (swpair:string lp-amount:decimal)
-        @doc "H11 fix: intentionally does NOT gate on <can-add>. <can-add> is a pool-owner switch meant \
-            \ to pause new liquidity provisioning; it must never also block existing LPs from getting \
-            \ their own principal back — an admin-controlled ability to freeze user funds already \
-            \ deposited isn't a safety mechanism, it's a trust violation (owner's own framing, matching \
-            \ how Curve's kill_me exempts plain remove_liquidity and Balancer's Recovery Mode is \
-            \ deliberately permissionless while paused, 'so that funds can never be locked by governance \
-            \ action'). Removal stays subject only to genuine validity checks below, never to the pool \
-            \ owner's add-liquidity switch."
-        (let
-            (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-SWP:module{SwapperV4} SWP)
-                ;;
-                (lp-id:string (ref-SWP::UR_TokenLP swpair))
-                (pool-lp-amount:decimal (ref-DPTF::UR_Supply lp-id))
-            )
-            (ref-DPTF::UEV_Amount lp-id lp-amount)
-            (enforce (<= lp-amount pool-lp-amount) (format "{} is an invalid LP Amount for removing Liquidity" [lp-amount]))
-        )
-    )
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;{5.7}  User [A/C]
-    (defun C_UpdatePendingBrandingLPs:object{IgnisCollectorV3.OutputCumulator}
-        (swpair:string entity-pos:integer logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
-        (P|UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-BRD:module{BrandingV2} BRD)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                (entity-id:string (URC_EntityPosToID swpair entity-pos))
-                (entity-owner:string
-                    (if (= entity-pos 3)
-                        (ref-DPOF::UR_Konto entity-id)
-                        (ref-DPTF::UR_Konto entity-id)
-                    )
-                )
-            )
-            (with-capability (SWPLC|C>UPDATE-BRD swpair)
-                (ref-BRD::XE_UpdatePendingBranding entity-id logo description website social)
-                (ref-IGNIS::UDC_BrandingCumulator entity-owner 2.0)
-            )
-        )
-    )
-    (defun C_UpgradeBrandingLPs (patron:string swpair:string entity-pos:integer months:integer)
-        (P|UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                (ref-BRD:module{BrandingV2} BRD)
-                (ref-SWP:module{SwapperV4} SWP)
-                (owner:string (ref-SWP::UR_OwnerKonto swpair))
-                (entity-id:string (URC_EntityPosToID swpair entity-pos))
-                (stoa-payment:decimal
-                    (with-capability (SWPLC|C>UPGRADE-BRD swpair)
-                        (ref-BRD::XE_UpgradeBranding entity-id owner months)
-                    )
-                )
-            )
-            (ref-IGNIS::XB_CollectStoaWithTrigger patron stoa-payment false)
-        )
-    )
-    (defun C_ToggleAddLiquidity:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string swpair:string toggle:bool)
-        (P|UEV_IMC)
-        (let
-            (
-                (ref-SWP:module{SwapperV4} SWP)
-            )
-            (with-capability (P|SWPLC|CALLER)
-                (ref-SWP::C_ToggleAddOrSwap patron swpair toggle true)
-            )
-        )
-    )
-    (defun C_Fuel:object{IgnisCollectorV3.OutputCumulator}
-        (account:string swpair:string input-amounts:[decimal] direct-or-indirect:bool validation:bool)
-        (P|UEV_IMC)
-        (let
-            (
-                (ref-U|LST:module{StringProcessorV2} U|LST)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
-                (ref-SWP:module{SwapperV4} SWP)
-                (ref-SWPI:module{SwapperIssueV4} SWPI)
-                ;;
-                (pt-current-amounts:[decimal] (ref-SWP::UR_PoolTokenSupplies swpair))
-                (pool-tokens:[string] (ref-SWP::UR_PoolTokens swpair))
-                (has-zeros:bool (contains 0.0 input-amounts))
-                (input-ids-for-transfer:[string]
-                    (if has-zeros
-                        (ref-SWPI::URC_TrimIdsWithZeroAmounts swpair input-amounts)
-                        pool-tokens
-                    )
-                )
-                (input-amounts-for-transfer:[decimal]
-                    (if has-zeros
-                        (ref-U|LST::UC_RemoveItem input-amounts 0.0)
-                        input-amounts
-                    )
-                )
-                (new-balances:[decimal] 
-                    (zip (+) pt-current-amounts input-amounts)
-                )
-            )
-            (if validation
-                (UEV_InputsForLP swpair input-amounts)
-                true
-            )
-            (if direct-or-indirect
-                (with-capability (SWPLC|C>DIRECT-FUEL account swpair input-ids-for-transfer input-amounts-for-transfer)
-                    (ref-SWP::XE_UpdateSupplies swpair new-balances)
-                    (ref-TFT::C_MultiTransfer account account SWP|SC_NAME input-ids-for-transfer input-amounts-for-transfer true)
-                )
-                (with-capability (SWPLC|C>INDIRECT-FUEL account swpair input-ids-for-transfer input-amounts-for-transfer)
-                    (ref-SWP::XE_UpdateSupplies swpair new-balances)
-                    EOC
-                )
-            )
-        )
-    )
-    (defun STOA-PID|C_AddStandardLiquidity:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
-        (P|UEV_IMC)
-        (let
-            (
-                (ref-SWPL:module{SwapperLiquidityV2} SWPL)
-                (ld:object{SwapperLiquidityV2.LiquidityData}
-                    (ref-SWPL::URC_LD swpair input-amounts)
-                )
-            )
-            (with-capability (SWPLC|C>ADD-STANDARD-LQ swpair ld)
-                (let
-                    (
-                        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                        (ref-TFT:module{TrueFungibleTransferV2} TFT)
-                        (ref-SWP:module{SwapperV4} SWP)
-                        
-                        ;;
-                        (lp-id:string (ref-SWP::UR_TokenLP swpair))
-                        ;;
-                        ;;Compute Liquidity Addition Data
-                        (clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
-                            (ref-SWPL::URC_STOA-PID|CLAD account swpair ld true true stoa-pid)
-                        )
-                        ;;
-                        (ico1:object{IgnisCollectorV3.OutputCumulator}
-                            (at "perfect-ignis-fee" (at "clad-op" clad))
-                        )
-                        (native-lp-transfer-amount:decimal (at "primary-lp" clad))
-                    )
-                    (ref-SWPL::XE_STOA-PID|AddLiquidity patron account swpair true true stoa-pid ld clad)
-                    (let
-                        (
-                            (ico2:object{IgnisCollectorV3.OutputCumulator}
-                                (ref-TFT::C_Transfer patron SWP|SC_NAME account lp-id native-lp-transfer-amount true)
-                            )
-                        )
-                        ;;Autonomous Swap Mangement
-                        (ref-SWPL::XE_AutonomousSwapManagement swpair)
-                        ;;Output Cumulator
-                        (ref-IGNIS::UDC_ConcatenateOutputCumulators 
-                            [(ref-IGNIS::UDC_ConstructOutputCumulator
-                ;;the STOA-PID variant is the same work as its plain sibling, and both
-                ;;branches are the SAME Talos op (SWP|C_AddLiquidity), so it bills the
-                ;;sibling component key rather than inventing a second entry
-                (ref-IGNIS::UC_IgnisPrice "SWP|C_AddStandardLiquidity" "lp-churn")
-                SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []) ico1 ico2] [native-lp-transfer-amount]
-                        )
-                    )
-                )
-            )
-        )
-    )
-    (defun STOA-PID|C_AddIcedLiquidity:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
-        (P|UEV_IMC)
-        (let
-            (
-                (ref-SWPL:module{SwapperLiquidityV2} SWPL)
-                (ld:object{SwapperLiquidityV2.LiquidityData}
-                    (ref-SWPL::URC_LD swpair input-amounts)
-                )
-            )
-            (with-capability (SWPLC|C>ADD-ICED-LQ swpair ld)
-                (let
-                    (
-                        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                        (ref-TFT:module{TrueFungibleTransferV2} TFT)
-                        (ref-VST:module{VestingV2} VST)
-                        (ref-SWP:module{SwapperV4} SWP)
-                        ;;
-                        (lp-id:string (ref-SWP::UR_TokenLP swpair))
-                        ;;
-                        ;;Compute Liquidity Addition Data
-                        (clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
-                            (ref-SWPL::URC_STOA-PID|CLAD account swpair ld false true stoa-pid)
-                        )
-                        ;;
-                        (ico1:object{IgnisCollectorV3.OutputCumulator}
-                            (at "perfect-ignis-fee" (at "clad-op" clad))
-                            
-                        )
-                        (native-lp-transfer-amount:decimal (at "primary-lp" clad))
-                        (frozen-lp-transfer-amount:decimal (at "secondary-lp" clad))
-                    )
-                    (ref-SWPL::XE_STOA-PID|AddLiquidity patron account swpair false true stoa-pid ld clad)
-                    (let
-                        (
-                            (ico2:object{IgnisCollectorV3.OutputCumulator}
-                                (ref-TFT::C_Transfer patron SWP|SC_NAME account lp-id native-lp-transfer-amount true)
-                            )
-                            (ico3:object{IgnisCollectorV3.OutputCumulator}
-                                (ref-VST::C_Freeze patron SWP|SC_NAME account lp-id frozen-lp-transfer-amount)
-                            )
-                        )
-                        ;;Autonomous Swap Mangement
-                        (ref-SWPL::XE_AutonomousSwapManagement swpair)
-                        ;;Output Cumulator
-                        (ref-IGNIS::UDC_ConcatenateOutputCumulators [
-                            (ref-IGNIS::UDC_ConstructOutputCumulator
-                ;;the STOA-PID variant is the same work as its plain sibling, and both
-                ;;branches are the SAME Talos op (SWP|C_AddLiquidity), so it bills the
-                ;;sibling component key rather than inventing a second entry
-                (ref-IGNIS::UC_IgnisPrice "SWP|C_AddIcedLiquidity" "lp-churn")
-                SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []) ico1 ico2 ico3] [native-lp-transfer-amount frozen-lp-transfer-amount]
-                        )
-                    )
-                )
-            )
-        )
-    )
-    (defun STOA-PID|C_AddGlacialLiquidity:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
-        (P|UEV_IMC)
-        (let
-            (
-                (ref-SWPL:module{SwapperLiquidityV2} SWPL)
-                (ld:object{SwapperLiquidityV2.LiquidityData}
-                    (ref-SWPL::URC_LD swpair input-amounts)
-                )
-            )
-            (with-capability (SWPLC|C>ADD-GLACIAL-LQ swpair ld)
-                (let
-                    (
-                        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                        (ref-TFT:module{TrueFungibleTransferV2} TFT)
-                        (ref-VST:module{VestingV2} VST)
-                        (ref-SWP:module{SwapperV4} SWP)
-                        ;;
-                        (lp-id:string (ref-SWP::UR_TokenLP swpair))
-                        ;;
-                        ;;Compute Liquidity Addition Data
-                        (clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
-                            (ref-SWPL::URC_STOA-PID|CLAD account swpair ld false false stoa-pid)
-                        )
-                        ;;
-                        (ico1:object{IgnisCollectorV3.OutputCumulator}
-                            (at "perfect-ignis-fee" (at "clad-op" clad))
-                            
-                        )
-                        (native-lp-transfer-amount:decimal (at "primary-lp" clad))
-                        (frozen-lp-transfer-amount:decimal (at "secondary-lp" clad))
-                    )
-                    (ref-SWPL::XE_STOA-PID|AddLiquidity patron account swpair false false stoa-pid ld clad)
-                    (let
-                        (
-                            (ico2:object{IgnisCollectorV3.OutputCumulator}
-                                (if (!= native-lp-transfer-amount 0.0)
-                                    (ref-TFT::C_Transfer patron SWP|SC_NAME account lp-id native-lp-transfer-amount true)
-                                    EOC
-                                )
-                            )
-                            (ico3:object{IgnisCollectorV3.OutputCumulator}
-                                (ref-VST::C_Freeze patron SWP|SC_NAME account lp-id frozen-lp-transfer-amount)
-                            )
-                        )
-                        ;;Autonomous Swap Mangement
-                        (ref-SWPL::XE_AutonomousSwapManagement swpair)
-                        ;;Output Cumulator
-                        (ref-IGNIS::UDC_ConcatenateOutputCumulators 
-                            [(ref-IGNIS::UDC_ConstructOutputCumulator
-                ;;the STOA-PID variant is the same work as its plain sibling, and both
-                ;;branches are the SAME Talos op (SWP|C_AddLiquidity), so it bills the
-                ;;sibling component key rather than inventing a second entry
-                (ref-IGNIS::UC_IgnisPrice "SWP|C_AddGlacialLiquidity" "lp-churn")
-                SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []) ico1 ico2 ico3] [native-lp-transfer-amount frozen-lp-transfer-amount]
-                        )
-                    )
-                )
-            )
-        )
-    )
-    (defun STOA-PID|C_AddFrozenLiquidity:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal)
-        (P|UEV_IMC)
-        (let
-            (
-                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-SWP:module{SwapperV4} SWP)
-                (ref-SWPL:module{SwapperLiquidityV2} SWPL)
-                ;;
-                (dptf:string (ref-DPTF::UR_Frozen frozen-dptf))
-                (ptp:integer (ref-SWP::URv_PoolTokenPosition swpair dptf))
-                (lq-lst:[decimal] (ref-U|SWP::UC_MakeLiquidityList swpair ptp input-amount))
-                (ld:object{SwapperLiquidityV2.LiquidityData}
-                    (ref-SWPL::URC_LD swpair lq-lst)
-                )
-            )
-            (with-capability (SWPLC|C>ADD-FROZEN-LQ swpair frozen-dptf ld)
-                (let
-                    (
-                        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                        (ref-DALOS:module{OuronetDalosV2} DALOS)
-                        (ref-TFT:module{TrueFungibleTransferV2} TFT)
-                        (ref-VST:module{VestingV2} VST)
-                        ;;
-                        (vst-sc:string (ref-DALOS::GOV|VST|SC_NAME))
-                        (ignis-id:string (ref-DALOS::UR_IgnisID))
-                        (lp-id:string (ref-SWP::UR_TokenLP swpair))
-                        ;;
-                        ;;Move F|DPTF to vst-sc and burn it
-                        (ico1:object{IgnisCollectorV3.OutputCumulator}
-                            (ref-TFT::C_Transfer patron account vst-sc frozen-dptf input-amount true)
-                        )
-                        (ico2:object{IgnisCollectorV3.OutputCumulator}
-                            (ref-DPTF::C_Burn patron vst-sc frozen-dptf input-amount)
-                        )
-                        ;;
-                        ;;Compute CLAD
-                        (clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
-                            (ref-SWPL::URC_STOA-PID|CLAD vst-sc swpair ld false false stoa-pid)
-                        )
-                        ;;
-                        (ico3:object{IgnisCollectorV3.OutputCumulator}
-                            (at "perfect-ignis-fee" (at "clad-op" clad))
-                        )
-                        (frozen-lp-transfer-amount:decimal (at "secondary-lp" clad))
-                    )
-                    (ref-SWPL::XE_STOA-PID|AddLiquidity patron vst-sc swpair false false stoa-pid ld clad)
-                    (let
-                        (
-                            (ico4:object{IgnisCollectorV3.OutputCumulator}
-                                (ref-VST::C_Freeze patron SWP|SC_NAME account lp-id frozen-lp-transfer-amount)
-                            )
-                        )
-                        ;;Autonomous Swap Mangement
-                        (ref-SWPL::XE_AutonomousSwapManagement swpair)
-                        ;;Output Cumulator
-                        (ref-IGNIS::UDC_ConcatenateOutputCumulators 
-                            [(ref-IGNIS::UDC_ConstructOutputCumulator
-                ;;the STOA-PID variant is the same work as its plain sibling, and both
-                ;;branches are the SAME Talos op (SWP|C_AddLiquidity), so it bills the
-                ;;sibling component key rather than inventing a second entry
-                (ref-IGNIS::UC_IgnisPrice "SWP|C_AddFrozenLiquidity" "lp-churn")
-                SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []) ico1 ico2 ico3 ico4] [frozen-lp-transfer-amount]
-                        )
-                    )
-                )
-            )
-        )
-    )
-    (defun STOA-PID|C_AddSleepingLiquidity:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal)
-        (P|UEV_IMC)
-        (let
-            (
-                (ref-U|SWP:module{UtilitySwpV2} U|SWP)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                (ref-TFT:module{TrueFungibleTransferV2} TFT)
-                (ref-SWP:module{SwapperV4} SWP)
-                (ref-SWPL:module{SwapperLiquidityV2} SWPL)
-                ;;
-                (dptf:string (ref-DPOF::UR_Sleeping sleeping-dpof))
-                (ptp:integer (ref-SWP::URv_PoolTokenPosition swpair dptf))
-                (batch-amount:decimal (ref-DPOF::UR_NonceSupply sleeping-dpof nonce))
-                (lq-lst:[decimal] (ref-U|SWP::UC_MakeLiquidityList swpair ptp batch-amount))
-                (ld:object{SwapperLiquidityV2.LiquidityData}
-                    (ref-SWPL::URC_LD swpair lq-lst)
-                )
-            )
-            (with-capability (SWPLC|C>ADD-SLEEPING-LQ account swpair sleeping-dpof nonce ld)
-                (let
-                    (
-                        (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                        (ref-DALOS:module{OuronetDalosV2} DALOS)
-                        (ref-VST:module{VestingV2} VST)
-                        ;;
-                        (vst-sc:string (ref-DALOS::GOV|VST|SC_NAME))
-                        (ignis-id:string (ref-DALOS::UR_IgnisID))
-                        (lp-id:string (ref-SWP::UR_TokenLP swpair))
-                        ;;
-                        (nonce-md:[object] (ref-DPOF::UR_NonceMetaData sleeping-dpof nonce))
-                        (release-date:time (at "release-date" (at 0 nonce-md)))
-                        (present-time:time (at "block-time" (chain-data)))
-                        (dt:integer (floor (diff-time release-date present-time)))
-                        ;;
-                        ;;
-                        ;;Move the sleeping DPOF (Z| prefix) to vst-sc and burn it
-                        (ico1:object{IgnisCollectorV3.OutputCumulator}
-                            (ref-DPOF::C_Transfer patron account vst-sc sleeping-dpof [nonce] true)
-                        )
-                        (ico2:object{IgnisCollectorV3.OutputCumulator}
-                            (ref-DPOF::C_Burn patron vst-sc sleeping-dpof nonce batch-amount)
-                        )
-                        ;;
-                        ;;Compute CLAD
-                        (clad:object{SwapperLiquidityV2.CompleteLiquidityAdditionData}
-                            (ref-SWPL::URC_STOA-PID|CLAD vst-sc swpair ld true true stoa-pid)
-                        )
-                        ;;
-                        ;;MOVE IGNIS to vst-sc, paying for the ignis-tax
-                        (ico3:object{IgnisCollectorV3.OutputCumulator}
-                            (ref-TFT::C_Transfer patron account vst-sc ignis-id (at "total-ignis-tax-needed" clad) true)
-                        )
-                        ;;
-                        (ico4:object{IgnisCollectorV3.OutputCumulator}
-                            (at "perfect-ignis-fee" (at "clad-op" clad))
-                        )
-                        (sleeping-lp-transfer-amount:decimal (at "primary-lp" clad))
-                    )
-                    (ref-SWPL::XE_STOA-PID|AddLiquidity patron vst-sc swpair true true stoa-pid ld clad)
-                    (let
-                        (
-                            (ico5:object{IgnisCollectorV3.OutputCumulator}
-                                (ref-VST::C_Sleep patron SWP|SC_NAME account lp-id sleeping-lp-transfer-amount dt)
-                            )
-                        )
-                        ;;Autonomous Swap Mangement
-                        (ref-SWPL::XE_AutonomousSwapManagement swpair)
-                        ;;Output Cumulator
-                        (ref-IGNIS::UDC_ConcatenateOutputCumulators 
-                            [(ref-IGNIS::UDC_ConstructOutputCumulator
-                ;;the STOA-PID variant is the same work as its plain sibling, and both
-                ;;branches are the SAME Talos op (SWP|C_AddLiquidity), so it bills the
-                ;;sibling component key rather than inventing a second entry
-                (ref-IGNIS::UC_IgnisPrice "SWP|C_AddSleepingLiquidity" "lp-churn")
-                SWP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []) ico1 ico2 ico3 ico4 ico5] [sleeping-lp-transfer-amount]
-                        )
-                    )
-                )
-            )
-        )
-    )
-    (defun C_RemoveLiquidity:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string account:string swpair:string lp-amount:decimal)
-        @doc "Removes <swpair> Liquidity using <lp-amount> of LP Tokens \
-            \ Always returns all Pool Tokens at current Pool Token Ratio"
-        ;;
-        (P|UEV_IMC)
-        (with-capability (SWPLC|C>REMOVE_LQ swpair lp-amount)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                    (ref-TFT:module{TrueFungibleTransferV2} TFT)
-                    (ref-SWP:module{SwapperV4} SWP)
-                    (ref-SWPL:module{SwapperLiquidityV2} SWPL)
-                    ;;
-                    (pool-token-ids:[string] (ref-SWP::UR_PoolTokens swpair))
-                    (lp-id:string (ref-SWP::UR_TokenLP swpair))
-                    (pt-output-amounts:[decimal] (ref-SWPL::URC_LpBreakAmounts swpair lp-amount))
-                    (pt-current-amounts:[decimal] (ref-SWP::UR_PoolTokenSupplies swpair))
-                    (pt-new-amounts:[decimal] (zip (-) pt-current-amounts pt-output-amounts))
-                    ;;
-                    ;;Removing Liquidity requires a flat fee of 10$ in Ignis
-                    ;;This deincentivizes frequent Liquidity removals
-                    ;;
-                    ;;LP add/remove churn deterrent — central IG|DETER lp-churn (owner 2026-09-05).
-                    ;;2026-09-14: was the BARE UC_IgnisDeter, which made removal the one liquidity op
-                    ;;that skipped its own component while its 29.0 row sat unbilled in the price
-                    ;;table. Now UC_IgnisPrice, matching the five ADD ops. See URCi_RemoveLiquidity.
-                    (flat-ignis-lq-rm-fee:decimal
-                        (ref-IGNIS::UC_IgnisPrice "SWP|C_RemoveLiquidity" "lp-churn"))
-                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                    (ico-flat:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-IGNIS::UDC_ConstructOutputCumulator flat-ignis-lq-rm-fee SWP|SC_NAME trigger [])
-                    )
-                    ;;
-                    (ico1:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-TFT::C_Transfer patron account SWP|SC_NAME lp-id lp-amount true)
-                    )
-                    (ico2:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-DPTF::C_Burn patron SWP|SC_NAME lp-id lp-amount)
-                    )
-                    (ico3:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-TFT::C_MultiTransfer patron SWP|SC_NAME account pool-token-ids pt-output-amounts true)
-                    )
-                )
-                ;;Updates Pool Supplies
-                (ref-SWP::XE_UpdateSupplies swpair pt-new-amounts)
-                ;;Autonomous Swap Mangement
-                (ref-SWPL::XE_AutonomousSwapManagement swpair)
-                ;;Output Cumulator
-                (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico-flat ico1 ico2 ico3] pt-output-amounts)
-            )
-        )
-    )
-
-)
-
-;; --- tables for 18_SWPLC.pact (2 defined) ---
 ;; UPGRADE MODE: this module is assumed already deployed, so its
 ;; tables already exist and (create-table) would ABORT the whole
 ;; transaction. They are listed here, commented, for reference.

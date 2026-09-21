@@ -23,7 +23,9 @@ WHAT IT CHECKS. For each `A_`/`C_`/`AA_`/`CC_` with an `executor` parameter, one
   2. FORWARDED   -- it is handed to another module's entrypoint in the executor position, which
                     is the Talos-wrapper and cross-core shape;
   3. INDIRECT    -- registered below WITH the route, which must also appear in the function's own
-                    `@doc` -- the canon's "the path MUST be named" clause, made checkable.
+                    `@doc` -- the canon's "the path MUST be named" clause, made checkable;
+  4. SELF-PROVING -- account creation, where the executor is the account being created and proves
+                    itself with the guard it supplies. Same @doc discipline as INDIRECT.
 
 Anything else is a finding. `--module X` scopes to one file, which is how `_modulecomplete.py`
 consumes it: a module's turn is not done while it holds an executor nobody proves.
@@ -50,31 +52,34 @@ INDIRECT = {
     "C_Issue":                "executor",
 }
 
-# OPEN -- a real question put to the owner, not a waiver and not a defect. Printed every run so
-# it cannot be forgotten, but it does not fail: deciding it is the owner's call, and a red gate
-# that nobody can clear teaches people to ignore the gate.
-OPEN = {
- ("01_DALOS.pact", "A_DeploySmartAccount"):    "deploy-family",
- ("01_DALOS.pact", "A_DeployStandardAccount"): "deploy-family",
- ("01_DALOS.pact", "C_DeploySmartAccount"):    "deploy-family",
- ("01_DALOS.pact", "C_DeployStandardAccount"): "deploy-family",
-}
-OPEN_WHY = {
- "deploy-family":
-   "THE BASE CASE OF THE ATTRIBUTION RULE. In all four the `executor` is the account BEING\n"
-   "   CREATED, not an account that acted -- so its ownership cannot be proven: it does not exist\n"
-   "   yet, and its guard arrives as an argument. Under the canon the new account is the EXECUTEE.\n"
-   "   That leaves the real actor unnamed on the one path that creates accounts:\n"
-   "     A_Deploy*  the ADMIN deploys for someone else (gasless). The admin is authenticated by\n"
-   "                SECURE-ADMIN and recorded NOWHERE -- the ledger says an account appeared, not\n"
-   "                who made it appear. Canon shape would be (executor executee guard stoa ...),\n"
-   "                the self/foreign pair applied to account creation.\n"
-   "     C_Deploy*  the user deploys for THEMSELVES (paid). executor == executee, the self case,\n"
-   "                and the supplied guard is the only thing that could prove it.\n"
-   "   Genesis is the reason this cannot simply be legislated: the FIRST account has no prior\n"
-   "   account to name, so it comes through the governance door (REPL/Stage_01/[2.1]_Dalos.repl\n"
-   "   calls DALOS.A_Deploy*Account directly under module admin). Changing the signature means\n"
-   "   deciding what genesis does instead. OWNER DECISION REQUIRED.",
+# SELF-PROVING AT CREATION -- the base case of the attribution rule, resolved by the owner on
+# 2026-09-21 after being raised as an open question.
+#
+# In the four deploy entrypoints the `executor` is the account BEING CREATED, so its ownership
+# cannot be read from a table: there is no row yet. It does not need to be. The GUARD the account
+# is being created WITH is enforced in the same transaction --
+#
+#     (defcap DALOS|C>DEPLOY-STANDARD-OURONET-ACCOUNT (account:string guard:guard stoa:string)
+#         (ref-U|G::UEV_Any [guard (create-capability-guard (GOV))])   ;; <- FIRST, before format
+#
+# and `UEV_Any` is enforce-one ("at least one guard in GUARDS is successfully enforced"). So
+# whoever deploys an account must sign for the guard that account will be governed by -- which is
+# exactly what UEV_StandardAccOwn's own `(enforce-guard account-guard)` does for an account that
+# already exists. Same proof, same key; the guard simply travels with the call because there is
+# nowhere else it could come from yet.
+#
+# The second element of that list is the governance door in-line: module `GOV` can create an
+# account without its guard being signed, which is how genesis bootstraps the first one.
+#
+# The claim is load-bearing and is PINNED by REPL/modules/DALOS-ADMIN.repl <<DALOS-G4b>>: a deploy
+# whose guard the caller does not hold is refused by UEV_Any, and refused BEFORE the format guards
+# -- so if that first list element were ever dropped, account creation would become unauthenticated
+# and this entry would silently become false.
+SELF_PROVING = {
+ "A_DeploySmartAccount":    "UEV_Any",
+ "A_DeployStandardAccount": "UEV_Any",
+ "C_DeploySmartAccount":    "UEV_Any",
+ "C_DeployStandardAccount": "UEV_Any",
 }
 
 OWN = re.compile(r'(CAP_EnforceAccountOwnership|UEV_Executor\w*|UEV_StandardAccOwn'
@@ -117,6 +122,13 @@ def classify(name, body, caps):
     if re.search(r'ref-[A-Za-z0-9|_\-]+::[A-Za-z0-9|_]+\s+[\w\-|]+\s+executor', body):
         return "FORWARDED", ""
     bare = name.split("|")[-1]
+    if bare in SELF_PROVING:
+        need = SELF_PROVING[bare]
+        doc = re.search(r'@doc\s+"(.*?)(?<!\\)"', body, re.S)
+        if doc and need.lower() in doc.group(1).lower():
+            return "SELF-PROVING", f'@doc names "{need}"'
+        return "UNPROVEN", (f'registered SELF-PROVING but its @doc does not name "{need}" '
+                            f'-- the canon requires the proof to be written in the function')
     if bare in INDIRECT:
         need = INDIRECT[bare]
         doc = re.search(r'@doc\s+"(.*?)(?<!\\)"', body, re.S)
@@ -137,7 +149,7 @@ def main():
 
     files = sorted(glob.glob(os.path.join(ROOT, "1_SOVEREIGN", "**", "*.pact"), recursive=True)
                    + glob.glob(os.path.join(ROOT, "2_CITIZEN", "**", "*.pact"), recursive=True))
-    bad, open_q, ok = [], [], 0
+    bad, ok = [], 0
     for f in files:
         base = os.path.basename(f)
         if only and base != only: continue
@@ -154,20 +166,12 @@ def main():
             if "executor:string" not in body[:500]: continue
             v, d = classify(n, body, caps)
             if v == "UNPROVEN":
-                (open_q if (base, n) in OPEN else bad).append((base, n, d))
+                bad.append((base, n, d))
             else:
                 ok += 1
 
     scope = f"--module {only}" if only else ("swept modules" if swept_only else "whole tree")
-    print(f"executor enforcement -- {scope}:  {ok} proven, {len(bad)} UNPROVEN, "
-          f"{len(open_q)} OPEN")
-    if open_q:
-        seen = set()
-        for base, n, _ in open_q:
-            print(f"   OPEN  {base:<22} {n}")
-            seen.add(OPEN[(base, n)])
-        for k in sorted(seen):
-            print(f"\n   {OPEN_WHY[k]}\n")
+    print(f"executor enforcement -- {scope}:  {ok} proven, {len(bad)} UNPROVEN")
     for base, n, d in bad:
         print(f"   {base:<22} {n:<38} {d}")
     if bad:

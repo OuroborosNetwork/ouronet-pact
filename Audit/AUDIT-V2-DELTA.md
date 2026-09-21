@@ -45,6 +45,18 @@ module with a changed surface has no block. Neither half pretends to be the othe
    - **an UNENFORCED executor is worse than none.** A parameter nobody checks is one the caller
      picks, so the emitted event can implicate an account that was never involved. v2 must treat a
      decorative executor as a **finding**, not a style issue.
+   - **Account creation is the base case, not an exception** (owner ruling, 2026-09-21). The
+     account being created IS the executor and **proves itself**: the guard it will be governed by
+     is supplied in the call and enforced by `UEV_Any` — enforce-ONE — inside
+     `DALOS|C>DEPLOY-*-OURONET-ACCOUNT`, *before* the format guards. Same proof
+     `UEV_StandardAccOwn` performs on an existing account, same key; the guard travels with the
+     call because at creation there is nowhere else it can come from. The list's second element,
+     `(create-capability-guard (GOV))`, is the governance door written into the capability — which
+     is how genesis bootstraps the first account. **The audit should assert this as the induction
+     base**, because without it the attribution rule has an unexplained hole exactly where
+     accounts come from. It was **unpinned until 2026-09-21** and is now
+     `REPL/modules/DALOS-ADMIN.repl` `<<DALOS-G4b>>`, which also shows the guard check runs
+     *first* by pairing a held guard (format refusal) against an unheld one (guard refusal).
    - New gate-fatal instrument for Part IV: **`_executorenforced.py`**, `_modulecomplete.py`'s
      check 7. It proves each executor is enforced directly, forwarded, or reached by an indirect
      route **the function's own `@doc` names** — which is the canon's "the path MUST be named"

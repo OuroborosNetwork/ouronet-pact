@@ -84,16 +84,16 @@ Read top to bottom. **`step`** is the position in the full sequence; **`file`** 
 
 | step | file | what | gas | source |
 |---:|:---:|---|---:|---|
-| 1 | **01** | DEPLOY 14 modules: 01_U_CT, 02_U_G, 03_U_ST, 04_U_RS, 05_U_LST, 06_U_INT, 07_U_DEC, 08_U_DALOS, 09_U_ATS, 10_U_DPTF, 11_U_VST, 12_U_SWP, 13_U_BFS, 01_DALOS | 271,373 | `Deploy/1_Pure/01_deploy.pact` |
-| 2 | **02** | DEPLOY 3 modules: 02_IGNIS, 04_BRD, 05_DPTF | 267,241 | `Deploy/1_Pure/02_deploy.pact` |
-| 3 | **03** | DEPLOY 3 modules: 06_DPOF, 07_ELITE, 08_ATS | 350,668 | `Deploy/1_Pure/03_deploy.pact` |
-| 4 | **04** | DEPLOY 2 modules: 09_TFT, 10_ATSU | 261,798 | `Deploy/1_Pure/04_deploy.pact` |
-| 5 | **05** | DEPLOY 4 modules: 11_VST, 12_LIQUID, 13_OUROBOROS, 14_SWPT | 296,962 | `Deploy/1_Pure/05_deploy.pact` |
-| 6 | **06** | DEPLOY 2 modules: 15_SWP, 16_SWPI | 254,885 | `Deploy/1_Pure/06_deploy.pact` |
-| 7 | **07** | DEPLOY 2 modules: 17_SWPL, 18_SWPLC | 212,803 | `Deploy/1_Pure/07_deploy.pact` |
-| 8 | **08** | DEPLOY 3 modules: 19_SWPU, 20_MTX-SWP, 21_CODEX | 261,624 | `Deploy/1_Pure/08_deploy.pact` |
-| 9 | **09** | DEPLOY 4 modules: 22_PYTHIA, 01_TS01-A, 02_TS01-C1, 03_TS01-C2 | 321,475 | `Deploy/1_Pure/09_deploy.pact` |
-| 10 | **10** | DEPLOY 4 modules: 04_TS01-C3, 06_TS01-C4, 05_TS01-P, 01_INFO-ZERO | 112,869 | `Deploy/1_Pure/10_deploy.pact` |
+| 1 | **01** | DEPLOY 13 modules: 01_U_CT, 02_U_G, 03_U_ST, 04_U_RS, 05_U_LST, 06_U_INT, 07_U_DEC, 08_U_DALOS, 09_U_ATS, 10_U_DPTF, 11_U_VST, 12_U_SWP, 13_U_BFS | 183,286 | `Deploy/1_Pure/01_deploy.pact` |
+| 2 | **02** | DEPLOY 3 modules: 01_DALOS, 02_IGNIS, 04_BRD | 198,069 | `Deploy/1_Pure/02_deploy.pact` |
+| 3 | **03** | DEPLOY 3 modules: 05_DPTF, 06_DPOF, 07_ELITE | 332,277 | `Deploy/1_Pure/03_deploy.pact` |
+| 4 | **04** | DEPLOY 2 modules: 08_ATS, 09_TFT | 285,032 | `Deploy/1_Pure/04_deploy.pact` |
+| 5 | **05** | DEPLOY 4 modules: 10_ATSU, 11_VST, 12_LIQUID, 13_OUROBOROS | 397,481 | `Deploy/1_Pure/05_deploy.pact` |
+| 6 | **06** | DEPLOY 2 modules: 14_SWPT, 15_SWP | 176,138 | `Deploy/1_Pure/06_deploy.pact` |
+| 7 | **07** | DEPLOY 2 modules: 16_SWPI, 17_SWPL | 235,153 | `Deploy/1_Pure/07_deploy.pact` |
+| 8 | **08** | DEPLOY 3 modules: 18_SWPLC, 19_SWPU, 20_MTX-SWP | 323,224 | `Deploy/1_Pure/08_deploy.pact` |
+| 9 | **09** | DEPLOY 4 modules: 21_CODEX, 22_PYTHIA, 01_TS01-A, 02_TS01-C1 | 252,440 | `Deploy/1_Pure/09_deploy.pact` |
+| 10 | **10** | DEPLOY 5 modules: 03_TS01-C2, 04_TS01-C3, 06_TS01-C4, 05_TS01-P, 01_INFO-ZERO | 228,598 | `Deploy/1_Pure/10_deploy.pact` |
 | 11 | **11** | DEPLOY 3 modules: 02_INFO-ONE+, 01_AOZ+, 01_DPDC-UDC | 457,539 | `Deploy/1_Pure/11_deploy.pact` |
 | 12 | **12** | DEPLOY 6 modules: 02_DPDC, 03_DPDC-C, 04_DPDC-I, 05_DPDC-R, 06_DPDC-MNG, 07_DPDC-T | 350,541 | `Deploy/1_Pure/12_deploy.pact` |
 | 13 | **13** | DEPLOY 5 modules: 08_DPDC-S, 09_DPDC-F, 10_DPDC-N, 11_EQUITY+, 00_Demipad | 320,565 | `Deploy/1_Pure/13_deploy.pact` |

@@ -2,16 +2,25 @@
 ;; OURONET DEPLOY -- file 9 of 24
 ;; This is STEP 9 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-8 must have run first, including the init steps between deploys.
-;; 4 source file(s), 321,475 gas measured in the REPL gas model, 282,635 bytes
+;; 4 source file(s), 252,440 gas measured in the REPL gas model, 238,174 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
+;;   1_SOVEREIGN/STAGE_01/2_Core/21_CODEX.pact
 ;;   1_SOVEREIGN/STAGE_01/2_Core/22_PYTHIA.pact
 ;;   1_SOVEREIGN/STAGE_01/3_Talos/01_TS01-A.pact
 ;;   1_SOVEREIGN/STAGE_01/3_Talos/02_TS01-C1.pact
-;;   1_SOVEREIGN/STAGE_01/3_Talos/03_TS01-C2.pact
 ;;
-;; TOTAL: 5 interface(s), 4 module(s), 14 table(s)
+;; TOTAL: 5 interface(s), 4 module(s), 18 table(s)
 ;; What it DEPLOYS, in load order:
+;;   -- 1_SOVEREIGN/STAGE_01/2_Core/21_CODEX.pact
+;;      interface  CodexV2
+;;      module     CODEX
+;;      table      P|T
+;;      table      P|MT
+;;      table      CODEX|T|Identities
+;;      table      CODEX|T|ArweaveTracker
+;;      table      CODEX|T|StoicTags
+;;      table      CODEX|T|StoicTagsByAccount
 ;;   -- 1_SOVEREIGN/STAGE_01/2_Core/22_PYTHIA.pact
 ;;      interface  PythiaV5
 ;;      interface  PythiaLedgerV3
@@ -34,17 +43,1111 @@
 ;;      module     TS01-C1
 ;;      table      P|T
 ;;      table      P|MT
-;;   -- 1_SOVEREIGN/STAGE_01/3_Talos/03_TS01-C2.pact
-;;      interface  TalosStageOne_ClientTwoV2
-;;      module     TS01-C2
-;;      table      P|T
-;;      table      P|MT
 ;;
 ;; Paste this whole file as ONE transaction. It needs the Ouronet admin signature
 ;; and the `ouronet-ns` namespace, which the first line sets.
 ;; ---------------------------------------------------------------------------
 
 (namespace "ouronet-ns")
+
+;; ===== 1_SOVEREIGN/STAGE_01/2_Core/21_CODEX.pact ===================
+;; CODEX — Codex Identity registry + Arweave upload tracker + StoicTags (Stage 01 core #22).
+;; Spec: OuronetInformational/01-mnemosyne-codex-pact-module.md
+;; Nomenclature: OuronetInformational/MODULE_ARCHITECTURE.md
+;; Client entrypoints: Talos TS01-C4 (StoicTag: 1 native STOA per glyph; fee wiring in TS01-C4).
+;; Mnemosyne operator: ouronet-ns.codex-keyset (define before A_RegisterCodexIdentity).
+;;
+;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
+(interface CodexV2
+    @doc "CodexV2 is the interface for the CODEX module — the on-chain Codex Identity \
+        \ registry, Arweave upload audit log, and StoicTag name registry. It declares UC \
+        \ validators (Apollo composite id, Arweave tx-id, StoicTag name/fee), UR field \
+        \ accessors and DataOrNull readers over the CODEX tables, URCi cost single-sources \
+        \ for StoicTag register/release, plus A_/C_ entrypoints to \
+        \ register identities, rotate codex guards, record Arweave uploads, and \
+        \ register/release StoicTags. Client entrypoints are wired through Talos TS01-C4."
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables  ⟨cannot exist in an interface⟩
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+    (defun GOV|CodexKey ())
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables  ⟨cannot exist in an interface⟩
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;{5.2}  Compute [UC]
+    ;;
+    ;;
+    (defun UC_ValidateArweaveTxId:bool (tx-id:string))
+    (defun UC_StoicTagStoaFee:decimal (tag-name:string))
+    (defun UC_ValidateStoicTagName:bool (tag-name:string))
+    (defun UC_CodexIdStandard:string (codex-id:string))
+    (defun UC_CodexIdSmart:string (codex-id:string))
+    (defun UC_ValidateCompositeCodexId:bool (codex-id:string))
+    (defun UC_ArweaveTrackerKey:string (codex-id:string arweave-tx-id:string))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;
+    ;; [URCi] cost single-source readers — one raw toll per cost-bearing client op;
+    ;; consumed by BOTH the TS01-C4 exec collect and the INFO preview layer.
+    (defun URCi_RegisterStoicTag:decimal (tag-name:string))
+    (defun URCi_ReleaseStoicTag:decimal (tag-name:string))
+    (defun URCi_RotateCodexGuard:object{IgnisCollectorV3.OutputCumulator} (patron:string))
+    (defun URCi_RecordArweaveUpload:object{IgnisCollectorV3.OutputCumulator} (patron:string))
+    ;;
+    ;; [UR] CODEX|S|Identity — field accessors + DataOrNull (UR_CIX|Data is module-only; schema not in interface)
+    (defun UR_CIX|CodexIdStandard:string (codex-id:string))
+    (defun UR_CIX|CodexIdSmart:string (codex-id:string))
+    (defun UR_CIX|PublicStandard:string (codex-id:string))
+    (defun UR_CIX|PublicSmart:string (codex-id:string))
+    (defun UR_CIX|CodexGuard:guard (codex-id:string))
+    (defun UR_CIX|RegisteredAt:time (codex-id:string))
+    (defun UR_CIX|RegisteredBy:string (codex-id:string))
+    (defun UR_CIX|CodexId:string (codex-id:string))
+    (defun UR_CIX|DataOrNull:object (codex-id:string))
+    ;;
+    ;; [UR] CODEX|S|ArweaveTracker — field accessors (UR_AWT|Data is module-only)
+    (defun UR_AWT|UploadTime:time (codex-id:string arweave-tx-id:string))
+    (defun UR_AWT|UploadedBytes:integer (codex-id:string arweave-tx-id:string))
+    (defun UR_AWT|CodexId:string (codex-id:string arweave-tx-id:string))
+    (defun UR_AWT|ArweaveTxId:string (codex-id:string arweave-tx-id:string))
+    (defun UR_AWT|ListByCodex:[object] (codex-id:string))
+    ;;
+    ;; [UR] CODEX|S|StoicTag — field accessors + DataOrNull (UR_STG|Data is module-only)
+    (defun UR_STG|AccountAddress:string (tag-name:string))
+    (defun UR_STG|RegisteredAt:time (tag-name:string))
+    (defun UR_STG|IzActive:bool (tag-name:string))
+    (defun UR_STG|TagName:string (tag-name:string))
+    (defun UR_STG|DataOrNull:object (tag-name:string))
+    ;;
+    ;; [UR] CODEX|S|StoicTagByAccount — field accessors + DataOrNull (UR_STBA|Data is module-only)
+    (defun UR_STBA|TagName:string (account-address:string))
+    (defun UR_STBA|AccountAddress:string (account-address:string))
+    (defun UR_STBA|IzActive:bool (account-address:string))
+    (defun UR_STBA|DataOrNull:object (account-address:string))
+    ;;
+    ;; [URC]
+    (defun URC_AWT|LatestUpload:object (codex-id:string))
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+    ;; NOTE: INFO_CODEX|* previews are UI-only → NOT declared here (canon: INFO not in
+    ;; interfaces); they live in the CODEX module's {5.3} Read block.
+    ;;
+    (defun A_RegisterCodexIdentity:string
+        ( codex-id:string
+          public-standard:string
+          public-smart:string
+          codex-guard:guard
+          registered-by:string ))
+    ;;
+    ;;#24H fix: these four were already live/actively-called via TS01-C4's module{CodexV2}-typed
+    ;;ref, but missing from the interface itself. Added here, purely additive - the module already
+    ;;implements all four with matching signatures.
+    ;; [C]
+    (defun C_RotateCodexGuard:string (codex-id:string new-codex-guard:guard))
+    (defun C_RecordArweaveUpload:string (codex-id:string arweave-tx-id:string uploaded-bytes:integer))
+    (defun C_RegisterStoicTag:string (tag-name:string account-address:string))
+    (defun C_ReleaseStoicTag:string (tag-name:string))
+
+)
+
+(module CODEX GOV
+    @doc "On-chain Codex Identity registry, Arweave upload audit log, and StoicTag \
+         \ name registry. Apollo cosign is off-chain only; chain enforces Stoa guards."
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
+    ;;
+    (implements CodexV2)
+    (implements OuronetPolicyV2)
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;
+    (defconst GOV|MD_CODEX                              (keyset-ref-guard (GOV|Demiurgoi)))
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    (defcap GOV ()                                      (compose-capability (GOV|CODEX_ADMIN)))
+    (defcap GOV|CODEX_ADMIN ()                          (enforce-guard GOV|MD_CODEX))
+    ;;{G5}  functions
+    (defun GOV|Demiurgoi ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::GOV|Demiurgoi)
+        )
+    )
+    (defun GOV|CodexKey ()                              (+ (CT_Namespace) ".codex-keyset"))
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    (defconst P|I                                       (P|Info))
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;
+    (deftable P|T:{OuronetPolicyV2.P|S})
+    (deftable P|MT:{OuronetPolicyV2.P|MS})
+    ;;{P4}  capabilities
+    (defcap P|CODEX|CALLER ()
+        true
+    )
+    ;;{P5}  functions
+    (defun P|Info ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::P|Info)
+        )
+    )
+    (defun P|UR:guard (policy-name:string)
+        (at "policy" (read P|T policy-name ["policy"]))
+    )
+    (defun P|UR_IMP:[guard] ()
+        ;;DEFAULT ADDED 2026-09-14 (owner ruling). This was a bare `read`, which RAISES
+        ;;`No value found in table <M>_P|MT for key: InterModulePolicies` when the row does not
+        ;;exist -- i.e. before ANY module has registered. P|UEV_IMC is built on this, so in that
+        ;;window the inter-module gate answered with a raw table error naming a row key instead of
+        ;;refusing cleanly. Surfaced by the X-01 repair, which removed the harness registration
+        ;;that had been creating the row as a side effect.
+        ;;
+        ;;The default is the module's OWN SECURE capability guard, which is exactly what
+        ;;P|A_AddIMP already seeds the row with. So reader and writer now agree on what an
+        ;;unregistered policy list contains, and the gate's answer is the same before and after
+        ;;the first registration: satisfiable only from inside this module.
+        (with-default-read P|MT P|I
+            {"m-policies" : [(create-capability-guard (SECURE))]}
+            {"m-policies" := mp}
+            mp
+        )
+    )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV2} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|CODEX_ADMIN)
+            (write P|T policy-name {"policy" : policy-guard})
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        @doc "Registers <policy-guard> as a trusted inter-module caller of this module. \
+            \ IDEMPOTENT: a guard already in the chain is left alone rather than appended \
+            \ a second time. See OuronetPolicyV2 for why that is load-bearing."
+        (with-capability (GOV|CODEX_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
+                    ;;
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" :
+                            (if (contains policy-guard mp)
+                                mp
+                                (ref-U|LST::UC_AppL mp policy-guard)
+                            )
+                        }
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_RemoveIMP (policy-guard:guard)
+        @doc "Revokes <policy-guard> from this module's guard chain. Removes EVERY occurrence, so \
+            \ it doubles as the cleanup for duplicates left behind by the pre-idempotence append. \
+            \ Refuses to drop this module's own SECURE seed -- see OuronetPolicyV2."
+        (with-capability (GOV|CODEX_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
+                    ;;
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (enforce (!= policy-guard dg) "The module's own SECURE seed cannot be revoked")
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_RemoveItem mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_SetIMP (policy-guards:[guard])
+        @doc "Replaces this module's whole guard chain in one write -- the recovery hatch. \
+            \ Deduplicates, and enforces that the module's own SECURE seed survives: without it \
+            \ the module can no longer reach its own P|UEV_IMC-gated functions."
+        (with-capability (GOV|CODEX_ADMIN)
+            (let
+                (
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (enforce (contains dg policy-guards) "The module's own SECURE seed must be present")
+                (write P|MT P|I
+                    {"m-policies" : (distinct policy-guards)}
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|DALOS:module{OuronetPolicyV2} DALOS)
+                (mg:guard (create-capability-guard (P|CODEX|CALLER)))
+            )
+            (ref-P|DALOS::P|A_AddIMP mg)
+        )
+    )
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    (defconst BAR                                       (CT_Bar))
+    (defconst CODEX|EPOCH:time                          (time "1970-01-01T00:00:00Z"))
+    (defconst CODEX|APOLLO-HALF-LEN:integer             162)
+    (defconst CODEX|COMPOSITE-SEP:string                ":")
+    (defconst CODEX|APOLLO-COMPOSITE-LEN:integer
+        (fold (+) 0 [CODEX|APOLLO-HALF-LEN 1 CODEX|APOLLO-HALF-LEN])
+    )
+    ;;{3.2}  schemas
+    ;;
+    (defschema CODEX|S|Identity
+        @doc "One Mnemosyne-registered codex identity. Immutable except codex-guard."
+        codex-id-standard:string            ;;[.]   Apollo Standard half (₱. + 160 charset chars, len 162)
+        codex-id-smart:string               ;;[.]   Apollo Smart half (Π. + 160 charset chars, len 162)
+        public-standard:string              ;;[.]   Canonical Standard Apollo pubkey material
+        public-smart:string                 ;;[.]   Canonical Smart Apollo pubkey material
+        codex-guard:guard                   ;;[M]   Stoa CodexGuard keyset (rotatable)
+        registered-at:time                  ;;[.]   Block time at registration
+        registered-by:string                ;;[.]   Operator observability string
+        ;;
+        ;;Select Keys
+        codex-id:string                     ;;[.]   Composite Apollo id: standard + ':' + smart (len 325)
+    )
+    (defschema CODEX|S|ArweaveTracker
+        @doc "Append-only Arweave backup row for one codex."
+        upload-time:time                    ;;[.]   Block time at insert
+        uploaded-bytes:integer              ;;[.]   Encrypted blob size on Arweave
+        ;;
+        ;;Select Keys
+        codex-id:string                     ;;[.]   Parent identity (FK to CODEX|T|Identities)
+        arweave-tx-id:string                ;;[.]   Arweave transaction id (43-char base64url)
+    )
+    (defschema CODEX|S|StoicTag
+        @doc "Human-readable name → Ouronet account (codex-agnostic). Release sets iz-active false."
+        account-address:string              ;;[M]   Ouronet DALOS account (Ѻ.* or Σ.*), not a Stoa k: account
+        registered-at:time                  ;;[M]   Block time at last activation
+        iz-active:bool                      ;;[M]   true = name in use; false = released (re-register updates row)
+        ;;
+        ;;Select Keys
+        tag-name:string                     ;;[.]   Bare name without § prefix (table key)
+    )
+    (defschema CODEX|S|StoicTagByAccount
+        @doc "Reverse index: one active StoicTag per account when iz-active is true."
+        tag-name:string                     ;;[M]   StoicTag registered to account
+        iz-active:bool                      ;;[M]   Mirrors CODEX|T|StoicTags.iz-active for this account slot
+        ;;
+        ;;Select Keys
+        account-address:string              ;;[.]   Ouronet DALOS account (table key; Ѻ.* or Σ.*)
+    )
+    ;;{3.3}  tables
+    (deftable CODEX|T|Identities:{CODEX|S|Identity})                    ;;Key = <codex-id>
+    (deftable CODEX|T|ArweaveTracker:{CODEX|S|ArweaveTracker})          ;;Key = <codex-id> | <arweave-tx-id>
+    (deftable CODEX|T|StoicTags:{CODEX|S|StoicTag})                     ;;Key = <tag-name>
+    (deftable CODEX|T|StoicTagsByAccount:{CODEX|S|StoicTagByAccount})   ;;Key = <account-address>
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;
+    (defcap SECURE ()
+        true
+    )
+    ;;{C2}  Simple
+    (defcap CODEX|ADMIN ()                              (enforce-guard (keyset-ref-guard (GOV|CodexKey))))
+    (defcap CODEX|OWNER (codex-id:string)
+        (let 
+            (
+                (codex-guard:guard (UR_CIX|CodexGuard codex-id))
+            )
+            (enforce-guard codex-guard)
+        )
+    )
+    ;;{C3}  Composed
+    (defcap CODEX|A>REGISTER-IDENTITY
+        ( codex-id:string
+          public-standard:string
+          public-smart:string
+          codex-guard:guard
+          registered-by:string )
+        @doc "Mnemosyne operator registers a new codex identity. Derives Apollo halves from composite codex-id."
+        @event
+        ;;FIXED 2026-09-12: the LENGTH check is enforced HERE, above the binding group.
+        ;;It used to be computed inside the `let` below as `iz-composite-len` and folded in with the
+        ;;other six conditions -- but a `let` is EAGER and `fold (and)` does not short-circuit, so for
+        ;;an id too short to split, `iz-standard-valid` ran anyway, indexed into an empty derived half
+        ;;and raised `Array index out of bounds. Length (0), Index (0)`. Being false in the FIRST
+        ;;conjunct saved nothing, and a truncated or hand-typed id -- the likeliest bad input on this
+        ;;path -- got no message at all.
+        ;;A length test needs nothing but the parameter, so it can run before anything is derived.
+        ;;The fold below is unchanged and still answers for every other way to be invalid.
+        ;;Pinned by REPL/modules/CODEX.repl <<CODEX-G3>>.
+        (compose-capability (CODEX|ADMIN))
+        (enforce
+            (= (length codex-id) CODEX|APOLLO-COMPOSITE-LEN)
+            "Invalid codex identity: composite Apollo codex-id must be 325 characters"
+        )
+        (let
+            (
+                (ref-U|DALOS:module{UtilityDalosGlyphsV3} U|DALOS)
+                (codex-len:integer (length codex-id))
+                (codex-id-standard:string (UC_CodexIdStandard codex-id))
+                (codex-id-smart:string (UC_CodexIdSmart codex-id))
+                (iz-composite-len:bool (= codex-len CODEX|APOLLO-COMPOSITE-LEN))
+                (iz-separator:bool
+                    (= CODEX|COMPOSITE-SEP (take 1 (drop CODEX|APOLLO-HALF-LEN codex-id)))
+                )
+                (iz-standard-valid:bool
+                    (ref-U|DALOS::GLYPH|UEV_ApolloAccountCheck codex-id-standard false)
+                )
+                (iz-smart-valid:bool
+                    (ref-U|DALOS::GLYPH|UEV_ApolloAccountCheck codex-id-smart true)
+                )
+                (iz-reconcat:bool
+                    (= codex-id (format "{}{}{}" [codex-id-standard CODEX|COMPOSITE-SEP codex-id-smart]))
+                )
+                (iz-nonempty-pub-std:bool (!= public-standard ""))
+                (iz-nonempty-pub-smt:bool (!= public-smart ""))
+            )
+            (enforce
+                (fold (and) true
+                    [
+                        iz-composite-len
+                        iz-separator
+                        iz-standard-valid
+                        iz-smart-valid
+                        iz-reconcat
+                        iz-nonempty-pub-std
+                        iz-nonempty-pub-smt
+                    ]
+                )
+                "Invalid codex identity: composite Apollo codex-id or pubkey material"
+            )
+            (compose-capability (SECURE))
+        )
+    )
+    (defcap CODEX|C>ROTATE-GUARD (codex-id:string new-codex-guard:guard)
+        @doc "Rotate codex-guard: current owner + new guard must sign. Composes SECURE for XI."
+        @event
+        (compose-capability (CODEX|OWNER codex-id))
+        (enforce-guard new-codex-guard)
+        (compose-capability (SECURE))
+    )
+    (defcap CODEX|C>RECORD-ARWEAVE (codex-id:string arweave-tx-id:string uploaded-bytes:integer)
+        @doc "Append Arweave tracker row for registered codex. Composes OWNER + SECURE for XI."
+        @event
+        (let
+            (
+                (iz-valid-tx-id:bool (UC_ValidateArweaveTxId arweave-tx-id))
+                (iz-positive-bytes:bool (> uploaded-bytes 0))
+            )
+            (compose-capability (CODEX|OWNER codex-id))
+            (enforce
+                (and iz-valid-tx-id iz-positive-bytes)
+                "Invalid arweave upload: bad tx-id format or non-positive uploaded-bytes"
+            )
+            (compose-capability (SECURE))
+        )
+    )
+    (defcap CODEX|C>REGISTER-STOICTAG (tag-name:string account-address:string)
+        @doc "Register or re-activate StoicTag. Fails if name or account slot is already active. Composes SECURE for XI."
+        @event
+        (let
+            (
+                (ref-U|DALOS:module{UtilityDalosGlyphsV3} U|DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                ;;
+                (tag-row-found:bool (not (= (try false (UR_STG|Data tag-name)) false)))
+                (tag-iz-active:bool
+                    (if tag-row-found
+                        (UR_STG|IzActive tag-name)
+                        false
+                    )
+                )
+                (acct-row-found:bool (not (= (try false (UR_STBA|Data account-address)) false)))
+                (acct-iz-active:bool
+                    (if acct-row-found
+                        (UR_STBA|IzActive account-address)
+                        false
+                    )
+                )
+            )
+            (ref-U|DALOS::UEV_StoicTagName tag-name)
+            (ref-DALOS::UEV_EnforceAccountExists account-address)
+            (enforce (not tag-iz-active) "StoicTag name is already active")
+            (enforce (not acct-iz-active) "Account already has an active StoicTag")
+            (compose-capability (CODEX|STOICTAG-DALOS-OWNER account-address))
+            (compose-capability (SECURE))
+        )
+    )
+    (defcap CODEX|C>RELEASE-STOICTAG (tag-name:string)
+        @doc "Release (deactivate) StoicTag: must exist and be active. Composes SECURE for XI."
+        @event
+        (let
+            (
+                (tag-row-found:bool (not (= (try false (UR_STG|Data tag-name)) false)))
+                (tag-iz-active:bool
+                    (if tag-row-found
+                        (UR_STG|IzActive tag-name)
+                        false
+                    )
+                )
+                (account-address:string
+                    (if tag-row-found
+                        (UR_STG|AccountAddress tag-name)
+                        ""
+                    )
+                )
+            )
+            (enforce tag-row-found "StoicTag not found")
+            (enforce tag-iz-active "StoicTag is not active")
+            (compose-capability (CODEX|STOICTAG-DALOS-OWNER account-address))
+            (compose-capability (SECURE))
+        )
+    )
+    ;;{C4}  Ownership [gold]
+    (defcap CODEX|STOICTAG-DALOS-OWNER (account-address:string)
+        @doc "Caller controls the Ouronet (DALOS) account — Standard or Smart, not Stoa coin.details."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership account-address)
+        )
+    )
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    (defun CT_Namespace ()
+        (let
+            (
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+            )
+            (ref-U|CT::CT_NS_USE)
+        )
+    )
+    (defun CT_Bar ()
+        (let
+            (
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+            )
+            (ref-U|CT::CT_BAR)
+        )
+    )
+    ;;
+    (defun UDC_CIX|Identity:object{CODEX|S|Identity}
+        ( codex-id-standard:string
+          codex-id-smart:string
+          public-standard:string
+          public-smart:string
+          codex-guard:guard
+          registered-at:time
+          registered-by:string
+          codex-id:string )
+        @doc "Constructor for object{CODEX|S|Identity}."
+        { "codex-id-standard": codex-id-standard
+        , "codex-id-smart":    codex-id-smart
+        , "public-standard":   public-standard
+        , "public-smart":      public-smart
+        , "codex-guard":       codex-guard
+        , "registered-at":     registered-at
+        , "registered-by":     registered-by
+        , "codex-id":          codex-id
+        }
+    )
+    (defun UDC_CIX|GuardUpdate:object (new-codex-guard:guard)
+        @doc "Partial update object for codex-guard rotation."
+        { "codex-guard": new-codex-guard }
+    )
+    (defun UDC_CIX|Unregistered:object ()
+        @doc "Sentinel for UR_CIX|DataOrNull when codex-id is absent."
+        { "codex-id":           ""
+        , "codex-id-standard":  ""
+        , "codex-id-smart":     ""
+        , "public-standard":    ""
+        , "public-smart":       ""
+        , "registered-at":      CODEX|EPOCH
+        , "registered-by":      ""
+        , "is-registered":      false
+        }
+    )
+    (defun UDC_CIX|WithRegisteredFlag:object (row:object{CODEX|S|Identity})
+        (+ row { "is-registered": true })
+    )
+    (defun UDC_AWT|Tracker:object{CODEX|S|ArweaveTracker}
+        ( codex-id:string
+          arweave-tx-id:string
+          upload-time:time
+          uploaded-bytes:integer )
+        { "codex-id":       codex-id
+        , "arweave-tx-id":  arweave-tx-id
+        , "upload-time":    upload-time
+        , "uploaded-bytes": uploaded-bytes
+        }
+    )
+    (defun UDC_AWT|EmptyLatest:object (codex-id:string)
+        (UDC_AWT|Tracker codex-id "" CODEX|EPOCH 0)
+    )
+    (defun UDC_STG|StoicTag:object{CODEX|S|StoicTag}
+        ( account-address:string registered-at:time iz-active:bool tag-name:string )
+        { "account-address": account-address
+        , "registered-at":   registered-at
+        , "iz-active":         iz-active
+        , "tag-name":        tag-name
+        }
+    )
+    (defun UDC_STG|IzActiveUpdate:object (iz-active:bool)
+        { "iz-active": iz-active }
+    )
+    (defun UDC_STG|Unregistered:object ()
+        { "tag-name":        ""
+        , "account-address": ""
+        , "registered-at":   CODEX|EPOCH
+        , "iz-active":         false
+        , "is-registered":   false
+        }
+    )
+    (defun UDC_STG|WithRegisteredFlag:object (row:object{CODEX|S|StoicTag})
+        (+ row { "is-registered": true })
+    )
+    (defun UDC_STBA|StoicTagByAccount:object{CODEX|S|StoicTagByAccount}
+        ( tag-name:string iz-active:bool account-address:string )
+        { "tag-name":        tag-name
+        , "iz-active":         iz-active
+        , "account-address": account-address
+        }
+    )
+    (defun UDC_STBA|IzActiveUpdate:object (iz-active:bool)
+        { "iz-active": iz-active }
+    )
+    (defun UDC_STBA|Unregistered:object ()
+        { "account-address": ""
+        , "tag-name":        ""
+        , "iz-active":         false
+        , "has-stoictag":    false
+        }
+    )
+    (defun UDC_STBA|WithHasStoicTagFlag:object (row:object{CODEX|S|StoicTagByAccount})
+        (+ row { "has-stoictag": true })
+    )
+    ;;{5.2}  Compute [UC]
+    (defun UC_IsBase64urlChar:bool (c:string)
+        (or (and (>= c "A") (<= c "Z"))
+            (or (and (>= c "a") (<= c "z"))
+                (or (and (>= c "0") (<= c "9"))
+                    (contains c ["_" "-"])
+                )
+            )
+        )
+    )
+    (defun UC_ValidateArweaveTxId:bool (tx-id:string)
+        @doc "True when tx-id is 43-char Arweave base64url (length + charset)."
+        (and (= (length tx-id) 43)
+            (fold
+                (lambda (ok:bool c:string) (and ok (UC_IsBase64urlChar c)))
+                true
+                (str-to-list tx-id)
+            )
+        )
+    )
+    (defun UC_StoicTagStoaFee:decimal (tag-name:string)
+        @doc "Native STOA due for registering <tag-name>: exactly 1 STOA per glyph (= string \
+            \ length). E.g. bytales -> 7.0 STOA. DELIBERATE EXCEPTION to the dollar rule (owner \
+            \ 2026-09-07): this toll is FIXED IN STOA UNITS, not denominated in dollars and \
+            \ converted, so a glyph always costs one STOA whatever the oracle says. It is also \
+            \ non-discountable. Do NOT change it to derive from IG|DETER."
+        (dec (length tag-name))
+    )
+    (defun UC_ValidateStoicTagName:bool (tag-name:string)
+        @doc "True when tag-name is 3–256 glyphs from DALOS|CHARSET (U|DALOS)."
+        (let 
+            (
+                (ref-U|DALOS:module{UtilityDalosGlyphsV3} U|DALOS)
+            )
+            (ref-U|DALOS::UC_IzStoicTagName tag-name)
+        )
+    )
+    (defun UC_CodexIdStandard:string (codex-id:string)
+        @doc "Standard Apollo half of composite codex-id (first 162 chars)."
+        (take CODEX|APOLLO-HALF-LEN codex-id)
+    )
+    (defun UC_CodexIdSmart:string (codex-id:string)
+        @doc "Smart Apollo half of composite codex-id (chars after separator ':')."
+        (drop (+ CODEX|APOLLO-HALF-LEN 1) codex-id)
+    )
+    (defun UC_ValidateCompositeCodexId:bool (codex-id:string)
+        @doc "True when codex-id is 325 chars: valid ₱. standard + ':' + valid Π. smart Apollo strings."
+        (let
+            (
+                (ref-U|DALOS:module{UtilityDalosGlyphsV3} U|DALOS)
+                (standard:string (UC_CodexIdStandard codex-id))
+                (smart:string (UC_CodexIdSmart codex-id))
+            )
+            (fold (and) true
+                [
+                    (= (length codex-id) CODEX|APOLLO-COMPOSITE-LEN)
+                    (= CODEX|COMPOSITE-SEP (take 1 (drop CODEX|APOLLO-HALF-LEN codex-id)))
+                    (ref-U|DALOS::GLYPH|UEV_ApolloAccountCheck standard false)
+                    (ref-U|DALOS::GLYPH|UEV_ApolloAccountCheck smart true)
+                    (= codex-id (format "{}{}{}" [standard CODEX|COMPOSITE-SEP smart]))
+                ]
+            )
+        )
+    )
+    (defun UC_ArweaveTrackerKey:string (codex-id:string arweave-tx-id:string)
+        @doc "Composite table key for CODEX|T|ArweaveTracker."
+        (format "{}|{}" [codex-id arweave-tx-id])
+    )
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    (defun URCi_RegisterStoicTag:decimal (tag-name:string)
+        @doc "Cost single-source for CODEX|C_RegisterStoicTag — RAW native STOA toll \
+            \ (1/glyph). Elite discount is applied at collect against the tagged account, \
+            \ so this returns the pre-discount amount. Consumed by TS01-C4 exec + INFO."
+        (UC_StoicTagStoaFee tag-name)
+    )
+    (defun URCi_RotateCodexGuard:object{IgnisCollectorV3.OutputCumulator} (patron:string)
+        @doc "Cost single-source for CODEX|C_RotateCodexGuard — deter(usage) + components, on the \
+            \ patron (the codex row carries no konto of its own). USAGE tier (deterrence 1x, owner \
+            \ 2026-09-07): CODEX ops pay what they structurally cost and carry no deterrent premium. \
+            \ Consumed by the TS01-C4 exec path + INFO, so the two cannot drift."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "CODEX|C_RotateCodexGuard" "usage")
+                patron (ref-IGNIS::URC_IsVirtualGasZero) [])
+        )
+    )
+    (defun URCi_RecordArweaveUpload:object{IgnisCollectorV3.OutputCumulator} (patron:string)
+        @doc "Cost single-source for CODEX|C_RecordArweaveUpload — deter(usage) + components, on \
+            \ the patron. USAGE tier: recording an upload is routine activity, not a config \
+            \ change. Consumed by the TS01-C4 exec path + INFO."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "CODEX|C_RecordArweaveUpload" "usage")
+                patron (ref-IGNIS::URC_IsVirtualGasZero) [])
+        )
+    )
+    (defun URCi_ReleaseStoicTag:decimal (tag-name:string)
+        @doc "Cost single-source for CODEX|C_ReleaseStoicTag — flat IGNIS toll (1/glyph), \
+            \ collected via IGNIS::XE_CollectIgnis in TS01-C4. Consumed by exec + INFO."
+        (UC_StoicTagStoaFee tag-name)
+    )
+    ;;
+    ;; [1] CODEX|T|Identities  (CODEX|S|Identity)  Key = <codex-id>
+    (defun UR_CIX|Data:object{CODEX|S|Identity} (codex-id:string)
+        @doc "Full codex identity row."
+        (read CODEX|T|Identities codex-id)
+    )
+    (defun UR_CIX|CodexIdStandard:string (codex-id:string)
+        (at "codex-id-standard" (read CODEX|T|Identities codex-id ["codex-id-standard"]))
+    )
+    (defun UR_CIX|CodexIdSmart:string (codex-id:string)
+        (at "codex-id-smart" (read CODEX|T|Identities codex-id ["codex-id-smart"]))
+    )
+    (defun UR_CIX|PublicStandard:string (codex-id:string)
+        (at "public-standard" (read CODEX|T|Identities codex-id ["public-standard"]))
+    )
+    (defun UR_CIX|PublicSmart:string (codex-id:string)
+        (at "public-smart" (read CODEX|T|Identities codex-id ["public-smart"]))
+    )
+    (defun UR_CIX|CodexGuard:guard (codex-id:string)
+        (at "codex-guard" (read CODEX|T|Identities codex-id ["codex-guard"]))
+    )
+    (defun UR_CIX|RegisteredAt:time (codex-id:string)
+        (at "registered-at" (read CODEX|T|Identities codex-id ["registered-at"]))
+    )
+    (defun UR_CIX|RegisteredBy:string (codex-id:string)
+        (at "registered-by" (read CODEX|T|Identities codex-id ["registered-by"]))
+    )
+    (defun UR_CIX|CodexId:string (codex-id:string)
+        (at "codex-id" (UR_CIX|Data codex-id))
+    )
+    (defun UR_CIX|DataOrNull:object (codex-id:string)
+        @doc "Like UR_CIX|Data but returns is-registered:false when absent."
+        (if (= (try false (UR_CIX|Data codex-id)) false)
+            (UDC_CIX|Unregistered)
+            (UDC_CIX|WithRegisteredFlag (UR_CIX|Data codex-id))
+        )
+    )
+    ;;
+    ;; [2] CODEX|T|ArweaveTracker  (CODEX|S|ArweaveTracker)  Key = <codex-id> | <arweave-tx-id>
+    (defun UR_AWT|Data:object{CODEX|S|ArweaveTracker} (codex-id:string arweave-tx-id:string)
+        @doc "One Arweave tracker row."
+        (read CODEX|T|ArweaveTracker (UC_ArweaveTrackerKey codex-id arweave-tx-id))
+    )
+    (defun UR_AWT|UploadTime:time (codex-id:string arweave-tx-id:string)
+        (at "upload-time"
+            (read CODEX|T|ArweaveTracker (UC_ArweaveTrackerKey codex-id arweave-tx-id) ["upload-time"])
+        )
+    )
+    (defun UR_AWT|UploadedBytes:integer (codex-id:string arweave-tx-id:string)
+        (at "uploaded-bytes"
+            (read CODEX|T|ArweaveTracker (UC_ArweaveTrackerKey codex-id arweave-tx-id) ["uploaded-bytes"])
+        )
+    )
+    (defun UR_AWT|CodexId:string (codex-id:string arweave-tx-id:string)
+        (at "codex-id" (UR_AWT|Data codex-id arweave-tx-id))
+    )
+    (defun UR_AWT|ArweaveTxId:string (codex-id:string arweave-tx-id:string)
+        (at "arweave-tx-id" (UR_AWT|Data codex-id arweave-tx-id))
+    )
+    (defun UR_AWT|ListByCodex:[object] (codex-id:string)
+        @doc "All tracker rows for codex-id (select scan)."
+        (select CODEX|T|ArweaveTracker
+            ["codex-id" "arweave-tx-id" "upload-time" "uploaded-bytes"]
+            (where "codex-id" (= codex-id))
+        )
+    )
+    ;;
+    ;; [3] CODEX|T|StoicTags  (CODEX|S|StoicTag)  Key = <tag-name>
+    (defun UR_STG|Data:object{CODEX|S|StoicTag} (tag-name:string)
+        (read CODEX|T|StoicTags tag-name)
+    )
+    (defun UR_STG|AccountAddress:string (tag-name:string)
+        (at "account-address" (read CODEX|T|StoicTags tag-name ["account-address"]))
+    )
+    (defun UR_STG|RegisteredAt:time (tag-name:string)
+        (at "registered-at" (read CODEX|T|StoicTags tag-name ["registered-at"]))
+    )
+    (defun UR_STG|IzActive:bool (tag-name:string)
+        (at "iz-active" (read CODEX|T|StoicTags tag-name ["iz-active"]))
+    )
+    (defun UR_STG|TagName:string (tag-name:string)
+        (at "tag-name" (UR_STG|Data tag-name))
+    )
+    (defun UR_STG|DataOrNull:object (tag-name:string)
+        (if (= (try false (UR_STG|Data tag-name)) false)
+            (UDC_STG|Unregistered)
+            (if (UR_STG|IzActive tag-name)
+                (UDC_STG|WithRegisteredFlag (UR_STG|Data tag-name))
+                (UDC_STG|Unregistered)
+            )
+        )
+    )
+    ;;
+    ;; [4] CODEX|T|StoicTagsByAccount  (CODEX|S|StoicTagByAccount)  Key = <account-address>
+    (defun UR_STBA|Data:object{CODEX|S|StoicTagByAccount} (account-address:string)
+        (read CODEX|T|StoicTagsByAccount account-address)
+    )
+    (defun UR_STBA|TagName:string (account-address:string)
+        (at "tag-name" (read CODEX|T|StoicTagsByAccount account-address ["tag-name"]))
+    )
+    (defun UR_STBA|AccountAddress:string (account-address:string)
+        (at "account-address" (UR_STBA|Data account-address))
+    )
+    (defun UR_STBA|IzActive:bool (account-address:string)
+        (at "iz-active" (read CODEX|T|StoicTagsByAccount account-address ["iz-active"]))
+    )
+    (defun UR_STBA|DataOrNull:object (account-address:string)
+        (if (= (try false (UR_STBA|Data account-address)) false)
+            (UDC_STBA|Unregistered)
+            (if (UR_STBA|IzActive account-address)
+                (UDC_STBA|WithHasStoicTagFlag (UR_STBA|Data account-address))
+                (UDC_STBA|Unregistered)
+            )
+        )
+    )
+    ;;
+    (defun URC_AWT|LatestUpload:object (codex-id:string)
+        @doc "Newest arweave-tracker row for codex-id, or empty object if none."
+        (let 
+            (
+                (rows:[object] (UR_AWT|ListByCodex codex-id))
+            )
+            (if (= (length rows) 0)
+                (UDC_AWT|EmptyLatest codex-id)
+                (fold
+                    (lambda (best:object row:object)
+                        (if (> (at "upload-time" row) (at "upload-time" best))
+                            row
+                            best
+                        )
+                    )
+                    (at 0 rows)
+                    (drop 1 rows)
+                )
+            )
+        )
+    )
+    ;;
+    (defun INFO_CODEX|RegisterStoicTag:object{OuronetInfoV2.ClientInfo}
+        (patron:string tag-name:string account-address:string)
+        @doc "ClientInfo preview for TS01-C4 CODEX|C_RegisterStoicTag — STOA from patron; Elite discount on account-address."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                ;;single-source: the SAME reader the TS01-C4 exec path collects from
+                (stoa-fee:decimal (URCi_RegisterStoicTag tag-name))
+                (glyph-count:integer (length tag-name))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account-address))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [
+                    (format "Operation: Register StoicTag §{} to Ouronet account {}." [tag-name sa])
+                    (format "Native STOA fee: {} (1 per glyph, {} glyphs; Elite discount on tagged account)." [stoa-fee glyph-count])
+                ]
+                [(format "StoicTag §{} registered to account {}." [tag-name account-address])]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (ref-I|OURONET::OI|UDC_StoaCosts account-address stoa-fee)
+                []
+            )
+        )
+    )
+    (defun INFO_CODEX|RotateCodexGuard:object{OuronetInfoV2.ClientInfo}
+        (patron:string codex-id:string)
+        
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Rotate the Codex Guard of Codex {}." [codex-id])]
+                [(format "Codex Guard of Codex {} rotated." [codex-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (URCi_RotateCodexGuard patron)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun INFO_CODEX|RecordArweaveUpload:object{OuronetInfoV2.ClientInfo}
+        (patron:string codex-id:string arweave-tx-id:string uploaded-bytes:integer)
+        @doc "ClientInfo preview for TS01-C4 CODEX|C_RecordArweaveUpload — deter(usage) + \
+            \ components via URCi_RecordArweaveUpload, so preview and execution cannot drift. \
+            \ Records the Arweave transaction id and the uploaded byte count."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Record Arweave upload {} ({} bytes) for Codex {}."
+                    [arweave-tx-id uploaded-bytes codex-id])]
+                [(format "Arweave upload {} recorded for Codex {}." [arweave-tx-id codex-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (URCi_RecordArweaveUpload patron)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun INFO_CODEX|ReleaseStoicTag:object{OuronetInfoV2.ClientInfo}
+        (patron:string tag-name:string)
+        @doc "ClientInfo preview for TS01-C4 CODEX|C_ReleaseStoicTag (IGNIS = UC_StoicTagStoaFee per glyph)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                ;;single-source: the SAME reader the TS01-C4 exec path collects from
+                (tag-fee:decimal (URCi_ReleaseStoicTag tag-name))
+                (glyph-count:integer (length tag-name))
+                (is-ignis-zero:bool (ref-IGNIS::URC_IsVirtualGasZero))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [
+                    (format "Operation: Release StoicTag §{}." [tag-name])
+                    (format "IGNIS fee: {} (1 per glyph, {} glyphs)." [tag-fee glyph-count])
+                ]
+                [(format "StoicTag §{} released." [tag-name])]
+                (if is-ignis-zero
+                    (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                    (ref-I|OURONET::OI|UDC_IgnisCosts patron tag-fee)
+                )
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;Protection: Class 2 — SECURE
+    (defun XI_InsertIdentity:string
+        ( codex-id:string
+          public-standard:string
+          public-smart:string
+          codex-guard:guard
+          registered-by:string )
+        @doc "Under SECURE (from CODEX|A>REGISTER-IDENTITY): insert identity row. Write only."
+        (require-capability (SECURE))
+        (insert CODEX|T|Identities codex-id
+            (UDC_CIX|Identity
+                (UC_CodexIdStandard codex-id)
+                (UC_CodexIdSmart codex-id)
+                public-standard public-smart
+                codex-guard (at "block-time" (chain-data)) registered-by codex-id
+            )
+        )
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_UpdateCodexGuard:string (codex-id:string new-codex-guard:guard)
+        @doc "Under SECURE (from CODEX|C>ROTATE-GUARD): update codex-guard only. Write only."
+        (require-capability (SECURE))
+        (update CODEX|T|Identities codex-id (UDC_CIX|GuardUpdate new-codex-guard))
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_InsertArweaveTracker:string (codex-id:string arweave-tx-id:string uploaded-bytes:integer)
+        @doc "Under SECURE (from CODEX|C>RECORD-ARWEAVE): append tracker row. Write only."
+        (require-capability (SECURE))
+        (insert CODEX|T|ArweaveTracker (UC_ArweaveTrackerKey codex-id arweave-tx-id)
+            (UDC_AWT|Tracker
+                codex-id arweave-tx-id (at "block-time" (chain-data)) uploaded-bytes
+            )
+        )
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_UpsertStoicTag:string (tag-name:string account-address:string)
+        @doc "Under SECURE (from CODEX|C>REGISTER-STOICTAG): insert new or re-activate released rows. Write only."
+        (require-capability (SECURE))
+        (let 
+            (
+                (now:time (at "block-time" (chain-data)))
+            )
+            (if (= (try false (UR_STG|Data tag-name)) false)
+                (insert CODEX|T|StoicTags tag-name
+                    (UDC_STG|StoicTag account-address now true tag-name))
+                (update CODEX|T|StoicTags tag-name
+                    (UDC_STG|StoicTag account-address now true tag-name))
+            )
+            (if (= (try false (UR_STBA|Data account-address)) false)
+                (insert CODEX|T|StoicTagsByAccount account-address
+                    (UDC_STBA|StoicTagByAccount tag-name true account-address))
+                (update CODEX|T|StoicTagsByAccount account-address
+                    (UDC_STBA|StoicTagByAccount tag-name true account-address))
+            )
+        )
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_DeactivateStoicTag:string (tag-name:string)
+        @doc "Under SECURE (from CODEX|C>RELEASE-STOICTAG): set iz-active false on both tables. Write only."
+        (require-capability (SECURE))
+        (let
+            (
+                (account-address:string (UR_STG|AccountAddress tag-name))
+            )
+            (update CODEX|T|StoicTags tag-name (UDC_STG|IzActiveUpdate false))
+            (update CODEX|T|StoicTagsByAccount account-address (UDC_STBA|IzActiveUpdate false))
+        )
+    )
+    ;;{5.7}  User [A/C]
+    (defun A_RegisterCodexIdentity:string
+        ( codex-id:string
+          public-standard:string
+          public-smart:string
+          codex-guard:guard
+          registered-by:string )
+        @doc "ADMIN-only insert into CODEX|T|Identities; standard/smart halves derived from codex-id."
+        (P|UEV_IMC)
+        (with-capability (CODEX|A>REGISTER-IDENTITY codex-id public-standard public-smart codex-guard registered-by)
+            (XI_InsertIdentity
+                codex-id public-standard public-smart codex-guard registered-by
+            )
+        )
+        (format "Codex Identity {} registered" [codex-id])
+    )
+    (defun C_RotateCodexGuard:string (codex-id:string new-codex-guard:guard)
+        @doc "Rotate codex-guard; validation in CODEX|C>ROTATE-GUARD; XI writes only."
+        (P|UEV_IMC)
+        (with-capability (CODEX|C>ROTATE-GUARD codex-id new-codex-guard)
+            (XI_UpdateCodexGuard codex-id new-codex-guard)
+        )
+        (format "Codex {} guard rotated" [codex-id])
+    )
+    ;;
+    (defun C_RecordArweaveUpload:string (codex-id:string arweave-tx-id:string uploaded-bytes:integer)
+        @doc "Append one row to CODEX|T|ArweaveTracker; validation in CODEX|C>RECORD-ARWEAVE."
+        (P|UEV_IMC)
+        (with-capability (CODEX|C>RECORD-ARWEAVE codex-id arweave-tx-id uploaded-bytes)
+            (XI_InsertArweaveTracker codex-id arweave-tx-id uploaded-bytes)
+        )
+        (format "Upload recorded: {} -> {}" [codex-id arweave-tx-id])
+    )
+    ;;
+    (defun C_RegisterStoicTag:string (tag-name:string account-address:string)
+        @doc "Register StoicTag; validation in CODEX|C>REGISTER-STOICTAG; XI writes only (1 STOA/glyph fee in TS01-C4)."
+        (P|UEV_IMC)
+        (with-capability (CODEX|C>REGISTER-STOICTAG tag-name account-address)
+            (XI_UpsertStoicTag tag-name account-address)
+        )
+        (format "StoicTag §{} registered to account {}" [tag-name account-address])
+    )
+    ;;
+    (defun C_ReleaseStoicTag:string (tag-name:string)
+        @doc "Release StoicTag (iz-active false); validation in CODEX|C>RELEASE-STOICTAG; XI updates only."
+        (P|UEV_IMC)
+        (with-capability (CODEX|C>RELEASE-STOICTAG tag-name)
+            (XI_DeactivateStoicTag tag-name)
+        )
+        (format "StoicTag §{} released" [tag-name])
+    )
+
+)
+
+;; --- tables for 21_CODEX.pact (6 defined) ---
+;; UPGRADE MODE: this module is assumed already deployed, so its
+;; tables already exist and (create-table) would ABORT the whole
+;; transaction. They are listed here, commented, for reference.
+;; If any of these is NEW since the last deploy, uncomment JUST it.
+;; (create-table P|T)
+;; (create-table P|MT)
+;; (create-table CODEX|T|Identities)
+;; (create-table CODEX|T|ArweaveTracker)
+;; (create-table CODEX|T|StoicTags)
+;; (create-table CODEX|T|StoicTagsByAccount)
 
 ;; ===== 1_SOVEREIGN/STAGE_01/2_Core/22_PYTHIA.pact ==================
 ;; PYTHIA — Apollo Pythia dual-Apollo API-key registry (Stage 01 core #23).
@@ -4312,1918 +5415,6 @@
 )
 
 ;; --- tables for 02_TS01-C1.pact (2 defined) ---
-;; UPGRADE MODE: this module is assumed already deployed, so its
-;; tables already exist and (create-table) would ABORT the whole
-;; transaction. They are listed here, commented, for reference.
-;; If any of these is NEW since the last deploy, uncomment JUST it.
-;; (create-table P|T)
-;; (create-table P|MT)
-
-;; ===== 1_SOVEREIGN/STAGE_01/3_Talos/03_TS01-C2.pact ================
-;; Deploy: load THIS file — interface(s) + module ship together.
-;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/03_Talos.pact
-;;
-;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface TalosStageOne_ClientTwoV2
-    @doc "Exposes Ouronet Stage One Second Batch of Client Functions \
-        \ Modules: ATS, VST, LQD and ORBR are included in the Second Batch"
-
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;{G2}  schemas
-    ;;{G3}  tables  ⟨cannot exist in an interface⟩
-    ;;{G4}  capabilities
-    ;;{G5}  functions
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    ;;{P2}  schemas
-    ;;{P3}  tables  ⟨cannot exist in an interface⟩
-    ;;{P4}  capabilities
-    ;;{P5}  functions
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    ;;{3.2}  schemas
-    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    ;;{5.2}  Compute [UC]
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;{5.4}  Validate [UEV/CAP]
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;{5.7}  User [A/C]
-    ;;
-    (defun ATS|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
-    (defun ATS|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer))
-    ;;
-    ;;Hot Rbt Management
-    (defun ATS|HOT-RBT|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
-    (defun ATS|HOT-RBT|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer))
-    (defun ATS|HOT-RBT|C_Repurpose (patron:string executor:string executee:string hot-rbt:string nonce:integer))
-        ;;
-    (defun ATS|C_Issue:list (patron:string account:string ats:[string] index-decimals:[integer] reward-token:[string] rt-nfr:[bool] reward-bearing-token:[string] rbt-nfr:[bool]))
-    (defun ATS|C_RotateOwnership (patron:string executor:string executee:string ats:string))
-    (defun ATS|C_Control (patron:string executor:string ats:string can-change-owner:bool syphoning:bool hibernate:bool))
-    (defun ATS|C_UpdateRoyalty (patron:string executor:string ats:string royalty:decimal))
-    (defun ATS|C_UpdateSyphon (patron:string executor:string ats:string syphon:decimal))
-    (defun ATS|C_SetHibernationFees (patron:string executor:string ats:string peak:decimal decay:decimal))
-        ;;
-    (defun ATS|C_ToggleParameterLock (patron:string executor:string ats:string toggle:bool))
-    (defun ATS|C_AddSecondary (patron:string executor:string ats:string reward-token:string rt-nfr:bool))
-        ;;
-    (defun ATS|C_ControlColdRecoveryFees (patron:string executor:string ats:string c-nfr:bool c-fr:bool))
-    (defun ATS|C_SetColdRecoveryFees (patron:string executor:string ats:string fee-positions:integer fee-thresholds:[decimal] fee-array:[[decimal]]))
-    (defun ATS|C_SetColdRecoveryDuration (patron:string executor:string ats:string soft-or-hard:bool base:integer growth:integer))
-    (defun ATS|C_ToggleElite (patron:string executor:string ats:string toggle:bool))
-    (defun ATS|C_ToggleUpgrade (patron:string executor:string ats:string toggle:bool))
-    (defun ATS|C_SwitchColdRecovery (patron:string executor:string ats:string toggle:bool))
-        ;;
-    (defun ATS|C_AddHotRBT (patron:string executor:string ats:string hot-rbt:string))
-    (defun ATS|C_ControlHotRecoveryFee (patron:string executor:string ats:string h-fr:bool))
-    (defun ATS|C_SetHotRecoveryFee (patron:string executor:string ats:string promile:decimal decay:integer))
-    (defun ATS|C_SwitchHotRecovery (patron:string executor:string ats:string toggle:bool))
-        ;;
-    (defun ATS|C_SetDirectRecoveryFee (patron:string executor:string ats:string promile:decimal))
-    (defun ATS|C_SwitchDirectRecovery (patron:string executor:string ats:string toggle:bool))
-        ;;
-    (defun ATS|CC_RemoveSecondary (patron:string remover:string ats:string reward-token:string))
-    (defun ATS|C_WithdrawRoyalties (patron:string ats:string target:string))
-    (defun ATS|C_KickStart (patron:string kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
-    (defun ATS|C_Fuel (patron:string fueler:string ats:string reward-token:string amount:decimal))
-    (defun ATS|C_Coil (patron:string coiler:string ats:string rt:string amount:decimal))
-    (defun ATS|C_Curl (patron:string curler:string ats1:string ats2:string rt:string amount:decimal))
-    (defun ATS|C_VestedCoil (patron:string coiler-vester:string ats:string coil-token:string amount:decimal target-account:string offset:integer duration:integer milestones:integer))
-    (defun ATS|C_VestedCurl (patron:string curler-vester:string ats1:string ats2:string curl-token:string amount:decimal target-account:string offset:integer duration:integer milestones:integer))
-    (defun ATS|C_Constrict (patron:string constricter:string ats:string rt:string amount:decimal dayz:integer))
-    (defun ATS|C_Brumate (patron:string brumator:string ats1:string ats2:string rt:string amount:decimal dayz:integer))
-    (defun ATS|C_Syphon (patron:string syphon-target:string ats:string syphon-amounts:[decimal]))
-        ;;
-    (defun ATS|C_ColdRecovery (patron:string recoverer:string ats:string ra:decimal))
-    (defun ATS|C_Cull (patron:string culler:string ats:string))
-        ;;
-    (defun ATS|C_HotRecovery (patron:string recoverer:string ats:string ra:decimal))
-    (defun ATS|C_Reverse (patron:string recoverer:string id:string nonce:integer))
-    (defun ATS|C_Redeem (patron:string redeemer:string id:string nonce:integer))
-        ;;
-    (defun ATS|C_DirectRecovery (patron:string recoverer:string ats:string ra:decimal))
-    ;;
-    ;;
-    (defun VST|C_CreateFrozenLink:[string] (patron:string dptf:string))
-    (defun VST|C_CreateReservationLink:[string] (patron:string dptf:string))
-    (defun VST|C_CreateVestingLink:[string] (patron:string dptf:string))
-    (defun VST|C_CreateSleepingLink:[string] (patron:string dptf:string))
-    (defun VST|C_CreateHibernatingLink:[string] (patron:string dptf:string))
-        ;;Frozen
-    (defun VST|C_Freeze (patron:string freezer:string freeze-output:string dptf:string amount:decimal))
-    (defun VST|C_RepurposeFrozen (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string))
-    (defun VST|C_ToggleTransferRoleFrozenDPTF (patron:string s-dptf:string target:string toggle:bool))
-        ;;Reservation
-    (defun VST|C_Reserve (patron:string reserver:string dptf:string amount:decimal))
-    (defun VST|C_Unreserve (patron:string unreserver:string r-dptf:string amount:decimal))
-    (defun VST|C_RepurposeReserved (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string))
-    (defun VST|C_ToggleTransferRoleReservedDPTF (patron:string s-dptf:string target:string toggle:bool))
-        ;;Vesting
-    (defun VST|C_Vest (patron:string vester:string target-account:string dptf:string amount:decimal offset:integer seconds:integer milestones:integer))
-    (defun VST|C_Unvest (patron:string unvester:string dpof:string nonce:integer))
-    (defun VST|C_RepurposeVested (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
-        ;;Sleeping
-    (defun VST|C_Sleep (patron:string sleeper:string target-account:string dptf:string amount:decimal seconds:integer))
-    (defun VST|C_Unsleep (patron:string unsleeper:string dpof:string nonce:integer))
-    (defun VST|C_Merge(patron:string merger:string dpof:string nonces:[integer]))
-    (defun VST|C_RepurposeMerge (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string))
-    (defun VST|C_RepurposeSleeping (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
-    (defun VST|C_ToggleTransferRoleSleepingDPOF (patron:string s-dpof:string target:string toggle:bool))
-        ;;Hibernating
-    (defun VST|C_Hibernate (patron:string hibernator:string target-account:string dptf:string amount:decimal dayz:integer))
-    (defun VST|C_Awake (patron:string awaker:string dpof:string nonce:integer))
-    (defun VST|C_Slumber (patron:string merger:string dpof:string nonces:[integer]))
-    (defun VST|C_RepurposeSlumber (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string))
-    (defun VST|C_RepurposeHibernating (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
-    (defun VST|C_ToggleTransferRoleHibernatingDPOF (patron:string s-dpof:string target:string toggle:bool))
-    ;;
-    ;;
-    (defun LQD|C_UnwrapStoa (patron:string unwrapper:string amount:decimal))
-    (defun LQD|C_WrapStoa (patron:string wrapper:string amount:decimal))
-    ;;#13H fix: LQD|C_RegisterOuronetAccountForUrstoaHoldings removed (2026-08-27) - see
-    ;;12_LIQUID.pact's matching note; account creation is UI-constructed, not a Pact function.
-    (defun LQD|C_UnwrapUrStoa (patron:string unwrapper:string amount:decimal))
-    (defun LQD|C_WrapUrStoa (patron:string wrapper:string amount:decimal))
-    ;;
-    ;;
-    (defun ORBR|C_Compress (client:string ignis-amount:decimal))
-    (defun ORBR|C_Sublimate (client:string target:string ouro-amount:decimal))
-    (defun ORBR|C_SublimateV2 (client:string target:string ouro-amount:decimal))
-    (defun ORBR|C_WithdrawFees (patron:string id:string target:string))
-
-)
-;;
-(module TS01-C2 GOV
-    @doc "TALOS Client Module for Stage 1, namely ATS VST LIQUID and OUROBOROS Modules"
-
-    ;;<=========================================================================>
-    ;;{0}  IMPLEMENTERS
-    ;;
-    (implements OuronetPolicyV2)
-    (implements TalosStageOne_ClientTwoV2)
-
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;
-    (defconst GOV|MD_TS01-C2                            (keyset-ref-guard (GOV|Demiurgoi)))
-    ;;{G2}  schemas
-    ;;{G3}  tables
-    ;;{G4}  capabilities
-    (defcap GOV ()                                      (compose-capability (GOV|TS01-C1_ADMIN)))
-    (defcap GOV|TS01-C1_ADMIN ()                        (enforce-guard GOV|MD_TS01-C2))
-    ;;{G5}  functions
-    (defun GOV|Demiurgoi ()
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-            )
-            (ref-DALOS::GOV|Demiurgoi)
-        )
-    )
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    (defconst P|I                                       (P|Info))
-    ;;{P2}  schemas
-    ;;{P3}  tables
-    ;;
-    (deftable P|T:{OuronetPolicyV2.P|S})
-    (deftable P|MT:{OuronetPolicyV2.P|MS})
-    ;;{P4}  capabilities
-    (defcap P|TS ()
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (gap:bool (ref-DALOS::UR_GAP))
-            )
-            (enforce (not gap) "While Global Administrative Pause is online, no client Functions can be executed")
-            (compose-capability (P|TALOS-SUMMONER))
-        )
-    )
-    (defcap P|TALOS-SUMMONER ()
-        @doc "Talos Summoner Capability"
-        true
-    )
-    ;;{P5}  functions
-    (defun P|Info ()
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-            )
-            (ref-DALOS::P|Info)
-        )
-    )
-    (defun P|UR:guard (policy-name:string)
-        (at "policy" (read P|T policy-name ["policy"]))
-    )
-    (defun P|UR_IMP:[guard] ()
-        ;;DEFAULT ADDED 2026-09-14 (owner ruling). This was a bare `read`, which RAISES
-        ;;`No value found in table <M>_P|MT for key: InterModulePolicies` when the row does not
-        ;;exist -- i.e. before ANY module has registered. P|UEV_IMC is built on this, so in that
-        ;;window the inter-module gate answered with a raw table error naming a row key instead of
-        ;;refusing cleanly. Surfaced by the X-01 repair, which removed the harness registration
-        ;;that had been creating the row as a side effect.
-        ;;
-        ;;The default is the module's OWN SECURE capability guard, which is exactly what
-        ;;P|A_AddIMP already seeds the row with. So reader and writer now agree on what an
-        ;;unregistered policy list contains, and the gate's answer is the same before and after
-        ;;the first registration: satisfiable only from inside this module.
-        (with-default-read P|MT P|I
-            {"m-policies" : [(create-capability-guard (SECURE))]}
-            {"m-policies" := mp}
-            mp
-        )
-    )
-    (defun P|UEV_IMC ()
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV2} U|G)
-            )
-            (ref-U|G::UEV_Any (P|UR_IMP))
-        )
-    )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
-        (with-capability (GOV|TS01-C1_ADMIN)
-            (write P|T policy-name
-                {"policy" : policy-guard}
-            )
-        )
-    )
-    (defun P|A_AddIMP (policy-guard:guard)
-        @doc "Registers <policy-guard> as a trusted inter-module caller of this module. \
-            \ IDEMPOTENT: a guard already in the chain is left alone rather than appended \
-            \ a second time. See OuronetPolicyV2 for why that is load-bearing."
-        (with-capability (GOV|TS01-C1_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV2} U|LST)
-                    ;;
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" :
-                            (if (contains policy-guard mp)
-                                mp
-                                (ref-U|LST::UC_AppL mp policy-guard)
-                            )
-                        }
-                    )
-                )
-            )
-        )
-    )
-    (defun P|A_RemoveIMP (policy-guard:guard)
-        @doc "Revokes <policy-guard> from this module's guard chain. Removes EVERY occurrence, so \
-            \ it doubles as the cleanup for duplicates left behind by the pre-idempotence append. \
-            \ Refuses to drop this module's own SECURE seed -- see OuronetPolicyV2."
-        (with-capability (GOV|TS01-C1_ADMIN)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV2} U|LST)
-                    ;;
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (enforce (!= policy-guard dg) "The module's own SECURE seed cannot be revoked")
-                (with-default-read P|MT P|I
-                    {"m-policies" : [dg]}
-                    {"m-policies" := mp}
-                    (write P|MT P|I
-                        {"m-policies" : (ref-U|LST::UC_RemoveItem mp policy-guard)}
-                    )
-                )
-            )
-        )
-    )
-    (defun P|A_SetIMP (policy-guards:[guard])
-        @doc "Replaces this module's whole guard chain in one write -- the recovery hatch. \
-            \ Deduplicates, and enforces that the module's own SECURE seed survives: without it \
-            \ the module can no longer reach its own P|UEV_IMC-gated functions."
-        (with-capability (GOV|TS01-C1_ADMIN)
-            (let
-                (
-                    (dg:guard (create-capability-guard (SECURE)))
-                )
-                (enforce (contains dg policy-guards) "The module's own SECURE seed must be present")
-                (write P|MT P|I
-                    {"m-policies" : (distinct policy-guards)}
-                )
-            )
-        )
-    )
-    (defun P|A_Define ()
-        (let
-            (
-                (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
-                (ref-P|DPOF:module{OuronetPolicyV2} DPOF)
-                (ref-P|ATS:module{OuronetPolicyV2} ATS)
-                (ref-P|ATSU:module{OuronetPolicyV2} ATSU)
-                (ref-P|VST:module{OuronetPolicyV2} VST)
-                (ref-P|LIQUID:module{OuronetPolicyV2} LIQUID)
-                (ref-P|ORBR:module{OuronetPolicyV2} OUROBOROS)
-                (ref-P|SWPT:module{OuronetPolicyV2} SWPT)
-                (ref-P|SWP:module{OuronetPolicyV2} SWP)
-                (ref-P|SWPI:module{OuronetPolicyV2} SWPI)
-                (ref-P|SWPL:module{OuronetPolicyV2} SWPL)
-                (ref-P|SWPLC:module{OuronetPolicyV2} SWPLC)
-                (ref-P|SWPU:module{OuronetPolicyV2} SWPU)
-                (ref-P|TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                (mg:guard (create-capability-guard (P|TALOS-SUMMONER)))
-            )
-            (ref-P|IGNIS::P|A_AddIMP mg)
-            (ref-P|DPOF::P|A_AddIMP mg)
-            (ref-P|ATS::P|A_AddIMP mg)
-            (ref-P|ATSU::P|A_AddIMP mg)
-            (ref-P|VST::P|A_AddIMP mg)
-            (ref-P|LIQUID::P|A_AddIMP mg)
-            (ref-P|ORBR::P|A_AddIMP mg)
-            ;;
-            (ref-P|SWPT::P|A_AddIMP mg)
-            (ref-P|SWP::P|A_AddIMP mg)
-            (ref-P|SWPI::P|A_AddIMP mg)
-            (ref-P|SWPL::P|A_AddIMP mg)
-            (ref-P|SWPLC::P|A_AddIMP mg)
-            (ref-P|SWPU::P|A_AddIMP mg)
-            (ref-P|TS01-A::P|A_AddIMP mg)
-        )
-    )
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    (defconst BAR                                       (CT_Bar))
-    ;;{3.2}  schemas
-    ;;{3.3}  tables
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;
-    (defcap SECURE ()
-        true
-    )
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    ;;
-    (defun CT_Bar ()
-        (let
-            (
-                (ref-U|CT:module{OuronetConstantsV2} U|CT)
-            )
-            (ref-U|CT::CT_BAR)
-        )
-    )
-    ;;{5.2}  Compute [UC]
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;{5.4}  Validate [UEV/CAP]
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;{5.7}  User [A/C]
-    ;;
-    ;;
-    ;;  [ATS_Client]
-    (defun ATS|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
-        @doc "Updates <pending-branding> for ATSPair <entity-id> costing 500 IGNIS"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-B|ATS:module{BrandingUsagePrimaryV2} ATS)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-B|ATS::C_UpdatePendingBranding patron executor entity-id logo description website social)
-                )
-            )
-        )
-    )
-    (defun ATS|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer)
-        @doc "Similar to its DPTF, DPOF Variants"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-B|ATS:module{BrandingUsagePrimaryV2} ATS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                )
-                (ref-B|ATS::C_UpgradeBranding patron executor entity-id months)
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-            )
-        )
-    )
-    ;;
-    (defun ATS|HOT-RBT|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
-        @doc "Updates <pending-branding> for a HOT-RBT <entity-id> costing 150 IGNIS (Standard DPOF Costs)"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATS::HOT-RBT|C_UpdatePendingBranding patron executor entity-id logo description website social)
-                )
-            )
-        )
-    )
-    (defun ATS|HOT-RBT|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer)
-        @doc "Similar to its DPTF, DPOF Variants"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-ATS:module{AutostakeV3} ATS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                )
-                (ref-ATS::HOT-RBT|C_UpgradeBranding patron executor entity-id months)
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-            )
-        )
-    )
-    (defun ATS|HOT-RBT|C_Repurpose (patron:string executor:string executee:string hot-rbt:string nonce:integer)
-        @doc "Repurposes a Hot-Rbt to a another Account, Can only be done by atspair owner"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
-                    (srt:string (ref-I|OURONET::OI|UC_ShortAccount executee))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATS::HOT-RBT|C_Repurpose patron executor executee hot-rbt nonce)
-                )
-                (format "Succesfully repurposed HOT-RBT {} Nonce {} to Account {}" [hot-rbt nonce srt])
-            )
-        )
-    )
-    ;;
-    (defun ATS|C_Issue:list (patron:string account:string ats:[string] index-decimals:[integer] reward-token:[string] rt-nfr:[bool] reward-bearing-token:[string] rbt-nfr:[bool])
-        @doc "Issues and Autostake Pair"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-ATS::C_Issue patron account ats index-decimals reward-token rt-nfr reward-bearing-token rbt-nfr)
-                    )
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                (at "output" ico)
-            )
-        )
-    )
-    (defun ATS|C_RotateOwnership (patron:string executor:string executee:string ats:string)
-        @doc "Rotates ATSPair Ownership"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATS::C_RotateOwnership patron executor executee ats)
-                )
-                (format "Succesfully changed ownership for ATS-Pair {}" [ats])
-            )
-        )
-    )
-    (defun ATS|C_Control (patron:string executor:string ats:string can-change-owner:bool syphoning:bool hibernate:bool)
-        @doc "Controls the Properties of an ATS-Pair"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATS::C_Control patron executor ats can-change-owner syphoning hibernate)
-                )
-                (format "Succesfully controlled ATS-Pair {}" [ats])
-            )
-        )
-    )
-    (defun ATS|C_UpdateRoyalty (patron:string executor:string ats:string royalty:decimal)
-        @doc "Updates the Royalty value for an ATS-Pair"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATS::C_UpdateRoyalty patron executor ats royalty)
-                )
-                (format "Royalty for ATS-Pair {} updated Succesfully to {} Promile" [ats royalty])
-            )
-        )
-    )
-    (defun ATS|C_UpdateSyphon (patron:string executor:string ats:string syphon:decimal)
-        @doc "Updates the Syphoning Index value for an ATS-Pair"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATS::C_UpdateSyphon patron executor ats syphon)
-                )
-                (format "Syphon Index for ATS-Pair {} updated Succesfully to {}" [ats syphon])
-            )
-        )
-    )
-    (defun ATS|C_SetHibernationFees (patron:string executor:string ats:string peak:decimal decay:decimal)
-        @doc "Updates the Hibernation Fees an ATS-Pair"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATS::C_SetHibernationFees patron executor ats peak decay)
-                )
-                (format "Hibernation Fees for ATS-Pair {} set to {} Promile-Peak and {} Promile-Decay per Day" [ats peak decay])
-            )
-        )
-    )
-    ;;
-    (defun ATS|C_ToggleParameterLock (patron:string executor:string ats:string toggle:bool)
-        @doc "Toggle ATSPair Parameter Lock"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-ATS::C_ToggleParameterLock patron executor ats toggle)
-                    )
-                    (collect:bool (at 0 (at "output" ico)))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (ref-TS01-A::XE_ConditionalFuelSTOA collect)
-            )
-        )
-    )
-    (defun ATS|C_AddSecondary (patron:string executor:string ats:string reward-token:string rt-nfr:bool)
-        @doc "Adds a Secondary RT to an ATSPair"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATS::C_AddSecondary patron executor ats reward-token rt-nfr)
-                )
-                (if rt-nfr
-                    (format "Succesfully Added {} as a secondndary Reward Token for the ATS-Pair {} with Native-Fee-Recovery" [ats reward-token])
-                    (format "Succesfully Added {} as a secondndary Reward Token for the ATS-Pair {} without Native-Fee-Recovery" [ats reward-token])
-                )
-                
-            )
-        )
-    )
-    ;;
-    (defun ATS|C_ControlColdRecoveryFees (patron:string executor:string ats:string c-nfr:bool c-fr:bool)
-        @doc "Adds a Secondary RT to an ATSPair"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATS::C_ControlColdRecoveryFees patron executor ats c-nfr c-fr)
-                )
-                (format "Succesfully controlled Cold Recovery Fees for ATS-Pair {}" [ats])
-                
-            )
-        )
-    )
-    (defun ATS|C_SetColdRecoveryFees (patron:string executor:string ats:string fee-positions:integer fee-thresholds:[decimal] fee-array:[[decimal]])
-        @doc "Adds a Secondary RT to an ATSPair"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATS::C_SetColdRecoveryFees patron executor ats fee-positions fee-thresholds fee-array)
-                )
-                (format "Succesfully set Cold Recovery Fees for ATS-Pair {}" [ats])
-                
-            )
-        )
-    )
-    (defun ATS|C_SetColdRecoveryDuration (patron:string executor:string ats:string soft-or-hard:bool base:integer growth:integer)
-        @doc "Adds a Secondary RT to an ATSPair"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATS::C_SetColdRecoveryDuration patron executor ats soft-or-hard base growth)
-                )
-                (format "Succesfully set Cold Recovery Duration for ATS-Pair {}" [ats])
-                
-            )
-        )
-    )
-    (defun ATS|C_ToggleElite (patron:string executor:string ats:string toggle:bool)
-        @doc "Toggles ATSPair Elite Functionality"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATS::C_ToggleElite patron executor ats toggle)
-                )
-                (if toggle
-                    (format "Succesfully switched on Elite Mode for ATS-Pair {}" [ats])
-                    (format "Succesfully switched off Elite Mode for ATS-Pair {}" [ats])
-                )
-            )
-        )
-    )
-    (defun ATS|C_ToggleUpgrade (patron:string executor:string ats:string toggle:bool)
-        @doc "Sets can-upgrade for an ATS-Pair (audit finding #21L / L3). Gates C_Control \
-            \ (can-change-owner/syphoning/hibernate) - false blocks C_Control entirely \
-            \ until set back to true."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATS::C_ToggleUpgrade patron executor ats toggle)
-                )
-                (if toggle
-                    (format "Succesfully allowed further Property Upgrades (can-upgrade) for ATS-Pair {}" [ats])
-                    (format "Succesfully blocked further Property Upgrades (can-upgrade) for ATS-Pair {} - C_Control is now disabled until this is turned back on" [ats])
-                )
-            )
-        )
-    )
-    (defun ATS|C_SwitchColdRecovery (patron:string executor:string ats:string toggle:bool)
-        @doc "Switches on or off Cold Recovery"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATS::C_SwitchColdRecovery patron executor ats toggle)
-                )
-                (if toggle
-                    (format "Succesfully switched on Cold Recovery for ATS-Pair {}" [ats])
-                    (format "Succesfully switched off Cold Recovery for ATS-Pair {}" [ats])
-                )
-                
-            )
-        )
-    )
-    ;;
-    (defun ATS|C_AddHotRBT (patron:string executor:string ats:string hot-rbt:string)
-        @doc "Adds a Hot-RBT to an ATS-Pair immutably \
-            \ Must be a non special DPOF Token with zero Supply \
-            \ Ownership of this Token is transfered to the ATS|SC_NAME"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATS::C_AddHotRBT patron executor ats hot-rbt)
-                )
-                (format "Succesfully added DPOF {} as Hot-RBT for ATS-Pair {}" [hot-rbt ats])
-            )
-        )
-    )
-    (defun ATS|C_ControlHotRecoveryFee (patron:string executor:string ats:string h-fr:bool)
-        @doc "Controls Hot Recovery Fees"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATS::C_ControlHotRecoveryFee patron executor ats h-fr)
-                )
-                (format "Succesfully controlled Hot-Recovery Fee for ATS-Pair {}" [ats])
-            )
-        )
-    )
-    (defun ATS|C_SetHotRecoveryFee (patron:string executor:string ats:string promile:decimal decay:integer)
-        @doc "Controls Hot Recovery Fees"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATS::C_SetHotRecoveryFees patron executor ats promile decay)
-                )
-                (format "Succesfully set Hot-Recovery Fees for ATS-Pair {} to {} Promile and {} Days-Decay" [ats promile decay])
-            )
-        )
-    )
-    (defun ATS|C_SwitchHotRecovery (patron:string executor:string ats:string toggle:bool)
-        @doc "Switches on or off Hot Recovery"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATS::C_SwitchHotRecovery patron executor ats toggle)
-                )
-                (if toggle
-                    (format "Succesfully switched on Hot Recovery for ATS-Pair {}" [ats])
-                    (format "Succesfully switched off Hot Recovery for ATS-Pair {}" [ats])
-                )
-                
-            )
-        )
-    )
-    ;;
-    (defun ATS|C_SetDirectRecoveryFee (patron:string executor:string ats:string promile:decimal)
-        @doc "Controls Direct Recovery Fees"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATS::C_SetDirectRecoveryFee patron executor ats promile)
-                )
-                (format "Succesfully set Direct-Recovery Fees for ATS-Pair {} to {} Promile" [ats promile])
-            )
-        )
-    )
-    (defun ATS|C_SwitchDirectRecovery (patron:string executor:string ats:string toggle:bool)
-        @doc "Switches on or off Direct Recovery"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATS::C_SwitchDirectRecovery patron executor ats toggle)
-                )
-                (if toggle
-                    (format "Succesfully switched on Direct Recovery for ATS-Pair {}" [ats])
-                    (format "Succesfully switched off Direct Recovery for ATS-Pair {}" [ats])
-                )
-                
-            )
-        )
-    )
-    ;;
-    ;;
-    (defun ATS|CC_RemoveSecondary (patron:string remover:string ats:string reward-token:string)
-        @doc "Controls Direct Recovery Fees"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATSU:module{AutostakeUsageV2} ATSU)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATSU::CC_RemoveSecondary remover ats reward-token)
-                )
-                (format "Succesfully removed RT {} from ATS-Pair" [reward-token ats])
-            )
-        )
-    )
-    (defun ATS|C_WithdrawRoyalties (patron:string ats:string target:string)
-        @doc "Withdraws ATS-Pair Royalties, if non-zero"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-ATSU:module{AutostakeUsageV2} ATSU)
-                    (st:string (ref-I|OURONET::OI|UC_ShortAccount target))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATSU::C_WithdrawRoyalties ats target)
-                )
-                (format "Succesfully withdrawn Royalties from ATS-Pair {} to Account {}" [ats st])
-            )
-        )
-    )
-    (defun ATS|C_KickStart (patron:string kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
-        @doc "Kickstarst an ATSPair, so that it starts at a given Index \
-            \ Can only be done on a freshly created ATS-Pair"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATSU:module{AutostakeUsageV2} ATSU)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-ATSU::C_KickStart patron kickstarter ats rt-amounts rbt-request-amount)
-                    )
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (format "Succesfully Kickstarted ATS-Pair {} to an Index of {}" [ats (at 0 (at "output" ico))])
-            )
-        )
-    )
-    (defun ATS|C_Fuel (patron:string fueler:string ats:string reward-token:string amount:decimal)
-        @doc "Fuels an ATSPair with RT Tokens, increasing its Index"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
-                    (ref-ATSU:module{AutostakeUsageV2} ATSU)
-                    (prev-index:decimal (ref-ATS::URC_Index ats))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATSU::C_Fuel fueler ats reward-token amount)
-                )
-                (format "Succesfully fueld ATS-Pair {} increasing its index by {}"
-                    [ats (- (ref-ATS::URC_Index ats) prev-index)]
-                )
-            )
-        )
-    )
-    (defun ATS|C_Coil (patron:string coiler:string ats:string rt:string amount:decimal)
-        @doc "Coils an RT Token from a specific ATS-Pair, generating a RBT Token \
-        \ Only works if <ats> has hibernation off."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATSU:module{AutostakeUsageV2} ATSU)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-ATSU::C_Coil patron coiler ats rt amount)
-                    )
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (format "Succesfully coiled {} {} on ATS-Pair {} generating {} RBT Tokens" [amount rt ats (at 0 (at "output" ico))])
-            )
-        )
-    )
-    (defun ATS|C_Curl (patron:string curler:string ats1:string ats2:string rt:string amount:decimal)
-        @doc "Curl double coils an RT Token in 2 chained ATS-Pairs \
-            \ The RBT Token of <ats1> must be RBT Token in <ats2> \
-            \ Both ATS-Pairs must have hibernation off for this to work."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATSU:module{AutostakeUsageV2} ATSU)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-ATSU::C_Curl patron curler ats1 ats2 rt amount)
-                    )
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (format "Succesfully curled {} {} on ATS-Pairs {} and {} generating {} RBT Tokens of the second ATS-Pair" 
-                    [amount rt ats1 ats2 (at 0 (at "output" ico))]
-                )
-            )
-        )
-    )
-    (defun ATS|C_VestedCoil (patron:string coiler-vester:string ats:string coil-token:string amount:decimal target-account:string offset:integer duration:integer milestones:integer)
-        @doc "Coils a DPTF Token and Vests its output to <target-account> \
-            \ Requires that: \
-            \ *]Input DPTF is part of an ATSPair, the <ats> \
-            \ *]That the RBT of <ats> has a vested counterpart \
-            \ \
-            \ Outputs the resulted Vested Cold-RBT Amount \
-            \ Only the Owner of <coil-token> can execute thi function, \
-            \ as this is prerequisite for Vesting"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
-                    (ref-ATSU:module{AutostakeUsageV2} ATSU)
-                    (ref-VST:module{VestingV2} VST)
-                    ;;
-                    (coil-data:object{AutostakeV3.CoilData} 
-                        (ref-ATS::URC_RewardBearingTokenAmounts ats coil-token amount)
-                    )
-                    (c-rbt:string (at "rbt-id" coil-data))
-                    (c-rbt-amount:decimal (at "rbt-amount" coil-data))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-IGNIS::UDC_ConcatenateOutputCumulators
-                        [
-                            (ref-ATSU::C_Coil patron coiler-vester ats coil-token amount)
-                            (ref-VST::C_Vest patron coiler-vester target-account c-rbt c-rbt-amount offset duration milestones)
-                        ]
-                        []
-                    )
-                )
-                (format "Succesfully coiled {} {} on ATS-Pair {} generating {} Vested RBT Tokens" [amount coil-token ats c-rbt-amount])
-            )
-        )
-    )
-    (defun ATS|C_VestedCurl (patron:string curler-vester:string ats1:string ats2:string curl-token:string amount:decimal target-account:string offset:integer duration:integer milestones:integer)
-        @doc "Same as <ATS|C_VestedCoil> but instead Curls the input Token. \
-            \ Requires that : \
-            \ *]Input DPTF is part of an ATSPair, the <ats1> \
-            \ *]That the Cold-RBT Token of the <ats1> is RT in <ats2> \
-            \ *]That Cold-RBT of <ats2> has a vested counterpat \
-            \ \
-            \ Outputs the resulted Vested Cold-RBT of <ats2>"
-        (with-capability (P|TS)
-            (let*
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATS:module{AutostakeV3} ATS)
-                    (ref-ATSU:module{AutostakeUsageV2} ATSU)
-                    (ref-VST:module{VestingV2} VST)
-                    ;;
-                    (coil1-data:object{AutostakeV3.CoilData} 
-                        (ref-ATS::URC_RewardBearingTokenAmounts ats1 curl-token amount)
-                    )
-                    (coil2-data:object{AutostakeV3.CoilData} 
-                        (ref-ATS::URC_RewardBearingTokenAmounts ats2 (at "rbt-id" coil1-data) (at "rbt-amount" coil1-data))
-                    )
-                    (c-rbt2-amount:decimal (at "rbt-amount" coil2-data))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-IGNIS::UDC_ConcatenateOutputCumulators
-                        [
-                            (ref-ATSU::C_Curl patron curler-vester ats1 ats2 curl-token amount)
-                            (ref-VST::C_Vest patron curler-vester target-account (at "rbt-id" coil2-data) c-rbt2-amount offset duration milestones)
-                        ]
-                        []
-                    )
-                )
-                (format "Succesfully curled {} {} on ATS-Pair {} and {} generating {} Vested RBT Tokens of the second ATS-Pair" 
-                    [amount curl-token ats1 ats2 c-rbt2-amount]
-                )
-            )
-        )
-    )
-    (defun ATS|C_Constrict (patron:string constricter:string ats:string rt:string amount:decimal dayz:integer)
-        @doc "Constricts an RT Token from a specific ATS-Pair, generating a RBT Token in HIbernated Form \
-        \ Only works if <ats> has hibernation on."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-VST::C_Constrict patron constricter ats rt amount dayz)
-                    )
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (format "Succesfully constricted {} {} on ATS-Pair {} generating {} Hibernated RBT Tokens" 
-                    [amount rt ats (at 0 (at "output" ico))]
-                )
-            )
-        )
-    )
-    (defun ATS|C_Brumate (patron:string brumator:string ats1:string ats2:string rt:string amount:decimal dayz:integer)
-        @doc "Brumate double coils an RT Token in 2 chained ATS-Pairs \
-            \ The RBT Token of <ats1> must be RBT Token in <ats2> \
-            \ Second ATS-Pair must have hibernation on for this to work."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-VST::C_Brumate patron brumator ats1 ats2 rt amount dayz)
-                    )
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (format "Succesfully brumated {} {} on ATS-Pairs {} and {} generating {} Hibernated RBT Tokens of the second ATS-Pair" 
-                    [amount rt ats1 ats2 (at 0 (at "output" ico))]
-                )
-            )
-        )
-    )
-    (defun ATS|C_Syphon (patron:string syphon-target:string ats:string syphon-amounts:[decimal])
-        @doc "Syphons from an ATS Pair, extracting RTs and decreasing ATSPair Index. \
-            \ Syphoning can be executed until the set up Syphon limit is achieved"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-ATSU:module{AutostakeUsageV2} ATSU)
-                    (st:string (ref-I|OURONET::OI|UC_ShortAccount syphon-target))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATSU::C_Syphon syphon-target ats syphon-amounts)
-                )
-                (format "Succesfully syphoned {} RT Amount(s) from ATS-Pair {} to Target {}" [syphon-amounts ats st])
-            )
-        )
-    )
-    ;;
-    (defun ATS|C_ColdRecovery (patron:string recoverer:string ats:string ra:decimal)
-        @doc "Recovers Cold-RBT, disolving it, generating RTs cullable in the future. \
-        \ Amount of RTs is determined by the ATS-Pair Index at the Cold Recovery Moment"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATSU:module{AutostakeUsageV2} ATSU)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATSU::C_ColdRecovery patron recoverer ats ra)
-                )
-                (format "Succesfully placed {} {} ATS-Pair RBT into Cold Recovery" [ra ats])
-            )
-        )
-    )
-    (defun ATS|C_Cull (patron:string culler:string ats:string)
-        @doc "Culls an ATSPair, extracting RTs that are cullable. Fix (audit finding \
-            \ #32N / N1): reports a distinct 'nothing to cull yet' message when nothing \
-            \ was actually culled, instead of always claiming success - the underlying \
-            \ crash-vs-graceful-empty-result fix lives in ATSU.URC_MultiCull."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATSU:module{AutostakeUsageV2} ATSU)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-ATSU::C_Cull culler ats)
-                    )
-                    (cw:[decimal] (at "output" ico))
-                    (how-many-tokens:integer (length cw))
-                    (total-culled:decimal (fold (+) 0.0 cw))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (if (= total-culled 0.0)
-                    (format "Nothing to Cull just yet for ATS-Pair {} - no positions have reached their cull-time" [ats])
-                    (format "Succesfully Culled {} RT(s) Tokens with amounts of {} from ATS-Pair {}" [how-many-tokens cw ats])
-                )
-            )
-        )
-    )
-    ;;
-    (defun ATS|C_HotRecovery (patron:string recoverer:string ats:string ra:decimal)
-        @doc "Converts a Cold-RBT to a Hot-RBT, preparing it for Hot Recovery"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATSU:module{AutostakeUsageV2} ATSU)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATSU::C_HotRecovery patron recoverer ats ra)
-                )
-                (format "Succesfully converted {} RBT to Hot-RBT on ATS-Pair {}" [ra ats])
-            )
-        )
-    )
-    (defun ATS|C_Reverse (patron:string recoverer:string id:string nonce:integer)
-        @doc "Reverses a Hot-RBT Nonce, converting it to Cold-RBT in its entirety \
-            \ as the Hot-RBT doesnt have segmentation turned on"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                    (ref-ATSU:module{AutostakeUsageV2} ATSU)
-                    (ats:string (ref-DPOF::UR_RewardBearingToken id))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATSU::C_Recover patron recoverer id nonce)
-                )
-                (format "Succesfully Converted Hot-RBT {} Nonce {} back into the Native RBT of ATS-Pair {}" [id nonce ats])
-            )
-        )
-    )
-    (defun ATS|C_Redeem (patron:string redeemer:string id:string nonce:integer)
-        @doc "Redeems a Hot-RBT, recovering RTs"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                    (ref-ATSU:module{AutostakeUsageV2} ATSU)
-                    (ats:string (ref-DPOF::UR_RewardBearingToken id))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATSU::C_Redeem patron redeemer id nonce)
-                )
-                (format "Succesfully Redeemed Hot-RBT {} Nonce {} back in RTs for ATS-Pair {}" [id nonce ats])
-            )
-        )
-    )
-    ;;
-    (defun ATS|C_DirectRecovery (patron:string recoverer:string ats:string ra:decimal)
-        @doc "Directly Recovers RBT to RTs using Direct Recovery"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ATSU:module{AutostakeUsageV2} ATSU)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ATSU::C_DirectRecovery patron recoverer ats ra)
-                )
-                (format "Succesfully recovered directly {} RBT Token on ATS-Pair" [ra ats])
-            )
-        )
-    )
-    ;;  [VST_Client]
-    (defun VST|C_CreateFrozenLink:[string] (patron:string dptf:string)
-        @doc "Creates a Frozen Link, issuing a Special-DPTF as a frozen counterpart for another DPTF \
-            \ A Frozen Link is immutable, and noted in the Token Properties of both DPTFs \
-            \ A Special DPTF of the Frozen variety, is used for implementing the FROZEN Functionality for a DPTF Token \
-            \ So called FROZEN Tokens are meant to be frozen on the account holding them, and only be used by that account, \
-            \ for specific purposes only, defined by the <dptf> owner, which is also the owner of the Frozen Token. \
-            \ Frozen Tokens can never be converted back to the original <dptf> Token they were created from \
-            \ \
-            \ Only the <dptf> owner can create Frozen Tokens to Target Accounts, \
-            \ or designate other Smart Ouronet Accounts to create them \
-            \ \
-            \ Frozen Tokens can be used to add Swpair Liquidity, as if they were the initial <dptf> token \
-            \ This can be done, when this functionality is turned on for the Swpair, and using a Frozen Token for adding Liquidity \
-            \ generates a Frozen LP Token, which behaves similarly to the Frozen Token \
-            \ that is, it can never be converted back to the SWPairs native LP, locking liquidity in place \
-            \ Existing LPs can also be frozen, permanently locking liquidity \
-            \ \
-            \ VESTA will be the first Token that will be making use of this functionality"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-VST::C_CreateFrozenLink patron dptf)
-                    )
-                    (output-id:string (at 0 (at "output" ico)))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                [
-                    (format "Succesfully generated a Frozen Link for the DPTF {}, issuing the Frozen DPTF {}" 
-                        [dptf output-id]
-                    )
-                    output-id
-                ]
-                
-            )
-        )
-    )
-    (defun VST|C_CreateReservationLink:[string] (patron:string dptf:string)
-        @doc "Creates a Reservation Link, issuing a Special-DPTF as a reserved counterpart for another DPTF \
-            \ A Reservation Link is immutable, and noted in the Token Properties of both DPTFs \
-            \ A Special DPTF of the Reserved variety, is used for implementing the RESERVED Functionality for a DPTF Token \
-            \ So called RESERVED Tokens are meant to be frozen on the account holding them, and only be used by that account, \
-            \ for specific purposes only, defined by the <dptf> owner, which is also the owner of the Reserved Token. \
-            \ Reserved Tokens can never be converted back to the original <dptf> Token they were created from \
-            \ \
-            \ As opposed to frozen tokens, where only the <dptf> owner can generate them or designated Ouronet Accounts, \
-            \ Reserved Tokens can be generated by clients, using as input the <dptf> Token, only when reservations are open by the <dptf> owner \
-            \ That is, the <dptf> owner dictates when clients can generate reserved tokens from the input <dptf>, \
-            \ and as such, reserved tokens can be used for special discounts when sales are planned with the main <dptf> Token, \
-            \ as if they were the main <dptf> token. \
-            \ \
-            \ Reserved Tokens cannot be used to add liquidty on any Swpair. \
-            \ \
-            \ OURO will be the first Token that will be making use of this functionality"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-VST::C_CreateReservationLink patron dptf)
-                    )
-                    (output-id:string (at 0 (at "output" ico)))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                [
-                    (format "Succesfully generated a Reservation Link for the DPTF {}, issuing the Reserved DPTF {}" 
-                        [dptf output-id]
-                    )
-                    output-id
-                ]
-                
-            )
-        )
-    )
-    (defun VST|C_CreateVestingLink:[string] (patron:string dptf:string)
-        @doc "Creates a Vesting Link, issuing a Special-DPOF as a vested counterpart for another DPTF \
-            \ A Vesting Link is immutable, and noted in the Token Properties of both the DPTF and the Special DPOF \
-            \ A Special DPOF of the Vested variety, is used for implementing the Vesting Functionality for a DPTF Token \
-            \ The <dptf> owner has the ability to vest its <dptf> token into a vested counterpart \
-            \ specifying a target account, an offset, a duration and a number of milestones as vesting parameters \
-            \ \
-            \ The Target account receives the vested token, and according to its input vested parameters, \
-            \ can revert it back to the <dptf> counterpart, as vesting intervals expire \
-            \ \
-            \ Vested Tokens cannot be used to add liquidity on any Swpair \
-            \ \
-            \ If a Vested Counterpart is created for a Token that is a Cold-RBT in an ATS Pair, \
-            \ the RT owner of that ATS Pair can <coil>|<curl> the RT Token, and subsequently <vest> the output Hot-RBT token, \
-            \ thus creating an additional layer of locking, for the input <RT> token, by converting it in a Vested Hot-RBT \
-            \ OURO, AURYN and ELITE-AURYN will be the first Tokens that will make use of this functionality"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-VST::C_CreateVestingLink patron dptf)
-                    )
-                    (output-id:string (at 0 (at "output" ico)))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                [
-                    (format "Succesfully generated a Vesting Link for the DPTF {}, issuing the Vested DPOF {}" 
-                        [dptf output-id]
-                    )
-                    output-id
-                ]
-                
-            )
-        )
-    )
-    (defun VST|C_CreateSleepingLink:[string] (patron:string dptf:string)
-        @doc "Creates a Sleeping Link, issuing a Special-DPOF as a sleeping counterpart for another DPTF \
-            \ A Sleeping Link is immutable, and noted in the Token Properties of both the DPTF and the Special DPOF \
-            \ A Special DPOF of the Sleeping variety, is used for implementing the Sleeping Functionality for a DPTF Token \
-            \ A Sleeping DPOF is similar to a vested Token, however it has a single period after which it can be converted \
-            \ in its entirety, at once, into the initial <dptf> \
-            \ As opposed to Vested DPOF Tokens, multiple Sleeping DPOF Tokens, can be unified into a single Sleeping Token \
-            \ using a weigthed mean to determine the final time when it can be converted back to the initial <dptf> \
-            \ \
-            \ As oposed to Vested Tokens, Sleeping Tokens can be used to add Swpair Liquidity, as if they were the initial <dptf> token \
-            \ This can be done, when this functionality is turned on for the Swpair, and using a Sleeping Token for adding Liquidity \
-            \ generates a Sleeping LP Token, which behaves similarly to the Sleeping Token, inheriting its sleeping date, \
-            \ that is, it can be converted back to the SWPairs native LP, when its sleeping interval expires \
-            \ Existing LPs can also be put to sleep, locking liquidity for a given period \
-            \ \
-            \ VESTA will be the first Token that will be making use of this functionality"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-VST::C_CreateSleepingLink patron dptf)
-                    )
-                    (output-id:string (at 0 (at "output" ico)))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                [
-                    (format "Succesfully generated a Sleeping Link for the DPTF {}, issuing the Sleeping DPOF {}" 
-                        [dptf output-id]
-                    )
-                    output-id
-                ]
-                
-            )
-        )
-    )
-    (defun VST|C_CreateHibernatingLink:[string] (patron:string dptf:string)
-        @doc "Creates a Hibernating Link, issuing a Special-DPOF as a hibernating counterpart for another DPTF \
-            \ A Hibernating Link is immutable, and noted in the Token Properties of both DPTF and the Special DPOF \
-            \ A Special DPOF of the Hibernating variety, is used for implementing the Hibernating Functionality for a DPTF Token \
-            \ A Hibernating DPOF is similar to a sleeping Token, with a few particularities. \
-            \ It has a day granularity, and up to 100 years can be used for hibernating. \
-            \ \
-            \ In direct contrast to a Sleeping DPOF, which has to be waited up for it to be converted back to its original DPTF \
-            \ the Hibernated DPOF can be converted on Demand back into its original DPTF, however there is a fee to do so, \
-            \ if the hibernation period hasnt elaspsed. This fee decreases from 800 promile down to zero at its awakening time \
-            \ The fee is automaticaly burned, and cannot be recovered by any means. \
-            \ \
-            \ Similarly to Sleeping DPOFs, multiple batches can be merged, using the same algoritm implemented for mergind of Sleeping DPOFs"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
-                    (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-VST::C_CreateHibernatingLink patron dptf)
-                    )
-                    (output-id:string (at 0 (at "output" ico)))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                [
-                    (format "Succesfully generated a Hibernation Link for the DPTF {}, issuing the Hibernated DPTF {}" 
-                        [dptf output-id]
-                    )
-                    output-id
-                ]
-            )
-        )
-    )
-    ;;  [VST Freezing]
-    (defun VST|C_Freeze (patron:string freezer:string freeze-output:string dptf:string amount:decimal)
-        @doc "Freezes a DPTF Token"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
-                    (sfa:string (ref-I|OURONET::OI|UC_ShortAccount freeze-output))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_Freeze patron freezer freeze-output dptf amount)
-                )
-                (format "Succesfully freeze {} DPTF {} to Account {}" [amount dptf sfa])
-            )
-        )
-    )
-    (defun VST|C_RepurposeFrozen (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string)
-        @doc "Repurposes a Frozen DPTF to another account"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
-                    (srf:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-from))
-                    (srt:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_RepurposeFrozen patron dptf-to-repurpose repurpose-from repurpose-to)
-                )
-                (format "Succesfully repurposed Frozen DPTF {} from {} to {}" [dptf-to-repurpose srf srt])
-            )
-        )
-    )
-    (defun VST|C_ToggleTransferRoleFrozenDPTF (patron:string s-dptf:string target:string toggle:bool)
-        @doc "Toggles Transfer Role for a Frozen DPTF"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_ToggleTransferRoleFrozenDPTF patron s-dptf target toggle)
-                )
-                (format "Succefully toggled Transfer Role for the Frozen DPTF {}" [s-dptf])
-            )
-        )
-    )
-    ;;  [VST Reserving]
-    (defun VST|C_Reserve (patron:string reserver:string dptf:string amount:decimal)
-        @doc "Reserves a DPTF Token"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
-                    (sr:string (ref-I|OURONET::OI|UC_ShortAccount reserver))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_Reserve patron reserver dptf amount)
-                )
-                (format "Account {} succesfully reserved {} {} Tokens" [sr amount dptf])
-            )
-        )
-    )
-    (defun VST|C_Unreserve (patron:string unreserver:string r-dptf:string amount:decimal)
-        @doc "Unreserves a DPTF Token"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
-                    (su:string (ref-I|OURONET::OI|UC_ShortAccount unreserver))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_Unreserve patron unreserver r-dptf amount)
-                )
-                (format "Account {} succesfully unreserved {} {} Tokens" [su amount r-dptf])
-            )
-        )
-    )
-    (defun VST|C_RepurposeReserved (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string)
-        @doc "Repurposes a Reserved DPTF to another account"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
-                    (srf:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-from))
-                    (srt:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_RepurposeReserved patron dptf-to-repurpose repurpose-from repurpose-to)
-                )
-                (format "Succesfully repurposed Reserved DPTF {} from {} to {}" [dptf-to-repurpose srf srt])
-            )
-        )
-    )
-    (defun VST|C_ToggleTransferRoleReservedDPTF (patron:string s-dptf:string target:string toggle:bool)
-        @doc "Toggles Transfer Role for a Reserved DPTF"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_ToggleTransferRoleReservedDPTF patron s-dptf target toggle)
-                )
-                (format "Succefully toggled Transfer Role for the Reserved DPTF {}" [s-dptf])
-            )
-        )
-    )
-    ;;  [VST Vesting]
-    (defun VST|C_Vest (patron:string vester:string target-account:string dptf:string amount:decimal offset:integer seconds:integer milestones:integer)
-        @doc "Vests a DPTF Token, generating ist Vested DPOF Counterspart"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
-                    (sv:string (ref-I|OURONET::OI|UC_ShortAccount vester))
-                    (sta:string (ref-I|OURONET::OI|UC_ShortAccount target-account))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_Vest patron vester target-account dptf amount offset seconds milestones)
-                )
-                (format "Succesfully vested DPTF {} From Account {} to Account {}" [dptf sv sta])
-            )
-        )
-    )
-    (defun VST|C_Unvest (patron:string unvester:string dpof:string nonce:integer)
-        @doc "Culls the Vested DPOF Token, recovering its DPTF counterpart."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
-                    (su:string (ref-I|OURONET::OI|UC_ShortAccount unvester))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_Unvest patron unvester dpof nonce)
-                )
-                (format "Succesfully unvested DPOF {} Nonce {} to Account {}" [dpof nonce su])
-            )
-        )
-    )
-    (defun VST|C_RepurposeVested (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string)
-        @doc "Repurposes a Vested DPOF to another account"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
-                    (srf:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-from))
-                    (srt:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_RepurposeVested patron dpof-to-repurpose nonce repurpose-from repurpose-to)
-                )
-                (format "Succesfully repurposed Vested DPTF {} Nonce {}from {} to {}" [dpof-to-repurpose nonce srf srt])
-            )
-        )
-    )
-    ;;  [VST Sleeping]
-    (defun VST|C_Sleep (patron:string sleeper:string target-account:string dptf:string amount:decimal seconds:integer)
-        @doc "Sleeps a DPTF Token, generating its Sleeping DPOF Counterpart"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (sta:string (ref-I|OURONET::OI|UC_ShortAccount target-account))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_Sleep patron sleeper target-account dptf amount seconds)
-                )
-                (format "Sucesfully put to Sleep {} DPTF {} on Account {} for a Duration of {} seconds." [amount dptf sta seconds])
-            )
-        )
-    )
-    (defun VST|C_Unsleep (patron:string unsleeper:string dpof:string nonce:integer)
-        @doc "Culls the Sleeping DPOF Token, recovering its DPTF counterpart."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (su:string (ref-I|OURONET::OI|UC_ShortAccount unsleeper))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_Unsleep patron unsleeper dpof nonce)
-                )
-                (format "Succesfully unsleeped DPOF {} Nonce {} on Account {}" [dpof nonce su])
-            )
-        )
-    )
-    (defun VST|C_Merge(patron:string merger:string dpof:string nonces:[integer])
-        @doc "Merges selected sleeping Tokens of an account, \
-            \ releasing them if expired sleeping dpof-s exist within the selected tokens \
-            \ Multiple existing Batches can be merged this way."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
-                    (sm:string (ref-I|OURONET::OI|UC_ShortAccount merger))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_Merge patron merger dpof nonces)
-                )
-                (format "Succesfully merged Sleeping DPOF {} Nonces {} to Account {}" [dpof nonces sm])
-            )
-        )
-    )
-    (defun VST|C_RepurposeMerge (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string)
-        @doc "Repurposes multiple Sleeping DPOFs from <repurpose-from> to <repurpose-to>, while merging them"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (srf:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-from))
-                    (srt:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_RepurposeMerge patron dpof-to-repurpose nonces repurpose-from repurpose-to)
-                )
-                (format "Succesfully repurposed and merged Sleeping DPOF {} Nonces {} from {} to {}" 
-                    [dpof-to-repurpose nonces srf srt]
-                )
-            )
-        )
-    )
-    (defun VST|C_RepurposeSleeping (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string)
-        @doc "Repurposes a single Sleeping DPOF from <repurpose-from> to <repurpose-to>"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (srf:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-from))
-                    (srt:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_RepurposeSleeping patron dpof-to-repurpose nonce repurpose-from repurpose-to)
-                )
-                (format "Succesfully repurposed Sleeping DPOF {} Nonce {} from {} to {}" 
-                    [dpof-to-repurpose nonce srf srt]
-                )
-            )
-        )
-    )
-    (defun VST|C_ToggleTransferRoleSleepingDPOF (patron:string s-dpof:string target:string toggle:bool)
-        @doc "Toggles Transfer Role for a Sleeping DPOF"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_ToggleTransferRoleSleepingDPOF patron s-dpof target toggle)
-                )
-                (format "Succefully toggled Transfer Role for the Sleeping DPTF {}" [s-dpof])
-            )
-        )
-    )
-    ;;  [VST Hibernating]
-    (defun VST|C_Hibernate (patron:string hibernator:string target-account:string dptf:string amount:decimal dayz:integer)
-        @doc "Hibernates a DPTF Token, generating its Hibernated DPOF Counterpart"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (sta:string (ref-I|OURONET::OI|UC_ShortAccount target-account))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_Hibernate patron hibernator target-account dptf amount dayz)
-                )
-                (format "Sucesfully hibernated {} {} on Account {} for a Duration of {} days." [amount dptf sta dayz])
-            )
-        )
-    )
-    (defun VST|C_Awake (patron:string awaker:string dpof:string nonce:integer)
-        @doc "Culls the Hibernated DPOF Token, recovering its DPTF counterpart."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount awaker))
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-VST::C_Awake patron awaker dpof nonce)
-                    )
-                    (output:list (at "output" ico))
-                    (v1:decimal (at 0 output))
-                    (v2:decimal (at 1 output))
-                    (v3:decimal (at 2 output))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron ico)
-                (if (= v1 0.0)
-                    (format "Awakend DPOF {} Nonce {} with no Hibernation Fee, getting the Full Amount of {} back" [dpof nonce v2])
-                    (format "Awakend DPOF {} Nonce {} with a Hibernation Fee of {} Promile, relinquishing {} Tokens and getting only {} Tokens back" [dpof nonce v1 v3 v2])
-                )
-            )
-        )
-    )
-    (defun VST|C_Slumber (patron:string merger:string dpof:string nonces:[integer])
-        @doc "Merges selected hibernated Tokens of an account, \
-            \ releasing them if expired sleeping dpof-s exist within the selected tokens \
-            \ Multiple existing Batches can be merged this way."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
-                    (sm:string (ref-I|OURONET::OI|UC_ShortAccount merger))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_Slumber patron merger dpof nonces)
-                )
-                (format "Succesfully merged Hibernated DPOF {} Nonces {} to Account {}" [dpof nonces sm])
-            )
-        )
-    )
-    (defun VST|C_RepurposeSlumber (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string)
-        @doc "Repurposes multiple Hibernated DPOFs from <repurpose-from> to <repurpose-to>, while merging them"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (srf:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-from))
-                    (srt:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_RepurposeSlumber patron dpof-to-repurpose nonces repurpose-from repurpose-to)
-                )
-                (format "Succesfully repurposed and merged Hibernated DPOF {} Nonces {} from {} to {}" 
-                    [dpof-to-repurpose nonces srf srt]
-                )
-            )
-        )
-    )
-    (defun VST|C_RepurposeHibernating (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string)
-        @doc "Repurposes a single Hibernating DPOF from <repurpose-from> to <repurpose-to>"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (srf:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-from))
-                    (srt:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_RepurposeHibernating patron dpof-to-repurpose nonce repurpose-from repurpose-to)
-                )
-                (format "Succesfully repurposed Hibernated DPOF {} Nonce {} from {} to {}" 
-                    [dpof-to-repurpose nonce srf srt]
-                )
-            )
-        )
-    )
-    (defun VST|C_ToggleTransferRoleHibernatingDPOF (patron:string s-dpof:string target:string toggle:bool)
-        @doc "Toggles Transfer Role for a Hibernating DPOF"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-VST:module{VestingV2} VST)
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_ToggleTransferRoleHibernatingDPOF patron s-dpof target toggle)
-                )
-                (format "Succefully toggled Transfer Role for the Hibernating DPTF {}" [s-dpof])
-            )
-        )
-    )
-    ;;  [LIQUID_Client]
-    (defun LQD|C_UnwrapStoa (patron:string unwrapper:string amount:decimal)
-        @doc "Unwraps DPTF Stoa to Native Stoa"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
-                    (su:string (ref-I|OURONET::OI|UC_ShortAccount unwrapper))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-LIQUID::C_UnwrapStoa patron unwrapper amount)
-                )
-                (format "Succesfully Unwrapped {} STOA on Account {}" [amount su])
-            )
-        )
-    )
-    (defun LQD|C_WrapStoa (patron:string wrapper:string amount:decimal)
-        @doc "Wraps Native Stoa to DPTF Stoa"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
-                    (sw:string (ref-I|OURONET::OI|UC_ShortAccount wrapper))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-LIQUID::C_WrapStoa patron wrapper amount)
-                )
-                (format "Succesfully Wrapped {} STOA on Account {}" [amount sw])
-            )
-        )
-    )
-    (defun LQD|C_UnwrapUrStoa (patron:string unwrapper:string amount:decimal)
-        @doc "Unwrapper is the Ouronet Account doing the Unwrapping. \
-            \ Its attached Stoa address k:xxx must be registered in the UrStoa Account Table for this to work. \
-            \ If its not registered there yet, the UI constructs a bespoke tx that creates the \
-            \ account with the real signer's own (read-keyset \"ks\") immediately before this \
-            \ call, the same pattern already used for native Stoa unwrap - there is no \
-            \ standalone Pact function for this (see #13H, ROUND-02-FIXES.md). \
-            \ \
-            \ Its register status can be verified with <LIQUID.UR_IzOuronetAccountRegisteredForUrstoaHoldings>"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
-                    (su:string (ref-I|OURONET::OI|UC_ShortAccount unwrapper))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-LIQUID::C_UnwrapUrStoa patron unwrapper amount)
-                )
-                (format "Succesfully Unwrapped {} URSTOA on Account {}" [amount su])
-            )
-        )
-    )
-    (defun LQD|C_WrapUrStoa (patron:string wrapper:string amount:decimal)
-        @doc "Wrapper is the Ouronet Account doing the Wrapping. \
-            \ Its attached Stoa address k:xxx must be registered in the UrStoa Account Table for this to work. \
-            \ If its not registered there yet, the UI constructs a bespoke tx that creates the \
-            \ account with the real signer's own (read-keyset \"ks\") immediately before this \
-            \ call, the same pattern already used for native Stoa unwrap - there is no \
-            \ standalone Pact function for this (see #13H, ROUND-02-FIXES.md). \
-            \ \
-            \ Its register status can be verified with <LIQUID.UR_IzOuronetAccountRegisteredForUrstoaHoldings>"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
-                    (sw:string (ref-I|OURONET::OI|UC_ShortAccount wrapper))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-LIQUID::C_WrapUrStoa patron wrapper amount)
-                )
-                (format "Succesfully Wrapped {} URSTOA on Account {}" [amount sw])
-            )
-        )
-    )
-    ;;  [OUROBOROS_Client]
-    (defun ORBR|C_Compress (client:string ignis-amount:decimal)
-        @doc "Compresses IGNIS - Ouronet Gas Token, generating OUROBOROS \
-            \ Only whole IGNIS Amounts greater than or equal to 1.0 can be used for compression \
-            \ Similar to Sublimation, the output amount is dependent on OUROBOROS price, set at a minimum of 1$ \
-            \ Compression has 98.5% efficiency, 1.5% is lost as fees."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-ORBR:module{OuroborosV2} OUROBOROS)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-ORBR::C_Compress client ignis-amount)
-                    )
-                )
-                (format "Succesfully compressed {} IGNIS to {} OUROBOROS" [ignis-amount (at 0 (at "output" ico))])
-            )
-        )
-    )
-    (defun ORBR|C_Sublimate (client:string target:string ouro-amount:decimal)
-        @doc "Sublimates OUROBOROS, generating Ouronet Gas, in form of IGNIS Token \
-            \ A minimum amount of 1 input OUROBOROS is required. Amount of IGNIS generated depends on OUROBOROS Price in $, \
-            \ with the minimum value being set at 1$ (in case the actual value is lower than 1$ \
-            \ Ignis is generated for 99% of the input Ouroboros amount, thus Sublimation has a fee of 1% \
-            \ Needed for Sublimating negative Amounts"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-ORBR:module{OuroborosV2} OUROBOROS)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-ORBR::C_Sublimate client target ouro-amount)
-                    )
-                )
-                (format "Succesfully sublimated {} OUROBOROS to {} IGNIS" [ouro-amount (at 0 (at "output" ico))])
-            )
-        )
-    )
-    (defun ORBR|C_SublimateV2 (client:string target:string ouro-amount:decimal)
-        @doc "Sublimates OUROBOROS, generating Ouronet Gas, in form of IGNIS Token \
-            \ A minimum amount of 1 input OUROBOROS is required. Amount of IGNIS generated depends on OUROBOROS Price in $, \
-            \ with the minimum value being set at 1$ (in case the actual value is lower than 1$ \
-            \ Ignis is generated for 99% of the input Ouroboros amount, thus Sublimation has a fee of 1% \
-            \ Can be used for Sublimation when OURO Supply is Positive, also being used in Firestarter."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-ORBR:module{OuroborosV2} OUROBOROS)
-                    (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-ORBR::C_SublimateV2 client target ouro-amount)
-                    )
-                )
-                (format "Succesfully sublimated {} OUROBOROS to {} IGNIS" [ouro-amount (at 0 (at "output" ico))])
-                (at 0 (at "output" ico))
-            )
-        )
-    )
-    (defun ORBR|C_WithdrawFees (patron:string id:string target:string)
-        @doc "Withdraws collected DPTF Fees collected in standard mode \
-        \ DPTF Fees collected in standard mode cumullate on the OUROBOROS Smart Account \
-        \ Only the Token Owner can withdraw these fees."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-ORBR:module{OuroborosV2} OUROBOROS)
-                    (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (st:string (ref-I|OURONET::OI|UC_ShortAccount target))
-                )
-                (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ORBR::C_WithdrawFees id target)
-                )
-                (format "Succesfully withdrawn DPTF Fees for DPTF {} to Account {}" [id st])
-            )
-        )
-    )
-
-)
-
-;; --- tables for 03_TS01-C2.pact (2 defined) ---
 ;; UPGRADE MODE: this module is assumed already deployed, so its
 ;; tables already exist and (create-table) would ABORT the whole
 ;; transaction. They are listed here, commented, for reference.

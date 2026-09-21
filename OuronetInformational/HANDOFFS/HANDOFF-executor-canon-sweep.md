@@ -408,7 +408,23 @@ route **named in the function's own `@doc`**. Its first run over the seven swept
 **three** decorative executors in DPTF's treasury admin ops and **one `@doc` that claimed a route
 it did not state** — mine, written the same day. Do not trust a route you have not grepped for.
 
-Full statement: `StoicSyntax-Prefixes.md` §2.2, *"WHY THE EXECUTOR IS UNCONDITIONAL"*.
+**Account creation is the BASE CASE, not an exception** (owner, same day). It looks like the one
+place the rule must break — if the new account were the executee, who is the executor? It does not
+break: **the account being created IS the executor and proves itself**, because the guard it will
+be governed by is supplied in the call and enforced by `UEV_Any` (enforce-ONE) *before* every other
+check in `DALOS|C>DEPLOY-*-OURONET-ACCOUNT`. Same proof `UEV_StandardAccOwn` performs on an
+existing account, same key; the guard travels with the call because at creation there is nowhere
+else it could come from. The list's second element, `(create-capability-guard (GOV))`, is the
+governance door written into the capability — which is how genesis makes the first one.
+
+That fact was **unpinned** until it was checked. It is now `<<DALOS-G4b>>`, which also proves the
+guard check runs FIRST by pairing a held guard (format refusal) against an unheld one (guard
+refusal). **Generalise the habit**: when a canon claim rests on a specific line of code, grep for
+the test that holds that line still. Twice in this programme the line was right and the test did
+not exist.
+
+Full statement: `StoicSyntax-Prefixes.md` §2.2, *"WHY THE EXECUTOR IS UNCONDITIONAL"* and its
+*"base case"* subsection.
 
 ## 4.1 PATRONLESS BY DESIGN — the correction that changes what "conforming" means
 

@@ -1836,11 +1836,43 @@
         )
     )
     (defun A_DeploySmartAccount (executor:string guard:guard stoa:string sovereign:string public:string)
+        @doc "ADMIN deploy of a Smart Ouronet Account -- gasless, and PATRONLESS by design: \
+            \ there is no patron at the moment an account comes into existence. \
+            \ \
+            \ Executor: SELF-PROVING. <executor> is the account being CREATED, so its ownership \
+            \ cannot be read from a table -- there is no row yet. It does not need to be: the \
+            \ GUARD the account will be governed by is enforced in this same transaction, by \
+            \ UEV_Any inside the capability below, BEFORE any other check. That is the same \
+            \ proof UEV_StandardAccOwn performs on an existing account (`enforce-guard \
+            \ account-guard`) with the same key; the guard simply travels with the call, because \
+            \ at creation there is nowhere else it could come from. \
+            \ \
+            \ UEV_Any is enforce-ONE over [guard, (create-capability-guard (GOV))], and the \
+            \ second element is the governance door in-line -- module GOV may create an account \
+            \ without its guard being signed, which is how genesis bootstraps the first one. \
+            \ Pinned by REPL/modules/DALOS-ADMIN.repl <<DALOS-G4b>>. (patron/executor canon 2.2, \
+            \ the base case.)"
         (with-capability (DALOS|A>DEPLOY-SMART-OURONET-ACCOUNT executor guard stoa sovereign)
             (XI_DeploySmartAccount executor guard stoa sovereign public)
         )
     )
     (defun A_DeployStandardAccount (executor:string guard:guard stoa:string public:string)
+        @doc "ADMIN deploy of a Standard Ouronet Account -- gasless, and PATRONLESS by design: \
+            \ there is no patron at the moment an account comes into existence. \
+            \ \
+            \ Executor: SELF-PROVING. <executor> is the account being CREATED, so its ownership \
+            \ cannot be read from a table -- there is no row yet. It does not need to be: the \
+            \ GUARD the account will be governed by is enforced in this same transaction, by \
+            \ UEV_Any inside the capability below, BEFORE any other check. That is the same \
+            \ proof UEV_StandardAccOwn performs on an existing account (`enforce-guard \
+            \ account-guard`) with the same key; the guard simply travels with the call, because \
+            \ at creation there is nowhere else it could come from. \
+            \ \
+            \ UEV_Any is enforce-ONE over [guard, (create-capability-guard (GOV))], and the \
+            \ second element is the governance door in-line -- module GOV may create an account \
+            \ without its guard being signed, which is how genesis bootstraps the first one. \
+            \ Pinned by REPL/modules/DALOS-ADMIN.repl <<DALOS-G4b>>. (patron/executor canon 2.2, \
+            \ the base case.)"
         (with-capability (SECURE-ADMIN)
             (XI_DeployStandardAccount executor guard stoa public)
         )
@@ -1960,12 +1992,46 @@
         )
     )
     (defun C_DeploySmartAccount (executor:string guard:guard stoa:string sovereign:string public:string)
+        @doc "PERMISSIONLESS self-deploy of a Smart Ouronet Account, paid in STOA. The admin twin \
+            \ A_DeploySmartAccount is the gasless route. \
+            \ \
+            \ Executor: SELF-PROVING. <executor> is the account being CREATED, so its ownership \
+            \ cannot be read from a table -- there is no row yet. It does not need to be: the \
+            \ GUARD the account will be governed by is enforced in this same transaction, by \
+            \ UEV_Any inside the capability below, BEFORE any other check. That is the same \
+            \ proof UEV_StandardAccOwn performs on an existing account (`enforce-guard \
+            \ account-guard`) with the same key; the guard simply travels with the call, because \
+            \ at creation there is nowhere else it could come from. \
+            \ \
+            \ UEV_Any is enforce-ONE over [guard, (create-capability-guard (GOV))], and the \
+            \ second element is the governance door in-line -- module GOV may create an account \
+            \ without its guard being signed, which is how genesis bootstraps the first one. \
+            \ Pinned by REPL/modules/DALOS-ADMIN.repl <<DALOS-G4b>>. (patron/executor canon 2.2, \
+            \ the base case.)"
         (P|UEV_IMC)
         (with-capability (DALOS|C>DEPLOY-SMART-OURONET-ACCOUNT executor guard stoa sovereign)
             (XI_DeploySmartAccount executor guard stoa sovereign public)
         )
     )
     (defun C_DeployStandardAccount (executor:string guard:guard stoa:string public:string)
+        @doc "PERMISSIONLESS self-deploy of a Standard Ouronet Account, paid in STOA. The admin \
+            \ twin A_DeployStandardAccount is the gasless route; both exist for flexibility, \
+            \ and in normal operation neither is needed -- an account is created automatically \
+            \ as required. \
+            \ \
+            \ Executor: SELF-PROVING. <executor> is the account being CREATED, so its ownership \
+            \ cannot be read from a table -- there is no row yet. It does not need to be: the \
+            \ GUARD the account will be governed by is enforced in this same transaction, by \
+            \ UEV_Any inside the capability below, BEFORE any other check. That is the same \
+            \ proof UEV_StandardAccOwn performs on an existing account (`enforce-guard \
+            \ account-guard`) with the same key; the guard simply travels with the call, because \
+            \ at creation there is nowhere else it could come from. \
+            \ \
+            \ UEV_Any is enforce-ONE over [guard, (create-capability-guard (GOV))], and the \
+            \ second element is the governance door in-line -- module GOV may create an account \
+            \ without its guard being signed, which is how genesis bootstraps the first one. \
+            \ Pinned by REPL/modules/DALOS-ADMIN.repl <<DALOS-G4b>>. (patron/executor canon 2.2, \
+            \ the base case.)"
         (P|UEV_IMC)
         (with-capability (SECURE)
             (XI_DeployStandardAccount executor guard stoa public)

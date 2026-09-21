@@ -824,6 +824,34 @@
                 (expect-failure "<<DALOS-G4>> the SMART deploy rejects an Ouroboros-prefixed id"
                     "Format for a Smart DALOS Account"
                     (ref-TS01-C1::DALOS|C_DeploySmartAccount (+ "Ѻ" "WrongKind") g "stoa" std "pub"))
+                ;;<<DALOS-G4b>> THE GUARD THE NEW ACCOUNT WILL BE GOVERNED BY IS ENFORCED, AND IT
+                ;;IS ENFORCED FIRST. This is the load-bearing fact under the attribution rule's
+                ;;BASE CASE (StoicSyntax §2.2): a deploy entrypoint names the account being
+                ;;created as its <executor>, and that executor is proven not from a table row --
+                ;;there is none yet -- but by UEV_Any over [guard, (create-capability-guard (GOV))]
+                ;;inside DALOS|C>DEPLOY-*-OURONET-ACCOUNT. UEV_Any is enforce-ONE. So whoever
+                ;;deploys an account must sign for the guard it will be governed by, which is the
+                ;;same proof UEV_StandardAccOwn performs on an account that already exists.
+                ;;
+                ;;It was UNPINNED until 2026-09-21. If that first list element were ever dropped,
+                ;;account creation would become unauthenticated AND the canon's claim that a
+                ;;created account proves itself would silently become false, with nothing to
+                ;;notice. The second element is the genesis door and is deliberately NOT tested
+                ;;here -- it needs module GOV in scope, which this transaction does not have.
+                ;;
+                ;;THE PAIR IS THE POINT. Both calls below pass a DELIBERATELY WRONG glyph. With a
+                ;;guard this signer holds (`g` = ANHD's, above) the refusal is the FORMAT message;
+                ;;with EMMA's guard, which this signer does not hold, the refusal is the GUARD --
+                ;;so the guard check demonstrably runs BEFORE the format check, and a future
+                ;;reorder that buried it behind a cheaper guard would show up here.
+                (expect-failure "<<DALOS-G4b>> deploying an account whose guard the caller does not hold is refused"
+                    "None of the guards passed"
+                    (ref-TS01-C1::DALOS|C_DeployStandardAccount (+ "Σ" "WrongKind")
+                        (ref-DALOS::UR_AccountGuard KST.EMMA) "stoa" "pub"))
+                (expect-failure "<<DALOS-G4b>> ...and the SMART deploy answers the same way"
+                    "None of the guards passed"
+                    (ref-TS01-C1::DALOS|C_DeploySmartAccount (+ "Ѻ" "WrongKind")
+                        (ref-DALOS::UR_AccountGuard KST.EMMA) "stoa" std "pub"))
             ]
         )
         ""

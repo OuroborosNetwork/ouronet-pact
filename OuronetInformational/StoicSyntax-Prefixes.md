@@ -406,13 +406,40 @@ Which means: **before anything can be done on Ouronet, the actor must have an Ou
 Admin included. From a cold start the first act is therefore *deploying an account* — through the
 **administrative path, which is gasless** — and only then does the normal surface become usable.
 
-#### The base case, and why it does not break the rule
+#### The base case: account creation, and why it is NOT an exception (owner ruling, 2026-09-21)
 
-Account deployment is where the induction bottoms out: the *first* account cannot name a
-pre-existing Ouronet account as its executor. That is precisely what the governance door is for —
-genesis runs `DALOS.A_Deploy*Account` **directly on the module under module admin**, not through
-Talos (see `REPL/Stage_01/[2.1]_Dalos.repl`). The rule is about the normal paths, and genesis is by
-definition not one.
+Account deployment looks like the one place the rule must break. If the account being created were
+the **executee**, who is the executor? There is no prior account to name.
+
+**The account being created IS the executor, and it proves itself.** The guard it will be governed
+by is supplied in the call and enforced in the same transaction — so whoever deploys an account
+must sign for the guard that account will answer to. That is the *same proof* `UEV_StandardAccOwn`
+performs on an account that already exists (`enforce-guard account-guard`), with the same key. The
+guard simply travels with the call, because at creation there is nowhere else it could come from.
+
+```pact
+(defcap DALOS|C>DEPLOY-STANDARD-OURONET-ACCOUNT (account:string guard:guard stoa:string)
+    (ref-U|G::UEV_Any [guard (create-capability-guard (GOV))])   ;; FIRST, before the format guards
+    …
+```
+
+`UEV_Any` is **enforce-ONE** — *"will succeed if at least one guard in GUARDS is successfully
+enforced"*. Two elements, and both matter:
+
+| element | what it is |
+|---|---|
+| `guard` | the account proving itself — the normal path |
+| `(create-capability-guard (GOV))` | **the governance door, in-line** — module `GOV` may create an account without its guard being signed, which is how genesis bootstraps the very first one |
+
+So the second door named above is not a hole in the rule, it is the rule's own base case, written
+into the capability. Genesis (`REPL/Stage_01/[2.1]_Dalos.repl`) calls `DALOS.A_Deploy*Account`
+directly on the module rather than through Talos, and that is why it can.
+
+**This is load-bearing and is pinned.** `REPL/modules/DALOS-ADMIN.repl` `<<DALOS-G4b>>` drives a
+deploy whose guard the caller does not hold and requires the refusal to come from `UEV_Any` — and,
+by pairing it with a deploy whose guard the caller *does* hold, shows the guard check runs **before**
+the format guards. Without it, dropping that first list element would make account creation
+unauthenticated *and* make this section false, silently.
 
 **This is the frame for the whole patron/executor/executee structure.** Three roles, three
 questions, and each is answered by naming an account rather than by inspecting a signature list:
