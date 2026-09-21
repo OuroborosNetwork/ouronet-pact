@@ -107,30 +107,30 @@
     (defun VST|C_CreateHibernatingLink:[string] (patron:string executor:string dptf:string))
         ;;Frozen
     (defun VST|C_Freeze (patron:string freezer:string freeze-output:string dptf:string amount:decimal))
-    (defun VST|C_RepurposeFrozen (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string))
+    (defun VST|C_RepurposeFrozen (patron:string executor:string executee:string dptf-to-repurpose:string repurpose-to:string))
     (defun VST|C_ToggleTransferRoleFrozenDPTF (patron:string executor:string s-dptf:string target:string toggle:bool))
         ;;Reservation
     (defun VST|C_Reserve (patron:string reserver:string dptf:string amount:decimal))
     (defun VST|C_Unreserve (patron:string unreserver:string r-dptf:string amount:decimal))
-    (defun VST|C_RepurposeReserved (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string))
+    (defun VST|C_RepurposeReserved (patron:string executor:string executee:string dptf-to-repurpose:string repurpose-to:string))
     (defun VST|C_ToggleTransferRoleReservedDPTF (patron:string executor:string s-dptf:string target:string toggle:bool))
         ;;Vesting
     (defun VST|C_Vest (patron:string vester:string target-account:string dptf:string amount:decimal offset:integer seconds:integer milestones:integer))
     (defun VST|C_Unvest (patron:string unvester:string dpof:string nonce:integer))
-    (defun VST|C_RepurposeVested (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
+    (defun VST|C_RepurposeVested (patron:string executor:string executee:string dpof-to-repurpose:string nonce:integer repurpose-to:string))
         ;;Sleeping
     (defun VST|C_Sleep (patron:string sleeper:string target-account:string dptf:string amount:decimal seconds:integer))
     (defun VST|C_Unsleep (patron:string unsleeper:string dpof:string nonce:integer))
     (defun VST|C_Merge(patron:string merger:string dpof:string nonces:[integer]))
-    (defun VST|C_RepurposeMerge (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string))
-    (defun VST|C_RepurposeSleeping (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
+    (defun VST|C_RepurposeMerge (patron:string executor:string executee:string dpof-to-repurpose:string nonces:[integer] repurpose-to:string))
+    (defun VST|C_RepurposeSleeping (patron:string executor:string executee:string dpof-to-repurpose:string nonce:integer repurpose-to:string))
     (defun VST|C_ToggleTransferRoleSleepingDPOF (patron:string executor:string s-dpof:string target:string toggle:bool))
         ;;Hibernating
     (defun VST|C_Hibernate (patron:string hibernator:string target-account:string dptf:string amount:decimal dayz:integer))
     (defun VST|C_Awake (patron:string awaker:string dpof:string nonce:integer))
     (defun VST|C_Slumber (patron:string merger:string dpof:string nonces:[integer]))
-    (defun VST|C_RepurposeSlumber (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string))
-    (defun VST|C_RepurposeHibernating (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
+    (defun VST|C_RepurposeSlumber (patron:string executor:string executee:string dpof-to-repurpose:string nonces:[integer] repurpose-to:string))
+    (defun VST|C_RepurposeHibernating (patron:string executor:string executee:string dpof-to-repurpose:string nonce:integer repurpose-to:string))
     (defun VST|C_ToggleTransferRoleHibernatingDPOF (patron:string executor:string s-dpof:string target:string toggle:bool))
     ;;
     ;;
@@ -1360,7 +1360,7 @@
             )
         )
     )
-    (defun VST|C_RepurposeFrozen (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string)
+    (defun VST|C_RepurposeFrozen (patron:string executor:string executee:string dptf-to-repurpose:string repurpose-to:string)
         @doc "Repurposes a Frozen DPTF to another account"
         (with-capability (P|TS)
             (let
@@ -1368,11 +1368,11 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-VST:module{VestingV2} VST)
-                    (srf:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-from))
+                    (srf:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                     (srt:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_RepurposeFrozen patron dptf-to-repurpose repurpose-from repurpose-to)
+                    (ref-VST::C_RepurposeFrozen patron executor executee dptf-to-repurpose repurpose-to)
                 )
                 (format "Succesfully repurposed Frozen DPTF {} from {} to {}" [dptf-to-repurpose srf srt])
             )
@@ -1428,7 +1428,7 @@
             )
         )
     )
-    (defun VST|C_RepurposeReserved (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string)
+    (defun VST|C_RepurposeReserved (patron:string executor:string executee:string dptf-to-repurpose:string repurpose-to:string)
         @doc "Repurposes a Reserved DPTF to another account"
         (with-capability (P|TS)
             (let
@@ -1436,11 +1436,11 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-VST:module{VestingV2} VST)
-                    (srf:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-from))
+                    (srf:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                     (srt:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_RepurposeReserved patron dptf-to-repurpose repurpose-from repurpose-to)
+                    (ref-VST::C_RepurposeReserved patron executor executee dptf-to-repurpose repurpose-to)
                 )
                 (format "Succesfully repurposed Reserved DPTF {} from {} to {}" [dptf-to-repurpose srf srt])
             )
@@ -1497,7 +1497,7 @@
             )
         )
     )
-    (defun VST|C_RepurposeVested (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string)
+    (defun VST|C_RepurposeVested (patron:string executor:string executee:string dpof-to-repurpose:string nonce:integer repurpose-to:string)
         @doc "Repurposes a Vested DPOF to another account"
         (with-capability (P|TS)
             (let
@@ -1505,11 +1505,11 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-VST:module{VestingV2} VST)
-                    (srf:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-from))
+                    (srf:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                     (srt:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_RepurposeVested patron dpof-to-repurpose nonce repurpose-from repurpose-to)
+                    (ref-VST::C_RepurposeVested patron executor executee dpof-to-repurpose nonce repurpose-to)
                 )
                 (format "Succesfully repurposed Vested DPTF {} Nonce {}from {} to {}" [dpof-to-repurpose nonce srf srt])
             )
@@ -1569,19 +1569,19 @@
             )
         )
     )
-    (defun VST|C_RepurposeMerge (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string)
-        @doc "Repurposes multiple Sleeping DPOFs from <repurpose-from> to <repurpose-to>, while merging them"
+    (defun VST|C_RepurposeMerge (patron:string executor:string executee:string dpof-to-repurpose:string nonces:[integer] repurpose-to:string)
+        @doc "Repurposes multiple Sleeping DPOFs from <executee> to <repurpose-to>, while merging them"
         (with-capability (P|TS)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-VST:module{VestingV2} VST)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (srf:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-from))
+                    (srf:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                     (srt:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_RepurposeMerge patron dpof-to-repurpose nonces repurpose-from repurpose-to)
+                    (ref-VST::C_RepurposeMerge patron executor executee dpof-to-repurpose nonces repurpose-to)
                 )
                 (format "Succesfully repurposed and merged Sleeping DPOF {} Nonces {} from {} to {}" 
                     [dpof-to-repurpose nonces srf srt]
@@ -1589,19 +1589,19 @@
             )
         )
     )
-    (defun VST|C_RepurposeSleeping (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string)
-        @doc "Repurposes a single Sleeping DPOF from <repurpose-from> to <repurpose-to>"
+    (defun VST|C_RepurposeSleeping (patron:string executor:string executee:string dpof-to-repurpose:string nonce:integer repurpose-to:string)
+        @doc "Repurposes a single Sleeping DPOF from <executee> to <repurpose-to>"
         (with-capability (P|TS)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-VST:module{VestingV2} VST)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (srf:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-from))
+                    (srf:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                     (srt:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_RepurposeSleeping patron dpof-to-repurpose nonce repurpose-from repurpose-to)
+                    (ref-VST::C_RepurposeSleeping patron executor executee dpof-to-repurpose nonce repurpose-to)
                 )
                 (format "Succesfully repurposed Sleeping DPOF {} Nonce {} from {} to {}" 
                     [dpof-to-repurpose nonce srf srt]
@@ -1686,19 +1686,19 @@
             )
         )
     )
-    (defun VST|C_RepurposeSlumber (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string)
-        @doc "Repurposes multiple Hibernated DPOFs from <repurpose-from> to <repurpose-to>, while merging them"
+    (defun VST|C_RepurposeSlumber (patron:string executor:string executee:string dpof-to-repurpose:string nonces:[integer] repurpose-to:string)
+        @doc "Repurposes multiple Hibernated DPOFs from <executee> to <repurpose-to>, while merging them"
         (with-capability (P|TS)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-VST:module{VestingV2} VST)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (srf:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-from))
+                    (srf:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                     (srt:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_RepurposeSlumber patron dpof-to-repurpose nonces repurpose-from repurpose-to)
+                    (ref-VST::C_RepurposeSlumber patron executor executee dpof-to-repurpose nonces repurpose-to)
                 )
                 (format "Succesfully repurposed and merged Hibernated DPOF {} Nonces {} from {} to {}" 
                     [dpof-to-repurpose nonces srf srt]
@@ -1706,19 +1706,19 @@
             )
         )
     )
-    (defun VST|C_RepurposeHibernating (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string)
-        @doc "Repurposes a single Hibernating DPOF from <repurpose-from> to <repurpose-to>"
+    (defun VST|C_RepurposeHibernating (patron:string executor:string executee:string dpof-to-repurpose:string nonce:integer repurpose-to:string)
+        @doc "Repurposes a single Hibernating DPOF from <executee> to <repurpose-to>"
         (with-capability (P|TS)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-VST:module{VestingV2} VST)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (srf:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-from))
+                    (srf:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                     (srt:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_RepurposeHibernating patron dpof-to-repurpose nonce repurpose-from repurpose-to)
+                    (ref-VST::C_RepurposeHibernating patron executor executee dpof-to-repurpose nonce repurpose-to)
                 )
                 (format "Succesfully repurposed Hibernated DPOF {} Nonce {} from {} to {}" 
                     [dpof-to-repurpose nonce srf srt]

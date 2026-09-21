@@ -2791,7 +2791,7 @@
         (ref-TS01-C2::VST|C_Unreserve patron smart-patron ROuroID 10.0)
 
         ;;
-        ;(ref-TS01-C2::VST|C_RepurposeReserved patron ROuroID patron emma)
+        ;(ref-TS01-C2::VST|C_RepurposeReserved patron (ouronet-ns.DPTF.UR_Konto (ouronet-ns.DPTF.UR_Reservation ROuroID)) patron ROuroID emma)
         (let
             (
                 (r2-dptf-balance:decimal (ref-DPTF::UR_AccountSupply ROuroID smart-patron))
@@ -2862,7 +2862,7 @@
     ;;Show Emmas Balance
     ;(format "Emma has {} {}"[(ref-DPTF::UR_AccountSupply f-vst emma) f-vst])
     ;;Repurpose frozen Token back to AH
-    (ref-TS01-C2::VST|C_RepurposeFrozen patron f-vst emma patron)
+    (ref-TS01-C2::VST|C_RepurposeFrozen patron (ouronet-ns.DPTF.UR_Konto (ouronet-ns.DPTF.UR_Frozen f-vst)) emma f-vst patron)
     ;(ref-VST::XI_RepurposeTrueFungible patron f-vst emma patron true)
     ;;Show AH Balance
     (format "AH has {} {} after repurpose"[(ref-DPTF::UR_AccountSupply f-vst patron) f-vst])
@@ -2959,7 +2959,7 @@
         {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
          "block-time": (time "2024-10-16T00:00:00Z")}
     )
-    ;(ref-TS01-C2::VST|C_RepurposeSleeping patron s-vst 25 emma patron)
+    ;(ref-TS01-C2::VST|C_RepurposeSleeping patron (ouronet-ns.DPTF.UR_Konto (ouronet-ns.DPOF.UR_Sleeping s-vst)) emma s-vst 25 patron)
     [
         (format "<<<<<>>>>>{}" [p])
         (format "Emma has {} {} in total, owned nonces are {}"[(ref-DPOF::UR_AccountSupply s-vst emma) s-vst (ref-DPOF::URH_AccountNonces emma s-vst)])
@@ -3016,8 +3016,8 @@
     )
     ;(ref-TS01-C2::VST|C_Merge KST.EMMA KST.EMMA s-vesta (enumerate 1 30))
     ;(ref-TS01-C2::VST|C_MergeAll KST.EMMA KST.EMMA s-vesta)
-    ;(ref-TS01-C2::VST|C_RepurposeMerge KST.EMMA s-vesta (enumerate 1 10) KST.EMMA KST.ANHD)
-    (ref-TS01-C2::VST|C_RepurposeMerge KST.EMMA s-vesta (ref-DPOF::URH_AccountNonces KST.EMMA s-vesta) KST.EMMA KST.ANHD)
+    ;(ref-TS01-C2::VST|C_RepurposeMerge KST.EMMA (ouronet-ns.DPTF.UR_Konto (ouronet-ns.DPOF.UR_Sleeping s-vesta)) KST.EMMA s-vesta (enumerate 1 10) KST.ANHD)
+    (ref-TS01-C2::VST|C_RepurposeMerge KST.EMMA (ouronet-ns.DPTF.UR_Konto (ouronet-ns.DPOF.UR_Sleeping s-vesta)) KST.EMMA s-vesta (ref-DPOF::URH_AccountNonces KST.EMMA s-vesta) KST.ANHD)
     [
         (format "Emma has {} {} in total, owned nonces are {}"[(ref-DPOF::UR_AccountSupply s-vesta KST.EMMA) s-vesta (ref-DPOF::URH_AccountNonces KST.EMMA s-vesta)])
         (format "Emma VST supply is {}" [(ref-DPTF::UR_AccountSupply "VST-98c486052a51" KST.EMMA)])

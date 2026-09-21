@@ -280,7 +280,7 @@
     ;; fund EMMA with 100 OURO so it holds a non-zero base-token balance to recover
     (ref-TS01-C1::DPTF|C_Transfer patron patron emma ouro-id 100.0 false)
     ;; RepurposeFrozen: freeze+wipe EMMA's OURO and re-mint to LUMY (OURO has a frozen link from TX-003)
-    (ref-TS01-C2::VST|C_RepurposeFrozen patron ouro-id emma lumy)
+    (ref-TS01-C2::VST|C_RepurposeFrozen patron (ouronet-ns.DPTF.UR_Konto (ouronet-ns.DPTF.UR_Frozen ouro-id)) emma ouro-id lumy)
     (print "<<TX-VSTH-006>> DPTF|C_Transfer + VST|C_RepurposeFrozen (account-recovery) OK")
 )
 (print "===^^^===")
@@ -329,7 +329,7 @@
         (ouro-id:string (ref-DALOS::UR_OuroborosID))
     )
     ;; LUMY holds the 100 OURO re-minted by TX-VSTH-006; recover it to AOZT (OURO has a reservation link)
-    (ref-TS01-C2::VST|C_RepurposeReserved patron ouro-id lumy aozt)
+    (ref-TS01-C2::VST|C_RepurposeReserved patron (ouronet-ns.DPTF.UR_Konto (ouronet-ns.DPTF.UR_Reservation ouro-id)) lumy ouro-id aozt)
     (print "<<TX-VSTH-007>> VST|C_RepurposeReserved (account-recovery) OK")
 )
 (print "===^^^===")
@@ -385,8 +385,7 @@
         (
             (vested-ouro:string (ref-DPTF::UR_Vesting ouro-id))
         )
-        (ref-TS01-C2::VST|C_RepurposeVested patron vested-ouro
-            (at 0 (ref-DPOF::URH_AccountNonces aozt vested-ouro)) aozt patron)
+        (ref-TS01-C2::VST|C_RepurposeVested patron (ouronet-ns.DPTF.UR_Konto (ouronet-ns.DPOF.UR_Vesting vested-ouro)) aozt vested-ouro (at 0 (ref-DPOF::URH_AccountNonces aozt vested-ouro)) patron)
     )
     (print "<<TX-VSTH-008>> VST|C_Vest + VST|C_RepurposeVested (nonce account-recovery) OK")
 )
@@ -443,8 +442,7 @@
         (
             (sleeping-ouro:string (ref-DPTF::UR_Sleeping ouro-id))
         )
-        (ref-TS01-C2::VST|C_RepurposeSleeping patron sleeping-ouro
-            (at 0 (ref-DPOF::URH_AccountNonces aozt sleeping-ouro)) aozt patron)
+        (ref-TS01-C2::VST|C_RepurposeSleeping patron (ouronet-ns.DPTF.UR_Konto (ouronet-ns.DPOF.UR_Sleeping sleeping-ouro)) aozt sleeping-ouro (at 0 (ref-DPOF::URH_AccountNonces aozt sleeping-ouro)) patron)
     )
     (print "<<TX-VSTH-009>> VST|C_Sleep + VST|C_RepurposeSleeping (nonce account-recovery) OK")
 )
@@ -561,8 +559,7 @@
         (
             (sleeping-ouro:string (ref-DPTF::UR_Sleeping ouro-id))
         )
-        (ref-TS01-C2::VST|C_RepurposeMerge patron sleeping-ouro
-            (ref-DPOF::URH_AccountNonces patron sleeping-ouro) patron lumy)
+        (ref-TS01-C2::VST|C_RepurposeMerge patron (ouronet-ns.DPTF.UR_Konto (ouronet-ns.DPOF.UR_Sleeping sleeping-ouro)) patron sleeping-ouro (ref-DPOF::URH_AccountNonces patron sleeping-ouro) lumy)
     )
     (print "<<TX-VSTH-011>> VST|C_RepurposeMerge (multi-nonce account-recovery) OK")
 )

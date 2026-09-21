@@ -108,30 +108,30 @@
     (defun C_CreateHibernatingLink:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string dptf:string))
         ;;
     (defun C_Freeze:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string freeze-output:string dptf:string amount:decimal))
-    (defun C_RepurposeFrozen:object{IgnisCollectorV3.OutputCumulator} (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string))
+    (defun C_RepurposeFrozen:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string dptf-to-repurpose:string repurpose-to:string))
     (defun C_ToggleTransferRoleFrozenDPTF:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string s-dptf:string target:string toggle:bool))
         ;;
     (defun C_Reserve:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string dptf:string amount:decimal))
     (defun C_Unreserve:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string r-dptf:string amount:decimal))
-    (defun C_RepurposeReserved:object{IgnisCollectorV3.OutputCumulator} (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string))
+    (defun C_RepurposeReserved:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string dptf-to-repurpose:string repurpose-to:string))
     (defun C_ToggleTransferRoleReservedDPTF:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string s-dptf:string target:string toggle:bool))
         ;;
     (defun C_Vest:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string target-account:string dptf:string amount:decimal offset:integer duration:integer milestones:integer))
     (defun C_Unvest:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string dpof:string nonce:integer))
-    (defun C_RepurposeVested:object{IgnisCollectorV3.OutputCumulator} (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
+    (defun C_RepurposeVested:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string dpof-to-repurpose:string nonce:integer repurpose-to:string))
         ;;
     (defun C_Sleep:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string target-account:string dptf:string amount:decimal duration:integer))
     (defun C_Unsleep:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string dpof:string nonce:integer))
     (defun C_Merge:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string dpof:string nonces:[integer]))
-    (defun C_RepurposeMerge:object{IgnisCollectorV3.OutputCumulator} (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string))
-    (defun C_RepurposeSleeping:object{IgnisCollectorV3.OutputCumulator} (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
+    (defun C_RepurposeMerge:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string dpof-to-repurpose:string nonces:[integer] repurpose-to:string))
+    (defun C_RepurposeSleeping:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string dpof-to-repurpose:string nonce:integer repurpose-to:string))
     (defun C_ToggleTransferRoleSleepingDPOF:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string s-dpof:string target:string toggle:bool))
     ;;
     (defun C_Hibernate:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string target-account:string dptf:string amount:decimal dayz:integer))
     (defun C_Awake:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string dpof:string nonce:integer))
     (defun C_Slumber:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string dpof:string nonces:[integer]))
-    (defun C_RepurposeSlumber:object{IgnisCollectorV3.OutputCumulator} (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string))
-    (defun C_RepurposeHibernating:object{IgnisCollectorV3.OutputCumulator} (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
+    (defun C_RepurposeSlumber:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string dpof-to-repurpose:string nonces:[integer] repurpose-to:string))
+    (defun C_RepurposeHibernating:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string dpof-to-repurpose:string nonce:integer repurpose-to:string))
     (defun C_ToggleTransferRoleHibernatingDPOF:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string s-dpof:string target:string toggle:bool))
     ;;
     (defun C_Constrict:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string ats:string rt:string amount:decimal dayz:integer))
@@ -583,39 +583,39 @@
         )
     )
     ;;
-    (defcap VST|C>REPURPOSE-FROZEN-TF (dptf-to-repurpose:string repurpose-from:string repurpose-to:string)
+    (defcap VST|C>REPURPOSE-FROZEN-TF (executor:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string)
         @event
-        (compose-capability (VST|C>REPURPOSE-TRUE-FUNGIBLE dptf-to-repurpose repurpose-from repurpose-to 1))
+        (compose-capability (VST|C>REPURPOSE-TRUE-FUNGIBLE executor dptf-to-repurpose repurpose-from repurpose-to 1))
     )
-    (defcap VST|C>REPURPOSE-RESERVED-TF (dptf-to-repurpose:string repurpose-from:string repurpose-to:string)
+    (defcap VST|C>REPURPOSE-RESERVED-TF (executor:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string)
         @event
-        (compose-capability (VST|C>REPURPOSE-TRUE-FUNGIBLE dptf-to-repurpose repurpose-from repurpose-to 2))
+        (compose-capability (VST|C>REPURPOSE-TRUE-FUNGIBLE executor dptf-to-repurpose repurpose-from repurpose-to 2))
     )
-    (defcap VST|C>REPURPOSE-VESTING-MF (dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string)
+    (defcap VST|C>REPURPOSE-VESTING-MF (executor:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string)
         @event
-        (compose-capability (VST|C>REPURPOSE-ORTO-FUNGIBLE dpof-to-repurpose [nonce] repurpose-from repurpose-to 1))
+        (compose-capability (VST|C>REPURPOSE-ORTO-FUNGIBLE executor dpof-to-repurpose [nonce] repurpose-from repurpose-to 1))
     )
-    (defcap VST|C>REPURPOSE-SLEEPING-MF (dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string)
+    (defcap VST|C>REPURPOSE-SLEEPING-MF (executor:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string)
         @event
-        (compose-capability (VST|C>REPURPOSE-ORTO-FUNGIBLE dpof-to-repurpose [nonce] repurpose-from repurpose-to 2))
+        (compose-capability (VST|C>REPURPOSE-ORTO-FUNGIBLE executor dpof-to-repurpose [nonce] repurpose-from repurpose-to 2))
     )
-    (defcap VST|C>REPURPOSE-HIBERNATING-MF (dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string)
+    (defcap VST|C>REPURPOSE-HIBERNATING-MF (executor:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string)
         @event
-        (compose-capability (VST|C>REPURPOSE-ORTO-FUNGIBLE dpof-to-repurpose [nonce] repurpose-from repurpose-to 3))
-    )
-    ;;
-    (defcap VST|C>REPURPOSE-MERGE (dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string)
-        @event
-        (UEV_NoncesForMerging nonces)
-        (compose-capability (VST|C>REPURPOSE-ORTO-FUNGIBLE dpof-to-repurpose nonces repurpose-from repurpose-to 2))
-    )
-    (defcap VST|C>REPURPOSE-SLUMBER (dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string)
-        @event
-        (UEV_NoncesForMerging nonces)
-        (compose-capability (VST|C>REPURPOSE-ORTO-FUNGIBLE dpof-to-repurpose nonces repurpose-from repurpose-to 3))
+        (compose-capability (VST|C>REPURPOSE-ORTO-FUNGIBLE executor dpof-to-repurpose [nonce] repurpose-from repurpose-to 3))
     )
     ;;
-    (defcap VST|C>REPURPOSE-TRUE-FUNGIBLE (dptf-to-repurpose:string repurpose-from:string repurpose-to:string fr-tag:integer)
+    (defcap VST|C>REPURPOSE-MERGE (executor:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string)
+        @event
+        (UEV_NoncesForMerging nonces)
+        (compose-capability (VST|C>REPURPOSE-ORTO-FUNGIBLE executor dpof-to-repurpose nonces repurpose-from repurpose-to 2))
+    )
+    (defcap VST|C>REPURPOSE-SLUMBER (executor:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string)
+        @event
+        (UEV_NoncesForMerging nonces)
+        (compose-capability (VST|C>REPURPOSE-ORTO-FUNGIBLE executor dpof-to-repurpose nonces repurpose-from repurpose-to 3))
+    )
+    ;;
+    (defcap VST|C>REPURPOSE-TRUE-FUNGIBLE (executor:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string fr-tag:integer)
         ;;UNREACHABLE BY CONSTRUCTION: both compose sites pass a LITERAL (1 and 2) and no Talos
         ;;wrapper exposes <fr-tag> to a client, so no input can trip this. Fail-closed backstop,
         ;;not a live guard - it cannot be pinned by a negative test. DPTF|C>UPDATE-SPECIAL carries
@@ -636,19 +636,25 @@
             (ref-DALOS::UEV_SenderWithReceiver repurpose-from repurpose-to)
             (ref-DALOS::UEV_EnforceAccountType repurpose-to false)
             (ref-DPTF::CAP_Owner dptf)
+            ;;ATTRIBUTION (canon 2.2). CAP_Owner proves the AUTHORITY of the SPECIAL token's
+            ;;owner -- a DERIVED account, not a parameter -- which is HANDOFF 4g's signature for
+            ;;"actor unrecorded". <repurpose-from> LOOKS like the actor and is not: it is the
+            ;;account being WIPED, so it is the executee. Bind the named executor to the account
+            ;;the authority check actually used.
+            (ref-DPTF::UEV_ExecutorIsKonto executor dptf)
             (compose-capability (P|TT))
         )
     )
-    (defcap VST|C>REPURPOSE-ORTO-FUNGIBLE (dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string vzh-tag:integer)
+    (defcap VST|C>REPURPOSE-ORTO-FUNGIBLE (executor:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string vzh-tag:integer)
         (let
             (
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
             )
             (ref-DPOF::UEV_NoncesToAccount dpof-to-repurpose repurpose-from nonces)
-            (compose-capability (VST|X>REPURPOSE-ORTO-FUNGIBLE dpof-to-repurpose repurpose-from repurpose-to vzh-tag))
+            (compose-capability (VST|X>REPURPOSE-ORTO-FUNGIBLE executor dpof-to-repurpose repurpose-from repurpose-to vzh-tag))
         )
     )
-    (defcap VST|X>REPURPOSE-ORTO-FUNGIBLE (dpof-to-repurpose:string repurpose-from:string repurpose-to:string vzh-tag:integer)
+    (defcap VST|X>REPURPOSE-ORTO-FUNGIBLE (executor:string dpof-to-repurpose:string repurpose-from:string repurpose-to:string vzh-tag:integer)
         (enforce (contains vzh-tag [1 2 3]) "Invalid Vesting|Sleeping|Hibernation Tag")
         (let
             (
@@ -667,6 +673,10 @@
             (ref-DALOS::UEV_SenderWithReceiver repurpose-from repurpose-to)
             (ref-DALOS::UEV_EnforceAccountType repurpose-to false)
             (ref-DPTF::CAP_Owner dptf)
+            ;;ATTRIBUTION (canon 2.2) -- ortofungible twin of the TF cap above. <dptf> is derived
+            ;;from the DPOF by its vesting/sleeping/hibernation tag, so the account CAP_Owner
+            ;;proves is never a parameter. Bind the named executor to that same account.
+            (ref-DPTF::UEV_ExecutorIsKonto executor dptf)
             (compose-capability (P|TT))
         )
     )
@@ -2013,10 +2023,10 @@
         )
     )
     (defun C_RepurposeFrozen:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string)
+        (patron:string executor:string executee:string dptf-to-repurpose:string repurpose-to:string)
         (P|UEV_IMC)
-        (with-capability (VST|C>REPURPOSE-FROZEN-TF dptf-to-repurpose repurpose-from repurpose-to)
-            (XI_RepurposeTrueFungible patron dptf-to-repurpose repurpose-from repurpose-to)
+        (with-capability (VST|C>REPURPOSE-FROZEN-TF executor dptf-to-repurpose executee repurpose-to)
+            (XI_RepurposeTrueFungible patron dptf-to-repurpose executee repurpose-to)
         )
     )
     (defun C_ToggleTransferRoleFrozenDPTF:object{IgnisCollectorV3.OutputCumulator}
@@ -2085,10 +2095,10 @@
         )
     )
     (defun C_RepurposeReserved:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string)
+        (patron:string executor:string executee:string dptf-to-repurpose:string repurpose-to:string)
         (P|UEV_IMC)
-        (with-capability (VST|C>REPURPOSE-RESERVED-TF dptf-to-repurpose repurpose-from repurpose-to)
-            (XI_RepurposeTrueFungible patron dptf-to-repurpose repurpose-from repurpose-to)
+        (with-capability (VST|C>REPURPOSE-RESERVED-TF executor dptf-to-repurpose executee repurpose-to)
+            (XI_RepurposeTrueFungible patron dptf-to-repurpose executee repurpose-to)
         )
     )
     (defun C_ToggleTransferRoleReservedDPTF:object{IgnisCollectorV3.OutputCumulator}
@@ -2202,10 +2212,10 @@
         )
     )
     (defun C_RepurposeVested:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string)
+        (patron:string executor:string executee:string dpof-to-repurpose:string nonce:integer repurpose-to:string)
         (P|UEV_IMC)
-        (with-capability (VST|C>REPURPOSE-VESTING-MF dpof-to-repurpose nonce repurpose-from repurpose-to)
-            (XI_RepurposeOrtoFungible patron dpof-to-repurpose nonce repurpose-from repurpose-to)
+        (with-capability (VST|C>REPURPOSE-VESTING-MF executor dpof-to-repurpose nonce executee repurpose-to)
+            (XI_RepurposeOrtoFungible patron dpof-to-repurpose nonce executee repurpose-to)
         )
     )
     (defun C_Sleep:object{IgnisCollectorV3.OutputCumulator}
@@ -2282,17 +2292,17 @@
         )
     )
     (defun C_RepurposeMerge:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string)
+        (patron:string executor:string executee:string dpof-to-repurpose:string nonces:[integer] repurpose-to:string)
         (P|UEV_IMC)
-        (with-capability (VST|C>REPURPOSE-MERGE dpof-to-repurpose nonces repurpose-from repurpose-to)
-            (XIv_MergeNonces patron dpof-to-repurpose repurpose-from repurpose-to nonces 2)
+        (with-capability (VST|C>REPURPOSE-MERGE executor dpof-to-repurpose nonces executee repurpose-to)
+            (XIv_MergeNonces patron dpof-to-repurpose executee repurpose-to nonces 2)
         )
     )
     (defun C_RepurposeSleeping:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string)
+        (patron:string executor:string executee:string dpof-to-repurpose:string nonce:integer repurpose-to:string)
         (P|UEV_IMC)
-        (with-capability (VST|C>REPURPOSE-SLEEPING-MF dpof-to-repurpose nonce repurpose-from repurpose-to)
-            (XI_RepurposeOrtoFungible patron dpof-to-repurpose nonce repurpose-from repurpose-to)
+        (with-capability (VST|C>REPURPOSE-SLEEPING-MF executor dpof-to-repurpose nonce executee repurpose-to)
+            (XI_RepurposeOrtoFungible patron dpof-to-repurpose nonce executee repurpose-to)
         )
     )
     (defun C_ToggleTransferRoleSleepingDPOF:object{IgnisCollectorV3.OutputCumulator}
@@ -2414,17 +2424,17 @@
         )
     )
     (defun C_RepurposeSlumber:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string)
+        (patron:string executor:string executee:string dpof-to-repurpose:string nonces:[integer] repurpose-to:string)
         (P|UEV_IMC)
-        (with-capability (VST|C>REPURPOSE-SLUMBER dpof-to-repurpose nonces repurpose-from repurpose-to)
-            (XIv_MergeNonces patron dpof-to-repurpose repurpose-from repurpose-to nonces 3)
+        (with-capability (VST|C>REPURPOSE-SLUMBER executor dpof-to-repurpose nonces executee repurpose-to)
+            (XIv_MergeNonces patron dpof-to-repurpose executee repurpose-to nonces 3)
         )
     )
     (defun C_RepurposeHibernating:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string)
+        (patron:string executor:string executee:string dpof-to-repurpose:string nonce:integer repurpose-to:string)
         (P|UEV_IMC)
-        (with-capability (VST|C>REPURPOSE-HIBERNATING-MF dpof-to-repurpose nonce repurpose-from repurpose-to)
-            (XI_RepurposeOrtoFungible patron dpof-to-repurpose nonce repurpose-from repurpose-to)
+        (with-capability (VST|C>REPURPOSE-HIBERNATING-MF executor dpof-to-repurpose nonce executee repurpose-to)
+            (XI_RepurposeOrtoFungible patron dpof-to-repurpose nonce executee repurpose-to)
         )
     )
     (defun C_ToggleTransferRoleHibernatingDPOF:object{IgnisCollectorV3.OutputCumulator}

@@ -286,7 +286,7 @@ not a mechanical one.
 
 ---
 
-### 11_VST.pact — IN PROGRESS (22 of 29 entrypoints, 2026-09-21)
+### 11_VST.pact — COMPLETE (29 of 29 entrypoints, 2026-09-21)
 
 **What v1 asserted that is now wrong.** Every VST client call site has moved. 18 of 29 entrypoints
 have a changed signature; the remaining 11 (`C_Repurpose*` ×7, `C_ToggleTransferRole*` ×4) are
@@ -346,6 +346,24 @@ family as `Z|` only, so every **hibernating** (`H|`) token took the DPTF branch 
 table. This module's own comment at the Merge/Slumber guards states the rule plainly: test
 `(take 2 dpof-id)` against `["Z|" "H|"]`. **Sleeping and hibernating are two prefixes of one family**,
 and an auditor re-checking any special-token branch should confirm both are handled.
+
+**7 `C_Repurpose*` gained BOTH an executor and an executee, and the split is the finding.** The
+caps enforce `CAP_Owner` on a **derived** special token — `(UR_Frozen x)`, `(UR_Vesting x)`,
+`(UR_Hibernation x)` — never on a parameter. `repurpose-from` reads like the actor and is not: it is
+the account being **wiped**. So it is the executee, and the executor is the token owner, which
+`XI_RepurposeTrueFungible` was *already* passing downstream to DPTF as its executor. Signatures moved
+to canon order `(patron executor executee entity …)`; internals and caps keep `repurpose-from`, per
+the convention this ledger already records for `receiver` → `executee`.
+
+**An auditor should re-derive this split rather than take it.** Both readings are defensible from the
+signature alone; only the body and the downstream call disambiguate them.
+
+**Negative probes keep PLAIN accounts.** `<<VST-07>>` was first migrated with a derived executor,
+`(UR_Konto (UR_Hibernation slp))`, against a SLEEPING token that has no hibernation link — the read
+resolved `BAR` and died on *"No value found in table … for key: |"*, **replacing the refusal under
+test**. It is safe as a plain account because `UEV_NoncesForMerging` runs in the wrapper cap before
+the binder it composes. Any v2 re-point of a VST negative test must check that ordering, not assume
+it.
 
 **Call sites re-pointed: 33** across 11 files, including `[4.0]_Sovereign-Executor.repl`,
 `[6.3]_SWP.repl`, `[5.3]_Launchpad.repl`, `modules/VST.repl`, `modules/ATS.repl`, `modules/SWP.repl`
