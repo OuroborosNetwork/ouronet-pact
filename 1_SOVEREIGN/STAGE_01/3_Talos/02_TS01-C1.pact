@@ -744,7 +744,12 @@
         @doc "Deploys a DPTF Account. Self-service activation only - the caller must own \
             \ <account> (DALOS|CAP_EnforceAccountOwnership). System/infrastructure account \
             \ setup (a smart account governed by another module) must use the admin variant \
-            \ DPTF|A_DeployAccount in TS01-A instead."
+            \ DPTF|A_DeployAccount in TS01-A instead. \
+            \ The core it wraps is now XB_DeployAccount, not C_DeployAccount: that function \
+            \ builds no cumulator and was being called from inside its own module, which is \
+            \ what a C_ may never be. The BILLING is unchanged and stays here -- a user who \
+            \ activates their own token account PAYS, even though the account is normally \
+            \ created automatically and they need not do this at all."
         (with-capability (P|TS)
             (let
                 (
@@ -755,7 +760,7 @@
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
                 (ref-DALOS::CAP_EnforceAccountOwnership account)
-                (ref-DPTF::C_DeployAccount id account)
+                (ref-DPTF::XBv_DeployAccount id account)
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::URCi_DeployAccount account)
                 )

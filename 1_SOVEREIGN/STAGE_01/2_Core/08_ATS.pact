@@ -2621,10 +2621,10 @@
                 ,"direct-recovery"          : false                
                 }
             )
-            (ref-DPTF::C_DeployAccount reward-token account)
-            (ref-DPTF::C_DeployAccount reward-bearing-token account)
-            (ref-DPTF::C_DeployAccount reward-token ats-sc)
-            (ref-DPTF::C_DeployAccount reward-bearing-token ats-sc)
+            (ref-DPTF::XBv_DeployAccount reward-token account)
+            (ref-DPTF::XBv_DeployAccount reward-bearing-token account)
+            (ref-DPTF::XBv_DeployAccount reward-token ats-sc)
+            (ref-DPTF::XBv_DeployAccount reward-bearing-token ats-sc)
             id
         )
     )

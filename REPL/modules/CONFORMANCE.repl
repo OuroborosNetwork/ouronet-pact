@@ -55,9 +55,17 @@
     (let ((stoa0:string (ref-DALOS::UR_AccountStoa emma)))
         (map print
             [
-                (expect-failure "<<CONF-01>> DPTF::C_DeployAccount is refused from outside Talos"
+                ;;RETARGETED 2026-09-21: the core `C_DeployAccount` was reclassified to
+                ;;`XB_DeployAccount` -- it builds no cumulator and was called from inside its own
+                ;;module, which a C_ may never be. The ASSERTION is unchanged in substance and in
+                ;;fact gets STRONGER: the refusal was, and still is, P|UEV_IMC saying "None of the
+                ;;guards passed", because that gate never cared about the prefix. What the old
+                ;;wording implied -- that the C_ band is what keeps a core function out of reach
+                ;;-- was never true; the IMC policy is. An X_ under the same gate is exactly as
+                ;;unreachable, and now the name says what the protection is.
+                (expect-failure "<<CONF-01>> DPTF::XBv_DeployAccount is refused from outside Talos"
                     "None of the guards passed"
-                    (ref-DPTF::C_DeployAccount a emma))
+                    (ref-DPTF::XBv_DeployAccount a emma))
                 (expect-failure "<<CONF-01>> DALOS::C_RotateStoa likewise, for an ordinary signer"
                     "None of the guards passed"
                     (ref-DALOS::C_RotateStoa emma emma

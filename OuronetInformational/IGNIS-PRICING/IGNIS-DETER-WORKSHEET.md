@@ -88,7 +88,6 @@ DSA A_→C_ rename DONE (substage 4) — only 2 genuine GOV fns remain A_ in DSA
 | <span style="color:#8250df">A_WipeTreasuryDebtPartial</span> | <span style="color:#57606a">SETUP</span> | <span style="color:#cf222e">2</span> | <span style="color:#e36209">3</span> | <span style="color:#0969da">9</span> | · | <span style="color:#8b5cf6">14</span> | <span style="color:#0b7285">88</span> | · | <span style="color:#bf3989">exempt</span> | <span style="color:#116329">0</span> | IGNIS-EXEMPT — admin function (Ouronet Admin only): fully FREE (no STOA, no IGNIS) |
 | <span style="color:#8250df">C_Burn</span> | <span style="color:#57606a">SETUP</span> | <span style="color:#cf222e">1</span> | <span style="color:#e36209">2</span> | <span style="color:#0969da">7</span> | · | <span style="color:#8b5cf6">11</span> | <span style="color:#0b7285">71</span> | · | <span style="color:#bf3989">5x</span> | <span style="color:#116329">76</span> | management/config/property change — slightly expensive |
 | <span style="color:#8250df">C_Control</span> | <span style="color:#57606a">SETUP</span> | · | <span style="color:#e36209">1</span> | <span style="color:#0969da">2</span> | · | <span style="color:#8b5cf6">4</span> | <span style="color:#0b7285">20</span> | · | <span style="color:#bf3989">5x</span> | <span style="color:#116329">25</span> | management/config/property change — slightly expensive |
-| <span style="color:#8250df">C_DeployAccount</span> | <span style="color:#57606a">ISSUE</span> | <span style="color:#cf222e">1</span> | · | <span style="color:#0969da">3</span> | · | <span style="color:#8b5cf6">3</span> | <span style="color:#0b7285">24</span> | · | <span style="color:#bf3989">50x</span> | <span style="color:#116329">74</span> | explicit token-account creation — IGNIS deterrent vs on-purpose spam (auto-creation inside a transfer is FREE) |
 | <span style="color:#8250df">C_Issue</span> | <span style="color:#57606a">ISSUE</span> | <span style="color:#cf222e">3</span> | · | <span style="color:#0969da">3</span> | · | <span style="color:#8b5cf6">15</span> | <span style="color:#0b7285">72</span> | · | <span style="color:#bf3989">1000x</span> | <span style="color:#116329">1072</span> | ISSUANCE GATE — true fungible = $10 (1 ignis = 1 cent) → 1000 ignis base + components |
 | <span style="color:#8250df">C_Mint</span> | <span style="color:#57606a">ISSUE</span> | <span style="color:#cf222e">2</span> | <span style="color:#e36209">3</span> | <span style="color:#0969da">9</span> | · | <span style="color:#8b5cf6">12</span> | <span style="color:#0b7285">84</span> | · | <span style="color:#bf3989">50x</span> | <span style="color:#116329">134</span> | token/collection issuance — STOA-priced (20-50) + modest IGNIS deterrent |
 | <span style="color:#8250df">C_RotateOwnership</span> | <span style="color:#57606a">SETUP</span> | · | <span style="color:#e36209">1</span> | <span style="color:#0969da">2</span> | · | <span style="color:#8b5cf6">4</span> | <span style="color:#0b7285">19</span> | · | <span style="color:#bf3989">10x</span> | <span style="color:#116329">29</span> | role/authority/guard setup |
@@ -875,7 +874,7 @@ Deter is a multiplier on IG|TX: `25x` = 25·IG|TX added on top of the compute co
 | 5x | 133 | config/property change |
 | 10x | 28 | role/authority/guard setup |
 | 25x | 15 | fee/price/rate change |
-| 50x | 33 | small deterrent (toggles, links, token-account deploy, legacy issuance) |
+| 50x | 32 | small deterrent (toggles, links, token-account deploy, legacy issuance) |
 | 100x | 8 | owner-priced 100x |
 | 200x | 1 | AddScore |
 | 250x | 1 | RevokeScore |
@@ -887,4 +886,4 @@ Deter is a multiplier on IG|TX: `25x` = 25·IG|TX added on top of the compute co
 | 5000x | 5 | SWP pair $50 / DSA vault $50 |
 | 10000x | 1 | ShareholderCollection $100 |
 
-604 ops · 254 with deter>1 (rest default 1 or exempt). Regenerate: python3 REPL/tools/_ignis_deter_worksheet.py > OuronetInformational/IGNIS-PRICING/IGNIS-DETER-WORKSHEET.md
+603 ops · 253 with deter>1 (rest default 1 or exempt). Regenerate: python3 REPL/tools/_ignis_deter_worksheet.py > OuronetInformational/IGNIS-PRICING/IGNIS-DETER-WORKSHEET.md

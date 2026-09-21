@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 5 of 22
 ;; This is STEP 5 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-4 must have run first, including the init steps between deploys.
-;; 4 source file(s), 296,962 gas measured in the REPL gas model, 263,929 bytes
+;; 4 source file(s), 296,962 gas measured in the REPL gas model, 263,933 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/11_VST.pact
@@ -1683,7 +1683,7 @@
                 (stoa-costs:decimal (ref-DALOS::UR_UsagePrice "dptf"))
             )
             ;;Create DPTF Account
-            (ref-DPTF::C_DeployAccount dptf VST|SC_NAME)
+            (ref-DPTF::XBv_DeployAccount dptf VST|SC_NAME)
             (ref-IGNIS::XE_CollectStoa patron stoa-costs)
             (ref-IGNIS::UDC_ConcatenateOutputCumulators 
                 [
@@ -1756,7 +1756,7 @@
                 (stoa-costs:decimal (ref-DALOS::UR_UsagePrice "dpmf"))
             )
             ;;Create DPTF Account 
-            (ref-DPTF::C_DeployAccount dptf VST|SC_NAME)
+            (ref-DPTF::XBv_DeployAccount dptf VST|SC_NAME)
             (ref-IGNIS::XE_CollectStoa patron stoa-costs)
             (ref-IGNIS::UDC_ConcatenateOutputCumulators 
                 [

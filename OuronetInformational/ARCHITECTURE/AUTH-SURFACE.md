@@ -6,9 +6,9 @@
 
 | metric | value |
 |---|---|
-| entrypoints scanned | 1194 |
+| entrypoints scanned | 1193 |
 | reaching at least one ownership enforce | 816 |
-| reaching NONE | 378 |
+| reaching NONE | 377 |
 
 ## Per entrypoint
 
@@ -55,7 +55,6 @@
 | `05_DPTF` | `A_WipeTreasuryDebtPartial` | `UR_Konto`, `account:string`, `client`, `id`, `id:string` |
 | `05_DPTF` | `C_Burn` | `UR_Konto`, `account`, `account:string`, `id`, `id:string` |
 | `05_DPTF` | `C_Control` | `UR_Konto`, `account:string`, `id`, `id:string` |
-| `05_DPTF` | `C_DeployAccount` | — |
 | `05_DPTF` | `C_Issue` | `account`, `account:string` |
 | `05_DPTF` | `C_Mint` | `UR_Konto`, `account:string`, `client`, `id`, `id:string` |
 | `05_DPTF` | `C_RotateOwnership` | `UR_Konto`, `account:string`, `id`, `id:string` |

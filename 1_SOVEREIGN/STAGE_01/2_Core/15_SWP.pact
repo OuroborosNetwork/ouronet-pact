@@ -1801,11 +1801,11 @@
             (XE_AddLPTracker token-lp swpair)
             (with-capability (P|SECURE-CALLER)
                 (XI_SavePool n what swpair)
-                (ref-DPTF::C_DeployAccount token-lp account)
+                (ref-DPTF::XBv_DeployAccount token-lp account)
                 (map
                     (lambda
                         (id:string)
-                        (ref-DPTF::C_DeployAccount id SWP|SC_NAME)
+                        (ref-DPTF::XBv_DeployAccount id SWP|SC_NAME)
                     )
                     ptte
                 )

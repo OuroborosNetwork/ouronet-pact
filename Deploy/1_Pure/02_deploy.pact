@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 2 of 22
 ;; This is STEP 2 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-1 must have run first, including the init steps between deploys.
-;; 3 source file(s), 267,241 gas measured in the REPL gas model, 260,930 bytes
+;; 3 source file(s), 267,241 gas measured in the REPL gas model, 262,822 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/02_IGNIS.pact
@@ -3044,6 +3044,7 @@
             iz-special:[bool]
         )
     )
+    (defun XBv_DeployAccount (id:string account:string))
     (defun XB_DeployAccountWNE (account:string id:string))
     (defun XBv_UpdateSupply (id:string amount:decimal direction:bool))
     (defun XE_UpdateFeeVolume (id:string amount:decimal primary:bool))
@@ -3086,7 +3087,6 @@
     (defun C_SetFeeTarget:object{IgnisCollectorV3.OutputCumulator} (id:string target:string))
     (defun C_ToggleFeeLock:object{IgnisCollectorV3.OutputCumulator} (patron:string id:string toggle:bool))
         ;;
-    (defun C_DeployAccount (id:string account:string))
     (defun C_ToggleFreezeAccount:object{IgnisCollectorV3.OutputCumulator} (id:string account:string toggle:bool))
     (defun C_ToggleBurnRole:object{IgnisCollectorV3.OutputCumulator} (id:string account:string toggle:bool))
     (defun C_ToggleMintRole:object{IgnisCollectorV3.OutputCumulator} (id:string account:string toggle:bool))
@@ -4671,10 +4671,10 @@
             (ref-BRD::URCi_UpgradeBranding months)
         )
     )
-    ;;  DeployAccount: CORE C_DeployAccount returns no cumulator; the ignis|small toll is billed
+    ;;  DeployAccount: CORE XBv_DeployAccount returns no cumulator; the ignis|small toll is billed
     ;;  by Talos keyed on the deployed account. This reader single-sources that toll for exec + INFO.
     (defun URCi_DeployAccount:object{IgnisCollectorV3.OutputCumulator} (account:string)
-        @doc "IGNIS cost of DELIBERATE token-account creation (the explicit C_DeployAccount \
+        @doc "IGNIS cost of DELIBERATE token-account creation (the explicit DPTF|C_DeployAccount \
             \ entrypoint, billed at its Talos wrapper): the central IG|DETER token-account tier \
             \ (50) — an anti-spam deterrent per owner 2026-09-05. Auto-creation inside a transfer \
             \ never reaches this reader and stays FREE (S1 constraint). Shared by exec + INFO_*."
@@ -5056,6 +5056,57 @@
             )
         )
     )
+    ;;Enforce: <account> existence cannot be relocated. There is no defcap on this path to
+    ;;          host it, and the two Talos doors differ precisely here: the CLIENT door proves
+    ;;          existence as a side effect of CAP_EnforceAccountOwnership, but the ADMIN door
+    ;;          deliberately has NO ownership check on the target -- that absence is its reason
+    ;;          to exist. Hoisting the check into the doors would therefore duplicate it into
+    ;;          one that does not need it and one that does, and would leave XB_DeployAccountWNE's
+    ;;          external callers (ATS/SWP/VST) unguarded. It guards the write, so it lives here.
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
+    (defun XBv_DeployAccount (id:string account:string)
+        @doc "Activates DPTF <id> on <account> -- writes the zero balance row if absent, \
+            \ preserving an existing row's fields. \
+            \ \
+            \ RECLASSIFIED FROM `C_DeployAccount` 2026-09-21 (owner). It was never a client \
+            \ function: it builds no OutputCumulator, and it was called by `XIv_Issue` and \
+            \ `XB_DeployAccountWNE` -- an X_ reaching into a C_, which inverts the layering. \
+            \ A `C_` and an `A_` are the FINAL functions of a module, the ones Talos wraps; \
+            \ nothing inside the module may call them. Both Talos doors now wrap this X_ \
+            \ instead, and they are where the two policies differ: \
+            \ \
+            \   DPTF|C_DeployAccount  self-service. The caller must own <account>, and PAYS. \
+            \   DPTF|A_DeployAccount  admin only. Deploys for SOMEONE ELSE, no ownership check \
+            \                         on the target -- the case a user cannot serve. \
+            \ \
+            \ Neither is usually needed: an account is created automatically as required. Both \
+            \ exist for flexibility."
+        (P|UEV_IMC)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (f:bool false)
+                (tk:string (UC_IdAccount id account))
+            )
+            (ref-DALOS::UEV_EnforceAccountExists account)
+            (UEV_id id)
+            (with-default-read DPTF|BalanceTable tk
+                (UDC_TrueFungibleAccount 0.0 f f f f f id account)
+                {"balance"                  := b
+                ,"frozen"                   := f
+                ,"role-burn"                := rb
+                ,"role-mint"                := rm
+                ,"role-transfer"            := rt
+                ,"role-fee-exemption"       := rfe
+                ,"id"                       := i
+                ,"account"                  := a
+                }
+                (write DPTF|BalanceTable tk
+                    (UDC_TrueFungibleAccount b f rb rm rt rfe i a)
+                )
+            )
+        )
+    )
     ;;Enforce: per-element-in-map -- XB_IssueFree maps this over LISTS (name/ticker/decimals), so
     ;;          UEV_Decimals validates one element. DPTF|C>ISSUE receives the whole [integer] list and has
     ;;          no per-element loop; adding one purely for decimals is more code. (ATS does have such a
@@ -5132,7 +5183,7 @@
                     [BAR]
                 )
             )
-            (C_DeployAccount id account)
+            (XBv_DeployAccount id account)
             id
         )
     )
@@ -5144,7 +5195,7 @@
                 (exist-account:bool (UR_IzAccount id account))
             )
             (if (not exist-account)
-                (C_DeployAccount id account)
+                (XBv_DeployAccount id account)
                 true
             )
         )
@@ -5832,33 +5883,6 @@
         )
     )
     ;;
-    (defun C_DeployAccount (id:string account:string)
-        (P|UEV_IMC)
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (f:bool false)
-                (tk:string (UC_IdAccount id account))
-            )
-            (ref-DALOS::UEV_EnforceAccountExists account)
-            (UEV_id id)
-            (with-default-read DPTF|BalanceTable tk
-                (UDC_TrueFungibleAccount 0.0 f f f f f id account)
-                {"balance"                  := b
-                ,"frozen"                   := f
-                ,"role-burn"                := rb
-                ,"role-mint"                := rm
-                ,"role-transfer"            := rt
-                ,"role-fee-exemption"       := rfe
-                ,"id"                       := i
-                ,"account"                  := a
-                }
-                (write DPTF|BalanceTable tk
-                    (UDC_TrueFungibleAccount b f rb rm rt rfe i a)
-                )
-            )
-        )
-    )
     (defun C_ToggleFreezeAccount:object{IgnisCollectorV3.OutputCumulator}
         (id:string account:string toggle:bool)
         @doc "Toggle Verum 1"

@@ -1638,7 +1638,7 @@
                 (stoa-costs:decimal (ref-DALOS::UR_UsagePrice "dptf"))
             )
             ;;Create DPTF Account
-            (ref-DPTF::C_DeployAccount dptf VST|SC_NAME)
+            (ref-DPTF::XBv_DeployAccount dptf VST|SC_NAME)
             (ref-IGNIS::XE_CollectStoa patron stoa-costs)
             (ref-IGNIS::UDC_ConcatenateOutputCumulators 
                 [
@@ -1711,7 +1711,7 @@
                 (stoa-costs:decimal (ref-DALOS::UR_UsagePrice "dpmf"))
             )
             ;;Create DPTF Account 
-            (ref-DPTF::C_DeployAccount dptf VST|SC_NAME)
+            (ref-DPTF::XBv_DeployAccount dptf VST|SC_NAME)
             (ref-IGNIS::XE_CollectStoa patron stoa-costs)
             (ref-IGNIS::UDC_ConcatenateOutputCumulators 
                 [

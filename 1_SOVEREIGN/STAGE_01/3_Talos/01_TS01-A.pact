@@ -624,7 +624,12 @@
             \ system/infrastructure account setup only (a smart account governed by \
             \ another module, e.g. a pool/vault/dispenser account), where the caller \
             \ legitimately cannot hold <account>'s own guard. End-user self-service \
-            \ activation must use the ownership-gated DPTF|C_DeployAccount instead."
+            \ activation must use the ownership-gated DPTF|C_DeployAccount instead. \
+            \ ONLY THE ADMIN may deploy for someone else (owner, 2026-09-21); the absence of an \
+            \ ownership check on <account> is the entire reason this door exists, and \
+            \ P|ADMINISTRATIVE-SUMMONER is what confines it. \
+            \ Wraps XB_DeployAccount -- the core was reclassified out of the C_ band, since it \
+            \ builds no cumulator and was called from inside its own module."
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
@@ -633,7 +638,7 @@
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
-                (ref-DPTF::C_DeployAccount id account)
+                (ref-DPTF::XBv_DeployAccount id account)
                 (ref-IGNIS::XE_CollectIgnis patron
                     ;;charge through the SAME reader the client twin uses, so the admin variant
                     ;;cannot drift from DPTF|C_DeployAccount's price

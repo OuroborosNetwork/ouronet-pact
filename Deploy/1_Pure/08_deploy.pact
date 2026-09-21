@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 8 of 22
 ;; This is STEP 8 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-7 must have run first, including the init steps between deploys.
-;; 5 source file(s), 321,972 gas measured in the REPL gas model, 291,619 bytes
+;; 5 source file(s), 321,972 gas measured in the REPL gas model, 292,494 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/20_MTX-SWP.pact
@@ -4862,7 +4862,12 @@
             \ system/infrastructure account setup only (a smart account governed by \
             \ another module, e.g. a pool/vault/dispenser account), where the caller \
             \ legitimately cannot hold <account>'s own guard. End-user self-service \
-            \ activation must use the ownership-gated DPTF|C_DeployAccount instead."
+            \ activation must use the ownership-gated DPTF|C_DeployAccount instead. \
+            \ ONLY THE ADMIN may deploy for someone else (owner, 2026-09-21); the absence of an \
+            \ ownership check on <account> is the entire reason this door exists, and \
+            \ P|ADMINISTRATIVE-SUMMONER is what confines it. \
+            \ Wraps XB_DeployAccount -- the core was reclassified out of the C_ band, since it \
+            \ builds no cumulator and was called from inside its own module."
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
@@ -4871,7 +4876,7 @@
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
-                (ref-DPTF::C_DeployAccount id account)
+                (ref-DPTF::XBv_DeployAccount id account)
                 (ref-IGNIS::XE_CollectIgnis patron
                     ;;charge through the SAME reader the client twin uses, so the admin variant
                     ;;cannot drift from DPTF|C_DeployAccount's price
@@ -5839,7 +5844,12 @@
         @doc "Deploys a DPTF Account. Self-service activation only - the caller must own \
             \ <account> (DALOS|CAP_EnforceAccountOwnership). System/infrastructure account \
             \ setup (a smart account governed by another module) must use the admin variant \
-            \ DPTF|A_DeployAccount in TS01-A instead."
+            \ DPTF|A_DeployAccount in TS01-A instead. \
+            \ The core it wraps is now XB_DeployAccount, not C_DeployAccount: that function \
+            \ builds no cumulator and was being called from inside its own module, which is \
+            \ what a C_ may never be. The BILLING is unchanged and stays here -- a user who \
+            \ activates their own token account PAYS, even though the account is normally \
+            \ created automatically and they need not do this at all."
         (with-capability (P|TS)
             (let
                 (
@@ -5850,7 +5860,7 @@
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
                 (ref-DALOS::CAP_EnforceAccountOwnership account)
-                (ref-DPTF::C_DeployAccount id account)
+                (ref-DPTF::XBv_DeployAccount id account)
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-DPTF::URCi_DeployAccount account)
                 )

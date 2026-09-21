@@ -290,11 +290,33 @@ STOA; the constants-only conversion (65 table reads lifted); the `define-set` / 
 
 ## What is open
 
-**443** Talos client functions carry a price; **7** carry no row, and the sheet now says which:
+**441** Talos client functions carry a price; **9** carry no row, and the sheet now says which:
 
 ```
-187 exact  ·  134 floor  ·  2 STOA-only  ·  120 exempt  ·  0 unresolved  ·  7 unpriced
+186 exact  ·  134 floor  ·  2 STOA-only  ·  119 exempt  ·  0 unresolved  ·  9 unpriced
 ```
+
+MOVED 2026-09-21, 443 → 441 and 7 → 9 unpriced. Two causes, neither a repricing:
+
+- **`00_DPMF` went to ARCHIVE MODE**, so its two `BrandingUsagePrimaryV2` client functions no
+  longer exist. −2 from the total. Nothing became more or less expensive.
+- **`DPTF::C_DeployAccount` was reclassified to `XB_DeployAccount`.** The Talos wrapper
+  `DPTF|C_DeployAccount` still exists and still CHARGES; it simply has no core `C_` to key a row
+  on, so it moved into UNPRICED as a **shape-B** entry naming its real reader,
+  `URCi_DeployAccount`. +1 unpriced, −1 exact.
+
+The second +1 is not from this change at all — it is a **latent defect this pass exposed**. The
+sheet's shape-B detector grepped for a collector named `C_Collect*`, and that name has not
+existed since 2026-09-20, when the IGNIS collectors were reclassified (`C_Collect` →
+`XE_CollectIgnis`, `STOA|C_Collect*` → `XE_`/`XB_CollectStoa*`). The regex was not carried along.
+Nothing failed loudly: shape-B wrappers stopped being RECOGNISED and fell through to the generic
+*"no core client op reached from body"*, so the sheet silently stopped naming the `URCi_` reader
+that holds their cost — for `DALOS|C_UpdateEliteAccount`, its `Squared` twin, and now
+`DPTF|C_DeployAccount`. All three are informative again.
+
+The lesson is the one this file already records about the 431 undercount, in a new form: **a
+rename pass has to carry the TOOLS that grep for the old name.** The gate could not catch it
+because the generator and its artefact agreed with each other — they were consistently wrong.
 
 Of the 7: **5 are admin entrypoints** (`ORBR|A_Fuel`, `P|A_Add`, `P|A_AddIMP`, and — new on
 2026-09-20 — `P|A_RemoveIMP` and `P|A_SetIMP`, the guard-chain revoke and replace) — IGNIS and

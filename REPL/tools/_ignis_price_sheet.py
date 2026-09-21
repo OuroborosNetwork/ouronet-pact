@@ -509,7 +509,19 @@ for tf in TALOS:
             # Squared. The op is billed and the cost IS knowable -- just not through this sheet's
             # row model, which is keyed on a core op. Name the authoritative reader rather than
             # print a bare "could not resolve", and never invent a component cost for it.
-            _rdr = re.search(r'C_Collect\w*\s+[A-Za-z0-9|_-]+\s*\(\s*(?:ref-[A-Za-z0-9|_+-]+::)?'
+            # COLLECTOR NAMES, 2026-09-21. This matched `C_Collect\w*` -- a name that no longer
+            # exists anywhere in the tree. The IGNIS collectors were reclassified out of the C_
+            # band on 2026-09-20 (C_Collect -> XE_CollectIgnis, STOA|C_Collect* -> XE_/XB_
+            # CollectStoa*), and this regex was not carried along. Nothing failed: shape-B
+            # wrappers simply stopped being recognised and fell through to the generic
+            # "no core client op reached from body", so the sheet quietly stopped naming the
+            # URCi_ reader that holds their real cost. THREE entrypoints were affected --
+            # DALOS|C_UpdateEliteAccount, its Squared twin, and DPTF|C_DeployAccount -- and the
+            # sheet's own preamble warns about exactly this: a price sheet that drops an
+            # entrypoint silently "reports as complete while a client can still call them and
+            # be charged". A rename pass has to carry the TOOLS that grep for the old name.
+            _rdr = re.search(r'(?:C_Collect|XE_CollectIgnis|XE_CollectStoa|XB_Collect)\w*'
+                             r'\s+[A-Za-z0-9|_-]+\s*\(\s*(?:ref-[A-Za-z0-9|_+-]+::)?'
                              r'((?:[A-Za-z0-9-]+\|)?URCi[x]?_[A-Za-z0-9|_-]+)', body)
             _msg = ('no core client op reached from body' if not _rdr else
                     # the reader name carries an ENTITY| prefix; an unescaped pipe would

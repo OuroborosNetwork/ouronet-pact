@@ -2876,7 +2876,7 @@
 ;;by whoever is calling.
 ;;
 ;;It was recorded as only PARTIALLY witnessed, and the distinction is the point.
-;;`modules/CONFORMANCE.repl` <<CONF-01>> asserts that the CORE `DPTF::C_DeployAccount` is refused
+;;`modules/CONFORMANCE.repl` <<CONF-01>> asserts that the CORE `DPTF::XB_DeployAccount` is refused
 ;;from outside Talos -- that is `P|UEV_IMC`, the inter-module gate, a different guard entirely.
 ;;Nothing drove the TALOS WRAPPER against an account the signer does not own, so deleting this line
 ;;would have left CONF-01 green.

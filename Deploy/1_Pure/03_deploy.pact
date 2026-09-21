@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 3 of 22
 ;; This is STEP 3 of 23 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-2 must have run first, including the init steps between deploys.
-;; 3 source file(s), 350,668 gas measured in the REPL gas model, 298,048 bytes
+;; 3 source file(s), 350,668 gas measured in the REPL gas model, 298,056 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/06_DPOF.pact
@@ -6485,10 +6485,10 @@
                 ,"direct-recovery"          : false                
                 }
             )
-            (ref-DPTF::C_DeployAccount reward-token account)
-            (ref-DPTF::C_DeployAccount reward-bearing-token account)
-            (ref-DPTF::C_DeployAccount reward-token ats-sc)
-            (ref-DPTF::C_DeployAccount reward-bearing-token ats-sc)
+            (ref-DPTF::XBv_DeployAccount reward-token account)
+            (ref-DPTF::XBv_DeployAccount reward-bearing-token account)
+            (ref-DPTF::XBv_DeployAccount reward-token ats-sc)
+            (ref-DPTF::XBv_DeployAccount reward-bearing-token ats-sc)
             id
         )
     )

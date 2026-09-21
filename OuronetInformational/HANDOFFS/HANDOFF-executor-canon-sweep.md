@@ -229,7 +229,7 @@ same tools with those three properties.
 | [x] 3 | `04_BRD.pact` | 0 | 0 | 2 | **2** | `BrandingV2` |
 | [ ] 4 | `05_DPTF.pact` | 0 | 2 | 22 | **24** | `BrandingUsagePrimaryV2`, `DemiourgosPactTrueFungibleV2` |
 | [ ] 5 | `00_DPMF.pact` | 0 | 1 | 16 | **17** | `DemiourgosPactMetaFungibleV7` |
-| [ ] 6 | `06_DPOF.pact` | 0 | 1 | 20 | **21** | `DemiourgosPactOrtoFungibleV2`, `DpofUdcV2` |
+| [ ] 6 | `06_DPOF.pact` | 0 | 1 | 20 | **21** | `DemiourgosPactOrtoFungibleV2`, `DpofUdcV2` — **also do `C_DeployAccount` → `XB_DeployAccount`**, see note below |
 | [ ] 7 | `08_ATS.pact` | 0 | 3 | 21 | **24** | `AutostakeV3` |
 | [ ] 8 | `09_TFT.pact` | 0 | 0 | 5 | **5** | `TrueFungibleTransferV2` |
 | [ ] 9 | `10_ATSU.pact` | 0 | 0 | 14 | **14** | `AutostakeUsageV2` |
@@ -271,6 +271,36 @@ same tools with those three properties.
 | [ ] 44 | `02_TS02-C2.pact` | 9 | 50 | 0 | **59** | `TalosStageTwo_ClientTwoV2` |
 | [ ] 45 | `04_TS02-C3.pact` | 15 | 27 | 0 | **42** | `TalosStageTwo_ClientThreeV1` |
 | [ ] 46 | `05_TS02-DPAD.pact` | 8 | 6 | 0 | **14** | `TalosStageTwo_DemiPadV1` |
+
+**THE TWO CHARGING ADMIN WRAPPERS — a decision deferred so the twins move together.**
+Measured 2026-09-21: of **120** Talos `A_` wrappers, exactly **two** charge a caller-supplied
+patron — `DPTF|A_DeployAccount` and `DPOF|A_DeployAccount`. The other 118 are gasless, the canon
+says a Talos `A_` takes no patron and supplies `GASLESS-PATRON`, and the generated price sheet
+already *labels both of these* "admin entrypoint — IGNIS + STOA free by owner rule". So the
+artefact and the code disagree today, and the code is the outlier 2/120.
+
+Applying the canon makes them free. That is a PRICE GOING TO ZERO, not a refactor, and the owner
+has not ruled on it — so both were left charging. **Do not fix only the DPTF one.** They are
+twins; changing one mid-sweep replaces a consistent anomaly with an inconsistent one, which is
+strictly worse to reason about. Raise it when module 6 comes up and move both, or neither.
+
+**`06_DPOF` CARRIES AN UNFIXED TWIN.** DPTF's `C_DeployAccount` was reclassified to
+`XB_DeployAccount` on 2026-09-21 (owner): it builds no OutputCumulator and was called by
+`XIv_Issue` and `XB_DeployAccountWNE` — an `X_` reaching into a `C_`, which inverts the layering.
+`06_DPOF.pact` has the **identical** pair (`C_DeployAccount` + `XB_DeployAccountWNE` calling it),
+and it was deliberately NOT fixed in DPTF's pass: doing it there would leave DPOF half-swept, and
+half-swept is the state that wrecked the first attempt at this refactor. Do it as part of module
+6's own turn. ~16 references.
+
+The shape to copy, and the two Talos doors that must keep their DIFFERENT policies:
+
+```
+DPOF|C_DeployAccount   self-service. Caller must own <account>, and PAYS.
+DPOF|A_DeployAccount   admin only. Deploys for SOMEONE ELSE, no ownership check on the target.
+```
+
+Only the admin may deploy for another account (owner, 2026-09-21); the missing ownership check
+IS that door's reason to exist, and `P|ADMINISTRATIVE-SUMMONER` is what confines it.
 
 **Interfaces get CONTENT updates, not necessarily VERSION bumps** — most are already ahead of
 mainnet. This is what dissolved the "48-interface cascade" that blocked the first attempt.
