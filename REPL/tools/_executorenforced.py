@@ -38,6 +38,17 @@ import os, re, sys, glob
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+# A PATRONLESS CALLEE'S EXECUTOR SLOT IS SLOT 1, NOT SLOT 2, and FORWARDED has to know which.
+# IMPORTED, never re-typed: _executorplan owns this registry with the evidence attached to each
+# entry, and a second copy here would be a second answer that drifts -- the failure mode CLAUDE.md
+# records for the price sheet and that this programme has now hit in four separate tools.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+try:
+    from _executorplan import PATRONLESS as _PATRONLESS
+except Exception as _e:                                  # fail LOUD, never silently strict
+    sys.exit(f"_executorenforced: cannot import PATRONLESS from _executorplan ({_e}). "
+             f"Refusing to run -- without it every patronless forward reports UNPROVEN.")
+
 # Modules whose sweep turn is DONE -- the only ones this is fair to judge. Grown per turn.
 def _swept():
     """The modules whose turn is done -- READ FROM THE WORKLIST, not remembered here.
@@ -70,17 +81,28 @@ SWEPT = _swept()
 # waiver; the tool still requires the function to SAY it, so the justification lives next to the
 # code and not only in this table.
 INDIRECT = {
-    "C_Transmute":            "XB_DebitTrueFungible",
-    "A_UpdatePublicKey":      "GOV|DALOS_ADMIN",
+    # FILE-QUALIFIED 2026-09-22. These were bare names, and four of them matched MORE THAN ONE
+    # swept module once the Talos files joined SWEPT -- `C_Issue` alone matched five. Measured
+    # which entrypoints actually DEPEND on the registry by emptying it and re-running: nine do,
+    # and every one is a CORE module. The colliding Talos entrypoints pass by DIRECT or
+    # FORWARDED and never consult it.
+    #
+    # So the ambiguity was harmless TODAY and fragile FOREVER: if a Talos entrypoint ever stopped
+    # being forwarded, it would silently inherit a core module's route-claim and report proven on
+    # the strength of a sentence written about a different function.
+    "09_TFT.pact::C_Transmute":     "XB_DebitTrueFungible",
+    "01_DALOS.pact::A_UpdatePublicKey": "GOV|DALOS_ADMIN",
     "C_DonateStoa":           "EXECUTOR",
-    "C_Issue":                "executor",
+    "05_DPTF.pact::C_Issue":  "executor",
+    "06_DPOF.pact::C_Issue":  "executor",
+    "16_SWPI.pact::C_Issue":  "executor",
     # ATSU's two KickStart variants. The executor FUNDS the kickstart and is proven by the
     # transfer that spends its tokens; the capability's CAP_Owner (owner path) / GOV|ATSU_ADMIN
     # (admin path) is a SEPARATE authority, over the POOL, held by a different account.
     # Conflating those two is exactly what the position-aware matcher was added to stop -- it
     # passed C_KickStart for a day on the strength of a CAP_Owner two arguments away.
-    "C_KickStart":            "XI_KickStart",
-    "A_KickStart":            "XI_KickStart",
+    "10_ATSU.pact::C_KickStart": "XI_KickStart",
+    "10_ATSU.pact::A_KickStart": "XI_KickStart",
     # ---- 19_SWPU (2026-09-22). These forward the executor into a SAME-MODULE `XI_`, which the
     # FORWARDED branch cannot see -- it looks for `ref-X::`, i.e. a CROSS-module hand-off. That
     # is the correct shape for FORWARDED to match (a foreign module is what does the proving);
@@ -202,6 +224,15 @@ def classify(name, body, caps, base=""):
     # `-`; pinned by --selftest below so the fourth time fails loudly instead of silently.
     if re.search(r'ref-[A-Za-z0-9|_\-]+::[A-Za-z0-9|_\-]+\s+[\w\-|]+\s+executor', body):
         return "FORWARDED", ""
+    # SLOT 1 COUNTS WHEN THE CALLEE IS PATRONLESS. ORBR|C_Compress forwards
+    # `(ref-ORBR::C_Compress executor ignis-amount)` -- correct, because ORBR::C_Compress has no
+    # patron and its executor IS the first argument. Requiring slot 2 unconditionally reported
+    # three Talos wrappers as "used 1x, never proven" while they forward perfectly.
+    for m in re.finditer(r'ref-[A-Za-z0-9|_\-]+::([A-Za-z0-9|_\-]+)\s+executor(?![A-Za-z0-9|_\-])',
+                         body):
+        callee = m.group(1)
+        if callee in _PATRONLESS or any(k.endswith("::" + callee) for k in _PATRONLESS):
+            return "FORWARDED", f"patronless callee {callee}, executor is slot 1"
     bare = name.split("|")[-1]
     if bare in SELF_PROVING:
         need = SELF_PROVING[bare]

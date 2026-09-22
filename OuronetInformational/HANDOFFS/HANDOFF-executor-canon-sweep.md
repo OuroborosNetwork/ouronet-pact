@@ -272,7 +272,7 @@ same tools with those three properties.
 | [x] 18 | `22_PYTHIA.pact` | 0 | 0 | 9 | **9** | `PythiaLedgerV3`, `PythiaV5` |
 | [x] 19 | `01_TS01-A.pact` | 0 | 27 | 0 | **27** | `TalosStageOne_AdminV2` |
 | [x] 20 | `02_TS01-C1.pact` | 10 | 49 | 2 | **61** | `TalosStageOne_ClientOneV2` |
-| [ ] 21 | `03_TS01-C2.pact` | 18 | 56 | 3 | **77** | `TalosStageOne_ClientTwoV2` |
+| [x] 21 | `03_TS01-C2.pact` | 18 | 56 | 3 | **77** | `TalosStageOne_ClientTwoV2` |
 | [ ] 22 | `04_TS01-C3.pact` | 18 | 15 | 1 | **34** | `TalosStageOne_ClientThreeV4` |
 | [ ] 23 | `06_TS01-C4.pact` | 1 | 12 | 1 | **14** | `TalosStageOne_ClientFourV8` |
 | [ ] 24 | `05_TS01-P.pact` | 8 | 0 | 0 | **8** | `TalosStageOne_ClientPactsV4` |

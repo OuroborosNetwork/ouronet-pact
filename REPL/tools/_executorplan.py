@@ -153,10 +153,17 @@ EXECUTORLESS = {
     #   cascades the `OuroborosV2` interface, and the last one of these was an owner ruling.
     "13_OUROBOROS.pact::C_Fuel",
 }
+# VST/ATS VOCABULARY ADDED 2026-09-22, and the distinction matters. These are not guesses: every
+# one was confirmed to be an ACCOUNT by reading the body at 11_VST's and 08_ATS's own turns, and
+# the core modules were swept on that basis. Recording verified knowledge is what this list is
+# FOR. REVIEW still exists for names nobody has checked yet -- what it must never become is a
+# state you clear by adding whatever is in front of you.
 ACCT = re.compile(r'^(account|konto|owner|client|sender|receiver|beneficiary|staker|user|operator|'
                   r'holder|injector|collector|executor|recoverer|remover|merger|wrapper|unwrapper|'
                   r'kickstarter|curler|coiler|fueler|swapper|swaper|minter|burner|depositor|'
-                  r'withdrawer|creator|patron)')
+                  r'withdrawer|creator|patron|'
+                  r'freezer|reserver|unreserver|vester|unvester|sleeper|unsleeper|hibernator|'
+                  r'awaker|constricter|brumator)')
 # ENTITY ids -- the shapes that legitimately mean "there is no executor parameter here".
 # Kept EXPLICIT for the same reason ACCT is: so that a name matching NEITHER list is reported
 # rather than assumed. See REVIEW below.
@@ -271,7 +278,12 @@ def selftest():
         ("client",              "RENAME", "ACCT name in the executor slot -- ORBR::C_Compress"),
         ("executor",            "DONE",   "already canon"),
         ("swpair",              "ADD",    "an entity id -- no executor parameter exists"),
-        ("brumator",            "REVIEW", "matches NEITHER list -- read the body, do not assume"),
+        # THE REVIEW CANARY MUST BE A NAME NOBODY HAS CLASSIFIED. It used to be "brumator",
+        # and on 2026-09-22 that became wrong -- brumator was confirmed an ACCOUNT at 11_VST's
+        # turn and added to ACCT, so the case started failing. That is the selftest working:
+        # it noticed the classifier's behaviour had changed under it. Replaced with a name that
+        # appears nowhere in the tree, so the canary tests the FALLBACK rather than a fact.
+        ("custodian",           "REVIEW", "matches NEITHER list -- read the body, do not assume"),
         ("",                    "ADD",    "a definite absence, not an unknown name"),
         ("dptf-to-repurpose",   "ADD",    "entity, via the -to-repurpose arm"),
     ]

@@ -1090,3 +1090,60 @@ DECOYS.** The first version of the detector grepped for the literal `@doc` and f
 — nearly all on `;;` comments that merely *mention* doc strings. In a codebase annotated this
 heavily, a detector that cannot tell code from commentary about code is not a detector.
 
+---
+
+### 03_TS01-C2.pact — COMPLETE (77 of 77 entrypoints, 2026-09-22)
+
+**Sixty-three of seventy-seven arrived already swept.** The remaining fourteen were pure renames —
+`freezer`, `reserver`, `unreserver`, `vester`, `unvester`, `sleeper`, `unsleeper`, `hibernator`,
+`awaker`, `constricter`, `brumator`, `merger` ×2 and `account` — the Talos half of the vocabulary
+whose core half was settled at 11_VST's and 08_ATS's turns. Arity unchanged throughout, so **no
+call site moved**: 36 body renames, 14 signatures, zero fixtures touched.
+
+**The `REVIEW` backlog is now knowledge, not a queue.** Those names were sitting in `REVIEW`
+because `ACCT` had never seen them — the state added at 11_VST's turn precisely so the tool would
+be *loud* rather than assume. They have since been confirmed as accounts **by reading the bodies**,
+and the cores were swept on that basis, so the vocabulary is now recorded in `ACCT`. Tree-wide
+`REVIEW` fell 22 → 11.
+
+> The distinction that keeps this honest: `REVIEW` is cleared by **checking**, never by adding
+> whatever is in front of you. The eleven that remain are names nobody has read yet.
+
+**And the selftest refused the change until its canary was fixed** — `brumator` was the REVIEW
+canary, and adding it to `ACCT` made the case fail. That is the selftest doing its job: it noticed
+the classifier's behaviour had moved under it. The canary is now a name that appears **nowhere in
+the tree**, so it tests the *fallback* rather than a fact that can change.
+
+---
+
+### `FORWARDED` HAD TO LEARN THAT A PATRONLESS CALLEE'S EXECUTOR IS SLOT 1
+
+Check 7 reported `ORBR|C_Compress`, `C_Sublimate` and `C_SublimateV2` as *"used 1x, never
+proven"* while all three forward perfectly: `(ref-ORBR::C_Compress executor ignis-amount)`. The
+executor is the **first** argument, because `ORBR::C_Compress` is PATRONLESS — and `FORWARDED`
+required slot 2, which is the executor slot only when a patron occupies slot 0.
+
+The registry that knows which callees are patronless already exists, **so it is imported rather
+than re-typed**, and the import failure is fatal rather than silent:
+
+> A second copy would be a second answer that drifts. CLAUDE.md records exactly that failure for
+> the price sheet, and this programme has now hit it in four separate tools.
+
+---
+
+### THE `INDIRECT` REGISTRY: MEASURED BEFORE IT WAS TRUSTED
+
+Adding the Talos files to `SWEPT` made the selftest's ambiguity note fire on **four** bare keys —
+`C_Issue` alone matched **five** swept modules. A bare key means a route-claim written for one
+function silently applies to every function sharing its name.
+
+Rather than assume that mattered, it was **measured**: emptying `INDIRECT` and re-running shows
+**nine** entrypoints depend on it, and **every one is a core module**. The colliding Talos
+entrypoints pass by `DIRECT` or `FORWARDED` and never consult the registry.
+
+So the ambiguity was **harmless today and fragile forever** — if a Talos entrypoint ever stopped
+being forwarded, it would inherit a core module's route-claim and report *proven* on the strength
+of a sentence written about a different function. All four are now file-qualified.
+
+**Result: 285 proven, 0 unproven across all 19 swept modules.**
+

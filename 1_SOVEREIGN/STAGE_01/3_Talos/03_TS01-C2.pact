@@ -53,7 +53,7 @@
     (defun ATS|HOT-RBT|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer))
     (defun ATS|HOT-RBT|C_Repurpose (patron:string executor:string executee:string hot-rbt:string nonce:integer))
         ;;
-    (defun ATS|C_Issue:list (patron:string account:string ats:[string] index-decimals:[integer] reward-token:[string] rt-nfr:[bool] reward-bearing-token:[string] rbt-nfr:[bool]))
+    (defun ATS|C_Issue:list (patron:string executor:string ats:[string] index-decimals:[integer] reward-token:[string] rt-nfr:[bool] reward-bearing-token:[string] rbt-nfr:[bool]))
     (defun ATS|C_RotateOwnership (patron:string executor:string executee:string ats:string))
     (defun ATS|C_Control (patron:string executor:string ats:string can-change-owner:bool syphoning:bool hibernate:bool))
     (defun ATS|C_UpdateRoyalty (patron:string executor:string ats:string royalty:decimal))
@@ -86,8 +86,8 @@
     (defun ATS|C_Curl (patron:string executor:string ats1:string ats2:string rt:string amount:decimal))
     (defun ATS|C_VestedCoil (patron:string executor:string ats:string coil-token:string amount:decimal target-account:string offset:integer duration:integer milestones:integer))
     (defun ATS|C_VestedCurl (patron:string executor:string ats1:string ats2:string curl-token:string amount:decimal target-account:string offset:integer duration:integer milestones:integer))
-    (defun ATS|C_Constrict (patron:string constricter:string ats:string rt:string amount:decimal dayz:integer))
-    (defun ATS|C_Brumate (patron:string brumator:string ats1:string ats2:string rt:string amount:decimal dayz:integer))
+    (defun ATS|C_Constrict (patron:string executor:string ats:string rt:string amount:decimal dayz:integer))
+    (defun ATS|C_Brumate (patron:string executor:string ats1:string ats2:string rt:string amount:decimal dayz:integer))
     (defun ATS|C_Syphon (patron:string executor:string executee:string ats:string syphon-amounts:[decimal]))
         ;;
     (defun ATS|C_ColdRecovery (patron:string executor:string ats:string ra:decimal))
@@ -106,29 +106,29 @@
     (defun VST|C_CreateSleepingLink:[string] (patron:string executor:string dptf:string))
     (defun VST|C_CreateHibernatingLink:[string] (patron:string executor:string dptf:string))
         ;;Frozen
-    (defun VST|C_Freeze (patron:string freezer:string freeze-output:string dptf:string amount:decimal))
+    (defun VST|C_Freeze (patron:string executor:string freeze-output:string dptf:string amount:decimal))
     (defun VST|C_RepurposeFrozen (patron:string executor:string executee:string dptf-to-repurpose:string repurpose-to:string))
     (defun VST|C_ToggleTransferRoleFrozenDPTF (patron:string executor:string s-dptf:string target:string toggle:bool))
         ;;Reservation
-    (defun VST|C_Reserve (patron:string reserver:string dptf:string amount:decimal))
-    (defun VST|C_Unreserve (patron:string unreserver:string r-dptf:string amount:decimal))
+    (defun VST|C_Reserve (patron:string executor:string dptf:string amount:decimal))
+    (defun VST|C_Unreserve (patron:string executor:string r-dptf:string amount:decimal))
     (defun VST|C_RepurposeReserved (patron:string executor:string executee:string dptf-to-repurpose:string repurpose-to:string))
     (defun VST|C_ToggleTransferRoleReservedDPTF (patron:string executor:string s-dptf:string target:string toggle:bool))
         ;;Vesting
-    (defun VST|C_Vest (patron:string vester:string target-account:string dptf:string amount:decimal offset:integer seconds:integer milestones:integer))
-    (defun VST|C_Unvest (patron:string unvester:string dpof:string nonce:integer))
+    (defun VST|C_Vest (patron:string executor:string target-account:string dptf:string amount:decimal offset:integer seconds:integer milestones:integer))
+    (defun VST|C_Unvest (patron:string executor:string dpof:string nonce:integer))
     (defun VST|C_RepurposeVested (patron:string executor:string executee:string dpof-to-repurpose:string nonce:integer repurpose-to:string))
         ;;Sleeping
-    (defun VST|C_Sleep (patron:string sleeper:string target-account:string dptf:string amount:decimal seconds:integer))
-    (defun VST|C_Unsleep (patron:string unsleeper:string dpof:string nonce:integer))
-    (defun VST|C_Merge(patron:string merger:string dpof:string nonces:[integer]))
+    (defun VST|C_Sleep (patron:string executor:string target-account:string dptf:string amount:decimal seconds:integer))
+    (defun VST|C_Unsleep (patron:string executor:string dpof:string nonce:integer))
+    (defun VST|C_Merge(patron:string executor:string dpof:string nonces:[integer]))
     (defun VST|C_RepurposeMerge (patron:string executor:string executee:string dpof-to-repurpose:string nonces:[integer] repurpose-to:string))
     (defun VST|C_RepurposeSleeping (patron:string executor:string executee:string dpof-to-repurpose:string nonce:integer repurpose-to:string))
     (defun VST|C_ToggleTransferRoleSleepingDPOF (patron:string executor:string s-dpof:string target:string toggle:bool))
         ;;Hibernating
-    (defun VST|C_Hibernate (patron:string hibernator:string target-account:string dptf:string amount:decimal dayz:integer))
-    (defun VST|C_Awake (patron:string awaker:string dpof:string nonce:integer))
-    (defun VST|C_Slumber (patron:string merger:string dpof:string nonces:[integer]))
+    (defun VST|C_Hibernate (patron:string executor:string target-account:string dptf:string amount:decimal dayz:integer))
+    (defun VST|C_Awake (patron:string executor:string dpof:string nonce:integer))
+    (defun VST|C_Slumber (patron:string executor:string dpof:string nonces:[integer]))
     (defun VST|C_RepurposeSlumber (patron:string executor:string executee:string dpof-to-repurpose:string nonces:[integer] repurpose-to:string))
     (defun VST|C_RepurposeHibernating (patron:string executor:string executee:string dpof-to-repurpose:string nonce:integer repurpose-to:string))
     (defun VST|C_ToggleTransferRoleHibernatingDPOF (patron:string executor:string s-dpof:string target:string toggle:bool))
@@ -460,7 +460,7 @@
         )
     )
     ;;
-    (defun ATS|C_Issue:list (patron:string account:string ats:[string] index-decimals:[integer] reward-token:[string] rt-nfr:[bool] reward-bearing-token:[string] rbt-nfr:[bool])
+    (defun ATS|C_Issue:list (patron:string executor:string ats:[string] index-decimals:[integer] reward-token:[string] rt-nfr:[bool] reward-bearing-token:[string] rbt-nfr:[bool])
         @doc "Issues and Autostake Pair"
         (with-capability (P|TS)
             (let
@@ -469,7 +469,7 @@
                     (ref-ATS:module{AutostakeV3} ATS)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-ATS::C_Issue patron account ats index-decimals reward-token rt-nfr reward-bearing-token rbt-nfr)
+                        (ref-ATS::C_Issue patron executor ats index-decimals reward-token rt-nfr reward-bearing-token rbt-nfr)
                     )
                 )
                 (ref-IGNIS::XE_CollectIgnis patron ico)
@@ -981,7 +981,7 @@
             )
         )
     )
-    (defun ATS|C_Constrict (patron:string constricter:string ats:string rt:string amount:decimal dayz:integer)
+    (defun ATS|C_Constrict (patron:string executor:string ats:string rt:string amount:decimal dayz:integer)
         @doc "Constricts an RT Token from a specific ATS-Pair, generating a RBT Token in HIbernated Form \
         \ Only works if <ats> has hibernation on."
         (with-capability (P|TS)
@@ -990,7 +990,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-VST:module{VestingV2} VST)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-VST::C_Constrict patron constricter ats rt amount dayz)
+                        (ref-VST::C_Constrict patron executor ats rt amount dayz)
                     )
                 )
                 (ref-IGNIS::XE_CollectIgnis patron ico)
@@ -1000,7 +1000,7 @@
             )
         )
     )
-    (defun ATS|C_Brumate (patron:string brumator:string ats1:string ats2:string rt:string amount:decimal dayz:integer)
+    (defun ATS|C_Brumate (patron:string executor:string ats1:string ats2:string rt:string amount:decimal dayz:integer)
         @doc "Brumate double coils an RT Token in 2 chained ATS-Pairs \
             \ The RBT Token of <ats1> must be RBT Token in <ats2> \
             \ Second ATS-Pair must have hibernation on for this to work."
@@ -1010,7 +1010,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-VST:module{VestingV2} VST)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-VST::C_Brumate patron brumator ats1 ats2 rt amount dayz)
+                        (ref-VST::C_Brumate patron executor ats1 ats2 rt amount dayz)
                     )
                 )
                 (ref-IGNIS::XE_CollectIgnis patron ico)
@@ -1343,7 +1343,7 @@
         )
     )
     ;;  [VST Freezing]
-    (defun VST|C_Freeze (patron:string freezer:string freeze-output:string dptf:string amount:decimal)
+    (defun VST|C_Freeze (patron:string executor:string freeze-output:string dptf:string amount:decimal)
         @doc "Freezes a DPTF Token"
         (with-capability (P|TS)
             (let
@@ -1354,7 +1354,7 @@
                     (sfa:string (ref-I|OURONET::OI|UC_ShortAccount freeze-output))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_Freeze patron freezer freeze-output dptf amount)
+                    (ref-VST::C_Freeze patron executor freeze-output dptf amount)
                 )
                 (format "Succesfully freeze {} DPTF {} to Account {}" [amount dptf sfa])
             )
@@ -1394,7 +1394,7 @@
         )
     )
     ;;  [VST Reserving]
-    (defun VST|C_Reserve (patron:string reserver:string dptf:string amount:decimal)
+    (defun VST|C_Reserve (patron:string executor:string dptf:string amount:decimal)
         @doc "Reserves a DPTF Token"
         (with-capability (P|TS)
             (let
@@ -1402,16 +1402,16 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-VST:module{VestingV2} VST)
-                    (sr:string (ref-I|OURONET::OI|UC_ShortAccount reserver))
+                    (sr:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_Reserve patron reserver dptf amount)
+                    (ref-VST::C_Reserve patron executor dptf amount)
                 )
                 (format "Account {} succesfully reserved {} {} Tokens" [sr amount dptf])
             )
         )
     )
-    (defun VST|C_Unreserve (patron:string unreserver:string r-dptf:string amount:decimal)
+    (defun VST|C_Unreserve (patron:string executor:string r-dptf:string amount:decimal)
         @doc "Unreserves a DPTF Token"
         (with-capability (P|TS)
             (let
@@ -1419,10 +1419,10 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-VST:module{VestingV2} VST)
-                    (su:string (ref-I|OURONET::OI|UC_ShortAccount unreserver))
+                    (su:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_Unreserve patron unreserver r-dptf amount)
+                    (ref-VST::C_Unreserve patron executor r-dptf amount)
                 )
                 (format "Account {} succesfully unreserved {} {} Tokens" [su amount r-dptf])
             )
@@ -1462,7 +1462,7 @@
         )
     )
     ;;  [VST Vesting]
-    (defun VST|C_Vest (patron:string vester:string target-account:string dptf:string amount:decimal offset:integer seconds:integer milestones:integer)
+    (defun VST|C_Vest (patron:string executor:string target-account:string dptf:string amount:decimal offset:integer seconds:integer milestones:integer)
         @doc "Vests a DPTF Token, generating ist Vested DPOF Counterspart"
         (with-capability (P|TS)
             (let
@@ -1470,17 +1470,17 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-VST:module{VestingV2} VST)
-                    (sv:string (ref-I|OURONET::OI|UC_ShortAccount vester))
+                    (sv:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                     (sta:string (ref-I|OURONET::OI|UC_ShortAccount target-account))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_Vest patron vester target-account dptf amount offset seconds milestones)
+                    (ref-VST::C_Vest patron executor target-account dptf amount offset seconds milestones)
                 )
                 (format "Succesfully vested DPTF {} From Account {} to Account {}" [dptf sv sta])
             )
         )
     )
-    (defun VST|C_Unvest (patron:string unvester:string dpof:string nonce:integer)
+    (defun VST|C_Unvest (patron:string executor:string dpof:string nonce:integer)
         @doc "Culls the Vested DPOF Token, recovering its DPTF counterpart."
         (with-capability (P|TS)
             (let
@@ -1488,10 +1488,10 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-VST:module{VestingV2} VST)
-                    (su:string (ref-I|OURONET::OI|UC_ShortAccount unvester))
+                    (su:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_Unvest patron unvester dpof nonce)
+                    (ref-VST::C_Unvest patron executor dpof nonce)
                 )
                 (format "Succesfully unvested DPOF {} Nonce {} to Account {}" [dpof nonce su])
             )
@@ -1516,7 +1516,7 @@
         )
     )
     ;;  [VST Sleeping]
-    (defun VST|C_Sleep (patron:string sleeper:string target-account:string dptf:string amount:decimal seconds:integer)
+    (defun VST|C_Sleep (patron:string executor:string target-account:string dptf:string amount:decimal seconds:integer)
         @doc "Sleeps a DPTF Token, generating its Sleeping DPOF Counterpart"
         (with-capability (P|TS)
             (let
@@ -1527,13 +1527,13 @@
                     (sta:string (ref-I|OURONET::OI|UC_ShortAccount target-account))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_Sleep patron sleeper target-account dptf amount seconds)
+                    (ref-VST::C_Sleep patron executor target-account dptf amount seconds)
                 )
                 (format "Sucesfully put to Sleep {} DPTF {} on Account {} for a Duration of {} seconds." [amount dptf sta seconds])
             )
         )
     )
-    (defun VST|C_Unsleep (patron:string unsleeper:string dpof:string nonce:integer)
+    (defun VST|C_Unsleep (patron:string executor:string dpof:string nonce:integer)
         @doc "Culls the Sleeping DPOF Token, recovering its DPTF counterpart."
         (with-capability (P|TS)
             (let
@@ -1541,16 +1541,16 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-VST:module{VestingV2} VST)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (su:string (ref-I|OURONET::OI|UC_ShortAccount unsleeper))
+                    (su:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_Unsleep patron unsleeper dpof nonce)
+                    (ref-VST::C_Unsleep patron executor dpof nonce)
                 )
                 (format "Succesfully unsleeped DPOF {} Nonce {} on Account {}" [dpof nonce su])
             )
         )
     )
-    (defun VST|C_Merge(patron:string merger:string dpof:string nonces:[integer])
+    (defun VST|C_Merge(patron:string executor:string dpof:string nonces:[integer])
         @doc "Merges selected sleeping Tokens of an account, \
             \ releasing them if expired sleeping dpof-s exist within the selected tokens \
             \ Multiple existing Batches can be merged this way."
@@ -1560,10 +1560,10 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-VST:module{VestingV2} VST)
-                    (sm:string (ref-I|OURONET::OI|UC_ShortAccount merger))
+                    (sm:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_Merge patron merger dpof nonces)
+                    (ref-VST::C_Merge patron executor dpof nonces)
                 )
                 (format "Succesfully merged Sleeping DPOF {} Nonces {} to Account {}" [dpof nonces sm])
             )
@@ -1625,7 +1625,7 @@
         )
     )
     ;;  [VST Hibernating]
-    (defun VST|C_Hibernate (patron:string hibernator:string target-account:string dptf:string amount:decimal dayz:integer)
+    (defun VST|C_Hibernate (patron:string executor:string target-account:string dptf:string amount:decimal dayz:integer)
         @doc "Hibernates a DPTF Token, generating its Hibernated DPOF Counterpart"
         (with-capability (P|TS)
             (let
@@ -1636,13 +1636,13 @@
                     (sta:string (ref-I|OURONET::OI|UC_ShortAccount target-account))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_Hibernate patron hibernator target-account dptf amount dayz)
+                    (ref-VST::C_Hibernate patron executor target-account dptf amount dayz)
                 )
                 (format "Sucesfully hibernated {} {} on Account {} for a Duration of {} days." [amount dptf sta dayz])
             )
         )
     )
-    (defun VST|C_Awake (patron:string awaker:string dpof:string nonce:integer)
+    (defun VST|C_Awake (patron:string executor:string dpof:string nonce:integer)
         @doc "Culls the Hibernated DPOF Token, recovering its DPTF counterpart."
         (with-capability (P|TS)
             (let
@@ -1650,9 +1650,9 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-VST:module{VestingV2} VST)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount awaker))
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-VST::C_Awake patron awaker dpof nonce)
+                        (ref-VST::C_Awake patron executor dpof nonce)
                     )
                     (output:list (at "output" ico))
                     (v1:decimal (at 0 output))
@@ -1667,7 +1667,7 @@
             )
         )
     )
-    (defun VST|C_Slumber (patron:string merger:string dpof:string nonces:[integer])
+    (defun VST|C_Slumber (patron:string executor:string dpof:string nonces:[integer])
         @doc "Merges selected hibernated Tokens of an account, \
             \ releasing them if expired sleeping dpof-s exist within the selected tokens \
             \ Multiple existing Batches can be merged this way."
@@ -1677,10 +1677,10 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-VST:module{VestingV2} VST)
-                    (sm:string (ref-I|OURONET::OI|UC_ShortAccount merger))
+                    (sm:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VST::C_Slumber patron merger dpof nonces)
+                    (ref-VST::C_Slumber patron executor dpof nonces)
                 )
                 (format "Succesfully merged Hibernated DPOF {} Nonces {} to Account {}" [dpof nonces sm])
             )
