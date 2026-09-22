@@ -57,7 +57,7 @@
             "garbage out-of-range primordial element (-100000) is rejected (DPDC Audit #31M fix)"
                 "Invalid Set-Definition for a Primordial Set: every allowed-nonce must"
             (ref-TS02-C1::DPSF|C_DefinePrimordialSet
-                owner id "GarbageProbeSet" 1.0
+                owner (DPDC.UR_OwnerKonto id true) id "GarbageProbeSet" 1.0
                 [
                     (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [1])
                     (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [2])
@@ -73,7 +73,7 @@
             "zero as a primordial allowed-nonce is rejected (DPDC Audit #31M fix)"
                 "Invalid Set-Definition for a Primordial Set: every allowed-nonce must"
             (ref-TS02-C1::DPSF|C_DefinePrimordialSet
-                owner id "ZeroProbeSet" 1.0
+                owner (DPDC.UR_OwnerKonto id true) id "ZeroProbeSet" 1.0
                 [
                     (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [1])
                     (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [0])
@@ -86,7 +86,7 @@
     ;;fragment-encoding-shaped negatives within magnitude 1-10) must still be accepted normally.
     (print
         (ref-TS02-C1::DPSF|C_DefinePrimordialSet
-            owner id "LegitProbeSet" 1.0
+            owner (DPDC.UR_OwnerKonto id true) id "LegitProbeSet" 1.0
             [
                 (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [1])
                 (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [2])

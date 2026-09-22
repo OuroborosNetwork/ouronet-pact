@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 22 of 24
 ;; This is STEP 22 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-21 must have run first, including the init steps between deploys.
-;; 8 source file(s), 175,977 gas measured in the REPL gas model, 268,449 bytes
+;; 8 source file(s), 175,977 gas measured in the REPL gas model, 268,885 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   2_CITIZEN/7_Launchpad/1_Spark/01_Spark.pact
@@ -5567,6 +5567,7 @@
     (defun A_BunnyRGBSet (patron:string kbn-id:string)
         (let
             (
+                (ref-DPDC:module{DpdcV2} DPDC)
                 (ref-DPDC-UDC:module{DpdcUdcV2} DPDC-UDC)
                 (ref-TS02-C2:module{TalosStageTwo_ClientTwoV2} TS02-C2)
                 ;;
@@ -5577,8 +5578,12 @@
                 (ipfs-link-two:string "BiggrPhoto-IPFS-Link")
             )
             ;;Set Class 1
+            ;;The EXECUTOR is the collection owner, READ here rather than threaded: this
+            ;;populator takes only (patron kbn-id), and 08_DPDC-S binds the declared executor to
+            ;;(UR_OwnerKonto id son) because the authority underneath is DPDC::CAP_Owner -- an
+            ;;enforce on a DERIVED account (HANDOFF 4g, 2026-09-22).
             (ref-TS02-C2::DPNF|C_DefinePrimordialSet
-                patron kbn-id
+                patron (ref-DPDC::UR_OwnerKonto kbn-id false) kbn-id
                 "Bunny RGB Set"
                 1.0
                 [

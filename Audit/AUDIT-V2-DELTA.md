@@ -1524,3 +1524,58 @@ for a day. `SWEPT` is now derived from the source (first parameter is literally 
 immediately found **two more** in `04_TS01-C3` the list had never covered. Registered count
 **25 → 48**. See HANDOFF §4i.
 
+
+---
+
+### 08_DPDC-S.pact — COMPLETE (10 of 10 entrypoints, 2026-09-22)
+
+Ten entrypoints, **two different authorities**, and nothing in the signatures said which was
+which. 118 call sites: 77 rewritten by `_executormigrate`, 41 by hand in two citizen minters.
+
+| group | entrypoints | executor | proven by |
+|---|---|---|---|
+| acts on a **holding** | `C_MakeSemiFungibleSet`, `CC_BreakSemiFungibleSet`, `C_MakeNonFungibleSet`, `C_BreakNonFungibleSet` | the acting account (a **rename** of `account`) | FORWARDED — `DPDC-T::C_Transfer` → `CAP_EnforceAccountOwnership sender` |
+| acts on the **definition** | `C_DefinePrimordialSet`, `C_DefineCompositeSet`, `C_DefineHybridSet`, `C_EnableSetClassFragmentation`, `C_ToggleSet`, `C_RenameSet` | the **collection owner** (an **addition**) | §4g — `DPDC::CAP_Owner id son`, bound by `UEV_ExecutorIsCollectionOwner` |
+
+**The collection owner has no say in whether a holder assembles a set; a holder has no say in what
+a set IS.** That is the line. `DPDC-S|C>MAKE` and `DPDC-S|C>BREAK` look like authorisation gates
+and are not — they check shape and state only, and prove no account at all. The authorisation for
+those four happens a module away, in `DPDC-T`.
+
+> Deciding this **per module** rather than per entrypoint would have been right for `05_DPDC-R`
+> (one authority, eleven entrypoints) and wrong here, with no local signal that anything was off.
+> "Which capability does it open" is not the question. "What does that capability prove" is.
+
+#### Two citizen minters had to read the owner
+
+`BLOODSHED-SETS` (40 sites) and `KBunnies` (1) drive the set definitions through Talos, and their
+populators take only `(patron dhb)` — no executor to thread. The owner is **read**:
+`(ref-DPDC::UR_OwnerKonto dhb false)`, the same expression the module's binder evaluates, so the
+two cannot disagree.
+
+It is deliberately **inlined at each call site** rather than bound once in the enclosing `let`.
+`let` is eager in Pact, and this programme's standing rule is never to read an owner eagerly: a
+collection that does not exist yet turns a clean refusal into a raw table abort. `BLOODSHED-SETS`
+got one `UR_DhbOwner` helper so the `DpdcV2` modref is bound in one place rather than twelve.
+
+#### `_patronslots.py` was silently narrowing its own input
+
+Two gaps in one regex, both live:
+
+* `C_[A-Za-z]+` could not match `CC_`, nor any name with a digit or hyphen. **Every heavy client
+  op in the tree is a `CC_`**, and the tool had never looked at one.
+* the first-argument group could not match a **parenthesised expression**, so a patron slot
+  holding `(ref-DPDC::GOV|DPDC|SC_NAME)` — exactly what this module's three `C_Define*Set`
+  variants passed before their turn — was not merely unregistered, it was **invisible**. The tool
+  printed *"every non-`patron` patron slot is registered"* over three slots it had never seen.
+
+> A checker that silently narrows its own input is worse than no checker, because it reports the
+> narrowing as a pass. Same class as `_executorenforced`'s FORWARDED matcher a week earlier, and
+> the same one-line moral: **a matcher built from the argument shapes you happen to have seen is a
+> hardcoded list wearing a regex.**
+
+Eight provisional patron slots **cleared** at this turn (four `DPDC-T` legs, four
+`C_CreateNewNonce`), and the binder helper is now spelled `UEV_ExecutorIsCollectionOwner` in all
+three DPDC modules that have one — `05_DPDC-R`'s `UEV_ExecutorIsOwnerKontoLocal` was renamed to
+match. See HANDOFF §4j.
+

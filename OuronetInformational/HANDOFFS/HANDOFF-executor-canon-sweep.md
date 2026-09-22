@@ -282,7 +282,7 @@ same tools with those three properties.
 | [x] 28 | `05_DPDC-R.pact` | 0 | 0 | 11 | **11** | `DpdcRolesV2` |
 | [x] 29 | `06_DPDC-MNG.pact` | 0 | 0 | 12 | **12** | `DpdcManagementV2` |
 | [x] 30 | `07_DPDC-T.pact` | 1 | 0 | 3 | **4** | `DpdcTransferV2` — done; +10 TS02-C1/C2 wrappers reordered. See §4i |
-| [ ] 31 | `08_DPDC-S.pact` | 0 | 0 | 10 | **10** | `DpdcSetsV2` |
+| [x] 31 | `08_DPDC-S.pact` | 0 | 0 | 10 | **10** | `DpdcSetsV2` — done; two authorities in one module, see §4j |
 | [ ] 32 | `09_DPDC-F.pact` | 0 | 0 | 4 | **4** | `DpdcFragmentsV2` |
 | [ ] 33 | `10_DPDC-N.pact` | 0 | 0 | 8 | **8** | `DpdcNonceV2` |
 | [ ] 34 | `11_EQUITY+.pact` | 1 | 0 | 1 | **2** | `EquityV2` |
@@ -448,6 +448,38 @@ arguments away from anything that proved it. It is now position-aware: it finds 
 PARAMETER the executor landed in and requires the enforcement to be on THAT name, re-mapping the
 position at each `compose-capability` hop. Re-run after the change, it immediately found both
 KickStart variants.
+
+### 4j. LESSON FROM MODULE 31 — ONE MODULE, TWO AUTHORITIES, AND THE LINE BETWEEN THEM
+
+`08_DPDC-S` has ten entrypoints and **two different answers** to "who is the executor":
+
+* **Four** — `C_MakeSemiFungibleSet`, `CC_BreakSemiFungibleSet`, `C_MakeNonFungibleSet`,
+  `C_BreakNonFungibleSet` — are acts on a **holding**. The account assembling or dissolving a set
+  signs for itself, and the proof is FORWARDED: the first leg hands it to `DPDC-T::C_Transfer`,
+  whose capability opens on `CAP_EnforceAccountOwnership sender`. `DPDC-S|C>MAKE` and `C>BREAK`
+  prove **no account at all** — they check shape and state only.
+* **Six** — the three `C_Define*Set` variants, `C_EnableSetClassFragmentation`, `C_ToggleSet`,
+  `C_RenameSet` — are acts on the **definition**. They reach `DPDC::CAP_Owner id son`, ownership
+  of the DERIVED collection owner: §4g, needing a binder.
+
+**The collection owner has no say in whether a holder assembles a set, and a holder has no say in
+what a set IS.** That is the line, and it is not visible in the signatures: before this turn all
+ten took an untyped leading `account` or `id` and neither shape told you which rule applied.
+
+Two things follow for the remaining modules:
+
+1. **"Which capability does it open?" is not the question — "what does that capability prove?"
+   is.** `DPDC-S|C>MAKE` looks like an authorisation gate and is not one; it is a validator, and
+   the authorisation happens a module away.
+2. **A module-wide answer is a guess.** `05_DPDC-R` genuinely has one authority for all eleven
+   entrypoints; `08_DPDC-S` has two for ten. Deciding per module rather than per entrypoint would
+   have been right once and wrong once, with no local signal that anything was wrong.
+
+The binder helper is now spelled `UEV_ExecutorIsCollectionOwner` in all three DPDC modules that
+have one (`05_DPDC-R` was `UEV_ExecutorIsOwnerKontoLocal` and was renamed). Three names for one
+check in one family is three greps.
+
+---
 
 ### 4i. LESSON FROM MODULE 30 — A HAND-MAINTAINED LIST HID SIX SITES FOR A DAY
 

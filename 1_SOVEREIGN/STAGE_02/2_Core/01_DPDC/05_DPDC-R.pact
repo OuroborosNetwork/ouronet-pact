@@ -713,8 +713,12 @@
     )
     ;;{5.7}  User [A/C]
     ;;Role Toggling
-    (defun UEV_ExecutorIsOwnerKontoLocal (executor:string id:string son:bool)
+    (defun UEV_ExecutorIsCollectionOwner (executor:string id:string son:bool)
         @doc "Thin local wrapper over DPDC::UEV_ExecutorIsOwnerKonto. \
+            \ \
+            \ RENAMED 2026-09-22 from UEV_ExecutorIsOwnerKontoLocal. 06_DPDC-MNG and 08_DPDC-S \
+            \ define the identical helper under the name used here, and three names for one \
+            \ check in one module family is three greps. \
             \ \
             \ Exists so the DPDC modref is bound in ONE place rather than at eleven call sites. \
             \ Every entrypoint in this module is gated by DPDC::CAP_Owner, which enforces on the \
@@ -742,7 +746,7 @@
             \ needs no signature -- the executee test. A rename and a reorder, plus the two new \
             \ leading parameters."
         (P|UEV_IMC)
-        (UEV_ExecutorIsOwnerKontoLocal executor id true)
+        (UEV_ExecutorIsCollectionOwner executor id true)
         (let
             (
                 (ref-DPDC:module{DpdcV2} DPDC)
@@ -763,7 +767,7 @@
             \ needs no signature -- the executee test. A rename and a reorder, plus the two new \
             \ leading parameters."
         (P|UEV_IMC)
-        (UEV_ExecutorIsOwnerKontoLocal executor id son)
+        (UEV_ExecutorIsCollectionOwner executor id son)
         (let
             (
                 (ref-DPDC:module{DpdcV2} DPDC)
@@ -784,7 +788,7 @@
             \ needs no signature -- the executee test. A rename and a reorder, plus the two new \
             \ leading parameters."
         (P|UEV_IMC)
-        (UEV_ExecutorIsOwnerKontoLocal executor id son)
+        (UEV_ExecutorIsCollectionOwner executor id son)
         (let
             (
                 (ref-DPDC:module{DpdcV2} DPDC)
@@ -805,7 +809,7 @@
             \ needs no signature -- the executee test. A rename and a reorder, plus the two new \
             \ leading parameters."
         (P|UEV_IMC)
-        (UEV_ExecutorIsOwnerKontoLocal executor id son)
+        (UEV_ExecutorIsCollectionOwner executor id son)
         (let
             (
                 (ref-DPDC:module{DpdcV2} DPDC)
@@ -826,7 +830,7 @@
             \ needs no signature -- the executee test. A rename and a reorder, plus the two new \
             \ leading parameters."
         (P|UEV_IMC)
-        (UEV_ExecutorIsOwnerKontoLocal executor id son)
+        (UEV_ExecutorIsCollectionOwner executor id son)
         (let
             (
                 (ref-DPDC:module{DpdcV2} DPDC)
@@ -847,7 +851,7 @@
             \ needs no signature -- the executee test. A rename and a reorder, plus the two new \
             \ leading parameters."
         (P|UEV_IMC)
-        (UEV_ExecutorIsOwnerKontoLocal executor id son)
+        (UEV_ExecutorIsCollectionOwner executor id son)
         (let
             (
                 (ref-DPDC:module{DpdcV2} DPDC)
@@ -868,7 +872,7 @@
             \ needs no signature -- the executee test. A rename and a reorder, plus the two new \
             \ leading parameters."
         (P|UEV_IMC)
-        (UEV_ExecutorIsOwnerKontoLocal executor id son)
+        (UEV_ExecutorIsCollectionOwner executor id son)
         (let
             (
                 (ref-DPDC:module{DpdcV2} DPDC)
@@ -889,7 +893,7 @@
             \ needs no signature -- the executee test. A rename and a reorder, plus the two new \
             \ leading parameters."
         (P|UEV_IMC)
-        (UEV_ExecutorIsOwnerKontoLocal executor id son)
+        (UEV_ExecutorIsCollectionOwner executor id son)
         (let
             (
                 (ref-DPDC:module{DpdcV2} DPDC)
@@ -911,7 +915,7 @@
             \ needs no signature -- the executee test. A rename and a reorder, plus the two new \
             \ leading parameters."
         (P|UEV_IMC)
-        (UEV_ExecutorIsOwnerKontoLocal executor id son)
+        (UEV_ExecutorIsCollectionOwner executor id son)
         (let
             (
                 (ref-DPDC:module{DpdcV2} DPDC)
@@ -933,7 +937,7 @@
             \ needs no signature -- the executee test. A rename and a reorder, plus the two new \
             \ leading parameters."
         (P|UEV_IMC)
-        (UEV_ExecutorIsOwnerKontoLocal executor id son)
+        (UEV_ExecutorIsCollectionOwner executor id son)
         (let
             (
                 (ref-DPDC:module{DpdcV2} DPDC)
@@ -955,7 +959,7 @@
             \ needs no signature -- the executee test. A rename and a reorder, plus the two new \
             \ leading parameters."
         (P|UEV_IMC)
-        (UEV_ExecutorIsOwnerKontoLocal executor id son)
+        (UEV_ExecutorIsCollectionOwner executor id son)
         (let
             (
                 (ref-DPDC:module{DpdcV2} DPDC)

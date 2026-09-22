@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 13 of 24
 ;; This is STEP 13 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-12 must have run first, including the init steps between deploys.
-;; 5 source file(s), 315,762 gas measured in the REPL gas model, 234,491 bytes
+;; 5 source file(s), 315,762 gas measured in the REPL gas model, 241,827 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/07_DPDC-T.pact
@@ -1302,28 +1302,28 @@
     ;;
     ;;  [C]
     ;;
-    (defun C_MakeSemiFungibleSet:object{IgnisCollectorV3.OutputCumulator} (account:string id:string nonces:[integer] set-class:integer how-many-sets:integer))
-    (defun CC_BreakSemiFungibleSet:object{IgnisCollectorV3.OutputCumulator} (account:string id:string nonce:integer how-many-sets:integer))
-    (defun C_MakeNonFungibleSet:object{IgnisCollectorV3.OutputCumulator} (account:string id:string nonces:[integer] set-class:integer))
-    (defun C_BreakNonFungibleSet:object{IgnisCollectorV3.OutputCumulator} (account:string id:string nonce:integer))
+    (defun C_MakeSemiFungibleSet:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string nonces:[integer] set-class:integer how-many-sets:integer))
+    (defun CC_BreakSemiFungibleSet:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string nonce:integer how-many-sets:integer))
+    (defun C_MakeNonFungibleSet:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string nonces:[integer] set-class:integer))
+    (defun C_BreakNonFungibleSet:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string nonce:integer))
         ;;
     (defun C_DefinePrimordialSet:object{IgnisCollectorV3.OutputCumulator}
         (
-            id:string son:bool set-name:string score-multiplier:decimal
+            patron:string executor:string id:string son:bool set-name:string score-multiplier:decimal
             set-definition:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}]
             ind:object{DpdcUdcV2.DPDC|NonceData}
         )
     )
     (defun C_DefineCompositeSet:object{IgnisCollectorV3.OutputCumulator}
         (
-            id:string son:bool set-name:string score-multiplier:decimal
+            patron:string executor:string id:string son:bool set-name:string score-multiplier:decimal
             set-definition:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}]
             ind:object{DpdcUdcV2.DPDC|NonceData}
         )
     )
     (defun C_DefineHybridSet:object{IgnisCollectorV3.OutputCumulator}
         (
-            id:string son:bool set-name:string score-multiplier:decimal
+            patron:string executor:string id:string son:bool set-name:string score-multiplier:decimal
             primordial-sd:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}]
             composite-sd:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}]
             ind:object{DpdcUdcV2.DPDC|NonceData}
@@ -1331,12 +1331,12 @@
     )
     (defun C_EnableSetClassFragmentation:object{IgnisCollectorV3.OutputCumulator}
         (
-            id:string son:bool set-class:integer
+            patron:string executor:string id:string son:bool set-class:integer
             fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData}
         )
     )
-    (defun C_ToggleSet:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool set-class:integer toggle:bool))
-    (defun C_RenameSet:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool set-class:integer new-name:string))
+    (defun C_ToggleSet:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string son:bool set-class:integer toggle:bool))
+    (defun C_RenameSet:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string son:bool set-class:integer new-name:string))
 
 )
 ;;
@@ -2569,7 +2569,17 @@
     )
     ;;{5.7}  User [A/C]
     (defun C_MakeSemiFungibleSet:object{IgnisCollectorV3.OutputCumulator}
-        (account:string id:string nonces:[integer] set-class:integer how-many-sets:integer)
+        (patron:string executor:string id:string nonces:[integer] set-class:integer how-many-sets:integer)
+        @doc "Assembles <how-many-sets> Class-<set-class> SFT sets for <executor> out of its own <nonces>. \
+            \ \
+            \ Executor: PROVEN FORWARDED. Nothing in DPDC-S proves an account -- DPDC-S|C>MAKE \
+            \ runs shape and state checks only -- but the first leg below hands <executor> to \
+            \ DPDC-T::C_Transfer in the executor slot, and DPDC-T|C>TRANSFER opens on \
+            \ (CAP_EnforceAccountOwnership sender) unconditionally. The custodial <dpdc> \
+            \ smart account on the other side of that transfer is DERIVED, not a parameter, \
+            \ so it is not an executee: it is where the pieces are parked while the set is \
+            \ assembled, and it is the same account in every call. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
         (let
             (
@@ -2582,14 +2592,24 @@
             (with-capability (DPDC-S|C>MAKE id son nonces set-class how-many-sets)
                 ;;1]SFT Set Nonce is already created with the Set Definition,
                 ;;it only needs a quantity of <how-many-sets> to be added to target <account>
-                (ref-DPDC-C::XB_CreditSFT-Nonce account id (UR_NonceOfSet id set-class) how-many-sets)
+                (ref-DPDC-C::XB_CreditSFT-Nonce executor id (UR_NonceOfSet id set-class) how-many-sets)
                 ;;2]Transfer <nonces> to <dpdc> last to return the cumulator.
-                (ref-DPDC-T::C_Transfer account account dpdc [id] [son] [nonces] [(make-list (length nonces) how-many-sets)] true)
+                (ref-DPDC-T::C_Transfer patron executor dpdc [id] [son] [nonces] [(make-list (length nonces) how-many-sets)] true)
             )
         )
     )
     (defun CC_BreakSemiFungibleSet:object{IgnisCollectorV3.OutputCumulator}
-        (account:string id:string nonce:integer how-many-sets:integer)
+        (patron:string executor:string id:string nonce:integer how-many-sets:integer)
+        @doc "Dissolves <how-many-sets> of <executor>'s Class-non-0 SFT set nonces back into their constituents. \
+            \ \
+            \ Executor: PROVEN FORWARDED. Nothing in DPDC-S proves an account -- DPDC-S|C>BREAK \
+            \ runs shape and state checks only -- but the first leg below hands <executor> to \
+            \ DPDC-T::C_Transfer in the executor slot, and DPDC-T|C>TRANSFER opens on \
+            \ (CAP_EnforceAccountOwnership sender) unconditionally. The custodial <dpdc> \
+            \ smart account on the other side of that transfer is DERIVED, not a parameter, \
+            \ so it is not an executee: it is where the pieces are parked while the set is \
+            \ assembled, and it is the same account in every call. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
         (let
             (
@@ -2605,14 +2625,14 @@
                     (
                         (ico1:object{IgnisCollectorV3.OutputCumulator}
                             ;;1]Transfer the SFT Sets from <account> to <dpdc>
-                            (ref-DPDC-T::C_Transfer account account dpdc [id] [son] [[nonce]] [[how-many-sets]] true)
+                            (ref-DPDC-T::C_Transfer patron executor dpdc [id] [son] [[nonce]] [[how-many-sets]] true)
                         )
                         (constituents:[integer]
                             (URC_SemiFungibleConstituents id (ref-DPDC::UR_NonceClass id son nonce))
                         )
                         (ico2:object{IgnisCollectorV3.OutputCumulator}
                             ;;2]Release the Set Elements from <dpdc> to <account>
-                            (ref-DPDC-T::C_Transfer account dpdc account [id] [son] [constituents] [(make-list (length constituents) how-many-sets)] true)
+                            (ref-DPDC-T::C_Transfer patron dpdc executor [id] [son] [constituents] [(make-list (length constituents) how-many-sets)] true)
                         )
                     )
                     ;;3]Burn the Input SFT Set Nonces
@@ -2623,7 +2643,17 @@
         )
     )
     (defun C_MakeNonFungibleSet:object{IgnisCollectorV3.OutputCumulator}
-        (account:string id:string nonces:[integer] set-class:integer)
+        (patron:string executor:string id:string nonces:[integer] set-class:integer)
+        @doc "Assembles one Class-<set-class> NFT set for <executor> out of its own <nonces>, minting the set nonce. \
+            \ \
+            \ Executor: PROVEN FORWARDED. Nothing in DPDC-S proves an account -- DPDC-S|C>MAKE \
+            \ runs shape and state checks only -- but the first leg below hands <executor> to \
+            \ DPDC-T::C_Transfer in the executor slot, and DPDC-T|C>TRANSFER opens on \
+            \ (CAP_EnforceAccountOwnership sender) unconditionally. The custodial <dpdc> \
+            \ smart account on the other side of that transfer is DERIVED, not a parameter, \
+            \ so it is not an executee: it is where the pieces are parked while the set is \
+            \ assembled, and it is the same account in every call. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
         (let
             (
@@ -2640,7 +2670,7 @@
                     (
                         (ico1:object{IgnisCollectorV3.OutputCumulator}
                             ;;1]Transfer <nonces> to <dpdc>
-                            (ref-DPDC-T::C_Transfer account account dpdc [id] [son] [nonces] [(make-list (length nonces) 1)] true)
+                            (ref-DPDC-T::C_Transfer patron executor dpdc [id] [son] [nonces] [(make-list (length nonces) 1)] true)
                         )
                         ;;
                         (set-nd:object{DpdcUdcV2.DPDC|NonceData} (UR_SetNonceData id son set-class))
@@ -2660,26 +2690,22 @@
                         )
                         (ico2:object{IgnisCollectorV3.OutputCumulator}
                             ;;2]When one nonce of class non-0 is created, is automatically created on <dpdc> account
-                            ;;PROVISIONAL PATRON/EXECUTOR SLOTS (HANDOFF 4e, 2026-09-22).
-                            ;;03_DPDC-C's turn gave C_CreateNewNonce a <patron> and an <executor>
-                            ;;bound to (UR_Verum5 id son), the create-role account. This module's
-                            ;;own turn has not come and NONE of these four functions has a patron
-                            ;;-- I assumed one and the module stopped loading with "Cannot find
-                            ;;module: ouronet-ns.patron", which is what Pact calls an unbound
-                            ;;name. So the slot carries the account each function actually knows:
-                            ;;<account> here (the user), the DPDC smart account in the three
-                            ;;C_Define*Set variants, which is 06_VCT's precedent for "no user
-                            ;;account is in scope at all". The executor is READ rather than
-                            ;;threaded. That read is not a
-                            ;;placeholder: it is the same expression the binder evaluates, and
-                            ;;this is the branch where the SIGNATURE check is deliberately
-                            ;;bypassed -- the module is acting, not the role holder -- so naming
-                            ;;the account is the only attribution available and it is exact.
-                            (ref-DPDC-C::C_CreateNewNonce account (ref-DPDC::UR_Verum5 id son) id son set-class 1 spawned-nd true)
+                            ;;PROVISIONAL PATRON SLOT CLEARED (HANDOFF 4e) at this module's own
+                            ;;turn, 2026-09-22. It read `account` because no patron existed here
+                            ;;-- and the attempt to write `patron` anyway is what taught this
+                            ;;programme that Pact reports an unbound name as "Cannot find module:
+                            ;;ouronet-ns.patron". There is a real one now, so the payer is the
+                            ;;payer. The EXECUTOR stays READ rather than threaded, and that is not
+                            ;;a leftover: C_CreateNewNonce binds its executor to (UR_Verum5 id son),
+                            ;;the create-role holder, and this is the branch where the SIGNATURE
+                            ;;check is deliberately bypassed -- the module is minting the set
+                            ;;nonce, not the role holder -- so naming that account is the only
+                            ;;attribution available and it is exact.
+                            (ref-DPDC-C::C_CreateNewNonce patron (ref-DPDC::UR_Verum5 id son) id son set-class 1 spawned-nd true)
                         )
                         (ico3:object{IgnisCollectorV3.OutputCumulator}
                             ;;3]Transfer new set nonce to <account>
-                            (ref-DPDC-T::C_Transfer account dpdc account [id] [son] [[(ref-DPDC::UR_NoncesUsed id son)]] [[1]] true)
+                            (ref-DPDC-T::C_Transfer patron dpdc executor [id] [son] [[(ref-DPDC::UR_NoncesUsed id son)]] [[1]] true)
                         )
                     )
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3] [])
@@ -2688,7 +2714,17 @@
         )
     )
     (defun C_BreakNonFungibleSet:object{IgnisCollectorV3.OutputCumulator}
-        (account:string id:string nonce:integer)
+        (patron:string executor:string id:string nonce:integer)
+        @doc "Dissolves one of <executor>'s Class-non-0 NFT set nonces back into its constituents. \
+            \ \
+            \ Executor: PROVEN FORWARDED. Nothing in DPDC-S proves an account -- DPDC-S|C>BREAK \
+            \ runs shape and state checks only -- but the first leg below hands <executor> to \
+            \ DPDC-T::C_Transfer in the executor slot, and DPDC-T|C>TRANSFER opens on \
+            \ (CAP_EnforceAccountOwnership sender) unconditionally. The custodial <dpdc> \
+            \ smart account on the other side of that transfer is DERIVED, not a parameter, \
+            \ so it is not an executee: it is where the pieces are parked while the set is \
+            \ assembled, and it is the same account in every call. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
         (let
             (
@@ -2704,14 +2740,14 @@
                     (
                         (ico1:object{IgnisCollectorV3.OutputCumulator}
                             ;;1]Transfer the SFT|NFT from <account> to <dpdc>
-                            (ref-DPDC-T::C_Transfer account account dpdc [id] [son] [[nonce]] [[1]] true)
+                            (ref-DPDC-T::C_Transfer patron executor dpdc [id] [son] [[nonce]] [[1]] true)
                         )
                         (constituents:[integer]
                             (URCv_NonFungibleConstituents id nonce)
                         )
                         (ico2:object{IgnisCollectorV3.OutputCumulator}
                             ;;2]Release the Set Elements from <dpdc> to <account>
-                            (ref-DPDC-T::C_Transfer account dpdc account [id] [son] [constituents] [(make-list (length constituents) 1)] true)
+                            (ref-DPDC-T::C_Transfer patron dpdc executor [id] [son] [constituents] [(make-list (length constituents) 1)] true)
                         )
                     )
                     ;;3]Burn the Input SFT Set Nonces
@@ -2721,13 +2757,47 @@
             )
         )
     )
+    (defun UEV_ExecutorIsCollectionOwner (executor:string id:string son:bool)
+        @doc "BINDS <executor> to the collection owner, (UR_OwnerKonto id son), via DPDC. \
+            \ \
+            \ Used by the SIX owner-gated entrypoints of this module -- the three C_Define*Set \
+            \ variants, C_EnableSetClassFragmentation, C_ToggleSet and C_RenameSet -- and by \
+            \ nothing else here. All six reach (ref-DPDC::CAP_Owner id son), which enforces on \
+            \ the DERIVED (UR_OwnerKonto id son) and names no actor: HANDOFF 4g. This supplies \
+            \ the other half, that the account the caller NAMED is that owner. \
+            \ \
+            \ The FOUR set make/break entrypoints deliberately do NOT call it. Their authority \
+            \ is the acting account's own signature, proven downstream by DPDC-T|C>TRANSFER, \
+            \ and the collection owner has no say in whether a holder assembles a set. Same \
+            \ module, two different authorities, and which one applies is decided by whether \
+            \ the op touches the set DEFINITION or a holding of it. \
+            \ \
+            \ Named to match 06_DPDC-MNG's identical helper. 05_DPDC-R's was called \
+            \ UEV_ExecutorIsOwnerKontoLocal and has been renamed to this, so one grep finds \
+            \ every site in the DPDC family that makes this binding. \
+            \ (patron/executor canon 2.2, indirect route named, 2026-09-22.)"
+        (let
+            (
+                (ref-DPDC:module{DpdcV2} DPDC)
+            )
+            (ref-DPDC::UEV_ExecutorIsOwnerKonto executor id son)
+        )
+    )
     (defun C_DefinePrimordialSet:object{IgnisCollectorV3.OutputCumulator}
         (
-            id:string son:bool set-name:string score-multiplier:decimal
+            patron:string executor:string id:string son:bool set-name:string score-multiplier:decimal
             set-definition:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}]
             ind:object{DpdcUdcV2.DPDC|NonceData}
         )
+        @doc "Defines a new PRIMORDIAL set-class on <id> -- one composed of Class-0 nonces. \
+            \ \
+            \ Executor: PROVEN INDIRECTLY, and named. DPDC-S|CX>DEFINE reaches \
+            \ (ref-DPDC::CAP_Owner id son), ownership of the DERIVED collection owner and not \
+            \ of any parameter -- HANDOFF 4g -- so UEV_ExecutorIsCollectionOwner binds the \
+            \ declared executor to that same (UR_OwnerKonto id son). \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
+        (UEV_ExecutorIsCollectionOwner executor id son)
         (with-capability (DPDC-S|C>DEFINE-PRIMORDIAL id son score-multiplier set-definition ind)
             (let
                 (
@@ -2744,7 +2814,7 @@
                     )
                     (ico1:object{IgnisCollectorV3.OutputCumulator}
                         (if son
-                            (ref-DPDC-C::C_CreateNewNonce (ref-DPDC::GOV|DPDC|SC_NAME) (ref-DPDC::UR_Verum5 id son) id son set-class 0 ind true)
+                            (ref-DPDC-C::C_CreateNewNonce patron (ref-DPDC::UR_Verum5 id son) id son set-class 0 ind true)
                             EOC
                         )
                     )
@@ -2755,11 +2825,16 @@
     )
     (defun C_DefineCompositeSet:object{IgnisCollectorV3.OutputCumulator}
         (
-            id:string son:bool set-name:string score-multiplier:decimal
+            patron:string executor:string id:string son:bool set-name:string score-multiplier:decimal
             set-definition:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}]
             ind:object{DpdcUdcV2.DPDC|NonceData}
         )
+        @doc "Defines a new COMPOSITE set-class on <id> -- one composed of other set-classes. \
+            \ Executor: PROVEN INDIRECTLY via DPDC-S|CX>DEFINE's (CAP_Owner id son), a derived \
+            \ account (HANDOFF 4g), bound by UEV_ExecutorIsCollectionOwner. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
+        (UEV_ExecutorIsCollectionOwner executor id son)
         (with-capability (DPDC-S|C>DEFINE-COMPOSITE id son score-multiplier set-definition ind)
             (let
                 (
@@ -2776,7 +2851,7 @@
                     )
                     (ico1:object{IgnisCollectorV3.OutputCumulator}
                         (if son
-                            (ref-DPDC-C::C_CreateNewNonce (ref-DPDC::GOV|DPDC|SC_NAME) (ref-DPDC::UR_Verum5 id son) id son set-class 0 ind true)
+                            (ref-DPDC-C::C_CreateNewNonce patron (ref-DPDC::UR_Verum5 id son) id son set-class 0 ind true)
                             EOC
                         )
                     )
@@ -2787,12 +2862,17 @@
     )
     (defun C_DefineHybridSet:object{IgnisCollectorV3.OutputCumulator}
         (
-            id:string son:bool set-name:string score-multiplier:decimal
+            patron:string executor:string id:string son:bool set-name:string score-multiplier:decimal
             primordial-sd:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}]
             composite-sd:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}]
             ind:object{DpdcUdcV2.DPDC|NonceData}
         )
+        @doc "Defines a new HYBRID set-class on <id> -- Class-0 nonces AND other set-classes. \
+            \ Executor: PROVEN INDIRECTLY via DPDC-S|CX>DEFINE's (CAP_Owner id son), a derived \
+            \ account (HANDOFF 4g), bound by UEV_ExecutorIsCollectionOwner. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
+        (UEV_ExecutorIsCollectionOwner executor id son)
         (with-capability (DPDC-S|C>DEFINE-HYBRID id son score-multiplier primordial-sd composite-sd ind)
             (let
                 (
@@ -2810,7 +2890,7 @@
                     )
                     (ico1:object{IgnisCollectorV3.OutputCumulator}
                         (if son
-                            (ref-DPDC-C::C_CreateNewNonce (ref-DPDC::GOV|DPDC|SC_NAME) (ref-DPDC::UR_Verum5 id son) id son set-class 0 ind true)
+                            (ref-DPDC-C::C_CreateNewNonce patron (ref-DPDC::UR_Verum5 id son) id son set-class 0 ind true)
                             (do
                                 (ref-DPDC::XE_DeployAccountWNE dpdc id false)
                                 EOC
@@ -2824,24 +2904,41 @@
     )
     (defun C_EnableSetClassFragmentation:object{IgnisCollectorV3.OutputCumulator}
         (
-            id:string son:bool set-class:integer
+            patron:string executor:string id:string son:bool set-class:integer
             fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData}
         )
+        @doc "Turns fragmentation ON for one set-class -- a ONE-WAY switch. \
+            \ Executor: PROVEN INDIRECTLY via the capability's (CAP_Owner id son), a derived \
+            \ account (HANDOFF 4g), bound by UEV_ExecutorIsCollectionOwner. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
+        (UEV_ExecutorIsCollectionOwner executor id son)
         (with-capability (DPDC-S|C>ENABLE-FRAGMENTATION id son set-class fragmentation-ind)
             (XI_FragmentSetClass id son set-class fragmentation-ind)
             (URCi_EnableSetClassFragmentation id son)
         )
     )
-    (defun C_ToggleSet:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool set-class:integer toggle:bool)
+    (defun C_ToggleSet:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string executor:string id:string son:bool set-class:integer toggle:bool)
+        @doc "Activates or deactivates a set-class for further composition. \
+            \ Executor: PROVEN INDIRECTLY via the capability's (CAP_Owner id son), a derived \
+            \ account (HANDOFF 4g), bound by UEV_ExecutorIsCollectionOwner. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
+        (UEV_ExecutorIsCollectionOwner executor id son)
         (with-capability (DPDC-S|C>TOGGLE id son set-class toggle)
             (XI_ToggleSetClass id son set-class toggle)
             (URCi_ToggleSet id son)
         )
     )
-    (defun C_RenameSet:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool set-class:integer new-name:string)
+    (defun C_RenameSet:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string executor:string id:string son:bool set-class:integer new-name:string)
+        @doc "Renames a set-class. \
+            \ Executor: PROVEN INDIRECTLY via the capability's (CAP_Owner id son), a derived \
+            \ account (HANDOFF 4g), bound by UEV_ExecutorIsCollectionOwner. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
+        (UEV_ExecutorIsCollectionOwner executor id son)
         (with-capability (DPDC-S|C>RENAME id son set-class new-name)
             (XI_RenameSet id son set-class new-name)
             (URCi_RenameSet id son)

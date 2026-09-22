@@ -142,7 +142,7 @@
         (print (format "CREATE 2 = {}" [(ref-TS02-C1::DPSF|C_Create owner (DPDC.UR_Verum5 sid true) sid [5] [nd])]))
         ;; Define with nd (UDC_NoMetaData -> raw score = -1.0 sentinel) and multiplier 2.5.
         (print (format "DEFINE = {}"
-            [(ref-TS02-C1::DPSF|C_DefinePrimordialSet owner sid "PairSet" 2.5
+            [(ref-TS02-C1::DPSF|C_DefinePrimordialSet owner (DPDC.UR_OwnerKonto sid true) sid "PairSet" 2.5
                 [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [1]) (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [2])] nd)]))
         (let ((set-nonce:integer (ref-DPDC-S::UR_NonceOfSet sid 1)))
             (print (format "set-nonce = {}" [set-nonce]))

@@ -272,7 +272,7 @@
             ;;    so a silent no-op would leave an audit record of a rename that never happened.
             (expect-failure "<<DPDC-S-G2>> renaming a set-class to its CURRENT name is refused"
                 "must be different from the current name"
-                (ref-TS02-C1::DPSF|C_RenameSet KST.ANHD sft 1 (ref-DPDC-S::UR_SetName sft true 1)))
+                (ref-TS02-C1::DPSF|C_RenameSet KST.ANHD (DPDC.UR_OwnerKonto sft true) sft 1 (ref-DPDC-S::UR_SetName sft true 1)))
         ]
     )
     ""
@@ -299,7 +299,7 @@
         (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
         (sft:string "TSFS-98c486052a51")
     )
-    (ref-TS02-C1::DPSF|C_ToggleSet KST.ANHD sft 1 false)
+    (ref-TS02-C1::DPSF|C_ToggleSet KST.ANHD (DPDC.UR_OwnerKonto sft true) sft 1 false)
     (map print
         [
             (expect "<<DPDC-S-G3>> SC1 is now inactive" false (ref-DPDC-S::UR_IzSetActive sft true 1))
@@ -309,7 +309,7 @@
                 (ref-TS02-C1::DPSF|C_Make KST.ANHD KST.ANHD sft [1] 1 1))
         ]
     )
-    (ref-TS02-C1::DPSF|C_ToggleSet KST.ANHD sft 1 true)
+    (ref-TS02-C1::DPSF|C_ToggleSet KST.ANHD (DPDC.UR_OwnerKonto sft true) sft 1 true)
     (map print
         [
             (expect "<<DPDC-S-G3>> ...and SC1 is active again, as the rest of the suite expects"
@@ -490,7 +490,7 @@
                 true (ref-DPDC-S::UEV_IzSetClassFragmented sft true 1))
             (expect-failure "<<DPDC-S-G5>> so enabling fragmentation on it AGAIN is refused"
                 "Set Class must not be fragmented in order to enable fragmentation for it !"
-                (ref-TS02-C1::DPSF|C_EnableSetClassFragmentation KST.ANHD sft 1
+                (ref-TS02-C1::DPSF|C_EnableSetClassFragmentation KST.ANHD (DPDC.UR_OwnerKonto sft true) sft 1
                     (ref-UDC::UDC_ZeroNonceData)))
             ;;CONTRAST -- an UNfragmented set class gets past this rule and is answered by a later
             ;;one, which is what shows the refusal above is the re-entry check and not a blanket
@@ -663,7 +663,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|ToggleSet patron sf 1 false))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_ToggleSet patron sf 1 false))
+            (m (ref-TS02-C1::DPSF|C_ToggleSet patron (DPDC.UR_OwnerKonto sf true) sf 1 false))
         )
         (map print
             [
@@ -702,7 +702,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|RenameSet patron sf 1 "SC1-CostProbe"))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_RenameSet patron sf 1 "SC1-CostProbe"))
+            (m (ref-TS02-C1::DPSF|C_RenameSet patron (DPDC.UR_OwnerKonto sf true) sf 1 "SC1-CostProbe"))
         )
         (map print
             [
@@ -1167,7 +1167,7 @@
     ;;<set-class>` (`08_DPDC-S.pact:946`). Only SC1 is fragmented at this point in the file (DPDC-S-G5
     ;;did it), so a two-class bulk needs SC2 opened as well. That op is itself measured at
     ;;<<DPDC-S-I28>>; here it is setup and closes before `ignis-before` is read.
-    (ref-TS02-C1::DPSF|C_EnableSetClassFragmentation patron sft 2 nd)
+    (ref-TS02-C1::DPSF|C_EnableSetClassFragmentation patron (DPDC.UR_OwnerKonto sft true) sft 2 nd)
     (let
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateSetNonces patron sft patron [1 2] false [nd nd]))
@@ -1220,7 +1220,7 @@
     ;;(`08_DPDC-S.pact:946`), and TSFN's only set class is NOT fragmented at this point in the file
     ;;(DPDC-S-G5 fragmented the SFT side only). Opening it is itself measured at <<DPDC-S-I31>>;
     ;;here it is setup and closes before `ignis-before` is read.
-    (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron nft 1 nd)
+    (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron (DPDC.UR_OwnerKonto nft false) nft 1 nd)
     (let
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateSetNonceName patron nft patron 1 false "ProbeName"))
@@ -1271,7 +1271,7 @@
     ;;(`08_DPDC-S.pact:946`), and TSFN's only set class is NOT fragmented at this point in the file
     ;;(DPDC-S-G5 fragmented the SFT side only). Opening it is itself measured at <<DPDC-S-I31>>;
     ;;here it is setup and closes before `ignis-before` is read.
-    (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron nft 1 nd)
+    (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron (DPDC.UR_OwnerKonto nft false) nft 1 nd)
     (let
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateSetNonceDescription patron nft patron 1 false "probe description"))
@@ -1322,7 +1322,7 @@
     ;;(`08_DPDC-S.pact:946`), and TSFN's only set class is NOT fragmented at this point in the file
     ;;(DPDC-S-G5 fragmented the SFT side only). Opening it is itself measured at <<DPDC-S-I31>>;
     ;;here it is setup and closes before `ignis-before` is read.
-    (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron nft 1 nd)
+    (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron (DPDC.UR_OwnerKonto nft false) nft 1 nd)
     (let
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateSetNonceRoyalty patron nft patron 1 false 3.0))
@@ -1373,7 +1373,7 @@
     ;;(`08_DPDC-S.pact:946`), and TSFN's only set class is NOT fragmented at this point in the file
     ;;(DPDC-S-G5 fragmented the SFT side only). Opening it is itself measured at <<DPDC-S-I31>>;
     ;;here it is setup and closes before `ignis-before` is read.
-    (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron nft 1 nd)
+    (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron (DPDC.UR_OwnerKonto nft false) nft 1 nd)
     (let
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateSetNonceIgnisRoyalty patron nft patron 1 false 2.0))
@@ -1424,7 +1424,7 @@
     ;;(`08_DPDC-S.pact:946`), and TSFN's only set class is NOT fragmented at this point in the file
     ;;(DPDC-S-G5 fragmented the SFT side only). Opening it is itself measured at <<DPDC-S-I31>>;
     ;;here it is setup and closes before `ignis-before` is read.
-    (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron nft 1 nd)
+    (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron (DPDC.UR_OwnerKonto nft false) nft 1 nd)
     (let
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateSetNonceScore patron nft patron 1 false 7.0))
@@ -1475,7 +1475,7 @@
     ;;(`08_DPDC-S.pact:946`), and TSFN's only set class is NOT fragmented at this point in the file
     ;;(DPDC-S-G5 fragmented the SFT side only). Opening it is itself measured at <<DPDC-S-I31>>;
     ;;here it is setup and closes before `ignis-before` is read.
-    (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron nft 1 nd)
+    (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron (DPDC.UR_OwnerKonto nft false) nft 1 nd)
     (let
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|RemoveSetNonceScore patron nft patron 1 false))
@@ -1526,7 +1526,7 @@
     ;;(`08_DPDC-S.pact:946`), and TSFN's only set class is NOT fragmented at this point in the file
     ;;(DPDC-S-G5 fragmented the SFT side only). Opening it is itself measured at <<DPDC-S-I31>>;
     ;;here it is setup and closes before `ignis-before` is read.
-    (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron nft 1 nd)
+    (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron (DPDC.UR_OwnerKonto nft false) nft 1 nd)
     (let
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateSetNonceMetaData patron nft patron 1 false (ref-DPDC-UDC::UDC_NoMetaData)))
@@ -1577,7 +1577,7 @@
     ;;(`08_DPDC-S.pact:946`), and TSFN's only set class is NOT fragmented at this point in the file
     ;;(DPDC-S-G5 fragmented the SFT side only). Opening it is itself measured at <<DPDC-S-I31>>;
     ;;here it is setup and closes before `ignis-before` is read.
-    (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron nft 1 nd)
+    (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron (DPDC.UR_OwnerKonto nft false) nft 1 nd)
     (let
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateSetNonceURI patron nft patron 1 false type (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
@@ -1628,7 +1628,7 @@
     ;;(`08_DPDC-S.pact:946`), and TSFN's only set class is NOT fragmented at this point in the file
     ;;(DPDC-S-G5 fragmented the SFT side only). Opening it is itself measured at <<DPDC-S-I31>>;
     ;;here it is setup and closes before `ignis-before` is read.
-    (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron nft 1 nd)
+    (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron (DPDC.UR_OwnerKonto nft false) nft 1 nd)
     (let
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateSetNonce patron nft patron 1 false nd))
@@ -1679,7 +1679,7 @@
     ;;(`08_DPDC-S.pact:946`), and TSFN's only set class is NOT fragmented at this point in the file
     ;;(DPDC-S-G5 fragmented the SFT side only). Opening it is itself measured at <<DPDC-S-I31>>;
     ;;here it is setup and closes before `ignis-before` is read.
-    (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron nft 1 nd)
+    (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron (DPDC.UR_OwnerKonto nft false) nft 1 nd)
     (let
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateSetNonces patron nft patron [1] false [nd]))
@@ -1733,7 +1733,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|DefinePrimordialSet patron sft "SC4-Probe" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [4]) (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [5])] nd))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_DefinePrimordialSet patron sft "SC4-Probe" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [4]) (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [5])] nd))
+            (m (ref-TS02-C1::DPSF|C_DefinePrimordialSet patron (DPDC.UR_OwnerKonto sft true) sft "SC4-Probe" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [4]) (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [5])] nd))
         )
         (map print
             [
@@ -1779,7 +1779,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|DefineCompositeSet patron sft "SC4-Comp" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 1)] nd))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_DefineCompositeSet patron sft "SC4-Comp" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 1)] nd))
+            (m (ref-TS02-C1::DPSF|C_DefineCompositeSet patron (DPDC.UR_OwnerKonto sft true) sft "SC4-Comp" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 1)] nd))
         )
         (map print
             [
@@ -1834,7 +1834,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|DefineHybridSet patron sft "SC4-Hyb" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [4]) (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [5])] [(ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 1)] nd))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_DefineHybridSet patron sft "SC4-Hyb" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [4]) (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [5])] [(ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 1)] nd))
+            (m (ref-TS02-C1::DPSF|C_DefineHybridSet patron (DPDC.UR_OwnerKonto sft true) sft "SC4-Hyb" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [4]) (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [5])] [(ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 1)] nd))
         )
         (map print
             [
@@ -1882,7 +1882,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|EnableSetClassFragmentation patron sft 2 nd))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_EnableSetClassFragmentation patron sft 2 nd))
+            (m (ref-TS02-C1::DPSF|C_EnableSetClassFragmentation patron (DPDC.UR_OwnerKonto sft true) sft 2 nd))
         )
         (map print
             [
@@ -2032,7 +2032,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|DefinePrimordialSet patron nft "NFT-SC2-Probe" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [1 2]) (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [3 4])] nd))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C2::DPNF|C_DefinePrimordialSet patron nft "NFT-SC2-Probe" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [1 2]) (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [3 4])] nd))
+            (m (ref-TS02-C2::DPNF|C_DefinePrimordialSet patron (DPDC.UR_OwnerKonto nft false) nft "NFT-SC2-Probe" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [1 2]) (ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [3 4])] nd))
         )
         (map print
             [
@@ -2078,7 +2078,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|DefineCompositeSet patron nft "NFT-SC2-Comp" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 1)] nd))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C2::DPNF|C_DefineCompositeSet patron nft "NFT-SC2-Comp" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 1)] nd))
+            (m (ref-TS02-C2::DPNF|C_DefineCompositeSet patron (DPDC.UR_OwnerKonto nft false) nft "NFT-SC2-Comp" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 1)] nd))
         )
         (map print
             [
@@ -2133,7 +2133,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|DefineHybridSet patron nft "NFT-SC2-Hyb" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [1 2])] [(ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 1)] nd))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C2::DPNF|C_DefineHybridSet patron nft "NFT-SC2-Hyb" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [1 2])] [(ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 1)] nd))
+            (m (ref-TS02-C2::DPNF|C_DefineHybridSet patron (DPDC.UR_OwnerKonto nft false) nft "NFT-SC2-Hyb" 1.0 [(ref-DPDC-UDC::UDC_DPDC|AllowedNonceForSetPosition [1 2])] [(ref-DPDC-UDC::UDC_DPDC|AllowedClassForSetPosition 1)] nd))
         )
         (map print
             [
@@ -2179,7 +2179,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|RenameSet patron nft 1 "NFT-SC1-Probe"))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C2::DPNF|C_RenameSet patron nft 1 "NFT-SC1-Probe"))
+            (m (ref-TS02-C2::DPNF|C_RenameSet patron (DPDC.UR_OwnerKonto nft false) nft 1 "NFT-SC1-Probe"))
         )
         (map print
             [
@@ -2225,7 +2225,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|ToggleSet patron nft 1 false))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C2::DPNF|C_ToggleSet patron nft 1 false))
+            (m (ref-TS02-C2::DPNF|C_ToggleSet patron (DPDC.UR_OwnerKonto nft false) nft 1 false))
         )
         (map print
             [
@@ -2271,7 +2271,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|EnableSetClassFragmentation patron nft 1 nd))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron nft 1 nd))
+            (m (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation patron (DPDC.UR_OwnerKonto nft false) nft 1 nd))
         )
         (map print
             [

@@ -110,6 +110,27 @@
         )
     )
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    (defun UR_DhbOwner:string (dhb:string)
+        @doc "The Ouronet account that owns NFT collection <dhb> -- the EXECUTOR of every set \
+            \ definition below. \
+            \ \
+            \ Added 2026-09-22 at 08_DPDC-S's patron/executor turn. Every DPNF|C_Define*Set / \
+            \ C_ToggleSet / C_RenameSet door now names its executor, and DPDC-S binds that name \
+            \ to (UR_OwnerKonto id son) because the authority underneath is DPDC::CAP_Owner -- \
+            \ an enforce on a DERIVED account (HANDOFF 4g). This module's twelve populators take \
+            \ only (patron dhb), so the owner is READ rather than threaded. \
+            \ \
+            \ It is deliberately NOT bound in each function's `let`: `let` is EAGER in Pact, and \
+            \ the standing rule from this programme is never to read an owner eagerly, because a \
+            \ collection that does not exist yet turns a clean refusal into a raw table abort. \
+            \ Inlined at each call site, it is evaluated only on the path that needs it."
+        (let
+            (
+                (ref-DPDC:module{DpdcV2} DPDC)
+            )
+            (ref-DPDC::UR_OwnerKonto dhb false)
+        )
+    )
     ;;{5.4}  Validate [UEV/CAP]
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
@@ -127,7 +148,7 @@
             )
             ;;Set Class 1
             (ref-TS02-C2::DPNF|C_DefinePrimordialSet
-                patron dhb "Tier 1 Common Comati" 1.1
+                patron (UR_DhbOwner dhb) dhb "Tier 1 Common Comati" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 4865 12928 144))
                     (UDC_AllowedNonce (enumerate 4866 12928 144))
@@ -174,7 +195,7 @@
             )
             ;;Set Class 2
             (ref-TS02-C2::DPNF|C_DefinePrimordialSet
-                patron dhb "Tier 1 Common Ursoi" 1.1
+                patron (UR_DhbOwner dhb) dhb "Tier 1 Common Ursoi" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 4883 12928 144))
                     (UDC_AllowedNonce (enumerate 4884 12928 144))
@@ -221,7 +242,7 @@
             )
             ;;Set Class 3
             (ref-TS02-C2::DPNF|C_DefinePrimordialSet
-                patron dhb "Tier 1 Common Pileati" 1.1
+                patron (UR_DhbOwner dhb) dhb "Tier 1 Common Pileati" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 4901 12928 144))
                     (UDC_AllowedNonce (enumerate 4902 12928 144))
@@ -268,7 +289,7 @@
             )
             ;;Set Class 4
             (ref-TS02-C2::DPNF|C_DefinePrimordialSet
-                patron dhb "Tier 1 Common Smardoi" 1.1
+                patron (UR_DhbOwner dhb) dhb "Tier 1 Common Smardoi" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 4919 12928 144))
                     (UDC_AllowedNonce (enumerate 4920 12928 144))
@@ -315,7 +336,7 @@
             )
             ;;Set Class 5
             (ref-TS02-C2::DPNF|C_DefinePrimordialSet
-                patron dhb "Tier 1 Common Carpian" 1.1
+                patron (UR_DhbOwner dhb) dhb "Tier 1 Common Carpian" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 4937 12928 144))
                     (UDC_AllowedNonce (enumerate 4938 12928 144))
@@ -362,7 +383,7 @@
             )
             ;;Set Class 6
             (ref-TS02-C2::DPNF|C_DefinePrimordialSet
-                patron dhb "Tier 1 Common Tarabostes" 1.1
+                patron (UR_DhbOwner dhb) dhb "Tier 1 Common Tarabostes" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 4955 12928 144))
                     (UDC_AllowedNonce (enumerate 4956 12928 144))
@@ -409,7 +430,7 @@
             )
             ;;Set Class 7
             (ref-TS02-C2::DPNF|C_DefinePrimordialSet
-                patron dhb "Tier 1 Common Costoboc" 1.1
+                patron (UR_DhbOwner dhb) dhb "Tier 1 Common Costoboc" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 4973 12928 144))
                     (UDC_AllowedNonce (enumerate 4974 12928 144))
@@ -463,7 +484,7 @@
             )
             ;;Set Class 8
             [(ref-TS02-C2::DPNF|C_DefinePrimordialSet
-                patron dhb "Tier 1 Common Buridavens" 1.1
+                patron (UR_DhbOwner dhb) dhb "Tier 1 Common Buridavens" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 4991 12928 144))
                     (UDC_AllowedNonce (enumerate 4992 12928 144))
@@ -496,7 +517,7 @@
             )
             ;;Set Class 9
             (ref-TS02-C2::DPNF|C_DefinePrimordialSet
-                patron dhb "Tier 1 Rare Comati" 1.1
+                patron (UR_DhbOwner dhb) dhb "Tier 1 Rare Comati" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 1697 4864 72))
                     (UDC_AllowedNonce (enumerate 1698 4864 72))
@@ -536,7 +557,7 @@
             )
             ;;Set Class 10
             [(ref-TS02-C2::DPNF|C_DefinePrimordialSet
-                patron dhb "Tier 1 Rare Ursoi" 1.1
+                patron (UR_DhbOwner dhb) dhb "Tier 1 Rare Ursoi" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 1706 4864 72))
                     (UDC_AllowedNonce (enumerate 1707 4864 72))
@@ -561,7 +582,7 @@
             )
             ;;Set Class 11
             (ref-TS02-C2::DPNF|C_DefinePrimordialSet
-                patron dhb "Tier 1 Rare Pileati" 1.1
+                patron (UR_DhbOwner dhb) dhb "Tier 1 Rare Pileati" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 1715 4864 72))
                     (UDC_AllowedNonce (enumerate 1716 4864 72))
@@ -586,7 +607,7 @@
             )
             ;;Set Class 12
             (ref-TS02-C2::DPNF|C_DefinePrimordialSet
-                patron dhb "Tier 1 Rare Smardoi" 1.1
+                patron (UR_DhbOwner dhb) dhb "Tier 1 Rare Smardoi" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 1724 4864 72))
                     (UDC_AllowedNonce (enumerate 1725 4864 72))
@@ -611,7 +632,7 @@
             )
             ;;Set Class 13
             (ref-TS02-C2::DPNF|C_DefinePrimordialSet
-                patron dhb "Tier 1 Rare Carpian" 1.1
+                patron (UR_DhbOwner dhb) dhb "Tier 1 Rare Carpian" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 1733 4864 72))
                     (UDC_AllowedNonce (enumerate 1734 4864 72))
@@ -651,7 +672,7 @@
             )
             ;;Set Class 14
             [(ref-TS02-C2::DPNF|C_DefinePrimordialSet
-                patron dhb "Tier 1 Rare Tarabostes" 1.1
+                patron (UR_DhbOwner dhb) dhb "Tier 1 Rare Tarabostes" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 1742 4864 72))
                     (UDC_AllowedNonce (enumerate 1743 4864 72))
@@ -676,7 +697,7 @@
             )
             ;;Set Class 15
             (ref-TS02-C2::DPNF|C_DefinePrimordialSet
-                patron dhb "Tier 1 Rare Costoboc" 1.1
+                patron (UR_DhbOwner dhb) dhb "Tier 1 Rare Costoboc" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 1751 4864 72))
                     (UDC_AllowedNonce (enumerate 1752 4864 72))
@@ -701,7 +722,7 @@
             )
             ;;Set Class 16
             (ref-TS02-C2::DPNF|C_DefinePrimordialSet
-                patron dhb "Tier 1 Rare Buridavens" 1.1
+                patron (UR_DhbOwner dhb) dhb "Tier 1 Rare Buridavens" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 1760 4864 72))
                     (UDC_AllowedNonce (enumerate 1761 4864 72))
@@ -741,7 +762,7 @@
             )
             ;;Set Class 17
             [(ref-TS02-C2::DPNF|C_DefinePrimordialSet
-                patron dhb "Tier 1 Epic Comati" 1.1
+                patron (UR_DhbOwner dhb) dhb "Tier 1 Epic Comati" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 161 1696 48))
                     (UDC_AllowedNonce (enumerate 162 1696 48))
@@ -763,7 +784,7 @@
             )
             ;;Set Class 18
             (ref-TS02-C2::DPNF|C_DefinePrimordialSet
-                patron dhb "Tier 1 Epic Ursoi" 1.1
+                patron (UR_DhbOwner dhb) dhb "Tier 1 Epic Ursoi" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 167 1696 48))
                     (UDC_AllowedNonce (enumerate 168 1696 48))
@@ -785,7 +806,7 @@
             )
             ;;Set Class 19
             (ref-TS02-C2::DPNF|C_DefinePrimordialSet
-                patron dhb "Tier 1 Epic Pileati" 1.1
+                patron (UR_DhbOwner dhb) dhb "Tier 1 Epic Pileati" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 173 1696 48))
                     (UDC_AllowedNonce (enumerate 174 1696 48))
@@ -807,7 +828,7 @@
             )
             ;;Set Class 20
             (ref-TS02-C2::DPNF|C_DefinePrimordialSet
-                patron dhb "Tier 1 Epic Smardoi" 1.1
+                patron (UR_DhbOwner dhb) dhb "Tier 1 Epic Smardoi" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 179 1696 48))
                     (UDC_AllowedNonce (enumerate 180 1696 48))
@@ -829,7 +850,7 @@
             )
             ;;Set Class 21
             (ref-TS02-C2::DPNF|C_DefinePrimordialSet
-                patron dhb "Tier 1 Epic Carpian" 1.1
+                patron (UR_DhbOwner dhb) dhb "Tier 1 Epic Carpian" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 185 1696 48))
                     (UDC_AllowedNonce (enumerate 186 1696 48))
@@ -851,7 +872,7 @@
             )
             ;;Set Class 22
             (ref-TS02-C2::DPNF|C_DefinePrimordialSet
-                patron dhb "Tier 1 Epic Tarabostes" 1.1
+                patron (UR_DhbOwner dhb) dhb "Tier 1 Epic Tarabostes" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 191 1696 48))
                     (UDC_AllowedNonce (enumerate 192 1696 48))
@@ -873,7 +894,7 @@
             )
             ;;Set Class 23
             (ref-TS02-C2::DPNF|C_DefinePrimordialSet
-                patron dhb "Tier 1 Epic Costoboc" 1.1
+                patron (UR_DhbOwner dhb) dhb "Tier 1 Epic Costoboc" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 197 1696 48))
                     (UDC_AllowedNonce (enumerate 198 1696 48))
@@ -895,7 +916,7 @@
             )
             ;;Set Class 24
             (ref-TS02-C2::DPNF|C_DefinePrimordialSet
-                patron dhb "Tier 1 Epic Buridavens" 1.1
+                patron (UR_DhbOwner dhb) dhb "Tier 1 Epic Buridavens" 1.1
                 [
                     (UDC_AllowedNonce (enumerate 203 1696 48))
                     (UDC_AllowedNonce (enumerate 204 1696 48))
@@ -950,7 +971,7 @@
             )
             ;;Set Class 25
             [(ref-TS02-C2::DPNF|C_DefineHybridSet
-                patron dhb "Tier 2 Comati" 1.3
+                patron (UR_DhbOwner dhb) dhb "Tier 2 Comati" 1.3
                 [(UDC_AllowedNonce (enumerate 1 160 8))]
                 [(UDC_AllowedClass 1) (UDC_AllowedClass 9) (UDC_AllowedClass 17)]
                 (ref-DPDC-UDC::UDC_NonceData
@@ -965,7 +986,7 @@
             )
             ;;Set Class 26
             (ref-TS02-C2::DPNF|C_DefineHybridSet
-                patron dhb "Tier 2 Ursoi" 1.3
+                patron (UR_DhbOwner dhb) dhb "Tier 2 Ursoi" 1.3
                 [(UDC_AllowedNonce (enumerate 2 160 8))]
                 [(UDC_AllowedClass 2) (UDC_AllowedClass 10) (UDC_AllowedClass 18)]
                 (ref-DPDC-UDC::UDC_NonceData
@@ -980,7 +1001,7 @@
             )
             ;;Set Class 27
             (ref-TS02-C2::DPNF|C_DefineHybridSet
-                patron dhb "Tier 2 Pileati" 1.3
+                patron (UR_DhbOwner dhb) dhb "Tier 2 Pileati" 1.3
                 [(UDC_AllowedNonce (enumerate 3 160 8))]
                 [(UDC_AllowedClass 3) (UDC_AllowedClass 11) (UDC_AllowedClass 19)]
                 (ref-DPDC-UDC::UDC_NonceData
@@ -995,7 +1016,7 @@
             )
             ;;Set Class 28
             (ref-TS02-C2::DPNF|C_DefineHybridSet
-                patron dhb "Tier 2 Smardoi" 1.3
+                patron (UR_DhbOwner dhb) dhb "Tier 2 Smardoi" 1.3
                 [(UDC_AllowedNonce (enumerate 4 160 8))]
                 [(UDC_AllowedClass 4) (UDC_AllowedClass 12) (UDC_AllowedClass 20)]
                 (ref-DPDC-UDC::UDC_NonceData
@@ -1010,7 +1031,7 @@
             )
             ;;Set Class 29
             (ref-TS02-C2::DPNF|C_DefineHybridSet
-                patron dhb "Tier 2 Carpian" 1.3
+                patron (UR_DhbOwner dhb) dhb "Tier 2 Carpian" 1.3
                 [(UDC_AllowedNonce (enumerate 5 160 8))]
                 [(UDC_AllowedClass 5) (UDC_AllowedClass 13) (UDC_AllowedClass 21)]
                 (ref-DPDC-UDC::UDC_NonceData
@@ -1025,7 +1046,7 @@
             )
             ;;Set Class 30
             (ref-TS02-C2::DPNF|C_DefineHybridSet
-                patron dhb "Tier 2 Tarabostes" 1.3
+                patron (UR_DhbOwner dhb) dhb "Tier 2 Tarabostes" 1.3
                 [(UDC_AllowedNonce (enumerate 6 160 8))]
                 [(UDC_AllowedClass 6) (UDC_AllowedClass 14) (UDC_AllowedClass 22)]
                 (ref-DPDC-UDC::UDC_NonceData
@@ -1040,7 +1061,7 @@
             )
             ;;Set Class 31
             (ref-TS02-C2::DPNF|C_DefineHybridSet
-                patron dhb "Tier 2 Costoboc" 1.3
+                patron (UR_DhbOwner dhb) dhb "Tier 2 Costoboc" 1.3
                 [(UDC_AllowedNonce (enumerate 7 160 8))]
                 [(UDC_AllowedClass 7) (UDC_AllowedClass 15) (UDC_AllowedClass 23)]
                 (ref-DPDC-UDC::UDC_NonceData
@@ -1055,7 +1076,7 @@
             )
             ;;Set Class 32
             (ref-TS02-C2::DPNF|C_DefineHybridSet
-                patron dhb "Tier 2 Buridavens" 1.3
+                patron (UR_DhbOwner dhb) dhb "Tier 2 Buridavens" 1.3
                 [(UDC_AllowedNonce (enumerate 8 160 8))]
                 [(UDC_AllowedClass 8) (UDC_AllowedClass 16) (UDC_AllowedClass 24)]
                 (ref-DPDC-UDC::UDC_NonceData
@@ -1070,7 +1091,7 @@
             )
             ;;Set Class 33
             (ref-TS02-C2::DPNF|C_DefineCompositeSet
-                patron dhb "Tier 3 Common" 1.6
+                patron (UR_DhbOwner dhb) dhb "Tier 3 Common" 1.6
                 [(UDC_AllowedClass 1) (UDC_AllowedClass 2) (UDC_AllowedClass 3) (UDC_AllowedClass 4) (UDC_AllowedClass 5) (UDC_AllowedClass 6) (UDC_AllowedClass 7) (UDC_AllowedClass 8)]
                 (ref-DPDC-UDC::UDC_NonceData
                     r2 ir3-c
@@ -1084,7 +1105,7 @@
             )
             ;;Set Class 34
             (ref-TS02-C2::DPNF|C_DefineCompositeSet
-                patron dhb "Tier 3 Rare" 1.6
+                patron (UR_DhbOwner dhb) dhb "Tier 3 Rare" 1.6
                 [(UDC_AllowedClass 9) (UDC_AllowedClass 10) (UDC_AllowedClass 11) (UDC_AllowedClass 12) (UDC_AllowedClass 13) (UDC_AllowedClass 14) (UDC_AllowedClass 15) (UDC_AllowedClass 16)]
                 (ref-DPDC-UDC::UDC_NonceData
                     r2 ir3-r
@@ -1098,7 +1119,7 @@
             )
             ;;Set Class 35
             (ref-TS02-C2::DPNF|C_DefineCompositeSet
-                patron dhb "Tier 3 Epic" 1.6
+                patron (UR_DhbOwner dhb) dhb "Tier 3 Epic" 1.6
                 [(UDC_AllowedClass 17) (UDC_AllowedClass 18) (UDC_AllowedClass 19) (UDC_AllowedClass 20) (UDC_AllowedClass 21) (UDC_AllowedClass 22) (UDC_AllowedClass 23) (UDC_AllowedClass 24)]
                 (ref-DPDC-UDC::UDC_NonceData
                     r2 ir3-e
@@ -1112,7 +1133,7 @@
             )
             ;;Set Class 36
             (ref-TS02-C2::DPNF|C_DefinePrimordialSet
-                patron dhb "Tier 3 Legendary" 1.6
+                patron (UR_DhbOwner dhb) dhb "Tier 3 Legendary" 1.6
                 [
                     (UDC_AllowedNonce (enumerate 1 160 8))
                     (UDC_AllowedNonce (enumerate 2 160 8))
@@ -1136,7 +1157,7 @@
             )
             ;;Set Class 37
             (ref-TS02-C2::DPNF|C_DefineCompositeSet
-                patron dhb "Tier 4" 2.0
+                patron (UR_DhbOwner dhb) dhb "Tier 4" 2.0
                 [(UDC_AllowedClass 25) (UDC_AllowedClass 26) (UDC_AllowedClass 27) (UDC_AllowedClass 28) (UDC_AllowedClass 29) (UDC_AllowedClass 30) (UDC_AllowedClass 31) (UDC_AllowedClass 32)]
                 (ref-DPDC-UDC::UDC_NonceData
                     r3 ir4
@@ -1150,7 +1171,7 @@
             )
             ;;Set Class 38
             (ref-TS02-C2::DPNF|C_DefineCompositeSet
-                patron dhb "Tier 4" 2.0
+                patron (UR_DhbOwner dhb) dhb "Tier 4" 2.0
                 [(UDC_AllowedClass 33) (UDC_AllowedClass 34) (UDC_AllowedClass 35) (UDC_AllowedClass 36)]
                 (ref-DPDC-UDC::UDC_NonceData
                     r3 ir4
@@ -1164,7 +1185,7 @@
             )
             ;;Set Fragmentation for Class 37 and 38
             (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation
-                patron dhb 37
+                patron (UR_DhbOwner dhb) dhb 37
                 (ref-DPDC-UDC::UDC_NonceData
                     r3 (/ ir4 1000.0)
                     "Tier 4 Fragments"
@@ -1176,7 +1197,7 @@
                 )
             )
             (ref-TS02-C2::DPNF|C_EnableSetClassFragmentation
-                patron dhb 38
+                patron (UR_DhbOwner dhb) dhb 38
                 (ref-DPDC-UDC::UDC_NonceData
                     r3 (/ ir4 1000.0)
                     "Tier 4 Fragments"

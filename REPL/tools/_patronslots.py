@@ -119,10 +119,10 @@ REGISTRY = {
  # for the operation pays for both halves of it, and that is the user. Writing `dpdc` into the
  # patron slot of the return leg would have been the easy mirror of the executor and would have
  # meant "the module pays", which is not what happens.
- ("08_DPDC-S.pact", "C_MakeSemiFungibleSet"):   ("account", "provisional", "08_DPDC-S"),
- ("08_DPDC-S.pact", "CC_BreakSemiFungibleSet"): ("account", "provisional", "08_DPDC-S"),
- ("08_DPDC-S.pact", "C_MakeNonFungibleSet"):    ("account", "provisional", "08_DPDC-S"),
- ("08_DPDC-S.pact", "C_BreakNonFungibleSet"):   ("account", "provisional", "08_DPDC-S"),
+ # 08_DPDC-S's four entries were CLEARED at its own turn (2026-09-22): all ten entrypoints gained
+ # a real `patron`, so the seven DPDC-T call sites and the four C_CreateNewNonce ones thread it
+ # instead of the acting account. Removed rather than commented, which is what the `clears-at`
+ # column is for -- it names the turn that retires the entry.
  ("09_DPDC-F.pact", "C_MakeFragments"):         ("account", "provisional", "09_DPDC-F"),
  ("09_DPDC-F.pact", "C_MergeFragments"):        ("account", "provisional", "09_DPDC-F"),
  ("11_EQUITY+.pact", "XI_ConvertPackageShares"): ("account", "provisional", "11_EQUITY+"),
@@ -143,7 +143,22 @@ REGISTRY = {
    ("AQP|SC_NAME", "provisional, as XI_VacateCollectableBatch", "06_VCT"),
 }
 
-CALL = re.compile(r'\(ref-([A-Za-z0-9|_\-]+)::(C_[A-Za-z]+)\s+([A-Za-z0-9|_\-\.\[]+)')
+# WIDENED 2026-09-22, twice over, and both gaps were live.
+#
+#   * `C_[A-Za-z]+` could not match `CC_`, nor any name containing a digit or a hyphen. Every
+#     heavy client op in the tree is a `CC_`, and this tool never looked at one.
+#   * the first-argument group could not match a PARENTHESISED EXPRESSION, so a patron slot
+#     holding `(ref-DPDC::GOV|DPDC|SC_NAME)` -- which is exactly what 08_DPDC-S's three
+#     C_Define*Set variants passed before their turn -- was not merely unregistered, it was
+#     INVISIBLE. The tool printed a clean "every non-`patron` patron slot is registered" over
+#     three slots it had never seen. A checker that silently narrows its own input is worse than
+#     no checker, because it reports the narrowing as a pass.
+#
+# Same class as _executorenforced's FORWARDED matcher, fixed for the same reason on the same day
+# a week earlier: a matcher built from the argument shapes you happen to have seen is a hardcoded
+# list wearing a regex.
+CALL = re.compile(r'\(ref-([A-Za-z0-9|_\-]+)::(CC?_[A-Za-z0-9\-]+)'
+                  r'\s+(\([^()]*\)|[A-Za-z0-9|_\-\.\[]+)')
 DEF  = re.compile(r'^\s*\((?:defun|defpact)\s+([A-Za-z0-9|_\-\.]+)', re.M)
 
 

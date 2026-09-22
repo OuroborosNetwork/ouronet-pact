@@ -76,6 +76,30 @@ RULES = {
     # IssueMultipletFamily reached NO ownership enforce at all; the executor is simply the creator,
     # so the fixtures keep the account they used -- what changes is that it must now be OWNED.
     "AQP-FVT|C_IssueMultipletFamily":   (7, "{0}"),
+    # ---- 08_DPDC-S (sweep 31/46, 2026-09-22) ------------------------------------------------
+    # The SIX owner-gated set ops. Their authority is DPDC::CAP_Owner, an enforce on the DERIVED
+    # (UR_OwnerKonto id son) -- HANDOFF 4g -- so the executor is the collection owner, read at the
+    # call site with the SAME expression the module's binder evaluates. <son> is a LITERAL here
+    # because the Talos door already picks the kind: DPSF|* is semi-fungible, DPNF|* is not, and
+    # the two tables are separate (the same id can live in both).
+    #
+    # DELIBERATELY ABSENT: the four make/break ops (C_Make / CC_Break / C_Break). Their change was
+    # a RENAME in place -- `account` became `executor`, same slot, same arity -- so there is
+    # nothing at a call site to insert, and a rule for them would find the right arity and do
+    # nothing, or worse, find a stale one and insert. Their executor is proven forwarded through
+    # DPDC-T|C>TRANSFER, not by CAP_Owner, which is why they are a different shape.
+    "DPSF|C_DefinePrimordialSet":        (7, "(DPDC.UR_OwnerKonto {1} true)"),
+    "DPSF|C_DefineCompositeSet":         (7, "(DPDC.UR_OwnerKonto {1} true)"),
+    "DPSF|C_DefineHybridSet":            (8, "(DPDC.UR_OwnerKonto {1} true)"),
+    "DPSF|C_EnableSetClassFragmentation":(5, "(DPDC.UR_OwnerKonto {1} true)"),
+    "DPSF|C_ToggleSet":                  (5, "(DPDC.UR_OwnerKonto {1} true)"),
+    "DPSF|C_RenameSet":                  (5, "(DPDC.UR_OwnerKonto {1} true)"),
+    "DPNF|C_DefinePrimordialSet":        (7, "(DPDC.UR_OwnerKonto {1} false)"),
+    "DPNF|C_DefineCompositeSet":         (7, "(DPDC.UR_OwnerKonto {1} false)"),
+    "DPNF|C_DefineHybridSet":            (8, "(DPDC.UR_OwnerKonto {1} false)"),
+    "DPNF|C_EnableSetClassFragmentation":(5, "(DPDC.UR_OwnerKonto {1} false)"),
+    "DPNF|C_ToggleSet":                  (5, "(DPDC.UR_OwnerKonto {1} false)"),
+    "DPNF|C_RenameSet":                  (5, "(DPDC.UR_OwnerKonto {1} false)"),
     # ---- 05_DPTF (sweep 4/46) -------------------------------------------------------------
     # Every one of these is owner-gated: the entrypoint's capability reaches CAP_Owner <id>,
     # which enforces ownership of (UR_Konto id). So the executor IS the token owner, read at

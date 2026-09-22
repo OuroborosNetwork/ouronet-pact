@@ -110,25 +110,25 @@
     ;;
     ;;  [8] DPDC-S
     ;;
-    (defun DPNF|C_Make (patron:string account:string id:string nonces:[integer] set-class:integer))
-    (defun DPNF|C_Break (patron:string account:string id:string nonce:integer))
-    (defun DPNF|C_DefinePrimordialSet 
+    (defun DPNF|C_Make (patron:string executor:string id:string nonces:[integer] set-class:integer))
+    (defun DPNF|C_Break (patron:string executor:string id:string nonce:integer))
+    (defun DPNF|C_DefinePrimordialSet
         (
-            patron:string id:string set-name:string score-multiplier:decimal
+            patron:string executor:string id:string set-name:string score-multiplier:decimal
             set-definition:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}]
             ind:object{DpdcUdcV2.DPDC|NonceData}
         )
     )
     (defun DPNF|C_DefineCompositeSet
         (
-            patron:string id:string set-name:string score-multiplier:decimal
+            patron:string executor:string id:string set-name:string score-multiplier:decimal
             set-definition:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}]
             ind:object{DpdcUdcV2.DPDC|NonceData}
         )
     )
     (defun DPNF|C_DefineHybridSet
         (
-            patron:string id:string set-name:string score-multiplier:decimal
+            patron:string executor:string id:string set-name:string score-multiplier:decimal
             primordial-sd:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}]
             composite-sd:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}]
             ind:object{DpdcUdcV2.DPDC|NonceData}
@@ -136,12 +136,12 @@
     )
     (defun DPNF|C_EnableSetClassFragmentation
         (
-            patron:string id:string set-class:integer
+            patron:string executor:string id:string set-class:integer
             fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData}
         )
     )
-    (defun DPNF|C_ToggleSet (patron:string id:string set-class:integer toggle:bool))
-    (defun DPNF|C_RenameSet (patron:string id:string set-class:integer new-name:string))
+    (defun DPNF|C_ToggleSet (patron:string executor:string id:string set-class:integer toggle:bool))
+    (defun DPNF|C_RenameSet (patron:string executor:string id:string set-class:integer new-name:string))
     ;; DPNF|C_UpdateSetMultiplier removed — DPDC Audit #15H: score-multiplier is immutable after Define.
     ;;
     (defun DPNF|C_UpdateSetNonce                        (patron:string id:string account:string set-class:integer nos:bool new-nonce-data:object{DpdcUdcV2.DPDC|NonceData}))
@@ -943,7 +943,7 @@
     ;;  [8] DPDC-S
     ;;
     (defun DPNF|C_Make
-        (patron:string account:string id:string nonces:[integer] set-class:integer)
+        (patron:string executor:string id:string nonces:[integer] set-class:integer)
         @doc "Makes a Set NFT of Class <set-class>"
         (with-capability (P|TS)
             (let
@@ -952,18 +952,18 @@
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DPDC:module{DpdcV2} DPDC)
                     (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
-                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                     (nonce:integer (+ 1 (ref-DPDC::UR_NoncesUsed id false)))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-S::C_MakeNonFungibleSet account id nonces set-class)
+                    (ref-DPDC-S::C_MakeNonFungibleSet patron executor id nonces set-class)
                 )
                 (format "Successfully generated Class {} Set (Nonce {}) of NFT Collection {} on Account {}" [set-class nonce id sa])
             )
         )
     )
     (defun DPNF|C_Break
-        (patron:string account:string id:string nonce:integer)
+        (patron:string executor:string id:string nonce:integer)
         @doc "Brakes an NFT Nonce representing an NFT Set"
         (with-capability (P|TS)
             (let
@@ -973,10 +973,10 @@
                     (ref-DPDC:module{DpdcV2} DPDC)
                     (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
                     (set-class:integer (ref-DPDC::UR_NonceClass id false nonce))
-                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-S::C_BreakNonFungibleSet account id nonce)
+                    (ref-DPDC-S::C_BreakNonFungibleSet patron executor id nonce)
                 )
                 (format "Successfully broken Class {} Set (Nonce {}) of NFT Collection {} on Account {}" [set-class nonce id sa])
             )
@@ -984,7 +984,7 @@
     )
     (defun DPNF|C_DefinePrimordialSet
         (
-            patron:string id:string set-name:string score-multiplier:decimal
+            patron:string executor:string id:string set-name:string score-multiplier:decimal
             set-definition:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}]
             ind:object{DpdcUdcV2.DPDC|NonceData}
         )
@@ -996,7 +996,7 @@
                     (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-S::C_DefinePrimordialSet id false set-name score-multiplier set-definition ind)
+                    (ref-DPDC-S::C_DefinePrimordialSet patron executor id false set-name score-multiplier set-definition ind)
                 )
                 (format "Primordial Set <{}> for NFT Collection {} defined succesfully" [set-name id])
             )
@@ -1004,7 +1004,7 @@
     )
     (defun DPNF|C_DefineCompositeSet
         (
-            patron:string id:string set-name:string score-multiplier:decimal
+            patron:string executor:string id:string set-name:string score-multiplier:decimal
             set-definition:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}]
             ind:object{DpdcUdcV2.DPDC|NonceData}
         )
@@ -1016,7 +1016,7 @@
                     (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-S::C_DefineCompositeSet id false set-name score-multiplier set-definition ind)
+                    (ref-DPDC-S::C_DefineCompositeSet patron executor id false set-name score-multiplier set-definition ind)
                 )
                 (format "Composite Set <{}> for NFT Collection {} defined succesfully" [set-name id])
             )
@@ -1024,7 +1024,7 @@
     )
     (defun DPNF|C_DefineHybridSet
         (
-            patron:string id:string set-name:string score-multiplier:decimal
+            patron:string executor:string id:string set-name:string score-multiplier:decimal
             primordial-sd:[object{DpdcUdcV2.DPDC|AllowedNonceForSetPosition}]
             composite-sd:[object{DpdcUdcV2.DPDC|AllowedClassForSetPosition}]
             ind:object{DpdcUdcV2.DPDC|NonceData}
@@ -1037,7 +1037,7 @@
                     (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-S::C_DefineHybridSet id false set-name score-multiplier primordial-sd composite-sd ind)
+                    (ref-DPDC-S::C_DefineHybridSet patron executor id false set-name score-multiplier primordial-sd composite-sd ind)
                 )
                 (format "Hybrid Set <{}> for NFT Collection {} defined succesfully" [set-name id])
             )
@@ -1045,7 +1045,7 @@
     )
     (defun DPNF|C_EnableSetClassFragmentation
         (
-            patron:string id:string set-class:integer
+            patron:string executor:string id:string set-class:integer
             fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData}
         )
         @doc "Enables Fragmentation for a given Set Class. This allows all NFTs of the given Set Class to be Fragmented"
@@ -1056,13 +1056,13 @@
                     (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-S::C_EnableSetClassFragmentation id false set-class fragmentation-ind)
+                    (ref-DPDC-S::C_EnableSetClassFragmentation patron executor id false set-class fragmentation-ind)
                 )
                 (format "Set Class {} for NFT {} succesfully fragmented" [set-class id])
             )
         )
     )
-    (defun DPNF|C_ToggleSet (patron:string id:string set-class:integer toggle:bool)
+    (defun DPNF|C_ToggleSet (patron:string executor:string id:string set-class:integer toggle:bool)
         @doc "Enables or Disables a Set. A disabled Set allows only for decomposition of Set Elements, but not for composition"
         (with-capability (P|TS)
             (let
@@ -1071,13 +1071,13 @@
                     (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-S::C_ToggleSet id false set-class toggle)
+                    (ref-DPDC-S::C_ToggleSet patron executor id false set-class toggle)
                 )
                 (format "NFT {} Set Class {} succesfully turned {}" [id set-class (if toggle "ON" "OFF")])
             )
         )
     )
-    (defun DPNF|C_RenameSet (patron:string id:string set-class:integer new-name:string)
+    (defun DPNF|C_RenameSet (patron:string executor:string id:string set-class:integer new-name:string)
         @doc "Renames an NFT Set"
         (with-capability (P|TS)
             (let
@@ -1086,7 +1086,7 @@
                     (ref-DPDC-S:module{DpdcSetsV2} DPDC-S)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-S::C_RenameSet id false set-class new-name)
+                    (ref-DPDC-S::C_RenameSet patron executor id false set-class new-name)
                 )
                 (format "NFT {} Set Class {} succesfuly renamed to <{}>" [id set-class new-name])
             )
