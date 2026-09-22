@@ -3084,12 +3084,40 @@
                      (at "class-active" (ref-ANK::UR_BC|Data tc))])
                 (expect-failure "<<AQP-G37>> ...so revoking it again is refused as already inactive"
                     "BoostClass TempClassTF-98c486052a51 already inactive"
-                    (ref-TS02-C3::AQP-ANK|C_RevokeBoostClass KST.ANHD tc))
+                    (ref-TS02-C3::AQP-ANK|C_RevokeBoostClass KST.ANHD (at "class-owner" (AQP-ANK.UR_BC|Data tc)) tc))
                 ;;...and an ACTIVE class is refused by the OTHER guard instead, which locates the
                 ;;boundary between the two: TfStakeBoost is active but carries an anchor.
                 (expect-failure "<<AQP-G37>> ...while an ACTIVE class with an anchor hits the first guard"
                     "BoostClass TfStakeBoost-98c486052a51 not empty"
-                    (ref-TS02-C3::AQP-ANK|C_RevokeBoostClass KST.ANHD bc))
+                    (ref-TS02-C3::AQP-ANK|C_RevokeBoostClass KST.ANHD (at "class-owner" (AQP-ANK.UR_BC|Data bc)) bc))
+                ;;GUARD 5, ADDED 2026-09-22 WITH THE GUARD ITSELF -- and it is a FIX, not an
+                ;;attribution. ANK|C>REVOKE-BOOST-CLASS validated only the two conditions above and
+                ;;checked NO ACCOUNT AT ALL, so any account reachable through Talos could revoke
+                ;;any empty BoostClass that was not theirs. Not a funds hole -- an empty class
+                ;;holds nothing -- but a denial vector that costs the victim real money, because
+                ;;re-creating a class is the 2x-STOA inline path in C_Issue*Anchor.
+                ;;
+                ;;The ATTACH path already enforced exactly this, and had since 2026-09-19: the
+                ;;<class-owner> field and UEV_AttachToExistingClass were added together after the
+                ;;same reasoning. The REVOKE path was not carried over with it. Same field, same
+                ;;rule, one path short.
+                ;;
+                ;;NOTE WHICH ACCOUNT IS NAMED. Every other call in this suite passes
+                ;;(at "class-owner" (UR_BC|Data ...)) -- the class's real owner -- precisely so the
+                ;;guards under test are the ones that answer. Here ANHD names HERSELF, and the
+                ;;assertion is that this alone is refused.
+                ;;
+                ;;MEASURED WITHOUT THE GUARD, 2026-09-22: this call instead reached the
+                ;;already-inactive enforce and reported
+                ;;"... BoostClass TempClassTF-98c486052a51 already inactive". So the assertion
+                ;;DISCRIMINATES -- the executor gate is what answers now, and by name. TempClassTF
+                ;;is inactive, so the un-guarded call still failed here; on an empty ACTIVE class
+                ;;it would have succeeded, because those two enforces were the ONLY ones in the
+                ;;capability. That last clause is read off the code, not measured, and is marked
+                ;;as such deliberately.
+                (expect-failure "<<AQP-G37>> ...and an account that is not the class's owner cannot revoke it"
+                    "is not BoostClass"
+                    (ref-TS02-C3::AQP-ANK|C_RevokeBoostClass KST.ANHD KST.ANHD tc))
             ]
         )
     )

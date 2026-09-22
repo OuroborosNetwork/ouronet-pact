@@ -97,7 +97,7 @@
             (expect-failure
                 (format "<<TX-AQP-NEG-IMC2>> direct AQP-ANK::C_RevokeAnchor rejected (P|UEV_IMC — Talos only)" [])
                 "None of the guards passed"
-                (ref-ANK::C_RevokeAnchor anchor-id))
+                (ref-ANK::C_RevokeAnchor KST.ANHD KST.ANHD anchor-id))
             (expect-failure
                 (format "<<TX-AQP-NEG-IMC2>> direct AQP-SCR::C_EnableDebBoost rejected (P|UEV_IMC)" [])
                 "None of the guards passed"
@@ -312,7 +312,7 @@
             (expect-failure
                 (format "<<TX-AQP-NEG-OWNER2>> AQP-ANK|C_RevokeAnchor on a NON-EXISTENT anchor: liveness gate" [])
                 "must be alive for operation"
-                (ref-TS02-C3::AQP-ANK|C_RevokeAnchor foreign anchor-id))
+                (ref-TS02-C3::AQP-ANK|C_RevokeAnchor foreign foreign anchor-id))
             ;;THE OWNER-GATE HALF IS NOT WRITTEN HERE, and the attempt is worth recording. Taking
             ;;`(at 0 (URH_ANK|AllAnchorIds))` and revoking it as <foreign> SUCCEEDED --
             ;;"Successfully revoked Anchor NfSyncAnchor-98c486052a51." -- which is NOT a bypass:

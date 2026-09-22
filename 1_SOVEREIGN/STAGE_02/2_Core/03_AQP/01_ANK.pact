@@ -116,6 +116,7 @@
     (defun UEV_IssueAnchor (ank-asset:string boost-class-id:string))
     (defun UEV_ExecutorIzAssetAuthority (executor:string ank-asset:string asset-fungibility:[bool]))
     (defun UEV_ExecutorIzAnchorAuthority (executor:string anchor-id:string))
+    (defun UEV_ExecutorIzClassOwner (executor:string boost-class-id:string))
     (defun UEV_AssetAnchorCap (ank-asset:string))
     (defun UEV_LiveAnchor (anchor-id:string))
     ;;{5.5}  Write [W]
@@ -145,7 +146,7 @@
     ;; [C]   client
     ;;
     (defun C_RevokeBoostClass:object{IgnisCollectorV3.OutputCumulator}
-        (boost-class-id:string)
+        (patron:string executor:string boost-class-id:string)
     )
     (defun C_IssueTrueFungibleAnchor:object{IgnisCollectorV3.OutputCumulator}
         (patron:string executor:string anchor-name:string dptf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dptf-amount:decimal)
@@ -159,7 +160,7 @@
     (defun C_IssueNonFungibleSetAnchor:object{IgnisCollectorV3.OutputCumulator}
         (patron:string executor:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-nonce-class:integer)
     )
-    (defun C_RevokeAnchor:object{IgnisCollectorV3.OutputCumulator} (anchor-id:string))
+    (defun C_RevokeAnchor:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string anchor-id:string))
 
 )
 (module AQP-ANK GOV
@@ -645,7 +646,7 @@
             (compose-capability (SECURE))
         )
     )
-    (defcap ANK|C>REVOKE (anchor-id:string)
+    (defcap ANK|C>REVOKE (executor:string anchor-id:string)
         @doc "Authorizes anchor revocation for <anchor-id>; requires the anchor to be ALIVE + owned. H4 (#9) \
             \ temp-patch: blocked while the anchor's BoostClass is linked by any score — vacate/unlink first (the \
             \ re-score-sweep unwind is not built yet; see Audit/ANCHOR-STALENESS-INVENTORY.md)."
@@ -654,6 +655,17 @@
         ;; cleanly here instead of deep in UC_RemoveItemAt — and the H4 lock below never reads a revoked anchor.
         (UEV_LiveAnchor anchor-id)
         (CAP_Owner anchor-id)
+        ;;ATTRIBUTION (canon 2.2, 2026-09-22). CAP_Owner above enforces on the ANCHORED ASSET's
+        ;;authority -- a DERIVED account naming no actor, HANDOFF 4g. This binds the declared
+        ;;executor to that same authority.
+        ;;
+        ;;DELIBERATELY BELOW UEV_LiveAnchor, and this is not stylistic. The binder resolves the
+        ;;anchored asset out of the anchor row, so on a NON-EXISTENT anchor it would raise a raw
+        ;;table error -- replacing the liveness message that [6.2.10] <<TX-AQP-NEG-OWNER2>> exists
+        ;;to pin, and which was itself only made reachable by turning UR_ANK|State into a
+        ;;defaulted read. Reading an owner before proving the entity exists is the standing hazard
+        ;;in HANDOFF's rules list; here it has a named test that would have caught it.
+        (UEV_ExecutorIzAnchorAuthority executor anchor-id)
         ;; #9 lock: cannot revoke an anchor whose BoostClass is employed by ≥1 score (stale-boost prevention).
         (enforce
             (= (UR_BC|ScoreLinkCount (UR_ANK|BoostClassId anchor-id)) 0)
@@ -1710,6 +1722,34 @@
             )
         )
     )
+    (defun UEV_ExecutorIzClassOwner (executor:string boost-class-id:string)
+        @doc "Enforces that <executor> IS the BoostClass's recorded creator, AND that the \
+            \ transaction is signed for that account. \
+            \ \
+            \ BOTH HALVES ARE NEW HERE (2026-09-22), and the second is a fix rather than an \
+            \ attribution. ANK|C>REVOKE-BOOST-CLASS validated only that the class is EMPTY and \
+            \ ACTIVE -- it checked no account at all -- so any account reachable through Talos \
+            \ could revoke any empty BoostClass that was not theirs. Not a funds hole: a revoked \
+            \ class holds no anchors by construction. It is a griefing and denial vector, and it \
+            \ costs the victim real money, because re-creating the class is the 2x-STOA inline \
+            \ path in C_Issue*Anchor. \
+            \ \
+            \ The ATTACH path already did exactly this -- UEV_AttachToExistingClass runs \
+            \ (CAP_EnforceAccountOwnership (at \"class-owner\" bc)) and the schema comment beside \
+            \ <class-owner> explains why it was added on 2026-09-19. The REVOKE path was not \
+            \ carried over with it. Same field, same rule, one path short. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (co:string (at "class-owner" (UR_BC|Data boost-class-id)))
+            )
+            (enforce (= executor co)
+                (format "{} Executor {} is not BoostClass {}'s owner; owner is {}"
+                    [E-ANK executor boost-class-id co]))
+            (ref-DALOS::CAP_EnforceAccountOwnership co)
+        )
+    )
     (defun UEV_ExecutorIzAnchorAuthority (executor:string anchor-id:string)
         @doc "Anchor-level form of UEV_ExecutorIzAssetAuthority: resolves the anchored asset and its \
             \ fungibility from the anchor row, then defers. This is the shape MTX-AQP needs for \
@@ -2396,9 +2436,15 @@
     ;; [C]   client
     ;;
     (defun C_RevokeBoostClass:object{IgnisCollectorV3.OutputCumulator}
-        (boost-class-id:string)
-        @doc "Revokes an empty BoostClass."
+        (patron:string executor:string boost-class-id:string)
+        @doc "Revokes an empty BoostClass. \
+            \ \
+            \ Executor: ENFORCED DIRECTLY, and THE ENFORCE IS NEW. See \
+            \ UEV_ExecutorIzClassOwner: this entrypoint checked no account whatsoever, so any \
+            \ account reachable through Talos could revoke any empty BoostClass. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
+        (UEV_ExecutorIzClassOwner executor boost-class-id)
         (with-capability (ANK|C>REVOKE-BOOST-CLASS boost-class-id)
             (WU_BoostClass|Active boost-class-id false)
             (URCi_RevokeBoostClass)
@@ -2505,10 +2551,18 @@
         )
     )
     (defun C_RevokeAnchor:object{IgnisCollectorV3.OutputCumulator}
-        (anchor-id:string)
-        @doc "Revokes an anchor and updates BoostClass and AssetAnchors bookkeeping."
+        (patron:string executor:string anchor-id:string)
+        @doc "Revokes an anchor and updates BoostClass and AssetAnchors bookkeeping. \
+            \ \
+            \ Executor: PROVEN INDIRECTLY, and named. ANK|C>REVOKE runs (CAP_Owner anchor-id), \
+            \ which resolves the ANCHORED ASSET's authority and enforces on it -- a DERIVED \
+            \ account naming no actor, HANDOFF 4g. UEV_ExecutorIzAnchorAuthority supplies the \
+            \ other half. That helper already existed, written for MTX-AQP's \
+            \ C_2|SweepRevokeAnchor, and it is a DISJUNCTION rather than an equality because a \
+            \ collectable has two authorities (owner OR creator) where a DPTF has one. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
-        (with-capability (ANK|C>REVOKE anchor-id)
+        (with-capability (ANK|C>REVOKE executor anchor-id)
             (WU_Anchor|State anchor-id false)
             (XI_RevokeAnchorBookkeeping anchor-id)
             (URCi_RevokeAnchor)

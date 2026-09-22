@@ -54,7 +54,7 @@
     ;;
     ;;  [ANK]
     ;;
-    (defun AQP-ANK|C_RevokeBoostClass:string (patron:string boost-class-id:string))
+    (defun AQP-ANK|C_RevokeBoostClass:string (patron:string executor:string boost-class-id:string))
     (defun AQP-ANK|C_IssueTrueFungibleAnchor:string
         (patron:string executor:string anchor-name:string dptf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dptf-amount:decimal)
     )
@@ -67,7 +67,7 @@
     (defun AQP-ANK|C_IssueNonFungibleSetAnchor:string
         (patron:string executor:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-nonce-class:integer)
     )
-    (defun AQP-ANK|C_RevokeAnchor:string (patron:string anchor-id:string))
+    (defun AQP-ANK|C_RevokeAnchor:string (patron:string executor:string anchor-id:string))
     ;;
     ;;  [AQP-SCORE]
     ;;
@@ -1073,7 +1073,7 @@
     )
     ;;
     (defun AQP-ANK|C_RevokeBoostClass:string
-        (patron:string boost-class-id:string)
+        (patron:string executor:string boost-class-id:string)
         @doc "Revokes an empty BoostClass."
         (with-capability (P|TS)
             (let
@@ -1082,7 +1082,7 @@
                     (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-ANK::C_RevokeBoostClass boost-class-id)
+                    (ref-ANK::C_RevokeBoostClass patron executor boost-class-id)
                 )
                 (format "Successfully revoked BoostClass {}." [boost-class-id])
             )
@@ -1192,7 +1192,7 @@
             )
         )
     )
-    (defun AQP-ANK|C_RevokeAnchor:string (patron:string anchor-id:string)
+    (defun AQP-ANK|C_RevokeAnchor:string (patron:string executor:string anchor-id:string)
         @doc "Revokes an existing Anchor, removing it from its BoostClass and AssetAnchors bookkeeping."
         (with-capability (P|TS)
             (let
@@ -1201,7 +1201,7 @@
                     (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron 
-                    (ref-ANK::C_RevokeAnchor anchor-id)
+                    (ref-ANK::C_RevokeAnchor patron executor anchor-id)
                 )
                 (format "Successfully revoked Anchor {}." [anchor-id])
             )

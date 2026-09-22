@@ -287,7 +287,7 @@ same tools with those three properties.
 | [x] 33 | `10_DPDC-N.pact` | 0 | 0 | 8 | **8** | `DpdcNonceV2` — done; the DPDC family's only ROLE-gated module |
 | [x] 34 | `11_EQUITY+.pact` | 1 | 0 | 1 | **2** | `EquityV2` — done; **found a module with NO ownership check at all**, see §4m |
 | [x] 35 | `00_Demipad.pact` | 2 | 2 | 6 | **10** | `DemiourgosLaunchpadV2` — done; 4 admin ops gained an enforced executor. See §4n |
-| [ ] 36 | `01_ANK.pact` | 0 | 0 | 2 | **2** | `AcquisitionAnchorsV1` |
+| [x] 36 | `01_ANK.pact` | 0 | 0 | 2 | **2** | `AcquisitionAnchorsV1` — done; **found an unowned revoke**, and the binder had to go BELOW the liveness gate |
 | [ ] 37 | `02_SCORE.pact` | 6 | 0 | 8 | **14** | `AcquisitionScoresV1` |
 | [ ] 38 | `03_AQP.pact` | 2 | 0 | 0 | **2** | `AcquisitionPoolsV1` |
 | [ ] 39 | `05_FVT.pact` | 4 | 2 | 3 | **9** | `AcquisitionFarmsVaultsTreasuriesV1` |
@@ -470,6 +470,27 @@ changing. Their delegation is arity-preserving, so `_callarity` (including the s
 built one module earlier) could not object. Grepping for the OLD parameter shape
 `(patron:string id:string account:string` found them in one line. *A signature change must reach
 every place the name is written, and "the names I listed" is narrower than that.*
+
+---
+
+### 4o. LESSON FROM MODULE 36 — A BINDER IS A READ, AND A READ CAN PRE-EMPT A REFUSAL
+
+`C_RevokeAnchor`'s binder resolves the anchored asset **out of the anchor row**. Placed in the
+defun body, ahead of the capability, it turns a clean *"anchor must be alive"* refusal into a raw
+`No value found in table …` on every non-existent anchor — replacing exactly the message
+`[6.2.10] <<TX-AQP-NEG-OWNER2>>` was rewritten to pin.
+
+So: **put the binder where the entity is already known to exist.** Inside the capability, after the
+liveness/existence guard. The rules list has said *"never read an owner eagerly"* since module 9;
+module 36 is the first time a named test would have caught the violation, and it is worth knowing
+that the test existed only because an earlier round had already fixed the same class of problem in
+`UR_ANK|State`.
+
+**Second half, and it cost the gate run:** the first pass wrote `patron` into all 18 fixture
+executor slots. The anchored asset there is `OURO`, owned by a `Σ.` SMART account — so every
+positive revoke failed the binder and eleven suites went BROKEN. Fixtures must read the authority
+with the **same expression the binder evaluates**; anything else is a second answer that can
+disagree. `executor = patron` is not a safe default, and the rules list says so.
 
 ---
 

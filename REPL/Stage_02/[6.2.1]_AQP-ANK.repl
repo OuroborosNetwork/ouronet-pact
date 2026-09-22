@@ -253,8 +253,8 @@
     (print "--- [TX002 · 04 · revoke last TF in class-7 + revoke BoostClass-7 + issue temp anchor (acnoi=true)] ---")
     (map print
         [
-            (format "<(TS02-C3.AQP-ANK|C_RevokeAnchor TFclassGa-98c486052a51)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_RevokeAnchor patron "TFclassGa-98c486052a51")])
-            (format "<(TS02-C3.AQP-ANK|C_RevokeBoostClass CoreBoostTFg)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_RevokeBoostClass patron class07-id)])
+            (format "<(TS02-C3.AQP-ANK|C_RevokeAnchor TFclassGa-98c486052a51)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_RevokeAnchor patron (AQP-ANK.URC_AnchorableAssetOwner (AQP-ANK.UR_ANK|AnchoredAsset "TFclassGa-98c486052a51") (AQP-ANK.UR_ANK|Fungibility "TFclassGa-98c486052a51")) "TFclassGa-98c486052a51")])
+            (format "<(TS02-C3.AQP-ANK|C_RevokeBoostClass CoreBoostTFg)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_RevokeBoostClass patron (at "class-owner" (AQP-ANK.UR_BC|Data class07-id)) class07-id)])
             (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFTEMPaa acnoi=true TempClassTF)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron ouro-owner "TFTEMPaa" ouro-id true temp-class-name 3 400.0 4000.0)])
         ]
     )
@@ -265,7 +265,7 @@
             (expect-failure
                 (format "<<TX002 expect-failure>> Cannot revoke non-empty BoostClass: <(TS02-C3.AQP-ANK|C_RevokeBoostClass TempClassTF)> (must fail)" [])
                 "{\"anchor-id\": \"|\",\"ouronet-account\": \"|\",\"promile\": 0.0} BoostClass"
-                (ref-TS02-C3::AQP-ANK|C_RevokeBoostClass patron temp-class-id)
+                (ref-TS02-C3::AQP-ANK|C_RevokeBoostClass patron (at "class-owner" (AQP-ANK.UR_BC|Data temp-class-id)) temp-class-id)
             )
         ]
     )
@@ -273,8 +273,8 @@
     (print "--- [TX002 · 06 · clear temp anchor then revoke temp BoostClass] ---")
     (map print
         [
-            (format "<(TS02-C3.AQP-ANK|C_RevokeAnchor TFTEMPaa-98c486052a51)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_RevokeAnchor patron "TFTEMPaa-98c486052a51")])
-            (format "<(TS02-C3.AQP-ANK|C_RevokeBoostClass TempClassTF)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_RevokeBoostClass patron temp-class-id)])
+            (format "<(TS02-C3.AQP-ANK|C_RevokeAnchor TFTEMPaa-98c486052a51)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_RevokeAnchor patron (AQP-ANK.URC_AnchorableAssetOwner (AQP-ANK.UR_ANK|AnchoredAsset "TFTEMPaa-98c486052a51") (AQP-ANK.UR_ANK|Fungibility "TFTEMPaa-98c486052a51")) "TFTEMPaa-98c486052a51")])
+            (format "<(TS02-C3.AQP-ANK|C_RevokeBoostClass TempClassTF)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_RevokeBoostClass patron (at "class-owner" (AQP-ANK.UR_BC|Data temp-class-id)) temp-class-id)])
         ]
     )
     ;;==== TX002 · 06b · L4 #17: double-revoke of a now-dead anchor must fail (UEV_LiveAnchor) =
@@ -284,7 +284,7 @@
             (expect-failure
                 "<<TX002 L4#17>> re-revoking an already-revoked anchor is rejected up front (anchor must be alive)"
                 "Anchor TFTEMPaa-98c486052a51 must be alive for operation"
-                (ref-TS02-C3::AQP-ANK|C_RevokeAnchor patron "TFTEMPaa-98c486052a51"))
+                (ref-TS02-C3::AQP-ANK|C_RevokeAnchor patron (AQP-ANK.URC_AnchorableAssetOwner (AQP-ANK.UR_ANK|AnchoredAsset "TFTEMPaa-98c486052a51") (AQP-ANK.UR_ANK|Fungibility "TFTEMPaa-98c486052a51")) "TFTEMPaa-98c486052a51"))
         ]
     )
     ;;==== TX002 · 07 · ref-ANK UR_AA|Data / UR_ANK|Data — REPL =======================
@@ -418,8 +418,8 @@
     )
     ;;==== TX004 · 03 · Talos C_RevokeAnchor (sweep 1 OURO/DHCD) — REPL ==============
     (print "--- [TX004 · 03 · revoke all TF/SF anchors (sweep 1)] ---")
-    (map print (map (lambda (id:string) (format "<(TS02-C3.AQP-ANK|C_RevokeAnchor)> OURO id={} => \"{}\"" [id (ref-TS02-C3::AQP-ANK|C_RevokeAnchor patron id)])) tf-ids))
-    (map print (map (lambda (id:string) (format "<(TS02-C3.AQP-ANK|C_RevokeAnchor)> DHCD id={} => \"{}\"" [id (ref-TS02-C3::AQP-ANK|C_RevokeAnchor patron id)])) sf-ids))
+    (map print (map (lambda (id:string) (format "<(TS02-C3.AQP-ANK|C_RevokeAnchor)> OURO id={} => \"{}\"" [id (ref-TS02-C3::AQP-ANK|C_RevokeAnchor patron (AQP-ANK.URC_AnchorableAssetOwner (AQP-ANK.UR_ANK|AnchoredAsset id) (AQP-ANK.UR_ANK|Fungibility id)) id)])) tf-ids))
+    (map print (map (lambda (id:string) (format "<(TS02-C3.AQP-ANK|C_RevokeAnchor)> DHCD id={} => \"{}\"" [id (ref-TS02-C3::AQP-ANK|C_RevokeAnchor patron (AQP-ANK.URC_AnchorableAssetOwner (AQP-ANK.UR_ANK|AnchoredAsset id) (AQP-ANK.UR_ANK|Fungibility id)) id)])) sf-ids))
     (let
         (
             (ouro-bcids:[string]
@@ -455,8 +455,8 @@
         )
         ;;==== TX004 · 05 · Talos C_RevokeBoostClass (OURO/DHCD) — REPL ================
         (print "--- [TX004 · 05 · revoke non-BAR BoostClasses] ---")
-        (map print (map (lambda (bcid:string) (format "<(TS02-C3.AQP-ANK|C_RevokeBoostClass)> OURO bcid={} => \"{}\"" [bcid (ref-TS02-C3::AQP-ANK|C_RevokeBoostClass patron bcid)])) ouro-bcids))
-        (map print (map (lambda (bcid:string) (format "<(TS02-C3.AQP-ANK|C_RevokeBoostClass)> DHCD bcid={} => \"{}\"" [bcid (ref-TS02-C3::AQP-ANK|C_RevokeBoostClass patron bcid)])) dhcd-bcids))
+        (map print (map (lambda (bcid:string) (format "<(TS02-C3.AQP-ANK|C_RevokeBoostClass)> OURO bcid={} => \"{}\"" [bcid (ref-TS02-C3::AQP-ANK|C_RevokeBoostClass patron (at "class-owner" (AQP-ANK.UR_BC|Data bcid)) bcid)])) ouro-bcids))
+        (map print (map (lambda (bcid:string) (format "<(TS02-C3.AQP-ANK|C_RevokeBoostClass)> DHCD bcid={} => \"{}\"" [bcid (ref-TS02-C3::AQP-ANK|C_RevokeBoostClass patron (at "class-owner" (AQP-ANK.UR_BC|Data bcid)) bcid)])) dhcd-bcids))
     )
     ;;==== TX004 · 06 · UR sweep-2 + Talos C_RevokeAnchor stragglers — REPL ===========
     (print "--- [TX004 · 06 · UR re-query + revoke stragglers (sweep 2)] ---")
@@ -466,8 +466,8 @@
             (sf2:[string] (ref-ANK::UR_ANK|AnchorsForAsset dhcd-id))
         )
         (map print [(format "<(AQP-ANK|UR_ANK|AnchorsForAsset OURO sweep-2)> => \"{}\"" [tf2]) (format "<(AQP-ANK|UR_ANK|AnchorsForAsset DHCD sweep-2)> => \"{}\"" [sf2])])
-        (map print (map (lambda (id:string) (format "<(TS02-C3.AQP-ANK|C_RevokeAnchor)> OURO sweep-2 id={} => \"{}\"" [id (ref-TS02-C3::AQP-ANK|C_RevokeAnchor patron id)])) tf2))
-        (map print (map (lambda (id:string) (format "<(TS02-C3.AQP-ANK|C_RevokeAnchor)> DHCD sweep-2 id={} => \"{}\"" [id (ref-TS02-C3::AQP-ANK|C_RevokeAnchor patron id)])) sf2))
+        (map print (map (lambda (id:string) (format "<(TS02-C3.AQP-ANK|C_RevokeAnchor)> OURO sweep-2 id={} => \"{}\"" [id (ref-TS02-C3::AQP-ANK|C_RevokeAnchor patron (AQP-ANK.URC_AnchorableAssetOwner (AQP-ANK.UR_ANK|AnchoredAsset id) (AQP-ANK.UR_ANK|Fungibility id)) id)])) tf2))
+        (map print (map (lambda (id:string) (format "<(TS02-C3.AQP-ANK|C_RevokeAnchor)> DHCD sweep-2 id={} => \"{}\"" [id (ref-TS02-C3::AQP-ANK|C_RevokeAnchor patron (AQP-ANK.URC_AnchorableAssetOwner (AQP-ANK.UR_ANK|AnchoredAsset id) (AQP-ANK.UR_ANK|Fungibility id)) id)])) sf2))
     )
     ;;==== TX004 · 07 · expect (strip invariants) — REPL ==============================
     (print "--- [TX004 · 07 · expect: OURO/DHCD bare; KBN NF still live] ---")

@@ -1808,3 +1808,61 @@ would have caught all three. Two INDIRECT routes registered — the two collecta
 directly and pass by FORWARDED. Four functions, one job, two classifications, decided purely by
 whether a local helper sits in the middle.
 
+
+---
+
+### 01_ANK.pact — COMPLETE (2 of 2 entrypoints, 2026-09-22)
+
+Two entrypoints left in the anchors module, both revokes. One was an attribution; the other was
+**an authorisation gap**.
+
+#### `C_RevokeBoostClass` checked no account at all
+
+`ANK|C>REVOKE-BOOST-CLASS` validated exactly two things — the class is **empty** and the class is
+**active** — and nothing else. **Any account reachable through Talos could revoke any empty
+BoostClass that was not theirs.**
+
+Not a funds hole: an empty class holds no anchors by construction. It is a denial vector that costs
+the victim real money, because re-creating a class is the **2× STOA** inline path in
+`C_Issue*Anchor`.
+
+> **The attach path already enforced exactly this, and had since 2026-09-19.** The `class-owner`
+> field and `UEV_AttachToExistingClass`'s `(CAP_EnforceAccountOwnership (at "class-owner" bc))`
+> were added together, with a schema comment explaining why. The **revoke** path was not carried
+> over with them. Same field, same rule, one path short — and the sweep found it because the canon
+> forces the question *"who is the actor?"* at every entrypoint, including the ones nobody
+> suspected.
+
+Measured (`modules/AQP.repl` `<<AQP-G37>>`, guard disabled): the un-owned revoke reached the
+*already-inactive* enforce instead of being refused by name. The fixture's class is inactive, so
+the call still failed there; on an empty **active** class it would have succeeded, because those
+two enforces were the only ones in the capability.
+
+#### And the binder had to go BELOW the liveness gate
+
+`C_RevokeAnchor` is ordinary §4g — `ANK|C>REVOKE` runs `CAP_Owner anchor-id`, which resolves the
+**anchored asset's** authority, a derived account. `UEV_ExecutorIzAnchorAuthority` already existed
+(written for MTX-AQP) and is a **disjunction**, not an equality, because a collectable has two
+authorities (owner **or** creator) where a DPTF has one.
+
+Placing it in the defun body, ahead of the capability, would have broken
+`[6.2.10] <<TX-AQP-NEG-OWNER2>>`: that test revokes a **non-existent** anchor and pins the
+*liveness* message, which was itself only made reachable by turning `UR_ANK|State` into a defaulted
+read. The binder resolves the anchored asset out of the anchor row, so it would have raised a raw
+table error and replaced the message the test exists for.
+
+> **"Never read an owner eagerly — the entity may not exist yet"** is in the handoff's rules list,
+> and this is the first time in the sweep it had a named test standing behind it. The binder sits
+> inside the capability, after `UEV_LiveAnchor`.
+
+#### The fixtures had to name the derived authority, not the patron
+
+The first pass gave all 18 call sites `patron` as executor and the suite went **BROKEN**: the
+anchored asset in `[6.2.1]` is `OURO`, owned by a `Σ.` **smart account**, not by the human patron.
+The fixtures now read the authority with the same expression the binder evaluates —
+`(URC_AnchorableAssetOwner (UR_ANK|AnchoredAsset id) (UR_ANK|Fungibility id))` — which is the
+template `_executormigrate` already carried for `AQP-FVT|CC_SweepRevokeAnchor`.
+
+> `executor = patron` is not a safe default. It is in the rules list for this reason, and it cost a
+> gate run to be reminded.
+

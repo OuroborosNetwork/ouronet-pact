@@ -313,13 +313,13 @@
             (expect-failure
                 "<<RT-K-007a>> RevokeAnchor refuses BY NAME, not with a raw table read"
                 "Anchor NOSUCHANK-98c486052a51 must be alive for operation"
-                (r::AQP-ANK|C_RevokeAnchor KST.ANHD bad))
+                (r::AQP-ANK|C_RevokeAnchor KST.ANHD KST.ANHD bad))
             ;;NON-VACUITY: the message must be DERIVED FROM THE ARGUMENT, not a constant that any
             ;;input would produce. A second id must appear in its own refusal.
             (expect-failure
                 "<<RT-K-007b>> ...and the refusal names the id it was given, so it is not a constant"
                 "Anchor ALSONOSUCHANK-98c486052a51 must be alive for operation"
-                (r::AQP-ANK|C_RevokeAnchor KST.ANHD other))
+                (r::AQP-ANK|C_RevokeAnchor KST.ANHD KST.ANHD other))
             ;;And the defaulted reader answers the question directly, rather than raising.
             (expect
                 "<<RT-K-007c>> UR_ANK|State on a non-existent anchor is FALSE, not an exception"
