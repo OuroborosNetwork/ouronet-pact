@@ -79,10 +79,10 @@
         (nf:string "MOCKN-98c486052a51")
         (patron:string KST.ANHD)
     )
-    (ref-TS02-C2::DPNF|C_UpdateNonceName        patron nf patron 1 true "RenamedNonce")
-    (ref-TS02-C2::DPNF|C_UpdateNonceDescription patron nf patron 1 true "A described nonce")
-    (ref-TS02-C2::DPNF|C_UpdateNonceRoyalty     patron nf patron 1 true 12.0)
-    (ref-TS02-C2::DPNF|C_UpdateNonceScore       patron nf patron 1 true 44.0)
+    (ref-TS02-C2::DPNF|C_UpdateNonceName        patron patron nf 1 true "RenamedNonce")
+    (ref-TS02-C2::DPNF|C_UpdateNonceDescription patron patron nf 1 true "A described nonce")
+    (ref-TS02-C2::DPNF|C_UpdateNonceRoyalty     patron patron nf 1 true 12.0)
+    (ref-TS02-C2::DPNF|C_UpdateNonceScore       patron patron nf 1 true 44.0)
     (let ((nd:object{DpdcUdcV2.DPDC|NonceData} (ref-DPDC::UR_NonceData nf false 1)))
         (map print
             [
@@ -195,7 +195,7 @@
                         (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)
                         (ref-DPDC-UDC::UDC_ZeroURI|Data)))
             )
-            (ref-TS02-C2::DPNF|C_UpdateNonce patron nf patron 2 true nd)
+            (ref-TS02-C2::DPNF|C_UpdateNonce patron patron nf 2 true nd)
             (let ((got:object{DpdcUdcV2.DPDC|NonceData} (ref-DPDC::UR_NonceData nf false 2)))
                 (map print
                     [

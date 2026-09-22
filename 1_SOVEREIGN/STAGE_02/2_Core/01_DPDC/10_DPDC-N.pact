@@ -64,14 +64,14 @@
     ;;
     ;; [C]
     ;;
-    (defun C_UpdateNonces                               (id:string son:bool account:string nosc:[integer] nos:bool nost:bool new-nonces-data:[object{DpdcUdcV2.DPDC|NonceData}]))
-    (defun C_UpdateNonceRoyalty                         (id:string son:bool account:string nosc:integer nos:bool nost:bool royalty-value:decimal))
-    (defun C_UpdateNonceIgnisRoyalty                    (id:string son:bool account:string nosc:integer nos:bool nost:bool royalty-value:decimal))
-    (defun C_UpdateNonceName                            (id:string son:bool account:string nosc:integer nos:bool nost:bool name:string))
-    (defun C_UpdateNonceDescription                     (id:string son:bool account:string nosc:integer nos:bool nost:bool description:string))
-    (defun C_UpdateNonceScore                           (id:string son:bool account:string nosc:integer nos:bool nost:bool score:decimal))
-    (defun C_UpdateNonceMetaData                        (id:string son:bool account:string nosc:integer nos:bool nost:bool meta-data:object))
-    (defun C_UpdateNonceURI                             (id:string son:bool account:string nosc:integer nos:bool nost:bool ay:object{DpdcUdcV2.URI|Type} u1:object{DpdcUdcV2.URI|Data} u2:object{DpdcUdcV2.URI|Data} u3:object{DpdcUdcV2.URI|Data}))
+    (defun C_UpdateNonces                               (patron:string executor:string id:string son:bool nosc:[integer] nos:bool nost:bool new-nonces-data:[object{DpdcUdcV2.DPDC|NonceData}]))
+    (defun C_UpdateNonceRoyalty                         (patron:string executor:string id:string son:bool nosc:integer nos:bool nost:bool royalty-value:decimal))
+    (defun C_UpdateNonceIgnisRoyalty                    (patron:string executor:string id:string son:bool nosc:integer nos:bool nost:bool royalty-value:decimal))
+    (defun C_UpdateNonceName                            (patron:string executor:string id:string son:bool nosc:integer nos:bool nost:bool name:string))
+    (defun C_UpdateNonceDescription                     (patron:string executor:string id:string son:bool nosc:integer nos:bool nost:bool description:string))
+    (defun C_UpdateNonceScore                           (patron:string executor:string id:string son:bool nosc:integer nos:bool nost:bool score:decimal))
+    (defun C_UpdateNonceMetaData                        (patron:string executor:string id:string son:bool nosc:integer nos:bool nost:bool meta-data:object))
+    (defun C_UpdateNonceURI                             (patron:string executor:string id:string son:bool nosc:integer nos:bool nost:bool ay:object{DpdcUdcV2.URI|Type} u1:object{DpdcUdcV2.URI|Data} u2:object{DpdcUdcV2.URI|Data} u3:object{DpdcUdcV2.URI|Data}))
 
 )
 ;;
@@ -727,8 +727,23 @@
     )
     ;;{5.7}  User [A/C]
     (defun C_UpdateNonces
-        (id:string son:bool account:string nosc:[integer] nos:bool nost:bool new-nonces-data:[object{DpdcUdcV2.DPDC|NonceData}])
-        @doc "[0] Updates Full Nonce Data for multiple Nonces at a time"
+        (patron:string executor:string id:string son:bool nosc:[integer] nos:bool nost:bool new-nonces-data:[object{DpdcUdcV2.DPDC|NonceData}])
+        @doc "Replaces the full NonceData of several nonces (or set-classes) at once. \
+            \ \
+            \ Executor: ENFORCED DIRECTLY. Every one of this module's eight entrypoints \
+            \ funnels into DPDC-N|C>DATA, which runs CAP_EnforceAccountOwnership on the \
+            \ parameter itself, and the surrounding capability first checks that the SAME \
+            \ account holds the relevant role (UEV_RoleNftUpdateON / \
+            \ UEV_RoleModifyRoyaltiesON / UEV_RoleSetNewUriON). Role AND signature, both on \
+            \ the named account: a rename, not an addition. \
+            \ \
+            \ Note the contrast with its DPDC siblings, which is the whole reason this \
+            \ module was quick. 05_DPDC-R, 06_DPDC-MNG (wipes), 08_DPDC-S (definitions) and \
+            \ 09_DPDC-F (fragmentation) all bottom out in DPDC::CAP_Owner, an enforce on a \
+            \ DERIVED account that names no actor -- HANDOFF 4g -- and every one needed a \
+            \ binder. Nonce METADATA is delegated by ROLE instead, so the actor is a \
+            \ parameter and was there all along under the wrong name. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
         (let
             (
@@ -738,79 +753,182 @@
                 (price:decimal (* how-many smallest))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
             )
-            (with-capability (DPDC-N|C>SET-DATA id son account nosc nos nost new-nonces-data)
-                (XI_U|NoncesData id son account nosc nos nost new-nonces-data)
+            (with-capability (DPDC-N|C>SET-DATA id son executor nosc nos nost new-nonces-data)
+                (XI_U|NoncesData id son executor nosc nos nost new-nonces-data)
                 ;;Cumulator
-                (URCi_UpdateNonces account (length nosc))
+                (URCi_UpdateNonces executor (length nosc))
             )
         )
     )
     (defun C_UpdateNonceRoyalty
-        (id:string son:bool account:string nosc:integer nos:bool nost:bool royalty-value:decimal)
-        @doc "[1] Updates Nonce Native Royalty Value. This field is a forward-looking hook for the \
-            \ upcoming Escrow/NFT marketplace (not yet built) — no on-chain consumer reads it today; \
-            \ confirmed intentional, not dead/unfinished code. See DPDC Audit #26M."
+        (patron:string executor:string id:string son:bool nosc:integer nos:bool nost:bool royalty-value:decimal)
+        @doc "Sets one nonce's native royalty value. \
+            \ \
+            \ Executor: ENFORCED DIRECTLY. Every one of this module's eight entrypoints \
+            \ funnels into DPDC-N|C>DATA, which runs CAP_EnforceAccountOwnership on the \
+            \ parameter itself, and the surrounding capability first checks that the SAME \
+            \ account holds the relevant role (UEV_RoleNftUpdateON / \
+            \ UEV_RoleModifyRoyaltiesON / UEV_RoleSetNewUriON). Role AND signature, both on \
+            \ the named account: a rename, not an addition. \
+            \ \
+            \ Note the contrast with its DPDC siblings, which is the whole reason this \
+            \ module was quick. 05_DPDC-R, 06_DPDC-MNG (wipes), 08_DPDC-S (definitions) and \
+            \ 09_DPDC-F (fragmentation) all bottom out in DPDC::CAP_Owner, an enforce on a \
+            \ DERIVED account that names no actor -- HANDOFF 4g -- and every one needed a \
+            \ binder. Nonce METADATA is delegated by ROLE instead, so the actor is a \
+            \ parameter and was there all along under the wrong name. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
-        (with-capability (DPDC-N|C>SET-ROYALTY id son account nosc nos nost royalty-value)
-            (XI_U|NonceRoyalty id son account nosc nos nost true royalty-value)
-            (URCi_UpdateNonceField account)
+        (with-capability (DPDC-N|C>SET-ROYALTY id son executor nosc nos nost royalty-value)
+            (XI_U|NonceRoyalty id son executor nosc nos nost true royalty-value)
+            (URCi_UpdateNonceField executor)
         )
     )
     (defun C_UpdateNonceIgnisRoyalty
-        (id:string son:bool account:string nosc:integer nos:bool nost:bool royalty-value:decimal)
-        @doc "[2] Updates Nonce Ignis Royalty Value"
+        (patron:string executor:string id:string son:bool nosc:integer nos:bool nost:bool royalty-value:decimal)
+        @doc "Sets one nonce's IGNIS royalty value. \
+            \ \
+            \ Executor: ENFORCED DIRECTLY. Every one of this module's eight entrypoints \
+            \ funnels into DPDC-N|C>DATA, which runs CAP_EnforceAccountOwnership on the \
+            \ parameter itself, and the surrounding capability first checks that the SAME \
+            \ account holds the relevant role (UEV_RoleNftUpdateON / \
+            \ UEV_RoleModifyRoyaltiesON / UEV_RoleSetNewUriON). Role AND signature, both on \
+            \ the named account: a rename, not an addition. \
+            \ \
+            \ Note the contrast with its DPDC siblings, which is the whole reason this \
+            \ module was quick. 05_DPDC-R, 06_DPDC-MNG (wipes), 08_DPDC-S (definitions) and \
+            \ 09_DPDC-F (fragmentation) all bottom out in DPDC::CAP_Owner, an enforce on a \
+            \ DERIVED account that names no actor -- HANDOFF 4g -- and every one needed a \
+            \ binder. Nonce METADATA is delegated by ROLE instead, so the actor is a \
+            \ parameter and was there all along under the wrong name. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
-        (with-capability (DPDC-N|C>SET-IGNIS-ROYALTY id son account nosc nos nost royalty-value)
-            (XI_U|NonceRoyalty id son account nosc nos nost false royalty-value)
-            (URCi_UpdateNonceField account)
+        (with-capability (DPDC-N|C>SET-IGNIS-ROYALTY id son executor nosc nos nost royalty-value)
+            (XI_U|NonceRoyalty id son executor nosc nos nost false royalty-value)
+            (URCi_UpdateNonceField executor)
         )
     )
     (defun C_UpdateNonceName
-        (id:string son:bool account:string nosc:integer nos:bool nost:bool name:string)
-        @doc "[3] Updates Nonce Name"
+        (patron:string executor:string id:string son:bool nosc:integer nos:bool nost:bool name:string)
+        @doc "Sets one nonce's name. \
+            \ \
+            \ Executor: ENFORCED DIRECTLY. Every one of this module's eight entrypoints \
+            \ funnels into DPDC-N|C>DATA, which runs CAP_EnforceAccountOwnership on the \
+            \ parameter itself, and the surrounding capability first checks that the SAME \
+            \ account holds the relevant role (UEV_RoleNftUpdateON / \
+            \ UEV_RoleModifyRoyaltiesON / UEV_RoleSetNewUriON). Role AND signature, both on \
+            \ the named account: a rename, not an addition. \
+            \ \
+            \ Note the contrast with its DPDC siblings, which is the whole reason this \
+            \ module was quick. 05_DPDC-R, 06_DPDC-MNG (wipes), 08_DPDC-S (definitions) and \
+            \ 09_DPDC-F (fragmentation) all bottom out in DPDC::CAP_Owner, an enforce on a \
+            \ DERIVED account that names no actor -- HANDOFF 4g -- and every one needed a \
+            \ binder. Nonce METADATA is delegated by ROLE instead, so the actor is a \
+            \ parameter and was there all along under the wrong name. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
-        (with-capability (DPDC-N|C>SET-NAME id son account nosc nos nost name)
-            (XI_U|NonceNoD id son account nosc nos nost true name)
-            (URCi_UpdateNonceField account)
+        (with-capability (DPDC-N|C>SET-NAME id son executor nosc nos nost name)
+            (XI_U|NonceNoD id son executor nosc nos nost true name)
+            (URCi_UpdateNonceField executor)
         )
     )
     (defun C_UpdateNonceDescription
-        (id:string son:bool account:string nosc:integer nos:bool nost:bool description:string)
-        @doc "[4] Updates Nonce Description"
+        (patron:string executor:string id:string son:bool nosc:integer nos:bool nost:bool description:string)
+        @doc "Sets one nonce's description. \
+            \ \
+            \ Executor: ENFORCED DIRECTLY. Every one of this module's eight entrypoints \
+            \ funnels into DPDC-N|C>DATA, which runs CAP_EnforceAccountOwnership on the \
+            \ parameter itself, and the surrounding capability first checks that the SAME \
+            \ account holds the relevant role (UEV_RoleNftUpdateON / \
+            \ UEV_RoleModifyRoyaltiesON / UEV_RoleSetNewUriON). Role AND signature, both on \
+            \ the named account: a rename, not an addition. \
+            \ \
+            \ Note the contrast with its DPDC siblings, which is the whole reason this \
+            \ module was quick. 05_DPDC-R, 06_DPDC-MNG (wipes), 08_DPDC-S (definitions) and \
+            \ 09_DPDC-F (fragmentation) all bottom out in DPDC::CAP_Owner, an enforce on a \
+            \ DERIVED account that names no actor -- HANDOFF 4g -- and every one needed a \
+            \ binder. Nonce METADATA is delegated by ROLE instead, so the actor is a \
+            \ parameter and was there all along under the wrong name. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
-        (with-capability (DPDC-N|C>SET-DESCRIPTION id son account nosc nos nost description)
-            (XI_U|NonceNoD id son account nosc nos nost false description)
-            (URCi_UpdateNonceField account)
+        (with-capability (DPDC-N|C>SET-DESCRIPTION id son executor nosc nos nost description)
+            (XI_U|NonceNoD id son executor nosc nos nost false description)
+            (URCi_UpdateNonceField executor)
         )
     )
     (defun C_UpdateNonceScore
-        (id:string son:bool account:string nosc:integer nos:bool nost:bool score:decimal)
-        @doc "[5] Updates Nonce Score"
+        (patron:string executor:string id:string son:bool nosc:integer nos:bool nost:bool score:decimal)
+        @doc "Sets one nonce's score. \
+            \ \
+            \ Executor: ENFORCED DIRECTLY. Every one of this module's eight entrypoints \
+            \ funnels into DPDC-N|C>DATA, which runs CAP_EnforceAccountOwnership on the \
+            \ parameter itself, and the surrounding capability first checks that the SAME \
+            \ account holds the relevant role (UEV_RoleNftUpdateON / \
+            \ UEV_RoleModifyRoyaltiesON / UEV_RoleSetNewUriON). Role AND signature, both on \
+            \ the named account: a rename, not an addition. \
+            \ \
+            \ Note the contrast with its DPDC siblings, which is the whole reason this \
+            \ module was quick. 05_DPDC-R, 06_DPDC-MNG (wipes), 08_DPDC-S (definitions) and \
+            \ 09_DPDC-F (fragmentation) all bottom out in DPDC::CAP_Owner, an enforce on a \
+            \ DERIVED account that names no actor -- HANDOFF 4g -- and every one needed a \
+            \ binder. Nonce METADATA is delegated by ROLE instead, so the actor is a \
+            \ parameter and was there all along under the wrong name. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
-        (with-capability (DPDC-N|C>SET-SCORE id son account nosc nos nost score)
-            (XI_U|NonceScore id son account nosc nos nost score)
-            (URCi_UpdateNonceField account)
+        (with-capability (DPDC-N|C>SET-SCORE id son executor nosc nos nost score)
+            (XI_U|NonceScore id son executor nosc nos nost score)
+            (URCi_UpdateNonceField executor)
         )
     )
     (defun C_UpdateNonceMetaData
-        (id:string son:bool account:string nosc:integer nos:bool nost:bool meta-data:object)
-        @doc "[6] Updates Nonce Meta-Data"
+        (patron:string executor:string id:string son:bool nosc:integer nos:bool nost:bool meta-data:object)
+        @doc "Sets one nonce's metadata bag. \
+            \ \
+            \ Executor: ENFORCED DIRECTLY. Every one of this module's eight entrypoints \
+            \ funnels into DPDC-N|C>DATA, which runs CAP_EnforceAccountOwnership on the \
+            \ parameter itself, and the surrounding capability first checks that the SAME \
+            \ account holds the relevant role (UEV_RoleNftUpdateON / \
+            \ UEV_RoleModifyRoyaltiesON / UEV_RoleSetNewUriON). Role AND signature, both on \
+            \ the named account: a rename, not an addition. \
+            \ \
+            \ Note the contrast with its DPDC siblings, which is the whole reason this \
+            \ module was quick. 05_DPDC-R, 06_DPDC-MNG (wipes), 08_DPDC-S (definitions) and \
+            \ 09_DPDC-F (fragmentation) all bottom out in DPDC::CAP_Owner, an enforce on a \
+            \ DERIVED account that names no actor -- HANDOFF 4g -- and every one needed a \
+            \ binder. Nonce METADATA is delegated by ROLE instead, so the actor is a \
+            \ parameter and was there all along under the wrong name. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
-        (with-capability (DPDC-N|C>SET-META-DATA id son account nosc nos nost meta-data)
-            (XI_NonceMetaData id son account nosc nos nost meta-data)
-            (URCi_UpdateNonceField account)
+        (with-capability (DPDC-N|C>SET-META-DATA id son executor nosc nos nost meta-data)
+            (XI_NonceMetaData id son executor nosc nos nost meta-data)
+            (URCi_UpdateNonceField executor)
         )
     )
     (defun C_UpdateNonceURI
         (
-            id:string son:bool account:string nosc:integer nos:bool nost:bool
+            patron:string executor:string id:string son:bool nosc:integer nos:bool nost:bool
             ay:object{DpdcUdcV2.URI|Type} u1:object{DpdcUdcV2.URI|Data} u2:object{DpdcUdcV2.URI|Data} u3:object{DpdcUdcV2.URI|Data}
         )
-        @doc "[7] Updates Nonce URIs"
+        @doc "Sets one nonce's asset type and up to three URI records. \
+            \ \
+            \ Executor: ENFORCED DIRECTLY. Every one of this module's eight entrypoints \
+            \ funnels into DPDC-N|C>DATA, which runs CAP_EnforceAccountOwnership on the \
+            \ parameter itself, and the surrounding capability first checks that the SAME \
+            \ account holds the relevant role (UEV_RoleNftUpdateON / \
+            \ UEV_RoleModifyRoyaltiesON / UEV_RoleSetNewUriON). Role AND signature, both on \
+            \ the named account: a rename, not an addition. \
+            \ \
+            \ Note the contrast with its DPDC siblings, which is the whole reason this \
+            \ module was quick. 05_DPDC-R, 06_DPDC-MNG (wipes), 08_DPDC-S (definitions) and \
+            \ 09_DPDC-F (fragmentation) all bottom out in DPDC::CAP_Owner, an enforce on a \
+            \ DERIVED account that names no actor -- HANDOFF 4g -- and every one needed a \
+            \ binder. Nonce METADATA is delegated by ROLE instead, so the actor is a \
+            \ parameter and was there all along under the wrong name. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
-        (with-capability (DPDC-N|C>SET-URI id son account nosc nos nost ay u1 u2 u3)
-            (XI_U|NonceUri id son account nosc nos nost ay u1 u2 u3)
-            (URCi_UpdateNonceField account)
+        (with-capability (DPDC-N|C>SET-URI id son executor nosc nos nost ay u1 u2 u3)
+            (XI_U|NonceUri id son executor nosc nos nost ay u1 u2 u3)
+            (URCi_UpdateNonceField executor)
         )
     )
 

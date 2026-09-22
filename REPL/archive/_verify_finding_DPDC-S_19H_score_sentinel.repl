@@ -75,7 +75,7 @@
             [(ref-DPDC-S::URC_N|Score nid false -1)]))
         ;; Sanity: a real score still comes back correctly through both class-0 branches.
         (print (format "SET real score 40.0 = {}"
-            [(ref-TS02-C2::DPNF|C_UpdateNonceScore owner nid owner 1 true 40.0)]))
+            [(ref-TS02-C2::DPNF|C_UpdateNonceScore owner owner nid 1 true 40.0)]))
         (print (format "<<19H-3>> Branch B real score (40.0) -> {}"
             [(ref-DPDC-S::URC_N|Score nid false 1)]))
         (print (format "<<19H-4>> Branch A real score, fragment (40.0/1000) -> {}"
@@ -153,7 +153,7 @@
             ;; Sanity: a real score is still correctly multiplied (40.0 * 2.5 = 100.0) and fragment-divided
             ;; (100.0 / 1000 = 0.1).
             (print (format "SET real score 40.0 on set-nonce = {}"
-                [(ref-TS02-C1::DPSF|C_UpdateNonceScore owner sid owner set-nonce true 40.0)]))
+                [(ref-TS02-C1::DPSF|C_UpdateNonceScore owner owner sid set-nonce true 40.0)]))
             (print (format "<<19H-7>> Branch D real score (40.0 x 2.5 = 100.0) -> {}"
                 [(ref-DPDC-S::URC_N|Score sid true set-nonce)]))
             (print (format "<<19H-8>> Branch C real score, fragment (100.0/1000 = 0.1) -> {}"

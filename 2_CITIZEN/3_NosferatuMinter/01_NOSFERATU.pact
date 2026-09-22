@@ -481,8 +481,7 @@
                 (nonces:[integer] (UC_Nonces rarity starting-position number-of-positions))
             )
             (enforce (= l number-of-positions) "Invalid Number of Positions")
-            (ref-TS02-C2::DPNF|C_UpdateNonces patron dhn-id account nonces true
-                (UDC_NonceData rarity starting-position mdm)
+            (ref-TS02-C2::DPNF|C_UpdateNonces patron account dhn-id nonces true (UDC_NonceData rarity starting-position mdm)
             )
         )
     )

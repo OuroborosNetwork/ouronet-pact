@@ -133,14 +133,14 @@
     ;; C_RemoveNonceScore is a one-line wrapper over C_UpdateNonceScore with score = -1.0.
     ;; Asserting only "it ran" would not distinguish it from ANY other score write, so the test
     ;; is differential: put a real score in first, then prove Remove lands on exactly -1.0.
-    (ref-TS02-C1::DPSF|C_UpdateNonceScore patron id patron 8 true 42.5)
+    (ref-TS02-C1::DPSF|C_UpdateNonceScore patron patron id 8 true 42.5)
     (map print
         [
             (expect "<<DSU-02>> the score to be removed is in place" 42.5
                 (at "score" (at "meta-data" (ref-DPDC::UR_NativeNonceData id true 8))))
         ]
     )
-    (ref-TS02-C1::DPSF|C_RemoveNonceScore patron id patron 8 true)
+    (ref-TS02-C1::DPSF|C_RemoveNonceScore patron patron id 8 true)
     (map print
         [
             (expect "<<DSU-02>> RemoveNonceScore writes the -1.0 no-score value" -1.0
@@ -183,11 +183,7 @@
     ;; UDC_URI|Data field order is image audio video document archive model exotic.
     ;; The three slots (primary/secondary/tertiary) are separate rows of the same shape, so the
     ;; failure mode worth catching is one slot's payload landing in another.
-    (ref-TS02-C1::DPSF|C_UpdateNonceURI patron id patron 9 true
-        (ref-DPDC-UDC::UDC_URI|Type true false false false false false false)
-        (ref-DPDC-UDC::UDC_URI|Data "ipfs://primary"   "|" "|" "|" "|" "|" "|")
-        (ref-DPDC-UDC::UDC_URI|Data "ipfs://secondary" "|" "|" "|" "|" "|" "|")
-        (ref-DPDC-UDC::UDC_URI|Data "ipfs://tertiary"  "|" "|" "|" "|" "|" "|")
+    (ref-TS02-C1::DPSF|C_UpdateNonceURI patron patron id 9 true (ref-DPDC-UDC::UDC_URI|Type true false false false false false false) (ref-DPDC-UDC::UDC_URI|Data "ipfs://primary"   "|" "|" "|" "|" "|" "|") (ref-DPDC-UDC::UDC_URI|Data "ipfs://secondary" "|" "|" "|" "|" "|" "|") (ref-DPDC-UDC::UDC_URI|Data "ipfs://tertiary"  "|" "|" "|" "|" "|" "|")
     )
     (let
         (

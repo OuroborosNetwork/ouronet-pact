@@ -1178,11 +1178,11 @@
                 [
                     (expect-failure "<<TX-SET-012>> SHADOW: mismatched list lengths never reach the gate"
                         "Invalid Inputs for Updating Nonces"
-                        (ref-TS02-C1::DPSF|C_UpdateNonces attacker sft-id victim [1 2] true [nd]))
+                        (ref-TS02-C1::DPSF|C_UpdateNonces attacker victim sft-id [1 2] true [nd]))
                     (expect-failure "<<TX-SET-012>> GATE: the identical call with matching lengths is\
                         \ refused by account ownership instead"
                         "Keyset failure (keys-all): [PK_Ancie...]"
-                        (ref-TS02-C1::DPSF|C_UpdateNonces attacker sft-id victim [nonce] true [nd]))
+                        (ref-TS02-C1::DPSF|C_UpdateNonces attacker victim sft-id [nonce] true [nd]))
                 ]
             )
             ;;==== TX-SET-012 · 03 · pair 2: only the ACCOUNT moves (the nearest shadow) ====
@@ -1195,11 +1195,11 @@
                     (expect-failure "<<TX-SET-012>> SHADOW: the naive attack -- EMMA names her own\
                         \ account -- dies at the ROLE check, one line above the gate"
                         "Element Data cannot be Updated while using the"
-                        (ref-TS02-C1::DPSF|C_UpdateNonces attacker sft-id attacker [nonce] true [nd]))
+                        (ref-TS02-C1::DPSF|C_UpdateNonces attacker attacker sft-id [nonce] true [nd]))
                     (expect-failure "<<TX-SET-012>> GATE: naming the ROLE-HOLDER's account clears [c]\
                         \ and lands on ownership"
                         "Keyset failure (keys-all): [PK_Ancie...]"
-                        (ref-TS02-C1::DPSF|C_UpdateNonces attacker sft-id victim [nonce] true [nd]))
+                        (ref-TS02-C1::DPSF|C_UpdateNonces attacker victim sft-id [nonce] true [nd]))
                     (expect "<<TX-SET-012>> ...and none of the four refusals moved the nonce's name"
                         name-before (at "name" (ref-DPDC::UR_NonceData sft-id true nonce)))
                 ]
@@ -1220,8 +1220,7 @@
                         (let
                             (
                                 (ignore:string
-                                    (ref-TS02-C1::DPSF|C_UpdateNonces victim sft-id victim
-                                        [nonce] true [nd]))
+                                    (ref-TS02-C1::DPSF|C_UpdateNonces victim victim sft-id [nonce] true [nd]))
                             )
                             (at "name" (ref-DPDC::UR_NonceData sft-id true nonce))
                         ))
@@ -1243,7 +1242,7 @@
                     (expect-failure "<<TX-SET-012>> ...and ANHD, STILL the owner, is now refused by\
                         \ the ROLE check -- he lost the flag, not the collection"
                         "Element Data cannot be Updated while using the"
-                        (ref-TS02-C1::DPSF|C_UpdateNonces victim sft-id victim [nonce] true [nd]))
+                        (ref-TS02-C1::DPSF|C_UpdateNonces victim victim sft-id [nonce] true [nd]))
                 ]
             )
             (env-sigs [{ "key": "PK_Emma", "caps": [] }])
@@ -1252,7 +1251,7 @@
                     (expect-failure "<<TX-SET-012>> ...and the stranger naming the NEW role-holder is\
                         \ refused by PK_Flore's keyset, not the owner's. The gate is on <account>"
                         "Keyset failure (keys-all): [PK_Flore...]"
-                        (ref-TS02-C1::DPSF|C_UpdateNonces attacker sft-id third [nonce] true [nd]))
+                        (ref-TS02-C1::DPSF|C_UpdateNonces attacker third sft-id [nonce] true [nd]))
                 ]
             )
         )

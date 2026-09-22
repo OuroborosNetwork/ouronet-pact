@@ -144,16 +144,16 @@
     (defun DPNF|C_RenameSet (patron:string executor:string id:string set-class:integer new-name:string))
     ;; DPNF|C_UpdateSetMultiplier removed — DPDC Audit #15H: score-multiplier is immutable after Define.
     ;;
-    (defun DPNF|C_UpdateSetNonce                        (patron:string id:string account:string set-class:integer nos:bool new-nonce-data:object{DpdcUdcV2.DPDC|NonceData}))
-    (defun DPNF|C_UpdateSetNonces                       (patron:string id:string account:string set-classes:[integer] nos:bool new-nonces-data:[object{DpdcUdcV2.DPDC|NonceData}]))
-    (defun DPNF|C_UpdateSetNonceRoyalty                 (patron:string id:string account:string set-class:integer nos:bool royalty-value:decimal))
-    (defun DPNF|C_UpdateSetNonceIgnisRoyalty            (patron:string id:string account:string set-class:integer nos:bool royalty-value:decimal))
-    (defun DPNF|C_UpdateSetNonceName                    (patron:string id:string account:string set-class:integer nos:bool name:string))
-    (defun DPNF|C_UpdateSetNonceDescription             (patron:string id:string account:string set-class:integer nos:bool description:string))
-    (defun DPNF|C_UpdateSetNonceScore                   (patron:string id:string account:string set-class:integer nos:bool score:decimal))
-    (defun DPNF|C_RemoveSetNonceScore                   (patron:string id:string account:string set-class:integer nos:bool))
-    (defun DPNF|C_UpdateSetNonceMetaData                (patron:string id:string account:string set-class:integer nos:bool meta-data:object))
-    (defun DPNF|C_UpdateSetNonceURI                     (patron:string id:string account:string set-class:integer nos:bool ay:object{DpdcUdcV2.URI|Type} u1:object{DpdcUdcV2.URI|Data} u2:object{DpdcUdcV2.URI|Data} u3:object{DpdcUdcV2.URI|Data}))
+    (defun DPNF|C_UpdateSetNonce                        (patron:string executor:string id:string set-class:integer nos:bool new-nonce-data:object{DpdcUdcV2.DPDC|NonceData}))
+    (defun DPNF|C_UpdateSetNonces                       (patron:string executor:string id:string set-classes:[integer] nos:bool new-nonces-data:[object{DpdcUdcV2.DPDC|NonceData}]))
+    (defun DPNF|C_UpdateSetNonceRoyalty                 (patron:string executor:string id:string set-class:integer nos:bool royalty-value:decimal))
+    (defun DPNF|C_UpdateSetNonceIgnisRoyalty            (patron:string executor:string id:string set-class:integer nos:bool royalty-value:decimal))
+    (defun DPNF|C_UpdateSetNonceName                    (patron:string executor:string id:string set-class:integer nos:bool name:string))
+    (defun DPNF|C_UpdateSetNonceDescription             (patron:string executor:string id:string set-class:integer nos:bool description:string))
+    (defun DPNF|C_UpdateSetNonceScore                   (patron:string executor:string id:string set-class:integer nos:bool score:decimal))
+    (defun DPNF|C_RemoveSetNonceScore                   (patron:string executor:string id:string set-class:integer nos:bool))
+    (defun DPNF|C_UpdateSetNonceMetaData                (patron:string executor:string id:string set-class:integer nos:bool meta-data:object))
+    (defun DPNF|C_UpdateSetNonceURI                     (patron:string executor:string id:string set-class:integer nos:bool ay:object{DpdcUdcV2.URI|Type} u1:object{DpdcUdcV2.URI|Data} u2:object{DpdcUdcV2.URI|Data} u3:object{DpdcUdcV2.URI|Data}))
     ;;
     ;;  [9] DPDC-F
     ;;
@@ -164,16 +164,16 @@
     ;;
     ;;  [10] DPDC-N
     ;;
-    (defun DPNF|C_UpdateNonce                           (patron:string id:string account:string nonce:integer nos:bool new-nonce-data:object{DpdcUdcV2.DPDC|NonceData}))
-    (defun DPNF|C_UpdateNonces                          (patron:string id:string account:string nonces:[integer] nos:bool new-nonces-data:[object{DpdcUdcV2.DPDC|NonceData}]))
-    (defun DPNF|C_UpdateNonceRoyalty                    (patron:string id:string account:string nonce:integer nos:bool royalty-value:decimal))
-    (defun DPNF|C_UpdateNonceIgnisRoyalty               (patron:string id:string account:string nonce:integer nos:bool royalty-value:decimal))
-    (defun DPNF|C_UpdateNonceName                       (patron:string id:string account:string nonce:integer nos:bool name:string))
-    (defun DPNF|C_UpdateNonceDescription                (patron:string id:string account:string nonce:integer nos:bool description:string))
-    (defun DPNF|C_UpdateNonceScore                      (patron:string id:string account:string nonce:integer nos:bool score:decimal))
-    (defun DPNF|C_RemoveNonceScore                      (patron:string id:string account:string nonce:integer nos:bool))
-    (defun DPNF|C_UpdateNonceMetaData                   (patron:string id:string account:string nonce:integer nos:bool meta-data:object))
-    (defun DPNF|C_UpdateNonceURI                        (patron:string id:string account:string nonce:integer nos:bool ay:object{DpdcUdcV2.URI|Type} u1:object{DpdcUdcV2.URI|Data} u2:object{DpdcUdcV2.URI|Data} u3:object{DpdcUdcV2.URI|Data}))
+    (defun DPNF|C_UpdateNonce                           (patron:string executor:string id:string nonce:integer nos:bool new-nonce-data:object{DpdcUdcV2.DPDC|NonceData}))
+    (defun DPNF|C_UpdateNonces                          (patron:string executor:string id:string nonces:[integer] nos:bool new-nonces-data:[object{DpdcUdcV2.DPDC|NonceData}]))
+    (defun DPNF|C_UpdateNonceRoyalty                    (patron:string executor:string id:string nonce:integer nos:bool royalty-value:decimal))
+    (defun DPNF|C_UpdateNonceIgnisRoyalty               (patron:string executor:string id:string nonce:integer nos:bool royalty-value:decimal))
+    (defun DPNF|C_UpdateNonceName                       (patron:string executor:string id:string nonce:integer nos:bool name:string))
+    (defun DPNF|C_UpdateNonceDescription                (patron:string executor:string id:string nonce:integer nos:bool description:string))
+    (defun DPNF|C_UpdateNonceScore                      (patron:string executor:string id:string nonce:integer nos:bool score:decimal))
+    (defun DPNF|C_RemoveNonceScore                      (patron:string executor:string id:string nonce:integer nos:bool))
+    (defun DPNF|C_UpdateNonceMetaData                   (patron:string executor:string id:string nonce:integer nos:bool meta-data:object))
+    (defun DPNF|C_UpdateNonceURI                        (patron:string executor:string id:string nonce:integer nos:bool ay:object{DpdcUdcV2.URI|Type} u1:object{DpdcUdcV2.URI|Data} u2:object{DpdcUdcV2.URI|Data} u3:object{DpdcUdcV2.URI|Data}))
     (defun DPNF|C_BulkTransfer
         (patron:string executor:string executee-lst:[string] id:string nonces-array:[[integer]] amounts-array:[[integer]] method:bool)
     )
@@ -1095,7 +1095,7 @@
     ;; DPNF|C_UpdateSetMultiplier removed — DPDC Audit #15H.
     ;;
     (defun DPNF|C_UpdateSetNonce 
-        (patron:string id:string account:string set-class:integer nos:bool new-nonce-data:object{DpdcUdcV2.DPDC|NonceData})
+        (patron:string executor:string id:string set-class:integer nos:bool new-nonce-data:object{DpdcUdcV2.DPDC|NonceData})
         @doc "[0] Updates Full Set Nonce Data, either Native or Split, for an NFT"
         (with-capability (P|TS)
             (let
@@ -1104,13 +1104,13 @@
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-N::C_UpdateNonces id false account [set-class] nos false [new-nonce-data])
+                    (ref-DPDC-N::C_UpdateNonces patron executor id false [set-class] nos false [new-nonce-data])
                 )
             )
         )
     )
     (defun DPNF|C_UpdateSetNonces
-        (patron:string id:string account:string set-classes:[integer] nos:bool new-nonces-data:[object{DpdcUdcV2.DPDC|NonceData}])
+        (patron:string executor:string id:string set-classes:[integer] nos:bool new-nonces-data:[object{DpdcUdcV2.DPDC|NonceData}])
         @doc "[0] Updates Full Set Nonce Data, either Native or Split, for an NFT"
         (with-capability (P|TS)
             (let
@@ -1119,13 +1119,13 @@
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-N::C_UpdateNonces id false account set-classes nos false new-nonces-data)
+                    (ref-DPDC-N::C_UpdateNonces patron executor id false set-classes nos false new-nonces-data)
                 )
             )
         )
     )
     (defun DPNF|C_UpdateSetNonceRoyalty
-        (patron:string id:string account:string set-class:integer nos:bool royalty-value:decimal)
+        (patron:string executor:string id:string set-class:integer nos:bool royalty-value:decimal)
         @doc "[1] Updates Set Nonce Native Royalty Value, either Native or Split, for an NFT"
         (with-capability (P|TS)
             (let
@@ -1134,13 +1134,13 @@
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-N::C_UpdateNonceRoyalty id false account set-class nos false royalty-value)
+                    (ref-DPDC-N::C_UpdateNonceRoyalty patron executor id false set-class nos false royalty-value)
                 )
             )
         )
     )
     (defun DPNF|C_UpdateSetNonceIgnisRoyalty
-        (patron:string id:string account:string set-class:integer nos:bool royalty-value:decimal)
+        (patron:string executor:string id:string set-class:integer nos:bool royalty-value:decimal)
         @doc "[2] Updates Set Nonce IGNIS Royalty Value, either Native or Split, for an NFT"
         (with-capability (P|TS)
             (let
@@ -1149,13 +1149,13 @@
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-N::C_UpdateNonceIgnisRoyalty id false account set-class nos false royalty-value)
+                    (ref-DPDC-N::C_UpdateNonceIgnisRoyalty patron executor id false set-class nos false royalty-value)
                 )
             )
         )
     )
     (defun DPNF|C_UpdateSetNonceName
-        (patron:string id:string account:string set-class:integer nos:bool name:string)
+        (patron:string executor:string id:string set-class:integer nos:bool name:string)
         @doc "[3] Updates Set Nonce Name, either Native or Split, for an NFT"
         (with-capability (P|TS)
             (let
@@ -1164,13 +1164,13 @@
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-N::C_UpdateNonceName id false account set-class nos false name)
+                    (ref-DPDC-N::C_UpdateNonceName patron executor id false set-class nos false name)
                 )
             )
         )
     )
     (defun DPNF|C_UpdateSetNonceDescription
-        (patron:string id:string account:string set-class:integer nos:bool description:string)
+        (patron:string executor:string id:string set-class:integer nos:bool description:string)
         @doc "[4] Updates Set Nonce Description, either Native or Split, for an NFT"
         (with-capability (P|TS)
             (let
@@ -1179,13 +1179,13 @@
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-N::C_UpdateNonceDescription id false account set-class nos false description)
+                    (ref-DPDC-N::C_UpdateNonceDescription patron executor id false set-class nos false description)
                 )
             )
         )
     )
     (defun DPNF|C_UpdateSetNonceScore
-        (patron:string id:string account:string set-class:integer nos:bool score:decimal)
+        (patron:string executor:string id:string set-class:integer nos:bool score:decimal)
         @doc "[5] Updates Set Nonce Score, either Native or Split, for an NFT"
         (with-capability (P|TS)
             (let
@@ -1194,17 +1194,17 @@
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-N::C_UpdateNonceScore id false account set-class nos false score)
+                    (ref-DPDC-N::C_UpdateNonceScore patron executor id false set-class nos false score)
                 )
             )
         )
     )
-    (defun DPNF|C_RemoveSetNonceScore (patron:string id:string account:string set-class:integer nos:bool)
+    (defun DPNF|C_RemoveSetNonceScore (patron:string executor:string id:string set-class:integer nos:bool)
         @doc "[5b] Removes Set Nonce Score, setting it to -1.0, either Native or Split, for an NFT"
-        (DPNF|C_UpdateSetNonceScore patron id account set-class nos -1.0)
+        (DPNF|C_UpdateSetNonceScore patron executor id set-class nos -1.0)
     )
     (defun DPNF|C_UpdateSetNonceMetaData
-        (patron:string id:string account:string set-class:integer nos:bool meta-data:object)
+        (patron:string executor:string id:string set-class:integer nos:bool meta-data:object)
         @doc "[6] Updates Set Nonce Meta-Data, either Native or Split, for an NFT"
         (with-capability (P|TS)
             (let
@@ -1213,14 +1213,14 @@
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-N::C_UpdateNonceMetaData id false account set-class nos false meta-data)
+                    (ref-DPDC-N::C_UpdateNonceMetaData patron executor id false set-class nos false meta-data)
                 )
             )
         )
     )
     (defun DPNF|C_UpdateSetNonceURI
         (
-            patron:string id:string account:string set-class:integer nos:bool
+            patron:string executor:string id:string set-class:integer nos:bool
             ay:object{DpdcUdcV2.URI|Type} u1:object{DpdcUdcV2.URI|Data} u2:object{DpdcUdcV2.URI|Data} u3:object{DpdcUdcV2.URI|Data}
         )
         @doc "[7] Updates Set Nonce URI, either Native or Split, for an NFT"
@@ -1231,7 +1231,7 @@
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-N::C_UpdateNonceURI id false account set-class nos false ay u1 u2 u3)
+                    (ref-DPDC-N::C_UpdateNonceURI patron executor id false set-class nos false ay u1 u2 u3)
                 )
             )
         )
@@ -1310,7 +1310,7 @@
     ;;  [10] DPDC-N
     ;;
     (defun DPNF|C_UpdateNonce 
-        (patron:string id:string account:string nonce:integer nos:bool new-nonce-data:object{DpdcUdcV2.DPDC|NonceData})
+        (patron:string executor:string id:string nonce:integer nos:bool new-nonce-data:object{DpdcUdcV2.DPDC|NonceData})
         @doc "[0] Updates Full Nonce Data, either Native or Split, for an NFT"
         (with-capability (P|TS)
             (let
@@ -1319,14 +1319,14 @@
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-N::C_UpdateNonces id false account [nonce] nos true [new-nonce-data])
+                    (ref-DPDC-N::C_UpdateNonces patron executor id false [nonce] nos true [new-nonce-data])
                 )
                 (format "Nonce {} updated successfully!" [nonce])
             )
         )
     )
     (defun DPNF|C_UpdateNonces
-        (patron:string id:string account:string nonces:[integer] nos:bool new-nonces-data:[object{DpdcUdcV2.DPDC|NonceData}])
+        (patron:string executor:string id:string nonces:[integer] nos:bool new-nonces-data:[object{DpdcUdcV2.DPDC|NonceData}])
         @doc "[0] Updates Full Nonce Data, either Native or Split, for an NFT"
         (with-capability (P|TS)
             (let
@@ -1335,14 +1335,14 @@
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-N::C_UpdateNonces id false account nonces nos true new-nonces-data)
+                    (ref-DPDC-N::C_UpdateNonces patron executor id false nonces nos true new-nonces-data)
                 )
                 (format "Nonces {} updated successfully!" [nonces])
             )
         )
     )
     (defun DPNF|C_UpdateNonceRoyalty
-        (patron:string id:string account:string nonce:integer nos:bool royalty-value:decimal)
+        (patron:string executor:string id:string nonce:integer nos:bool royalty-value:decimal)
         @doc "[1] Updates Nonce Native Royalty Value, either Native or Split, for an NFT"
         (with-capability (P|TS)
             (let
@@ -1351,13 +1351,13 @@
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-N::C_UpdateNonceRoyalty id false account nonce nos true royalty-value)
+                    (ref-DPDC-N::C_UpdateNonceRoyalty patron executor id false nonce nos true royalty-value)
                 )
             )
         )
     )
     (defun DPNF|C_UpdateNonceIgnisRoyalty
-        (patron:string id:string account:string nonce:integer nos:bool royalty-value:decimal)
+        (patron:string executor:string id:string nonce:integer nos:bool royalty-value:decimal)
         @doc "[2] Updates Nonce IGNIS Royalty Value, either Native or Split, for an NFT"
         (with-capability (P|TS)
             (let
@@ -1366,13 +1366,13 @@
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-N::C_UpdateNonceIgnisRoyalty id false account nonce nos true royalty-value)
+                    (ref-DPDC-N::C_UpdateNonceIgnisRoyalty patron executor id false nonce nos true royalty-value)
                 )
             )
         )
     )
     (defun DPNF|C_UpdateNonceName
-        (patron:string id:string account:string nonce:integer nos:bool name:string)
+        (patron:string executor:string id:string nonce:integer nos:bool name:string)
         @doc "[3] Updates Nonce Name, either Native or Split, for an NFT"
         (with-capability (P|TS)
             (let
@@ -1381,13 +1381,13 @@
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-N::C_UpdateNonceName id false account nonce nos true name)
+                    (ref-DPDC-N::C_UpdateNonceName patron executor id false nonce nos true name)
                 )
             )
         )
     )
     (defun DPNF|C_UpdateNonceDescription
-        (patron:string id:string account:string nonce:integer nos:bool description:string)
+        (patron:string executor:string id:string nonce:integer nos:bool description:string)
         @doc "[4] Updates Nonce Description, either Native or Split, for an NFT"
         (with-capability (P|TS)
             (let
@@ -1396,13 +1396,13 @@
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-N::C_UpdateNonceDescription id false account nonce nos true description)
+                    (ref-DPDC-N::C_UpdateNonceDescription patron executor id false nonce nos true description)
                 )
             )
         )
     )
     (defun DPNF|C_UpdateNonceScore
-        (patron:string id:string account:string nonce:integer nos:bool score:decimal)
+        (patron:string executor:string id:string nonce:integer nos:bool score:decimal)
         @doc "[5] Updates Nonce Score, either Native or Split, for an NFT"
         (with-capability (P|TS)
             (let
@@ -1411,17 +1411,17 @@
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-N::C_UpdateNonceScore id false account nonce nos true score)
+                    (ref-DPDC-N::C_UpdateNonceScore patron executor id false nonce nos true score)
                 )
             )
         )
     )
-    (defun DPNF|C_RemoveNonceScore (patron:string id:string account:string nonce:integer nos:bool)
+    (defun DPNF|C_RemoveNonceScore (patron:string executor:string id:string nonce:integer nos:bool)
         @doc "[5b] Removes Nonce Score, setting it to -1.0, either Native or Split, for an NFT"
-        (DPNF|C_UpdateNonceScore patron id account nonce nos -1.0)
+        (DPNF|C_UpdateNonceScore patron executor id nonce nos -1.0)
     )
     (defun DPNF|C_UpdateNonceMetaData
-        (patron:string id:string account:string nonce:integer nos:bool meta-data:object)
+        (patron:string executor:string id:string nonce:integer nos:bool meta-data:object)
         @doc "[6] Updates Nonce Meta-Data, either Native or Split, for an NFT"
         (with-capability (P|TS)
             (let
@@ -1430,14 +1430,14 @@
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-N::C_UpdateNonceMetaData id false account nonce nos true meta-data)
+                    (ref-DPDC-N::C_UpdateNonceMetaData patron executor id false nonce nos true meta-data)
                 )
             )
         )
     )
     (defun DPNF|C_UpdateNonceURI
         (
-            patron:string id:string account:string nonce:integer nos:bool
+            patron:string executor:string id:string nonce:integer nos:bool
             ay:object{DpdcUdcV2.URI|Type} u1:object{DpdcUdcV2.URI|Data} u2:object{DpdcUdcV2.URI|Data} u3:object{DpdcUdcV2.URI|Data}
         )
         @doc "[7] Updates Nonce URI, either Native or Split, for an NFT"
@@ -1448,7 +1448,7 @@
                     (ref-DPDC-N:module{DpdcNonceV2} DPDC-N)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-N::C_UpdateNonceURI id false account nonce nos true ay u1 u2 u3)
+                    (ref-DPDC-N::C_UpdateNonceURI patron executor id false nonce nos true ay u1 u2 u3)
                 )
             )
         )

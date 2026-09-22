@@ -275,7 +275,7 @@
                         (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)
                         (ref-DPDC-UDC::UDC_ZeroURI|Data)))
             )
-            (ref-TS02-C1::DPSF|C_UpdateNonce patron sf patron 3 true nd)
+            (ref-TS02-C1::DPSF|C_UpdateNonce patron patron sf 3 true nd)
             (let ((got:object{DpdcUdcV2.DPDC|NonceData} (ref-DPDC::UR_NonceData sf true 3)))
                 (map print
                     [
@@ -1534,7 +1534,7 @@
             ;;   otherwise nonces would be rewritten with data the caller never supplied for them.
             (expect-failure "<<DPDC-G13>> two nonces against one data object is refused"
                 "Invalid Inputs for Updating Nonces"
-                (ref-TS02-C1::DPSF|C_UpdateNonces KST.ANHD sf KST.ANHD [1 2] true [nd]))
+                (ref-TS02-C1::DPSF|C_UpdateNonces KST.ANHD KST.ANHD sf [1 2] true [nd]))
         ]
     )
     ""
@@ -2764,7 +2764,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateNonceName patron nf patron 2 true "CostProbe"))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C2::DPNF|C_UpdateNonceName patron nf patron 2 true "CostProbe"))
+            (m (ref-TS02-C2::DPNF|C_UpdateNonceName patron patron nf 2 true "CostProbe"))
         )
         (map print
             [
@@ -3072,7 +3072,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateNonceName patron sf patron 1 true "CostProbe"))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_UpdateNonceName patron sf patron 1 true "CostProbe"))
+            (m (ref-TS02-C1::DPSF|C_UpdateNonceName patron patron sf 1 true "CostProbe"))
         )
         (map print
             [
@@ -3156,7 +3156,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateNonceDescription patron nf patron 2 true "cost probe"))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C2::DPNF|C_UpdateNonceDescription patron nf patron 2 true "cost probe"))
+            (m (ref-TS02-C2::DPNF|C_UpdateNonceDescription patron patron nf 2 true "cost probe"))
         )
         (map print
             [
@@ -3202,7 +3202,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateNonceRoyalty patron nf patron 2 true 3.0))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C2::DPNF|C_UpdateNonceRoyalty patron nf patron 2 true 3.0))
+            (m (ref-TS02-C2::DPNF|C_UpdateNonceRoyalty patron patron nf 2 true 3.0))
         )
         (map print
             [
@@ -3251,7 +3251,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateNonceIgnisRoyalty patron nf patron 2 true 2.0))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C2::DPNF|C_UpdateNonceIgnisRoyalty patron nf patron 2 true 2.0))
+            (m (ref-TS02-C2::DPNF|C_UpdateNonceIgnisRoyalty patron patron nf 2 true 2.0))
         )
         (map print
             [
@@ -3297,7 +3297,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateNonceScore patron nf patron 2 true 7.0))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C2::DPNF|C_UpdateNonceScore patron nf patron 2 true 7.0))
+            (m (ref-TS02-C2::DPNF|C_UpdateNonceScore patron patron nf 2 true 7.0))
         )
         (map print
             [
@@ -3343,7 +3343,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|RemoveNonceScore patron nf patron 2 true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C2::DPNF|C_RemoveNonceScore patron nf patron 2 true))
+            (m (ref-TS02-C2::DPNF|C_RemoveNonceScore patron patron nf 2 true))
         )
         (map print
             [
@@ -3389,7 +3389,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateNonceMetaData patron nf patron 2 true (ref-DPDC-UDC::UDC_NoMetaData)))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C2::DPNF|C_UpdateNonceMetaData patron nf patron 2 true (ref-DPDC-UDC::UDC_NoMetaData)))
+            (m (ref-TS02-C2::DPNF|C_UpdateNonceMetaData patron patron nf 2 true (ref-DPDC-UDC::UDC_NoMetaData)))
         )
         (map print
             [
@@ -3435,7 +3435,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateNonceURI patron nf patron 2 true type (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C2::DPNF|C_UpdateNonceURI patron nf patron 2 true type (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+            (m (ref-TS02-C2::DPNF|C_UpdateNonceURI patron patron nf 2 true type (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
         )
         (map print
             [
@@ -3484,7 +3484,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateNonce patron nf patron 2 true nd))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C2::DPNF|C_UpdateNonce patron nf patron 2 true nd))
+            (m (ref-TS02-C2::DPNF|C_UpdateNonce patron patron nf 2 true nd))
         )
         (map print
             [
@@ -3532,7 +3532,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdateNonces patron nf patron [2 3] true [nd nd]))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C2::DPNF|C_UpdateNonces patron nf patron [2 3] true [nd nd]))
+            (m (ref-TS02-C2::DPNF|C_UpdateNonces patron patron nf [2 3] true [nd nd]))
         )
         (map print
             [
@@ -3863,7 +3863,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateNonceDescription patron sf patron 2 true "cost probe"))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_UpdateNonceDescription patron sf patron 2 true "cost probe"))
+            (m (ref-TS02-C1::DPSF|C_UpdateNonceDescription patron patron sf 2 true "cost probe"))
         )
         (map print
             [
@@ -3911,7 +3911,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateNonceRoyalty patron sf patron 2 true 3.0))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_UpdateNonceRoyalty patron sf patron 2 true 3.0))
+            (m (ref-TS02-C1::DPSF|C_UpdateNonceRoyalty patron patron sf 2 true 3.0))
         )
         (map print
             [
@@ -3962,7 +3962,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateNonceIgnisRoyalty patron sf patron 2 true 2.0))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_UpdateNonceIgnisRoyalty patron sf patron 2 true 2.0))
+            (m (ref-TS02-C1::DPSF|C_UpdateNonceIgnisRoyalty patron patron sf 2 true 2.0))
         )
         (map print
             [
@@ -4010,7 +4010,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateNonceScore patron sf patron 2 true 7.0))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_UpdateNonceScore patron sf patron 2 true 7.0))
+            (m (ref-TS02-C1::DPSF|C_UpdateNonceScore patron patron sf 2 true 7.0))
         )
         (map print
             [
@@ -4058,7 +4058,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|RemoveNonceScore patron sf patron 2 true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_RemoveNonceScore patron sf patron 2 true))
+            (m (ref-TS02-C1::DPSF|C_RemoveNonceScore patron patron sf 2 true))
         )
         (map print
             [
@@ -4106,7 +4106,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateNonceMetaData patron sf patron 2 true (ref-DPDC-UDC::UDC_NoMetaData)))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_UpdateNonceMetaData patron sf patron 2 true (ref-DPDC-UDC::UDC_NoMetaData)))
+            (m (ref-TS02-C1::DPSF|C_UpdateNonceMetaData patron patron sf 2 true (ref-DPDC-UDC::UDC_NoMetaData)))
         )
         (map print
             [
@@ -4154,7 +4154,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateNonceURI patron sf patron 2 true type (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_UpdateNonceURI patron sf patron 2 true type (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
+            (m (ref-TS02-C1::DPSF|C_UpdateNonceURI patron patron sf 2 true type (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
         )
         (map print
             [
@@ -4202,7 +4202,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateNonce patron sf patron 2 true nd))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_UpdateNonce patron sf patron 2 true nd))
+            (m (ref-TS02-C1::DPSF|C_UpdateNonce patron patron sf 2 true nd))
         )
         (map print
             [
@@ -4252,7 +4252,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|UpdateNonces patron sf patron [1 2] true [nd nd]))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_UpdateNonces patron sf patron [1 2] true [nd nd]))
+            (m (ref-TS02-C1::DPSF|C_UpdateNonces patron patron sf [1 2] true [nd nd]))
         )
         (map print
             [

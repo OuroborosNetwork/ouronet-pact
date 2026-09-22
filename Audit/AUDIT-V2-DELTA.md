@@ -1629,3 +1629,57 @@ rule for it is deliberately absent with the reason recorded in `RULES`:
 
 Same reason `05_DPDC-R` is absent from that table. Two provisional patron slots cleared.
 
+
+---
+
+### 10_DPDC-N.pact — COMPLETE (8 of 8 entrypoints, 2026-09-22)
+
+Nonce metadata: name, description, score, royalties, URIs, the whole mutable bag. Eight
+entrypoints, **eight straight renames**, and the reason is the interesting part.
+
+Every DPDC module before it bottomed out in `DPDC::CAP_Owner id son` — an enforce on a **derived**
+account that names no actor, §4g — and every one needed a binder: `05_DPDC-R` (eleven),
+`06_DPDC-MNG` (the six wipes), `08_DPDC-S` (the six definition ops), `09_DPDC-F` (two). This one
+does not. All eight funnel into `DPDC-N|C>DATA`:
+
+```pact
+(UEV_NonceDataUpdater id son account nosc nos nost)
+(UEV_NotSetInstance id son nosc nost)
+(ref-DALOS::CAP_EnforceAccountOwnership account)      ;; <- on the PARAMETER
+```
+
+and the capability above it first checks the **same account holds the role** —
+`UEV_RoleNftUpdateON`, `UEV_RoleModifyRoyaltiesON`, `UEV_RoleSetNewUriON`. Role **and** signature,
+both on the named account.
+
+> **Metadata is delegated by ROLE; the rest of DPDC is gated by OWNERSHIP.** An owner can hand out
+> the update role and stop being the actor, which is exactly why the actor has to be a parameter
+> here and cannot be one anywhere else in the family. The executor was present all along under the
+> wrong name.
+
+#### Two wrappers that the name filter missed
+
+`DPSF|C_RemoveNonceScore` and `DPSF|C_RemoveSetNonceScore` (and the DPNF pair) are thin aliases
+that delegate **within Talos** to `C_UpdateNonceScore` with a literal `-1.0`. The pass that
+rewrote the 36 `C_Update*` wrappers matched on the name and did not touch them — and their
+delegation is **arity-preserving**, six arguments before and after, so nothing downstream could
+have objected:
+
+```pact
+(DPSF|C_UpdateSetNonceScore patron id account set-class nos -1.0)   ;; would still load
+```
+
+`_callarity`'s same-module pass — built one module earlier for exactly this — sees only arity, so
+a swap of `id` and `account` inside a correct count is invisible to it. Caught by grepping for the
+**old parameter shape** `(patron:string id:string account:string` rather than for the names
+already known to need changing. *A signature change must reach every place the name is written,
+and "the names I listed" is narrower than that.*
+
+#### 106 call sites the arity checker could not see
+
+The 40 Talos wrappers went from `(patron id account …)` to `(patron executor id …)` — a **swap of
+slots 1 and 2**, arity unchanged. Rewritten by a one-shot pass that **reads each wrapper's arity
+out of the Talos source** rather than declaring it, because a hardcoded arity that is wrong
+matches nothing and reports success. Run once, then parked: an arity-preserving reorder is not
+idempotent.
+

@@ -284,7 +284,7 @@ same tools with those three properties.
 | [x] 30 | `07_DPDC-T.pact` | 1 | 0 | 3 | **4** | `DpdcTransferV2` — done; +10 TS02-C1/C2 wrappers reordered. See §4i |
 | [x] 31 | `08_DPDC-S.pact` | 0 | 0 | 10 | **10** | `DpdcSetsV2` — done; two authorities in one module, see §4j |
 | [x] 32 | `09_DPDC-F.pact` | 0 | 0 | 4 | **4** | `DpdcFragmentsV2` — done; the third repurpose of the sweep, same shape |
-| [ ] 33 | `10_DPDC-N.pact` | 0 | 0 | 8 | **8** | `DpdcNonceV2` |
+| [x] 33 | `10_DPDC-N.pact` | 0 | 0 | 8 | **8** | `DpdcNonceV2` — done; the DPDC family's only ROLE-gated module |
 | [ ] 34 | `11_EQUITY+.pact` | 1 | 0 | 1 | **2** | `EquityV2` |
 | [ ] 35 | `00_Demipad.pact` | 2 | 2 | 6 | **10** | `DemiourgosLaunchpadV2` |
 | [ ] 36 | `01_ANK.pact` | 0 | 0 | 2 | **2** | `AcquisitionAnchorsV1` |
@@ -448,6 +448,30 @@ arguments away from anything that proved it. It is now position-aware: it finds 
 PARAMETER the executor landed in and requires the enforcement to be on THAT name, re-mapping the
 position at each `compose-capability` hop. Re-run after the change, it immediately found both
 KickStart variants.
+
+### 4l. LESSON FROM MODULE 33 — ROLE-GATED IS NOT OWNER-GATED, AND IT CHANGES THE ANSWER
+
+Five DPDC modules in a row needed a binder because their authority was `DPDC::CAP_Owner id son` —
+an enforce on a DERIVED account (§4g). `10_DPDC-N` needed none, and the distinction is worth
+carrying forward because it is the first clean example of the *other* answer:
+
+| gating | where the actor is | what the sweep does |
+|---|---|---|
+| **ownership** of a derived entity (`CAP_Owner`) | nowhere — it is read from a table | ADD an executor, BIND it |
+| **a role held by an account** (`UEV_Role*ON account`) + `CAP_EnforceAccountOwnership account` | it is already a parameter | RENAME |
+
+The tell is that a role can be **delegated**: an owner grants the update role and stops being the
+actor, so the actor *has* to be named. Where authority is ownership of the entity, naming it is
+redundant to the check and that is precisely why nobody wrote it down.
+
+**And check the parameter SHAPE, not the name list.** Four Talos aliases — `C_Remove*NonceScore` —
+delegate to a `C_Update*` sibling and were missed by a pass keyed on the names known to be
+changing. Their delegation is arity-preserving, so `_callarity` (including the same-module pass
+built one module earlier) could not object. Grepping for the OLD parameter shape
+`(patron:string id:string account:string` found them in one line. *A signature change must reach
+every place the name is written, and "the names I listed" is narrower than that.*
+
+---
 
 ### 4k. THE REPURPOSE SHAPE, THIRD SIGHTING — AND WHAT A TEST COMMENT KNEW FIRST
 

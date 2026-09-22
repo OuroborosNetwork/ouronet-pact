@@ -335,21 +335,20 @@
             )
         )
     )
-    (ref-TS02-C1::DPSF|C_UpdateNonceScore patron id emma 1 true 25.0)
+    (ref-TS02-C1::DPSF|C_UpdateNonceScore patron emma id 1 true 25.0)
     ;; L7 #19: DPDC must reject a real negative score (only exactly -1.0 sentinel or >= 0 allowed).
     (expect-failure "<<DPDC L7#19>> negative nonce score (-5.0) rejected by UEV_Score"
                 "Score must be the -1.0 unscored sentinel or a non-negative value"
-        (ref-TS02-C1::DPSF|C_UpdateNonceScore patron id emma 1 true -5.0))
+        (ref-TS02-C1::DPSF|C_UpdateNonceScore patron emma id 1 true -5.0))
     ;(ref-TS02-C1::DPSF|C_RemoveNonceScore patron id emma 1)
-    (ref-TS02-C1::DPSF|C_UpdateNonceMetaData patron id emma 1 true
-        {"eye"      : "red"
+    (ref-TS02-C1::DPSF|C_UpdateNonceMetaData patron emma id 1 true {"eye"      : "red"
         ,"age"      : 24.3
         ,"value"    : 123.3}
     )
-    (ref-TS02-C1::DPSF|C_UpdateNonceName patron id emma 1  true "Snake Eyez")
-    (ref-TS02-C1::DPSF|C_UpdateNonceDescription patron id emma 1 true "Long dormant sentient AI, Snake Eye. Coded by a mad developer back in the 80s. Awakened by DemiourgosHoldings. With the help of our Coding Division it searches for his creatorz.")
-    (ref-TS02-C1::DPSF|C_UpdateNonceRoyalty patron id emma 1 true 133.0)
-    (ref-TS02-C1::DPSF|C_UpdateNonceIgnisRoyalty patron id emma 1 true 50.0)
+    (ref-TS02-C1::DPSF|C_UpdateNonceName patron emma id 1 true "Snake Eyez")
+    (ref-TS02-C1::DPSF|C_UpdateNonceDescription patron emma id 1 true "Long dormant sentient AI, Snake Eye. Coded by a mad developer back in the 80s. Awakened by DemiourgosHoldings. With the help of our Coding Division it searches for his creatorz.")
+    (ref-TS02-C1::DPSF|C_UpdateNonceRoyalty patron emma id 1 true 133.0)
+    (ref-TS02-C1::DPSF|C_UpdateNonceIgnisRoyalty patron emma id 1 true 50.0)
     
     ;(ref-TS02-C1::DPSF|C_UpdateNonceURI patron id emma 1 true
     ;    {"image"    : t

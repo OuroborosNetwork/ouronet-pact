@@ -65,7 +65,7 @@
                 )]
             )]))
         (print (format "SET ROYALTY RESULT = {}"
-            [(ref-TS02-C2::DPNF|C_UpdateNonceRoyalty owner id owner 1 true 50.0)]))
+            [(ref-TS02-C2::DPNF|C_UpdateNonceRoyalty owner owner id 1 true 50.0)]))
         (print (format "royalty after set = {}" [(ref-DPDC::UR_N|Royalty (ref-DPDC::UR_NonceData id false 1))]))
     )
 )
