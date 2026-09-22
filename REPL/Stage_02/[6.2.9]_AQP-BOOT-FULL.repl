@@ -1115,6 +1115,300 @@
 (rollback-tx)
 (env-sigs [])
 
+;;|| NEXT >
+;;||
+;;|| ================================================================================
+(begin-tx "TX-BOOT-S2MOVE - the Stage Two emission moves the RIGHT money to the RIGHT places")
+(print "")
+(print "=== TX-BOOT-S2MOVE — AA_OuroMinterStageTwo balance deltas ======================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+;;ADDED 2026-09-23, and it should have existed from the start.
+;;
+;;<<TX-BOOT-S2GAS>> above proves the emission RUNS and FITS. It asserts two gas bounds and
+;;NOTHING ELSE -- not the six shares, not one destination balance, not the coil conversion, not
+;;the returned list. A regression that moved the right TOTAL to the WRONG PLACE passes it
+;;silently, and so does one that skips a destination while some other leg absorbs the remainder.
+;;"It fits in a block" is not "it works".
+;;
+;;So this block reads all seven observables BEFORE the call and again AFTER, inside one
+;;transaction (`let*` binds in order, so the call sequences the two reads), and pins every leg to
+;;the share the function itself returned. Rolled back, like its sibling, so the boot state the
+;;later fixtures depend on is untouched.
+;;
+;;THE SEVEN DESTINATIONS, and the reader that sees each one:
+;;  1 treasury OURO      DPTF::UR_AccountSupply                  <- C_BulkTransfer
+;;  2 custodians vault   AQP-FVT::UR_FVT-RG|AvailableRewards     <- CC_Inject  (OURO)
+;;  3 shareholders       AQP-FVT::UR_FVT-RG|AvailableRewards     <- CC_Inject  (OURO)
+;;  4 LP farm            AQP-FVT::UR_FVT-RG|AvailableRewards     <- CC_Inject  (OURO)
+;;  5 Auryndex           ATS::UR_SingleRewardTokenRUR ... 1      <- ATS|C_Fuel
+;;  6 subsidiary         AQP-FVT::UR_FVT-RG|AvailableRewards     <- CC_Inject  (AURYN)
+;;  7 dispenser          DPTF::UR_AccountSupply, BOTH tokens     <- must end where it started
+;;RUR index 1 is not a guess: ATSU::C_Fuel calls (ATS::XE_UpdateRUR ats reward-token 1 true amount).
+;;
+;;Destination 7 is the one that catches a SKIPPED leg. Every other assertion is a credit, and a
+;;credit that never happened is invisible unless you also ask where the money stayed.
+;;
+;;WHY THE FVT LANES ARE READ AS (available + zombie) AND NOT available ALONE. Written after the
+;;first version of this block asserted `available` and watched all four lanes report a delta of
+;;ZERO while the dispenser emptied correctly. That is not a leak and not a skipped leg -- it is
+;;RPS::XI_DistributeInjectAmount's documented ESCROW branch:
+;;
+;;    ;; ESCROW -- no stakers (divisor 0): park `amount` in limbo, available-rewards untouched.
+;;    (WU_RpsGlobal|ZombieRewards fvt-id reward-dptf-id (+ zombie amount))
+;;
+;;When a vault has no ELIGIBLE stakers at inject time the share is escrowed, held in custody, and
+;;released to the next flush that has a denominator. In this fixture all four vaults are in that
+;;state, so `available` is exactly the wrong counter and `available + zombie` is the invariant that
+;;holds in BOTH branches. Asserting the sum is also the stronger test: it pins the escrow
+;;behaviour, so a regression that dropped the escrow instead of parking it would now fail here.
+;;
+;;AND THE AURYNDEX TAKES TWO DEPOSITS, not one. Leg 6 FUELS it with the 20% autostake share and leg
+;;7a COILS the 20% subsidiary share through it -- both are OURO entering the same pool, so RUR 1
+;;grows by the SUM. The first version of this block expected the fuel alone and read exactly double.
+(env-sigs
+    [   { "key": "PK_AOZ", "caps": [] }
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "PK_DSP", "caps": [] }
+    ])
+(let*
+    (
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        ;;
+        (ouro:string        (ref-DALOS::UR_OuroborosID))
+        (auryn:string       (ref-DALOS::UR_AurynID))
+        (auryndex:string    (at 0 (ref-DPTF::UR_RewardBearingToken auryn)))
+        (treasury:string    (ref-DALOS::GOV|DHV1|SC_NAME))
+        (dispenser:string   DSP.DSP1|SC_NAME)
+        ;;
+        (f-cust:string      (ref-U|DALOS::UDC_Makeid "CustodiansVault"))
+        (f-shar:string      (ref-U|DALOS::UDC_Makeid "CompanySharesTreasury"))
+        (f-farm:string      (ref-U|DALOS::UDC_Makeid "OuroLpFarm"))
+        (f-subs:string      (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
+        ;;BEFORE
+        (b-supply:decimal   (ref-DPTF::UR_Supply ouro))
+        (b-treasury:decimal (ref-DPTF::UR_AccountSupply ouro treasury))
+        (b-disp-o:decimal   (ref-DPTF::UR_AccountSupply ouro dispenser))
+        (b-disp-a:decimal   (ref-DPTF::UR_AccountSupply auryn dispenser))
+        (b-cust:decimal     (+ (ref-FVT::UR_FVT-RG|AvailableRewards f-cust ouro)
+                                   (ref-FVT::UR_FVT-RG|ZombieRewards f-cust ouro)))
+        (b-shar:decimal     (+ (ref-FVT::UR_FVT-RG|AvailableRewards f-shar ouro)
+                                   (ref-FVT::UR_FVT-RG|ZombieRewards f-shar ouro)))
+        (b-farm:decimal     (+ (ref-FVT::UR_FVT-RG|AvailableRewards f-farm ouro)
+                                   (ref-FVT::UR_FVT-RG|ZombieRewards f-farm ouro)))
+        (b-subs:decimal     (+ (ref-FVT::UR_FVT-RG|AvailableRewards f-subs auryn)
+                                   (ref-FVT::UR_FVT-RG|ZombieRewards f-subs auryn)))
+        (b-adex:decimal     (ref-ATS::UR_SingleRewardTokenRUR auryndex ouro 1))
+        ;;THE CALL
+        (r:[decimal]        (DSP.AA_OuroMinterStageTwo [f-cust f-shar f-farm f-subs]))
+        ;;what the function SAYS it did
+        (daily:decimal      (at 0 r))
+        (s-cust:decimal     (at 1 r))
+        (s-treas:decimal    (at 2 r))
+        (s-shar:decimal     (at 3 r))
+        (s-farm:decimal     (at 4 r))
+        (s-auto:decimal     (at 5 r))
+        (s-subs:decimal     (at 6 r))
+        ;;AFTER
+        (a-supply:decimal   (ref-DPTF::UR_Supply ouro))
+        (a-treasury:decimal (ref-DPTF::UR_AccountSupply ouro treasury))
+        (a-disp-o:decimal   (ref-DPTF::UR_AccountSupply ouro dispenser))
+        (a-disp-a:decimal   (ref-DPTF::UR_AccountSupply auryn dispenser))
+        (a-cust:decimal     (+ (ref-FVT::UR_FVT-RG|AvailableRewards f-cust ouro)
+                                   (ref-FVT::UR_FVT-RG|ZombieRewards f-cust ouro)))
+        (a-shar:decimal     (+ (ref-FVT::UR_FVT-RG|AvailableRewards f-shar ouro)
+                                   (ref-FVT::UR_FVT-RG|ZombieRewards f-shar ouro)))
+        (a-farm:decimal     (+ (ref-FVT::UR_FVT-RG|AvailableRewards f-farm ouro)
+                                   (ref-FVT::UR_FVT-RG|ZombieRewards f-farm ouro)))
+        (a-subs:decimal     (+ (ref-FVT::UR_FVT-RG|AvailableRewards f-subs auryn)
+                                   (ref-FVT::UR_FVT-RG|ZombieRewards f-subs auryn)))
+        (a-adex:decimal     (ref-ATS::UR_SingleRewardTokenRUR auryndex ouro 1))
+        ;;the split, recomputed INDEPENDENTLY from the daily the function reported, so the
+        ;;share assertions below are checked against the rule rather than against themselves
+        (op:integer         (ref-DPTF::UR_Decimals ouro))
+        (split:[decimal]    (ref-U|DALOS::UC_StageTwoEmissionSplit daily op))
+    )
+    (print (format "   daily={} | cust={} treas={} shar={} farm={} auto={} subs-auryn={}"
+        [daily s-cust s-treas s-shar s-farm s-auto s-subs]))
+    (map print
+        [
+        ;;--- the arithmetic, against the RULE and not against itself
+        (expect "<<TX-BOOT-S2MOVE>> the six shares sum to the daily emission -- nothing minted-but-unassigned"
+            daily (fold (+) 0.0 split))
+        (expect "<<TX-BOOT-S2MOVE>> the reported shares ARE the canonical split, in destination order"
+            [(at 0 split) (at 1 split) (at 2 split) (at 3 split) (at 4 split)]
+            [s-cust s-treas s-shar s-farm s-auto])
+        (expect "<<TX-BOOT-S2MOVE>> the mint increased OURO total supply by exactly the daily"
+            daily (- a-supply b-supply))
+        ;;--- the six destinations
+        (expect "<<TX-BOOT-S2MOVE>> [1] the Demiourgos treasury received its 10% in OURO"
+            s-treas (- a-treasury b-treasury))
+        (expect "<<TX-BOOT-S2MOVE>> [2] the Custodians vault credited the whole share (available + escrowed)"
+            s-cust (- a-cust b-cust))
+        (expect "<<TX-BOOT-S2MOVE>> [3] the shareholders treasury credited the whole share (available + escrowed)"
+            s-shar (- a-shar b-shar))
+        (expect "<<TX-BOOT-S2MOVE>> [4] the OURO LP farm credited the whole share (available + escrowed)"
+            s-farm (- a-farm b-farm))
+        (expect "<<TX-BOOT-S2MOVE>> [5] the Auryndex RUR grew by the fuel AND the coil (both are OURO in)"
+            (+ s-auto (at 5 split)) (- a-adex b-adex))
+        (expect "<<TX-BOOT-S2MOVE>> [6] the Subsidiary treasury credited the whole share (available + escrowed)"
+            s-subs (- a-subs b-subs))
+        ;;--- and the one that catches a leg that never ran
+        (expect "<<TX-BOOT-S2MOVE>> [7] the dispenser kept NO OURO -- every leg spent what it was given"
+            b-disp-o a-disp-o)
+        (expect "<<TX-BOOT-S2MOVE>> [7] the dispenser kept NO AURYN -- the coil was fully injected"
+            b-disp-a a-disp-a)
+        ;;--- and the subsidiary really is a CONVERSION, not a pass-through of the OURO share
+        (expect "<<TX-BOOT-S2MOVE>> the subsidiary leg is AURYN, not the raw OURO 20% share"
+            false (= s-subs s-auto))
+        ]
+    )
+    ""
+)
+(rollback-tx)
+(env-sigs [])
+
+;;|| NEXT >
+;;||
+;;|| ================================================================================
+(begin-tx "TX-BOOT-S2PARA - the PARALLEL emission lands exactly where the one-shot lands")
+(print "")
+(print "=== TX-BOOT-S2PARA — flat leg + four injects == AA_OuroMinterStageTwo ==========")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+;;ADDED 2026-09-23 with the parallel emission itself.
+;;
+;;THE CLAIM THIS PINS: A_OuroMinterStageTwo_Flat followed by four
+;;AA_OuroMinterStageTwo_InjectLeg calls produces the SAME outcome as the one-shot
+;;AA_OuroMinterStageTwo. Not a similar outcome -- the same seven destination deltas, asserted
+;;against the same canonical split, in a fixture starting from the same state as its sibling
+;;<<TX-BOOT-S2MOVE>> (both roll back, so both see identical chain state and compute an identical
+;;`daily`).
+;;
+;;A fallback nobody has compared against the thing it replaces is not a fallback, it is a second
+;;implementation of the same rules -- and two implementations of a split that must sum to exactly
+;;the minted amount is precisely the shape that drifts. This block is what stops that.
+;;
+;;IT ALSO PINS THE RECOVERY PATH. URC_StageTwoResidual derives the four inject amounts from the
+;;dispenser's BALANCES rather than from the flat leg's return value, for the day the transaction
+;;lands and the response is lost. If its arithmetic (40/20/40 of the OURO residual + the whole
+;;AURYN balance) ever stopped agreeing with what the flat leg actually left behind, the operator
+;;would inject the wrong amounts with no way to notice. Asserted here against the return value.
+(env-sigs
+    [   { "key": "PK_AOZ", "caps": [] }
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "PK_DSP", "caps": [] }
+    ])
+(let*
+    (
+        (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+        (ref-DALOS:module{OuronetDalosV2} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+        (ref-ATS:module{AutostakeV3} ATS)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        ;;
+        (ouro:string        (ref-DALOS::UR_OuroborosID))
+        (auryn:string       (ref-DALOS::UR_AurynID))
+        (auryndex:string    (at 0 (ref-DPTF::UR_RewardBearingToken auryn)))
+        (treasury:string    (ref-DALOS::GOV|DHV1|SC_NAME))
+        (dispenser:string   DSP.DSP1|SC_NAME)
+        ;;
+        (f-cust:string      (ref-U|DALOS::UDC_Makeid "CustodiansVault"))
+        (f-shar:string      (ref-U|DALOS::UDC_Makeid "CompanySharesTreasury"))
+        (f-farm:string      (ref-U|DALOS::UDC_Makeid "OuroLpFarm"))
+        (f-subs:string      (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
+        ;;BEFORE
+        (b-supply:decimal   (ref-DPTF::UR_Supply ouro))
+        (b-treasury:decimal (ref-DPTF::UR_AccountSupply ouro treasury))
+        (b-disp-o:decimal   (ref-DPTF::UR_AccountSupply ouro dispenser))
+        (b-disp-a:decimal   (ref-DPTF::UR_AccountSupply auryn dispenser))
+        (b-cust:decimal     (+ (ref-FVT::UR_FVT-RG|AvailableRewards f-cust ouro)
+                               (ref-FVT::UR_FVT-RG|ZombieRewards f-cust ouro)))
+        (b-shar:decimal     (+ (ref-FVT::UR_FVT-RG|AvailableRewards f-shar ouro)
+                               (ref-FVT::UR_FVT-RG|ZombieRewards f-shar ouro)))
+        (b-farm:decimal     (+ (ref-FVT::UR_FVT-RG|AvailableRewards f-farm ouro)
+                               (ref-FVT::UR_FVT-RG|ZombieRewards f-farm ouro)))
+        (b-subs:decimal     (+ (ref-FVT::UR_FVT-RG|AvailableRewards f-subs auryn)
+                               (ref-FVT::UR_FVT-RG|ZombieRewards f-subs auryn)))
+        (b-adex:decimal     (ref-ATS::UR_SingleRewardTokenRUR auryndex ouro 1))
+        ;;PHASE 1 -- the flat leg, no vault ids
+        (flat:[decimal]     (DSP.A_OuroMinterStageTwo_Flat))
+        (daily:decimal      (at 0 flat))
+        (q-cust:decimal     (at 1 flat))
+        (q-shar:decimal     (at 2 flat))
+        (q-farm:decimal     (at 3 flat))
+        (q-subs:decimal     (at 4 flat))
+        ;;what the dispenser is holding between the phases -- the carried state
+        (m-disp-o:decimal   (ref-DPTF::UR_AccountSupply ouro dispenser))
+        (m-disp-a:decimal   (ref-DPTF::UR_AccountSupply auryn dispenser))
+        (recovered:[decimal] (DSP.URC_StageTwoResidual))
+        ;;PHASE 2 -- four injects, fed their amounts, order-independent
+        (i1:string          (DSP.AA_OuroMinterStageTwo_InjectLeg f-cust ouro q-cust))
+        (i2:string          (DSP.AA_OuroMinterStageTwo_InjectLeg f-shar ouro q-shar))
+        (i3:string          (DSP.AA_OuroMinterStageTwo_InjectLeg f-farm ouro q-farm))
+        (i4:string          (DSP.AA_OuroMinterStageTwo_InjectLeg f-subs auryn q-subs))
+        ;;AFTER
+        (a-supply:decimal   (ref-DPTF::UR_Supply ouro))
+        (a-treasury:decimal (ref-DPTF::UR_AccountSupply ouro treasury))
+        (a-disp-o:decimal   (ref-DPTF::UR_AccountSupply ouro dispenser))
+        (a-disp-a:decimal   (ref-DPTF::UR_AccountSupply auryn dispenser))
+        (a-cust:decimal     (+ (ref-FVT::UR_FVT-RG|AvailableRewards f-cust ouro)
+                               (ref-FVT::UR_FVT-RG|ZombieRewards f-cust ouro)))
+        (a-shar:decimal     (+ (ref-FVT::UR_FVT-RG|AvailableRewards f-shar ouro)
+                               (ref-FVT::UR_FVT-RG|ZombieRewards f-shar ouro)))
+        (a-farm:decimal     (+ (ref-FVT::UR_FVT-RG|AvailableRewards f-farm ouro)
+                               (ref-FVT::UR_FVT-RG|ZombieRewards f-farm ouro)))
+        (a-subs:decimal     (+ (ref-FVT::UR_FVT-RG|AvailableRewards f-subs auryn)
+                               (ref-FVT::UR_FVT-RG|ZombieRewards f-subs auryn)))
+        (a-adex:decimal     (ref-ATS::UR_SingleRewardTokenRUR auryndex ouro 1))
+        ;;the canonical split, recomputed from the daily the flat leg reported
+        (op:integer         (ref-DPTF::UR_Decimals ouro))
+        (split:[decimal]    (ref-U|DALOS::UC_StageTwoEmissionSplit daily op))
+    )
+    (print (format "   flat => daily={} cust={} shar={} farm={} subs-auryn={}"
+        [daily q-cust q-shar q-farm q-subs]))
+    (map print
+        [
+        ;;--- phase 1 left exactly what phase 2 needs, and nothing else
+        (expect "<<TX-BOOT-S2PARA>> the flat leg's three OURO amounts ARE the canonical shares"
+            [(at 0 split) (at 2 split) (at 3 split)] [q-cust q-shar q-farm])
+        (expect "<<TX-BOOT-S2PARA>> after the flat leg the dispenser holds exactly the 3 OURO shares"
+            (+ (+ q-cust q-shar) q-farm) (- m-disp-o b-disp-o))
+        (expect "<<TX-BOOT-S2PARA>> ...and exactly the coiled AURYN, nothing more"
+            q-subs (- m-disp-a b-disp-a))
+        ;;--- the recovery path agrees with the return value it stands in for
+        (expect "<<TX-BOOT-S2PARA>> URC_StageTwoResidual recovers the SAME four amounts from balances"
+            [q-cust q-shar q-farm q-subs] recovered)
+        ;;--- and the whole run lands where the one-shot lands
+        (expect "<<TX-BOOT-S2PARA>> the mint increased OURO total supply by exactly the daily"
+            daily (- a-supply b-supply))
+        (expect "<<TX-BOOT-S2PARA>> [1] treasury, same as the one-shot"
+            (at 1 split) (- a-treasury b-treasury))
+        (expect "<<TX-BOOT-S2PARA>> [2] Custodians vault, same as the one-shot"
+            (at 0 split) (- a-cust b-cust))
+        (expect "<<TX-BOOT-S2PARA>> [3] shareholders treasury, same as the one-shot"
+            (at 2 split) (- a-shar b-shar))
+        (expect "<<TX-BOOT-S2PARA>> [4] OURO LP farm, same as the one-shot"
+            (at 3 split) (- a-farm b-farm))
+        (expect "<<TX-BOOT-S2PARA>> [5] Auryndex RUR took the fuel AND the coil, same as the one-shot"
+            (+ (at 4 split) (at 5 split)) (- a-adex b-adex))
+        (expect "<<TX-BOOT-S2PARA>> [6] Subsidiary treasury got the coiled AURYN, same as the one-shot"
+            q-subs (- a-subs b-subs))
+        (expect "<<TX-BOOT-S2PARA>> [7] the dispenser is empty of OURO when the run completes"
+            b-disp-o a-disp-o)
+        (expect "<<TX-BOOT-S2PARA>> [7] the dispenser is empty of AURYN when the run completes"
+            b-disp-a a-disp-a)
+        ]
+    )
+    ""
+)
+(rollback-tx)
+(env-sigs [])
+
 (begin-tx "TX-BOOT-13-SPLIT - dual reward-split ECONOMIC flip on OuroLpFarm (task #89 / D1-G2)")
 (print "")
 (print "=== TX-BOOT-13-SPLIT — the SAME member's W_i flips STAKED<->TVL on the real LP farm ==")

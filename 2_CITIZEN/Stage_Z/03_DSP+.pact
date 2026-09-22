@@ -45,6 +45,8 @@
     ;;  [URC]
     ;;
     (defun URC_DailyOURO ())
+    (defun URHC_StageTwoPlan:object (fvt-ids:[string]))
+    (defun URC_StageTwoResidual:[decimal] ())
     (defun URC_DailyKOSON (iz-game-live:bool))
     ;;{5.4}  Validate [UEV/CAP]
     ;;{5.5}  Write [W]
@@ -55,6 +57,11 @@
     ;;
     (defun A_OuroMinterStageOne:[decimal] ())
     (defun AA_OuroMinterStageTwo:[decimal] (fvt-ids:[string]))
+    (defun A_OuroMinterStageTwo_Flat:[decimal] ())
+    (defun AA_OuroMinterStageTwo_InjectLeg:string
+        (fvt-id:string reward-dptf-id:string amount:decimal))
+    (defun AA_OuroMinterStageTwo_InjectLegFinalize:string
+        (fvt-id:string reward-dptf-id:string amount:decimal))
     (defun A_KosonMinterStageOne ())
     (defun A_KosonMinterStageOne_1of3 ())
     (defun A_KosonMinterStageOne_2of3 ())
@@ -278,6 +285,27 @@
     (defconst CST2|SC_NAME                              (GOV|CST2|SC_NAME))
     (defconst CST|PBL                                   (GOV|CST|PBL))
     (defconst GASLESS-PATRON                            (URC_Gassless))
+    ;;
+    ;; --- Stage Two emission sizing (URHC_StageTwoPlan's SEED, not the optimizer) ---
+    ;; MEASURED, not chosen. REPL/Stage_02/[6.2.9] <<TX-BOOT-S2GAS>> puts the whole one-shot at
+    ;; 911,546 - 966,256 gas on a fixture with a handful of stakers, and REPL/Kursan/AQP-scale-inject
+    ;; puts ONE enforced-fresh inject leg at gas(n) = 199,096 + 5,189*n over its stale set. Four
+    ;; inject legs plus mint/bulk-transfer/fuel/coil reconcile to the observed floor.
+    (defconst S2-FIXED:integer 950000
+        "The flat part of the emission: 4 x ~199k inject fixed cost + ~150k for mint, bulk \
+       \ transfer, Auryndex fuel and the subsidiary coil. Taken at the TOP of the measured \
+       \ band, because a preflight that UNDER-estimates sends the operator into a \
+       \ transaction that aborts.")
+    (defconst S2-GAS-PER-STALE:integer 6500
+        "Per deb-stale staker, summed ACROSS ALL FOUR VAULTS -- they share one block. The \
+       \ measured slope is 5,189; this carries the same ~25% margin AQP-FVT's \
+       \ INJECT-FIX-GAS-PER-USER does, and is deliberately the SAME number, so the two \
+       \ cannot quietly disagree about the cost of the same fix.")
+    (defconst S2-ONE-TX-CEILING:integer 1600000
+        "Recommend the one-shot below this, the parallel form above it. NOT 2,000,000: the \
+       \ node gas meter is the real ceiling, chain state moved the measured figure by 6% \
+       \ between two runs minutes apart, and a 20% reserve is what keeps a recommendation \
+       \ from being a coin flip.")
     ;;{3.2}  schemas
     ;;{3.3}  tables
 
@@ -362,6 +390,125 @@
                 (speed:decimal 10000.0)
             )
             (floor (/ (- maximum-theorethical-supply current-ouro-supply) speed) op)
+        )
+    )
+    ;;
+    (defun URHC_StageTwoPlan:object (fvt-ids:[string])
+        @doc "PREFLIGHT for the Stage Two daily emission — read-only, call it via /local before \
+            \ spending anything. Answers the only question that matters on the day: does today's \
+            \ emission still fit in ONE transaction, or must it be run as the flat leg plus four \
+            \ parallel injects. \
+            \ \
+            \ HEAVY (URH): it runs <URH_FvtStalePresentUsers> once per vault, which is the same \
+            \ scan <CC_Inject> runs, so the count it returns is the exact set each inject would \
+            \ have to fix. Four heavy scans is why this is a preflight and not something to call \
+            \ inside a write path. \
+            \ \
+            \ RETURNS an object: \
+            \   daily             the emission <A_OuroMinterStageTwo_Flat> would mint \
+            \   split             the six shares, DESTINATION order, as UC_StageTwoEmissionSplit \
+            \   subsidiary-auryn  the coil conversion at the CURRENT rate — INDICATIVE only, see below \
+            \   stale             stale present users per vault, in the order fvt-ids was given \
+            \   stale-total       their sum, which is what actually consumes the block \
+            \   est-gas           S2-FIXED + S2-GAS-PER-STALE x stale-total \
+            \   one-tx            est-gas < S2-ONE-TX-CEILING — a SEED for the UI, not a promise \
+            \ \
+            \ WHY subsidiary-auryn IS INDICATIVE: the one-shot reads <URC_RBT> AFTER fuelling the \
+            \ Auryndex, and that fuel moves the pool's rate. Reading it here, before the fuel, \
+            \ gives a near value and not the value. The number to inject is the one \
+            \ <A_OuroMinterStageTwo_Flat> RETURNS, or <URC_StageTwoResidual> afterwards — never this one. \
+            \ \
+            \ AND `one-tx` IS A SEED. The node gas meter is the real ceiling and the UI must \
+            \ simulate; an oversized transaction aborts atomically. See STAGE-TWO-EMISSION.md."
+        (let
+            (
+                (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                ;;
+                (ouro:string (ref-DALOS::UR_OuroborosID))
+                (auryn:string (ref-DALOS::UR_AurynID))
+                (op:integer (ref-DPTF::UR_Decimals ouro))
+                (daily:decimal (URC_DailyOURO))
+                (split:[decimal] (ref-U|DALOS::UC_StageTwoEmissionSplit daily op))
+                (auryndex:string (at 0 (ref-DPTF::UR_RewardBearingToken auryn)))
+            )
+            (enforce (= (length fvt-ids) 4)
+                "Stage Two expects fvt-ids x4: [custodians shareholders farm subsidiary]")
+            (let
+                (
+                    (stale:[integer]
+                        (map (lambda (f:string) (length (ref-FVT::URH_FvtStalePresentUsers f)))
+                            fvt-ids))
+                )
+                (let
+                    (
+                        (stale-total:integer (fold (+) 0 stale))
+                    )
+                    {"daily"            : daily
+                    ,"split"            : split
+                    ,"subsidiary-auryn" : (ref-ATS::URC_RBT auryndex ouro (at 5 split))
+                    ,"stale"            : stale
+                    ,"stale-total"      : stale-total
+                    ,"est-gas"          : (+ S2-FIXED (* S2-GAS-PER-STALE stale-total))
+                    ,"one-tx"           : (< (+ S2-FIXED (* S2-GAS-PER-STALE stale-total))
+                                             S2-ONE-TX-CEILING)}
+                )
+            )
+        )
+    )
+    ;;
+    (defun URC_StageTwoResidual:[decimal] ()
+        @doc "RECOVERY reader for the parallel emission: the four inject amounts, derived from \
+            \ what the dispenser is actually HOLDING. \
+            \ \
+            \ Use it when the UI has lost <A_OuroMinterStageTwo_Flat>'s return value — the \
+            \ transaction landed but the response did not — or to verify before injecting. It is \
+            \ the same idiom <A_KosonMinterStageOne_2of3> already uses: the dispenser balance IS \
+            \ the carried state, so nothing has to be stored between transactions. \
+            \ \
+            \ After the flat leg the dispenser holds exactly 50% of the daily emission in OURO \
+            \ (custodians 20 + shareholders 10 + farm 20) and the coiled AURYN. So the three OURO \
+            \ shares are 40/20/40 OF THE RESIDUAL, exactly, and the subsidiary share is the whole \
+            \ AURYN balance. \
+            \ \
+            \ RETURNS [custodians shareholders farm subsidiary-auryn] — the first three in OURO, \
+            \ the fourth in AURYN. \
+            \ \
+            \ THE ONE RULE THIS DEPENDS ON: complete a run before starting the next. The ratios \
+            \ are self-correcting across a RETRY of the same run — 40/20/40 of double is still \
+            \ right — but running the flat leg for day two before day one's injects have landed \
+            \ puts two emissions in one residual and the split would mis-allocate between them. \
+            \ A dispenser that is not empty after a completed run is the alarm."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ouro:string (ref-DALOS::UR_OuroborosID))
+                (auryn:string (ref-DALOS::UR_AurynID))
+                (dispenser:string DSP1|SC_NAME)
+            )
+            (let
+                (
+                    (op:integer (ref-DPTF::UR_Decimals ouro))
+                    (residual:decimal (ref-DPTF::UR_AccountSupply ouro dispenser))
+                    (auryn-held:decimal (ref-DPTF::UR_AccountSupply auryn dispenser))
+                )
+                (let
+                    (
+                        (unit:decimal (floor (/ residual 5.0) op))
+                    )
+                    ;;40/20/40 of the residual, with the LAST OURO share absorbing the rounding
+                    ;;remainder -- the same discipline UC_StageTwoEmissionSplit applies to the
+                    ;;emission itself, so nothing is left stranded on the dispenser.
+                    [(* 2.0 unit)
+                     unit
+                     (- residual (* 3.0 unit))
+                     auryn-held]
+                )
+            )
         )
     )
     ;;
@@ -604,6 +751,138 @@
                     (ref-TS02-C3::AQP-FVT|CC_Inject GASLESS-PATRON dispenser (at 3 fvt-ids) auryn subsidiary-auryn)
                     [daily s2-custodians s2-treasury s2-shareholders s2-farm s2-autostake subsidiary-auryn]
                 )
+            )
+        )
+    )
+    ;;
+    (defun A_OuroMinterStageTwo_Flat:[decimal] ()
+        @doc "PHASE 1 of the PARALLEL Stage Two emission: every leg that does NOT scale. Mint the \
+            \ whole daily emission onto the dispenser, pay the Demiourgos treasury, fuel the \
+            \ Auryndex, and coil the subsidiary share OURO->AURYN. \
+            \ \
+            \ TAKES NO ARGUMENTS, deliberately: not one of these four legs touches an FVT, so the \
+            \ vault ids are not needed until the inject legs. Feeding ids to a function that \
+            \ cannot use them invites the day somebody feeds the WRONG ones and nothing complains. \
+            \ \
+            \ FLAT `A_`, not `AA_`: no heavy read is reachable from here. That is the entire point \
+            \ of the split -- A_OuroMinterStageOne has exactly this leg set and costs ~135k. \
+            \ \
+            \ AFTER IT, THE DISPENSER HOLDS exactly 50% of the daily emission in OURO (custodians \
+            \ 20 + shareholders 10 + farm 20) and the coiled AURYN, and nothing else is owed. Run \
+            \ the four inject legs next, IN ANY ORDER -- they are fed their amounts rather than \
+            \ chaining off each other, so they are order-independent and may be submitted in \
+            \ parallel. If this return value is lost, <URC_StageTwoResidual> recovers the four \
+            \ amounts from the dispenser's balances. \
+            \ \
+            \ WHY THE SPLIT CANNOT RECOMPUTE ITSELF LATER: URC_DailyOURO reads the OURO SUPPLY, \
+            \ and leg 1 mints into that supply. A second transaction that recomputes the daily \
+            \ gets a smaller number and its shares no longer sum to what was minted. So the \
+            \ emission is computed ONCE, here, and the dispenser's balance carries it -- the same \
+            \ idiom A_KosonMinterStageOne_2of3 uses, for the same reason. \
+            \ \
+            \ ORDER IS LOAD-BEARING inside this function: URC_RBT is read AFTER the Auryndex fuel \
+            \ and BEFORE the coil, exactly as the one-shot does, because the fuel moves the rate \
+            \ the conversion is quoted at. \
+            \ \
+            \ RETURNS [daily custodians shareholders farm subsidiary-auryn] -- the daily for the \
+            \ record, then the FOUR amounts the inject legs take, in vault order."
+        (with-capability (DSP|STAGE-ONE-MINTER)
+            (let
+                (
+                    (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (ref-ATS:module{AutostakeV3} ATS)
+                    (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+                    (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
+                    (ouro:string (ref-DALOS::UR_OuroborosID))
+                    (op:integer (ref-DPTF::UR_Decimals ouro))
+                    (daily:decimal (URC_DailyOURO))
+                    ;;
+                    (split:[decimal] (ref-U|DALOS::UC_StageTwoEmissionSplit daily op))
+                    (s2-custodians:decimal (at 0 split))
+                    (s2-treasury:decimal (at 1 split))
+                    (s2-shareholders:decimal (at 2 split))
+                    (s2-farm:decimal (at 3 split))
+                    (s2-autostake:decimal (at 4 split))
+                    (s2-subsidiary:decimal (at 5 split))
+                    ;;
+                    (treasury:string (ref-DALOS::GOV|DHV1|SC_NAME))
+                    (dispenser:string DSP1|SC_NAME)
+                    ;;
+                    (auryn:string (ref-DALOS::UR_AurynID))
+                    (auryndex:string (at 0 (ref-DPTF::UR_RewardBearingToken auryn)))
+                )
+                ;;1. Mint the whole daily emission on the Dispenser
+                (ref-TS01-C1::DPTF|C_Mint GASLESS-PATRON dispenser ouro daily false)
+                ;;2. 10% to the Demiourgos Treasury, as pure OURO
+                (ref-TS01-C1::DPTF|C_BulkTransfer GASLESS-PATRON dispenser [treasury] ouro [s2-treasury])
+                ;;3. 20% fuels the Auryndex directly
+                (ref-TS01-C2::ATS|C_Fuel GASLESS-PATRON dispenser auryndex ouro s2-autostake)
+                ;;4. 20% coiled OURO->Auryn. The rate is read AFTER the fuel, as in the one-shot.
+                (let
+                    (
+                        (subsidiary-auryn:decimal (ref-ATS::URC_RBT auryndex ouro s2-subsidiary))
+                    )
+                    (ref-TS01-C2::ATS|C_Coil GASLESS-PATRON dispenser auryndex ouro s2-subsidiary)
+                    [daily s2-custodians s2-shareholders s2-farm subsidiary-auryn]
+                )
+            )
+        )
+    )
+    ;;
+    (defun AA_OuroMinterStageTwo_InjectLeg:string
+        (fvt-id:string reward-dptf-id:string amount:decimal)
+        @doc "PHASE 2 of the PARALLEL Stage Two emission: ONE inject leg, run four times. \
+            \ \
+            \ Call it once per vault with the amount <A_OuroMinterStageTwo_Flat> returned (or \
+            \ <URC_StageTwoResidual> recovered): custodians/shareholders/farm in OURO, subsidiary \
+            \ in AURYN. The four calls are ORDER-INDEPENDENT and may be submitted in parallel -- \
+            \ each is fed its amount rather than deriving it from what the previous leg left. \
+            \ \
+            \ The safety here is intrinsic rather than asserted: the dispenser cannot spend what \
+            \ it does not hold, so an over-stated amount ABORTS instead of mis-paying. \
+            \ \
+            \ HEAVY (AA_): AQP-FVT|CC_Inject is the enforced-fresh variant. It scans the FVT's \
+            \ present users and fixes every deb-stale one so the divisor is live before the money \
+            \ moves, which is exactly the work that scales and exactly why this leg was split out. \
+            \ When ONE vault's stale set alone will not fit a transaction, page \
+            \ AQP-FVT|CCp_InjectFixChunk until nothing is stale and finish with \
+            \ <AA_OuroMinterStageTwo_InjectLegFinalize>. \
+            \ \
+            \ GASLESS-PATRON pays, the dispenser acts."
+        (with-capability (DSP|STAGE-ONE-MINTER)
+            (let
+                (
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                )
+                (ref-TS02-C3::AQP-FVT|CC_Inject
+                    GASLESS-PATRON DSP1|SC_NAME fvt-id reward-dptf-id amount)
+            )
+        )
+    )
+    ;;
+    (defun AA_OuroMinterStageTwo_InjectLegFinalize:string
+        (fvt-id:string reward-dptf-id:string amount:decimal)
+        @doc "PHASE 3 tail: the same leg as <AA_OuroMinterStageTwo_InjectLeg>, for a vault whose \
+            \ stale set did not fit one transaction. \
+            \ \
+            \ Run AQP-FVT|CCp_InjectFixChunk with a simulated chunk until the report says zero \
+            \ remain, THEN call this. AQP-FVT|CC_InjectFinalize enforces zero-stale at inject, so \
+            \ the outcome is identical to the single-transaction inject -- it is the same money \
+            \ into the same lane on the same fresh divisor, and if a page was missed it refuses \
+            \ rather than injecting on a stale one. \
+            \ \
+            \ The other two routes for the same situation are AQP-FVT|CCp_UnstaleAll (mass-unstale \
+            \ without injecting, then a now-light inject) and MTX-AQP|2|CC_Inject (the 2-step \
+            \ defpact). See STAGE-TWO-EMISSION.md for which to reach for."
+        (with-capability (DSP|STAGE-ONE-MINTER)
+            (let
+                (
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                )
+                (ref-TS02-C3::AQP-FVT|CC_InjectFinalize
+                    GASLESS-PATRON DSP1|SC_NAME fvt-id reward-dptf-id amount)
             )
         )
     )

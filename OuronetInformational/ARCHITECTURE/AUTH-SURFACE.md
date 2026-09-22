@@ -1,14 +1,13 @@
-# Authorisation surface — every sovereign client entrypoint
-
-> **GENERATED** by `REPL/tools/_authsurface.py`. Do not edit.
+wrote OuronetInformational/ARCHITECTURE/AUTH-SURFACE.md  (1196 entrypoints, 863 enforcing ownership)
+rface.py`. Do not edit.
 > For each `C_`/`A_`, the accounts whose ownership is enforced ANYWHERE in its call tree.
 > The gate requires this set to only ever GROW: an entrypoint that stops enforcing something it used to enforce is an authorisation regression, and nothing else here would catch it.
 
 | metric | value |
 |---|---|
-| entrypoints scanned | 1193 |
-| reaching at least one ownership enforce | 856 |
-| reaching NONE | 337 |
+| entrypoints scanned | 1196 |
+| reaching at least one ownership enforce | 863 |
+| reaching NONE | 333 |
 
 ## Per entrypoint
 
@@ -793,8 +792,8 @@
 | `07_MTX-AQP` | `P|A_Define` | — |
 | `07_MTX-AQP` | `P|A_RemoveIMP` | — |
 | `07_MTX-AQP` | `P|A_SetIMP` | — |
-| `08_DSA` | `A_SetOracleValidity` | — |
-| `08_DSA` | `A_ToggleExternalOracle` | — |
+| `08_DSA` | `A_SetOracleValidity` | `account:string`, `executor` |
+| `08_DSA` | `A_ToggleExternalOracle` | `account:string`, `executor` |
 | `08_DSA` | `C_AdmitAgency` | `account:string`, `operator`, `owner-konto` |
 | `08_DSA` | `C_BurnRoyalty` | `UR_Konto`, `account`, `account:string`, `client`, `fvt-owner`, `id`, `id:string`, `receiver`, `sender` |
 | `08_DSA` | `C_DefineDelegationVault` | `account:string`, `fvt-owner` |
@@ -949,8 +948,8 @@
 | `04_TS02-C3` | `AQP-ANK|C_IssueTrueFungibleAnchor` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `at`, `client`, `dptf-id`, `dptf-id:string`, `id`, `id:string`, `owner`, `patron`, `receiver`, `sender` |
 | `04_TS02-C3` | `AQP-ANK|C_RevokeAnchor` | `DALOS|SC_NAME`, `UR_CreatorKonto`, `UR_OwnerKonto`, `account:string`, `anchor-id`, `anchor-id:string`, `ank-asset`, `dptf-id:string`, `id`, `id:string`, `owner`, `patron` |
 | `04_TS02-C3` | `AQP-ANK|C_RevokeBoostClass` | `DALOS|SC_NAME`, `account:string`, `co`, `patron` |
-| `04_TS02-C3` | `AQP-DSA|A_SetOracleValidity` | — |
-| `04_TS02-C3` | `AQP-DSA|A_ToggleExternalOracle` | — |
+| `04_TS02-C3` | `AQP-DSA|A_SetOracleValidity` | `account:string`, `executor` |
+| `04_TS02-C3` | `AQP-DSA|A_ToggleExternalOracle` | `account:string`, `executor` |
 | `04_TS02-C3` | `AQP-DSA|CC_OpenAgency` | `DALOS|SC_NAME`, `UR_OwnerKonto`, `account`, `account:string`, `id`, `id:string`, `operator`, `owner-id`, `owner-id:string`, `owner-konto`, `patron`, `receiver`, `sender` |
 | `04_TS02-C3` | `AQP-DSA|C_BurnRoyalty` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `client`, `fvt-owner`, `id`, `id:string`, `patron`, `receiver`, `sender` |
 | `04_TS02-C3` | `AQP-DSA|C_DefineDelegationVault` | `DALOS|SC_NAME`, `account:string`, `fvt-owner`, `patron` |
@@ -1196,11 +1195,14 @@
 | `99_TS02-CPAD` | `SPARK|C_RedemFewSparks` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `patron`, `receiver`, `sender`, `spark-id` |
 | `99_TS02-CPAD` | `STOAICO|C_Collect` | — |
 | `03_DSP+` | `AA_OuroMinterStageTwo` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `patron`, `receiver`, `sender` |
+| `03_DSP+` | `AA_OuroMinterStageTwo_InjectLeg` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `patron`, `receiver`, `sender` |
+| `03_DSP+` | `AA_OuroMinterStageTwo_InjectLegFinalize` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `patron`, `receiver`, `sender` |
 | `03_DSP+` | `A_KosonMinterStageOne` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `patron`, `receiver`, `sender` |
 | `03_DSP+` | `A_KosonMinterStageOne_1of3` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `patron`, `receiver`, `sender` |
 | `03_DSP+` | `A_KosonMinterStageOne_2of3` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `id`, `id:string`, `patron`, `receiver`, `sender` |
 | `03_DSP+` | `A_KosonMinterStageOne_3of3` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `id`, `id:string`, `patron`, `receiver`, `sender` |
 | `03_DSP+` | `A_OuroMinterStageOne` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `patron`, `receiver`, `sender` |
+| `03_DSP+` | `A_OuroMinterStageTwo_Flat` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `patron`, `receiver`, `sender` |
 | `03_DSP+` | `A_StoicismMinter` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `patron` |
 | `03_DSP+` | `P|A_Add` | — |
 | `03_DSP+` | `P|A_AddIMP` | — |

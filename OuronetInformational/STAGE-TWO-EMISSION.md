@@ -210,27 +210,76 @@ cannot spend what it does not hold: a wrong amount aborts rather than mis-pays.
 `/local` simulation** — the node gas meter is the real ceiling. An oversized chunk aborts
 atomically: submitter's gas, offset unchanged, retry smaller.
 
-### What must be built in DSP
+### What was built in DSP
 
-Specification, to be implemented:
+**BUILT 2026-09-23.** Five additions, all in `2_CITIZEN/Stage_Z/03_DSP+.pact`:
 
 ```pact
-(defun URC_StageTwoPlan:object (fvt-ids:[string]))
-    ;; PREFLIGHT, read-only. Returns the daily, the six shares, the four inject amounts,
-    ;; the resolved coil->Auryn amount, and per-vault stale counts + a gas estimate,
-    ;; so the UI can decide single-tx vs parallel BEFORE spending anything.
+(defun URHC_StageTwoPlan:object (fvt-ids:[string]))
+    ;; PREFLIGHT, read-only, call via /local. Returns daily, split, subsidiary-auryn
+    ;; (indicative), per-vault stale counts, stale-total, est-gas and a one-tx
+    ;; recommendation. URHC_ because it runs the same heavy scan CC_Inject runs, once
+    ;; per vault -- so the count it reports is the exact set each inject would fix.
 
-(defun AA_OuroMinterStageTwo_Flat:[decimal] ())
-    ;; Phase 1. Mint + treasury + Auryndex fuel + subsidiary coil. No fvt-ids needed:
-    ;; not one of these legs touches a vault. Flat gas.
+(defun A_OuroMinterStageTwo_Flat:[decimal] ())
+    ;; Phase 1. Mint + treasury + Auryndex fuel + subsidiary coil. NO ARGUMENTS: not one
+    ;; of these legs touches a vault. A_ and not AA_ -- no heavy read is reachable, which
+    ;; is the whole point of the split.
+    ;; RETURNS [daily custodians shareholders farm subsidiary-auryn].
 
-(defun AA_OuroMinterStageTwo_InjectLeg:string (fvt-id:string reward-dptf-id:string amount:decimal))
-    ;; Phase 2, called four times, parallel-safe. Thin admin-gated wrapper over
-    ;; AQP-FVT|CC_Inject with the dispenser as executor and GASLESS-PATRON as patron.
+(defun URC_StageTwoResidual:[decimal] ())
+    ;; RECOVERY. The four inject amounts derived from what the dispenser is HOLDING --
+    ;; 40/20/40 of the OURO residual plus the whole AURYN balance -- for when the flat
+    ;; leg's return value was lost, or to verify before injecting.
 
-(defun AA_OuroMinterStageTwo_InjectLegFinalize:string (fvt-id:string reward-dptf-id:string amount:decimal))
-    ;; Phase 3 tail, after the UI has paged CCp_InjectFixChunk to zero stale.
+(defun AA_OuroMinterStageTwo_InjectLeg:string (fvt-id reward-dptf-id amount))
+    ;; Phase 2, called four times, ORDER-INDEPENDENT and parallel-submittable.
+
+(defun AA_OuroMinterStageTwo_InjectLegFinalize:string (fvt-id reward-dptf-id amount))
+    ;; Phase 3 tail, after CCp_InjectFixChunk has been paged to zero stale.
 ```
+
+Sizing constants live in DSP beside them, and every one is measured rather than chosen:
+`S2-FIXED = 950,000` (top of the observed band, because a preflight that under-estimates sends the
+operator into a transaction that aborts), `S2-GAS-PER-STALE = 6,500` (deliberately the same number
+as AQP-FVT's `INJECT-FIX-GAS-PER-USER`, so the two cannot quietly disagree about the cost of the
+same fix), `S2-ONE-TX-CEILING = 1,600,000` (not 2M — chain state moved the measurement 6% between
+two runs minutes apart).
+
+---
+
+## 5b. The behaviour that will surprise you first: ESCROW
+
+Found by the correctness test the moment it was written, and it is **designed behaviour, not a
+defect** — but nobody would guess it from the minter's own source.
+
+When an inject reaches a vault with **no eligible stakers**, the share is **not** credited to that
+lane's available rewards. `RPS::XI_DistributeInjectAmount` parks it:
+
+```pact
+;; ESCROW -- no stakers (divisor 0): park `amount` in limbo, available-rewards untouched.
+(WU_RpsGlobal|ZombieRewards fvt-id reward-dptf-id (+ zombie amount))
+```
+
+The money leaves the dispenser, enters AQP custody, and waits. The **next** inject into that lane
+that *does* have a denominator flushes `amount + zombie` together. Nothing is lost and nothing is
+double-paid.
+
+**Two consequences for whoever runs the emission:**
+
+1. **A vault with no stakers still costs you the full leg** — the tokens move, the transaction
+   runs, and the accounting lands in escrow. It is not a no-op you can skip.
+2. **`UR_FVT-RG|AvailableRewards` alone is the wrong thing to watch.** On an empty vault it reads
+   zero after a perfectly successful inject. The quantity that is conserved across both branches is
+   **`AvailableRewards + ZombieRewards`**, and that is what `<<TX-BOOT-S2MOVE>>` asserts.
+
+> The first version of that test asserted `AvailableRewards` and watched all four vaults report a
+> delta of zero while the dispenser emptied correctly. That looked exactly like four lost injects.
+> It was four escrows.
+
+**And the Auryndex takes two deposits, not one.** Leg 6 fuels it with the 20% autostake share and
+leg 7a coils the 20% subsidiary share *through* it — both are OURO entering the same pool, so its
+RUR grows by the **sum**. The same first draft expected the fuel alone and read exactly double.
 
 The existing one-shot `AA_OuroMinterStageTwo` **stays exactly as it is** — it is the fast path and
 it will be the right call on most days. The parallel form is the fallback, and the point of
