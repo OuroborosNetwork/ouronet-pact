@@ -126,6 +126,21 @@ EXECUTORLESS = {
     # parameter nobody checks, which the canon rates WORSE than having none: the emitted message
     # would name whoever the caller typed. The @docs now say this outright.
     "DALOS|C_UpdateEliteAccount", "DALOS|C_UpdateEliteAccountSquared",
+    # 03_AQP's two ANCHOR-SYNC repairs, added 2026-09-22 at that module's turn. The SAME shape as
+    # the elite pair above, arrived at independently and then recognised: AQP|C>SYNC-TF-ANCHORS
+    # and C>SYNC-COLLECTABLE-ANCHORS validate only that the beneficiary EXISTS and is a standard
+    # account (UEV_StakeBeneficiaryAccount) -- no ownership check anywhere on the path. The op
+    # recomputes anchor promile from the beneficiary's ACTUAL balances, so every outcome is the
+    # truth; it is idempotent; and it is deliberately permissionless, because the party who
+    # NOTICES the staleness is typically whoever issued the new anchors, not the beneficiary.
+    #
+    # The beneficiary is therefore an EXECUTEE and has been renamed to one. Requiring its
+    # signature would remove the third-party repair path and protect nothing: the only thing a
+    # caller can do here is make someone else's data correct AT THEIR OWN EXPENSE, since the
+    # patron pays. Manufacturing an `executor` out of a parameter nobody checks is what 4f rates
+    # worse than having none.
+    "C_SyncTrueFungibleAnchors", "C_SyncCollectableAnchors",
+    "AQP-POOL|C_SyncTrueFungibleAnchors", "AQP-POOL|C_SyncCollectableAnchors",
     # Left non-empty-looking on purpose. The same stale-name failure hit the PRICE SHEET, whose
     # shape-B detector went on grepping for `C_Collect*` for a day after the rename and silently
     # stopped resolving three entrypoints. A rename pass has to carry the TOOLS that name the

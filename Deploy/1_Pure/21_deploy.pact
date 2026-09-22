@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 21 of 24
 ;; This is STEP 21 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-20 must have run first, including the init steps between deploys.
-;; 2 source file(s), 221,896 gas measured in the REPL gas model, 156,576 bytes
+;; 2 source file(s), 221,896 gas measured in the REPL gas model, 156,486 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact
@@ -229,13 +229,13 @@
         )
     )
     (defun AQP-POOL|C_SyncTrueFungibleAnchors:string
-        (patron:string beneficiary-id:string dptf-id:string)
+        (patron:string executee:string dptf-id:string)
     )
     (defun AQP-POOL|C_SyncSemiFungibleAnchors:string
-        (patron:string beneficiary-id:string dpsf-id:string)
+        (patron:string executee:string dpsf-id:string)
     )
     (defun AQP-POOL|C_SyncNonFungibleAnchors:string
-        (patron:string beneficiary-id:string dpnf-id:string)
+        (patron:string executee:string dpnf-id:string)
     )
     (defun AQP-POOL|C_AbortVacate:string
         (patron:string pool-id:string)
@@ -2008,55 +2008,55 @@
         )
     )
     (defun AQP-POOL|C_SyncTrueFungibleAnchors:string
-        (patron:string beneficiary-id:string dptf-id:string)
+        (patron:string executee:string dptf-id:string)
         @doc "Pool-agnostic TF anchor repair for beneficiary × dptf-id. Talos shell → AQP-POOL::C_SyncTrueFungibleAnchors."
-        (with-capability (AQP|C>SYNC-TF-ANCHORS patron beneficiary-id dptf-id)
+        (with-capability (AQP|C>SYNC-TF-ANCHORS patron executee dptf-id)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-AQP::C_SyncTrueFungibleAnchors patron beneficiary-id dptf-id)
+                    (ref-AQP::C_SyncTrueFungibleAnchors patron executee dptf-id)
                 )
                 (format "Successfully synced TrueFungible anchors for beneficiary {} on {}."
-                    [(UC_ShortAccount beneficiary-id) dptf-id]
+                    [(UC_ShortAccount executee) dptf-id]
                 )
             )
         )
     )
     (defun AQP-POOL|C_SyncSemiFungibleAnchors:string
-        (patron:string beneficiary-id:string dpsf-id:string)
+        (patron:string executee:string dpsf-id:string)
         @doc "Pool-agnostic DPSF anchor repair. Talos shell → AQP-POOL::C_SyncCollectableAnchors son=true."
-        (with-capability (AQP|C>SYNC-SEMI-FUNGIBLE-ANCHORS patron beneficiary-id dpsf-id)
+        (with-capability (AQP|C>SYNC-SEMI-FUNGIBLE-ANCHORS patron executee dpsf-id)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-AQP::C_SyncCollectableAnchors patron beneficiary-id dpsf-id true)
+                    (ref-AQP::C_SyncCollectableAnchors patron executee dpsf-id true)
                 )
                 (format "Successfully synced SemiFungible anchors for beneficiary {} on {}."
-                    [(UC_ShortAccount beneficiary-id) dpsf-id]
+                    [(UC_ShortAccount executee) dpsf-id]
                 )
             )
         )
     )
     (defun AQP-POOL|C_SyncNonFungibleAnchors:string
-        (patron:string beneficiary-id:string dpnf-id:string)
+        (patron:string executee:string dpnf-id:string)
         @doc "Pool-agnostic DPNF anchor repair. Talos shell → AQP-POOL::C_SyncCollectableAnchors son=false."
-        (with-capability (AQP|C>SYNC-NON-FUNGIBLE-ANCHORS patron beneficiary-id dpnf-id)
+        (with-capability (AQP|C>SYNC-NON-FUNGIBLE-ANCHORS patron executee dpnf-id)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-AQP::C_SyncCollectableAnchors patron beneficiary-id dpnf-id false)
+                    (ref-AQP::C_SyncCollectableAnchors patron executee dpnf-id false)
                 )
                 (format "Successfully synced NonFungible anchors for beneficiary {} on {}."
-                    [(UC_ShortAccount beneficiary-id) dpnf-id]
+                    [(UC_ShortAccount executee) dpnf-id]
                 )
             )
         )

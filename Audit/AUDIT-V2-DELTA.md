@@ -1919,3 +1919,43 @@ And a Talos `@doc` `format` still referenced `new-owner-konto` after the paramet
 `executee` — the same *"a signature change must reach every place the name is written"* class,
 caught the same way, by the module failing to load rather than by any static check.
 
+
+---
+
+### 03_AQP.pact — COMPLETE (2 of 2 entrypoints, 2026-09-22)
+
+Two anchor-sync repairs, and the right answer was to add **no executor at all**.
+
+`AQP|C>SYNC-TF-ANCHORS` and `C>SYNC-COLLECTABLE-ANCHORS` validate that the beneficiary **exists**
+and is a **standard account** — `UEV_StakeBeneficiaryAccount` — and nothing else. There is no
+ownership check anywhere on either path.
+
+| | |
+|---|---|
+| what it does | recomputes anchor promile from the beneficiary's **actual** balances |
+| who pays | the **patron** |
+| who benefits | the beneficiary, whose stale boost is corrected |
+| who notices the staleness | usually whoever **issued the new anchors** — not the beneficiary |
+
+So the beneficiary is an **executee**: acted upon, needing no signature, only type-validated — the
+executee test verbatim, and the same disposition `DPDC-I` reached for `creator-account` under audit
+#53L. And there is **no executor to name**. Requiring the beneficiary's signature would delete the
+third-party repair path and protect nothing: the only thing a caller can do here is make someone
+else's data correct *at their own expense*.
+
+> Registered EXECUTORLESS beside `DALOS|C_UpdateEliteAccount` — the same shape, reached
+> independently and then recognised. That registry entry already said it: *"the op recomputes
+> DERIVED elite data from state already on chain, is idempotent, and is deliberately permissionless
+> so anyone can repair a stale row… renaming a subject to `executor` would have manufactured
+> attribution out of a parameter nobody checks."*
+
+#### A blanket rename in the wrong file, caught by reading the diff
+
+The first pass renamed `beneficiary-id` → `executee` across **all of `04_TS02-C3.pact`** — 80
+occurrences, most of them in **stake** wrappers that have nothing to do with this module and whose
+roles belong to module 45's turn. Reverted by writing back the committed blob and redone scoped to
+the three sync shells: **15 edits, not 80.**
+
+> A rename is only safe inside the extent you have actually reasoned about. `beneficiary-id` means
+> one thing in a repair and another in a stake, and a file-wide `re.sub` cannot tell them apart.
+

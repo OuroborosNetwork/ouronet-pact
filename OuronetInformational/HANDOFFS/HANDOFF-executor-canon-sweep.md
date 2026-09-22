@@ -289,7 +289,7 @@ same tools with those three properties.
 | [x] 35 | `00_Demipad.pact` | 2 | 2 | 6 | **10** | `DemiourgosLaunchpadV2` — done; 4 admin ops gained an enforced executor. See §4n |
 | [x] 36 | `01_ANK.pact` | 0 | 0 | 2 | **2** | `AcquisitionAnchorsV1` — done; **found an unowned revoke**, and the binder had to go BELOW the liveness gate |
 | [x] 37 | `02_SCORE.pact` | 6 | 0 | 8 | **14** | `AcquisitionScoresV1` — done; **eight dead bindings of the same 4g expression**. See §4p |
-| [ ] 38 | `03_AQP.pact` | 2 | 0 | 0 | **2** | `AcquisitionPoolsV1` |
+| [x] 38 | `03_AQP.pact` | 2 | 0 | 0 | **2** | `AcquisitionPoolsV1` — done; two EXECUTORLESS repairs, executee renamed. §4q |
 | [ ] 39 | `05_FVT.pact` | 4 | 2 | 3 | **9** | `AcquisitionFarmsVaultsTreasuriesV1` |
 | [ ] 40 | `06_VCT.pact` | 0 | 0 | 3 | **3** | `AcquisitionVacateV1` |
 | [ ] 41 | `07_MTX-AQP.pact` | 1 | 0 | 0 | **1** | `AqpMtxV1` |
@@ -470,6 +470,30 @@ changing. Their delegation is arity-preserving, so `_callarity` (including the s
 built one module earlier) could not object. Grepping for the OLD parameter shape
 `(patron:string id:string account:string` found them in one line. *A signature change must reach
 every place the name is written, and "the names I listed" is narrower than that.*
+
+---
+
+### 4q. LESSON FROM MODULE 38 — SOMETIMES THE ANSWER IS NO EXECUTOR
+
+`03_AQP`'s two anchor-sync repairs got **no executor**, and that is the finding rather than a gap.
+The test that settles it, in order:
+
+1. **Is any account on the path ownership-checked?** If not, ask why before adding one.
+2. **Is the op idempotent truth-restoration?** These recompute promile from actual balances — every
+   outcome is the correct one.
+3. **Who pays?** The patron. A caller can only make someone else's data correct at their own cost.
+4. **Would a signature requirement remove a legitimate path?** Yes: the party who NOTICES stale
+   anchors is usually whoever issued them, not the beneficiary.
+
+All four → **EXECUTORLESS, and the account in the signature is an EXECUTEE.** Registered beside
+`DALOS|C_UpdateEliteAccount`, which reached the same conclusion first.
+
+**And a warning about the rename itself.** The first pass renamed `beneficiary-id` → `executee`
+across the WHOLE of `04_TS02-C3.pact` — 80 occurrences, most in **stake** wrappers belonging to
+module 45's turn. `beneficiary-id` means one thing in a repair and another in a stake; a file-wide
+`re.sub` cannot tell them apart. Reverted (`git show HEAD:<path> > <path>`, never `checkout`) and
+redone scoped: **15 edits, not 80.** A rename is only safe inside the extent you have actually
+reasoned about.
 
 ---
 

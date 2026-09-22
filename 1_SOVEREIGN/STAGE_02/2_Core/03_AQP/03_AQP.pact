@@ -252,10 +252,10 @@
     )
     ;;
     (defun C_SyncTrueFungibleAnchors:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string beneficiary-id:string dptf-id:string)
+        (patron:string executee:string dptf-id:string)
     )
     (defun C_SyncCollectableAnchors:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string beneficiary-id:string collectable-id:string son:bool)
+        (patron:string executee:string collectable-id:string son:bool)
     )
 
 )
@@ -3351,26 +3351,43 @@
         )
     )
     (defun C_SyncTrueFungibleAnchors:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string beneficiary-id:string dptf-id:string)
+        (patron:string executee:string dptf-id:string)
         @doc "Pool-agnostic ANK repair when new TF anchors issued after stake. Reads BenDptfTotal, \
-            \ refreshes promile, stamps last-ank-sync-count. SCORE boosted unchanged (lazy on next stake)."
+            \ refreshes promile, stamps last-ank-sync-count. SCORE boosted unchanged (lazy on next stake). \
+            \ \
+            \ EXECUTORLESS BY DESIGN, and <executee> is exactly that (canon 2.2, 2026-09-22). \
+            \ The capability validates that the beneficiary EXISTS and is a standard account \
+            \ (UEV_StakeBeneficiaryAccount) and nothing else; it is never ownership-checked. \
+            \ Acted upon, needing no signature, only type-validated: the executee test \
+            \ verbatim, and the same disposition DPDC-I reached for <creator-account> under \
+            \ audit #53L. \
+            \ \
+            \ There is NO executor to name, and inventing one would be worse than none (4f). \
+            \ This is permissionless maintenance: it recomputes anchor values from the \
+            \ beneficiary's ACTUAL balances, so every outcome is the truth, and the PATRON pays \
+            \ for it. A third party -- typically whoever issued the new anchors that made the \
+            \ values stale -- can and should be able to trigger the repair. Requiring the \
+            \ beneficiary's signature would remove that path and protect nothing: the only \
+            \ thing a caller can do here is make someone else's data correct at their own \
+            \ expense. \
+            \ (patron/executor canon 2.2, EXECUTORLESS + executee, 2026-09-22.)"
         (P|UEV_IMC)
-        (with-capability (AQP|C>SYNC-TF-ANCHORS patron beneficiary-id dptf-id)
+        (with-capability (AQP|C>SYNC-TF-ANCHORS patron executee dptf-id)
             (let
                 (
                     (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     ;;
-                    (total:decimal (UR_AQP|BenDptfTotalBalance beneficiary-id dptf-id))
+                    (total:decimal (UR_AQP|BenDptfTotalBalance executee dptf-id))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                     (ico-ank:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-ANK::XE_UpdateTrueFungibleUserAnchorValues beneficiary-id dptf-id total)
+                        (ref-ANK::XE_UpdateTrueFungibleUserAnchorValues executee dptf-id total)
                     )
                     (ico-meta:object{IgnisCollectorV3.OutputCumulator}
-                        (XB_SetBenDptfAnkSyncCount beneficiary-id dptf-id)
+                        (XB_SetBenDptfAnkSyncCount executee dptf-id)
                     )
                     (ico-gas:object{IgnisCollectorV3.OutputCumulator}
-                        (URCi_SyncTrueFungibleAnchors [beneficiary-id dptf-id])
+                        (URCi_SyncTrueFungibleAnchors [executee dptf-id])
                     )
                 )
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico-ank ico-meta ico-gas] [])
@@ -3378,21 +3395,38 @@
         )
     )
     (defun C_SyncCollectableAnchors:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string beneficiary-id:string collectable-id:string son:bool)
+        (patron:string executee:string collectable-id:string son:bool)
         @doc "Pool-agnostic ANK repair for DPSF (son=true) or DPNF (son=false). Reads Ben* nonce rollup, \
             \ absolute resync via AQP-ANK::XE_Resync*, stamps Ben*AnkMeta. Talos splits SF/NF shells. \
-            \ URD inventory is read before with-capability (select illegal in defcap)."
+            \ URD inventory is read before with-capability (select illegal in defcap). \
+            \ \
+            \ EXECUTORLESS BY DESIGN, and <executee> is the EXECUTEE (patron/executor \
+            \ canon 2.2, 2026-09-22). The capability validates that the beneficiary EXISTS and \
+            \ is a standard account (UEV_StakeBeneficiaryAccount) and nothing else -- it is \
+            \ never ownership-checked. Acted upon, needing no signature, only type-validated: \
+            \ the executee test verbatim, and the same disposition DPDC-I reached for \
+            \ <creator-account> under audit #53L. \
+            \ \
+            \ There is NO executor to name, and inventing one would be worse than none (4f). \
+            \ This is permissionless maintenance: it recomputes anchor values from the \
+            \ beneficiary's ACTUAL balances, so every outcome is the truth, and the PATRON pays \
+            \ for it. A third party -- typically whoever issued the new anchors that made the \
+            \ values stale -- can and should be able to trigger the repair. Requiring the \
+            \ beneficiary's signature would remove that path and protect nothing: the only \
+            \ thing a caller can do here is make someone else's data correct at their own \
+            \ expense. \
+            \ (patron/executor canon 2.2, EXECUTORLESS + executee, 2026-09-22.)"
         (P|UEV_IMC)
         (let
             (
                 (supplies:[object]
                     (if son
-                        (URH_AQP|BenDpsfActiveNonceSupplies beneficiary-id collectable-id)
-                        (URH_AQP|BenDpnfActiveNonceSupplies beneficiary-id collectable-id)
+                        (URH_AQP|BenDpsfActiveNonceSupplies executee collectable-id)
+                        (URH_AQP|BenDpnfActiveNonceSupplies executee collectable-id)
                     )
                 )
             )
-            (with-capability (AQP|C>SYNC-COLLECTABLE-ANCHORS patron beneficiary-id collectable-id son)
+            (with-capability (AQP|C>SYNC-COLLECTABLE-ANCHORS patron executee collectable-id son)
                 (let
                     (
                         (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
@@ -3404,18 +3438,18 @@
                         (ico-ank:object{IgnisCollectorV3.OutputCumulator}
                             (if son
                                 (ref-ANK::XE_ResyncSemiFungibleUserAnchorValues
-                                    beneficiary-id collectable-id nonces nonce-amounts
+                                    executee collectable-id nonces nonce-amounts
                                 )
                                 (ref-ANK::XE_ResyncNonFungibleUserAnchorValues
-                                    beneficiary-id collectable-id nonces
+                                    executee collectable-id nonces
                                 )
                             )
                         )
                         (ico-meta:object{IgnisCollectorV3.OutputCumulator}
-                            (XB_SetBenCollectableAnkSyncCount beneficiary-id collectable-id son)
+                            (XB_SetBenCollectableAnkSyncCount executee collectable-id son)
                         )
                         (ico-gas:object{IgnisCollectorV3.OutputCumulator}
-                            (URCi_SyncCollectableAnchors [beneficiary-id collectable-id])
+                            (URCi_SyncCollectableAnchors [executee collectable-id])
                         )
                     )
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico-ank ico-meta ico-gas] [])
