@@ -285,7 +285,7 @@ same tools with those three properties.
 | [x] 31 | `08_DPDC-S.pact` | 0 | 0 | 10 | **10** | `DpdcSetsV2` — done; two authorities in one module, see §4j |
 | [x] 32 | `09_DPDC-F.pact` | 0 | 0 | 4 | **4** | `DpdcFragmentsV2` — done; the third repurpose of the sweep, same shape |
 | [x] 33 | `10_DPDC-N.pact` | 0 | 0 | 8 | **8** | `DpdcNonceV2` — done; the DPDC family's only ROLE-gated module |
-| [ ] 34 | `11_EQUITY+.pact` | 1 | 0 | 1 | **2** | `EquityV2` |
+| [x] 34 | `11_EQUITY+.pact` | 1 | 0 | 1 | **2** | `EquityV2` — done; **found a module with NO ownership check at all**, see §4m |
 | [ ] 35 | `00_Demipad.pact` | 2 | 2 | 6 | **10** | `DemiourgosLaunchpadV2` |
 | [ ] 36 | `01_ANK.pact` | 0 | 0 | 2 | **2** | `AcquisitionAnchorsV1` |
 | [ ] 37 | `02_SCORE.pact` | 6 | 0 | 8 | **14** | `AcquisitionScoresV1` |
@@ -470,6 +470,31 @@ changing. Their delegation is arity-preserving, so `_callarity` (including the s
 built one module earlier) could not object. Grepping for the OLD parameter shape
 `(patron:string id:string account:string` found them in one line. *A signature change must reach
 every place the name is written, and "the names I listed" is narrower than that.*
+
+---
+
+### 4m. LESSON FROM MODULE 34 — RUN THE GUARD TEST WITHOUT THE GUARD
+
+`11_EQUITY+` has **no ownership check of its own** — zero `CAP_EnforceAccountOwnership`, zero
+`CAP_Owner` — so the turn added one and wrote a test for it. Both the `@doc` and the test comment
+said the guard closed a hole.
+
+**It does not, and only running the test with the guard disabled showed that.** The named creator
+was already reached, three modules away and two writes later, by
+`DPDC-C::C_CreateNewNonces`'s enforce on the derived `(UR_Verum5 id son)` — which on a freshly
+issued collection *is* the creator. Of the two new assertions, one passed unchanged without the
+guard and one failed; only the second discriminates.
+
+Two rules, both already in this file, and this is what they look like when they bite:
+
+* **"Where a guard is added, add a test that fails without it."** Not "a test that passes with it".
+  The difference is one experiment and it is the whole point.
+* **Install the fixture's funding signatures before measuring.** The first run without the guard
+  died on `Managed capability not installed: (coin.TRANSFER …)` — a FUNDING signal that looked
+  like the guard working. Only with the coin caps installed could the real answer surface.
+
+Keep the non-discriminating assertion; relabel it. It pins a property worth pinning, and saying
+which assertion depends on the guard is what stops the next reader assuming both do.
 
 ---
 

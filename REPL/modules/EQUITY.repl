@@ -192,6 +192,86 @@
 (commit-tx)
 
 ;;|| NEXT >
+;;|| EQ-G2 — the executor guard added at 11_EQUITY+'s patron/executor turn.
+;;
+(begin-tx "EQ-G2 - C_IssueShareholderCollection refuses an executor the caller cannot sign for")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [EQ-G2 · 01 · founding a company in someone else's name] ---")
+;;ADDED 2026-09-22 with the guard it protects, and REWRITTEN the same day when the measurement
+;;contradicted the first version of this comment. That first version said the guard closed a hole.
+;;It does not. Recording what was actually observed, because a test comment that overstates its
+;;own subject is the failure mode this suite exists to catch.
+;;
+;;WHAT THE GUARD IS. `11_EQUITY+.pact` contains no account-ownership check of any kind, and the
+;;only one DPDC-I runs is on the collection OWNER -- which for an equity collection is <dpdc>, the
+;;DPDC smart account, because the collection is automanaged. So that check proves a MODULE. The
+;;patron/executor turn added (CAP_EnforceAccountOwnership executor), first, ahead of the
+;;ipfs-links shape check.
+;;
+;;WHAT WAS MEASURED, by disabling that enforce and re-running this file with the funding
+;;signatures below installed so nothing else could refuse:
+;;  * the FIRST assertion STILL PASSED, with the same "Keyset failure (keys-all): [PK_Emma..."
+;;    message. EMMA's consent was already required -- three modules away and two writes later.
+;;    The ico3 leg calls DPDC-C::C_CreateNewNonces, whose authority is
+;;    CAP_EnforceAccountOwnership on the DERIVED (UR_Verum5 id son), the create-role account,
+;;    and on a freshly issued collection that IS the creator. So assertion 1 is a PROPERTY test:
+;;    it pins that a company cannot be founded in someone else's name. It holds with the guard
+;;    and without it, and it is worth keeping for exactly that reason.
+;;  * the SECOND assertion FAILED, reporting "24 IPFS links must be provided" instead of the
+;;    keyset failure. That one discriminates: it is what proves the new enforce runs FIRST.
+;;
+;;So the guard changes WHEN and WITH WHAT MESSAGE, not WHETHER. It is still worth having: the old
+;;proof was incidental (it holds only while the create-role account IS the named creator, an
+;;invariant of issuance rather than of this function) and late (after the collection is issued and
+;;its branding written). The canon asks that the account a function NAMES be the account it
+;;PROVES, and now it is.
+;;
+;;the STOA leg splits four ways (Holdings / Maintenance / Ouroboros / Gas Station), so the payer's
+;;coin account must sign all four TRANSFER legs -- installed here so that, without the guard,
+;;nothing else could have refused. That is what made the measurement above meaningful.
+;;==== EQ-G2 - C_IssueShareholderCollection refuses an executor the caller cannot sign for · 01 · env-sigs (caps) ==== 
+(print "--- [EQ-G2 - C_IssueShareholderCollection refuses an executor the caller cannot sign for · 01 · env-sigs (caps)] ---")
+(env-sigs
+  [ { "key": "PK_AncientHodler", "caps": [] }
+    { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+    , "caps":
+      [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+;;==== EQ-G2 - C_IssueShareholderCollection refuses an executor the caller cannot sign for · 02 · let / invocation ==== 
+(print "--- [EQ-G2 - C_IssueShareholderCollection refuses an executor the caller cannot sign for · 02 · let / invocation] ---")
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (anhd:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (links:[string] (make-list 24 "ipfs://EquityTestLink"))
+    )
+    (map print
+        [
+            ;;PROPERTY. ANHD pays and signs; EMMA is named as the company's creator and signs
+            ;;nothing. Refused -- and refused with and WITHOUT the new guard, see the note above.
+            ;;This pins the property itself: a company cannot be founded in someone else's name.
+            (expect-failure "<<EQ-G2>> ANHD cannot found a company in EMMA's name"
+                "Keyset failure (keys-all): [PK_Emma"
+                (ref-TS02-C1::DPSF|C_IssueCompany anhd emma "EqExecProbeA" "EQXA" 5.0 100.0 links))
+            ;;DISCRIMINATOR. A call that is wrong in BOTH ways reports the authorisation
+            ;;failure, not the shape one -- because the new enforce runs first. Without the guard
+            ;;this assertion reports "24 IPFS links must be provided" and fails. It is the one
+            ;;assertion here that the guard is necessary for, which is why both are kept.
+            (expect-failure "<<EQ-G2>> ...and the ownership refusal precedes the link-count one"
+                "Keyset failure"
+                (ref-TS02-C1::DPSF|C_IssueCompany anhd emma "EqExecProbeB" "EQXB" 5.0 100.0 []))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+(commit-tx)
+
+;;|| NEXT >
 ;;|| EQ-D1 — the URCi_IssueShareholderCollection cost-preview doc, claim by claim.
 ;;
 (begin-tx "EQ-D1 - URCi_IssueShareholderCollection: the documented three-leg decomposition")

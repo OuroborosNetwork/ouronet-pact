@@ -125,6 +125,13 @@ INDIRECT = {
     # and take the first, which is why those are 4g and these are not.
     "06_DPDC-MNG.pact::C_BurnSFT": "wipe-mode FALSE",
     "06_DPDC-MNG.pact::C_BurnNFT": "wipe-mode FALSE",
+    # 11_EQUITY+ (2026-09-22). The same INTERNAL-HOP shape as 19_SWPU's swaps: the executor is
+    # handed to a SAME-MODULE XI_ helper (XI_Make/Break/ConvertPackageShares), and only that
+    # helper calls out to DPDC-T::C_Transfer, whose capability opens on
+    # (CAP_EnforceAccountOwnership sender). FORWARDED matches cross-module `ref-X::` by design --
+    # a foreign module is what does the proving -- so one hop through a local helper has to be
+    # traced by a human and written down, which is what INDIRECT is for.
+    "11_EQUITY+.pact::C_MorphPackageShares": "DPDC-T::C_Transfer",
 }
 
 # SELF-PROVING AT CREATION -- the base case of the attribution rule, resolved by the owner on

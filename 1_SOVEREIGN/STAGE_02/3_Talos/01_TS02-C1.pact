@@ -183,11 +183,11 @@
     ;;
     (defun DPSF|C_IssueCompany:string
         (
-            patron:string creator-account:string collection-name:string collection-ticker:string
+            patron:string executor:string collection-name:string collection-ticker:string
             royalty:decimal ignis-royalty:decimal ipfs-links:[string]
         )
     )
-    (defun DPSF|C_MorphEquity (patron:string account:string id:string input-nonce:integer input-amount:integer output-nonce:integer))
+    (defun DPSF|C_MorphEquity (patron:string executor:string id:string input-nonce:integer input-amount:integer output-nonce:integer))
     (defun DPDC|C_BulkTransfer
         (patron:string executor:string executee-lst:[string] id:string son:bool nonces-array:[[integer]] amounts-array:[[integer]] method:bool)
     )
@@ -1600,7 +1600,7 @@
     ;;
     (defun DPSF|C_IssueCompany:string
         (
-            patron:string creator-account:string collection-name:string collection-ticker:string
+            patron:string executor:string collection-name:string collection-ticker:string
             royalty:decimal ignis-royalty:decimal ipfs-links:[string]
         )
         @doc "Issues an SFT Equity Collection to tokenize Company Shares on Ouronet. \
@@ -1625,7 +1625,7 @@
                     ;;
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-EQUITY::C_IssueShareholderCollection 
-                            patron creator-account collection-name collection-ticker
+                            patron executor collection-name collection-ticker
                             royalty ignis-royalty ipfs-links
                         )
                     )
@@ -1641,7 +1641,7 @@
         )
     )
     (defun DPSF|C_MorphEquity
-        (patron:string account:string id:string input-nonce:integer input-amount:integer output-nonce:integer)
+        (patron:string executor:string id:string input-nonce:integer input-amount:integer output-nonce:integer)
         @doc "Converts any Nonce to [1 2 3 4 5 6 7 8] to any Nonce [1 2 3 4 5 6 7 8] \
             \ Input-Nonce must be different from Output-Nonce"
         (with-capability (P|TS)
@@ -1654,16 +1654,16 @@
                     ;;
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-EQUITY::C_MorphPackageShares
-                            account id input-nonce input-amount output-nonce
+                            patron executor id input-nonce input-amount output-nonce
                         )
                     )
                     (output:list (at "output" ico))
                     (ir-nonces:[integer] (at 0 output))
                     (ir-amounts:[integer] (at 1 output))
-                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                     ;;
                     (irs:object{DpdcTransferV2.AggregatedRoyalties}
-                        (ref-DPDC-T::C_IgnisRoyaltyCollector patron account [id] [true] [ir-nonces] [ir-amounts])
+                        (ref-DPDC-T::C_IgnisRoyaltyCollector patron executor [id] [true] [ir-nonces] [ir-amounts])
                     )
                     (c:[string] (at "creators" irs))
                     (r:[decimal] (at "ignis-royalties" irs))

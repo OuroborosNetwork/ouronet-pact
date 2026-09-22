@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 13 of 24
 ;; This is STEP 13 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-12 must have run first, including the init steps between deploys.
-;; 5 source file(s), 315,762 gas measured in the REPL gas model, 255,405 bytes
+;; 5 source file(s), 315,762 gas measured in the REPL gas model, 258,483 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/07_DPDC-T.pact
@@ -4674,11 +4674,11 @@
     ;;
     (defun C_IssueShareholderCollection:object{IgnisCollectorV3.OutputCumulator}
         (
-            patron:string creator-account:string collection-name:string collection-ticker:string
+            patron:string executor:string collection-name:string collection-ticker:string
             royalty:decimal ignis-royalty:decimal ipfs-links:[string]
         )
     )
-    (defun C_MorphPackageShares:object{IgnisCollectorV3.OutputCumulator} (account:string id:string input-nonce:integer input-amount:integer output-nonce:integer))
+    (defun C_MorphPackageShares:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string input-nonce:integer input-amount:integer output-nonce:integer))
 
 )
 (module EQUITY GOV
@@ -5213,7 +5213,7 @@
     ;;{5.6}  Aux/X
     ;;Protection: Class 2 — SECURE
     (defun XI_ConvertPackageShares:object{IgnisCollectorV3.OutputCumulator}
-        (account:string id:string input-package-share-tier:integer input-package-share-tier-amount:integer output-package-share-tier:integer)
+        (patron:string executor:string id:string input-package-share-tier:integer input-package-share-tier-amount:integer output-package-share-tier:integer)
         @doc "Converts any Nonce to [2 3 4 5 6 7 8] to any Nonce [2 3 4 5 6 7 8]"
         (require-capability (SECURE))
         (with-capability (EQUITY|C>CONVERT id input-package-share-tier input-package-share-tier-amount output-package-share-tier)
@@ -5231,25 +5231,24 @@
                     ;;
                     (ico1:object{IgnisCollectorV3.OutputCumulator}
                         ;;1]Transfer <input-package-share-tier> with <input-package-share-tier-amount> to <dpdc>
-                        (ref-DPDC-T::C_Transfer account account dpdc [id] [true] [[input-nonce]] [[input-package-share-tier-amount]] true)
+                        (ref-DPDC-T::C_Transfer patron executor dpdc [id] [true] [[input-nonce]] [[input-package-share-tier-amount]] true)
                     )
                     (ico2:object{IgnisCollectorV3.OutputCumulator}
-                        ;;2]Burn it
-                        ;;PROVISIONAL PATRON SLOT (HANDOFF 4e, 2026-09-22). These three XI_
+                        ;;2]Burn it These three XI_
                         ;;helpers have NO <patron> -- I assumed one and the module stopped
                         ;;loading with "Cannot find module: ouronet-ns.patron", the second time
-                        ;;that assumption has cost a load in this sweep. They do have <account>,
-                        ;;the user whose shares are being converted, which is the account that
+                        ;;that assumption has cost a load in this sweep. They do have <executor>,
+                        ;;the user whose shares are being converted, which is the executor that
                         ;;actually initiates. It becomes this module's own <patron> at its turn.
-                        (ref-DPDC-MNG::C_BurnSFT account dpdc id input-nonce input-package-share-tier-amount)
+                        (ref-DPDC-MNG::C_BurnSFT patron dpdc id input-nonce input-package-share-tier-amount)
                     )
                     (ico3:object{IgnisCollectorV3.OutputCumulator}
                         ;;3]Add Quantity <output-quantity> for the <output-nonce> on <dpdc> Account
-                        (ref-DPDC-MNG::C_AddQuantity account dpdc id output-nonce output-amount)
+                        (ref-DPDC-MNG::C_AddQuantity patron dpdc id output-nonce output-amount)
                     )
                     (ico4:object{IgnisCollectorV3.OutputCumulator}
-                        ;;4]Transfer it to <account>
-                        (ref-DPDC-T::C_Transfer account dpdc account [id] [true] [[output-nonce]] [[output-amount]] true)
+                        ;;4]Transfer it to <executor>
+                        (ref-DPDC-T::C_Transfer patron dpdc executor [id] [true] [[output-nonce]] [[output-amount]] true)
                     )
                 )
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators 
@@ -5261,7 +5260,7 @@
     )
     ;;Protection: Class 2 — SECURE
     (defun XI_MakePackageShares:object{IgnisCollectorV3.OutputCumulator}
-        (account:string id:string shares-amount:integer package-share-tier:integer)
+        (patron:string executor:string id:string shares-amount:integer package-share-tier:integer)
         @doc "Combines Nonce 1 to Nonce 2,3,4,5,6,7,8. \
             \ DPDC Audit #49L: this is an intentionally separate, bespoke implementation of the \
             \ same conceptual pattern as DPDC-S::C_MakeSemiFungibleSet/CC_BreakSemiFungibleSet -- EQUITY \
@@ -5283,15 +5282,15 @@
                     ;;
                     (ico1:object{IgnisCollectorV3.OutputCumulator}
                         ;;1]Transfer Shares to <dpdc>
-                        (ref-DPDC-T::C_Transfer account account dpdc [id] [true] [[1]] [[shares-amount]] true)
+                        (ref-DPDC-T::C_Transfer patron executor dpdc [id] [true] [[1]] [[shares-amount]] true)
                     )
                     (ico2:object{IgnisCollectorV3.OutputCumulator}
                         ;;2]Add Quantity for the Package-Share on <dpdc> Account
-                        (ref-DPDC-MNG::C_AddQuantity account dpdc id output-nonce output-amount)
+                        (ref-DPDC-MNG::C_AddQuantity patron dpdc id output-nonce output-amount)
                     )
                     (ico3:object{IgnisCollectorV3.OutputCumulator}
-                        ;;3]Transfer it to <account>
-                        (ref-DPDC-T::C_Transfer account dpdc account [id] [true] [[output-nonce]] [[output-amount]] true)
+                        ;;3]Transfer it to <executor>
+                        (ref-DPDC-T::C_Transfer patron dpdc executor [id] [true] [[output-nonce]] [[output-amount]] true)
                     )
                 )
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators 
@@ -5303,7 +5302,7 @@
     )
     ;;Protection: Class 2 — SECURE
     (defun XI_BreakPackageShares:object{IgnisCollectorV3.OutputCumulator}
-        (account:string id:string package-share-tier:integer amount:integer)
+        (patron:string executor:string id:string package-share-tier:integer amount:integer)
         @doc "Brakes Nonce 2,3,4,5,6,7,8 to Nonce 1. \
             \ DPDC Audit #49L: see XI_MakePackageShares's @doc -- intentionally bespoke vs. DPDC-S, \
             \ cross-link any DPDC-S Make/Break invariant change here for manual review."
@@ -5323,15 +5322,15 @@
                     ;;
                     (ico1:object{IgnisCollectorV3.OutputCumulator}
                         ;;1]Transfer Package-Share-Tier nonce to dpdc
-                        (ref-DPDC-T::C_Transfer account account dpdc [id] [true] [[nonce-to-break]] [[amount]] true)
+                        (ref-DPDC-T::C_Transfer patron executor dpdc [id] [true] [[nonce-to-break]] [[amount]] true)
                     )
                     (ico2:object{IgnisCollectorV3.OutputCumulator}
                         ;;2]Burn it
-                        (ref-DPDC-MNG::C_BurnSFT account dpdc id nonce-to-break amount)
+                        (ref-DPDC-MNG::C_BurnSFT patron dpdc id nonce-to-break amount)
                     )
                     (ico3:object{IgnisCollectorV3.OutputCumulator}
-                        ;;3]Release Shares to <account>
-                        (ref-DPDC-T::C_Transfer account dpdc account [id] [true] [[1]] [[output-shares]] true)
+                        ;;3]Release Shares to <executor>
+                        (ref-DPDC-T::C_Transfer patron dpdc executor [id] [true] [[1]] [[output-shares]] true)
                     )
                 )
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators 
@@ -5344,12 +5343,46 @@
     ;;{5.7}  User [A/C]
     (defun C_IssueShareholderCollection:object{IgnisCollectorV3.OutputCumulator}
         (
-            patron:string creator-account:string collection-name:string collection-ticker:string
+            patron:string executor:string collection-name:string collection-ticker:string
             royalty:decimal ignis-royalty:decimal ipfs-links:[string]
         )
-        @doc "Royalty is the standard Royalty for the Whole Collection \
-            \ While <ignis-royalty> is the ignis Royalty for 1% of Company Shares"
+        @doc "Issues an eight-element Equity SFT collection -- a tokenised company. Royalty is \
+            \ the standard royalty for the whole collection, <ignis-royalty> the IGNIS royalty \
+            \ for 1% of company shares. \
+            \ \
+            \ Executor: ENFORCED DIRECTLY, and THE ENFORCE IS NEW (2026-09-22). It changes \
+            \ WHEN and WITH WHAT MESSAGE the wrong caller is refused, NOT WHETHER -- and that \
+            \ distinction is measured, not assumed. See EQUITY.repl <<EQ-G2>>. \
+            \ \
+            \ WHAT WAS ALREADY TRUE. This module contains no ownership check of any kind -- not \
+            \ one CAP_EnforceAccountOwnership, not one CAP_Owner -- and DPDC-I|C>ISSUE runs its \
+            \ on the collection OWNER, which for an equity collection is <dpdc>, the DPDC smart \
+            \ account, because the collection is automanaged. So that check proves a MODULE. But \
+            \ the named creator was reached anyway, three modules later: the ico3 leg calls \
+            \ DPDC-C::C_CreateNewNonces, whose authority is CAP_EnforceAccountOwnership on the \
+            \ DERIVED (UR_Verum5 id son) -- the create-role account -- and on a freshly issued \
+            \ collection that resolves to the creator. Disabling this enforce and re-running \
+            \ <<EQ-G2>> still produced a keys-all keyset failure naming EMMA's own key. \
+            \ \
+            \ WHY IT IS STILL WORTH HAVING. That proof is incidental and late. It is incidental \
+            \ because it holds only while the create-role account IS the named creator -- an \
+            \ invariant of issuance, not of this function -- and late because it fires after the \
+            \ collection has been issued and its branding written. The new enforce makes the \
+            \ refusal direct, first, and by name, which is what the canon asks for: the account \
+            \ this function NAMES is the account it proves. It also runs ahead of the \
+            \ ipfs-links shape check, per the 2026-09-14 ruling that authorisation precedes \
+            \ validation; <<EQ-G1>> signs as the account it names, so that fixture still \
+            \ exercises the shape guard rather than being shadowed by this one. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
+        ;;1]AUTHORISATION, before every validation below (owner ruling 2026-09-14). See the @doc:
+        ;;this is the only account-ownership check on the entire equity-issuance path.
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership executor)
+        )
         ;;MUTE-GUARD FIX: this check used to live BELOW the let, and the let's <ico> binding ISSUES
         ;;the collection (DPDC-I::C_IssueDigitalCollection). Pact evaluates let bindings eagerly, so a
         ;;caller who passed the wrong number of links paid for a full collection issuance before the
@@ -5383,7 +5416,7 @@
                 (ico:object{IgnisCollectorV3.OutputCumulator}
                     ;;1]Issue Equity SFT Collection; <dpdc> automatically gets <role-nft-add-quantity> and <role-nft-burn>
                     (ref-DPDC-I::C_IssueDigitalCollection
-                        patron dpdc creator-account true
+                        patron dpdc executor true
                         name ticker
                         false false true true
                         true true true false
@@ -5466,18 +5499,26 @@
         )
     )
     (defun C_MorphPackageShares:object{IgnisCollectorV3.OutputCumulator}
-        (account:string id:string input-nonce:integer input-amount:integer output-nonce:integer)
+        (patron:string executor:string id:string input-nonce:integer input-amount:integer output-nonce:integer)
+        @doc "Combines, breaks or converts <executor>'s equity share tiers. \
+            \ \
+            \ Executor: PROVEN FORWARDED. Nothing here or in the three XI_ helpers proves an \
+            \ account; each helper moves the shares through the <dpdc> custodial account with \
+            \ DPDC-T::C_Transfer, whose capability opens on \
+            \ (CAP_EnforceAccountOwnership sender) unconditionally, and <executor> occupies \
+            \ that slot on the outbound leg of every branch. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
         (UEV_Morph input-nonce output-nonce)
         (with-capability (SECURE)
             (if (= input-nonce 1)
                 ;;Make Package Shares
-                (XI_MakePackageShares account id input-amount (- output-nonce 1))
+                (XI_MakePackageShares patron executor id input-amount (- output-nonce 1))
                 (if (= output-nonce 1)
                     ;;Brake Package Shares
-                    (XI_BreakPackageShares account id (- input-nonce 1) input-amount)
+                    (XI_BreakPackageShares patron executor id (- input-nonce 1) input-amount)
                     ;;Convert Package Shares
-                    (XI_ConvertPackageShares account id (- input-nonce 1) input-amount (- output-nonce 1))
+                    (XI_ConvertPackageShares patron executor id (- input-nonce 1) input-amount (- output-nonce 1))
                 )
             )
         )

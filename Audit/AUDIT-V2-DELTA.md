@@ -1683,3 +1683,67 @@ out of the Talos source** rather than declaring it, because a hardcoded arity th
 matches nothing and reports success. Run once, then parked: an arity-preserving reorder is not
 idempotent.
 
+
+---
+
+### 11_EQUITY+.pact — COMPLETE (2 of 2 entrypoints, 2026-09-22)
+
+Two entrypoints, and the interesting one produced **a finding, a fix, and then a correction of the
+finding** — in that order, because the fix was measured instead of assumed.
+
+| entrypoint | before | after |
+|---|---|---|
+| `C_IssueShareholderCollection` | `(patron creator-account …)` | `(patron executor …)` + a **new ownership enforce** |
+| `C_MorphPackageShares` | `(account id …)` | `(patron executor id …)` |
+
+#### A module with no ownership check of its own
+
+`11_EQUITY+.pact` contains **no `CAP_EnforceAccountOwnership` and no `CAP_Owner`** — not one, in
+900 lines. Its issuance calls `DPDC-I::C_IssueDigitalCollection patron dpdc creator-account …`, and
+`DPDC-I|C>ISSUE` runs its ownership check on the **owner**, which for an equity collection is
+`dpdc`, the DPDC smart account, because the collection is automanaged.
+
+> So the account that check proves is a **module**, not a person. And `creator-account` — who
+> collects the royalties — was named by the caller and never checked *here*.
+
+The turn added `(CAP_EnforceAccountOwnership executor)`, first, ahead of the `ipfs-links` shape
+check, per the 2026-09-14 ruling that authorisation precedes validation.
+
+#### Then the measurement contradicted the claim
+
+The first version of the guard's `@doc` — and of the new `<<EQ-G2>>` test comment — said the guard
+**closed a hole**. It does not. Disabling the enforce and re-running `modules/EQUITY.repl` with the
+four `coin.TRANSFER` funding signatures installed, so nothing else could refuse:
+
+| assertion | without the guard |
+|---|---|
+| *ANHD cannot found a company in EMMA's name* | **still passed** — same `Keyset failure (keys-all): [PK_Emma…]` |
+| *…and the ownership refusal precedes the link-count one* | **failed** — reported `24 IPFS links must be provided` |
+
+EMMA's consent was already required, **three modules away and two writes later**: the `ico3` leg
+calls `DPDC-C::C_CreateNewNonces`, whose authority is `CAP_EnforceAccountOwnership` on the derived
+`(UR_Verum5 id son)` — the create-role account — which on a freshly issued collection *is* the
+creator.
+
+So the guard changes **when** and **with what message**, not **whether**. It is still worth having:
+the old proof is **incidental** (it holds only while the create-role account is the named creator —
+an invariant of issuance, not of this function) and **late** (after the collection is issued and its
+branding written). Both `@doc` and test comment were rewritten to say exactly that.
+
+> This is the second time in this programme a comment claimed more than was observed
+> (`<<ORBR-FEE3b>>` was the first). The rule that caught it both times: **when you add a guard, add
+> a test that fails without it — and then actually run it without it.** The first assertion here
+> does *not* depend on the guard and is kept, relabelled, as a property test; the second is the one
+> that discriminates, and the comment says which is which.
+
+#### And an unescaped `"` broke the build again
+
+Writing `"Keyset failure (keys-all): [PK_Emma...]"` inside a Pact `@doc` **closes the string**, and
+the rest of the line parses as code. `_docstrings.py` — built after the first occurrence — caught
+it statically, named the file, the line and the reason, before any suite ran. The gate runs it
+first for exactly this reason: a module that does not load makes every other check meaningless.
+
+Three provisional patron slots cleared, and `C_MorphPackageShares` registered as INDIRECT — its
+executor reaches `DPDC-T::C_Transfer` through a **same-module** `XI_` helper, which `FORWARDED`
+does not match by design.
+
