@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 14 of 24
 ;; This is STEP 14 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-13 must have run first, including the init steps between deploys.
-;; 3 source file(s), 102,008 gas measured in the REPL gas model, 262,204 bytes
+;; 3 source file(s), 102,008 gas measured in the REPL gas model, 270,737 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/00_Demipad.pact
@@ -219,26 +219,26 @@
     ;;
     ;;  [A]
     ;;
-    (defun A_RegisterAssetToLaunchpad (patron:string asset-id:string fungibility:[bool]))
-    (defun A_ToggleOpenForBusiness (asset-id:string toggle:bool))
-    (defun A_DefinePrice (asset-id:string price:object))
-    (defun A_ToggleRetrieval (asset-id:string toggle:bool))
+    (defun A_RegisterAssetToLaunchpad (patron:string executor:string asset-id:string fungibility:[bool]))
+    (defun A_ToggleOpenForBusiness (patron:string executor:string asset-id:string toggle:bool))
+    (defun A_DefinePrice (patron:string executor:string asset-id:string price:object))
+    (defun A_ToggleRetrieval (patron:string executor:string asset-id:string toggle:bool))
     ;;
     ;;  [C]
     ;;
     (defun C_Deposit:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal)
+        (patron:string executor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal)
     )
-    (defun C_Withdraw (patron:string asset-id:string type:integer destination:string)
+    (defun C_Withdraw (patron:string executor:string asset-id:string type:integer destination:string)
     )
     ;;
-    (defun C_TransmitTrueFungible (patron:string client:string asset-id:string amount:decimal fuel-or-retrieve:bool))
-    (defun C_TransmitOrtoFungible (patron:string client:string asset-id:string nonces:[integer] fuel-or-retrieve:bool))
+    (defun C_TransmitTrueFungible (patron:string executor:string asset-id:string amount:decimal fuel-or-retrieve:bool))
+    (defun C_TransmitOrtoFungible (patron:string executor:string asset-id:string nonces:[integer] fuel-or-retrieve:bool))
     (defun C_TransmitSemiFungibles:object{IgnisCollectorV3.OutputCumulator} 
-        (client:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
+        (patron:string executor:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
     )
     (defun C_TransmitNonFungibles:object{IgnisCollectorV3.OutputCumulator}
-        (client:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
+        (patron:string executor:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
     )
 
 )
@@ -1496,14 +1496,14 @@
     ;;
     ;;Protection: Class 2 — SECURE
     (defun XI_TransmitCollectables:object{IgnisCollectorV3.OutputCumulator}
-        (client:string asset-id:string son:bool nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
+        (patron:string executor:string asset-id:string son:bool nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
         (require-capability (SECURE))
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
                 (lpad:string DEMIPAD|SC_NAME)
-                (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount client))
+                (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount executor))
             )
             ;;#7M: open the capability matching the collectable KIND (son true = Semi-Fungible [false true],
             ;;     false = Non-Fungible [false false]). Previously both branches hardcoded the SEMI cap, so a
@@ -1513,19 +1513,19 @@
                 ;;FUEL — deposit collectables INTO the launchpad
                 (if son
                     (with-capability (DEMIPAD|C>FUEL-SEMI-FUNGIBLE asset-id)
-                        (ref-DPDC-T::C_Transfer client client lpad [asset-id] [son] [nonces] [amounts] true)
+                        (ref-DPDC-T::C_Transfer patron executor lpad [asset-id] [son] [nonces] [amounts] true)
                     )
                     (with-capability (DEMIPAD|C>FUEL-NON-FUNGIBLE asset-id)
-                        (ref-DPDC-T::C_Transfer client client lpad [asset-id] [son] [nonces] [amounts] true)
+                        (ref-DPDC-T::C_Transfer patron executor lpad [asset-id] [son] [nonces] [amounts] true)
                     )
                 )
                 ;;RETRIEVE — withdraw collectables FROM the launchpad (NF path now also inherits the #2H lock)
                 (if son
                     (with-capability (DEMIPAD|C>RETRIEVE-SEMI-FUNGIBLE asset-id)
-                        (ref-DPDC-T::C_Transfer client lpad client [asset-id] [son] [nonces] [amounts] true)
+                        (ref-DPDC-T::C_Transfer patron lpad executor [asset-id] [son] [nonces] [amounts] true)
                     )
                     (with-capability (DEMIPAD|C>RETRIEVE-NON-FUNGIBLE asset-id)
-                        (ref-DPDC-T::C_Transfer client lpad client [asset-id] [son] [nonces] [amounts] true)
+                        (ref-DPDC-T::C_Transfer patron lpad executor [asset-id] [son] [nonces] [amounts] true)
                     )
                 )
             )
@@ -1533,38 +1533,106 @@
     )
     ;;{5.7}  User [A/C]
     ;;
-    (defun A_RegisterAssetToLaunchpad (patron:string asset-id:string fungibility:[bool])
+    (defun A_RegisterAssetToLaunchpad (patron:string executor:string asset-id:string fungibility:[bool])
+        @doc "Registers <asset-id> with the Launchpad, opening its ledger row. \
+            \ \
+            \ ATTRIBUTION (patron/executor canon 2.2, 2026-09-22). The AUTHORITY is the admin \
+            \ key: DEMIPAD|C>SECURE-ADMIN composes GOV|DEMIPAD_ADMIN, and that is what decides \
+            \ whether the call proceeds. The EXECUTOR is the ACTOR among the keyholders, proven \
+            \ by CAP_EnforceAccountOwnership -- authority and attribution are orthogonal and \
+            \ neither substitutes for the other. Same treatment as LIQUID::A_MigrateLiquidFunds \
+            \ and DALOS's admin band. Without it the event records that AN admin acted and \
+            \ never which one, which HANDOFF 4f calls worse than no executor at all."
         (P|UEV_IMC)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership executor)
+        )
         (with-capability (DEMIPAD|C>REGISTER asset-id fungibility)
             (XI_RegisterAsset asset-id fungibility)
             (format "{} {} registered succesfuly to Demiourgos Launchpad!" [(UC_Type asset-id fungibility) asset-id])
         )
     )
     ;;
-    (defun A_ToggleOpenForBusiness (asset-id:string toggle:bool)
+    (defun A_ToggleOpenForBusiness (patron:string executor:string asset-id:string toggle:bool)
+        @doc "Opens or closes <asset-id>'s sale. \
+            \ \
+            \ ATTRIBUTION (patron/executor canon 2.2, 2026-09-22). The AUTHORITY is the admin \
+            \ key: DEMIPAD|C>SECURE-ADMIN composes GOV|DEMIPAD_ADMIN, and that is what decides \
+            \ whether the call proceeds. The EXECUTOR is the ACTOR among the keyholders, proven \
+            \ by CAP_EnforceAccountOwnership -- authority and attribution are orthogonal and \
+            \ neither substitutes for the other. Same treatment as LIQUID::A_MigrateLiquidFunds \
+            \ and DALOS's admin band. Without it the event records that AN admin acted and \
+            \ never which one, which HANDOFF 4f calls worse than no executor at all."
         (P|UEV_IMC)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership executor)
+        )
         (with-capability (DEMIPAD|C>TOGGLE-SALE asset-id toggle)
             (XI_U|OpenForBusiness asset-id toggle)
             (format "Asset {} sale succesfully toggled to {}" [asset-id toggle])
         )
     )
-    (defun A_DefinePrice (asset-id:string price:object)
+    (defun A_DefinePrice (patron:string executor:string asset-id:string price:object)
+        @doc "Sets <asset-id>'s price object. \
+            \ \
+            \ ATTRIBUTION (patron/executor canon 2.2, 2026-09-22). The AUTHORITY is the admin \
+            \ key: DEMIPAD|C>SECURE-ADMIN composes GOV|DEMIPAD_ADMIN, and that is what decides \
+            \ whether the call proceeds. The EXECUTOR is the ACTOR among the keyholders, proven \
+            \ by CAP_EnforceAccountOwnership -- authority and attribution are orthogonal and \
+            \ neither substitutes for the other. Same treatment as LIQUID::A_MigrateLiquidFunds \
+            \ and DALOS's admin band. Without it the event records that AN admin acted and \
+            \ never which one, which HANDOFF 4f calls worse than no executor at all."
         (P|UEV_IMC)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership executor)
+        )
         (with-capability (DEMIPAD|C>DEFINE-PRICE asset-id price)
             (XI_U|Price asset-id price)
             (format "Asset {} price succesfully updated with the Price Object {}" [asset-id price])
         )
     )
-    (defun A_ToggleRetrieval (asset-id:string toggle:bool)
+    (defun A_ToggleRetrieval (patron:string executor:string asset-id:string toggle:bool)
+        @doc "Enables or disables retrieval of <asset-id> from the Launchpad. \
+            \ \
+            \ ATTRIBUTION (patron/executor canon 2.2, 2026-09-22). The AUTHORITY is the admin \
+            \ key: DEMIPAD|C>SECURE-ADMIN composes GOV|DEMIPAD_ADMIN, and that is what decides \
+            \ whether the call proceeds. The EXECUTOR is the ACTOR among the keyholders, proven \
+            \ by CAP_EnforceAccountOwnership -- authority and attribution are orthogonal and \
+            \ neither substitutes for the other. Same treatment as LIQUID::A_MigrateLiquidFunds \
+            \ and DALOS's admin band. Without it the event records that AN admin acted and \
+            \ never which one, which HANDOFF 4f calls worse than no executor at all."
         (P|UEV_IMC)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership executor)
+        )
         (with-capability (DEMIPAD|C>TOGGLE-RETRIEVAL asset-id toggle)
             (XI_U|Retrieval asset-id toggle)
             (format "Asset {} Retrieval succesfuly set to {}" [asset-id toggle])
         )
     )
     (defun C_Deposit:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal)
+        (patron:string executor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal)
         @doc "Deposits Funds into the Launchpad, for a registered Asset \
+            \ \
+            \ Executor: PROVEN FORWARDED. DEMIPAD|C>DEPOSIT only TYPE-checks the account \
+            \ (UEV_EnforceAccountType executor false) -- it never proves ownership. The proof \
+            \ comes from the leg that actually spends: every branch hands <executor> to \
+            \ TFT::C_Transfer or LIQUID::C_WrapStoa / C_UnwrapStoa in the executor slot, and \
+            \ those open on CAP_EnforceAccountOwnership. A deposit that did not move the \
+            \ depositor's own funds would not be a deposit. \
+            \ (patron/executor canon 2.2, 2026-09-22.) \
             \ Type 0 = Native Stoa \
             \ Type 1 = WSTOA \
             \ Type 2 = SSTOA \
@@ -1580,7 +1648,7 @@
             \ <type 2> = STOA Split ENV + SSTOA for CD + SSTOA for Sale \
             \ <type 3> = STOA Split ENV + OURO for CD + OURO for Sale "
         (P|UEV_IMC)
-        (with-capability (DEMIPAD|C>DEPOSIT donor asset-id amount-in-dollars type direct-injection max-cost)
+        (with-capability (DEMIPAD|C>DEPOSIT executor asset-id amount-in-dollars type direct-injection max-cost)
             (let
                 (
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -1606,28 +1674,28 @@
                     ;;
                     (ico1:object{IgnisCollectorV3.OutputCumulator}
                         (if (= type 0)
-                            (ref-LIQUID::C_WrapStoa patron donor non-enviroment)
+                            (ref-LIQUID::C_WrapStoa patron executor non-enviroment)
                             EOC
                         )
                     )
                     (ico2:object{IgnisCollectorV3.OutputCumulator}
                         (if (= type 1)
-                            (ref-LIQUID::C_UnwrapStoa patron donor env)
+                            (ref-LIQUID::C_UnwrapStoa patron executor env)
                             EOC
                         )
                     )
                     (ico3:object{IgnisCollectorV3.OutputCumulator}
                         (if (not direct-injection)
-                            (ref-TFT::C_Transfer patron donor DEMIPAD|SC_NAME working-id non-enviroment true)
+                            (ref-TFT::C_Transfer patron executor DEMIPAD|SC_NAME working-id non-enviroment true)
                             EOC
                             ;;When AQP LIVE, to be replaced by:
                             ;;(ref-AQP::C_Inject <pool-id> <working-id> <cod> <injection-type>)
-                            ;;(ref-TFT::C_Transfer patron donor DEMIPAD|SC_NAME working-id rem true)
+                            ;;(ref-TFT::C_Transfer patron executor DEMIPAD|SC_NAME working-id rem true)
                         )
                     )
                 )
                 ;;1]Satisfy Enviroment (Stoa was Unwraped prior if <type> = 1)
-                (XI_SatisfyEnviroment donor prices)
+                (XI_SatisfyEnviroment executor prices)
                 ;;2]Update Internal Launchpad with deposit Data
                     ;;2.1]When (not direct-injection) save <cod> amount in Launchpad Properties
                 (if (not direct-injection)
@@ -1652,12 +1720,28 @@
         )
     )
     (defun C_Withdraw
-        (patron:string asset-id:string type:integer destination:string)
+        (patron:string executor:string asset-id:string type:integer destination:string)
         @doc "Withdraws all cumulated Tokens in the Launchpad, gathered through sale \
         \ Type 1 = WSTOA \
         \ Type 2 = SSTOA \
-        \ Type 3 = OURO "
+        \ Type 3 = OURO \
+        \ \
+        \ ATTRIBUTION (patron/executor canon 2.2, 2026-09-22). DEMIPAD|C>WITHDRAW composes \
+        \ DEMIPAD|C>REGISTERED-ACCESS, whose authority is an enforce-one over TWO guards: the \
+        \ asset owner (a DERIVED account, via a user-guard on CAP_Owner) or the Launchpad admin \
+        \ keyset. Either may withdraw, so no single binder can name the actor -- HANDOFF 4g with \
+        \ a disjunction. The executor is therefore proven on its OWN terms, by \
+        \ CAP_EnforceAccountOwnership, which says the named account signed WITHOUT claiming \
+        \ which of the two branches it satisfied. That is the honest statement and it is the \
+        \ one the ledger needs: the funds leave the Launchpad, and the event should say who \
+        \ sent them where."
         (P|UEV_IMC)
+        (let
+            (
+                (ref-DALOS-X:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS-X::CAP_EnforceAccountOwnership executor)
+        )
         (let
             (
                 (retrieval-amount:decimal (URv_Funds asset-id type))
@@ -1686,60 +1770,97 @@
         )
     )
     ;;Fuel|Retrieve Assets to|from Launchpad to be made after Upgrade.
-    (defun C_TransmitTrueFungible (patron:string client:string asset-id:string amount:decimal fuel-or-retrieve:bool)
+    (defun C_TransmitTrueFungible (patron:string executor:string asset-id:string amount:decimal fuel-or-retrieve:bool)
+        @doc "Moves <amount> of true-fungible <asset-id> into or out of the Launchpad. \
+            \ \
+            \ Executor: PROVEN FORWARDED. The DEMIPAD|C>FUEL-* / C>RETRIEVE-* capabilities gate \
+            \ on the ASSET (registration and fungibility) and prove no account. <executor> is \
+            \ handed to TS01-C1::DPTF|C_Transfer in the executor slot on the fuel leg, and that call opens on \
+            \ CAP_EnforceAccountOwnership. On the RETRIEVE leg the Launchpad account is the \
+            \ sender and <executor> is the recipient, which is why the asset-side capability \
+            \ carries the authority there. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
                 (lpad:string DEMIPAD|SC_NAME)
-                (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount client))
+                (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount executor))
             )
             (if fuel-or-retrieve
                 (with-capability (DEMIPAD|C>FUEL-TRUE-FUNGIBLE asset-id)
-                    (ref-TS01-C1::DPTF|C_Transfer patron client lpad asset-id amount true)
+                    (ref-TS01-C1::DPTF|C_Transfer patron executor lpad asset-id amount true)
                     (format "Succesfuly fueled {} {} to Demiourgos Launchpad from Account {}" [amount asset-id sa-s])
                 )
                 (with-capability (DEMIPAD|C>RETRIEVE-TRUE-FUNGIBLE asset-id)
-                    (ref-TS01-C1::DPTF|C_Transfer patron lpad client asset-id amount true)
+                    (ref-TS01-C1::DPTF|C_Transfer patron lpad executor asset-id amount true)
                     (format "Succesfuly retrieved {} {} from Demiourgos Launchpad to Account {}" [amount asset-id sa-s])
                 )
             )
         )
     )
-    (defun C_TransmitOrtoFungible (patron:string client:string asset-id:string nonces:[integer] fuel-or-retrieve:bool)
+    (defun C_TransmitOrtoFungible (patron:string executor:string asset-id:string nonces:[integer] fuel-or-retrieve:bool)
+        @doc "Moves <nonces> of orto-fungible <asset-id> into or out of the Launchpad. \
+            \ \
+            \ Executor: PROVEN FORWARDED. The DEMIPAD|C>FUEL-* / C>RETRIEVE-* capabilities gate \
+            \ on the ASSET (registration and fungibility) and prove no account. <executor> is \
+            \ handed to TS01-C1::DPOF|C_Transfer in the executor slot on the fuel leg, and that call opens on \
+            \ CAP_EnforceAccountOwnership. On the RETRIEVE leg the Launchpad account is the \
+            \ sender and <executor> is the recipient, which is why the asset-side capability \
+            \ carries the authority there. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                 (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
                 (lpad:string DEMIPAD|SC_NAME)
-                (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount client))
+                (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount executor))
             )
             (if fuel-or-retrieve
                 (with-capability (DEMIPAD|C>FUEL-ORTO-FUNGIBLE asset-id)
-                    (ref-TS01-C1::DPOF|C_Transfer patron client lpad asset-id nonces true)
+                    (ref-TS01-C1::DPOF|C_Transfer patron executor lpad asset-id nonces true)
                     (format "Succesfuly fueled {} Nonces {} to Demiourgos Launchpad from Account {}" [asset-id nonces sa-s])
                 )
                 (with-capability (DEMIPAD|C>RETRIEVE-ORTO-FUNGIBLE asset-id)
-                    (ref-TS01-C1::DPOF|C_Transfer patron lpad client asset-id nonces true)
+                    (ref-TS01-C1::DPOF|C_Transfer patron lpad executor asset-id nonces true)
                     (format "Succesfuly retrieved {} Nonces {} from Demiourgos Launchpad to Account {}" [asset-id nonces sa-s])
                 )
             )
         )
     )
     (defun C_TransmitSemiFungibles:object{IgnisCollectorV3.OutputCumulator}
-        (client:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
+        (patron:string executor:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
+        @doc "Moves <nonces>/<amounts> of semi-fungible collectable <asset-id> into or out of the Launchpad. \
+            \ \
+            \ Executor: PROVEN FORWARDED. The DEMIPAD|C>FUEL-* / C>RETRIEVE-* capabilities gate \
+            \ on the ASSET (registration and fungibility) and prove no account. <executor> is \
+            \ handed to DPDC-T::C_Transfer (through XI_TransmitCollectables) in the executor slot on the fuel leg, and that call opens on \
+            \ CAP_EnforceAccountOwnership. On the RETRIEVE leg the Launchpad account is the \
+            \ sender and <executor> is the recipient, which is why the asset-side capability \
+            \ carries the authority there. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
         (with-capability (P|SECURE-CALLER)
-            (XI_TransmitCollectables client asset-id true nonces amounts fuel-or-retrieve)
+            (XI_TransmitCollectables patron executor asset-id true nonces amounts fuel-or-retrieve)
         )
     )
     (defun C_TransmitNonFungibles:object{IgnisCollectorV3.OutputCumulator}
-        (client:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
+        (patron:string executor:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
+        @doc "Moves <nonces>/<amounts> of non-fungible collectable <asset-id> into or out of the \
+            \ Launchpad. \
+            \ \
+            \ Executor: PROVEN FORWARDED. The DEMIPAD|C>FUEL-* / C>RETRIEVE-* capabilities gate \
+            \ on the ASSET (registration and fungibility) and prove no account. <executor> is \
+            \ handed to DPDC-T::C_Transfer (through XI_TransmitCollectables) in the executor \
+            \ slot on the fuel leg, and that call opens on CAP_EnforceAccountOwnership. On the \
+            \ RETRIEVE leg the Launchpad account is the sender and <executor> is the recipient, \
+            \ which is why the asset-side capability carries the authority there. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
         (with-capability (P|SECURE-CALLER)
-            (XI_TransmitCollectables client asset-id false nonces amounts fuel-or-retrieve)
+            (XI_TransmitCollectables patron executor asset-id false nonces amounts fuel-or-retrieve)
         )
     )
 

@@ -132,6 +132,13 @@ INDIRECT = {
     # a foreign module is what does the proving -- so one hop through a local helper has to be
     # traced by a human and written down, which is what INDIRECT is for.
     "11_EQUITY+.pact::C_MorphPackageShares": "DPDC-T::C_Transfer",
+    # 00_Demipad's two COLLECTABLE transmits (2026-09-22). Same internal-hop shape again: both
+    # hand the executor to XI_TransmitCollectables, a SAME-MODULE helper, and only that helper
+    # calls DPDC-T::C_Transfer. Their true- and orto-fungible siblings call TS01-C1 directly and
+    # so pass by FORWARDED without an entry here -- four functions, one job, two classifications,
+    # decided purely by whether a local helper sits in the middle.
+    "00_Demipad.pact::C_TransmitSemiFungibles": "DPDC-T::C_Transfer",
+    "00_Demipad.pact::C_TransmitNonFungibles": "DPDC-T::C_Transfer",
 }
 
 # SELF-PROVING AT CREATION -- the base case of the attribution rule, resolved by the owner on

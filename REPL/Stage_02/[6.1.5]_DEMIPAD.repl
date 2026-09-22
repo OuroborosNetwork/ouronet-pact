@@ -31,11 +31,11 @@
         (patron:string KST.ANHD)
     )
     ;; NF fungibility flags = [false false]; register deploys the launchpad's NF account for CNF
-    (ref-TS02-DPAD::A_RegisterAssetToLaunchpad patron id [false false])
+    (ref-TS02-DPAD::A_RegisterAssetToLaunchpad patron patron id [false false])
     ;; fuel nonce 2 (amount 1) into the launchpad (owner holds CNF nonce 2 from [6.1.4])
     (ref-TS02-DPAD::DEMIPAD|C_FuelNonFungible patron patron id [2] [1])
     ;; allow retrieval, then retrieve nonce 2 back to the owner
-    (ref-TS02-DPAD::A_ToggleRetrieval id true)
+    (ref-TS02-DPAD::A_ToggleRetrieval KST.ANHD id true)
     (ref-TS02-DPAD::DEMIPAD|C_RetrieveNonFungible patron patron id [2] [1])
     (map print
         [
@@ -71,9 +71,9 @@
         (patron:string KST.ANHD)
     )
     ;; SF fungibility = [false true]; fuel 100 units of nonce 5, then retrieve them
-    (ref-TS02-DPAD::A_RegisterAssetToLaunchpad patron id [false true])
+    (ref-TS02-DPAD::A_RegisterAssetToLaunchpad patron patron id [false true])
     (ref-TS02-DPAD::DEMIPAD|C_FuelSemiFungible patron patron id [5] [100])
-    (ref-TS02-DPAD::A_ToggleRetrieval id true)
+    (ref-TS02-DPAD::A_ToggleRetrieval KST.ANHD id true)
     (ref-TS02-DPAD::DEMIPAD|C_RetrieveSemiFungible patron patron id [5] [100])
     (print "<<TX-DP-002>> SF FuelSemiFungible + RetrieveSemiFungible OK")
 )
@@ -104,9 +104,9 @@
         (patron:string KST.ANHD)
     )
     ;; TF fungibility = [true true]; fuel 100 OURO, then retrieve it
-    (ref-TS02-DPAD::A_RegisterAssetToLaunchpad patron id [true true])
+    (ref-TS02-DPAD::A_RegisterAssetToLaunchpad patron patron id [true true])
     (ref-TS02-DPAD::DEMIPAD|C_FuelTrueFungible patron patron id 100.0)
-    (ref-TS02-DPAD::A_ToggleRetrieval id true)
+    (ref-TS02-DPAD::A_ToggleRetrieval KST.ANHD id true)
     (ref-TS02-DPAD::DEMIPAD|C_RetrieveTrueFungible patron patron id 100.0)
     (print "<<TX-DP-003>> TF FuelTrueFungible + RetrieveTrueFungible OK")
 )
@@ -159,9 +159,9 @@
     (ref-TS01-C1::DPOF|C_ToggleAddQuantityRole patron (DPOF.UR_Konto id) patron id true)
     (ref-TS01-C1::DPOF|C_Mint patron patron id 1000.0 [{"cov": "of"}])
     ;; OF fungibility = [true false]; fuel nonce 1 into the launchpad, then retrieve it
-    (ref-TS02-DPAD::A_RegisterAssetToLaunchpad patron id [true false])
+    (ref-TS02-DPAD::A_RegisterAssetToLaunchpad patron patron id [true false])
     (ref-TS02-DPAD::DEMIPAD|C_FuelOrtoFungible patron patron id [1])
-    (ref-TS02-DPAD::A_ToggleRetrieval id true)
+    (ref-TS02-DPAD::A_ToggleRetrieval KST.ANHD id true)
     (ref-TS02-DPAD::DEMIPAD|C_RetrieveOrtoFungible patron patron id [1])
     (print "<<TX-DP-004>> OF FuelOrtoFungible + RetrieveOrtoFungible OK")
 )

@@ -56,10 +56,10 @@ explanation*, because stating precisely what an assertion proved exposed that it
 
 | | |
 |---|---:|
-| **distinct assertions written** | **5,943** |
-| **assertions executed per full gate run** | **25,681** |
+| **distinct assertions written** | **5,946** |
+| **assertions executed per full gate run** | **25,684** |
 | &nbsp;&nbsp;positive (`expect`) | 20,556 |
-| &nbsp;&nbsp;negative (`expect-failure`) | 5,125 |
+| &nbsp;&nbsp;negative (`expect-failure`) | 5,128 |
 | gate entrypoints | **92** |
 | `.repl` files reachable from the gate | 321 |
 | orphaned asserting files (written but never run) | **0** |

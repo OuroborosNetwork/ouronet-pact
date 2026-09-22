@@ -286,7 +286,7 @@ same tools with those three properties.
 | [x] 32 | `09_DPDC-F.pact` | 0 | 0 | 4 | **4** | `DpdcFragmentsV2` — done; the third repurpose of the sweep, same shape |
 | [x] 33 | `10_DPDC-N.pact` | 0 | 0 | 8 | **8** | `DpdcNonceV2` — done; the DPDC family's only ROLE-gated module |
 | [x] 34 | `11_EQUITY+.pact` | 1 | 0 | 1 | **2** | `EquityV2` — done; **found a module with NO ownership check at all**, see §4m |
-| [ ] 35 | `00_Demipad.pact` | 2 | 2 | 6 | **10** | `DemiourgosLaunchpadV2` |
+| [x] 35 | `00_Demipad.pact` | 2 | 2 | 6 | **10** | `DemiourgosLaunchpadV2` — done; 4 admin ops gained an enforced executor. See §4n |
 | [ ] 36 | `01_ANK.pact` | 0 | 0 | 2 | **2** | `AcquisitionAnchorsV1` |
 | [ ] 37 | `02_SCORE.pact` | 6 | 0 | 8 | **14** | `AcquisitionScoresV1` |
 | [ ] 38 | `03_AQP.pact` | 2 | 0 | 0 | **2** | `AcquisitionPoolsV1` |
@@ -470,6 +470,33 @@ changing. Their delegation is arity-preserving, so `_callarity` (including the s
 built one module earlier) could not object. Grepping for the OLD parameter shape
 `(patron:string id:string account:string` found them in one line. *A signature change must reach
 every place the name is written, and "the names I listed" is narrower than that.*
+
+---
+
+### 4n. LESSON FROM MODULE 35 — THE IMPLEMENTATION IS THE LAST MATCH, NEVER THE FIRST
+
+Every sovereign module in this tree carries its **interface inline at the top of the same file**.
+So a regex anchored on `(defun NAME` finds the STUB, and `re.search` returns it. This has now cost
+edits in five separate modules, and module 35 produced two more in one pass.
+
+The instance worth remembering is *why it was not obvious*: `C_TransmitSemiFungibles`'s stub ends
+in a **trailing space** and `C_TransmitNonFungibles`'s does not. The same regex therefore matched
+the BODY for one and the STUB for the other — two adjacent functions, one edit, opposite outcomes,
+and nothing in the diff to show it.
+
+**Rule: take `hits[-1]`.** `_ignis_price_sheet.defun_body` has always done this. Every scoped edit
+from here on does too. And verify with `_modulecomplete` check 2 (interface declarations match
+their module defuns), which catches the whole class in one line — `_callarity` only catches the
+subset where the arity also changed.
+
+**Corollary for the admin band.** When an admin op gains an enforced executor, the test must show
+the two gates are DIFFERENT, not that one of them exists:
+
+* admin signs, names someone else  → the **executor** gate refuses
+* non-admin signs, names herself   → the executor gate passes and the **admin** gate refuses
+
+Both produce "Keyset failure", so each assertion has to name the KEY it expects. Without that, one
+assertion proves whichever gate happens to fire first and the other proves nothing.
 
 ---
 

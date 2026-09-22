@@ -1747,3 +1747,64 @@ Three provisional patron slots cleared, and `C_MorphPackageShares` registered as
 executor reaches `DPDC-T::C_Transfer` through a **same-module** `XI_` helper, which `FORWARDED`
 does not match by design.
 
+
+---
+
+### 00_Demipad.pact — COMPLETE (10 of 10 entrypoints, 2026-09-22)
+
+The sovereign launchpad. Ten entrypoints across three bands — four **admin** ops, a
+deposit/withdraw pair, and four **transmit** ops — and the admin band is where the finding is.
+
+#### An admin keyset answers "may this happen", never "who did it"
+
+`A_RegisterAssetToLaunchpad`, `A_ToggleOpenForBusiness`, `A_DefinePrice` and `A_ToggleRetrieval`
+are gated by `DEMIPAD|C>SECURE-ADMIN` → `GOV|DEMIPAD_ADMIN` — a keyset **shared by every launchpad
+admin**. Three of the four took no `patron` and none took an executor, so the `@event` each emits
+recorded that *an* admin acted and never which one. Each now takes `patron` + `executor`, with
+`CAP_EnforceAccountOwnership` run **before** the admin capability is acquired, exactly as
+`LIQUID::A_MigrateLiquidFunds` and the DALOS admin band already do.
+
+**Measured without the guard** (`modules/DEMIPAD.repl` `<<DEMIPAD-G3>>`, all four enforces
+disabled, file re-run):
+
+| assertion | without the guard |
+|---|---|
+| admin toggles retrieval, attributes it to EMMA | reached the idempotence guard — `Retrieval is already true` |
+| admin sets a price, attributes it to EMMA | **`Asset TSFS-… price succesfully updated`** — the op *succeeded* |
+| non-admin signs for herself | unchanged — the ADMIN gate still refuses |
+
+> The second row is the finding in one line: **before this turn an admin could change a launchpad
+> price and have the event name somebody else.** The third is the control that shows the two gates
+> are distinct rather than one gate tested twice. The block is a `rollback-tx`, because an
+> `expect-failure` whose subject *mutates* when the guard is absent must never share a committing
+> transaction — and that measurement is precisely why the rule exists.
+
+#### The rest
+
+`C_Deposit` (`donor` → `executor`) and the four transmits (`client` → `executor`) are FORWARDED:
+`DEMIPAD|C>DEPOSIT` only *type*-checks the account, and the `C>FUEL-*`/`C>RETRIEVE-*` capabilities
+gate on the **asset**, not on any account. The proof comes from the leg that actually spends —
+`TFT::C_Transfer`, `LIQUID::C_WrapStoa`, `TS01-C1::DPTF|C_Transfer`, `DPDC-T::C_Transfer`.
+
+`C_Withdraw` is §4g **with a disjunction**: `DEMIPAD|C>REGISTERED-ACCESS` is an `enforce-one` over
+the asset owner (derived, via a user-guard on `CAP_Owner`) **or** the launchpad admin keyset.
+Either may withdraw, so no binder can name the actor; the executor is proven on its own terms
+instead, which says the named account signed without claiming *which* branch it satisfied.
+
+#### The stub-vs-implementation trap, fifth and sixth occurrences — and a trailing space
+
+Three bodies were silently missed because `re.search` found the **interface stub** at the top of
+the file instead of the implementation. What makes this instance worth recording is the
+discriminator: `C_TransmitSemiFungibles`'s stub ends in a **trailing space** and
+`C_TransmitNonFungibles`'s does not, so the *same* regex matched the body for one and the stub for
+the other. Two functions, one edit, opposite outcomes, invisible in a diff.
+
+> Fixed by the rule `_ignis_price_sheet.defun_body` already uses and that every future scoped edit
+> in this programme will: **the implementation is the LAST match, never the first.**
+
+`_callarity` caught one of the three (the arity changed); `_modulecomplete`'s interface-drift check
+would have caught all three. Two INDIRECT routes registered — the two collectable transmits reach
+`DPDC-T::C_Transfer` through a same-module `XI_` helper, while their true/orto siblings call Talos
+directly and pass by FORWARDED. Four functions, one job, two classifications, decided purely by
+whether a local helper sits in the middle.
+

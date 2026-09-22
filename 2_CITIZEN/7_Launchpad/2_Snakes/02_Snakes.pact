@@ -66,7 +66,7 @@
     ;;
     ;;  [A+C]
     ;;
-    (defun A_UpdateSharePrice (price:decimal))
+    (defun A_UpdateSharePrice (patron:string executor:string price:decimal))
     (defun C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool max-cost:decimal))
 
 )
@@ -508,7 +508,7 @@
     ;;{5.6}  Aux/X
     ;;{5.7}  User [A/C]
     ;;
-    (defun A_UpdateSharePrice (price:decimal)
+    (defun A_UpdateSharePrice (patron:string executor:string price:decimal)
         @doc "Updates the Share Price. \
             \ FIXED 2026-09-14 -- this was DEAD ON ARRIVAL. DEMIPAD::A_DefinePrice opens with \
             \ P|UEV_IMC, a UEV_Any over the caller-policy guards DEMIPAD has registered, and the \
@@ -528,7 +528,12 @@
                     (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
                     (asset:string (UR_AssetID))
                 )
-                (ref-DEMIPAD::A_DefinePrice asset
+                ;;PATRON AND EXECUTOR THREADED, 2026-09-22 (00_Demipad's canon turn). DEMIPAD's
+                ;;four admin ops now take both: the GOV|DEMIPAD_ADMIN keyset still decides whether
+                ;;the call proceeds, and the executor records WHICH keyholder made it. This
+                ;;function had neither, so both had to become parameters rather than be invented
+                ;;here -- HANDOFF 4e: never put a placeholder in a patron slot.
+                (ref-DEMIPAD::A_DefinePrice patron executor asset
                     {"price-per-share-in-dollars" : price}
                 )
             )

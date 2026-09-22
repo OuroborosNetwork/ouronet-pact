@@ -354,14 +354,13 @@
                 {"spark-id"            : SparkID}
             )
             ;;Register Spark To Launchpad
-            (ref-TS02-DPAD::A_RegisterAssetToLaunchpad patron SparkID [true true])
-            (ref-TS02-DPAD::A_DefinePrice SparkID 
-                {"pid"      : 1.01
+            (ref-TS02-DPAD::A_RegisterAssetToLaunchpad patron patron SparkID [true true])
+            (ref-TS02-DPAD::A_DefinePrice KST.ANHD SparkID {"pid"      : 1.01
                 ,"boost"    : 400.0
                 ,"id"       : SparkID}
             )
-            (ref-TS02-DPAD::A_ToggleRetrieval SparkID true)
-            (ref-TS02-DPAD::A_ToggleOpenForBusiness SparkID true)
+            (ref-TS02-DPAD::A_ToggleRetrieval KST.ANHD SparkID true)
+            (ref-TS02-DPAD::A_ToggleOpenForBusiness KST.ANHD SparkID true)
         ]
     )
 )
@@ -394,7 +393,7 @@
         (SparkID:string "SPARK-98c486052a51")
     )
     ;; admin locks retrieval (SparkID was enabled during setup)
-    (ref-TS02-DPAD::A_ToggleRetrieval SparkID false)
+    (ref-TS02-DPAD::A_ToggleRetrieval KST.ANHD SparkID false)
     (map print
         [ (expect "SparkID retrieval now LOCKED (false)" false (DEMIPAD.UR_Retrieval SparkID)) ])
 )
@@ -448,7 +447,7 @@
 ;;==== TX-2H-d - unlock, then non-admin passes · 02 · let / invocation ==== =======================
 (print "--- [TX-2H-d - unlock, then non-admin passes · 02 · let / invocation] ---")
 (let ((ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD))
-    (ref-TS02-DPAD::A_ToggleRetrieval "SPARK-98c486052a51" true))
+    (ref-TS02-DPAD::A_ToggleRetrieval KST.ANHD "SPARK-98c486052a51" true))
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;|| NEXT                   >
@@ -502,12 +501,11 @@
             {"asset-id"     : shareholders-id}
         )
         ;;Register Shareholders Collection To Launchpad
-        (ref-TS02-DPAD::A_RegisterAssetToLaunchpad patron shareholders-id [false true])
-        (ref-TS02-DPAD::A_DefinePrice shareholders-id 
-            {"price-per-share-in-dollars"   : 10.0}
+        (ref-TS02-DPAD::A_RegisterAssetToLaunchpad patron patron shareholders-id [false true])
+        (ref-TS02-DPAD::A_DefinePrice KST.ANHD shareholders-id {"price-per-share-in-dollars"   : 10.0}
         )
-        (ref-TS02-DPAD::A_ToggleRetrieval shareholders-id true)
-        (ref-TS02-DPAD::A_ToggleOpenForBusiness shareholders-id true)
+        (ref-TS02-DPAD::A_ToggleRetrieval KST.ANHD shareholders-id true)
+        (ref-TS02-DPAD::A_ToggleOpenForBusiness KST.ANHD shareholders-id true)
         ;;Fuel Assets for Sale must be done separately
     ]
 )
@@ -559,12 +557,11 @@
             {"asset-id"     : custodians-id}
         )
         ;;Register Shareholders Collection To Launchpad
-        (ref-TS02-DPAD::A_RegisterAssetToLaunchpad patron custodians-id [false true])
-        (ref-TS02-DPAD::A_DefinePrice custodians-id 
-            {"quintessence-price"   : 1.5}
+        (ref-TS02-DPAD::A_RegisterAssetToLaunchpad patron patron custodians-id [false true])
+        (ref-TS02-DPAD::A_DefinePrice KST.ANHD custodians-id {"quintessence-price"   : 1.5}
         )
-        (ref-TS02-DPAD::A_ToggleRetrieval custodians-id true)
-        (ref-TS02-DPAD::A_ToggleOpenForBusiness custodians-id true)
+        (ref-TS02-DPAD::A_ToggleRetrieval KST.ANHD custodians-id true)
+        (ref-TS02-DPAD::A_ToggleOpenForBusiness KST.ANHD custodians-id true)
         ;;Fuel Assets for Sale must be done separately
     ]
 )
@@ -1009,13 +1006,12 @@
                 {"asset-id"            : KpayID}
             )
             ;;Register KPAY To Launchpad
-            (ref-TS02-DPAD::A_RegisterAssetToLaunchpad patron KpayID [true true])
+            (ref-TS02-DPAD::A_RegisterAssetToLaunchpad patron patron KpayID [true true])
             ;;Defines the starting point, which is the base for the price and ending period.
-            (ref-TS02-DPAD::A_DefinePrice KpayID
-                {"starting-time" : (at "block-time" (chain-data))}
+            (ref-TS02-DPAD::A_DefinePrice KST.ANHD KpayID {"starting-time" : (at "block-time" (chain-data))}
                 ;{"starting-time": (time "2030-10-25T18:00:00Z")}
             )
-            (ref-TS02-DPAD::A_ToggleOpenForBusiness KpayID true)
+            (ref-TS02-DPAD::A_ToggleOpenForBusiness KST.ANHD KpayID true)
         ]
     )
 )
@@ -1249,17 +1245,17 @@
             ;;enforce stays as defence-in-depth for any future caller that does not read first.
             (expect-failure "<<TX-DEP-02>> FINDING: type 0 dies in URv_Funds, so the cap's own type enforce is unreachable"
                 "Invalid Read Type"
-                (ref-TS02-DPAD::DEMIPAD|C_Withdraw KST.ANHD asset 0 KST.EMMA))
+                (ref-TS02-DPAD::DEMIPAD|C_Withdraw KST.ANHD KST.ANHD asset 0 KST.EMMA))
             ;;The same shadowing for every other out-of-range type -- so the deadness is a
             ;;property of the pair of functions, not an artefact of the value 0.
             (expect-failure "<<TX-DEP-02>> ...and the same shadowing holds for any other out-of-range type"
                 "Invalid Read Type"
-                (ref-TS02-DPAD::DEMIPAD|C_Withdraw KST.ANHD asset 99 KST.EMMA))
+                (ref-TS02-DPAD::DEMIPAD|C_Withdraw KST.ANHD KST.ANHD asset 99 KST.EMMA))
             ;;EMPTY LEDGER. Aimed at SSTOA, which this sale never took, so the ONLY reason it
             ;;fails is the zero balance -- not the type, not the destination, not access.
             (expect-failure "<<TX-DEP-02>> withdrawing a currency the sale never took is rejected"
                 "There is nothing to retrieve for Asset-Id DHOC-98c486052a51 and Token Type 2 (SSTOA)"
-                (ref-TS02-DPAD::DEMIPAD|C_Withdraw KST.ANHD asset 2 KST.EMMA))
+                (ref-TS02-DPAD::DEMIPAD|C_Withdraw KST.ANHD KST.ANHD asset 2 KST.EMMA))
             ;;And the WSTOA ledger really is non-empty, so the rejection above was about SSTOA
             ;;alone. Without this the test above would pass just as well on a dead launchpad.
             (expect "<<TX-DEP-02>> ...while the WSTOA ledger IS funded"
@@ -1304,7 +1300,7 @@
             ;;THE ITEM (:488)
             (expect-failure "<<TX-DEP-02>> a third party may not withdraw launchpad funds"
                 "Only LPAD Admin or DHOC-98c486052a51 Owner|Creator may acces the Launchpad"
-                (ref-TS02-DPAD::DEMIPAD|C_Withdraw KST.LUMY asset 1 KST.EMMA))
+                (ref-TS02-DPAD::DEMIPAD|C_Withdraw KST.LUMY KST.LUMY asset 1 KST.EMMA))
             ;;:513 -- FIXED 2026-09-12, owner-ruled. This was the twelfth instance of the eager-`let`
             ;;mute-guard class (2026-09-12-eager-let-mute-guards.md) and is now the first one repaired.
             ;;
@@ -1361,7 +1357,7 @@
         (dest-before:decimal (ref-DPTF::UR_AccountSupply wstoa dest))
         (sc-before:decimal (ref-DPTF::UR_AccountSupply wstoa lpad-sc))
     )
-    (ref-TS02-DPAD::DEMIPAD|C_Withdraw KST.ANHD asset 1 dest)
+    (ref-TS02-DPAD::DEMIPAD|C_Withdraw KST.ANHD KST.ANHD asset 1 dest)
     (map print
         [
             (expect "<<TX-DEP-02>> the destination receives the whole seller ledger"
@@ -1382,7 +1378,7 @@
             ;;is rejected -- the guard is a live balance check, not a one-shot flag.
             (expect-failure "<<TX-DEP-02>> a second withdrawal finds nothing to retrieve"
                 "There is nothing to retrieve for Asset-Id DHOC-98c486052a51 and Token Type 1 (WSTOA)"
-                (ref-TS02-DPAD::DEMIPAD|C_Withdraw KST.ANHD asset 1 dest))
+                (ref-TS02-DPAD::DEMIPAD|C_Withdraw KST.ANHD KST.ANHD asset 1 dest))
             ;;Dollars raised is a CUMULATIVE sale record, not a balance: paying the seller out
             ;;must not erase the history of what was raised.
             (expect "<<TX-DEP-02>> dollars-raised survives the payout (it is history, not a balance)"

@@ -53,16 +53,16 @@
     ;;
     ;;  [A]
     ;;
-    (defun A_RegisterAssetToLaunchpad (patron:string asset-id:string fungibility:[bool]))
-    (defun A_ToggleOpenForBusiness (asset-id:string toggle:bool))
-    (defun A_DefinePrice (asset-id:string price:object))
-    (defun A_ToggleRetrieval (asset-id:string toggle:bool))
+    (defun A_RegisterAssetToLaunchpad (patron:string executor:string asset-id:string fungibility:[bool]))
+    (defun A_ToggleOpenForBusiness (executor:string asset-id:string toggle:bool))
+    (defun A_DefinePrice (executor:string asset-id:string price:object))
+    (defun A_ToggleRetrieval (executor:string asset-id:string toggle:bool))
     ;;
     ;;  [C]
     ;;
     (defun DEMIPAD|C_Deposit (patron:string donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal))
     ;;
-    (defun DEMIPAD|C_Withdraw (patron:string asset-id:string type:integer destination:string))
+    (defun DEMIPAD|C_Withdraw (patron:string executor:string asset-id:string type:integer destination:string))
     ;;
     (defun DEMIPAD|C_FuelTrueFungible (patron:string client:string asset-id:string amount:decimal))
     (defun DEMIPAD|C_FuelOrtoFungible (patron:string client:string asset-id:string nonces:[integer]))
@@ -300,7 +300,7 @@
     ;;{5.6}  Aux/X
     ;;{5.7}  User [A/C]
     ;;
-    (defun A_RegisterAssetToLaunchpad (patron:string asset-id:string fungibility:[bool])
+    (defun A_RegisterAssetToLaunchpad (patron:string executor:string asset-id:string fungibility:[bool])
         @doc "Registers an Asset to Launchpad; \
             \ An Asset can be a DPTF, DPMF, DPSF or DPNF \
             \   Asset-type can be designated via the double-boolean <fungibility> \
@@ -322,7 +322,7 @@
                     (nf:[bool] [false false])
                     (f:bool false)
                 )
-                (ref-DEMIPAD::A_RegisterAssetToLaunchpad patron asset-id fungibility)
+                (ref-DEMIPAD::A_RegisterAssetToLaunchpad patron executor asset-id fungibility)
                 ;;Reconciles two audits' DeployAccount hardening (dptf-dpof #N2 + DPDC #35M):
                 ;; #N2: lpad is DEMIPAD's own system smart account (not patron's) — tf/of use the ADMIN
                 ;;   variant (TS01-A, no ownership check on <account>); the self-service C_ variant now
@@ -350,36 +350,51 @@
             )
         )
     )
-    (defun A_ToggleOpenForBusiness (asset-id:string toggle:bool)
+    (defun A_ToggleOpenForBusiness (executor:string asset-id:string toggle:bool)
         @doc "Toggle Open For Bussines. Must be on to acquire Assets"
         (with-capability (P|TALOS-SUMMONER)
             (let
                 (
+                    (ref-DALOS-G:module{OuronetDalosV2} DALOS)
                     (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
                 )
-                (ref-DEMIPAD::A_ToggleOpenForBusiness asset-id toggle)
+                ;;GASLESS admin path: this Talos A_ wrapper takes no patron, so the core's patron
+                ;;slot carries the Ouronet system account, read from the same source
+                ;;TS01-A's GASLESS-PATRON constant resolves to. The EXECUTOR is threaded: the
+                ;;admin keyset says the call MAY happen, the executor says who made it happen.
+                (ref-DEMIPAD::A_ToggleOpenForBusiness (ref-DALOS-G::GOV|DALOS|SC_NAME) executor asset-id toggle)
             )
         )
     )
-    (defun A_DefinePrice (asset-id:string price:object)
+    (defun A_DefinePrice (executor:string asset-id:string price:object)
         @doc "Updates Price Object for an Asset"
         (with-capability (P|TALOS-SUMMONER)
             (let
                 (
+                    (ref-DALOS-G:module{OuronetDalosV2} DALOS)
                     (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
                 )
-                (ref-DEMIPAD::A_DefinePrice asset-id price)
+                ;;GASLESS admin path: this Talos A_ wrapper takes no patron, so the core's patron
+                ;;slot carries the Ouronet system account, read from the same source
+                ;;TS01-A's GASLESS-PATRON constant resolves to. The EXECUTOR is threaded: the
+                ;;admin keyset says the call MAY happen, the executor says who made it happen.
+                (ref-DEMIPAD::A_DefinePrice (ref-DALOS-G::GOV|DALOS|SC_NAME) executor asset-id price)
             )
         )
     )
-    (defun A_ToggleRetrieval (asset-id:string toggle:bool)
+    (defun A_ToggleRetrieval (executor:string asset-id:string toggle:bool)
         @doc "Retrieval ON allows Asset Owners to retrieve their Asssets that still exist on the Launchpad"
         (with-capability (P|TALOS-SUMMONER)
             (let
                 (
+                    (ref-DALOS-G:module{OuronetDalosV2} DALOS)
                     (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
                 )
-                (ref-DEMIPAD::A_ToggleRetrieval asset-id toggle)
+                ;;GASLESS admin path: this Talos A_ wrapper takes no patron, so the core's patron
+                ;;slot carries the Ouronet system account, read from the same source
+                ;;TS01-A's GASLESS-PATRON constant resolves to. The EXECUTOR is threaded: the
+                ;;admin keyset says the call MAY happen, the executor says who made it happen.
+                (ref-DEMIPAD::A_ToggleRetrieval (ref-DALOS-G::GOV|DALOS|SC_NAME) executor asset-id toggle)
             )
         )
     )
@@ -405,7 +420,7 @@
         )
     )
     ;;
-    (defun DEMIPAD|C_Withdraw (patron:string asset-id:string type:integer destination:string)
+    (defun DEMIPAD|C_Withdraw (patron:string executor:string asset-id:string type:integer destination:string)
         @doc "Withdraws all cumulated Tokens in the Launchpad, gathered through sale \
             \ Type 1 = WSTOA \
             \ Type 2 = SSTOA \
@@ -428,7 +443,7 @@
                     )
                     (sd:string (ref-I|OURONET::OI|UC_ShortAccount destination))
                 )
-                (ref-DEMIPAD::C_Withdraw patron asset-id type destination)
+                (ref-DEMIPAD::C_Withdraw patron executor asset-id type destination)
                 (format "Succesfuly withdrawn {} {} from Demipad to {}." [retrieval-amount working-id sd])
             )
         )
@@ -464,7 +479,7 @@
                     (c:string (ref-I|OURONET::OI|UC_ShortAccount client))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DEMIPAD::C_TransmitSemiFungibles client asset-id nonces amounts true)
+                    (ref-DEMIPAD::C_TransmitSemiFungibles patron client asset-id nonces amounts true)
                 )
                 (format "Succesfuly fueled {} Nonces {} with Amounts {} to Demiourgos Launchpad from Account {}" [asset-id nonces amounts c])
             )
@@ -480,7 +495,7 @@
                     (c:string (ref-I|OURONET::OI|UC_ShortAccount client))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DEMIPAD::C_TransmitNonFungibles client asset-id nonces amounts true)
+                    (ref-DEMIPAD::C_TransmitNonFungibles patron client asset-id nonces amounts true)
                 )
                 (format "Succesfuly fueled {} Nonces {} with Amounts {} to Demiourgos Launchpad from Account {}" [asset-id nonces amounts c])
             )
@@ -517,7 +532,7 @@
                     (c:string (ref-I|OURONET::OI|UC_ShortAccount client))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DEMIPAD::C_TransmitSemiFungibles client asset-id nonces amounts false)
+                    (ref-DEMIPAD::C_TransmitSemiFungibles patron client asset-id nonces amounts false)
                 )
                 (format "Succesfuly retrieved {} Nonces {} with Amounts {} from Demiourgos Launchpad to Account {}" [asset-id nonces amounts c])
             )
@@ -533,7 +548,7 @@
                     (c:string (ref-I|OURONET::OI|UC_ShortAccount client))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DEMIPAD::C_TransmitNonFungibles client asset-id nonces amounts false)
+                    (ref-DEMIPAD::C_TransmitNonFungibles patron client asset-id nonces amounts false)
                 )
                 (format "Succesfuly retrieved {} Nonces {} with Amounts {} from Demiourgos Launchpad to Account {}" [asset-id nonces amounts c])
             )

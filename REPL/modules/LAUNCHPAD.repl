@@ -541,7 +541,7 @@
                 (format "<<LPAD-N5>> share price on record = {}" [before])
                 ;;THE REGRESSION. Before the fix this call could not succeed for ANY signer.
                 (expect "<<LPAD-N5>> the admin's update is accepted now that P|UEV_IMC can pass"
-                    true (> (length (ref-SNAKES::A_UpdateSharePrice 17.5)) 0))
+                    true (> (length (ref-SNAKES::A_UpdateSharePrice KST.ANHD KST.ANHD 17.5)) 0))
                 (expect "<<LPAD-N5>> ...and the new share price is what the reader returns"
                     17.5 (ref-SNAKES::UR_DollarSharePrice))
                 ;;non-vacuity: 17.5 must not have been the price already, or the line above proves nothing
@@ -556,9 +556,17 @@
         (env-sigs [{ "key": "PK_Emma", "caps": [] }])
         (map print
             [
+;;EXECUTOR THREADED, 2026-09-22 (00_Demipad's canon turn). The NEGATIVE half names EMMA as
+;;BOTH patron and executor, deliberately: DEMIPAD::A_DefinePrice now enforces
+;;CAP_EnforceAccountOwnership on the executor BEFORE acquiring GOV|DEMIPAD_ADMIN, so naming the
+;;admin there would have made the EXECUTOR gate answer -- with the same "Keyset failure" text --
+;;and this assertion would have silently stopped testing the admin gate it was written for.
+;;Naming EMMA lets her own enforce pass, leaving GOV|DEMIPAD_ADMIN as the only thing that can
+;;refuse. Same reasoning as EQUITY.repl <<EQ-G1>>: choose the fixture so the guard under test is
+;;the one that speaks.
                 (expect-failure "<<LPAD-N5>> a NON-admin is refused -- by the ADMIN gate, now reachable"
                     "Keyset failure"
-                    (ref-SNAKES::A_UpdateSharePrice 99.0))
+                    (ref-SNAKES::A_UpdateSharePrice KST.EMMA KST.EMMA 99.0))
                 ;;total refusal, not a partial write: the admin's 17.5 still stands
                 (expect "<<LPAD-N5>> ...and the price the admin set is untouched by the attempt"
                     17.5 (ref-SNAKES::UR_DollarSharePrice))
@@ -601,7 +609,7 @@
                 (format "<<LPAD-N6>> quintessence price on record = {}" [before])
                 ;;THE REGRESSION, twin of <<LPAD-N5>>.
                 (expect "<<LPAD-N6>> the admin's update is accepted now that P|UEV_IMC can pass"
-                    true (> (length (ref-CUSTODIANS::A_UpdateQuintessencePrice 2.75)) 0))
+                    true (> (length (ref-CUSTODIANS::A_UpdateQuintessencePrice KST.ANHD KST.ANHD 2.75)) 0))
                 (expect "<<LPAD-N6>> ...and the new quintessence price is what the reader returns"
                     2.75 (ref-CUSTODIANS::UR_QuitessencePrice))
                 (expect "<<LPAD-N6>> ...which is a real change: 2.75 was not the price before"
@@ -611,9 +619,17 @@
         (env-sigs [{ "key": "PK_Emma", "caps": [] }])
         (map print
             [
+;;EXECUTOR THREADED, 2026-09-22 (00_Demipad's canon turn). The NEGATIVE half names EMMA as
+;;BOTH patron and executor, deliberately: DEMIPAD::A_DefinePrice now enforces
+;;CAP_EnforceAccountOwnership on the executor BEFORE acquiring GOV|DEMIPAD_ADMIN, so naming the
+;;admin there would have made the EXECUTOR gate answer -- with the same "Keyset failure" text --
+;;and this assertion would have silently stopped testing the admin gate it was written for.
+;;Naming EMMA lets her own enforce pass, leaving GOV|DEMIPAD_ADMIN as the only thing that can
+;;refuse. Same reasoning as EQUITY.repl <<EQ-G1>>: choose the fixture so the guard under test is
+;;the one that speaks.
                 (expect-failure "<<LPAD-N6>> a NON-admin is refused -- by the ADMIN gate, now reachable"
                     "Keyset failure"
-                    (ref-CUSTODIANS::A_UpdateQuintessencePrice 99.0))
+                    (ref-CUSTODIANS::A_UpdateQuintessencePrice KST.EMMA KST.EMMA 99.0))
                 (expect "<<LPAD-N6>> ...and the price the admin set is untouched by the attempt"
                     2.75 (ref-CUSTODIANS::UR_QuitessencePrice))
             ]

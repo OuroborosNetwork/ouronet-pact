@@ -127,10 +127,10 @@
             ;;    whatever state earlier blocks leave behind.
             (expect-failure "<<DEMIPAD-G2>> setting open-for-business to the value it already holds is refused"
                 "Open for business is already"
-                (ref-DPAD::A_ToggleOpenForBusiness sft (ref-DEMIPAD::UR_OpenForBusiness sft)))
+                (ref-DPAD::A_ToggleOpenForBusiness KST.ANHD sft (ref-DEMIPAD::UR_OpenForBusiness sft)))
             (expect-failure "<<DEMIPAD-G2>> ...and retrieval likewise"
                 "Retrieval is already"
-                (ref-DPAD::A_ToggleRetrieval sft (ref-DEMIPAD::UR_Retrieval sft)))
+                (ref-DPAD::A_ToggleRetrieval KST.ANHD sft (ref-DEMIPAD::UR_Retrieval sft)))
             ;;--- dollar amount: zero. Type 0 is valid, so the type guard cannot be what answers.
             (expect-failure "<<DEMIPAD-G2>> a deposit of zero dollars is refused"
                 "Invalid Dollar Amount for Deposit"
@@ -190,6 +190,85 @@
 ;;The else-branch checks iz-OURO and says SSTOA. Both are driven above, so both sites are genuinely
 ;;exercised — but a type-3 depositor is told to enable the wrong switch, and the two sites share
 ;;wording inside one module, so the coverage tool can credit them only nominally. One word.
+
+;;|| NEXT >
+;;|| DEMIPAD-G3 — the executor guard added to the four admin ops at 00_Demipad's canon turn.
+;;
+(begin-tx "DEMIPAD-G3 - the launchpad admin ops name the acting admin, and check it")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [DEMIPAD-G3 · 01 · authority and attribution are two different gates] ---")
+;;ADDED 2026-09-22 with the guard it protects. DEMIPAD's four admin ops -- A_RegisterAssetToLaunchpad,
+;;A_ToggleOpenForBusiness, A_DefinePrice, A_ToggleRetrieval -- are gated by GOV|DEMIPAD_ADMIN, a
+;;keyset shared by every launchpad admin. That answers "may this happen"; it cannot answer "who did
+;;it", and the events these ops emit are the launchpad's audit trail. Each now takes an <executor>
+;;and proves it with CAP_EnforceAccountOwnership, run BEFORE the admin capability is acquired.
+;;
+;;THE TWO GATES ARE SHOWN TO BE DIFFERENT, which is the only way to show either is real:
+;;  * admin signs, but names an executor they cannot sign for -> the EXECUTOR gate refuses
+;;  * a non-admin signs and names HERSELF                     -> the executor gate PASSES and the
+;;                                                               ADMIN gate refuses
+;;Both produce a keyset failure, so each assertion names the KEY it expects.
+;;
+;;MEASURED WITHOUT THE GUARD, 2026-09-22, by disabling all four enforces and re-running this file:
+;;  * the A_ToggleRetrieval assertion got "Retrieval is already true for Asset TSFS-..." -- it had
+;;    passed the (absent) executor gate and reached the idempotence guard;
+;;  * the A_DefinePrice assertion got "Asset TSFS-... price succesfully updated with the Price
+;;    Object {"pid": 1.0}" -- the op SUCCEEDED, attributed to an account that signed nothing;
+;;  * the third assertion was unchanged, because the ADMIN gate does not depend on the new one.
+;;So two of the three discriminate, and the second is the whole finding in one line: before this
+;;turn an admin could change a launchpad price and have the event name somebody else.
+;;
+;;Own transaction ending in (rollback-tx): Rule 9 -- an expect-failure whose subject MUTATES when
+;;the guard is absent must never share a committing transaction. The measurement above is exactly
+;;why that rule exists.
+;;==== DEMIPAD-G3 - the launchpad admin ops name the acting admin, and check it · 01 · env-sigs (caps) ==== 
+(print "--- [DEMIPAD-G3 - the launchpad admin ops name the acting admin, and check it · 01 · env-sigs (caps)] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== DEMIPAD-G3 - the launchpad admin ops name the acting admin, and check it · 02 · let / invocation ==== 
+(print "--- [DEMIPAD-G3 - the launchpad admin ops name the acting admin, and check it · 02 · let / invocation] ---")
+(let
+    (
+        (ref-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
+        (sft:string "TSFS-98c486052a51")
+    )
+    (map print
+        [
+            ;;THE ADMIN SIGNS, and names EMMA as the actor. EMMA signed nothing.
+            (expect-failure "<<DEMIPAD-G3>> an admin may not attribute a toggle to an account that did not sign"
+                "Keyset failure (keys-all): [PK_Emma"
+                (ref-DPAD::A_ToggleRetrieval KST.EMMA sft true))
+            ;;...and the same for the price op, so this is a property of the band and not of one
+            ;;function that happened to get the enforce.
+            (expect-failure "<<DEMIPAD-G3>> ...and the same holds for A_DefinePrice"
+                "Keyset failure (keys-all): [PK_Emma"
+                (ref-DPAD::A_DefinePrice KST.EMMA sft {"pid" : 1.0}))
+        ]
+    )
+    ""
+)
+;;==== DEMIPAD-G3 · 03 · the OTHER gate, reached by a signer who is not an admin ==== 
+(print "--- [DEMIPAD-G3 · 03 · the OTHER gate, reached by a signer who is not an admin] ---")
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
+        (sft:string "TSFS-98c486052a51")
+    )
+    (map print
+        [
+            ;;EMMA signs for HERSELF, so the executor gate is satisfied and the ADMIN gate is the
+            ;;only thing left that can refuse. The key named in the failure is what tells the two
+            ;;apart: the launchpad admin keyset, not EMMA's.
+            (expect-failure "<<DEMIPAD-G3>> a non-admin signing for herself is refused by the ADMIN gate instead"
+                "Keyset failure"
+                (ref-DPAD::A_ToggleRetrieval KST.EMMA sft true))
+        ]
+    )
+    ""
+)
+(env-sigs [])
+(rollback-tx)
 
 ;;|| NEXT >
 ;;
