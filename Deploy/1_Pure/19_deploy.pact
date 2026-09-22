@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 19 of 24
 ;; This is STEP 19 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-18 must have run first, including the init steps between deploys.
-;; 3 source file(s), 849,276 gas measured in the REPL gas model, 261,872 bytes
+;; 3 source file(s), 849,276 gas measured in the REPL gas model, 269,873 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/06_VCT.pact
@@ -3625,7 +3625,7 @@
     ;;{5.6}  Aux/X
     ;;{5.7}  User [A/C]
     ;;
-    (defun C_2|Inject (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal))
+    (defun C_2|Inject (patron:string executor:string fvt-id:string reward-dptf-id:string amount:decimal))
     (defun C_2|SweepRevokeAnchor (patron:string executor:string anchor-id:string))
 
 )
@@ -3981,13 +3981,22 @@
                 score-ids))
     )
     ;;{5.7}  User [A/C]
-    (defun C_2|Inject (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
+    (defun C_2|Inject (patron:string executor:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "2-step enforced-fresh inject (spike fallback for AQP-FVT::CC_Inject; handles up to 2×N_FIX stale \
             \ stakers). Acquires MTX-AQP|C>INJECT, then runs the MTX|2|C_Inject defpact. Advance with \
-            \ (continue-pact 1). Vault/treasury only (the defpact's inject is class≠0)."
+            \ (continue-pact 1). Vault/treasury only (the defpact's inject is class≠0). \
+            \ \
+            \ Executor: PROVEN INDIRECTLY, and named. MTX-AQP|C>INJECT validates the CONTEXT and \
+            \ proves no account. The executor's tokens are debited inside the defpact's step 0, \
+            \ which calls AQP-FVT::XB_FvtInject and bottoms out in \
+            \ (TFT::C_Transfer patron executor AQP|SC_NAME reward-dptf-id amount). FORWARDED \
+            \ cannot see it: the hop is a DEFPACT STEP, and the tool matches direct modref \
+            \ calls in the entrypoint's own body. Renamed from <injector>, which was already the \
+            \ right account under a local word -- the same rename 05_FVT's three injects took. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
         (with-capability (MTX-AQP|C>INJECT patron fvt-id reward-dptf-id amount)
-            (MTX|2|C_Inject patron injector fvt-id reward-dptf-id amount)
+            (MTX|2|C_Inject patron executor fvt-id reward-dptf-id amount)
         )
     )
     (defun C_2|SweepRevokeAnchor (patron:string executor:string anchor-id:string)
@@ -4000,7 +4009,7 @@
             (MTX|2|C_SweepRevokeAnchor patron executor anchor-id)
         )
     )
-    (defpact MTX|2|C_Inject (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
+    (defpact MTX|2|C_Inject (patron:string executor:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "Enforced-fresh vault/treasury inject as a 2-step defpact: each step's opening stale scan IS the \
             \ pre-inject freshness proof — atomically fixing a whole scanned set of size <= N_FIX leaves zero \
             \ stale, so no re-scan is needed. Step 0 injects terminally when the stale set fits, else fixes \
@@ -4027,7 +4036,7 @@
                             (n:integer (length stale))
                         )
                         (RPS.XE_FvtFixUserChunk fvt-id reward-dptf-id stale)
-                        (ref-IGNIS::XE_CollectIgnis patron (ref-FVT::XB_FvtInject patron injector fvt-id reward-dptf-id amount))
+                        (ref-IGNIS::XE_CollectIgnis patron (ref-FVT::XB_FvtInject patron executor fvt-id reward-dptf-id amount))
                         (yield {"injected" : true})
                         (format "MTX Inject 1|2: fixed {} stale staker(s) and INJECTED {} {} (terminal)." [n amount reward-dptf-id])
                     )
@@ -4057,7 +4066,7 @@
                                 (stale:[string] (RPS.URH_FvtStalePresentUsers fvt-id))
                             )
                             (RPS.XE_FvtFixUserChunk fvt-id reward-dptf-id stale)
-                            (ref-IGNIS::XE_CollectIgnis patron (ref-FVT::XB_FvtInject patron injector fvt-id reward-dptf-id amount))
+                            (ref-IGNIS::XE_CollectIgnis patron (ref-FVT::XB_FvtInject patron executor fvt-id reward-dptf-id amount))
                             (format "MTX Inject 2|2: fixed {} remaining stale staker(s) and INJECTED {} {}." [(length stale) amount reward-dptf-id])
                         )
                     )
@@ -4237,8 +4246,8 @@
         (patron:string executor:string fvt-id:string reward-dptf-id:string swpair:string))
     (defun C_SetAgencyFee:object{IgnisCollectorV3.OutputCumulator}
         (patron:string executor:string fvt-id:string score-entity-id:string fee-per-mille:integer))
-    (defun A_ToggleExternalOracle:string (on:bool))
-    (defun A_SetOracleValidity:string (seconds:integer))
+    (defun A_ToggleExternalOracle:string (patron:string executor:string on:bool))
+    (defun A_SetOracleValidity:string (patron:string executor:string seconds:integer))
 
 )
 ;;
@@ -4932,7 +4941,15 @@
     (defun C_DefineDelegationVault:object{IgnisCollectorV3.OutputCumulator}
         (patron:string executor:string fvt-id:string model-id:string unit-score:integer)
         @doc "Bind a class-0 FVT as a DSA delegation vault: record the score-entity model + unit-score (active). \
-            \ Only the FVT owner may define it. P|UEV_IMC + DSA|C>DEFINE-VAULT. Bills GAS|DEFINE-VAULT."
+            \ Only the FVT owner may define it. P|UEV_IMC + DSA|C>DEFINE-VAULT. Bills GAS|DEFINE-VAULT. \
+            \ \
+            \ Executor: PROVEN INDIRECTLY, and named -- DSA|C>DEFINE-VAULT resolves it IN \
+            \ PLACE. The capability binds (= executor fvt-owner) and separately runs \
+            \ (CAP_EnforceAccountOwnership fvt-owner) on that same DERIVED account, so both \
+            \ halves of HANDOFF 4g are present: the authority is proven and the actor is named \
+            \ against it. The matcher looks for the enforce applied to `executor`; here it is \
+            \ applied to the name `executor` was just proven equal to. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
         (with-capability (DSA|C>DEFINE-VAULT patron executor fvt-id model-id unit-score)
             (let
@@ -4949,7 +4966,15 @@
         (patron:string executor:string fvt-id:string oracle-guard:guard)
         @doc "Owner-only: authorize the delegated oracle key for this DSA vault (DSA|OracleAuth) and ARM the FVT \
             \ oracle-on expiry, so stale oracle data (>25h) captures nothing. P|UEV_IMC + DSA|C>SET-ORACLE-AUTH. \
-            \ Bills GAS|SET-ORACLE-AUTH."
+            \ Bills GAS|SET-ORACLE-AUTH. \
+            \ \
+            \ Executor: PROVEN INDIRECTLY, and named -- DSA|C>SET-ORACLE-AUTH resolves it IN \
+            \ PLACE. The capability binds (= executor fvt-owner) and separately runs \
+            \ (CAP_EnforceAccountOwnership fvt-owner) on that same DERIVED account, so both \
+            \ halves of HANDOFF 4g are present: the authority is proven and the actor is named \
+            \ against it. The matcher looks for the enforce applied to `executor`; here it is \
+            \ applied to the name `executor` was just proven equal to. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
         (with-capability (DSA|C>SET-ORACLE-AUTH patron executor fvt-id)
             (let
@@ -4967,6 +4992,16 @@
     (defun C_OracleWrite:object{IgnisCollectorV3.OutputCumulator}
         (patron:string fvt-id:string score-entity-id:string nodes:integer uptime:integer)
         @doc "Delegated-oracle-only: write an agency's daily {nodes, uptime}, then recompute its capture stamped \
+            \ \
+            \ EXECUTORLESS BY DESIGN (canon 2.2, 2026-09-22). The authority here is \
+            \ (enforce-guard (UR_DSA-ORA|Guard fvt-id)) -- a GUARD, not an account. There is no \
+            \ Ouronet account to bind an executor to, and inventing one would be a name nothing \
+            \ checks, which 4f rates worse than none. \
+            \ \
+            \ The attribution exists ONE LEVEL UP and is recorded there: C_SetOracleAuth is what \
+            \ registers this guard, and it takes an <executor> proven against the vault owner. \
+            \ So the ledger can answer WHO AUTHORISED this oracle, which is the question that \
+            \ has an account-shaped answer. \
             \ with NOW (fresh oracle-ts resets the 25h expiry). Authorized by the registered oracle guard. \
             \ P|UEV_IMC + DSA|A>ORACLE-WRITE. Bills GAS|ORACLE-WRITE."
         (P|UEV_IMC)
@@ -4982,21 +5017,49 @@
             )
         )
     )
-    (defun A_ToggleExternalOracle:string (on:bool)
+    (defun A_ToggleExternalOracle:string (patron:string executor:string on:bool)
         @doc "DSA MODULE ADMIN (GOV): flip the SINGULAR GLOBAL external-oracle switch for ALL operators at once. \
             \ OFF ⇒ external oracling is bypassed protocol-wide — every agency captures its STORED weight (oracle \
             \ entries, fresh or stale, are ignored); ON ⇒ the oracle-validity freshness gate applies (an operator \
-            \ with no/stale entry captures 0). Composes P|SECURE-CALLER for the FVT global-config write."
+            \ with no/stale entry captures 0). Composes P|SECURE-CALLER for the FVT global-config write. \
+            \ \
+            \ ATTRIBUTION (patron/executor canon 2.2, 2026-09-22). The AUTHORITY is the admin \
+            \ key: GOV|DSA_ADMIN decides whether the call proceeds. The EXECUTOR is the ACTOR \
+            \ among the keyholders, proven by CAP_EnforceAccountOwnership -- authority and \
+            \ attribution are orthogonal and neither substitutes for the other. This switch is \
+            \ SINGULAR AND GLOBAL, so the audit trail for WHICH keyholder flipped it matters \
+            \ more here than for a per-entity admin op, not less. Same treatment as DEMIPAD's \
+            \ four admin ops and LIQUID::A_MigrateLiquidFunds."
+        (let
+            (
+                (ref-DALOS-X:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS-X::CAP_EnforceAccountOwnership executor)
+        )
         (with-capability (GOV|DSA_ADMIN)
             (with-capability (P|SECURE-CALLER)
                 (RPS.XE_SetExternalOracle on)
             )
         )
     )
-    (defun A_SetOracleValidity:string (seconds:integer)
+    (defun A_SetOracleValidity:string (patron:string executor:string seconds:integer)
         @doc "DSA MODULE ADMIN (GOV): set the GLOBAL oracle-validity window (seconds; the freshness horizon an \
             \ oracle write is honored for while external-oracle is ON). Must be positive. Composes P|SECURE-CALLER \
-            \ for the FVT global-config write."
+            \ for the FVT global-config write. \
+            \ \
+            \ ATTRIBUTION (patron/executor canon 2.2, 2026-09-22). The AUTHORITY is the admin \
+            \ key: GOV|DSA_ADMIN decides whether the call proceeds. The EXECUTOR is the ACTOR \
+            \ among the keyholders, proven by CAP_EnforceAccountOwnership -- authority and \
+            \ attribution are orthogonal and neither substitutes for the other. This switch is \
+            \ SINGULAR AND GLOBAL, so the audit trail for WHICH keyholder flipped it matters \
+            \ more here than for a per-entity admin op, not less. Same treatment as DEMIPAD's \
+            \ four admin ops and LIQUID::A_MigrateLiquidFunds."
+        (let
+            (
+                (ref-DALOS-X:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS-X::CAP_EnforceAccountOwnership executor)
+        )
         (enforce (> seconds 0) "oracle-validity must be positive")
         (with-capability (GOV|DSA_ADMIN)
             (with-capability (P|SECURE-CALLER)
@@ -5009,7 +5072,15 @@
         @doc "Owner-only: dispose the whole royalty pool (uptime-shortfall custody) of <reward-dptf-id> on a DSA \
             \ vault by WITHDRAWING it to the FVT owner (delegates the AQP-custody move + zero to the FVT primitive \
             \ FVT::XE_WithdrawRoyalty, which holds the custody-governor authority). P|UEV_IMC + DSA|C>WITHDRAW-ROYALTY. \
-            \ Bills GAS|WITHDRAW-ROYALTY merged with the custody transfer's IGNIS."
+            \ Bills GAS|WITHDRAW-ROYALTY merged with the custody transfer's IGNIS. \
+            \ \
+            \ Executor: PROVEN INDIRECTLY, and named -- DSA|C>WITHDRAW-ROYALTY resolves it IN \
+            \ PLACE. The capability binds (= executor fvt-owner) and separately runs \
+            \ (CAP_EnforceAccountOwnership fvt-owner) on that same DERIVED account, so both \
+            \ halves of HANDOFF 4g are present: the authority is proven and the actor is named \
+            \ against it. The matcher looks for the enforce applied to `executor`; here it is \
+            \ applied to the name `executor` was just proven equal to. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
         (with-capability (DSA|C>WITHDRAW-ROYALTY patron executor fvt-id)
             (let
@@ -5027,7 +5098,15 @@
         (patron:string executor:string fvt-id:string reward-dptf-id:string)
         @doc "Owner-only: dispose the whole royalty pool of <reward-dptf-id> on a DSA vault by BURNING it (delegates \
             \ the AQP-custody burn + zero to FVT::XE_BurnRoyalty; AQP|SC_NAME holds the autonomic burn role). \
-            \ P|UEV_IMC + DSA|C>BURN-ROYALTY. Bills GAS|BURN-ROYALTY merged with the burn's IGNIS."
+            \ P|UEV_IMC + DSA|C>BURN-ROYALTY. Bills GAS|BURN-ROYALTY merged with the burn's IGNIS. \
+            \ \
+            \ Executor: PROVEN INDIRECTLY, and named -- DSA|C>BURN-ROYALTY resolves it IN \
+            \ PLACE. The capability binds (= executor fvt-owner) and separately runs \
+            \ (CAP_EnforceAccountOwnership fvt-owner) on that same DERIVED account, so both \
+            \ halves of HANDOFF 4g are present: the authority is proven and the actor is named \
+            \ against it. The matcher looks for the enforce applied to `executor`; here it is \
+            \ applied to the name `executor` was just proven equal to. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
         (with-capability (DSA|C>BURN-ROYALTY patron executor fvt-id)
             (let
@@ -5045,7 +5124,15 @@
         (patron:string executor:string fvt-id:string reward-dptf-id:string swpair:string)
         @doc "Owner-only: dispose the whole royalty pool of <reward-dptf-id> on a DSA vault by FUELING <swpair> \
             \ (add liquidity WITHOUT minting LP — delegates to FVT::XE_FuelRoyalty; the reward-dptf must be a token \
-            \ of the swpair). P|UEV_IMC + DSA|C>FUEL-ROYALTY. Bills GAS|FUEL-ROYALTY merged with the fuel's IGNIS."
+            \ of the swpair). P|UEV_IMC + DSA|C>FUEL-ROYALTY. Bills GAS|FUEL-ROYALTY merged with the fuel's IGNIS. \
+            \ \
+            \ Executor: PROVEN INDIRECTLY, and named -- DSA|C>FUEL-ROYALTY resolves it IN \
+            \ PLACE. The capability binds (= executor fvt-owner) and separately runs \
+            \ (CAP_EnforceAccountOwnership fvt-owner) on that same DERIVED account, so both \
+            \ halves of HANDOFF 4g are present: the authority is proven and the actor is named \
+            \ against it. The matcher looks for the enforce applied to `executor`; here it is \
+            \ applied to the name `executor` was just proven equal to. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
         (with-capability (DSA|C>FUEL-ROYALTY patron executor fvt-id swpair)
             (let
@@ -5064,7 +5151,15 @@
         @doc "Owner-only: change a delegation agency's operator fee-per-mille. Updates DSA|Agency + mirrors it onto \
             \ the FVT member (FVT::XE_SetAgencyFee) so the next inject uses the new split. Safe + O(1) — the fee is \
             \ never in a stored weight, so this reprices only FUTURE injects, no per-delegator recompute. P|UEV_IMC + \
-            \ DSA|C>SET-AGENCY-FEE. Bills GAS|SET-AGENCY-FEE."
+            \ DSA|C>SET-AGENCY-FEE. Bills GAS|SET-AGENCY-FEE. \
+            \ \
+            \ Executor: PROVEN INDIRECTLY, and named -- DSA|C>SET-AGENCY-FEE resolves it IN \
+            \ PLACE. The capability binds (= executor fvt-owner) and separately runs \
+            \ (CAP_EnforceAccountOwnership fvt-owner) on that same DERIVED account, so both \
+            \ halves of HANDOFF 4g are present: the authority is proven and the actor is named \
+            \ against it. The matcher looks for the enforce applied to `executor`; here it is \
+            \ applied to the name `executor` was just proven equal to. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
         (with-capability (DSA|C>SET-AGENCY-FEE patron executor fvt-id score-entity-id fee-per-mille)
             (let
@@ -5087,7 +5182,13 @@
             \ Does NOT stake or gate: the deep DPDC custody transfer of the operator's stake needs the caller's \
             \ guard registered in DPDC-T's IMP, which is P|TS (Talos) — so the Talos flow performs the stake under \
             \ P|TS after this admit, then calls UEV_OpenGate as the terminal atomic check (a short stake reverts the \
-            \ whole open). P|UEV_IMC + DSA|C>OPEN-AGENCY. Bills GAS|OPEN-AGENCY."
+            \ whole open). P|UEV_IMC + DSA|C>OPEN-AGENCY. Bills GAS|OPEN-AGENCY. \
+            \ \
+            \ Executor: PROVEN INDIRECTLY, and named. DSA|C>OPEN-AGENCY validates the vault \
+            \ template and the fee range; the OPERATOR's account ownership is enforced \
+            \ downstream in FVT|XE>ADMIT-DELEGATION, which its own @doc already said. Stated \
+            \ here too, because the canon requires the route to be written in the FUNCTION. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
         (with-capability (DSA|C>OPEN-AGENCY patron executor fvt-id score-entity-id fee-per-mille)
             (let
@@ -5106,7 +5207,15 @@
     )
     (defun C_RecomputeCapture:object{IgnisCollectorV3.OutputCumulator}
         (patron:string fvt-id:string score-entity-id:string)
-        @doc "Permissionless: recompute an agency's capture from its CURRENT quintessence (after a delegator \
+        @doc "EXECUTORLESS BY DESIGN (canon 2.2, 2026-09-22): DSA|C>RECOMPUTE-CAPTURE validates \
+            \ that the template is active and the score entity is a delegation member, and \
+            \ proves NO account. It recomputes a DERIVED aggregate from stored weight and the \
+            \ oracle entry -- idempotent truth-restoration, paid for by the patron -- so it is \
+            \ deliberately permissionless, the same disposition 03_AQP's anchor syncs and \
+            \ DALOS|C_UpdateEliteAccount carry. Neither parameter is an account: <fvt-id> and \
+            \ <score-entity-id> are entities, so there is no executee either. \
+            \ \
+            \ Permissionless: recompute an agency's capture from its CURRENT quintessence (after a delegator \
             \ stake/unstake changed Q), PRESERVING the stored oracle-ts (a stake must not refresh oracle freshness). \
             \ P|UEV_IMC + DSA|C>RECOMPUTE-CAPTURE. Bills GAS|RECOMPUTE-CAPTURE."
         (P|UEV_IMC)

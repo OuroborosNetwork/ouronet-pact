@@ -275,22 +275,22 @@
         (patron:string owner-konto:string vault-name:string stake-dptf-id:string reward-dptf-id:string)
     )
     (defun AQP-FVT|CC_InjectStream:string
-        (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
+        (patron:string executor:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
     )
     (defun AQP-FVT|CC_Inject:string
-        (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
+        (patron:string executor:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
     (defun AQP-FVT|CCp_InjectFixChunk:string
         (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
     )
     (defun AQP-FVT|CC_InjectFinalize:string
-        (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
+        (patron:string executor:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
     (defun AQP-FVT|CCp_UnstaleAll:string
         (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
     )
     (defun MTX-AQP|2|CC_Inject:string
-        (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
+        (patron:string executor:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
     (defun MTX-AQP|2|CC_SweepRevokeAnchor:string
         (patron:string executor:string anchor-id:string)
@@ -338,8 +338,8 @@
     (defun AQP-DSA|C_SetAgencyFee:string
         (patron:string executor:string fvt-id:string score-entity-id:string fee-per-mille:integer)
     )
-    (defun AQP-DSA|A_ToggleExternalOracle:string (on:bool))
-    (defun AQP-DSA|A_SetOracleValidity:string (seconds:integer))
+    (defun AQP-DSA|A_ToggleExternalOracle:string (patron:string executor:string on:bool))
+    (defun AQP-DSA|A_SetOracleValidity:string (patron:string executor:string seconds:integer))
 
 )
 ;;
@@ -1045,7 +1045,7 @@
             )
         )
     )
-    (defun AQP-DSA|A_ToggleExternalOracle:string (on:bool)
+    (defun AQP-DSA|A_ToggleExternalOracle:string (patron:string executor:string on:bool)
         @doc "DSA (Talos): MODULE ADMIN (GOV) flip of the SINGULAR GLOBAL external-oracle switch for ALL agencies. \
             \ No IGNIS billing (pure governance, master-signed, no OutputCumulator)."
         (with-capability (P|TS)
@@ -1053,12 +1053,12 @@
                 (
                     (ref-DSA:module{DsaV1} AQP-DSA)
                 )
-                (ref-DSA::A_ToggleExternalOracle on)
+                (ref-DSA::A_ToggleExternalOracle patron executor on)
                 (format "Global external-oracle switch set to {}." [on])
             )
         )
     )
-    (defun AQP-DSA|A_SetOracleValidity:string (seconds:integer)
+    (defun AQP-DSA|A_SetOracleValidity:string (patron:string executor:string seconds:integer)
         @doc "DSA (Talos): MODULE ADMIN (GOV) set of the GLOBAL oracle-validity window (freshness horizon, seconds). \
             \ No IGNIS billing (pure governance, master-signed, no OutputCumulator)."
         (with-capability (P|TS)
@@ -1066,7 +1066,7 @@
                 (
                     (ref-DSA:module{DsaV1} AQP-DSA)
                 )
-                (ref-DSA::A_SetOracleValidity seconds)
+                (ref-DSA::A_SetOracleValidity patron executor seconds)
                 (format "Global oracle-validity window set to {} seconds." [seconds])
             )
         )
@@ -2349,7 +2349,7 @@
     )
 
     (defun AQP-FVT|CC_InjectStream:string
-        (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
+        (patron:string executor:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
         @doc "Injects reward DPTF as a TIME-STREAM (linear vesting over `duration` seconds, 1h..365d) into fvt-id \
             \ and collects IGNIS on patron. The DELAYED counterpart of AQP-FVT|CC_Inject (instant): the amount vests \
             \ continuously and whoever is staked during each slice earns it (late stakers included). Independent \
@@ -2362,7 +2362,7 @@
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::CC_InjectStream patron injector fvt-id reward-dptf-id amount duration)
+                    (ref-FVT::CC_InjectStream patron executor fvt-id reward-dptf-id amount duration)
                 )
                 (ref-TS01-A::XB_DynamicFuelSTOA)
                 (format "Successfully streamed {} {} into FVT {} over {}s." [amount reward-dptf-id fvt-id duration])
@@ -2370,7 +2370,7 @@
         )
     )
     (defun AQP-FVT|CC_Inject:string
-        (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
+        (patron:string executor:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "HEAVY enforced-FRESH inject for ANY FVT class (farm/vault/treasury; M3 #12): refreshes every stale \
             \ staker's deb so the divisor is live before injecting, then injects + collects IGNIS on patron. Same \
             \ shape as C_Inject. Farms are covered too — a mosaic farm's singular/non-true-triplet members are \
@@ -2383,7 +2383,7 @@
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::CC_Inject patron injector fvt-id reward-dptf-id amount)
+                    (ref-FVT::CC_Inject patron executor fvt-id reward-dptf-id amount)
                 )
                 (ref-TS01-A::XB_DynamicFuelSTOA)
                 (format "Successfully FRESH-injected {} {} into FVT {}." [amount reward-dptf-id fvt-id])
@@ -2413,7 +2413,7 @@
         )
     )
     (defun AQP-FVT|CC_InjectFinalize:string
-        (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
+        (patron:string executor:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "FINALIZE a paginated enforced-fresh inject: after CCp_InjectFixChunk pages left ZERO stale, inject on \
             \ the fresh divisor + collect IGNIS on patron — same outcome as the single-tx AQP-FVT|CC_Inject. Lives \
             \ in AQP-FVT."
@@ -2425,7 +2425,7 @@
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::CC_InjectFinalize patron injector fvt-id reward-dptf-id amount)
+                    (ref-FVT::CC_InjectFinalize patron executor fvt-id reward-dptf-id amount)
                 )
                 (ref-TS01-A::XB_DynamicFuelSTOA)
                 (format "Successfully FRESH-injected {} {} into FVT {} (paginated)." [amount reward-dptf-id fvt-id])
@@ -2456,7 +2456,7 @@
         )
     )
     (defun MTX-AQP|2|CC_Inject:string
-        (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
+        (patron:string executor:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "Starts the 2-step enforced-fresh inject defpact (MTX-AQP — spike fallback for AQP-FVT|CC_Inject when \
             \ the stale set exceeds one tx). Step 0 runs here; advance with (continue-pact 1). Each defpact step \
             \ collects its own IGNIS on patron, so this wrapper only summons the pact."
@@ -2468,7 +2468,7 @@
                 )
                 (let
                     (
-                        (r:string (ref-MTX-AQP::C_2|Inject patron injector fvt-id reward-dptf-id amount))
+                        (r:string (ref-MTX-AQP::C_2|Inject patron executor fvt-id reward-dptf-id amount))
                     )
                     (ref-TS01-A::XB_DynamicFuelSTOA)
                     r

@@ -2055,3 +2055,73 @@ prove `P|UEV_IMC` refuses a non-Talos caller. Their executor stays a plain accou
 from the `_executormigrate` rule block by an explicit comment: these calls exist to die **before**
 anything is read, and a derived owner expression at the call site would be evaluated first.
 
+
+---
+
+### 07_MTX-AQP.pact — COMPLETE (1 of 1 entrypoint, 2026-09-22)
+
+A one-line rename — `injector` → `executor`, matching `05_FVT`'s three injects — and a **third
+distinct reason `FORWARDED` cannot see a real proof.**
+
+`C_2|Inject` acquires its capability and then runs the `MTX|2|C_Inject` **defpact**. The executor's
+tokens are debited in *step 0*, which calls `AQP-FVT::XB_FvtInject` and bottoms out in
+`(TFT::C_Transfer patron executor AQP|SC_NAME …)`. The entrypoint's own body contains **no**
+`ref-X::` call carrying the executor at all — `FORWARDED` scans the body, so a hop through a
+defpact step is invisible to it.
+
+The registry now records three separable reasons, and keeping them apart is the point:
+
+| shape | example |
+|---|---|
+| proven **in place** — binder + enforce on the derived name | `SCR|C>ISSUE-TRIPLET`, `FVT|C>ROTATE-OWNERSHIP-FVT`, six of `08_DSA`'s |
+| hop through a **same-module** `XI_` | `02_SCORE::C_IssueScoreFromModel`, `00_Demipad`'s collectable transmits |
+| hop through a **defpact step** | `07_MTX-AQP::C_2|Inject` |
+
+> And the registry key had to be `07_MTX-AQP.pact::Inject`, not `::C_2|Inject` — the lookup does
+> `name.split("|")[-1]`. The tool's own selftest refuses the wrong shape and caught it on the first
+> run, which is exactly what that selftest was added for.
+
+---
+
+### 08_DSA.pact — COMPLETE (4 of 4 outstanding entrypoints, 2026-09-22)
+
+Delegation agencies. Two admin ops, and two that get **no executor** for two *different* reasons.
+
+#### A guard is not an account
+
+`C_OracleWrite`'s authority is `(enforce-guard (UR_DSA-ORA|Guard fvt-id))` — a **guard**, not an
+account. There is nothing account-shaped to bind an executor to, and naming one would be a
+parameter nobody checks.
+
+> The attribution exists **one level up**, and is already recorded there: `C_SetOracleAuth`
+> registers that guard and takes an `executor` proven against the vault owner. So the ledger can
+> answer *who authorised this oracle* — the question that has an account-shaped answer. Where a
+> module delegates authority to a guard, the attribution belongs at the delegation, not at the use.
+
+`C_RecomputeCapture` is the *other* executorless shape — the permissionless-repair one from
+module 38. It recomputes a derived aggregate from stored weight and the oracle entry, idempotent,
+patron-paid; and neither parameter is even an account, so there is no executee either. The registry
+comment keeps the two reasons visibly separate.
+
+#### Two global admin switches, now attributable
+
+`A_ToggleExternalOracle` and `A_SetOracleValidity` are `GOV|DSA_ADMIN` ops that took **neither**
+patron nor executor. Both now take both, with the ownership enforce ahead of the validation.
+
+> The toggle is **singular and global** — it flips external oracling for *every* operator at once.
+> An audit trail for which keyholder flipped it matters more there than for a per-entity admin op,
+> not less.
+
+`<<AQP-G20b>>`'s two floor assertions now name ANHD as executor in a block that signs for her, so
+the positivity message still speaks rather than being shadowed by the new ownership guard — the
+same fixture discipline as `<<EQ-G1>>`.
+
+#### Seven proofs the matcher could not see
+
+Six DSA entrypoints bind `(= executor fvt-owner)` and enforce ownership of that derived name — the
+`SCR|C>ISSUE-TRIPLET` shape. The seventh, `C_AdmitAgency`, is a genuine downstream forward, and
+`DSA|C>OPEN-AGENCY`'s `@doc` **already said so**: *"Operator account-ownership is enforced
+downstream in `FVT|XE>ADMIT-DELEGATION`."* That sentence now also sits in the function, because the
+canon requires the route to be written where the executor is declared — not one level up where
+only a reader of the capability would find it.
+

@@ -1434,12 +1434,19 @@
                     (ref-U|DALOS::UDC_Makeid "NoModel") 10))
             ;;the oracle-validity window is how long an oracle write stays fresh; zero or negative
             ;;would make every write instantly stale, or permanently fresh.
+            ;;
+            ;;ANHD IS NAMED AS EXECUTOR AND THE BLOCK SIGNS FOR HER, deliberately. The 2026-09-22
+            ;;canon turn gave this admin op an executor proven by CAP_EnforceAccountOwnership,
+            ;;which runs BEFORE the positivity enforce (authorisation precedes validation, the
+            ;;2026-09-14 ruling). Naming an account the block does not sign for would make the
+            ;;OWNERSHIP guard answer and this assertion would stop testing the floor it is named
+            ;;for -- the same fixture discipline as EQUITY.repl <<EQ-G1>>.
             (expect-failure "<<AQP-G20b>> a negative oracle-validity window is refused"
                 "oracle-validity must be positive"
-                (AQP-DSA.A_SetOracleValidity -1))
+                (AQP-DSA.A_SetOracleValidity KST.ANHD KST.ANHD -1))
             (expect-failure "<<AQP-G20b>> ...and zero likewise"
                 "oracle-validity must be positive"
-                (AQP-DSA.A_SetOracleValidity 0))
+                (AQP-DSA.A_SetOracleValidity KST.ANHD KST.ANHD 0))
         ]
     )
     ""

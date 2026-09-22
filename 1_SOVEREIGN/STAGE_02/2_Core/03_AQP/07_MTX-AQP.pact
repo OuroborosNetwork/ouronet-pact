@@ -45,7 +45,7 @@
     ;;{5.6}  Aux/X
     ;;{5.7}  User [A/C]
     ;;
-    (defun C_2|Inject (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal))
+    (defun C_2|Inject (patron:string executor:string fvt-id:string reward-dptf-id:string amount:decimal))
     (defun C_2|SweepRevokeAnchor (patron:string executor:string anchor-id:string))
 
 )
@@ -401,13 +401,22 @@
                 score-ids))
     )
     ;;{5.7}  User [A/C]
-    (defun C_2|Inject (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
+    (defun C_2|Inject (patron:string executor:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "2-step enforced-fresh inject (spike fallback for AQP-FVT::CC_Inject; handles up to 2×N_FIX stale \
             \ stakers). Acquires MTX-AQP|C>INJECT, then runs the MTX|2|C_Inject defpact. Advance with \
-            \ (continue-pact 1). Vault/treasury only (the defpact's inject is class≠0)."
+            \ (continue-pact 1). Vault/treasury only (the defpact's inject is class≠0). \
+            \ \
+            \ Executor: PROVEN INDIRECTLY, and named. MTX-AQP|C>INJECT validates the CONTEXT and \
+            \ proves no account. The executor's tokens are debited inside the defpact's step 0, \
+            \ which calls AQP-FVT::XB_FvtInject and bottoms out in \
+            \ (TFT::C_Transfer patron executor AQP|SC_NAME reward-dptf-id amount). FORWARDED \
+            \ cannot see it: the hop is a DEFPACT STEP, and the tool matches direct modref \
+            \ calls in the entrypoint's own body. Renamed from <injector>, which was already the \
+            \ right account under a local word -- the same rename 05_FVT's three injects took. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
         (with-capability (MTX-AQP|C>INJECT patron fvt-id reward-dptf-id amount)
-            (MTX|2|C_Inject patron injector fvt-id reward-dptf-id amount)
+            (MTX|2|C_Inject patron executor fvt-id reward-dptf-id amount)
         )
     )
     (defun C_2|SweepRevokeAnchor (patron:string executor:string anchor-id:string)
@@ -420,7 +429,7 @@
             (MTX|2|C_SweepRevokeAnchor patron executor anchor-id)
         )
     )
-    (defpact MTX|2|C_Inject (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
+    (defpact MTX|2|C_Inject (patron:string executor:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "Enforced-fresh vault/treasury inject as a 2-step defpact: each step's opening stale scan IS the \
             \ pre-inject freshness proof — atomically fixing a whole scanned set of size <= N_FIX leaves zero \
             \ stale, so no re-scan is needed. Step 0 injects terminally when the stale set fits, else fixes \
@@ -447,7 +456,7 @@
                             (n:integer (length stale))
                         )
                         (RPS.XE_FvtFixUserChunk fvt-id reward-dptf-id stale)
-                        (ref-IGNIS::XE_CollectIgnis patron (ref-FVT::XB_FvtInject patron injector fvt-id reward-dptf-id amount))
+                        (ref-IGNIS::XE_CollectIgnis patron (ref-FVT::XB_FvtInject patron executor fvt-id reward-dptf-id amount))
                         (yield {"injected" : true})
                         (format "MTX Inject 1|2: fixed {} stale staker(s) and INJECTED {} {} (terminal)." [n amount reward-dptf-id])
                     )
@@ -477,7 +486,7 @@
                                 (stale:[string] (RPS.URH_FvtStalePresentUsers fvt-id))
                             )
                             (RPS.XE_FvtFixUserChunk fvt-id reward-dptf-id stale)
-                            (ref-IGNIS::XE_CollectIgnis patron (ref-FVT::XB_FvtInject patron injector fvt-id reward-dptf-id amount))
+                            (ref-IGNIS::XE_CollectIgnis patron (ref-FVT::XB_FvtInject patron executor fvt-id reward-dptf-id amount))
                             (format "MTX Inject 2|2: fixed {} remaining stale staker(s) and INJECTED {} {}." [(length stale) amount reward-dptf-id])
                         )
                     )

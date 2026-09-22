@@ -141,6 +141,21 @@ EXECUTORLESS = {
     # worse than having none.
     "C_SyncTrueFungibleAnchors", "C_SyncCollectableAnchors",
     "AQP-POOL|C_SyncTrueFungibleAnchors", "AQP-POOL|C_SyncCollectableAnchors",
+    # 08_DSA's two, added 2026-09-22, and they are executorless for TWO DIFFERENT reasons --
+    # worth keeping apart, because only one of them is the permissionless-repair shape:
+    #
+    #  * C_RecomputeCapture IS that shape. DSA|C>RECOMPUTE-CAPTURE validates template-active and
+    #    delegation-membership and proves no account; the op recomputes a DERIVED aggregate from
+    #    stored weight and the oracle entry, idempotent, patron-paid. Neither parameter is even
+    #    an account -- <fvt-id> and <score-entity-id> are entities -- so there is no executee.
+    #
+    #  * C_OracleWrite is different: it HAS an authority, and that authority is a GUARD rather
+    #    than an account -- (enforce-guard (UR_DSA-ORA|Guard fvt-id)). There is nothing
+    #    account-shaped to bind an executor to. The attribution exists ONE LEVEL UP, in
+    #    C_SetOracleAuth, which registers that guard and does take a proven executor. Naming an
+    #    unchecked account here would be the decorative attribution 4f rates worse than none.
+    "C_OracleWrite", "C_RecomputeCapture",
+    "AQP-DSA|C_OracleWrite", "AQP-DSA|C_RecomputeCapture",
     # Left non-empty-looking on purpose. The same stale-name failure hit the PRICE SHEET, whose
     # shape-B detector went on grepping for `C_Collect*` for a day after the rename and silently
     # stopped resolving three entrypoints. A rename pass has to carry the TOOLS that name the

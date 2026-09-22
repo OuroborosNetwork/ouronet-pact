@@ -159,6 +159,26 @@ INDIRECT = {
     "05_FVT.pact::CC_InjectStream":    "XE_XI_FvtAddStream",
     "05_FVT.pact::CC_Inject":          "XE_XI_FvtInjectCore",
     "05_FVT.pact::CC_InjectFinalize":  "XE_XI_FvtInjectCore",
+    # 07_MTX-AQP (2026-09-22). A THIRD reason the matcher cannot see a real forward, and the
+    # newest one: the hop is a DEFPACT STEP. C_2|Inject acquires its capability and then runs the
+    # MTX|2|C_Inject defpact, whose step 0 calls AQP-FVT::XB_FvtInject -- so the entrypoint's own
+    # body contains no `ref-X::` call carrying the executor at all. FORWARDED scans the body.
+    # KEY USES THE BARE NAME -- the lookup does name.split("|")[-1], so "C_2|Inject" would be
+    # inert. The selftest below refuses that shape and caught this one on the first run.
+    "07_MTX-AQP.pact::Inject": "XB_FvtInject",
+    # 08_DSA (2026-09-22). SIX of the seven are the SCR|C>ISSUE-TRIPLET shape -- the capability
+    # binds (= executor fvt-owner) and enforces ownership of that DERIVED name, so the proof is
+    # complete and the matcher simply cannot see it. The seventh, C_AdmitAgency, is a genuine
+    # downstream forward: DSA|C>OPEN-AGENCY's own @doc already said "Operator account-ownership
+    # is enforced downstream in FVT|XE>ADMIT-DELEGATION", and that sentence now also sits in the
+    # FUNCTION, which is what the canon asks for.
+    "08_DSA.pact::C_DefineDelegationVault": "CAP_EnforceAccountOwnership fvt-owner",
+    "08_DSA.pact::C_SetOracleAuth":         "CAP_EnforceAccountOwnership fvt-owner",
+    "08_DSA.pact::C_WithdrawRoyalty":       "CAP_EnforceAccountOwnership fvt-owner",
+    "08_DSA.pact::C_BurnRoyalty":           "CAP_EnforceAccountOwnership fvt-owner",
+    "08_DSA.pact::C_FuelRoyalty":           "CAP_EnforceAccountOwnership fvt-owner",
+    "08_DSA.pact::C_SetAgencyFee":          "CAP_EnforceAccountOwnership fvt-owner",
+    "08_DSA.pact::C_AdmitAgency":           "FVT|XE>ADMIT-DELEGATION",
 }
 
 # SELF-PROVING AT CREATION -- the base case of the attribution rule, resolved by the owner on
