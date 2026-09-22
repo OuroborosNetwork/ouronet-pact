@@ -280,7 +280,7 @@ same tools with those three properties.
 | [x] 26 | `03_DPDC-C.pact` | 0 | 0 | 2 | **2** | `DpdcCreateV2` |
 | [x] 27 | `04_DPDC-I.pact` | 0 | 1 | 0 | **1** | `DpdcIssueV2` |
 | [x] 28 | `05_DPDC-R.pact` | 0 | 0 | 11 | **11** | `DpdcRolesV2` |
-| [ ] 29 | `06_DPDC-MNG.pact` | 0 | 0 | 12 | **12** | `DpdcManagementV2` |
+| [x] 29 | `06_DPDC-MNG.pact` | 0 | 0 | 12 | **12** | `DpdcManagementV2` |
 | [ ] 30 | `07_DPDC-T.pact` | 1 | 0 | 3 | **4** | `DpdcTransferV2` |
 | [ ] 31 | `08_DPDC-S.pact` | 0 | 0 | 10 | **10** | `DpdcSetsV2` |
 | [ ] 32 | `09_DPDC-F.pact` | 0 | 0 | 4 | **4** | `DpdcFragmentsV2` |

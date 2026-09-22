@@ -49,7 +49,7 @@
     (print (format "BEFORE anhd nonce1 supply = {}" [(ref-DPDC::UR_AccountNonceSupply KST.ANHD id true 1)]))
     ;; ANHD already holds the burn role by default (owner==creator at genesis) — no need to grant it.
     (print (format "LEGIT BURN RESULT = {}"
-        [(ref-TS02-C1::DPSF|C_Burn KST.ANHD id KST.ANHD 1 50)]))
+        [(ref-TS02-C1::DPSF|C_Burn KST.ANHD KST.ANHD id 1 50)]))
     (print (format "AFTER legit burn: anhd nonce1 supply = {}" [(ref-DPDC::UR_AccountNonceSupply KST.ANHD id true 1)]))
 )
 (commit-tx)
@@ -69,6 +69,6 @@
         (id:string "DHOC-98c486052a51")
         (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
     )
-    (ref-TS02-C1::DPSF|C_Burn KST.ANHD id dpdc 3 50)
+    (ref-TS02-C1::DPSF|C_Burn KST.ANHD dpdc id 3 50)
 )
 (commit-tx)

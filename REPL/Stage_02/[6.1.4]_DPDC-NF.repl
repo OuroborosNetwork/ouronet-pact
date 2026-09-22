@@ -118,8 +118,8 @@
         (f:bool false)
     )
     ;; pause on/off
-    (ref-TS02-C2::DPNF|C_TogglePause patron id t)
-    (ref-TS02-C2::DPNF|C_TogglePause patron id f)
+    (ref-TS02-C2::DPNF|C_TogglePause patron (DPDC.UR_OwnerKonto id false) id t)
+    (ref-TS02-C2::DPNF|C_TogglePause patron (DPDC.UR_OwnerKonto id false) id f)
     ;; per-account role toggles on a standard account (EMMA) — on then off
     (ref-TS02-C2::DPNF|C_ToggleBurnRole patron (DPDC.UR_OwnerKonto id false) emma id t)
     (ref-TS02-C2::DPNF|C_ToggleBurnRole patron (DPDC.UR_OwnerKonto id false) emma id f)
@@ -429,9 +429,9 @@
     )
     ;; enable EMMA's burn role (TX-NF-002 left it off), then burn her nonce 5
     (ref-TS02-C2::DPNF|C_ToggleBurnRole patron (DPDC.UR_OwnerKonto id false) emma id true)
-    (ref-TS02-C2::DPNF|C_Burn patron id emma 5)
+    (ref-TS02-C2::DPNF|C_Burn patron emma id 5)
     ;; respawn the burned nonce 5 to the owner
-    (ref-TS02-C2::DPNF|C_Respawn patron id patron 5)
+    (ref-TS02-C2::DPNF|C_Respawn patron patron id 5)
     (map print
         [
             (expect "<<TX-NF-008>> nonce 5 no longer held by EMMA after burn" 0 (ref-DPDC::UR_AccountNonceSupply emma id false 5))
@@ -477,12 +477,12 @@
     (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto id false) emma id true)
     (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto id false) lumy id true)
     ;; owner-forced wipes on EMMA: single / clean / dirty / heavy (heavy clears the rest)
-    (ref-TS02-C2::DPNF|C_WipeNonce patron id emma 3)
-    (ref-TS02-C2::DPNF|C_WipeClean patron emma id [4])
-    (ref-TS02-C2::DPNF|C_WipeDirty patron emma id [5])
-    (ref-TS02-C2::DPNF|CC_WipeHeavy patron emma id)
+    (ref-TS02-C2::DPNF|C_WipeNonce patron (DPDC.UR_OwnerKonto id false) emma id 3)
+    (ref-TS02-C2::DPNF|C_WipeClean patron (DPDC.UR_OwnerKonto id false) emma id [4])
+    (ref-TS02-C2::DPNF|C_WipeDirty patron (DPDC.UR_OwnerKonto id false) emma id [5])
+    (ref-TS02-C2::DPNF|CC_WipeHeavy patron (DPDC.UR_OwnerKonto id false) emma id )
     ;; WipePure on LUMY via the computed RemovableNonces object
-    (ref-TS02-C2::DPNF|C_WipePure patron lumy id (ref-DPDC-MNG::URHC_WipePure lumy id false))
+    (ref-TS02-C2::DPNF|C_WipePure patron (DPDC.UR_OwnerKonto id false) lumy id (ref-DPDC-MNG::URHC_WipePure lumy id false))
     (map print
         [
             (expect "<<TX-NF-009>> EMMA fully wiped (nonce 6 gone)" 0 (ref-DPDC::UR_AccountNonceSupply emma id false 6))

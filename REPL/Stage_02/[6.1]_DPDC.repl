@@ -124,8 +124,8 @@
         (t:bool true)
         (f:bool false)
     )
-    (ref-TS02-C1::DPSF|C_Control patron id t f t t t t t t)
-    (ref-TS02-C1::DPSF|C_TogglePause patron id t)
+    (ref-TS02-C1::DPSF|C_Control patron (DPDC.UR_OwnerKonto id true) id t f t t t t t t)
+    (ref-TS02-C1::DPSF|C_TogglePause patron (DPDC.UR_OwnerKonto id true) id t)
     (ref-TS02-C1::DPSF|C_ToggleAddQuantityRole patron (DPDC.UR_OwnerKonto id true) emma id t)
     (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto id true) emma id t)
     (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto id true) emma id f)
@@ -470,20 +470,20 @@
     [       
             ;:Freeze Emma
             (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto id true) emma id t)
-        (ref-TS02-C1::DPSF|C_AddQuantity patron id emma 1 20)
-        ;(ref-TS02-C1::DPSF|C_AddQuantity patron id emma 11 20)
+        (ref-TS02-C1::DPSF|C_AddQuantity patron emma id 1 20)
+        ;(ref-TS02-C1::DPSF|C_AddQuantity patron emma id 11 20)
             (format "Emma Nonce 1 Supply is {}" [(ref-DPDC::UR_AccountNonceSupply emma id true 1)])
             (format "After Add Q, Nonce 1 Supply is {}" [(ref-DPDC::UR_NonceSupply id true 1)])
-        (ref-TS02-C1::DPSF|C_Burn patron id emma 1 7)
+        (ref-TS02-C1::DPSF|C_Burn patron emma id 1 7)
             (format "Emma Nonce 1 Supply is {}" [(ref-DPDC::UR_AccountNonceSupply emma id true 1)])
             (format "After Burn, Nonce 1 Supply is {}" [(ref-DPDC::UR_NonceSupply id true 1)])
-        (ref-TS02-C1::DPSF|C_WipeNoncePartialy patron id emma 1 6)
+        (ref-TS02-C1::DPSF|C_WipeNoncePartialy patron (DPDC.UR_OwnerKonto id true) emma id 1 6)
             (format "Emma Nonce 1 Supply is {}" [(ref-DPDC::UR_AccountNonceSupply emma id true 1)])
             (format "After Wipe, Nonce 1 Supply is {}" [(ref-DPDC::UR_NonceSupply id true 1)])
-        (ref-TS02-C1::DPSF|C_WipeNonce patron id emma 1)
+        (ref-TS02-C1::DPSF|C_WipeNonce patron (DPDC.UR_OwnerKonto id true) emma id 1)
             (format "Emma Nonce 1 Supply is {}" [(ref-DPDC::UR_AccountNonceSupply emma id true 1)])
             (format "After Total Wipe of Nonce, Nonce 1 Supply is {}" [(ref-DPDC::UR_NonceSupply id true 1)])
-        (ref-TS02-C1::DPSF|C_AddQuantity patron id emma 1 500)
+        (ref-TS02-C1::DPSF|C_AddQuantity patron emma id 1 500)
             (format "Emma Nonce 1 Supply is {}" [(ref-DPDC::UR_AccountNonceSupply emma id true 1)])
             (format "After Remake of Nonce, Nonce 1 Supply is {}" [(ref-DPDC::UR_NonceSupply id true 1)])
         
@@ -558,7 +558,7 @@
 
         ;;Block 1 of Testing
         ;(ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto id true) patron id t)
-        ;    (ref-TS02-C1::DPSF|CC_WipeHeavy patron patron id)
+        ;    (ref-TS02-C1::DPSF|CC_WipeHeavy patron (DPDC.UR_OwnerKonto id true) patron id )
         ;(ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto id true) patron id f)
 
         ;;Block 2 of Testing
@@ -570,8 +570,8 @@
         ;(ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto id true) patron id f)
 
         
-        ;(ref-TS02-C1::DPSF|C_WipeClean patron emma id [1 2 3 4 5 6 7 8 9 10])
-        ;(ref-TS02-C1::DPSF|C_WipeDirty patron emma id [1 2 3 4 5 6 7 8 9 10])
+        ;(ref-TS02-C1::DPSF|C_WipeClean patron (DPDC.UR_OwnerKonto id true) emma id [1 2 3 4 5 6 7 8 9 10])
+        ;(ref-TS02-C1::DPSF|C_WipeDirty patron (DPDC.UR_OwnerKonto id true) emma id [1 2 3 4 5 6 7 8 9 10])
         (format "Wipe Tests executed here and are {}" [true])
     ]
 )
@@ -707,7 +707,7 @@
         (lumy:string KST.LUMY)
     )
     ;(ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto id true) emma id false)
-    (ref-TS02-C1::DPSF|C_TogglePause patron id false)
+    (ref-TS02-C1::DPSF|C_TogglePause patron (DPDC.UR_OwnerKonto id true) id false)
     [
         (format "Patron has {} IGNIS" [(ref-DALOS::UR_TF_AccountSupply patron false)])
         (format "Summed Ignis Royalty is {}" [(ref-DPDC-T::URC_SummedIgnisRoyalty patron id true [1] [7])])

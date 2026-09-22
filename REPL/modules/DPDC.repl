@@ -388,7 +388,7 @@
         [
             (expect-failure "<<DPDC-07b>> WipeClean refuses a list with one non-viable nonce"
                 "is invalid for Debiting Nonce 3"
-                (ref-TS02-C1::DPSF|C_WipeClean KST.ANHD KST.EMMA sf [1 3]))
+                (ref-TS02-C1::DPSF|C_WipeClean KST.ANHD (DPDC.UR_OwnerKonto sf true) KST.EMMA sf [1 3]))
         ]
     )
     ""
@@ -428,7 +428,7 @@
         )
         ;;THE DIVERGENCE. Identical signature, identical arguments, opposite outcome: Dirty
         ;;filters [1 3] down to [1] and proceeds.
-        (ref-TS02-C1::DPSF|C_WipeDirty KST.ANHD emma sf [1 3])
+        (ref-TS02-C1::DPSF|C_WipeDirty KST.ANHD (DPDC.UR_OwnerKonto sf true) emma sf [1 3])
         (map print
             [
                 ;;NOTE THE VALUE: a wiped holding reads 0, NOT the -1 "never held" sentinel
@@ -518,8 +518,7 @@
         ;;hand-narrowed to ONE of the two nonces, so if Pure re-derived the full set itself
         ;;(i.e. behaved like Heavy) this would wipe both and the next assertion would fail.
         (let ((tot3:integer (ref-DPDC::UR_NonceSupply sf true 3)))
-            (ref-TS02-C1::DPSF|C_WipePure KST.ANHD emma sf
-                (ref-DPDC-MNG::UDC_RemovableNonces [3] [5]))
+            (ref-TS02-C1::DPSF|C_WipePure KST.ANHD (DPDC.UR_OwnerKonto sf true) emma sf (ref-DPDC-MNG::UDC_RemovableNonces [3] [5]))
             (map print
                 [
                     (expect "<<DPDC-08>> Pure wiped exactly the nonce named in the object"
@@ -534,7 +533,7 @@
         ;;Heavy, with no set supplied at all: it must find the remainder on its own and reach
         ;;the same conclusion the dirty read did.
         (let ((tot2:integer (ref-DPDC::UR_NonceSupply sf true 2)))
-            (ref-TS02-C1::DPSF|CC_WipeHeavy KST.ANHD emma sf)
+            (ref-TS02-C1::DPSF|CC_WipeHeavy KST.ANHD (DPDC.UR_OwnerKonto sf true) emma sf )
             (map print
                 [
                     (expect "<<DPDC-08>> Heavy discovered and wiped the remaining nonce unaided"
@@ -1429,22 +1428,22 @@
             ;;NONCE 0 -- the case the hoist fixed. Nonce numbering starts at 1, so 0 is "no nonce".
             (expect-failure "<<DPDC-G11>> nonce 0 is refused with the written message, not a row error"
                 "Invalid Data for Adding Quantity for an SFT Nonce"
-                (TS02-C1.DPSF|C_AddQuantity a sf a 0 5))
+                (TS02-C1.DPSF|C_AddQuantity a a sf 0 5))
             ;;NONCE -1 -- reached the guard even before the hoist, because UR_NonceClass takes (abs n)
             ;;and therefore read nonce 1's row. Asserted alongside nonce 0 because the two differ in
             ;;exactly the way that made the old bug hard to see: only one of them was mute.
             (expect-failure "<<DPDC-G11>> ...and so is a negative nonce, the half that always worked"
                 "Invalid Data for Adding Quantity for an SFT Nonce"
-                (TS02-C1.DPSF|C_AddQuantity a sf a -1 5))
+                (TS02-C1.DPSF|C_AddQuantity a a sf -1 5))
             ;;AMOUNT 0 -- the SECOND enforce, inside the let, sharing the same message. Adding zero
             ;;quantity is a no-op that would still cost IGNIS and emit an event.
             (expect-failure "<<DPDC-G11>> adding a ZERO quantity is refused as a no-op"
                 "Invalid Data for Adding Quantity for an SFT Nonce"
-                (TS02-C1.DPSF|C_AddQuantity a sf a 1 0))
+                (TS02-C1.DPSF|C_AddQuantity a a sf 1 0))
             ;;...and the positive direction, so none of the above is satisfied by a path that refuses
             ;;everything. A real nonce with a real amount is accepted.
             (expect "<<DPDC-G11>> ...while a real nonce with a positive amount is accepted"
-                true (!= "" (TS02-C1.DPSF|C_AddQuantity a sf a 1 5)))
+                true (!= "" (TS02-C1.DPSF|C_AddQuantity a a sf 1 5)))
         ]
     )
     ""
@@ -2204,7 +2203,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|AddQuantity patron sf patron 1 5))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_AddQuantity patron sf patron 1 5))
+            (m (ref-TS02-C1::DPSF|C_AddQuantity patron patron sf 1 5))
         )
         (map print
             [
@@ -2245,7 +2244,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|Burn patron sf patron 1 1))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_Burn patron sf patron 1 1))
+            (m (ref-TS02-C1::DPSF|C_Burn patron patron sf 1 1))
         )
         (map print
             [
@@ -2286,7 +2285,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|TogglePause patron sf true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_TogglePause patron sf true))
+            (m (ref-TS02-C1::DPSF|C_TogglePause patron (DPDC.UR_OwnerKonto sf true) sf true))
         )
         (map print
             [
@@ -2688,7 +2687,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|TogglePause patron nf true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C2::DPNF|C_TogglePause patron nf true))
+            (m (ref-TS02-C2::DPNF|C_TogglePause patron (DPDC.UR_OwnerKonto nf false) nf true))
         )
         (map print
             [
@@ -2807,7 +2806,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|Control patron nf true true true true true true true true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C2::DPNF|C_Control patron nf true true true true true true true true))
+            (m (ref-TS02-C2::DPNF|C_Control patron (DPDC.UR_OwnerKonto nf false) nf true true true true true true true true))
         )
         (map print
             [
@@ -3114,7 +3113,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|Control patron sf true true true true true true true true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_Control patron sf true true true true true true true true))
+            (m (ref-TS02-C1::DPSF|C_Control patron (DPDC.UR_OwnerKonto sf true) sf true true true true true true true true))
         )
         (map print
             [
@@ -3677,7 +3676,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|Burn patron nf patron 2))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C2::DPNF|C_Burn patron nf patron 2))
+            (m (ref-TS02-C2::DPNF|C_Burn patron patron nf 2))
         )
         (map print
             [
@@ -4452,7 +4451,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|WipeNonce patron sf lumy 2))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_WipeNonce patron sf lumy 2))
+            (m (ref-TS02-C1::DPSF|C_WipeNonce patron (DPDC.UR_OwnerKonto sf true) lumy sf 2))
         )
         (map print
             [
@@ -4504,7 +4503,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|WipeNoncePartialy patron sf lumy 2 1))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_WipeNoncePartialy patron sf lumy 2 1))
+            (m (ref-TS02-C1::DPSF|C_WipeNoncePartialy patron (DPDC.UR_OwnerKonto sf true) lumy sf 2 1))
         )
         (map print
             [
@@ -4556,7 +4555,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|WipeClean patron lumy sf [2]))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_WipeClean patron lumy sf [2]))
+            (m (ref-TS02-C1::DPSF|C_WipeClean patron (DPDC.UR_OwnerKonto sf true) lumy sf [2]))
         )
         (map print
             [
@@ -4608,7 +4607,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|WipeDirty patron lumy sf [2]))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_WipeDirty patron lumy sf [2]))
+            (m (ref-TS02-C1::DPSF|C_WipeDirty patron (DPDC.UR_OwnerKonto sf true) lumy sf [2]))
         )
         (map print
             [
@@ -4662,7 +4661,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|WipePure patron lumy sf (DPDC-MNG.URHC_WipePure lumy sf true)))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_WipePure patron lumy sf (DPDC-MNG.URHC_WipePure lumy sf true)))
+            (m (ref-TS02-C1::DPSF|C_WipePure patron (DPDC.UR_OwnerKonto sf true) lumy sf (DPDC-MNG.URHC_WipePure lumy sf true)))
         )
         (map print
             [
@@ -4718,7 +4717,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|WipeHeavy patron lumy sf))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|CC_WipeHeavy patron lumy sf))
+            (m (ref-TS02-C1::DPSF|CC_WipeHeavy patron (DPDC.UR_OwnerKonto sf true) lumy sf ))
         )
         (map print
             [
@@ -4970,7 +4969,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|WipeNonce patron nf emma 1))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C2::DPNF|C_WipeNonce patron nf emma 1))
+            (m (ref-TS02-C2::DPNF|C_WipeNonce patron (DPDC.UR_OwnerKonto nf false) emma nf 1))
         )
         (map print
             [
@@ -5022,7 +5021,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|WipeClean patron emma nf [1]))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C2::DPNF|C_WipeClean patron emma nf [1]))
+            (m (ref-TS02-C2::DPNF|C_WipeClean patron (DPDC.UR_OwnerKonto nf false) emma nf [1]))
         )
         (map print
             [
@@ -5074,7 +5073,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|WipeDirty patron emma nf [1]))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C2::DPNF|C_WipeDirty patron emma nf [1]))
+            (m (ref-TS02-C2::DPNF|C_WipeDirty patron (DPDC.UR_OwnerKonto nf false) emma nf [1]))
         )
         (map print
             [
@@ -5126,7 +5125,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|WipePure patron emma nf (DPDC-MNG.URHC_WipePure emma nf false)))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C2::DPNF|C_WipePure patron emma nf (DPDC-MNG.URHC_WipePure emma nf false)))
+            (m (ref-TS02-C2::DPNF|C_WipePure patron (DPDC.UR_OwnerKonto nf false) emma nf (DPDC-MNG.URHC_WipePure emma nf false)))
         )
         (map print
             [
@@ -5178,7 +5177,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|WipeHeavy patron emma nf))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C2::DPNF|CC_WipeHeavy patron emma nf))
+            (m (ref-TS02-C2::DPNF|CC_WipeHeavy patron (DPDC.UR_OwnerKonto nf false) emma nf ))
         )
         (map print
             [
@@ -5277,12 +5276,12 @@
                 0.0 5.0 "CostProbe" "cost probe nonce" (ref-DPDC-UDC::UDC_NoMetaData) type
                 (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
     )
-    (ref-TS02-C2::DPNF|C_Burn patron nf patron 2)
+    (ref-TS02-C2::DPNF|C_Burn patron patron nf 2)
     (let
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|Respawn patron nf patron 2))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C2::DPNF|C_Respawn patron nf patron 2))
+            (m (ref-TS02-C2::DPNF|C_Respawn patron patron nf 2))
         )
         (map print
             [

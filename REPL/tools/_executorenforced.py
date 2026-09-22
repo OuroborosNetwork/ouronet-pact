@@ -115,6 +115,16 @@ INDIRECT = {
     # the same "internal hop" shape as 19_SWPU's swaps: FORWARDED matches cross-module `ref-X::`
     # by design, so an in-module delegation has to be traced by a human and stated.
     "04_TS01-C3.pact::C_IssueStandard": "SWP|C_IssueStable",
+    # 06_DPDC-MNG's two BURN entrypoints (2026-09-22). Their executor is proven by the account's
+    # OWN signature -- but three hops away and through a LOCAL XI_ first, so FORWARDED (which
+    # matches cross-module `ref-X::`) cannot see it. The chain is
+    #   C_BurnSFT -> XI_DecreaseClassZeroSemiFungibles -> DPDC-C::XE_DebitSFT-Nonce(s)
+    #   -> DPSF|C>DEBIT-NONCES -> DPDC|C>MULTI-DEBIT -> DPDC|CX>MULTI-DEBIT
+    #   -> (if wipe-mode (CAP_Owner id son) (CAP_EnforceAccountOwnership account))
+    # and the burns pass wipe-mode FALSE, selecting the second arm. Their WIPE twins pass TRUE
+    # and take the first, which is why those are 4g and these are not.
+    "06_DPDC-MNG.pact::C_BurnSFT": "wipe-mode FALSE",
+    "06_DPDC-MNG.pact::C_BurnNFT": "wipe-mode FALSE",
 }
 
 # SELF-PROVING AT CREATION -- the base case of the attribution rule, resolved by the owner on

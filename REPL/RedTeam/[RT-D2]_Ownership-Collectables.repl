@@ -225,7 +225,7 @@
             (expect-failure
                 "<<RT-K-004b>> Burn · EXEC   (same message -- and no longer a role report on nothing)"
                 "DPNF ID NOSUCHCOL-98c486052a51 does not exist"
-                (r2::DPNF|C_Burn KST.ANHD bad KST.ANHD 1))
+                (r2::DPNF|C_Burn KST.ANHD KST.ANHD bad 1))
             ;;NON-VACUITY: the guard must not have turned the preview into one that always refuses.
             (expect
                 (format "<<RT-K-004c>> ...and the preview still QUOTES the real collection {}" [real])
@@ -240,7 +240,7 @@
             (expect-failure
                 "<<RT-K-004d>> TogglePause · EXEC   (same failure as the preview)"
                 "DPNF|T|Properties"
-                (r2::DPNF|C_TogglePause KST.ANHD bad true))
+                (r2::DPNF|C_TogglePause KST.ANHD (DPDC.UR_OwnerKonto bad false) bad true))
         ])
     ""
 )

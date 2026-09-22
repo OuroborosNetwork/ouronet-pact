@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 13 of 24
 ;; This is STEP 13 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-12 must have run first, including the init steps between deploys.
-;; 6 source file(s), 370,184 gas measured in the REPL gas model, 308,097 bytes
+;; 6 source file(s), 370,184 gas measured in the REPL gas model, 308,697 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/07_DPDC-T.pact
@@ -4885,11 +4885,17 @@
                     )
                     (ico2:object{IgnisCollectorV3.OutputCumulator}
                         ;;2]Burn it
-                        (ref-DPDC-MNG::C_BurnSFT dpdc id input-nonce input-package-share-tier-amount)
+                        ;;PROVISIONAL PATRON SLOT (HANDOFF 4e, 2026-09-22). These three XI_
+                        ;;helpers have NO <patron> -- I assumed one and the module stopped
+                        ;;loading with "Cannot find module: ouronet-ns.patron", the second time
+                        ;;that assumption has cost a load in this sweep. They do have <account>,
+                        ;;the user whose shares are being converted, which is the account that
+                        ;;actually initiates. It becomes this module's own <patron> at its turn.
+                        (ref-DPDC-MNG::C_BurnSFT account dpdc id input-nonce input-package-share-tier-amount)
                     )
                     (ico3:object{IgnisCollectorV3.OutputCumulator}
                         ;;3]Add Quantity <output-quantity> for the <output-nonce> on <dpdc> Account
-                        (ref-DPDC-MNG::C_AddQuantity dpdc id output-nonce output-amount)
+                        (ref-DPDC-MNG::C_AddQuantity account dpdc id output-nonce output-amount)
                     )
                     (ico4:object{IgnisCollectorV3.OutputCumulator}
                         ;;4]Transfer it to <account>
@@ -4931,7 +4937,7 @@
                     )
                     (ico2:object{IgnisCollectorV3.OutputCumulator}
                         ;;2]Add Quantity for the Package-Share on <dpdc> Account
-                        (ref-DPDC-MNG::C_AddQuantity dpdc id output-nonce output-amount)
+                        (ref-DPDC-MNG::C_AddQuantity account dpdc id output-nonce output-amount)
                     )
                     (ico3:object{IgnisCollectorV3.OutputCumulator}
                         ;;3]Transfer it to <account>
@@ -4971,7 +4977,7 @@
                     )
                     (ico2:object{IgnisCollectorV3.OutputCumulator}
                         ;;2]Burn it
-                        (ref-DPDC-MNG::C_BurnSFT dpdc id nonce-to-break amount)
+                        (ref-DPDC-MNG::C_BurnSFT account dpdc id nonce-to-break amount)
                     )
                     (ico3:object{IgnisCollectorV3.OutputCumulator}
                         ;;3]Release Shares to <account>

@@ -89,17 +89,17 @@
     ;;
     ;;  [6] DPDC-MNG
     ;;
-    (defun DPNF|C_Control (patron:string id:string cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool))
-    (defun DPNF|C_TogglePause (patron:string id:string toggle:bool))
+    (defun DPNF|C_Control (patron:string executor:string id:string cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool))
+    (defun DPNF|C_TogglePause (patron:string executor:string id:string toggle:bool))
         ;;
-    (defun DPNF|C_Respawn (patron:string id:string account:string nonce:integer))
-    (defun DPNF|C_Burn (patron:string id:string account:string nonce:integer))
-    (defun DPNF|C_WipeNonce (patron:string id:string account:string nonce:integer))
+    (defun DPNF|C_Respawn (patron:string executor:string id:string nonce:integer))
+    (defun DPNF|C_Burn (patron:string executor:string id:string nonce:integer))
+    (defun DPNF|C_WipeNonce (patron:string executor:string executee:string id:string nonce:integer))
         ;;
-    (defun DPNF|CC_WipeHeavy (patron:string account:string id:string))
-    (defun DPNF|C_WipePure (patron:string account:string id:string removable-nonces-obj:object{DpdcManagementV2.RemovableNonces}))
-    (defun DPNF|C_WipeClean (patron:string account:string id:string nonces:[integer]))
-    (defun DPNF|C_WipeDirty (patron:string account:string id:string nonces:[integer]))
+    (defun DPNF|CC_WipeHeavy (patron:string executor:string executee:string id:string))
+    (defun DPNF|C_WipePure (patron:string executor:string executee:string id:string removable-nonces-obj:object{DpdcManagementV2.RemovableNonces}))
+    (defun DPNF|C_WipeClean (patron:string executor:string executee:string id:string nonces:[integer]))
+    (defun DPNF|C_WipeDirty (patron:string executor:string executee:string id:string nonces:[integer]))
     (defun DPNF|Cp_WipeSlice (patron:string account:string id:string removable-nonces-obj:object{DpdcManagementV2.RemovableNonces}))
     ;;
     ;;  [7] DPDC-T
@@ -668,7 +668,7 @@
     ;;
     ;;  [6] DPDC-MNG
     ;;
-    (defun DPNF|C_Control (patron:string id:string cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool)
+    (defun DPNF|C_Control (patron:string executor:string id:string cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool)
         @doc "Controls DPNF Properties"
         (with-capability (P|TS)
             (let
@@ -677,12 +677,12 @@
                     (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-MNG::C_Control id false cu cco ccc casr ctncr cf cw cp)
+                    (ref-DPDC-MNG::C_Control patron executor id false cu cco ccc casr ctncr cf cw cp)
                 )
             )
         )
     )
-    (defun DPNF|C_TogglePause (patron:string id:string toggle:bool)
+    (defun DPNF|C_TogglePause (patron:string executor:string id:string toggle:bool)
         @doc "Pauses a DPNF Collection. Paused Collections can no longer be transfered"
         (with-capability (P|TS)
             (let
@@ -691,13 +691,13 @@
                     (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-MNG::C_TogglePause id false toggle)
+                    (ref-DPDC-MNG::C_TogglePause patron executor id false toggle)
                 )
             )
         )
     )
-    (defun DPNF|C_Respawn (patron:string id:string account:string nonce:integer)
-        @doc "Respawns NFT <id> <nonce> on <account>"
+    (defun DPNF|C_Respawn (patron:string executor:string id:string nonce:integer)
+        @doc "Respawns NFT <id> <nonce> on <executor>"
         (with-capability (P|TS)
             (let
                 (
@@ -705,14 +705,14 @@
                     (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-MNG::C_RespawnNFT account id nonce)
+                    (ref-DPDC-MNG::C_RespawnNFT patron executor id nonce)
                 )
-                (format "Succesfuly respawned NFT {} Nonce {} on Account {}" [id nonce (UC_ShortAccount account)])
+                (format "Succesfuly respawned NFT {} Nonce {} on Account {}" [id nonce (UC_ShortAccount executor)])
             )
         )
     )
-    (defun DPNF|C_Burn (patron:string id:string account:string nonce:integer)
-        @doc "Burns NFT <id> <nonce> on <account>"
+    (defun DPNF|C_Burn (patron:string executor:string id:string nonce:integer)
+        @doc "Burns NFT <id> <nonce> on <executor>"
         (with-capability (P|TS)
             (let
                 (
@@ -720,14 +720,14 @@
                     (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-MNG::C_BurnNFT account id nonce)
+                    (ref-DPDC-MNG::C_BurnNFT patron executor id nonce)
                 )
-                (format "Succesfuly burned NFT {} Nonce {} on Account {}" [id nonce (UC_ShortAccount account)])
+                (format "Succesfuly burned NFT {} Nonce {} on Account {}" [id nonce (UC_ShortAccount executor)])
             )
         )
     )
-    (defun DPNF|C_WipeNonce (patron:string id:string account:string nonce:integer)
-        @doc "Wipes NFT <id> <nonce> on <account>"
+    (defun DPNF|C_WipeNonce (patron:string executor:string executee:string id:string nonce:integer)
+        @doc "Wipes NFT <id> <nonce> on <executee>"
         (with-capability (P|TS)
             (let
                 (
@@ -735,20 +735,20 @@
                     (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG) 
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-MNG::C_WipeNonce account id false nonce)
+                    (ref-DPDC-MNG::C_WipeNonce patron executor executee id false nonce)
                 )
-                (format "Succesfuly wiped NFT {} Nonce {} from Account {}" [id nonce (UC_ShortAccount account)])
+                (format "Succesfuly wiped NFT {} Nonce {} from Account {}" [id nonce (UC_ShortAccount executee)])
             )
         )
     )
-    (defun DPNF|CC_WipeHeavy (patron:string account:string id:string)
+    (defun DPNF|CC_WipeHeavy (patron:string executor:string executee:string id:string)
         (with-capability (P|TS)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-DPDC-MNG::CC_WipeHeavy account id false)
+                        (ref-DPDC-MNG::CC_WipeHeavy patron executor executee id false)
                     )
                     (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
                     (total-nonces-supplies:integer (fold (+) 0 (at "r-amounts" (at 0 (at "output" ico)))))
@@ -756,19 +756,19 @@
                 (ref-IGNIS::XE_CollectIgnis patron ico)
                 (format 
                     "Succesfuly executed Heavy Wipe of NFT {} on Account {}, wiping {} Nonces With a Total Supply of {}" 
-                    [id (UC_ShortAccount account) no-of-nonces total-nonces-supplies]
+                    [id (UC_ShortAccount executee) no-of-nonces total-nonces-supplies]
                 )
             )
         )
     )
-    (defun DPNF|C_WipePure (patron:string account:string id:string removable-nonces-obj:object{DpdcManagementV2.RemovableNonces})
+    (defun DPNF|C_WipePure (patron:string executor:string executee:string id:string removable-nonces-obj:object{DpdcManagementV2.RemovableNonces})
         (with-capability (P|TS)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-DPDC-MNG::C_WipePure account id false removable-nonces-obj) 
+                        (ref-DPDC-MNG::C_WipePure patron executor executee id false removable-nonces-obj) 
                     )
                     (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
                     (total-nonces-supplies:integer (fold (+) 0 (at "r-amounts" (at 0 (at "output" ico)))))
@@ -776,19 +776,19 @@
                 (ref-IGNIS::XE_CollectIgnis patron ico)
                 (format 
                     "Succesfuly executed Pure Wipe of NFT {} on Account {}, wiping {} Nonces With a Total Supply of {}" 
-                    [id (UC_ShortAccount account) no-of-nonces total-nonces-supplies]
+                    [id (UC_ShortAccount executee) no-of-nonces total-nonces-supplies]
                 )
             )
         )
     )
-    (defun DPNF|C_WipeClean (patron:string account:string id:string nonces:[integer])
+    (defun DPNF|C_WipeClean (patron:string executor:string executee:string id:string nonces:[integer])
         (with-capability (P|TS)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-DPDC-MNG::C_WipeClean account id false nonces) 
+                        (ref-DPDC-MNG::C_WipeClean patron executor executee id false nonces) 
                     )
                     (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
                     (total-nonces-supplies:integer (fold (+) 0 (at "r-amounts" (at 0 (at "output" ico)))))
@@ -796,19 +796,19 @@
                 (ref-IGNIS::XE_CollectIgnis patron ico)
                 (format 
                     "Succesfuly executed Clean Wipe of NFT {} on Account {}, wiping {} Nonces With a Total Supply of {}" 
-                    [id (UC_ShortAccount account) no-of-nonces total-nonces-supplies]
+                    [id (UC_ShortAccount executee) no-of-nonces total-nonces-supplies]
                 )
             )
         )
     )
-    (defun DPNF|C_WipeDirty (patron:string account:string id:string nonces:[integer])
+    (defun DPNF|C_WipeDirty (patron:string executor:string executee:string id:string nonces:[integer])
         (with-capability (P|TS)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-DPDC-MNG:module{DpdcManagementV2} DPDC-MNG)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-DPDC-MNG::C_WipeDirty account id false nonces)
+                        (ref-DPDC-MNG::C_WipeDirty patron executor executee id false nonces)
                     )
                     (no-of-nonces:integer (length (at "r-nonces" (at 0 (at "output" ico)))))
                     (total-nonces-supplies:integer (fold (+) 0 (at "r-amounts" (at 0 (at "output" ico)))))
@@ -816,7 +816,7 @@
                 (ref-IGNIS::XE_CollectIgnis patron ico)
                 (format
                     "Succesfuly executed Dirty Wipe of NFT {} on Account {}, wiping {} Nonces With a Total Supply of {}"
-                    [id (UC_ShortAccount account) no-of-nonces total-nonces-supplies]
+                    [id (UC_ShortAccount executee) no-of-nonces total-nonces-supplies]
                 )
             )
         )

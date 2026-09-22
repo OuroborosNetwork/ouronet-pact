@@ -1363,3 +1363,78 @@ implementation trap that has now appeared four times this programme: *the first 
 file that contains both is the declaration, not the code.* Relocated into the module body, where
 it needs no interface stub at all — nothing outside the module calls it.
 
+---
+
+### 06_DPDC-MNG.pact — COMPLETE (12 of 12 entrypoints, 2026-09-22)
+
+**The most hidden actor/target split the sweep has found.** `C_BurnSFT` and `C_WipeSlim` have
+**identical signatures** — `(account id nonce amount)` — and **opposite actors**:
+
+```pact
+;; DPDC-C, three hops down, at the bottom of both chains:
+(if wipe-mode
+    (ref-DPDC::CAP_Owner id son)                        ;; WIPE  -> the collection owner
+    (ref-DALOS::CAP_EnforceAccountOwnership account))   ;; BURN  -> the account itself
+```
+
+The burns pass `wipe-mode false`, so their `account` **is** the executor — a pure rename. The
+wipes pass `true`, so their `account` is the **executee** and the executor is the derived
+`(UR_OwnerKonto id son)` — §4g, needing a new binder.
+
+> **Nothing in this module distinguishes them.** Not the name, not the type, not the position, not
+> the capability it opens. The discriminator is a boolean argument handed to a capability **two
+> modules away**. Reading these twelve signatures cannot tell you which is which; only following
+> `wipe-mode` can — and the module's own comments say only *"Account Ownership - via Debit
+> Function"*, which is true and insufficient.
+
+Third instance of "same shape, opposite role" in this sweep, after the admin/client
+`C_DeployAccount` pair and `C_Register`/`C_ReleaseStoicTag` — and by far the least visible, because
+the other two could at least be settled by reading one file.
+
+**Split:** 4 renames (`C_AddQuantity`, `C_RespawnNFT`, `C_BurnSFT`, `C_BurnNFT`), 6 wipes gaining
+`executor` + executee-rename + a binder, 2 spec ops (`C_Control`, `C_TogglePause`) gaining
+`executor` + a binder. **~110 call sites** in four distinct shapes.
+
+**Two credit ops nearly got the wrong explanation.** `C_AddQuantity` and `C_RespawnNFT` prove their
+executor **in this module's own capability**, not down the debit chain — they are credits, and
+never touch `DPDC|CX>MULTI-DEBIT`. A shared `@doc` template had given all four "renames" the burn
+rationale. Corrected: a template that is right for most members of a group is wrong for the group.
+
+---
+
+### FOUR DEAD BINDINGS, TWO OF WHICH WERE ALIVE
+
+The map surfaced two genuinely dead `(owner (UR_OwnerKonto id son))` bindings — table reads on live
+paths, discarded. A blanket textual removal took **four**, because the same expression appears in
+two `URCi_` gas-preview readers **where it is read**. Restored, with the rule recorded at the site:
+
+> **Dead-binding cleanup has to be per SITE, never per TEXT.** The same expression is waste in one
+> function and load-bearing in another, and the only difference is whether the body reads it.
+
+And removing the two real ones left their `ref-DPDC` modref with no consumer — which
+`_conformance.py`'s `[dead-modref-binding]` rule reported immediately. **Two dead things, one of
+which only became visible once the other went.**
+
+---
+
+### A THIRD ARITY BLIND SPOT: THE SAME-MODULE CALL
+
+`C_WipeClean`, `C_WipeDirty` and `CC_WipeHeavy` all delegate to `C_WipePure` **within the module**.
+Those three calls kept the old 4-argument shape, and `_callarity.py` reported **clean** — it checks
+`ref-X::` modref calls, and these have no prefix.
+
+Pact does not reject it at load either: the short call is a **partial application**, so the failure
+surfaced as `Runtime typecheck failure, argument is bool, but expected type string` inside a test.
+**A same-module call that no test exercises would ship silently** — which is, word for word, the
+rationale `_callarity` was written under for modref calls.
+
+Two of the three gaps are now closed (modref calls, capability acquisitions). **The same-module
+function call is the third and is NOT yet covered** — recorded here rather than built in haste,
+because distinguishing a bare function call from a native, a `let`-bound name and a lambda argument
+is where a careless pass produces false positives across the whole tree.
+
+**And `patron` was assumed in scope for a second time**, in three `XI_` helpers of `11_EQUITY+`
+that do not have one. They have `account` — the user whose shares are being converted — which is
+the account that actually initiates. Same symptom as `08_DPDC-S`: Pact reports an unbound name as
+*"Cannot find module: ouronet-ns.patron"*.
+

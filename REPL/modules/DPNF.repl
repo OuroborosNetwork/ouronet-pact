@@ -141,10 +141,10 @@
             ]
         )
     )
-    (ref-TS02-C2::DPNF|C_TogglePause patron nf true)
+    (ref-TS02-C2::DPNF|C_TogglePause patron (DPDC.UR_OwnerKonto nf false) nf true)
     (map print [(expect "<<DPNF-03>> C_TogglePause paused the collection"
                     true (ref-DPDC::UR_IsPaused nf false))])
-    (ref-TS02-C2::DPNF|C_TogglePause patron nf false)
+    (ref-TS02-C2::DPNF|C_TogglePause patron (DPDC.UR_OwnerKonto nf false) nf false)
     (map print [(expect "<<DPNF-03>> C_TogglePause unpaused the collection"
                     false (ref-DPDC::UR_IsPaused nf false))])
     ""

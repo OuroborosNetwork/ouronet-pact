@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 12 of 24
 ;; This is STEP 12 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-11 must have run first, including the init steps between deploys.
-;; 5 source file(s), 300,922 gas measured in the REPL gas model, 270,125 bytes
+;; 5 source file(s), 300,922 gas measured in the REPL gas model, 281,807 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/02_DPDC.pact
@@ -5054,30 +5054,30 @@
     ;;
     ;; [C]
     ;;
-    (defun C_Control:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool))
-    (defun C_TogglePause:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool toggle:bool))
+    (defun C_Control:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string son:bool cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool))
+    (defun C_TogglePause:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string son:bool toggle:bool))
     ;;
     ;;  [CREDIT-SINGLE]
     ;;  [SFT]
-    (defun C_AddQuantity:object{IgnisCollectorV3.OutputCumulator} (account:string id:string nonce:integer amount:integer))
+    (defun C_AddQuantity:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string nonce:integer amount:integer))
     ;;  [NFT]
-    (defun C_RespawnNFT:object{IgnisCollectorV3.OutputCumulator} (account:string id:string nonce:integer))
+    (defun C_RespawnNFT:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string nonce:integer))
     ;;
     ;;  [DEBIT-SINGLE]
     ;;  [SFT]
-    (defun C_BurnSFT:object{IgnisCollectorV3.OutputCumulator} (account:string id:string nonce:integer amount:integer))
-    (defun C_WipeSlim:object{IgnisCollectorV3.OutputCumulator} (account:string id:string nonce:integer amount:integer))
+    (defun C_BurnSFT:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string nonce:integer amount:integer))
+    (defun C_WipeSlim:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string nonce:integer amount:integer))
     ;;  [NFT]
-    (defun C_BurnNFT:object{IgnisCollectorV3.OutputCumulator} (account:string id:string nonce:integer))
+    (defun C_BurnNFT:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string nonce:integer))
     ;;  [SFT+NFT]
-    (defun C_WipeNonce:object{IgnisCollectorV3.OutputCumulator} (account:string id:string son:bool nonce:integer))
+    (defun C_WipeNonce:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string son:bool nonce:integer))
     ;;
     ;;  [DEBIT-MULTIPLE]
     ;;  [SFT+NFT]
-    (defun CC_WipeHeavy:object{IgnisCollectorV3.OutputCumulator} (account:string id:string son:bool))
-    (defun C_WipePure:object{IgnisCollectorV3.OutputCumulator} (account:string id:string son:bool removable-nonces-obj:object{RemovableNonces}))
-    (defun C_WipeClean:object{IgnisCollectorV3.OutputCumulator} (account:string id:string son:bool nonces:[integer]))
-    (defun C_WipeDirty:object{IgnisCollectorV3.OutputCumulator} (account:string id:string son:bool nonces:[integer]))
+    (defun CC_WipeHeavy:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string son:bool))
+    (defun C_WipePure:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string son:bool removable-nonces-obj:object{RemovableNonces}))
+    (defun C_WipeClean:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string son:bool nonces:[integer]))
+    (defun C_WipeDirty:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string son:bool nonces:[integer]))
     (defun Cp_WipeSlice:object{IgnisCollectorV3.OutputCumulator} (account:string id:string son:bool removable-nonces-obj:object{RemovableNonces}))
 
 )
@@ -5723,6 +5723,12 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
+                ;;RESTORED 2026-09-22. This binding IS read, two lines down, as the cumulator's
+                ;;active account. A blanket removal of `(owner:string (UR_OwnerKonto id son))`
+                ;;-- aimed at the two genuinely DEAD copies in C_Control and C_WipeNonce -- took
+                ;;this one and its twin as well. Dead-binding cleanup has to be per SITE, never
+                ;;per TEXT: the same expression is waste in one function and load-bearing in
+                ;;another, and the only difference is whether the body reads it.
                 (owner:string (ref-DPDC::UR_OwnerKonto id son))
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
@@ -5822,6 +5828,12 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
+                ;;RESTORED 2026-09-22. This binding IS read, two lines down, as the cumulator's
+                ;;active account. A blanket removal of `(owner:string (UR_OwnerKonto id son))`
+                ;;-- aimed at the two genuinely DEAD copies in C_Control and C_WipeNonce -- took
+                ;;this one and its twin as well. Dead-binding cleanup has to be per SITE, never
+                ;;per TEXT: the same expression is waste in one function and load-bearing in
+                ;;another, and the only difference is whether the body reads it.
                 (owner:string (ref-DPDC::UR_OwnerKonto id son))
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
@@ -5926,23 +5938,55 @@
         )
     )
     ;;{5.7}  User [A/C]
-    (defun C_Control:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool)
-        (P|UEV_IMC)
+    (defun UEV_ExecutorIsCollectionOwner (executor:string id:string son:bool)
+        @doc "BINDS <executor> to the collection owner, (UR_OwnerKonto id son), via DPDC. \
+            \ \
+            \ Used by the two spec entrypoints and by all six WIPE entrypoints, and by nothing \
+            \ else in this module -- which is the distinction that matters here. The BURN \
+            \ entrypoints have the same shapes and do NOT call it, because their authority is \
+            \ the account's own signature: DPDC-C's DPDC|CX>MULTI-DEBIT runs \
+            \ (if wipe-mode (CAP_Owner id son) (CAP_EnforceAccountOwnership account)), and the \
+            \ burns pass wipe-mode FALSE. \
+            \ \
+            \ So whether a given account in this module is the ACTOR or the TARGET is decided \
+            \ by a boolean handed to a capability two modules away. Reading these twelve \
+            \ signatures cannot tell you; only following wipe-mode can. \
+            \ (patron/executor canon 2.2, indirect route named, 2026-09-22.)"
         (let
             (
                 (ref-DPDC:module{DpdcV2} DPDC)
-                (owner:string (ref-DPDC::UR_OwnerKonto id son))
             )
-            (with-capability (DPDC-MNG|S>CTRL id son)
-                (XI_Control id son cu cco ccc casr ctncr cf cw cp)
-                (URCi_Control id son)
-            )
+            (ref-DPDC::UEV_ExecutorIsOwnerKonto executor id son)
+        )
+    )
+    (defun C_Control:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string executor:string id:string son:bool cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool)
+        @doc "Updates a collection's mutable specification flags. \
+            \ \
+            \ HANDOFF 4g: DPDC::CAP_Owner enforces on the DERIVED (UR_OwnerKonto id son) and names \
+            \ no actor. UEV_ExecutorIsCollectionOwner supplies it; the ownership enforce is KEPT. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
+        (P|UEV_IMC)
+        (UEV_ExecutorIsCollectionOwner executor id son)
+        ;;THE `let` THAT WAS HERE IS GONE, AND SO IS ITS ref-DPDC. It existed only to bind
+        ;;(owner (UR_OwnerKonto id son)), which the body never read -- a table read on a live
+        ;;path for nothing. Removing the dead binding left the modref with no consumer, and
+        ;;_conformance's [dead-modref-binding] rule said so immediately. Two dead things, one
+        ;;of which only became visible once the other went.
+        (with-capability (DPDC-MNG|S>CTRL id son)
+            (XI_Control id son cu cco ccc casr ctncr cf cw cp)
+            (URCi_Control id son)
         )
     )
     (defun C_TogglePause:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool toggle:bool)
+        (patron:string executor:string id:string son:bool toggle:bool)
+        @doc "Pauses or unpauses a collection. \
+            \ \
+            \ HANDOFF 4g: DPDC::CAP_Owner enforces on the DERIVED (UR_OwnerKonto id son) and names \
+            \ no actor. UEV_ExecutorIsCollectionOwner supplies it; the ownership enforce is KEPT. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
+        (UEV_ExecutorIsCollectionOwner executor id son)
         (with-capability (DPDC-MNG|S>TG_PAUSE id son toggle)
             (XI_TogglePause id son toggle)
             (URCi_TogglePause id son)
@@ -5952,24 +5996,42 @@
     ;;  [CREDIT-SINGLE]
     ;;  [SFT]
     (defun C_AddQuantity:object{IgnisCollectorV3.OutputCumulator}
-        (account:string id:string nonce:integer amount:integer)
-        @doc "Add Quantity for an SFT"
+        (patron:string executor:string id:string nonce:integer amount:integer)
+        @doc "Adds quantity to an existing SFT nonce. \
+            \ \
+            \ Executor: PROVEN DIRECTLY, and in THIS module rather than down the debit chain. The \
+            \ old <account> WAS the actor: the entrypoint capability runs \
+            \ CAP_EnforceAccountOwnership on it outright, so this is a pure RENAME. \
+            \ \
+            \ A CREDIT, NOT A DEBIT -- which is why it does not share its siblings' route. The burn \
+            \ and wipe entrypoints defer authority to DPDC-C's DPDC|CX>MULTI-DEBIT and are told apart \
+            \ by <wipe-mode>; nothing here goes through that. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
-        (with-capability (DPDC-MNG|C>ADD-QUANTITY account id nonce amount)
-            (XI_IncreaseClassZeroSemiFungible account id nonce amount)
+        (with-capability (DPDC-MNG|C>ADD-QUANTITY executor id nonce amount)
+            (XI_IncreaseClassZeroSemiFungible executor id nonce amount)
             (URCi_AddQuantity id)
         )
     )
     ;;  [NFT]
-    (defun C_RespawnNFT:object{IgnisCollectorV3.OutputCumulator} (account:string id:string nonce:integer)
-        @doc "Respawns a previously burned NFT"
+    (defun C_RespawnNFT:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string nonce:integer)
+        @doc "Respawns a previously burned NFT. \
+            \ \
+            \ Executor: PROVEN DIRECTLY, and in THIS module rather than down the debit chain. The \
+            \ old <account> WAS the actor: the entrypoint capability runs \
+            \ CAP_EnforceAccountOwnership on it outright, so this is a pure RENAME. \
+            \ \
+            \ A CREDIT, NOT A DEBIT -- which is why it does not share its siblings' route. The burn \
+            \ and wipe entrypoints defer authority to DPDC-C's DPDC|CX>MULTI-DEBIT and are told apart \
+            \ by <wipe-mode>; nothing here goes through that. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
         (let
             (
                 (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
             )
-            (with-capability (DPDC-MNG|C>RESPAWN-NFT account id nonce)
-                (ref-DPDC-C::XB_CreditNFT-Nonce account id nonce 1)
+            (with-capability (DPDC-MNG|C>RESPAWN-NFT executor id nonce)
+                (ref-DPDC-C::XB_CreditNFT-Nonce executor id nonce 1)
                 (URCi_RespawnNFT id)
             )
         )
@@ -5978,61 +6040,107 @@
     ;;  [DEBIT-SINGLE]
     ;;  [SFT]
     (defun C_BurnSFT:object{IgnisCollectorV3.OutputCumulator}
-        (account:string id:string nonce:integer amount:integer)
+        (patron:string executor:string id:string nonce:integer amount:integer)
+        @doc "Burns SFT quantity from the executor's own account. \
+            \ \
+            \ Executor: PROVEN DIRECTLY. The old <account> WAS the actor -- the debit chain bottoms \
+            \ out in DPDC-C's DPDC|CX>MULTI-DEBIT, whose authority is \
+            \ (if wipe-mode (CAP_Owner id son) (CAP_EnforceAccountOwnership account)), and this \
+            \ entrypoint passes wipe-mode FALSE. So the account signs for itself. A RENAME. \
+            \ \
+            \ ITS WIPE TWIN HAS THE SAME SIGNATURE AND THE OPPOSITE ACTOR. C_WipeSlim takes exactly \
+            \ these parameters and passes wipe-mode TRUE, which selects CAP_Owner -- so there the \
+            \ account is the EXECUTEE and the collection owner is the executor. The discriminator \
+            \ is a boolean two modules away. (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
-        (with-capability (DPDC-MNG|C>BURN-SFT account id nonce amount)
+        (with-capability (DPDC-MNG|C>BURN-SFT executor id nonce amount)
             ;;Burn Semifungible and Update Supplies
-            (XI_DecreaseClassZeroSemiFungibles account id [nonce] [amount] false)
+            (XI_DecreaseClassZeroSemiFungibles executor id [nonce] [amount] false)
             ;;Costs 2 IGNIS per Burn Event
             (URCi_BurnSFT id)
         )
     )
     (defun C_WipeSlim:object{IgnisCollectorV3.OutputCumulator}
-        (account:string id:string nonce:integer amount:integer)
+        (patron:string executor:string executee:string id:string nonce:integer amount:integer)
+        @doc "Partially wipes an SFT nonce from the executee. \
+            \ \
+            \ HANDOFF 4g. Nothing in THIS module proves any account: the capability chain runs only \
+            \ STATE checks (UEV_AccountFreezeState, UEV_CanWipeON, supply bounds). Authority lives \
+            \ in DPDC-C's DPDC|CX>MULTI-DEBIT -- (if wipe-mode (CAP_Owner id son) ...) -- and this \
+            \ entrypoint passes wipe-mode TRUE, so the authority is the COLLECTION OWNER, derived as \
+            \ (UR_OwnerKonto id son) and naming no actor. \
+            \ \
+            \ <account> became <executee>: it is wiped, not consulted. Its twin C_BurnSFT/C_BurnNFT \
+            \ has the SAME signature and passes wipe-mode FALSE, which makes that same parameter the \
+            \ EXECUTOR. Identical shapes, opposite roles, decided by a boolean two modules away. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
-        (with-capability (DPDC-MNG|C>WIPE-SFT-NONCE-PARTIALLY account id nonce amount)
+        (UEV_ExecutorIsCollectionOwner executor id true)
+        (with-capability (DPDC-MNG|C>WIPE-SFT-NONCE-PARTIALLY executee id nonce amount)
             ;;Burn Semifungible and Update Supplies
-            (XI_DecreaseClassZeroSemiFungibles account id [nonce] [amount] true)
+            (XI_DecreaseClassZeroSemiFungibles executee id [nonce] [amount] true)
             ;;Costs 1 IGNIS for Partial Nonce Wipe Event
             (URCi_WipeSlim id)
         )
     )
     ;;  [NFT]
-    (defun C_BurnNFT:object{IgnisCollectorV3.OutputCumulator} (account:string id:string nonce:integer)
+    (defun C_BurnNFT:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string nonce:integer)
+        @doc "Burns an NFT from the executor's own account. \
+            \ \
+            \ Executor: PROVEN DIRECTLY. The old <account> WAS the actor -- the debit chain bottoms \
+            \ out in DPDC-C's DPDC|CX>MULTI-DEBIT, whose authority is \
+            \ (if wipe-mode (CAP_Owner id son) (CAP_EnforceAccountOwnership account)), and this \
+            \ entrypoint passes wipe-mode FALSE. So the account signs for itself. A RENAME. \
+            \ \
+            \ ITS WIPE TWIN HAS THE SAME SIGNATURE AND THE OPPOSITE ACTOR. C_WipeSlim takes exactly \
+            \ these parameters and passes wipe-mode TRUE, which selects CAP_Owner -- so there the \
+            \ account is the EXECUTEE and the collection owner is the executor. The discriminator \
+            \ is a boolean two modules away. (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
-        (with-capability (DPDC-MNG|C>BURN-NFT account id nonce)
+        (with-capability (DPDC-MNG|C>BURN-NFT executor id nonce)
             ;; #79: TWO latent bugs here, never triggered because DPNF|C_Burn had no test coverage:
             ;;  (1) called via ref-DPDC-C:: but XI_DecreaseClassZeroNonFungibles is a LOCAL XI_ of
             ;;      DPDC-MNG (defined above) — must be a local call;
-            ;;  (2) args were (id account …) but the signature is (account id nonces wipe-mode), so
-            ;;      account/id were swapped → the composed IZ-CLASS-ZERO cap check used the account
-            ;;      as the collection id and failed. Correct order is account first, then id.
-            (XI_DecreaseClassZeroNonFungibles account id [nonce] false)
+            ;;  (2) args were (id executor …) but the signature is (executor id nonces wipe-mode), so
+            ;;      executor/id were swapped → the composed IZ-CLASS-ZERO cap check used the executor
+            ;;      as the collection id and failed. Correct order is executor first, then id.
+            (XI_DecreaseClassZeroNonFungibles executor id [nonce] false)
             (URCi_BurnNFT id)
         )
     )
     ;;  [SFT+NFT]
     (defun C_WipeNonce:object{IgnisCollectorV3.OutputCumulator}
-        (account:string id:string son:bool nonce:integer)
-        @doc "Wipes a viable SFT or NFT Nonce in its entirety"
+        (patron:string executor:string executee:string id:string son:bool nonce:integer)
+        @doc "Totally wipes one nonce from the executee. \
+            \ \
+            \ HANDOFF 4g. Nothing in THIS module proves any account: the capability chain runs only \
+            \ STATE checks (UEV_AccountFreezeState, UEV_CanWipeON, supply bounds). Authority lives \
+            \ in DPDC-C's DPDC|CX>MULTI-DEBIT -- (if wipe-mode (CAP_Owner id son) ...) -- and this \
+            \ entrypoint passes wipe-mode TRUE, so the authority is the COLLECTION OWNER, derived as \
+            \ (UR_OwnerKonto id son) and naming no actor. \
+            \ \
+            \ <account> became <executee>: it is wiped, not consulted. Its twin C_BurnSFT/C_BurnNFT \
+            \ has the SAME signature and passes wipe-mode FALSE, which makes that same parameter the \
+            \ EXECUTOR. Identical shapes, opposite roles, decided by a boolean two modules away. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
+        (UEV_ExecutorIsCollectionOwner executor id son)
         (let
             (
                 (ref-DPDC:module{DpdcV2} DPDC)
-                (owner:string (ref-DPDC::UR_OwnerKonto id son))
             )
             (if son
                 (let
                     (
-                        (amount:integer (ref-DPDC::UR_AccountNonceSupply account id true nonce))
+                        (amount:integer (ref-DPDC::UR_AccountNonceSupply executee id true nonce))
                     )
-                    (with-capability (DPDC-MNG|C>WIPE-SFT-NONCE-TOTALLY account id nonce amount)
-                        (XI_DecreaseClassZeroSemiFungibles account id [nonce] [amount] true)
+                    (with-capability (DPDC-MNG|C>WIPE-SFT-NONCE-TOTALLY executee id nonce amount)
+                        (XI_DecreaseClassZeroSemiFungibles executee id [nonce] [amount] true)
                         (URCi_WipeNonce id son)
                     )
                 )
-                (with-capability (DPDC-MNG|C>WIPE-NFT-NONCE account id nonce)
-                    (XI_DecreaseClassZeroNonFungibles account id [nonce] true)
+                (with-capability (DPDC-MNG|C>WIPE-NFT-NONCE executee id nonce)
+                    (XI_DecreaseClassZeroNonFungibles executee id [nonce] true)
                     (URCi_WipeNonce id son)
                 )
             )
@@ -6042,39 +6150,52 @@
     ;;  [DEBIT-MULTIPLE]
     ;;  [SFT+NFT]
     (defun CC_WipeHeavy:object{IgnisCollectorV3.OutputCumulator}
-        (account:string id:string son:bool)
-        @doc "Wipes all viable <id> Nonces of an SFT or NFT <account> \
+        (patron:string executor:string executee:string id:string son:bool)
+        @doc "Wipes every viable nonce from the executee (heavy scan). \
             \ \
-            \ |Heavy| reffers to the usage of expensive functions like <select> or <keys> \
-            \ (that arent meant to be used in transactional context) to get the Account Nonces; \
-            \ May fit in a single Transaction for Small Data Sets"
+            \ HANDOFF 4g. Nothing in THIS module proves any account: the capability chain runs only \
+            \ STATE checks (UEV_AccountFreezeState, UEV_CanWipeON, supply bounds). Authority lives \
+            \ in DPDC-C's DPDC|CX>MULTI-DEBIT -- (if wipe-mode (CAP_Owner id son) ...) -- and this \
+            \ entrypoint passes wipe-mode TRUE, so the authority is the COLLECTION OWNER, derived as \
+            \ (UR_OwnerKonto id son) and naming no actor. \
+            \ \
+            \ <account> became <executee>: it is wiped, not consulted. Its twin C_BurnSFT/C_BurnNFT \
+            \ has the SAME signature and passes wipe-mode FALSE, which makes that same parameter the \
+            \ EXECUTOR. Identical shapes, opposite roles, decided by a boolean two modules away. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
-        (C_WipePure account id son (URHC_WipePure account id son))
+        (UEV_ExecutorIsCollectionOwner executor id son)
+        (C_WipePure patron executor executee id son (URHC_WipePure executee id son))
     )
     (defun C_WipePure:object{IgnisCollectorV3.OutputCumulator}
-        (account:string id:string son:bool removable-nonces-obj:object{DpdcManagementV2.RemovableNonces})
-        @doc "Wipes all <id> Nonces of an SFT or NFT <account>, presented via an <removable-nonces-obj> object \
+        (patron:string executor:string executee:string id:string son:bool removable-nonces-obj:object{DpdcManagementV2.RemovableNonces})
+        @doc "Wipes a pre-computed removable-nonce set from the executee. \
             \ \
-            \ The object must be pre-read (dirty read) \
+            \ HANDOFF 4g. Nothing in THIS module proves any account: the capability chain runs only \
+            \ STATE checks (UEV_AccountFreezeState, UEV_CanWipeON, supply bounds). Authority lives \
+            \ in DPDC-C's DPDC|CX>MULTI-DEBIT -- (if wipe-mode (CAP_Owner id son) ...) -- and this \
+            \ entrypoint passes wipe-mode TRUE, so the authority is the COLLECTION OWNER, derived as \
+            \ (UR_OwnerKonto id son) and naming no actor. \
             \ \
-            \ Example to retrieve the <removable-nonces-obj> \
-            \ <(URHC_WipePure account id son)> ; to get the whole object \
-            \ <(UCv_TakePureWipe (URHC_WipePure account id son) 165)> ; to get only the first 165 units \
-            \ Aproximately 167 Individual Wipes fit inside one TX (for NFTs)."
+            \ <account> became <executee>: it is wiped, not consulted. Its twin C_BurnSFT/C_BurnNFT \
+            \ has the SAME signature and passes wipe-mode FALSE, which makes that same parameter the \
+            \ EXECUTOR. Identical shapes, opposite roles, decided by a boolean two modules away. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
+        (UEV_ExecutorIsCollectionOwner executor id son)
         (let
             (
                 (viable-nonces:[integer] (at "r-nonces" removable-nonces-obj))
                 (viable-amounts:[integer] (at "r-amounts" removable-nonces-obj))
             )
             (if son
-                (with-capability (DPDC-MNG|C>WIPE-SFT-NONCES account id viable-nonces)
+                (with-capability (DPDC-MNG|C>WIPE-SFT-NONCES executee id viable-nonces)
                     ;;Burn SemiFungible and Update Nonce Supplies
-                    (XI_DecreaseClassZeroSemiFungibles account id viable-nonces viable-amounts true)
+                    (XI_DecreaseClassZeroSemiFungibles executee id viable-nonces viable-amounts true)
                 )
-                (with-capability (DPDC-MNG|C>WIPE-NFT-NONCES account id viable-nonces)
+                (with-capability (DPDC-MNG|C>WIPE-NFT-NONCES executee id viable-nonces)
                     ;;Burn NonFungible
-                    (XI_DecreaseClassZeroNonFungibles account id viable-nonces true)
+                    (XI_DecreaseClassZeroNonFungibles executee id viable-nonces true)
                 )
             )
             ;;Costs 2 IGNIS per Nonce Wiped
@@ -6082,27 +6203,50 @@
         )
     )
     (defun C_WipeClean:object{IgnisCollectorV3.OutputCumulator}
-        (account:string id:string son:bool nonces:[integer])
-        @doc "Wipes <id> select viable <nonces> of an SFT or NFT <account> \
-            \ Fails if a single nonce is not viable"
+        (patron:string executor:string executee:string id:string son:bool nonces:[integer])
+        @doc "Wipes the named nonces from the executee. \
+            \ \
+            \ HANDOFF 4g. Nothing in THIS module proves any account: the capability chain runs only \
+            \ STATE checks (UEV_AccountFreezeState, UEV_CanWipeON, supply bounds). Authority lives \
+            \ in DPDC-C's DPDC|CX>MULTI-DEBIT -- (if wipe-mode (CAP_Owner id son) ...) -- and this \
+            \ entrypoint passes wipe-mode TRUE, so the authority is the COLLECTION OWNER, derived as \
+            \ (UR_OwnerKonto id son) and naming no actor. \
+            \ \
+            \ <account> became <executee>: it is wiped, not consulted. Its twin C_BurnSFT/C_BurnNFT \
+            \ has the SAME signature and passes wipe-mode FALSE, which makes that same parameter the \
+            \ EXECUTOR. Identical shapes, opposite roles, decided by a boolean two modules away. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
+        (UEV_ExecutorIsCollectionOwner executor id son)
         (let
             (
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
-            (C_WipePure account id son
+            (C_WipePure patron executor executee id son
                 (UDC_RemovableNonces
                     nonces
-                    (ref-DPDC::UR_AccountNoncesSupplies account id son nonces)
+                    (ref-DPDC::UR_AccountNoncesSupplies executee id son nonces)
                 )
             )
         )
     )
     (defun C_WipeDirty:object{IgnisCollectorV3.OutputCumulator}
-        (account:string id:string son:bool nonces:[integer])
-        @doc "Wipes <id> select <nonces> of an SFT or NFT <account> (at least 1 nonce must be viable)"
+        (patron:string executor:string executee:string id:string son:bool nonces:[integer])
+        @doc "Wipes the viable subset of the named nonces from the executee. \
+            \ \
+            \ HANDOFF 4g. Nothing in THIS module proves any account: the capability chain runs only \
+            \ STATE checks (UEV_AccountFreezeState, UEV_CanWipeON, supply bounds). Authority lives \
+            \ in DPDC-C's DPDC|CX>MULTI-DEBIT -- (if wipe-mode (CAP_Owner id son) ...) -- and this \
+            \ entrypoint passes wipe-mode TRUE, so the authority is the COLLECTION OWNER, derived as \
+            \ (UR_OwnerKonto id son) and naming no actor. \
+            \ \
+            \ <account> became <executee>: it is wiped, not consulted. Its twin C_BurnSFT/C_BurnNFT \
+            \ has the SAME signature and passes wipe-mode FALSE, which makes that same parameter the \
+            \ EXECUTOR. Identical shapes, opposite roles, decided by a boolean two modules away. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
-        (C_WipePure account id son (URC_FilterAccountViableNonces account id son nonces))
+        (UEV_ExecutorIsCollectionOwner executor id son)
+        (C_WipePure patron executor executee id son (URC_FilterAccountViableNonces executee id son nonces))
     )
     (defun Cp_WipeSlice:object{IgnisCollectorV3.OutputCumulator}
         (account:string id:string son:bool removable-nonces-obj:object{DpdcManagementV2.RemovableNonces})

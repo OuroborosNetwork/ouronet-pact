@@ -62,7 +62,7 @@
         ;;    C_Control again for the regression check below -- the real brick scenario also needs
         ;;    can-upgrade=false, but that's an orthogonal compounding factor, not required to prove #13H).
         (print (format "RENOUNCE can-freeze RESULT = {}"
-            [(ref-TS02-C2::DPNF|C_Control owner id true true true true true false true true)]))
+            [(ref-TS02-C2::DPNF|C_Control owner (DPDC.UR_OwnerKonto id false) id true true true true true false true true)]))
         ;; 3] #13H fix proof: unfreeze Lumy MUST still succeed even though can-freeze is now false.
         (print (format "<<13H-1>> UNFREEZE after can-freeze=false RESULT = {}"
             [(ref-TS02-C2::DPNF|C_ToggleFreezeAccount owner (DPDC.UR_OwnerKonto id false) lumy id false)]))
