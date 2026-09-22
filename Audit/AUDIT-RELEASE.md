@@ -7,7 +7,7 @@
 |---|---|
 | version | **2.0** |
 | released | 2026-09-20 |
-| built from commit | `28871fda+dirty` |
+| built from commit | `d2ed0080+dirty` |
 | pages | 233 |
 | chapters | 24 |
 

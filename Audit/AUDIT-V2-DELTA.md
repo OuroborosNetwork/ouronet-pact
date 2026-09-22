@@ -1147,3 +1147,49 @@ of a sentence written about a different function. All four are now file-qualifie
 
 **Result: 285 proven, 0 unproven across all 19 swept modules.**
 
+---
+
+### 04_TS01-C3.pact — COMPLETE (34 of 34 entrypoints, 2026-09-22)
+
+**Nineteen renames, 65 occurrences, and not one call site moved** — every one was `account` (or
+`fire-starter`) → `executor` at unchanged arity. Fifteen entrypoints arrived already swept.
+
+**Three different signature SHAPES broke three successive matchers**, which is worth recording
+because the fix generalises:
+
+| shape | example |
+|---|---|
+| `(defun NAME (params…)` | the common case |
+| `(defun NAME:list (params…)` | a return type between name and params |
+| `(defun NAME(params…)` | **no space** before the paren (`VST\|C_Merge`) |
+| `(defun NAME\n    (params…)` | params on the FOLLOWING line (`SWP\|C_Fuel`) |
+
+Each attempt matched on the LINE and each missed a different shape. The version that works stops
+looking at lines: it finds `(defun NAME`, takes the **balanced extent**, and renames inside it —
+which also collapses the stub-vs-implementation discrimination that the line-based versions kept
+getting wrong, since both forms are handled identically.
+
+> A matcher built from the shapes you have seen is a hardcoded list wearing a regex.
+
+**`SWP|C_IssueStandard` is a thin alias**, delegating to its **sibling** `SWP|C_IssueStable` with
+the amplifier pinned to `-1.0`. That is a **same-module** hop, and `FORWARDED` matches
+cross-module `ref-X::` by design — correctly, because a foreign module is what would do the
+proving and the tool can go and look, whereas an internal hop proves nothing by itself. Route
+named in its `@doc` and registered.
+
+---
+
+### A REGISTRY ENTRY THAT COULD NEVER MATCH
+
+The entry was first written `04_TS01-C3.pact::SWP|C_IssueStandard`. The lookup does
+`bare = name.split("|")[-1]`, so a qualified key that keeps its `MOD|` prefix **can never match**
+— the entry is present, readable, and **inert**.
+
+The only symptom was the entrypoint still reporting UNPROVEN, which is the *good* case: it failed
+loudly. The bad case is a registry accumulating entries nobody notices are dead — and this
+programme has already found that exact shape in `_deadbind` (a live detector nobody could see),
+`_toolpaths`, `_bandplan` and `_executorplan`.
+
+The selftest now refuses any `::`-qualified key that keeps a `|` in its name part, **verified by
+re-introducing the bad key and watching it fire.**
+

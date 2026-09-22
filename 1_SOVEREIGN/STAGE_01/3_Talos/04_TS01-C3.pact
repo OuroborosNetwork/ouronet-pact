@@ -63,9 +63,9 @@
     (defun SWP|C_EnableFrozenLP:string (patron:string executor:string swpair:string))
     (defun SWP|C_EnableSleepingLP:string (patron:string executor:string swpair:string))
     ;;Issue
-    (defun SWP|C_IssueStable:list (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal amp:decimal p:bool))
-    (defun SWP|C_IssueStandard:list (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal p:bool))
-    (defun SWP|C_IssueWeighted:list (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool))
+    (defun SWP|C_IssueStable:list (patron:string executor:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal amp:decimal p:bool))
+    (defun SWP|C_IssueStandard:list (patron:string executor:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal p:bool))
+    (defun SWP|C_IssueWeighted:list (patron:string executor:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool))
     ;;Management
     (defun SWP|C_ModifyCanChangeOwner (patron:string executor:string swpair:string new-boolean:bool))
     (defun SWP|C_ModifyWeights (patron:string executor:string swpair:string new-weights:[decimal]))
@@ -76,35 +76,35 @@
     (defun SWP|C_UpdateFee (patron:string executor:string swpair:string new-fee:decimal lp-or-special:bool))
     (defun SWP|C_UpdateSpecialFeeTargets (patron:string executor:string swpair:string targets:[object{SwapperV4.FeeSplit}]))
     ;;Liquidity
-    (defun SWP|C_AddLiquidity:string (patron:string account:string swpair:string input-amounts:[decimal]))
-    (defun SWP|C_AddIcedLiquidity:string (patron:string account:string swpair:string input-amounts:[decimal]))
-    (defun SWP|C_AddGlacialLiquidity:string (patron:string account:string swpair:string input-amounts:[decimal]))
-    (defun SWP|C_AddFrozenLiquidity:string (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal))
-    (defun SWP|C_AddSleepingLiquidity:string (patron:string account:string swpair:string sleeping-dpof:string nonce:integer))
-    (defun SWP|C_RemoveLiquidity (patron:string account:string swpair:string lp-amount:decimal))
+    (defun SWP|C_AddLiquidity:string (patron:string executor:string swpair:string input-amounts:[decimal]))
+    (defun SWP|C_AddIcedLiquidity:string (patron:string executor:string swpair:string input-amounts:[decimal]))
+    (defun SWP|C_AddGlacialLiquidity:string (patron:string executor:string swpair:string input-amounts:[decimal]))
+    (defun SWP|C_AddFrozenLiquidity:string (patron:string executor:string swpair:string frozen-dptf:string input-amount:decimal))
+    (defun SWP|C_AddSleepingLiquidity:string (patron:string executor:string swpair:string sleeping-dpof:string nonce:integer))
+    (defun SWP|C_RemoveLiquidity (patron:string executor:string swpair:string lp-amount:decimal))
     ;;#70L fix: SWP|C_Fuel/SWP|C_Firestarter are real, public functions on the TS01-C3
     ;;module below but were missing from this interface (interface-completeness gap,
     ;;not a security issue — both were still reachable via the concrete module ref).
-    (defun SWP|C_Fuel (patron:string account:string swpair:string input-amounts:[decimal]))
-    (defun SWP|C_Firestarter (fire-starter:string))
+    (defun SWP|C_Fuel (patron:string executor:string swpair:string input-amounts:[decimal]))
+    (defun SWP|C_Firestarter (executor:string))
     ;;Smart Swap
-    (defun SWP|CC_SmartSwapWithSlippage (patron:string account:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV3.Slippage}))
-    (defun SWP|CC_SmartSwapNoSlippage (patron:string account:string input-id:string input-amount:decimal output-id:string))
+    (defun SWP|CC_SmartSwapWithSlippage (patron:string executor:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV3.Slippage}))
+    (defun SWP|CC_SmartSwapNoSlippage (patron:string executor:string input-id:string input-amount:decimal output-id:string))
     ;;#34 Phase 8: bundle-based, dirty-read-injected Smart Swap — built alongside, not
     ;;replacing, SWP|CC_SmartSwap{With,No}Slippage above, for direct gas comparison.
     (defun SWP|C_SmartSwapWithSlippage
-        (patron:string account:string input-id:string input-amount:decimal output-id:string
+        (patron:string executor:string input-id:string input-amount:decimal output-id:string
          slippage-bounds:object{SwapperUsageV3.Slippage} bundle:object{SwapperUsageV3.SmartSwapPathBundle})
     )
     (defun SWP|C_SmartSwapNoSlippage
-        (patron:string account:string input-id:string input-amount:decimal output-id:string
+        (patron:string executor:string input-id:string input-amount:decimal output-id:string
          bundle:object{SwapperUsageV3.SmartSwapPathBundle})
     )
     ;;Swap
-    (defun SWP|C_SingleSwapWithSlippage (patron:string account:string swpair:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV3.Slippage}))
-    (defun SWP|C_SingleSwapNoSlippage (patron:string account:string swpair:string input-id:string input-amount:decimal output-id:string))
-    (defun SWP|C_MultiSwapWithSlippage (patron:string account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage-bounds:object{SwapperUsageV3.Slippage}))
-    (defun SWP|C_MultiSwapNoSlippage (patron:string account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string))
+    (defun SWP|C_SingleSwapWithSlippage (patron:string executor:string swpair:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV3.Slippage}))
+    (defun SWP|C_SingleSwapNoSlippage (patron:string executor:string swpair:string input-id:string input-amount:decimal output-id:string))
+    (defun SWP|C_MultiSwapWithSlippage (patron:string executor:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage-bounds:object{SwapperUsageV3.Slippage}))
+    (defun SWP|C_MultiSwapNoSlippage (patron:string executor:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string))
 
 )
 ;;
@@ -472,7 +472,7 @@
             )
         )
     )
-    (defun SWP|C_IssueStable:list (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal amp:decimal p:bool)
+    (defun SWP|C_IssueStable:list (patron:string executor:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal amp:decimal p:bool)
         @doc "Issues a Stable Liquidity Pool. First Token in the liquidity Pool must have a connection to a principal Token \
             \ Stable Pools have the S designation. \
             \ Stable Pools can be created with up to 7 Tokens, and have by design equal weighting. \
@@ -486,7 +486,7 @@
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                     (weights:[decimal] (make-list (length pool-tokens) 1.0))
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-SWPI::C_Issue patron account pool-tokens fee-lp weights amp p)
+                        (ref-SWPI::C_Issue patron executor pool-tokens fee-lp weights amp p)
                     )
                 )
                 (ref-IGNIS::XE_CollectIgnis patron ico)
@@ -495,14 +495,26 @@
             )
         )
     )
-    (defun SWP|C_IssueStandard:list (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal p:bool)
+    (defun SWP|C_IssueStandard:list (patron:string executor:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal p:bool)
         @doc "Issues a Standard, Constant Product Pool. \
             \ Constant Product Pools have the P Designation, and they are by design equal weigthed \
             \ Can also be created with up to 7 Tokens, also the <p> boolean determines if its a Principal Pool or not \
-            \ The First Token must be a Principal Token"
-        (SWP|C_IssueStable patron account pool-tokens fee-lp -1.0 p)
+            \ The First Token must be a Principal Token \
+            \ \
+            \ Executor: ENFORCED INDIRECTLY, one line below. This function is a thin alias -- it \
+            \ delegates the whole operation to its SIBLING SWP|C_IssueStable with the amplifier \
+            \ pinned to -1.0, and that sibling forwards <executor> to SWPI::C_Issue, where the \
+            \ proof lives (XE_IssueWrite -> TFT::C_MultiTransfer, named in SWPI::C_Issue's own \
+            \ @doc). \
+            \ \
+            \ The route has to be written down because the delegation is SAME-MODULE: \
+            \ _executorenforced's FORWARDED branch matches `ref-X::` hand-offs, which is correct \
+            \ -- a foreign module is what would do the proving, and the tool can go and look. An \
+            \ internal hop proves nothing by itself. \
+            \ (patron/executor canon 2.2, indirect route named, 2026-09-22.)"
+        (SWP|C_IssueStable patron executor pool-tokens fee-lp -1.0 p)
     )
-    (defun SWP|C_IssueWeighted:list (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool)
+    (defun SWP|C_IssueWeighted:list (patron:string executor:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool)
         @doc "Issues a Weigthed Constant Liquidity Pool \
             \ Weigthed Pools have the W Designation, and the weights can be changed at will. \
             \ Can also be created with up to 7 Tokens, <p> boolean determines if its a Principal Pool or not \
@@ -514,7 +526,7 @@
                     (ref-SWPI:module{SwapperIssueV4} SWPI)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-SWPI::C_Issue patron account pool-tokens fee-lp weights -1.0 p)
+                        (ref-SWPI::C_Issue patron executor pool-tokens fee-lp weights -1.0 p)
                     )
                 )
                 (ref-IGNIS::XE_CollectIgnis patron ico)
@@ -670,7 +682,7 @@
     )
     ;;
     (defun SWP|C_Fuel
-        (patron:string account:string swpair:string input-amounts:[decimal])
+        (patron:string executor:string swpair:string input-amounts:[decimal])
         @doc "Fuels the <swpair> with <input-amounts> of Tokens. \
             \ Must contain values for all pool tokens, with zero for Tokens that arent used \
             \ Fueling increases Liquidity without issuing LP, therefore increasing LP Value"
@@ -683,14 +695,14 @@
                     (ref-SWPI:module{SwapperIssueV4} SWPI)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-SWPLC::C_Fuel patron account swpair input-amounts true true)
+                    (ref-SWPLC::C_Fuel patron executor swpair input-amounts true true)
                 )
                 (ref-SWP::XE_UpdateStoaValue swpair (at 0 (ref-SWPI::URC_PoolValue swpair)))
                 (format "Succesfully fueled SWP-Pair {} with Token Amounts {}" [swpair input-amounts])
             )
         )
     )
-    (defun SWP|C_AddLiquidity:string (patron:string account:string swpair:string input-amounts:[decimal])
+    (defun SWP|C_AddLiquidity:string (patron:string executor:string swpair:string input-amounts:[decimal])
         @doc "Adds Liquidity using <input-amounts> on <swpair>, in its default Standard Mode. \
             \ Must Contain 0.0 for Tokens not used; Pool Token Order must be followed for desired <input-amounts> \
             \ 1000 IGNIS Flat Fee Cost for adding liquidity to deincentivize addition of small values \
@@ -714,7 +726,7 @@
                     (ref-SWPI:module{SwapperIssueV4} SWPI)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-SWPLC::STOA-PID|C_AddStandardLiquidity patron account swpair input-amounts stoa-pid)
+                        (ref-SWPLC::STOA-PID|C_AddStandardLiquidity patron executor swpair input-amounts stoa-pid)
                     )
                 )
                 (ref-IGNIS::XE_CollectIgnis patron ico)
@@ -725,7 +737,7 @@
             )
         )
     )
-    (defun SWP|C_AddIcedLiquidity:string (patron:string account:string swpair:string input-amounts:[decimal])
+    (defun SWP|C_AddIcedLiquidity:string (patron:string executor:string swpair:string input-amounts:[decimal])
         @doc "Same as <SWP|C_AddLiquidity>, but using ICED Mode \
             \ \
             \ ICED MODE \
@@ -747,7 +759,7 @@
                     (ref-SWPI:module{SwapperIssueV4} SWPI)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-SWPLC::STOA-PID|C_AddIcedLiquidity patron account swpair input-amounts stoa-pid)
+                        (ref-SWPLC::STOA-PID|C_AddIcedLiquidity patron executor swpair input-amounts stoa-pid)
                     )
                 )
                 (ref-IGNIS::XE_CollectIgnis patron ico)
@@ -758,7 +770,7 @@
             )
         )
     )
-    (defun SWP|C_AddGlacialLiquidity:string (patron:string account:string swpair:string input-amounts:[decimal])
+    (defun SWP|C_AddGlacialLiquidity:string (patron:string executor:string swpair:string input-amounts:[decimal])
         @doc "Same as <SWP|C_AddLiquidity>, but using GLACIAL Mode \
             \ \
             \ GLACIAL MODE \
@@ -778,7 +790,7 @@
                     (ref-SWPI:module{SwapperIssueV4} SWPI)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-SWPLC::STOA-PID|C_AddGlacialLiquidity patron account swpair input-amounts stoa-pid)
+                        (ref-SWPLC::STOA-PID|C_AddGlacialLiquidity patron executor swpair input-amounts stoa-pid)
                     )
                 )
                 (ref-IGNIS::XE_CollectIgnis patron ico)
@@ -789,7 +801,7 @@
             )
         )
     )
-    (defun SWP|C_AddFrozenLiquidity:string (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal)
+    (defun SWP|C_AddFrozenLiquidity:string (patron:string executor:string swpair:string frozen-dptf:string input-amount:decimal)
         @doc "Adds Liquidity using a single <input-amount> of a single <frozen-dptf> \
             \ Since this is an asymetric-liquidity-amount, it is bound by max. deviation rules \
             \ 1000 IGNIS Flat Fee Cost for adding liquidity. \
@@ -808,7 +820,7 @@
                     (ref-SWPI:module{SwapperIssueV4} SWPI)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-SWPLC::STOA-PID|C_AddFrozenLiquidity patron account swpair frozen-dptf input-amount stoa-pid)
+                        (ref-SWPLC::STOA-PID|C_AddFrozenLiquidity patron executor swpair frozen-dptf input-amount stoa-pid)
                     )
                 )
                 (ref-IGNIS::XE_CollectIgnis patron ico)
@@ -819,7 +831,7 @@
             )
         )
     )
-    (defun SWP|C_AddSleepingLiquidity:string (patron:string account:string swpair:string sleeping-dpof:string nonce:integer)
+    (defun SWP|C_AddSleepingLiquidity:string (patron:string executor:string swpair:string sleeping-dpof:string nonce:integer)
         @doc "Adds Liquidity using a single <input-amount> of a single <sleeping-dpof> \
         \ Since this is an asymetric-liquidity-amount, it is bound by max. deviation rules \
         \ 1000 IGNIS Flat Fee Cost for adding liquidity. \
@@ -838,7 +850,7 @@
                     (ref-SWPI:module{SwapperIssueV4} SWPI)
                     (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-SWPLC::STOA-PID|C_AddSleepingLiquidity patron account swpair sleeping-dpof nonce stoa-pid)
+                        (ref-SWPLC::STOA-PID|C_AddSleepingLiquidity patron executor swpair sleeping-dpof nonce stoa-pid)
                     )
                 )
                 (ref-IGNIS::XE_CollectIgnis patron ico)
@@ -849,7 +861,7 @@
             )
         )
     )
-    (defun SWP|C_RemoveLiquidity (patron:string account:string swpair:string lp-amount:decimal)
+    (defun SWP|C_RemoveLiquidity (patron:string executor:string swpair:string lp-amount:decimal)
         @doc "Removes <swpair> Liquidity using <lp-amount> of LP Tokens \
             \ Always returns all Pool Tokens at current Pool Token Ratio \
             \ Removing Liquidty complety leaving the pool exactly empty (0.0 tokens) is fully supported"
@@ -861,7 +873,7 @@
                     (ref-SWP:module{SwapperV4} SWP)
                     (ref-SWPI:module{SwapperIssueV4} SWPI)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-SWPLC::C_RemoveLiquidity patron account swpair lp-amount)
+                        (ref-SWPLC::C_RemoveLiquidity patron executor swpair lp-amount)
                     )
                 )
                 (ref-IGNIS::XE_CollectIgnis patron ico)
@@ -871,8 +883,8 @@
         )
     )
     ;;Swaps
-    (defun SWP|C_Firestarter (fire-starter:string)
-        @doc "Makes IGNIS for <fire-starter> using 10 native Stoas"
+    (defun SWP|C_Firestarter (executor:string)
+        @doc "Makes IGNIS for <executor> using 10 native Stoas"
         (with-capability (P|TS)
             (let
                 (
@@ -887,8 +899,8 @@
                     (ouro:string (ref-DALOS::UR_OuroborosID))
                     (ignis:string (ref-DALOS::UR_IgnisID))
                     (primordial:string (ref-SWP::UR_PrimordialPool))
-                    (fire-starter-ignis:decimal (ref-DPTF::UR_AccountSupply ignis fire-starter))
-                    (fire-starter-ouro:decimal (ref-DPTF::UR_AccountSupply ouro fire-starter))
+                    (fire-starter-ignis:decimal (ref-DPTF::UR_AccountSupply ignis executor))
+                    (fire-starter-ouro:decimal (ref-DPTF::UR_AccountSupply ouro executor))
                 )
                 (enforce
                     (fold (and) true
@@ -906,20 +918,20 @@
                         (wstoa:string (ref-DALOS::UR_WrappedStoaID))
                         (ref-SWPI:module{SwapperIssueV4} SWPI)
                         (ico1:object{IgnisCollectorV3.OutputCumulator}
-                            (ref-LIQUID::C_WrapStoa fire-starter fire-starter 10.0)
+                            (ref-LIQUID::C_WrapStoa executor executor 10.0)
                         )
                         (slippage-bounds:object{SwapperUsageV3.Slippage}
                             (ref-SWPU::UDC_SpawnSlippageBounds primordial [wstoa] [10.0] ouro -1.0)
                         )
                         (ico2:object{IgnisCollectorV3.OutputCumulator}
                             (ref-SWPU::C_Swap 
-                                fire-starter fire-starter primordial [wstoa] [10.0] ouro 
+                                executor executor primordial [wstoa] [10.0] ouro 
                                 -1.0 stoa-pid slippage-bounds
                             )
                         )
                         (gained-ouro:decimal (at 0 (at "output" ico2)))
                         (ico3:object{IgnisCollectorV3.OutputCumulator}
-                            (ref-ORBR::C_SublimateV2 fire-starter fire-starter gained-ouro)
+                            (ref-ORBR::C_SublimateV2 executor executor gained-ouro)
                         )
                     )
                     (ref-SWP::XE_UpdateStoaValue primordial (at 0 (ref-SWPI::URC_PoolValue primordial)))
@@ -931,7 +943,7 @@
     (defun SWP|CC_SmartSwapWithSlippage
         (
             patron:string
-            account:string
+            executor:string
             input-id:string
             input-amount:decimal
             output-id:string
@@ -968,7 +980,7 @@
                     (slippage:decimal (at "slippage-percent" slippage-bounds))
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-SWPU::CC_SmartSwap
-                            patron account input-id input-amount output-id
+                            patron executor input-id input-amount output-id
                             slippage stoa-pid slippage-bounds
                         )
                     )
@@ -1019,7 +1031,7 @@
     (defun SWP|CC_SmartSwapNoSlippage
         (
             patron:string
-            account:string
+            executor:string
             input-id:string
             input-amount:decimal
             output-id:string
@@ -1046,7 +1058,7 @@
                     )
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-SWPU::CC_SmartSwap
-                            patron account input-id input-amount output-id
+                            patron executor input-id input-amount output-id
                             -1.0 stoa-pid slippage-bounds
                         )
                     )
@@ -1101,7 +1113,7 @@
     (defun SWP|C_SmartSwapWithSlippage
         (
             patron:string
-            account:string
+            executor:string
             input-id:string
             input-amount:decimal
             output-id:string
@@ -1126,7 +1138,7 @@
                     (slippage:decimal (at "slippage-percent" slippage-bounds))
                     (result:list
                         (ref-SWPU::C_SmartSwap
-                            patron account input-id input-amount output-id
+                            patron executor input-id input-amount output-id
                             slippage stoa-pid slippage-bounds bundle
                         )
                     )
@@ -1149,7 +1161,7 @@
     (defun SWP|C_SmartSwapNoSlippage
         (
             patron:string
-            account:string
+            executor:string
             input-id:string
             input-amount:decimal
             output-id:string
@@ -1171,7 +1183,7 @@
                     (slippage-bounds:object{SwapperUsageV3.Slippage} (ref-SWPU::UDC_Slippage 0.0 0 0.0))
                     (result:list
                         (ref-SWPU::C_SmartSwap
-                            patron account input-id input-amount output-id
+                            patron executor input-id input-amount output-id
                             -1.0 stoa-pid slippage-bounds bundle
                         )
                     )
@@ -1194,7 +1206,7 @@
     (defun SWP|C_SingleSwapWithSlippage
         (
             patron:string
-            account:string
+            executor:string
             swpair:string
             input-id:string
             input-amount:decimal
@@ -1214,7 +1226,7 @@
                     (slippage:decimal (at "slippage-percent" slippage-bounds))
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-SWPU::C_Swap 
-                            patron account swpair [input-id] [input-amount] output-id 
+                            patron executor swpair [input-id] [input-amount] output-id 
                             slippage stoa-pid slippage-bounds
                         )
                     )
@@ -1237,7 +1249,7 @@
     (defun SWP|C_SingleSwapNoSlippage
         (
             patron:string
-            account:string
+            executor:string
             swpair:string
             input-id:string
             input-amount:decimal
@@ -1258,7 +1270,7 @@
                     )
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-SWPU::C_Swap 
-                            patron account swpair [input-id] [input-amount] output-id 
+                            patron executor swpair [input-id] [input-amount] output-id 
                             -1.0 stoa-pid slippage-bounds
                         )
                     )
@@ -1272,7 +1284,7 @@
     (defun SWP|C_MultiSwapWithSlippage
         (
             patron:string
-            account:string
+            executor:string
             swpair:string
             input-ids:[string]
             input-amounts:[decimal]
@@ -1292,7 +1304,7 @@
                     (slippage:decimal (at "slippage-percent" slippage-bounds))
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-SWPU::C_Swap 
-                            patron account swpair input-ids input-amounts output-id 
+                            patron executor swpair input-ids input-amounts output-id 
                             slippage stoa-pid slippage-bounds
                         )
                     )
@@ -1315,7 +1327,7 @@
     (defun SWP|C_MultiSwapNoSlippage
         (
             patron:string
-            account:string
+            executor:string
             swpair:string
             input-ids:[string]
             input-amounts:[decimal]
@@ -1336,7 +1348,7 @@
                     )
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-SWPU::C_Swap 
-                            patron account swpair input-ids input-amounts output-id 
+                            patron executor swpair input-ids input-amounts output-id 
                             -1.0 stoa-pid slippage-bounds)
                     )
                 )

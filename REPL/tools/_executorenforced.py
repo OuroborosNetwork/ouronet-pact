@@ -111,6 +111,10 @@ INDIRECT = {
     "19_SWPU.pact::C_Swap":       "TFT::C_MultiTransfer",
     "19_SWPU.pact::CC_SmartSwap": "TFT::C_MultiTransfer",
     "19_SWPU.pact::C_SmartSwap":  "XI_Swap",
+    # 04_TS01-C3 (2026-09-22). A thin alias delegating to its SIBLING in the same file, which is
+    # the same "internal hop" shape as 19_SWPU's swaps: FORWARDED matches cross-module `ref-X::`
+    # by design, so an in-module delegation has to be traced by a human and stated.
+    "04_TS01-C3.pact::C_IssueStandard": "SWP|C_IssueStable",
 }
 
 # SELF-PROVING AT CREATION -- the base case of the attribution rule, resolved by the owner on
@@ -303,6 +307,15 @@ def selftest():
     if ambiguous:
         print("  _executorenforced: NOTE -- bare INDIRECT key(s) matching >1 swept module: "
               + ", ".join(f"{k} {sorted(where[k])}" for k in ambiguous))
+    # A QUALIFIED KEY MUST USE THE **BARE** NAME. The lookup does `bare = name.split("|")[-1]`,
+    # so a key written `file.pact::SWP|C_IssueStandard` can never match and the entry is present,
+    # readable, and DEAD. I wrote exactly that on 2026-09-22 and the only symptom was the
+    # entrypoint still reporting UNPROVEN -- which is the good case. The bad case is a registry
+    # full of entries nobody notices are inert.
+    for k in sorted(set(INDIRECT) | set(SELF_PROVING)):
+        if "::" in k and "|" in k.split("::", 1)[1]:
+            bad.append(f"   registry key {k!r} keeps a `MOD|` prefix after `::` -- the lookup "
+                       f"strips it, so this entry can NEVER match. Use the bare name.")
     if not SWEPT:
         bad.append("   SWEPT is empty -- --swept would report a confident clean zero")
     if "01_DALOS.pact" not in SWEPT:
