@@ -722,16 +722,16 @@
                 (expect-failure
                     "<<TX-AQP-DEB09>> boost-link on a POPULATED score must fail (nzs>0 ⇒ vacate to reconfigure)"
                 "SCR|C>CREATE-BOOST-LINK-SCORE: boost-score-id must exist, be non-BAR,"
-                    (ref-TS02-C3::AQP-SCR|C_CreateScoreBoostLink anhd bunnies-score wc-score))
+                    (ref-TS02-C3::AQP-SCR|C_CreateScoreBoostLink anhd (AQP-SCORE.UR_SCR|ScoreOwnerKonto bunnies-score) bunnies-score wc-score))
                 (expect-failure
                     "<<TX-AQP-DEB09>> enable-deb-boost on a POPULATED score must fail (nzs>0 ⇒ vacate to reconfigure)"
                 "Deb-boost must be off and the score must have no stakers (nzs-count ="
-                    (ref-TS02-C3::AQP-SCR|C_EnableDebBoost anhd bunnies-score))
+                    (ref-TS02-C3::AQP-SCR|C_EnableDebBoost anhd (AQP-SCORE.UR_SCR|ScoreOwnerKonto bunnies-score) bunnies-score))
             ]
         )
         ;; M4 #13 re-settable side: the SAME config on the VACATED WonderCoach (nzs=0) SUCCEEDS,
         ;; and the boost-link slot actually moves to Bunnies — proving reconfigure-after-vacate.
-        (ref-TS02-C3::AQP-SCR|C_CreateScoreBoostLink anhd wc-score bunnies-score)
+        (ref-TS02-C3::AQP-SCR|C_CreateScoreBoostLink anhd (AQP-SCORE.UR_SCR|ScoreOwnerKonto wc-score) wc-score bunnies-score)
         (map print
             [
                 (format "<(DEB09 WonderCoach boost-link after re-set)> => {}"

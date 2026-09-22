@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 23 of 24
 ;; This is STEP 23 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-22 must have run first, including the init steps between deploys.
-;; 1 source file(s), 0 gas measured in the REPL gas model, 84,620 bytes
+;; 1 source file(s), 0 gas measured in the REPL gas model, 84,740 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   2_CITIZEN/5_VaultsMinter/04_AQP-BOOT.pact
@@ -575,11 +575,11 @@
                 (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron owner-konto "SubsidiaryBloodshed" 6 -1)
                 (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron owner-konto "SubsidiaryNosferatu" 6 -1)
                 (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron owner-konto "SubsidiaryBunnies" 6 -1)
-                (ref-TS02-C3::AQP-SCR|C_EnableDebBoost patron score-sub-coding)
-                (ref-TS02-C3::AQP-SCR|C_EnableDebBoost patron score-sub-wondercoach)
-                (ref-TS02-C3::AQP-SCR|C_EnableDebBoost patron score-sub-bloodshed)
-                (ref-TS02-C3::AQP-SCR|C_EnableDebBoost patron score-sub-nosferatu)
-                (ref-TS02-C3::AQP-SCR|C_EnableDebBoost patron score-sub-bunnies)
+                (ref-TS02-C3::AQP-SCR|C_EnableDebBoost patron owner-konto score-sub-coding)
+                (ref-TS02-C3::AQP-SCR|C_EnableDebBoost patron owner-konto score-sub-wondercoach)
+                (ref-TS02-C3::AQP-SCR|C_EnableDebBoost patron owner-konto score-sub-bloodshed)
+                (ref-TS02-C3::AQP-SCR|C_EnableDebBoost patron owner-konto score-sub-nosferatu)
+                (ref-TS02-C3::AQP-SCR|C_EnableDebBoost patron owner-konto score-sub-bunnies)
                 ;;ORDERING BUG FIXED 2026-09-18. The `NEXT=Step7:dh-score-ids[1,3,6,7,8]` list used
                 ;;to be emitted in CREATION order -- coding, wondercoach, bloodshed, nosferatu,
                 ;;bunnies -- while slots [1,3,6,7,8] are coding, BLOODSHED, WONDERCOACH, nosferatu,
@@ -680,19 +680,19 @@
                 (ref-TS02-C3::AQP-SCR|C_IssueLiquidityScore
                     patron owner-konto BOOT|SCORE_SILVER BOOT|PRECISION lp-denominator BOOT|MX_FROZEN BOOT|MX_SLEEPING
                 )
-                (ref-TS02-C3::AQP-SCR|C_CreateScoreBoostClassLink patron silver-id silver-boost-class-id)
+                (ref-TS02-C3::AQP-SCR|C_CreateScoreBoostClassLink patron owner-konto silver-id silver-boost-class-id)
                 ;; [3..5] Bronze
                 (ref-TS02-C3::AQP-SCR|C_IssueLiquidityScore
                     patron owner-konto BOOT|SCORE_BRONZE BOOT|PRECISION lp-denominator BOOT|MX_FROZEN BOOT|MX_SLEEPING
                 )
-                (ref-TS02-C3::AQP-SCR|C_CreateScoreBoostClassLink patron bronze-id bronze-boost-class-id)
-                (ref-TS02-C3::AQP-SCR|C_CreateScoreBoostLink patron bronze-id silver-id)
+                (ref-TS02-C3::AQP-SCR|C_CreateScoreBoostClassLink patron owner-konto bronze-id bronze-boost-class-id)
+                (ref-TS02-C3::AQP-SCR|C_CreateScoreBoostLink patron owner-konto bronze-id silver-id)
                 ;; [6..8] Golden
                 (ref-TS02-C3::AQP-SCR|C_IssueLiquidityScore
                     patron owner-konto BOOT|SCORE_GOLDEN BOOT|PRECISION lp-denominator BOOT|MX_FROZEN BOOT|MX_SLEEPING
                 )
-                (ref-TS02-C3::AQP-SCR|C_CreateScoreBoostClassLink patron golden-id golden-boost-class-id)
-                (ref-TS02-C3::AQP-SCR|C_CreateScoreBoostLink patron golden-id silver-id)
+                (ref-TS02-C3::AQP-SCR|C_CreateScoreBoostClassLink patron owner-konto golden-id golden-boost-class-id)
+                (ref-TS02-C3::AQP-SCR|C_CreateScoreBoostLink patron owner-konto golden-id silver-id)
                 ;;
                 (format "AQP-BOOT Step 6 done. lp-denominator={}. score-ids=[silver={} bronze={} golden={}]. \
                         \ boost-class-ids-IN=[{} {} {}]. boost-links=[{}->{} {}->{}]. \

@@ -101,7 +101,7 @@
             (expect-failure
                 (format "<<TX-AQP-NEG-IMC2>> direct AQP-SCR::C_EnableDebBoost rejected (P|UEV_IMC)" [])
                 "None of the guards passed"
-                (ref-SCR::C_EnableDebBoost score-id))
+                (ref-SCR::C_EnableDebBoost KST.ANHD KST.ANHD score-id))
             (expect-failure
                 (format "<<TX-AQP-NEG-IMC2>> direct AQP-POOL::C_DisablePoolStake rejected (P|UEV_IMC)" [])
                 "None of the guards passed"
@@ -326,7 +326,7 @@
             (expect-failure
                 (format "<<TX-AQP-NEG-OWNER2>> non-owner AQP-SCR|C_EnableDebBoost rejected (score-owner gate)" [])
                 "Keyset failure (keys-all): [PK_Ancie...]"
-                (ref-TS02-C3::AQP-SCR|C_EnableDebBoost foreign score-id))
+                (ref-TS02-C3::AQP-SCR|C_EnableDebBoost foreign (AQP-SCORE.UR_SCR|ScoreOwnerKonto score-id) score-id))
             (expect-failure
                 (format "<<TX-AQP-NEG-OWNER2>> non-owner AQP-FVT|C_Control rejected (fvt-owner gate)" [])
                 "Keyset failure (keys-all): [PK_Ancie...]"
@@ -340,7 +340,7 @@
             (expect-failure
                 (format "<<TX-AQP-NEG-OWNER2>> non-owner AQP-SCR|C_ControlScore rejected (score-owner gate)" [])
                 "Keyset failure (keys-all): [PK_Ancie...]"
-                (ref-TS02-C3::AQP-SCR|C_ControlScore foreign score-id false false))
+                (ref-TS02-C3::AQP-SCR|C_ControlScore foreign (AQP-SCORE.UR_SCR|ScoreOwnerKonto score-id) score-id false false))
             ;;Rotation needs BOTH halves of its conjunction to pass before ownership is consulted:
             ;;can-change-owner true, and a new owner distinct from the current one. EMMA is not the
             ;;owner (ANHD is), so handing EMMA in satisfies distinctness by the same fact that makes
@@ -351,7 +351,7 @@
             (expect-failure
                 (format "<<TX-AQP-NEG-OWNER2>> non-owner AQP-SCR|C_RotateScoreOwnership rejected (score-owner gate)" [])
                 "Keyset failure (keys-all): [PK_Ancie...]"
-                (ref-TS02-C3::AQP-SCR|C_RotateScoreOwnership foreign score-id foreign))
+                (ref-TS02-C3::AQP-SCR|C_RotateScoreOwnership foreign (AQP-SCORE.UR_SCR|ScoreOwnerKonto score-id) foreign score-id))
             (expect
                 (format "<<TX-AQP-NEG-OWNER2>> ResumeVacVault still allows owner rotation (ROTATE-FVT precondition)" [])
                 true (ref-FVT::UR_FVT|CanChangeOwner fvt-id))
@@ -397,7 +397,7 @@
             (expect-failure
                 (format "<<TX-AQP-NEG-OWNER2>> non-owner AQP-SCR|C_CreateScoreBoostLink rejected (score-owner gate)" [])
                 "Keyset failure (keys-all): [PK_Ancie...]"
-                (ref-TS02-C3::AQP-SCR|C_CreateScoreBoostLink foreign score-id boost-score-id))
+                (ref-TS02-C3::AQP-SCR|C_CreateScoreBoostLink foreign (AQP-SCORE.UR_SCR|ScoreOwnerKonto score-id) score-id boost-score-id))
             ;;The class variant adds one more guard ahead of ownership -- the class must be ACTIVE --
             ;;so the id is taken from the live set rather than named, and the set is proved non-empty
             ;;first so `(at 0 ...)` cannot be what fails.
@@ -407,7 +407,7 @@
             (expect-failure
                 (format "<<TX-AQP-NEG-OWNER2>> non-owner AQP-SCR|C_CreateScoreBoostClassLink rejected (score-owner gate)" [])
                 "Keyset failure (keys-all): [PK_Ancie...]"
-                (ref-TS02-C3::AQP-SCR|C_CreateScoreBoostClassLink foreign score-id (at 0 active-bcs)))
+                (ref-TS02-C3::AQP-SCR|C_CreateScoreBoostClassLink foreign (AQP-SCORE.UR_SCR|ScoreOwnerKonto score-id) score-id (at 0 active-bcs)))
         ]
     )
 )
@@ -500,7 +500,7 @@
             (expect-failure
                 (format "<<TX-AQP-NEG-INPUT>> negative NF set-class score value (-1.0) rejected at definition (#19)" [])
                 "Invalid DPNF set score definition (nonce-class=0, value=-1.0,"
-                (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleSetScoreDefinition patron score-id dpnf-id [0] [-1.0]))
+                (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleSetScoreDefinition patron (AQP-SCORE.UR_SCR|ScoreOwnerKonto score-id) score-id dpnf-id [0] [-1.0]))
         ]
     )
 )
@@ -552,7 +552,7 @@
                 ;;and it silently marked FVT's guard as covered until this was tightened.
                 (expect-failure "<<TX-AQP-NEG-SCRCTL>> rotating a score to the owner it ALREADY has is rejected"
                     "Score owner rotation requires"
-                    (ref-TS02-C3::AQP-SCR|C_RotateScoreOwnership patron score-id owner-now))
+                    (ref-TS02-C3::AQP-SCR|C_RotateScoreOwnership patron (AQP-SCORE.UR_SCR|ScoreOwnerKonto score-id) owner-now score-id))
                 ;;...and the rejected call changed nothing.
                 (expect "<<TX-AQP-NEG-SCRCTL>> the owner-konto is untouched after the rejection"
                     owner-now (ref-SCR::UR_SCR|ScoreOwnerKonto score-id))

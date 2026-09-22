@@ -178,36 +178,36 @@
     ;; [C]   client
     ;;
     (defun C_IssueLiquidityScore:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string owner-konto:string score-name:string precision:integer lp-denominator:string mx-frozen:decimal mx-sleeping:decimal)
+        (patron:string executor:string score-name:string precision:integer lp-denominator:string mx-frozen:decimal mx-sleeping:decimal)
     )
     (defun C_IssueTrueFungibleScore:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string owner-konto:string score-name:string precision:integer mx-frozen:decimal)
+        (patron:string executor:string score-name:string precision:integer mx-frozen:decimal)
     )
     (defun C_IssueOrtoFungibleScore:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string owner-konto:string score-name:string precision:integer mx-sleeping:decimal mx-hibernated:decimal)
+        (patron:string executor:string score-name:string precision:integer mx-sleeping:decimal mx-hibernated:decimal)
     )
     (defun C_IssueSemiFungibleScore:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string owner-konto:string score-name:string precision:integer sft-equality:bool)
+        (patron:string executor:string score-name:string precision:integer sft-equality:bool)
     )
     (defun C_IssueNonFungibleScore:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string owner-konto:string score-name:string precision:integer nft-score-model:integer)
+        (patron:string executor:string score-name:string precision:integer nft-score-model:integer)
     )
-    (defun C_RotateOwnership:object{IgnisCollectorV3.OutputCumulator} (score-id:string new-owner-konto:string))
-    (defun C_Control:object{IgnisCollectorV3.OutputCumulator} (score-id:string new-can-upgrade:bool new-can-change-owner:bool))
-    (defun C_CreateBoostClassLink:object{IgnisCollectorV3.OutputCumulator} (score-id:string boost-class-id:string))
-    (defun C_CreateBoostLink:object{IgnisCollectorV3.OutputCumulator} (score-id:string boost-score-id:string))
-    (defun C_EnableDebBoost:object{IgnisCollectorV3.OutputCumulator} (score-id:string))
+    (defun C_RotateOwnership:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string score-id:string))
+    (defun C_Control:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string score-id:string new-can-upgrade:bool new-can-change-owner:bool))
+    (defun C_CreateBoostClassLink:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string score-id:string boost-class-id:string))
+    (defun C_CreateBoostLink:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string score-id:string boost-score-id:string))
+    (defun C_EnableDebBoost:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string score-id:string))
     (defun C_IssueTriplet:object{IgnisCollectorV3.OutputCumulator}
         (patron:string executor:string bronze-score-id:string silver-score-id:string golden-score-id:string)
     )
     (defun C_IssueSemiFungibleScoreDefinition:object{IgnisCollectorV3.OutputCumulator}
-        (score-id:string dpsf-id:string nonces:[integer] nonce-score-values:[decimal])
+        (patron:string executor:string score-id:string dpsf-id:string nonces:[integer] nonce-score-values:[decimal])
     )
     (defun C_IssueNonFungibleScoreDefinition:object{IgnisCollectorV3.OutputCumulator}
-        (score-id:string dpnf-id:string trait-keys:[string] trait-values:[string] trait-score-values:[decimal])
+        (patron:string executor:string score-id:string dpnf-id:string trait-keys:[string] trait-values:[string] trait-score-values:[decimal])
     )
     (defun C_IssueNonFungibleSetScoreDefinition:object{IgnisCollectorV3.OutputCumulator}
-        (score-id:string dpnf-id:string dpnf-nonce-classes:[integer] class-score-values:[decimal])
+        (patron:string executor:string score-id:string dpnf-id:string dpnf-nonce-classes:[integer] class-score-values:[decimal])
     )
     (defun C_IssueSingleScoreModel:object{IgnisCollectorV3.OutputCumulator}
         (patron:string executor:string model-name:string score-class:integer collectable-id:string precision:integer nonces:[integer] nonce-score-values:[decimal] boost-class-id:string)
@@ -216,7 +216,7 @@
         (patron:string executor:string model-name:string bronze-model-id:string silver-model-id:string golden-model-id:string)
     )
     (defun C_IssueScoreFromModel:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string owner-konto:string model-id:string agency-name:string)
+        (patron:string executor:string model-id:string agency-name:string)
     )
 
 )
@@ -3802,11 +3802,34 @@
     ;; [C]   client
     ;;
     ;;Issue by score-class (SCR|T|Score / SCR|Schema)
+    (defun UEV_ExecutorIzScoreOwner (executor:string score-id:string)
+        @doc "BINDS <executor> to <score-id>'s owner-konto. \
+            \ \
+            \ Eight entrypoints of this module reach CAP_EnforceAccountOwnership on \
+            \ (UR_SCR|ScoreOwnerKonto score-id) -- a DERIVED account that names no actor, \
+            \ HANDOFF 4g. This supplies the other half: that the account the caller NAMED is \
+            \ that owner. \
+            \ \
+            \ THE MODULE WAS ALREADY WRITING THE ANSWER DOWN AND THROWING IT AWAY. Every one of \
+            \ those eight defuns bound (owner-konto (UR_SCR|ScoreOwnerKonto score-id)) in its \
+            \ own `let` and never read it -- eight dead bindings, all of the SAME expression, \
+            \ all reported by _deadbind. That is what 4g looks like from the inside: the \
+            \ derived actor is so obviously the subject of the operation that somebody bound it \
+            \ by reflex, and nothing in the signature had anywhere to put it. \
+            \ (patron/executor canon 2.2, indirect route named, 2026-09-22.)"
+        (let
+            (
+                (owner:string (UR_SCR|ScoreOwnerKonto score-id))
+            )
+            (enforce (= executor owner)
+                (format "Executor {} is not Score {}'s owner; owner is {}" [executor score-id owner]))
+        )
+    )
     (defun C_IssueLiquidityScore:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string owner-konto:string score-name:string precision:integer lp-denominator:string mx-frozen:decimal mx-sleeping:decimal)
+        (patron:string executor:string score-name:string precision:integer lp-denominator:string mx-frozen:decimal mx-sleeping:decimal)
         @doc "Create score-class 0 (LP). Costs GAS|ISSUE-SCORE IGNIS and UR_UsagePrice \"smart\" STOA from patron."
         (P|UEV_IMC)
-        (with-capability (SCR|C>ISSUE-LIQUIDITY-SCORE owner-konto score-name precision lp-denominator mx-frozen mx-sleeping)
+        (with-capability (SCR|C>ISSUE-LIQUIDITY-SCORE executor score-name precision lp-denominator mx-frozen mx-sleeping)
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -3816,16 +3839,16 @@
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
                 (ref-IGNIS::XE_CollectStoa patron (URCi_IssueScoreStoa))
-                (XI_Issue score-name owner-konto precision 0 lp-denominator mx-frozen mx-sleeping 1.0 true -1)
-                (URCi_IssueScore owner-konto [score-id])
+                (XI_Issue score-name executor precision 0 lp-denominator mx-frozen mx-sleeping 1.0 true -1)
+                (URCi_IssueScore executor [score-id])
             )
         )
     )
     (defun C_IssueTrueFungibleScore:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string owner-konto:string score-name:string precision:integer mx-frozen:decimal)
+        (patron:string executor:string score-name:string precision:integer mx-frozen:decimal)
         @doc "Create score-class 1 (DPTF). Costs GAS|ISSUE-SCORE IGNIS and UR_UsagePrice \"smart\" STOA from patron."
         (P|UEV_IMC)
-        (with-capability (SCR|C>ISSUE-TRUE-FUNGIBLE-SCORE owner-konto score-name precision mx-frozen)
+        (with-capability (SCR|C>ISSUE-TRUE-FUNGIBLE-SCORE executor score-name precision mx-frozen)
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -3835,17 +3858,17 @@
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
                 (ref-IGNIS::XE_CollectStoa patron (URCi_IssueScoreStoa))
-                (XI_Issue score-name owner-konto precision 1 BAR mx-frozen 1.0 1.0 true -1)
-                (URCi_IssueScore owner-konto [score-id])
+                (XI_Issue score-name executor precision 1 BAR mx-frozen 1.0 1.0 true -1)
+                (URCi_IssueScore executor [score-id])
             )
         )
     )
     (defun C_IssueOrtoFungibleScore:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string owner-konto:string score-name:string precision:integer mx-sleeping:decimal mx-hibernated:decimal)
+        (patron:string executor:string score-name:string precision:integer mx-sleeping:decimal mx-hibernated:decimal)
         @doc "Create score-class 2 (DPOF, including special tokens). Caller sets mx-sleeping and mx-hibernated; mx-frozen defaults 2.0. \
             \ Costs GAS|ISSUE-SCORE IGNIS and UR_UsagePrice \"smart\" STOA from patron."
         (P|UEV_IMC)
-        (with-capability (SCR|C>ISSUE-ORTO-FUNGIBLE-SCORE owner-konto score-name precision mx-sleeping mx-hibernated)
+        (with-capability (SCR|C>ISSUE-ORTO-FUNGIBLE-SCORE executor score-name precision mx-sleeping mx-hibernated)
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -3855,16 +3878,16 @@
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
                 (ref-IGNIS::XE_CollectStoa patron (URCi_IssueScoreStoa))
-                (XI_Issue score-name owner-konto precision 2 BAR 2.0 mx-sleeping mx-hibernated true -1)
-                (URCi_IssueScore owner-konto [score-id])
+                (XI_Issue score-name executor precision 2 BAR 2.0 mx-sleeping mx-hibernated true -1)
+                (URCi_IssueScore executor [score-id])
             )
         )
     )
     (defun C_IssueSemiFungibleScore:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string owner-konto:string score-name:string precision:integer sft-equality:bool)
+        (patron:string executor:string score-name:string precision:integer sft-equality:bool)
         @doc "Create score-class 3 (DPSF). Costs GAS|ISSUE-SCORE IGNIS and UR_UsagePrice \"smart\" STOA from patron."
         (P|UEV_IMC)
-        (with-capability (SCR|C>ISSUE-SEMI-FUNGIBLE-SCORE owner-konto score-name precision sft-equality)
+        (with-capability (SCR|C>ISSUE-SEMI-FUNGIBLE-SCORE executor score-name precision sft-equality)
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -3874,16 +3897,16 @@
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
                 (ref-IGNIS::XE_CollectStoa patron (URCi_IssueScoreStoa))
-                (XI_Issue score-name owner-konto precision 3 BAR 2.0 1.0 1.0 sft-equality -1)
-                (URCi_IssueScore owner-konto [score-id])
+                (XI_Issue score-name executor precision 3 BAR 2.0 1.0 1.0 sft-equality -1)
+                (URCi_IssueScore executor [score-id])
             )
         )
     )
     (defun C_IssueNonFungibleScore:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string owner-konto:string score-name:string precision:integer nft-score-model:integer)
+        (patron:string executor:string score-name:string precision:integer nft-score-model:integer)
         @doc "Create score-class 4 (DPNF). Costs GAS|ISSUE-SCORE IGNIS and UR_UsagePrice \"smart\" STOA from patron."
         (P|UEV_IMC)
-        (with-capability (SCR|C>ISSUE-NON-FUNGIBLE-SCORE owner-konto score-name precision nft-score-model)
+        (with-capability (SCR|C>ISSUE-NON-FUNGIBLE-SCORE executor score-name precision nft-score-model)
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -3893,96 +3916,131 @@
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
                 (ref-IGNIS::XE_CollectStoa patron (URCi_IssueScoreStoa))
-                (XI_Issue score-name owner-konto precision 4 BAR 2.0 1.0 1.0 true nft-score-model)
-                (URCi_IssueScore owner-konto [score-id])
+                (XI_Issue score-name executor precision 4 BAR 2.0 1.0 1.0 true nft-score-model)
+                (URCi_IssueScore executor [score-id])
             )
         )
     )
     ;;Management (SCR|Schema)
     (defun C_RotateOwnership:object{IgnisCollectorV3.OutputCumulator}
-        (score-id:string new-owner-konto:string)
-        @doc "Transfer score owner-konto. No native STOA; validation in SCR|C>ROTATE-OWNERSHIP-SCORE; XI writes only; medium IGNIS cumulator built here."
+        (patron:string executor:string executee:string score-id:string)
+        @doc "Transfers score ownership to <executee>. \
+            \ \
+            \ Executor: PROVEN INDIRECTLY, and named. SCR|C>ROTATE-OWNERSHIP-SCORE reaches \
+            \ (CAP_EnforceAccountOwnership (UR_SCR|ScoreOwnerKonto score-id)) -- ownership of a \
+            \ DERIVED account that names no actor, HANDOFF 4g -- and UEV_ExecutorIzScoreOwner \
+            \ binds the declared executor to that same owner. It REPLACES a dead \
+            \ (owner-konto (UR_SCR|ScoreOwnerKonto score-id)) binding that this function \
+            \ computed and discarded. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
+        (UEV_ExecutorIzScoreOwner executor score-id)
         (let
             (
                 (ico:object{IgnisCollectorV3.OutputCumulator} (URCi_RotateOwnership score-id))
             )
-            (with-capability (SCR|C>ROTATE-OWNERSHIP-SCORE score-id new-owner-konto)
-                (XI_RotateOwnership score-id new-owner-konto)
+            (with-capability (SCR|C>ROTATE-OWNERSHIP-SCORE score-id executee)
+                (XI_RotateOwnership score-id executee)
             )
             ico
         )
     )
     (defun C_Control:object{IgnisCollectorV3.OutputCumulator}
-        (score-id:string new-can-upgrade:bool new-can-change-owner:bool)
-        @doc "Set can-upgrade and can-change-owner. No native STOA; validation in SCR|C>CONTROL-SCORE; XI writes only; medium IGNIS cumulator built here."
+        (patron:string executor:string score-id:string new-can-upgrade:bool new-can-change-owner:bool)
+        @doc "Sets a score's can-upgrade and can-change-owner flags. \
+            \ \
+            \ Executor: PROVEN INDIRECTLY, and named. SCR|C>CONTROL-SCORE reaches \
+            \ (CAP_EnforceAccountOwnership (UR_SCR|ScoreOwnerKonto score-id)) -- ownership of a \
+            \ DERIVED account that names no actor, HANDOFF 4g -- and UEV_ExecutorIzScoreOwner \
+            \ binds the declared executor to that same owner. It REPLACES a dead \
+            \ (owner-konto (UR_SCR|ScoreOwnerKonto score-id)) binding that this function \
+            \ computed and discarded. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
-        (let
-            (
-                ;;
-                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
-            )
-            (with-capability (SCR|C>CONTROL-SCORE score-id new-can-upgrade new-can-change-owner)
-                (XI_Control score-id new-can-upgrade new-can-change-owner)
-            )
-            (URCi_Control score-id)
+        (UEV_ExecutorIzScoreOwner executor score-id)
+        (with-capability (SCR|C>CONTROL-SCORE score-id new-can-upgrade new-can-change-owner)
+            (XI_Control score-id new-can-upgrade new-can-change-owner)
         )
+        (URCi_Control score-id)
     )
     ;;Post-issuance: only C_EnableDebBoost (deb-boost defaults false). Multipliers, sft-equality, nft-score-model, links [..] set at issue.
     (defun C_CreateBoostClassLink:object{IgnisCollectorV3.OutputCumulator}
-        (score-id:string boost-class-id:string)
-        @doc "Set boost-class-link once. No STOA; validation in SCR|C>CREATE-BOOST-CLASS-LINK-SCORE; XI writes only; biggest IGNIS cumulator built here."
+        (patron:string executor:string score-id:string boost-class-id:string)
+        @doc "Links a score to a BoostClass. \
+            \ \
+            \ Executor: PROVEN INDIRECTLY, and named. SCR|C>CREATE-BOOST-CLASS-LINK-SCORE reaches \
+            \ (CAP_EnforceAccountOwnership (UR_SCR|ScoreOwnerKonto score-id)) -- ownership of a \
+            \ DERIVED account that names no actor, HANDOFF 4g -- and UEV_ExecutorIzScoreOwner \
+            \ binds the declared executor to that same owner. It REPLACES a dead \
+            \ (owner-konto (UR_SCR|ScoreOwnerKonto score-id)) binding that this function \
+            \ computed and discarded. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
-        (let
-            (
-                ;;
-                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
-            )
-            (with-capability (SCR|C>CREATE-BOOST-CLASS-LINK-SCORE score-id boost-class-id)
-                (XI_CreateBoostClassLink score-id boost-class-id)
-            )
-            (URCi_CreateBoostClassLink score-id)
+        (UEV_ExecutorIzScoreOwner executor score-id)
+        (with-capability (SCR|C>CREATE-BOOST-CLASS-LINK-SCORE score-id boost-class-id)
+            (XI_CreateBoostClassLink score-id boost-class-id)
         )
+        (URCi_CreateBoostClassLink score-id)
     )
     (defun C_CreateBoostLink:object{IgnisCollectorV3.OutputCumulator}
-        (score-id:string boost-score-id:string)
-        @doc "Set boost-link once. No STOA; validation in SCR|C>CREATE-BOOST-LINK-SCORE; XI writes only; biggest IGNIS cumulator built here."
+        (patron:string executor:string score-id:string boost-score-id:string)
+        @doc "Links a score to a boosting score. \
+            \ \
+            \ Executor: PROVEN INDIRECTLY, and named. SCR|C>CREATE-BOOST-LINK-SCORE reaches \
+            \ (CAP_EnforceAccountOwnership (UR_SCR|ScoreOwnerKonto score-id)) -- ownership of a \
+            \ DERIVED account that names no actor, HANDOFF 4g -- and UEV_ExecutorIzScoreOwner \
+            \ binds the declared executor to that same owner. It REPLACES a dead \
+            \ (owner-konto (UR_SCR|ScoreOwnerKonto score-id)) binding that this function \
+            \ computed and discarded. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
-        (let
-            (
-                ;;
-                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
-            )
-            (with-capability (SCR|C>CREATE-BOOST-LINK-SCORE score-id boost-score-id)
-                (XI_CreateBoostLink score-id boost-score-id)
-            )
-            (URCi_CreateBoostLink score-id)
+        (UEV_ExecutorIzScoreOwner executor score-id)
+        (with-capability (SCR|C>CREATE-BOOST-LINK-SCORE score-id boost-score-id)
+            (XI_CreateBoostLink score-id boost-score-id)
         )
+        (URCi_CreateBoostLink score-id)
     )
     (defun C_EnableDebBoost:object{IgnisCollectorV3.OutputCumulator}
-        (score-id:string)
-        @doc "Set deb-boost true once; irreversible. No native STOA; validation in SCR|C>ENABLE-DEB-BOOST-SCORE; XI write only; medium IGNIS cumulator."
+        (patron:string executor:string score-id:string)
+        @doc "Turns deb-boost on -- irreversible. \
+            \ \
+            \ Executor: PROVEN INDIRECTLY, and named. SCR|C>ENABLE-DEB-BOOST-SCORE reaches \
+            \ (CAP_EnforceAccountOwnership (UR_SCR|ScoreOwnerKonto score-id)) -- ownership of a \
+            \ DERIVED account that names no actor, HANDOFF 4g -- and UEV_ExecutorIzScoreOwner \
+            \ binds the declared executor to that same owner. It REPLACES a dead \
+            \ (owner-konto (UR_SCR|ScoreOwnerKonto score-id)) binding that this function \
+            \ computed and discarded. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
-        (let
-            (
-                ;;
-                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
-            )
-            (with-capability (SCR|C>ENABLE-DEB-BOOST-SCORE score-id)
-                (XI_EnableDebBoost score-id)
-            )
-            (URCi_EnableDebBoost score-id)
+        (UEV_ExecutorIzScoreOwner executor score-id)
+        (with-capability (SCR|C>ENABLE-DEB-BOOST-SCORE score-id)
+            (XI_EnableDebBoost score-id)
         )
+        (URCi_EnableDebBoost score-id)
     )
     (defun C_IssueTriplet:object{IgnisCollectorV3.OutputCumulator}
         (patron:string executor:string bronze-score-id:string silver-score-id:string golden-score-id:string)
-        @doc "Bundle three issued scores into one triplet T|bronze|silver|golden. Silver score owner; costs GAS|ISSUE-TRIPLET IGNIS."
+        @doc "Bundles three issued scores into one triplet T|bronze|silver|golden. Costs \
+            \ GAS|ISSUE-TRIPLET IGNIS. \
+            \ \
+            \ Executor: PROVEN INDIRECTLY, and named -- SCR|C>ISSUE-TRIPLET resolves it in \
+            \ place. The capability binds (= executor owner-konto) inside its compound enforce \
+            \ AND separately runs (CAP_EnforceAccountOwnership owner-konto) on the same derived \
+            \ account, so both halves of HANDOFF 4g are already present: the authority is \
+            \ proven and the actor is named against it. This is the one entrypoint in the \
+            \ module that needed neither a binder nor a rename -- it was written correctly \
+            \ before the canon existed. \
+            \ \
+            \ Its dead (owner-konto (UR_SCR|ScoreOwnerKonto silver-score-id)) let-binding was \
+            \ removed at the same turn: the capability reads the BRONZE score's owner and \
+            \ enforces the three are identical, so this second read of a different score was \
+            \ both unused and, had anything ever read it, redundant. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 ;;
-                (owner-konto:string (UR_SCR|ScoreOwnerKonto silver-score-id))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
             )
             (with-capability (SCR|C>ISSUE-TRIPLET executor bronze-score-id silver-score-id golden-score-id)
@@ -3994,14 +4052,21 @@
         )
     )
     (defun C_IssueSemiFungibleScoreDefinition:object{IgnisCollectorV3.OutputCumulator}
-        (score-id:string dpsf-id:string nonces:[integer] nonce-score-values:[decimal])
-        @doc "Write SCR|T|SF|Score nonce-score-value for multiple nonces in one call; increments SF DefRevision revision-nonce once."
+        (patron:string executor:string score-id:string dpsf-id:string nonces:[integer] nonce-score-values:[decimal])
+        @doc "Writes per-nonce score values for a semi-fungible. \
+            \ \
+            \ Executor: PROVEN INDIRECTLY, and named. SCR|C>ISSUE-SF-SCORE-DEFINITION reaches \
+            \ (CAP_EnforceAccountOwnership (UR_SCR|ScoreOwnerKonto score-id)) -- ownership of a \
+            \ DERIVED account that names no actor, HANDOFF 4g -- and UEV_ExecutorIzScoreOwner \
+            \ binds the declared executor to that same owner. It REPLACES a dead \
+            \ (owner-konto (UR_SCR|ScoreOwnerKonto score-id)) binding that this function \
+            \ computed and discarded. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
+        (UEV_ExecutorIzScoreOwner executor score-id)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                ;;
-                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
                 (big:decimal (ref-IGNIS::UC_IgnisLeg "tier-big"))
                 (how-many:decimal (dec (length nonces)))
                 (price:decimal (* how-many big))
@@ -4014,14 +4079,21 @@
         )
     )
     (defun C_IssueNonFungibleScoreDefinition:object{IgnisCollectorV3.OutputCumulator}
-        (score-id:string dpnf-id:string trait-keys:[string] trait-values:[string] trait-score-values:[decimal])
-        @doc "Write SCR|T|NF|TraitScore trait-score-value rows for multiple trait key/value pairs in one call; bumps NF DefRevision global + trait counters."
+        (patron:string executor:string score-id:string dpnf-id:string trait-keys:[string] trait-values:[string] trait-score-values:[decimal])
+        @doc "Writes per-trait score values for a non-fungible. \
+            \ \
+            \ Executor: PROVEN INDIRECTLY, and named. SCR|XI>X_ISSUE-NF-SCORE-DEFINITION reaches \
+            \ (CAP_EnforceAccountOwnership (UR_SCR|ScoreOwnerKonto score-id)) -- ownership of a \
+            \ DERIVED account that names no actor, HANDOFF 4g -- and UEV_ExecutorIzScoreOwner \
+            \ binds the declared executor to that same owner. It REPLACES a dead \
+            \ (owner-konto (UR_SCR|ScoreOwnerKonto score-id)) binding that this function \
+            \ computed and discarded. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
+        (UEV_ExecutorIzScoreOwner executor score-id)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                ;;
-                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
                 (biggest:decimal (ref-IGNIS::UC_IgnisLeg "tier-biggest"))
                 (how-many:decimal (dec (length trait-keys)))
                 (price:decimal (* how-many biggest))
@@ -4036,14 +4108,21 @@
         )
     )
     (defun C_IssueNonFungibleSetScoreDefinition:object{IgnisCollectorV3.OutputCumulator}
-        (score-id:string dpnf-id:string dpnf-nonce-classes:[integer] class-score-values:[decimal])
-        @doc "Write SCR|T|NF|ClassScore set-mode definitions (one row per dpnf-nonce-class); bumps NF DefRevision global + class counters."
+        (patron:string executor:string score-id:string dpnf-id:string dpnf-nonce-classes:[integer] class-score-values:[decimal])
+        @doc "Writes per-set-class score values for a non-fungible. \
+            \ \
+            \ Executor: PROVEN INDIRECTLY, and named. SCR|XI>X_ISSUE-NF-SCORE-DEFINITION reaches \
+            \ (CAP_EnforceAccountOwnership (UR_SCR|ScoreOwnerKonto score-id)) -- ownership of a \
+            \ DERIVED account that names no actor, HANDOFF 4g -- and UEV_ExecutorIzScoreOwner \
+            \ binds the declared executor to that same owner. It REPLACES a dead \
+            \ (owner-konto (UR_SCR|ScoreOwnerKonto score-id)) binding that this function \
+            \ computed and discarded. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
+        (UEV_ExecutorIzScoreOwner executor score-id)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                ;;
-                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
                 (biggest:decimal (ref-IGNIS::UC_IgnisLeg "tier-biggest"))
                 (how-many:decimal (dec (length dpnf-nonce-classes)))
                 (price:decimal (* how-many biggest))
@@ -4096,14 +4175,20 @@
         )
     )
     (defun C_IssueScoreFromModel:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string owner-konto:string model-id:string agency-name:string)
-        @doc "FACTORY: issue a score entity conforming to <model-id>, owned by owner-konto, named <agency-name>. \
+        (patron:string executor:string model-id:string agency-name:string)
+        @doc "FACTORY: issue a score entity conforming to <model-id>, owned by <executor>, named <agency-name>. \
+            \ \
+            \ Executor: PROVEN INDIRECTLY, and named. SCR|C>ISSUE-SCORE-FROM-MODEL proves only \
+            \ that the model exists. Each score the factory mints goes through the same-module \
+            \ XI_IssueOneFromModel, which acquires SCR|XI>ISSUE-SCORE, and THAT runs \
+            \ CAP_EnforceAccountOwnership on the owner -- the executor. FORWARDED cannot see it \
+            \ because the hop is internal, so the route is stated here. \
             \ single → 1 SF score named agency-name + its definition; triplet → 3 sub-scores named \
             \ agency-name+Bronze/Silver/Golden (from the sub single-models) + XI_IssueTriplet. agency-name must be a \
             \ valid, globally-unique score-name (collision ⇒ rejected). Returns the (score | triplet) id in \
             \ output[0]. P|UEV_IMC + SCR|C>ISSUE-SCORE-FROM-MODEL (composes SECURE). Bills GAS|ISSUE-SCORE-MODEL."
         (P|UEV_IMC)
-        (with-capability (SCR|C>ISSUE-SCORE-FROM-MODEL patron owner-konto model-id)
+        (with-capability (SCR|C>ISSUE-SCORE-FROM-MODEL patron executor model-id)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
@@ -4113,19 +4198,19 @@
                     (
                         (result-id:string
                             (if (= (UR_SCR|ModelEntityType model-id) CT_SCORE_MODEL_SINGLE)
-                                (XI_IssueOneFromModel owner-konto model-id agency-name)
+                                (XI_IssueOneFromModel executor model-id agency-name)
                                 (let
                                     (
                                         (m:object{AcquisitionSchemasV1.SCR|ScoreEntityModel} (UR_SCR|ScoreEntityModel model-id))
                                     )
                                     (let
                                         (
-                                            (b:string (XI_IssueOneFromModel owner-konto (at "bronze-model-id" m) (concat [agency-name "Bronze"])))
-                                            (s:string (XI_IssueOneFromModel owner-konto (at "silver-model-id" m) (concat [agency-name "Silver"])))
-                                            (g:string (XI_IssueOneFromModel owner-konto (at "golden-model-id" m) (concat [agency-name "Golden"])))
+                                            (b:string (XI_IssueOneFromModel executor (at "bronze-model-id" m) (concat [agency-name "Bronze"])))
+                                            (s:string (XI_IssueOneFromModel executor (at "silver-model-id" m) (concat [agency-name "Silver"])))
+                                            (g:string (XI_IssueOneFromModel executor (at "golden-model-id" m) (concat [agency-name "Golden"])))
                                         )
-                                        (with-capability (SCR|C>ISSUE-TRIPLET owner-konto b s g)
-                                            (XI_IssueTriplet owner-konto b s g))
+                                        (with-capability (SCR|C>ISSUE-TRIPLET executor b s g)
+                                            (XI_IssueTriplet executor b s g))
                                         (UC_ComputeTripletId b s g)
                                     )
                                 )

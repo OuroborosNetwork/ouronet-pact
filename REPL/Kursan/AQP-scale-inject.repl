@@ -112,7 +112,7 @@
     (ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron patron "ScaleInjScore" 12 1.0)
     (ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id score-id)
     ;; ENABLE deb-boost while the score is empty — required for the score's deb to track Elite-DEB (go stale)
-    (ref-TS02-C3::AQP-SCR|C_EnableDebBoost patron score-id)
+    (ref-TS02-C3::AQP-SCR|C_EnableDebBoost patron (AQP-SCORE.UR_SCR|ScoreOwnerKonto score-id) score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
     ;; stake 50 synth (2 OURO each) at Elite-DEB=1.0 → deb stored on the 1.0 basis

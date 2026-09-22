@@ -114,7 +114,7 @@
     (ref-TS02-C3::AQP-POOL|C_Issue patron (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 1 ouro-id) "ScaleSwpPool" ouro-id 1)
     (ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron patron "ScaleSwpScore" 12 1.0)
     (ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id score-id)
-    (ref-TS02-C3::AQP-SCR|C_CreateScoreBoostClassLink patron score-id boost-id)
+    (ref-TS02-C3::AQP-SCR|C_CreateScoreBoostClassLink patron (AQP-SCORE.UR_SCR|ScoreOwnerKonto score-id) score-id boost-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
     ;; 3. stake 50 synth (2 OURO each) → each gains proportional promile (2/1000 * 500 = 1.0)

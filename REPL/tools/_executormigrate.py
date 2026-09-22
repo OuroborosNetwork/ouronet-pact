@@ -76,6 +76,23 @@ RULES = {
     # IssueMultipletFamily reached NO ownership enforce at all; the executor is simply the creator,
     # so the fixtures keep the account they used -- what changes is that it must now be OWNED.
     "AQP-FVT|C_IssueMultipletFamily":   (7, "{0}"),
+    # ---- 02_SCORE (sweep 37/46, 2026-09-22) --------------------------------------------------
+    # The seven owner-gated score ops. Each reaches CAP_EnforceAccountOwnership on the DERIVED
+    # (UR_SCR|ScoreOwnerKonto score-id) -- 4g -- so the executor is read with the SAME expression
+    # UEV_ExecutorIzScoreOwner evaluates, which is what stops the fixture and the binder
+    # disagreeing (the 01_ANK lesson, one module earlier).
+    #
+    # DELIBERATELY ABSENT: AQP-SCR|C_RotateScoreOwnership. Its change is an insert AND a reorder
+    # -- (patron score-id new-owner-konto) became (patron executor executee score-id) -- and this
+    # tool only inserts, so it would produce the right arity with the score-id and the new owner
+    # exchanged. Same reason 05_DPDC-R and 09_DPDC-F's repurpose are absent. Five sites, by hand.
+    "AQP-SCR|C_ControlScore":                       (5, "(AQP-SCORE.UR_SCR|ScoreOwnerKonto {1})"),
+    "AQP-SCR|C_CreateScoreBoostClassLink":          (4, "(AQP-SCORE.UR_SCR|ScoreOwnerKonto {1})"),
+    "AQP-SCR|C_CreateScoreBoostLink":               (4, "(AQP-SCORE.UR_SCR|ScoreOwnerKonto {1})"),
+    "AQP-SCR|C_EnableDebBoost":                     (3, "(AQP-SCORE.UR_SCR|ScoreOwnerKonto {1})"),
+    "AQP-SCR|C_IssueSemiFungibleScoreDefinition":   (6, "(AQP-SCORE.UR_SCR|ScoreOwnerKonto {1})"),
+    "AQP-SCR|C_IssueNonFungibleScoreDefinition":    (7, "(AQP-SCORE.UR_SCR|ScoreOwnerKonto {1})"),
+    "AQP-SCR|C_IssueNonFungibleSetScoreDefinition": (6, "(AQP-SCORE.UR_SCR|ScoreOwnerKonto {1})"),
     # ---- 09_DPDC-F (sweep 32/46, 2026-09-22) ------------------------------------------------
     # Only the fragmentation switch. Its authority is DPDC::CAP_Owner (4g), so the executor is
     # the collection owner, read with the same expression the module's binder evaluates.

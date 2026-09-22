@@ -1866,3 +1866,56 @@ template `_executormigrate` already carried for `AQP-FVT|CC_SweepRevokeAnchor`.
 > `executor = patron` is not a safe default. It is in the rules list for this reason, and it cost a
 > gate run to be reminded.
 
+
+---
+
+### 02_SCORE.pact — COMPLETE (14 of 14 entrypoints, 2026-09-22)
+
+The largest AQP core module. 128 call sites: 51 by `_executormigrate`, 10 in a citizen minter, 8
+by hand, the rest in Talos. Three shapes, and one of them the module had already written down.
+
+#### Eight dead bindings of the same §4g expression
+
+`C_Control`, `C_CreateBoostClassLink`, `C_CreateBoostLink`, `C_EnableDebBoost` and the three
+`C_Issue*ScoreDefinition` ops each opened with
+
+```pact
+(let ( (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id)) ) …)
+```
+
+and **never read it**. Eight dead bindings, all of the *same* expression, all reported by
+`_deadbind`, all sitting in functions whose capability enforces
+`CAP_EnforceAccountOwnership` on exactly that derived account.
+
+> That is what §4g looks like from the inside. The derived actor is so obviously the subject of the
+> operation that somebody bound it by reflex — and the signature had nowhere to put it, so the
+> binding went nowhere. `UEV_ExecutorIzScoreOwner` now *is* that expression, and each dead binding
+> was replaced by the call rather than merely deleted.
+
+#### Two executors were proven, and the matcher could not see either
+
+`_executorenforced` reported `C_IssueTriplet` and `C_IssueScoreFromModel` UNPROVEN. Neither is.
+
+* `SCR|C>ISSUE-TRIPLET` binds `(= executor owner-konto)` inside its compound enforce **and**
+  separately runs `CAP_EnforceAccountOwnership owner-konto`. Both halves of §4g were already there
+  — written correctly before the canon existed. The matcher looks for the enforce applied to
+  `executor`; here it is applied to the name `executor` was just proven equal to.
+* `C_IssueScoreFromModel` reaches `SCR|XI>ISSUE-SCORE` through the same-module
+  `XI_IssueOneFromModel` — the internal-hop shape `FORWARDED` declines by design.
+
+Both registered as INDIRECT with the route named, and the registry comment keeps the *two different
+reasons* visible rather than collapsing them into one.
+
+#### Removing a binding can delete a `let`
+
+Four of the eight `let` forms bound **nothing else**. Deleting the dead binding left
+`(let ( ) …)`, which Pact rejects with `Expected: ['(']` — a **load** error, so 55 suites reported
+BROKEN with zero assertions. The empty forms were collapsed and the bodies dedented.
+
+> A dead-binding removal is not always a deletion. When it is the *last* binding, it is a
+> restructure, and the difference shows up only at load.
+
+And a Talos `@doc` `format` still referenced `new-owner-konto` after the parameter became
+`executee` — the same *"a signature change must reach every place the name is written"* class,
+caught the same way, by the module failing to load rather than by any static check.
+

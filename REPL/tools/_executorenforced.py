@@ -139,6 +139,16 @@ INDIRECT = {
     # decided purely by whether a local helper sits in the middle.
     "00_Demipad.pact::C_TransmitSemiFungibles": "DPDC-T::C_Transfer",
     "00_Demipad.pact::C_TransmitNonFungibles": "DPDC-T::C_Transfer",
+    # 02_SCORE (2026-09-22). Two DIFFERENT reasons the matcher cannot see the proof, and the
+    # difference is worth keeping visible:
+    #  * C_IssueTriplet is proven IN PLACE and always was -- SCR|C>ISSUE-TRIPLET binds
+    #    (= executor owner-konto) and separately runs CAP_EnforceAccountOwnership on that same
+    #    DERIVED account. The matcher looks for the enforce applied to `executor`; here it is
+    #    applied to the name `executor` was just proven equal to. Correct code, invisible shape.
+    #  * C_IssueScoreFromModel reaches SCR|XI>ISSUE-SCORE through the same-module
+    #    XI_IssueOneFromModel, which is the internal-hop shape FORWARDED declines by design.
+    "02_SCORE.pact::C_IssueTriplet":        "CAP_EnforceAccountOwnership owner-konto",
+    "02_SCORE.pact::C_IssueScoreFromModel": "XI_IssueOneFromModel",
 }
 
 # SELF-PROVING AT CREATION -- the base case of the attribution rule, resolved by the owner on

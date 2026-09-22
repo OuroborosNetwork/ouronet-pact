@@ -822,7 +822,7 @@
                                         (amts:[integer] (make-list 6 1))
                                     )
                                     (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron owner-id sc 6 1)
-                                    (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScoreDefinition patron score-id kbn-id
+                                    (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScoreDefinition patron (AQP-SCORE.UR_SCR|ScoreOwnerKonto score-id) score-id kbn-id
                                         ["Rarity" "Rarity" "Background"] ["Common" "Legendary" "Movie Set"] [50.0 9999.0 10.0])
                                     (ref-TS02-C3::AQP-POOL|C_Issue patron (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 4 kbn-id) pool kbn-id 4)
                                     (ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id score-id)

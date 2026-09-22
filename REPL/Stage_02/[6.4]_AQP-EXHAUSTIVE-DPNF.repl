@@ -281,7 +281,7 @@
             (expect-failure
                 (format "<<TX-AQP-NF-NEGDEF>> negative NF trait score value (-1.0) rejected at definition (#19)" [])
                 "Invalid DPNF trait definition (key=Rarity, value=Common, score=-1.0,"
-                (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScoreDefinition patron score-id kbn-id ["Rarity"] ["Common"] [-1.0]))
+                (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScoreDefinition patron (AQP-SCORE.UR_SCR|ScoreOwnerKonto score-id) score-id kbn-id ["Rarity"] ["Common"] [-1.0]))
         ]
     )
 )
@@ -343,7 +343,7 @@
     ;; trait definitions (IGNIS only → plain ANHD sig)
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
     (print (format "<(AQP-SCR|C_IssueNonFungibleScoreDefinition Rarity/Background)> => \"{}\"" [
-        (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScoreDefinition patron score-id kbn-id
+        (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScoreDefinition patron (AQP-SCORE.UR_SCR|ScoreOwnerKonto score-id) score-id kbn-id
             ["Rarity" "Rarity" "Background"] ["Common" "Legendary" "Movie Set"] [50.0 9999.0 10.0])]))
     ;;==== TX-AQP-M1 · 01 · point-read scoring assertions ====
     (print "--- [TX-AQP-M1 · 01 · point-read scoring assertions] ---")

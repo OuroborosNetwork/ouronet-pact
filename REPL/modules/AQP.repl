@@ -1254,13 +1254,13 @@
             ;;collectable are both REAL, so the only thing wrong is the pairing.
             (expect-failure "<<AQP-G17>> an SF score definition with misaligned nonce/value lists is refused"
                 "Invalid score/dpsf inputs: score must exist, sft-equality false, nonce/value lists aligned"
-                (ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition KST.ANHD
+                (ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition KST.ANHD (AQP-SCORE.UR_SCR|ScoreOwnerKonto (ref-U|DALOS::UDC_Makeid "SfStakeScore"))
                     (ref-U|DALOS::UDC_Makeid "SfStakeScore") "DHCD-98c486052a51" [1] [1.0 2.0]))
             ;;--- a boost-class link with a BAR class id. The score is real and has no stakers, so
             ;;the guard's other half is satisfied and this is attributable to the BAR check.
             (expect-failure "<<AQP-G17>> a boost-class link with a BAR class id is refused"
                 "boost-class-id must be non-BAR and the score must have no stakers"
-                (ref-TS02-C3::AQP-SCR|C_CreateScoreBoostClassLink KST.ANHD
+                (ref-TS02-C3::AQP-SCR|C_CreateScoreBoostClassLink KST.ANHD (AQP-SCORE.UR_SCR|ScoreOwnerKonto (ref-U|DALOS::UDC_Makeid "ResumeVacScore"))
                     (ref-U|DALOS::UDC_Makeid "ResumeVacScore") "|"))
         ]
     )
@@ -2472,7 +2472,7 @@
                 ;;THE ITEM
                 (expect-failure "<<AQP-G38>> a score cannot be linked to an inactive BoostClass"
                     "BoostClass must be active"
-                    (ref-TS02-C3::AQP-SCR|C_CreateScoreBoostClassLink KST.ANHD score revoked))
+                    (ref-TS02-C3::AQP-SCR|C_CreateScoreBoostClassLink KST.ANHD (AQP-SCORE.UR_SCR|ScoreOwnerKonto score) score revoked))
             ]
         )
         ;;flip the ONE variable
@@ -2483,7 +2483,7 @@
                 (expect "<<AQP-G38>> the boost class is active again" true (ref-ANK::UR_BC|Active revoked))
                 (expect "<<AQP-G38>> ...and the identical link call is now admitted"
                     true (!= "" (format "{}"
-                        [(ref-TS02-C3::AQP-SCR|C_CreateScoreBoostClassLink KST.ANHD score revoked)])))
+                        [(ref-TS02-C3::AQP-SCR|C_CreateScoreBoostClassLink KST.ANHD (AQP-SCORE.UR_SCR|ScoreOwnerKonto score) score revoked)])))
                 (expect "<<AQP-G38>> ...and the link is recorded on the score"
                     revoked (ref-SCR::UR_SCR|ScoreBoostClassLink score))
             ]
@@ -2561,19 +2561,19 @@
                 ;;the door closes -- a normal, admitted control call that happens to renounce control
                 (expect "<<AQP-G39>> a control call that sets can-upgrade FALSE is admitted"
                     true (!= "" (format "{}"
-                        [(ref-TS02-C3::AQP-SCR|C_ControlScore KST.ANHD score false true)])))
+                        [(ref-TS02-C3::AQP-SCR|C_ControlScore KST.ANHD (AQP-SCORE.UR_SCR|ScoreOwnerKonto score) score false true)])))
                 (expect "<<AQP-G39>> ...and the flag is now false"
                     false (ref-SCR::UR_SCR|ScoreCanUpgrade score))
                 ;;THE ITEM
                 (expect-failure "<<AQP-G39>> ...so any further control call is refused"
                     "Score control requires can-upgrade true"
-                    (ref-TS02-C3::AQP-SCR|C_ControlScore KST.ANHD score false false))
+                    (ref-TS02-C3::AQP-SCR|C_ControlScore KST.ANHD (AQP-SCORE.UR_SCR|ScoreOwnerKonto score) score false false))
                 ;;THE ONE-WAY PROPERTY: the owner cannot buy the capability back. Same message, and
                 ;;it is the same guard -- but this is the call that matters, because an owner who
                 ;;set the flag by mistake would try exactly this one.
                 (expect-failure "<<AQP-G39>> ...INCLUDING the call that would set can-upgrade back to true"
                     "Score control requires can-upgrade true"
-                    (ref-TS02-C3::AQP-SCR|C_ControlScore KST.ANHD score true true))
+                    (ref-TS02-C3::AQP-SCR|C_ControlScore KST.ANHD (AQP-SCORE.UR_SCR|ScoreOwnerKonto score) score true true))
                 ;;and it is specifically the FLAG, not the score: the owner is unchanged and other
                 ;;score operations are unaffected, so this is a targeted renunciation.
                 (expect "<<AQP-G39>> the owner is unchanged -- only control was renounced"
@@ -4870,13 +4870,13 @@
         )
         (print (format "<(AQP-SCR|C_IssueNonFungibleScoreDefinition trait)> => \"{}\""
             [(ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScoreDefinition
-                KST.ANHD nf-score tnf ["rarity"] ["golden"] [25.0])]))
+                KST.ANHD (AQP-SCORE.UR_SCR|ScoreOwnerKonto nf-score) nf-score tnf ["rarity"] ["golden"] [25.0])]))
         (print (format "<(AQP-SCR|C_IssueNonFungibleSetScoreDefinition class)> => \"{}\""
             ;;the nonce-class must satisfy `(<= nc (UR_SetClassesUsed dpnf false))`. TNF has no set
             ;;classes beyond the implicit 0, so class 0 is the only admissible one here -- which is
             ;;itself the boundary the validator is enforcing.
             [(ref-TS02-C3::AQP-SCR|C_IssueNonFungibleSetScoreDefinition
-                KST.ANHD nf-score tnf [0] [7.0])]))
+                KST.ANHD (AQP-SCORE.UR_SCR|ScoreOwnerKonto nf-score) nf-score tnf [0] [7.0])]))
         (map print
             [
                 (expect "<<AQP-F11>> the issued score is class 4 (DPNF), as the definition path requires"
@@ -4912,7 +4912,7 @@
                 (expect-failure "<<AQP-F11>> a nonce-class above the collection's set-classes-used is refused"
                     "Invalid DPNF set score definition"
                     (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleSetScoreDefinition
-                        KST.ANHD nf-score tnf [99] [7.0]))
+                        KST.ANHD (AQP-SCORE.UR_SCR|ScoreOwnerKonto nf-score) nf-score tnf [99] [7.0]))
                 ;;the REVISION counter -- consumers re-read when it moves, so it must exist and have
                 ;;advanced past its initial value after the two issues above
                 (expect "<<AQP-F11>> the NF revision row exists and round-trips its key"

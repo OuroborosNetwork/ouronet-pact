@@ -159,7 +159,7 @@
     ;;==== TX-SCORE-02 · 02 · rotate ownership ANHD -> EMMA — REPL ====================
     (print "--- [TX-SCORE-02 · 02 · rotate ownership ANHD -> EMMA] ---")
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-    (print (format "<(TS02-C3.AQP-SCR|C_RotateScoreOwnership to EMMA)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_RotateScoreOwnership patron score-id KST.EMMA)]))
+    (print (format "<(TS02-C3.AQP-SCR|C_RotateScoreOwnership to EMMA)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_RotateScoreOwnership patron (AQP-SCORE.UR_SCR|ScoreOwnerKonto score-id) KST.EMMA score-id)]))
     (let ((own1:string (ref-SCR::UR_SCR|ScoreOwnerKonto score-id)))
         (print (format "<(AQP-SCORE|UR_SCR|ScoreOwnerKonto)> after rotate to EMMA => \"{}\"" [own1]))
         (map print [(expect (format "<<TX-SCORE-02 expect>> <(AQP-SCORE|UR_SCR|ScoreOwnerKonto)> got={} expected={}" [own1 KST.EMMA]) KST.EMMA own1)])
@@ -172,7 +172,7 @@
             { "key": "PK_Emma", "caps": [] }
         ]
     )
-    (print (format "<(TS02-C3.AQP-SCR|C_RotateScoreOwnership to ANHD)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_RotateScoreOwnership patron score-id KST.ANHD)]))
+    (print (format "<(TS02-C3.AQP-SCR|C_RotateScoreOwnership to ANHD)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_RotateScoreOwnership patron (AQP-SCORE.UR_SCR|ScoreOwnerKonto score-id) KST.ANHD score-id)]))
     (let ((own2:string (ref-SCR::UR_SCR|ScoreOwnerKonto score-id)))
         (print (format "<(AQP-SCORE|UR_SCR|ScoreOwnerKonto)> after rotate-back to ANHD => \"{}\"" [own2]))
         (map print [(expect (format "<<TX-SCORE-02 expect>> <(AQP-SCORE|UR_SCR|ScoreOwnerKonto)> got={} expected={}" [own2 KST.ANHD]) KST.ANHD own2)])
@@ -180,7 +180,7 @@
     ;;==== TX-SCORE-02 · 04 · C_ControlScore (upgrade true, change-owner false) — REPL =
     (print "--- [TX-SCORE-02 · 04 · C_ControlScore (upgrade on, change-owner off)] ---")
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-    (print (format "<(TS02-C3.AQP-SCR|C_ControlScore upgrade=true change-owner=false)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_ControlScore patron score-id true false)]))
+    (print (format "<(TS02-C3.AQP-SCR|C_ControlScore upgrade=true change-owner=false)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_ControlScore patron (AQP-SCORE.UR_SCR|ScoreOwnerKonto score-id) score-id true false)]))
     (let
         (
             (u:bool (ref-SCR::UR_SCR|ScoreCanUpgrade score-id))
@@ -202,7 +202,7 @@
     ;;==== TX-SCORE-02 · 05 · C_ControlScore restore defaults (true, true) — REPL =====
     (print "--- [TX-SCORE-02 · 05 · C_ControlScore restore defaults (on, on)] ---")
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-    (print (format "<(TS02-C3.AQP-SCR|C_ControlScore upgrade=true change-owner=true)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_ControlScore patron score-id true true)]))
+    (print (format "<(TS02-C3.AQP-SCR|C_ControlScore upgrade=true change-owner=true)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_ControlScore patron (AQP-SCORE.UR_SCR|ScoreOwnerKonto score-id) score-id true true)]))
     (let
         (
             (u2:bool (ref-SCR::UR_SCR|ScoreCanUpgrade score-id))
@@ -387,15 +387,15 @@
     (print "--- [TX-SCORE-11 · 01 · score definitions] ---")
     (map print
         [
-            (format "<(TS02-C3|C_IssueSFScoreDef TheCodingDivision nonces 1-10 val=1.0)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition patron "TheCodingDivision-98c486052a51" "DHCD-98c486052a51" (enumerate 1 10) (make-list 10 1.0))])
-            (format "<(TS02-C3|C_IssueSFScoreDef TheCodingDivision nonce 11 val=10.0)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition patron "TheCodingDivision-98c486052a51" "DHCD-98c486052a51" [11] [10.0])])
-            (format "<(TS02-C3|C_IssueSFScoreDef TheCodingDivision nonces 1-10 val=5.0)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition patron "TheCodingDivision-98c486052a51" "DHCD-98c486052a51" (enumerate 1 10) (make-list 10 5.0))])
-            (format "<(TS02-C3|C_IssueSFScoreDef TheCodingDivision nonce 11 val=75.0)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition patron "TheCodingDivision-98c486052a51" "DHCD-98c486052a51" [11] [75.0])])
-            (format "<(TS02-C3|C_IssueSFScoreDef WonderCoach nonces 1-34)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition patron "SubsidiaryWonderCoach-98c486052a51" "DHWC-98c486052a51" (enumerate 1 34) wc-values)])
+            (format "<(TS02-C3|C_IssueSFScoreDef TheCodingDivision nonces 1-10 val=1.0)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition patron (AQP-SCORE.UR_SCR|ScoreOwnerKonto "TheCodingDivision-98c486052a51") "TheCodingDivision-98c486052a51" "DHCD-98c486052a51" (enumerate 1 10) (make-list 10 1.0))])
+            (format "<(TS02-C3|C_IssueSFScoreDef TheCodingDivision nonce 11 val=10.0)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition patron (AQP-SCORE.UR_SCR|ScoreOwnerKonto "TheCodingDivision-98c486052a51") "TheCodingDivision-98c486052a51" "DHCD-98c486052a51" [11] [10.0])])
+            (format "<(TS02-C3|C_IssueSFScoreDef TheCodingDivision nonces 1-10 val=5.0)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition patron (AQP-SCORE.UR_SCR|ScoreOwnerKonto "TheCodingDivision-98c486052a51") "TheCodingDivision-98c486052a51" "DHCD-98c486052a51" (enumerate 1 10) (make-list 10 5.0))])
+            (format "<(TS02-C3|C_IssueSFScoreDef TheCodingDivision nonce 11 val=75.0)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition patron (AQP-SCORE.UR_SCR|ScoreOwnerKonto "TheCodingDivision-98c486052a51") "TheCodingDivision-98c486052a51" "DHCD-98c486052a51" [11] [75.0])])
+            (format "<(TS02-C3|C_IssueSFScoreDef WonderCoach nonces 1-34)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition patron (AQP-SCORE.UR_SCR|ScoreOwnerKonto "SubsidiaryWonderCoach-98c486052a51") "SubsidiaryWonderCoach-98c486052a51" "DHWC-98c486052a51" (enumerate 1 34) wc-values)])
             ;; L7 #19: a NEGATIVE score value in a definition must be rejected (mangles reward weighting).
             (expect-failure "<<TX-SCR L7#19>> negative SF nonce score value rejected at definition"
                 "Nonce score value -5.0 must be non-negative and match score precision"
-                (ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition patron "TheCodingDivision-98c486052a51" "DHCD-98c486052a51" [11] [-5.0]))
+                (ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition patron (AQP-SCORE.UR_SCR|ScoreOwnerKonto "TheCodingDivision-98c486052a51") "TheCodingDivision-98c486052a51" "DHCD-98c486052a51" [11] [-5.0]))
             ;;FULL> KBN Rarity vector — needs PopulateBunnies mint (nonce 1+ on chain)
             ;(format "<(TS02-C3|C_IssueNFScoreDef Bunnies KBN Rarity)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScoreDefinition patron "SubsidiaryBunnies-98c486052a51" "KBN-98c486052a51" ["Rarity" "Rarity"] ["Legendary" "Common"] [2.0 160.0])])
         ]
@@ -776,10 +776,10 @@
                 true (>= (ref-DPDC::UR_NoncesUsed dhcd-id true) 11))
             (expect-failure "<<TX-SCORE-14 SF-DEF>> SHADOW: misaligned nonce/value lists are refused by the input enforce, NOT by ownership"
                 "Invalid score/dpsf inputs: score must exist, sft-equality false, nonce/value lists aligned, and max nonce <= DPDC nonces-used"
-                (ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition attacker coding-id dhcd-id [11] [1.0 2.0]))
+                (ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition attacker (AQP-SCORE.UR_SCR|ScoreOwnerKonto coding-id) coding-id dhcd-id [11] [1.0 2.0]))
             (expect-failure "<<TX-SCORE-14 SF-DEF>> GATE: aligned lists reach CAP_EnforceAccountOwnership, which refuses and names the victim"
                 "Keyset failure (keys-all): [PK_Ancie...]"
-                (ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition attacker coding-id dhcd-id [11] [1.0]))
+                (ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition attacker (AQP-SCORE.UR_SCR|ScoreOwnerKonto coding-id) coding-id dhcd-id [11] [1.0]))
             ;;--- b] triplet ------------------------------------------------------------------------
             (expect "<<TX-SCORE-14 TRIPLET>> all three trio members are class 3 (same-class conjunct)"
                 [3 3 3] [(ref-SCR::UR_SCR|ScoreClass coding-id) (ref-SCR::UR_SCR|ScoreClass shareholder-id) (ref-SCR::UR_SCR|ScoreClass snakes-id)])
@@ -814,16 +814,16 @@
             ;;"set-classes used = 0" and went red under `AQP-comprehensive.repl`.)
             (expect-failure "<<TX-SCORE-14 NF-SET>> SHADOW 1: an out-of-range nonce-class is refused by the set-range enforce, NOT by ownership"
                 "Invalid DPNF set score definition (nonce-class="
-                (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleSetScoreDefinition attacker bloodshed-id kbn-id [(+ 1 (ref-DPDC::UR_SetClassesUsed kbn-id false))] [1.0]))
+                (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleSetScoreDefinition attacker (AQP-SCORE.UR_SCR|ScoreOwnerKonto bloodshed-id) bloodshed-id kbn-id [(+ 1 (ref-DPDC::UR_SetClassesUsed kbn-id false))] [1.0]))
             ;;SHADOW 2 -- the enforce IMMEDIATELY above the ownership line, inside the target defcap.
             (expect-failure "<<TX-SCORE-14 NF-SET>> SHADOW 2: a class-3 score is refused by the class enforce one line above the gate"
                 "Invalid score/dpnf: score must exist as DPNF (class 4) with matching score-id"
-                (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleSetScoreDefinition attacker coding-id kbn-id [0] [1.0]))
+                (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleSetScoreDefinition attacker (AQP-SCORE.UR_SCR|ScoreOwnerKonto coding-id) coding-id kbn-id [0] [1.0]))
             ;;THE GATE. nonce-class 0 is in range for ANY value of `UR_SetClassesUsed`, so this call
             ;;clears both shadows in every profile.
             (expect-failure "<<TX-SCORE-14 NF-SET>> GATE: a class-4 score reaches CAP_EnforceAccountOwnership, which refuses and names the victim"
                 "Keyset failure (keys-all): [PK_Ancie...]"
-                (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleSetScoreDefinition attacker bloodshed-id kbn-id [0] [1.0]))
+                (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleSetScoreDefinition attacker (AQP-SCORE.UR_SCR|ScoreOwnerKonto bloodshed-id) bloodshed-id kbn-id [0] [1.0]))
             ;;...and every refusal was TOTAL: no triplet was marked, and nonce 11 still carries the
             ;;value TX-SCORE-11 left on it.
             (expect "<<TX-SCORE-14>> ...and no score was marked as belonging to a triplet"
@@ -871,9 +871,9 @@
     )
     (map print
         [
-            (format "<(TS02-C3.AQP-SCR|C_IssueSemiFungibleScoreDefinition, owner signing)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition patron coding-id dhcd-id [11] [1.0])])
+            (format "<(TS02-C3.AQP-SCR|C_IssueSemiFungibleScoreDefinition, owner signing)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition patron (AQP-SCORE.UR_SCR|ScoreOwnerKonto coding-id) coding-id dhcd-id [11] [1.0])])
             (format "<(TS02-C3.AQP-SCR|C_IssueTriplet, owner signing)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueTriplet patron patron coding-id shareholder-id snakes-id)])
-            (format "<(TS02-C3.AQP-SCR|C_IssueNonFungibleSetScoreDefinition, owner signing)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueNonFungibleSetScoreDefinition patron bloodshed-id kbn-id [0] [1.0])])
+            (format "<(TS02-C3.AQP-SCR|C_IssueNonFungibleSetScoreDefinition, owner signing)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueNonFungibleSetScoreDefinition patron (AQP-SCORE.UR_SCR|ScoreOwnerKonto bloodshed-id) bloodshed-id kbn-id [0] [1.0])])
         ]
     )
     (map print

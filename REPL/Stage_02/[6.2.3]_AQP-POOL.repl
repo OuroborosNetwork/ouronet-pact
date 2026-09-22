@@ -215,8 +215,8 @@
     (print (format "<(TS02-C3.AQP-SCR|C_IssueSemiFungibleScore hub)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron owner-konto hub-name 3 false)]))
     (print (format "<(TS02-C3.AQP-SCR|C_IssueSemiFungibleScore sat-a)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron owner-konto sat-a-name 3 false)]))
     (print (format "<(TS02-C3.AQP-SCR|C_IssueSemiFungibleScore sat-b)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron owner-konto sat-b-name 3 false)]))
-    (print (format "<(TS02-C3.AQP-SCR|C_CreateScoreBoostLink sat-a->hub)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_CreateScoreBoostLink patron sat-a-id hub-id)]))
-    (print (format "<(TS02-C3.AQP-SCR|C_CreateScoreBoostLink sat-b->hub)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_CreateScoreBoostLink patron sat-b-id hub-id)]))
+    (print (format "<(TS02-C3.AQP-SCR|C_CreateScoreBoostLink sat-a->hub)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_CreateScoreBoostLink patron (AQP-SCORE.UR_SCR|ScoreOwnerKonto sat-a-id) sat-a-id hub-id)]))
+    (print (format "<(TS02-C3.AQP-SCR|C_CreateScoreBoostLink sat-b->hub)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_CreateScoreBoostLink patron (AQP-SCORE.UR_SCR|ScoreOwnerKonto sat-b-id) sat-b-id hub-id)]))
     ;;==== TX-POOL-02 · 02 · issue pool + add triplet — REPL ===========================
     (print "--- [TX-POOL-02 · 02 · issue pool + C_AddScore ×3] ---")
     (print (format "<(TS02-C3.AQP-POOL|C_Issue class=3)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_Issue patron (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset aqp-class asset-id) pool-name asset-id aqp-class)]))

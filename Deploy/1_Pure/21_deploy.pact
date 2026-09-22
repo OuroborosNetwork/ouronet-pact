@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 21 of 24
 ;; This is STEP 21 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-20 must have run first, including the init steps between deploys.
-;; 2 source file(s), 221,896 gas measured in the REPL gas model, 156,220 bytes
+;; 2 source file(s), 221,896 gas measured in the REPL gas model, 156,576 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact
@@ -116,11 +116,11 @@
     (defun AQP-SCR|C_IssueNonFungibleScore:string
         (patron:string owner-konto:string score-name:string precision:integer nft-score-model:integer)
     )
-    (defun AQP-SCR|C_RotateScoreOwnership:string (patron:string score-id:string new-owner-konto:string))
-    (defun AQP-SCR|C_ControlScore:string (patron:string score-id:string new-can-upgrade:bool new-can-change-owner:bool))
-    (defun AQP-SCR|C_CreateScoreBoostClassLink:string (patron:string score-id:string boost-class-id:string))
-    (defun AQP-SCR|C_CreateScoreBoostLink:string (patron:string score-id:string boost-score-id:string))
-    (defun AQP-SCR|C_EnableDebBoost:string (patron:string score-id:string))
+    (defun AQP-SCR|C_RotateScoreOwnership:string (patron:string executor:string executee:string score-id:string))
+    (defun AQP-SCR|C_ControlScore:string (patron:string executor:string score-id:string new-can-upgrade:bool new-can-change-owner:bool))
+    (defun AQP-SCR|C_CreateScoreBoostClassLink:string (patron:string executor:string score-id:string boost-class-id:string))
+    (defun AQP-SCR|C_CreateScoreBoostLink:string (patron:string executor:string score-id:string boost-score-id:string))
+    (defun AQP-SCR|C_EnableDebBoost:string (patron:string executor:string score-id:string))
     (defun AQP-SCR|C_IssueTriplet:string
         (patron:string executor:string bronze-score-id:string silver-score-id:string golden-score-id:string)
     )
@@ -132,13 +132,13 @@
     )
     (defun AQP-SCR|C_IssueScoreFromModel:string (patron:string owner-konto:string model-id:string agency-name:string))
     (defun AQP-SCR|C_IssueSemiFungibleScoreDefinition:string
-        (patron:string score-id:string dpsf-id:string nonces:[integer] nonce-score-values:[decimal])
+        (patron:string executor:string score-id:string dpsf-id:string nonces:[integer] nonce-score-values:[decimal])
     )
     (defun AQP-SCR|C_IssueNonFungibleScoreDefinition:string
-        (patron:string score-id:string dpnf-id:string trait-keys:[string] trait-values:[string] trait-score-values:[decimal])
+        (patron:string executor:string score-id:string dpnf-id:string trait-keys:[string] trait-values:[string] trait-score-values:[decimal])
     )
     (defun AQP-SCR|C_IssueNonFungibleSetScoreDefinition:string
-        (patron:string score-id:string dpnf-id:string dpnf-nonce-classes:[integer] class-score-values:[decimal])
+        (patron:string executor:string score-id:string dpnf-id:string dpnf-nonce-classes:[integer] class-score-values:[decimal])
     )
     ;;
     ;;  [AQP-POOL]
@@ -1317,7 +1317,7 @@
             )
         )
     )
-    (defun AQP-SCR|C_RotateScoreOwnership:string (patron:string score-id:string new-owner-konto:string)
+    (defun AQP-SCR|C_RotateScoreOwnership:string (patron:string executor:string executee:string score-id:string)
         @doc "Rotates score ownership in AQP-SCORE and collects resulting IGNIS output on patron."
         (with-capability (P|TS)
             (let
@@ -1325,12 +1325,12 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 )
-                (ref-IGNIS::XE_CollectIgnis patron (ref-SCR::C_RotateOwnership score-id new-owner-konto))
-                (format "Successfully rotated ownership for score {} to {}." [score-id new-owner-konto])
+                (ref-IGNIS::XE_CollectIgnis patron (ref-SCR::C_RotateOwnership patron executor executee score-id))
+                (format "Successfully rotated ownership for score {} to {}." [score-id executee])
             )
         )
     )
-    (defun AQP-SCR|C_ControlScore:string (patron:string score-id:string new-can-upgrade:bool new-can-change-owner:bool)
+    (defun AQP-SCR|C_ControlScore:string (patron:string executor:string score-id:string new-can-upgrade:bool new-can-change-owner:bool)
         @doc "Updates score control flags in AQP-SCORE and collects resulting IGNIS output on patron."
         (with-capability (P|TS)
             (let
@@ -1339,13 +1339,13 @@
                     (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-SCR::C_Control score-id new-can-upgrade new-can-change-owner)
+                    (ref-SCR::C_Control patron executor score-id new-can-upgrade new-can-change-owner)
                 )
                 (format "Successfully updated control flags for score {}." [score-id])
             )
         )
     )
-    (defun AQP-SCR|C_CreateScoreBoostClassLink:string (patron:string score-id:string boost-class-id:string)
+    (defun AQP-SCR|C_CreateScoreBoostClassLink:string (patron:string executor:string score-id:string boost-class-id:string)
         @doc "Creates score -> boost-class link in AQP-SCORE and collects resulting IGNIS output on patron."
         (with-capability (P|TS)
             (let
@@ -1353,12 +1353,12 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 )
-                (ref-IGNIS::XE_CollectIgnis patron (ref-SCR::C_CreateBoostClassLink score-id boost-class-id))
+                (ref-IGNIS::XE_CollectIgnis patron (ref-SCR::C_CreateBoostClassLink patron executor score-id boost-class-id))
                 (format "Successfully linked score {} to BoostClass {}." [score-id boost-class-id])
             )
         )
     )
-    (defun AQP-SCR|C_CreateScoreBoostLink:string (patron:string score-id:string boost-score-id:string)
+    (defun AQP-SCR|C_CreateScoreBoostLink:string (patron:string executor:string score-id:string boost-score-id:string)
         @doc "Creates score -> boost-score link in AQP-SCORE and collects resulting IGNIS output on patron."
         (with-capability (P|TS)
             (let
@@ -1366,12 +1366,12 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 )
-                (ref-IGNIS::XE_CollectIgnis patron (ref-SCR::C_CreateBoostLink score-id boost-score-id))
+                (ref-IGNIS::XE_CollectIgnis patron (ref-SCR::C_CreateBoostLink patron executor score-id boost-score-id))
                 (format "Successfully linked score {} to boost score {}." [score-id boost-score-id])
             )
         )
     )
-    (defun AQP-SCR|C_EnableDebBoost:string (patron:string score-id:string)
+    (defun AQP-SCR|C_EnableDebBoost:string (patron:string executor:string score-id:string)
         @doc "Enables irreversible DEB boost on the score row. Medium IGNIS cost; no native STOA."
         (with-capability (P|TS)
             (let
@@ -1379,7 +1379,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 )
-                (ref-IGNIS::XE_CollectIgnis patron (ref-SCR::C_EnableDebBoost score-id))
+                (ref-IGNIS::XE_CollectIgnis patron (ref-SCR::C_EnableDebBoost patron executor score-id))
                 (format "Successfully enabled DEB boost for score {}." [score-id])
             )
         )
@@ -1458,7 +1458,7 @@
         )
     )
     (defun AQP-SCR|C_IssueSemiFungibleScoreDefinition:string
-        (patron:string score-id:string dpsf-id:string nonces:[integer] nonce-score-values:[decimal])
+        (patron:string executor:string score-id:string dpsf-id:string nonces:[integer] nonce-score-values:[decimal])
         @doc "Writes DPSF nonce score definitions in AQP-SCORE and collects resulting IGNIS output on patron."
         (with-capability (P|TS)
             (let
@@ -1467,14 +1467,14 @@
                     (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-SCR::C_IssueSemiFungibleScoreDefinition score-id dpsf-id nonces nonce-score-values)
+                    (ref-SCR::C_IssueSemiFungibleScoreDefinition patron executor score-id dpsf-id nonces nonce-score-values)
                 )
                 (format "Successfully issued SemiFungible score definitions for score {} and dpsf-id {}." [score-id dpsf-id])
             )
         )
     )
     (defun AQP-SCR|C_IssueNonFungibleScoreDefinition:string
-        (patron:string score-id:string dpnf-id:string trait-keys:[string] trait-values:[string] trait-score-values:[decimal])
+        (patron:string executor:string score-id:string dpnf-id:string trait-keys:[string] trait-values:[string] trait-score-values:[decimal])
         @doc "Writes DPNF trait score definitions in AQP-SCORE and collects resulting IGNIS output on patron."
         (with-capability (P|TS)
             (let
@@ -1483,14 +1483,14 @@
                     (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-SCR::C_IssueNonFungibleScoreDefinition score-id dpnf-id trait-keys trait-values trait-score-values)
+                    (ref-SCR::C_IssueNonFungibleScoreDefinition patron executor score-id dpnf-id trait-keys trait-values trait-score-values)
                 )
                 (format "Successfully issued NonFungible score definitions for score {} and dpnf-id {}." [score-id dpnf-id])
             )
         )
     )
     (defun AQP-SCR|C_IssueNonFungibleSetScoreDefinition:string
-        (patron:string score-id:string dpnf-id:string dpnf-nonce-classes:[integer] class-score-values:[decimal])
+        (patron:string executor:string score-id:string dpnf-id:string dpnf-nonce-classes:[integer] class-score-values:[decimal])
         @doc "Writes DPNF set-mode (nonce-class) score definitions in AQP-SCORE and collects resulting IGNIS output on patron."
         (with-capability (P|TS)
             (let
@@ -1499,7 +1499,7 @@
                     (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-SCR::C_IssueNonFungibleSetScoreDefinition score-id dpnf-id dpnf-nonce-classes class-score-values)
+                    (ref-SCR::C_IssueNonFungibleSetScoreDefinition patron executor score-id dpnf-id dpnf-nonce-classes class-score-values)
                 )
                 (format "Successfully issued NonFungible set score definitions for score {} and dpnf-id {}." [score-id dpnf-id])
             )

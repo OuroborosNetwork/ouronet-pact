@@ -288,7 +288,7 @@ same tools with those three properties.
 | [x] 34 | `11_EQUITY+.pact` | 1 | 0 | 1 | **2** | `EquityV2` — done; **found a module with NO ownership check at all**, see §4m |
 | [x] 35 | `00_Demipad.pact` | 2 | 2 | 6 | **10** | `DemiourgosLaunchpadV2` — done; 4 admin ops gained an enforced executor. See §4n |
 | [x] 36 | `01_ANK.pact` | 0 | 0 | 2 | **2** | `AcquisitionAnchorsV1` — done; **found an unowned revoke**, and the binder had to go BELOW the liveness gate |
-| [ ] 37 | `02_SCORE.pact` | 6 | 0 | 8 | **14** | `AcquisitionScoresV1` |
+| [x] 37 | `02_SCORE.pact` | 6 | 0 | 8 | **14** | `AcquisitionScoresV1` — done; **eight dead bindings of the same 4g expression**. See §4p |
 | [ ] 38 | `03_AQP.pact` | 2 | 0 | 0 | **2** | `AcquisitionPoolsV1` |
 | [ ] 39 | `05_FVT.pact` | 4 | 2 | 3 | **9** | `AcquisitionFarmsVaultsTreasuriesV1` |
 | [ ] 40 | `06_VCT.pact` | 0 | 0 | 3 | **3** | `AcquisitionVacateV1` |
@@ -470,6 +470,31 @@ changing. Their delegation is arity-preserving, so `_callarity` (including the s
 built one module earlier) could not object. Grepping for the OLD parameter shape
 `(patron:string id:string account:string` found them in one line. *A signature change must reach
 every place the name is written, and "the names I listed" is narrower than that.*
+
+---
+
+### 4p. LESSON FROM MODULE 37 — DEAD BINDINGS ARE WHERE 4g LEFT ITS FINGERPRINTS
+
+`02_SCORE` had **eight dead `let` bindings of the same expression** —
+`(owner-konto (UR_SCR|ScoreOwnerKonto score-id))` — one in each of the eight entrypoints whose
+capability enforces ownership of exactly that derived account.
+
+**That is §4g seen from the inside.** The derived actor is so obviously the subject of the
+operation that somebody bound it by reflex; the signature had nowhere to put it, so the binding
+went nowhere. Worth treating as a *search heuristic* for the modules still to come: run
+`_deadbind --all` on the module first, and a repeated dead read of an owner/authority is a strong
+prior that the entrypoints above it are §4g and need a binder.
+
+**Two further traps this module produced:**
+
+* **Removing the last binding deletes the `let`.** Four of the eight bound nothing else, so the
+  deletion left `(let ( ) …)` — a LOAD error (`Expected: ['(']`), 55 suites BROKEN, zero
+  assertions. A dead-binding removal is a *restructure* when it is the last binding, and the
+  difference only shows at load.
+* **A proof the matcher cannot see is still a proof.** `SCR|C>ISSUE-TRIPLET` binds
+  `(= executor owner-konto)` and enforces ownership of `owner-konto`. `_executorenforced` looks
+  for the enforce applied to `executor` and reported UNPROVEN. Register it as INDIRECT — do NOT
+  add a second enforce to satisfy a tool.
 
 ---
 
