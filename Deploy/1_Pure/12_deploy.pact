@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 12 of 24
 ;; This is STEP 12 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-11 must have run first, including the init steps between deploys.
-;; 6 source file(s), 350,541 gas measured in the REPL gas model, 300,337 bytes
+;; 6 source file(s), 350,541 gas measured in the REPL gas model, 302,372 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/02_DPDC.pact
@@ -109,8 +109,8 @@
     ;;{5.6}  Aux/X
     ;;{5.7}  User [A/C]
     ;;
-    (defun C_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator} (entity-id:string son:bool logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
-    (defun C_UpgradeBranding (patron:string entity-id:string son:bool months:integer))
+    (defun C_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string entity-id:string son:bool logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
+    (defun C_UpgradeBranding (patron:string executor:string entity-id:string son:bool months:integer))
 
 )
 
@@ -281,6 +281,7 @@
     ;;
     ;;  [CAP]
     ;;
+    (defun UEV_ExecutorIsOwnerKonto (executor:string entity-id:string son:bool))
     (defun CAP_Owner (id:string son:bool))
     (defun CAP_Creator (id:string son:bool))
     (defun CAP_OwnerOrCreator (id:string son:bool))
@@ -1418,6 +1419,22 @@
         )
     )
     ;;
+    (defun UEV_ExecutorIsOwnerKonto (executor:string entity-id:string son:bool)
+        @doc "BINDS <executor> to <entity-id>'s owner, across BOTH collectable kinds. \
+            \ \
+            \ Ownership is proven INDIRECTLY: DPDC|C>UPDATE-BRD / C>UPGRADE-BRD call CAP_Owner, \
+            \ which enforces ownership of the DERIVED (UR_OwnerKonto entity-id son) -- HANDOFF \
+            \ 4g. This supplies the other half, that the account the caller NAMED is that owner. \
+            \ \
+            \ <son> IS PART OF THE KEY, not decoration. DPSF and DPNF are separate tables and a \
+            \ given id can exist in both, so an owner lookup without <son> is a lookup of a \
+            \ different token. Reading through UR_OwnerKonto with the same pair the capability \
+            \ uses is what stops the binder and the enforce disagreeing about which token they \
+            \ are talking about. \
+            \ (patron/executor canon 2.2, indirect route named.)"
+        (enforce (= executor (UR_OwnerKonto entity-id son))
+            "Executor is not the Entity Owner")
+    )
     (defun CAP_Owner (id:string son:bool)
         @doc "Enforces DPSF or DPNF Token ID Ownership"
         (let
@@ -2028,8 +2045,14 @@
         )
     )
     (defun C_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator}
-        (entity-id:string son:bool logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+        (patron:string executor:string entity-id:string son:bool logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+        @doc "ATTRIBUTION (patron/executor canon 2.2, 2026-09-22). The AUTHORITY is collectable \
+            \ ownership -- DPDC|C>UPDATE-BRD calls CAP_Owner, which enforces on the DERIVED \
+            \ (UR_OwnerKonto entity-id son) and names no actor: HANDOFF 4g. \
+            \ UEV_ExecutorIsOwnerKonto supplies the missing half and the ownership enforce is \
+            \ KEPT, not replaced."
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor entity-id son)
         (let
             (
                 (ref-BRD:module{BrandingV2} BRD)
@@ -2042,8 +2065,12 @@
             )
         )
     )
-    (defun C_UpgradeBranding (patron:string entity-id:string son:bool months:integer)
+    (defun C_UpgradeBranding (patron:string executor:string entity-id:string son:bool months:integer)
+        @doc "ATTRIBUTION: as C_UpdatePendingBranding -- CAP_Owner enforces on the DERIVED \
+            \ (UR_OwnerKonto entity-id son), so the actor is supplied by \
+            \ UEV_ExecutorIsOwnerKonto. (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor entity-id son)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)

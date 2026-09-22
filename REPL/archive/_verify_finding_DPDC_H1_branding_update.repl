@@ -26,7 +26,7 @@
     )
     (print (format "BEFORE pending logo = {}" [(ref-BRD::UR_Logo id true)]))
     (print (format "SFT UPDATE RESULT = {}"
-        [(ref-TS02-C1::DPSF|C_UpdatePendingBranding KST.ANHD id
+        [(ref-TS02-C1::DPSF|C_UpdatePendingBranding KST.ANHD (DPDC.UR_OwnerKonto id true) id
             "https://example.com/logo.png" "The best DPSF collection" "https://example.com" [])]))
     (print (format "AFTER pending logo = {}" [(ref-BRD::UR_Logo id true)]))
     (print (format "AFTER pending description = {}" [(ref-BRD::UR_Description id true)]))
@@ -45,7 +45,7 @@
     )
     ;; DHN's collection-owner is LUMY (per genesis), not ANHD
     (print (format "NFT UPDATE RESULT = {}"
-        [(ref-TS02-C2::DPNF|C_UpdatePendingBranding KST.LUMY id
+        [(ref-TS02-C2::DPNF|C_UpdatePendingBranding KST.LUMY (DPDC.UR_OwnerKonto id false) id
             "https://example.com/nft-logo.png" "The best DPNF collection" "https://example.com" [])]))
     (print (format "AFTER NFT pending logo = {}" [(ref-BRD::UR_Logo id true)]))
 )

@@ -385,7 +385,7 @@
             (map print
                 [
                     (format "<(DPNF|C_UpgradeBranding CNF 1 month)> => \"{}\""
-                        [(ref-TS02-C2::DPNF|C_UpgradeBranding patron id 1)])
+                        [(ref-TS02-C2::DPNF|C_UpgradeBranding patron (DPDC.UR_OwnerKonto id false) id 1)])
                     ""
                 ]
             )

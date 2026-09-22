@@ -47,8 +47,8 @@
     ;;
     ;;  [2] DPDC
     ;;
-    (defun DPNF|C_UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
-    (defun DPNF|C_UpgradeBranding (patron:string entity-id:string months:integer))
+    (defun DPNF|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
+    (defun DPNF|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer))
     ;;
     ;;  [3] DPDC-C
     ;;
@@ -415,7 +415,7 @@
     ;;
     ;;  [2] DPDC
     ;;
-    (defun DPNF|C_UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+    (defun DPNF|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
         @doc "Updates <pending-branding> for DPNF Token <entity-id> costing 500 IGNIS"
         (with-capability (P|TS)
             (let
@@ -424,12 +424,12 @@
                     (ref-DPDC:module{DpdcV2} DPDC)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC::C_UpdatePendingBranding entity-id false logo description website social)
+                    (ref-DPDC::C_UpdatePendingBranding patron executor entity-id false logo description website social)
                 )
             )
         )
     )
-    (defun DPNF|C_UpgradeBranding (patron:string entity-id:string months:integer)
+    (defun DPNF|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer)
         @doc "Upgrades Branding for DPNF Token, making it a premium BrandingV2. \
             \ Also sets pending-branding to live branding if its branding is not live yet"
         (with-capability (P|TS)
@@ -438,7 +438,7 @@
                     (ref-DPDC:module{DpdcV2} DPDC)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
-                (ref-DPDC::C_UpgradeBranding patron entity-id false months)
+                (ref-DPDC::C_UpgradeBranding patron executor entity-id false months)
                 (ref-TS01-A::XB_DynamicFuelSTOA)
             )
         )

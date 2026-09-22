@@ -174,6 +174,14 @@ RULES = {
     # same place (SWP::C_ToggleAddOrSwap). The three SWAP entrypoints are NOT here -- they
     # renamed `account` -> `executor` in the core only, no arity change at the Talos boundary.
     "SWP|C_ToggleSwapCapability":     (4, "(SWP.UR_OwnerKonto {1})"),
+    # ---- 02_DPDC (sweep 25/46). Collectable ownership, and <son> is part of the KEY: DPSF and
+    # DPNF are separate tables and the same id can exist in both, so an owner lookup without it
+    # is a lookup of a different token. DPSF|* is son=true, DPNF|* is son=false -- the two
+    # families therefore need two different readers even though the Talos signatures match.
+    "DPSF|C_UpdatePendingBranding": (7, "(DPDC.UR_OwnerKonto {1} true)"),
+    "DPSF|C_UpgradeBranding":       (4, "(DPDC.UR_OwnerKonto {1} true)"),
+    "DPNF|C_UpdatePendingBranding": (7, "(DPDC.UR_OwnerKonto {1} false)"),
+    "DPNF|C_UpgradeBranding":       (4, "(DPDC.UR_OwnerKonto {1} false)"),
 
     "AQP-FVT|CC_SweepBegin":            (3, "(AQP-ANK.URC_AnchorableAssetOwner (AQP-ANK.UR_ANK|AnchoredAsset {1}) (AQP-ANK.UR_ANK|Fungibility {1}))"),
 }

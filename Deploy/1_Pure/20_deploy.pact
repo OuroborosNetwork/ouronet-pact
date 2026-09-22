@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 20 of 24
 ;; This is STEP 20 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-19 must have run first, including the init steps between deploys.
-;; 3 source file(s), 149,410 gas measured in the REPL gas model, 236,567 bytes
+;; 3 source file(s), 149,410 gas measured in the REPL gas model, 236,745 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact
@@ -1619,8 +1619,8 @@
     ;;  [2] DPDC
     ;;
     (defun DPDC|C_MultiTransfer (patron:string ids:[string] sons:[bool] sender:string receiver:string nonces-array:[[integer]] amounts-array:[[integer]] method:bool))
-    (defun DPSF|C_UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
-    (defun DPSF|C_UpgradeBranding (patron:string entity-id:string months:integer))
+    (defun DPSF|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
+    (defun DPSF|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer))
     ;;
     ;;  [3] DPDC-C
     ;;
@@ -2035,7 +2035,7 @@
             )
         )
     )
-    (defun DPSF|C_UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+    (defun DPSF|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
         @doc "Updates <pending-branding> for DPSF Token <entity-id> costing 400 IGNIS"
         (with-capability (P|TS)
             (let
@@ -2044,12 +2044,12 @@
                     (ref-DPDC:module{DpdcV2} DPDC)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC::C_UpdatePendingBranding entity-id true logo description website social)
+                    (ref-DPDC::C_UpdatePendingBranding patron executor entity-id true logo description website social)
                 )
             )
         )
     )
-    (defun DPSF|C_UpgradeBranding (patron:string entity-id:string months:integer)
+    (defun DPSF|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer)
         @doc "Upgrades Branding for DPSF Token, making it a premium BrandingV2. \
             \ Also sets pending-branding to live branding if its branding is not live yet"
         (with-capability (P|TS)
@@ -2058,7 +2058,7 @@
                     (ref-DPDC:module{DpdcV2} DPDC)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
-                (ref-DPDC::C_UpgradeBranding patron entity-id true months)
+                (ref-DPDC::C_UpgradeBranding patron executor entity-id true months)
                 (ref-TS01-A::XB_DynamicFuelSTOA)
             )
         )
@@ -3331,8 +3331,8 @@
     ;;
     ;;  [2] DPDC
     ;;
-    (defun DPNF|C_UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
-    (defun DPNF|C_UpgradeBranding (patron:string entity-id:string months:integer))
+    (defun DPNF|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
+    (defun DPNF|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer))
     ;;
     ;;  [3] DPDC-C
     ;;
@@ -3699,7 +3699,7 @@
     ;;
     ;;  [2] DPDC
     ;;
-    (defun DPNF|C_UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+    (defun DPNF|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
         @doc "Updates <pending-branding> for DPNF Token <entity-id> costing 500 IGNIS"
         (with-capability (P|TS)
             (let
@@ -3708,12 +3708,12 @@
                     (ref-DPDC:module{DpdcV2} DPDC)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC::C_UpdatePendingBranding entity-id false logo description website social)
+                    (ref-DPDC::C_UpdatePendingBranding patron executor entity-id false logo description website social)
                 )
             )
         )
     )
-    (defun DPNF|C_UpgradeBranding (patron:string entity-id:string months:integer)
+    (defun DPNF|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer)
         @doc "Upgrades Branding for DPNF Token, making it a premium BrandingV2. \
             \ Also sets pending-branding to live branding if its branding is not live yet"
         (with-capability (P|TS)
@@ -3722,7 +3722,7 @@
                     (ref-DPDC:module{DpdcV2} DPDC)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
-                (ref-DPDC::C_UpgradeBranding patron entity-id false months)
+                (ref-DPDC::C_UpgradeBranding patron executor entity-id false months)
                 (ref-TS01-A::XB_DynamicFuelSTOA)
             )
         )

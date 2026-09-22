@@ -48,8 +48,8 @@
     ;;  [2] DPDC
     ;;
     (defun DPDC|C_MultiTransfer (patron:string ids:[string] sons:[bool] sender:string receiver:string nonces-array:[[integer]] amounts-array:[[integer]] method:bool))
-    (defun DPSF|C_UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
-    (defun DPSF|C_UpgradeBranding (patron:string entity-id:string months:integer))
+    (defun DPSF|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
+    (defun DPSF|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer))
     ;;
     ;;  [3] DPDC-C
     ;;
@@ -464,7 +464,7 @@
             )
         )
     )
-    (defun DPSF|C_UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+    (defun DPSF|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
         @doc "Updates <pending-branding> for DPSF Token <entity-id> costing 400 IGNIS"
         (with-capability (P|TS)
             (let
@@ -473,12 +473,12 @@
                     (ref-DPDC:module{DpdcV2} DPDC)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC::C_UpdatePendingBranding entity-id true logo description website social)
+                    (ref-DPDC::C_UpdatePendingBranding patron executor entity-id true logo description website social)
                 )
             )
         )
     )
-    (defun DPSF|C_UpgradeBranding (patron:string entity-id:string months:integer)
+    (defun DPSF|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer)
         @doc "Upgrades Branding for DPSF Token, making it a premium BrandingV2. \
             \ Also sets pending-branding to live branding if its branding is not live yet"
         (with-capability (P|TS)
@@ -487,7 +487,7 @@
                     (ref-DPDC:module{DpdcV2} DPDC)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                 )
-                (ref-DPDC::C_UpgradeBranding patron entity-id true months)
+                (ref-DPDC::C_UpgradeBranding patron executor entity-id true months)
                 (ref-TS01-A::XB_DynamicFuelSTOA)
             )
         )

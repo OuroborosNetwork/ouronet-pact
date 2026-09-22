@@ -226,7 +226,17 @@ def classify(name, body, caps, base=""):
     # scan() and in twins()) and here. `\b` and `[A-Za-z0-9|_]` both encode a PYTHON notion of a
     # word, and a Pact identifier is not one. Anything matching a Pact name needs `|`, `_` AND
     # `-`; pinned by --selftest below so the fourth time fails loudly instead of silently.
-    if re.search(r'ref-[A-Za-z0-9|_\-]+::[A-Za-z0-9|_\-]+\s+[\w\-|]+\s+executor', body):
+    # ARG 1 MAY BE AN EXPRESSION, NOT A BARE TOKEN. This required `[\w\-|]+` in the patron slot,
+    # so every forward whose patron is resolved inline -- `(ref-DALOS::GOV|DALOS|SC_NAME)`, the
+    # gasless patron read from its single source rather than re-declared as a local const -- was
+    # invisible, and six admin wrappers in 06_TS01-C4 reported "used 1x, never proven" while
+    # forwarding correctly.
+    #
+    # FOURTH TIME A PATTERN HERE HAS ASSUMED A SIMPLER ARGUMENT SHAPE THAN THE CODE HAS, after
+    # the hyphenated member name and the two in _deadbind. Same symptom every time: a SILENT
+    # under-report, the tool saying "never proven" about code that proves it.
+    ARG = r'(?:\([^()]*\)|[\w\-|]+)'
+    if re.search(r'ref-[A-Za-z0-9|_\-]+::[A-Za-z0-9|_\-]+\s+' + ARG + r'\s+executor', body):
         return "FORWARDED", ""
     # SLOT 1 COUNTS WHEN THE CALLEE IS PATRONLESS. ORBR|C_Compress forwards
     # `(ref-ORBR::C_Compress executor ignis-amount)` -- correct, because ORBR::C_Compress has no
@@ -282,10 +292,14 @@ def selftest():
          "the ordinary shape, which always worked"),
         ("(ref-TFT::C_Transfer patron sender executor id amt true)", False,
          "executor in slot 3 is the EXECUTEE position -- must NOT count as forwarded"),
+        ("(ref-CODEX::A_RegisterCodexIdentity (ref-DALOS::GOV|DALOS|SC_NAME) executor id)", True,
+         "the patron is an EXPRESSION -- the 06_TS01-C4 regression"),
+        ("(ref-X::C_Y (a b) (c d) executor)", False,
+         "executor in slot 3 stays the executee position even with expression args"),
         ("(ref-IGNIS::UC_IgnisPrice \"STOA-PID|C_AddIcedLiquidity\" executor)", False,
          "a price-table KEY in a string is not a call"),
     ]
-    pat = r'ref-[A-Za-z0-9|_\-]+::[A-Za-z0-9|_\-]+\s+[\w\-|]+\s+executor'
+    pat = r'ref-[A-Za-z0-9|_\-]+::[A-Za-z0-9|_\-]+\s+(?:\([^()]*\)|[\w\-|]+)\s+executor'
     for src, want, why in cases:
         got = bool(re.search(pat, src))
         if got != want:

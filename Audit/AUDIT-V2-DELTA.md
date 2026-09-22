@@ -1193,3 +1193,55 @@ programme has already found that exact shape in `_deadbind` (a live detector nob
 The selftest now refuses any `::`-qualified key that keeps a `|` in its name part, **verified by
 re-introducing the bad key and watching it fire.**
 
+---
+
+### 06_TS01-C4.pact — COMPLETE (14 of 14 entrypoints, 2026-09-22)
+
+**Every entrypoint arrived already swept** from the CODEX and PYTHIA turns. Nothing in the module
+changed. What it produced was a **tool** finding.
+
+**Six admin wrappers reported *"used 1x, never proven"* while forwarding correctly.** They pass
+the gasless patron as `(ref-DALOS::GOV|DALOS|SC_NAME)` — read from its single source rather than
+re-declared as a local `defconst` — and `FORWARDED` required the patron slot to be a **bare
+token**, `[\w\-|]+`. An expression in that slot was invisible.
+
+> **Fourth time a pattern in this checker has assumed a simpler argument shape than the code
+> has**, after the hyphenated member name and the two in `_deadbind`. The symptom is identical
+> every time: a **silent under-report** — the tool saying *"never proven"* about code that proves
+> it. Now `(?:\([^()]*\)|[\w\-|]+)`, pinned by two new selftest cases including the negative
+> one (an executor in slot 3 stays the *executee* position even when the earlier arguments are
+> expressions).
+
+After the fix: **396 proven, 0 unproven** across the swept modules.
+
+---
+
+### 05_TS01-P.pact — COMPLETE (8 of 8 entrypoints, 2026-09-22)
+
+Eight `account` → `executor` renames across the defpact wrappers, 24 occurrences, arity unchanged,
+**no call site moved**. The module is `TS01-CP`, not `TS01-P` — worth noting only because
+`_modulecomplete` takes the MODULE name and the FILE name differs.
+
+---
+
+### 02_DPDC.pact — COMPLETE (2 of 2 entrypoints, 2026-09-22)
+
+`C_UpdatePendingBranding` gained `patron` + `executor`; `C_UpgradeBranding` gained `executor`.
+HANDOFF §4g once more: `DPDC|C>UPDATE-BRD` → `CAP_Owner entity-id son` →
+`CAP_EnforceAccountOwnership (UR_OwnerKonto entity-id son)` — **derived**, no actor named. A new
+`UEV_ExecutorIsOwnerKonto` binds it, and the ownership enforce is kept.
+
+**`son` IS PART OF THE KEY, NOT DECORATION** — and that is the thing to get right here. DPSF and
+DPNF are **separate tables**, and the same id can exist in both, so an owner lookup without `son`
+is a lookup of *a different token*. The binder reads through `UR_OwnerKonto` with the same
+`(entity-id son)` pair the capability uses, so the two cannot disagree about which token they are
+discussing — and the migration rules are split accordingly: `DPSF|*` resolves with `true`,
+`DPNF|*` with `false`, even though the two Talos signatures are identical.
+
+**Deferred deliberately: `03_DPDC-C`'s two nonce creators.** Their ownership enforce is
+**conditional** — `(if (not (and (not son) sft-set-mode)) (CAP_EnforceAccountOwnership
+r-nft-create-account) true)` — so a binder placed unconditionally would add a requirement in the
+branch that deliberately has none, and one placed inside the branch leaves the executor unproven
+in the other. That is a design question, not a mechanical one, and it gets its own turn rather
+than a place in a batch.
+

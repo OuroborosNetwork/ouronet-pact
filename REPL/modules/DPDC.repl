@@ -220,8 +220,8 @@
         (patron:string KST.ANHD)
     )
     (let ((live0:string (ref-BRD::UR_Logo nf false)))
-        (ref-TS02-C2::DPNF|C_UpdatePendingBranding patron nf "nf-logo" "nf-desc" "https://nf" [])
-        (ref-TS02-C1::DPSF|C_UpdatePendingBranding patron sf "sf-logo" "sf-desc" "https://sf" [])
+        (ref-TS02-C2::DPNF|C_UpdatePendingBranding patron (DPDC.UR_OwnerKonto nf false) nf "nf-logo" "nf-desc" "https://nf" [])
+        (ref-TS02-C1::DPSF|C_UpdatePendingBranding patron (DPDC.UR_OwnerKonto sf true) sf "sf-logo" "sf-desc" "https://sf" [])
         (map print
             [
                 (expect "<<DPDC-05>> NFT pending logo was written"
@@ -2330,7 +2330,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|UpdatePendingBranding patron sf "logo" "desc" "site.example" []))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_UpdatePendingBranding patron sf "logo" "desc" "site.example" []))
+            (m (ref-TS02-C1::DPSF|C_UpdatePendingBranding patron (DPDC.UR_OwnerKonto sf true) sf "logo" "desc" "site.example" []))
         )
         (map print
             [
@@ -3819,7 +3819,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpdatePendingBranding patron nf "ipfs://probe-logo" "cost probe" "https://probe.example" []))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C2::DPNF|C_UpdatePendingBranding patron nf "ipfs://probe-logo" "cost probe" "https://probe.example" []))
+            (m (ref-TS02-C2::DPNF|C_UpdatePendingBranding patron (DPDC.UR_OwnerKonto nf false) nf "ipfs://probe-logo" "cost probe" "https://probe.example" []))
         )
         (map print
             [
@@ -5497,7 +5497,7 @@
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|UpgradeBranding patron sf 1))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (stoa-before:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
-            (m (ref-TS02-C1::DPSF|C_UpgradeBranding patron sf 1))
+            (m (ref-TS02-C1::DPSF|C_UpgradeBranding patron (DPDC.UR_OwnerKonto sf true) sf 1))
         )
         (map print
             [
@@ -5570,7 +5570,7 @@
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|UpgradeBranding patron nf 1))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (stoa-before:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
-            (m (ref-TS02-C2::DPNF|C_UpgradeBranding patron nf 1))
+            (m (ref-TS02-C2::DPNF|C_UpgradeBranding patron (DPDC.UR_OwnerKonto nf false) nf 1))
         )
         (map print
             [
