@@ -59,13 +59,16 @@
     ;; [C]
     ;;
     (defun C_RepurposeCollectableFragments:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool repurpose-from:string repurpose-to:string fragment-nonces:[integer] fragment-amounts:[integer])
+        (
+            patron:string executor:string executee:string id:string son:bool repurpose-to:string
+            fragment-nonces:[integer] fragment-amounts:[integer]
+        )
     )
-    (defun C_MakeFragments:object{IgnisCollectorV3.OutputCumulator} (account:string id:string son:bool nonce:integer amount:integer))
-    (defun C_MergeFragments:object{IgnisCollectorV3.OutputCumulator} (account:string id:string son:bool nonce:integer amount:integer))
+    (defun C_MakeFragments:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string son:bool nonce:integer amount:integer))
+    (defun C_MergeFragments:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string id:string son:bool nonce:integer amount:integer))
     (defun C_EnableNonceFragmentation:object{IgnisCollectorV3.OutputCumulator}
         (
-            id:string son:bool nonce:integer
+            patron:string executor:string id:string son:bool nonce:integer
             fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData}
         )
     )
@@ -271,13 +274,36 @@
         true
     )
     ;;{C2}  Simple
-    (defcap DPDC-F|C>REPURPOSE (id:string son:bool repurpose-from:string repurpose-to:string fragment-nonces:[integer] fragment-amounts:[integer])
+    (defcap DPDC-F|C>REPURPOSE
+        (
+            executor:string id:string son:bool repurpose-from:string repurpose-to:string
+            fragment-nonces:[integer] fragment-amounts:[integer]
+        )
+        @doc "Forced move of <id> FRAGMENT nonces from <repurpose-from> to <repurpose-to>. \
+            \ \
+            \ HANDOFF 4g, and the exact twin of DPDC-T|C>REPURPOSE. This capability proves no \
+            \ account: the authority is the COLLECTION OWNER, enforced three hops down in \
+            \ DPDC-C's DPDC|CX>MULTI-DEBIT by (if wipe-mode (CAP_Owner id son) ...), which \
+            \ C_RepurposeCollectableFragments reaches with wipe-mode TRUE at every debit leg. \
+            \ CAP_Owner enforces on the DERIVED (UR_OwnerKonto id son) and names no actor; the \
+            \ binder below supplies the other half. <repurpose-from> is the EXECUTEE -- it is \
+            \ debited without being consulted. \
+            \ \
+            \ [6.1.2]_DPDC-FRAGMENTS.repl TX-FRAG-003 documented this gap in prose two weeks \
+            \ before the binder existed: \"DPDC-F|C>REPURPOSE's own defcap only checks \
+            \ list-length; the real gate is CAP_Owner, downstream in the wipe-mode debit leg\". \
+            \ It is still downstream; what is new is that the actor is now named and checked \
+            \ against it. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         @event
         (let
             (
+                (ref-DPDC:module{DpdcV2} DPDC)
+                ;;
                 (l1:integer (length fragment-nonces))
                 (l2:integer (length fragment-amounts))
             )
+            (ref-DPDC::UEV_ExecutorIsOwnerKonto executor id son)
             ;;DPDC Audit #47L: reject an empty repurpose here, with a clear message, instead of letting
             ;;it fall through to an unfriendly out-of-bounds error several call-hops downstream.
             (enforce (and (= l1 l2) (> l1 0)) "Invalid Repurpose data")
@@ -471,9 +497,22 @@
     )
     ;;{5.7}  User [A/C]
     (defun C_RepurposeCollectableFragments:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool repurpose-from:string repurpose-to:string fragment-nonces:[integer] fragment-amounts:[integer])
+        (
+            patron:string executor:string executee:string id:string son:bool repurpose-to:string
+            fragment-nonces:[integer] fragment-amounts:[integer]
+        )
+        @doc "Forcibly moves <id> FRAGMENT nonces from <executee> to <repurpose-to>, on the \
+            \ collection owner's authority. \
+            \ \
+            \ Executor: PROVEN INDIRECTLY, and named. Every debit leg passes wipe-mode TRUE to \
+            \ DPDC-C::XE_Debit*-FragmentNonce(s), selecting (CAP_Owner id son) -- ownership of \
+            \ the DERIVED collection owner, HANDOFF 4g -- and DPDC-F|C>REPURPOSE binds \
+            \ <executor> to that same (UR_OwnerKonto id son). \
+            \ Executee: NOT consulted, by design. That is what makes it a repurpose. \
+            \ Same shape, same rationale, as DPDC-T::C_RepurposeCollectable. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
-        (with-capability (DPDC-F|C>REPURPOSE id son repurpose-from repurpose-to fragment-nonces fragment-amounts)
+        (with-capability (DPDC-F|C>REPURPOSE executor id son executee repurpose-to fragment-nonces fragment-amounts)
             ;;DEAD PRE-COMPUTATION REMOVED (2026-09-22), the twin of the one in
             ;;DPDC-T::C_RepurposeCollectable and found by the same run of _deadbind
             ;;(<owner>, <price>, <trigger> all bound and never read). Every value here is
@@ -502,8 +541,8 @@
                         )
                         ;;1]Debit from <repurpose-from>
                         (if son
-                            (ref-DPDC-C::XE_DebitSFT-FragmentNonce repurpose-from id fragment-nonce fragment-amount true)
-                            (ref-DPDC-C::XE_DebitNFT-FragmentNonce repurpose-from id fragment-nonce fragment-amount true)
+                            (ref-DPDC-C::XE_DebitSFT-FragmentNonce executee id fragment-nonce fragment-amount true)
+                            (ref-DPDC-C::XE_DebitNFT-FragmentNonce executee id fragment-nonce fragment-amount true)
                         )
                         ;;2]Credit to <repurpose-to>
                         (if son
@@ -515,8 +554,8 @@
                     (do
                         (if son
                             ;;1]Debit from <repurpose-from>
-                            (ref-DPDC-C::XE_DebitSFT-FragmentNonces repurpose-from id fragment-nonces fragment-amounts true)
-                            (ref-DPDC-C::XE_DebitNFT-FragmentNonces repurpose-from id fragment-nonces fragment-amounts true)
+                            (ref-DPDC-C::XE_DebitSFT-FragmentNonces executee id fragment-nonces fragment-amounts true)
+                            (ref-DPDC-C::XE_DebitNFT-FragmentNonces executee id fragment-nonces fragment-amounts true)
                         )
                         (if son
                             ;;2]Credit to <repurpose-to>
@@ -531,7 +570,17 @@
         )
     )
     (defun C_MakeFragments:object{IgnisCollectorV3.OutputCumulator}
-        (account:string id:string son:bool nonce:integer amount:integer)
+        (patron:string executor:string id:string son:bool nonce:integer amount:integer)
+        @doc "Splits <amount> of <executor>'s whole nonce <nonce> into 1000 fragments each. \
+            \ \
+            \ Executor: PROVEN FORWARDED. DPDC-F|C>NONCE proves no account -- it checks the \
+            \ nonce shape only -- but each leg below hands <executor> to DPDC-T::C_Transfer \
+            \ in the executor slot, and DPDC-T|C>TRANSFER opens on \
+            \ (CAP_EnforceAccountOwnership sender) unconditionally. The <dpdc> smart account \
+            \ on the other side is DERIVED, not a parameter, and is a workbench rather than \
+            \ an executee: the nonce goes there so it can be split or rejoined and comes \
+            \ straight back in the same transaction. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
         (with-capability (DPDC-F|C>NONCE id son nonce)
             (let
@@ -544,21 +593,31 @@
                     (f-amount:integer (* 1000 amount))
                 )
                 ;;1]Transfer <nonce> <amount> from <account> to <DPDC|SC_NAME>
-                (ref-DPDC-T::C_Transfer account account dpdc [id] [son] [[nonce]] [[amount]] true)
+                (ref-DPDC-T::C_Transfer patron executor dpdc [id] [son] [[nonce]] [[amount]] true)
                 ;;2]Fragment Nonces are credited to the <DPDC|SC_NAME>
                 (if son
                     (ref-DPDC-C::XE_CreditSFT-FragmentNonce dpdc id neg-nonce f-amount)
                     (ref-DPDC-C::XE_CreditNFT-FragmentNonce dpdc id neg-nonce f-amount)
                 )
-                ;;3]They are then transfered to the <account>
-                (ref-DPDC-T::C_Transfer account dpdc account [id] [son] [[neg-nonce]] [[f-amount]] true)
+                ;;3]They are then transfered to the <executor>
+                (ref-DPDC-T::C_Transfer patron dpdc executor [id] [son] [[neg-nonce]] [[f-amount]] true)
                 ;;4]Output Cumulator
                 (URCi_MakeFragments id son)
             )
         )
     )
     (defun C_MergeFragments:object{IgnisCollectorV3.OutputCumulator}
-        (account:string id:string son:bool nonce:integer amount:integer)
+        (patron:string executor:string id:string son:bool nonce:integer amount:integer)
+        @doc "Rejoins <amount> of <executor>'s fragment nonces (a multiple of 1000) back into whole nonces. \
+            \ \
+            \ Executor: PROVEN FORWARDED. DPDC-F|C>MERGE proves no account -- it checks the \
+            \ nonce shape only -- but each leg below hands <executor> to DPDC-T::C_Transfer \
+            \ in the executor slot, and DPDC-T|C>TRANSFER opens on \
+            \ (CAP_EnforceAccountOwnership sender) unconditionally. The <dpdc> smart account \
+            \ on the other side is DERIVED, not a parameter, and is a workbench rather than \
+            \ an executee: the nonce goes there so it can be split or rejoined and comes \
+            \ straight back in the same transaction. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
         (with-capability (DPDC-F|C>MERGE id son nonce amount)
             (let
@@ -571,14 +630,14 @@
                     (merged-amount:integer (/ amount 1000))
                 )
                 ;;1]Transfer <nonce> <amount> from <account> to <DPDC|SC_NAME>
-                (ref-DPDC-T::C_Transfer account account dpdc [id] [son] [[nonce]] [[amount]] true)
+                (ref-DPDC-T::C_Transfer patron executor dpdc [id] [son] [[nonce]] [[amount]] true)
                 ;;2]Fragment Nonces are debited from the <DPDC|SC_NAME>
                 (if son
                     (ref-DPDC-C::XE_DebitSFT-FragmentNonce dpdc id nonce amount false)
                     (ref-DPDC-C::XE_DebitNFT-FragmentNonce dpdc id nonce amount false)
                 )
-                ;;3]Native <nonces> are transfered from <DPDC|SC_NAME> to <account>
-                (ref-DPDC-T::C_Transfer account dpdc account [id] [son] [[pos-nonce]] [[merged-amount]] true)
+                ;;3]Native <nonces> are transfered from <DPDC|SC_NAME> to <executor>
+                (ref-DPDC-T::C_Transfer patron dpdc executor [id] [son] [[pos-nonce]] [[merged-amount]] true)
                 ;;4]Output Cumulator
                 (URCi_MergeFragments id son)
             )
@@ -586,9 +645,18 @@
     )
     (defun C_EnableNonceFragmentation:object{IgnisCollectorV3.OutputCumulator}
         (
-            id:string son:bool nonce:integer
+            patron:string executor:string id:string son:bool nonce:integer
             fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData}
         )
+        @doc "Turns fragmentation ON for one Class-0 nonce -- a ONE-WAY switch. \
+            \ \
+            \ Executor: PROVEN INDIRECTLY, and named. DPDC-F|C>ENABLE-FRAGMENTATION reaches \
+            \ (ref-DPDC::CAP_Owner id son), ownership of the DERIVED collection owner and not \
+            \ of any parameter -- HANDOFF 4g -- so the binder below ties the declared executor \
+            \ to that same (UR_OwnerKonto id son). Sibling of 08_DPDC-S's \
+            \ C_EnableSetClassFragmentation, which does the same thing one level up, for a \
+            \ whole set-class. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
         (with-capability (DPDC-F|C>ENABLE-FRAGMENTATION id son nonce fragmentation-ind)
             (let
@@ -596,6 +664,7 @@
                     (ref-DPDC:module{DpdcV2} DPDC)
                     (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
                 )
+                (ref-DPDC::UEV_ExecutorIsOwnerKonto executor id son)
                 (XI_EnableNonceFragmentation id son nonce fragmentation-ind)
                 (ref-DPDC::XE_DeployAccountWNE dpdc id son)
                 (URCi_EnableNonceFragmentation id son)

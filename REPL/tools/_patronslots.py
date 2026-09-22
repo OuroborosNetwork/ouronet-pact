@@ -123,8 +123,9 @@ REGISTRY = {
  # a real `patron`, so the seven DPDC-T call sites and the four C_CreateNewNonce ones thread it
  # instead of the acting account. Removed rather than commented, which is what the `clears-at`
  # column is for -- it names the turn that retires the entry.
- ("09_DPDC-F.pact", "C_MakeFragments"):         ("account", "provisional", "09_DPDC-F"),
- ("09_DPDC-F.pact", "C_MergeFragments"):        ("account", "provisional", "09_DPDC-F"),
+ # 09_DPDC-F's two entries were CLEARED at its own turn (2026-09-22), same as 08_DPDC-S's four
+ # the entry before: all four entrypoints gained a real `patron` and the four DPDC-T legs thread
+ # it instead of the acting account.
  ("11_EQUITY+.pact", "XI_ConvertPackageShares"): ("account", "provisional", "11_EQUITY+"),
  ("11_EQUITY+.pact", "XI_MakePackageShares"):    ("account", "provisional", "11_EQUITY+"),
  ("11_EQUITY+.pact", "XI_BreakPackageShares"):   ("account", "provisional", "11_EQUITY+"),

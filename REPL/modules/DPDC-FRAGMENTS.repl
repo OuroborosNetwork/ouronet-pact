@@ -65,7 +65,7 @@
                  (ref-DPDC-F::UEV_IzNonceFragmented frg true 1)])
             (expect-failure "<<DPDC-F-G2>> so enabling fragmentation on it AGAIN is refused"
                 "Nonce must not be fragmented in order to enable fragmentation for it !"
-                (ref-TS02-C1::DPSF|C_EnableNonceFragmentation KST.ANHD frg 1
+                (ref-TS02-C1::DPSF|C_EnableNonceFragmentation KST.ANHD (DPDC.UR_OwnerKonto frg true) frg 1
                     (ref-UDC::UDC_ZeroNonceData)))
         ]
     )
@@ -252,7 +252,10 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|RepurposeFragments patron fr emma lumy [-1] [100000]))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_RepurposeFragments patron fr emma lumy [-1] [100000]))
+            ;;patron IS the collection owner here (the tx is signed by ANHD), so patron and
+            ;;executor read the same -- but they are answering different questions: who pays,
+            ;;and who has the authority to take EMMA's fragments without her signature.
+            (m (ref-TS02-C1::DPSF|C_RepurposeFragments patron patron emma fr lumy [-1] [100000]))
         )
         (map print
             [

@@ -67,7 +67,7 @@
     (let ((id:string "FCPN-98c486052a51"))
         (print (format "CREATE 1 = {}" [(ref-TS02-C2::DPNF|C_Create owner (DPDC.UR_Verum5 id false) id [nd])]))
         (print (format "ENABLE FRAGMENTATION = {}"
-            [(ref-TS02-C2::DPNF|C_EnableNonceFragmentation owner id 1 nd)]))
+            [(ref-TS02-C2::DPNF|C_EnableNonceFragmentation owner (DPDC.UR_OwnerKonto id false) id 1 nd)]))
         ;; #24M positive control: the real Make-Fragments flow always produces exactly 1000 -- still works.
         (print (format "<<24M-1>> MAKE FRAGMENTS (real flow, must succeed) RESULT = {}"
             [(ref-TS02-C2::DPNF|C_MakeFragments owner owner id 1 1)]))

@@ -867,7 +867,7 @@
                         (ref-TS02-C1::DPSF|C_AddQuantity attacker victim sft-id nonce 5))
                     (expect-failure "<<TX-SET-009>> a non-owner cannot enable fragmentation on a nonce"
                         "Keyset failure (keys-all): [PK_Ancie...]"
-                        (ref-TS02-C1::DPSF|C_EnableNonceFragmentation attacker sft-id nonce nd))
+                        (ref-TS02-C1::DPSF|C_EnableNonceFragmentation attacker (DPDC.UR_OwnerKonto sft-id true) sft-id nonce nd))
                     ;;...and both refusals were TOTAL: no quantity was minted, no flag was flipped.
                     (expect "<<TX-SET-009>> ...and neither the supply nor the fragmentation flag moved"
                         [supply-before false]

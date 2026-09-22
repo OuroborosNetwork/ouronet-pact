@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 20 of 24
 ;; This is STEP 20 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-19 must have run first, including the init steps between deploys.
-;; 3 source file(s), 149,410 gas measured in the REPL gas model, 239,811 bytes
+;; 3 source file(s), 149,410 gas measured in the REPL gas model, 240,323 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact
@@ -1731,10 +1731,10 @@
     ;;
     ;;  [9] DPDC-F
     ;;
-    (defun DPSF|C_RepurposeFragments (patron:string id:string repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer]))
-    (defun DPSF|C_MakeFragments (patron:string account:string id:string nonce:integer amount:integer))
-    (defun DPSF|C_MergeFragments (patron:string account:string id:string nonce:integer amount:integer))
-    (defun DPSF|C_EnableNonceFragmentation (patron:string id:string nonce:integer fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData}))
+    (defun DPSF|C_RepurposeFragments (patron:string executor:string executee:string id:string repurpose-to:string nonces:[integer] amounts:[integer]))
+    (defun DPSF|C_MakeFragments (patron:string executor:string id:string nonce:integer amount:integer))
+    (defun DPSF|C_MergeFragments (patron:string executor:string id:string nonce:integer amount:integer))
+    (defun DPSF|C_EnableNonceFragmentation (patron:string executor:string id:string nonce:integer fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData}))
     ;;
     ;;  [10] DPDC-N
     ;;
@@ -2956,25 +2956,27 @@
     ;;
     ;;  [9] DPDC-F
     ;;
-    (defun DPSF|C_RepurposeFragments (patron:string id:string repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer])
-        @doc "Repurpose SFT Fragment(s) from <repurpose-from> to <repurpose-to>. Requires <id> ownerhsip"
+    (defun DPSF|C_RepurposeFragments (patron:string executor:string executee:string id:string repurpose-to:string nonces:[integer] amounts:[integer])
+        @doc "Repurpose SFT Fragment(s) from <executee> to <repurpose-to>. The <executor> must \
+            \ BE the collection owner -- that is the authority the whole op rests on, and \
+            \ DPDC-F now binds the name to it rather than deriving it silently."
         (with-capability (P|TS)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
-                    (sf:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-from))
+                    (sf:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                     (st:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-F::C_RepurposeCollectableFragments id true repurpose-from repurpose-to nonces amounts)
+                    (ref-DPDC-F::C_RepurposeCollectableFragments patron executor executee id true repurpose-to nonces amounts)
                 )
                 (format "Successfully repurposed SFT {} Fragment-Nonces {} with Amounts {} from {} to {}" [id nonces amounts sf st])
             )
         )
     )
-    (defun DPSF|C_MakeFragments (patron:string account:string id:string nonce:integer amount:integer)
+    (defun DPSF|C_MakeFragments (patron:string executor:string id:string nonce:integer amount:integer)
         @doc "Fragments SFT nonce of the given amount into its respective Fragments."
         (with-capability (P|TS)
             (let
@@ -2983,13 +2985,13 @@
                     (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-F::C_MakeFragments account id true nonce amount)
+                    (ref-DPDC-F::C_MakeFragments patron executor id true nonce amount)
                 )
                 (format "Successfully Fragmented {} SFT(s) {} of Nonce {}" [amount id nonce])
             )
         )
     )
-    (defun DPSF|C_MergeFragments (patron:string account:string id:string nonce:integer amount:integer)
+    (defun DPSF|C_MergeFragments (patron:string executor:string id:string nonce:integer amount:integer)
         @doc "MErges SFT Fragments nonces of the given amount into the original SFT nonce."
         (with-capability (P|TS)
             (let
@@ -2998,13 +3000,13 @@
                     (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-F::C_MergeFragments account id true nonce amount)
+                    (ref-DPDC-F::C_MergeFragments patron executor id true nonce amount)
                 )
                 (format "Successfully merged {} {} SFT(s) Fragments of Nonce {}" [amount id nonce])
             )
         )
     )
-    (defun DPSF|C_EnableNonceFragmentation (patron:string id:string nonce:integer fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData})
+    (defun DPSF|C_EnableNonceFragmentation (patron:string executor:string id:string nonce:integer fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData})
         @doc "Enables Fragmentation for a given SFT Nonce"
         (with-capability (P|TS)
             (let
@@ -3013,7 +3015,7 @@
                     (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-F::C_EnableNonceFragmentation id true nonce fragmentation-ind)
+                    (ref-DPDC-F::C_EnableNonceFragmentation patron executor id true nonce fragmentation-ind)
                 )
                 (format "Fragmentation for SFT {} Nonce {} enabled succesfully" [id nonce])
             )
@@ -3443,10 +3445,10 @@
     ;;
     ;;  [9] DPDC-F
     ;;
-    (defun DPNF|C_RepurposeFragments (patron:string id:string repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer]))
-    (defun DPNF|C_MakeFragments (patron:string account:string id:string nonce:integer amount:integer))
-    (defun DPNF|C_MergeFragments (patron:string account:string id:string nonce:integer amount:integer))
-    (defun DPNF|C_EnableNonceFragmentation (patron:string id:string nonce:integer fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData}))
+    (defun DPNF|C_RepurposeFragments (patron:string executor:string executee:string id:string repurpose-to:string nonces:[integer] amounts:[integer]))
+    (defun DPNF|C_MakeFragments (patron:string executor:string id:string nonce:integer amount:integer))
+    (defun DPNF|C_MergeFragments (patron:string executor:string id:string nonce:integer amount:integer))
+    (defun DPNF|C_EnableNonceFragmentation (patron:string executor:string id:string nonce:integer fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData}))
     ;;
     ;;  [10] DPDC-N
     ;;
@@ -4525,27 +4527,29 @@
     ;;
     ;;  [9] DPDC-F
     ;;
-    (defun DPNF|C_RepurposeFragments (patron:string id:string repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer])
-        @doc "Repurpose NFT Fragment(s) from <repurpose-from> to <repurpose-to>. Requires <id> ownerhsip"
+    (defun DPNF|C_RepurposeFragments (patron:string executor:string executee:string id:string repurpose-to:string nonces:[integer] amounts:[integer])
+        @doc "Repurpose NFT Fragment(s) from <executee> to <repurpose-to>. The <executor> must \
+            \ BE the collection owner -- that is the authority the whole op rests on, and \
+            \ DPDC-F now binds the name to it rather than deriving it silently."
         (with-capability (P|TS)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
-                    (sf:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-from))
+                    (sf:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                     (st:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
                     ;; #79: this is the NFT (C_DPNF|) wrapper — son MUST be false. Was hardcoded `true`
                     ;; (SFT), so it read CNF from the DPSF table and failed. Never caught: no test coverage.
-                    (ref-DPDC-F::C_RepurposeCollectableFragments id false repurpose-from repurpose-to nonces amounts)
+                    (ref-DPDC-F::C_RepurposeCollectableFragments patron executor executee id false repurpose-to nonces amounts)
                 )
                 (format "Successfully repurposed NFT {} Fragment-Nonces {} with Amounts {} from {} to {}" [id nonces amounts sf st])
             )
         )
     )
-    (defun DPNF|C_MakeFragments (patron:string account:string id:string nonce:integer amount:integer)
+    (defun DPNF|C_MakeFragments (patron:string executor:string id:string nonce:integer amount:integer)
         @doc "Fragments NFT nonce of the given amount into its respective Fragments."
         (with-capability (P|TS)
             (let
@@ -4554,13 +4558,13 @@
                     (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-F::C_MakeFragments account id false nonce amount)
+                    (ref-DPDC-F::C_MakeFragments patron executor id false nonce amount)
                 )
                 (format "Succesfuly Fragmented {} NFT(s) {} of Nonce {}" [amount id nonce])
             )
         )
     )
-    (defun DPNF|C_MergeFragments (patron:string account:string id:string nonce:integer amount:integer)
+    (defun DPNF|C_MergeFragments (patron:string executor:string id:string nonce:integer amount:integer)
         @doc "MErges NFT Fragments nonces of the given amount into the original NFT nonce."
         (with-capability (P|TS)
             (let
@@ -4569,13 +4573,13 @@
                     (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-F::C_MergeFragments account id false nonce amount)
+                    (ref-DPDC-F::C_MergeFragments patron executor id false nonce amount)
                 )
                 (format "Succesfuly merged {} {} NFT(s) Fragments of Nonce {}" [amount id nonce])
             )
         )
     )
-    (defun DPNF|C_EnableNonceFragmentation (patron:string id:string nonce:integer fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData})
+    (defun DPNF|C_EnableNonceFragmentation (patron:string executor:string id:string nonce:integer fragmentation-ind:object{DpdcUdcV2.DPDC|NonceData})
         @doc "Enables Fragmentation for a given NFT Nonce"
         (with-capability (P|TS)
             (let
@@ -4584,7 +4588,7 @@
                     (ref-DPDC-F:module{DpdcFragmentsV2} DPDC-F)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-F::C_EnableNonceFragmentation id false nonce fragmentation-ind)
+                    (ref-DPDC-F::C_EnableNonceFragmentation patron executor id false nonce fragmentation-ind)
                 )
                 (format "Fragmentation for NFT {} Nonce {} enabled succesfully" [id nonce])
             )

@@ -1579,3 +1579,53 @@ Eight provisional patron slots **cleared** at this turn (four `DPDC-T` legs, fou
 three DPDC modules that have one — `05_DPDC-R`'s `UEV_ExecutorIsOwnerKontoLocal` was renamed to
 match. See HANDOFF §4j.
 
+
+---
+
+### 09_DPDC-F.pact — COMPLETE (4 of 4 entrypoints, 2026-09-22)
+
+Fragmentation: splitting a whole collectable nonce into 1000 fragments and rejoining them. Four
+entrypoints, and **all three shapes the DPDC family has produced appear here at once**:
+
+| entrypoint | executor | proven by |
+|---|---|---|
+| `C_MakeFragments`, `C_MergeFragments` | the acting account (**rename**) | FORWARDED — `DPDC-T::C_Transfer` |
+| `C_EnableNonceFragmentation` | the collection owner (**addition**) | §4g — `DPDC::CAP_Owner id son` |
+| `C_RepurposeCollectableFragments` | the collection owner (**addition + executee**) | §4g — `wipe-mode TRUE` at every debit leg |
+
+The third repurpose of the sweep after `11_VST` and `07_DPDC-T`, and by now the shape is
+recognisable on sight: the account in the actor position is the **target**, the authority is
+derived, and the capability that carries the `@event` proves nothing at all.
+
+#### A test comment had been describing this defect for two weeks
+
+`[6.1.2]_DPDC-FRAGMENTS.repl` `TX-FRAG-003` carries the banner
+
+> *"non-owner repurpose rejected (`DPDC-F|C>REPURPOSE` only checks list-length; the real gate is
+> `CAP_Owner`, downstream in the wipe-mode debit leg)"*
+
+— an accurate description of §4g written before §4g had a name. The gate is still downstream; what
+is new is that the **actor is named first**, so the three ways to get this wrong are now three
+different refusals rather than one:
+
+| attempt | refused by |
+|---|---|
+| EMMA names **herself** as executor | the binder, **by name** — *"Executor is not the Entity Owner"* |
+| EMMA names the **real owner** | the keyset — she cannot sign for him |
+| patron **and** executor are the real owner, signer is EMMA | the keyset — proving the refusal tracks the **signer**, not either argument |
+
+All three are pinned. The middle one is the original assertion, unchanged in meaning but now
+reached *deliberately* instead of by accident.
+
+#### Why `_executormigrate` was not pointed at the repurpose
+
+77 + 15 call sites were rewritten by the tool; the repurpose's **eight** were done by hand, and the
+rule for it is deliberately absent with the reason recorded in `RULES`:
+
+> `C_RepurposeFragments` is an **insert AND a swap** — `(patron id repurpose-from repurpose-to …)`
+> became `(patron executor executee id repurpose-to …)`. The tool only inserts, so running it here
+> produces the right **arity** with `id` and the executee exchanged — silently, because arity is
+> all `_callarity` can see.
+
+Same reason `05_DPDC-R` is absent from that table. Two provisional patron slots cleared.
+

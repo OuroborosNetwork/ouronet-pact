@@ -151,7 +151,7 @@
     (map print
         [
             (format "<(TS02-C1.DPSF|C_EnableNonceFragmentation nonce=1)> => \"{}\""
-                [(ref-TS02-C1::DPSF|C_EnableNonceFragmentation owner id 1 nd)])
+                [(ref-TS02-C1::DPSF|C_EnableNonceFragmentation owner (DPDC.UR_OwnerKonto id true) id 1 nd)])
             (format "<(TS02-C1.DPSF|C_TransferNonce ANHD->LUMY 100)> => \"{}\""
                 [(ref-TS02-C1::DPSF|C_TransferNonce owner owner lumy id 1 100 false)])
         ]
@@ -286,18 +286,33 @@
     )
     (map print
         [
+            ;;THREE WAYS TO GET THIS WRONG, and after the 2026-09-22 canon sweep they are
+            ;;three DIFFERENT refusals. DPDC-F|C>REPURPOSE now BINDS the declared <executor> to
+            ;;(UR_OwnerKonto id son), so naming the wrong actor is caught by NAME, before the
+            ;;keyset is ever consulted. The banner above this block still describes the old
+            ;;world ("only checks list-length; the real gate is CAP_Owner, downstream") -- the
+            ;;real gate is STILL downstream; what is new is that the actor is named first.
             (expect-failure
-                "<<TX-FRAG-003>> non-owner (EMMA) repurposing LUMY's fragments to herself is rejected (CAP_Owner gate)"
-                "Keyset failure (keys-all): [PK_Ancie...]"
-                (ref-TS02-C1::DPSF|C_RepurposeFragments emma id lumy emma [-1] [100000])
+                "<<TX-FRAG-003>> EMMA naming HERSELF as executor is refused BY NAME"
+                "Executor is not the Entity Owner"
+                (ref-TS02-C1::DPSF|C_RepurposeFragments emma emma lumy id emma [-1] [100000])
             )
-            ;;Isolation control: same call, patron=the real owner-konto (correct billing account) but the
-            ;;tx is STILL only signed by EMMA's key -- proves the failure tracks the tx signer against the
-            ;;owner-konto guard (CAP_Owner), not the <patron> argument used for IGNIS billing.
+            ;;Isolation control 1: EMMA names the REAL owner as executor, so the binder is
+            ;;satisfied and the CAP_Owner keyset is what answers -- the original assertion,
+            ;;unchanged in meaning, now reached deliberately rather than by accident.
             (expect-failure
-                "<<TX-FRAG-003>> isolation control: patron=owner-konto but signer=EMMA is still rejected"
+                "<<TX-FRAG-003>> EMMA naming the REAL owner is refused by his keyset (CAP_Owner gate)"
                 "Keyset failure (keys-all): [PK_Ancie...]"
-                (ref-TS02-C1::DPSF|C_RepurposeFragments (ref-DPDC::UR_OwnerKonto id true) id lumy emma [-1] [100000])
+                (ref-TS02-C1::DPSF|C_RepurposeFragments emma (ref-DPDC::UR_OwnerKonto id true) lumy id emma [-1] [100000])
+            )
+            ;;Isolation control 2: patron=the real owner-konto (correct billing account) AND
+            ;;executor=the real owner, but the tx is STILL only signed by EMMA's key -- proves the
+            ;;failure tracks the tx SIGNER against the owner-konto guard, not the <patron>
+            ;;argument used for IGNIS billing and not the <executor> name.
+            (expect-failure
+                "<<TX-FRAG-003>> isolation control: patron AND executor = owner-konto, signer=EMMA, still rejected"
+                "Keyset failure (keys-all): [PK_Ancie...]"
+                (ref-TS02-C1::DPSF|C_RepurposeFragments (ref-DPDC::UR_OwnerKonto id true) (ref-DPDC::UR_OwnerKonto id true) lumy id emma [-1] [100000])
             )
         ]
     )
@@ -328,7 +343,7 @@
     (map print
         [
             (format "<(TS02-C1.DPSF|C_RepurposeFragments owner-authorized LUMY->EMMA)> => \"{}\""
-                [(ref-TS02-C1::DPSF|C_RepurposeFragments owner id lumy emma [-1] [100000])])
+                [(ref-TS02-C1::DPSF|C_RepurposeFragments owner owner lumy id emma [-1] [100000])])
         ]
     )
     (map print

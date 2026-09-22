@@ -283,7 +283,7 @@ same tools with those three properties.
 | [x] 29 | `06_DPDC-MNG.pact` | 0 | 0 | 12 | **12** | `DpdcManagementV2` |
 | [x] 30 | `07_DPDC-T.pact` | 1 | 0 | 3 | **4** | `DpdcTransferV2` — done; +10 TS02-C1/C2 wrappers reordered. See §4i |
 | [x] 31 | `08_DPDC-S.pact` | 0 | 0 | 10 | **10** | `DpdcSetsV2` — done; two authorities in one module, see §4j |
-| [ ] 32 | `09_DPDC-F.pact` | 0 | 0 | 4 | **4** | `DpdcFragmentsV2` |
+| [x] 32 | `09_DPDC-F.pact` | 0 | 0 | 4 | **4** | `DpdcFragmentsV2` — done; the third repurpose of the sweep, same shape |
 | [ ] 33 | `10_DPDC-N.pact` | 0 | 0 | 8 | **8** | `DpdcNonceV2` |
 | [ ] 34 | `11_EQUITY+.pact` | 1 | 0 | 1 | **2** | `EquityV2` |
 | [ ] 35 | `00_Demipad.pact` | 2 | 2 | 6 | **10** | `DemiourgosLaunchpadV2` |
@@ -448,6 +448,26 @@ arguments away from anything that proved it. It is now position-aware: it finds 
 PARAMETER the executor landed in and requires the enforcement to be on THAT name, re-mapping the
 position at each `compose-capability` hop. Re-run after the change, it immediately found both
 KickStart variants.
+
+### 4k. THE REPURPOSE SHAPE, THIRD SIGHTING — AND WHAT A TEST COMMENT KNEW FIRST
+
+Three modules have now produced the same shape: `11_VST`, `07_DPDC-T`, `09_DPDC-F`. Recognise it
+by three things together —
+
+1. an entrypoint whose leading account **loses** something (`repurpose-from`, `account`, `sender`);
+2. an `@event` capability that validates shapes and **proves no account at all**;
+3. an ownership enforce several hops downstream whose argument is **derived**, not a parameter.
+
+When all three hold, the leading account is the **executee** and the executor has to be added and
+bound. When only (1) and (3) hold but the derived account IS the leading one, it is a rename.
+
+**`[6.1.2]_DPDC-FRAGMENTS.repl` had written this down before the canon had a name for it:**
+*"`DPDC-F|C>REPURPOSE` only checks list-length; the real gate is `CAP_Owner`, downstream in the
+wipe-mode debit leg."* That sentence is §4g exactly, sitting in a test banner for two weeks. Worth
+remembering in both directions: the shape is findable by reading, and a comment that describes a
+gap is not the same as a check that closes it.
+
+---
 
 ### 4j. LESSON FROM MODULE 31 — ONE MODULE, TWO AUTHORITIES, AND THE LINE BETWEEN THEM
 

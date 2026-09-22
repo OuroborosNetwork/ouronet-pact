@@ -527,7 +527,7 @@
         )
     )
     ;; enable fragmentation on native nonce 1 (owner holds 1,2 after the wipes)
-    (ref-TS02-C2::DPNF|C_EnableNonceFragmentation patron id 1 nd)
+    (ref-TS02-C2::DPNF|C_EnableNonceFragmentation patron (DPDC.UR_OwnerKonto id false) id 1 nd)
     ;; make 1000 fragments of nonce 1 (NFT supply 1 -> fragment nonce -1 x1000), then merge back
     (ref-TS02-C2::DPNF|C_MakeFragments patron patron id 1 1)
     (ref-TS02-C2::DPNF|C_MergeFragments patron patron id -1 1000)
@@ -535,7 +535,7 @@
     (ref-TS02-C2::DPNF|C_MakeFragments patron patron id 1 1)
     (ref-TS02-C2::DPNF|C_ToggleUpdateRole patron (DPDC.UR_OwnerKonto id false) orbr id true)
     (ref-TS02-C2::DPNF|C_ToggleUpdateRole patron (DPDC.UR_OwnerKonto id false) orbr id false)
-    (ref-TS02-C2::DPNF|C_RepurposeFragments patron id patron orbr [-1] [1000])
+    (ref-TS02-C2::DPNF|C_RepurposeFragments patron (DPDC.UR_OwnerKonto id false) patron id orbr [-1] [1000])
     (map print
         [
             (expect "<<TX-NF-010>> Ouroboros holds the 1000 repurposed fragment units of nonce -1" 1000 (ref-DPDC::UR_AccountNonceSupply orbr id false -1))

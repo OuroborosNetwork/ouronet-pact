@@ -358,7 +358,7 @@
             ;;    message that says what is wrong.
             (expect-failure "<<DPDC-F-G1>> an EMPTY fragment repurpose is refused"
                 "Invalid Repurpose data"
-                (ref-TS02-C1::DPSF|C_RepurposeFragments KST.ANHD sft KST.ANHD KST.EMMA [] []))
+                (ref-TS02-C1::DPSF|C_RepurposeFragments KST.ANHD KST.ANHD KST.ANHD sft KST.EMMA [] []))
             ;;--- MERGE, guard 1: merging is the inverse of fragmenting, so it only makes sense on a
             ;;    fragment lane — a NEGATIVE nonce. The amount passed is a clean multiple of 1000,
             ;;    so the guard below it provably cannot be what answers.
@@ -376,7 +376,7 @@
             ;;    two independent claims on the same underlying items.
             (expect-failure "<<DPDC-F-G1>> enabling fragmentation on a SET (class 2) nonce is refused"
                 "Only Class 0 Nonces can be fragmented"
-                (ref-TS02-C1::DPSF|C_EnableNonceFragmentation KST.ANHD sft 12 (ref-UDC::UDC_ZeroNonceData)))
+                (ref-TS02-C1::DPSF|C_EnableNonceFragmentation KST.ANHD (DPDC.UR_OwnerKonto sft true) sft 12 (ref-UDC::UDC_ZeroNonceData)))
             ;;--- THE BLOCKER FOR `06_DPDC-MNG.pact:280` (DPDC-MNG|C>IZ-CLASS-ZERO), asserted rather
             ;;    than described, because it is a FIXTURE limit and fixtures change.
             ;;

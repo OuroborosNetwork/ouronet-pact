@@ -34,7 +34,7 @@
             (expect-failure
                 "<<PROBE-47L>> empty DPSF|C_RepurposeFragments (0 nonces) rejected cleanly"
                 "Invalid Repurpose data"
-                (ref-TS02-C1::DPSF|C_RepurposeFragments owner id owner lumy [] [])
+                (ref-TS02-C1::DPSF|C_RepurposeFragments owner owner owner id lumy [] [])
             )
             ;;#51L: empty Primordial set-definition rejected cleanly (previously crashed with an opaque
             ;;out-of-bounds error, since (enumerate 0 -1) = [0 -1], not []).

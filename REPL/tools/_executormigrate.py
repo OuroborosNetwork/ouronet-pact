@@ -76,6 +76,20 @@ RULES = {
     # IssueMultipletFamily reached NO ownership enforce at all; the executor is simply the creator,
     # so the fixtures keep the account they used -- what changes is that it must now be OWNED.
     "AQP-FVT|C_IssueMultipletFamily":   (7, "{0}"),
+    # ---- 09_DPDC-F (sweep 32/46, 2026-09-22) ------------------------------------------------
+    # Only the fragmentation switch. Its authority is DPDC::CAP_Owner (4g), so the executor is
+    # the collection owner, read with the same expression the module's binder evaluates.
+    #
+    # DELIBERATELY ABSENT, for two different reasons:
+    #   * C_MakeFragments / C_MergeFragments -- RENAME in place, `account` -> `executor`, same
+    #     slot and same arity. Nothing to insert.
+    #   * C_RepurposeFragments -- an insert AND a swap: (patron id repurpose-from repurpose-to ..)
+    #     became (patron executor executee id repurpose-to ..). This tool only INSERTS, so running
+    #     it here would produce the right arity with <id> and the executee exchanged -- silently,
+    #     because arity is all _callarity can see. Same reason 05_DPDC-R is absent above. Its
+    #     eight call sites were done by hand.
+    "DPSF|C_EnableNonceFragmentation": (5, "(DPDC.UR_OwnerKonto {1} true)"),
+    "DPNF|C_EnableNonceFragmentation": (5, "(DPDC.UR_OwnerKonto {1} false)"),
     # ---- 08_DPDC-S (sweep 31/46, 2026-09-22) ------------------------------------------------
     # The SIX owner-gated set ops. Their authority is DPDC::CAP_Owner, an enforce on the DERIVED
     # (UR_OwnerKonto id son) -- HANDOFF 4g -- so the executor is the collection owner, read at the

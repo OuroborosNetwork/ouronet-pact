@@ -5745,7 +5745,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|EnableNonceFragmentation patron nf 2 nd))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C2::DPNF|C_EnableNonceFragmentation patron nf 2 nd))
+            (m (ref-TS02-C2::DPNF|C_EnableNonceFragmentation patron (DPDC.UR_OwnerKonto nf false) nf 2 nd))
         )
         (map print
             [
@@ -5789,7 +5789,7 @@
                 0.0 5.0 "CostProbe" "cost probe nonce" (ref-DPDC-UDC::UDC_NoMetaData) type
                 (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
     )
-    (ref-TS02-C2::DPNF|C_EnableNonceFragmentation patron nf 2 nd)
+    (ref-TS02-C2::DPNF|C_EnableNonceFragmentation patron (DPDC.UR_OwnerKonto nf false) nf 2 nd)
     (let
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|MakeFragments patron patron nf 2 1))
@@ -5845,7 +5845,7 @@
                 0.0 5.0 "CostProbe" "cost probe nonce" (ref-DPDC-UDC::UDC_NoMetaData) type
                 (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
     )
-    (ref-TS02-C2::DPNF|C_EnableNonceFragmentation patron nf 2 nd)
+    (ref-TS02-C2::DPNF|C_EnableNonceFragmentation patron (DPDC.UR_OwnerKonto nf false) nf 2 nd)
     (ref-TS02-C2::DPNF|C_MakeFragments patron patron nf 2 1)
     (let
         (
@@ -5909,13 +5909,13 @@
                 0.0 5.0 "CostProbe" "cost probe nonce" (ref-DPDC-UDC::UDC_NoMetaData) type
                 (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)))
     )
-    (ref-TS02-C2::DPNF|C_EnableNonceFragmentation patron nf 2 nd)
+    (ref-TS02-C2::DPNF|C_EnableNonceFragmentation patron (DPDC.UR_OwnerKonto nf false) nf 2 nd)
     (ref-TS02-C2::DPNF|C_MakeFragments patron patron nf 2 1)
     (let
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|RepurposeFragments patron nf patron lumy [-2] [(ref-DPDC::UR_AccountNonceSupply patron nf false -2)]))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C2::DPNF|C_RepurposeFragments patron nf patron lumy [-2] [(ref-DPDC::UR_AccountNonceSupply patron nf false -2)]))
+            (m (ref-TS02-C2::DPNF|C_RepurposeFragments patron patron patron nf lumy [-2] [(ref-DPDC::UR_AccountNonceSupply patron nf false -2)]))
         )
         (map print
             [
@@ -5963,7 +5963,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|EnableNonceFragmentation patron sf 2 nd))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_EnableNonceFragmentation patron sf 2 nd))
+            (m (ref-TS02-C1::DPSF|C_EnableNonceFragmentation patron (DPDC.UR_OwnerKonto sf true) sf 2 nd))
         )
         (map print
             [

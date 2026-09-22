@@ -452,9 +452,9 @@
             ;;2]Create Nonces [1 2 3]
             (ref-TS02-C1::DPSF|C_Create patron (DPDC.UR_Verum5 dhoc-id true) dhoc-id [10000 1000 100 105] native-nonce-data)
             ;;3]Enable Fragmentations for Nonces [1 2 3]
-            (ref-TS02-C1::DPSF|C_EnableNonceFragmentation patron dhoc-id 1 (at 0 fragments-nonce-data))
-            (ref-TS02-C1::DPSF|C_EnableNonceFragmentation patron dhoc-id 2 (at 1 fragments-nonce-data))
-            (ref-TS02-C1::DPSF|C_EnableNonceFragmentation patron dhoc-id 3 (at 2 fragments-nonce-data))
+            (ref-TS02-C1::DPSF|C_EnableNonceFragmentation patron (DPDC.UR_OwnerKonto dhoc-id true) dhoc-id 1 (at 0 fragments-nonce-data))
+            (ref-TS02-C1::DPSF|C_EnableNonceFragmentation patron (DPDC.UR_OwnerKonto dhoc-id true) dhoc-id 2 (at 1 fragments-nonce-data))
+            (ref-TS02-C1::DPSF|C_EnableNonceFragmentation patron (DPDC.UR_OwnerKonto dhoc-id true) dhoc-id 3 (at 2 fragments-nonce-data))
         ]
     )
 )
