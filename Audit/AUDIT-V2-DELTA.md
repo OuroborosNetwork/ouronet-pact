@@ -902,3 +902,79 @@ matched `PYTHIA\|A_` *and* listed `A_Flush`/`A_Link`/… as alternatives, so it 
 "0 changed" on a file it was pointed at is a failure, not a no-op — `_callarity.py`'s unchanged
 count is what said so.
 
+---
+
+### 01_TS01-A.pact — COMPLETE (27 of 27 entrypoints, 2026-09-22)
+
+**Twenty-three of the twenty-seven were already done** — carried in by the cascades from the core
+modules whose turns came first. Only four needed work, and three of those were findings about the
+*tool* or about entrypoints the plan had already passed over.
+
+**What v1 asserted that is now wrong.** `DPTF|A_DeployAccount` and `DPOF|A_DeployAccount` went
+`(patron id account)` → `(patron executor executee id)`, moving 18 call sites; `ORBR|A_Fuel` went
+from **no parameters at all** to `(executor)`.
+
+---
+
+### THE TOOL WAS PRESCRIBING THE MISTAKE THE HANDOFF WARNS ABOUT
+
+`_executorplan`'s Talos-admin branch classified **slot 0** as the executor slot, because "a Talos
+`A_` wrapper takes no patron". That rule is a statement about **gasless** ops — the blessed path
+supplying `GASLESS-PATRON` — **not** about admin ops. Three wrappers here genuinely charge:
+`DPTF|A_DeployAccount`, `DPOF|A_DeployAccount` and `ATS|AA_RemoveSecondary` all end in
+`XE_CollectIgnis patron …`.
+
+So the tool reported their `patron` as a **RENAME candidate** — i.e. *"rename the billing account
+to executor"*, which is the handoff's own **"`executor = patron` is not a safe default"** error,
+prescribed by a tool. And `ATS|AA_RemoveSecondary`, which already had **both** correctly, was being
+reported unswept for having a patron in slot 0.
+
+Fixed: if slot 0 is a real `patron`, the executor slot is slot 1 and the ordinary rules apply.
+DONE 444 → 445, RENAME 97 → 93.
+
+> **A billed admin wrapper has all three.** The absence of a patron on a Talos `A_` is a
+> consequence of being gasless, not a property of being admin.
+
+---
+
+### `account` BECAME `executee`, AND THAT IS THE POINT OF THE FUNCTION
+
+`DPTF|A_DeployAccount` exists **precisely so that no ownership check runs on `account`** — audit
+`#N2` opened that door deliberately, so an admin can deploy for a smart account governed by another
+module, whose guard nobody can hold. So `account` satisfies the executee test exactly: acted upon,
+needing no signature. Calling it the *executor* would have named **the beneficiary as the actor on
+the one door in the system built to let somebody else act for them.**
+
+The executor is proven **locally**, by `CAP_EnforceAccountOwnership`, because the core this forwards
+to is an `XB_` outside the canon that proves nothing about any caller. Pinned by `<<OF-G15>>`,
+which sits immediately after two *successful* admin deploys — so the refusal it asserts cannot be
+the admin keyset speaking.
+
+**`ORBR|A_Fuel` earns its executor for a specific reason.** `<<CONF-05>>` found it gated only by a
+self-granting `SECURE`, and what an attacker got was not theft but **timing** — the ability to force
+the index move at a moment of their choosing. **An operation whose abuse is about *when* it ran is
+exactly one where *who* ran it is worth recording.** Its executor is also proven locally, forced:
+`ORBR::C_Fuel` is registered EXECUTORLESS, so there is nothing downstream to carry one to.
+
+---
+
+### TWO MORE `@doc`s THAT CLAIMED A ROUTE THEY DID NOT STATE
+
+Check 7 refused `DALOS|A_DeploySmartAccount` and `A_DeployStandardAccount`: *registered
+SELF-PROVING but the `@doc` does not name `UEV_Any`*. Third and fourth instance of this shape
+(`SWPI::C_Issue` was the second), and the same lesson each time — **an executor that arrives by
+cascade arrives without its justification**, and check 7 is the only thing that notices.
+
+The route is the owner's base-case ruling, now written into both functions: the executor **is** the
+account being created, so its ownership cannot be read from a table — there is no row yet. The
+`guard` travels in the same call and `DALOS|C>DEPLOY-*-OURONET-ACCOUNT` enforces it through
+`U|G::UEV_Any` — an enforce-ONE over `[guard, (create-capability-guard (GOV))]` — **first**, before
+the glyph and format checks. That it runs first is what makes it a proof rather than a check some
+other refusal could shadow, and `<<DALOS-G4b>>` pins that ordering by pairing a held guard against
+an unheld one.
+
+**Two new provisional executor slots**, in `05_TS02-DPAD` and `2_CITIZEN/6_OuronetBridge/03_CADUCEUS`
+— both pass `patron` as the executor, both with the admin-keyset requirement recorded in their own
+`@doc`s, and both annotated that `executor = patron` is a considered choice there and must become a
+real parameter at their turn.
+

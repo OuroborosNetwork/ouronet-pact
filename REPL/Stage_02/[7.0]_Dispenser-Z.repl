@@ -114,9 +114,9 @@
     (ref-TS01-C1::DPTF|C_ToggleMintRole patron (DPTF.UR_Konto OuroID) standard-dispenser OuroID true)
     ;;5]Toggle Mint Role for Primordial, Esoteric, and Ancient Kosons on Dispenser
     ;;#N2 fix: standard-dispenser is a system smart account (not self-owned) - admin variant
-    (ref-TS01-A::DPTF|A_DeployAccount patron PrimordialKosonID standard-dispenser)
-    (ref-TS01-A::DPTF|A_DeployAccount patron EsothericKosonID standard-dispenser)
-    (ref-TS01-A::DPTF|A_DeployAccount patron AncientKosonID standard-dispenser)
+    (ref-TS01-A::DPTF|A_DeployAccount patron patron standard-dispenser PrimordialKosonID)
+    (ref-TS01-A::DPTF|A_DeployAccount patron patron standard-dispenser EsothericKosonID)
+    (ref-TS01-A::DPTF|A_DeployAccount patron patron standard-dispenser AncientKosonID)
     ;;
     (ref-TS01-C1::DPTF|C_ToggleMintRole patron (DPTF.UR_Konto PrimordialKosonID) standard-dispenser PrimordialKosonID true)
     (ref-TS01-C1::DPTF|C_ToggleMintRole patron (DPTF.UR_Konto EsothericKosonID) standard-dispenser EsothericKosonID true)

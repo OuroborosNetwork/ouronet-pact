@@ -293,7 +293,12 @@
                     ;;replaces the self-service DPTF|C_DeployAccount (TS01-C1), which now
                     ;;requires the caller to own <account>. Running this still requires
                     ;;holding both GOV|CADUCEUS_ADMIN and TS01-A's own admin keyset.
-                    (ref-TS01-A::DPTF|A_DeployAccount patron dptf-id bridge-account)
+                    ;;PROVISIONAL EXECUTOR SLOT (HANDOFF 4e, 2026-09-22): <patron> stands in
+                    ;;for this module's future <executor>. The comment above already establishes
+                    ;;the caller holds TS01-A's admin keyset, so the admin and the payer are the
+                    ;;same account here; <bridge-account> is the EXECUTEE, deployed for, which is
+                    ;;the whole reason the admin variant is used rather than the self-service one.
+                    (ref-TS01-A::DPTF|A_DeployAccount patron patron bridge-account dptf-id)
                     (ref-TS01-C1::DPTF|C_ToggleMintRole patron (DPTF.UR_Konto dptf-id) bridge-account dptf-id true)
                     (ref-TS01-C1::DPTF|C_ToggleBurnRole patron (DPTF.UR_Konto dptf-id) bridge-account dptf-id true)
                     (ref-TS01-C1::DPTF|C_ToggleTransferRole patron (DPTF.UR_Konto dptf-id) bridge-account dptf-id true)

@@ -52,8 +52,34 @@
         (orbr:string KST.OURBR)
     )
     ;; DPOF|A_DeployAccount: deploy 2 standard collection accounts (wipe needs a freezable acct)
-    (ref-TS01-A::DPOF|A_DeployAccount patron id emma)
-    (ref-TS01-A::DPOF|A_DeployAccount patron id lumy)
+    (ref-TS01-A::DPOF|A_DeployAccount patron patron emma id)
+    (ref-TS01-A::DPOF|A_DeployAccount patron patron lumy id)
+    ;;<<OF-G15>> THE ADMIN DEPLOY DOOR NOW RECORDS WHO OPENED IT (2026-09-22, executor canon).
+    ;;
+    ;;This is the ADMIN variant, and its entire reason to exist is that NO ownership check runs
+    ;;on the account being deployed FOR -- audit #N2 opened that door deliberately, so an admin
+    ;;can set up a smart account governed by another module, which nobody can hold the guard of.
+    ;;The executee stays unchecked by design. What the door had no record of was WHO walked
+    ;;through it, which is HANDOFF 4f: authority and attribution are orthogonal, and an admin
+    ;;door is precisely where the second one is worth having.
+    ;;
+    ;;The two calls above are the POSITIVE half and they are not decoration here -- they prove
+    ;;the admin path works for <patron> as executor, so the refusal below cannot be the admin
+    ;;keyset speaking. ANHD is the admin and signs; naming EMMA as the executor is the only
+    ;;thing that changes.
+    (map print
+        [
+            (expect-failure "<<OF-G15>> an admin may not attribute the deployment to an account they do not own"
+                "Keyset failure"
+                (ref-TS01-A::DPOF|A_DeployAccount patron emma lumy id))
+            ;;...and the refusal is BEFORE the write. An expect-failure alone cannot distinguish
+            ;;"refused" from "succeeded, then something else raised" -- the lesson <<ORBR-FEE3b>>
+            ;;paid for. LUMY's account was deployed by the line above, so the observable is that
+            ;;the token's account count did not grow.
+            (expect "<<OF-G15>> ...and no third account was created by the refusal"
+                false (ref-DPOF::UR_IzAccount id orbr))
+        ]
+    )
     ;; enable segmentation (Control's last flag `sg`) — Transmit requires it ON
     (ref-TS01-C1::DPOF|C_Control patron (DPOF.UR_Konto id) id true true true true true true true true)
     ;; DPOF|C_Transmit: move 300 units of nonce 1 to EMMA and LUMY (owner keeps 400)

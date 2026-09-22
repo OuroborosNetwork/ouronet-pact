@@ -210,7 +210,23 @@ def plan():
             is_talos = os.sep + "3_Talos" + os.sep in p
             is_admin = re.search(r'(?:^|\|)(A|AA)_', n) is not None
             if is_talos and is_admin:
-                rows.append((f, n, _slot(ps[0] if ps else ""), ps[0] if ps else ""))
+                # A BILLED ADMIN WRAPPER KEEPS ITS PATRON, and this branch used to deny that.
+                # The rule is "a Talos A_ wrapper has no patron BECAUSE the blessed path supplies
+                # GASLESS-PATRON" -- it is a statement about GASLESS ops, not about admin ops.
+                # Three wrappers in 01_TS01-A genuinely charge: DPTF|A_DeployAccount,
+                # DPOF|A_DeployAccount and ATS|AA_RemoveSecondary all end in
+                # `XE_CollectIgnis patron ...`. Classifying their slot 0 reported `patron` as a
+                # RENAME candidate -- i.e. "rename the billing account to executor", which is the
+                # handoff's own "executor = patron is not a safe default" mistake, prescribed by
+                # a tool. ATS|AA_RemoveSecondary already had BOTH and was still reported unswept.
+                #
+                # So: if slot 0 is a real patron, this is an ordinary (patron, executor) shape and
+                # the executor slot is slot 1. Otherwise slot 0 IS the executor slot.
+                if ps and ps[0] == "patron":
+                    p2 = ps[1] if len(ps) > 1 else ""
+                    rows.append((f, n, _slot(p2), p2))
+                else:
+                    rows.append((f, n, _slot(ps[0] if ps else ""), ps[0] if ps else ""))
                 continue
             if n in EXECUTORLESS or f"{f}::{n}" in EXECUTORLESS:
                 rows.append((f, n, "DONE" if ps and ps[0] == "patron" else "PATRON",

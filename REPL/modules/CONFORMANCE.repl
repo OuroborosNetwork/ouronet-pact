@@ -390,7 +390,7 @@
             ;;the regression itself
             (expect-failure "<<CONF-05>> ORBR|A_Fuel is refused for a non-admin signer"
                 "Keyset failure"
-                (ref-TS01-A::ORBR|A_Fuel))
+                (ref-TS01-A::ORBR|A_Fuel KST.EMMA))
             ;;...and its siblings, so this reads as a swept property rather than one lucky case.
             ;;Each is called with a VALID argument shape, because an arity or type error would
             ;;also raise -- and would look exactly like a passing access-control test while

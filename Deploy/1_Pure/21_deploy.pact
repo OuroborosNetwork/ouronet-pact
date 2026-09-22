@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 21 of 24
 ;; This is STEP 21 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-20 must have run first, including the init steps between deploys.
-;; 2 source file(s), 221,896 gas measured in the REPL gas model, 153,645 bytes
+;; 2 source file(s), 221,896 gas measured in the REPL gas model, 154,487 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact
@@ -3032,9 +3032,18 @@
                 ;;   (any signer could force any account onto any collection); sf/nf now call
                 ;;   DPDC::XBv_DeployAccountSFT/NFT directly, module-to-module — the pattern every
                 ;;   legitimate internal caller (DPDC-C/DPDC-F/DPDC-R/DPDC-S) already uses.
+                ;;PROVISIONAL EXECUTOR SLOTS (HANDOFF 4e, 2026-09-22). 01_TS01-A's turn gave the
+                ;;two admin DeployAccount wrappers an <executor>, proven by
+                ;;CAP_EnforceAccountOwnership, and an <executee> -- the account deployed FOR,
+                ;;which is <lpad> here. This module's own turn has not come, so there is no
+                ;;<executor> parameter to thread and the rule is to pass the account that
+                ;;actually initiates. That is <patron>: the @doc above records that running this
+                ;;requires TS01-A's admin keyset, so the caller IS the admin and the admin is
+                ;;paying. Correct today, and it must become this module's own <executor> at its
+                ;;turn -- `executor = patron` is a considered choice here, never a default.
                 (cond
-                    ((= fungibility tf) (ref-TS01-A::DPTF|A_DeployAccount patron asset-id lpad))
-                    ((= fungibility of) (ref-TS01-A::DPOF|A_DeployAccount patron asset-id lpad))
+                    ((= fungibility tf) (ref-TS01-A::DPTF|A_DeployAccount patron patron lpad asset-id))
+                    ((= fungibility of) (ref-TS01-A::DPOF|A_DeployAccount patron patron lpad asset-id))
                     ((= fungibility sf) (ref-DPDC::XBv_DeployAccountSFT lpad asset-id f f f f f f f f f f f))
                     ((= fungibility nf) (ref-DPDC::XBv_DeployAccountNFT lpad asset-id f f f f f f f f f f))
                     true

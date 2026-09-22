@@ -2605,7 +2605,7 @@
     [
         (format "Current Liquindex is {}, Projected Liquindex is" [(at 0 indices) (at 1 indices)])
     ]
-    (ref-TS01-A::ORBR|A_Fuel)
+    (ref-TS01-A::ORBR|A_Fuel KST.ANHD)
     (let
         (
             (ref-DALOS:module{OuronetDalosV2} DALOS)

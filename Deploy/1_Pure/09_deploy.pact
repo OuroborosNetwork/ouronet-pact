@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 9 of 24
 ;; This is STEP 9 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-8 must have run first, including the init steps between deploys.
-;; 4 source file(s), 252,440 gas measured in the REPL gas model, 253,424 bytes
+;; 4 source file(s), 252,440 gas measured in the REPL gas model, 259,987 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/21_CODEX.pact
@@ -3310,9 +3310,9 @@
     (defun DPTF|A_UpdateTreasuryDispoParameters (executor:string type:integer tdp:decimal tds:decimal))
     (defun DPTF|A_WipeTreasuryDebt (executor:string))
     (defun DPTF|A_WipeTreasuryDebtPartial (executor:string debt-to-be-wiped:decimal))
-    (defun DPTF|A_DeployAccount (patron:string id:string account:string))
+    (defun DPTF|A_DeployAccount (patron:string executor:string executee:string id:string))
     ;;
-    (defun DPOF|A_DeployAccount (patron:string id:string account:string))
+    (defun DPOF|A_DeployAccount (patron:string executor:string executee:string id:string))
     ;;
     (defun ATS|AA_RemoveSecondary (patron:string executor:string ats:string reward-token:string accounts-with-ats-data:[string]))
     (defun ATS|A_KickStart (executor:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
@@ -3320,7 +3320,7 @@
     (defun LIQUID|A_MigrateLiquidFunds:decimal (executor:string migration-target-stoa-account:string))
     ;;
     ;;
-    (defun ORBR|A_Fuel ())
+    (defun ORBR|A_Fuel (executor:string))
     ;;
     ;;
     (defun SWP|A_UpdatePrincipal (executor:string principal:string add-or-remove:bool))
@@ -3665,7 +3665,25 @@
         )
     )
     (defun DALOS|A_DeploySmartAccount (executor:string guard:guard stoa:string sovereign:string public:string)
-        @doc "Deploys a Smart Ouronet Account in Administrator Mode, without collection STOA"
+        @doc "Deploys a Smart Ouronet Account in Administrator Mode, without collection STOA. \
+            \ \
+            \ Executor: SELF-PROVING, the base case of the attribution rule (owner ruling, \
+            \ 2026-09-21). The executor IS the account being created, so its ownership cannot be \
+            \ read from a table -- there is no row yet. It does not need to be. The <guard> the \
+            \ account will be governed by travels in the same call, and \
+            \ DALOS|C>DEPLOY-SMART-OURONET-ACCOUNT enforces it through U|G::UEV_Any -- an \
+            \ enforce-ONE over [guard, (create-capability-guard (GOV))] -- FIRST, before the glyph \
+            \ and format checks. Same proof UEV_SmartAccOwn performs on an existing account, same \
+            \ key; the guard is supplied in the call because at creation there is nowhere else it \
+            \ could come from. The second list element is the governance door genesis uses to \
+            \ make the first account. \
+            \ \
+            \ That the UEV_Any runs FIRST is not incidental -- it is what makes the proof a proof \
+            \ rather than a check some other refusal could shadow -- and it is pinned by \
+            \ <<DALOS-G4b>>, which pairs a held guard (format refusal) against an unheld one \
+            \ (guard refusal). \
+            \ (patron/executor canon 2.2; route named here because check 7 requires it to be, and \
+            \ found it missing at 01_TS01-A's own turn, 2026-09-22.)"
         (with-capability (P|TS)
             (let
                 (
@@ -3679,7 +3697,25 @@
         )
     )
     (defun DALOS|A_DeployStandardAccount (executor:string guard:guard stoa:string public:string)
-        @doc "Deploys a Standard Ouronet Account in Administrator Mode, without collection STOA"
+        @doc "Deploys a Standard Ouronet Account in Administrator Mode, without collection STOA. \
+            \ \
+            \ Executor: SELF-PROVING, the base case of the attribution rule (owner ruling, \
+            \ 2026-09-21). The executor IS the account being created, so its ownership cannot be \
+            \ read from a table -- there is no row yet. It does not need to be. The <guard> the \
+            \ account will be governed by travels in the same call, and \
+            \ DALOS|C>DEPLOY-STANDARD-OURONET-ACCOUNT enforces it through U|G::UEV_Any -- an \
+            \ enforce-ONE over [guard, (create-capability-guard (GOV))] -- FIRST, before the glyph \
+            \ and format checks. Same proof UEV_StandardAccOwn performs on an existing account, same \
+            \ key; the guard is supplied in the call because at creation there is nowhere else it \
+            \ could come from. The second list element is the governance door genesis uses to \
+            \ make the first account. \
+            \ \
+            \ That the UEV_Any runs FIRST is not incidental -- it is what makes the proof a proof \
+            \ rather than a check some other refusal could shadow -- and it is pinned by \
+            \ <<DALOS-G4b>>, which pairs a held guard (format refusal) against an unheld one \
+            \ (guard refusal). \
+            \ (patron/executor canon 2.2; route named here because check 7 requires it to be, and \
+            \ found it missing at 01_TS01-A's own turn, 2026-09-22.)"
         (with-capability (P|TS)
             (let
                 (
@@ -3859,7 +3895,7 @@
             )
         )
     )
-    (defun DPTF|A_DeployAccount (patron:string id:string account:string)
+    (defun DPTF|A_DeployAccount (patron:string executor:string executee:string id:string)
         @doc "Administrative variant of DPTF|C_DeployAccount (TS01-C1) - deploys a DPTF \
             \ Account for <account> with no ownership check on <account>. For \
             \ system/infrastructure account setup only (a smart account governed by \
@@ -3870,20 +3906,37 @@
             \ ownership check on <account> is the entire reason this door exists, and \
             \ P|ADMINISTRATIVE-SUMMONER is what confines it. \
             \ Wraps XB_DeployAccount -- the core was reclassified out of the C_ band, since it \
-            \ builds no cumulator and was called from inside its own module."
+            \ builds no cumulator and was called from inside its own module. \
+            \ \
+            \ ATTRIBUTION (patron/executor canon 2.2, 2026-09-22). The AUTHORITY is the admin keyset, \
+            \ composed as P|ADMINISTRATIVE-SUMMONER, which names no account; <executor> is the ACTOR \
+            \ among its holders and is proven HERE by CAP_EnforceAccountOwnership, because the core \
+            \ this forwards to is an XB_ outside the canon and proves nothing about any caller. \
+            \ \
+            \ <account> became <executee>: it is the account the deployment is BESTOWED UPON, and \
+            \ this variant exists PRECISELY so that no ownership check runs on it. It satisfies the \
+            \ executee test exactly -- acted upon, needing no signature -- and calling it the \
+            \ executor would have named the beneficiary as the actor on the one door in the system \
+            \ built to let somebody else act for them. \
+            \ \
+            \ THIS WRAPPER KEEPS ITS PATRON. The rule that a Talos A_ has none is a statement about \
+            \ GASLESS ops -- the blessed path supplying GASLESS-PATRON -- not about admin ops. This \
+            \ one ends in XE_CollectIgnis on a real patron, so it has all three."
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                 )
-                (ref-DPTF::XBv_DeployAccount id account)
+                (ref-DALOS::CAP_EnforceAccountOwnership executor)
+                (ref-DPTF::XBv_DeployAccount id executee)
                 (ref-IGNIS::XE_CollectIgnis patron
                     ;;charge through the SAME reader the client twin uses, so the admin variant
                     ;;cannot drift from DPTF|C_DeployAccount's price
-                    (ref-DPTF::URCi_DeployAccount account)
+                    (ref-DPTF::URCi_DeployAccount executee)
                 )
                 (format "DPTF {} added to {} Ouronet Account succesfully! (admin)" [id sa])
             )
@@ -3891,26 +3944,43 @@
     )
     ;;
     ;;  [DPOF_Administrator]
-    (defun DPOF|A_DeployAccount (patron:string id:string account:string)
+    (defun DPOF|A_DeployAccount (patron:string executor:string executee:string id:string)
         @doc "Administrative variant of DPOF|C_DeployAccount (TS01-C1) - deploys a DPOF \
             \ Account for <account> with no ownership check on <account>. For \
             \ system/infrastructure account setup only (a smart account governed by \
             \ another module, e.g. a pool/vault/dispenser account), where the caller \
             \ legitimately cannot hold <account>'s own guard. End-user self-service \
-            \ activation must use the ownership-gated DPOF|C_DeployAccount instead."
+            \ activation must use the ownership-gated DPOF|C_DeployAccount instead. \
+            \ \
+            \ ATTRIBUTION (patron/executor canon 2.2, 2026-09-22). The AUTHORITY is the admin keyset, \
+            \ composed as P|ADMINISTRATIVE-SUMMONER, which names no account; <executor> is the ACTOR \
+            \ among its holders and is proven HERE by CAP_EnforceAccountOwnership, because the core \
+            \ this forwards to is an XB_ outside the canon and proves nothing about any caller. \
+            \ \
+            \ <account> became <executee>: it is the account the deployment is BESTOWED UPON, and \
+            \ this variant exists PRECISELY so that no ownership check runs on it. It satisfies the \
+            \ executee test exactly -- acted upon, needing no signature -- and calling it the \
+            \ executor would have named the beneficiary as the actor on the one door in the system \
+            \ built to let somebody else act for them. \
+            \ \
+            \ THIS WRAPPER KEEPS ITS PATRON. The rule that a Talos A_ has none is a statement about \
+            \ GASLESS ops -- the blessed path supplying GASLESS-PATRON -- not about admin ops. This \
+            \ one ends in XE_CollectIgnis on a real patron, so it has all three."
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
-                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                 )
-                (ref-DPOF::XBv_DeployAccount id account)
+                (ref-DALOS::CAP_EnforceAccountOwnership executor)
+                (ref-DPOF::XBv_DeployAccount id executee)
                 (ref-IGNIS::XE_CollectIgnis patron
                     ;;charge through the SAME reader the client twin uses, so the admin variant
                     ;;cannot drift from DPOF|C_DeployAccount's price
-                    (ref-DPOF::URCi_DeployAccount account)
+                    (ref-DPOF::URCi_DeployAccount executee)
                 )
                 (format "Succesfully deployed a New DPOF Account for DPOF {} on Ouronet Account {} (admin)" [id sa])
             )
@@ -3966,7 +4036,7 @@
         )
     )
     ;;  [OUROBOROS_Administrator]
-    (defun ORBR|A_Fuel ()
+    (defun ORBR|A_Fuel (executor:string)
         @doc "Uses up all collected Native STOA on the Ouroboros Account, wraps it, and fuels the Stoa Liquid Index \
             \ Transaction fee must be paid for by the Ouronet Gas Station, so that all available balance may be used. \
             \ Is Part of all the Functions that collect native STOA as fee, \
@@ -3992,6 +4062,22 @@
         ;;Pinned by REPL/modules/CONFORMANCE.repl <<CONF-05>>; the class is linted by
         ;;_conformance.py [admin-gate-terminal], which was written FROM this defect and verified
         ;;against it by reverting the fix and watching the rule fire.
+        ;;ATTRIBUTION (patron/executor canon 2.2, 2026-09-22). Proven HERE rather than
+        ;;forwarded, and that is forced: ORBR::C_Fuel is registered EXECUTORLESS because its
+        ;;actor is ORBR|SC_NAME, a module constant. So there is nothing downstream to carry an
+        ;;executor to, and without a local proof this parameter would be decorative -- which the
+        ;;canon rates worse than absent.
+        ;;
+        ;;It earns its place on THIS function specifically. CONF-05 found ORBR|A_Fuel gated only
+        ;;by a self-granting SECURE, and the value an attacker got was not theft but TIMING --
+        ;;the ability to force the index move at a moment of their choosing. An operation whose
+        ;;abuse is about WHEN it ran is exactly one where WHO ran it is worth recording.
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership executor)
+        )
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (with-capability (SECURE)
                 (XI_DirectFuelSTOA)

@@ -69,7 +69,7 @@
         (acquire-module-admin ouronet-ns.DALOS)
         (update DALOS.DALOS|PropertiesTable info { "ur-stoa-id" : ur-stoa-id })
         ;; deploy the liquid smart account's holding account for the wrapped-UrStoa token
-        (ref-TS01-A::DPTF|A_DeployAccount patron ur-stoa-id liquid)
+        (ref-TS01-A::DPTF|A_DeployAccount patron patron liquid ur-stoa-id)
         (print (format "<(wrapped-UrStoa deployed)> ur-stoa-id => {}" [ur-stoa-id]))
     )
 )
