@@ -15,6 +15,12 @@
 > at V3 because it took the highest version mentioned ANYWHERE in the document, including prose. The
 > table says V2. Parse the live column only.)*
 
+<!-- LIVE-TABLE:BEGIN -- the ONLY rows in this file that describe what is DEPLOYED. A tool
+     reading live versions must read between these fences and nowhere else. Added 2026-09-23
+     after this document produced the SAME misreading for the THIRD time (see the note at the
+     end of the 'New since the last live snapshot' section). Two tables of near-identical
+     shape, one live and one not, cannot be told apart by a regex -- and the prose warning
+     that says so has now failed three readers, one of them a script. -->
 | Module | Live interface(s) implemented |
 |--------|-------------------------------|
 | `ATS` | `AutostakeComputerV1`, `AutostakeV2`, `BrandingUsagePrimaryV1` |
@@ -86,7 +92,12 @@ Notes: some modules implement/bless **two** versions (`IGNIS` V1+V2, `DPL-UR` De
 
 ---
 
+<!-- LIVE-TABLE:END -->
+
 ## New since the last live snapshot (NOT in the 62 above) — code versions, target TBD
+
+<!-- NOT-LIVE-TABLE -- every row below is a module that has NEVER been deployed. Nothing
+     here is evidence of a live version. -->
 
 These modules were **not** in the on-chain snapshot (2026-08-30), i.e. never deployed live. The
 versioning policy ("new/active work stays on V1 until first mainnet deployment") vs the whole-codebase
@@ -99,7 +110,7 @@ V2 baseline that #85 established is an **owner call** for the redeploy — recor
 | `AQP-ANK` | `AcquisitionAnchorsV1` | AQP earning-pools family (new since last deploy) |
 | `AQP-SCORE` | `AcquisitionScoresV1` | |
 | `AQP-POOL` | `AcquisitionPoolsV1` | |
-| `AQP-FVT` (05_FVT) | `AcquisitionFarmsVaultsTreasuriesV1` | content changed by #75 split (facade re-exports) — stayed on V2 (pre-deploy edit) |
+| `AQP-FVT` (05_FVT) | `AcquisitionFarmsVaultsTreasuriesV1` | content changed by #75 split (facade re-exports); kept on its existing suffix, pre-deploy. *(This cell used to read "stayed on V2" while the cell beside it said V1 — corrected 2026-09-23.)* |
 | `AQP-VCT` | `AcquisitionVacateV1` | |
 | `MTX-AQP` | `AqpMtxV1` | |
 | `DSA` | `DsaV1` | |
@@ -116,7 +127,14 @@ V2 baseline that #85 established is an **owner call** for the redeploy — recor
 updated to match the tree. What made this worth recording rather than just doing: the 2026-09-18 pass
 bumped six AQP interfaces V2 -> V3 as "live + 1" when **none of them is live** — they are listed in
 this very section as never deployed. That is exactly the misreading this file's own header warns
-about (taking a version from the wrong part of the document), and it happened anyway. Only
+about (taking a version from the wrong part of the document), and it happened anyway.
+
+**AND IT HAPPENED A THIRD TIME, 2026-09-23** — a script re-measuring the deploy-ready gate read
+BOTH tables as one, reported six interfaces as "sitting at their live version", and filed it in
+the roadmap as a redeploy blocker. It was not one: the tree is at V1 and the owner ruled it on
+2026-09-19, four lines above. Three readers, one warning, same error — so the fix this time is
+not a fourth sentence. The live table now sits inside `LIVE-TABLE:BEGIN/END` fences and this
+one is marked `NOT-LIVE-TABLE`. **Parse the fences, never the prose.** Only
 `IgnisCollector` was a real bump: `IGNIS` IS live at V2, so V3 is correct and the 51-module
 OutputCumulator cascade stands. The AQP six, plus `AcquisitionFarmsVaultsTreasuries`,
 `AcquisitionPoolBoot` and the new `AcquisitionSchemas`, are all **V1**.

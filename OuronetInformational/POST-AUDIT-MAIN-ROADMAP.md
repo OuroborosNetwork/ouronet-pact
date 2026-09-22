@@ -37,29 +37,37 @@ Every element carries a dotted address so you can point at it exactly. Header si
 > | all audits closed | 20/20 in the ledger | **`_redteam.py --check`: register sync ok, ledger coverage ok** |
 > | Audit Book assembled | 19 files, Parts I–III | **v3.0, 28 chapters, 248 pages, Parts I–V** |
 > | every module within the deploy ceiling | nothing over 22% of a block | **`_deploybundle.py --check` clean**, 24 transactions, emitted size now FATAL over the cap |
-> | version bump green | 0 interfaces at their live version | **UNSETTLED — see below.** 59 of 72 implemented interfaces are ahead of their live record, 7 have no live record, and **6 read as AT their live version** |
+> | version bump green | 0 interfaces at their live version | **0 at their live version** — 59 ahead, 13 never deployed. Holds. *(A first pass reported 6 as a blocker; that was a parser fault — see below.)* |
 >
 > Three checks that did not exist on 2026-09-18 are now gate-fatal as well: the authorisation
 > surface (**1,193 entrypoints, none weakened, 4 strengthened**), the patron-slot register (**0
 > unregistered**), and executor proof over the whole tree (**766 proven, 0 UNPROVEN**).
 >
-> **THE ONE PRECONDITION THAT DID NOT SURVIVE RE-MEASUREMENT.** Parsing `LIVE-INTERFACE-VERSIONS.md`'s
-> live column against every `(implements …V<n>)` in the tree, six interfaces read as sitting AT their
-> recorded live version: `AcquisitionAnchors`, `AcquisitionPools`, `AcquisitionScores`,
-> `AcquisitionVacate`, `AqpMtx`, `Dsa`. Those are six of the seven that Phase 1.7.1.1 records having
-> bumped on 2026-09-18 — and the Audit Book's own 1.1 changelog says the opposite of the snapshot:
-> *"ALL AQP interfaces are V1 … the 2026-09-18 pass had bumped six AQP interfaces V2→V3 as 'live + 1'
-> when none of them is live."* So one of the two documents is wrong about what is deployed, and
-> **neither is the chain.**
+> **A BLOCKER I FILED AND THEN WITHDREW — worth keeping, because of how it happened.** The first
+> re-measurement reported six interfaces (`AcquisitionAnchors`, `AcquisitionPools`,
+> `AcquisitionScores`, `AcquisitionVacate`, `AqpMtx`, `Dsa`) as sitting AT their live version, and I
+> filed it here as a redeploy blocker. **It was not one.** The tree has the whole acquisition family
+> at V1, which is correct, and the owner ruled exactly that on **2026-09-19** — recorded in
+> `LIVE-INTERFACE-VERSIONS.md` four lines below the rows I misread.
 >
-> This is NOT resolvable by reading, and it must not be resolved by picking the more recent file. If
-> those six ARE live at V1, the redeploy must bump them and cascade; if they are not, editing V1 in
-> place is correct and a bump would be wrong. `REPL/tools/_liveinventory.py --probe` settles it from
-> the chain — the same instrument CLAUDE.md names for the identical question about DPMF's tables.
-> **Do that before 1.7.2.2, not after.**
+> The fault was mine and it was mechanical: that file holds **two tables of near-identical shape** —
+> one listing what is deployed, one listing modules that have **never** been deployed — and my regex
+> read both as one. The file warns about precisely this in its own header (*"Parse the live column
+> only"*), and it records the same misreading happening twice before, once to a human and once to the
+> 2026-09-18 bump pass.
 >
-> **So 1.7.2.1 holds on four of five preconditions, the fifth is a chain probe away, and 1.7.2.2 —
-> the fresh redeploy — remains the only other open item in Chapter 1.** It is an on-chain act and it cannot change the entrypoint set; the shape the
+> **Three readers, one prose warning, the same error.** So the fix was not a fourth warning: the live
+> table now sits inside `LIVE-TABLE:BEGIN` / `LIVE-TABLE:END` fences and the other is marked
+> `NOT-LIVE-TABLE`. Re-measured through the fence: **0 interfaces at their live version, 59 ahead, 13
+> never deployed.** The precondition holds.
+>
+> *(Left visible rather than deleted. A withdrawn blocker is cheap; the same misreading reaching the
+> redeploy is not, and the reason this one was caught is that the claim was checked before it was
+> acted on.)*
+>
+> **So 1.7.2.1 holds on all five preconditions, and 1.7.2.2 — the fresh redeploy — is the only open
+> item in Chapter 1.** The one thing still owed before it is a CORRECTNESS test for the Stage Two
+> daily emission: see `STAGE-TWO-EMISSION.md` §4 — it is proven to run and to fit, not to be right. It is an on-chain act and it cannot change the entrypoint set; the shape the
 > capstones enumerate is final IN SOURCE today.
 
 > **⚠ THIS DASHBOARD IS STALE — read this before trusting a ❌ below.** *(noted 2026-09-17.)* The
