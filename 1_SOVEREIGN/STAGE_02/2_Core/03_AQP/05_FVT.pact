@@ -92,7 +92,7 @@
     )
     ;; [XB]
     (defun XB_FvtInject:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
+        (patron:string executor:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
     ;;{5.7}  User [A/C]
     (defun C_SetQualitySplit:object{IgnisCollectorV3.OutputCumulator}
@@ -101,16 +101,17 @@
     ;; [C]   client
     ;;
     (defun CC_TrueFungibleStakeFlow:object{IgnisCollectorV3.OutputCumulator}
-        (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
+        (patron:string executor:string executee:string pool-id:string dptf-id:string amount:decimal direction:bool)
     )
     (defun CC_OrtoFungibleStakeFlow:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool)
+        (patron:string executor:string executee:string pool-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool)
     )
     (defun CC_CollectableStakeFlow:object{IgnisCollectorV3.OutputCumulator}
         (
+            patron:string
+            executor:string
+            executee:string
             pool-id:string
-            owner-id:string
-            beneficiary-id:string
             collectable-id:string
             son:bool
             nonces:[integer]
@@ -120,10 +121,10 @@
     )
     ;;
     (defun C_Issue:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-name:string owner-konto:string fvt-class:integer common-denominator:string)
+        (patron:string executor:string fvt-name:string fvt-class:integer common-denominator:string)
     )
     (defun C_RotateOwnership:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string executor:string fvt-id:string new-owner-konto:string)
+        (patron:string executor:string executee:string fvt-id:string)
     )
     (defun C_Control:object{IgnisCollectorV3.OutputCumulator}
         (patron:string executor:string fvt-id:string new-can-upgrade:bool new-can-change-owner:bool)
@@ -161,16 +162,16 @@
         (patron:string executor:string fvt-id:string reward-dptf-id:string enabled:bool)
     )
     (defun CC_InjectStream:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
+        (patron:string executor:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
     )
     (defun CC_Inject:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
+        (patron:string executor:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
     (defun CCp_InjectFixChunk:string
         (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
     )
     (defun CC_InjectFinalize:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
+        (patron:string executor:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
     (defun CCp_UnstaleAll:string
         (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
@@ -178,9 +179,9 @@
     (defun CC_SweepRevokeAnchor:string (patron:string executor:string anchor-id:string))
     (defun CC_SweepBegin:string (patron:string executor:string anchor-id:string))
     (defun CCp_SweepRecomputeChunk:string (patron:string anchor-id:string chunk:integer))
-    (defun CC_UnstaleMyScores:object{IgnisCollectorV3.OutputCumulator} (patron:string fvt-ids:[string]))
+    (defun CC_UnstaleMyScores:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string fvt-ids:[string]))
     (defun CC_Collect:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string collector:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
+        (patron:string executor:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
     )
 
 
@@ -919,12 +920,15 @@
             "Sweep chunk out of range — the UI sizes it by simulation, the gas meter is the real ceiling")
         (compose-capability (P|SECURE-CALLER))
     )
-    (defcap FVT|C>UNSTALE-MY-SCORES (patron:string)
+    (defcap FVT|C>UNSTALE-MY-SCORES (executor:string)
         @doc "User SELF-SERVICE deb-unstale (CC_UnstaleMyScores): the caller refreshes THEIR OWN stale scores \
             \ across the listed FVTs — settle pending at the old deb, refresh the score deb to the live Elite-DEB, \
             \ resync the FVT total-deb mirror — NON-penalized (contrast the inject's forced fix, which bills the \
             \ 2e penalty; self-service is deliberately the cheaper path so users proactively unstale). Auth = \
-            \ account ownership of `patron`: you may only unstale your OWN scores, and refreshing your deb to the \
+            \ account ownership of `executor`: you may only unstale your OWN scores, and refreshing your deb to the \
+            \ live value is always safe. RENAMED FROM `patron` 2026-09-22: the parameter was the ACTOR all along -- \
+            \ its ownership is what this capability enforces -- and a patron is who PAYS, which the gas station lets \
+            \ be somebody else entirely. One word, two roles, and the split now has a name for each. \
             \ live value is always safe (no fund movement — pending is banked, not paid). Composes P|SECURE-CALLER \
             \ for the intra-module fix + the cross-module XE_RefreshUserScoreDeb into AQP-SCORE."
         @event
@@ -932,7 +936,7 @@
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
             )
-            (ref-DALOS::CAP_EnforceAccountOwnership patron)
+            (ref-DALOS::CAP_EnforceAccountOwnership executor)
         )
         (compose-capability (P|SECURE-CALLER))
     )
@@ -2137,7 +2141,7 @@
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          FVT|C>INJECT
     (defun XB_FvtInject:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
+        (patron:string executor:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "THE single authorized inject entry — usable BOTH internally (C_Inject delegates here) and externally \
             \ (the MTX|n|C_Inject defpact terminal step calls it cross-module), hence `XB`. Just the auth wrapper: \
             \ P|UEV_IMC + FVT|C>INJECT (validates + composes SECURE) around the one XI_FvtInjectCore. Any FVT class \
@@ -2151,7 +2155,7 @@
             )
             (P|UEV_IMC)
         (with-capability (FVT|C>INJECT patron fvt-id reward-dptf-id amount)
-            (ref-RPS::XE_XI_FvtInjectCore "MTX-AQP|2|CC_Inject" patron injector fvt-id reward-dptf-id amount)
+            (ref-RPS::XE_XI_FvtInjectCore "MTX-AQP|2|CC_Inject" patron executor fvt-id reward-dptf-id amount)
         )
     )
     )
@@ -2160,10 +2164,23 @@
     ;; [C]   client
     ;; --- Lifecycle (FVT|T) ---
     (defun C_Issue:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-name:string owner-konto:string fvt-class:integer common-denominator:string)
-        @doc "Create a new FVT (Farm | Vault | Treasury). GAS|ISSUE-FVT + smart STOA from patron; returns fvt-id in output."
+        (patron:string executor:string fvt-name:string fvt-class:integer common-denominator:string)
+        @doc "Create a new FVT (Farm | Vault | Treasury), owned by <executor>. GAS|ISSUE-FVT + \
+            \ smart STOA from patron; returns fvt-id in output. \
+            \ \
+            \ Executor: ENFORCED DIRECTLY. FVT|C>ISSUE-FVT closes with \
+            \ (CAP_EnforceAccountOwnership owner-konto) on the parameter itself, after the \
+            \ class / name-freshness / common-denominator checks. A RENAME AND A REORDER: the \
+            \ account was always proven and always the actor, it simply sat third, behind the \
+            \ name, where the canon puts the executor second. \
+            \ \
+            \ The ownership gate is pinned by [6.2.2] <<TX-SCORE-13>>, which is worth reading \
+            \ as a model: it walks the two SHADOWING guards first (an out-of-range class, then \
+            \ a wrong denominator) to prove they are NOT what refuses, and only then reaches \
+            \ the keyset failure naming the victim. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
-        (with-capability (FVT|C>ISSUE-FVT fvt-name owner-konto fvt-class common-denominator)
+        (with-capability (FVT|C>ISSUE-FVT fvt-name executor fvt-class common-denominator)
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -2173,15 +2190,23 @@
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
                 (ref-IGNIS::XE_CollectStoa patron (URCi_IssueStoa))
-                (XI_IssueFvt fvt-id fvt-class owner-konto common-denominator)
-                (URCi_Issue owner-konto [fvt-id])
+                (XI_IssueFvt fvt-id fvt-class executor common-denominator)
+                (URCi_Issue executor [fvt-id])
             )
         )
     )
     ;;Management (FVT|Schema)
     (defun C_RotateOwnership:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string executor:string fvt-id:string new-owner-konto:string)
-        @doc "Transfer FVT owner-konto. Validation in FVT|C>ROTATE-OWNERSHIP-FVT; medium IGNIS on pre-rotate owner."
+        (patron:string executor:string executee:string fvt-id:string)
+        @doc "Transfer FVT owner-konto. Validation in FVT|C>ROTATE-OWNERSHIP-FVT; medium IGNIS on pre-rotate owner. \
+            \ \
+            \ Executor: PROVEN INDIRECTLY, and named -- FVT|C>ROTATE-OWNERSHIP-FVT resolves it \
+            \ IN PLACE. The capability binds (= executor owner-now) and separately runs \
+            \ CAP_EnforceAccountOwnership owner-now on that same derived account, so both halves \
+            \ of HANDOFF 4g are already present: the authority is proven and the actor is named \
+            \ against it. Executee: <executee> receives ownership and is only type-validated -- \
+            \ acted upon, needing no signature. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (let
             (
                 (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
@@ -2191,8 +2216,8 @@
             (
                 (ico:object{IgnisCollectorV3.OutputCumulator} (ref-RPS::URCi_RotateOwnership fvt-id))
             )
-            (with-capability (FVT|C>ROTATE-OWNERSHIP-FVT executor fvt-id new-owner-konto)
-                (ref-RPS::XE_XI_RotateOwnership fvt-id new-owner-konto)
+            (with-capability (FVT|C>ROTATE-OWNERSHIP-FVT executor fvt-id executee)
+                (ref-RPS::XE_XI_RotateOwnership fvt-id executee)
             )
             ico
         )
@@ -2515,26 +2540,33 @@
     ;; ───────────────────────────────────────────────────────────────────────────
     ;;
     (defun CC_InjectStream:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
+        (patron:string executor:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
         @doc "Inject a reward DPTF as a TIME-STREAM — the DELAYED inject path (any FVT class): `amount` vests \
             \ LINEARLY over `duration` seconds (1h..365d) and whoever is staked during each slice earns that slice \
             \ (late stakers included). duration = 0 is not accepted here — use C_Inject for an instant inject. \
             \ Streams are independent + overlap (no merge), capped per the FVT owner konto's Elite tier; a full \
             \ lane accepts only instant injects until a stream finishes. Delegates to XIv_FvtAddStream under \
             \ FVT|C>INJECT-STREAM (validate + custody + SECURE). UI: URC_LiveClaimable / URC_StreamStatus show \
-            \ real-time accrual. See Audit/STREAMED-INJECT-DESIGN.md."
+            \ real-time accrual. See Audit/STREAMED-INJECT-DESIGN.md. \
+            \ \
+            \ Executor: PROVEN INDIRECTLY, and named. FVT|C>INJECT-STREAM validates the CONTEXT \
+            \ only. The executor's tokens are debited by XE_XI_FvtAddStream, which bottoms out \
+            \ in (TFT::C_Transfer patron executor AQP|SC_NAME reward-dptf-id amount) -- the \
+            \ custody leg, whose capability opens on CAP_EnforceAccountOwnership. Renamed from \
+            \ <injector>, which was already the right account under a local word. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (let
             (
                 (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
             )
             (P|UEV_IMC)
         (with-capability (FVT|C>INJECT-STREAM patron fvt-id reward-dptf-id amount duration)
-            (ref-RPS::XE_XI_FvtAddStream "AQP-FVT|CC_InjectStream" patron injector fvt-id reward-dptf-id amount duration)
+            (ref-RPS::XE_XI_FvtAddStream "AQP-FVT|CC_InjectStream" patron executor fvt-id reward-dptf-id amount duration)
         )
     )
     )
     (defun CC_Inject:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
+        (patron:string executor:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "HEAVY (R3 `CC_`) enforced-FRESH inject for ANY FVT class (farm/vault/treasury) — see the INJECT \
             \ FUNCTION MATRIX above C_Inject. Before injecting, SCAN the FVT's present users (`URH_FvtStalePresentUsers` \
             \ — one select over the purpose-built presence table, populated for every class at stake) and FIX every \
@@ -2545,7 +2577,12 @@
             \ SCR|ScoreTotalDebScore mirror, which goes deb-stale for singular / non-true-triplet members (e.g. a \
             \ mosaic farm carrying a singular score) exactly like a vault — the fix un-stales it (true-triplet members \
             \ no-op: deb-independent lanes). Same authorization as C_Inject (FVT|C>INJECT). For spike loads that exceed \
-            \ one tx, use the MTX|n|C_Inject defpact (MTX-AQP). UrStoa ≡ C_URV|Inject with a pre-fresh divisor."
+            \ one tx, use the MTX|n|C_Inject defpact (MTX-AQP). UrStoa ≡ C_URV|Inject with a pre-fresh divisor. \
+            \ \
+            \ Executor: PROVEN INDIRECTLY, and named. FVT|C>INJECT validates the CONTEXT only. \
+            \ The executor's tokens are debited by XE_XI_FvtInjectCore, which bottoms out in \
+            \ (TFT::C_Transfer patron executor AQP|SC_NAME reward-dptf-id amount). Renamed from \
+            \ <injector>. (patron/executor canon 2.2, 2026-09-22.)"
         (let
             (
                 (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
@@ -2572,7 +2609,7 @@
                             (UC_EmptyOc)
                         )
                         ;;===>PHASE 1-3=== inject on the now-FRESH divisor (shared core, also driven by the defpact)
-                        (ref-RPS::XE_XI_FvtInjectCore "AQP-FVT|CC_Inject" patron injector fvt-id reward-dptf-id amount)
+                        (ref-RPS::XE_XI_FvtInjectCore "AQP-FVT|CC_Inject" patron executor fvt-id reward-dptf-id amount)
                     ]
                     []
                 )
@@ -2624,12 +2661,16 @@
     )
     )
     (defun CC_InjectFinalize:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string injector:string fvt-id:string reward-dptf-id:string amount:decimal)
+        (patron:string executor:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "FINALIZE a paginated enforced-fresh inject: enforce that NO stale present user remains (the prior \
             \ CCp_InjectFixChunk pages made the divisor live), then inject on the fresh divisor via the shared \
             \ XI_FvtInjectCore — identical outcome to the single-tx CC_Inject and the MTX|2|C_Inject defpact terminal \
             \ step. The zero-stale gate is the enforced-fresh guarantee at the moment of inject (a heavy scan, so it \
-            \ lives in the body, not the defcap). P|UEV_IMC + FVT|C>INJECT (same auth as any inject)."
+            \ lives in the body, not the defcap). P|UEV_IMC + FVT|C>INJECT (same auth as any inject). \
+            \ \
+            \ Executor: PROVEN INDIRECTLY, and named. Same route as CC_Inject -- the debit is \
+            \ XE_XI_FvtInjectCore's (TFT::C_Transfer patron executor AQP|SC_NAME ...). Renamed \
+            \ from <injector>. (patron/executor canon 2.2, 2026-09-22.)"
         (let
             (
                 (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
@@ -2646,7 +2687,7 @@
                 )
                 (enforce (= 0 stale-remaining)
                     "Stale stakers remain — page CCp_InjectFixChunk until none remain before finalizing (or use single-tx CC_Inject)")
-                (ref-RPS::XE_XI_FvtInjectCore "AQP-FVT|CC_InjectFinalize" patron injector fvt-id reward-dptf-id amount)
+                (ref-RPS::XE_XI_FvtInjectCore "AQP-FVT|CC_InjectFinalize" patron executor fvt-id reward-dptf-id amount)
             )
         )
     )
@@ -2849,7 +2890,7 @@
     )
     )
     (defun CC_UnstaleMyScores:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string fvt-ids:[string])
+        (patron:string executor:string fvt-ids:[string])
         @doc "User SELF-SERVICE deb-unstale: the caller refreshes THEIR OWN stale scores across `fvt-ids` — per \
             \ FVT, XI_FixUserFvtDeb settles the caller's pending at the OLD deb, refreshes each score deb to the \
             \ live Elite-DEB, and resyncs the FVT total-deb mirror. NON-penalized (self-service is the cheap path; \
@@ -2862,7 +2903,7 @@
                 (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
             )
             (P|UEV_IMC)
-        (with-capability (FVT|C>UNSTALE-MY-SCORES patron)
+        (with-capability (FVT|C>UNSTALE-MY-SCORES executor)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
@@ -2884,13 +2925,26 @@
     )
     )
     (defun CC_Collect:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string collector:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
+        (patron:string executor:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
         @doc "Collect reward DPTF — phases 0 → 5 — see canonical collect map above. UrStoa ≡ C_URV|Collect."
         (let
             (
                 (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
             )
             (P|UEV_IMC)
+        (let
+            (
+                (ref-DALOS-X:module{OuronetDalosV2} DALOS)
+            )
+            ;;ATTRIBUTION + AUTHORISATION (canon 2.2, 2026-09-22). FVT|C>COLLECT validates the
+            ;;CONTEXT -- pool not sweeping, FVT not vacate-frozen, reward token enabled, score
+            ;;entity linked -- and proves NO account. The reward leaves the vault and is credited
+            ;;to <executor>, so <executor> is the claimant and must sign for its own claim. The
+            ;;patron/executor split is preserved and is the point: a sponsor may pay the gas,
+            ;;but only the claimant may trigger the claim. An executor nobody checks would be
+            ;;exactly the decorative attribution 4f rates worse than none.
+            (ref-DALOS-X::CAP_EnforceAccountOwnership executor)
+        )
         (with-capability (FVT|C>COLLECT patron fvt-id score-entity-type score-entity-id reward-dptf-id)
             (let
                 (
@@ -2920,14 +2974,14 @@
                         ;;
                         ;;===>PHASE 1=== coin step 1 · C_Transmit URV|KONTO→account
                         ;; PRE payout via URC_CollectClaimableRewards inside XI (post phase 0, pre reset)
-                        (ref-RPS::XE_XI_TransferRewardDptfFromVault patron collector pool-id fvt-id score-entity-type score-entity-id reward-dptf-id)
+                        (ref-RPS::XE_XI_TransferRewardDptfFromVault patron executor pool-id fvt-id score-entity-type score-entity-id reward-dptf-id)
                         ;;
                         ;;===>PHASE 5=== coin step 5 · XI_URV|UpdateVaultSupply false
                         ;; ICO slot before phase 2 so URC reads same pre-reset state as UrStoa available-rewards let
                         (let
                             (
                                 (payout:decimal
-                                    (ref-RPS::URC_CollectClaimableRewards collector pool-id fvt-id score-entity-type score-entity-id reward-dptf-id)
+                                    (ref-RPS::URC_CollectClaimableRewards executor pool-id fvt-id score-entity-type score-entity-id reward-dptf-id)
                                 )
                                 (ar:decimal (ref-RPS::UR_FVT-RG|AvailableRewards fvt-id reward-dptf-id))
                                 (new-ar:decimal (- ar payout))
@@ -2959,19 +3013,19 @@
                         ;;already-exited account could decrement the counter a second time.
                         ;;The two phases touch disjoint state -- counters here, pending-rewards
                         ;;there -- so the swap changes nothing else.
-                        (ref-RPS::XE_XI_BookCollectUnclaimed collector pool-id fvt-id score-entity-type score-entity-id reward-dptf-id)
+                        (ref-RPS::XE_XI_BookCollectUnclaimed executor pool-id fvt-id score-entity-type score-entity-id reward-dptf-id)
                         ;;
                         ;;===>PHASE 2=== coin step 2 · XI_URV|ResetPendingRewards
                         (do
                             ;; SECURE: granted by WU_RpsUser|PendingRewards (underlying W_).
-                            (ref-RPS::XE_WU_RpsUser|PendingRewards collector fvt-id score-entity-id reward-dptf-id 0.0)
+                            (ref-RPS::XE_WU_RpsUser|PendingRewards executor fvt-id score-entity-id reward-dptf-id 0.0)
                             (UC_EmptyOc)
                         )
                         ;;
                         ;;===>PHASE 4=== coin step 4 · XI_URV|UpdateUserRPS (farm: L_i; vault/treasury: G)
                         (do
                             ;; SECURE: granted by WU_RpsUser|LastRps (underlying W_).
-                            (ref-RPS::XE_WU_RpsUser|LastRps collector fvt-id score-entity-id reward-dptf-id
+                            (ref-RPS::XE_WU_RpsUser|LastRps executor fvt-id score-entity-id reward-dptf-id
                                 (ref-RPS::URC_FvtTier1IndexRps fvt-id score-entity-id reward-dptf-id)
                             )
                             (UC_EmptyOc)
@@ -2984,14 +3038,14 @@
                         ;; deb-score(s) to live (each triplet leg at its OWN pool), and resync the FVT total-deb mirror
                         ;; by the member delta. Runs AFTER phases 1-4 so settle-before-weight-change holds. No-op when
                         ;; fresh or a TRUE triplet (deb-independent lanes).
-                        (ref-RPS::XE_XI_FixUserMemberDeb collector fvt-id score-entity-type score-entity-id)
+                        (ref-RPS::XE_XI_FixUserMemberDeb executor fvt-id score-entity-type score-entity-id)
                         ;;===>PHASE 7=== (M3 #12 2e) inject-forced-fix penalty: `count × RATE` NON-discountable IGNIS,
                         ;; then zero the count. Non-discount via gross-up (price = count×RATE / patron-discount → after
                         ;; the uniform prime-time discount it lands at exactly count×RATE). The reward paid is untouched;
                         ;; self-fixing (PHASE 6) is never penalized, so it stays the cheaper path. No-op when count = 0.
                         (let
                             (
-                                (ffc:integer (ref-RPS::UR_FVT-FFC|Count fvt-id reward-dptf-id collector))
+                                (ffc:integer (ref-RPS::UR_FVT-FFC|Count fvt-id reward-dptf-id executor))
                             )
                             (if (<= ffc 0)
                                 (UC_EmptyOc)
@@ -3000,7 +3054,7 @@
                                         (ref-DALOS:module{OuronetDalosV2} DALOS)
                                         (penalty:decimal (* (dec ffc) CT_FORCED_FIX_RATE))
                                     )
-                                    (ref-RPS::XE_WU_FvtForcedFixCount|Zero fvt-id reward-dptf-id collector)
+                                    (ref-RPS::XE_WU_FvtForcedFixCount|Zero fvt-id reward-dptf-id executor)
                                     (ref-IGNIS::UDC_ConstructOutputCumulator
                                         (/ penalty (ref-DALOS::URC_IgnisGasDiscount patron)) patron trigger []
                                     )
@@ -3049,14 +3103,23 @@
     ;;
     ;; --- TF stake/unstake recipe (Talos client → CC_TrueFungibleStakeFlow) ---
     (defun CC_TrueFungibleStakeFlow:object{IgnisCollectorV3.OutputCumulator}
-        (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
-        @doc "Core TF stake/unstake recipe. Phases 1 → 2 → 3 → 4 → 5 — see canonical map above."
+        (patron:string executor:string executee:string pool-id:string dptf-id:string amount:decimal direction:bool)
+        @doc "Core TF stake/unstake recipe. Phases 1 -> 2 -> 3 -> 4 -> 5, see the canonical map above. \
+            \ \
+            \ Executor: PROVEN INDIRECTLY, and named. Phase 1 hands <executor> to AQP-POOL's \
+            \ custody leg (AQP|XE>*-POOL-CUSTODY), which is where the asset actually moves and \
+            \ where the account is proven. <executor> WAS the actor all along; it now says so, \
+            \ and sits where the canon puts it. \
+            \ Executee: the account whose stake POSITION is created or reduced. It is validated \
+            \ (UEV_StakeBeneficiaryAccount) and never consulted -- an owner may stake on a \
+            \ beneficiary's behalf, which is the whole reason the two are separate parameters. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (let
             (
                 (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
             )
             (P|UEV_IMC)
-        (with-capability (FVT|C>TRUE-FUNGIBLE-STAKE-FLOW pool-id owner-id beneficiary-id dptf-id amount direction)
+        (with-capability (FVT|C>TRUE-FUNGIBLE-STAKE-FLOW pool-id executor executee dptf-id amount direction)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
@@ -3064,7 +3127,7 @@
                     (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                     ;;
                     (settle-bundle:object{AcquisitionSchemasV1.FVT|StakeSettleBundle}
-                        (ref-RPS::URHC_BuildStakeSettleBundle pool-id beneficiary-id)
+                        (ref-RPS::URHC_BuildStakeSettleBundle pool-id executee)
                     )
                 )
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
@@ -3072,43 +3135,43 @@
                         ;;===>PHASE 1===
                         ;; PHASE 1.1 — Custody transfer · UrStoa ≡ X_UR|Transfer
                         (ref-AQP::XE_TrueFungibleTransfer
-                            pool-id owner-id beneficiary-id dptf-id amount direction)
+                            pool-id executor executee dptf-id amount direction)
                         ;; PHASE 1.2 — Per-pool DPTFTracker · UrStoa ≡ N/A
                         (ref-AQP::XE_TrueFungiblePoolTracker
-                            pool-id owner-id beneficiary-id dptf-id amount direction)
+                            pool-id executor executee dptf-id amount direction)
                         ;; PHASE 1.3 — BenDptfTotal rollup · UrStoa ≡ N/A
                         (ref-AQP::XE_TrueFungibleBeneficiaryRollup
-                            pool-id owner-id beneficiary-id dptf-id amount direction)
+                            pool-id executor executee dptf-id amount direction)
                         ;;
                         ;;===>PHASE 2===
                         ;; PHASE 2 — FVT RPS prelude at OLD deb (2.1→2.2→2.3)
-                        (ref-RPS::XE_XI_RpsPreScore beneficiary-id pool-id settle-bundle)
+                        (ref-RPS::XE_XI_RpsPreScore executee pool-id settle-bundle)
                         ;;
                         ;;===>PHASE 3===
                         ;; PHASE 3.1 — DPTF anchor refresh · UrStoa ≡ N/A (TF only)
-                        (XI_RefreshTrueFungibleStakeAnchors beneficiary-id dptf-id)
+                        (XI_RefreshTrueFungibleStakeAnchors executee dptf-id)
                         ;; PHASE 3.2 — DPSF anchor slot · N/A (DPDC son=true)
                         ;; PHASE 3.3 — DPNF anchor slot · N/A (DPDC son=false)
                         ;;
                         ;;===>PHASE 4===
                         ;; PHASE 4 — SCORE vault + user + nzs
                         (ref-SCR::XE_ApplyTrueFungibleStakeDelta
-                            pool-id beneficiary-id dptf-id amount direction
+                            pool-id executee dptf-id amount direction
                             (ref-AQP::URC_PoolActiveScoreIds pool-id)
                             (ref-AQP::URC_DptfStakeIsNativeLeg dptf-id)
                         )
                         ;; PHASE 4.5 — Sync FVT|T total-deb-score mirror for vault inject denominator
                         (ref-RPS::XE_XI_SyncFvtTotalDebMirrors (at "pre-member-debs" settle-bundle))
                         ;; PHASE 4.6 — Re-snapshot farm-triplet Level-1 weights (maintained Σ w-user divisor)
-                        (ref-RPS::XE_XI_SyncTripletLaneWeights beneficiary-id (at "settle-plans" settle-bundle))
+                        (ref-RPS::XE_XI_SyncTripletLaneWeights executee (at "settle-plans" settle-bundle))
                         ;; PHASE 4.7 — Presence: stake→add, unstake→recompute (flip false on last withdrawal)
-                        (ref-RPS::XE_XI_SyncFvtPresence beneficiary-id (at "distinct-fvts" settle-bundle) direction)
+                        (ref-RPS::XE_XI_SyncFvtPresence executee (at "distinct-fvts" settle-bundle) direction)
                         ;;
                         ;;===>PHASE 5===
                         ;; PHASE 5.1 — RPS unclaimed-count · UrStoa ≡ UpdateUnclaimedCount
-                        (ref-RPS::XE_XI_BookStakeUnclaimedCounts beneficiary-id pool-id settle-bundle)
+                        (ref-RPS::XE_XI_BookStakeUnclaimedCounts executee pool-id settle-bundle)
                         ;; PHASE 5.2 — RPS checkpoint last-rps · UrStoa ≡ UpdateUserRPS
-                        (ref-RPS::XE_XI_CheckpointStakeRps beneficiary-id pool-id settle-bundle)
+                        (ref-RPS::XE_XI_CheckpointStakeRps executee pool-id settle-bundle)
                     ]
                     []
                 )
@@ -3120,7 +3183,7 @@
     ;; --- OF stake/unstake recipe (Talos ×4 → CC_OrtoFungibleStakeFlow) ---
     ;;   No phase 2.2 — ANK anchors are DPTF / DPSF / DPNF only; OF custody does not refresh promile.
     (defun CC_OrtoFungibleStakeFlow:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool)
+        (patron:string executor:string executee:string pool-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool)
         @doc "Core OrtoFungible stake/unstake recipe. Phases 1 → 2 → 3 → 4 → 5 — see canonical map above. \
             \ OF: phase 1.3 and 3.x are N/A (comment-only in ICO list)."
         (let
@@ -3128,17 +3191,17 @@
                 (ref-RPS:module{AcquisitionRewardPerShareV1} RPS)
             )
             (P|UEV_IMC)
-        (with-capability (FVT|C>ORTO-FUNGIBLE-STAKE-FLOW pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts direction)
+        (with-capability (FVT|C>ORTO-FUNGIBLE-STAKE-FLOW pool-id executor executee dpof-id nonces nonce-amounts direction)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                     (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                     ;;
-                    ;; M5: beneficiary-id is authoritative BOTH directions (stake and unstake). The caller supplies
+                    ;; M5: executee is authoritative BOTH directions (stake and unstake). The caller supplies
                     ;; the real beneficiary on unstake too, so the exact (owner, beneficiary) tracker row is settled —
                     ;; no self-key derivation (which stranded non-self stakes). Sufficiency is enforced in the cap.
-                    (settle-beneficiary:string beneficiary-id)
+                    (settle-beneficiary:string executee)
                     (settle-bundle:object{AcquisitionSchemasV1.FVT|StakeSettleBundle}
                         (ref-RPS::URHC_BuildStakeSettleBundle pool-id settle-beneficiary)
                     )
@@ -3148,10 +3211,10 @@
                         ;;===>PHASE 1===
                         ;; PHASE 1.1 — Custody transfer · UrStoa ≡ X_UR|Transfer
                         (ref-AQP::XE_OrtoFungibleTransfer
-                            patron pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts direction)
+                            patron pool-id executor executee dpof-id nonces nonce-amounts direction)
                         ;; PHASE 1.2 — Per-pool DPOFTracker · UrStoa ≡ N/A
                         (ref-AQP::XE_OrtoFungiblePoolTracker
-                            pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts direction)
+                            pool-id executor executee dpof-id nonces nonce-amounts direction)
                         ;; PHASE 1.3 — Beneficiary rollup slot · N/A (OF)
                         ;;
                         ;;===>PHASE 2===
@@ -3192,9 +3255,10 @@
     ;; --- DPDC collectable stake/unstake recipe (Talos ×4 → CC_CollectableStakeFlow; son=true DPSF / false DPNF) ---
     (defun CC_CollectableStakeFlow:object{IgnisCollectorV3.OutputCumulator}
         (
+            patron:string
+            executor:string
+            executee:string
             pool-id:string
-            owner-id:string
-            beneficiary-id:string
             collectable-id:string
             son:bool
             nonces:[integer]
@@ -3210,7 +3274,7 @@
             (P|UEV_IMC)
         (with-capability
             (FVT|C>COLLECTABLE-STAKE-FLOW
-                pool-id owner-id beneficiary-id collectable-id son nonces nonce-amounts direction
+                pool-id executor executee collectable-id son nonces nonce-amounts direction
             )
             (let
                 (
@@ -3218,10 +3282,10 @@
                     (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                     (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                     ;;
-                    ;; M5: beneficiary-id is authoritative BOTH directions (see CC_OrtoFungibleStakeFlow). The caller
+                    ;; M5: executee is authoritative BOTH directions (see CC_OrtoFungibleStakeFlow). The caller
                     ;; supplies the real beneficiary on unstake, so the exact (owner, beneficiary) tracker + Ben rollup
                     ;; rows are settled — no self-key derivation. Sufficiency is enforced in the cap.
-                    (settle-beneficiary:string beneficiary-id)
+                    (settle-beneficiary:string executee)
                     (settle-bundle:object{AcquisitionSchemasV1.FVT|StakeSettleBundle}
                         (ref-RPS::URHC_BuildStakeSettleBundle pool-id settle-beneficiary)
                     )
@@ -3231,13 +3295,13 @@
                         ;;===>PHASE 1===
                         ;; PHASE 1.1 — Custody transfer · UrStoa ≡ X_UR|Transfer
                         (ref-AQP::XE_CollectableTransfer
-                            pool-id owner-id beneficiary-id collectable-id son nonces nonce-amounts direction)
+                            pool-id executor executee collectable-id son nonces nonce-amounts direction)
                         ;; PHASE 1.2 — Per-pool DPSF/DPNF tracker · UrStoa ≡ N/A
                         (ref-AQP::XE_CollectablePoolTracker
-                            pool-id owner-id beneficiary-id collectable-id son nonces nonce-amounts direction)
+                            pool-id executor executee collectable-id son nonces nonce-amounts direction)
                         ;; PHASE 1.3 — BenDpsf* / BenDpnf* cross-pool rollup · UrStoa ≡ N/A
                         (ref-AQP::XE_CollectableBeneficiaryRollup
-                            pool-id owner-id beneficiary-id collectable-id son nonces nonce-amounts direction)
+                            pool-id executor executee collectable-id son nonces nonce-amounts direction)
                         ;;
                         ;;===>PHASE 2===
                         ;; PHASE 2 — FVT RPS prelude at OLD deb (2.1→2.2→2.3)

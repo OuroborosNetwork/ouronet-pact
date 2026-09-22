@@ -1299,18 +1299,18 @@
         [
             (expect-failure "<<AQP-G18>> an fvt-class outside 0..2 is refused"
                 "Invalid FVT issue: fvt-class must be 0..2 and fvt-name must be unused"
-                (ref-TS02-C3::AQP-FVT|C_Issue KST.ANHD "BadClassFvt" KST.ANHD 9 "|"))
+                (ref-TS02-C3::AQP-FVT|C_Issue KST.ANHD KST.ANHD "BadClassFvt" 9 "|"))
             ;;valid class, but the name is already taken by a live FVT in this suite
             (expect-failure "<<AQP-G18>> ...and a name already in use is refused by the same fold"
                 "Invalid FVT issue: fvt-class must be 0..2 and fvt-name must be unused"
-                (ref-TS02-C3::AQP-FVT|C_Issue KST.ANHD "SfStakeVault" KST.ANHD 1 "|"))
+                (ref-TS02-C3::AQP-FVT|C_Issue KST.ANHD KST.ANHD "SfStakeVault" 1 "|"))
             ;;--- the denominator contract, both directions
             (expect-failure "<<AQP-G18>> a FARM issued without a common denominator is refused"
                 "Farm FVT requires a full native DPTF common-denominator"
-                (ref-TS02-C3::AQP-FVT|C_Issue KST.ANHD "FarmNoDenom" KST.ANHD 0 "|"))
+                (ref-TS02-C3::AQP-FVT|C_Issue KST.ANHD KST.ANHD "FarmNoDenom" 0 "|"))
             (expect-failure "<<AQP-G18>> ...and a VAULT issued WITH one is refused too"
                 "Vault/Treasury FVT common-denominator must be |"
-                (ref-TS02-C3::AQP-FVT|C_Issue KST.ANHD "VaultWithDenom" KST.ANHD 1 "OURO-98c486052a51"))
+                (ref-TS02-C3::AQP-FVT|C_Issue KST.ANHD KST.ANHD "VaultWithDenom" 1 "OURO-98c486052a51"))
         ]
     )
     ""
@@ -1581,7 +1581,7 @@
             }
         ]
     )
-    (ref-TS02-C3::AQP-FVT|C_Issue patron "G23Farm" patron 0 "OURO-98c486052a51")
+    (ref-TS02-C3::AQP-FVT|C_Issue patron patron "G23Farm" 0 "OURO-98c486052a51")
     ""
 )
 (env-sigs [])

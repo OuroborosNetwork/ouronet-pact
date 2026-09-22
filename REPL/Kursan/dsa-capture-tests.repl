@@ -180,7 +180,7 @@
         ;; FACTORY — the operator's blank triplet (3 sub-scores + SF definitions)
         (ref-TS02-C3::AQP-SCR|C_IssueScoreFromModel anhd anhd model-id "P3capAgency")
         ;; the class-0 delegation vault FVT + reward token (OURO) -> members become stake-ready
-        (ref-TS02-C3::AQP-FVT|C_Issue anhd "P3DelegationVault" anhd 0 ouro)
+        (ref-TS02-C3::AQP-FVT|C_Issue anhd anhd "P3DelegationVault" 0 ouro)
         (ref-TS02-C3::AQP-FVT|C_AddRewardLink anhd (AQP-FVT.UR_FVT|OwnerKonto fvt-id) fvt-id ouro false "|")
         ;; bind the vault as a DSA delegation vault (unit-score 2000 => open gate 1000)
         (ref-TS02-C3::AQP-DSA|C_DefineDelegationVault anhd anhd fvt-id model-id 2000)

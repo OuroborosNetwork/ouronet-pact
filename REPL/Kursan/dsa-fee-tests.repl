@@ -175,7 +175,7 @@
         (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd anhd "FeeGoldModel"   3 dhoc 24 [-3] [100.0] "|")
         (ref-TS02-C3::AQP-SCR|C_CombineTripletScoreModel anhd anhd "FeeTripletModel" bmid smid gmid)
         (ref-TS02-C3::AQP-SCR|C_IssueScoreFromModel anhd anhd model-id "FeeAgency")
-        (ref-TS02-C3::AQP-FVT|C_Issue anhd "FeeVault" anhd 0 ouro)
+        (ref-TS02-C3::AQP-FVT|C_Issue anhd anhd "FeeVault" 0 ouro)
         (ref-TS02-C3::AQP-FVT|C_AddRewardLink anhd (AQP-FVT.UR_FVT|OwnerKonto fvt-id) fvt-id ouro false "|")
         (ref-TS02-C3::AQP-DSA|C_DefineDelegationVault anhd anhd fvt-id model-id 2000)
         (ref-TS02-C3::AQP-POOL|C_Issue anhd (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 3 dhoc) "FeePool" dhoc 3)

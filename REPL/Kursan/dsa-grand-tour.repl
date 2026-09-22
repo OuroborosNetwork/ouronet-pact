@@ -180,7 +180,7 @@
         ;; 2) issue the OPERATOR's triplet score from the model
         (ref-TS02-C3::AQP-SCR|C_IssueScoreFromModel anhd anhd model-id "GtAgency")
         ;; 3) class-0 vault + MULTIPLET_BASE OURO reward (family, NOT BAR) + register it as a DSA delegation vault
-        (ref-TS02-C3::AQP-FVT|C_Issue anhd "GtVault" anhd 0 ouro)
+        (ref-TS02-C3::AQP-FVT|C_Issue anhd anhd "GtVault" 0 ouro)
         (ref-TS02-C3::AQP-FVT|C_AddRewardLink anhd (AQP-FVT.UR_FVT|OwnerKonto fvt-id) fvt-id ouro false family-id)
         (ref-TS02-C3::AQP-DSA|C_DefineDelegationVault anhd anhd fvt-id model-id 2000)
         ;; 4) pool employing the 3 sub-scores (where operator + delegators stake their custodian frags)

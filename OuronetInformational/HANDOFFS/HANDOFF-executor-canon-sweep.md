@@ -290,7 +290,7 @@ same tools with those three properties.
 | [x] 36 | `01_ANK.pact` | 0 | 0 | 2 | **2** | `AcquisitionAnchorsV1` — done; **found an unowned revoke**, and the binder had to go BELOW the liveness gate |
 | [x] 37 | `02_SCORE.pact` | 6 | 0 | 8 | **14** | `AcquisitionScoresV1` — done; **eight dead bindings of the same 4g expression**. See §4p |
 | [x] 38 | `03_AQP.pact` | 2 | 0 | 0 | **2** | `AcquisitionPoolsV1` — done; two EXECUTORLESS repairs, executee renamed. §4q |
-| [ ] 39 | `05_FVT.pact` | 4 | 2 | 3 | **9** | `AcquisitionFarmsVaultsTreasuriesV1` |
+| [x] 39 | `05_FVT.pact` | 4 | 2 | 3 | **9** | `AcquisitionFarmsVaultsTreasuriesV1` — done; **C_Issue proved no account**, and `patron` was doubling as the actor. §4r |
 | [ ] 40 | `06_VCT.pact` | 0 | 0 | 3 | **3** | `AcquisitionVacateV1` |
 | [ ] 41 | `07_MTX-AQP.pact` | 1 | 0 | 0 | **1** | `AqpMtxV1` |
 | [ ] 42 | `08_DSA.pact` | 0 | 2 | 2 | **4** | `DsaV1` |
@@ -470,6 +470,30 @@ changing. Their delegation is arity-preserving, so `_callarity` (including the s
 built one module earlier) could not object. Grepping for the OLD parameter shape
 `(patron:string id:string account:string` found them in one line. *A signature change must reach
 every place the name is written, and "the names I listed" is narrower than that.*
+
+---
+
+### 4r. LESSON FROM MODULE 39 — A GREP WINDOW IS NOT A READ, AND `patron` IS NOT AN ACTOR
+
+Two lessons, and the first is a correction of my own work.
+
+**`C_Issue` was already proven.** I grepped `FVT|C>ISSUE-FVT` with `sed -n '569,600p'`, saw only
+shape enforces, concluded "checks NO account at all", added a redundant
+`CAP_EnforceAccountOwnership` and wrote a `@doc` asserting a hole. The capability closes with
+`(CAP_EnforceAccountOwnership owner-konto)` at line 614 — **past the end of the window**. The
+enforce was removed and the `@doc` rewritten to the truth: a rename and a reorder.
+
+What corrected it was the SUITE. `[6.2.2] <<TX-SCORE-13>>` already pinned *"a well-formed vault
+reaches CAP_EnforceAccountOwnership, which refuses and names the victim"* — a test that cannot
+exist against an ungated function. **When you believe you have found a missing guard, grep the
+tests for it before you write the claim down.** Both times a claim has outrun the evidence in this
+programme, the tests held the answer.
+
+**`patron` is not an actor.** `FVT|C>UNSTALE-MY-SCORES` enforced ownership of `patron`, and its own
+`@doc` said *"Auth = account ownership of `patron`"*. A patron is who PAYS; the gas station exists
+so that can be somebody else. An enforce on `patron` is an enforce on the actor wearing the payer's
+name, and it silently moves to the wrong account the first time a sponsor pays. Worth grepping for
+in the modules still to come: **`CAP_EnforceAccountOwnership patron` is always a finding.**
 
 ---
 

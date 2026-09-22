@@ -358,7 +358,7 @@
             (expect-failure
                 (format "<<TX-AQP-NEG-OWNER2>> non-owner AQP-FVT|C_RotateOwnership rejected (fvt-owner gate)" [])
                 "Keyset failure (keys-all): [PK_Ancie...]"
-                (ref-TS02-C3::AQP-FVT|C_RotateOwnership foreign (AQP-FVT.UR_FVT|OwnerKonto fvt-id) fvt-id foreign))
+                (ref-TS02-C3::AQP-FVT|C_RotateOwnership foreign (AQP-FVT.UR_FVT|OwnerKonto fvt-id) foreign fvt-id))
             ;;--- two more FVT owner gates, each shadowed by a ROW-EXISTENCE enforce rather than by
             ;;a latched flag. The discipline is the same and matters more here: a missing row is the
             ;;single likeliest way to reach these ops, so a non-owner test that did not first prove

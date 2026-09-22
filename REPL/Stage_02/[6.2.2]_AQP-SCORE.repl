@@ -629,16 +629,16 @@
             ;;SHADOW 1 -- an out-of-band fvt-class trips check (1).
             (expect-failure "<<TX-SCORE-13>> SHADOW 1: fvt-class 3 is refused by the class/name enforce, NOT by ownership"
                 "Invalid FVT issue: fvt-class must be 0..2 and fvt-name must be unused"
-                (ref-TS02-C3::AQP-FVT|C_Issue attacker fvt-name victim 3 "|"))
+                (ref-TS02-C3::AQP-FVT|C_Issue attacker victim fvt-name 3 "|"))
             ;;SHADOW 2 -- a valid class with the wrong denominator trips check (2), one step closer.
             (expect-failure "<<TX-SCORE-13>> SHADOW 2: a vault with a DPTF denominator is refused by the denominator enforce, NOT by ownership"
                 "Vault/Treasury FVT common-denominator must be |"
-                (ref-TS02-C3::AQP-FVT|C_Issue attacker fvt-name victim 1 "OURO-98c486052a51"))
+                (ref-TS02-C3::AQP-FVT|C_Issue attacker victim fvt-name 1 "OURO-98c486052a51"))
             ;;THE GATE. Class 1 with "|" satisfies all four; the message becomes a keyset failure
             ;;naming the VICTIM's key.
             (expect-failure "<<TX-SCORE-13>> GATE: a well-formed vault reaches CAP_EnforceAccountOwnership, which refuses and names the victim"
                 "Keyset failure (keys-all): [PK_Ancie...]"
-                (ref-TS02-C3::AQP-FVT|C_Issue attacker fvt-name victim 1 "|"))
+                (ref-TS02-C3::AQP-FVT|C_Issue attacker victim fvt-name 1 "|"))
             ;;...and the refusal was TOTAL.
             (expect "<<TX-SCORE-13>> ...and no FVT row was created by any of the three attempts"
                 false (RPS.URC_FvtExists (ref-U|DALOS::UDC_Makeid fvt-name)))
@@ -702,7 +702,7 @@
             }
         ]
     )
-    (print (format "<(TS02-C3.AQP-FVT|C_Issue, named owner signing)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_Issue patron fvt-name owner-konto 1 "|")]))
+    (print (format "<(TS02-C3.AQP-FVT|C_Issue, named owner signing)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_Issue patron owner-konto fvt-name 1 "|")]))
     (map print
         [
             (expect "<<TX-SCORE-13b>> with the named owner signing, the identical issuance succeeds"

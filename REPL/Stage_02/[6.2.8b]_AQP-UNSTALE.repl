@@ -121,7 +121,7 @@
     )
     ;; THE SELF-SERVICE UNSTALE — ANHD refreshes his own stale scores in SubsidiaryTreasury.
     (print (format "<(UNSTALE02 AQP-FVT|CC_UnstaleMyScores anhd [SubsidiaryTreasury])> => \"{}\""
-        [(ref-TS02-C3::AQP-FVT|CC_UnstaleMyScores anhd [fvt-id])]))
+        [(ref-TS02-C3::AQP-FVT|CC_UnstaleMyScores anhd anhd [fvt-id])]))
     (let
         (
             (stored-post:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore anhd pool-id score-id))

@@ -108,7 +108,7 @@
     (ref-TS02-C3::AQP-POOL|C_Issue patron (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 1 ouro-id) "StreamPool" ouro-id 1)
     (ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id score-id)
     ;; 3. vault FVT + reward link (OURO) + score entity
-    (ref-TS02-C3::AQP-FVT|C_Issue patron "StreamVault" patron 1 "|")
+    (ref-TS02-C3::AQP-FVT|C_Issue patron patron "StreamVault" 1 "|")
     (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron (AQP-FVT.UR_FVT|OwnerKonto fvt-id) fvt-id ouro-id false (ref-U|CT::CT_BAR))
     (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron (AQP-FVT.UR_FVT|OwnerKonto fvt-id) fvt-id 1 score-id)
     (map print
@@ -544,7 +544,7 @@
         (ref-TS02-C3::AQP-SCR|C_IssueLiquidityScore patron patron "FarmStreamScore" 12 ouro-id 1.0 1.0)
         (ref-TS02-C3::AQP-POOL|C_Issue patron (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 0 lp-id) "FarmStreamPool" lp-id 0)
         (ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id score-id)
-        (ref-TS02-C3::AQP-FVT|C_Issue patron "FarmStreamFvt" patron 0 ouro-id)
+        (ref-TS02-C3::AQP-FVT|C_Issue patron patron "FarmStreamFvt" 0 ouro-id)
         (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron (AQP-FVT.UR_FVT|OwnerKonto fvt-id) fvt-id ouro-id false (ref-U|CT::CT_BAR))
         (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron (AQP-FVT.UR_FVT|OwnerKonto fvt-id) fvt-id 1 score-id)
         (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id anhd anhd lp-id 1.0)

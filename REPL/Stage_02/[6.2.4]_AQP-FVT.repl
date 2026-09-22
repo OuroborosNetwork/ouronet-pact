@@ -190,7 +190,7 @@
     (print (format "<(TS02-C3.AQP-POOL|C_AddScore)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id score-id)]))
     ;;==== TX-FVT-02 · 03 · C_Issue vault + C_AddRewardLink + C_AddScoreEntity — REPL =====
     (print "--- [TX-FVT-02 · 03 · C_Issue vault + C_AddRewardLink + C_AddScoreEntity] ---")
-    (print (format "<(TS02-C3.AQP-FVT|C_Issue class=1 vault)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_Issue patron fvt-name patron fvt-class "|")]))
+    (print (format "<(TS02-C3.AQP-FVT|C_Issue class=1 vault)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_Issue patron patron fvt-name fvt-class "|")]))
     (print (format "<(TS02-C3.AQP-FVT|C_AddRewardLink OURO)> => \"{}\"" [(let ((ref-U|CT:module{OuronetConstantsV2} U|CT)) (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron (AQP-FVT.UR_FVT|OwnerKonto fvt-id) fvt-id ouro-id false (ref-U|CT::CT_BAR)))]))
     (print (format "<(TS02-C3.AQP-FVT|C_AddScoreEntity)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron (AQP-FVT.UR_FVT|OwnerKonto fvt-id) fvt-id 1 score-id)]))
     ;;==== TX-FVT-02 · 04 · pre-stake readiness reads + expect — REPL ===============
@@ -873,7 +873,7 @@
         (ref-TS02-C3::AQP-POOL|C_Issue patron (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 1 ouro-id) pool-name ouro-id 1)
     ]))
     (print (format "<(C_AddScore)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id score-id)]))
-    (print (format "<(C_Issue vault)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_Issue patron fvt-name patron 1 "|")]))
+    (print (format "<(C_Issue vault)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_Issue patron patron fvt-name 1 "|")]))
     (let
         (
             (mosaic-default:bool (ref-FVT::UR_FVT|Mosaic fvt-id))

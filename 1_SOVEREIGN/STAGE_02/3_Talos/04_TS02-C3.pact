@@ -228,7 +228,7 @@
     ;;  [AQP-FVT]
     ;;
     (defun AQP-FVT|C_Issue:string
-        (patron:string fvt-name:string owner-konto:string fvt-class:integer common-denominator:string)
+        (patron:string executor:string fvt-name:string fvt-class:integer common-denominator:string)
     )
     (defun AQP-FVT|C_IssueMultipletFamily:string
         (
@@ -260,7 +260,7 @@
         (patron:string executor:string fvt-id:string new-can-upgrade:bool new-can-change-owner:bool)
     )
     (defun AQP-FVT|C_RotateOwnership:string
-        (patron:string executor:string fvt-id:string new-owner-konto:string)
+        (patron:string executor:string executee:string fvt-id:string)
     )
     (defun AQP-FVT|C_SetCommonDenominator:string
         (patron:string executor:string fvt-id:string common-denominator:string)
@@ -305,7 +305,7 @@
         (patron:string anchor-id:string chunk:integer)
     )
     (defun AQP-FVT|CC_UnstaleMyScores:string
-        (patron:string fvt-ids:[string])
+        (patron:string executor:string fvt-ids:[string])
     )
     (defun AQP-FVT|CC_Collect:string
         (patron:string collector:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
@@ -1579,7 +1579,7 @@
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::CC_TrueFungibleStakeFlow pool-id owner-id beneficiary-id dptf-id amount true)
+                    (ref-FVT::CC_TrueFungibleStakeFlow patron owner-id beneficiary-id pool-id dptf-id amount true)
                 )
                 (UC_FormatStakeTrueFungibleResult pool-id owner-id beneficiary-id dptf-id amount)
             )
@@ -1595,7 +1595,7 @@
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::CC_TrueFungibleStakeFlow pool-id owner-id beneficiary-id dptf-id amount false)
+                    (ref-FVT::CC_TrueFungibleStakeFlow patron owner-id beneficiary-id pool-id dptf-id amount false)
                 )
                 (UC_FormatUnstakeTrueFungibleResult pool-id owner-id beneficiary-id dptf-id amount)
             )
@@ -1626,7 +1626,7 @@
                     )
                     (ref-IGNIS::XE_CollectIgnis patron
                         (ref-FVT::CC_OrtoFungibleStakeFlow
-                            patron pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts true
+                            patron owner-id beneficiary-id pool-id dpof-id nonces nonce-amounts true
                         )
                     )
                     (UC_FormatStakeOrtoFungibleResult pool-id owner-id beneficiary-id dpof-id nonce-count)
@@ -1661,7 +1661,7 @@
                     )
                     (ref-IGNIS::XE_CollectIgnis patron
                         (ref-FVT::CC_OrtoFungibleStakeFlow
-                            patron pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts false
+                            patron owner-id beneficiary-id pool-id dpof-id nonces nonce-amounts false
                         )
                     )
                     (UC_FormatUnstakeOrtoFungibleResult pool-id owner-id dpof-id nonce-count)
@@ -1698,7 +1698,7 @@
                     )
                     (ref-IGNIS::XE_CollectIgnis patron
                         (ref-FVT::CC_CollectableStakeFlow
-                            pool-id owner-id beneficiary-id collectable-id true nonces nonce-amounts true
+                            patron owner-id beneficiary-id pool-id collectable-id true nonces nonce-amounts true
                         )
                     )
                     (UC_FormatStakeCollectableResult
@@ -1735,7 +1735,7 @@
                     )
                     (ref-IGNIS::XE_CollectIgnis patron
                         (ref-FVT::CC_CollectableStakeFlow
-                            pool-id owner-id beneficiary-id collectable-id true nonces nonce-amounts false
+                            patron owner-id beneficiary-id pool-id collectable-id true nonces nonce-amounts false
                         )
                     )
                     (UC_FormatUnstakeCollectableResult pool-id owner-id collectable-id true nonce-count)
@@ -1771,7 +1771,7 @@
                     )
                     (ref-IGNIS::XE_CollectIgnis patron
                         (ref-FVT::CC_CollectableStakeFlow
-                            pool-id owner-id beneficiary-id collectable-id false nonces nonce-amounts true
+                            patron owner-id beneficiary-id pool-id collectable-id false nonces nonce-amounts true
                         )
                     )
                     (UC_FormatStakeCollectableResult
@@ -1808,7 +1808,7 @@
                     )
                     (ref-IGNIS::XE_CollectIgnis patron
                         (ref-FVT::CC_CollectableStakeFlow
-                            pool-id owner-id beneficiary-id collectable-id false nonces nonce-amounts false
+                            patron owner-id beneficiary-id pool-id collectable-id false nonces nonce-amounts false
                         )
                     )
                     (UC_FormatUnstakeCollectableResult pool-id owner-id collectable-id false nonce-count)
@@ -2034,7 +2034,7 @@
     ;;
     ;; --- AQP-FVT lifecycle (Talos client shell → AQP-FVT::C_*) ---
     (defun AQP-FVT|C_Issue:string
-        (patron:string fvt-name:string owner-konto:string fvt-class:integer common-denominator:string)
+        (patron:string executor:string fvt-name:string fvt-class:integer common-denominator:string)
         @doc "Issues an FVT (farm/vault/treasury) and collects IGNIS output on patron."
         (with-capability (P|TS)
             (let
@@ -2043,7 +2043,7 @@
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-FVT::C_Issue patron fvt-name owner-konto fvt-class common-denominator)
+                        (ref-FVT::C_Issue patron executor fvt-name fvt-class common-denominator)
                     )
                     (out:[string] (at "output" ico))
                     (fvt-id:string (at 0 out))
@@ -2194,7 +2194,7 @@
         )
     )
     (defun AQP-FVT|C_RotateOwnership:string
-        (patron:string executor:string fvt-id:string new-owner-konto:string)
+        (patron:string executor:string executee:string fvt-id:string)
         @doc "Rotates FVT ownership and collects IGNIS output on patron."
         (with-capability (P|TS)
             (let
@@ -2203,9 +2203,9 @@
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::C_RotateOwnership patron executor fvt-id new-owner-konto)
+                    (ref-FVT::C_RotateOwnership patron executor executee fvt-id)
                 )
-                (format "Successfully rotated ownership for FVT {} to {}." [fvt-id new-owner-konto])
+                (format "Successfully rotated ownership for FVT {} to {}." [fvt-id executee])
             )
         )
     )
@@ -2328,7 +2328,7 @@
                             (ref-AQP::C_Issue patron stake-asset-owner pool-name stake-dptf-id GV|POOL_CLASS_TF)
                             (ref-AQP::C_AddScore patron stake-asset-owner pool-id score-id)
                             (ref-FVT::C_Issue
-                                patron fvt-name owner-konto GV|FVT_CLASS_VAULT GV|COMMON_BAR)
+                                patron owner-konto fvt-name GV|FVT_CLASS_VAULT GV|COMMON_BAR)
                             ;;The FVT's executor here IS `owner-konto` -- C_Issue two lines up
                             ;;makes that account the vault's owner, so it is derived, not assumed.
                             (ref-FVT::C_AddScoreEntity
@@ -2562,7 +2562,7 @@
         )
     )
     (defun AQP-FVT|CC_UnstaleMyScores:string
-        (patron:string fvt-ids:[string])
+        (patron:string executor:string fvt-ids:[string])
         @doc "User self-service deb-unstale: the caller refreshes THEIR OWN stale scores across the listed FVTs \
             \ (non-penalized — the cheap alternative to being force-fixed by an inject), then collects IGNIS on \
             \ patron. The UI finds the FVT list via RPS.URC_FvtUserHasStaleMember per FVT the user stakes. \
@@ -2575,7 +2575,7 @@
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::CC_UnstaleMyScores patron fvt-ids)
+                    (ref-FVT::CC_UnstaleMyScores patron executor fvt-ids)
                 )
                 (ref-TS01-A::XB_DynamicFuelSTOA)
                 (format "Refreshed your stale scores across {} FVT(s)." [(length fvt-ids)])
@@ -2632,7 +2632,7 @@
                 ;; (2) stake the operator's initial quintessence into the now-linked, reward-ready triplet
                 (ref-IGNIS::XE_CollectIgnis patron
                     (ref-FVT::CC_CollectableStakeFlow
-                        pool-id executor executor collectable-id true
+                        patron executor executor pool-id collectable-id true
                         stake-nonces (ref-DPDC::UR_AccountNoncesSupplies executor collectable-id true stake-nonces) true))
                 ;; (3) terminal atomic gate — after the stake, Q must clear unit-score/2 or the whole tx reverts
                 (ref-DSA::UEV_OpenGate fvt-id score-entity-id)

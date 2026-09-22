@@ -72,7 +72,7 @@
     ;;==== TX-SPLIT-01 · 02 · issue bare class-0 farm ====
     (print "--- [TX-SPLIT-01 · 02 · issue class-0 farm] ---")
     (print (format "<(AQP-FVT|C_Issue class=0 SplitModeFarm)> => \"{}\""
-        [(ref-TS02-C3::AQP-FVT|C_Issue patron farm-name owner-konto 0 denominator-id)]))
+        [(ref-TS02-C3::AQP-FVT|C_Issue patron owner-konto farm-name 0 denominator-id)]))
     ;;==== TX-SPLIT-01 · 03 · default split-mode reader ====
     (print "--- [TX-SPLIT-01 · 03 · default split-mode] ---")
     (let ((mode:string (ref-FVT::UR_FVT|SplitMode farm-id)))

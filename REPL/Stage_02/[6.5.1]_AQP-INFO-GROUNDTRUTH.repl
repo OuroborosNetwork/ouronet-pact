@@ -1610,7 +1610,7 @@
             (
                 (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
                 (pre-stoa:decimal (coin.get-balance stoa-acct))
-                (m (ref-TS02-C3::AQP-FVT|C_Issue patron "GtCostProbeVault" patron 1 "|"))
+                (m (ref-TS02-C3::AQP-FVT|C_Issue patron patron "GtCostProbeVault" 1 "|"))
             )
             (map print
                 [
@@ -1745,7 +1745,7 @@
             (predicted:decimal (at "ignis-need" (at "ignis" (AQP-INFO.INFO_AQP-FVT|UnstaleMyScores patron ["CodingDivisionTreasury-98c486052a51"]))))
             (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
         )
-        (print (format "<(AQP-FVT|CC_UnstaleMyScores)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|CC_UnstaleMyScores patron ["CodingDivisionTreasury-98c486052a51"])]))
+        (print (format "<(AQP-FVT|CC_UnstaleMyScores)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|CC_UnstaleMyScores patron patron ["CodingDivisionTreasury-98c486052a51"])]))
         (let
             (
                 (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
@@ -2189,7 +2189,7 @@
     )
     ;;SETUP — a link-free FVT, outside the measurement window.
     (print (format "<(setup issue fresh FVT)> => \"{}\""
-        [(ref-TS02-C3::AQP-FVT|C_Issue patron "GtMosaicProbeVault" patron 1 "|")]))
+        [(ref-TS02-C3::AQP-FVT|C_Issue patron patron "GtMosaicProbeVault" 1 "|")]))
     (let
         (
             (fresh:string (ref-U|DALOS::UDC_Makeid "GtMosaicProbeVault"))
@@ -3257,7 +3257,7 @@
         (ouro-owner:string (AQP-ANK.URC_AnchorableAssetOwner ouro-id [true true]))
     )
     (print (format "<(setup issue fresh CLASS-0 farm)> => \"{}\""
-        [(ref-TS02-C3::AQP-FVT|C_Issue patron "GtComDenProbeFarm" patron 0 ouro-id)]))
+        [(ref-TS02-C3::AQP-FVT|C_Issue patron patron "GtComDenProbeFarm" 0 ouro-id)]))
     (let
         (
             (fresh:string (ref-U|DALOS::UDC_Makeid "GtComDenProbeFarm"))
@@ -3812,7 +3812,7 @@
         (patron:string KST.ANHD)
     )
     (print (format "<(issue GtSeAddScoreVault, fvt-class 1)> => \"{}\""
-        [(ref-TS02-C3::AQP-FVT|C_Issue patron "GtSeAddScoreVault" patron 1 "|")]))
+        [(ref-TS02-C3::AQP-FVT|C_Issue patron patron "GtSeAddScoreVault" 1 "|")]))
 )
 (commit-tx)
 (env-sigs [])
@@ -4027,7 +4027,7 @@
                 (predicted:decimal (at "ignis-need" (at "ignis" (AQP-INFO.INFO_AQP-FVT|RotateOwnership patron fvt flrn))))
                 (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
             )
-            (print (format "<(TS02-C3.AQP-FVT|C_RotateOwnership)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_RotateOwnership patron (AQP-FVT.UR_FVT|OwnerKonto fvt) fvt flrn)]))
+            (print (format "<(TS02-C3.AQP-FVT|C_RotateOwnership)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_RotateOwnership patron (AQP-FVT.UR_FVT|OwnerKonto fvt) flrn fvt)]))
             (let
                 (
                     (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
@@ -4418,7 +4418,7 @@
     (print (format "<(setup issue family)> => \"{}\""
         [(ref-TS02-C3::AQP-FVT|C_IssueMultipletFamily patron patron t0 t1 t2 p01 p12)]))
     (print (format "<(setup issue virgin FVT)> => \"{}\""
-        [(ref-TS02-C3::AQP-FVT|C_Issue patron "GtQSplitProbeVault" patron 1 "|")]))
+        [(ref-TS02-C3::AQP-FVT|C_Issue patron patron "GtQSplitProbeVault" 1 "|")]))
     ;;THE FAMILY ID IS DERIVED, NOT THE BASE TOKEN. `XI_IssueMultipletFamily` keys the row on
     ;;`UCk_MultipletFamily token-0 token-1 token-2` (`04_RPS.pact:3506`), a composite of all three — not
     ;;on token-0, which is the intuitive guess and fails as a raw table miss on `FVT|T|MultipletFamily`

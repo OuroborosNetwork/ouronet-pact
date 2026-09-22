@@ -1959,3 +1959,68 @@ the three sync shells: **15 edits, not 80.**
 > A rename is only safe inside the extent you have actually reasoned about. `beneficiary-id` means
 > one thing in a repair and another in a stake, and a file-wide `re.sub` cannot tell them apart.
 
+
+---
+
+### 05_FVT.pact — COMPLETE (9 of 9 outstanding entrypoints, 2026-09-22)
+
+The farms/vaults/treasuries core. Nine entrypoints left after earlier cascades; three renames,
+three stake-flow reorders, one `patron` that was doing two jobs, and **one claim I had to withdraw
+after reading the code properly.**
+
+#### `patron` was doubling as the actor
+
+`CC_UnstaleMyScores (patron fvt-ids)` — and `FVT|C>UNSTALE-MY-SCORES`'s own `@doc` said so
+outright: *"Auth = account ownership of `patron`: you may only unstale your OWN scores."*
+
+> **One word, two roles.** A patron is who *pays*, and the gas station exists precisely so that can
+> be somebody else. An enforce on `patron` is an enforce on the actor wearing the payer's name, and
+> the moment a sponsor pays for a user's unstale the check moves to the wrong account. Now
+> `(patron executor fvt-ids)`, with the capability enforcing `executor`.
+
+#### `CC_Collect` — the claimant now signs for the claim
+
+`FVT|C>COLLECT` validates the **context** (pool not sweeping, FVT not vacate-frozen, reward token
+enabled, score entity linked) and proves no account. The reward leaves the vault and is credited to
+`collector`, renamed `executor`, with `CAP_EnforceAccountOwnership` added. Every fixture already
+passes `patron == collector`, so it is a no-op there; what it buys is that a sponsor may pay the
+gas while only the claimant may trigger the claim. `collector` was the right account under a local
+word — `injector` likewise, across the three inject ops.
+
+#### The three stake flows put the actor where the canon puts it
+
+`(pool-id owner-id beneficiary-id …)` → `(patron executor executee pool-id …)`. `owner-id` was
+always the actor and `beneficiary-id` always the account whose position is created — an owner may
+stake **on a beneficiary's behalf**, which is the whole reason the two are separate parameters.
+Two of the three had no `patron` at all.
+
+#### A claim withdrawn: `C_Issue` was already proven
+
+The first pass added an ownership enforce to `C_Issue` and a `@doc` asserting the capability
+*"checks NO account at all"*. **That was false.** `FVT|C>ISSUE-FVT` closes with
+`(CAP_EnforceAccountOwnership owner-konto)` — the check sat past the end of the 31-line window I
+had grepped, and I concluded "absent" from a truncated read.
+
+The evidence that corrected it came from the suite itself: `[6.2.2] <<TX-SCORE-13>>` already pinned
+*"a well-formed vault reaches `CAP_EnforceAccountOwnership`, which refuses and names the victim"* —
+a test that could not have been written against a function with no gate. The redundant enforce was
+removed (CLAUDE.md: do not duplicate validation across defcap and caller) and the `@doc` rewritten
+to what is there: **a rename and a reorder, nothing more.**
+
+> **A grep window is not a read.** This is the second time in the sweep a claim outran the
+> evidence, and both times the correction came from running or reading the *tests* rather than the
+> code. `<<TX-SCORE-13>>` is worth copying as a model: it walks the two shadowing guards first — an
+> out-of-range class, then a wrong denominator — to prove neither is what refuses, and only then
+> reaches the keyset failure.
+
+#### And the auth-surface artefact was regenerated before being read
+
+`_modulecomplete` flagged `CC_UnstaleMyScores` as WEAKENED — correctly, since the enforce moved
+from `patron` to `executor`. Running `_authsurface.py` bare **writes** the artefact, so the
+`--check` that followed compared the new file against itself and said "clean". The diff was then
+audited row by row after the fact: 38 rows changed, **exactly one** lost a name (`patron` →
+`executor`, the rename), and the headline moved **846 → 856** reaching an ownership enforce.
+
+> Reviewing the diff *after* regenerating is the mistake that tool exists to prevent. It came out
+> right; the order was still wrong.
+

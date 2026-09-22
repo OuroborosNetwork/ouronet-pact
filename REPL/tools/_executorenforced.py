@@ -149,6 +149,16 @@ INDIRECT = {
     #    XI_IssueOneFromModel, which is the internal-hop shape FORWARDED declines by design.
     "02_SCORE.pact::C_IssueTriplet":        "CAP_EnforceAccountOwnership owner-konto",
     "02_SCORE.pact::C_IssueScoreFromModel": "XI_IssueOneFromModel",
+    # 05_FVT (2026-09-22). C_RotateOwnership is the SCR|C>ISSUE-TRIPLET shape exactly --
+    # FVT|C>ROTATE-OWNERSHIP-FVT binds (= executor owner-now) and enforces ownership of
+    # <owner-now>. The three injects forward the executor into RPS's XE_XI_FvtAddStream /
+    # XE_XI_FvtInjectCore, which bottom out in (TFT::C_Transfer patron executor AQP|SC_NAME ...)
+    # -- a real cross-module forward that FORWARDED still cannot match, because the executor
+    # lands in slot 2 of the callee (behind an op-key) rather than the executor slot it scans.
+    "05_FVT.pact::C_RotateOwnership":  "CAP_EnforceAccountOwnership owner-now",
+    "05_FVT.pact::CC_InjectStream":    "XE_XI_FvtAddStream",
+    "05_FVT.pact::CC_Inject":          "XE_XI_FvtInjectCore",
+    "05_FVT.pact::CC_InjectFinalize":  "XE_XI_FvtInjectCore",
 }
 
 # SELF-PROVING AT CREATION -- the base case of the attribution rule, resolved by the owner on

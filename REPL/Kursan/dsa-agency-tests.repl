@@ -63,7 +63,7 @@
         ;; 2. FACTORY — ANHD's operator triplet (unstaked, Q=0)
         (print (format "<(factory)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueScoreFromModel anhd anhd (ref-U|DALOS::UDC_Makeid "DsaAgnModel") "AnhdOperator")]))
         ;; 3. the class-0 FVT this vault binds (owner = ANHD, common-denom = OURO — an LP-farm denom)
-        (print (format "<(fvt)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_Issue anhd "DsaAgnVault" anhd 0 ouro-id)]))
+        (print (format "<(fvt)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_Issue anhd anhd "DsaAgnVault" 0 ouro-id)]))
         (let
             (
                 (fvt-id:string (ref-U|DALOS::UDC_Makeid "DsaAgnVault"))

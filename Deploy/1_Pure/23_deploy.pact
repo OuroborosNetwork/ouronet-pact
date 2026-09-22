@@ -919,14 +919,14 @@
                     (bloodshed-treasury-id:string (ref-U|DALOS::UDC_Makeid BOOT|FVT_BLOODSHED_TREASURY))
                 )
                 (if (!= lp-denominator "")
-                    (ref-TS02-C3::AQP-FVT|C_Issue patron BOOT|FVT_OURO_LP_FARM owner-konto 0 lp-denominator)
+                    (ref-TS02-C3::AQP-FVT|C_Issue patron owner-konto BOOT|FVT_OURO_LP_FARM 0 lp-denominator)
                     true
                 )
-                (ref-TS02-C3::AQP-FVT|C_Issue patron BOOT|FVT_SUBSIDIARY_TREASURY owner-konto 2 BOOT|TREASURY_COMMON)
-                (ref-TS02-C3::AQP-FVT|C_Issue patron BOOT|FVT_CODING_TREASURY owner-konto 2 BOOT|TREASURY_COMMON)
-                (ref-TS02-C3::AQP-FVT|C_Issue patron BOOT|FVT_SNAKES_TREASURY owner-konto 2 BOOT|TREASURY_COMMON)
-                (ref-TS02-C3::AQP-FVT|C_Issue patron BOOT|FVT_SHARES_TREASURY owner-konto 2 BOOT|TREASURY_COMMON)
-                (ref-TS02-C3::AQP-FVT|C_Issue patron BOOT|FVT_BLOODSHED_TREASURY owner-konto 2 BOOT|TREASURY_COMMON)
+                (ref-TS02-C3::AQP-FVT|C_Issue patron owner-konto BOOT|FVT_SUBSIDIARY_TREASURY 2 BOOT|TREASURY_COMMON)
+                (ref-TS02-C3::AQP-FVT|C_Issue patron owner-konto BOOT|FVT_CODING_TREASURY 2 BOOT|TREASURY_COMMON)
+                (ref-TS02-C3::AQP-FVT|C_Issue patron owner-konto BOOT|FVT_SNAKES_TREASURY 2 BOOT|TREASURY_COMMON)
+                (ref-TS02-C3::AQP-FVT|C_Issue patron owner-konto BOOT|FVT_SHARES_TREASURY 2 BOOT|TREASURY_COMMON)
+                (ref-TS02-C3::AQP-FVT|C_Issue patron owner-konto BOOT|FVT_BLOODSHED_TREASURY 2 BOOT|TREASURY_COMMON)
                 (format "AQP-BOOT Step 8 done. fvt-ids=[farm={} sub-treasury={} coding-treasury={} snakes-treasury={} shares-treasury={} bloodshed-treasury={}]. NEXT=Step9:C_AddScoreEntity."
                     [
                         (if (!= lp-denominator "") farm-id "skipped")
@@ -1144,7 +1144,7 @@
                     bronze-model-id silver-model-id golden-model-id)
                 ;; 4. the class-0 FVT. common-denominator is a REAL DPTF here, not BAR: DSA capture
                 ;;    arithmetic is denominated in it, which is the whole reason class 1/2 is refused.
-                (ref-TS02-C3::AQP-FVT|C_Issue patron BOOT|FVT_CUSTODIANS_VAULT owner-konto 0 ouro-id)
+                (ref-TS02-C3::AQP-FVT|C_Issue patron owner-konto BOOT|FVT_CUSTODIANS_VAULT 0 ouro-id)
                 ;; 5. MULTIPLET_BASE reward — the family id is what makes it so
                 (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron (AQP-FVT.UR_FVT|OwnerKonto fvt-id) fvt-id ouro-id false multiplet-family-id)
                 ;; 6. the heterogeneous split across the OURO|AURYN|ELITEAURYN ladder
