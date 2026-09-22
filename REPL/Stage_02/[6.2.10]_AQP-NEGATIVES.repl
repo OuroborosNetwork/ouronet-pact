@@ -40,11 +40,11 @@
             (expect-failure
                 (format "<<TX-AQP-NEG-IMC1>> direct AQP-VCT::CC_FullVacate rejected (P|UEV_IMC — Talos only)" [])
                 "None of the guards passed"
-                (ref-VCT::CC_FullVacate patron pool-id))
+                (ref-VCT::CC_FullVacate patron patron pool-id))
             (expect-failure
                 (format "<<TX-AQP-NEG-IMC1>> direct AQP-VCT::C_AbortVacate rejected (P|UEV_IMC)" [])
                 "None of the guards passed"
-                (ref-VCT::C_AbortVacate pool-id))
+                (ref-VCT::C_AbortVacate patron patron pool-id))
             (expect-failure
                 (format "<<TX-AQP-NEG-IMC1>> direct AQP-FVT::CC_Inject rejected (P|UEV_IMC)" [])
                 "None of the guards passed"

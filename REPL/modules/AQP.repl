@@ -2829,7 +2829,7 @@
 ;;so it catches a real structural change and not gas-schedule drift.
 (let* ((pool:string (U|DALOS.UDC_Makeid "ResumeVacPool"))
        (g0:integer (env-gas)))
-    (TS02-C3.AQP-POOL|CC_FullVacate KST.ANHD pool)
+    (TS02-C3.AQP-POOL|CC_FullVacate KST.ANHD (AQP-POOL.URC_AqpOwnerKonto pool) pool)
     (let ((used:integer (- (env-gas) g0)))
         (print (format "CC_FullVacate used {} gas (limit 150000, guard 100000)" [used]))
         (map print
@@ -3363,7 +3363,7 @@
                 (ref-AQP::URC_AqpOwnerKonto junk))
             (expect-failure "<<AQP-G44>> so the vacate is refused on the class alone, past the owner check"
                 "VCT|C>VACATE: unknown aqp-class"
-                (ref-TS02-C3::AQP-POOL|CC_FullVacate KST.ANHD junk))
+                (ref-TS02-C3::AQP-POOL|CC_FullVacate KST.ANHD (AQP-POOL.URC_AqpOwnerKonto junk) junk))
         ]
     )
     ""

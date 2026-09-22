@@ -91,7 +91,7 @@
         (print (format "<(pre tracker/supply)> => {} / {}" [tracker-work pre-supply-work]))
         ;; THE REHAUL VACATE — pool-id ONLY; VCT scans the legs on-chain (no UI-supplied arrays)
         (print (format "<(AQP-POOL|XB_VacateTrueFungible pool-id-only)> => \"{}\""
-            [(ref-TS02-C3::AQP-POOL|XB_VacateTrueFungible patron pool-id)]))
+            [(ref-TS02-C3::AQP-POOL|XB_VacateTrueFungible patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)]))
         (let
             (
                 (tracker-post:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id beneficiary-id))
@@ -156,7 +156,7 @@
         ;; THE AGNOSTIC REHAUL VACATE — JUST the pool-id; VCT reads aqp-class, dispatches the family branch,
         ;; vacates the native TF (satellites derived from asset-id). Real Z|-satellite drain proven by [6.4] CL05.
         (print (format "<(AQP-POOL|CC_FullVacate pool-id-only)> => \"{}\""
-            [(ref-TS02-C3::AQP-POOL|CC_FullVacate patron pool-id)]))
+            [(ref-TS02-C3::AQP-POOL|CC_FullVacate patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)]))
         (let
             (
                 (tracker-post:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id beneficiary-id))
@@ -216,7 +216,7 @@
         )
         ;; the proof: this call must SUCCEED (return a string), not abort on the empty native lane
         (print (format "<(AQP-POOL|CC_FullVacate on empty pool)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|CC_FullVacate patron pool-id)
+            (ref-TS02-C3::AQP-POOL|CC_FullVacate patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
         ]))
     )
 )
@@ -341,7 +341,7 @@
         (print (format "<(pre OF tracker)> => {}" [tracker-pre]))
         ;; THE REHAUL VACATE — pool-id + dpof only; VCT scans + resolves amounts on-chain
         (print (format "<(AQP-POOL|XB_VacateOrtoFungible)> => \"{}\""
-            [(ref-TS02-C3::AQP-POOL|XB_VacateOrtoFungible patron pool-id dpof-id)]))
+            [(ref-TS02-C3::AQP-POOL|XB_VacateOrtoFungible patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id dpof-id)]))
         (let ((tracker-post:decimal (ref-AQP::UR_AQP|DPOFTrackerBalance pool-id dpof-id owner-id beneficiary-id stake-nonce)))
             (map print
                 [
@@ -521,7 +521,7 @@
         (print (format "<(pre SF legs)> => {}" [legs-pre]))
         ;; THE REHAUL VACATE — pool-id + dpsf only; whole collection scanned + amounts read on-chain
         (print (format "<(AQP-POOL|XB_VacateSemiFungible)> => \"{}\""
-            [(ref-TS02-C3::AQP-POOL|XB_VacateSemiFungible patron pool-id dpsf-id)]))
+            [(ref-TS02-C3::AQP-POOL|XB_VacateSemiFungible patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id dpsf-id)]))
         (let
             (
                 (tracker-a:decimal (ref-AQP::UR_AQP|DPSFTrackerBalance pool-id dpsf-id owner-a beneficiary-a nonce-a))
@@ -641,7 +641,7 @@
                 (ignis-before:decimal (DALOS.UR_TF_AccountSupply patron false))
             )
             (print (format "<(TS02-C3.AQP-POOL|C_AbortVacate)> => \"{}\"" [
-                (ref-TS02-C3::AQP-POOL|C_AbortVacate patron pool-id)
+                (ref-TS02-C3::AQP-POOL|C_AbortVacate patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
             ]))
             (let
                 (
@@ -748,11 +748,11 @@
             (expect-failure
                 (format "<<TX-VCT-L04b expect-failure>> non-owner CC_FullVacate rejected (pool-owner gate)" [])
                 "Keyset failure (keys-all): [PK_Ancie...]"
-                (ref-TS02-C3::AQP-POOL|CC_FullVacate foreign pool-id))
+                (ref-TS02-C3::AQP-POOL|CC_FullVacate foreign (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id))
             (expect-failure
                 (format "<<TX-VCT-L04b expect-failure>> non-owner C_AbortVacate rejected (pool-owner gate)" [])
                 "Keyset failure (keys-all): [PK_Ancie...]"
-                (ref-TS02-C3::AQP-POOL|C_AbortVacate foreign pool-id))
+                (ref-TS02-C3::AQP-POOL|C_AbortVacate foreign (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id))
             (expect-failure
                 (format "<<TX-VCT-L04b expect-failure>> non-owner C_EnablePoolStake rejected (pool-owner gate)" [])
                 "Keyset failure (keys-all): [PK_Ancie...]"
@@ -864,7 +864,7 @@
                 [(expect "<<TX-VCT-DPNF01 L7#19>> unscored nonce (sentinel -1.0) contributes base 0, not negative"
                     0.0 (ref-SCR::UR_U-SCR|UserScoreBaseScore beneficiary-id pool-id score-id))])
             (print (format "<(TS02-C3.AQP-POOL|CC_FullVacate agnostic class-4)> => \"{}\"" [
-                (ref-TS02-C3::AQP-POOL|CC_FullVacate patron pool-id)
+                (ref-TS02-C3::AQP-POOL|CC_FullVacate patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
             ]))
             (let
                 (
@@ -1057,7 +1057,7 @@
         (print (format "<(pre NF legs)> => {}" [legs-pre]))
         ;; THE REHAUL VACATE — pool-id + dpnf only; whole collection scanned + amounts read on-chain
         (print (format "<(AQP-POOL|XB_VacateNonFungible)> => \"{}\""
-            [(ref-TS02-C3::AQP-POOL|XB_VacateNonFungible patron pool-id dpnf-id)]))
+            [(ref-TS02-C3::AQP-POOL|XB_VacateNonFungible patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id dpnf-id)]))
         (let
             (
                 (tracker-post:decimal (ref-AQP::UR_AQP|DPNFTrackerBalance pool-id dpnf-id owner-id beneficiary-id stake-nonce))
@@ -1262,7 +1262,7 @@
     ;; Empty arrays fail batch validation (gas-ok requires l>0). The stake stays — clean up with
     ;; CC_FullVacate so later TfStakePool tests see empty inventory.
     (print (format "<(TS02-C3.AQP-POOL|CC_FullVacate cleanup)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|CC_FullVacate patron pool-id)
+        (ref-TS02-C3::AQP-POOL|CC_FullVacate patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
     ]))
 )
 (env-sigs [])
@@ -1327,7 +1327,7 @@
             ]
         )
         (print (format "<(TS02-C3.AQP-POOL|CC_FullVacate cleanup)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|CC_FullVacate patron pool-id)
+            (ref-TS02-C3::AQP-POOL|CC_FullVacate patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
         ]))
     )
 )
@@ -1387,7 +1387,7 @@
         )
     )
     (print (format "<(TS02-C3.AQP-POOL|CC_FullVacate cleanup)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|CC_FullVacate patron pool-id)
+        (ref-TS02-C3::AQP-POOL|CC_FullVacate patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
     ]))
 )
 (env-sigs [])
@@ -1596,7 +1596,7 @@
             )
         )
         (print (format "<(TS02-C3.AQP-POOL|CC_FullVacate cleanup)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|CC_FullVacate patron pool-id)
+            (ref-TS02-C3::AQP-POOL|CC_FullVacate patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
         ]))
     )
 )
@@ -2137,7 +2137,7 @@
             (nns-pre:integer (ref-AQP::UR_AQP|PoolNns pool-id))
         )
         (print "--- [TX-VCT-FINALIZE · 02 · C_FinalizeVacate (the nuke)] ---")
-        (ref-TS02-C3::AQP-POOL|C_FinalizeVacate patron pool-id)
+        (ref-TS02-C3::AQP-POOL|C_FinalizeVacate patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
         (let
             (
                 ;; per-user rows are now STALE (row-gen < score-gen) -> read as 0 lazily, WITHOUT any per-user write

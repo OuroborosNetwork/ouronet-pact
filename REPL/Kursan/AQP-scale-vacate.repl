@@ -123,7 +123,7 @@
             ;;the pool is staked and NOT vacating, which is precisely the state finalize must refuse.
             (expect-failure "<<SCALE-VAC-01>> finalizing a pool with no vacate in progress is refused"
                 "Finalize: no vacate in progress on this pool"
-                (ref-TS02-C3::AQP-POOL|C_FinalizeVacate patron pool-id))
+                (ref-TS02-C3::AQP-POOL|C_FinalizeVacate patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id))
             ;;...and the state is untouched by the refusal. Asserted rather than assumed: an
             ;;`expect-failure` does NOT roll back writes the failed expression already made
             ;;(2026-09-11-expect-failure-does-not-roll-back-writes.md), so "it threw" is not the
@@ -287,7 +287,7 @@
                     ;;answering for both.
                     (expect-failure "<<SCALE-VAC-R1>> finalizing a PARTIALLY drained pool is refused"
                         "Finalize: pool not fully drained (nns != 0)"
-                        (ref-TS02-C3::AQP-POOL|C_FinalizeVacate patron pool-id))
+                        (ref-TS02-C3::AQP-POOL|C_FinalizeVacate patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id))
                     ;;GUARD `03_AQP.pact:655` -- and stake cannot be re-enabled mid-drain. This is the
                     ;;guard that matters operationally: re-enabling stake while legs are still being
                     ;;drained would let new stakers enter a pool that is being emptied underneath them.
@@ -520,7 +520,7 @@
         (pool-id:string (ref-U|DALOS::UDC_Makeid "ScaleVacPool"))
     )
     (env-gas 0)
-    (ref-TS02-C3::AQP-POOL|C_FinalizeVacate patron pool-id)
+    (ref-TS02-C3::AQP-POOL|C_FinalizeVacate patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
     (let ((g:integer (env-gas)))
         (map print
             [

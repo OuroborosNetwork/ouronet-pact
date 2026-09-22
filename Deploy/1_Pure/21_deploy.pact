@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 21 of 24
 ;; This is STEP 21 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-20 must have run first, including the init steps between deploys.
-;; 2 source file(s), 221,896 gas measured in the REPL gas model, 156,539 bytes
+;; 2 source file(s), 221,896 gas measured in the REPL gas model, 156,840 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact
@@ -76,10 +76,10 @@
     ;;{5.4}  Validate [UEV/CAP]
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
-    (defun AQP-POOL|XB_VacateTrueFungible:string (patron:string pool-id:string))
-    (defun AQP-POOL|XB_VacateOrtoFungible:string (patron:string pool-id:string dpof-id:string))
-    (defun AQP-POOL|XB_VacateSemiFungible:string (patron:string pool-id:string dpsf-id:string))
-    (defun AQP-POOL|XB_VacateNonFungible:string (patron:string pool-id:string dpnf-id:string))
+    (defun AQP-POOL|XB_VacateTrueFungible:string (patron:string executor:string pool-id:string))
+    (defun AQP-POOL|XB_VacateOrtoFungible:string (patron:string executor:string pool-id:string dpof-id:string))
+    (defun AQP-POOL|XB_VacateSemiFungible:string (patron:string executor:string pool-id:string dpsf-id:string))
+    (defun AQP-POOL|XB_VacateNonFungible:string (patron:string executor:string pool-id:string dpnf-id:string))
     ;;{5.7}  User [A/C]
     ;;
     ;;  [ANK]
@@ -238,10 +238,10 @@
         (patron:string executee:string dpnf-id:string)
     )
     (defun AQP-POOL|C_AbortVacate:string
-        (patron:string pool-id:string)
+        (patron:string executor:string pool-id:string)
     )
-    (defun AQP-POOL|C_FinalizeVacate:string (patron:string pool-id:string))
-    (defun AQP-POOL|CC_FullVacate:string (patron:string pool-id:string))
+    (defun AQP-POOL|C_FinalizeVacate:string (patron:string executor:string pool-id:string))
+    (defun AQP-POOL|CC_FullVacate:string (patron:string executor:string pool-id:string))
     (defun AQP-POOL|CCp_BatchVacateTrueFungible:string
         (patron:string pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal]))
     (defun AQP-POOL|CCp_BatchVacateOrtoFungible:string
@@ -886,7 +886,7 @@
     ;;{5.6}  Aux/X
     ;;Protection: Class 3 — Custom: P|TS
     (defun AQP-POOL|XB_VacateTrueFungible:string
-        (patron:string pool-id:string)
+        (patron:string executor:string pool-id:string)
         @doc "Vacate rehaul — pool-owner vacate of a pool's TrueFungible leg only (one tx; used standalone or by \
             \ the agnostic CC_FullVacate for a class-1 TF+OF pool). Owner enforced in VCT|C>VACATE; IGNIS on patron."
         (with-capability (P|TS)
@@ -895,14 +895,14 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
-                (ref-IGNIS::XE_CollectIgnis patron (ref-VCT::XB_VacateTrueFungible pool-id))
+                (ref-IGNIS::XE_CollectIgnis patron (ref-VCT::XB_VacateTrueFungible executor pool-id))
                 (format "Successfully vacated the TrueFungible leg of Pool {}." [pool-id])
             )
         )
     )
     ;;Protection: Class 3 — Custom: P|TS
     (defun AQP-POOL|XB_VacateOrtoFungible:string
-        (patron:string pool-id:string dpof-id:string)
+        (patron:string executor:string pool-id:string dpof-id:string)
         @doc "Vacate rehaul — pool-owner vacate of ONE OrtoFungible asset of a pool (one tx; standalone or per \
             \ class-1 satellite). Owner enforced in VCT|C>VACATE; IGNIS on patron."
         (with-capability (P|TS)
@@ -911,14 +911,14 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
-                (ref-IGNIS::XE_CollectIgnis patron (ref-VCT::XB_VacateOrtoFungible patron pool-id dpof-id))
+                (ref-IGNIS::XE_CollectIgnis patron (ref-VCT::XB_VacateOrtoFungible patron executor pool-id dpof-id))
                 (format "Successfully vacated OrtoFungible {} of Pool {}." [dpof-id pool-id])
             )
         )
     )
     ;;Protection: Class 3 — Custom: P|TS
     (defun AQP-POOL|XB_VacateSemiFungible:string
-        (patron:string pool-id:string dpsf-id:string)
+        (patron:string executor:string pool-id:string dpsf-id:string)
         @doc "Vacate rehaul — pool-owner vacate of the DPSF (semi-fungible) collection of a class-3 pool (one tx). \
             \ Owner enforced in VCT|C>VACATE; IGNIS on patron."
         (with-capability (P|TS)
@@ -927,14 +927,14 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
-                (ref-IGNIS::XE_CollectIgnis patron (ref-VCT::XB_VacateSemiFungible pool-id dpsf-id))
+                (ref-IGNIS::XE_CollectIgnis patron (ref-VCT::XB_VacateSemiFungible executor pool-id dpsf-id))
                 (format "Successfully vacated SemiFungible {} of Pool {}." [dpsf-id pool-id])
             )
         )
     )
     ;;Protection: Class 3 — Custom: P|TS
     (defun AQP-POOL|XB_VacateNonFungible:string
-        (patron:string pool-id:string dpnf-id:string)
+        (patron:string executor:string pool-id:string dpnf-id:string)
         @doc "Vacate rehaul — pool-owner vacate of the DPNF (non-fungible) collection of a class-4 pool (one tx). \
             \ Owner enforced in VCT|C>VACATE; IGNIS on patron."
         (with-capability (P|TS)
@@ -943,7 +943,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
-                (ref-IGNIS::XE_CollectIgnis patron (ref-VCT::XB_VacateNonFungible pool-id dpnf-id))
+                (ref-IGNIS::XE_CollectIgnis patron (ref-VCT::XB_VacateNonFungible executor pool-id dpnf-id))
                 (format "Successfully vacated NonFungible {} of Pool {}." [dpnf-id pool-id])
             )
         )
@@ -1850,7 +1850,7 @@
     ;; Vacate — Full (1 tx) or Stateless Legs (N txs; auto-begin; finalize on last)
     ;;
     (defun AQP-POOL|C_AbortVacate:string
-        (patron:string pool-id:string)
+        (patron:string executor:string pool-id:string)
         @doc "Clear vacate-in-progress; stake stays disabled. Talos → AQP-VCT::C_AbortVacate."
         (with-capability (AQP|C>ABORT-VACATE patron pool-id)
             (let
@@ -1859,7 +1859,7 @@
                     (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-VCT::C_AbortVacate pool-id)
+                    (ref-VCT::C_AbortVacate patron executor pool-id)
                 )
                 (format "Successfully aborted vacate-in-progress on Pool {} (stake remains disabled)."
                     [pool-id]
@@ -1868,7 +1868,7 @@
         )
     )
     (defun AQP-POOL|C_FinalizeVacate:string
-        (patron:string pool-id:string)
+        (patron:string executor:string pool-id:string)
         @doc "Vacate-v2 FINALIZE (nuke) — after a pool has been fully drained via AQP-POOL|Cp_BatchDrain*, this \
             \ bulk-zeroes every employed score + bumps their vacate-generation (lazily invalidating all per-user \
             \ rows), then clears vacate-in-progress, re-enables stake, and unfreezes the pool's FVTs. Pool-owner + \
@@ -1879,13 +1879,13 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
-                (ref-IGNIS::XE_CollectIgnis patron (ref-VCT::C_FinalizeVacate pool-id))
+                (ref-IGNIS::XE_CollectIgnis patron (ref-VCT::C_FinalizeVacate patron executor pool-id))
                 (format "Successfully finalized vacate on Pool {} — scores nuked, stake re-enabled." [pool-id])
             )
         )
     )
     (defun AQP-POOL|CC_FullVacate:string
-        (patron:string pool-id:string)
+        (patron:string executor:string pool-id:string)
         @doc "Vacate rehaul — pool-owner AGNOSTIC full vacate (one tx): input is JUST the pool-id. VCT reads the \
             \ pool class + scans its inventory on-chain and vacates every asset type. Owner enforced in VCT|C>VACATE; \
             \ collects IGNIS on patron."
@@ -1895,7 +1895,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
-                (ref-IGNIS::XE_CollectIgnis patron (ref-VCT::CC_FullVacate patron pool-id))
+                (ref-IGNIS::XE_CollectIgnis patron (ref-VCT::CC_FullVacate patron executor pool-id))
                 (format "Successfully full-vacated Pool {} (all asset types)." [pool-id])
             )
         )

@@ -2024,3 +2024,34 @@ audited row by row after the fact: 38 rows changed, **exactly one** lost a name 
 > Reviewing the diff *after* regenerating is the mistake that tool exists to prevent. It came out
 > right; the order was still wrong.
 
+
+---
+
+### 06_VCT.pact — COMPLETE (3 of 3 entrypoints, 2026-09-22)
+
+The vacate module: drain a pool, abort a drain, finalise one. All three reach
+`CAP_VctVacatePoolOwner` → `CAP_EnforceAccountOwnership (URC_AqpOwnerKonto pool-id)` — ownership of
+a **derived** account, §4g — so all three gained a bound `executor`.
+
+`UEV_ExecutorIzVacatePoolOwner` is a **local twin** of `AQP-POOL`'s `UEV_ExecutorIzPoolOwner`, and
+the reason is worth recording: `03_AQP` does **not** expose that helper on `AcquisitionPoolsV1`, so
+VCT cannot call it across the modref. Both read through the same `URC_AqpOwnerKonto`, which is what
+keeps them from ever disagreeing.
+
+#### The executor had to reach four `XB_` helpers as well
+
+`VCT|C>VACATE` is acquired in five places — `CC_FullVacate` **and** the four `XB_Vacate*` shells
+that Talos calls for single-lane drains. Adding the executor to the capability meant adding it to
+all five, and to the seven Talos wrappers above them.
+
+> A capability signature change reaches everything that ACQUIRES it, not only the entrypoints the
+> worklist names. `_callarity`'s capability-acquisition pass — added at module 26 — is what makes
+> that mechanical rather than remembered: it reported all five immediately.
+
+#### Two probes deliberately left with a plain account
+
+`[6.2.10]` `<<TX-AQP-NEG-IMC1>>` calls `AQP-VCT::CC_FullVacate` and `C_AbortVacate` **directly**, to
+prove `P|UEV_IMC` refuses a non-Talos caller. Their executor stays a plain account and is excluded
+from the `_executormigrate` rule block by an explicit comment: these calls exist to die **before**
+anything is read, and a derived owner expression at the call site would be evaluated first.
+

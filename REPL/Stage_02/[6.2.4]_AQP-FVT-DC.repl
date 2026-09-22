@@ -552,7 +552,7 @@
         (print (format "<(vacate-nonce vacate-amount)> => {} / {}" [stake-nonce vacate-amount]))
         (print "--- [TX-FVT-DC-04 · 02 · CC_FullVacate (agnostic, class-3 DPSF; pool-id only)] ---")
         (print (format "<(TS02-C3.AQP-POOL|CC_FullVacate)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|CC_FullVacate patron pool-id)
+            (ref-TS02-C3::AQP-POOL|CC_FullVacate patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
         ]))
         (print "--- [TX-FVT-DC-04 · 03 · post-vacate expects] ---")
         (let

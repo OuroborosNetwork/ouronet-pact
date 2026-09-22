@@ -671,7 +671,7 @@
                                 (enforce (> of-pre 0.0) "CL05: Z| satellite must be live pre-vacate")
                                 (print (format "<(pre lanes native-LP-bal={} Z|-sat-bal={})> " [native-lp-bal of-pre]))
                                 (print (format "<(AQP-POOL|CC_FullVacate — agnostic dual-lane, pool-id only)> => \"{}\"" [
-                                    (ref-TS02-C3::AQP-POOL|CC_FullVacate patron pool-id)
+                                    (ref-TS02-C3::AQP-POOL|CC_FullVacate patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
                                 ]))
                             )
                             (let

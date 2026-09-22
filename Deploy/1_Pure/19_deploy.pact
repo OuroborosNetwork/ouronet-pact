@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 19 of 24
 ;; This is STEP 19 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-18 must have run first, including the init steps between deploys.
-;; 3 source file(s), 849,276 gas measured in the REPL gas model, 259,318 bytes
+;; 3 source file(s), 849,276 gas measured in the REPL gas model, 261,872 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/06_VCT.pact
@@ -100,13 +100,13 @@
     ;;{5.5}  Write [W]
     ;;{5.6}  Aux/X
     ;; [XB]
-    (defun XB_VacateTrueFungible:object{IgnisCollectorV3.OutputCumulator} (pool-id:string))
-    (defun XB_VacateOrtoFungible:object{IgnisCollectorV3.OutputCumulator} (patron:string pool-id:string dpof-id:string))
-    (defun XB_VacateSemiFungible:object{IgnisCollectorV3.OutputCumulator} (pool-id:string dpsf-id:string))
-    (defun XB_VacateNonFungible:object{IgnisCollectorV3.OutputCumulator} (pool-id:string dpnf-id:string))
+    (defun XB_VacateTrueFungible:object{IgnisCollectorV3.OutputCumulator} (executor:string pool-id:string))
+    (defun XB_VacateOrtoFungible:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string pool-id:string dpof-id:string))
+    (defun XB_VacateSemiFungible:object{IgnisCollectorV3.OutputCumulator} (executor:string pool-id:string dpsf-id:string))
+    (defun XB_VacateNonFungible:object{IgnisCollectorV3.OutputCumulator} (executor:string pool-id:string dpnf-id:string))
     ;;{5.7}  User [A/C]
     ;; [C]   client
-    (defun CC_FullVacate:object{IgnisCollectorV3.OutputCumulator} (patron:string pool-id:string))
+    (defun CC_FullVacate:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string pool-id:string))
     (defun CCp_BatchVacateTrueFungible:object{IgnisCollectorV3.OutputCumulator}
         (pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal]))
     (defun CCp_BatchVacateOrtoFungible:object{IgnisCollectorV3.OutputCumulator}
@@ -119,8 +119,8 @@
         (patron:string pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]]))
     (defun CCp_BatchDrainCollectable:object{IgnisCollectorV3.OutputCumulator}
         (pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]]))
-    (defun C_AbortVacate:object{IgnisCollectorV3.OutputCumulator} (pool-id:string))
-    (defun C_FinalizeVacate:object{IgnisCollectorV3.OutputCumulator} (pool-id:string))
+    (defun C_AbortVacate:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string pool-id:string))
+    (defun C_FinalizeVacate:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string pool-id:string))
 
 )
 
@@ -540,13 +540,15 @@
         (compose-capability (SECURE))
     )
     (defcap VCT|C>ABORT-VACATE-POOL
-        (pool-id:string)
-        @doc "Clear vacate-in-progress on pool; stake stays disabled."
+        (executor:string pool-id:string)
+        @doc "Clear vacate-in-progress on pool; stake stays disabled. \
+            \ <executor> is BOUND to the derived pool owner beside the key check -- HANDOFF 4g."
         @event
         (CAP_VctVacatePoolOwner pool-id)
+        (UEV_ExecutorIzVacatePoolOwner executor pool-id)
         (compose-capability (SECURE))
     )
-    (defcap VCT|C>FINALIZE-VACATE (pool-id:string)
+    (defcap VCT|C>FINALIZE-VACATE (executor:string pool-id:string)
         @doc "Vacate-v2 finalize (nuke) master cap. All validation here, not in the body: the tx sender must own \
             \ the pool (CAP_VctVacatePoolOwner), a vacate must be in progress, AND the pool must be fully drained \
             \ (URC_PoolFullyVacated — nns==0, so every position is out and every beneficiary was already settled \
@@ -554,6 +556,7 @@
             \ through SCORE's own IMC-gated XE_NukeScoreForVacate."
         @event
         (CAP_VctVacatePoolOwner pool-id)
+        (UEV_ExecutorIzVacatePoolOwner executor pool-id)
         (let
             (
                 (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
@@ -563,7 +566,7 @@
         )
         (compose-capability (SECURE))
     )
-    (defcap VCT|C>VACATE (pool-id:string)
+    (defcap VCT|C>VACATE (executor:string pool-id:string)
         @doc "Master AGNOSTIC vacate cap (rehaul). Class-agnostic: the new vacate reads the pool's staker legs \
             \ ON-CHAIN (no UI-supplied arrays to tamper/validate), so this gates the pool OWNER, ENFORCES the pool's \
             \ aqp-class is a known class (0-4) — all validation lives here, not in the function body — and composes \
@@ -571,6 +574,7 @@
             \ wrappers; the per-kind XI_Vacate*FromLegs / *PoolLegs functions run under it via require P|VCT|RECIPE."
         @event
         (CAP_VctVacatePoolOwner pool-id)
+        (UEV_ExecutorIzVacatePoolOwner executor pool-id)
         (let
             (
                 (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
@@ -2242,6 +2246,29 @@
     ;; that way does NOT run its body, which silently no-opped the owner gate on the WHOLE vacate surface
     ;; (CC_FullVacate / XB_Vacate* / Cp_BatchVacate* / C_AbortVacate) — any non-owner could vacate or abort.
     ;; A defun runs the enforce, exactly like AQP-POOL::CAP_PoolOwner. Only the pool owner may vacate/abort.
+    (defun UEV_ExecutorIzVacatePoolOwner (executor:string pool-id:string)
+        @doc "BINDS <executor> to the pool's canonical owner konto -- the SAME value \
+            \ CAP_VctVacatePoolOwner resolves and key-checks, read through the same \
+            \ ref-AQP::URC_AqpOwnerKonto so the two can never disagree. \
+            \ \
+            \ It does NOT replace that gate. CAP_VctVacatePoolOwner proves the signer holds the \
+            \ owner's key; this proves the account the caller NAMED is that owner. Both are \
+            \ needed and they are different questions: an AQP pool's owner is derived from the \
+            \ canonical ASSET, which for a sovereign asset is a SMART account whose key a human \
+            \ holds -- so the key check passes for an account the caller never names. That is \
+            \ HANDOFF 4g, and it is the same reasoning AQP-POOL's own UEV_ExecutorIzPoolOwner \
+            \ carries; this is its local twin, declared here because 03_AQP does not expose it \
+            \ on AcquisitionPoolsV1. \
+            \ (patron/executor canon 2.2, indirect route named, 2026-09-22.)"
+        (let
+            (
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+            )
+            (enforce (= executor (ref-AQP::URC_AqpOwnerKonto pool-id))
+                (format "Executor {} is not the owner of pool {} (owner is {})"
+                    [executor pool-id (ref-AQP::URC_AqpOwnerKonto pool-id)]))
+        )
+    )
     (defun CAP_VctVacatePoolOwner (pool-id:string)
         @doc "Vacate operations require tx sender ownership of the pool's canonical owner konto."
         (let
@@ -3227,25 +3254,25 @@
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          VCT|C>VACATE
     (defun XB_VacateTrueFungible:object{IgnisCollectorV3.OutputCumulator}
-        (pool-id:string)
+        (executor:string pool-id:string)
         @doc "Vacate rehaul — external per-kind TF vacate for a whole pool (both internal + external, hence XB). \
             \ 2-phase: SCAN every live DPTF lane (URH_VacateTrueFungiblePoolLegs: native + F| frozen) → CONSUME \
             \ (XI_VacateTrueFungiblePoolLegs). The pool's DPOF satellites (Z|/H|) are vacated by XB_VacateOrtoFungible; \
             \ use CC_FullVacate to empty a whole pool of any class in one call."
         (P|UEV_IMC)
-        (with-capability (VCT|C>VACATE pool-id)
+        (with-capability (VCT|C>VACATE executor pool-id)
             (XI_VacateTrueFungiblePoolLegs pool-id (URH_VacateTrueFungiblePoolLegs pool-id))
         )
     )
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          VCT|C>VACATE
     (defun XB_VacateOrtoFungible:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string pool-id:string dpof-id:string)
+        (patron:string executor:string pool-id:string dpof-id:string)
         @doc "Vacate rehaul — external per-kind OF vacate for ONE OF asset of a pool (both internal + external). \
             \ 2-phase: SCAN that asset's legs (URHC_VacateNonceOwnerRowsRaw) → CONSUME (XI_VacateOrtoFungibleFromLegs). \
             \ A class-1 pool has TF + ≥1 OF satellite; call per satellite, or use CC_FullVacate for the whole pool."
         (P|UEV_IMC)
-        (with-capability (VCT|C>VACATE pool-id)
+        (with-capability (VCT|C>VACATE executor pool-id)
             (XI_VacateOrtoFungibleFromLegs patron pool-id dpof-id
                 (URHC_VacateNonceOwnerRowsRaw pool-id dpof-id VACATE-KIND-OF))
         )
@@ -3253,12 +3280,12 @@
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          VCT|C>VACATE
     (defun XB_VacateSemiFungible:object{IgnisCollectorV3.OutputCumulator}
-        (pool-id:string dpsf-id:string)
+        (executor:string pool-id:string dpsf-id:string)
         @doc "Vacate rehaul — external per-kind DPSF (semi-fungible collection) vacate for ONE collectable of a \
             \ pool. 2-phase: SCAN (URHC_VacateNonceOwnerRowsRaw, DPSF) → CONSUME (XI_VacateCollectablesFromLegs, \
             \ son=true). Use CC_FullVacate to empty the whole pool in one call."
         (P|UEV_IMC)
-        (with-capability (VCT|C>VACATE pool-id)
+        (with-capability (VCT|C>VACATE executor pool-id)
             (XI_VacateCollectablesFromLegs pool-id dpsf-id true
                 (URHC_VacateNonceOwnerRowsRaw pool-id dpsf-id VACATE-KIND-DPSF))
         )
@@ -3266,12 +3293,12 @@
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          VCT|C>VACATE
     (defun XB_VacateNonFungible:object{IgnisCollectorV3.OutputCumulator}
-        (pool-id:string dpnf-id:string)
+        (executor:string pool-id:string dpnf-id:string)
         @doc "Vacate rehaul — external per-kind DPNF (non-fungible collection) vacate for ONE collectable of a \
             \ pool. 2-phase: SCAN (URHC_VacateNonceOwnerRowsRaw, DPNF) → CONSUME (XI_VacateCollectablesFromLegs, \
             \ son=false). Use CC_FullVacate to empty the whole pool in one call."
         (P|UEV_IMC)
-        (with-capability (VCT|C>VACATE pool-id)
+        (with-capability (VCT|C>VACATE executor pool-id)
             (XI_VacateCollectablesFromLegs pool-id dpnf-id false
                 (URHC_VacateNonceOwnerRowsRaw pool-id dpnf-id VACATE-KIND-DPNF))
         )
@@ -3279,7 +3306,7 @@
     ;;{5.7}  User [A/C]
     ;; [C]   client
     (defun CC_FullVacate:object{IgnisCollectorV3.OutputCumulator}
-        (patron:string pool-id:string)
+        (patron:string executor:string pool-id:string)
         @doc "HEAVY (R3 CC_) AGNOSTIC single-tx full vacate: input is JUST the pool-id. Clean 2-PHASE per aqp-class: \
             \ PHASE 1 URH_Vacate*PoolLegs SCANs the pool's legs (grouped by asset-lane); PHASE 2 XI_Vacate*PoolLegs \
             \ CONSUMEs them. TF-FAMILY (class 0 LP farm / class 1 DPTF family) is MULTI-LANE — up to native TF + F| \
@@ -3295,7 +3322,7 @@
                 (son:bool (= c 3))
             )
             ;; aqp-class validity is enforced inside VCT|C>VACATE (all validation lives in the cap).
-            (with-capability (VCT|C>VACATE pool-id)
+            (with-capability (VCT|C>VACATE executor pool-id)
                 (if (or (= c 0) (= c 1))
                     ;; TF-family: scan+consume the DPTF lanes AND the DPOF satellite lanes
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators
@@ -3500,23 +3527,29 @@
             )
         )
     )
-    (defun C_AbortVacate:object{IgnisCollectorV3.OutputCumulator} (pool-id:string)
-        @doc "Clear vacate-in-progress; stake stays disabled (ops: C_EnablePoolStake)."
+    (defun C_AbortVacate:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string pool-id:string)
+        @doc "Clear vacate-in-progress; stake stays disabled (ops: C_EnablePoolStake). \
+            \ \
+            \ Executor: PROVEN INDIRECTLY, and named. VCT|C>ABORT-VACATE-POOL runs \
+            \ CAP_VctVacatePoolOwner, which enforces ownership of the DERIVED \
+            \ (URC_AqpOwnerKonto pool-id) and names no actor -- HANDOFF 4g -- and \
+            \ UEV_ExecutorIzVacatePoolOwner binds the declared executor to that same owner. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
-        (with-capability (VCT|C>ABORT-VACATE-POOL pool-id)
+        (with-capability (VCT|C>ABORT-VACATE-POOL executor pool-id)
             (XI_ClearVacateInProgress pool-id)
             (UC_EmptyOc)
         )
     )
     (defun C_FinalizeVacate:object{IgnisCollectorV3.OutputCumulator}
-        (pool-id:string)
+        (patron:string executor:string pool-id:string)
         @doc "Vacate-v2 FINALIZE (the nuke) — commit-forward terminal step of a v2 campaign. After the pool has \
             \ been fully drained (nns==0) via Cp_BatchDrain*, bulk-zero every employed score's aggregates + bump \
             \ their vacate-generation (lazily invalidating all per-user rows — the drained beneficiaries were \
             \ already settled during the drain), then clear vacate-in-progress, RE-ENABLE stake, and unfreeze the \
             \ pool's FVTs. Pool-owner + nns==0 gated (in the cap). v1 Cp_BatchVacate* auto-finalizes instead."
         (P|UEV_IMC)
-        (with-capability (VCT|C>FINALIZE-VACATE pool-id)
+        (with-capability (VCT|C>FINALIZE-VACATE executor pool-id)
             (let
                 (
                     (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)

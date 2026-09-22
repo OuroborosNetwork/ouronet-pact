@@ -574,7 +574,7 @@
         (print (format "<(URH_AQP|VacateOfInventory leg-count)> => {}" [inv-count]))
         (print "--- [TX-FVT-08 · 01 · CC_FullVacate (agnostic, class-2 OF; pool-id only)] ---")
         (print (format "<(TS02-C3.AQP-POOL|CC_FullVacate)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|CC_FullVacate patron pool-id)
+            (ref-TS02-C3::AQP-POOL|CC_FullVacate patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
         ]))
         (print "--- [TX-FVT-08 · 02 · post full-vacate expects] ---")
         (let

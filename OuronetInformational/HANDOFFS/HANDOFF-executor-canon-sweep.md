@@ -291,7 +291,7 @@ same tools with those three properties.
 | [x] 37 | `02_SCORE.pact` | 6 | 0 | 8 | **14** | `AcquisitionScoresV1` — done; **eight dead bindings of the same 4g expression**. See §4p |
 | [x] 38 | `03_AQP.pact` | 2 | 0 | 0 | **2** | `AcquisitionPoolsV1` — done; two EXECUTORLESS repairs, executee renamed. §4q |
 | [x] 39 | `05_FVT.pact` | 4 | 2 | 3 | **9** | `AcquisitionFarmsVaultsTreasuriesV1` — done; **C_Issue proved no account**, and `patron` was doubling as the actor. §4r |
-| [ ] 40 | `06_VCT.pact` | 0 | 0 | 3 | **3** | `AcquisitionVacateV1` |
+| [x] 40 | `06_VCT.pact` | 0 | 0 | 3 | **3** | `AcquisitionVacateV1` — done; the executor had to reach four `XB_` helpers too |
 | [ ] 41 | `07_MTX-AQP.pact` | 1 | 0 | 0 | **1** | `AqpMtxV1` |
 | [ ] 42 | `08_DSA.pact` | 0 | 2 | 2 | **4** | `DsaV1` |
 | [ ] 43 | `01_TS02-C1.pact` | 11 | 54 | 0 | **65** | `TalosStageTwo_ClientOneV2` |

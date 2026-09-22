@@ -76,6 +76,21 @@ RULES = {
     # IssueMultipletFamily reached NO ownership enforce at all; the executor is simply the creator,
     # so the fixtures keep the account they used -- what changes is that it must now be OWNED.
     "AQP-FVT|C_IssueMultipletFamily":   (7, "{0}"),
+    # ---- 06_VCT (sweep 40/46, 2026-09-22) ----------------------------------------------------
+    # Every vacate op is gated by CAP_VctVacatePoolOwner -> CAP_EnforceAccountOwnership on the
+    # DERIVED (URC_AqpOwnerKonto pool-id) -- 4g -- so the executor is read with the SAME
+    # expression UEV_ExecutorIzVacatePoolOwner evaluates. The four XB_ shells are included
+    # because they acquire VCT|C>VACATE directly and therefore carry the executor too.
+    #
+    # The two DIRECT ref-VCT:: probes in [6.2.10] are NOT covered and must not be: they exist to
+    # die at P|UEV_IMC before anything is read, so their executor stays a plain account.
+    "AQP-POOL|XB_VacateTrueFungible": (3, "(AQP-POOL.URC_AqpOwnerKonto {1})"),
+    "AQP-POOL|XB_VacateOrtoFungible": (4, "(AQP-POOL.URC_AqpOwnerKonto {1})"),
+    "AQP-POOL|XB_VacateSemiFungible": (4, "(AQP-POOL.URC_AqpOwnerKonto {1})"),
+    "AQP-POOL|XB_VacateNonFungible":  (4, "(AQP-POOL.URC_AqpOwnerKonto {1})"),
+    "AQP-POOL|C_AbortVacate":         (3, "(AQP-POOL.URC_AqpOwnerKonto {1})"),
+    "AQP-POOL|C_FinalizeVacate":      (3, "(AQP-POOL.URC_AqpOwnerKonto {1})"),
+    "AQP-POOL|CC_FullVacate":         (3, "(AQP-POOL.URC_AqpOwnerKonto {1})"),
     # ---- 02_SCORE (sweep 37/46, 2026-09-22) --------------------------------------------------
     # The seven owner-gated score ops. Each reaches CAP_EnforceAccountOwnership on the DERIVED
     # (UR_SCR|ScoreOwnerKonto score-id) -- 4g -- so the executor is read with the SAME expression
