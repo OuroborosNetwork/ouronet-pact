@@ -104,9 +104,9 @@
     ;;
     ;;  [7] DPDC-T
     ;;
-    (defun DPNF|C_Repurpose (patron:string id:string repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer]))
-    (defun DPNF|C_TransferNonce (patron:string id:string sender:string receiver:string nonce:integer amount:integer method:bool))
-    (defun DPNF|C_TransferNonces (patron:string id:string sender:string receiver:string nonces:[integer] amounts:[integer] method:bool)) 
+    (defun DPNF|C_Repurpose (patron:string executor:string executee:string id:string repurpose-to:string nonces:[integer] amounts:[integer]))
+    (defun DPNF|C_TransferNonce (patron:string executor:string executee:string id:string nonce:integer amount:integer method:bool))
+    (defun DPNF|C_TransferNonces (patron:string executor:string executee:string id:string nonces:[integer] amounts:[integer] method:bool)) 
     ;;
     ;;  [8] DPDC-S
     ;;
@@ -175,7 +175,7 @@
     (defun DPNF|C_UpdateNonceMetaData                   (patron:string id:string account:string nonce:integer nos:bool meta-data:object))
     (defun DPNF|C_UpdateNonceURI                        (patron:string id:string account:string nonce:integer nos:bool ay:object{DpdcUdcV2.URI|Type} u1:object{DpdcUdcV2.URI|Data} u2:object{DpdcUdcV2.URI|Data} u3:object{DpdcUdcV2.URI|Data}))
     (defun DPNF|C_BulkTransfer
-        (patron:string id:string nonces-array:[[integer]] amounts-array:[[integer]] sender:string receiver-lst:[string] method:bool)
+        (patron:string executor:string executee-lst:[string] id:string nonces-array:[[integer]] amounts-array:[[integer]] method:bool)
     )
 
 )
@@ -848,43 +848,45 @@
     ;;
     ;;  [7] DPDC-T
     ;;
-    (defun DPNF|C_Repurpose (patron:string id:string repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer])
-        @doc "Repurpose NFT(s) from <repurpose-from> to <repurpose-to>. Requires <id> ownerhsip"
+    (defun DPNF|C_Repurpose (patron:string executor:string executee:string id:string repurpose-to:string nonces:[integer] amounts:[integer])
+        @doc "Repurpose NFT(s) from <executee> to <repurpose-to>. The <executor> must BE the \
+            \ collection owner -- that is the authority the whole op rests on, and DPDC-T now \
+            \ binds the name to it rather than deriving it silently."
         (with-capability (P|TS)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
-                    (sf:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-from))
+                    (sf:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                     (st:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-T::C_RepurposeCollectable id false repurpose-from repurpose-to nonces amounts)
+                    (ref-DPDC-T::C_RepurposeCollectable patron executor executee id false repurpose-to nonces amounts)
                 )
                 (format "Successfully repurposed NFT {} Nonces {} with Amounts {} from {} to {}" [id nonces amounts sf st])
             )
         )
     )
-    (defun DPNF|C_TransferNonce (patron:string id:string sender:string receiver:string nonce:integer amount:integer method:bool)
-        @doc "Transfer an NFT <nonce> of <amount> from <sender> to <receiver> using <method>"
+    (defun DPNF|C_TransferNonce (patron:string executor:string executee:string id:string nonce:integer amount:integer method:bool)
+        @doc "Transfer an NFT <nonce> of <amount> from <executor> to <executee> using <method>"
         (with-capability (P|TS)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
-                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount sender))
-                    (ra:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
+                    (ra:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                     ;;
                     (irs:object{DpdcTransferV2.AggregatedRoyalties}
-                        (ref-DPDC-T::C_IgnisRoyaltyCollector patron sender [id] [false] [[nonce]] [[amount]])
+                        (ref-DPDC-T::C_IgnisRoyaltyCollector patron executor [id] [false] [[nonce]] [[amount]])
                     )
                     (r:[decimal] (at "ignis-royalties" irs))
                     (s:decimal (fold (+) 0.0 r))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-T::C_Transfer [id] [false] sender receiver [[nonce]] [[amount]] method)
+                    (ref-DPDC-T::C_Transfer patron executor executee [id] [false] [[nonce]] [[amount]] method)
                 )
                 [
                     (format "Successfully transfered NFT {} Nonce {} and Amount {} from {} to {}" [id nonce amount sa ra])
@@ -896,26 +898,26 @@
             )
         )
     )
-    (defun DPNF|C_TransferNonces (patron:string id:string sender:string receiver:string nonces:[integer] amounts:[integer] method:bool)
-        @doc "Transfer an NFT <nonce> of <amount> from <sender> to <receiver> using <method>"
+    (defun DPNF|C_TransferNonces (patron:string executor:string executee:string id:string nonces:[integer] amounts:[integer] method:bool)
+        @doc "Transfer NFT <nonces> of <amounts> from <executor> to <executee> using <method>"
         (with-capability (P|TS)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
-                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount sender))
-                    (ra:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
+                    (ra:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                     ;;
                     (irs:object{DpdcTransferV2.AggregatedRoyalties}
-                        (ref-DPDC-T::C_IgnisRoyaltyCollector patron sender [id] [false] [nonces] [amounts])
+                        (ref-DPDC-T::C_IgnisRoyaltyCollector patron executor [id] [false] [nonces] [amounts])
                     )
                     (c:[string] (at "creators" irs))
                     (r:[decimal] (at "ignis-royalties" irs))
                     (s:decimal (fold (+) 0.0 r))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-T::C_Transfer [id] [false] sender receiver [nonces] [amounts] method)
+                    (ref-DPDC-T::C_Transfer patron executor executee [id] [false] [nonces] [amounts] method)
                 )
                 [
                     (format "Successfully transfered NFT {} Nonces {} with Amounts {} from {} to {}" [id nonces amounts sa ra])
@@ -928,13 +930,13 @@
         )
     )
     (defun DPNF|C_BulkTransfer
-        (patron:string id:string nonces-array:[[integer]] amounts-array:[[integer]] sender:string receiver-lst:[string] method:bool)
+        (patron:string executor:string executee-lst:[string] id:string nonces-array:[[integer]] amounts-array:[[integer]] method:bool)
         @doc "Bulk NFT transfer — son=false wrapper over TS02-C1.DPDC|C_BulkTransfer."
         (let
             (
                 (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
             )
-            (ref-TS02-C1::DPDC|C_BulkTransfer patron id false nonces-array amounts-array sender receiver-lst method)
+            (ref-TS02-C1::DPDC|C_BulkTransfer patron executor executee-lst id false nonces-array amounts-array method)
         )
     )
     ;;

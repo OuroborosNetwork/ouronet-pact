@@ -185,7 +185,7 @@
                                     )
                                     (if (not (contains auryn-rain-nonce anhd-kbn))
                                         (print (format "<(DPNF transfer AurynRain nonce {} EMMA→ANHD)> => \"{}\"" [auryn-rain-nonce
-                                            (ref-TS02-C2::DPNF|C_TransferNonce patron kbn-id emma owner auryn-rain-nonce 1 false)
+                                            (ref-TS02-C2::DPNF|C_TransferNonce patron emma owner kbn-id auryn-rain-nonce 1 false)
                                         ]))
                                         true
                                     )

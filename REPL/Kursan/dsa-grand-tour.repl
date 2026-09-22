@@ -119,8 +119,8 @@
         (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
     )
     (ref-TS02-C1::DPSF|C_MakeFragments anhd anhd dhoc 2 500)
-    (ref-TS02-C1::DPSF|C_TransferNonce anhd dhoc anhd emma -2 200000 false)
-    (ref-TS02-C1::DPSF|C_TransferNonce anhd dhoc anhd lumy -2 200000 false)
+    (ref-TS02-C1::DPSF|C_TransferNonce anhd anhd emma dhoc -2 200000 false)
+    (ref-TS02-C1::DPSF|C_TransferNonce anhd anhd lumy dhoc -2 200000 false)
     (map print
       [ (expect "<<GT-01>> ANHD keeps 100000 frag -2" 100000 (ref-DPDC::UR_AccountNonceSupply anhd dhoc true -2))
         (expect "<<GT-01>> EMMA holds 200000 frag -2" 200000 (ref-DPDC::UR_AccountNonceSupply emma dhoc true -2))

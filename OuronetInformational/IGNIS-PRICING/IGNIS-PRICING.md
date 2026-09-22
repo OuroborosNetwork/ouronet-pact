@@ -293,8 +293,25 @@ STOA; the constants-only conversion (65 table reads lifted); the `define-set` / 
 **440** Talos client functions carry a price; **11** carry no row, and the sheet now says which:
 
 ```
-185 exact  ·  135 floor  ·  2 STOA-only  ·  118 exempt  ·  0 unresolved  ·  11 unpriced
+183 exact  ·  137 floor  ·  2 STOA-only  ·  118 exempt  ·  0 unresolved  ·  11 unpriced
 ```
+
+MOVED 2026-09-22, 185 exact → 183. Both rows are `C_RepurposeFragments` (the DPSF and DPNF
+doors onto `DPDC-F::C_RepurposeCollectableFragments`), and they were published as an EXACT
+$0.05 for an op that charges `((if son small else medium)/1000) × (1 + Σ fragment-amounts)` —
+a price that scales with the request. Two separate defects had to line up to produce that:
+
+* `_ignis_price_sheet.SCALES` decided "does this charge scale?" partly on the literal phrases
+  `per-nonce` / `price-per-nonce`, and it runs over text that INCLUDES `@doc` prose. Its twin
+  `DPDC-T::C_RepurposeCollectable` computes the identical shape and says "per-nonce construct
+  priced" in its cost-preview doc; the fragments one says "per-fragment". One word, two price
+  classes. Fixed by matching the STRUCTURE — `(dec (fold …))` — instead.
+* both functions carried a DEAD pre-computation of the price, binding BOTH tier legs
+  unconditionally where the live code charges one. The sheet summed them, so the floor read 5
+  where it is 2 (SFT) or 3 (NFT). Removing the dead bindings corrected the legs.
+
+Neither changed what any account is charged: the live price is built by the `URCi_` cumulator
+and never moved. What moved is what the sheet SAYS, which is the thing an integrator quotes.
 
 MOVED AGAIN 2026-09-21, 441 → 439. One cause, and it is the DPTF change repeated on its twin:
 `DPOF::C_DeployAccount` was reclassified to `XBv_DeployAccount`, so both of its Talos doors lost

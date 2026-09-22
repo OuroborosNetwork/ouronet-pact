@@ -209,7 +209,7 @@
     )
     (expect "<<TX-AQP-DEB03>> EMMA ABSENT from the FVT before any stake"
         false (ref-FVT::UR_FVT-UP|IsPresent fvt-id emma))
-    (ref-TS02-C1::DPSF|C_TransferNonce anhd dhwc-id anhd emma nonce amt false)
+    (ref-TS02-C1::DPSF|C_TransferNonce anhd anhd emma dhwc-id nonce amt false)
     (expect "<<TX-AQP-DEB03>> EMMA still ABSENT after receiving the nonce (no stake yet)"
         false (ref-FVT::UR_FVT-UP|IsPresent fvt-id emma))
 )

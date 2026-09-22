@@ -212,7 +212,7 @@
         (emma:string KST.EMMA)
     )
     ;; bulk-transfer nonces 5 and 6 (amount 1 each) to EMMA (single receiver)
-    (ref-TS02-C2::DPNF|C_BulkTransfer patron id [[5 6]] [[1 1]] patron [emma] false)
+    (ref-TS02-C2::DPNF|C_BulkTransfer patron patron [emma] id [[5 6]] [[1 1]] false)
     (map print
         [
             (expect "<<TX-NF-004>> EMMA holds NFT nonce 6 after bulk-transfer" 1 (ref-DPDC::UR_AccountNonceSupply emma id false 6))
@@ -471,8 +471,8 @@
     ;; deploy LUMY's account (role toggle auto-deploys), then fund EMMA (3,4,5,7) and LUMY (8)
     (ref-TS02-C2::DPNF|C_ToggleUpdateRole patron (DPDC.UR_OwnerKonto id false) lumy id true)
     (ref-TS02-C2::DPNF|C_ToggleUpdateRole patron (DPDC.UR_OwnerKonto id false) lumy id false)
-    (ref-TS02-C2::DPNF|C_BulkTransfer patron id [[3 4 5 7]] [[1 1 1 1]] patron [emma] false)
-    (ref-TS02-C2::DPNF|C_BulkTransfer patron id [[8]] [[1]] patron [lumy] false)
+    (ref-TS02-C2::DPNF|C_BulkTransfer patron patron [emma] id [[3 4 5 7]] [[1 1 1 1]] false)
+    (ref-TS02-C2::DPNF|C_BulkTransfer patron patron [lumy] id [[8]] [[1]] false)
     ;; freeze both accounts (wipe requires a frozen account)
     (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto id false) emma id true)
     (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto id false) lumy id true)

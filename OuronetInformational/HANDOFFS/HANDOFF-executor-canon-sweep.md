@@ -281,7 +281,7 @@ same tools with those three properties.
 | [x] 27 | `04_DPDC-I.pact` | 0 | 1 | 0 | **1** | `DpdcIssueV2` |
 | [x] 28 | `05_DPDC-R.pact` | 0 | 0 | 11 | **11** | `DpdcRolesV2` |
 | [x] 29 | `06_DPDC-MNG.pact` | 0 | 0 | 12 | **12** | `DpdcManagementV2` |
-| [ ] 30 | `07_DPDC-T.pact` | 1 | 0 | 3 | **4** | `DpdcTransferV2` |
+| [x] 30 | `07_DPDC-T.pact` | 1 | 0 | 3 | **4** | `DpdcTransferV2` — done; +10 TS02-C1/C2 wrappers reordered. See §4i |
 | [ ] 31 | `08_DPDC-S.pact` | 0 | 0 | 10 | **10** | `DpdcSetsV2` |
 | [ ] 32 | `09_DPDC-F.pact` | 0 | 0 | 4 | **4** | `DpdcFragmentsV2` |
 | [ ] 33 | `10_DPDC-N.pact` | 0 | 0 | 8 | **8** | `DpdcNonceV2` |
@@ -448,6 +448,35 @@ arguments away from anything that proved it. It is now position-aware: it finds 
 PARAMETER the executor landed in and requires the enforcement to be on THAT name, re-mapping the
 position at each `compose-capability` hop. Re-run after the change, it immediately found both
 KickStart variants.
+
+### 4i. LESSON FROM MODULE 30 — A HAND-MAINTAINED LIST HID SIX SITES FOR A DAY
+
+`_patronslots.py` exists to make the one invisible thing in this refactor visible: a caller whose
+module has not had its turn, passing the initiating account where a `patron` will eventually go.
+Arity is correct, the value is unused by every swept callee, and no assertion can reach it — the
+registry is the only thing that remembers.
+
+It kept a **hand-written `SWEPT` dict** of which callees already take a `patron`, and a callee not
+in that dict was never even looked at. 06_DPDC-MNG's turn (2026-09-21) gave twelve entrypoints a
+`patron` and did not add the module to the dict. Consequence: **four** provisional slots in
+`11_EQUITY+` (`XI_ConvertPackageShares` and `XI_MakePackageShares` → `C_AddQuantity`,
+`XI_BreakPackageShares` and `XI_ConvertPackageShares` → `C_BurnSFT`) were invisible to the one
+tool whose entire purpose is to see them. They surfaced only because module 30 happened to touch
+the same three functions.
+
+`SWEPT` is now **derived from the source** — a function has been swept iff its first parameter is
+literally `patron`, which is the canon and is written in the file. That derivation immediately
+found **two more** the dict had never covered: `04_TS01-C3::SWP|C_Firestarter`'s two inner calls,
+permanent rather than provisional because that entrypoint is PATRONLESS by design. Registered
+count went 25 → 48.
+
+**This is the FIFTH tool in this programme caught carrying a hardcoded list that could not report
+its own incompleteness** (`_toolpaths`, `_bandplan`, `_executorplan`'s ACCT vocabulary,
+`_executorenforced`'s `SWEPT`, now `_patronslots`'s `SWEPT`). The pattern is stable enough to
+state as a rule: **if a tool's correctness depends on a list of things that changes as the work
+proceeds, derive the list or the tool will quietly stop applying.**
+
+---
 
 ### 4h. TWO THINGS THAT COST A GATE RUN EACH, AND THE CHECKS THAT NOW CATCH THEM
 

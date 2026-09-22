@@ -61,8 +61,7 @@
         )
         (ref-TS02-C2::DPNF|C_Create patron (DPDC.UR_Verum5 id false) id (make-list 40 nd))
         (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto id false) lumy id false)
-        (ref-TS02-C2::DPNF|C_BulkTransfer patron id
-            [fresh] [(make-list 40 1)] patron [lumy] false)
+        (ref-TS02-C2::DPNF|C_BulkTransfer patron patron [lumy] id [fresh] [(make-list 40 1)] false)
         (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto id false) lumy id true)
         (print (format "<(setup)> LUMY holds {} wipeable NFT nonces"
             [(length (at "r-nonces" (ref-DPDC-MNG::URHC_WipePure lumy id false)))]))

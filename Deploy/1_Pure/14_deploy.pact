@@ -2,14 +2,22 @@
 ;; OURONET DEPLOY -- file 14 of 24
 ;; This is STEP 14 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-13 must have run first, including the init steps between deploys.
-;; 2 source file(s), 47,586 gas measured in the REPL gas model, 182,185 bytes
+;; 3 source file(s), 102,008 gas measured in the REPL gas model, 262,204 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
+;;   1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/00_Demipad.pact
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/00_AQP-SCHEMAS.pact
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/01_ANK.pact
 ;;
-;; TOTAL: 2 interface(s), 1 module(s), 8 table(s)
+;; TOTAL: 3 interface(s), 2 module(s), 12 table(s)
 ;; What it DEPLOYS, in load order:
+;;   -- 1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/00_Demipad.pact
+;;      interface  DemiourgosLaunchpadV2
+;;      module     DEMIPAD
+;;      table      P|T
+;;      table      P|MT
+;;      table      DEMIPAD|T|Ledger
+;;      table      DEMIPAD|T|Properties
 ;;   -- 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/00_AQP-SCHEMAS.pact
 ;;      interface  AcquisitionSchemasV1
 ;;   -- 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/01_ANK.pact
@@ -29,6 +37,1723 @@
 ;; ---------------------------------------------------------------------------
 
 (namespace "ouronet-ns")
+
+;; ===== 1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/00_Demipad.pact ======
+;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
+(interface DemiourgosLaunchpadV2
+    @doc "Sovereign interface defining the API for the DemiPad launchpad, a permissioned \
+        \ venue where Demiourgos.Holdings sells assets (true/orto/semi/non-fungibles) for \
+        \ WSTOA, SSTOA or OURO while retaining a decreasing royalty fee. It declares schemas \
+        \ for Costs, launchpad Properties, per-asset Holdings, Prices and RoyaltyInterval, \
+        \ plus constructors, compute helpers (royalty intervals, deposit royalty, \
+        \ environment split), and readers for launchpad and asset state. It also exposes \
+        \ acquire/price computation, IGNIS cost-preview deposit/transmit functions, \
+        \ fungibility validators, owner capabilities, admin operations (register asset, \
+        \ toggle sale/retrieval, define price), and client deposit/withdraw/transmit \
+        \ entrypoints."
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;{G2}  schemas
+    ;;{G3}  tables  ⟨cannot exist in an interface⟩
+    ;;{G4}  capabilities
+    ;;{G5}  functions
+    ;;
+    (defun GOV|DEMIPAD|SC_NAME ())
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables  ⟨cannot exist in an interface⟩
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;{3.2}  schemas
+    ;;
+    ;;  [Schemas]
+    ;;
+    (defschema Costs
+        pid:decimal
+        wstoa:decimal
+    )
+    ;;
+    (defschema DEMIPAD|Properties
+        direct-injection:bool
+        resident-wstoa:decimal
+        resident-sstoa:decimal
+        resident-ouro:decimal
+    )
+    (defschema DEMIPAD|Holdings
+        total-dollarz-raised:decimal
+        total-wstoa-raised:decimal
+        total-sstoa-raised:decimal
+        total-ouro-raised:decimal
+        funds-wstoa:decimal
+        funds-sstoa:decimal
+        funds-ouro:decimal
+        ;;
+        iz-sstoa:bool
+        iz-ouro:bool
+        ;;
+        fungibility:[bool]
+        open-for-business:bool
+        price:object
+        retrieval:bool
+    )
+    (defschema DEMIPAD|Prices
+        receiver-one:string
+        receiver-two:string
+        receiver-three:string
+        receiver-four:string
+        amount-one:decimal
+        amount-two:decimal
+        amount-three:decimal
+        amount-four:decimal
+        enviroment-amount:decimal
+        coding-amount:decimal
+        remainder-amount:decimal
+    )
+    (defschema RoyaltyInterval
+        "Schema for fee intervals"
+        start:decimal
+        end:decimal
+        fee-promille:decimal
+    )
+    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;
+    ;;  [UDC]
+    ;;
+    (defun UDC_Costs:object{Costs} (a:decimal b:decimal))
+    (defun UDC_DEMIPAD|Holdings:object{DEMIPAD|Holdings}
+        (
+            a:decimal b:decimal c:decimal d:decimal
+            e:decimal f:decimal g:decimal
+            h:bool i:bool
+            j:[bool] k:bool l:object m:bool
+        )
+    )
+    (defun UDC_LaunchpadPrices:object{DEMIPAD|Prices}
+        (
+            a:string b:string c:string d:string
+            e:decimal f:decimal g:decimal h:decimal
+            j:decimal k:decimal l:decimal
+        )
+    )
+    ;;{5.2}  Compute [UC]
+    ;;
+    ;;
+    (defun UC_Type:string (asset-id:string fungibility:[bool]))
+    (defun UC_GenerateRoyaltyIntervals:[object{RoyaltyInterval}] ())
+    (defun UCv_ComputeDepositRoyalty:decimal (current-balance:decimal deposit-amount:decimal))
+    (defun UC_LaunchpadEnviromentSplit:[decimal] (amount-in-stoa:decimal))
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    ;;
+    ;;  [UR]
+    ;;
+    (defun UR_LaunchpadState:object{DEMIPAD|Properties} ())
+    (defun UR_DirectInjection:bool ())
+    (defun UR_WSTOA:decimal ())
+    (defun UR_SSTOA:decimal ())
+    (defun UR_OURO:decimal ())
+        ;;
+    (defun UR_AssetState:object{DEMIPAD|Holdings} (asset-id:string))
+    (defun UR_TotalDollarzRaised:decimal (asset-id:string))
+    (defun UR_TotalWSTOARaised:decimal (asset-id:string))
+    (defun UR_TotalSSTOARaised:decimal (asset-id:string))
+    (defun UR_TotalOURORaised:decimal (asset-id:string))
+    (defun UR_WSTOA|Funds:decimal (asset-id:string))
+    (defun UR_SSTOA|Funds:decimal (asset-id:string))
+    (defun UR_OURO|Funds:decimal (asset-id:string))
+        ;;
+    (defun UR_IzSSTOA:bool (asset-id:string))
+    (defun UR_IzOURO:bool (asset-id:string))
+    (defun UR_Fungibility:[bool] (asset-id:string))
+    (defun UR_OpenForBusiness:bool (asset-id:string))
+    (defun UR_Price:object (asset-id:string))
+    (defun UR_Retrieval:bool (asset-id:string))
+    (defun UR_CheckRegistration:bool (asset-id:string))
+    ;;
+    ;;  [URC]
+    ;;
+    (defun URC_Prices:object{DEMIPAD|Prices} (asset-id:string amount-in-dollars:decimal type:integer))
+    (defun URC_Acquire:[string] (buyer:string asset-id:string buy-amount-in-dollarz:decimal type:integer slippage:decimal))
+    (defun URCi_Deposit:object{IgnisCollectorV3.OutputCumulator}
+        (donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool)
+    )
+    (defun URCi_TransmitSemiFungibles:object{IgnisCollectorV3.OutputCumulator}
+        (client:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
+    )
+    (defun URCi_TransmitNonFungibles:object{IgnisCollectorV3.OutputCumulator}
+        (client:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
+    )
+    ;;{5.4}  Validate [UEV/CAP]
+    (defun CAP_Acquire (buyer:string asset-id:string buy-amount-in-dollarz:decimal type:integer))
+    ;;
+    ;;  [UEV]
+    ;;
+    (defun UEV_AssetFungibility (asset-id:string fungibility-to-check:[bool]))
+    (defun UEV_Fungibility (fungibility:[bool]))
+    ;;
+    ;;  [CAP]
+    ;;
+    (defun CAP_Owner (asset-id:string))
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+    ;;
+    ;;  [A]
+    ;;
+    (defun A_RegisterAssetToLaunchpad (patron:string asset-id:string fungibility:[bool]))
+    (defun A_ToggleOpenForBusiness (asset-id:string toggle:bool))
+    (defun A_DefinePrice (asset-id:string price:object))
+    (defun A_ToggleRetrieval (asset-id:string toggle:bool))
+    ;;
+    ;;  [C]
+    ;;
+    (defun C_Deposit:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal)
+    )
+    (defun C_Withdraw (patron:string asset-id:string type:integer destination:string)
+    )
+    ;;
+    (defun C_TransmitTrueFungible (patron:string client:string asset-id:string amount:decimal fuel-or-retrieve:bool))
+    (defun C_TransmitOrtoFungible (patron:string client:string asset-id:string nonces:[integer] fuel-or-retrieve:bool))
+    (defun C_TransmitSemiFungibles:object{IgnisCollectorV3.OutputCumulator} 
+        (client:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
+    )
+    (defun C_TransmitNonFungibles:object{IgnisCollectorV3.OutputCumulator}
+        (client:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
+    )
+
+)
+(module DEMIPAD GOV
+    @doc "Demiourgos Launchpad, is a permissioned Launchpad operated by Demiourgos.Holdings  \
+        \ allowing the Company to sell Assets (DPTFs, DPMFs, DPSFs and DPNFs) \
+        \ \
+        \ HOW IT WORKS: \
+        \ The Launchpad Admin registers an Asset for Sale, this Asset is then Permanently registered to the Launchpad \
+        \ Sale is executed via Functions, in Modules created by Demiourgos Holdings, specific to each Asset \
+        \ \
+        \ For Sale, both Native STOA and WSTOA are accepted, but also SSTOA or OURO \
+        \ \
+        \ From the incoming funds, The Launchpad Retains a Royalty Fee. This starts at 15%. \
+        \ The Royalty Decreases going as low as 0.3% the more an asset sales for. \
+        \ One THIRD of Royalty goes to the Enviroment as Native STOA (Unwrap would be executed if WSTOA Input is used): \
+        \       = 10% to Ouronet Gas Station \
+        \       = 20% to Demiourgos.Holdings Treasury \
+        \       = 30$ to Launchpad Maintanance \
+        \       = 40% to Liquid Staking \
+        \ TWO THIRDS is injected to Coding Division Pot (half to Coding Division Collection, half to Shareholders Collection) \
+        \       when acquisitions pool are coming Live \
+        \       Until then, it will be retained in the Pool as Resident WSTOA, SSTOA or OURO \
+        \ \
+        \ If Assets are Sold for SSTOA or OURO, then a third of the Royalty Fee, must be supplied as Native Stoa to satisfy the Enviroment \
+        \ \
+        \ Remaining Tokens (after Royalty deduction) can be withdrawn by Asset Owner or Creator (for SFTs and NFTs), or Launchpad Admin \
+        \ \
+        \ Launchpad Admin can update <open-for-business>, <price> and <retrieval> for each registered Asset \
+        \ \
+        \ <open-for-business>   = Determines if the Asset is on sale and if it can be bought by those that want to acquire it \
+        \ <price> object        = Holds information regarding the Sale Price. This is then used by the Individual Asset Modules in the Sale Function \
+        \ <retrieval> parameter = Defines if Asset Owners or Creators can withdraw their Assets from the Launchpad (default false) \
+        \                       If set to <false> the only way to retrieve Assets is to execute a buy(sale). \
+        \ \
+        \ Each Asset has its own Sale Module, that defines the logic of the Buy Functions, allowing for individual custom logic to be implemented for each Sale \
+        \ Which is the reason this is a permissioned Launchpad, as each Sale can have its own specific logic regarding Asset Acquisition \
+        \ \
+        \ \
+        \ \
+        \ Permissioned Launchpad, means its part of the Core Modules from Stage 2 \
+        \ A permissionless Launchpad, in the form of the IGNIS Market Place will be launched after the Acquisition Pools Deployment"
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
+    ;;
+    (implements OuronetPolicyV2)
+    (implements DemiourgosLaunchpadV2)
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;
+    (defconst GOV|MD_DEMIPAD                            (keyset-ref-guard (GOV|Demiurgoi)))
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    (defcap GOV ()                                      (compose-capability (GOV|DEMIPAD_ADMIN)))
+    (defcap GOV|DEMIPAD_ADMIN ()                        (enforce-guard GOV|MD_DEMIPAD))
+    ;;{G5}  functions
+    (defun GOV|Demiurgoi ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::GOV|Demiurgoi)
+        )
+    )
+    (defun GOV|LaunchpadKey ()                          (+ (CT_Namespace) ".dh_sc_mb-keyset"))
+    ;;(defun GOV|LaunchpadKey ()              (+ (CT_Namespace) ".dh_sc_demipad-keyset"))
+    ;;
+    ;; [SC-Names]
+    (defun GOV|DEMIPAD|SC_NAME ()                       (at 0 ["Σ.Îäć$ЬчýφVεÎÿůпΨÖůηüηŞйnюŽXΣşpЩß5ςĂκ£RäbE₳èËłŹŘYшÆgлoюýRαѺÑÏρζt∇ŹÏýжIŒațэVÞÛщŹЭδźvëȘĂтPЖÃÇЭiërđÈÝДÖšжzČđзUĚĂsкιnãñOÔIKпŞΛI₳zÄû$ρśθ6ΨЬпYпĞHöÝйÏюşí2ćщÞΔΔŻTж€₿ŞhTțŽ"]))
+    ;;
+    ;; [PBLs]
+    (defun GOV|DEMIPAD|PBL ()                           (at 0 ["9F.gGCkuc2wMAnFAjuFphikftLdl6qFqBD4yfeMEe9u65yMqf4r340Jd6dphh1d7E1cE20btMwl4HJ2cBEMvp209GA1eD4syB96hu4nmpFbB7dKnJEMz4p8fGLcmhvrBCfDmM0axnGin8qedl5vDtwbgL3l1aK5BsmjkEEJartqCH8qG8ialtjxwCcIMf50t2lkeww6Dct5LlmmLG25FmfpcgnwMMnkJl4Gfn9gwoA6vm0jKebjhodeJLjxnh9L11ss8f26866dqv1tEphxFFqutGetH4Itj3rHkrcrGsnlqpf4gfJp94b0gBwIBe4vCj6ha8jm6kd3f8B6pEaJtkJ3fbs6rCcGibltz1BAMn0vvKME5ddFyGBnzssk1s2s0vFzwxs6vjC61Ma2l1xDxqdg1thAk2u01hDiGndLhzK73HAfgtk7bxscn0qKhymG6JAqnEFt282pyHAq5nIthK9bA8nH76x7FEpLz4eK9tLIBsyjb8M5DxaeEei6pEnLxFCAg7ulacgtjjpjMiAaqhpmM1jEHqjt4G85q4L33zrME7whgIkIpIgwnF2qKd4"]))
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    (defconst P|I                                       (P|Info))
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;
+    (deftable P|T:{OuronetPolicyV2.P|S})
+    (deftable P|MT:{OuronetPolicyV2.P|MS})
+    ;;{P4}  capabilities
+    (defcap P|DEMIPAD|CALLER ()
+        true
+    )
+    (defcap P|SECURE-CALLER ()
+        (compose-capability (P|DEMIPAD|CALLER))
+        (compose-capability (SECURE))
+    )
+    ;;{P5}  functions
+    (defun P|Info ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::P|Info)
+        )
+    )
+    (defun P|UR:guard (policy-name:string)
+        (at "policy" (read P|T policy-name ["policy"]))
+    )
+    (defun P|UR_IMP:[guard] ()
+        ;;DEFAULT ADDED 2026-09-14 (owner ruling). This was a bare `read`, which RAISES
+        ;;`No value found in table <M>_P|MT for key: InterModulePolicies` when the row does not
+        ;;exist -- i.e. before ANY module has registered. P|UEV_IMC is built on this, so in that
+        ;;window the inter-module gate answered with a raw table error naming a row key instead of
+        ;;refusing cleanly. Surfaced by the X-01 repair, which removed the harness registration
+        ;;that had been creating the row as a side effect.
+        ;;
+        ;;The default is the module's OWN SECURE capability guard, which is exactly what
+        ;;P|A_AddIMP already seeds the row with. So reader and writer now agree on what an
+        ;;unregistered policy list contains, and the gate's answer is the same before and after
+        ;;the first registration: satisfiable only from inside this module.
+        (with-default-read P|MT P|I
+            {"m-policies" : [(create-capability-guard (SECURE))]}
+            {"m-policies" := mp}
+            mp
+        )
+    )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV2} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|DEMIPAD_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        @doc "Registers <policy-guard> as a trusted inter-module caller of this module. \
+            \ IDEMPOTENT: a guard already in the chain is left alone rather than appended \
+            \ a second time. See OuronetPolicyV2 for why that is load-bearing."
+        (with-capability (GOV|DEMIPAD_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
+                    ;;
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" :
+                            (if (contains policy-guard mp)
+                                mp
+                                (ref-U|LST::UC_AppL mp policy-guard)
+                            )
+                        }
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_RemoveIMP (policy-guard:guard)
+        @doc "Revokes <policy-guard> from this module's guard chain. Removes EVERY occurrence, so \
+            \ it doubles as the cleanup for duplicates left behind by the pre-idempotence append. \
+            \ Refuses to drop this module's own SECURE seed -- see OuronetPolicyV2."
+        (with-capability (GOV|DEMIPAD_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
+                    ;;
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (enforce (!= policy-guard dg) "The module's own SECURE seed cannot be revoked")
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_RemoveItem mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_SetIMP (policy-guards:[guard])
+        @doc "Replaces this module's whole guard chain in one write -- the recovery hatch. \
+            \ Deduplicates, and enforces that the module's own SECURE seed survives: without it \
+            \ the module can no longer reach its own P|UEV_IMC-gated functions."
+        (with-capability (GOV|DEMIPAD_ADMIN)
+            (let
+                (
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (enforce (contains dg policy-guards) "The module's own SECURE seed must be present")
+                (write P|MT P|I
+                    {"m-policies" : (distinct policy-guards)}
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|DALOS:module{OuronetPolicyV2} DALOS)
+                (ref-P|TFT:module{OuronetPolicyV2} TFT)
+                (ref-P|LIQUID:module{OuronetPolicyV2} LIQUID)
+                (ref-P|DPDC:module{OuronetPolicyV2} DPDC)
+                (ref-P|DPDC-T:module{OuronetPolicyV2} DPDC-T)
+                (mg:guard (create-capability-guard (P|DEMIPAD|CALLER)))
+            )
+            (ref-P|DALOS::P|A_AddIMP mg)
+            (ref-P|TFT::P|A_AddIMP mg)
+            (ref-P|LIQUID::P|A_AddIMP mg)
+            (ref-P|DPDC::P|A_AddIMP mg)
+            (ref-P|DPDC-T::P|A_AddIMP mg)
+        )
+    )
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;
+    (defconst DEMIPAD|SC_KEY                            (GOV|LaunchpadKey))
+    (defconst DEMIPAD|SC_NAME                           (GOV|DEMIPAD|SC_NAME))
+    (defconst MB|SC_STOA-NAME                           "k:xxx")
+    (defconst BAR                                       (CT_Bar))
+    (defconst EOC                                       (CT_EmptyCumulator))
+    (defconst TF                                        [true true])
+    (defconst OF                                        [true false])
+    (defconst SF                                        [false true])
+    (defconst NF                                        [false false])
+    ;;
+    (defconst PP                                        "Launchpad-Properties")
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+    ;;
+    (deftable DEMIPAD|T|Properties:{DemiourgosLaunchpadV2.DEMIPAD|Properties})
+    (deftable DEMIPAD|T|Ledger:{DemiourgosLaunchpadV2.DEMIPAD|Holdings})
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    (defcap DEMIPAD|GOV ()
+        @doc "Governor Capability for the DEMIPAD Smart DALOS Account"
+        true
+    )
+    ;;
+    (defcap SECURE ()
+        true
+    )
+    ;;{C2}  Simple
+    ;;
+    ;;#2H: the retrieval lock the launchpad advertises to buyers. A non-admin Owner/Creator may pull
+    ;;    deposited assets back out ONLY when retrieval is enabled; the Launchpad admin may always
+    ;;    retrieve. FUEL (deposit) is never gated — only RETRIEVE composes this. (Option A: admin override.)
+    (defcap DEMIPAD|C>RETRIEVAL-GATE (asset-id:string)
+        (enforce-one
+            (format "Asset {} retrieval is LOCKED (retrieval=false) — only the Launchpad admin may retrieve until a sale or an admin re-enable" [asset-id])
+            [
+                (enforce-guard GOV|MD_DEMIPAD)
+                (enforce (UR_Retrieval asset-id) "retrieval disabled")
+            ]
+        )
+    )
+    ;;{C3}  Composed
+    (defcap DEMIPAD|C>REGISTER (asset-id:string fungibility:[bool])
+        @event
+        (compose-capability (DEMIPAD|C>SECURE-ADMIN))
+        (UEV_Fungibility fungibility)
+    )
+    (defcap DEMIPAD|C>SECURE-ADMIN ()
+        (compose-capability (GOV|DEMIPAD_ADMIN))
+        (compose-capability (SECURE))
+    )
+    ;;
+    (defcap DEMIPAD|C>TOGGLE-SALE (asset-id:string toggle:bool)
+        @event
+        (compose-capability (DEMIPAD|C>SECURE-ADMIN))
+        (let
+            (
+                (ofb:bool (UR_OpenForBusiness asset-id))
+            )
+            (enforce (!= toggle ofb) (format "Open for business is already {} for Asset {}" [toggle asset-id]))
+        )
+    )
+    (defcap DEMIPAD|C>DEFINE-PRICE (asset-id:string price:object)
+        @event
+        (compose-capability (DEMIPAD|C>SECURE-ADMIN))
+    )
+    (defcap DEMIPAD|C>TOGGLE-RETRIEVAL (asset-id:string toggle:bool)
+        @event
+        (compose-capability (DEMIPAD|C>SECURE-ADMIN))
+        (let
+            (
+                (rtr:bool (UR_Retrieval asset-id))
+            )
+            (enforce (!= toggle rtr) (format "Retrieval is already {} for Asset {}" [toggle asset-id]))
+        )
+    )
+    ;;
+    ;;
+    (defcap DEMIPAD|C>FUEL-TRUE-FUNGIBLE (asset-id:string)
+        @event
+        (compose-capability (DEMIPAD|C>REGISTERED-ACCESS-BY-TYPE asset-id [true true]))
+    )
+    (defcap DEMIPAD|C>FUEL-ORTO-FUNGIBLE (asset-id:string)
+        @event
+        (compose-capability (DEMIPAD|C>REGISTERED-ACCESS-BY-TYPE asset-id [true false]))
+    )
+    (defcap DEMIPAD|C>FUEL-SEMI-FUNGIBLE (asset-id:string)
+        @event
+        (compose-capability (DEMIPAD|C>REGISTERED-ACCESS-BY-TYPE asset-id [false true]))
+    )
+    (defcap DEMIPAD|C>FUEL-NON-FUNGIBLE (asset-id:string)
+        @event
+        (compose-capability (DEMIPAD|C>REGISTERED-ACCESS-BY-TYPE asset-id [false false]))
+    )
+    ;;
+    (defcap DEMIPAD|C>RETRIEVE-TRUE-FUNGIBLE (asset-id:string)
+        @event
+        (compose-capability (DEMIPAD|C>RETRIEVAL-GATE asset-id))
+        (compose-capability (DEMIPAD|C>REGISTERED-ACCESS-BY-TYPE asset-id [true true]))
+    )
+    (defcap DEMIPAD|C>RETRIEVE-ORTO-FUNGIBLE (asset-id:string)
+        @event
+        (compose-capability (DEMIPAD|C>RETRIEVAL-GATE asset-id))
+        (compose-capability (DEMIPAD|C>REGISTERED-ACCESS-BY-TYPE asset-id [true false]))
+    )
+    (defcap DEMIPAD|C>RETRIEVE-SEMI-FUNGIBLE (asset-id:string)
+        @event
+        (compose-capability (DEMIPAD|C>RETRIEVAL-GATE asset-id))
+        (compose-capability (DEMIPAD|C>REGISTERED-ACCESS-BY-TYPE asset-id [false true]))
+    )
+    (defcap DEMIPAD|C>RETRIEVE-NON-FUNGIBLE (asset-id:string)
+        @event
+        (compose-capability (DEMIPAD|C>RETRIEVAL-GATE asset-id))
+        (compose-capability (DEMIPAD|C>REGISTERED-ACCESS-BY-TYPE asset-id [false false]))
+    )
+    ;;
+    (defcap DEMIPAD|C>REGISTERED-ACCESS-BY-TYPE (asset-id:string fungibility:[bool])
+        (compose-capability (DEMIPAD|C>REGISTERED-ACCESS asset-id))
+        (UEV_AssetFungibility asset-id fungibility)
+    )
+    ;;
+    (defcap DEMIPAD|C>REGISTERED-ACCESS (asset-id:string)
+        @doc "Fails is <asset-id> is not registered to Launchpad"
+        (enforce-one
+            (format "Only LPAD Admin or {} Owner|Creator may acces the Launchpad" [asset-id])
+            [
+                (enforce-guard (create-user-guard (CAP_Owner asset-id)))
+                (enforce-guard GOV|MD_DEMIPAD)
+            ]
+        )
+        (compose-capability (DEMIPAD|GOV))
+        (compose-capability (SECURE))
+    )
+    ;;Deposti and Withdrawal
+    ;;Module-local (no interface change): the single source for "is this a spendable dollar
+    ;;amount". Shared by DEMIPAD|C>DEPOSIT and URCi_Deposit so every launchpad quote and the
+    ;;deposit it previews refuse the same inputs, in the same words.
+    ;;Pinned by RedTeam/[RT-K]_PreviewParity.repl <<RT-K-006b/c>>.
+    (defun UEV_DepositDollarAmount (amount-in-dollars:decimal)
+        (enforce
+            (and
+                (= (floor amount-in-dollars 24) amount-in-dollars)
+                (> amount-in-dollars 0.0)
+            )
+            "Invalid Dollar Amount for Deposit"
+        )
+    )
+    (defcap DEMIPAD|C>DEPOSIT (donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal)
+        @event
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (iz-type:bool (contains type [0 1 2 3]))
+                (iz-registered:bool (UR_CheckRegistration asset-id))
+                (ofb:bool (UR_OpenForBusiness asset-id))
+                (iz-sstoa:bool (UR_IzSSTOA asset-id))
+                (iz-ouro:bool (UR_IzOURO asset-id))
+            )
+            ;;Validate <donor> to be Standard Ouronet Account
+            (ref-DALOS::UEV_EnforceAccountType donor false)
+            ;;Validate <asset-id> to be a Launchpad registered Asset
+            ;;FIXED 2026-09-12, owner-ruled. This message used to be UNREACHABLE: the `let` above
+            ;;binds FOUR reads of this same Ledger row and a `let` is EAGER, so `ofb`, `iz-sstoa` and
+            ;;`iz-ouro` -- then bare `read`s -- ran BEFORE this enforce and aborted the transaction
+            ;;with `No value found in table ... DEMIPAD|T|Ledger for key: <asset>`. The deposit was
+            ;;still refused (never a funds hole), but the sentence written for exactly that case
+            ;;never arrived. Owner ruling: make every reader SUCCEED to true/false rather than abort.
+            ;;All three are now `with-default-read`, matching what UR_CheckRegistration already did
+            ;;with its `(try false ...)`. Pinned by REPL/Stage_02/[5.3]_Launchpad.repl <<TX-DEP-02>>
+            ;;01b. See memories/2026-09-12-eager-let-mute-guards.md
+            (enforce iz-registered (format "Asset {} is not registered to the Demiourgos Lauchpad. Deposit unallowed" [asset-id]))
+            ;;Validate the <amount-in-dollars> to be greater than zero with 3 decimals.
+            ;;REFUSAL PARITY (family K, 2026-09-16): this enforce used to be written out here, so
+            ;;URCi_Deposit -- and therefore EVERY launchpad preview that prices a purchase through
+            ;;it -- had no way to share it. INFO_BuySparks quoted a buy of ZERO Sparks that this
+            ;;line refuses, and for a NEGATIVE amount the preview refused with someone else's
+            ;;message ("Deposit amount must be non-negative", reached incidentally from
+            ;;UCv_ComputeDepositRoyalty). Now in UEV_DepositDollarAmount, called by both.
+            (UEV_DepositDollarAmount amount-in-dollars)
+            ;;Slippage bound (Variant 1): the live-computed dollar cost must not exceed the buyer's
+            ;;signed ceiling <max-cost>. Sentinel <max-cost> < 0 = no bound (Variant 2, slippage off).
+            (UEV_SlippageCost amount-in-dollars max-cost)
+            ;;Validate <type> to be either 0, 1, 2 or 3, and that the required Token Deposit is turned on
+            (enforce iz-type "Invalid Deposit type")
+            ;;MESSAGE FIXED 2026-09-14. The type-3 branch enforces <iz-ouro> and used to report
+            ;;"SSTOA Deposits must be turned on" -- naming a DIFFERENT, separately-togglable admin
+            ;;flag. That is the actively-misleading shape, not merely a terse one: the operator CAN
+            ;;carry out the suggested remedy, turn SSTOA deposits on, observe nothing change, and
+            ;;retry forever. Same class as DALOS GOV|MIGRATE's inverted pause message, fixed the
+            ;;same day. Each branch now names the flag it actually reads.
+            (if (not (or (= type 0) (= type 1)))
+                (if (= type 2)
+                    (enforce iz-sstoa "SSTOA Deposits must be turned on for exec")
+                    (enforce iz-ouro "OURO Deposits must be turned on for exec")
+                )
+                true
+            )
+            ;;Direct-Injection is an unbuilt feature (routes the <cod> royalty into an
+            ;;injection profile once AQP vaults are live). It is HARD-BLOCKED here so no
+            ;;admin flag can half-enable the unfinished path (prevents phantom seller funds).
+            (UEV_DirectInjection direct-injection)
+            ;;<open-for-business> must be turned on to allow Deposits
+            (enforce ofb (format "{} is not open for business, to allow deposits" [asset-id]))
+            ;;Acces Capabilities
+            (compose-capability (DEMIPAD|GOV))
+            (compose-capability (P|SECURE-CALLER))
+        )
+    )
+    (defcap DEMIPAD|C>WITHDRAW (asset-id:string type:integer retrieval-amount:decimal destination:string )
+        @event
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (iz-type:bool (contains type [1 2 3]))
+            )
+            ;;Validate <type> to be either 1, 2 or 3, and that the required Token Deposit is on.
+            ;;
+            ;;SHADOWED AT TODAY'S ONLY CALL SITE - kept deliberately. C_Withdraw binds
+            ;;(URv_Funds asset-id type) BEFORE acquiring this capability, and URv_Funds opens with
+            ;;the IDENTICAL predicate under a different message, so an out-of-range <type> always
+            ;;aborts there with "Invalid Read Type" and this line never fires. It is NOT a hole:
+            ;;the input is still rejected, only the message is less specific.
+            ;;
+            ;;Not removed, and not "fixed" by restructuring: <retrieval-amount> is a parameter of
+            ;;this @event capability and the body needs it for the transfer, so the read must
+            ;;happen first - and moving it inside would change an EVENT SIGNATURE that indexers
+            ;;consume. This enforce is the defence-in-depth that makes the capability correct on
+            ;;its own terms for any FUTURE caller that does not read first. Pinned as-is in
+            ;;REPL/Stage_02/[5.3]_Launchpad.repl <<TX-DEP-02>>.
+            ;;UNREACHABLE (shadowed) -- the analysis above is the proof; this marker is what keeps
+            ;;it out of the pinning worklist. Same category as 05_DPTF:1004: not dead, not a hole,
+            ;;simply answered earlier by an identical predicate on every path that exists today.
+            ;;Revisit if a call site is ever added that does NOT read URv_Funds first.
+            (enforce iz-type "Invalid Withdrawal type")
+            ;;Validate <retrieval-amount> to be non-zero
+            (enforce 
+                (> retrieval-amount 0.0) 
+                (format "There is nothing to retrieve for Asset-Id {} and Token Type {} ({})." 
+                    [
+                        asset-id
+                        type
+                        (if (= type 1) "WSTOA" (if (= type 2) "SSTOA" "OURO"))
+                    ]
+                )
+            )
+            ;;Validate <destination> to be Standard Ouronet Account
+            (ref-DALOS::UEV_EnforceAccountType destination false)
+            ;;Only <asset-id> Owner|Creator, or Launchpad Admin can retrieve Launchpad Funds
+            (compose-capability (DEMIPAD|C>REGISTERED-ACCESS asset-id))
+        )
+    )
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    ;;
+    ;; [Keys]
+    (defun CT_Namespace ()
+        (let
+            (
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+            )
+            (ref-U|CT::CT_NS_USE)
+        )
+    )
+    (defun CT_Bar ()
+        (let
+            (
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+            )
+            (ref-U|CT::CT_BAR)
+        )
+    )
+    (defun CT_EmptyCumulator ()
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+            )
+            (ref-IGNIS::UDC_EmptyOutputCumulatorV2)
+        )
+    )
+    ;;
+    ;;
+    (defun UDC_Costs:object{DemiourgosLaunchpadV2.Costs} 
+        (a:decimal b:decimal)
+        {"pid"  : a
+        ,"wstoa" : b}
+    )
+    (defun UDC_DEMIPAD|Holdings:object{DemiourgosLaunchpadV2.DEMIPAD|Holdings}
+        (
+            a:decimal b:decimal c:decimal d:decimal
+            e:decimal f:decimal g:decimal
+            h:bool i:bool
+            j:[bool] k:bool l:object m:bool
+        )
+        {"total-dollarz-raised"         : a
+        ,"total-wstoa-raised"            : b
+        ,"total-sstoa-raised"            : c
+        ,"total-ouro-raised"            : d
+        ,"funds-wstoa"                   : e
+        ,"funds-sstoa"                   : f
+        ,"funds-ouro"                   : g
+        ;;
+        ,"iz-sstoa"                      : h
+        ,"iz-ouro"                      : i
+        ;;
+        ,"fungibility"                  : j
+        ,"open-for-business"            : k
+        ,"price"                        : l
+        ,"retrieval"                    : m
+        }
+    )
+    (defun UDC_LaunchpadPrices:object{DemiourgosLaunchpadV2.DEMIPAD|Prices}
+        (
+            a:string b:string c:string d:string
+            e:decimal f:decimal g:decimal h:decimal
+            j:decimal k:decimal l:decimal
+        )
+        {"receiver-one"         : a
+        ,"receiver-two"         : b
+        ,"receiver-three"       : c
+        ,"receiver-four"        : d
+        ,"amount-one"           : e
+        ,"amount-two"           : f
+        ,"amount-three"         : g
+        ,"amount-four"          : h
+        ,"enviroment-amount"    : j
+        ,"coding-amount"        : k
+        ,"remainder-amount"     : l}
+    )
+    ;;{5.2}  Compute [UC]
+    (defun UC_Type:string (asset-id:string fungibility:[bool])
+        (cond
+            ((= fungibility TF) "True Fungible")
+            ((= fungibility OF) "Orto-Fungible")
+            ((= fungibility SF) "Semi-Fungible")
+            ((= fungibility NF) "Non-Fungible")
+            ""
+        )
+    )
+    (defun UC_GenerateRoyaltyIntervals:[object{DemiourgosLaunchpadV2.RoyaltyInterval}] ()
+        @doc "Generate list of fee intervals until fee reaches 3 promille"
+        (let* 
+            (
+                (first-interval-size:decimal 10000.0)
+                (initial-increment:decimal 5000.0)
+                (fee-decrement:decimal 3.0)
+                (min-fee:decimal 3.0)
+            )
+            (fold
+                (lambda 
+                    (acc:[object{DemiourgosLaunchpadV2.RoyaltyInterval}] idx:integer)
+                    (let* 
+                        (
+                            (start:decimal
+                                (if (= idx 0)
+                                    0.0
+                                    (at "end" (at 0 (take -1 acc)))
+                                )
+                            )
+                            (increment-velocity:decimal 
+                                (if (= idx 0)
+                                    0.0
+                                    (+ initial-increment (* 100.0 (dec (- idx 1)))))
+                                )
+                                
+                            (prev-interval-size:decimal
+                                (if (= idx 0)
+                                    first-interval-size
+                                    (-
+                                        (at "end" (at 0 (take -1 acc)))
+                                        (at "start" (at 0 (take -1 acc)))
+                                    )
+                                )
+                            )
+                            (increment:decimal (+ increment-velocity prev-interval-size))
+                            (end:decimal 
+                                (if (= idx 0)
+                                    first-interval-size
+                                    (+ start increment)
+                                )
+                            )
+                            (fee-promille (- 150.0 (* fee-decrement (dec idx))))
+                        )
+                        (if (>= fee-promille min-fee)
+                            (+ acc [{"start": start, "end": end, "fee-promille": fee-promille}])
+                            acc
+                        )
+                    )
+                )
+                []
+                (enumerate 0 49)
+            )
+        )
+    )
+    (defun UC_SlippageFactor:decimal (slippage:decimal)
+        @doc "Pure slippage multiplier: (1 + slippage/100). slippage is a percent (1.0 = 1%). Used to pad \
+            \ the signed coin.TRANSFER cap ceilings in URC_Acquire (Variant 1)."
+        (+ 1.0 (/ slippage 100.0))
+    )
+    (defun UCv_ComputeDepositRoyalty:decimal (current-balance:decimal deposit-amount:decimal)
+        @doc "Compute fee for a deposit given current balance and deposit amount"
+        (enforce (>= current-balance 0.0) "Current balance must be non-negative")
+        (enforce (>= deposit-amount 0.0) "Deposit amount must be non-negative")
+        (let* 
+            (
+                (deposit-start:decimal current-balance)
+                (deposit-end:decimal (+ current-balance deposit-amount))
+                (intervals:[object{DemiourgosLaunchpadV2.RoyaltyInterval}] (UC_GenerateRoyaltyIntervals))
+                (last-interval:object{DemiourgosLaunchpadV2.RoyaltyInterval} (at (- (length intervals) 1) intervals) )
+                (last-interval-end:decimal (at "end" last-interval))
+                (min-fee:decimal (at "fee-promille" last-interval))
+                (min-fee-rate:decimal (/ min-fee 1000.0))
+            )
+            (+
+                ;;Interval Fees
+                (fold
+                    (lambda (total-fee:decimal interval:object{DemiourgosLaunchpadV2.RoyaltyInterval})
+                        (let 
+                            (
+                                (interval-start (at "start" interval))
+                                (interval-end (at "end" interval))
+                                (fee-rate (/ (at "fee-promille" interval) 1000.0))
+                            )
+                            (if (and (< deposit-start interval-end) (> deposit-end interval-start))
+                                (+ 
+                                    total-fee
+                                    (* 
+                                        fee-rate
+                                        (- 
+                                            (if (<= deposit-end interval-end) deposit-end interval-end)
+                                            (if (>= deposit-start interval-start) deposit-start interval-start)
+                                        )
+                                    )
+                                )
+                                total-fee
+                            )
+                        )
+                    )
+                    0.0
+                    intervals
+                )
+                ;;Beyond Fees
+                (if (> deposit-end last-interval-end)
+                    (* 
+                        min-fee-rate
+                        (- 
+                            deposit-end 
+                            (if (>= deposit-start last-interval-end) deposit-start last-interval-end)
+                        )
+                    )
+                    0.0
+                )
+            )
+        )
+    )
+    (defun UC_LaunchpadEnviromentSplit:[decimal] (amount-in-stoa:decimal)
+        @doc "Outputs the Launchpad Enviroment Split, whic is a \
+        \ 10%, 20%, 30%, 40% Split, outputed as a 4 element list."
+        (let
+            (
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+                (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                (stoa-prec:integer (ref-U|CT::CT_STOA_PRECISION))
+            )
+            (ref-U|DALOS::UC_TenTwentyThirtyFourtySplit amount-in-stoa stoa-prec)
+        )
+    )
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    (defun UR_LaunchpadState:object{DemiourgosLaunchpadV2.DEMIPAD|Properties} ()
+        (read DEMIPAD|T|Properties PP)
+    )
+    (defun UR_DirectInjection:bool ()
+        (at "direct-injection" (UR_LaunchpadState))
+    )
+    (defun UR_WSTOA:decimal ()
+        (at "resident-wstoa" (UR_LaunchpadState))
+    )
+    (defun UR_SSTOA:decimal ()
+        (at "resident-sstoa" (UR_LaunchpadState))
+    )
+    (defun UR_OURO:decimal ()
+        (at "resident-ouro" (UR_LaunchpadState))
+    )
+    ;;
+    (defun UR_AssetState:object{DemiourgosLaunchpadV2.DEMIPAD|Holdings} (asset-id:string)
+        (read DEMIPAD|T|Ledger asset-id)
+    )
+    (defun UR_TotalDollarzRaised:decimal (asset-id:string)
+        (at "total-dollarz-raised" (read DEMIPAD|T|Ledger asset-id ["total-dollarz-raised"]))
+    )
+    (defun URv_TotalRaised:decimal (asset-id:string type:integer)
+        (enforce (contains type [1 2 3]) "Invalid Read Type")
+        (cond
+            ((= type 1) (UR_TotalWSTOARaised asset-id))
+            ((= type 2) (UR_TotalSSTOARaised asset-id))
+            ((= type 3) (UR_TotalOURORaised asset-id))
+            0.0
+        )
+    )
+    (defun URv_Funds:decimal (asset-id:string type:integer)
+        (enforce (contains type [1 2 3]) "Invalid Read Type")
+        (cond
+            ((= type 1) (UR_WSTOA|Funds asset-id))
+            ((= type 2) (UR_SSTOA|Funds asset-id))
+            ((= type 3) (UR_OURO|Funds asset-id))
+            0.0
+        )
+    )
+    (defun UR_TotalWSTOARaised:decimal (asset-id:string)
+        (at "total-wstoa-raised" (read DEMIPAD|T|Ledger asset-id ["total-wstoa-raised"]))
+    )
+    (defun UR_TotalSSTOARaised:decimal (asset-id:string)
+        (at "total-sstoa-raised" (read DEMIPAD|T|Ledger asset-id ["total-sstoa-raised"]))
+    )
+    (defun UR_TotalOURORaised:decimal (asset-id:string)
+        (at "total-ouro-raised" (read DEMIPAD|T|Ledger asset-id ["total-ouro-raised"]))
+    )
+    (defun UR_WSTOA|Funds:decimal (asset-id:string)
+        (at "funds-wstoa" (read DEMIPAD|T|Ledger asset-id ["funds-wstoa"]))
+    )
+    (defun UR_SSTOA|Funds:decimal (asset-id:string)
+        (at "funds-sstoa" (read DEMIPAD|T|Ledger asset-id ["funds-sstoa"]))
+    )
+    (defun UR_OURO|Funds:decimal (asset-id:string)
+        (at "funds-ouro" (read DEMIPAD|T|Ledger asset-id ["funds-ouro"]))
+    )
+    ;;
+    (defun UR_IzSSTOA:bool (asset-id:string)
+        ;;with-default-read, not read: an UNREGISTERED asset has no row, and a bare read would abort
+        ;;the transaction before any caller's `enforce` could speak. See the note on UR_CheckRegistration.
+        (with-default-read DEMIPAD|T|Ledger asset-id
+            { "iz-sstoa" : false } { "iz-sstoa" := x } x)
+    )
+    (defun UR_IzOURO:bool (asset-id:string)
+        ;;with-default-read, not read -- same reason as UR_IzSSTOA above.
+        (with-default-read DEMIPAD|T|Ledger asset-id
+            { "iz-ouro" : false } { "iz-ouro" := x } x)
+    )
+    (defun UR_Fungibility:[bool] (asset-id:string)
+        (at "fungibility" (read DEMIPAD|T|Ledger asset-id ["fungibility"]))
+    )
+    (defun UR_OpenForBusiness:bool (asset-id:string)
+        ;;with-default-read, not read. FALSE is the semantically correct answer for an asset with no
+        ;;Ledger row -- a thing that is not registered is certainly not open for business -- and it
+        ;;lets DEMIPAD|C>DEPOSIT's registration enforce actually be reached. All four call sites were
+        ;;checked: the two in this module, 2_CITIZEN/.../01_Spark.pact and Stage_Z/01_DPL-UR.pact;
+        ;;every one of them is better served by `false` than by an aborted transaction.
+        (with-default-read DEMIPAD|T|Ledger asset-id
+            { "open-for-business" : false } { "open-for-business" := x } x)
+    )
+    (defun UR_Price:object (asset-id:string)
+        (at "price" (read DEMIPAD|T|Ledger asset-id ["price"]))
+    )
+    (defun UR_Retrieval:bool (asset-id:string)
+        (at "retrieval" (read DEMIPAD|T|Ledger asset-id ["retrieval"]))
+    )
+    ;;
+    (defun UR_CheckRegistration:bool (asset-id:string)
+        (try
+            false
+            (with-read DEMIPAD|T|Ledger asset-id 
+                { "price" := dummy }
+                true
+            )
+        )
+    )
+    (defun URC_Prices:object{DemiourgosLaunchpadV2.DEMIPAD|Prices} 
+        (asset-id:string amount-in-dollars:decimal type:integer)
+        (let
+            (
+                (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-SWPI:module{SwapperIssueV4} SWPI)
+                ;;
+                (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
+                (sstoa-id:string (ref-DALOS::UR_SilverStoaID))
+                (ouro-id:string (ref-DALOS::UR_OuroborosID))
+                ;;
+                (wstoa-prec:integer (ref-DPTF::UR_Decimals wstoa-id))
+                (sstoa-prec:integer (ref-DPTF::UR_Decimals sstoa-id))
+                (ouro-prec:integer (ref-DPTF::UR_Decimals ouro-id))
+                ;;
+                (total-dollarz-raised:decimal (UR_TotalDollarzRaised asset-id))
+                (deposit-royalty:decimal (UCv_ComputeDepositRoyalty total-dollarz-raised amount-in-dollars))
+                (five-percent-dollarz:decimal (floor (/ deposit-royalty 3.0) 5))
+                (ten-percent-dollarz:decimal (- deposit-royalty five-percent-dollarz))
+                (remainder-percent-dollarz:decimal (- amount-in-dollars deposit-royalty))
+
+                ;;
+                (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
+                (wstoa-pid:decimal (ref-SWPI::URC_TokenDollarPrice wstoa-id stoa-pid))
+                (sstoa-pid:decimal (ref-SWPI::URC_TokenDollarPrice sstoa-id stoa-pid))
+                (ouro-pid:decimal (ref-SWPI::URC_OuroPrimordialPrice))
+                ;;
+                (five-percent-dollarz-as-stoa:decimal (floor (/ five-percent-dollarz wstoa-pid) wstoa-prec))
+                (env-split:[decimal] (UC_LaunchpadEnviromentSplit five-percent-dollarz-as-stoa))
+                ;;
+                (type-pid:decimal 
+                    (if (or (= type 0) (= type 1))
+                        wstoa-pid
+                        (if (= type 2)
+                            sstoa-pid
+                            ouro-pid
+                        )
+                    )
+                )
+                (type-prec:integer
+                    (if (or (= type 0) (= type 1))
+                        wstoa-prec
+                        (if (= type 2)
+                            sstoa-prec
+                            ouro-prec
+                        )
+                    )
+                )
+            )
+            (UDC_LaunchpadPrices
+                ;;Enviroment Split with native STOA amounts
+                (ref-DALOS::UR_AccountStoa (ref-DALOS::GOV|DALOS|SC_NAME))      ;;Gas-Station 10%
+                (ref-DALOS::UR_AccountStoa (at 2 (ref-DALOS::UR_DemiurgoiID)))  ;;HOV 20%
+                (ref-DALOS::UR_AccountStoa (at 1 (ref-DALOS::UR_DemiurgoiID)))  ;;CTO 30%
+                (ref-DALOS::UR_AccountStoa (ref-DALOS::GOV|OUROBOROS|SC_NAME))  ;;Liquid Staking 40%
+                (at 0 env-split)
+                (at 1 env-split)
+                (at 2 env-split)
+                (at 3 env-split)
+                ;;Total Enviroment Amount in native STOA
+                five-percent-dollarz-as-stoa
+                ;;CodingDivision and Remainder Split in WSTOA, SSTOA or OURO, depending on <type>
+                (floor (/ ten-percent-dollarz type-pid) type-prec)
+                (floor (/ remainder-percent-dollarz type-pid) type-prec)
+            )
+        )
+    )
+    (defun URC_Acquire:[string]
+        (buyer:string asset-id:string buy-amount-in-dollarz:decimal type:integer slippage:decimal)
+        @doc "Variant 1 (with slippage) — returns the coin.TRANSFER cap descriptions the UI must SIGN. \
+            \ Each leg is padded by (1 + slippage/100) so the signed managed cap is a ceiling with \
+            \ headroom: at execution the launchpad transfers the real (possibly-moved) price <= the \
+            \ padded cap, succeeding within tolerance and failing safely beyond it. Pass slippage 0.0 \
+            \ for exact caps. The buyer's on-chain cost ceiling is enforced separately by <max-cost> in \
+            \ C_Deposit; the UI sets max-cost = displayed-cost x (1 + slippage/100), slippage <= 50 by UI \
+            \ policy. The install-based, no-ceiling counterpart is CAP_Acquire (Variant 2, slippage off)."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+                ;;
+                (buyer-stoa:string (ref-DALOS::UR_AccountStoa buyer))
+                (lq-stoa:string (ref-LIQUID::GOV|LIQUID|SC_STOA-NAME))
+                (prices:object{DemiourgosLaunchpadV2.DEMIPAD|Prices} (URC_Prices asset-id buy-amount-in-dollarz type))
+                (kp:integer (ref-U|CT::CT_STOA_PRECISION))
+                (f:decimal (UC_SlippageFactor slippage))
+                ;;Slippage-padded per-leg ceilings (floored to STOA precision so the signed caps are valid)
+                (a1:decimal (floor (* (at "amount-one" prices) f) kp))
+                (a2:decimal (floor (* (at "amount-two" prices) f) kp))
+                (a3:decimal (floor (* (at "amount-three" prices) f) kp))
+                (a4:decimal (floor (* (at "amount-four" prices) f) kp))
+                (non-env:decimal (floor (* (+ (at "coding-amount" prices) (at "remainder-amount" prices)) f) kp))
+                (env-amt:decimal (floor (* (at "enviroment-amount" prices) f) kp))
+                ;;
+                (s1:string (format "<(coin.TRANSFER \"{}\" \"{}\" {})>" [buyer-stoa (at "receiver-one" prices) a1]))
+                (s2:string (format "<(coin.TRANSFER \"{}\" \"{}\" {})>" [buyer-stoa (at "receiver-two" prices) a2]))
+                (s3:string (format "<(coin.TRANSFER \"{}\" \"{}\" {})>" [buyer-stoa (at "receiver-three" prices) a3]))
+                (s4:string (format "<(coin.TRANSFER \"{}\" \"{}\" {})>" [buyer-stoa (at "receiver-four" prices) a4]))
+            )
+            (if (= type 0)
+                [
+                    (format "<(coin.TRANSFER \"{}\" \"{}\" {})>" [buyer-stoa lq-stoa non-env])
+                    s1 s2 s3 s4
+                ]
+                (if (= type 1)
+                    [
+                        (format "<(coin.TRANSFER \"{}\" \"{}\" {})>" [lq-stoa buyer-stoa env-amt])
+                        s1 s2 s3 s4
+                    ]
+                    [s1 s2 s3 s4]
+                )
+            )
+        )
+    )
+    (defun URCi_Deposit:object{IgnisCollectorV3.OutputCumulator}
+        (donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool)
+        @doc "Cost preview for C_Deposit: (type 0) wrap-STOA of the non-environment amount, \
+            \ (type 1) unwrap-STOA of the environment amount, and (unless direct-injection) the \
+            \ donor->launchpad transfer of the working token. The Satisfy/Deposit writes are \
+            \ free. Re-derived purely from URC_Prices."
+        ;;The op's own gate, not a copy of it -- see UEV_DepositDollarAmount above.
+        (UEV_DepositDollarAmount amount-in-dollars)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
+                ;;
+                (prices:object{DemiourgosLaunchpadV2.DEMIPAD|Prices} (URC_Prices asset-id amount-in-dollars type))
+                (working-id:string
+                    (if (or (= type 0) (= type 1))
+                        (ref-DALOS::UR_WrappedStoaID)
+                        (if (= type 2)
+                            (ref-DALOS::UR_SilverStoaID)
+                            (ref-DALOS::UR_OuroborosID)
+                        )
+                    )
+                )
+                (env:decimal (at "enviroment-amount" prices))
+                (non-enviroment:decimal (+ (at "coding-amount" prices) (at "remainder-amount" prices)))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (if (= type 0)
+                        (ref-LIQUID::URCi_WrapStoa donor non-enviroment)
+                        EOC
+                    )
+                    (if (= type 1)
+                        (ref-LIQUID::URCi_UnwrapStoa donor env)
+                        EOC
+                    )
+                    (if (not direct-injection)
+                        (ref-TFT::URCi_Transfer working-id donor DEMIPAD|SC_NAME non-enviroment)
+                        EOC
+                    )
+                ]
+                []
+            )
+        )
+    )
+    (defun URCi_TransmitSemiFungibles:object{IgnisCollectorV3.OutputCumulator}
+        (client:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
+        @doc "Cost preview for C_TransmitSemiFungibles: the single collectable multi-transfer \
+            \ (client->launchpad on fuel, launchpad->client on retrieve), son=true."
+        (URCi_TransmitCollectables client asset-id true nonces amounts fuel-or-retrieve)
+    )
+    (defun URCi_TransmitNonFungibles:object{IgnisCollectorV3.OutputCumulator}
+        (client:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
+        @doc "Cost preview for C_TransmitNonFungibles: as URCi_TransmitSemiFungibles with son=false."
+        (URCi_TransmitCollectables client asset-id false nonces amounts fuel-or-retrieve)
+    )
+    (defun URCi_TransmitCollectables:object{IgnisCollectorV3.OutputCumulator}
+        (client:string asset-id:string son:bool nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
+        @doc "Shared cost preview for the collectable transmit legs (mirrors XI_TransmitCollectables): \
+            \ one DPDC-T multi-transfer, sender/receiver flipped by fuel-or-retrieve."
+        (let
+            (
+                (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
+                (lpad:string DEMIPAD|SC_NAME)
+            )
+            (if fuel-or-retrieve
+                (ref-DPDC-T::URCi_MultiTransferCumulator [asset-id] [son] client lpad [nonces] [amounts])
+                (ref-DPDC-T::URCi_MultiTransferCumulator [asset-id] [son] lpad client [nonces] [amounts])
+            )
+        )
+    )
+    ;;{5.4}  Validate [UEV/CAP]
+    (defun CAP_Acquire
+        (buyer:string asset-id:string buy-amount-in-dollarz:decimal type:integer)
+        (let
+            (
+                (ref-coin:module{stoa-ns.fungible-v1} coin)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
+                ;;
+                (buyer-stoa:string (ref-DALOS::UR_AccountStoa buyer))
+                (lq-stoa:string (ref-LIQUID::GOV|LIQUID|SC_STOA-NAME))
+                (prices:object{DemiourgosLaunchpadV2.DEMIPAD|Prices} (URC_Prices asset-id buy-amount-in-dollarz type))
+                ;;
+
+                (r1:string (at "receiver-one" prices))
+                (r2:string (at "receiver-two" prices))
+                (r3:string (at "receiver-three" prices))
+                (r4:string (at "receiver-four" prices))
+                (a1:decimal (at "amount-one" prices))
+                (a2:decimal (at "amount-two" prices))
+                (a3:decimal (at "amount-three" prices))
+                (a4:decimal (at "amount-four" prices))
+                (enviroment:decimal (at "enviroment-amount" prices))
+                (coding:decimal (at "coding-amount" prices))
+                (remainder:decimal (at "remainder-amount" prices))
+            )
+            (if (= type 0)
+                (do
+                    (install-capability (ref-coin::TRANSFER buyer-stoa lq-stoa (+ coding remainder)))
+                    (install-capability (ref-coin::TRANSFER buyer-stoa r1 a1))
+                    (install-capability (ref-coin::TRANSFER buyer-stoa r2 a2))
+                    (install-capability (ref-coin::TRANSFER buyer-stoa r3 a3))
+                    (install-capability (ref-coin::TRANSFER buyer-stoa r4 a4))
+
+                )
+                (if (= type 1)
+                    (do
+                        (install-capability (ref-coin::TRANSFER lq-stoa buyer-stoa enviroment))
+                        (install-capability (ref-coin::TRANSFER buyer-stoa r1 a1))
+                        (install-capability (ref-coin::TRANSFER buyer-stoa r2 a2))
+                        (install-capability (ref-coin::TRANSFER buyer-stoa r3 a3))
+                        (install-capability (ref-coin::TRANSFER buyer-stoa r4 a4))
+                    )
+                    (do
+                        (install-capability (ref-coin::TRANSFER buyer-stoa r1 a1))
+                        (install-capability (ref-coin::TRANSFER buyer-stoa r2 a2))
+                        (install-capability (ref-coin::TRANSFER buyer-stoa r3 a3))
+                        (install-capability (ref-coin::TRANSFER buyer-stoa r4 a4))
+                    )
+                )
+            )
+        )
+    )
+    (defun UEV_AssetFungibility (asset-id:string fungibility-to-check:[bool])
+        (let
+            (
+                (type:string (UC_Type asset-id fungibility-to-check))
+                (fungibility:[bool] (UR_Fungibility asset-id))
+            )
+            (enforce (= fungibility fungibility-to-check) (format "ID {} fungibility as {} is invalid" [asset-id type]))
+        )
+    )
+    (defun UEV_Fungibility (fungibility:[bool])
+        (let
+            (
+                (l:integer (length fungibility))
+            )
+            (enforce (= l 2) "Invalid Fungibility variable")
+        )
+    )
+    (defun UEV_DirectInjection (direct-injection:bool)
+        @doc "Direct-Injection is an unbuilt feature: once AQP vaults are live it will route the \
+            \ <cod> royalty portion of a deposit into an injection profile (or collect-then-drip \
+            \ once/day via an automaton). Until it is built it is HARD-BLOCKED here — this enforces \
+            \ a deposit does not request it, UNCONDITIONALLY (no admin flag can enable the \
+            \ unfinished path). This is what prevents the half-wired branch from crediting seller \
+            \ funds with no tokens in custody (phantom funds). The <UR_DirectInjection> state is \
+            \ kept reserved to gate the real path when it is implemented."
+        (enforce (not direct-injection) "Direct Injection is not yet available")
+    )
+    (defun UEV_SlippageCost (amount-in-dollars:decimal max-cost:decimal)
+        @doc "Slippage guard for a buy (Variant 1). The dollar cost computed live at execution \
+            \ (<amount-in-dollars>) must not exceed the buyer's signed ceiling <max-cost>, which the UI \
+            \ sets to displayed-cost x (1 + slippage/100). A sentinel <max-cost> below zero means NO \
+            \ bound — the slippage-off path (Variant 2), where the buyer accepts the live price via \
+            \ install-capability and is warned by the UI. Mirrors SWP's slippage protection, adapted to \
+            \ bound a cost instead of a min output; the 50%% tolerance ceiling is a UI policy (the \
+            \ on-chain code holds no poll-time baseline to recover the percent from)."
+        (enforce
+            (or (< max-cost 0.0) (<= amount-in-dollars max-cost))
+            (format "Slippage: live cost {} exceeds the accepted maximum {}" [amount-in-dollars max-cost])
+        )
+    )
+    (defun CAP_Owner (asset-id:string)
+        @doc "Enforces <asset-id> ownership \
+        \ Automaticaly enforces <asset-id> is registered, via <UR_Fungibility>"
+        (let
+            (
+                (fungibility:[bool] (UR_Fungibility asset-id))
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (ref-DPDC:module{DpdcV2} DPDC)
+            )
+            (cond
+                ((= fungibility TF) (ref-DPTF::CAP_Owner asset-id))
+                ((= fungibility OF) (ref-DPOF::CAP_Owner asset-id))
+                ((= fungibility SF) (ref-DPDC::CAP_OwnerOrCreator asset-id true))
+                ((= fungibility NF) (ref-DPDC::CAP_OwnerOrCreator asset-id false))
+                true
+            )
+        )
+    )
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;
+    ;;
+    ;;Protection: Class 2 — SECURE
+    (defun XI_RegisterAsset (asset-id:string fungibility:[bool])
+        (require-capability (SECURE))
+        (insert DEMIPAD|T|Ledger asset-id 
+            (UDC_DEMIPAD|Holdings 
+                0.0 0.0 0.0 0.0
+                0.0 0.0 0.0
+                false false
+                fungibility false {} false
+            )
+        )
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_U|TotalDollarzRaised (asset-id:string value:decimal)
+        (require-capability (SECURE))
+        (update DEMIPAD|T|Ledger asset-id {"total-dollarz-raised" : value})
+    )
+    ;;Protection: Class 1 — Innate protection offered by XI_U|TotalWSTOARaised,
+    ;;Protection:          XI_U|TotalSSTOARaised, XI_U|TotalOURORaised
+    (defun XI_U|TotalRaised (asset-id:string value:decimal type:integer)
+        (cond
+            ((= type 1) (XI_U|TotalWSTOARaised asset-id value))
+            ((= type 2) (XI_U|TotalSSTOARaised asset-id value))
+            ((= type 3) (XI_U|TotalOURORaised asset-id value))
+            true
+        )
+    )
+    ;;Protection: Class 1 — Innate protection offered by XI_U|FundsWSTOA, XI_U|FundsSSTOA,
+    ;;Protection:          XI_U|FundsOURO
+    (defun XI_U|Funds (asset-id:string value:decimal type:integer)
+        (cond
+            ((= type 1) (XI_U|FundsWSTOA asset-id value))
+            ((= type 2) (XI_U|FundsSSTOA asset-id value))
+            ((= type 3) (XI_U|FundsOURO asset-id value))
+            true
+        )
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_U|TotalWSTOARaised (asset-id:string value:decimal)
+        (require-capability (SECURE))
+        (update DEMIPAD|T|Ledger asset-id {"total-wstoa-raised" : value})
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_U|TotalSSTOARaised (asset-id:string value:decimal)
+        (require-capability (SECURE))
+        (update DEMIPAD|T|Ledger asset-id {"total-sstoa-raised" : value})
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_U|TotalOURORaised (asset-id:string value:decimal)
+        (require-capability (SECURE))
+        (update DEMIPAD|T|Ledger asset-id {"total-ouro-raised" : value})
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_U|FundsWSTOA (asset-id:string value:decimal)
+        (require-capability (SECURE))
+        (update DEMIPAD|T|Ledger asset-id {"funds-wstoa" : value})
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_U|FundsSSTOA (asset-id:string value:decimal)
+        (require-capability (SECURE))
+        (update DEMIPAD|T|Ledger asset-id {"funds-sstoa" : value})
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_U|FundsOURO (asset-id:string value:decimal)
+        (require-capability (SECURE))
+        (update DEMIPAD|T|Ledger asset-id {"funds-ouro" : value})
+    )
+    ;;
+    ;;Protection: Class 2 — SECURE
+    (defun XI_U|OpenForBusiness (asset-id:string toggle:bool)
+        (require-capability (SECURE))
+        (update DEMIPAD|T|Ledger asset-id {"open-for-business" : toggle})
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_U|Price (asset-id:string price:object)
+        (require-capability (SECURE))
+        (update DEMIPAD|T|Ledger asset-id {"price" : price})
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_U|Retrieval (asset-id:string retrieval:bool)
+        (require-capability (SECURE))
+        (update DEMIPAD|T|Ledger asset-id {"retrieval" : retrieval})
+    )
+    ;;
+    ;;Protection: Class 2 — SECURE
+    (defun XI_W|DirectInjection (value:decimal)
+        (require-capability (SECURE))
+        (update DEMIPAD|T|Properties PP {"direct-injection" : value})
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_U|WSTOA (value:decimal)
+        (require-capability (SECURE))
+        (update DEMIPAD|T|Properties PP {"resident-wstoa" : value})
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_U|SSTOA (value:decimal)
+        (require-capability (SECURE))
+        (update DEMIPAD|T|Properties PP {"resident-sstoa" : value})
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_U|OURO (value:decimal)
+        (require-capability (SECURE))
+        (update DEMIPAD|T|Properties PP {"resident-ouro" : value})
+    )
+    ;;
+    ;;Protection: Class 2 — SECURE
+    (defun XI_SatisfyEnviroment (donor:string prices:object{DemiourgosLaunchpadV2.DEMIPAD|Prices})
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-coin:module{stoa-ns.fungible-v1} coin)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                ;;
+                (donor-stoa:string (ref-DALOS::UR_AccountStoa donor))
+            )
+            (ref-coin::transfer donor-stoa (at "receiver-one" prices)    (at "amount-one" prices))       ;;for GasStation
+            (ref-coin::transfer donor-stoa (at "receiver-two" prices)    (at "amount-two" prices))       ;;for HOV
+            (ref-coin::transfer donor-stoa (at "receiver-three" prices)  (at "amount-three" prices))     ;;for CTO
+            (ref-coin::transfer donor-stoa (at "receiver-four" prices)   (at "amount-four" prices))      ;;for LQ-St
+        )
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_DepositResidents (prices:object{DemiourgosLaunchpadV2.DEMIPAD|Prices} type:integer)
+        (require-capability (SECURE))
+        (with-capability (SECURE)
+            (let
+                (
+                    (v0:decimal (at "coding-amount" prices))
+                    (v1:decimal (UR_WSTOA))
+                    (v2:decimal (UR_SSTOA))
+                    (v3:decimal (UR_OURO))
+                )
+                (if (or (= type 0) (= type 1))
+                    (XI_U|WSTOA (+ v0 v1))
+                    (if (= type 2)
+                        (XI_U|SSTOA (+ v0 v2))
+                        (XI_U|OURO (+ v0 v3))
+                    )
+                )
+            )
+        ) 
+    )
+    ;;Protection: Class 1 — Innate protection offered by XI_U|TotalDollarzRaised
+    (defun XI_DepositForAsset 
+        (asset-id:string amount-in-dollars:decimal remainder:decimal type:integer)
+        (let
+            (
+                (used-type:integer (if (= type 0) 1 type))
+            )
+            (XI_U|TotalDollarzRaised asset-id (+ (UR_TotalDollarzRaised asset-id) amount-in-dollars))
+            (XI_U|TotalRaised asset-id (+ remainder (URv_TotalRaised asset-id used-type)) used-type)
+            (XI_U|Funds asset-id (+ remainder (URv_Funds asset-id used-type)) used-type)
+        )
+    )
+    ;;
+    ;;Protection: Class 2 — SECURE
+    (defun XI_TransmitCollectables:object{IgnisCollectorV3.OutputCumulator}
+        (client:string asset-id:string son:bool nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
+                (lpad:string DEMIPAD|SC_NAME)
+                (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount client))
+            )
+            ;;#7M: open the capability matching the collectable KIND (son true = Semi-Fungible [false true],
+            ;;     false = Non-Fungible [false false]). Previously both branches hardcoded the SEMI cap, so a
+            ;;     real NF asset always failed UEV_AssetFungibility (dead) and an SF routed via the NF entry
+            ;;     transferred with son=false (type mismatch). The NON caps existed but were wired to nothing.
+            (if fuel-or-retrieve
+                ;;FUEL — deposit collectables INTO the launchpad
+                (if son
+                    (with-capability (DEMIPAD|C>FUEL-SEMI-FUNGIBLE asset-id)
+                        (ref-DPDC-T::C_Transfer client client lpad [asset-id] [son] [nonces] [amounts] true)
+                    )
+                    (with-capability (DEMIPAD|C>FUEL-NON-FUNGIBLE asset-id)
+                        (ref-DPDC-T::C_Transfer client client lpad [asset-id] [son] [nonces] [amounts] true)
+                    )
+                )
+                ;;RETRIEVE — withdraw collectables FROM the launchpad (NF path now also inherits the #2H lock)
+                (if son
+                    (with-capability (DEMIPAD|C>RETRIEVE-SEMI-FUNGIBLE asset-id)
+                        (ref-DPDC-T::C_Transfer client lpad client [asset-id] [son] [nonces] [amounts] true)
+                    )
+                    (with-capability (DEMIPAD|C>RETRIEVE-NON-FUNGIBLE asset-id)
+                        (ref-DPDC-T::C_Transfer client lpad client [asset-id] [son] [nonces] [amounts] true)
+                    )
+                )
+            )
+        )
+    )
+    ;;{5.7}  User [A/C]
+    ;;
+    (defun A_RegisterAssetToLaunchpad (patron:string asset-id:string fungibility:[bool])
+        (P|UEV_IMC)
+        (with-capability (DEMIPAD|C>REGISTER asset-id fungibility)
+            (XI_RegisterAsset asset-id fungibility)
+            (format "{} {} registered succesfuly to Demiourgos Launchpad!" [(UC_Type asset-id fungibility) asset-id])
+        )
+    )
+    ;;
+    (defun A_ToggleOpenForBusiness (asset-id:string toggle:bool)
+        (P|UEV_IMC)
+        (with-capability (DEMIPAD|C>TOGGLE-SALE asset-id toggle)
+            (XI_U|OpenForBusiness asset-id toggle)
+            (format "Asset {} sale succesfully toggled to {}" [asset-id toggle])
+        )
+    )
+    (defun A_DefinePrice (asset-id:string price:object)
+        (P|UEV_IMC)
+        (with-capability (DEMIPAD|C>DEFINE-PRICE asset-id price)
+            (XI_U|Price asset-id price)
+            (format "Asset {} price succesfully updated with the Price Object {}" [asset-id price])
+        )
+    )
+    (defun A_ToggleRetrieval (asset-id:string toggle:bool)
+        (P|UEV_IMC)
+        (with-capability (DEMIPAD|C>TOGGLE-RETRIEVAL asset-id toggle)
+            (XI_U|Retrieval asset-id toggle)
+            (format "Asset {} Retrieval succesfuly set to {}" [asset-id toggle])
+        )
+    )
+    (defun C_Deposit:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal)
+        @doc "Deposits Funds into the Launchpad, for a registered Asset \
+            \ Type 0 = Native Stoa \
+            \ Type 1 = WSTOA \
+            \ Type 2 = SSTOA \
+            \ Type 3 = OURO \
+            \ \
+            \ <max-cost> is the buyer's slippage ceiling in dollars (Variant 1): the live-computed \
+            \ <amount-in-dollars> must be <= <max-cost>. Pass a sentinel below zero for the slippage-off \
+            \ path (Variant 2). \
+            \ \
+            \ Outputs: \
+            \ <type 0> = STOA Split ENV + WSTOA for CD (needs wrapping) + WSTOA for Sale (needs wrapping) \
+            \ <type 1> = STOA Split ENV (needs unwrapping) + WSTOA for CD + WSTOA for Sale \
+            \ <type 2> = STOA Split ENV + SSTOA for CD + SSTOA for Sale \
+            \ <type 3> = STOA Split ENV + OURO for CD + OURO for Sale "
+        (P|UEV_IMC)
+        (with-capability (DEMIPAD|C>DEPOSIT donor asset-id amount-in-dollars type direct-injection max-cost)
+            (let
+                (
+                    (ref-DALOS:module{OuronetDalosV2} DALOS)
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                    (ref-LIQUID:module{StoaLiquidStakingV2} LIQUID)
+                    ;;
+                    (prices:object{DemiourgosLaunchpadV2.DEMIPAD|Prices}  (URC_Prices asset-id amount-in-dollars type))
+                    (working-id:string
+                        (if (or (= type 0) (= type 1))
+                            (ref-DALOS::UR_WrappedStoaID)
+                            (if (= type 2)
+                                (ref-DALOS::UR_SilverStoaID)
+                                (ref-DALOS::UR_OuroborosID)
+                            )
+                        )
+                    )
+                    ;;
+                    (env:decimal (at "enviroment-amount" prices))
+                    (cod:decimal (at "coding-amount" prices))
+                    (rem:decimal (at "remainder-amount" prices))
+                    (non-enviroment:decimal (+ cod rem))
+                    ;;
+                    (ico1:object{IgnisCollectorV3.OutputCumulator}
+                        (if (= type 0)
+                            (ref-LIQUID::C_WrapStoa patron donor non-enviroment)
+                            EOC
+                        )
+                    )
+                    (ico2:object{IgnisCollectorV3.OutputCumulator}
+                        (if (= type 1)
+                            (ref-LIQUID::C_UnwrapStoa patron donor env)
+                            EOC
+                        )
+                    )
+                    (ico3:object{IgnisCollectorV3.OutputCumulator}
+                        (if (not direct-injection)
+                            (ref-TFT::C_Transfer patron donor DEMIPAD|SC_NAME working-id non-enviroment true)
+                            EOC
+                            ;;When AQP LIVE, to be replaced by:
+                            ;;(ref-AQP::C_Inject <pool-id> <working-id> <cod> <injection-type>)
+                            ;;(ref-TFT::C_Transfer patron donor DEMIPAD|SC_NAME working-id rem true)
+                        )
+                    )
+                )
+                ;;1]Satisfy Enviroment (Stoa was Unwraped prior if <type> = 1)
+                (XI_SatisfyEnviroment donor prices)
+                ;;2]Update Internal Launchpad with deposit Data
+                    ;;2.1]When (not direct-injection) save <cod> amount in Launchpad Properties
+                (if (not direct-injection)
+                    ;;Update Resident Amounts in DEMIPAD|Properties (they may be later injected to Acquisition Pool)
+                    (XI_DepositResidents prices type)
+                    true
+                )
+                    ;;2.2]Save <rem> in <DEMIPAD|T|Ledger> (so that it may be withdrawed by Asset Seller)
+                    ;;    Guarded on (not direct-injection): crediting the seller ledger is only
+                    ;;    valid once <rem> tokens actually enter custody (ico3 above). The cap
+                    ;;    hard-blocks direct-injection today, so this branch is unreachable; the
+                    ;;    guard stays as defense-in-depth so the future direct-injection build
+                    ;;    must wire the <rem> transfer before this credit can ever fire (no
+                    ;;    phantom funds).
+                (if (not direct-injection)
+                    (XI_DepositForAsset asset-id amount-in-dollars rem type)
+                    true
+                )
+                ;;3]Output Cumulator
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3] [])
+            )
+        )
+    )
+    (defun C_Withdraw
+        (patron:string asset-id:string type:integer destination:string)
+        @doc "Withdraws all cumulated Tokens in the Launchpad, gathered through sale \
+        \ Type 1 = WSTOA \
+        \ Type 2 = SSTOA \
+        \ Type 3 = OURO "
+        (P|UEV_IMC)
+        (let
+            (
+                (retrieval-amount:decimal (URv_Funds asset-id type))
+            )
+            (with-capability (DEMIPAD|C>WITHDRAW asset-id type retrieval-amount destination)
+                (let
+                    (
+                        (ref-DALOS:module{OuronetDalosV2} DALOS)
+                        (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+                        (working-id:string
+                            (if (= type 1)
+                                (ref-DALOS::UR_WrappedStoaID)
+                                (if (= type 2)
+                                    (ref-DALOS::UR_SilverStoaID)
+                                    (ref-DALOS::UR_OuroborosID)
+                                )
+                            )
+                        )
+                    )
+                    ;;1]Withdraw Tokens to Destination
+                    (ref-TS01-C1::DPTF|C_Transfer patron DEMIPAD|SC_NAME destination working-id retrieval-amount true)
+                    ;;2]Reset Holdings to 0.0 after withdrawal
+                    (XI_U|Funds asset-id 0.0 type)
+                )
+            )
+        )
+    )
+    ;;Fuel|Retrieve Assets to|from Launchpad to be made after Upgrade.
+    (defun C_TransmitTrueFungible (patron:string client:string asset-id:string amount:decimal fuel-or-retrieve:bool)
+        (P|UEV_IMC)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+                (lpad:string DEMIPAD|SC_NAME)
+                (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount client))
+            )
+            (if fuel-or-retrieve
+                (with-capability (DEMIPAD|C>FUEL-TRUE-FUNGIBLE asset-id)
+                    (ref-TS01-C1::DPTF|C_Transfer patron client lpad asset-id amount true)
+                    (format "Succesfuly fueled {} {} to Demiourgos Launchpad from Account {}" [amount asset-id sa-s])
+                )
+                (with-capability (DEMIPAD|C>RETRIEVE-TRUE-FUNGIBLE asset-id)
+                    (ref-TS01-C1::DPTF|C_Transfer patron lpad client asset-id amount true)
+                    (format "Succesfuly retrieved {} {} from Demiourgos Launchpad to Account {}" [amount asset-id sa-s])
+                )
+            )
+        )
+    )
+    (defun C_TransmitOrtoFungible (patron:string client:string asset-id:string nonces:[integer] fuel-or-retrieve:bool)
+        (P|UEV_IMC)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
+                (lpad:string DEMIPAD|SC_NAME)
+                (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount client))
+            )
+            (if fuel-or-retrieve
+                (with-capability (DEMIPAD|C>FUEL-ORTO-FUNGIBLE asset-id)
+                    (ref-TS01-C1::DPOF|C_Transfer patron client lpad asset-id nonces true)
+                    (format "Succesfuly fueled {} Nonces {} to Demiourgos Launchpad from Account {}" [asset-id nonces sa-s])
+                )
+                (with-capability (DEMIPAD|C>RETRIEVE-ORTO-FUNGIBLE asset-id)
+                    (ref-TS01-C1::DPOF|C_Transfer patron lpad client asset-id nonces true)
+                    (format "Succesfuly retrieved {} Nonces {} from Demiourgos Launchpad to Account {}" [asset-id nonces sa-s])
+                )
+            )
+        )
+    )
+    (defun C_TransmitSemiFungibles:object{IgnisCollectorV3.OutputCumulator}
+        (client:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
+        (P|UEV_IMC)
+        (with-capability (P|SECURE-CALLER)
+            (XI_TransmitCollectables client asset-id true nonces amounts fuel-or-retrieve)
+        )
+    )
+    (defun C_TransmitNonFungibles:object{IgnisCollectorV3.OutputCumulator}
+        (client:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
+        (P|UEV_IMC)
+        (with-capability (P|SECURE-CALLER)
+            (XI_TransmitCollectables client asset-id false nonces amounts fuel-or-retrieve)
+        )
+    )
+
+)
+
+;; --- tables for 00_Demipad.pact (4 defined) ---
+;; UPGRADE MODE: this module is assumed already deployed, so its
+;; tables already exist and (create-table) would ABORT the whole
+;; transaction. They are listed here, commented, for reference.
+;; If any of these is NEW since the last deploy, uncomment JUST it.
+;; (create-table P|T)
+;; (create-table P|MT)
+;; (create-table DEMIPAD|T|Ledger)
+;; (create-table DEMIPAD|T|Properties)
 
 ;; ===== 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/00_AQP-SCHEMAS.pact ======
 ;;<=============================================================================>

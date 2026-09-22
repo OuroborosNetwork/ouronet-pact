@@ -375,7 +375,7 @@
             ;;which would pass an unqualified match while proving the opposite.
             (expect-failure "<<RT-D-004>> ATTACK REFUSED: holding the nonce is the victim's, not the payer's"
                 "Keyset failure (keys-all): [PK_Ancie...]"
-                (ref-TS02-C2::DPNF|C_TransferNonce attacker id victim attacker nonce 1 false))
+                (ref-TS02-C2::DPNF|C_TransferNonce attacker victim attacker id nonce 1 false))
             ;;...and the nonce did not move: the victim still passes the possession gate afterwards.
             ;;THE PLURAL DOOR, a separate defcap with its own `CAP_EnforceAccountOwnership sender`.
             ;;The singular assertion above says nothing about it. Unlike the singular collectable
@@ -383,7 +383,7 @@
             ;;well-formed only so that a shape error cannot be mistaken for the refusal under test.
             (expect-failure "<<RT-D-004>> ...nor in bulk, which is a separate gate"
                 "Keyset failure (keys-all): [PK_Ancie...]"
-                (ref-TS02-C1::DPDC|C_BulkTransfer attacker id false [[nonce]] [[1]] victim [attacker] false))
+                (ref-TS02-C1::DPDC|C_BulkTransfer attacker victim [attacker] id false [[nonce]] [[1]] false))
             (expect "<<RT-D-004>> ...and the victim still holds the nonce"
                 true (> (ref-DPDC::UR_AccountNonceSupply victim id false nonce) 0))
         ]

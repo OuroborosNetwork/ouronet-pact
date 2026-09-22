@@ -129,7 +129,7 @@
         (emma:string KST.EMMA)
     )
     (let ((used0:integer (ref-DPDC::UR_NoncesUsed nf false)))
-        (ref-TS02-C2::DPNF|C_TransferNonce patron nf patron emma 3 1 false)
+        (ref-TS02-C2::DPNF|C_TransferNonce patron patron emma nf 3 1 false)
         (map print
             [
                 (expect "<<DPNF-03>> C_TransferNonce moved nonce 3 to the receiver"
@@ -248,7 +248,11 @@
         ]
     )
     (let ((used0:integer (ref-DPDC::UR_NoncesUsed nf false)))
-        (ref-TS02-C2::DPNF|C_Repurpose patron nf emma patron [3] [1])
+        ;;<executor> is the collection owner -- the only account that may repurpose -- and
+        ;;<executee> is EMMA, who is debited without signing. Before the 2026-09-22 canon
+        ;;sweep the signature named neither, and the account in the actor position was the
+        ;;TARGET.
+        (ref-TS02-C2::DPNF|C_Repurpose patron patron emma nf patron [3] [1])
         (map print
             [
                 (expect "<<DPNF-05>> the nonce is back with the collection owner"

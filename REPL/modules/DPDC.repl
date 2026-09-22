@@ -128,8 +128,7 @@
             (nf-hold0:string (ref-DPDC::UR_NonceHolder nf false 1))
         )
         ;;one call, both kinds: NFT nonce 1 (amount 1) and SFT nonce 1 (amount 4)
-        (ref-TS02-C1::DPDC|C_MultiTransfer patron [nf sf] [false true] patron emma
-            [[1] [1]] [[1] [4]] false)
+        (ref-TS02-C1::DPDC|C_MultiTransfer patron patron emma [nf sf] [false true] [[1] [1]] [[1] [4]] false)
         (map print
             [
                 (expect "<<DPDC-03>> the NFT nonce moved to the receiver"
@@ -177,7 +176,7 @@
             (l0:integer (ref-DPDC::UR_AccountNonceSupply lumy sf true 2))
         )
         ;;nonce 2, 3 to EMMA and 2 to LUMY, in a single bulk call
-        (ref-TS02-C1::DPDC|C_BulkTransfer patron sf true [[2] [2]] [[3] [2]] patron [emma lumy] false)
+        (ref-TS02-C1::DPDC|C_BulkTransfer patron patron [emma lumy] sf true [[2] [2]] [[3] [2]] false)
         (map print
             [
                 ;;NOTE: UR_AccountNonceSupply returns -1 as the "holds none" SENTINEL, not 0.
@@ -502,7 +501,7 @@
         ;;itself worth doing here: it proves the freeze is a real gate on the RECEIVE path and
         ;;not just on the wipe path.
         (ref-TS02-C1::DPSF|C_ToggleFreezeAccount KST.ANHD (DPDC.UR_OwnerKonto sf true) emma sf false)
-        (ref-TS02-C1::DPSF|C_TransferNonce KST.ANHD sf KST.ANHD emma 3 5 false)
+        (ref-TS02-C1::DPSF|C_TransferNonce KST.ANHD KST.ANHD emma sf 3 5 false)
         (ref-TS02-C1::DPSF|C_ToggleFreezeAccount KST.ANHD (DPDC.UR_OwnerKonto sf true) emma sf true)
         (map print
             [
@@ -1608,19 +1607,17 @@
             ;;never run. It runs now.
             (expect-failure "<<DPDC-G14>> an EMPTY receiver list reaches the shape message"
                 "Invalid DPDC bulk transfer: receiver/nonces/amounts legs"
-                (ref-TS02-C2::DPNF|C_BulkTransfer KST.ANHD nf [[1]] [[1]] KST.ANHD [] false))
+                (ref-TS02-C2::DPNF|C_BulkTransfer KST.ANHD KST.ANHD [] nf [[1]] [[1]] false))
             ;;WAS MUTE 2 -- more receivers than nonce legs. Same cause, same repair.
             (expect-failure "<<DPDC-G14>> ...and so does two receivers against one nonce leg"
                 "Invalid DPDC bulk transfer: receiver/nonces/amounts legs"
-                (ref-TS02-C2::DPNF|C_BulkTransfer KST.ANHD nf [[1]] [[1]] KST.ANHD
-                    [KST.EMMA KST.LUMY] false))
+                (ref-TS02-C2::DPNF|C_BulkTransfer KST.ANHD KST.ANHD [KST.EMMA KST.LUMY] nf [[1]] [[1]] false))
             ;;ALWAYS REACHABLE -- arrays longer than receivers. The indexing stayed in bounds even
             ;;before the fix, so this direction always spoke. Keeping it is what shows the repair
             ;;made the guard UNIFORM rather than simply moving which direction works.
             (expect-failure "<<DPDC-G14>> ...while two nonce legs against one receiver DOES reach the message"
                 "Invalid DPDC bulk transfer: receiver/nonces/amounts legs"
-                (ref-TS02-C2::DPNF|C_BulkTransfer KST.ANHD nf [[1] [2]] [[1]] KST.ANHD
-                    [KST.EMMA] false))
+                (ref-TS02-C2::DPNF|C_BulkTransfer KST.ANHD KST.ANHD [KST.EMMA] nf [[1] [2]] [[1]] false))
         ]
     )
     ""
@@ -1949,7 +1946,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|TransferNonce patron sf patron lumy 1 2 false))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_TransferNonce patron sf patron lumy 1 2 false))
+            (m (ref-TS02-C1::DPSF|C_TransferNonce patron patron lumy sf 1 2 false))
         )
         (map print
             [
@@ -1996,7 +1993,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|TransferNonces patron sf patron lumy [1 4] [2 2] false))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_TransferNonces patron sf patron lumy [1 4] [2 2] false))
+            (m (ref-TS02-C1::DPSF|C_TransferNonces patron patron lumy sf [1 4] [2 2] false))
         )
         (map print
             [
@@ -2370,7 +2367,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPDC|BulkTransfer patron sf true [[2]] [[1]] patron [lumy] false))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPDC|C_BulkTransfer patron sf true [[2]] [[1]] patron [lumy] false))
+            (m (ref-TS02-C1::DPDC|C_BulkTransfer patron patron [lumy] sf true [[2]] [[1]] false))
         )
         (map print
             [
@@ -2411,7 +2408,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPDC|MultiTransfer patron [nf sf] [false true] patron lumy [[2] [1]] [[1] [4]] false))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPDC|C_MultiTransfer patron [nf sf] [false true] patron lumy [[2] [1]] [[1] [4]] false))
+            (m (ref-TS02-C1::DPDC|C_MultiTransfer patron patron lumy [nf sf] [false true] [[2] [1]] [[1] [4]] false))
         )
         (map print
             [
@@ -3584,7 +3581,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|TransferNonce patron nf patron lumy 2 1 false))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C2::DPNF|C_TransferNonce patron nf patron lumy 2 1 false))
+            (m (ref-TS02-C2::DPNF|C_TransferNonce patron patron lumy nf 2 1 false))
         )
         (map print
             [
@@ -3630,7 +3627,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|TransferNonces patron nf patron lumy [2 3] [1 1] false))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C2::DPNF|C_TransferNonces patron nf patron lumy [2 3] [1 1] false))
+            (m (ref-TS02-C2::DPNF|C_TransferNonces patron patron lumy nf [2 3] [1 1] false))
         )
         (map print
             [
@@ -4303,7 +4300,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|BulkTransfer patron sf [[1]] [[1]] patron [lumy] false))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_BulkTransfer patron sf [[1]] [[1]] patron [lumy] false))
+            (m (ref-TS02-C1::DPSF|C_BulkTransfer patron patron [lumy] sf [[1]] [[1]] false))
         )
         (map print
             [
@@ -4399,7 +4396,9 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|Repurpose patron sf patron lumy [1] [2]))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_Repurpose patron sf patron lumy [1] [2]))
+            ;;patron/executor/executee all read ANHD/ANHD/ANHD here: the collection owner is
+            ;;also paying and also the account being debited. Three roles, one account.
+            (m (ref-TS02-C1::DPSF|C_Repurpose patron patron patron sf lumy [1] [2]))
         )
         (map print
             [
@@ -4819,7 +4818,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|BulkTransfer patron nf [[2]] [[1]] patron [lumy] false))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C2::DPNF|C_BulkTransfer patron nf [[2]] [[1]] patron [lumy] false))
+            (m (ref-TS02-C2::DPNF|C_BulkTransfer patron patron [lumy] nf [[2]] [[1]] false))
         )
         (map print
             [
@@ -4917,7 +4916,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|Repurpose patron nf patron lumy [2] [1]))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C2::DPNF|C_Repurpose patron nf patron lumy [2] [1]))
+            (m (ref-TS02-C2::DPNF|C_Repurpose patron patron patron nf lumy [2] [1]))
         )
         (map print
             [
@@ -6014,7 +6013,7 @@
         (holder:string KST.LUMY)
     )
     ;;...and the holder is given MORE nonces, so the plan really splits.
-    (ref-TS02-C1::DPSF|C_TransferNonces patron id patron holder [1 4] [1 1] false)
+    (ref-TS02-C1::DPSF|C_TransferNonces patron patron holder id [1 4] [1 1] false)
     (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto id true) holder id true)
     (let
         (
@@ -6095,7 +6094,7 @@
         (holder:string KST.EMMA)
     )
     ;;...and the holder is given MORE nonces, so the plan really splits.
-    (ref-TS02-C2::DPNF|C_TransferNonces patron id patron holder [2 3] [1 1] false)
+    (ref-TS02-C2::DPNF|C_TransferNonces patron patron holder id [2 3] [1 1] false)
     (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto id false) holder id true)
     (let
         (

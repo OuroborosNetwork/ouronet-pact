@@ -712,7 +712,7 @@
         (format "Patron has {} IGNIS" [(ref-DALOS::UR_TF_AccountSupply patron false)])
         (format "Summed Ignis Royalty is {}" [(ref-DPDC-T::URC_SummedIgnisRoyalty patron id true [1] [7])])
         (format "Transfer Cumulator is {}" [(ref-DPDC-T::URCi_MultiTransferCumulator [id] [true] patron emma [[1]] [[7]])])
-        (ref-TS02-C1::DPSF|C_TransferNonce patron id patron lumy 1 7 false)
+        (ref-TS02-C1::DPSF|C_TransferNonce patron patron lumy id 1 7 false)
         (format "Patron has after transfer {} IGNIS" [(ref-DALOS::UR_TF_AccountSupply patron false)])
         (ref-DPDC::URH_AccountNoncesWithSupplies lumy id true)
         (ref-DPDC::URH_AccountNoncesWithSupplies emma id true)

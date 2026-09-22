@@ -59,7 +59,28 @@ VARIABLE_FAMILY = re.compile(r'(Wipe|MultiTransfer|MultiBulk|BulkTransfer|SmartS
                              r'|Drain|Sweep|Unstale|Slice)')
 SCALES = re.compile(r'\(dec\s*\(length|\(dec\s+token-count\)|\(dec\s+no-of-nonces\)'
                     r'|\(dec\s+number-of-nonces\)|fold\s*\(\+\)\s*0\.0'
+                    r'|\(dec\s*\(fold'
                     r'|\(\*\s*\(dec|per-nonce|price-per-nonce')
+# `\(dec\s*\(fold` ADDED 2026-09-22, and the reason is a warning about this whole regex.
+#
+# SCALES is run over `billing_text`, which keeps the RAW function bodies INCLUDING `@doc`
+# prose -- deliberately, because charge() harvests deter keys out of string literals. So the
+# two literal phrases in this pattern, `per-nonce` and `price-per-nonce`, can match a
+# DOCUMENTATION SENTENCE and decide an op's published price class on the strength of a word.
+#
+# That is not hypothetical. DPDC-T::C_RepurposeCollectable and
+# DPDC-F::C_RepurposeCollectableFragments compute the IDENTICAL price shape --
+# `(* p (dec (fold (+) 1 amounts)))` -- and were classified DIFFERENTLY: the first published
+# COMPLEX / ">= n", the second an EXACT flat price. The only difference between them was that
+# one cost-preview @doc says "per-nonce construct priced" and the other says "per-fragment".
+# A published price was resting on a hyphenated word in a comment.
+#
+# `(dec (fold ...))` is the STRUCTURE those docs were describing: fold a list into a number and
+# multiply the price by it. Matching the code makes the classification independent of the prose,
+# which is what it should have been. The two phrase alternatives are LEFT IN rather than removed
+# -- some ops may be carried only by them, and proving which is a separate exercise from fixing
+# the one that was demonstrably wrong.
+
 # Same-module delegation must be followed too: DPOF::C_WipeClean is a thin alias that just calls
 # C_WipePure in its OWN module, so a walk chasing only URCi_/X*_ stops before the cumulator and the
 # op publishes "?". Bare C_/CC_/Cp_/CCp_ names are same-module client calls. This is only safe

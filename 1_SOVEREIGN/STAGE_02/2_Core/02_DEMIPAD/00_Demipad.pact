@@ -1472,19 +1472,19 @@
                 ;;FUEL — deposit collectables INTO the launchpad
                 (if son
                     (with-capability (DEMIPAD|C>FUEL-SEMI-FUNGIBLE asset-id)
-                        (ref-DPDC-T::C_Transfer [asset-id] [son] client lpad [nonces] [amounts] true)
+                        (ref-DPDC-T::C_Transfer client client lpad [asset-id] [son] [nonces] [amounts] true)
                     )
                     (with-capability (DEMIPAD|C>FUEL-NON-FUNGIBLE asset-id)
-                        (ref-DPDC-T::C_Transfer [asset-id] [son] client lpad [nonces] [amounts] true)
+                        (ref-DPDC-T::C_Transfer client client lpad [asset-id] [son] [nonces] [amounts] true)
                     )
                 )
                 ;;RETRIEVE — withdraw collectables FROM the launchpad (NF path now also inherits the #2H lock)
                 (if son
                     (with-capability (DEMIPAD|C>RETRIEVE-SEMI-FUNGIBLE asset-id)
-                        (ref-DPDC-T::C_Transfer [asset-id] [son] lpad client [nonces] [amounts] true)
+                        (ref-DPDC-T::C_Transfer client lpad client [asset-id] [son] [nonces] [amounts] true)
                     )
                     (with-capability (DEMIPAD|C>RETRIEVE-NON-FUNGIBLE asset-id)
-                        (ref-DPDC-T::C_Transfer [asset-id] [son] lpad client [nonces] [amounts] true)
+                        (ref-DPDC-T::C_Transfer client lpad client [asset-id] [son] [nonces] [amounts] true)
                     )
                 )
             )

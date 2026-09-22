@@ -281,8 +281,8 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_RemoveNonceScore` | `C_UpdateNonceScore` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
 | `C_RemoveSetNonceScore` | `C_UpdateNonceScore` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
 | `C_RenameSet` | `C_RenameSet` | SETUP | **14** | — | $0.14 | deter:setup 5 + components:DPNF|C_RenameSet 9 |
-| `C_Repurpose` | `C_RepurposeCollectable` | USAGE | **≥ 5** | — | COMPLEX | charge multiplies by an item count; legs: small 2 + medium 3 |
-| `C_RepurposeFragments` | `C_RepurposeCollectableFragments` | USAGE | **5** | — | $0.05 | small 2 + medium 3 |
+| `C_Repurpose` | `C_RepurposeCollectable` | USAGE | **≥ 3** | — | COMPLEX | charge multiplies by an item count; legs: medium 3 |
+| `C_RepurposeFragments` | `C_RepurposeCollectableFragments` | USAGE | **≥ 3** | — | COMPLEX | charge multiplies by an item count; legs: medium 3 |
 | `C_Respawn` | `C_RespawnNFT` | SETUP | **14** | — | $0.14 | deter:setup 5 + components:DPNF|C_Respawn 9 |
 | `C_ToggleBurnRole` | `C_ToggleBurnRole` | AUTH | **23** | — | $0.23 | deter:auth 10 + components:DPNF|C_ToggleBurnRole 13 |
 | `C_ToggleExemptionRole` | `C_ToggleExemptionRole` | AUTH | **23** | — | $0.23 | deter:auth 10 + components:DPNF|C_ToggleExemptionRole 13 |
@@ -375,8 +375,8 @@ cross-module callee internals are not re-summed, so delegating ops read a little
 | `C_RemoveNonceScore` | `C_UpdateNonceScore` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
 | `C_RemoveSetNonceScore` | `C_UpdateNonceScore` | SETUP | **22** | — | $0.22 | deter:setup 5 + components:DPNF|C_UpdateNonce 17 |
 | `C_RenameSet` | `C_RenameSet` | SETUP | **14** | — | $0.14 | deter:setup 5 + components:DPSF|C_RenameSet 9 |
-| `C_Repurpose` | `C_RepurposeCollectable` | USAGE | **≥ 5** | — | COMPLEX | charge multiplies by an item count; legs: small 2 + medium 3 |
-| `C_RepurposeFragments` | `C_RepurposeCollectableFragments` | USAGE | **5** | — | $0.05 | small 2 + medium 3 |
+| `C_Repurpose` | `C_RepurposeCollectable` | USAGE | **≥ 2** | — | COMPLEX | charge multiplies by an item count; legs: small 2 |
+| `C_RepurposeFragments` | `C_RepurposeCollectableFragments` | USAGE | **≥ 2** | — | COMPLEX | charge multiplies by an item count; legs: small 2 |
 | `C_ToggleAddQuantityRole` | `C_ToggleAddQuantityRole` | AUTH | **23** | — | $0.23 | deter:auth 10 + components:DPSF|C_ToggleAddQuantityRole 13 |
 | `C_ToggleBurnRole` | `C_ToggleBurnRole` | AUTH | **23** | — | $0.23 | deter:auth 10 + components:DPSF|C_ToggleBurnRole 13 |
 | `C_ToggleExemptionRole` | `C_ToggleExemptionRole` | AUTH | **23** | — | $0.23 | deter:auth 10 + components:DPSF|C_ToggleExemptionRole 13 |
@@ -637,7 +637,7 @@ another Talos wrapper, not a core op) or admin entrypoints that are exempt by ru
 | P\|A_SetIMP | admin entrypoint -- IGNIS + STOA free by owner rule, nothing to price |
 
 ---
-185 simple (exact price) · 135 complex (floor price) · 2 STOA-only · 118 exempt · 0 unresolved · 11 unpriced · 440 Talos client functions
+183 simple (exact price) · 137 complex (floor price) · 2 STOA-only · 118 exempt · 0 unresolved · 11 unpriced · 440 Talos client functions
 
 `×N` on a core op = the wrapper drives N priced core ops in a FIXED composition (still exactly knowable).
 

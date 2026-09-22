@@ -47,7 +47,7 @@
     ;;
     ;;  [2] DPDC
     ;;
-    (defun DPDC|C_MultiTransfer (patron:string ids:[string] sons:[bool] sender:string receiver:string nonces-array:[[integer]] amounts-array:[[integer]] method:bool))
+    (defun DPDC|C_MultiTransfer (patron:string executor:string executee:string ids:[string] sons:[bool] nonces-array:[[integer]] amounts-array:[[integer]] method:bool))
     (defun DPSF|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
     (defun DPSF|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer))
     ;;
@@ -107,9 +107,9 @@
     ;;
     ;;  [7] DPDC-T
     ;;
-    (defun DPSF|C_Repurpose (patron:string id:string repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer]))
-    (defun DPSF|C_TransferNonce (patron:string id:string sender:string receiver:string nonce:integer amount:integer method:bool))
-    (defun DPSF|C_TransferNonces (patron:string id:string sender:string receiver:string nonces:[integer] amounts:[integer] method:bool))
+    (defun DPSF|C_Repurpose (patron:string executor:string executee:string id:string repurpose-to:string nonces:[integer] amounts:[integer]))
+    (defun DPSF|C_TransferNonce (patron:string executor:string executee:string id:string nonce:integer amount:integer method:bool))
+    (defun DPSF|C_TransferNonces (patron:string executor:string executee:string id:string nonces:[integer] amounts:[integer] method:bool))
     ;;
     ;;  [8] DPDC-S
     ;;
@@ -189,10 +189,10 @@
     )
     (defun DPSF|C_MorphEquity (patron:string account:string id:string input-nonce:integer input-amount:integer output-nonce:integer))
     (defun DPDC|C_BulkTransfer
-        (patron:string id:string son:bool nonces-array:[[integer]] amounts-array:[[integer]] sender:string receiver-lst:[string] method:bool)
+        (patron:string executor:string executee-lst:[string] id:string son:bool nonces-array:[[integer]] amounts-array:[[integer]] method:bool)
     )
     (defun DPSF|C_BulkTransfer
-        (patron:string id:string nonces-array:[[integer]] amounts-array:[[integer]] sender:string receiver-lst:[string] method:bool)
+        (patron:string executor:string executee-lst:[string] id:string nonces-array:[[integer]] amounts-array:[[integer]] method:bool)
     )
 
 )
@@ -431,20 +431,20 @@
     ;;
     ;;  [2] DPDC
     ;;
-    (defun DPDC|C_MultiTransfer (patron:string ids:[string] sons:[bool] sender:string receiver:string nonces-array:[[integer]] amounts-array:[[integer]] method:bool)
-        @doc "Transfer multiple SFT <ids> from <sender> to <receiver>"
+    (defun DPDC|C_MultiTransfer (patron:string executor:string executee:string ids:[string] sons:[bool] nonces-array:[[integer]] amounts-array:[[integer]] method:bool)
+        @doc "Transfer multiple collectable <ids> from <executor> to <executee>"
         (with-capability (P|TS)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
-                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount sender))
-                    (ra:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
+                    (ra:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                     (hm:integer (length ids))
                     ;;
                     (irs:object{DpdcTransferV2.AggregatedRoyalties}
-                        (ref-DPDC-T::C_IgnisRoyaltyCollector patron sender ids sons nonces-array amounts-array)
+                        (ref-DPDC-T::C_IgnisRoyaltyCollector patron executor ids sons nonces-array amounts-array)
                     )
                     (c:[string] (at "creators" irs))
                     (r:[decimal] (at "ignis-royalties" irs))
@@ -452,7 +452,7 @@
                     (l:integer (length c))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-T::C_Transfer ids sons sender receiver nonces-array amounts-array method)
+                    (ref-DPDC-T::C_Transfer patron executor executee ids sons nonces-array amounts-array method)
                 )
                 [
                     (format "Successfully transfered DPDC(s) {} Nonce-Array {} using Amount-Array {} from {} to {}" [ids nonces-array amounts-array sa ra])
@@ -927,43 +927,45 @@
     ;;
     ;;  [7] DPDC-T
     ;;
-    (defun DPSF|C_Repurpose (patron:string id:string repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer])
-        @doc "Repurpose SFT(s) from <repurpose-from> to <repurpose-to>. Requires <id> ownerhsip"
+    (defun DPSF|C_Repurpose (patron:string executor:string executee:string id:string repurpose-to:string nonces:[integer] amounts:[integer])
+        @doc "Repurpose SFT(s) from <executee> to <repurpose-to>. The <executor> must BE the \
+            \ collection owner -- that is the authority the whole op rests on, and DPDC-T now \
+            \ binds the name to it rather than deriving it silently."
         (with-capability (P|TS)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
-                    (sf:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-from))
+                    (sf:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                     (st:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-T::C_RepurposeCollectable id true repurpose-from repurpose-to nonces amounts)
+                    (ref-DPDC-T::C_RepurposeCollectable patron executor executee id true repurpose-to nonces amounts)
                 )
                 (format "Successfully repurposed SFT {} Nonces {} with Amounts {} from {} to {}" [id nonces amounts sf st])
             )
         )
     )
-    (defun DPSF|C_TransferNonce (patron:string id:string sender:string receiver:string nonce:integer amount:integer method:bool)
-        @doc "Transfer an SFT <nonce> of <amount> from <sender> to <receiver> using <method>"
+    (defun DPSF|C_TransferNonce (patron:string executor:string executee:string id:string nonce:integer amount:integer method:bool)
+        @doc "Transfer an SFT <nonce> of <amount> from <executor> to <executee> using <method>"
         (with-capability (P|TS)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
-                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount sender))
-                    (ra:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
+                    (ra:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                     ;;
                     (irs:object{DpdcTransferV2.AggregatedRoyalties}
-                        (ref-DPDC-T::C_IgnisRoyaltyCollector patron sender [id] [true] [[nonce]] [[amount]])
+                        (ref-DPDC-T::C_IgnisRoyaltyCollector patron executor [id] [true] [[nonce]] [[amount]])
                     )
                     (r:[decimal] (at "ignis-royalties" irs))
                     (s:decimal (fold (+) 0.0 r))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-T::C_Transfer [id] [true] sender receiver [[nonce]] [[amount]] method)
+                    (ref-DPDC-T::C_Transfer patron executor executee [id] [true] [[nonce]] [[amount]] method)
                 )
                 [
                     (format "Successfully transfered SFT {} Nonce {} and Amount {} from {} to {}" [id nonce amount sa ra])
@@ -975,26 +977,26 @@
             )
         )
     )
-    (defun DPSF|C_TransferNonces (patron:string id:string sender:string receiver:string nonces:[integer] amounts:[integer] method:bool)
-        @doc "Transfer an SFT <nonce> of <amount> from <sender> to <receiver> using <method>"
+    (defun DPSF|C_TransferNonces (patron:string executor:string executee:string id:string nonces:[integer] amounts:[integer] method:bool)
+        @doc "Transfer SFT <nonces> of <amounts> from <executor> to <executee> using <method>"
         (with-capability (P|TS)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
-                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount sender))
-                    (ra:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
+                    (ra:string (ref-I|OURONET::OI|UC_ShortAccount executee))
                     ;;
                     (irs:object{DpdcTransferV2.AggregatedRoyalties}
-                        (ref-DPDC-T::C_IgnisRoyaltyCollector patron sender [id] [true] [nonces] [amounts])
+                        (ref-DPDC-T::C_IgnisRoyaltyCollector patron executor [id] [true] [nonces] [amounts])
                     )
                     (c:[string] (at "creators" irs))
                     (r:[decimal] (at "ignis-royalties" irs))
                     (s:decimal (fold (+) 0.0 r))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-T::C_Transfer [id] [true] sender receiver [nonces] [amounts] method)
+                    (ref-DPDC-T::C_Transfer patron executor executee [id] [true] [nonces] [amounts] method)
                 )
                 [
                     (format "Successfully transfered SFT {} Nonces {} with Amounts {} from {} to {}" [id nonces amounts sa ra])
@@ -1007,8 +1009,8 @@
         )
     )
     (defun DPDC|C_BulkTransfer
-        (patron:string id:string son:bool nonces-array:[[integer]] amounts-array:[[integer]] sender:string receiver-lst:[string] method:bool)
-        @doc "Bulk whole collectable transfer — one sender, many standard-account receivers (TalosStageTwo_ClientOneV2)."
+        (patron:string executor:string executee-lst:[string] id:string son:bool nonces-array:[[integer]] amounts-array:[[integer]] method:bool)
+        @doc "Bulk whole collectable transfer — one executor, many standard-account executees (TalosStageTwo_ClientOneV2)."
         (with-capability (P|TS)
             (let
                 (
@@ -1016,8 +1018,8 @@
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
                     ;;
-                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount sender))
-                    (l:integer (length receiver-lst))
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
+                    (l:integer (length executee-lst))
                     ;;FIXED 2026-09-12: these two used to map over `(enumerate 0 (- l 1))`.
                     ;;**In Pact `(enumerate 0 -1)` is `[0, -1]` -- a DESCENDING pair, not an empty
                     ;;list.** So an EMPTY receiver list produced TWO ids, `C_IgnisRoyaltyCollector`
@@ -1028,8 +1030,8 @@
                     ;;empty when the list is, so the hazard is removed rather than worked around.
                     ;;Chosen over reordering the call: the royalty collector must still run BEFORE the
                     ;;transfer, and moving it would change what is charged, not just what is said.
-                    (ids:[string]  (map (lambda (rcv:string) id)  receiver-lst))
-                    (sons:[bool]   (map (lambda (rcv:string) son) receiver-lst))
+                    (ids:[string]  (map (lambda (rcv:string) id)  executee-lst))
+                    (sons:[bool]   (map (lambda (rcv:string) son) executee-lst))
                 )
                 ;;THE CORE TRANSFER RUNS FIRST, and the ordering is the fix.
                 ;;FIXED 2026-09-12: the royalty collector used to be bound in the `let` ABOVE this
@@ -1048,13 +1050,13 @@
                 (let
                     (
                         (core-ico:object{IgnisCollectorV3.OutputCumulator}
-                            (ref-DPDC-T::C_BulkTransfer id son nonces-array amounts-array sender receiver-lst method)
+                            (ref-DPDC-T::C_BulkTransfer patron executor executee-lst id son nonces-array amounts-array method)
                         )
                     )
                 (let
                     (
                     (irs:object{DpdcTransferV2.AggregatedRoyalties}
-                        (ref-DPDC-T::C_IgnisRoyaltyCollector patron sender ids sons nonces-array amounts-array)
+                        (ref-DPDC-T::C_IgnisRoyaltyCollector patron executor ids sons nonces-array amounts-array)
                     )
                     (r:[decimal] (at "ignis-royalties" irs))
                     (s:decimal (fold (+) 0.0 r))
@@ -1071,9 +1073,9 @@
         )
     )
     (defun DPSF|C_BulkTransfer
-        (patron:string id:string nonces-array:[[integer]] amounts-array:[[integer]] sender:string receiver-lst:[string] method:bool)
+        (patron:string executor:string executee-lst:[string] id:string nonces-array:[[integer]] amounts-array:[[integer]] method:bool)
         @doc "Bulk SFT transfer — son=true wrapper over DPDC|C_BulkTransfer."
-        (DPDC|C_BulkTransfer patron id true nonces-array amounts-array sender receiver-lst method)
+        (DPDC|C_BulkTransfer patron executor executee-lst id true nonces-array amounts-array method)
     )
     ;;
     ;;  [8] DPDC-S

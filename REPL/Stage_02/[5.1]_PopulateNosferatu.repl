@@ -2554,13 +2554,7 @@
     ]
 )
 (ouronet-ns.TS02-C2.DPNF|C_TransferNonces
-    KST.ANHD
-    "DHN-98c486052a51"
-    KST.EMMA
-    KST.LUMY
-    (enumerate 126 250)
-    (make-list 125 1)
-    false
+    KST.ANHD KST.EMMA KST.LUMY "DHN-98c486052a51" (enumerate 126 250) (make-list 125 1) false
 )
 ;(ouronet-ns.TS02-C2.DPNF|C_TransferNonces
 ;    KST.ANHD

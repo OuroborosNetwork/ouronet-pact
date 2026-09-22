@@ -26,19 +26,49 @@ import os, re, sys, glob, collections
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Entrypoints already swept: their first parameter IS `patron`. Grown as the sweep advances --
-# a module's turn adds its entrypoints here.
-SWEPT = {
-    "TFT":  ["C_Transfer", "C_MultiTransfer", "C_MultiBulkTransfer", "C_Transmute",
-             "C_ClearDispo"],
-    "DPTF": ["C_Mint", "C_Burn", "C_WipeSlim", "C_Wipe", "C_ToggleFreezeAccount", "C_Issue",
-             "C_Control", "C_RotateOwnership"],
-    "DPOF": ["C_Transfer", "C_Mint", "C_Burn", "C_WipeClean", "C_ToggleFreezeAccount",
-             "C_Control", "C_RotateOwnership"],
-    "ATS":  ["C_Fuel"],
-    "OUROBOROS": ["C_WithdrawFees"],
-    "SWPLC": ["C_Fuel", "C_RemoveLiquidity", "C_ToggleAddLiquidity"],
-}
+# WHICH ENTRYPOINTS ALREADY TAKE A `patron` -- DERIVED FROM THE SOURCE, not remembered here.
+#
+# This WAS a hand-maintained dict, and on 2026-09-22 it proved the failure mode CLAUDE.md already
+# records three times over: a hardcoded list cannot report its own incompleteness. 06_DPDC-MNG's
+# turn (2026-09-21) gave twelve entrypoints a `patron` and did not add the module to the list, so
+# FOUR unregistered provisional slots in 11_EQUITY+ -- XI_ConvertPackageShares and
+# XI_MakePackageShares calling C_AddQuantity, XI_BreakPackageShares and XI_ConvertPackageShares
+# calling C_BurnSFT -- were invisible to the one tool whose entire job is to see them. They
+# surfaced only because 07_DPDC-T's turn touched the same three functions.
+#
+# The fix is the same one applied to _executorenforced.SWEPT and _toolpaths: read the artefact
+# that is already the single source of truth. A function "has been swept" iff its first parameter
+# is literally `patron`, which is the canon (StoicSyntax-Prefixes.md 2.2) and is in the file.
+# FAILS LOUD on an empty result, because an empty SWEPT makes every check below vacuous.
+MODNAME = re.compile(r'^\(module\s+([A-Za-z0-9|_+\-]+)\s', re.M)
+DEFUN_C = re.compile(r'^    \(defun\s+(C_[A-Za-z]+)[:\s(]', re.M)
+
+
+def _swept(files):
+    out = {}
+    for f in files:
+        src = open(f).read()
+        m = MODNAME.search(src)
+        if not m:
+            continue
+        mod, body = m.group(1), src[m.start():]
+        for d in DEFUN_C.finditer(body):
+            # the parameter list is the next `(` after the name, possibly after a return type
+            k = body.index("(", d.end() - 1) if body[d.end() - 1] != "(" else d.end() - 1
+            j = body.find("(", d.start() + 10)
+            # walk forward from the defun name to the first top-level `(` that opens the params
+            i = d.end() - 1
+            while i < len(body) and body[i] != "(":
+                i += 1
+            close = body.find(")", i)
+            first = body[i + 1:close].strip().split(":")[0].split()[0] if close > i else ""
+            if first == "patron":
+                out.setdefault(mod, []).append(d.group(1))
+    if not out:
+        sys.exit("_patronslots: no entrypoint in the tree takes `patron` first -- refusing to "
+                 "run, because an empty SWEPT makes every check below vacuously clean.")
+    return out
+
 
 # (file basename, enclosing function) -> (expression in the patron slot, why, clears-at)
 # `clears-at` is None for a PERMANENT entry and a module name for a PROVISIONAL one.
@@ -63,12 +93,54 @@ REGISTRY = {
  # `C_MultiTransfer account account ...` -- the SAME account in both the patron and the executor
  # slot, which is the most invisible form this takes: the arity is right, the two values agree,
  # and only the registry remembered that one of them was a stand-in. It now threads a real patron.
+ # FOUND BY THE DERIVATION, 2026-09-22, the moment SWEPT stopped being a hand list. The old
+ # dict had no "SWP" key, so both of these were invisible. SWP|C_Firestarter is PATRONLESS by
+ # design and is registered as such in _executorplan.PATRONLESS ("its patron was unused in the
+ # body, threaded in only because C_SublimateV2 had temporarily acquired one") -- it takes
+ # `(executor:string)` and nothing else, so the executor occupying the patron slot of its two
+ # inner calls is PERMANENT, exactly as in the OUROBOROS family above, not a turn waiting to
+ # happen.
+ ("04_TS01-C3.pact", "SWP|C_Firestarter"):
+   ("executor", "PATRONLESS by design -- the function makes IGNIS out of native STOA, so there "
+                "is no patron to pay from yet; the executor funds and receives it.", None),
  ("03_AQP.pact", "XE_TrueFungibleTransfer"): ("owner-id", "provisional", "03_AQP"),
  ("06_VCT.pact", "XI_VacateTrueFungibleFromLegs"):
    ("AQP|SC_NAME", "provisional -- no user account is in scope at all here; the vault is the "
                    "only account the function knows.", "06_VCT"),
  ("06_VCT.pact", "XI_DrainTrueFungibleFromLegs"):
    ("AQP|SC_NAME", "provisional, as XI_VacateTrueFungibleFromLegs", "06_VCT"),
+ # ---- 07_DPDC-T's turn, 2026-09-22. Twelve NEW provisional slots in one module's sweep, the
+ # most any turn has produced, because DPDC-T::C_Transfer is the collectable movement primitive
+ # and SIX unswept modules call it directly rather than through Talos.
+ #
+ # EVERY ONE PASSES THE USER ACCOUNT, INCLUDING ON THE RETURN LEG. The set/fragment/equity ops
+ # are round trips -- <account> sends to the module's smart account and the smart account sends
+ # back -- so the EXECUTOR alternates between the two while the PATRON does not: whoever pays
+ # for the operation pays for both halves of it, and that is the user. Writing `dpdc` into the
+ # patron slot of the return leg would have been the easy mirror of the executor and would have
+ # meant "the module pays", which is not what happens.
+ ("08_DPDC-S.pact", "C_MakeSemiFungibleSet"):   ("account", "provisional", "08_DPDC-S"),
+ ("08_DPDC-S.pact", "CC_BreakSemiFungibleSet"): ("account", "provisional", "08_DPDC-S"),
+ ("08_DPDC-S.pact", "C_MakeNonFungibleSet"):    ("account", "provisional", "08_DPDC-S"),
+ ("08_DPDC-S.pact", "C_BreakNonFungibleSet"):   ("account", "provisional", "08_DPDC-S"),
+ ("09_DPDC-F.pact", "C_MakeFragments"):         ("account", "provisional", "09_DPDC-F"),
+ ("09_DPDC-F.pact", "C_MergeFragments"):        ("account", "provisional", "09_DPDC-F"),
+ ("11_EQUITY+.pact", "XI_ConvertPackageShares"): ("account", "provisional", "11_EQUITY+"),
+ ("11_EQUITY+.pact", "XI_MakePackageShares"):    ("account", "provisional", "11_EQUITY+"),
+ ("11_EQUITY+.pact", "XI_BreakPackageShares"):   ("account", "provisional", "11_EQUITY+"),
+ ("00_Demipad.pact", "XI_TransmitCollectables"):
+   ("client", "provisional -- the launchpad moves the asset BETWEEN <client> and <lpad> in both "
+              "directions; the client is the one buying, so the client is the one paying.",
+    "00_Demipad"),
+ ("03_AQP.pact", "XE_CollectableTransfer"):
+   ("owner-id", "provisional, and deliberately the same expression its true-fungible twin "
+                "XE_TrueFungibleTransfer already uses -- the two are the same op over two asset "
+                "kinds and must not disagree about who pays.", "03_AQP"),
+ ("06_VCT.pact", "XI_VacateCollectableBatch"):
+   ("AQP|SC_NAME", "provisional -- no user account is in scope; same as the true-fungible "
+                   "XI_VacateTrueFungibleFromLegs above.", "06_VCT"),
+ ("06_VCT.pact", "XI_DrainCollectableBatch"):
+   ("AQP|SC_NAME", "provisional, as XI_VacateCollectableBatch", "06_VCT"),
 }
 
 CALL = re.compile(r'\(ref-([A-Za-z0-9|_\-]+)::(C_[A-Za-z]+)\s+([A-Za-z0-9|_\-\.\[]+)')
@@ -105,6 +177,7 @@ def main():
     hits, unregistered = [], []
     files = (glob.glob(os.path.join(ROOT, "1_SOVEREIGN", "**", "*.pact"), recursive=True)
              + glob.glob(os.path.join(ROOT, "2_CITIZEN", "**", "*.pact"), recursive=True))
+    SWEPT = _swept(sorted(files))
     for f in sorted(files):
         src = open(f).read(); msk = mask(src); base = os.path.basename(f)
         defs = [(m.start(), m.group(1)) for m in DEF.finditer(msk)]

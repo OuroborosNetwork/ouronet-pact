@@ -1419,7 +1419,7 @@
                 ;;1] SOVEREIGN deposit Talos op — buyer's STOA into the Launchpad; self-collects IGNIS on patron
                 (ref-TS02-DPAD::DEMIPAD|C_Deposit patron buyer asset pid type false max-cost)
                 ;;2] SOVEREIGN DPDC collectable transfer Talos op — SFT nonce(s) from the Launchpad SC to the buyer; self-collects IGNIS
-                (ref-TS02-C1::DPDC|C_MultiTransfer patron [asset] [true] DEMIPAD|SC_NAME buyer [[nonce]] [[amount]] true)
+                (ref-TS02-C1::DPDC|C_MultiTransfer patron DEMIPAD|SC_NAME buyer [asset] [true] [[nonce]] [[amount]] true)
                 (format "User {} succesfuly acquired {} Nonce {} {} SFTs" [sb amount nonce asset])
             )
         )
@@ -1998,7 +1998,7 @@
                 ;;1] SOVEREIGN deposit Talos op — buyer's STOA into the Launchpad; self-collects IGNIS on patron
                 (ref-TS02-DPAD::DEMIPAD|C_Deposit patron buyer asset pid type false max-cost)
                 ;;2] SOVEREIGN DPDC collectable transfer Talos op — SFT nonce(s) from the Launchpad SC to the buyer; self-collects IGNIS
-                (ref-TS02-C1::DPDC|C_MultiTransfer patron [asset] [true] DEMIPAD|SC_NAME buyer [[nonce]] [[amount]] true)
+                (ref-TS02-C1::DPDC|C_MultiTransfer patron DEMIPAD|SC_NAME buyer [asset] [true] [[nonce]] [[amount]] true)
                 (format "User {} succesfuly acquired {} Nonce {} {} SFTs" [sb amount nonce asset])
             )
         )

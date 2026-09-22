@@ -67,7 +67,7 @@
                   (if (not (contains n anhd-kbn))
                       (if (contains n emma-kbn)
                           (print (format "<(transfer KBN nonce {} EMMA→ANHD)> => \"{}\"" [n
-                              (ref-TS02-C2::DPNF|C_TransferNonce patron kbn-id emma owner n 1 false)
+                              (ref-TS02-C2::DPNF|C_TransferNonce patron emma owner kbn-id n 1 false)
                           ]))
                           (print (format "NOTE: KBN nonce {} not on EMMA (may already be staked)" [n]))
                       )

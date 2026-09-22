@@ -3077,7 +3077,7 @@
                     (sender:string (if direction owner-id vault))
                     (receiver:string (if direction vault owner-id))
                 )
-                (ref-DPDC-T::C_Transfer [collectable-id] [son] sender receiver [nonces] [nonce-amounts] true)
+                (ref-DPDC-T::C_Transfer owner-id sender receiver [collectable-id] [son] [nonces] [nonce-amounts] true)
             )
         )
     )

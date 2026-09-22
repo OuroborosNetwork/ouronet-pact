@@ -815,7 +815,7 @@
     ;;==== TX-BOOT-15-DSA · 01 · fund EMMA with bronze Custodians ====
     (print "--- [TX-BOOT-15-DSA · 01 · fund EMMA] ---")
     (print (format "<(transfer 20 whole bronze to EMMA)> => \"{}\""
-        [(TS02-C1.DPSF|C_TransferNonce patron dhoc-id patron KST.EMMA 1 20 false)]))
+        [(TS02-C1.DPSF|C_TransferNonce patron patron KST.EMMA dhoc-id 1 20 false)]))
     ;;==== TX-BOOT-15-DSA · 02 · EMMA opens agency #2 via the PUBLIC path ====
     (print "--- [TX-BOOT-15-DSA · 02 · EMMA opens agency 2, public path] ---")
     (let
@@ -898,7 +898,7 @@
                         ;;(10%) on an earlier run -- SF anchor promile is
                         ;;`conform-amount x ank-promile` (01_ANK.pact URC_SemiFungibleAnchorPromile),
                         ;;i.e. it SCALES PER UNIT HELD and is not a flat per-holder grant.
-                        (TS02-C1.DPSF|C_TransferNonce patron dhoc-id patron KST.EMMA 4 1 false)
+                        (TS02-C1.DPSF|C_TransferNonce patron patron KST.EMMA dhoc-id 4 1 false)
                         (print (format "<(EMMA stakes 1x nonce 4)> => \"{}\""
                             [(TS02-C3.AQP-POOL|CC_StakeSemiFungibleCollectable KST.EMMA pool-id KST.EMMA KST.EMMA dhoc-id [4])]))
                         (print (format "<(EMMA promile AFTER)> => {}   <(q before)> => {}   <(q after)> => {}"

@@ -399,7 +399,7 @@
             (amt-b:integer (ref-DPDC::UR_AccountNonceSupply owner-a dpsf-id true nonce-b))
         )
         (if (> amt-b 0)
-            (ref-TS02-C1::DPSF|C_TransferNonces patron dpsf-id owner-a owner-b [nonce-b] [amt-b] false)
+            (ref-TS02-C1::DPSF|C_TransferNonces patron owner-a owner-b dpsf-id [nonce-b] [amt-b] false)
             true
         )
     )
@@ -847,7 +847,7 @@
             (pre-supply:integer 1)
         )
         (print (format "<(DPNF|C_TransferNonces nonce {})> => \"{}\"" [stake-nonce
-            (ref-TS02-C2::DPNF|C_TransferNonces patron dpnf-id source owner-id [stake-nonce] [1] false)
+            (ref-TS02-C2::DPNF|C_TransferNonces patron source owner-id dpnf-id [stake-nonce] [1] false)
         ]))
         (print (format "<(TS02-C3.AQP-POOL|CC_StakeNonFungibleCollectable nonce {})> => \"{}\"" [
             stake-nonce
@@ -972,7 +972,7 @@
             (pre-supply:integer 1)
         )
         (print (format "<(DPNF|C_TransferNonces nonce {})> => \"{}\"" [stake-nonce
-            (ref-TS02-C2::DPNF|C_TransferNonces patron dpnf-id source owner-id [stake-nonce] [1] false)
+            (ref-TS02-C2::DPNF|C_TransferNonces patron source owner-id dpnf-id [stake-nonce] [1] false)
         ]))
         (print (format "<(TS02-C3.AQP-POOL|CC_StakeNonFungibleCollectable)> => \"{}\"" [
             (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron pool-id owner-id beneficiary-id dpnf-id [stake-nonce])
@@ -1161,7 +1161,7 @@
             (pre-supply:integer 1)
         )
         (print (format "<(DPNF|C_TransferNonces nonce {})> => \"{}\"" [stake-nonce
-            (ref-TS02-C2::DPNF|C_TransferNonces patron dpnf-id source owner-id [stake-nonce] [1] false)
+            (ref-TS02-C2::DPNF|C_TransferNonces patron source owner-id dpnf-id [stake-nonce] [1] false)
         ]))
         (print (format "<(TS02-C3.AQP-POOL|CC_StakeNonFungibleCollectable)> => \"{}\"" [
             (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron pool-id owner-id beneficiary-id dpnf-id [stake-nonce])

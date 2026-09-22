@@ -2970,13 +2970,7 @@
                 ;;
                 (bulk-oc:object{IgnisCollectorV3.OutputCumulator}
                     (ref-DPDC-T::C_BulkTransfer
-                        collectable-id
-                        son
-                        nonces-array
-                        amounts-array
-                        AQP|SC_NAME
-                        owner-ids
-                        true
+                        AQP|SC_NAME AQP|SC_NAME owner-ids collectable-id son nonces-array amounts-array true
                     )
                 )
                 (unwind-oc:object{IgnisCollectorV3.OutputCumulator}
@@ -3169,13 +3163,7 @@
                 ;;
                 (bulk-oc:object{IgnisCollectorV3.OutputCumulator}
                     (ref-DPDC-T::C_BulkTransfer
-                        collectable-id
-                        son
-                        nonces-array
-                        amounts-array
-                        AQP|SC_NAME
-                        owner-ids
-                        true
+                        AQP|SC_NAME AQP|SC_NAME owner-ids collectable-id son nonces-array amounts-array true
                     )
                 )
                 (unwind-oc:object{IgnisCollectorV3.OutputCumulator}

@@ -294,7 +294,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|TransferNonce patron fr patron lumy 1 100 false))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_TransferNonce patron fr patron lumy 1 100 false))
+            (m (ref-TS02-C1::DPSF|C_TransferNonce patron patron lumy fr 1 100 false))
         )
         (map print
             [

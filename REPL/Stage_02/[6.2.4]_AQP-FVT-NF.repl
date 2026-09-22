@@ -129,7 +129,7 @@
             (stake-nonce:integer (at pre-count (ref-DPDC::URH_AccountNonces source dpnf-id false)))
         )
         (print (format "<(DPNF|C_TransferNonces nonce {})> => \"{}\"" [stake-nonce
-            (ref-TS02-C2::DPNF|C_TransferNonces patron dpnf-id source owner-id [stake-nonce] [1] false)
+            (ref-TS02-C2::DPNF|C_TransferNonces patron source owner-id dpnf-id [stake-nonce] [1] false)
         ]))
         (print "--- [TX-FVT-NF-01 · 03 · CC_StakeNonFungibleCollectable] ---")
         (print (format "<(AQP-POOL|CC_StakeNonFungibleCollectable nonce {})> => \"{}\"" [stake-nonce
@@ -569,7 +569,7 @@
         (
             (stake-nonce:integer (at pre-count (ref-DPDC::URH_AccountNonces source dpnf-id false)))
         )
-        (ref-TS02-C2::DPNF|C_TransferNonces patron dpnf-id source owner-id [stake-nonce] [1] false)
+        (ref-TS02-C2::DPNF|C_TransferNonces patron source owner-id dpnf-id [stake-nonce] [1] false)
         ;; keep the DHB pool-owner keyset signed through stake AND drain (the drain's CAP_VctVacatePoolOwner
         ;; enforces ownership of the DHB pool's owner konto, which needs PK_Lumy — same as TX-VCT-DPNF02).
         (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] } { "key": "PK_Lumy", "caps": [] }])
@@ -697,7 +697,7 @@
                             (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron (ref-U|DALOS::UDC_Makeid (format "{}Fvt" [pool])) patron (ref-U|DALOS::UDC_Makeid sc) ouro-id)
                             (ref-TS02-C2::DPNF|C_Create patron (DPDC.UR_Verum5 dpnf-id false) dpnf-id (NfSyncProbe.UC_DpnfNonceRows n))
                             (let ((minted:[integer] (take (- n) (ref-DPDC::URH_AccountNonces source dpnf-id false))))
-                                (ref-TS02-C2::DPNF|C_TransferNonces patron dpnf-id source owner-id minted amts false)
+                                (ref-TS02-C2::DPNF|C_TransferNonces patron source owner-id dpnf-id minted amts false)
                                 (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron pool-id owner-id ben dpnf-id minted)
                                 (let ((g0:integer (env-gas)))
                                     (if drain
@@ -781,7 +781,7 @@
                 (to-move:[integer] (take 12 emma-kbn))
             )
             (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
-            (ref-TS02-C2::DPNF|C_TransferNonces patron kbn-id source owner-id to-move (make-list 12 1) false)
+            (ref-TS02-C2::DPNF|C_TransferNonces patron source owner-id kbn-id to-move (make-list 12 1) false)
             (let
                 (
                     (owned:[integer] (ref-DPDC::URH_AccountNonces owner-id kbn-id false))

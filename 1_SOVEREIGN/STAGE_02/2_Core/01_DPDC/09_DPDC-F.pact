@@ -474,20 +474,24 @@
         (id:string son:bool repurpose-from:string repurpose-to:string fragment-nonces:[integer] fragment-amounts:[integer])
         (P|UEV_IMC)
         (with-capability (DPDC-F|C>REPURPOSE id son repurpose-from repurpose-to fragment-nonces fragment-amounts)
+            ;;DEAD PRE-COMPUTATION REMOVED (2026-09-22), the twin of the one in
+            ;;DPDC-T::C_RepurposeCollectable and found by the same run of _deadbind
+            ;;(<owner>, <price>, <trigger> all bound and never read). Every value here is
+            ;;recomputed identically inside the URCi_RepurposeCollectableFragments call that
+            ;;ends this function.
+            ;;
+            ;;IT WAS NOT ONLY WASTE: IT WAS PUBLISHING A WRONG PRICE. _pricesync derives the
+            ;;IGNIS-PRICE-SHEET leg breakdown from the UC_IgnisLeg calls it can see in a
+            ;;function body, and <s> and <m> bound BOTH tiers unconditionally while
+            ;;(if son s m) only ever charges ONE. So the sheet read "small 2 + medium 3" and
+            ;;quoted a floor of 5 for an op whose floor is 2 (SFT) or 3 (NFT). Deleting the
+            ;;dead bindings corrected the published figure as a side effect -- which is the
+            ;;strongest argument yet that _deadbind's findings are not cosmetic.
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC:module{DpdcV2} DPDC)
                     (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
                     ;;
                     (l:integer (length fragment-nonces))
-                    (owner:string (ref-DPDC::UR_OwnerKonto id son))
-                    (s:decimal (ref-IGNIS::UC_IgnisLeg "tier-small"))
-                    (m:decimal (ref-IGNIS::UC_IgnisLeg "tier-medium"))
-                    (p:decimal (/ (if son s m) 1000.0))
-                    (sum-amounts:decimal (dec (fold (+) 1 fragment-amounts)))
-                    (price:decimal (* p sum-amounts))
-                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
                 (if (= l 1)
                     ;;Single Mode
@@ -540,14 +544,14 @@
                     (f-amount:integer (* 1000 amount))
                 )
                 ;;1]Transfer <nonce> <amount> from <account> to <DPDC|SC_NAME>
-                (ref-DPDC-T::C_Transfer [id] [son] account dpdc [[nonce]] [[amount]] true)
+                (ref-DPDC-T::C_Transfer account account dpdc [id] [son] [[nonce]] [[amount]] true)
                 ;;2]Fragment Nonces are credited to the <DPDC|SC_NAME>
                 (if son
                     (ref-DPDC-C::XE_CreditSFT-FragmentNonce dpdc id neg-nonce f-amount)
                     (ref-DPDC-C::XE_CreditNFT-FragmentNonce dpdc id neg-nonce f-amount)
                 )
                 ;;3]They are then transfered to the <account>
-                (ref-DPDC-T::C_Transfer [id] [son] dpdc account [[neg-nonce]] [[f-amount]] true)
+                (ref-DPDC-T::C_Transfer account dpdc account [id] [son] [[neg-nonce]] [[f-amount]] true)
                 ;;4]Output Cumulator
                 (URCi_MakeFragments id son)
             )
@@ -567,14 +571,14 @@
                     (merged-amount:integer (/ amount 1000))
                 )
                 ;;1]Transfer <nonce> <amount> from <account> to <DPDC|SC_NAME>
-                (ref-DPDC-T::C_Transfer [id] [son] account dpdc [[nonce]] [[amount]] true)
+                (ref-DPDC-T::C_Transfer account account dpdc [id] [son] [[nonce]] [[amount]] true)
                 ;;2]Fragment Nonces are debited from the <DPDC|SC_NAME>
                 (if son
                     (ref-DPDC-C::XE_DebitSFT-FragmentNonce dpdc id nonce amount false)
                     (ref-DPDC-C::XE_DebitNFT-FragmentNonce dpdc id nonce amount false)
                 )
                 ;;3]Native <nonces> are transfered from <DPDC|SC_NAME> to <account>
-                (ref-DPDC-T::C_Transfer [id] [son] dpdc account [[pos-nonce]] [[merged-amount]] true)
+                (ref-DPDC-T::C_Transfer account dpdc account [id] [son] [[pos-nonce]] [[merged-amount]] true)
                 ;;4]Output Cumulator
                 (URCi_MergeFragments id son)
             )

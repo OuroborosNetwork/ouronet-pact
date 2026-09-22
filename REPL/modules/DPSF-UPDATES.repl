@@ -240,7 +240,7 @@
         (id:string "TSFS-98c486052a51")
         (patron:string KST.ANHD)
     )
-    (ref-TS02-C1::DPSF|C_Repurpose patron id KST.EMMA KST.ANHD [7] [40])
+    (ref-TS02-C1::DPSF|C_Repurpose patron KST.ANHD KST.EMMA id KST.ANHD [7] [40])
     (map print
         [
             (expect "<<DSU-04>> repurposed OUT of EMMA without EMMA signing" 60
@@ -263,14 +263,14 @@
         (patron:string KST.ANHD)
     )
     ;; seed EMMA on a second nonce so a two-nonce repurpose has something to take
-    (ref-TS02-C1::DPSF|C_TransferNonce patron id patron KST.EMMA 8 250 false)
+    (ref-TS02-C1::DPSF|C_TransferNonce patron patron KST.EMMA id 8 250 false)
     (map print
         [
             (expect "<<DSU-04>> EMMA seeded on nonce 8" 250
                 (ref-DPDC::UR_AccountNonceSupply KST.EMMA id true 8))
         ]
     )
-    (ref-TS02-C1::DPSF|C_Repurpose patron id KST.EMMA KST.ANHD [7 8] [10 50])
+    (ref-TS02-C1::DPSF|C_Repurpose patron KST.ANHD KST.EMMA id KST.ANHD [7 8] [10 50])
     (map print
         [
             (expect "<<DSU-04>> multi mode debited nonce 7"  50 (ref-DPDC::UR_AccountNonceSupply KST.EMMA id true 7))
@@ -307,12 +307,24 @@
     )
     (map print
         [
-            ;; The rejection surfaces as a KEYSET failure naming the owner's key -- not as a
-            ;; message saying "you are not the collection owner". Correct, but it tells a caller
-            ;; which key was wanted rather than which rule they broke.
-            (expect-failure "<<DSU-05>> EMMA is not the collection owner and cannot repurpose"
+            ;; TWO REFUSALS, AND THEY ARE DIFFERENT ONES -- the distinction arrived with the
+            ;; 2026-09-22 patron/executor sweep. This used to be one assertion, and its comment
+            ;; recorded the complaint that "the rejection surfaces as a KEYSET failure naming the
+            ;; owner's key -- not as a message saying you are not the collection owner ... it
+            ;; tells a caller which key was wanted rather than which rule they broke."
+            ;;
+            ;; DPDC-T|C>REPURPOSE now BINDS the declared <executor> to (UR_OwnerKonto id son),
+            ;; so the two ways of getting it wrong separate cleanly:
+            ;;   * EMMA names HERSELF  -> the binder refuses, by NAME: she is not the owner.
+            ;;   * EMMA names ANHD     -> the binder is satisfied and the KEYSET refuses, because
+            ;;                            she cannot sign for him. The old message, still there.
+            ;; Both are pinned, because a single one cannot tell a fixed gate from a renamed one.
+            (expect-failure "<<DSU-05>> EMMA naming HERSELF as executor is refused BY NAME"
+                "Executor is not the Entity Owner"
+                (ref-TS02-C1::DPSF|C_Repurpose KST.EMMA KST.EMMA KST.ANHD id KST.EMMA [7] [10]))
+            (expect-failure "<<DSU-05>> EMMA naming the REAL owner is refused by his keyset"
                 "Keyset failure (keys-all): [PK_Ancie...]"
-                (ref-TS02-C1::DPSF|C_Repurpose KST.EMMA id KST.ANHD KST.EMMA [7] [10]))
+                (ref-TS02-C1::DPSF|C_Repurpose KST.EMMA KST.ANHD KST.ANHD id KST.EMMA [7] [10]))
             (expect "<<DSU-05>> and nothing moved" 950
                 (ref-DPDC::UR_AccountNonceSupply KST.ANHD id true 7))
         ]
@@ -334,7 +346,7 @@
                 ;;a complete fixed run of the guard, not a fragment spanning the interpolated
                 ;;nonce number -- see the note in modules/DPDC.repl <<DPDC-G6>>
                 "in sufficient quantity for Operation"
-                (ref-TS02-C1::DPSF|C_Repurpose KST.ANHD id KST.EMMA KST.ANHD [7] [51]))
+                (ref-TS02-C1::DPSF|C_Repurpose KST.ANHD KST.ANHD KST.EMMA id KST.ANHD [7] [51]))
             (expect "<<DSU-05>> EMMA's holding is intact after the rejected take" 50
                 (ref-DPDC::UR_AccountNonceSupply KST.EMMA id true 7))
         ]

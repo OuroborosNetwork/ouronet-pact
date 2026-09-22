@@ -1438,3 +1438,89 @@ that do not have one. They have `account` — the user whose shares are being co
 the account that actually initiates. Same symptom as `08_DPDC-S`: Pact reports an unbound name as
 *"Cannot find module: ouronet-ns.patron"*.
 
+
+---
+
+### 07_DPDC-T.pact — COMPLETE (4 of 4 entrypoints, 2026-09-22)
+
+The collectable **movement primitive**. Four entrypoints, and they produced the widest call-site
+tail of any module so far: **86 arity-preserving reorders** across 35 files, **24** direct core
+calls, **10** Talos wrappers in `TS02-C1`/`TS02-C2` reordered to canon, and **7** repurpose sites
+that needed an executor invented from the collection owner.
+
+| entrypoint | before | after | executor proven |
+|---|---|---|---|
+| `C_Transfer` | `(ids sons sender receiver nonces-array amounts-array method)` | `(patron executor executee ids sons nonces-array amounts-array method)` | DIRECT — `CAP_EnforceAccountOwnership sender`, unconditional |
+| `C_BulkTransfer` | `(id son nonces-array amounts-array sender receiver-lst method)` | `(patron executor executee-lst id son nonces-array amounts-array method)` | DIRECT |
+| `C_RepurposeCollectable` | `(id son repurpose-from repurpose-to nonces amounts)` | `(patron executor executee id son repurpose-to nonces amounts)` | §4g — new binder in the capability |
+| `C_IgnisRoyaltyCollector` | `(patron sender ids sons …)` | `(patron executor ids sons …)` | DIRECT — **the enforce is new** |
+
+#### A transfer and a repurpose look the same and are not
+
+`C_Transfer` and `C_RepurposeCollectable` both move nonces from one account to another. In the
+first, the account losing the nonces **signs**; in the second it does not, and the authority is
+the **collection owner** — enforced three hops down in `DPDC-C::DPDC|CX>MULTI-DEBIT` by the same
+`(if wipe-mode (CAP_Owner id son) …)` fork that module 29 found for burn-vs-wipe, reached here
+with `wipe-mode` hardcoded `true` at every debit leg.
+
+So `repurpose-from` is the **executee** and the executor was nowhere in the signature — §4g,
+"authority proven, actor unrecorded", now the fourth module to show it. `DPDC-T|C>REPURPOSE`
+gained the binder (`DPDC::UEV_ExecutorIsOwnerKonto`), exactly as `VST|C>REPURPOSE-TRUE-FUNGIBLE`
+did for the vesting side.
+
+**The binder also made a refusal legible.** `modules/DPSF-UPDATES.repl` `<<DSU-05>>` carried a
+standing complaint in its own comment: a non-owner's repurpose was rejected by a *keyset failure
+naming the owner's key*, which "tells a caller which key was wanted rather than which rule they
+broke". There are now **two** assertions, because there are now two distinct refusals — naming
+yourself fails **by name**, naming the real owner fails **by keyset** — and one assertion cannot
+tell a working gate from a renamed one.
+
+#### An unenforced executor, and why it was worth an enforce
+
+`C_IgnisRoyaltyCollector` took `sender`, **read it, and never proved it**. That is not decoration:
+
+```pact
+(if (= sender creator) 0.0 …)        ;; URC_SummedIgnisRoyalty
+```
+
+A caller free to name any sender is a caller free to name **the creator** and pay no royalty at
+all — out of the patron, to the creator's loss. Unreachable from a client today (`P|UEV_IMC`
+admits only registered modules, and all five call sites pass an account a sibling call in the
+same transaction proves), but *"proven by my caller's other call"* is not a property this
+function holds. §4f is explicit that an unenforced executor is worse than none, so the ownership
+enforce was **added**; it is a no-op at every existing site by construction.
+
+#### A dead binding was publishing a wrong price
+
+`_deadbind` reported `price` and `trigger` dead in `C_RepurposeCollectable`. They were the tail of
+a whole **duplicated cost model** — `owner`, both tier legs, the sum, the price, the virtual-gas
+trigger — every value of which is recomputed identically inside the `URCi_` call that ends the
+function. Left behind when the cumulator was factored out.
+
+Deleting it moved a **published figure**, because `_ignis_price_sheet` reads the tier legs a
+function body mentions: `s` and `m` bound *both* tiers where `(if son s m)` charges *one*, so the
+sheet summed them and quoted a floor of **5** for an op whose floor is **2** (SFT) or **3** (NFT).
+
+Its twin in `09_DPDC-F::C_RepurposeCollectableFragments` had the identical dead block and the same
+wrong legs — fixed in the same pass, because the price is wrong *now*, not at that module's turn.
+
+And that exposed a third thing. The two functions compute the **identical** price shape and were
+classified **differently**: `C_Repurpose` published `COMPLEX / ≥ n`, `C_RepurposeFragments` an
+*exact* `$0.05`. The reason is that `SCALES` — the "does this charge scale?" test — partly matches
+the literal phrases `per-nonce` / `price-per-nonce`, and it runs over text that **includes `@doc`
+prose**. One cost-preview doc says "per-nonce construct priced" and the other says "per-fragment".
+
+> **A published price class was resting on a hyphenated word in a comment.** Fixed by matching the
+> structure the docs were describing — `(dec (fold …))` — so the classification no longer depends
+> on prose. Tally moved `185 exact · 135 floor` → `183 · 137`. No account's charge changed; what
+> changed is what the sheet *says*, which is the thing an integrator quotes.
+
+#### The tool that could not report its own incompleteness — fifth instance
+
+`_patronslots.py` exists to see the one invisible thing in this refactor. It kept a **hand-written
+list** of which callees already take a `patron`, and module 29 did not add itself to it — so
+**four** provisional slots in `11_EQUITY+` were invisible to the only tool that looks for them,
+for a day. `SWEPT` is now derived from the source (first parameter is literally `patron`), which
+immediately found **two more** in `04_TS01-C3` the list had never covered. Registered count
+**25 → 48**. See HANDOFF §4i.
+

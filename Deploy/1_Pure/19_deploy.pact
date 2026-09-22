@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 19 of 24
 ;; This is STEP 19 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-18 must have run first, including the init steps between deploys.
-;; 3 source file(s), 849,276 gas measured in the REPL gas model, 259,582 bytes
+;; 3 source file(s), 849,276 gas measured in the REPL gas model, 259,318 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/06_VCT.pact
@@ -3009,13 +3009,7 @@
                 ;;
                 (bulk-oc:object{IgnisCollectorV3.OutputCumulator}
                     (ref-DPDC-T::C_BulkTransfer
-                        collectable-id
-                        son
-                        nonces-array
-                        amounts-array
-                        AQP|SC_NAME
-                        owner-ids
-                        true
+                        AQP|SC_NAME AQP|SC_NAME owner-ids collectable-id son nonces-array amounts-array true
                     )
                 )
                 (unwind-oc:object{IgnisCollectorV3.OutputCumulator}
@@ -3208,13 +3202,7 @@
                 ;;
                 (bulk-oc:object{IgnisCollectorV3.OutputCumulator}
                     (ref-DPDC-T::C_BulkTransfer
-                        collectable-id
-                        son
-                        nonces-array
-                        amounts-array
-                        AQP|SC_NAME
-                        owner-ids
-                        true
+                        AQP|SC_NAME AQP|SC_NAME owner-ids collectable-id son nonces-array amounts-array true
                     )
                 )
                 (unwind-oc:object{IgnisCollectorV3.OutputCumulator}

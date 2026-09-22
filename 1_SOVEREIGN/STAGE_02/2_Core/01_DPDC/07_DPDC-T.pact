@@ -76,12 +76,16 @@
     ;;  [C]
     ;;
     (defun C_RepurposeCollectable:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer])
+        (patron:string executor:string executee:string id:string son:bool repurpose-to:string nonces:[integer] amounts:[integer])
     )
-    (defun C_Transfer:object{IgnisCollectorV3.OutputCumulator} (ids:[string] sons:[bool] sender:string receiver:string nonces-array:[[integer]] amounts-array:[[integer]] method:bool))
-    (defun C_IgnisRoyaltyCollector:object{AggregatedRoyalties} (patron:string sender:string ids:[string] sons:[bool] nonces-array:[[integer]] amounts-array:[[integer]]))
+    (defun C_Transfer:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string executor:string executee:string ids:[string] sons:[bool] nonces-array:[[integer]] amounts-array:[[integer]] method:bool)
+    )
+    (defun C_IgnisRoyaltyCollector:object{AggregatedRoyalties}
+        (patron:string executor:string ids:[string] sons:[bool] nonces-array:[[integer]] amounts-array:[[integer]])
+    )
     (defun C_BulkTransfer:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool nonces-array:[[integer]] amounts-array:[[integer]] sender:string receiver-lst:[string] method:bool)
+        (patron:string executor:string executee-lst:[string] id:string son:bool nonces-array:[[integer]] amounts-array:[[integer]] method:bool)
     )
 
 )
@@ -277,13 +281,30 @@
         true
     )
     ;;{C2}  Simple
-    (defcap DPDC-T|C>REPURPOSE (id:string son:bool repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer])
+    (defcap DPDC-T|C>REPURPOSE
+        (executor:string id:string son:bool repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer])
+        @doc "Forced move of <id> nonces from <repurpose-from> to <repurpose-to>. \
+            \ \
+            \ HANDOFF 4g. This capability proves no account and never did: the authority is the \
+            \ COLLECTION OWNER, enforced three hops downstream in DPDC-C's DPDC|CX>MULTI-DEBIT, \
+            \ (if wipe-mode (CAP_Owner id son) (CAP_EnforceAccountOwnership account)) -- and \
+            \ C_RepurposeCollectable reaches it with wipe-mode TRUE. CAP_Owner enforces on the \
+            \ DERIVED (UR_OwnerKonto id son) and so names no actor; the binder below supplies \
+            \ the other half, that the executor the caller DECLARED is that owner. \
+            \ \
+            \ <repurpose-from> is the EXECUTEE: it is debited without being consulted. That is \
+            \ the whole point of a repurpose and the reason it cannot be the executor. Mirrors \
+            \ VST|C>REPURPOSE-TRUE-FUNGIBLE, which resolved the identical shape. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         @event
         (let
             (
+                (ref-DPDC:module{DpdcV2} DPDC)
+                ;;
                 (l1:integer (length nonces))
                 (l2:integer (length amounts))
             )
+            (ref-DPDC::UEV_ExecutorIsOwnerKonto executor id son)
             (enforce (= l1 l2) "Invalid Repurpose data")
         )
     )
@@ -914,23 +935,36 @@
     )
     ;;{5.7}  User [A/C]
     (defun C_RepurposeCollectable:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer])
+        (patron:string executor:string executee:string id:string son:bool repurpose-to:string nonces:[integer] amounts:[integer])
+        @doc "Forcibly moves <id> nonces from <executee> to <repurpose-to>, on the collection \
+            \ owner's authority. \
+            \ \
+            \ Executor: PROVEN INDIRECTLY, and named. The debit legs below pass wipe-mode TRUE \
+            \ to DPDC-C::XE_Debit*-Nonce(s), which selects (CAP_Owner id son) in \
+            \ DPDC|CX>MULTI-DEBIT -- ownership of the DERIVED collection owner, HANDOFF 4g. \
+            \ DPDC-T|C>REPURPOSE binds <executor> to that same (UR_OwnerKonto id son). \
+            \ Executee: NOT consulted, by design -- <executee> is debited whether or not it \
+            \ agrees, which is what makes this a repurpose rather than a transfer. Its \
+            \ consent gate is the collection's, not its own. \
+            \ \
+            \ The three-argument shape it replaces read (id son repurpose-from repurpose-to ...) \
+            \ and recorded no actor at all; the account that LOOKED like one was the target. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
-        (with-capability (DPDC-T|C>REPURPOSE id son repurpose-from repurpose-to nonces amounts)
+        (with-capability (DPDC-T|C>REPURPOSE executor id son executee repurpose-to nonces amounts)
+            ;;DEAD PRE-COMPUTATION REMOVED (2026-09-22). This `let` also bound
+            ;;<owner>/<s>/<m>/<p>/<sum-amounts>/<price>/<trigger> and read NONE of them --
+            ;;_deadbind reported <price> and <trigger>, and <owner> fell out with them once the
+            ;;4g binder replaced it. Every one is recomputed, identically, inside the
+            ;;URCi_RepurposeCollectable call that ends this function: it derives the same owner
+            ;;konto, the same tier leg, the same (1 + Sum amounts) and the same virtual-gas
+            ;;trigger. So this was the cost model left behind when the cumulator was factored
+            ;;out, not a second one -- deleting it drops two table reads and changes no price.
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
-                    (ref-DPDC:module{DpdcV2} DPDC)
                     (ref-DPDC-C:module{DpdcCreateV2} DPDC-C)
                     ;;
                     (l:integer (length nonces))
-                    (owner:string (ref-DPDC::UR_OwnerKonto id son))
-                    (s:decimal (ref-IGNIS::UC_IgnisLeg "tier-small"))
-                    (m:decimal (ref-IGNIS::UC_IgnisLeg "tier-medium"))
-                    (p:decimal (if son s m))
-                    (sum-amounts:decimal (dec (fold (+) 1 amounts)))
-                    (price:decimal (* p sum-amounts))
-                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
                 (if (= l 1)
                     ;;Single Mode
@@ -941,8 +975,8 @@
                         )
                         ;;1]Debit from <repurpose-from>
                         (if son
-                            (ref-DPDC-C::XE_DebitSFT-Nonce repurpose-from id nonce amount true)
-                            (ref-DPDC-C::XE_DebitNFT-Nonce repurpose-from id nonce amount true)
+                            (ref-DPDC-C::XE_DebitSFT-Nonce executee id nonce amount true)
+                            (ref-DPDC-C::XE_DebitNFT-Nonce executee id nonce amount true)
                         )
                         ;;2]Credit to <repurpose-to>
                         (if son
@@ -954,8 +988,8 @@
                     (do
                         (if son
                             ;;1]Debit from <repurpose-from>
-                            (ref-DPDC-C::XE_DebitSFT-Nonces repurpose-from id nonces amounts true)
-                            (ref-DPDC-C::XE_DebitNFT-Nonces repurpose-from id nonces amounts true)
+                            (ref-DPDC-C::XE_DebitSFT-Nonces executee id nonces amounts true)
+                            (ref-DPDC-C::XE_DebitNFT-Nonces executee id nonces amounts true)
                         )
                         (if son
                             ;;2]Credit to <repurpose-to>
@@ -970,49 +1004,82 @@
         )
     )
     (defun C_Transfer:object{IgnisCollectorV3.OutputCumulator}
-        (ids:[string] sons:[bool] sender:string receiver:string nonces-array:[[integer]] amounts-array:[[integer]] method:bool)
+        (patron:string executor:string executee:string ids:[string] sons:[bool] nonces-array:[[integer]] amounts-array:[[integer]] method:bool)
+        @doc "Moves nonce slices of several collectables from <executor> to <executee> in one \
+            \ call. \
+            \ \
+            \ Executor: ENFORCED DIRECTLY -- DPDC-T|C>TRANSFER opens on \
+            \ (CAP_EnforceAccountOwnership sender) unconditionally, on the parameter itself. \
+            \ Executee: ENFORCED CONDITIONALLY, in the same capability -- only when <method> is \
+            \ true AND the executee is a SMART account, because crediting a contract-owned \
+            \ account is an act upon that contract. A standard executee is merely credited. \
+            \ Same rule, same shape, as TFT::C_Transfer on the true-fungible side. \
+            \ (patron/executor canon 2.2, conditional executee named, 2026-09-22.)"
         (P|UEV_IMC)
-        (with-capability (DPDC-T|C>TRANSFER ids sons sender receiver nonces-array amounts-array method)
+        (with-capability (DPDC-T|C>TRANSFER ids sons executor executee nonces-array amounts-array method)
             (map
                 (lambda
                     (idx:integer)
-                    (XI_TransferNonces (at idx ids) (at idx sons) sender receiver (at idx nonces-array) (at idx amounts-array))
+                    (XI_TransferNonces (at idx ids) (at idx sons) executor executee (at idx nonces-array) (at idx amounts-array))
                 )
                 (enumerate 0 (- (length ids) 1))
             )
-            (URCi_MultiTransferCumulator ids sons sender receiver nonces-array amounts-array)
+            (URCi_MultiTransferCumulator ids sons executor executee nonces-array amounts-array)
         )
     )
     (defun C_BulkTransfer:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool nonces-array:[[integer]] amounts-array:[[integer]] sender:string receiver-lst:[string] method:bool)
-        @doc "Bulk collectable transfer: one id/son, one sender, many standard-account receivers (DpdcTransferV2). \
-            \ Arg order mirrors C_Transfer: id/son, slice arrays, sender, receiver-lst, method."
+        (patron:string executor:string executee-lst:[string] id:string son:bool nonces-array:[[integer]] amounts-array:[[integer]] method:bool)
+        @doc "Bulk collectable transfer: one id/son, one executor, many standard-account \
+            \ executees (DpdcTransferV2). \
+            \ \
+            \ Executor: ENFORCED DIRECTLY -- DPDC-T|C>BULK-TRANSFER opens on \
+            \ (CAP_EnforceAccountOwnership sender), on the parameter itself. \
+            \ Executees: NOT enforced, and unlike C_Transfer they cannot be: \
+            \ DPDC-T|S>BULK-TRANSFER runs (UEV_EnforceAccountType receiver false) over the \
+            \ whole list, so every executee here is by construction a STANDARD account, which \
+            \ is the exact case C_Transfer's conditional arm also declines to check. A plural \
+            \ executee slot takes the plural name, as DPTF|C_BulkTransfer does. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
         (with-capability
-            (DPDC-T|C>BULK-TRANSFER id son nonces-array amounts-array sender receiver-lst method)
+            (DPDC-T|C>BULK-TRANSFER id son nonces-array amounts-array executor executee-lst method)
             (do
                 (map
                     (lambda (idx:integer)
                         (XI_TransferNonces
                             id
                             son
-                            sender
-                            (at idx receiver-lst)
+                            executor
+                            (at idx executee-lst)
                             (at idx nonces-array)
                             (at idx amounts-array)
                         )
                     )
-                    (enumerate 0 (- (length receiver-lst) 1))
+                    (enumerate 0 (- (length executee-lst) 1))
                 )
-                (URCi_BulkTransferCumulator id son sender receiver-lst nonces-array amounts-array)
+                (URCi_BulkTransferCumulator id son executor executee-lst nonces-array amounts-array)
             )
         )
     )
     (defun C_IgnisRoyaltyCollector:object{DpdcTransferV2.AggregatedRoyalties}
-        (patron:string sender:string ids:[string] sons:[bool] nonces-array:[[integer]] amounts-array:[[integer]])
+        (patron:string executor:string ids:[string] sons:[bool] nonces-array:[[integer]] amounts-array:[[integer]])
+        @doc "Pays each collectable creator their IGNIS royalty for a move <executor> is making, \
+            \ OUT OF THE PATRON, and returns the aggregate for the caller's result string. \
+            \ \
+            \ Executor: ENFORCED DIRECTLY, and the enforce is NEW (2026-09-22). The old <sender> \
+            \ was read and never proven, and it is not decoration: URC_SummedIgnisRoyalty \
+            \ short-circuits to 0.0 when the sender IS the creator, so a caller free to name \
+            \ any sender is a caller free to name the creator and pay no royalty at all. \
+            \ Unreachable from a client today -- P|UEV_IMC admits only registered modules, and \
+            \ all five call sites pass an account a sibling call in the same transaction \
+            \ proves -- but 'proven by my caller's other call' is not a property this function \
+            \ holds, and §4f is explicit that an unenforced executor is worse than none. \
+            \ The check is a no-op at every existing site by construction. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
         (let
             (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                 (ref-DPDC:module{DpdcV2} DPDC)
                 ;;
@@ -1031,13 +1098,16 @@
                     (map
                         (lambda
                             (idx:integer)
-                            (URC_SummedIgnisRoyalty sender (at idx ids) (at idx sons) (at idx nonces-array) (at idx amounts-array))
+                            (URC_SummedIgnisRoyalty executor (at idx ids) (at idx sons) (at idx nonces-array) (at idx amounts-array))
                         )
                         (enumerate 0 (- (length ids) 1))
                     )
                 )
                 (sum:decimal (fold (+) 0.0 ids-ignis-royalties))
             )
+            ;;ATTRIBUTION (canon 2.2): the royalty is computed FROM the executor, so the
+            ;;executor has to be real. See the @doc.
+            (ref-DALOS::CAP_EnforceAccountOwnership executor)
             (if (or ivgz (= sum 0.0))
                 (with-capability (IGNIS|C>NO-ROYALTY )
                     (UDCx_AggregatedRoyalties [""] [0.0])

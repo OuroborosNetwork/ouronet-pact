@@ -227,7 +227,7 @@
         ;;right way to leave an as-behaves pin: the assertion survived the fix and changed meaning.
         (expect-failure "<<TFT-MT4>> ...and the CLIENT gives a deliberate refusal, like TFT-MT2"
             "Invalid DPDC bulk transfer: receiver/nonces/amounts legs"
-            (TS02-C1.DPDC|C_BulkTransfer KST.ANHD "DHCD-98c486052a51" true [] [] KST.ANHD [] false))
+            (TS02-C1.DPDC|C_BulkTransfer KST.ANHD KST.ANHD [] "DHCD-98c486052a51" true [] [] false))
     ]
 )
 (commit-tx)

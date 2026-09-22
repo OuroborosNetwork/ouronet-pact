@@ -153,7 +153,7 @@
             (format "<(TS02-C1.DPSF|C_EnableNonceFragmentation nonce=1)> => \"{}\""
                 [(ref-TS02-C1::DPSF|C_EnableNonceFragmentation owner id 1 nd)])
             (format "<(TS02-C1.DPSF|C_TransferNonce ANHD->LUMY 100)> => \"{}\""
-                [(ref-TS02-C1::DPSF|C_TransferNonce owner id owner lumy 1 100 false)])
+                [(ref-TS02-C1::DPSF|C_TransferNonce owner owner lumy id 1 100 false)])
         ]
     )
     (map print

@@ -180,6 +180,57 @@ DEFCAP_RE = re.compile(r'\n    \(defcap ([A-Za-z0-9|_\->]+)\s*\(')
 CAPUSE_RE = re.compile(r'\((?:with|require|compose)-capability\s+\(([A-Za-z0-9|_\->]+)')
 
 
+LOCAL_CALL = re.compile(r'\(\s*([A-Za-z][A-Za-z0-9|_\-]*)[\s)]')
+
+
+def local_arity(paths):
+    """SAME-MODULE FUNCTION-CALL ARITY -- the third and last of this file's blind spots.
+
+    The first two were modref calls (`ref-X::fn`) and capability acquisitions. This is the one
+    that has no prefix at all: a function calling a sibling in its own module.
+
+    IT IS NOT CHECKED BY ANYTHING ELSE. Pact does not reject a short call at load -- it is a
+    PARTIAL APPLICATION, perfectly legal -- so the failure surfaces at RUNTIME, and only if a
+    test happens to execute that path. On 2026-09-22 three wipe entrypoints in 06_DPDC-MNG kept
+    a stale 4-argument call to their sibling C_WipePure; _callarity reported clean and the suite
+    died with `Runtime typecheck failure, argument is bool, but expected type string`. A
+    same-module call no test exercises would have shipped.
+
+    DELIBERATELY CONSERVATIVE, because a careless version would fire across the whole tree:
+      * only names DEFINED AS A defun IN THE SAME MODULE are considered -- natives, specials and
+        anything foreign are invisible to it by construction;
+      * a name that is also bound as a `let` variable or a parameter ANYWHERE in the module is
+        skipped entirely. Pact allows a local to shadow a defun, and distinguishing the two needs
+        real scope analysis. Skipping loses coverage; guessing produces noise that gets ignored,
+        which is worse -- `_deadbind`'s 150-line report is this programme's cautionary tale.
+    """
+    bad = []
+    for f in paths:
+        src = open(f, encoding="utf8", errors="replace").read()
+        for i, m in enumerate(list(MODULE_RE.finditer(src))):
+            mm = list(MODULE_RE.finditer(src))
+            end = mm[i + 1].start() if i + 1 < len(mm) else len(src)
+            body = src[m.start():end]
+            local = {}
+            for dm in DEFUN_RE.finditer(body):
+                local[dm.group(1)] = _params(body, dm.end() - 1)
+            # every name bound as a parameter or a let-binding anywhere in this module
+            shadowed = set(re.findall(r'\(\s*([A-Za-z][A-Za-z0-9|_\-]*)\s*:[A-Za-z\[]', body))
+            for cm in LOCAL_CALL.finditer(body):
+                fn = cm.group(1)
+                if fn not in local or fn in shadowed:
+                    continue
+                if in_string(body, cm.start()):
+                    continue
+                got, _ = split_form(body, cm.start())
+                got = len(got) - 1
+                if got != local[fn] and got != 0:      # 0 args = a bare reference, not a call
+                    bad.append((os.path.relpath(f, ROOT),
+                                body.count("\n", 0, cm.start()) + src.count("\n", 0, m.start()) + 1,
+                                fn, local[fn], got))
+    return bad
+
+
 def cap_arity(paths):
     """CAPABILITY ACQUISITION ARITY, per module.
 
@@ -249,6 +300,7 @@ def main():
 
     hits, mism, unchecked, partial = scan(paths, sigs, owners, want_fns)
     capbad = cap_arity(paths)
+    locbad = local_arity(paths)
     scope = only_fn or only_mod or "all entrypoints"
     print(f"call-arity -- scope: {scope}")
     print(f"  {len(want_fns)} function(s), {hits} resolved call site(s) in {len(paths)} file(s)")
@@ -259,6 +311,12 @@ def main():
         print(f"  {tot} call site(s) UNCHECKED -- name defined on >1 module:")
         for fn, n in unchecked.most_common(8):
             print(f"     {fn:34s} {n:4d}  (on {', '.join(sorted(owners[fn]))})")
+    if locbad:
+        print(f"\n  SAME-MODULE CALL ARITY MISMATCHES: {len(locbad)}")
+        for rel, line, fn, want, got in locbad:
+            print(f"     {rel}:{line}\n         {fn}  wants {want}, got {got}")
+        print("  A short same-module call is a PARTIAL APPLICATION -- legal at load, fatal at")
+        print("  runtime, and only if a test reaches it. Nothing else in the toolchain sees it.")
     if capbad:
         print(f"\n  CAPABILITY ACQUISITION ARITY MISMATCHES: {len(capbad)}")
         for rel, line, name, want, got in capbad:
@@ -271,9 +329,9 @@ def main():
         for rel, line, fn, want, got, txt in mism:
             print(f"     {rel}:{line}\n         {fn}  wants {want}, got {got}   {txt.strip()}")
         return 1
-    if capbad:
+    if capbad or locbad:
         return 1
-    print("\n  no arity mismatches (function calls and capability acquisitions).")
+    print("\n  no arity mismatches (modref calls, same-module calls, capability acquisitions).")
     return 0
 
 

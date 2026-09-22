@@ -644,7 +644,7 @@
         )
         (enforce (> amt-b 0) "owner-a must hold DHCD nonce 2 for multi-owner vacate setup")
         (print (format "<(TS02-C1.DPSF|C_TransferNonces owner-a→owner-b)> => {}" [
-            (ref-TS02-C1::DPSF|C_TransferNonces patron dpsf-id owner-a owner-b [nonce-b] [amt-b] false)
+            (ref-TS02-C1::DPSF|C_TransferNonces patron owner-a owner-b dpsf-id [nonce-b] [amt-b] false)
         ]))
     )
     (print (format "<(TS02-C3.AQP-POOL|CC_StakeSemiFungibleCollectable owner-a)> => \"{}\"" [

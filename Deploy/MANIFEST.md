@@ -96,8 +96,8 @@ Read top to bottom. **`step`** is the position in the full sequence; **`file`** 
 | 10 | **10** | DEPLOY 5 modules: 03_TS01-C2, 04_TS01-C3, 06_TS01-C4, 05_TS01-P, 01_INFO-ZERO | 228,598 | `Deploy/1_Pure/10_deploy.pact` |
 | 11 | **11** | DEPLOY 3 modules: 02_INFO-ONE+, 01_AOZ+, 01_DPDC-UDC | 457,539 | `Deploy/1_Pure/11_deploy.pact` |
 | 12 | **12** | DEPLOY 5 modules: 02_DPDC, 03_DPDC-C, 04_DPDC-I, 05_DPDC-R, 06_DPDC-MNG | 300,922 | `Deploy/1_Pure/12_deploy.pact` |
-| 13 | **13** | DEPLOY 6 modules: 07_DPDC-T, 08_DPDC-S, 09_DPDC-F, 10_DPDC-N, 11_EQUITY+, 00_Demipad | 370,184 | `Deploy/1_Pure/13_deploy.pact` |
-| 14 | **14** | DEPLOY 2 modules: 00_AQP-SCHEMAS, 01_ANK | 47,586 | `Deploy/1_Pure/14_deploy.pact` |
+| 13 | **13** | DEPLOY 5 modules: 07_DPDC-T, 08_DPDC-S, 09_DPDC-F, 10_DPDC-N, 11_EQUITY+ | 315,762 | `Deploy/1_Pure/13_deploy.pact` |
+| 14 | **14** | DEPLOY 3 modules: 00_Demipad, 00_AQP-SCHEMAS, 01_ANK | 102,008 | `Deploy/1_Pure/14_deploy.pact` |
 | 15 | **15** | DEPLOY 1 modules: 02_SCORE | 96,321 | `Deploy/1_Pure/15_deploy.pact` |
 | 16 | **16** | DEPLOY 1 modules: 03_AQP | 151,366 | `Deploy/1_Pure/16_deploy.pact` |
 | 17 | **17** | DEPLOY 1 modules: 04_RPS | 229,502 | `Deploy/1_Pure/17_deploy.pact` |

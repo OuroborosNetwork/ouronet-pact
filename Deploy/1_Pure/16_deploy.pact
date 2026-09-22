@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 16 of 24
 ;; This is STEP 16 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-15 must have run first, including the init steps between deploys.
-;; 1 source file(s), 151,366 gas measured in the REPL gas model, 175,100 bytes
+;; 1 source file(s), 151,366 gas measured in the REPL gas model, 175,109 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/03_AQP.pact
@@ -3112,7 +3112,7 @@
                     (sender:string (if direction owner-id vault))
                     (receiver:string (if direction vault owner-id))
                 )
-                (ref-DPDC-T::C_Transfer [collectable-id] [son] sender receiver [nonces] [nonce-amounts] true)
+                (ref-DPDC-T::C_Transfer owner-id sender receiver [collectable-id] [son] [nonces] [nonce-amounts] true)
             )
         )
     )

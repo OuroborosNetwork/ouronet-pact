@@ -74,7 +74,7 @@
         (print (format "Lumy has transfer-role? {}" [(ref-DPDC::UR_CA|R-Transfer id false lumy)]))
         ;; #16H proof: ANHD (sender, no role) -> Lumy (receiver, HAS role) must be ALLOWED.
         (print (format "<<16H-1>> Transfer ANHD(no role)->Lumy(has role) RESULT = {}"
-            [(ref-TS02-C2::DPNF|C_TransferNonce owner id owner lumy 1 1 false)]))
+            [(ref-TS02-C2::DPNF|C_TransferNonce owner owner lumy id 1 1 false)]))
         ""
     )
 )

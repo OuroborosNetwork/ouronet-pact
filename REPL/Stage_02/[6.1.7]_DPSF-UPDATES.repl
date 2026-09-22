@@ -104,7 +104,7 @@
     ;; native (non-set) nonce update on nonce 7 (owner holds 1000 of it, untouched by [6.1.3] sets)
     (ref-TS02-C1::DPSF|C_UpdateNonces patron id patron [7] true [nd2])
     ;; bulk transfer 100 units of nonce 7 to EMMA (account auto-deploys; method=false, standard acct)
-    (ref-TS02-C1::DPSF|C_BulkTransfer patron id [[7]] [[100]] patron [emma] false)
+    (ref-TS02-C1::DPSF|C_BulkTransfer patron patron [emma] id [[7]] [[100]] false)
     ;; premium branding upgrade (STOA fee)
     ;;ORDER-DEPENDENCE FIX (G3), third site -- see [6.1.4]_DPDC-NF.repl and [6.1.6]_DPOF.repl for
     ;;the full reasoning. BRD allows an upgrade only under 15 days of remaining premium
