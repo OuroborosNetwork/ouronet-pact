@@ -482,6 +482,13 @@
     ;;
     (defun C_IssueStablePool
         (patron:string executor:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal amp:decimal p:bool)
+        @doc "Multi-transaction door to a STABLE pool issuance -- the defpact twin of \
+            \ <SWPI|C_Issue>, for when the single-transaction form will not fit in one TX. \
+            \ EXECUTOR PROOF (indirect, via a defpact): <MTX|C_Issue> forwards <executor> into \
+            \ <SWPI::XE_IssueWrite>, whose <TFT::C_MultiTransfer> DEBITS the pool's seed tokens \
+            \ from it. The debit is the proof -- a caller naming an account it does not own \
+            \ cannot fund the pool. Invisible to the FORWARDED check because the first hop is a \
+            \ SAME-MODULE defpact, not a <ref-X::> call."
         (P|UEV_IMC)
         (with-capability (MTX-SWP|C>ISSUE-S-POOL pool-tokens)
             (MTX|C_Issue
@@ -493,6 +500,13 @@
     )
     (defun C_IssueWeightedPool
         (patron:string executor:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool)
+        @doc "Multi-transaction door to a WEIGHTED pool issuance -- the defpact twin of \
+            \ <SWPI|C_Issue>, for when the single-transaction form will not fit in one TX. \
+            \ EXECUTOR PROOF (indirect, via a defpact): <MTX|C_Issue> forwards <executor> into \
+            \ <SWPI::XE_IssueWrite>, whose <TFT::C_MultiTransfer> DEBITS the pool's seed tokens \
+            \ from it. The debit is the proof -- a caller naming an account it does not own \
+            \ cannot fund the pool. Invisible to the FORWARDED check because the first hop is a \
+            \ SAME-MODULE defpact, not a <ref-X::> call."
         (P|UEV_IMC)
         (with-capability (MTX-SWP|C>ISSUE-W-POOL pool-tokens)
             (MTX|C_Issue
@@ -504,6 +518,13 @@
     )
     (defun C_IssueStandardPool
         (patron:string executor:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal p:bool)
+        @doc "Multi-transaction door to a STANDARD pool issuance -- the defpact twin of \
+            \ <SWPI|C_Issue>, for when the single-transaction form will not fit in one TX. \
+            \ EXECUTOR PROOF (indirect, via a defpact): <MTX|C_Issue> forwards <executor> into \
+            \ <SWPI::XE_IssueWrite>, whose <TFT::C_MultiTransfer> DEBITS the pool's seed tokens \
+            \ from it. The debit is the proof -- a caller naming an account it does not own \
+            \ cannot fund the pool. Invisible to the FORWARDED check because the first hop is a \
+            \ SAME-MODULE defpact, not a <ref-X::> call."
         (P|UEV_IMC)
         (with-capability (MTX-SWP|C>ISSUE-P-POOL pool-tokens)
             (MTX|C_Issue
@@ -516,6 +537,12 @@
     ;;
     (defun C_AddStandardLiquidity
         (patron:string executor:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
+        @doc "Multi-transaction door to a STANDARD (asymmetric, gaseous) liquidity addition. \
+            \ EXECUTOR PROOF (indirect, via a defpact): <MTX|C_AddLiquidity> forwards <executor> \
+            \ into <SWPL::XE_STOA-PID|AddLiquidity>, which reaches <XI_AddLiqSendAndMint>, where \
+            \ <TFT::C_MultiTransfer> DEBITS the supplied liquidity from it. The debit is the \
+            \ proof. Invisible to the FORWARDED check because the first hop is a SAME-MODULE \
+            \ defpact, not a <ref-X::> call."
         (P|UEV_IMC)
         (with-capability (MTX-SWP|S>ADD-LQ stoa-pid)
             (MTX|C_AddLiquidity patron executor swpair input-amounts true true stoa-pid)
@@ -523,6 +550,12 @@
     )
     (defun C_AddIcedLiquidity
         (patron:string executor:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
+        @doc "Multi-transaction door to an ICED (balanced, gaseous) liquidity addition. \
+            \ EXECUTOR PROOF (indirect, via a defpact): <MTX|C_AddLiquidity> forwards <executor> \
+            \ into <SWPL::XE_STOA-PID|AddLiquidity>, which reaches <XI_AddLiqSendAndMint>, where \
+            \ <TFT::C_MultiTransfer> DEBITS the supplied liquidity from it. The debit is the \
+            \ proof. Invisible to the FORWARDED check because the first hop is a SAME-MODULE \
+            \ defpact, not a <ref-X::> call."
         (P|UEV_IMC)
         (with-capability (MTX-SWP|S>ADD-LQ stoa-pid)
             (MTX|C_AddLiquidity patron executor swpair input-amounts false true stoa-pid)
@@ -530,6 +563,12 @@
     )
     (defun C_AddGlacialLiquidity
         (patron:string executor:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
+        @doc "Multi-transaction door to a GLACIAL (balanced, non-gaseous) liquidity addition. \
+            \ EXECUTOR PROOF (indirect, via a defpact): <MTX|C_AddLiquidity> forwards <executor> \
+            \ into <SWPL::XE_STOA-PID|AddLiquidity>, which reaches <XI_AddLiqSendAndMint>, where \
+            \ <TFT::C_MultiTransfer> DEBITS the supplied liquidity from it. The debit is the \
+            \ proof. Invisible to the FORWARDED check because the first hop is a SAME-MODULE \
+            \ defpact, not a <ref-X::> call."
         (P|UEV_IMC)
         (with-capability (MTX-SWP|S>ADD-LQ stoa-pid)
             (MTX|C_AddLiquidity patron executor swpair input-amounts false false stoa-pid)
@@ -537,6 +576,11 @@
     )
     (defun C_AddFrozenLiquidity
         (patron:string executor:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal)
+        @doc "Multi-transaction door to a FROZEN-DPTF liquidity addition -- the VST unwrap path. \
+            \ EXECUTOR PROOF (indirect, via a defpact): <MTX|C_AddFrozenLiquidity> moves the \
+            \ frozen token with <TFT::C_Transfer>, which DEBITS <executor> before the VST burn \
+            \ that releases the underlying. The debit is the proof. Invisible to the FORWARDED \
+            \ check because the first hop is a SAME-MODULE defpact, not a <ref-X::> call."
         (P|UEV_IMC)
         (with-capability (MTX-SWP|S>ADD-LQ stoa-pid)
             (MTX|C_AddFrozenLiquidity patron executor swpair frozen-dptf input-amount stoa-pid)
@@ -544,6 +588,12 @@
     )
     (defun C_AddSleepingLiquidity
         (patron:string executor:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal)
+        @doc "Multi-transaction door to a SLEEPING-DPOF liquidity addition -- the VST unwrap \
+            \ path. EXECUTOR PROOF (indirect, via a defpact): <MTX|C_AddSleepingLiquidity> moves \
+            \ the sleeping nonce with <DPOF::C_Transfer>, which DEBITS <executor> before the \
+            \ burn that releases the underlying. The debit is the proof. Invisible to the \
+            \ FORWARDED check because the first hop is a SAME-MODULE defpact, not a <ref-X::> \
+            \ call."
         (P|UEV_IMC)
         (with-capability (MTX-SWP|S>ADD-LQ stoa-pid)
             (MTX|C_AddSleepingLiquidity patron executor swpair sleeping-dpof nonce stoa-pid)

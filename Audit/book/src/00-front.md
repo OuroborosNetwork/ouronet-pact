@@ -1,4 +1,4 @@
-This is a single consolidated record of every audit performed on Ouronet: three rounds of work,
+This is a single consolidated record of every audit performed on Ouronet: four rounds of work,
 carried out over several months, against a virtual blockchain of ninety-three Pact modules.
 
 It is written to be read by three different people, and it is worth saying at the outset which one
@@ -20,6 +20,11 @@ attacks themselves.
 audit and doubles as the most honest description of how each subsystem actually behaves. {{ch:instruments}}
 is about the instruments — and about the fifteen defects found *in the instruments*, which is the
 chapter most likely to change how you think about your own tooling.
+
+Whichever you are, read {{ch:sweepdefects}} if you have read an earlier edition of this book. The
+canon sweep changed **694 entrypoint signatures across 58 files**, so every adversarial call site
+in the attack register has moved, and an attack that still passes without being re-pointed is
+passing on an arity error rather than on the guard it names.
 
 ## What this book claims, and in what voice
 
@@ -72,6 +77,9 @@ does not reproduce, the book is wrong and the tree is right.
 - **Part III** (Chapters {{n:part3}}–{{n:register}}) — the red team. How the round was designed, the method, the
   ownership-gate programme, the defects, and the complete register.
 - **Part IV** ({{ch:instruments}}) — the instruments, and what was wrong with them.
+- **Part V** (Chapters {{n:part5}}–{{n:sweepmethod}}) — the patron/executor/executee canon
+  sweep: the round that re-signed the client surface of every module so the system can say WHO
+  performed an operation, and the three live defects that asking the question exposed.
 - **Appendices** (Chapters {{n:repro}}–{{n:state}}) — reproduction, and the verification state.
 
 A reader going front to back will find Part I heavy. Part I is a reference; Parts II and III are

@@ -26,12 +26,82 @@ OUT_MD = os.path.join(ROOT, "Audit", "OURONET-AUDIT-BOOK.md")
 OUT_DOCX = os.path.join(ROOT, "Audit", "OURONET-AUDIT-BOOK.docx")
 OUT_PDF = os.path.join(ROOT, "Audit", "OURONET-AUDIT-BOOK.pdf")
 
-VERSION = "2.0"
+VERSION = "3.0"
 
 # CHANGELOG. One entry per published version, newest first. A version bump without a line here is
 # a bump nobody can interpret: the book's premise is "here is what was verified", so a reader has
 # to be able to tell what that statement covered when they read it.
 CHANGELOG = [
+    ("3.0", "2026-09-22", [
+        "THE v2 AUDIT RE-ISSUE. This edition is the audit re-verified after the patron/executor/"
+        "executee canon sweep re-signed the client surface of every sovereign module. 694"
+        " entrypoint signatures changed across 58 files, so EVERY adversarial call site in the"
+        " previous edition's attack register has MOVED. An attack that still passes without being"
+        " re-pointed is passing on an ARITY ERROR rather than on the guard it names -- a short"
+        " modref call partially applies into a closure and the expect-failure around it goes green"
+        " for the wrong reason. That happened six times during the round, twice inside"
+        " expect-failures that had looked green for weeks. Part V is the new material.",
+        "SWEEP COMPLETE: 776 of 776 A_/C_ entrypoints take `patron` first, `executor` second and"
+        " `executee` third where one exists, across 46 modules, and EVERY executor is proven --"
+        " directly, by a forward, or by a route the function's own @doc names. Position is canon,"
+        " not merely presence, because Pact arguments are positional: correcting a signature"
+        " rewrites every call site that reaches it, and three single turns rewrote 172, 86 and 31"
+        " of them.",
+        "THE PLAN WAS WRONG BY 63% ON ITS FIRST DAY. The refactor was scoped against a tool whose"
+        " entrypoint filter was anchored wrongly and could not match a name containing a bar --"
+        " so every Talos entrypoint, all 482 of them, was invisible. It reported 302 done / 474"
+        " remaining against an actual 776, and Talos is the only supported client path in this"
+        " system. Found by a SECOND tool written to re-derive the same worklist by another route.",
+        "SECURITY: ANK|C>REVOKE-BOOST-CLASS validated only that the BoostClass was empty and"
+        " active -- it checked NO account. Any account reachable through Talos could revoke any"
+        " empty BoostClass that was not theirs. The owner field and its enforcement both already"
+        " existed, added earlier on the ATTACH path; the REVOKE path was never carried over. A"
+        " partially-applied fix is the most convincing kind of absence.",
+        "DEFECT (attribution): four 00_Demipad admin operations -- register asset, define price,"
+        " toggle open-for-business, toggle retrieval -- ran under an admin keyset and took NO"
+        " account argument, so the events they emitted named nobody. Measured with the new guard"
+        " disabled, A_DefinePrice SUCCEEDED and returned a price-updated message: an administrator"
+        " could change a launchpad price and have the event name somebody else. An admin keyset"
+        " says MAY, never WHO. Pinned by a rollback-tx, because the subject mutates when the guard"
+        " is absent.",
+        "DEFECT (published price): two repurpose entrypoints each bound a whole duplicated cost"
+        " model and read none of it. The price sheet derives a price from the tier legs a body"
+        " MENTIONS, and the dead block mentioned BOTH tiers where the live code charges one -- so"
+        " the sheet quoted a floor of 5 for an operation whose floor is 2 or 3. Dead code is"
+        " usually harmless because nothing reads it; a generator reads everything.",
+        "DEFECT (published price): a price CLASS rested on a hyphenated word in a comment. The"
+        " sheet's 'does this scale with input size' test matched the literal phrase `per-nonce`"
+        " and runs over text including @doc prose -- so two functions with an identical price"
+        " shape were classified differently because one doc says 'per-nonce' and the other says"
+        " 'per-fragment'. Replaced with structural patterns; tally moved 185 exact / 135 floor to"
+        " 183 / 137.",
+        "DEFECT (published price): DOCUMENTING A FUNCTION RAISED ITS PRICE. The deterrence"
+        " worksheet counts cost legs from source text and counted them inside `;;` comments and"
+        " @doc strings -- 24 phantom cross-module hops in @doc plus 25 in comments, inflating 29"
+        " published rows. Found because eight functions gained an @doc explaining how their"
+        " executor is proven. The rule now written into the generator: a cost leg must be read"
+        " from a FORM, and a form only exists in code.",
+        "INSTRUMENT: _executorenforced.py is now GATE-FATAL over the whole tree (766 proven, 0"
+        " UNPROVEN). It had been run with a --swept filter derived from the worklist's ticks, and"
+        " the tick parser required the index column to be a NUMBER -- one module carries an"
+        " em-dash there, because its signatures arrived by cascade rather than by a turn of its"
+        " own. So the filter judged 45 modules while the worklist said 46 and reported a confident"
+        " `0 UNPROVEN` while eight executors sat unproven for two days. All eight were genuinely"
+        " proven once traced; the finding is that a verified zero was being reported over a set"
+        " that silently excluded a module.",
+        "MEASUREMENT: the authorisation surface HEADLINE went the wrong way and the round was"
+        " still a net gain. Entrypoints reaching no ownership enforce rose 291 -> 337, because a"
+        " separate piece of work added the same admin pair (P|A_SetIMP / P|A_RemoveIMP) to 58"
+        " modules and those are policy functions, canon-exempt and account-ownership-free by"
+        " construction. Diffed per entrypoint instead: of the 1,075 present in both measurements,"
+        " 60 GAINED an ownership gate and 0 lost one. A total is a summary of two populations, and"
+        " a summary cannot tell you that one of them changed.",
+        "ARCHITECTURE: six entrypoints were deliberately given NO executor, with the four-question"
+        " test that settles it recorded beside them -- is any account on the path checked, is the"
+        " op idempotent truth-restoration, who pays, and would a signature requirement remove a"
+        " legitimate path. The two different rationales (permissionless repair vs."
+        " authority-is-a-guard) are kept visibly separate rather than blurred into one register.",
+    ]),
     ("2.0", "2026-09-20", [
         "PATRON/EXECUTOR SEPARATION, the whole AQP family. 52 of the 89 patron-taking C_/A_"
         " entrypoints now name the account that ACTS separately from the account that PAYS. Before"
@@ -149,6 +219,10 @@ CHAPTERS = [
     ("defects", "The defects, and what was done", "PART-III/03-DEFECTS.md"),
     ("register", "The full attack register", "src/34-register.md"),
     ("instruments", "Part IV \u2014 The instruments", "PART-III/04-INSTRUMENTS.md"),
+    ("part5", "Part V \u2014 The canon sweep", "PART-V/README.md"),
+    ("canon", "The canon, and the four shapes a proof can take", "PART-V/01-CANON.md"),
+    ("sweepdefects", "What the sweep found", "PART-V/02-DEFECTS.md"),
+    ("sweepmethod", "Method: how the round was run", "PART-V/03-METHOD.md"),
     ("repro", "Appendix A \u2014 Reproducing everything", "APPENDIX/01-REPRODUCTION.md"),
     ("state", "Appendix B \u2014 Verification state", "src/90-state.md"),
 ]

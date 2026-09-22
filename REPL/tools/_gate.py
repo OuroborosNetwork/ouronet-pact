@@ -510,6 +510,25 @@ def main():
         print(_ps.stdout + _ps.stderr)
         sys.exit("GATE FAILED: an unexplained patron slot -- see _patronslots.py.")
 
+    # EXECUTOR PROOF -- whole tree, fatal. Added 2026-09-22, the day the canon sweep finished,
+    # because the claim it protects is the whole point of the sweep: an `A_`/`C_` that takes an
+    # `executor` and never proves it does not record who acted, it records whoever the caller
+    # felt like naming -- and the event it emits can implicate an account that was nowhere near
+    # the transaction. That is WORSE than having no executor, because a missing one is visibly
+    # missing and a decorative one looks like attribution.
+    #
+    # WHOLE TREE, not `--swept`. `--swept` reads the worklist's ticks, and on the day this was
+    # added the tick parser required the index column to be a NUMBER -- one module (20_MTX-SWP)
+    # carries an em-dash there, so `--swept` judged 45 modules, reported a confident `0 UNPROVEN`,
+    # and hid eight unproven executors for two days. The sweep is COMPLETE and the whole tree is
+    # clean (766 proven, 0 UNPROVEN), so there is no longer any reason to gate on a subset --
+    # and a gate over everything cannot be narrowed by a list going stale.
+    _ee = subprocess.run([sys.executable, "tools/_executorenforced.py"],
+                         capture_output=True, text=True)
+    if _ee.returncode != 0:
+        print(_ee.stdout + _ee.stderr)
+        sys.exit("GATE FAILED: an entrypoint takes an `executor` that nothing proves.")
+
     # MODREF MEMBERS -- fatal only on LIVE class-B: a `(ref-X::member ...)` call where `member` is
     # defined NOWHERE in the module implementing X. Pact 5 resolves modref members DYNAMICALLY, so
     # such a call loads and runs, and only raises if that branch is ever taken -- invisible to every

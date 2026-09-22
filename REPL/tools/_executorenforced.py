@@ -68,7 +68,17 @@ def _swept():
     if not os.path.exists(plan):
         sys.exit(f"_executorenforced: cannot find the worklist at {plan} -- refusing to guess "
                  f"which modules are swept.")
-    done = re.findall(r"^\|\s*\[x\]\s*\d+\s*\|\s*`([^`]+\.pact)`", open(plan, encoding="utf8").read(), re.M)
+    # THE INDEX COLUMN IS NOT ALWAYS A NUMBER. This read `\d+`, and one ticked row carries `—`
+    # instead of a turn number -- `20_MTX-SWP.pact`, ticked as "nothing to do" because its
+    # signatures were carried in by OTHER modules' turns rather than by one of its own. So the
+    # regex dropped it, `--swept` judged 45 modules while the worklist said 46, and the eight
+    # executors MTX-SWP forwards into its own defpacts sat UNPROVEN for two days behind a
+    # confident `0 UNPROVEN`. Found 2026-09-22 by comparing `--swept` against the whole-tree run.
+    #
+    # This is the same shape as the three hardcoded lists this file's own docstring names, one
+    # step further in: the list IS derived, and the DERIVATION had the hole. A tick is the
+    # definition of swept; what sits in the column beside it is decoration.
+    done = re.findall(r"^\|\s*\[x\]\s*\S+\s*\|\s*`([^`]+\.pact)`", open(plan, encoding="utf8").read(), re.M)
     if not done:
         sys.exit("_executorenforced: the worklist has no ticked rows -- either nothing is swept "
                  "or the table format changed. Refusing to report on an empty set.")
@@ -189,6 +199,24 @@ INDIRECT = {
     "01_TS02-C1.pact::C_RemoveNonceScore":    "DPSF|C_UpdateNonceScore",
     "02_TS02-C2.pact::C_RemoveSetNonceScore": "DPNF|C_UpdateSetNonceScore",
     "02_TS02-C2.pact::C_RemoveNonceScore":    "DPNF|C_UpdateNonceScore",
+    # 20_MTX-SWP (2026-09-22). EIGHT entries, and the reason there are eight is the reason this
+    # module was invisible: its worklist row is ticked with `\u2014` instead of a turn number, and
+    # `_swept()` matched `\\d+`. `--swept` reported a confident `0 UNPROVEN` over 45 modules while
+    # the worklist said 46, and only comparing it against the whole-tree run showed the gap.
+    #
+    # All eight are the DEFPACT-STEP shape (07_MTX-AQP above is the same): the entrypoint's own
+    # body contains no `ref-X::` call at all, because it hands `executor` to a defpact declared
+    # in this same file. Every route was traced by reading and bottoms out in a DEBIT of the
+    # executor's own tokens -- which is the strongest form this proof takes, since a caller who
+    # names an account it does not own cannot pay.
+    "20_MTX-SWP.pact::C_IssueStablePool":      "TFT::C_MultiTransfer",
+    "20_MTX-SWP.pact::C_IssueWeightedPool":    "TFT::C_MultiTransfer",
+    "20_MTX-SWP.pact::C_IssueStandardPool":    "TFT::C_MultiTransfer",
+    "20_MTX-SWP.pact::C_AddStandardLiquidity": "TFT::C_MultiTransfer",
+    "20_MTX-SWP.pact::C_AddIcedLiquidity":     "TFT::C_MultiTransfer",
+    "20_MTX-SWP.pact::C_AddGlacialLiquidity":  "TFT::C_MultiTransfer",
+    "20_MTX-SWP.pact::C_AddFrozenLiquidity":   "TFT::C_Transfer",
+    "20_MTX-SWP.pact::C_AddSleepingLiquidity": "DPOF::C_Transfer",
 }
 
 # SELF-PROVING AT CREATION -- the base case of the attribution rule, resolved by the owner on

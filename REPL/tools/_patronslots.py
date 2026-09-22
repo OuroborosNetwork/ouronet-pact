@@ -115,6 +115,17 @@ REGISTRY = {
  # VCT. That is a contained follow-up, deliberately not folded into the sweep's last commit.
  # Until then AQP|SC_NAME is correct on its own terms: the vault IS the account spending, because
  # a vacate returns the POOL's custody to its stakers.
+ #
+ # AND THEY ARE PROVABLY INERT TODAY, measured 2026-09-22 rather than assumed. Both callees --
+ # TFT::C_MultiBulkTransfer and DPDC-T::C_BulkTransfer -- take `patron` for CANON POSITION and
+ # never read it: zero occurrences in either body once the signature and @doc are stripped. The
+ # cumulator each returns is collected by Talos on the REAL patron, so nothing downstream can see
+ # what sits in this slot.
+ #
+ # That is the reason this is a follow-up and not a defect, and it is also exactly why the entry
+ # STAYS. The day someone makes C_MultiBulkTransfer read its patron -- to bill a leg, to stamp an
+ # event -- AQP|SC_NAME silently becomes "the vault pays", and nothing in the vacate recipe would
+ # look wrong. An inert wrong value is the most patient kind.
  ("06_VCT.pact", "XI_VacateTrueFungibleFromLegs"):
    ("AQP|SC_NAME", "provisional -- no user account is in scope at all here; the vault is the "
                    "only account the function knows.", "06_VCT"),

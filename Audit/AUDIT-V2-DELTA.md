@@ -2176,3 +2176,71 @@ Four remain, all in `06_VCT`, all registered with the plumbing they need spelled
 patron through the vacate recipe's three `require-capability` levels. A contained follow-up,
 deliberately not folded into the sweep's last commit.
 
+
+---
+
+### POST-SWEEP — `20_MTX-SWP.pact`, the module that had no turn
+
+**What the v2 audit must re-verify: eight executor proofs that no instrument had ever looked at.**
+
+`20_MTX-SWP`'s worklist row reads *"nothing to do"* with an em-dash where every other row carries
+a turn number, because its signatures arrived entirely by **cascade** — DPTF, SWP and the liquidity
+family were swept before it, and the `patron`/`executor` pair appeared in its eight entrypoints
+without anyone editing the file. That is the worklist working as designed.
+
+It is also how the module fell out of the check. `_executorenforced.py --swept` derives its module
+list from the worklist's ticked rows — deliberately, because a hardcoded list had already gone
+stale twice in this programme — and the pattern required the index column to be a **number**. So
+the derivation dropped the one row whose index is an em-dash, judged **45** modules while the
+worklist said **46**, and reported `0 UNPROVEN` for two days while eight executors went unchecked.
+
+Found by comparing `--swept` against the same tool run over the whole tree:
+
+```
+--swept:      756 proven, 0 UNPROVEN
+whole tree:   758 proven, 8 UNPROVEN      <- all eight in 20_MTX-SWP
+```
+
+| entrypoint | route the executor is proven by |
+|---|---|
+| `C_IssueStablePool`, `C_IssueWeightedPool`, `C_IssueStandardPool` | `MTX\|C_Issue` step 3 → `SWPI::XE_IssueWrite` → `TFT::C_MultiTransfer` debits the pool's seed tokens |
+| `C_AddStandardLiquidity`, `C_AddIcedLiquidity`, `C_AddGlacialLiquidity` | `MTX\|C_AddLiquidity` step 1 → `SWPL::XE_STOA-PID\|AddLiquidity` → `XI_AddLiqSendAndMint` → `TFT::C_MultiTransfer` debits the supplied liquidity |
+| `C_AddFrozenLiquidity` | `TFT::C_Transfer` debits the frozen DPTF before the VST burn |
+| `C_AddSleepingLiquidity` | `DPOF::C_Transfer` debits the sleeping nonce before the burn |
+
+All eight are the **defpact-step** shape and all eight are genuinely proven: every route bottoms
+out in a **debit of the executor's own tokens**, which is the strongest form this proof takes,
+since a caller naming an account it does not own cannot pay. Each route is now written in the
+function's own `@doc` and registered INDIRECT.
+
+**Three repairs, and the third is the one that matters:**
+
+1. The eight `@doc`s and their registry entries.
+2. The tick parser accepts any index token. *A tick is the definition of swept; what sits in the
+   column beside it is decoration.*
+3. **`_executorenforced.py` is now gate-fatal over the WHOLE TREE** — 766 proven, 0 UNPROVEN. The
+   sweep is complete, so gating on a subset buys nothing, and a gate over everything cannot be
+   narrowed by a list going stale.
+
+> This is the **fifth** time in this programme that a tool's correctness depended on a list that
+> changes as the work proceeds. The first four were fixed by *deriving* the list. This one **was**
+> derived, and the derivation had the hole.
+
+#### And a price that went up because a function was documented
+
+Adding those eight `@doc`s changed the generated deterrence worksheet. The worksheet counts a
+function's cost legs — inserts, updates, reads, scans, cross-module hops — out of its source text,
+transitively, and it was counting them inside `;;` comments and `@doc` strings. Measured: **24
+`ref-X::` tokens inside `@doc` strings and 25 inside `;;` comments**, plus phantom reads and scans,
+inflating **29 published rows**.
+
+The published `IGNIS-PRICE-SHEET.md` did not move — these are design figures, and none of the
+affected rows has a live `GAS|` constant — but the worksheet is what future pricing decisions are
+argued from. Fixed in the generator:
+
+> **A cost leg must be read from a FORM, and a form only exists in code.**
+
+with one deliberate exception kept visible beside it: the price *classifier* still reads prose on
+purpose, because `per-nonce` in a doc string is evidence about the **shape** of a price rather than
+a **leg** of it. That exception is itself the fix for an earlier defect in the same generator, so
+the two live one comment apart and neither can be removed by someone tidying up.

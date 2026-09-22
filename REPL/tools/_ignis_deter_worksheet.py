@@ -22,6 +22,9 @@ v2 (IGNIS rehaul substage 2) — cost model per owner decisions 2026-09-05
     substage-3 IGNIS defconst generation. 1 ignis = 1 USD/EUR cent (hard peg).
 """
 import re, glob, math, importlib.util
+import os as _os0, sys as _sys0
+_sys0.path.insert(0, _os0.path.dirname(_os0.path.abspath(__file__)))
+from _pactlex import strip_comments
 from collections import Counter
 import os as _os
 _HERE=_os.path.dirname(_os.path.abspath(__file__))
@@ -116,7 +119,25 @@ def _update_fields(txt,start):
         j+=1
     return max(1,n)
 
+# PROSE IS NOT BILLABLE. `txt` is raw source -- the function plus every same-module function it
+# reaches -- so until 2026-09-22 a `;;` comment or an `@doc` that MENTIONED a cross-module call
+# was counted as one. Measured the day it was found: 24 `ref-X::` tokens inside `@doc` strings and
+# 25 inside `;;` comments, 49 phantom hops at IG_X=2 IGNIS each, sitting in the PUBLISHED price of
+# roughly twenty functions. The trigger was ordinary: eight MTX-SWP wrappers gained an `@doc`
+# naming the route that proves their executor, and the act of documenting them raised their price.
+#
+# This is the second time this sheet has priced a word rather than a form (the first was SCALES
+# matching the literal phrase `per-nonce` in a comment). The general rule that came out of it:
+# **a cost leg must be read from a FORM, and a form only exists in code.** Note what is NOT
+# stripped -- the price sheet's own SCALES classifier still reads prose deliberately, because
+# "per-nonce" in a doc is evidence about the SHAPE of the price rather than a leg of it.
+def _billable(txt):
+    """Code only: no `;` comments, no `@doc` strings. See the note above."""
+    txt = strip_comments(txt)
+    return re.sub(r'@doc\s+"(?:[^"\\]|\\.)*"', ' @doc "" ', txt, flags=re.S)
+
 def prim_costs(txt):
+    txt = _billable(txt)
     ins=upd=r=sc=x=0; cost=0
     for m in re.finditer(r'\((?:insert|write)\s+([A-Za-z0-9|_-]+)',txt):
         ins+=1; cost+=IG_INS*T2M.get(m.group(1),(1,1))[0]
