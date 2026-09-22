@@ -59,7 +59,7 @@
             ;;nonces 21..60 (1..20 were consumed by [6.1.8] and the DPDC suites)
             (fresh:[integer] (enumerate 21 60))
         )
-        (ref-TS02-C2::DPNF|C_Create patron id (make-list 40 nd))
+        (ref-TS02-C2::DPNF|C_Create patron (DPDC.UR_Verum5 id false) id (make-list 40 nd))
         (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron id lumy false)
         (ref-TS02-C2::DPNF|C_BulkTransfer patron id
             [fresh] [(make-list 40 1)] patron [lumy] false)

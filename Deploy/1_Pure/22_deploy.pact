@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 22 of 24
 ;; This is STEP 22 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-21 must have run first, including the init steps between deploys.
-;; 8 source file(s), 175,977 gas measured in the REPL gas model, 268,419 bytes
+;; 8 source file(s), 175,977 gas measured in the REPL gas model, 268,449 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   2_CITIZEN/7_Launchpad/1_Spark/01_Spark.pact
@@ -5614,7 +5614,7 @@
             )
             (enforce (= l number-of-positions) "Invalid Number of Positions")
             (ref-TS02-C2::DPNF|C_Create
-                patron kbn-id
+                patron (DPDC.UR_Verum5 kbn-id false) kbn-id
                 (fold
                     (lambda
                         (acc:[object{DpdcUdcV2.DPDC|NonceData}] idx:integer)

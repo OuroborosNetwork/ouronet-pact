@@ -65,10 +65,10 @@
     (let ((id:string "MULP-98c486052a51"))
         ;; 4 real primordial nonces so every Define below fails/succeeds specifically on the
         ;; multiplier check, not on an unrelated "nonexistent nonce" definition error.
-        (print (format "CREATE 1 = {}" [(ref-TS02-C2::DPNF|C_Create owner id [nd])]))
-        (print (format "CREATE 2 = {}" [(ref-TS02-C2::DPNF|C_Create owner id [nd])]))
-        (print (format "CREATE 3 = {}" [(ref-TS02-C2::DPNF|C_Create owner id [nd])]))
-        (print (format "CREATE 4 = {}" [(ref-TS02-C2::DPNF|C_Create owner id [nd])]))
+        (print (format "CREATE 1 = {}" [(ref-TS02-C2::DPNF|C_Create owner (DPDC.UR_Verum5 id false) id [nd])]))
+        (print (format "CREATE 2 = {}" [(ref-TS02-C2::DPNF|C_Create owner (DPDC.UR_Verum5 id false) id [nd])]))
+        (print (format "CREATE 3 = {}" [(ref-TS02-C2::DPNF|C_Create owner (DPDC.UR_Verum5 id false) id [nd])]))
+        (print (format "CREATE 4 = {}" [(ref-TS02-C2::DPNF|C_Create owner (DPDC.UR_Verum5 id false) id [nd])]))
         ;; #15H negatives at DEFINE time (previously entirely unchecked).
         (print (expect-failure "<<15H-1>> Define with multiplier=100.001 (> 100x) rejected"
                 "Set-Multiplier of 100.001 must be between 1.0 and 100.0 inclusive"

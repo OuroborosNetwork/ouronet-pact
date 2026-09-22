@@ -1207,12 +1207,12 @@
             ;;may legitimately be created empty and minted into later.
             (expect-failure "<<DPDC-G8>> an SFT nonce cannot be created with a NEGATIVE amount"
                 "For an SFT Collectable the -1 must be greater or equal to 0"
-                (TS02-C1.DPSF|C_Create KST.ANHD sf [-1] [nd]))
+                (TS02-C1.DPSF|C_Create KST.ANHD (DPDC.UR_Verum5 sf true) sf [-1] [nd]))
             ;;and the two caller-supplied lists must agree in length: three amounts against two
             ;;nonce-datas would otherwise register nonces the caller never described
             (expect-failure "<<DPDC-G8>> amounts and nonce-datas must be the same length"
                 "Incompatible Input Data for Registering multiple Nonces"
-                (TS02-C1.DPSF|C_Create KST.ANHD sf [10 10 10] [nd nd]))
+                (TS02-C1.DPSF|C_Create KST.ANHD (DPDC.UR_Verum5 sf true) sf [10 10 10] [nd nd]))
         ]
     )
 )
@@ -1236,7 +1236,7 @@
           (DPDC-UDC.UDC_URI|Type true false false false false false false)
           (DPDC-UDC.UDC_URI|Data "ipfs://a" "" "" "" "" "" "")
           (DPDC-UDC.UDC_ZeroURI|Data) (DPDC-UDC.UDC_ZeroURI|Data))))
-    (TS02-C1.DPSF|C_Create KST.ANHD sf [7] [nd])
+    (TS02-C1.DPSF|C_Create KST.ANHD (DPDC.UR_Verum5 sf true) sf [7] [nd])
     (map print
         [
             (expect "<<DPDC-G8>> a well-formed SFT create adds exactly one nonce"
@@ -1279,12 +1279,12 @@
         [
             (expect-failure "<<DPDC-G9>> one amount against two nonce-datas hits the MULTI length guard"
                 "Invalid Input variable length for a Multi Nonce Creation Capability"
-                (TS02-C1.DPSF|C_Create KST.ANHD sf [1] [nd nd]))
+                (TS02-C1.DPSF|C_Create KST.ANHD (DPDC.UR_Verum5 sf true) sf [1] [nd nd]))
             ;;...and the contrast that locates the boundary: the same shape of mistake in the other
             ;;direction gets the OTHER message, because it clears this guard first.
             (expect-failure "<<DPDC-G9>> ...while three amounts against two reaches the PARITY guard instead"
                 "Incompatible Input Data for Registering multiple Nonces"
-                (TS02-C1.DPSF|C_Create KST.ANHD sf [1 1 1] [nd nd]))
+                (TS02-C1.DPSF|C_Create KST.ANHD (DPDC.UR_Verum5 sf true) sf [1 1 1] [nd nd]))
         ]
     )
     ""
@@ -4352,7 +4352,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|Create patron sf [7] [nd]))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_Create patron sf [7] [nd]))
+            (m (ref-TS02-C1::DPSF|C_Create patron (DPDC.UR_Verum5 sf true) sf [7] [nd]))
         )
         (map print
             [
@@ -4870,7 +4870,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|Create patron nf [nd]))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C2::DPNF|C_Create patron nf [nd]))
+            (m (ref-TS02-C2::DPNF|C_Create patron (DPDC.UR_Verum5 nf false) nf [nd]))
         )
         (map print
             [

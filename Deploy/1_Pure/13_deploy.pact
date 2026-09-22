@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 13 of 24
 ;; This is STEP 13 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-12 must have run first, including the init steps between deploys.
-;; 5 source file(s), 320,565 gas measured in the REPL gas model, 260,138 bytes
+;; 5 source file(s), 320,565 gas measured in the REPL gas model, 262,361 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/08_DPDC-S.pact
@@ -1515,7 +1515,22 @@
                         )
                         (ico2:object{IgnisCollectorV3.OutputCumulator}
                             ;;2]When one nonce of class non-0 is created, is automatically created on <dpdc> account
-                            (ref-DPDC-C::C_CreateNewNonce id son set-class 1 spawned-nd true)
+                            ;;PROVISIONAL PATRON/EXECUTOR SLOTS (HANDOFF 4e, 2026-09-22).
+                            ;;03_DPDC-C's turn gave C_CreateNewNonce a <patron> and an <executor>
+                            ;;bound to (UR_Verum5 id son), the create-role account. This module's
+                            ;;own turn has not come and NONE of these four functions has a patron
+                            ;;-- I assumed one and the module stopped loading with "Cannot find
+                            ;;module: ouronet-ns.patron", which is what Pact calls an unbound
+                            ;;name. So the slot carries the account each function actually knows:
+                            ;;<account> here (the user), the DPDC smart account in the three
+                            ;;C_Define*Set variants, which is 06_VCT's precedent for "no user
+                            ;;account is in scope at all". The executor is READ rather than
+                            ;;threaded. That read is not a
+                            ;;placeholder: it is the same expression the binder evaluates, and
+                            ;;this is the branch where the SIGNATURE check is deliberately
+                            ;;bypassed -- the module is acting, not the role holder -- so naming
+                            ;;the account is the only attribution available and it is exact.
+                            (ref-DPDC-C::C_CreateNewNonce account (ref-DPDC::UR_Verum5 id son) id son set-class 1 spawned-nd true)
                         )
                         (ico3:object{IgnisCollectorV3.OutputCumulator}
                             ;;3]Transfer new set nonce to <account>
@@ -1584,7 +1599,7 @@
                     )
                     (ico1:object{IgnisCollectorV3.OutputCumulator}
                         (if son
-                            (ref-DPDC-C::C_CreateNewNonce id son set-class 0 ind true)
+                            (ref-DPDC-C::C_CreateNewNonce (ref-DPDC::GOV|DPDC|SC_NAME) (ref-DPDC::UR_Verum5 id son) id son set-class 0 ind true)
                             EOC
                         )
                     )
@@ -1616,7 +1631,7 @@
                     )
                     (ico1:object{IgnisCollectorV3.OutputCumulator}
                         (if son
-                            (ref-DPDC-C::C_CreateNewNonce id son set-class 0 ind true)
+                            (ref-DPDC-C::C_CreateNewNonce (ref-DPDC::GOV|DPDC|SC_NAME) (ref-DPDC::UR_Verum5 id son) id son set-class 0 ind true)
                             EOC
                         )
                     )
@@ -1650,7 +1665,7 @@
                     )
                     (ico1:object{IgnisCollectorV3.OutputCumulator}
                         (if son
-                            (ref-DPDC-C::C_CreateNewNonce id son set-class 0 ind true)
+                            (ref-DPDC-C::C_CreateNewNonce (ref-DPDC::GOV|DPDC|SC_NAME) (ref-DPDC::UR_Verum5 id son) id son set-class 0 ind true)
                             (do
                                 (ref-DPDC::XE_DeployAccountWNE dpdc id false)
                                 EOC
@@ -3946,7 +3961,14 @@
                 (ref-IGNIS::UC_IgnisPrice "DPSF|C_IssueCompany" "issue-shareholder")
                 dpdc (ref-IGNIS::URC_IsVirtualGasZero) [])
                     ;;3]Populate Equity SFT Collection
+                    ;;PROVISIONAL PATRON/EXECUTOR SLOTS (HANDOFF 4e, 2026-09-22). 03_DPDC-C's
+                    ;;turn gave C_CreateNewNonces a <patron> and an <executor> bound to
+                    ;;(UR_Verum5 id son). This module's own turn has not come, so <patron> stands
+                    ;;in and the executor is READ -- the same expression the binder evaluates, on
+                    ;;a collection this function has just issued, so it is exact rather than a
+                    ;;placeholder. Both become real parameters at 11_EQUITY+'s turn.
                     (ref-DPDC-C::C_CreateNewNonces
+                        patron (ref-DPDC::UR_Verum5 equity-id true)
                         equity-id true [1000000 0 0 0 0 0 0 0]
                         [
                             ;;Barebone Share, Nonce 1

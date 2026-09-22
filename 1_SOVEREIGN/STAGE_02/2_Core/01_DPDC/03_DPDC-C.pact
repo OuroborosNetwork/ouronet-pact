@@ -91,12 +91,14 @@
     ;;
     (defun C_CreateNewNonce:object{IgnisCollectorV3.OutputCumulator}
         (
+            patron:string executor:string
             id:string son:bool nonce-class:integer amount:integer
             input-nonce-data:object{DpdcUdcV2.DPDC|NonceData} sft-set-mode:bool
         )
     )
     (defun C_CreateNewNonces:object{IgnisCollectorV3.OutputCumulator}
         (
+            patron:string executor:string
             id:string son:bool amounts:[integer]
             input-nonce-datas:[object{DpdcUdcV2.DPDC|NonceData}]
         )
@@ -293,23 +295,50 @@
     ;;{C3}  Composed
     ;;Register Nonces
     (defcap DPDC-C|C>REGISTER-SINGLE-NONCE
-        (id:string son:bool amount:integer ind:object{DpdcUdcV2.DPDC|NonceData} sft-set-mode:bool)
+        (executor:string id:string son:bool amount:integer ind:object{DpdcUdcV2.DPDC|NonceData} sft-set-mode:bool)
         @event
-        (compose-capability (DPDC-C|C>REGISTER-NONCES  id son [amount] [ind] sft-set-mode))
+        (compose-capability (DPDC-C|C>REGISTER-NONCES executor id son [amount] [ind] sft-set-mode))
     )
     (defcap DPDC-C|C>REGISTER-MULTIPLE-NONCES
-        (id:string son:bool amounts:[integer] input-nonce-datas:[object{DpdcUdcV2.DPDC|NonceData}])
+        (executor:string id:string son:bool amounts:[integer] input-nonce-datas:[object{DpdcUdcV2.DPDC|NonceData}])
         @event
         (let
             (
                 (l1:integer (length amounts))
             )
             (enforce (> l1 1) "Invalid Input variable length for a Multi Nonce Creation Capability")
-            (compose-capability (DPDC-C|C>REGISTER-NONCES id son amounts input-nonce-datas false))
+            (compose-capability (DPDC-C|C>REGISTER-NONCES executor id son amounts input-nonce-datas false))
+        )
+    )
+    (defun UEV_ExecutorIsCreateRole (executor:string id:string son:bool)
+        @doc "BINDS <executor> to the collectable's CREATE-ROLE account, (UR_Verum5 id son). \
+            \ \
+            \ WHY THIS IS UNCONDITIONAL WHILE THE OWNERSHIP ENFORCE BESIDE IT IS NOT. \
+            \ DPDC-C|C>REGISTER-NONCES runs CAP_EnforceAccountOwnership on that same derived \
+            \ account only when NOT (son=false AND sft-set-mode) -- the bypass exists for \
+            \ 08_DPDC-S's NFT-set path, where a nonce is spawned as an internal consequence of \
+            \ an action DPDC-S has already authorised, and demanding the role holder's SIGNATURE \
+            \ there would be wrong: the module is acting, not the role holder. \
+            \ \
+            \ A BINDER IS AN EQUALITY CHECK, NOT A SIGNATURE CHECK. Running it on both branches \
+            \ therefore adds no authority requirement whatsoever -- it demands only that the \
+            \ caller NAME the account the operation is really attributed to, which the internal \
+            \ caller can compute as easily as this function can. So attribution becomes total \
+            \ while the deliberate signature bypass is left exactly as it was. \
+            \ \
+            \ Mirroring the condition instead would have left the executor DECORATIVE on the \
+            \ internal path -- a name nobody checks, which the canon rates worse than absent. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
+        (let
+            (
+                (ref-DPDC:module{DpdcV2} DPDC)
+            )
+            (enforce (= executor (ref-DPDC::UR_Verum5 id son))
+                "Executor is not the Collectable Create-Role account")
         )
     )
     (defcap DPDC-C|C>REGISTER-NONCES
-        (id:string son:bool amounts:[integer] input-nonce-datas:[object{DpdcUdcV2.DPDC|NonceData}] sft-set-mode:bool)
+        (executor:string id:string son:bool amounts:[integer] input-nonce-datas:[object{DpdcUdcV2.DPDC|NonceData}] sft-set-mode:bool)
         (let
             (
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -357,6 +386,11 @@
                 )
                 (enumerate 0 (- l2 1))
             )
+            ;;ATTRIBUTION runs on BOTH branches; the SIGNATURE check keeps its bypass. See
+            ;;UEV_ExecutorIsCreateRole's @doc -- an equality check adds no authority requirement,
+            ;;so making it total costs the internal NFT-set path nothing and stops the executor
+            ;;being decorative on exactly the branch where nothing else looks at it.
+            (UEV_ExecutorIsCreateRole executor id son)
             (if (not (and (not son) sft-set-mode))
                 (ref-DALOS::CAP_EnforceAccountOwnership r-nft-create-account)                    
                 true
@@ -966,6 +1000,7 @@
     ;;Protection:          XB_CreditNFT-Nonce, XB_CreditSFT-Nonces, XB_CreditNFT-Nonces
     (defun XI_RegisterCollectables:object{IgnisCollectorV3.OutputCumulator}
         (
+            executor:string
             id:string son:bool nonce-classes:[integer] amounts:[integer]
             input-nonce-datas:[object{DpdcUdcV2.DPDC|NonceData}] sft-set-mode:bool
         )
@@ -1000,8 +1035,8 @@
                 ;;Generating Collection Elements Names, by registering them
                 (collectable-names:[string]
                     (if (= l 1)
-                        [(XI_RegisterSingleNonce id son fnc (at 0 amounts) (at 0 input-nonce-datas) sft-set-mode)]
-                        (XI_RegisterMultipleNonces id son nonce-classes amounts input-nonce-datas)
+                        [(XI_RegisterSingleNonce executor id son fnc (at 0 amounts) (at 0 input-nonce-datas) sft-set-mode)]
+                        (XI_RegisterMultipleNonces executor id son nonce-classes amounts input-nonce-datas)
                     )
                 )
             )
@@ -1019,10 +1054,18 @@
     ;;Protection: Class 3 — Custom: DPDC-C|C>REGISTER-MULTIPLE-NONCES
     (defun XI_RegisterMultipleNonces:[string]
         (
+            executor:string
             id:string son:bool nonce-classes:[integer] amounts:[integer]
             input-nonce-datas:[object{DpdcUdcV2.DPDC|NonceData}]
         )
-        (require-capability (DPDC-C|C>REGISTER-MULTIPLE-NONCES id son amounts input-nonce-datas))
+        ;;<executor> IS THREADED ONLY TO SATISFY THE CAPABILITY, and that is the whole reason
+        ;;it is here. DPDC-C|C>REGISTER-*-NONCES gained an <executor> parameter at 03_DPDC-C's
+        ;;turn, and a `require-capability` must name the capability EXACTLY as it was granted --
+        ;;so every internal hop between the entrypoint and the require has to carry it. Missing
+        ;;one does not fail the arity checker (which reads function calls, not capability
+        ;;acquisitions); it fails at LOAD with "Attempted to apply a closure to too many
+        ;;arguments", which is how this was found.
+        (require-capability (DPDC-C|C>REGISTER-MULTIPLE-NONCES executor id son amounts input-nonce-datas))
         (with-capability (SECURE)
             (let
                 (
@@ -1051,10 +1094,11 @@
     ;;Protection: Class 3 — Custom: DPDC-C|C>REGISTER-SINGLE-NONCE
     (defun XI_RegisterSingleNonce:string
         (
+            executor:string
             id:string son:bool nonce-class:integer amount:integer
             input-nonce-data:object{DpdcUdcV2.DPDC|NonceData} sft-set-mode:bool
         )
-        (require-capability (DPDC-C|C>REGISTER-SINGLE-NONCE id son amount input-nonce-data sft-set-mode))
+        (require-capability (DPDC-C|C>REGISTER-SINGLE-NONCE executor id son amount input-nonce-data sft-set-mode))
         (with-capability (SECURE)
             (XI_RegisterCollectionElement id son nonce-class amount input-nonce-data)
         )
@@ -1180,22 +1224,40 @@
     ;;{5.7}  User [A/C]
     (defun C_CreateNewNonce:object{IgnisCollectorV3.OutputCumulator}
         (
+            patron:string executor:string
             id:string son:bool nonce-class:integer amount:integer
             input-nonce-data:object{DpdcUdcV2.DPDC|NonceData} sft-set-mode:bool
         )
+        @doc "Registers a single nonce on <id>. \
+            \ \
+            \ HANDOFF 4g: the authority is CAP_EnforceAccountOwnership on the DERIVED \
+            \ (UR_Verum5 id son) -- the collectable create-role account -- and it names no actor. \
+            \ UEV_ExecutorIsCreateRole supplies the missing half, and runs on BOTH branches of the \
+            \ conditional ownership enforce because an equality check adds no authority \
+            \ requirement. See that function @doc for why the signature bypass is left intact. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
-        (with-capability (DPDC-C|C>REGISTER-SINGLE-NONCE id son amount input-nonce-data sft-set-mode)
-            (XI_RegisterCollectables id son [nonce-class] [amount] [input-nonce-data] sft-set-mode)
+        (with-capability (DPDC-C|C>REGISTER-SINGLE-NONCE executor id son amount input-nonce-data sft-set-mode)
+            (XI_RegisterCollectables executor id son [nonce-class] [amount] [input-nonce-data] sft-set-mode)
         )
     )
     (defun C_CreateNewNonces:object{IgnisCollectorV3.OutputCumulator}
         (
+            patron:string executor:string
             id:string son:bool amounts:[integer]
             input-nonce-datas:[object{DpdcUdcV2.DPDC|NonceData}]
         )
+        @doc "Registers multiple nonces on <id>. \
+            \ \
+            \ HANDOFF 4g: the authority is CAP_EnforceAccountOwnership on the DERIVED \
+            \ (UR_Verum5 id son) -- the collectable create-role account -- and it names no actor. \
+            \ UEV_ExecutorIsCreateRole supplies the missing half, and runs on BOTH branches of the \
+            \ conditional ownership enforce because an equality check adds no authority \
+            \ requirement. See that function @doc for why the signature bypass is left intact. \
+            \ (patron/executor canon 2.2, 2026-09-22.)"
         (P|UEV_IMC)
-        (with-capability (DPDC-C|C>REGISTER-MULTIPLE-NONCES id son amounts input-nonce-datas)
-            (XI_RegisterCollectables id son 
+        (with-capability (DPDC-C|C>REGISTER-MULTIPLE-NONCES executor id son amounts input-nonce-datas)
+            (XI_RegisterCollectables executor id son 
                 (make-list (length input-nonce-datas) 0) 
                 amounts input-nonce-datas false
             )

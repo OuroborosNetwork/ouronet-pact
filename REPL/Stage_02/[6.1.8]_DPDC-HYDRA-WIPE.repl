@@ -46,7 +46,7 @@
                 )
             )
         )
-        (ref-TS02-C2::DPNF|C_Create patron id (make-list 12 nd))
+        (ref-TS02-C2::DPNF|C_Create patron (DPDC.UR_Verum5 id false) id (make-list 12 nd))
     )
     ;; EMMA left FROZEN by [6.1.4] TX-NF-009 — unfreeze, fund all 12, re-freeze for the campaign
     (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron id emma false)
@@ -329,7 +329,7 @@
             (before:integer (ref-DPDC::UR_NoncesUsed id true))
             (fresh:[integer] (map (lambda (i:integer) (+ before i)) (enumerate 1 8)))
         )
-        (ref-TS02-C1::DPSF|C_Create patron id (make-list 8 100) (make-list 8 nd))
+        (ref-TS02-C1::DPSF|C_Create patron (DPDC.UR_Verum5 id true) id (make-list 8 100) (make-list 8 nd))
         ;;LUMY starts UNfrozen on DHCD (no prior suite freezes it here), so fund then freeze —
         ;;a defensive unfreeze would abort, since unfreezing enforces the account IS frozen.
         (ref-TS02-C1::DPSF|C_BulkTransfer patron id

@@ -79,7 +79,7 @@
         (map print
             [
                 (format "<(DPNF|C_Create 8 NFT nonces)> => \"{}\""
-                    [(ref-TS02-C2::DPNF|C_Create owner nft-id (make-list 8 nd))])
+                    [(ref-TS02-C2::DPNF|C_Create owner (DPDC.UR_Verum5 nft-id false) nft-id (make-list 8 nd))])
                 (expect "<<TX-NF-001>> CNF has 8 native nonces created" 8 (ref-DPDC::UR_NoncesUsed nft-id false))
                 ""
             ]

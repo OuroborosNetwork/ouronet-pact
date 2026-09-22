@@ -468,7 +468,7 @@
                 (l:integer (length mdm))
             )
             (enforce (= l number-of-positions) "Invalid Number of Positions")
-            (ref-TS02-C2::DPNF|C_Create patron dhn-id
+            (ref-TS02-C2::DPNF|C_Create patron (DPDC.UR_Verum5 dhn-id false) dhn-id
                 (UDC_NonceData rarity starting-position mdm)
             )
         )

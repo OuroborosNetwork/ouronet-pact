@@ -103,9 +103,9 @@
         (map print
             [
                 (format "<(TS02-C1.DPSF|C_Create 10 SFT nonces)> => \"{}\""
-                    [(ref-TS02-C1::DPSF|C_Create owner sft-id (make-list 10 1000) (make-list 10 nd))])
+                    [(ref-TS02-C1::DPSF|C_Create owner (DPDC.UR_Verum5 sft-id true) sft-id (make-list 10 1000) (make-list 10 nd))])
                 (format "<(TS02-C2.DPNF|C_Create 4 NFT nonces)> => \"{}\""
-                    [(ref-TS02-C2::DPNF|C_Create owner nft-id (make-list 4 nd))])
+                    [(ref-TS02-C2::DPNF|C_Create owner (DPDC.UR_Verum5 nft-id false) nft-id (make-list 4 nd))])
             ]
         )
         (map print
@@ -1027,15 +1027,15 @@
                 [
                     (expect-failure "<<TX-SET-011>> SHADOW: a negative amount never reaches the gate"
                         "For an SFT Collectable the -5 must be greater or equal to 0"
-                        (ref-TS02-C1::DPSF|C_Create attacker sft-id [-5] [nd]))
+                        (ref-TS02-C1::DPSF|C_Create attacker (DPDC.UR_Verum5 sft-id true) sft-id [-5] [nd]))
                     (expect-failure "<<TX-SET-011>> GATE: the identical call with a LEGAL amount is\
                         \ refused by <r-nft-create> ownership instead"
                         "Keyset failure (keys-all): [PK_Ancie...]"
-                        (ref-TS02-C1::DPSF|C_Create attacker sft-id [1] [nd]))
+                        (ref-TS02-C1::DPSF|C_Create attacker (DPDC.UR_Verum5 sft-id true) sft-id [1] [nd]))
                     ;;and the zero-object arm of [c], to show the pair cleared a real guard too.
                     (expect-failure "<<TX-SET-011>> ...while the ZERO NonceData dies at [c], above [d]"
                         "Incorrect Fragmentation Data"
-                        (ref-TS02-C1::DPSF|C_Create attacker sft-id [1]
+                        (ref-TS02-C1::DPSF|C_Create attacker (DPDC.UR_Verum5 sft-id true) sft-id [1]
                             [(ref-DPDC-UDC::UDC_ZeroNonceData)]))
                     (expect "<<TX-SET-011>> ...and no nonce was registered by any of the three"
                         used-before (ref-DPDC::UR_NoncesUsed sft-id true))
@@ -1050,7 +1050,7 @@
                     (expect "<<TX-SET-011>> the role-holder's identical Create is accepted"
                         (format "Created [\"1 <CreateGateN>\"] Clas 0 SemiFungible(s)\
                             \ within the {} DPSF Collection" [sft-id])
-                        (ref-TS02-C1::DPSF|C_Create victim sft-id [1] [nd]))
+                        (ref-TS02-C1::DPSF|C_Create victim (DPDC.UR_Verum5 sft-id true) sft-id [1] [nd]))
                     (expect "<<TX-SET-011>> ...and the collection really gained a nonce"
                         (+ used-before 1) (ref-DPDC::UR_NoncesUsed sft-id true))
                     (expect "<<TX-SET-011>> ...whose single unit sits on the role-holder's account"
@@ -1077,7 +1077,7 @@
                     (expect-failure "<<TX-SET-011>> ...and now ANHD, the OWNER, is refused -- naming\
                         \ the ROLE-HOLDER's key. An owner gate cannot do that"
                         "Keyset failure (keys-all): [PK_Flore...]"
-                        (ref-TS02-C1::DPSF|C_Create victim sft-id [1] [nd]))
+                        (ref-TS02-C1::DPSF|C_Create victim (DPDC.UR_Verum5 sft-id true) sft-id [1] [nd]))
                 ]
             )
             (env-sigs [{ "key": "PK_Emma", "caps": [] }])
@@ -1086,7 +1086,7 @@
                     (expect-failure "<<TX-SET-011>> ...and the stranger's refusal followed the role\
                         \ from PK_Ancie to PK_Flore"
                         "Keyset failure (keys-all): [PK_Flore...]"
-                        (ref-TS02-C1::DPSF|C_Create attacker sft-id [1] [nd]))
+                        (ref-TS02-C1::DPSF|C_Create attacker (DPDC.UR_Verum5 sft-id true) sft-id [1] [nd]))
                 ]
             )
         )

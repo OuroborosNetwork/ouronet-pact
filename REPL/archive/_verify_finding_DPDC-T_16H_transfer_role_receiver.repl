@@ -64,7 +64,7 @@
         [(ref-TS02-C2::DPNF|C_Issue owner owner creator "TransferRoleProbeNFT" "TRPN"
             true true true true true true true true)]))
     (let ((id:string "TRPN-98c486052a51"))
-        (print (format "CREATE 1 = {}" [(ref-TS02-C2::DPNF|C_Create owner id [nd])]))
+        (print (format "CREATE 1 = {}" [(ref-TS02-C2::DPNF|C_Create owner (DPDC.UR_Verum5 id false) id [nd])]))
         ;; Activate role-restricted transfers by granting the transfer role to Lumy ONLY -- owner/sender
         ;; (ANHD) never gets it. Once >=1 account holds the role, URC_TransferRoleChecker's
         ;; "are-transfer-roles-active" gate flips on and every transfer must satisfy sender-OR-receiver.

@@ -55,7 +55,7 @@
     ;;
     (defun DPSF|C_Create:string
         (
-            patron:string id:string amount:[integer]
+            patron:string executor:string id:string amount:[integer]
             input-nonce-data:[object{DpdcUdcV2.DPDC|NonceData}]
         )
     )
@@ -497,7 +497,7 @@
     ;;
     (defun DPSF|C_Create:string
         (
-            patron:string id:string amount:[integer]
+            patron:string executor:string id:string amount:[integer]
             input-nonce-data:[object{DpdcUdcV2.DPDC|NonceData}]
         )
         @doc "Creates a new SFT Collection Element(s), having a new nonce, \
@@ -512,10 +512,10 @@
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (if (= l 1)
                             (ref-DPDC-C::C_CreateNewNonce
-                                id true 0 (at 0 amount) (at 0 input-nonce-data) false
+                                patron executor id true 0 (at 0 amount) (at 0 input-nonce-data) false
                             )
                             (ref-DPDC-C::C_CreateNewNonces
-                                id true amount input-nonce-data
+                                patron executor id true amount input-nonce-data
                             )
                         )
                     )

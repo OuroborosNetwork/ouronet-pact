@@ -68,7 +68,7 @@
         [(ref-TS02-C2::DPNF|C_Issue owner owner creator "ScoreSentinelNFT" "SSNF"
             true true true true true true true true)]))
     (let ((nid:string "SSNF-98c486052a51"))
-        (print (format "CREATE 1 = {}" [(ref-TS02-C2::DPNF|C_Create owner nid [nd])]))
+        (print (format "CREATE 1 = {}" [(ref-TS02-C2::DPNF|C_Create owner (DPDC.UR_Verum5 nid false) nid [nd])]))
         (print (format "<<19H-1>> Branch B (class-0, native) unscored -> {}"
             [(ref-DPDC-S::URC_N|Score nid false 1)]))
         (print (format "<<19H-2>> Branch A (class-0, fragment) unscored -> {}"
@@ -138,8 +138,8 @@
         [(ref-TS02-C1::DPSF|C_Issue owner owner creator "ScoreSentinelSFT" "SSSF"
             true true true true true true true true)]))
     (let ((sid:string "SSSF-98c486052a51"))
-        (print (format "CREATE 1 = {}" [(ref-TS02-C1::DPSF|C_Create owner sid [5] [nd])]))
-        (print (format "CREATE 2 = {}" [(ref-TS02-C1::DPSF|C_Create owner sid [5] [nd])]))
+        (print (format "CREATE 1 = {}" [(ref-TS02-C1::DPSF|C_Create owner (DPDC.UR_Verum5 sid true) sid [5] [nd])]))
+        (print (format "CREATE 2 = {}" [(ref-TS02-C1::DPSF|C_Create owner (DPDC.UR_Verum5 sid true) sid [5] [nd])]))
         ;; Define with nd (UDC_NoMetaData -> raw score = -1.0 sentinel) and multiplier 2.5.
         (print (format "DEFINE = {}"
             [(ref-TS02-C1::DPSF|C_DefinePrimordialSet owner sid "PairSet" 2.5

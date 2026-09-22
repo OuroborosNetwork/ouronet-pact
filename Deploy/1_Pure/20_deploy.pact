@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 20 of 24
 ;; This is STEP 20 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-19 must have run first, including the init steps between deploys.
-;; 3 source file(s), 149,410 gas measured in the REPL gas model, 236,745 bytes
+;; 3 source file(s), 149,410 gas measured in the REPL gas model, 236,873 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact
@@ -1626,7 +1626,7 @@
     ;;
     (defun DPSF|C_Create:string
         (
-            patron:string id:string amount:[integer]
+            patron:string executor:string id:string amount:[integer]
             input-nonce-data:[object{DpdcUdcV2.DPDC|NonceData}]
         )
     )
@@ -2068,7 +2068,7 @@
     ;;
     (defun DPSF|C_Create:string
         (
-            patron:string id:string amount:[integer]
+            patron:string executor:string id:string amount:[integer]
             input-nonce-data:[object{DpdcUdcV2.DPDC|NonceData}]
         )
         @doc "Creates a new SFT Collection Element(s), having a new nonce, \
@@ -2083,10 +2083,10 @@
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (if (= l 1)
                             (ref-DPDC-C::C_CreateNewNonce
-                                id true 0 (at 0 amount) (at 0 input-nonce-data) false
+                                patron executor id true 0 (at 0 amount) (at 0 input-nonce-data) false
                             )
                             (ref-DPDC-C::C_CreateNewNonces
-                                id true amount input-nonce-data
+                                patron executor id true amount input-nonce-data
                             )
                         )
                     )
@@ -3338,7 +3338,7 @@
     ;;
     (defun DPNF|C_Create:string
         (
-            patron:string id:string
+            patron:string executor:string id:string
             input-nonce-data:[object{DpdcUdcV2.DPDC|NonceData}]
         )
     )
@@ -3732,7 +3732,7 @@
     ;;
     (defun DPNF|C_Create:string
         (
-            patron:string id:string
+            patron:string executor:string id:string
             input-nonce-data:[object{DpdcUdcV2.DPDC|NonceData}]
         )
         @doc "Creates a new NFT Collection Element(s), having a new nonce, \
@@ -3746,10 +3746,10 @@
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (if (= l 1)
                             (ref-DPDC-C::C_CreateNewNonce
-                                id false 0 1 (at 0 input-nonce-data) false
+                                patron executor id false 0 1 (at 0 input-nonce-data) false
                             )
                             (ref-DPDC-C::C_CreateNewNonces
-                                id false (make-list l 1) input-nonce-data
+                                patron executor id false (make-list l 1) input-nonce-data
                             )
                         )
                     )

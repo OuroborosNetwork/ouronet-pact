@@ -122,7 +122,7 @@
     ]))
     (print "--- [TX-FVT-NF-01 · 02 · DPNF|C_Create + transfer EMMA→ANHD] ---")
     (print (format "<(DPNF|C_Create 1)> => \"{}\"" [
-        (ref-TS02-C2::DPNF|C_Create patron dpnf-id (NfSyncProbe.UC_DpnfNonceRows 1))
+        (ref-TS02-C2::DPNF|C_Create patron (DPDC.UR_Verum5 dpnf-id false) dpnf-id (NfSyncProbe.UC_DpnfNonceRows 1))
     ]))
     (let
         (
@@ -564,7 +564,7 @@
     (ref-TS02-C3::AQP-POOL|C_Issue patron (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 4 dpnf-id) pool-name dpnf-id 4)
     (ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
-    (ref-TS02-C2::DPNF|C_Create patron dpnf-id (NfSyncProbe.UC_DpnfNonceRows 1))
+    (ref-TS02-C2::DPNF|C_Create patron (DPDC.UR_Verum5 dpnf-id false) dpnf-id (NfSyncProbe.UC_DpnfNonceRows 1))
     (let
         (
             (stake-nonce:integer (at pre-count (ref-DPDC::URH_AccountNonces source dpnf-id false)))
@@ -695,7 +695,7 @@
                             (ref-TS02-C3::AQP-POOL|C_Issue patron (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 4 dpnf-id) pool dpnf-id 4)
                             (ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id (ref-U|DALOS::UDC_Makeid sc))
                             (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron (ref-U|DALOS::UDC_Makeid (format "{}Fvt" [pool])) patron (ref-U|DALOS::UDC_Makeid sc) ouro-id)
-                            (ref-TS02-C2::DPNF|C_Create patron dpnf-id (NfSyncProbe.UC_DpnfNonceRows n))
+                            (ref-TS02-C2::DPNF|C_Create patron (DPDC.UR_Verum5 dpnf-id false) dpnf-id (NfSyncProbe.UC_DpnfNonceRows n))
                             (let ((minted:[integer] (take (- n) (ref-DPDC::URH_AccountNonces source dpnf-id false))))
                                 (ref-TS02-C2::DPNF|C_TransferNonces patron dpnf-id source owner-id minted amts false)
                                 (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron pool-id owner-id ben dpnf-id minted)

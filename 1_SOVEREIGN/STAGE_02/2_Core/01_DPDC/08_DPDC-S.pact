@@ -1463,7 +1463,22 @@
                         )
                         (ico2:object{IgnisCollectorV3.OutputCumulator}
                             ;;2]When one nonce of class non-0 is created, is automatically created on <dpdc> account
-                            (ref-DPDC-C::C_CreateNewNonce id son set-class 1 spawned-nd true)
+                            ;;PROVISIONAL PATRON/EXECUTOR SLOTS (HANDOFF 4e, 2026-09-22).
+                            ;;03_DPDC-C's turn gave C_CreateNewNonce a <patron> and an <executor>
+                            ;;bound to (UR_Verum5 id son), the create-role account. This module's
+                            ;;own turn has not come and NONE of these four functions has a patron
+                            ;;-- I assumed one and the module stopped loading with "Cannot find
+                            ;;module: ouronet-ns.patron", which is what Pact calls an unbound
+                            ;;name. So the slot carries the account each function actually knows:
+                            ;;<account> here (the user), the DPDC smart account in the three
+                            ;;C_Define*Set variants, which is 06_VCT's precedent for "no user
+                            ;;account is in scope at all". The executor is READ rather than
+                            ;;threaded. That read is not a
+                            ;;placeholder: it is the same expression the binder evaluates, and
+                            ;;this is the branch where the SIGNATURE check is deliberately
+                            ;;bypassed -- the module is acting, not the role holder -- so naming
+                            ;;the account is the only attribution available and it is exact.
+                            (ref-DPDC-C::C_CreateNewNonce account (ref-DPDC::UR_Verum5 id son) id son set-class 1 spawned-nd true)
                         )
                         (ico3:object{IgnisCollectorV3.OutputCumulator}
                             ;;3]Transfer new set nonce to <account>
@@ -1532,7 +1547,7 @@
                     )
                     (ico1:object{IgnisCollectorV3.OutputCumulator}
                         (if son
-                            (ref-DPDC-C::C_CreateNewNonce id son set-class 0 ind true)
+                            (ref-DPDC-C::C_CreateNewNonce (ref-DPDC::GOV|DPDC|SC_NAME) (ref-DPDC::UR_Verum5 id son) id son set-class 0 ind true)
                             EOC
                         )
                     )
@@ -1564,7 +1579,7 @@
                     )
                     (ico1:object{IgnisCollectorV3.OutputCumulator}
                         (if son
-                            (ref-DPDC-C::C_CreateNewNonce id son set-class 0 ind true)
+                            (ref-DPDC-C::C_CreateNewNonce (ref-DPDC::GOV|DPDC|SC_NAME) (ref-DPDC::UR_Verum5 id son) id son set-class 0 ind true)
                             EOC
                         )
                     )
@@ -1598,7 +1613,7 @@
                     )
                     (ico1:object{IgnisCollectorV3.OutputCumulator}
                         (if son
-                            (ref-DPDC-C::C_CreateNewNonce id son set-class 0 ind true)
+                            (ref-DPDC-C::C_CreateNewNonce (ref-DPDC::GOV|DPDC|SC_NAME) (ref-DPDC::UR_Verum5 id son) id son set-class 0 ind true)
                             (do
                                 (ref-DPDC::XE_DeployAccountWNE dpdc id false)
                                 EOC

@@ -54,7 +54,7 @@
     ;;
     (defun DPNF|C_Create:string
         (
-            patron:string id:string
+            patron:string executor:string id:string
             input-nonce-data:[object{DpdcUdcV2.DPDC|NonceData}]
         )
     )
@@ -448,7 +448,7 @@
     ;;
     (defun DPNF|C_Create:string
         (
-            patron:string id:string
+            patron:string executor:string id:string
             input-nonce-data:[object{DpdcUdcV2.DPDC|NonceData}]
         )
         @doc "Creates a new NFT Collection Element(s), having a new nonce, \
@@ -462,10 +462,10 @@
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (if (= l 1)
                             (ref-DPDC-C::C_CreateNewNonce
-                                id false 0 1 (at 0 input-nonce-data) false
+                                patron executor id false 0 1 (at 0 input-nonce-data) false
                             )
                             (ref-DPDC-C::C_CreateNewNonces
-                                id false (make-list l 1) input-nonce-data
+                                patron executor id false (make-list l 1) input-nonce-data
                             )
                         )
                     )

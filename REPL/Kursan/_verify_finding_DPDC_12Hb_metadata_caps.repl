@@ -63,7 +63,7 @@
         ;; #1 name > 256 chars rejected
         (print (expect-failure "<<12Hb-1>> name of 257 chars rejected at creation"
                 "Nonce name cannot exceed 256 characters (got 257)"
-            (ref-TS02-C2::DPNF|C_Create owner id
+            (ref-TS02-C2::DPNF|C_Create owner (DPDC.UR_Verum5 id false) id
                 [(ref-DPDC-UDC::UDC_NonceData
                     0.0 0.0 name257 "d" (ref-DPDC-UDC::UDC_NoMetaData)
                     (ref-DPDC-UDC::UDC_URI|Type true false false false false false false)
@@ -74,7 +74,7 @@
         ;; #5 asset-type all-false rejected
         (print (expect-failure "<<12Hb-2>> all-false asset-type rejected at creation"
                 "At least one asset-type flag must be set"
-            (ref-TS02-C2::DPNF|C_Create owner id
+            (ref-TS02-C2::DPNF|C_Create owner (DPDC.UR_Verum5 id false) id
                 [(ref-DPDC-UDC::UDC_NonceData
                     0.0 0.0 "ok" "d" (ref-DPDC-UDC::UDC_NoMetaData)
                     (ref-DPDC-UDC::UDC_ZeroURI|Type)
@@ -85,7 +85,7 @@
         ;; #6/7/8 uri string > 2048 chars rejected
         (print (expect-failure "<<12Hb-3>> uri-primary.image of 2049 chars rejected at creation"
                 "A URI link string exceeds the 2048 character limit"
-            (ref-TS02-C2::DPNF|C_Create owner id
+            (ref-TS02-C2::DPNF|C_Create owner (DPDC.UR_Verum5 id false) id
                 [(ref-DPDC-UDC::UDC_NonceData
                     0.0 0.0 "ok" "d" (ref-DPDC-UDC::UDC_NoMetaData)
                     (ref-DPDC-UDC::UDC_URI|Type true false false false false false false)
@@ -95,7 +95,7 @@
             )))
         ;; Boundary + legit case: name at exactly 256 chars, real asset-type, real link -> succeeds
         (print (format "<<12Hb-4>> CREATE at boundary (name=256, uri=2048) RESULT = {}"
-            [(ref-TS02-C2::DPNF|C_Create owner id
+            [(ref-TS02-C2::DPNF|C_Create owner (DPDC.UR_Verum5 id false) id
                 [(ref-DPDC-UDC::UDC_NonceData
                     0.0 0.0 name256 "d" (ref-DPDC-UDC::UDC_NoMetaData)
                     (ref-DPDC-UDC::UDC_URI|Type true false false false false false false)

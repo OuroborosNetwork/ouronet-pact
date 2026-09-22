@@ -1245,3 +1245,71 @@ branch that deliberately has none, and one placed inside the branch leaves the e
 in the other. That is a design question, not a mechanical one, and it gets its own turn rather
 than a place in a batch.
 
+---
+
+### 03_DPDC-C.pact — COMPLETE (2 of 2 entrypoints, 2026-09-22)
+
+The module deferred from the last batch, because its ownership enforce is **conditional**:
+
+```pact
+(if (not (and (not son) sft-set-mode))
+    (ref-DALOS::CAP_EnforceAccountOwnership r-nft-create-account)
+    true)
+```
+
+**What the bypass is for, established by tracing every caller.** Both Talos client wrappers pass
+`sft-set-mode = false`, so for a client the ownership enforce **always** runs. The only
+`sft-set-mode = true` site is `08_DPDC-S`'s NFT-set path, where a nonce is spawned as an internal
+consequence of an action DPDC-S has already authorised — and demanding the role holder's
+**signature** there would be wrong, because the module is acting, not the role holder. The bypass
+is deliberate and justified.
+
+---
+
+### THE RESOLUTION: A BINDER IS AN EQUALITY CHECK, NOT A SIGNATURE CHECK
+
+That single distinction settles the design question the conditional posed:
+
+- **Mirroring the condition** would leave the executor *decorative* on the internal path — a name
+  nobody checks, which the canon rates worse than absent.
+- **Binding unconditionally** adds **no authority requirement at all**. `UEV_ExecutorIsCreateRole`
+  is `(enforce (= executor (UR_Verum5 id son)))` — it demands only that the caller *name* the
+  account the operation is really attributed to, which the internal caller can compute as easily
+  as the capability can.
+
+So attribution becomes **total** while the deliberate signature bypass is left exactly as it was.
+`r-nft-create` is also a **different derived account** from the `UR_OwnerKonto` that `02_DPDC`'s
+branding pair uses — same module, same id, two distinct authorities — so the migration rules read
+`UR_Verum5`, not `UR_OwnerKonto`. Reading the wrong one would have produced a binder that refuses
+every legitimate call.
+
+---
+
+### TWO MISTAKES, AND A NEW STATIC CHECK OUT OF THE SECOND
+
+**I assumed a `patron` was in scope in `08_DPDC-S` and it was not** — none of the four enclosing
+functions has one, because that module is itself unswept. Pact reports an unbound name as
+*`Cannot find module: ouronet-ns.patron`*, which reads like a missing dependency and is not. The
+slots now carry the account each function actually knows: the user's `account` in
+`C_MakeNonFungibleSet`, the DPDC smart account in the three `C_Define*Set` variants — `06_VCT`'s
+precedent for *"no user account is in scope at all here"*.
+
+**And two `require-capability` sites, two internal hops away, still named the old capability
+shape.** `_callarity.py` could not see them: **a capability acquisition is not a function call.**
+Pact does catch it — at LOAD — so it is not a silent hole; what it is, is an expensive way to find
+out. The symptom is `Attempted to apply a closure to too many arguments` during a five-minute gate
+run, with every suite touching the module reporting BROKEN.
+
+`_callarity.py` now makes a **second pass over `with`/`require`/`compose-capability`**, comparing
+each acquisition against its `defcap` declaration within the module, and it is fatal. Same
+rationale `_docstrings.py` was written under — *"the 2-second check that two 5-minute gate runs did
+not do"*. **Verified by re-introducing the exact bug and watching it report
+`DPDC-C|C>REGISTER-SINGLE-NONCE wants 6, got 5`.**
+
+> The general shape, now seen at both ends: a signature change must reach **every place the name
+> is written**, and "call site" is narrower than that. Capability acquisitions, `require`s two
+> hops down an internal chain, and registry keys in the tooling are all places the name appears
+> and none of them is a call.
+
+**Call sites re-pointed: 70** across 27 files, plus 5 hand-threaded internal hops.
+

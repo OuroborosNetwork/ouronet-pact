@@ -798,7 +798,14 @@
                 (ref-IGNIS::UC_IgnisPrice "DPSF|C_IssueCompany" "issue-shareholder")
                 dpdc (ref-IGNIS::URC_IsVirtualGasZero) [])
                     ;;3]Populate Equity SFT Collection
+                    ;;PROVISIONAL PATRON/EXECUTOR SLOTS (HANDOFF 4e, 2026-09-22). 03_DPDC-C's
+                    ;;turn gave C_CreateNewNonces a <patron> and an <executor> bound to
+                    ;;(UR_Verum5 id son). This module's own turn has not come, so <patron> stands
+                    ;;in and the executor is READ -- the same expression the binder evaluates, on
+                    ;;a collection this function has just issued, so it is exact rather than a
+                    ;;placeholder. Both become real parameters at 11_EQUITY+'s turn.
                     (ref-DPDC-C::C_CreateNewNonces
+                        patron (ref-DPDC::UR_Verum5 equity-id true)
                         equity-id true [1000000 0 0 0 0 0 0 0]
                         [
                             ;;Barebone Share, Nonce 1

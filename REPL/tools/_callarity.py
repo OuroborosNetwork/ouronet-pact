@@ -176,6 +176,47 @@ def scan(paths, sigs, owners, want_fns):
     return hits, mismatches, unchecked, partial
 
 
+DEFCAP_RE = re.compile(r'\n    \(defcap ([A-Za-z0-9|_\->]+)\s*\(')
+CAPUSE_RE = re.compile(r'\((?:with|require|compose)-capability\s+\(([A-Za-z0-9|_\->]+)')
+
+
+def cap_arity(paths):
+    """CAPABILITY ACQUISITION ARITY, per module.
+
+    WHY THIS IS HERE AND NOT A SEPARATE CONCERN. Pact DOES check this at load, unlike modref
+    call arity -- so it is not a silent hole. What it is, is an EXPENSIVE way to find out: the
+    symptom is `Attempted to apply a closure to too many arguments` during a five-minute gate
+    run, and every suite touching the module reports BROKEN. Same rationale as _docstrings.py,
+    which exists as "the 2-second check that two 5-minute gate runs did not do".
+
+    FOUND BY COSTING ONE. 03_DPDC-C's three REGISTER-*-NONCES caps gained an `executor` on
+    2026-09-22, and two `require-capability` sites two internal hops away still named the old
+    shape. _callarity's function-call pass cannot see those: a capability acquisition is not a
+    function call.
+
+    Capabilities are module-local -- there is no modref form -- so this compares within a file.
+    """
+    bad = []
+    for f in paths:
+        src = open(f, encoding="utf8", errors="replace").read()
+        mi = src.find("\n(module ")
+        if mi < 0:
+            continue
+        caps = {}
+        for m in DEFCAP_RE.finditer(src):
+            caps[m.group(1)] = _params(src, m.end() - 1)
+        for m in CAPUSE_RE.finditer(src):
+            name = m.group(1)
+            if name not in caps:
+                continue                      # a cap from another module's namespace; not ours
+            got, _ = split_form(src, src.index("(", m.start() + 1))
+            got = len(got) - 1                # drop the capability name itself
+            if got != caps[name]:
+                bad.append((os.path.relpath(f, ROOT), src.count("\n", 0, m.start()) + 1,
+                            name, caps[name], got))
+    return bad
+
+
 def main():
     sigs, owners = signatures()
     only_mod = only_fn = None
@@ -207,6 +248,7 @@ def main():
     paths = [p for p in paths if os.sep + "Audit" + os.sep not in p]
 
     hits, mism, unchecked, partial = scan(paths, sigs, owners, want_fns)
+    capbad = cap_arity(paths)
     scope = only_fn or only_mod or "all entrypoints"
     print(f"call-arity -- scope: {scope}")
     print(f"  {len(want_fns)} function(s), {hits} resolved call site(s) in {len(paths)} file(s)")
@@ -217,12 +259,21 @@ def main():
         print(f"  {tot} call site(s) UNCHECKED -- name defined on >1 module:")
         for fn, n in unchecked.most_common(8):
             print(f"     {fn:34s} {n:4d}  (on {', '.join(sorted(owners[fn]))})")
+    if capbad:
+        print(f"\n  CAPABILITY ACQUISITION ARITY MISMATCHES: {len(capbad)}")
+        for rel, line, name, want, got in capbad:
+            print(f"     {rel}:{line}\n         {name}  wants {want}, got {got}")
+        print("  A with/require/compose-capability must name the capability EXACTLY as declared.")
+        print("  Pact catches this at LOAD, so it is not silent -- but the symptom is a five-")
+        print("  minute gate run reporting every suite BROKEN. This is the two-second version.")
     if mism:
         print(f"\n  ARITY MISMATCHES: {len(mism)}")
         for rel, line, fn, want, got, txt in mism:
             print(f"     {rel}:{line}\n         {fn}  wants {want}, got {got}   {txt.strip()}")
         return 1
-    print("\n  no arity mismatches.")
+    if capbad:
+        return 1
+    print("\n  no arity mismatches (function calls and capability acquisitions).")
     return 0
 
 

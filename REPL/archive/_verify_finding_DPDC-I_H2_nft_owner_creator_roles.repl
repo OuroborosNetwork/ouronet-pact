@@ -55,7 +55,7 @@
         (print (format "role-modify-royalties on owner BEFORE would-be-check: {}"
             [(ref-DPDC::UR_CA|R-ModifyRoyalties id false owner)]))
         (print (format "CREATE NONCE RESULT = {}"
-            [(ref-TS02-C2::DPNF|C_Create owner id
+            [(ref-TS02-C2::DPNF|C_Create owner (DPDC.UR_Verum5 id false) id
                 [(ref-DPDC-UDC::UDC_NonceData
                     0.0 0.0 "Solo Probe NFT #1" "bar" (ref-DPDC-UDC::UDC_NoMetaData)
                     ;; DPDC Audit #12Hb: at least one real asset-type flag + matching link required now.

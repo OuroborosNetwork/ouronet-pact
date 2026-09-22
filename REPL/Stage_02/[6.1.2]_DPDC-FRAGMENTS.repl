@@ -96,7 +96,7 @@
         (map print
             [
                 (format "<(TS02-C1.DPSF|C_Create id=TFRG nonce-1 amount=1000)> => \"{}\""
-                    [(ref-TS02-C1::DPSF|C_Create owner id [1000] [nd])])
+                    [(ref-TS02-C1::DPSF|C_Create owner (DPDC.UR_Verum5 id true) id [1000] [nd])])
             ]
         )
         (map print

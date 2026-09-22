@@ -63,7 +63,7 @@
                 )
             )
         )
-        (ref-TS02-C2::DPNF|C_Create patron tnf-id (make-list 8 nd))
+        (ref-TS02-C2::DPNF|C_Create patron (DPDC.UR_Verum5 tnf-id false) tnf-id (make-list 8 nd))
         ;; anchor on the "rarity"="golden" trait; acnoi=true creates the boost class inline (2x STOA)
         (print (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron patron "NFTraitAnchor" tnf-id true "NFTraitBoost" 3 100.0 "rarity" "golden"))
         (print "<<TX-NA-001>> DPNF|C_Issue/Create (trait) + AQP-ANK|C_IssueNonFungibleAnchor OK")

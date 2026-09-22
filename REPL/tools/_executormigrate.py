@@ -182,6 +182,12 @@ RULES = {
     "DPSF|C_UpgradeBranding":       (4, "(DPDC.UR_OwnerKonto {1} true)"),
     "DPNF|C_UpdatePendingBranding": (7, "(DPDC.UR_OwnerKonto {1} false)"),
     "DPNF|C_UpgradeBranding":       (4, "(DPDC.UR_OwnerKonto {1} false)"),
+    # ---- 03_DPDC-C (sweep 26/46). The executor is the CREATE-ROLE account, not the owner --
+    # DPDC-C|C>REGISTER-NONCES enforces on (UR_Verum5 id son), a DIFFERENT derived account from
+    # the UR_OwnerKonto the branding pair uses. Same module, same id, two distinct authorities;
+    # reading the wrong one would produce a binder that refuses every legitimate call.
+    "DPSF|C_Create":                (5, "(DPDC.UR_Verum5 {1} true)"),
+    "DPNF|C_Create":                (4, "(DPDC.UR_Verum5 {1} false)"),
 
     "AQP-FVT|CC_SweepBegin":            (3, "(AQP-ANK.URC_AnchorableAssetOwner (AQP-ANK.UR_ANK|AnchoredAsset {1}) (AQP-ANK.UR_ANK|Fungibility {1}))"),
 }
