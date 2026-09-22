@@ -24,6 +24,44 @@ Every element carries a dotted address so you can point at it exactly. Header si
 **Legend:** ✅ done · ❌ not done · ⚠ open decision (blocks its phase) · 🔒 hard dependency on earlier phases · — future/out-of-scope.
 **Progress (2026-08-30): 10 ✅ / 70 ❌.** Chapter 1 · Phase 0 fully closed; Phase 1 is next.
 
+> **MEASURED AGAIN 2026-09-23, after the patron/executor/executee canon sweep.** The sweep is
+> COMPLETE — 776 of 776 entrypoints across 46 modules, 0 remaining — and it re-signed the client
+> surface of every sovereign module: **694 entrypoint signatures changed across 58 files** against
+> the pre-sweep baseline `21fa54f`. So the deploy-ready gate that passed on 2026-09-18 passed
+> against a DIFFERENT entrypoint set than the one that will ship, and every figure it quoted has
+> moved. Re-measured today, by command rather than by memory:
+>
+> | deploy-ready precondition | 2026-09-18 | measured 2026-09-23 |
+> |---|---|---|
+> | whole-codebase run green | 25,035 assertions | **GREEN, 25,685** (20,556 + / 5,129 −), 92 entrypoints, 0 failures |
+> | all audits closed | 20/20 in the ledger | **`_redteam.py --check`: register sync ok, ledger coverage ok** |
+> | Audit Book assembled | 19 files, Parts I–III | **v3.0, 28 chapters, 248 pages, Parts I–V** |
+> | every module within the deploy ceiling | nothing over 22% of a block | **`_deploybundle.py --check` clean**, 24 transactions, emitted size now FATAL over the cap |
+> | version bump green | 0 interfaces at their live version | **UNSETTLED — see below.** 59 of 72 implemented interfaces are ahead of their live record, 7 have no live record, and **6 read as AT their live version** |
+>
+> Three checks that did not exist on 2026-09-18 are now gate-fatal as well: the authorisation
+> surface (**1,193 entrypoints, none weakened, 4 strengthened**), the patron-slot register (**0
+> unregistered**), and executor proof over the whole tree (**766 proven, 0 UNPROVEN**).
+>
+> **THE ONE PRECONDITION THAT DID NOT SURVIVE RE-MEASUREMENT.** Parsing `LIVE-INTERFACE-VERSIONS.md`'s
+> live column against every `(implements …V<n>)` in the tree, six interfaces read as sitting AT their
+> recorded live version: `AcquisitionAnchors`, `AcquisitionPools`, `AcquisitionScores`,
+> `AcquisitionVacate`, `AqpMtx`, `Dsa`. Those are six of the seven that Phase 1.7.1.1 records having
+> bumped on 2026-09-18 — and the Audit Book's own 1.1 changelog says the opposite of the snapshot:
+> *"ALL AQP interfaces are V1 … the 2026-09-18 pass had bumped six AQP interfaces V2→V3 as 'live + 1'
+> when none of them is live."* So one of the two documents is wrong about what is deployed, and
+> **neither is the chain.**
+>
+> This is NOT resolvable by reading, and it must not be resolved by picking the more recent file. If
+> those six ARE live at V1, the redeploy must bump them and cascade; if they are not, editing V1 in
+> place is correct and a bump would be wrong. `REPL/tools/_liveinventory.py --probe` settles it from
+> the chain — the same instrument CLAUDE.md names for the identical question about DPMF's tables.
+> **Do that before 1.7.2.2, not after.**
+>
+> **So 1.7.2.1 holds on four of five preconditions, the fifth is a chain probe away, and 1.7.2.2 —
+> the fresh redeploy — remains the only other open item in Chapter 1.** It is an on-chain act and it cannot change the entrypoint set; the shape the
+> capstones enumerate is final IN SOURCE today.
+
 > **⚠ THIS DASHBOARD IS STALE — read this before trusting a ❌ below.** *(noted 2026-09-17.)* The
 > per-phase marks date from 2026-08-30 and were not updated as work landed. Measured against the tree
 > today, the phases marked ❌ have substantial completed artefacts:
