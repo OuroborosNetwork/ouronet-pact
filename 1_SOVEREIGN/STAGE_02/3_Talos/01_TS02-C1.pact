@@ -77,17 +77,17 @@
     ;;
     ;;  [5] DPDC-R
     ;;
-    (defun DPSF|C_ToggleAddQuantityRole (patron:string id:string account:string toggle:bool))
-    (defun DPSF|C_ToggleFreezeAccount (patron:string id:string account:string toggle:bool))
-    (defun DPSF|C_ToggleExemptionRole (patron:string id:string account:string toggle:bool))
-    (defun DPSF|C_ToggleBurnRole (patron:string id:string account:string toggle:bool))
-    (defun DPSF|C_ToggleUpdateRole (patron:string id:string account:string toggle:bool))
-    (defun DPSF|C_ToggleModifyCreatorRole (patron:string id:string account:string toggle:bool))
-    (defun DPSF|C_ToggleModifyRoyaltiesRole (patron:string id:string account:string toggle:bool))
-    (defun DPSF|C_ToggleTransferRole (patron:string id:string account:string toggle:bool))
-    (defun DPSF|C_MoveCreateRole (patron:string id:string new-account:string))
-    (defun DPSF|C_MoveRecreateRole (patron:string id:string new-account:string))
-    (defun DPSF|C_MoveSetUriRole (patron:string id:string new-account:string))
+    (defun DPSF|C_ToggleAddQuantityRole (patron:string executor:string executee:string id:string toggle:bool))
+    (defun DPSF|C_ToggleFreezeAccount (patron:string executor:string executee:string id:string toggle:bool))
+    (defun DPSF|C_ToggleExemptionRole (patron:string executor:string executee:string id:string toggle:bool))
+    (defun DPSF|C_ToggleBurnRole (patron:string executor:string executee:string id:string toggle:bool))
+    (defun DPSF|C_ToggleUpdateRole (patron:string executor:string executee:string id:string toggle:bool))
+    (defun DPSF|C_ToggleModifyCreatorRole (patron:string executor:string executee:string id:string toggle:bool))
+    (defun DPSF|C_ToggleModifyRoyaltiesRole (patron:string executor:string executee:string id:string toggle:bool))
+    (defun DPSF|C_ToggleTransferRole (patron:string executor:string executee:string id:string toggle:bool))
+    (defun DPSF|C_MoveCreateRole (patron:string executor:string executee:string id:string))
+    (defun DPSF|C_MoveRecreateRole (patron:string executor:string executee:string id:string))
+    (defun DPSF|C_MoveSetUriRole (patron:string executor:string executee:string id:string))
     ;;
     ;;  [6] DPDC-MNG
     ;;
@@ -548,8 +548,8 @@
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-DPDC-I::C_IssueDigitalCollection
-                            patron true 
-                            owner-account creator-account collection-name collection-ticker
+                            patron owner-account creator-account true
+                            collection-name collection-ticker
                             can-upgrade can-change-owner can-change-creator can-add-special-role
                             can-transfer-nft-create-role can-freeze can-wipe can-pause
                             false
@@ -565,7 +565,7 @@
     ;;
     ;;  [5] DPDC-R
     ;;
-    (defun DPSF|C_ToggleAddQuantityRole (patron:string id:string account:string toggle:bool)
+    (defun DPSF|C_ToggleAddQuantityRole (patron:string executor:string executee:string id:string toggle:bool)
         @doc "Toggles the add quantity role for a DPTF Token on a given Ouronet Account"
         (with-capability (P|TS)
             (let
@@ -574,12 +574,12 @@
                     (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-R::C_ToggleAddQuantityRole id account toggle)
+                    (ref-DPDC-R::C_ToggleAddQuantityRole patron executor executee id toggle)
                 )
             )
         )
     )
-    (defun DPSF|C_ToggleFreezeAccount (patron:string id:string account:string toggle:bool)
+    (defun DPSF|C_ToggleFreezeAccount (patron:string executor:string executee:string id:string toggle:bool)
         @doc "Freezes a given account for a given DPSF Token. Frozen Accounts can no longer send or receive that DPSF Token"
         (with-capability (P|TS)
             (let
@@ -588,12 +588,12 @@
                     (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-R::C_ToggleFreezeAccount id true account toggle)
+                    (ref-DPDC-R::C_ToggleFreezeAccount patron executor executee id true toggle)
                 )
             )
         )
     )
-    (defun DPSF|C_ToggleExemptionRole (patron:string id:string account:string toggle:bool)
+    (defun DPSF|C_ToggleExemptionRole (patron:string executor:string executee:string id:string toggle:bool)
         @doc "Toggles exemption Role for a given DPSF on a given Smart Ouronet Account (Only Smart Ouronet Accounts can accept this role) \
             \ When sending to or receiving from such Accounts, the flat IGNIS Royalty fee must not be paid."
         (with-capability (P|TS)
@@ -603,12 +603,12 @@
                     (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-R::C_ToggleExemptionRole id true account toggle)
+                    (ref-DPDC-R::C_ToggleExemptionRole patron executor executee id true toggle)
                 )
             )
         )
     )
-    (defun DPSF|C_ToggleBurnRole (patron:string id:string account:string toggle:bool)
+    (defun DPSF|C_ToggleBurnRole (patron:string executor:string executee:string id:string toggle:bool)
         @doc "Toggles burn Role for a given DPSF on any Ouronet Account. \
             \ Such Accounts can then burn the DPSF"
         (with-capability (P|TS)
@@ -618,12 +618,12 @@
                     (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-R::C_ToggleBurnRole id true account toggle)
+                    (ref-DPDC-R::C_ToggleBurnRole patron executor executee id true toggle)
                 )
             )
         )
     )
-    (defun DPSF|C_ToggleUpdateRole (patron:string id:string account:string toggle:bool)
+    (defun DPSF|C_ToggleUpdateRole (patron:string executor:string executee:string id:string toggle:bool)
         @doc "Toggles update Role for a given DPSF on any Ouronet Account. \
             \ Such Accounts can then update (modify) the Metadata on any DPSF nonce"
         (with-capability (P|TS)
@@ -633,12 +633,12 @@
                     (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-R::C_ToggleUpdateRole id true account toggle)
+                    (ref-DPDC-R::C_ToggleUpdateRole patron executor executee id true toggle)
                 )
             )
         )
     )
-    (defun DPSF|C_ToggleModifyCreatorRole (patron:string id:string account:string toggle:bool)
+    (defun DPSF|C_ToggleModifyCreatorRole (patron:string executor:string executee:string id:string toggle:bool)
         @doc "Toggles Modify Creator Role for a given DPSF on any Ouronet Account. \
             \ Such Accounts can proceed to modify the Creator of the DPSF Collection"
         (with-capability (P|TS)
@@ -648,12 +648,12 @@
                     (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-R::C_ToggleModifyCreatorRole id true account toggle)
+                    (ref-DPDC-R::C_ToggleModifyCreatorRole patron executor executee id true toggle)
                 )
             )
         )
     )
-    (defun DPSF|C_ToggleModifyRoyaltiesRole (patron:string id:string account:string toggle:bool)
+    (defun DPSF|C_ToggleModifyRoyaltiesRole (patron:string executor:string executee:string id:string toggle:bool)
         @doc "Toggles Modify Royalties Role for a given DPSF on any Ouronet Account. \
             \ Such Accounts can proceed to modify the Permille Royalty of any nonce in the  DPSF Collection"
         (with-capability (P|TS)
@@ -663,12 +663,12 @@
                     (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-R::C_ToggleModifyRoyaltiesRole id true account toggle)
+                    (ref-DPDC-R::C_ToggleModifyRoyaltiesRole patron executor executee id true toggle)
                 )
             )
         )
     )
-    (defun DPSF|C_ToggleTransferRole (patron:string id:string account:string toggle:bool)
+    (defun DPSF|C_ToggleTransferRole (patron:string executor:string executee:string id:string toggle:bool)
         @doc "Toggles Transfer Role for a given DPSF on any Ouronet Account. \
             \ Transfers for any Nonce in the DPSF Collection are then restricted only to and from these accounts"
         (with-capability (P|TS)
@@ -678,12 +678,12 @@
                     (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-R::C_ToggleTransferRole id true account toggle)
+                    (ref-DPDC-R::C_ToggleTransferRole patron executor executee id true toggle)
                 )
             )
         )
     )
-    (defun DPSF|C_MoveCreateRole (patron:string id:string new-account:string)
+    (defun DPSF|C_MoveCreateRole (patron:string executor:string executee:string id:string)
         @doc "Moves the Create Role to another Ouronet Account. A single Account may have this Role \
             \ This is the only account that can issue new SFTs in the Collection"
         (with-capability (P|TS)
@@ -693,12 +693,12 @@
                     (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-R::C_MoveCreateRole id true new-account)
+                    (ref-DPDC-R::C_MoveCreateRole patron executor executee id true)
                 )
             )
         )
     )
-    (defun DPSF|C_MoveRecreateRole (patron:string id:string new-account:string)
+    (defun DPSF|C_MoveRecreateRole (patron:string executor:string executee:string id:string)
         @doc "Moves the Recreate Role to another Ouronet Account. A single Account may have this Role \
             \ This is the only account that can recreate any existing SFT in the Collection \
             \ Recreation reffers to a complete update (modification) of all SFT properties of a given nonce"
@@ -709,12 +709,12 @@
                     (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-R::C_MoveRecreateRole id true new-account)
+                    (ref-DPDC-R::C_MoveRecreateRole patron executor executee id true)
                 )
             )
         )
     )
-    (defun DPSF|C_MoveSetUriRole (patron:string id:string new-account:string)
+    (defun DPSF|C_MoveSetUriRole (patron:string executor:string executee:string id:string)
         @doc "Moves the Set URI Role to another Ouronet Account. A single Account may have this Role \
             \ This is the only account that can modify the URIs of any nonce in the SFT Collection"
         (with-capability (P|TS)
@@ -724,7 +724,7 @@
                     (ref-DPDC-R:module{DpdcRolesV2} DPDC-R)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPDC-R::C_MoveSetUriRole id true new-account)
+                    (ref-DPDC-R::C_MoveSetUriRole patron executor executee id true)
                 )
             )
         )

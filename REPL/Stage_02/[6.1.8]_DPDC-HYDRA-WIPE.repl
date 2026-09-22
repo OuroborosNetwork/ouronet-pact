@@ -49,10 +49,10 @@
         (ref-TS02-C2::DPNF|C_Create patron (DPDC.UR_Verum5 id false) id (make-list 12 nd))
     )
     ;; EMMA left FROZEN by [6.1.4] TX-NF-009 — unfreeze, fund all 12, re-freeze for the campaign
-    (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron id emma false)
+    (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto id false) emma id false)
     (ref-TS02-C2::DPNF|C_BulkTransfer patron id
         [[9 10 11 12 13 14 15 16 17 18 19 20]] [[1 1 1 1 1 1 1 1 1 1 1 1]] patron [emma] false)
-    (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron id emma true)
+    (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto id false) emma id true)
     (map print
         [
             (expect "<<TX-HW-001>> EMMA holds 12 wipeable nonces"
@@ -218,7 +218,7 @@
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
     )
-    (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron id emma false)
+    (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto id false) emma id false)
     (map print
         [
             (expect-failure "<<TX-HW-005>> slice on UNFROZEN account REVERTS (fail-safe)"
@@ -228,7 +228,7 @@
             ""
         ]
     )
-    (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron id emma true)
+    (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto id false) emma id true)
     (ref-TS02-C2::DPNF|Cp_WipeSlice patron emma id
         (ref-DPDC-MNG::UDC_RemovableNonces [13 14 15 16] [1 1 1 1]))
     (map print
@@ -334,7 +334,7 @@
         ;;a defensive unfreeze would abort, since unfreezing enforces the account IS frozen.
         (ref-TS02-C1::DPSF|C_BulkTransfer patron id
             [fresh] [(make-list 8 100)] patron [lumy] false)
-        (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron id lumy true)
+        (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto id true) lumy id true)
         (map print
             [
                 (expect "<<TX-HW-007>> LUMY holds 8 wipeable SFT nonces"
@@ -378,7 +378,7 @@
     ;;RESTORE STATE: this tx froze LUMY to run the campaign; later suites (e.g. [6.1]_DPDC
     ;;TX 007's DPSF|C_TransferNonce) expect it UNfrozen. A test must leave the world as it
     ;;found it — the wipe is done, so unfreeze.
-    (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron id lumy false)
+    (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto id true) lumy id false)
     (print "<<TX-HW-007>> SFT multi-nonce Hydra wipe OK (closes the [6.1]_DPDC TX 005b gap)")
 )
 (print "===^^^===")

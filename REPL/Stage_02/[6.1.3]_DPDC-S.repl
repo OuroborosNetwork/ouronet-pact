@@ -1070,7 +1070,7 @@
                 [
                     (expect "<<TX-SET-011>> the owner moves <r-nft-create> to a third party"
                         third
-                        (let ((ignore:string (ref-TS02-C1::DPSF|C_MoveCreateRole victim sft-id third)))
+                        (let ((ignore:string (ref-TS02-C1::DPSF|C_MoveCreateRole victim (DPDC.UR_OwnerKonto sft-id true) third sft-id)))
                             (ref-DPDC::UR_Verum5 sft-id true)))
                     (expect "<<TX-SET-011>> ...while the owner konto is untouched"
                         victim (ref-DPDC::UR_OwnerKonto sft-id true))
@@ -1236,7 +1236,7 @@
                 [
                     (expect "<<TX-SET-012>> the owner moves <r-nft-recreate> to a third party"
                         true
-                        (let ((ignore:string (ref-TS02-C1::DPSF|C_MoveRecreateRole victim sft-id third)))
+                        (let ((ignore:string (ref-TS02-C1::DPSF|C_MoveRecreateRole victim (DPDC.UR_OwnerKonto sft-id true) third sft-id)))
                             (ref-DPDC::UR_CA|R-Recreate sft-id true third)))
                     (expect "<<TX-SET-012>> ...while the owner konto is untouched"
                         victim (ref-DPDC::UR_OwnerKonto sft-id true))
@@ -1322,7 +1322,7 @@
             (expect-failure "<<TX-SET-013>> SHADOW [b]: EMMA naming her own ORDINARY account never\
                 \ reaches the gate"
                 "Only Smart Ouronet Accounts can get this role"
-                (ref-TS02-C1::DPSF|C_ToggleExemptionRole attacker sft-id attacker true))
+                (ref-TS02-C1::DPSF|C_ToggleExemptionRole attacker (DPDC.UR_OwnerKonto sft-id true) attacker sft-id true))
         ]
     )
     ;;==== TX-SET-013 · 03 · the differential pair: only <toggle> moves ====
@@ -1336,11 +1336,11 @@
             (expect-failure "<<TX-SET-013>> SHADOW [c]: <toggle=false> is refused by the state check\
                 \ one line above the gate"
                 "must be set to true for exec"
-                (ref-TS02-C1::DPSF|C_ToggleExemptionRole attacker sft-id smart false))
+                (ref-TS02-C1::DPSF|C_ToggleExemptionRole attacker (DPDC.UR_OwnerKonto sft-id true) smart sft-id false))
             (expect-failure "<<TX-SET-013>> GATE: the identical call with <toggle=true> is refused by\
                 \ the COLLECTION OWNER's keyset instead"
                 "Keyset failure (keys-all): [PK_Ancie...]"
-                (ref-TS02-C1::DPSF|C_ToggleExemptionRole attacker sft-id smart true))
+                (ref-TS02-C1::DPSF|C_ToggleExemptionRole attacker (DPDC.UR_OwnerKonto sft-id true) smart sft-id true))
             (expect "<<TX-SET-013>> ...and neither refusal flipped the flag"
                 false (ref-DPDC::UR_CA|R-Exemption sft-id true smart))
         ]
@@ -1369,7 +1369,7 @@
             (expect-failure "<<TX-SET-013>> ...yet the refusal names the SAME key for BOTH targets,\
                 \ which only the owner reading explains"
                 "Keyset failure (keys-all): [PK_Ancie...]"
-                (ref-TS02-C1::DPSF|C_ToggleExemptionRole attacker sft-id smart2 true))
+                (ref-TS02-C1::DPSF|C_ToggleExemptionRole attacker (DPDC.UR_OwnerKonto sft-id true) smart2 sft-id true))
         ]
     )
     ;;==== TX-SET-013 · 05 · non-vacuity: the rightful owner succeeds ====
@@ -1387,7 +1387,7 @@
                 (let
                     (
                         (ignore:string
-                            (ref-TS02-C1::DPSF|C_ToggleExemptionRole victim sft-id smart true))
+                            (ref-TS02-C1::DPSF|C_ToggleExemptionRole victim (DPDC.UR_OwnerKonto sft-id true) smart sft-id true))
                     )
                     (ref-DPDC::UR_CA|R-Exemption sft-id true smart)
                 ))

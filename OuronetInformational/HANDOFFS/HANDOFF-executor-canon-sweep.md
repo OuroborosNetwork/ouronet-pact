@@ -278,8 +278,8 @@ same tools with those three properties.
 | [x] 24 | `05_TS01-P.pact` | 8 | 0 | 0 | **8** | `TalosStageOne_ClientPactsV4` |
 | [x] 25 | `02_DPDC.pact` | 0 | 1 | 1 | **2** | `BrandingUsageTertiaryV2` |
 | [x] 26 | `03_DPDC-C.pact` | 0 | 0 | 2 | **2** | `DpdcCreateV2` |
-| [ ] 27 | `04_DPDC-I.pact` | 0 | 1 | 0 | **1** | `DpdcIssueV2` |
-| [ ] 28 | `05_DPDC-R.pact` | 0 | 0 | 11 | **11** | `DpdcRolesV2` |
+| [x] 27 | `04_DPDC-I.pact` | 0 | 1 | 0 | **1** | `DpdcIssueV2` |
+| [x] 28 | `05_DPDC-R.pact` | 0 | 0 | 11 | **11** | `DpdcRolesV2` |
 | [ ] 29 | `06_DPDC-MNG.pact` | 0 | 0 | 12 | **12** | `DpdcManagementV2` |
 | [ ] 30 | `07_DPDC-T.pact` | 1 | 0 | 3 | **4** | `DpdcTransferV2` |
 | [ ] 31 | `08_DPDC-S.pact` | 0 | 0 | 10 | **10** | `DpdcSetsV2` |

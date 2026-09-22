@@ -1313,3 +1313,53 @@ not do"*. **Verified by re-introducing the exact bug and watching it report
 
 **Call sites re-pointed: 70** across 27 files, plus 5 hand-threaded internal hops.
 
+---
+
+### 04_DPDC-I.pact — COMPLETE (1 of 1 entrypoint, 2026-09-22)
+
+**Both roles were already present under other names, and the module had already argued the
+distinction without having a word for it.**
+
+`DPDC-I|C>ISSUE` runs `CAP_EnforceAccountOwnership` on `owner-account` — a **parameter**, proven
+directly — so that is the executor. And `creator-account` is the executee, with the capability's
+own `@doc` supplying the rationale: audit **#53L** ruled it *deliberately* not ownership-checked,
+so an owner may designate a trusted associate as creator **without that account's separate consent
+or signature**, with only the type validated.
+
+> Acted upon, needing no signature, only shape-checked. That is the executee test **verbatim** —
+> decided by an audit two rounds before this canon existed. The sweep did not discover the
+> distinction here; it found the vocabulary for a ruling already made.
+
+`(patron son owner-account creator-account …)` → `(patron executor executee son …)`. **A rename
+and a reorder, not an addition** — nothing about who may call this function changed. Arity is
+unchanged, so `_callarity` sees nothing; the three sovereign call sites were reordered by hand and
+`modules/DPDC.repl` + `modules/EQUITY.repl` run green.
+
+---
+
+### 05_DPDC-R.pact — COMPLETE (11 of 11 entrypoints, 2026-09-22)
+
+§4g **across an entire module**, the second after `15_SWP`: all eleven are gated by
+`DPDC::CAP_Owner id son` → `CAP_EnforceAccountOwnership (UR_OwnerKonto id son)`, derived, no actor
+named. Each gained `patron` + `executor`, and the **role recipient became the executee** — the
+capabilities validate its *state* (`UEV_AccountBurnState`, `UEV_AccountAddQuantityState`) but never
+its ownership.
+
+**One binder, bound once.** `UEV_ExecutorIsOwnerKontoLocal` wraps `DPDC::UEV_ExecutorIsOwnerKonto`
+so the modref is bound in one place rather than at eleven call sites. `C_ToggleAddQuantityRole`
+passes the literal `true`, matching its own capability, which already hardcodes `(CAP_Owner id
+true)` because add-quantity is semi-fungible only.
+
+**The migration tool was deliberately NOT used, and the comment left in it says why.** These went
+`(patron id account toggle)` → `(patron executor executee id toggle)`: an **insert *and* a swap**,
+because the executee takes slot 2 and pushes the entity id down. `_executormigrate` only inserts.
+Running it anyway would have produced the right **arity** with `id` and the recipient **exchanged**
+— which `_callarity` cannot see and no test necessarily catches, since both are strings. 114 sites
+were rewritten by a bespoke insert-and-swap pass instead.
+
+**And the helper landed in the INTERFACE section first.** An interface holds declarations only, so
+the module stopped loading with `Expected: [')']` at the `(let`. The cause is the same stub-vs-
+implementation trap that has now appeared four times this programme: *the first `(defun NAME` in a
+file that contains both is the declaration, not the code.* Relocated into the module body, where
+it needs no interface stub at all — nothing outside the module calls it.
+

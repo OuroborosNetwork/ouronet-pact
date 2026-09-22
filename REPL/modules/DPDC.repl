@@ -342,7 +342,7 @@
     ;;Wiping REQUIRES the holder to be frozen on that collection (DPDC-MNG|C>WIPE-SFT ->
     ;;UEV_AccountFreezeState ... true). That is the design: a wipe is an enforcement action
     ;;against an already-restrained account, never a surprise on a live one.
-    (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron sf emma true)
+    (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto sf true) emma sf true)
     (map print
         [
             (expect "<<DPDC-07>> the holder has nonce 1" 4 (ref-DPDC::UR_AccountNonceSupply emma sf true 1))
@@ -501,9 +501,9 @@
         ;;frozen account cannot receive -- so unfreeze, transfer, refreeze. That round trip is
         ;;itself worth doing here: it proves the freeze is a real gate on the RECEIVE path and
         ;;not just on the wipe path.
-        (ref-TS02-C1::DPSF|C_ToggleFreezeAccount KST.ANHD sf emma false)
+        (ref-TS02-C1::DPSF|C_ToggleFreezeAccount KST.ANHD (DPDC.UR_OwnerKonto sf true) emma sf false)
         (ref-TS02-C1::DPSF|C_TransferNonce KST.ANHD sf KST.ANHD emma 3 5 false)
-        (ref-TS02-C1::DPSF|C_ToggleFreezeAccount KST.ANHD sf emma true)
+        (ref-TS02-C1::DPSF|C_ToggleFreezeAccount KST.ANHD (DPDC.UR_OwnerKonto sf true) emma sf true)
         (map print
             [
                 (expect "<<DPDC-08>> the holder received the second nonce while unfrozen"
@@ -1523,7 +1523,7 @@
                 false (DALOS.UR_AccountType KST.ANHD))
             (expect-failure "<<DPDC-G13>> ...so it cannot be given the exemption role"
                 "Only Smart Ouronet Accounts can get this role"
-                (ref-TS02-C1::DPSF|C_ToggleExemptionRole KST.ANHD sf KST.ANHD true))
+                (ref-TS02-C1::DPSF|C_ToggleExemptionRole KST.ANHD (DPDC.UR_OwnerKonto sf true) KST.ANHD sf true))
             ;;3] breaking down a SET requires a non-zero nonce class -- class 0 is the plain,
             ;;   unaggregated nonce and there is nothing inside it to break. Every nonce on this
             ;;   collection is class 0 (asserted by DPDC-G11), so the input is already here.
@@ -2040,7 +2040,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|ToggleFreezeAccount patron sf emma false))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron sf emma false))
+            (m (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto sf true) emma sf false))
         )
         (map print
             [
@@ -2081,7 +2081,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|ToggleBurnRole patron sf lumy true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_ToggleBurnRole patron sf lumy true))
+            (m (ref-TS02-C1::DPSF|C_ToggleBurnRole patron (DPDC.UR_OwnerKonto sf true) lumy sf true))
         )
         (map print
             [
@@ -2122,7 +2122,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|ToggleTransferRole patron sf lumy true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_ToggleTransferRole patron sf lumy true))
+            (m (ref-TS02-C1::DPSF|C_ToggleTransferRole patron (DPDC.UR_OwnerKonto sf true) lumy sf true))
         )
         (map print
             [
@@ -2163,7 +2163,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|ToggleAddQuantityRole patron sf lumy true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_ToggleAddQuantityRole patron sf lumy true))
+            (m (ref-TS02-C1::DPSF|C_ToggleAddQuantityRole patron (DPDC.UR_OwnerKonto sf true) lumy sf true))
         )
         (map print
             [
@@ -2454,7 +2454,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|ToggleBurnRole patron nf lumy true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C2::DPNF|C_ToggleBurnRole patron nf lumy true))
+            (m (ref-TS02-C2::DPNF|C_ToggleBurnRole patron (DPDC.UR_OwnerKonto nf false) lumy nf true))
         )
         (map print
             [
@@ -2493,7 +2493,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|ToggleTransferRole patron nf lumy true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C2::DPNF|C_ToggleTransferRole patron nf lumy true))
+            (m (ref-TS02-C2::DPNF|C_ToggleTransferRole patron (DPDC.UR_OwnerKonto nf false) lumy nf true))
         )
         (map print
             [
@@ -2532,7 +2532,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|ToggleUpdateRole patron nf lumy true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C2::DPNF|C_ToggleUpdateRole patron nf lumy true))
+            (m (ref-TS02-C2::DPNF|C_ToggleUpdateRole patron (DPDC.UR_OwnerKonto nf false) lumy nf true))
         )
         (map print
             [
@@ -2571,7 +2571,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|ToggleModifyCreatorRole patron nf lumy true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C2::DPNF|C_ToggleModifyCreatorRole patron nf lumy true))
+            (m (ref-TS02-C2::DPNF|C_ToggleModifyCreatorRole patron (DPDC.UR_OwnerKonto nf false) lumy nf true))
         )
         (map print
             [
@@ -2610,7 +2610,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|ToggleModifyRoyaltiesRole patron nf lumy true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C2::DPNF|C_ToggleModifyRoyaltiesRole patron nf lumy true))
+            (m (ref-TS02-C2::DPNF|C_ToggleModifyRoyaltiesRole patron (DPDC.UR_OwnerKonto nf false) lumy nf true))
         )
         (map print
             [
@@ -2649,7 +2649,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|ToggleFreezeAccount patron nf lumy true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron nf lumy true))
+            (m (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto nf false) lumy nf true))
         )
         (map print
             [
@@ -2727,7 +2727,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|MoveCreateRole patron nf lumy))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C2::DPNF|C_MoveCreateRole patron nf lumy))
+            (m (ref-TS02-C2::DPNF|C_MoveCreateRole patron (DPDC.UR_OwnerKonto nf false) lumy nf))
         )
         (map print
             [
@@ -2845,7 +2845,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|ToggleUpdateRole patron sf lumy true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_ToggleUpdateRole patron sf lumy true))
+            (m (ref-TS02-C1::DPSF|C_ToggleUpdateRole patron (DPDC.UR_OwnerKonto sf true) lumy sf true))
         )
         (map print
             [
@@ -2883,7 +2883,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|ToggleModifyCreatorRole patron sf lumy true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_ToggleModifyCreatorRole patron sf lumy true))
+            (m (ref-TS02-C1::DPSF|C_ToggleModifyCreatorRole patron (DPDC.UR_OwnerKonto sf true) lumy sf true))
         )
         (map print
             [
@@ -2921,7 +2921,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|ToggleModifyRoyaltiesRole patron sf lumy true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_ToggleModifyRoyaltiesRole patron sf lumy true))
+            (m (ref-TS02-C1::DPSF|C_ToggleModifyRoyaltiesRole patron (DPDC.UR_OwnerKonto sf true) lumy sf true))
         )
         (map print
             [
@@ -2959,7 +2959,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|MoveCreateRole patron sf lumy))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_MoveCreateRole patron sf lumy))
+            (m (ref-TS02-C1::DPSF|C_MoveCreateRole patron (DPDC.UR_OwnerKonto sf true) lumy sf))
         )
         (map print
             [
@@ -2997,7 +2997,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|MoveRecreateRole patron sf lumy))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_MoveRecreateRole patron sf lumy))
+            (m (ref-TS02-C1::DPSF|C_MoveRecreateRole patron (DPDC.UR_OwnerKonto sf true) lumy sf))
         )
         (map print
             [
@@ -3035,7 +3035,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|MoveSetUriRole patron sf lumy))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_MoveSetUriRole patron sf lumy))
+            (m (ref-TS02-C1::DPSF|C_MoveSetUriRole patron (DPDC.UR_OwnerKonto sf true) lumy sf))
         )
         (map print
             [
@@ -3723,7 +3723,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|MoveRecreateRole patron nf lumy))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C2::DPNF|C_MoveRecreateRole patron nf lumy))
+            (m (ref-TS02-C2::DPNF|C_MoveRecreateRole patron (DPDC.UR_OwnerKonto nf false) lumy nf))
         )
         (map print
             [
@@ -3769,7 +3769,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|MoveSetUriRole patron nf lumy))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C2::DPNF|C_MoveSetUriRole patron nf lumy))
+            (m (ref-TS02-C2::DPNF|C_MoveSetUriRole patron (DPDC.UR_OwnerKonto nf false) lumy nf))
         )
         (map print
             [
@@ -4447,7 +4447,7 @@
     ;;SETUP, outside the measurement window — every DPDC wipe path enforces that the target account is
     ;;FROZEN first. LUMY holds MOCKS nonce 2 (granted at DPDC-04); freezing her is the cheapest way to
     ;;reach the wipe guards, and it is a separate billed op so it must close before `ignis-before`.
-    (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron sf lumy true)
+    (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto sf true) lumy sf true)
     (let
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|WipeNonce patron sf lumy 2))
@@ -4499,7 +4499,7 @@
     ;;SETUP, outside the measurement window — every DPDC wipe path enforces that the target account is
     ;;FROZEN first. LUMY holds MOCKS nonce 2 (granted at DPDC-04); freezing her is the cheapest way to
     ;;reach the wipe guards, and it is a separate billed op so it must close before `ignis-before`.
-    (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron sf lumy true)
+    (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto sf true) lumy sf true)
     (let
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|WipeNoncePartialy patron sf lumy 2 1))
@@ -4551,7 +4551,7 @@
     ;;SETUP, outside the measurement window — every DPDC wipe path enforces that the target account is
     ;;FROZEN first. LUMY holds MOCKS nonce 2 (granted at DPDC-04); freezing her is the cheapest way to
     ;;reach the wipe guards, and it is a separate billed op so it must close before `ignis-before`.
-    (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron sf lumy true)
+    (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto sf true) lumy sf true)
     (let
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|WipeClean patron lumy sf [2]))
@@ -4603,7 +4603,7 @@
     ;;SETUP, outside the measurement window — every DPDC wipe path enforces that the target account is
     ;;FROZEN first. LUMY holds MOCKS nonce 2 (granted at DPDC-04); freezing her is the cheapest way to
     ;;reach the wipe guards, and it is a separate billed op so it must close before `ignis-before`.
-    (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron sf lumy true)
+    (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto sf true) lumy sf true)
     (let
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|WipeDirty patron lumy sf [2]))
@@ -4657,7 +4657,7 @@
     ;;SETUP, outside the measurement window — every DPDC wipe path enforces that the target account is
     ;;FROZEN first. LUMY holds MOCKS nonce 2 (granted at DPDC-04); freezing her is the cheapest way to
     ;;reach the wipe guards, and it is a separate billed op so it must close before `ignis-before`.
-    (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron sf lumy true)
+    (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto sf true) lumy sf true)
     (let
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|WipePure patron lumy sf (DPDC-MNG.URHC_WipePure lumy sf true)))
@@ -4713,7 +4713,7 @@
     ;;SETUP, outside the measurement window — every DPDC wipe path enforces that the target account is
     ;;FROZEN first. LUMY holds MOCKS nonce 2 (granted at DPDC-04); freezing her is the cheapest way to
     ;;reach the wipe guards, and it is a separate billed op so it must close before `ignis-before`.
-    (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron sf lumy true)
+    (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto sf true) lumy sf true)
     (let
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|WipeHeavy patron lumy sf))
@@ -4767,7 +4767,7 @@
     ;;SETUP, outside the measurement window — every DPDC wipe path enforces that the target account is
     ;;FROZEN first. LUMY holds MOCKS nonce 2 (granted at DPDC-04); freezing her is the cheapest way to
     ;;reach the wipe guards, and it is a separate billed op so it must close before `ignis-before`.
-    (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron sf lumy true)
+    (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto sf true) lumy sf true)
     (let
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|WipeSlice patron lumy sf (DPDC-MNG.UDC_RemovableNonces [2] [2])))
@@ -4965,7 +4965,7 @@
     ;;SETUP, outside the measurement window — the wipe paths require a FROZEN target. EMMA holds MOCKN
     ;;nonce 1 (moved to her at DPDC-03). The freeze is itself a billed op, so it closes before
     ;;`ignis-before` is read.
-    (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron nf emma true)
+    (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto nf false) emma nf true)
     (let
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|WipeNonce patron nf emma 1))
@@ -5017,7 +5017,7 @@
     ;;SETUP, outside the measurement window — the wipe paths require a FROZEN target. EMMA holds MOCKN
     ;;nonce 1 (moved to her at DPDC-03). The freeze is itself a billed op, so it closes before
     ;;`ignis-before` is read.
-    (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron nf emma true)
+    (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto nf false) emma nf true)
     (let
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|WipeClean patron emma nf [1]))
@@ -5069,7 +5069,7 @@
     ;;SETUP, outside the measurement window — the wipe paths require a FROZEN target. EMMA holds MOCKN
     ;;nonce 1 (moved to her at DPDC-03). The freeze is itself a billed op, so it closes before
     ;;`ignis-before` is read.
-    (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron nf emma true)
+    (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto nf false) emma nf true)
     (let
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|WipeDirty patron emma nf [1]))
@@ -5121,7 +5121,7 @@
     ;;SETUP, outside the measurement window — the wipe paths require a FROZEN target. EMMA holds MOCKN
     ;;nonce 1 (moved to her at DPDC-03). The freeze is itself a billed op, so it closes before
     ;;`ignis-before` is read.
-    (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron nf emma true)
+    (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto nf false) emma nf true)
     (let
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|WipePure patron emma nf (DPDC-MNG.URHC_WipePure emma nf false)))
@@ -5173,7 +5173,7 @@
     ;;SETUP, outside the measurement window — the wipe paths require a FROZEN target. EMMA holds MOCKN
     ;;nonce 1 (moved to her at DPDC-03). The freeze is itself a billed op, so it closes before
     ;;`ignis-before` is read.
-    (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron nf emma true)
+    (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto nf false) emma nf true)
     (let
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|WipeHeavy patron emma nf))
@@ -5226,7 +5226,7 @@
     ;;SETUP, outside the measurement window — the wipe paths require a FROZEN target. EMMA holds MOCKN
     ;;nonce 1 (moved to her at DPDC-03). The freeze is itself a billed op, so it closes before
     ;;`ignis-before` is read.
-    (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron nf emma true)
+    (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto nf false) emma nf true)
     (let
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|WipeSlice patron emma nf (DPDC-MNG.UDC_RemovableNonces [1] [1])))
@@ -5633,7 +5633,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPSF|ToggleExemptionRole patron id bj true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C1::DPSF|C_ToggleExemptionRole patron id bj true))
+            (m (ref-TS02-C1::DPSF|C_ToggleExemptionRole patron (DPDC.UR_OwnerKonto id true) bj id true))
         )
         (map print
             [
@@ -5692,7 +5692,7 @@
         (
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-TWO.INFO_DPNF|ToggleExemptionRole patron id bj true))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
-            (m (ref-TS02-C2::DPNF|C_ToggleExemptionRole patron id bj true))
+            (m (ref-TS02-C2::DPNF|C_ToggleExemptionRole patron (DPDC.UR_OwnerKonto id false) bj id true))
         )
         (map print
             [
@@ -6016,7 +6016,7 @@
     )
     ;;...and the holder is given MORE nonces, so the plan really splits.
     (ref-TS02-C1::DPSF|C_TransferNonces patron id patron holder [1 4] [1 1] false)
-    (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron id holder true)
+    (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto id true) holder id true)
     (let
         (
             (full:object{DpdcManagementV2.RemovableNonces} (ref-DPDC-MNG::URHC_WipePure holder id true))
@@ -6097,7 +6097,7 @@
     )
     ;;...and the holder is given MORE nonces, so the plan really splits.
     (ref-TS02-C2::DPNF|C_TransferNonces patron id patron holder [2 3] [1 1] false)
-    (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron id holder true)
+    (ref-TS02-C2::DPNF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto id false) holder id true)
     (let
         (
             (full:object{DpdcManagementV2.RemovableNonces} (ref-DPDC-MNG::URHC_WipePure holder id false))

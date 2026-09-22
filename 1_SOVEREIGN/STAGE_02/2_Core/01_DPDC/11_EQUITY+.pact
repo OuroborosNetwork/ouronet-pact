@@ -781,8 +781,8 @@
                 (ico:object{IgnisCollectorV3.OutputCumulator}
                     ;;1]Issue Equity SFT Collection; <dpdc> automatically gets <role-nft-add-quantity> and <role-nft-burn>
                     (ref-DPDC-I::C_IssueDigitalCollection
-                        patron true
-                        dpdc creator-account name ticker
+                        patron dpdc creator-account true
+                        name ticker
                         false false true true
                         true true true false
                         true

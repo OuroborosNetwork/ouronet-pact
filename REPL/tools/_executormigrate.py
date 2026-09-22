@@ -188,6 +188,12 @@ RULES = {
     # reading the wrong one would produce a binder that refuses every legitimate call.
     "DPSF|C_Create":                (5, "(DPDC.UR_Verum5 {1} true)"),
     "DPNF|C_Create":                (4, "(DPDC.UR_Verum5 {1} false)"),
+    # ---- 05_DPDC-R (sweep 28/46) IS NOT HERE, AND THAT IS THE POINT OF THIS COMMENT.
+    # Its eleven entrypoints went (patron id account toggle) -> (patron executor executee id
+    # toggle): an INSERT **and** a SWAP, because the executee takes slot 2 and pushes the entity
+    # id down. This tool only inserts. Running it anyway would have produced the right ARITY with
+    # `id` and the recipient exchanged -- which _callarity cannot see and no test would
+    # necessarily catch, since both are strings. Done by a bespoke pass instead.
 
     "AQP-FVT|CC_SweepBegin":            (3, "(AQP-ANK.URC_AnchorableAssetOwner (AQP-ANK.UR_ANK|AnchoredAsset {1}) (AQP-ANK.UR_ANK|Fungibility {1}))"),
 }

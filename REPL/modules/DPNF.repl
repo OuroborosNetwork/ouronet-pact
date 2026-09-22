@@ -175,10 +175,10 @@
         (emma:string KST.EMMA)
     )
     ;;C_ToggleTransferRole
-    (ref-TS02-C2::DPNF|C_ToggleTransferRole patron nf emma true)
+    (ref-TS02-C2::DPNF|C_ToggleTransferRole patron (DPDC.UR_OwnerKonto nf false) emma nf true)
     (map print [(expect "<<DPNF-04>> C_ToggleTransferRole granted the transfer role"
                     true (contains emma (at "r-transfer" (ref-DPDC::UR_VerumRoles nf false))))])
-    (ref-TS02-C2::DPNF|C_ToggleTransferRole patron nf emma false)
+    (ref-TS02-C2::DPNF|C_ToggleTransferRole patron (DPDC.UR_OwnerKonto nf false) emma nf false)
     (map print [(expect "<<DPNF-04>> C_ToggleTransferRole revoked the transfer role"
                     false (contains emma (at "r-transfer" (ref-DPDC::UR_VerumRoles nf false))))])
     ;;C_UpdateNonce — the WHOLE-object writer, versus the per-field writers in DPNF-02

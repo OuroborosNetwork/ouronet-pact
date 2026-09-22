@@ -69,7 +69,7 @@
         ;; (ANHD) never gets it. Once >=1 account holds the role, URC_TransferRoleChecker's
         ;; "are-transfer-roles-active" gate flips on and every transfer must satisfy sender-OR-receiver.
         (print (format "GRANT transfer-role to Lumy RESULT = {}"
-            [(ref-TS02-C2::DPNF|C_ToggleTransferRole owner id lumy true)]))
+            [(ref-TS02-C2::DPNF|C_ToggleTransferRole owner (DPDC.UR_OwnerKonto id false) lumy id true)]))
         (print (format "ANHD has transfer-role? {}" [(ref-DPDC::UR_CA|R-Transfer id false owner)]))
         (print (format "Lumy has transfer-role? {}" [(ref-DPDC::UR_CA|R-Transfer id false lumy)]))
         ;; #16H proof: ANHD (sender, no role) -> Lumy (receiver, HAS role) must be ALLOWED.

@@ -60,17 +60,18 @@
     ;;
     ;;  [C]
     ;;
-    (defun C_ToggleAddQuantityRole:object{IgnisCollectorV3.OutputCumulator} (id:string account:string toggle:bool))
-    (defun C_ToggleFreezeAccount:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool account:string toggle:bool))
-    (defun C_ToggleExemptionRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool account:string toggle:bool))
-    (defun C_ToggleBurnRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool account:string toggle:bool))
-    (defun C_ToggleUpdateRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool account:string toggle:bool))
-    (defun C_ToggleModifyCreatorRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool account:string toggle:bool))
-    (defun C_ToggleModifyRoyaltiesRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool account:string toggle:bool))
-    (defun C_ToggleTransferRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool account:string toggle:bool))
-    (defun C_MoveCreateRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool new-account:string))
-    (defun C_MoveRecreateRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool new-account:string))
-    (defun C_MoveSetUriRole:object{IgnisCollectorV3.OutputCumulator} (id:string son:bool new-account:string))
+
+    (defun C_ToggleAddQuantityRole:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string toggle:bool))
+    (defun C_ToggleFreezeAccount:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string son:bool toggle:bool))
+    (defun C_ToggleExemptionRole:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string son:bool toggle:bool))
+    (defun C_ToggleBurnRole:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string son:bool toggle:bool))
+    (defun C_ToggleUpdateRole:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string son:bool toggle:bool))
+    (defun C_ToggleModifyCreatorRole:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string son:bool toggle:bool))
+    (defun C_ToggleModifyRoyaltiesRole:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string son:bool toggle:bool))
+    (defun C_ToggleTransferRole:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string son:bool toggle:bool))
+    (defun C_MoveCreateRole:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string son:bool))
+    (defun C_MoveRecreateRole:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string son:bool))
+    (defun C_MoveSetUriRole:object{IgnisCollectorV3.OutputCumulator} (patron:string executor:string executee:string id:string son:bool))
 
 )
 ;;
@@ -712,160 +713,257 @@
     )
     ;;{5.7}  User [A/C]
     ;;Role Toggling
-    (defun C_ToggleAddQuantityRole:object{IgnisCollectorV3.OutputCumulator}
-        (id:string account:string toggle:bool)
-        (P|UEV_IMC)
+    (defun UEV_ExecutorIsOwnerKontoLocal (executor:string id:string son:bool)
+        @doc "Thin local wrapper over DPDC::UEV_ExecutorIsOwnerKonto. \
+            \ \
+            \ Exists so the DPDC modref is bound in ONE place rather than at eleven call sites. \
+            \ Every entrypoint in this module is gated by DPDC::CAP_Owner, which enforces on the \
+            \ DERIVED (UR_OwnerKonto id son) -- HANDOFF 4g, across the whole module -- so all \
+            \ eleven need the same binder against the same pair. \
+            \ \
+            \ <son> travels with <id> because DPSF and DPNF are separate tables and the same id \
+            \ can live in both; an owner lookup without it is a lookup of a different token. \
+            \ C_ToggleAddQuantityRole passes the literal TRUE, matching its own capability, \
+            \ which already hardcodes (CAP_Owner id true) because add-quantity is semi-fungible \
+            \ only. (patron/executor canon 2.2, indirect route named.)"
         (let
             (
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
-            (with-capability (DPDC|C>TG_ADD-QTY-R id account toggle)
-                (ref-DPDC::XE_DeployAccountWNE account id true)
-                (XI_ToggleAddQuantityRole id account toggle)
+            (ref-DPDC::UEV_ExecutorIsOwnerKonto executor id son)
+        )
+    )
+    (defun C_ToggleAddQuantityRole:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string executor:string executee:string id:string toggle:bool)
+        @doc "HANDOFF 4g (patron/executor canon 2.2, 2026-09-22). DPDC::CAP_Owner enforces on \
+            \ the DERIVED (UR_OwnerKonto id son) and names no actor; UEV_ExecutorIsOwnerKonto \
+            \ supplies it and the ownership enforce is KEPT. The role recipient became <executee>: \
+            \ the capability validates its STATE but never its ownership, so it is acted upon and \
+            \ needs no signature -- the executee test. A rename and a reorder, plus the two new \
+            \ leading parameters."
+        (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKontoLocal executor id true)
+        (let
+            (
+                (ref-DPDC:module{DpdcV2} DPDC)
+            )
+            (with-capability (DPDC|C>TG_ADD-QTY-R id executee toggle)
+                (ref-DPDC::XE_DeployAccountWNE executee id true)
+                (XI_ToggleAddQuantityRole id executee toggle)
                 (URCi_ToggleAddQuantityRole id)
             )
         )
     )
     (defun C_ToggleFreezeAccount:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool account:string toggle:bool)
+        (patron:string executor:string executee:string id:string son:bool toggle:bool)
+        @doc "HANDOFF 4g (patron/executor canon 2.2, 2026-09-22). DPDC::CAP_Owner enforces on \
+            \ the DERIVED (UR_OwnerKonto id son) and names no actor; UEV_ExecutorIsOwnerKonto \
+            \ supplies it and the ownership enforce is KEPT. The role recipient became <executee>: \
+            \ the capability validates its STATE but never its ownership, so it is acted upon and \
+            \ needs no signature -- the executee test. A rename and a reorder, plus the two new \
+            \ leading parameters."
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKontoLocal executor id son)
         (let
             (
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
-            (with-capability (DPDC|C>FRZ-ACC id son account toggle)
-                (ref-DPDC::XE_DeployAccountWNE account id son)
-                (XI_ToggleFreezeAccount id son account toggle)
+            (with-capability (DPDC|C>FRZ-ACC id son executee toggle)
+                (ref-DPDC::XE_DeployAccountWNE executee id son)
+                (XI_ToggleFreezeAccount id son executee toggle)
                 (URCi_ToggleFreezeAccount id son)
             )
         )
     )
     (defun C_ToggleExemptionRole:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool account:string toggle:bool)
+        (patron:string executor:string executee:string id:string son:bool toggle:bool)
+        @doc "HANDOFF 4g (patron/executor canon 2.2, 2026-09-22). DPDC::CAP_Owner enforces on \
+            \ the DERIVED (UR_OwnerKonto id son) and names no actor; UEV_ExecutorIsOwnerKonto \
+            \ supplies it and the ownership enforce is KEPT. The role recipient became <executee>: \
+            \ the capability validates its STATE but never its ownership, so it is acted upon and \
+            \ needs no signature -- the executee test. A rename and a reorder, plus the two new \
+            \ leading parameters."
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKontoLocal executor id son)
         (let
             (
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
-            (with-capability (DPDC|C>TG_EXEMPTION-R id son account toggle)
-                (ref-DPDC::XE_DeployAccountWNE account id son)
-                (XI_ToggleExemptionRole id son account toggle)
+            (with-capability (DPDC|C>TG_EXEMPTION-R id son executee toggle)
+                (ref-DPDC::XE_DeployAccountWNE executee id son)
+                (XI_ToggleExemptionRole id son executee toggle)
                 (URCi_ToggleExemptionRole id son)
             )
         )
     )
     (defun C_ToggleBurnRole:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool account:string toggle:bool)
+        (patron:string executor:string executee:string id:string son:bool toggle:bool)
+        @doc "HANDOFF 4g (patron/executor canon 2.2, 2026-09-22). DPDC::CAP_Owner enforces on \
+            \ the DERIVED (UR_OwnerKonto id son) and names no actor; UEV_ExecutorIsOwnerKonto \
+            \ supplies it and the ownership enforce is KEPT. The role recipient became <executee>: \
+            \ the capability validates its STATE but never its ownership, so it is acted upon and \
+            \ needs no signature -- the executee test. A rename and a reorder, plus the two new \
+            \ leading parameters."
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKontoLocal executor id son)
         (let
             (
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
-            (with-capability (DPDC|C>TG_BURN-R id son account toggle)
-                (ref-DPDC::XE_DeployAccountWNE account id son)
-                (XI_ToggleBurnRole id son account toggle)
+            (with-capability (DPDC|C>TG_BURN-R id son executee toggle)
+                (ref-DPDC::XE_DeployAccountWNE executee id son)
+                (XI_ToggleBurnRole id son executee toggle)
                 (URCi_ToggleBurnRole id son)
             )
         )
     )
     (defun C_ToggleUpdateRole:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool account:string toggle:bool)
+        (patron:string executor:string executee:string id:string son:bool toggle:bool)
+        @doc "HANDOFF 4g (patron/executor canon 2.2, 2026-09-22). DPDC::CAP_Owner enforces on \
+            \ the DERIVED (UR_OwnerKonto id son) and names no actor; UEV_ExecutorIsOwnerKonto \
+            \ supplies it and the ownership enforce is KEPT. The role recipient became <executee>: \
+            \ the capability validates its STATE but never its ownership, so it is acted upon and \
+            \ needs no signature -- the executee test. A rename and a reorder, plus the two new \
+            \ leading parameters."
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKontoLocal executor id son)
         (let
             (
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
-            (with-capability (DPDC|C>TG_UPDATE-R id son account toggle)
-                (ref-DPDC::XE_DeployAccountWNE account id son)
-                (XI_ToggleUpdateRole id son account toggle)
+            (with-capability (DPDC|C>TG_UPDATE-R id son executee toggle)
+                (ref-DPDC::XE_DeployAccountWNE executee id son)
+                (XI_ToggleUpdateRole id son executee toggle)
                 (URCi_ToggleUpdateRole id son)
             )
         )
     )
     (defun C_ToggleModifyCreatorRole:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool account:string toggle:bool)
+        (patron:string executor:string executee:string id:string son:bool toggle:bool)
+        @doc "HANDOFF 4g (patron/executor canon 2.2, 2026-09-22). DPDC::CAP_Owner enforces on \
+            \ the DERIVED (UR_OwnerKonto id son) and names no actor; UEV_ExecutorIsOwnerKonto \
+            \ supplies it and the ownership enforce is KEPT. The role recipient became <executee>: \
+            \ the capability validates its STATE but never its ownership, so it is acted upon and \
+            \ needs no signature -- the executee test. A rename and a reorder, plus the two new \
+            \ leading parameters."
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKontoLocal executor id son)
         (let
             (
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
-            (with-capability (DPDC|C>TG_MODIFY-CREATOR-R id son account toggle)
-                (ref-DPDC::XE_DeployAccountWNE account id son)
-                (XI_ToggleModifyCreatorRole id son account toggle)
+            (with-capability (DPDC|C>TG_MODIFY-CREATOR-R id son executee toggle)
+                (ref-DPDC::XE_DeployAccountWNE executee id son)
+                (XI_ToggleModifyCreatorRole id son executee toggle)
                 (URCi_ToggleModifyCreatorRole id son)
             )
         )
     )
     (defun C_ToggleModifyRoyaltiesRole:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool account:string toggle:bool)
+        (patron:string executor:string executee:string id:string son:bool toggle:bool)
+        @doc "HANDOFF 4g (patron/executor canon 2.2, 2026-09-22). DPDC::CAP_Owner enforces on \
+            \ the DERIVED (UR_OwnerKonto id son) and names no actor; UEV_ExecutorIsOwnerKonto \
+            \ supplies it and the ownership enforce is KEPT. The role recipient became <executee>: \
+            \ the capability validates its STATE but never its ownership, so it is acted upon and \
+            \ needs no signature -- the executee test. A rename and a reorder, plus the two new \
+            \ leading parameters."
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKontoLocal executor id son)
         (let
             (
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
-            (with-capability (DPDC|C>TG_MODIFY-ROYALTIES-R id son account toggle)
-                (ref-DPDC::XE_DeployAccountWNE account id son)
-                (XI_ToggleModifyRoyaltiesRole id son account toggle)
+            (with-capability (DPDC|C>TG_MODIFY-ROYALTIES-R id son executee toggle)
+                (ref-DPDC::XE_DeployAccountWNE executee id son)
+                (XI_ToggleModifyRoyaltiesRole id son executee toggle)
                 (URCi_ToggleModifyRoyaltiesRole id son)
             )
         )
     )
     (defun C_ToggleTransferRole:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool account:string toggle:bool)
+        (patron:string executor:string executee:string id:string son:bool toggle:bool)
+        @doc "HANDOFF 4g (patron/executor canon 2.2, 2026-09-22). DPDC::CAP_Owner enforces on \
+            \ the DERIVED (UR_OwnerKonto id son) and names no actor; UEV_ExecutorIsOwnerKonto \
+            \ supplies it and the ownership enforce is KEPT. The role recipient became <executee>: \
+            \ the capability validates its STATE but never its ownership, so it is acted upon and \
+            \ needs no signature -- the executee test. A rename and a reorder, plus the two new \
+            \ leading parameters."
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKontoLocal executor id son)
         (let
             (
                 (ref-DPDC:module{DpdcV2} DPDC)
             )
-            (with-capability (DPDC|C>TG_TRANSFER-R id son account toggle)
-                (ref-DPDC::XE_DeployAccountWNE account id son)
-                (XI_ToggleTransferRole id son account toggle)
+            (with-capability (DPDC|C>TG_TRANSFER-R id son executee toggle)
+                (ref-DPDC::XE_DeployAccountWNE executee id son)
+                (XI_ToggleTransferRole id son executee toggle)
                 (URCi_ToggleTransferRole id son)
             )
         )
     )
     ;;
     (defun C_MoveCreateRole:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool new-account:string)
+        (patron:string executor:string executee:string id:string son:bool)
+        @doc "HANDOFF 4g (patron/executor canon 2.2, 2026-09-22). DPDC::CAP_Owner enforces on \
+            \ the DERIVED (UR_OwnerKonto id son) and names no actor; UEV_ExecutorIsOwnerKonto \
+            \ supplies it and the ownership enforce is KEPT. The role recipient became <executee>: \
+            \ the capability validates its STATE but never its ownership, so it is acted upon and \
+            \ needs no signature -- the executee test. A rename and a reorder, plus the two new \
+            \ leading parameters."
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKontoLocal executor id son)
         (let
             (
                 (ref-DPDC:module{DpdcV2} DPDC)
                 (old-account:string (ref-DPDC::UR_Verum5 id son))
             )
-            (with-capability (DPDC|C>MV_CREATE-R id son old-account new-account)
-                (ref-DPDC::XE_DeployAccountWNE new-account id son)
-                (XI_MoveCreateRole id son old-account new-account)
+            (with-capability (DPDC|C>MV_CREATE-R id son old-account executee)
+                (ref-DPDC::XE_DeployAccountWNE executee id son)
+                (XI_MoveCreateRole id son old-account executee)
                 (URCi_MoveCreateRole id son)
             )
         )
     )
     (defun C_MoveRecreateRole:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool new-account:string)
+        (patron:string executor:string executee:string id:string son:bool)
+        @doc "HANDOFF 4g (patron/executor canon 2.2, 2026-09-22). DPDC::CAP_Owner enforces on \
+            \ the DERIVED (UR_OwnerKonto id son) and names no actor; UEV_ExecutorIsOwnerKonto \
+            \ supplies it and the ownership enforce is KEPT. The role recipient became <executee>: \
+            \ the capability validates its STATE but never its ownership, so it is acted upon and \
+            \ needs no signature -- the executee test. A rename and a reorder, plus the two new \
+            \ leading parameters."
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKontoLocal executor id son)
         (let
             (
                 (ref-DPDC:module{DpdcV2} DPDC)
                 (old-account:string (ref-DPDC::UR_Verum6 id son))
             )
-            (with-capability (DPDC|C>MV_RECREATE-R id son old-account new-account)
-                (ref-DPDC::XE_DeployAccountWNE new-account id son)
-                (XI_MoveRecreateRole id son old-account new-account)
+            (with-capability (DPDC|C>MV_RECREATE-R id son old-account executee)
+                (ref-DPDC::XE_DeployAccountWNE executee id son)
+                (XI_MoveRecreateRole id son old-account executee)
                 (URCi_MoveRecreateRole id son)
             )
         )
     )
     (defun C_MoveSetUriRole:object{IgnisCollectorV3.OutputCumulator}
-        (id:string son:bool new-account:string)
+        (patron:string executor:string executee:string id:string son:bool)
+        @doc "HANDOFF 4g (patron/executor canon 2.2, 2026-09-22). DPDC::CAP_Owner enforces on \
+            \ the DERIVED (UR_OwnerKonto id son) and names no actor; UEV_ExecutorIsOwnerKonto \
+            \ supplies it and the ownership enforce is KEPT. The role recipient became <executee>: \
+            \ the capability validates its STATE but never its ownership, so it is acted upon and \
+            \ needs no signature -- the executee test. A rename and a reorder, plus the two new \
+            \ leading parameters."
         (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKontoLocal executor id son)
         (let
             (
                 (ref-DPDC:module{DpdcV2} DPDC)
                 (old-account:string (ref-DPDC::UR_Verum10 id son))
             )
-            (with-capability (DPDC|C>MV_SET-URI-R id son old-account new-account)
-                (ref-DPDC::XE_DeployAccountWNE new-account id son)
-                (XI_MoveSetUriRole id son old-account new-account)
+            (with-capability (DPDC|C>MV_SET-URI-R id son old-account executee)
+                (ref-DPDC::XE_DeployAccountWNE executee id son)
+                (XI_MoveSetUriRole id son old-account executee)
                 (URCi_MoveSetUriRole id son)
             )
         )

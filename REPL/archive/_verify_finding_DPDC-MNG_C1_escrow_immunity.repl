@@ -32,7 +32,7 @@
     ;; Prove burn's real precondition is just the burn ROLE, nothing about freeze — grant it to dpdc,
     ;; simulating an accidental/malicious role grant, and deliberately do NOT freeze dpdc.
     (print (format "GRANT BURN ROLE TO dpdc RESULT = {}"
-        [(ref-TS02-C1::DPSF|C_ToggleBurnRole KST.ANHD id dpdc true)]))
+        [(ref-TS02-C1::DPSF|C_ToggleBurnRole KST.ANHD (DPDC.UR_OwnerKonto id true) dpdc id true)]))
 )
 (commit-tx)
 

@@ -28,7 +28,7 @@
     (print (format "ENABLE CAN-WIPE RESULT = {}"
         [(ref-TS02-C1::DPSF|C_Control KST.ANHD id true true true true true true true true)]))
     (print (format "FREEZE dpdc RESULT = {}"
-        [(ref-TS02-C1::DPSF|C_ToggleFreezeAccount KST.ANHD id dpdc true)]))
+        [(ref-TS02-C1::DPSF|C_ToggleFreezeAccount KST.ANHD (DPDC.UR_OwnerKonto id true) dpdc id true)]))
 )
 (commit-tx)
 

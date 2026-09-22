@@ -126,32 +126,32 @@
     )
     (ref-TS02-C1::DPSF|C_Control patron id t f t t t t t t)
     (ref-TS02-C1::DPSF|C_TogglePause patron id t)
-    (ref-TS02-C1::DPSF|C_ToggleAddQuantityRole patron id emma t)
-    (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron id emma t)
-    (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron id emma f)
+    (ref-TS02-C1::DPSF|C_ToggleAddQuantityRole patron (DPDC.UR_OwnerKonto id true) emma id t)
+    (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto id true) emma id t)
+    (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto id true) emma id f)
     ;;DPSF|C_DeployAccount removed — DPDC Audit #35M (standalone deploy, no ownership check). This file
     ;;is already disabled/unreachable from the active pipeline (see file header); noted here only so a
     ;;future resurrection attempt doesn't hit a silent "undefined function" surprise on this line.
     ;(ref-TS02-C1::DPSF|C_DeployAccount patron orbr id)
-    (ref-TS02-C1::DPSF|C_ToggleExemptionRole patron id orbr t)
-    (ref-TS02-C1::DPSF|C_ToggleExemptionRole patron id orbr f)
-    (ref-TS02-C1::DPSF|C_ToggleBurnRole patron id emma t)
-    ;(ref-TS02-C1::DPSF|C_ToggleBurnRole patron id emma f)
-    (ref-TS02-C1::DPSF|C_ToggleUpdateRole patron id emma t)
-    ;(ref-TS02-C1::DPSF|C_ToggleUpdateRole patron id emma f)
-    (ref-TS02-C1::DPSF|C_ToggleModifyCreatorRole patron id emma t)
-    (ref-TS02-C1::DPSF|C_ToggleModifyCreatorRole patron id emma f)
-    (ref-TS02-C1::DPSF|C_ToggleModifyRoyaltiesRole patron id emma t)
-    ;(ref-TS02-C1::DPSF|C_ToggleModifyRoyaltiesRole patron id emma f)
-    (ref-TS02-C1::DPSF|C_ToggleTransferRole patron id emma t)
-    (ref-TS02-C1::DPSF|C_ToggleTransferRole patron id emma f)
+    (ref-TS02-C1::DPSF|C_ToggleExemptionRole patron (DPDC.UR_OwnerKonto id true) orbr id t)
+    (ref-TS02-C1::DPSF|C_ToggleExemptionRole patron (DPDC.UR_OwnerKonto id true) orbr id f)
+    (ref-TS02-C1::DPSF|C_ToggleBurnRole patron (DPDC.UR_OwnerKonto id true) emma id t)
+    ;(ref-TS02-C1::DPSF|C_ToggleBurnRole patron (DPDC.UR_OwnerKonto id true) emma id f)
+    (ref-TS02-C1::DPSF|C_ToggleUpdateRole patron (DPDC.UR_OwnerKonto id true) emma id t)
+    ;(ref-TS02-C1::DPSF|C_ToggleUpdateRole patron (DPDC.UR_OwnerKonto id true) emma id f)
+    (ref-TS02-C1::DPSF|C_ToggleModifyCreatorRole patron (DPDC.UR_OwnerKonto id true) emma id t)
+    (ref-TS02-C1::DPSF|C_ToggleModifyCreatorRole patron (DPDC.UR_OwnerKonto id true) emma id f)
+    (ref-TS02-C1::DPSF|C_ToggleModifyRoyaltiesRole patron (DPDC.UR_OwnerKonto id true) emma id t)
+    ;(ref-TS02-C1::DPSF|C_ToggleModifyRoyaltiesRole patron (DPDC.UR_OwnerKonto id true) emma id f)
+    (ref-TS02-C1::DPSF|C_ToggleTransferRole patron (DPDC.UR_OwnerKonto id true) emma id t)
+    (ref-TS02-C1::DPSF|C_ToggleTransferRole patron (DPDC.UR_OwnerKonto id true) emma id f)
     ;;
-    (ref-TS02-C1::DPSF|C_MoveCreateRole patron id lumy)
-    (ref-TS02-C1::DPSF|C_MoveCreateRole patron id emma)
-    (ref-TS02-C1::DPSF|C_MoveRecreateRole patron id lumy)
-    (ref-TS02-C1::DPSF|C_MoveRecreateRole patron id emma)
-    (ref-TS02-C1::DPSF|C_MoveSetUriRole patron id lumy)
-    (ref-TS02-C1::DPSF|C_MoveSetUriRole patron id emma)
+    (ref-TS02-C1::DPSF|C_MoveCreateRole patron (DPDC.UR_OwnerKonto id true) lumy id)
+    (ref-TS02-C1::DPSF|C_MoveCreateRole patron (DPDC.UR_OwnerKonto id true) emma id)
+    (ref-TS02-C1::DPSF|C_MoveRecreateRole patron (DPDC.UR_OwnerKonto id true) lumy id)
+    (ref-TS02-C1::DPSF|C_MoveRecreateRole patron (DPDC.UR_OwnerKonto id true) emma id)
+    (ref-TS02-C1::DPSF|C_MoveSetUriRole patron (DPDC.UR_OwnerKonto id true) lumy id)
+    (ref-TS02-C1::DPSF|C_MoveSetUriRole patron (DPDC.UR_OwnerKonto id true) emma id)
     [
         [
             (ref-DPDC::UR_CA|R-AddQuantity id lumy)
@@ -469,7 +469,7 @@
     )
     [       
             ;:Freeze Emma
-            (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron id emma t)
+            (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto id true) emma id t)
         (ref-TS02-C1::DPSF|C_AddQuantity patron id emma 1 20)
         ;(ref-TS02-C1::DPSF|C_AddQuantity patron id emma 11 20)
             (format "Emma Nonce 1 Supply is {}" [(ref-DPDC::UR_AccountNonceSupply emma id true 1)])
@@ -489,7 +489,7 @@
         
 
             ;:Unfreeze Emma
-            (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron id emma f)
+            (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto id true) emma id f)
         ;;
         (format "Emma Nonces are {}" [(ref-DPDC::URH_AccountNonces emma id true)])
 
@@ -557,17 +557,17 @@
         ;wipe-obj
 
         ;;Block 1 of Testing
-        ;(ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron id patron t)
+        ;(ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto id true) patron id t)
         ;    (ref-TS02-C1::DPSF|CC_WipeHeavy patron patron id)
-        ;(ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron id patron f)
+        ;(ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto id true) patron id f)
 
         ;;Block 2 of Testing
-        ;(ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron id patron t)
+        ;(ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto id true) patron id t)
         ;    (ref-TS02-C1::DPSF|C_WipePure patron patron id
         ;        {"r-nonces": [1 2 3 4 5 6 7 8 9 10]
         ;        ,"r-amounts": [300 500 500 500 500 500 500 500 500 200]}
         ;    )
-        ;(ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron id patron f)
+        ;(ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto id true) patron id f)
 
         
         ;(ref-TS02-C1::DPSF|C_WipeClean patron emma id [1 2 3 4 5 6 7 8 9 10])
@@ -706,7 +706,7 @@
         (emma:string KST.EMMA)
         (lumy:string KST.LUMY)
     )
-    ;(ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron id emma false)
+    ;(ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron (DPDC.UR_OwnerKonto id true) emma id false)
     (ref-TS02-C1::DPSF|C_TogglePause patron id false)
     [
         (format "Patron has {} IGNIS" [(ref-DALOS::UR_TF_AccountSupply patron false)])

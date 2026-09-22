@@ -58,8 +58,8 @@
     ;; module-to-module (see DPDC-C/DPDC-F/DPDC-R/DPDC-S and this module's own Issue flow below).
     (defun C_IssueDigitalCollection:object{IgnisCollectorV3.OutputCumulator}
         (
-            patron:string son:bool
-            owner-account:string creator-account:string collection-name:string collection-ticker:string
+            patron:string executor:string executee:string son:bool
+            collection-name:string collection-ticker:string
             can-upgrade:bool can-change-owner:bool can-change-creator:bool can-add-special-role:bool
             can-transfer-nft-create-role:bool can-freeze:bool can-wipe:bool can-pause:bool
             iz-special:bool
@@ -445,14 +445,28 @@
     ;; C_DeployAccountSFT/NFT removed — DPDC Audit #35M: see interface-side removal note above.
     (defun C_IssueDigitalCollection:object{IgnisCollectorV3.OutputCumulator}
         (
-            patron:string son:bool
-            owner-account:string creator-account:string collection-name:string collection-ticker:string
+            patron:string executor:string executee:string son:bool
+            collection-name:string collection-ticker:string
             can-upgrade:bool can-change-owner:bool can-change-creator:bool can-add-special-role:bool
             can-transfer-nft-create-role:bool can-freeze:bool can-wipe:bool can-pause:bool
             iz-special:bool
         )
+        @doc "Issues a DPSF or DPNF digital collection. \
+            \ \
+            \ BOTH ROLES WERE ALREADY HERE UNDER OTHER NAMES (patron/executor canon 2.2, \
+            \ 2026-09-22), and the module had already argued the distinction without naming it. \
+            \ DPDC-I|C>ISSUE runs CAP_EnforceAccountOwnership on <owner-account> -- a PARAMETER, \
+            \ proven directly -- so that is the EXECUTOR. \
+            \ \
+            \ <creator-account> is the EXECUTEE, and the capability @doc says why in its own words: \
+            \ audit #53L ruled it deliberately NOT ownership-checked, so an owner may designate a \
+            \ trusted associate as creator WITHOUT that account separate consent or signature. Acted \
+            \ upon, needing no signature, only type-validated -- the executee test verbatim, decided \
+            \ by an audit two rounds before this canon existed. \
+            \ \
+            \ A RENAME AND A REORDER, not an addition: nothing about who may call this has changed."
         (P|UEV_IMC)
-        (with-capability (DPDC-I|C>ISSUE owner-account creator-account collection-name collection-ticker iz-special)
+        (with-capability (DPDC-I|C>ISSUE executor executee collection-name collection-ticker iz-special)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
@@ -466,7 +480,7 @@
                     (id:string
                         (XI_IssueDigitalCollection
                             son
-                            owner-account creator-account collection-name collection-ticker
+                            executor executee collection-name collection-ticker
                             can-upgrade can-change-owner can-change-creator can-add-special-role 
                             can-transfer-nft-create-role can-freeze can-wipe can-pause
                             iz-special
@@ -479,9 +493,9 @@
                 ;;Deploy Collection Accounts for Owner and Creator
                 (if son
                     ;;SFT New Account Roles
-                    (if (!= owner-account creator-account)
+                    (if (!= executor executee)
                         (do
-                            (ref-DPDC::XBv_DeployAccountSFT owner-account id
+                            (ref-DPDC::XBv_DeployAccountSFT executor id
                                 true    ;;role-nft-add-quantity
                                 false   ;;frozen
                                 false   ;;role-exemption
@@ -494,7 +508,7 @@
                                 false   ;;role-set-new-uri
                                 false   ;;role-transfer
                             )
-                            (ref-DPDC::XBv_DeployAccountSFT creator-account id
+                            (ref-DPDC::XBv_DeployAccountSFT executee id
                                 false   ;;role-nft-add-quantity
                                 false   ;;frozen
                                 true    ;;role-exemption
@@ -508,7 +522,7 @@
                                 false   ;;role-transfer
                             )
                         )
-                        (ref-DPDC::XBv_DeployAccountSFT owner-account id
+                        (ref-DPDC::XBv_DeployAccountSFT executor id
                             true    ;;role-nft-add-quantity
                             false   ;;frozen
                             true    ;;role-exemption
@@ -522,9 +536,9 @@
                             false   ;;role-transfer
                         )
                     )
-                    (if (!= owner-account creator-account)
+                    (if (!= executor executee)
                         (do
-                            (ref-DPDC::XBv_DeployAccountNFT owner-account id
+                            (ref-DPDC::XBv_DeployAccountNFT executor id
                                 false   ;;frozen
                                 false   ;;role-exemption
                                 true    ;;role-nft-burn
@@ -536,7 +550,7 @@
                                 false   ;;role-set-new-uri
                                 false   ;;role-transfer
                             )
-                            (ref-DPDC::XBv_DeployAccountNFT creator-account id
+                            (ref-DPDC::XBv_DeployAccountNFT executee id
                                 false   ;;frozen
                                 true    ;;role-exemption
                                 false   ;;role-nft-burn
@@ -549,7 +563,7 @@
                                 false   ;;role-transfer
                             )
                         )
-                        (ref-DPDC::XBv_DeployAccountNFT owner-account id
+                        (ref-DPDC::XBv_DeployAccountNFT executor id
                             false   ;;frozen
                             true    ;;role-exemption
                             true    ;;role-nft-burn
@@ -564,7 +578,7 @@
                     )
                 )
                 (ref-IGNIS::XE_CollectStoa patron stoa-cost)
-                (ref-IGNIS::UDC_ConstructOutputCumulator ignis-price owner-account trigger [id])
+                (ref-IGNIS::UDC_ConstructOutputCumulator ignis-price executor trigger [id])
             )
         )
     )
