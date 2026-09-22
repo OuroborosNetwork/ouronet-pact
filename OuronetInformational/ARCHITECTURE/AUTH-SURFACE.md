@@ -6,9 +6,9 @@
 
 | metric | value |
 |---|---|
-| entrypoints scanned | 1192 |
-| reaching at least one ownership enforce | 816 |
-| reaching NONE | 376 |
+| entrypoints scanned | 1193 |
+| reaching at least one ownership enforce | 846 |
+| reaching NONE | 347 |
 
 ## Per entrypoint
 
@@ -50,9 +50,9 @@
 | `04_BRD` | `P|A_Define` | — |
 | `04_BRD` | `P|A_RemoveIMP` | — |
 | `04_BRD` | `P|A_SetIMP` | — |
-| `05_DPTF` | `A_UpdateTreasury` | — |
-| `05_DPTF` | `A_WipeTreasuryDebt` | `UR_Konto`, `account:string`, `client`, `id`, `id:string` |
-| `05_DPTF` | `A_WipeTreasuryDebtPartial` | `UR_Konto`, `account:string`, `client`, `id`, `id:string` |
+| `05_DPTF` | `A_UpdateTreasury` | `account:string`, `executor` |
+| `05_DPTF` | `A_WipeTreasuryDebt` | `UR_Konto`, `account:string`, `client`, `executor`, `id`, `id:string` |
+| `05_DPTF` | `A_WipeTreasuryDebtPartial` | `UR_Konto`, `account:string`, `client`, `executor`, `id`, `id:string` |
 | `05_DPTF` | `C_Burn` | `UR_Konto`, `account`, `account:string`, `id`, `id:string` |
 | `05_DPTF` | `C_Control` | `UR_Konto`, `account:string`, `id`, `id:string` |
 | `05_DPTF` | `C_Issue` | `account`, `account:string` |
@@ -140,7 +140,7 @@
 | `08_ATS` | `P|A_Define` | — |
 | `08_ATS` | `P|A_RemoveIMP` | — |
 | `08_ATS` | `P|A_SetIMP` | — |
-| `09_TFT` | `C_ClearDispo` | `UR_Konto`, `account`, `account:string`, `id`, `id:string` |
+| `09_TFT` | `C_ClearDispo` | `UR_Konto`, `account`, `account:string`, `executee`, `executor`, `id`, `id:string` |
 | `09_TFT` | `C_MultiBulkTransfer` | `UR_Konto`, `account`, `account:string`, `id`, `id:string` |
 | `09_TFT` | `C_MultiTransfer` | `UR_Konto`, `account`, `account:string`, `id`, `id:string`, `receiver` |
 | `09_TFT` | `C_Transfer` | `UR_Konto`, `account`, `account:string`, `id`, `id:string`, `receiver`, `sender` |
@@ -150,7 +150,7 @@
 | `09_TFT` | `P|A_Define` | — |
 | `09_TFT` | `P|A_RemoveIMP` | — |
 | `09_TFT` | `P|A_SetIMP` | — |
-| `10_ATSU` | `AA_RemoveSecondary` | `UR_Konto`, `account`, `account:string`, `id`, `id:string`, `receiver`, `sender` |
+| `10_ATSU` | `AA_RemoveSecondary` | `UR_Konto`, `account`, `account:string`, `executor`, `id`, `id:string`, `receiver`, `sender` |
 | `10_ATSU` | `A_KickStart` | `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `receiver`, `sender` |
 | `10_ATSU` | `CC_RemoveSecondary` | `UR_Konto`, `UR_OwnerKonto`, `account`, `account:string`, `ats`, `id`, `id:string`, `receiver`, `sender` |
 | `10_ATSU` | `C_Coil` | `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `receiver`, `sender` |
@@ -204,7 +204,7 @@
 | `11_VST` | `P|A_Define` | — |
 | `11_VST` | `P|A_RemoveIMP` | — |
 | `11_VST` | `P|A_SetIMP` | — |
-| `12_LIQUID` | `A_MigrateLiquidFunds` | — |
+| `12_LIQUID` | `A_MigrateLiquidFunds` | `account:string`, `executor` |
 | `12_LIQUID` | `C_UnwrapStoa` | `UR_Konto`, `account`, `account:string`, `id`, `id:string`, `receiver`, `sender` |
 | `12_LIQUID` | `C_UnwrapUrStoa` | `UR_Konto`, `account`, `account:string`, `id`, `id:string`, `receiver`, `sender` |
 | `12_LIQUID` | `C_WrapStoa` | `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `receiver`, `sender` |
@@ -229,12 +229,12 @@
 | `14_SWPT` | `P|A_Define` | — |
 | `14_SWPT` | `P|A_RemoveIMP` | — |
 | `14_SWPT` | `P|A_SetIMP` | — |
-| `15_SWP` | `A_DefinePrimordialPool` | — |
-| `15_SWP` | `A_RotatePrincipal` | — |
-| `15_SWP` | `A_ToggleAsymetricLiquidityAddition` | `UR_Konto`, `account:string`, `id`, `id:string` |
-| `15_SWP` | `A_UpdateLimit` | — |
-| `15_SWP` | `A_UpdateLiquidBoost` | — |
-| `15_SWP` | `A_UpdatePrincipal` | — |
+| `15_SWP` | `A_DefinePrimordialPool` | `account:string`, `executor` |
+| `15_SWP` | `A_RotatePrincipal` | `account:string`, `executor` |
+| `15_SWP` | `A_ToggleAsymetricLiquidityAddition` | `UR_Konto`, `account:string`, `executor`, `id`, `id:string` |
+| `15_SWP` | `A_UpdateLimit` | `account:string`, `executor` |
+| `15_SWP` | `A_UpdateLiquidBoost` | `account:string`, `executor` |
+| `15_SWP` | `A_UpdatePrincipal` | `account:string`, `executor` |
 | `15_SWP` | `C_ChangeOwnership` | `UR_OwnerKonto`, `account:string`, `swpair`, `swpair:string` |
 | `15_SWP` | `C_EnableFrozenLP` | `UR_Konto`, `UR_OwnerKonto`, `account`, `account:string`, `dptf`, `id`, `id:string`, `main-dptf`, `secondary-dptf`, `swpair`, `swpair:string` |
 | `15_SWP` | `C_EnableSleepingLP` | `UR_Konto`, `UR_OwnerKonto`, `account`, `account:string`, `dptf`, `id`, `id:string`, `main-dptf`, `secondary-dpof`, `swpair`, `swpair:string` |
@@ -252,7 +252,7 @@
 | `15_SWP` | `P|A_Define` | — |
 | `15_SWP` | `P|A_RemoveIMP` | — |
 | `15_SWP` | `P|A_SetIMP` | — |
-| `16_SWPI` | `A_RebuildGraph` | — |
+| `16_SWPI` | `A_RebuildGraph` | `account:string`, `executor` |
 | `16_SWPI` | `C_Issue` | `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `receiver`, `sender` |
 | `16_SWPI` | `P|A_Add` | — |
 | `16_SWPI` | `P|A_AddIMP` | — |
@@ -301,21 +301,21 @@
 | `20_MTX-SWP` | `P|A_Define` | — |
 | `20_MTX-SWP` | `P|A_RemoveIMP` | — |
 | `20_MTX-SWP` | `P|A_SetIMP` | — |
-| `21_CODEX` | `A_RegisterCodexIdentity` | — |
-| `21_CODEX` | `C_RecordArweaveUpload` | — |
+| `21_CODEX` | `A_RegisterCodexIdentity` | `account:string`, `executor` |
+| `21_CODEX` | `C_RecordArweaveUpload` | `account:string`, `executor` |
 | `21_CODEX` | `C_RegisterStoicTag` | `account-address`, `account:string` |
 | `21_CODEX` | `C_ReleaseStoicTag` | `account-address`, `account:string` |
-| `21_CODEX` | `C_RotateCodexGuard` | — |
+| `21_CODEX` | `C_RotateCodexGuard` | `account:string`, `executor` |
 | `21_CODEX` | `P|A_Add` | — |
 | `21_CODEX` | `P|A_AddIMP` | — |
 | `21_CODEX` | `P|A_Define` | — |
 | `21_CODEX` | `P|A_RemoveIMP` | — |
 | `21_CODEX` | `P|A_SetIMP` | — |
-| `22_PYTHIA` | `A_Flush` | — |
-| `22_PYTHIA` | `A_LinkDualApiKey` | — |
-| `22_PYTHIA` | `A_RevokeDualLink` | — |
-| `22_PYTHIA` | `A_UpdateDeployPrice` | — |
-| `22_PYTHIA` | `A_UpdateRenamePrice` | — |
+| `22_PYTHIA` | `A_Flush` | `account:string`, `executor` |
+| `22_PYTHIA` | `A_LinkDualApiKey` | `account:string`, `executor` |
+| `22_PYTHIA` | `A_RevokeDualLink` | `account:string`, `executor` |
+| `22_PYTHIA` | `A_UpdateDeployPrice` | `account:string`, `executor` |
+| `22_PYTHIA` | `A_UpdateRenamePrice` | `account:string`, `executor` |
 | `22_PYTHIA` | `C_DeployApolloPythiaApiKey` | `account:string`, `owner-account` |
 | `22_PYTHIA` | `C_LinkDualApiKey` | `account:string`, `owner-account` |
 | `22_PYTHIA` | `C_RevokeDualLink` | `account:string`, `owner-account` |
@@ -325,7 +325,7 @@
 | `22_PYTHIA` | `P|A_Define` | — |
 | `22_PYTHIA` | `P|A_RemoveIMP` | — |
 | `22_PYTHIA` | `P|A_SetIMP` | — |
-| `01_TS01-A` | `ATS|AA_RemoveSecondary` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `id`, `id:string`, `patron`, `receiver`, `sender` |
+| `01_TS01-A` | `ATS|AA_RemoveSecondary` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `executor`, `id`, `id:string`, `patron`, `receiver`, `sender` |
 | `01_TS01-A` | `ATS|A_KickStart` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `patron`, `receiver`, `sender` |
 | `01_TS01-A` | `BRD|A_Live` | `account:string`, `executor` |
 | `01_TS01-A` | `BRD|A_SetFlag` | `account:string`, `executor` |
@@ -340,24 +340,24 @@
 | `01_TS01-A` | `DALOS|A_ToggleOAPU` | `account:string`, `executor` |
 | `01_TS01-A` | `DALOS|A_UpdatePublicKey` | — |
 | `01_TS01-A` | `DALOS|A_UpdateUsagePrice` | `account:string`, `executor` |
-| `01_TS01-A` | `DPOF|A_DeployAccount` | `DALOS|SC_NAME`, `account:string`, `patron` |
-| `01_TS01-A` | `DPTF|A_DeployAccount` | `DALOS|SC_NAME`, `account:string`, `patron` |
-| `01_TS01-A` | `DPTF|A_UpdateTreasuryDispoParameters` | — |
-| `01_TS01-A` | `DPTF|A_WipeTreasuryDebt` | `UR_Konto`, `account:string`, `client`, `id`, `id:string` |
-| `01_TS01-A` | `DPTF|A_WipeTreasuryDebtPartial` | `UR_Konto`, `account:string`, `client`, `id`, `id:string` |
-| `01_TS01-A` | `LIQUID|A_MigrateLiquidFunds` | — |
-| `01_TS01-A` | `ORBR|A_Fuel` | `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `receiver`, `sender` |
+| `01_TS01-A` | `DPOF|A_DeployAccount` | `DALOS|SC_NAME`, `account:string`, `executor`, `patron` |
+| `01_TS01-A` | `DPTF|A_DeployAccount` | `DALOS|SC_NAME`, `account:string`, `executor`, `patron` |
+| `01_TS01-A` | `DPTF|A_UpdateTreasuryDispoParameters` | `account:string`, `executor` |
+| `01_TS01-A` | `DPTF|A_WipeTreasuryDebt` | `UR_Konto`, `account:string`, `client`, `executor`, `id`, `id:string` |
+| `01_TS01-A` | `DPTF|A_WipeTreasuryDebtPartial` | `UR_Konto`, `account:string`, `client`, `executor`, `id`, `id:string` |
+| `01_TS01-A` | `LIQUID|A_MigrateLiquidFunds` | `account:string`, `executor` |
+| `01_TS01-A` | `ORBR|A_Fuel` | `UR_Konto`, `account`, `account:string`, `client`, `executor`, `id`, `id:string`, `receiver`, `sender` |
 | `01_TS01-A` | `P|A_Add` | — |
 | `01_TS01-A` | `P|A_AddIMP` | — |
 | `01_TS01-A` | `P|A_Define` | — |
 | `01_TS01-A` | `P|A_RemoveIMP` | — |
 | `01_TS01-A` | `P|A_SetIMP` | — |
-| `01_TS01-A` | `SWP|A_DefinePrimordialPool` | — |
-| `01_TS01-A` | `SWP|A_RotatePrincipal` | — |
-| `01_TS01-A` | `SWP|A_ToggleAsymetricLiquidityAddition` | `UR_Konto`, `account:string`, `id`, `id:string` |
-| `01_TS01-A` | `SWP|A_UpdateLimit` | — |
-| `01_TS01-A` | `SWP|A_UpdateLiquidBoost` | — |
-| `01_TS01-A` | `SWP|A_UpdatePrincipal` | — |
+| `01_TS01-A` | `SWP|A_DefinePrimordialPool` | `account:string`, `executor` |
+| `01_TS01-A` | `SWP|A_RotatePrincipal` | `account:string`, `executor` |
+| `01_TS01-A` | `SWP|A_ToggleAsymetricLiquidityAddition` | `UR_Konto`, `account:string`, `executor`, `id`, `id:string` |
+| `01_TS01-A` | `SWP|A_UpdateLimit` | `account:string`, `executor` |
+| `01_TS01-A` | `SWP|A_UpdateLiquidBoost` | `account:string`, `executor` |
+| `01_TS01-A` | `SWP|A_UpdatePrincipal` | `account:string`, `executor` |
 | `02_TS01-C1` | `DALOS|C_ControlSmartAccount` | `DALOS|SC_NAME`, `account`, `account:string`, `patron` |
 | `02_TS01-C1` | `DALOS|C_DeploySmartAccount` | `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `receiver`, `sender` |
 | `02_TS01-C1` | `DALOS|C_DeployStandardAccount` | `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `receiver`, `sender` |
@@ -372,7 +372,7 @@
 | `02_TS01-C1` | `DPOF|C_BulkTransfer` | `DALOS|SC_NAME`, `account:string`, `patron`, `sender` |
 | `02_TS01-C1` | `DPOF|C_Burn` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `id`, `id:string`, `patron` |
 | `02_TS01-C1` | `DPOF|C_Control` | `DALOS|SC_NAME`, `UR_Konto`, `account:string`, `id`, `id:string`, `patron` |
-| `02_TS01-C1` | `DPOF|C_DeployAccount` | `DALOS|SC_NAME`, `account`, `account:string`, `patron` |
+| `02_TS01-C1` | `DPOF|C_DeployAccount` | `DALOS|SC_NAME`, `account:string`, `executor`, `patron` |
 | `02_TS01-C1` | `DPOF|C_Issue` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `patron`, `receiver`, `sender` |
 | `02_TS01-C1` | `DPOF|C_Mint` | `DALOS|SC_NAME`, `account:string`, `client`, `patron` |
 | `02_TS01-C1` | `DPOF|C_MoveCreateRole` | `DALOS|SC_NAME`, `UR_Konto`, `account:string`, `id`, `id:string`, `patron` |
@@ -391,9 +391,10 @@
 | `02_TS01-C1` | `DPOF|C_WipeSlim` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `id`, `id:string`, `patron` |
 | `02_TS01-C1` | `DPTF|C_BulkTransfer` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `id`, `id:string`, `patron` |
 | `02_TS01-C1` | `DPTF|C_Burn` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `id`, `id:string`, `patron` |
-| `02_TS01-C1` | `DPTF|C_ClearDispo` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `id`, `id:string`, `patron` |
+| `02_TS01-C1` | `DPTF|C_ClearDispo` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `executee`, `executor`, `id`, `id:string`, `patron` |
+| `02_TS01-C1` | `DPTF|C_ClearDispoForeign` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `executee`, `executor`, `id`, `id:string`, `patron` |
 | `02_TS01-C1` | `DPTF|C_Control` | `DALOS|SC_NAME`, `UR_Konto`, `account:string`, `id`, `id:string`, `patron` |
-| `02_TS01-C1` | `DPTF|C_DeployAccount` | `DALOS|SC_NAME`, `account`, `account:string`, `patron` |
+| `02_TS01-C1` | `DPTF|C_DeployAccount` | `DALOS|SC_NAME`, `account:string`, `executor`, `patron` |
 | `02_TS01-C1` | `DPTF|C_DonateFees` | `DALOS|SC_NAME`, `UR_Konto`, `account:string`, `id`, `id:string`, `patron` |
 | `02_TS01-C1` | `DPTF|C_Issue` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `patron`, `receiver`, `sender` |
 | `02_TS01-C1` | `DPTF|C_Mint` | `DALOS|SC_NAME`, `UR_Konto`, `account:string`, `client`, `id`, `id:string`, `patron` |
@@ -555,16 +556,16 @@
 | `05_TS01-P` | `SWP|C_IssueStablePool` | — |
 | `05_TS01-P` | `SWP|C_IssueStandardPool` | — |
 | `05_TS01-P` | `SWP|C_IssueWeightedPool` | — |
-| `06_TS01-C4` | `CODEX|A_RegisterCodexIdentity` | — |
-| `06_TS01-C4` | `CODEX|C_RecordArweaveUpload` | `DALOS|SC_NAME`, `account:string`, `patron` |
+| `06_TS01-C4` | `CODEX|A_RegisterCodexIdentity` | `account:string`, `executor` |
+| `06_TS01-C4` | `CODEX|C_RecordArweaveUpload` | `DALOS|SC_NAME`, `account:string`, `executor`, `patron` |
 | `06_TS01-C4` | `CODEX|C_RegisterStoicTag` | `account-address`, `account:string` |
 | `06_TS01-C4` | `CODEX|C_ReleaseStoicTag` | `DALOS|SC_NAME`, `account-address`, `account:string`, `patron` |
-| `06_TS01-C4` | `CODEX|C_RotateCodexGuard` | `DALOS|SC_NAME`, `account:string`, `patron` |
-| `06_TS01-C4` | `PYTHIA|A_Flush` | — |
-| `06_TS01-C4` | `PYTHIA|A_Link` | — |
-| `06_TS01-C4` | `PYTHIA|A_RevokeLink` | — |
-| `06_TS01-C4` | `PYTHIA|A_UpdateDeployPrice` | — |
-| `06_TS01-C4` | `PYTHIA|A_UpdateRenamePrice` | — |
+| `06_TS01-C4` | `CODEX|C_RotateCodexGuard` | `DALOS|SC_NAME`, `account:string`, `executor`, `patron` |
+| `06_TS01-C4` | `PYTHIA|A_Flush` | `account:string`, `executor` |
+| `06_TS01-C4` | `PYTHIA|A_Link` | `account:string`, `executor` |
+| `06_TS01-C4` | `PYTHIA|A_RevokeLink` | `account:string`, `executor` |
+| `06_TS01-C4` | `PYTHIA|A_UpdateDeployPrice` | `account:string`, `executor` |
+| `06_TS01-C4` | `PYTHIA|A_UpdateRenamePrice` | `account:string`, `executor` |
 | `06_TS01-C4` | `PYTHIA|C_DeployApiKey` | `account:string`, `owner-account` |
 | `06_TS01-C4` | `PYTHIA|C_Link` | `account:string`, `owner-account` |
 | `06_TS01-C4` | `PYTHIA|C_RevokeLink` | `DALOS|SC_NAME`, `account:string`, `owner-account`, `patron` |
@@ -1021,7 +1022,7 @@
 | `04_TS02-C3` | `P|A_RemoveIMP` | — |
 | `04_TS02-C3` | `P|A_SetIMP` | — |
 | `05_TS02-DPAD` | `A_DefinePrice` | — |
-| `05_TS02-DPAD` | `A_RegisterAssetToLaunchpad` | `DALOS|SC_NAME`, `account:string`, `patron` |
+| `05_TS02-DPAD` | `A_RegisterAssetToLaunchpad` | `DALOS|SC_NAME`, `account:string`, `executor`, `patron` |
 | `05_TS02-DPAD` | `A_ToggleOpenForBusiness` | — |
 | `05_TS02-DPAD` | `A_ToggleRetrieval` | — |
 | `05_TS02-DPAD` | `DEMIPAD|C_Deposit` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `patron`, `receiver`, `sender` |
@@ -1136,7 +1137,7 @@
 | `04_AQP-BOOT` | `C_Step8_IssueFvtEntities` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `owner-konto`, `patron`, `receiver`, `sender` |
 | `04_AQP-BOOT` | `C_Step9_AddFvtScoreEntities` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `client`, `fvt-owner`, `id`, `id:string`, `owner-konto`, `patron`, `receiver`, `sender` |
 | `03_CADUCEUS` | `A_DeployBridgeSmartAccount` | `UR_Konto`, `account`, `account:string`, `client`, `id`, `id:string`, `receiver`, `sender` |
-| `03_CADUCEUS` | `A_ProvisionBridgeDptfRoles` | `DALOS|SC_NAME`, `UR_Konto`, `account:string`, `id`, `id:string`, `patron` |
+| `03_CADUCEUS` | `A_ProvisionBridgeDptfRoles` | `DALOS|SC_NAME`, `UR_Konto`, `account:string`, `executor`, `id`, `id:string`, `patron` |
 | `03_CADUCEUS` | `A_SetBridgeActive` | — |
 | `03_CADUCEUS` | `A_SetBridgeConfig` | — |
 | `03_CADUCEUS` | `C_BurnFromBridgeSignal` | `DALOS|SC_NAME`, `UR_Konto`, `account`, `account:string`, `id`, `id:string`, `patron` |

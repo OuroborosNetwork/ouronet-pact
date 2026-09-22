@@ -59,7 +59,7 @@
     (defun DPTF|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
     (defun DPTF|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer))
     ;;
-    (defun DPTF|C_Issue:list (patron:string account:string name:[string] ticker:[string] decimals:[integer] can-change-owner:[bool] can-upgrade:[bool] can-add-special-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool]))
+    (defun DPTF|C_Issue:list (patron:string executor:string name:[string] ticker:[string] decimals:[integer] can-change-owner:[bool] can-upgrade:[bool] can-add-special-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool]))
     (defun DPTF|C_RotateOwnership (patron:string executor:string executee:string id:string))
     (defun DPTF|C_Control (patron:string executor:string id:string cu:bool cco:bool casr:bool cf:bool cw:bool cp:bool))
     (defun DPTF|C_TogglePause (patron:string executor:string id:string toggle:bool))
@@ -73,7 +73,7 @@
     (defun DPTF|C_ResetFeeTarget (patron:string executor:string id:string))
     (defun DPTF|C_ToggleFeeLock (patron:string executor:string id:string toggle:bool))
         ;;
-    (defun DPTF|C_DeployAccount (patron:string id:string account:string))
+    (defun DPTF|C_DeployAccount (patron:string executor:string id:string))
     (defun DPTF|C_ToggleFreezeAccount (patron:string executor:string executee:string id:string toggle:bool))
     (defun DPTF|C_ToggleBurnRole (patron:string executor:string executee:string id:string toggle:bool))
     (defun DPTF|C_ToggleMintRole (patron:string executor:string executee:string id:string toggle:bool))
@@ -97,12 +97,12 @@
     (defun DPOF|C_UpdatePendingBranding (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}]))
     (defun DPOF|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer))
     ;;
-    (defun DPOF|C_Issue:list (patron:string account:string name:[string] ticker:[string] decimals:[integer] can-upgrade:[bool] can-change-owner:[bool] can-add-special-role:[bool] can-transfer-oft-create-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool]))
+    (defun DPOF|C_Issue:list (patron:string executor:string name:[string] ticker:[string] decimals:[integer] can-upgrade:[bool] can-change-owner:[bool] can-add-special-role:[bool] can-transfer-oft-create-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool]))
     (defun DPOF|C_RotateOwnership (patron:string executor:string executee:string id:string))
     (defun DPOF|C_Control (patron:string executor:string id:string cu:bool cco:bool casr:bool ctocr:bool cf:bool cw:bool cp:bool sg:bool))
     (defun DPOF|C_TogglePause (patron:string executor:string id:string toggle:bool))
         ;;
-    (defun DPOF|C_DeployAccount (patron:string id:string account:string))
+    (defun DPOF|C_DeployAccount (patron:string executor:string id:string))
     (defun DPOF|C_ToggleFreezeAccount (patron:string executor:string executee:string id:string toggle:bool))
     (defun DPOF|C_ToggleAddQuantityRole (patron:string executor:string executee:string id:string toggle:bool))
     (defun DPOF|C_ToggleBurnRole (patron:string executor:string executee:string id:string toggle:bool))
@@ -357,7 +357,25 @@
         )
     )
     (defun DALOS|C_DeploySmartAccount (executor:string guard:guard stoa:string sovereign:string public:string)
-        @doc "Deploys a Standard Ouronet Account, taxing for STOA"
+        @doc "Deploys a Smart Ouronet Account, taxing for STOA. CORRECTED 2026-09-22: this @doc said \"Standard\", a copy-paste from its twin. \
+            \ \
+            \ Executor: SELF-PROVING, the base case of the attribution rule (owner ruling, \
+            \ 2026-09-21). The executor IS the account being created, so its ownership cannot be \
+            \ read from a table -- there is no row yet, and there is no earlier call in which it \
+            \ could have been recorded. It does not need to be. The <guard> the account will be \
+            \ governed by travels in this same call, and DALOS|C>DEPLOY-SMART-OURONET-ACCOUNT \
+            \ enforces it through U|G::UEV_Any -- an enforce-ONE over \
+            \ [guard, (create-capability-guard (GOV))] -- FIRST, before the glyph and format \
+            \ checks. Same proof UEV_SmartAccOwn performs on an existing account, same key. The \
+            \ second list element is the governance door genesis uses to make the very first \
+            \ account, when not even a guard-holder exists yet. \
+            \ \
+            \ That the UEV_Any runs FIRST is what makes it a proof rather than a check some other \
+            \ refusal could shadow, and <<DALOS-G4b>> pins exactly that by pairing a held guard \
+            \ (format refusal) against an unheld one (guard refusal). \
+            \ (patron/executor canon 2.2; route named at 02_TS01-C1's own turn, 2026-09-22 -- \
+            \ fifth and sixth time check 7 has caught a cascade-added executor whose \
+            \ justification was never written down.)"
         (with-capability (P|TS)
             (let
                 (
@@ -377,7 +395,25 @@
         )
     )
     (defun DALOS|C_DeployStandardAccount (executor:string guard:guard stoa:string public:string)
-        @doc "Deploys a Standard Ouronet Account, taxing for STOA"
+        @doc "Deploys a Standard Ouronet Account, taxing for STOA. \
+            \ \
+            \ Executor: SELF-PROVING, the base case of the attribution rule (owner ruling, \
+            \ 2026-09-21). The executor IS the account being created, so its ownership cannot be \
+            \ read from a table -- there is no row yet, and there is no earlier call in which it \
+            \ could have been recorded. It does not need to be. The <guard> the account will be \
+            \ governed by travels in this same call, and DALOS|C>DEPLOY-STANDARD-OURONET-ACCOUNT \
+            \ enforces it through U|G::UEV_Any -- an enforce-ONE over \
+            \ [guard, (create-capability-guard (GOV))] -- FIRST, before the glyph and format \
+            \ checks. Same proof UEV_StandardAccOwn performs on an existing account, same key. The \
+            \ second list element is the governance door genesis uses to make the very first \
+            \ account, when not even a guard-holder exists yet. \
+            \ \
+            \ That the UEV_Any runs FIRST is what makes it a proof rather than a check some other \
+            \ refusal could shadow, and <<DALOS-G4b>> pins exactly that by pairing a held guard \
+            \ (format refusal) against an unheld one (guard refusal). \
+            \ (patron/executor canon 2.2; route named at 02_TS01-C1's own turn, 2026-09-22 -- \
+            \ fifth and sixth time check 7 has caught a cascade-added executor whose \
+            \ justification was never written down.)"
         (with-capability (P|TS)
             (let
                 (
@@ -457,7 +493,20 @@
     )
     (defun DALOS|C_UpdateEliteAccount (patron:string account:string)
         @doc "Manualy Updates the Demiourgos Elite Account for one Ouronet Account in case of emergency. \
-        \ Can be used without account ownership by anyone."
+        \ Can be used without account ownership by anyone. \
+        \ \
+        \ EXECUTORLESS BY DESIGN (patron/executor canon 2.2, 2026-09-22), and the line above is \
+        \ the reason. Verified rather than taken on trust: ELITE::XE_UpdateEliteSingle enforces \
+        \ NOTHING on the named account -- only P|UEV_IMC and P|ELITE|CALLER, both module-caller \
+        \ gates. The op recomputes DERIVED elite data from state already on chain, is idempotent, \
+        \ and is deliberately permissionless so anyone can repair a stale row. \
+        \ \
+        \ So the accounts here are SUBJECTS, not actors, and the only authenticated account in \
+        \ the call is <patron>, who pays. Renaming a subject to `executor` would have \
+        \ manufactured attribution out of a parameter nobody checks -- which the canon rates \
+        \ WORSE than having none, because the returned message would then name whoever the \
+        \ caller typed. Read this function's output as \"this account was refreshed\", never as \
+        \ \"this account refreshed it\"."
         (with-capability (P|TS)
             (let
                 (
@@ -476,7 +525,20 @@
     )
     (defun DALOS|C_UpdateEliteAccountSquared (patron:string sender:string receiver:string)
         @doc "Manualy Updates the Demiourgos Elite Account for two Ouronet Accounts in case of emergency. \
-        \ Can be used without account ownership by anyone."
+        \ Can be used without account ownership by anyone. \
+        \ \
+        \ EXECUTORLESS BY DESIGN (patron/executor canon 2.2, 2026-09-22), and the line above is \
+        \ the reason. Verified rather than taken on trust: ELITE::XE_UpdateEliteSingle enforces \
+        \ NOTHING on the named account -- only P|UEV_IMC and P|ELITE|CALLER, both module-caller \
+        \ gates. The op recomputes DERIVED elite data from state already on chain, is idempotent, \
+        \ and is deliberately permissionless so anyone can repair a stale row. \
+        \ \
+        \ So the accounts here are SUBJECTS, not actors, and the only authenticated account in \
+        \ the call is <patron>, who pays. Renaming a subject to `executor` would have \
+        \ manufactured attribution out of a parameter nobody checks -- which the canon rates \
+        \ WORSE than having none, because the returned message would then name whoever the \
+        \ caller typed. Read this function's output as \"this account was refreshed\", never as \
+        \ \"this account refreshed it\"."
         (with-capability (P|TS)
             (let
                 (
@@ -525,7 +587,7 @@
         )
     )
     ;;
-    (defun DPTF|C_Issue:list (patron:string account:string name:[string] ticker:[string] decimals:[integer] can-change-owner:[bool] can-upgrade:[bool] can-add-special-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool])
+    (defun DPTF|C_Issue:list (patron:string executor:string name:[string] ticker:[string] decimals:[integer] can-change-owner:[bool] can-upgrade:[bool] can-add-special-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool])
         @doc "Issues a new DPTF Token in Bulk, can also be used to issue a single DPTF \
         \ Outputs a string list with the issed DPTF IDs"
         (with-capability (P|TS)
@@ -535,7 +597,7 @@
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-DPTF::C_Issue patron account name ticker decimals can-change-owner can-upgrade can-add-special-role can-freeze can-wipe can-pause)
+                        (ref-DPTF::C_Issue patron executor name ticker decimals can-change-owner can-upgrade can-add-special-role can-freeze can-wipe can-pause)
                     )
                 )
                 (ref-IGNIS::XE_CollectIgnis patron ico)
@@ -741,7 +803,7 @@
         )
     )
     ;;
-    (defun DPTF|C_DeployAccount (patron:string id:string account:string)
+    (defun DPTF|C_DeployAccount (patron:string executor:string id:string)
         @doc "Deploys a DPTF Account. Self-service activation only - the caller must own \
             \ <account> (DALOS|CAP_EnforceAccountOwnership). System/infrastructure account \
             \ setup (a smart account governed by another module) must use the admin variant \
@@ -750,7 +812,19 @@
             \ builds no cumulator and was being called from inside its own module, which is \
             \ what a C_ may never be. The BILLING is unchanged and stays here -- a user who \
             \ activates their own token account PAYS, even though the account is normally \
-            \ created automatically and they need not do this at all."
+            \ created automatically and they need not do this at all. \
+            \ \
+            \ A RENAME AND A MOVE, not an addition (patron/executor canon 2.2, 2026-09-22): \
+            \ <account> was ALREADY the executor. The line above enforces \
+            \ CAP_EnforceAccountOwnership on it directly, which is the whole difference between this \
+            \ function and its admin twin. \
+            \ \
+            \ CONTRAST WITH DPTF|A_DeployAccount IN 01_TS01-A, WHICH IS THE POINT. Same parameter \
+            \ name, same position, OPPOSITE role -- there <account> is unchecked by design and \
+            \ became the EXECUTEE; here it is checked and became the EXECUTOR. Nothing about the \
+            \ name or the shape distinguishes them. The only thing that does is whether ownership \
+            \ is enforced on it, which is the test the canon actually asks and the reason a blind \
+            \ rename across both would have got one of them exactly backwards."
         (with-capability (P|TS)
             (let
                 (
@@ -758,12 +832,12 @@
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
-                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
-                (ref-DALOS::CAP_EnforceAccountOwnership account)
-                (ref-DPTF::XBv_DeployAccount id account)
+                (ref-DALOS::CAP_EnforceAccountOwnership executor)
+                (ref-DPTF::XBv_DeployAccount id executor)
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPTF::URCi_DeployAccount account)
+                    (ref-DPTF::URCi_DeployAccount executor)
                 )
                 (format "DPTF {} added to {} Ouronet Account succesfully!" [id sa])
             )
@@ -1128,7 +1202,7 @@
         )
     )
     ;;
-    (defun DPOF|C_Issue:list (patron:string account:string name:[string] ticker:[string] decimals:[integer] can-upgrade:[bool] can-change-owner:[bool] can-add-special-role:[bool] can-transfer-oft-create-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool])
+    (defun DPOF|C_Issue:list (patron:string executor:string name:[string] ticker:[string] decimals:[integer] can-upgrade:[bool] can-change-owner:[bool] can-add-special-role:[bool] can-transfer-oft-create-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool])
         @doc "Similar to its DPTF Variant"
         (with-capability (P|TS)
             (let
@@ -1137,7 +1211,7 @@
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-DPOF::C_Issue patron account name ticker decimals can-upgrade can-change-owner can-add-special-role can-transfer-oft-create-role can-freeze can-wipe can-pause)
+                        (ref-DPOF::C_Issue patron executor name ticker decimals can-upgrade can-change-owner can-add-special-role can-transfer-oft-create-role can-freeze can-wipe can-pause)
                     )
                 )
                 (ref-IGNIS::XE_CollectIgnis patron ico)
@@ -1196,11 +1270,23 @@
         )
     )
     ;;
-    (defun DPOF|C_DeployAccount (patron:string id:string account:string)
+    (defun DPOF|C_DeployAccount (patron:string executor:string id:string)
         @doc "Similar to its DPTF Variant. Self-service activation only - the caller must \
             \ own <account> (DALOS|CAP_EnforceAccountOwnership). System/infrastructure \
             \ account setup (a smart account governed by another module) must use the \
-            \ admin variant DPOF|A_DeployAccount in TS01-A instead."
+            \ admin variant DPOF|A_DeployAccount in TS01-A instead. \
+            \ \
+            \ A RENAME AND A MOVE, not an addition (patron/executor canon 2.2, 2026-09-22): \
+            \ <account> was ALREADY the executor. The line above enforces \
+            \ CAP_EnforceAccountOwnership on it directly, which is the whole difference between this \
+            \ function and its admin twin. \
+            \ \
+            \ CONTRAST WITH DPOF|A_DeployAccount IN 01_TS01-A, WHICH IS THE POINT. Same parameter \
+            \ name, same position, OPPOSITE role -- there <account> is unchecked by design and \
+            \ became the EXECUTEE; here it is checked and became the EXECUTOR. Nothing about the \
+            \ name or the shape distinguishes them. The only thing that does is whether ownership \
+            \ is enforced on it, which is the test the canon actually asks and the reason a blind \
+            \ rename across both would have got one of them exactly backwards."
         (with-capability (P|TS)
             (let
                 (
@@ -1208,12 +1294,12 @@
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
                     (ref-DALOS:module{OuronetDalosV2} DALOS)
-                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
-                (ref-DALOS::CAP_EnforceAccountOwnership account)
-                (ref-DPOF::XBv_DeployAccount id account)
+                (ref-DALOS::CAP_EnforceAccountOwnership executor)
+                (ref-DPOF::XBv_DeployAccount id executor)
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DPOF::URCi_DeployAccount account)
+                    (ref-DPOF::URCi_DeployAccount executor)
                 )
                 (format "Succesfully deployed a New DPOF Account for DPOF {} on Ouronet Account {}" [id sa])
             )

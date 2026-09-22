@@ -978,3 +978,115 @@ an unheld one.
 `@doc`s, and both annotated that `executor = patron` is a considered choice there and must become a
 real parameter at their turn.
 
+---
+
+### 02_TS01-C1.pact — COMPLETE (61 of 61 entrypoints, 2026-09-22)
+
+**Fifty-five of sixty-one arrived already swept**, carried in by the core cascades. Six needed
+work, and two of those turned out not to need an executor at all.
+
+---
+
+### THE SAME PARAMETER, THE OPPOSITE ROLE — settled by one question
+
+`DPTF|C_DeployAccount` and its admin twin `DPTF|A_DeployAccount` (module 19) have **the same
+parameter name in the same position**, and it resolves to opposite sides of the canon:
+
+| | `account` is… | because |
+|---|---|---|
+| `TS01-A::DPTF\|A_DeployAccount` | the **EXECUTEE** | nothing checks it — the door exists so an admin can deploy for a smart account nobody can hold the guard of (`#N2`) |
+| `TS01-C1::DPTF\|C_DeployAccount` | the **EXECUTOR** | `CAP_EnforceAccountOwnership` runs on it directly — self-service activation |
+
+Nothing about the name, the type or the position distinguishes them. **The only thing that does is
+whether ownership is enforced on it** — which is the question the canon actually asks, and the
+reason a blind rename across both would have got one of them exactly backwards. Both `@doc`s now
+name the other as the contrast.
+
+**The client variant was a rename AND a move**, `(patron id account)` → `(patron executor id)`.
+Arity is unchanged, so **`_callarity.py` sees nothing** — this is the "right arity, WRONG executor"
+shape the migration tooling was built around, and the 15 call sites had to be swapped by hand.
+
+---
+
+### TWO ENTRYPOINTS THAT MUST NOT HAVE AN EXECUTOR
+
+`DALOS|C_UpdateEliteAccount` and `C_UpdateEliteAccountSquared` say in their own `@doc`s: *"Can be
+used without account ownership by anyone."* **That is true, and it was verified rather than
+believed** — `ELITE::XE_UpdateEliteSingle` enforces nothing on the account, only `P|UEV_IMC` and
+`P|ELITE|CALLER`, both module-caller gates. The op recomputes *derived* elite data from state
+already on chain, is idempotent, and is deliberately permissionless so anyone can repair a stale
+row.
+
+So the accounts in those signatures are **subjects, not actors**, and the only authenticated
+account in the call is the `patron`, who pays. Renaming a subject to `executor` would have
+**manufactured attribution out of a parameter nobody checks** — which the canon rates *worse* than
+having none, because the returned message would then name whoever the caller typed. Registered
+EXECUTORLESS; both `@doc`s now say to read the output as *"this account was refreshed"*, never as
+*"this account refreshed it"*.
+
+> The sweep's job is to make attribution real where it is missing. It is equally the sweep's job
+> **not to invent it where it cannot exist.**
+
+---
+
+### THE AUTH-SURFACE BASELINE WAS STALE FROM BEFORE THE SWEEP — and regenerating it is the measurement
+
+Check 5 reported `DPTF|C_DeployAccount` and `DPOF|C_DeployAccount` **WEAKENED — no longer enforces
+`['account']`**. It was a rename: the enforce is still there, on `executor`. But the tool is right
+to shout, because regenerating the baseline is exactly how a genuine weakening would be laundered.
+
+So the regeneration was **diffed before it was accepted**, entry by entry:
+
+| | |
+|---|---:|
+| entrypoints whose enforced-name set LOST something | **2** (both the renames above, each gaining `executor` in place) |
+| entrypoints that GAINED enforced names | **48** |
+| entrypoints reaching at least one ownership enforce | **816 → 846** |
+| entrypoints reaching NONE | **376 → 347** |
+
+**Thirty more entrypoints now reach an ownership enforce than when this programme started, and not
+one lost one.** That is the sweep's cumulative effect on the authorisation surface, measured rather
+than asserted — and it had been sitting unrecorded because the baseline had not been regenerated
+since before module 1.
+
+---
+
+### FIFTH AND SIXTH TIME CHECK 7 CAUGHT A CASCADE-ADDED EXECUTOR WITH NO JUSTIFICATION
+
+`DALOS|C_DeploySmartAccount` and `C_DeployStandardAccount` — *registered SELF-PROVING but the
+`@doc` does not name `UEV_Any`*. The route is the owner's base case and is now written into both.
+The pattern is now firm enough to state as a rule:
+
+> **An executor that arrives by interface cascade arrives without its justification.** Six
+> instances across four modules, every one found at the *receiving* module's own turn and never
+> before. Running check 7 per module is what makes that true; running it once at the end would
+> have found them all at once, with nobody left who remembered the route.
+
+**And a small correction found on the way**: `DALOS|C_DeploySmartAccount`'s `@doc` read *"Deploys a
+Standard Ouronet Account"* — a copy-paste from its twin, in the function whose whole distinction is
+that it deploys a **smart** one.
+
+**AND THE DELTA ENTRY ABOVE BROKE THE BUILD** — worth recording, because the failure is the
+tool's, not the prose's. An `@doc` I wrote for the elite pair contained
+
+```
+\ caller typed. Read this function's output as "this account was refreshed", never as \
+```
+
+An **unescaped `"` inside a Pact string simply CLOSES it**, which is perfectly legal — so
+`_docstrings.py`, which lints continuations, reported **clean**, and the module died at load with
+`Cannot find module: ouronet-ns.this`. One full gate run to find out.
+
+`scan_doc_close()` now catches it, and the invariant took two attempts:
+
+1. *"prose must not follow the closing quote"* — flagged `(defun a () @doc "plain doc" true)`,
+   a legal one-liner.
+2. **the trailing backslash is the tell**: a line that CLOSES the doc string and then ends in a
+   continuation `\` means the author believed they were still inside the string, and everything
+   between the two is now code.
+
+**Both mistakes were found by the tool's own `--selftest`, and only because that fixture carries
+DECOYS.** The first version of the detector grepped for the literal `@doc` and fired **54 times**
+— nearly all on `;;` comments that merely *mention* doc strings. In a codebase annotated this
+heavily, a detector that cannot tell code from commentary about code is not a detector.
+

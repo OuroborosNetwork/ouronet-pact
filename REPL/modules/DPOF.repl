@@ -2191,7 +2191,7 @@
             (predicted:object{OuronetInfoV2.ClientInfo} (INFO-ONE.INFO_DPOF|DeployAccount patron o coca))
             (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply patron false))
             (stoa-before:decimal (coin.get-balance (ref-DALOS::UR_AccountStoa patron)))
-            (m (ref-TS01-C1::DPOF|C_DeployAccount patron o coca))
+            (m (ref-TS01-C1::DPOF|C_DeployAccount patron coca o))
         )
         (map print
             [

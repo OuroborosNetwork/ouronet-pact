@@ -2600,10 +2600,10 @@ EliteAuryndex-ds4il5rO7vDC
                 (ref-TS01-C1::DPTF|C_ToggleMintRole ancient OuroID smart-dhvault-sc true)
                 ;;
                 ;;Setup WSTOA and STOA
-                (ref-TS01-C1::DPTF|C_DeployAccount ancient AurynID ats-sc)
-                (ref-TS01-C1::DPTF|C_DeployAccount ancient EliteAurynID ats-sc)
-                (ref-TS01-C1::DPTF|C_DeployAccount ancient WrappedStoaID liquid-sc)
-                (ref-TS01-C1::DPTF|C_DeployAccount ancient SilverStoaID liquid-sc)
+                (ref-TS01-C1::DPTF|C_DeployAccount ancient ats-sc AurynID)
+                (ref-TS01-C1::DPTF|C_DeployAccount ancient ats-sc EliteAurynID)
+                (ref-TS01-C1::DPTF|C_DeployAccount ancient liquid-sc WrappedStoaID)
+                (ref-TS01-C1::DPTF|C_DeployAccount ancient liquid-sc SilverStoaID)
                 ;;
                 (ref-TS01-C1::DPTF|C_SetFee ancient SilverStoaID -1.0)
                 (ref-TS01-C1::DPTF|C_ToggleFee ancient SilverStoaID true)
@@ -2711,8 +2711,8 @@ EliteAuryndex-ds4il5rO7vDC
                             ;;Update SWP Principal Swap Tokens
                             (ref-TS01-A::SWP|A_UpdatePrincipal SilverStoaID true)
                             (ref-TS01-A::SWP|A_UpdatePrincipal OuroID true)
-                            (ref-TS01-C1::DPTF|C_DeployAccount ancient SilverStoaID swp-sc)
-                            (ref-TS01-C1::DPTF|C_DeployAccount ancient OuroID swp-sc)
+                            (ref-TS01-C1::DPTF|C_DeployAccount ancient swp-sc SilverStoaID)
+                            (ref-TS01-C1::DPTF|C_DeployAccount ancient swp-sc OuroID)
                         ]
                     )
                 )

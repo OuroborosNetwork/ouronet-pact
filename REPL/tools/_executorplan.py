@@ -113,6 +113,19 @@ EXECUTORLESS = {
     # the right outcome: a category that exists only to explain functions that do not fit their
     # prefix is describing a naming error, not a shape.
     #
+    # THE TWO ELITE MAINTENANCE OPS, added 2026-09-22 at 02_TS01-C1's turn. Both @docs say
+    # "Can be used without account ownership by anyone", and that is TRUE, not aspirational --
+    # verified by reading ELITE::XE_UpdateEliteSingle, which enforces nothing on <account>: only
+    # P|UEV_IMC (the module-caller gate) and P|ELITE|CALLER. The op recomputes DERIVED elite data
+    # from state already on chain, is idempotent, and is deliberately permissionless so anyone can
+    # repair a stale row.
+    #
+    # So there is no actor to name. The accounts in the signature are SUBJECTS -- acted upon,
+    # needing no signature -- and the only authenticated account in the call is the patron, who
+    # pays. Renaming a subject to `executor` would have manufactured attribution out of a
+    # parameter nobody checks, which the canon rates WORSE than having none: the emitted message
+    # would name whoever the caller typed. The @docs now say this outright.
+    "DALOS|C_UpdateEliteAccount", "DALOS|C_UpdateEliteAccountSquared",
     # Left non-empty-looking on purpose. The same stale-name failure hit the PRICE SHEET, whose
     # shape-B detector went on grepping for `C_Collect*` for a day after the rename and silently
     # stopped resolving three entrypoints. A rename pass has to carry the TOOLS that name the

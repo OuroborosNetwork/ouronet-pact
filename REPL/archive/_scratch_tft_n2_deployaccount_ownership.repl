@@ -37,7 +37,7 @@
             (format "victim (lumy) already associated with AurynID before the attack? {} (expected false)" [before-assoc])
             (expect-failure
                 (format "attacker ({}) force-deploying AurynID onto victim ({})'s account must be rejected (CAP_EnforceAccountOwnership)" [byta lumy])
-                (ref-TS01-C1::DPTF|C_DeployAccount byta auryn-id lumy)
+                (ref-TS01-C1::DPTF|C_DeployAccount byta lumy auryn-id)
             )
             (format "victim (lumy) associated with AurynID AFTER the rejected attack? {} (must stay false - the rejected call must not have partially applied)" [(DPTF.UR_IzAccount auryn-id lumy)])
         ]

@@ -1,7 +1,7 @@
 ;;
 ;; REPL/_scratch_n2_swp_smartpatron_regression.repl — DALOS-audit #N2 fix regression check
 ;;
-;; [6.3]_SWP.repl:2143 does (ref-TS01-C1::DPTF|C_DeployAccount patron ROuroID smart-patron), where
+;; [6.3]_SWP.repl:2143 does (ref-TS01-C1::DPTF|C_DeployAccount patron smart-patron ROuroID), where
 ;; `smart-patron` is patron's OWN smart-account variant (same underlying principal, "Σ." prefix
 ;; instead of "Ѻ."), not a different system smart account. This should PASS the new
 ;; CAP_EnforceAccountOwnership gate naturally (self-service), unlike the DemiPad/CADUCEUS/

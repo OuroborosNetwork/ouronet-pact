@@ -3004,7 +3004,7 @@
         [
             (expect-failure "<<DPTF-G12>> N2: paying does not let you deploy a token onto someone else's account"
                 "Keyset failure (keys-all): [PK_Emma...]"
-                (ref-TS01-C1::DPTF|C_DeployAccount KST.LUMY "MOCKA-98c486052a51" KST.EMMA))
+                (ref-TS01-C1::DPTF|C_DeployAccount KST.LUMY KST.EMMA "MOCKA-98c486052a51"))
         ]
     )
     ""
@@ -3019,7 +3019,7 @@
             ;;NON-VACUITY: only the signer set changes. LUMY still pays; EMMA now consents.
             (expect "<<DPTF-G12>> ...while with the account holder's signature the identical call works"
                 true (contains "added to"
-                    (ref-TS01-C1::DPTF|C_DeployAccount KST.LUMY "MOCKA-98c486052a51" KST.EMMA)))
+                    (ref-TS01-C1::DPTF|C_DeployAccount KST.LUMY KST.EMMA "MOCKA-98c486052a51")))
         ]
     )
     ""

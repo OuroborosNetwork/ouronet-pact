@@ -2488,7 +2488,7 @@
     )
     ;;SETUP, outside the measurement window — give the smart account a reserved balance to release.
     ;;This is the same three-step hand-off `Stage_01/[6.3]_SWP.repl:2624-2629` performs.
-    (ref-TS01-C1::DPTF|C_DeployAccount patron r bj)
+    (ref-TS01-C1::DPTF|C_DeployAccount patron bj r)
     (ref-TS01-C1::DPTF|C_ToggleTransferRole patron (DPTF.UR_Konto r) bj r true)
     (ref-TS01-C1::DPTF|C_Transfer patron patron bj r 20.0 true)
     (let

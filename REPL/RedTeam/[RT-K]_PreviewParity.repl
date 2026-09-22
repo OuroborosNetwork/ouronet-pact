@@ -320,7 +320,7 @@
             (expect-failure
                 "<<RT-K-003b>> DeployAccount · EXEC   (same message -- its own UEV_id, now reachable)"
                 "does not exist"
-                (r::DPOF|C_DeployAccount KST.ANHD bad KST.EMMA))
+                (r::DPOF|C_DeployAccount KST.ANHD KST.EMMA bad))
             ;;NON-VACUITY: the guards must not have turned these into functions that always refuse.
             (expect
                 (format "<<RT-K-003c>> ...and the preview still QUOTES the real ortofungible {}" [real])
