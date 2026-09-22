@@ -163,7 +163,7 @@
         (print "--- [TX-FVT-05 · 02 · CC_StakeOrtoFungible] ---")
         (print (format "<(TS02-C3.AQP-POOL|CC_StakeOrtoFungible)> => \"{}\"" [
             (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible
-                patron pool-id owner-id beneficiary-id dpof-id [stake-nonce]
+                patron owner-id beneficiary-id pool-id dpof-id [stake-nonce]
             )
         ]))
         (print "--- [TX-FVT-05 · 03 · post-stake reads + expect] ---")
@@ -245,7 +245,7 @@
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
     (print "--- [TX-FVT-06 · 01 · CC_UnstakeOrtoFungible] ---")
     (print (format "<(TS02-C3.AQP-POOL|CC_UnstakeOrtoFungible)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|CC_UnstakeOrtoFungible patron pool-id owner-id owner-id dpof-id [stake-nonce])
+        (ref-TS02-C3::AQP-POOL|CC_UnstakeOrtoFungible patron owner-id owner-id pool-id dpof-id [stake-nonce])
     ]))
     (print "--- [TX-FVT-06 · 02 · post-unstake reads + expect] ---")
     (let
@@ -331,7 +331,7 @@
             )
             ;;==== TX-FVT-06b · 01 · owner ANHD stakes FOR foreign beneficiary EMMA ====
             (print "--- [TX-FVT-06b · 01 · stake owner=ANHD, beneficiary=EMMA] ---")
-            (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron pool-id owner-id foreign-ben dpof-id [stake-nonce])
+            (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron owner-id foreign-ben pool-id dpof-id [stake-nonce])
             (let
                 (
                     (ben-bal:decimal (ref-AQP::UR_AQP|DPOFTrackerBalance pool-id dpof-id owner-id foreign-ben stake-nonce))
@@ -383,12 +383,12 @@
                     (expect-failure
                         "<<TX-FVT-06b>> unstake naming beneficiary=owner (the OLD self-key) finds NO row → must fail"
                 "Invalid OF pool custody: pool class/dpof-id, equal nonce/amount"
-                        (ref-TS02-C3::AQP-POOL|CC_UnstakeOrtoFungible patron pool-id owner-id owner-id dpof-id [stake-nonce]))
+                        (ref-TS02-C3::AQP-POOL|CC_UnstakeOrtoFungible patron owner-id owner-id pool-id dpof-id [stake-nonce]))
                 ]
             )
             ;;==== TX-FVT-06b · 03 · unstake naming the REAL beneficiary EMMA restores state ====
             (print "--- [TX-FVT-06b · 03 · unstake owner=ANHD, beneficiary=EMMA] ---")
-            (ref-TS02-C3::AQP-POOL|CC_UnstakeOrtoFungible patron pool-id owner-id foreign-ben dpof-id [stake-nonce])
+            (ref-TS02-C3::AQP-POOL|CC_UnstakeOrtoFungible patron owner-id foreign-ben pool-id dpof-id [stake-nonce])
             (let
                 (
                     (ben-bal-after:decimal (ref-AQP::UR_AQP|DPOFTrackerBalance pool-id dpof-id owner-id foreign-ben stake-nonce))
@@ -456,7 +456,7 @@
     )
     (print (format "<(TS02-C3.AQP-POOL|CC_StakeOrtoFungible)> => \"{}\"" [
         (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible
-            patron pool-id owner-id beneficiary-id dpof-id [stake-nonce]
+            patron owner-id beneficiary-id pool-id dpof-id [stake-nonce]
         )
     ]))
     (let
@@ -560,7 +560,7 @@
     )
     (print (format "<(TS02-C3.AQP-POOL|CC_StakeOrtoFungible)> => \"{}\"" [
         (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible
-            patron pool-id owner-id beneficiary-id dpof-id [stake-nonce]
+            patron owner-id beneficiary-id pool-id dpof-id [stake-nonce]
         )
     ]))
     (let
@@ -646,13 +646,13 @@
                 (nonce:integer (at 0 owned))
                 (nns0:integer (ref-AQP::UR_AQP|PoolNns pool-id))
                 (unn0:integer (ref-AQP::UR_AQP|UserUnn pool-id beneficiary-id))
-                (x:string (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron pool-id owner-id beneficiary-id dpof-id [nonce]))
+                (x:string (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron owner-id beneficiary-id pool-id dpof-id [nonce]))
             )
             (let
                 (
                     (nns1:integer (ref-AQP::UR_AQP|PoolNns pool-id))
                     (unn1:integer (ref-AQP::UR_AQP|UserUnn pool-id beneficiary-id))
-                    (y:string (ref-TS02-C3::AQP-POOL|CC_UnstakeOrtoFungible patron pool-id owner-id beneficiary-id dpof-id [nonce]))
+                    (y:string (ref-TS02-C3::AQP-POOL|CC_UnstakeOrtoFungible patron owner-id beneficiary-id pool-id dpof-id [nonce]))
                 )
                 (let ((nns2:integer (ref-AQP::UR_AQP|PoolNns pool-id))
                       (unn2:integer (ref-AQP::UR_AQP|UserUnn pool-id beneficiary-id)))
@@ -748,7 +748,7 @@
                 (x:string
                     (let ((z:integer 0))
                         (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-                        (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron pool-id owner-id beneficiary-id dpof-id [nonce])
+                        (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron owner-id beneficiary-id pool-id dpof-id [nonce])
                     )
                 )
             )

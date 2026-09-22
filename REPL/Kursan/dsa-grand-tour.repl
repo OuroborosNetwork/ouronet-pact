@@ -458,8 +458,8 @@
             (gsid:string (ref-U|DALOS::UDC_Makeid (concat ["GtAgency" "Golden"])))
         )
         (let ((triplet-id:string (ref-SCR::UC_ComputeTripletId bsid ssid gsid)))
-            (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable emma pool-id emma emma dhoc [-2])
-            (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable lumy pool-id lumy lumy dhoc [-2])
+            (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable emma emma emma pool-id dhoc [-2])
+            (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable lumy lumy lumy pool-id dhoc [-2])
             (ref-TS02-C3::AQP-DSA|C_SetOracleAuth anhd anhd fvt-id (read-keyset "dsa-oracle"))
             ;;THE DEFECT THIS REFACTOR FIXED, PROVEN BOTH WAYS. Until 2026-09-20 all six
             ;;owner-gated DSA entrypoints ran `(enforce (= patron fvt-owner))` -- the GAS PAYER was

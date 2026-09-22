@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 20 of 24
 ;; This is STEP 20 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-19 must have run first, including the init steps between deploys.
-;; 3 source file(s), 149,410 gas measured in the REPL gas model, 240,686 bytes
+;; 3 source file(s), 149,410 gas measured in the REPL gas model, 242,746 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact
@@ -1640,7 +1640,7 @@
     (defun DPSF|C_Issue:string 
         (
             patron:string 
-            owner-account:string creator-account:string collection-name:string collection-ticker:string
+            executor:string executee:string collection-name:string collection-ticker:string
             can-upgrade:bool can-change-owner:bool can-change-creator:bool can-add-special-role:bool
             can-transfer-nft-create-role:bool can-freeze:bool can-wipe:bool can-pause:bool
         )
@@ -2105,7 +2105,7 @@
     (defun DPSF|C_Issue:string
         (
             patron:string 
-            owner-account:string creator-account:string collection-name:string collection-ticker:string
+            executor:string executee:string collection-name:string collection-ticker:string
             can-upgrade:bool can-change-owner:bool can-change-creator:bool can-add-special-role:bool
             can-transfer-nft-create-role:bool can-freeze:bool can-wipe:bool can-pause:bool
         )
@@ -2119,7 +2119,7 @@
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-DPDC-I::C_IssueDigitalCollection
-                            patron owner-account creator-account true
+                            patron executor executee true
                             collection-name collection-ticker
                             can-upgrade can-change-owner can-change-creator can-add-special-role
                             can-transfer-nft-create-role can-freeze can-wipe can-pause
@@ -2645,7 +2645,13 @@
     )
     (defun DPSF|C_BulkTransfer
         (patron:string executor:string executee-lst:[string] id:string nonces-array:[[integer]] amounts-array:[[integer]] method:bool)
-        @doc "Bulk SFT transfer — son=true wrapper over DPDC|C_BulkTransfer."
+        @doc "Bulk SFT transfer — son=true wrapper over DPDC|C_BulkTransfer. \
+        \ \
+        \ Executor: PROVEN INDIRECTLY, and named. This is a thin alias: it delegates to \
+        \ DPDC|C_BulkTransfer in THIS module, and that wrapper's own call chain is what \
+        \ proves the account. FORWARDED matches cross-module `ref-X::` calls by design, so an \
+        \ intra-Talos delegation has to be traced by a human and written down. \
+        \ (patron/executor canon 2.2, 2026-09-22.)"
         (DPDC|C_BulkTransfer patron executor executee-lst id true nonces-array amounts-array method)
     )
     ;;
@@ -2917,7 +2923,13 @@
         )
     )
     (defun DPSF|C_RemoveSetNonceScore (patron:string executor:string id:string set-class:integer nos:bool)
-        @doc "[5b] Removes Set Nonce Score, setting it to -1.0, either Native or Split, for an SFT"
+        @doc "[5b] Removes Set Nonce Score, setting it to -1.0, either Native or Split, for an SFT \
+        \ \
+        \ Executor: PROVEN INDIRECTLY, and named. This is a thin alias: it delegates to \
+        \ DPSF|C_UpdateSetNonceScore in THIS module, and that wrapper's own call chain is what \
+        \ proves the account. FORWARDED matches cross-module `ref-X::` calls by design, so an \
+        \ intra-Talos delegation has to be traced by a human and written down. \
+        \ (patron/executor canon 2.2, 2026-09-22.)"
         (DPSF|C_UpdateSetNonceScore patron executor id set-class nos -1.0)
     )
     (defun DPSF|C_UpdateSetNonceMetaData
@@ -3130,7 +3142,13 @@
         )
     )
     (defun DPSF|C_RemoveNonceScore (patron:string executor:string id:string nonce:integer nos:bool)
-        @doc "[5b] Removes Nonce Score, setting it to -1.0, either Native or Split, for an SFT"
+        @doc "[5b] Removes Nonce Score, setting it to -1.0, either Native or Split, for an SFT \
+        \ \
+        \ Executor: PROVEN INDIRECTLY, and named. This is a thin alias: it delegates to \
+        \ DPSF|C_UpdateNonceScore in THIS module, and that wrapper's own call chain is what \
+        \ proves the account. FORWARDED matches cross-module `ref-X::` calls by design, so an \
+        \ intra-Talos delegation has to be traced by a human and written down. \
+        \ (patron/executor canon 2.2, 2026-09-22.)"
         (DPSF|C_UpdateNonceScore patron executor id nonce nos -1.0)
     )
     (defun DPSF|C_UpdateNonceMetaData
@@ -3356,7 +3374,7 @@
     (defun DPNF|C_Issue:string
         (
             patron:string 
-            owner-account:string creator-account:string collection-name:string collection-ticker:string
+            executor:string executee:string collection-name:string collection-ticker:string
             can-upgrade:bool can-change-owner:bool can-change-creator:bool can-add-special-role:bool
             can-transfer-nft-create-role:bool can-freeze:bool can-wipe:bool can-pause:bool
         )
@@ -3772,7 +3790,7 @@
     (defun DPNF|C_Issue:string
         (
             patron:string 
-            owner-account:string creator-account:string collection-name:string collection-ticker:string
+            executor:string executee:string collection-name:string collection-ticker:string
             can-upgrade:bool can-change-owner:bool can-change-creator:bool can-add-special-role:bool
             can-transfer-nft-create-role:bool can-freeze:bool can-wipe:bool can-pause:bool
         )
@@ -3786,7 +3804,7 @@
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-DPDC-I::C_IssueDigitalCollection
-                            patron owner-account creator-account false
+                            patron executor executee false
                             collection-name collection-ticker
                             can-upgrade can-change-owner can-change-creator can-add-special-role
                             can-transfer-nft-create-role can-freeze can-wipe can-pause
@@ -4488,7 +4506,13 @@
         )
     )
     (defun DPNF|C_RemoveSetNonceScore (patron:string executor:string id:string set-class:integer nos:bool)
-        @doc "[5b] Removes Set Nonce Score, setting it to -1.0, either Native or Split, for an NFT"
+        @doc "[5b] Removes Set Nonce Score, setting it to -1.0, either Native or Split, for an NFT \
+        \ \
+        \ Executor: PROVEN INDIRECTLY, and named. This is a thin alias: it delegates to \
+        \ DPNF|C_UpdateSetNonceScore in THIS module, and that wrapper's own call chain is what \
+        \ proves the account. FORWARDED matches cross-module `ref-X::` calls by design, so an \
+        \ intra-Talos delegation has to be traced by a human and written down. \
+        \ (patron/executor canon 2.2, 2026-09-22.)"
         (DPNF|C_UpdateSetNonceScore patron executor id set-class nos -1.0)
     )
     (defun DPNF|C_UpdateSetNonceMetaData
@@ -4705,7 +4729,13 @@
         )
     )
     (defun DPNF|C_RemoveNonceScore (patron:string executor:string id:string nonce:integer nos:bool)
-        @doc "[5b] Removes Nonce Score, setting it to -1.0, either Native or Split, for an NFT"
+        @doc "[5b] Removes Nonce Score, setting it to -1.0, either Native or Split, for an NFT \
+        \ \
+        \ Executor: PROVEN INDIRECTLY, and named. This is a thin alias: it delegates to \
+        \ DPNF|C_UpdateNonceScore in THIS module, and that wrapper's own call chain is what \
+        \ proves the account. FORWARDED matches cross-module `ref-X::` calls by design, so an \
+        \ intra-Talos delegation has to be traced by a human and written down. \
+        \ (patron/executor canon 2.2, 2026-09-22.)"
         (DPNF|C_UpdateNonceScore patron executor id nonce nos -1.0)
     )
     (defun DPNF|C_UpdateNonceMetaData

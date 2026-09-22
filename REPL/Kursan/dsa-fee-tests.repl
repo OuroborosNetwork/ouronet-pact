@@ -280,8 +280,8 @@
         )
         (let ((triplet-id:string (ref-SCR::UC_ComputeTripletId bsid ssid gsid)))
             ;; each delegator stakes their -2 supply (200k => 2000 quintessence) into the operator's pool
-            (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable emma pool-id emma emma dhoc [-2])
-            (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable lumy pool-id lumy lumy dhoc [-2])
+            (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable emma emma emma pool-id dhoc [-2])
+            (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable lumy lumy lumy pool-id dhoc [-2])
             ;; owner authorizes the oracle key, then oracle: 10 nodes at FULL uptime => capture-units =
             ;; min(5000/2000,10)=2, weight 2 (no royalty shortfall)
             (ref-TS02-C3::AQP-DSA|C_SetOracleAuth anhd anhd fvt-id (read-keyset "dsa-oracle"))

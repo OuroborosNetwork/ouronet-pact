@@ -103,7 +103,18 @@ REGISTRY = {
  ("04_TS01-C3.pact", "SWP|C_Firestarter"):
    ("executor", "PATRONLESS by design -- the function makes IGNIS out of native STOA, so there "
                 "is no patron to pay from yet; the executor funds and receives it.", None),
- ("03_AQP.pact", "XE_TrueFungibleTransfer"): ("owner-id", "provisional", "03_AQP"),
+ # 03_AQP's TWO XE_ transfer helpers were CLEARED on 2026-09-22, at the END of the sweep rather
+ # than at 03_AQP's own turn: their callers are 05_FVT's stake flows, which only gained a real
+ # <patron> at module 39. A `clears-at` of "03_AQP" was therefore optimistic -- the turn that
+ # clears a slot is the turn that gives its CALLER a patron, not the turn of the module the slot
+ # lives in. Worth remembering if this pattern is ever used again.
+ # 06_VCT's FOUR remain, and their `clears-at` has now PASSED -- 06_VCT was swept at module 40.
+ # They are NOT forgotten and NOT permanent: clearing them means threading a patron through the
+ # vacate RECIPE (the XB_Vacate* doors -> XI_Vacate*PoolLegs -> XI_Vacate*FromLegs), three levels
+ # of require-capability plumbing that touches no entrypoint signature and no call site outside
+ # VCT. That is a contained follow-up, deliberately not folded into the sweep's last commit.
+ # Until then AQP|SC_NAME is correct on its own terms: the vault IS the account spending, because
+ # a vacate returns the POOL's custody to its stakers.
  ("06_VCT.pact", "XI_VacateTrueFungibleFromLegs"):
    ("AQP|SC_NAME", "provisional -- no user account is in scope at all here; the vault is the "
                    "only account the function knows.", "06_VCT"),

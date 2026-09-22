@@ -154,7 +154,7 @@
             (expect-failure
                 (format "<<TX-AQP-NEG-STATE>> stake into a DISABLED pool rejected (URC_PoolStakeAdmissionOk)" [])
                 "Invalid pool-id: pool stake disabled or has no employed scores"
-                (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id 10.0))
+                (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron owner-id beneficiary-id pool-id ouro-id 10.0))
         ]
     )
 )

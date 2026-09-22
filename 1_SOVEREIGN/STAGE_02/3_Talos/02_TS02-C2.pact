@@ -68,7 +68,7 @@
     (defun DPNF|C_Issue:string
         (
             patron:string 
-            owner-account:string creator-account:string collection-name:string collection-ticker:string
+            executor:string executee:string collection-name:string collection-ticker:string
             can-upgrade:bool can-change-owner:bool can-change-creator:bool can-add-special-role:bool
             can-transfer-nft-create-role:bool can-freeze:bool can-wipe:bool can-pause:bool
         )
@@ -484,7 +484,7 @@
     (defun DPNF|C_Issue:string
         (
             patron:string 
-            owner-account:string creator-account:string collection-name:string collection-ticker:string
+            executor:string executee:string collection-name:string collection-ticker:string
             can-upgrade:bool can-change-owner:bool can-change-creator:bool can-add-special-role:bool
             can-transfer-nft-create-role:bool can-freeze:bool can-wipe:bool can-pause:bool
         )
@@ -498,7 +498,7 @@
                     (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
                         (ref-DPDC-I::C_IssueDigitalCollection
-                            patron owner-account creator-account false
+                            patron executor executee false
                             collection-name collection-ticker
                             can-upgrade can-change-owner can-change-creator can-add-special-role
                             can-transfer-nft-create-role can-freeze can-wipe can-pause
@@ -1200,7 +1200,13 @@
         )
     )
     (defun DPNF|C_RemoveSetNonceScore (patron:string executor:string id:string set-class:integer nos:bool)
-        @doc "[5b] Removes Set Nonce Score, setting it to -1.0, either Native or Split, for an NFT"
+        @doc "[5b] Removes Set Nonce Score, setting it to -1.0, either Native or Split, for an NFT \
+        \ \
+        \ Executor: PROVEN INDIRECTLY, and named. This is a thin alias: it delegates to \
+        \ DPNF|C_UpdateSetNonceScore in THIS module, and that wrapper's own call chain is what \
+        \ proves the account. FORWARDED matches cross-module `ref-X::` calls by design, so an \
+        \ intra-Talos delegation has to be traced by a human and written down. \
+        \ (patron/executor canon 2.2, 2026-09-22.)"
         (DPNF|C_UpdateSetNonceScore patron executor id set-class nos -1.0)
     )
     (defun DPNF|C_UpdateSetNonceMetaData
@@ -1417,7 +1423,13 @@
         )
     )
     (defun DPNF|C_RemoveNonceScore (patron:string executor:string id:string nonce:integer nos:bool)
-        @doc "[5b] Removes Nonce Score, setting it to -1.0, either Native or Split, for an NFT"
+        @doc "[5b] Removes Nonce Score, setting it to -1.0, either Native or Split, for an NFT \
+        \ \
+        \ Executor: PROVEN INDIRECTLY, and named. This is a thin alias: it delegates to \
+        \ DPNF|C_UpdateNonceScore in THIS module, and that wrapper's own call chain is what \
+        \ proves the account. FORWARDED matches cross-module `ref-X::` calls by design, so an \
+        \ intra-Talos delegation has to be traced by a human and written down. \
+        \ (patron/executor canon 2.2, 2026-09-22.)"
         (DPNF|C_UpdateNonceScore patron executor id nonce nos -1.0)
     )
     (defun DPNF|C_UpdateNonceMetaData

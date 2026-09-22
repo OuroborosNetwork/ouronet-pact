@@ -188,7 +188,7 @@
                 (lambda (acc:bool idx:integer)
                     (let ((owner:string (UC_SynthAccount idx)))
                         (ref-TS02-C1::DPSF|C_TransferNonces patron patron owner dpsf-id [nonce] [1] false)
-                        (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron pool-id owner owner dpsf-id [nonce])
+                        (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron owner owner pool-id dpsf-id [nonce])
                     )
                     true
                 )
@@ -246,7 +246,7 @@
                 (lambda (acc:bool idx:integer)
                     (let ((owner:string (UC_SynthAccount idx)))
                         (ref-TS01-C1::DPTF|C_Transfer patron patron owner ouro-id stake-amt true)
-                        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner owner ouro-id stake-amt)
+                        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron owner owner pool-id ouro-id stake-amt)
                     )
                     true
                 )
@@ -323,7 +323,7 @@
                                 (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron (DPOF.UR_Konto dpof-id) owner dpof-id false)
                                 true
                             )
-                            (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron pool-id owner owner dpof-id [mint-nonce])
+                            (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron owner owner pool-id dpof-id [mint-nonce])
                         )
                     )
                     true
@@ -398,7 +398,7 @@
                                 (nonce:integer (at (- idx 1) picked))
                             )
                             (ref-TS02-C2::DPNF|C_TransferNonces patron source owner dpnf-id [nonce] [1] false)
-                            (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron pool-id owner owner dpnf-id [nonce])
+                            (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron owner owner pool-id dpnf-id [nonce])
                         )
                         true
                     )
@@ -670,7 +670,7 @@
                                 )
                             )
                         )
-                        (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron pool-id owner owner dpof-id picked)
+                        (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron owner owner pool-id dpof-id picked)
                     )
                     true
                 )
@@ -775,7 +775,7 @@
                 (lambda (acc:bool idx:integer)
                     (let ((owner:string (UC_SynthAccount idx)))
                         (ref-TS01-C1::DPTF|C_Transfer patron patron owner ouro-id stake-amt true)
-                        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner owner ouro-id stake-amt)
+                        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron owner owner pool-id ouro-id stake-amt)
                     )
                     true
                 )
@@ -807,7 +807,7 @@
                                 (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron (DPOF.UR_Konto dpof-id) owner dpof-id false)
                                 true
                             )
-                            (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron pool-id owner owner dpof-id [mint-nonce])
+                            (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron owner owner pool-id dpof-id [mint-nonce])
                         )
                     )
                     true
@@ -829,7 +829,7 @@
                 (lambda (acc:bool idx:integer)
                     (let ((owner:string (UC_SynthAccount idx)))
                         (ref-TS02-C1::DPSF|C_TransferNonces patron patron owner dpsf-id [nonce] [1] false)
-                        (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron pool-id owner owner dpsf-id [nonce])
+                        (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron owner owner pool-id dpsf-id [nonce])
                     )
                     true
                 )
@@ -866,7 +866,7 @@
                                 (nonce:integer (at (- idx 1) picked))
                             )
                             (ref-TS02-C2::DPNF|C_TransferNonces patron source owner dpnf-id [nonce] [1] false)
-                            (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron pool-id owner owner dpnf-id [nonce])
+                            (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron owner owner pool-id dpnf-id [nonce])
                         )
                         true
                     )

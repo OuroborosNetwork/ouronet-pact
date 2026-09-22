@@ -8,9 +8,21 @@
 session must be able to see what is done by reading this file, without reconstructing it from
 `git log`. If the table and `_executorplan.py` disagree, **the tool is right** — regenerate.
 
-**Status:** preparation complete, sweep starting at `01_DALOS`.
-**302 done · 474 remaining · 46 modules · 8 swept (01_DALOS, 02_IGNIS, 04_BRD, 05_DPTF, 06_DPOF, 08_ATS, 09_TFT, 10_ATSU) · 1 archived (00_DPMF).**
-(Ground truth is `python3 REPL/tools/_executorplan.py`, never this line.)
+**Status: COMPLETE, 2026-09-22.**
+**776 done · 0 remaining · 46 modules swept · 1 archived (00_DPMF).**
+(Ground truth is `python3 REPL/tools/_executorplan.py`, never this line. It reads
+`DONE 776 / remaining: 0`.)
+
+Every `A_`/`AA_`/`C_`/`CC_` entrypoint in `1_SOVEREIGN` now takes `patron` first and, where one
+exists, `executor` second and `executee` third — and **every executor is PROVEN**, directly, by a
+forward, or by a route its own `@doc` names. `_modulecomplete.py` passes all 7 obligations for all
+46 modules; `_executorenforced.py` reports 0 UNPROVEN tree-wide.
+
+The line above used to read *"preparation complete, sweep starting at `01_DALOS`"* and carried the
+figure **302 done · 474 remaining**, taken from `_bandplan`, whose entrypoint filter was blind to
+every Talos function. The real number was 776. That correction is the first entry in this file's
+history and it is worth leaving visible: **the plan was wrong by 63% on its first day, and the
+tool that found it out was a second tool written to check the first.**
 
 ---
 
@@ -294,10 +306,10 @@ same tools with those three properties.
 | [x] 40 | `06_VCT.pact` | 0 | 0 | 3 | **3** | `AcquisitionVacateV1` — done; the executor had to reach four `XB_` helpers too |
 | [x] 41 | `07_MTX-AQP.pact` | 1 | 0 | 0 | **1** | `AqpMtxV1` — done; a forward through a **defpact step**, invisible to FORWARDED |
 | [x] 42 | `08_DSA.pact` | 0 | 2 | 2 | **4** | `DsaV1` — done; a GUARD is not an account, and seven proofs the matcher could not see |
-| [ ] 43 | `01_TS02-C1.pact` | 11 | 54 | 0 | **65** | `TalosStageTwo_ClientOneV2` |
-| [ ] 44 | `02_TS02-C2.pact` | 9 | 50 | 0 | **59** | `TalosStageTwo_ClientTwoV2` |
-| [ ] 45 | `04_TS02-C3.pact` | 15 | 27 | 0 | **42** | `TalosStageTwo_ClientThreeV1` |
-| [ ] 46 | `05_TS02-DPAD.pact` | 8 | 6 | 0 | **14** | `TalosStageTwo_DemiPadV1` |
+| [x] 43 | `01_TS02-C1.pact` | 11 | 54 | 0 | **65** | `TalosStageTwo_ClientOneV2` — done; 64 of 65 arrived by cascade, 1 by its own turn |
+| [x] 44 | `02_TS02-C2.pact` | 9 | 50 | 0 | **59** | `TalosStageTwo_ClientTwoV2` — done; same shape as its DPSF twin |
+| [x] 45 | `04_TS02-C3.pact` | 15 | 27 | 0 | **42** | `TalosStageTwo_ClientThreeV1` — done; 172 arity-preserving stake call sites |
+| [x] 46 | `05_TS02-DPAD.pact` | 8 | 6 | 0 | **14** | `TalosStageTwo_DemiPadV1` — done. **SWEEP COMPLETE: 776 of 776.** |
 
 **THE TWO CHARGING ADMIN WRAPPERS — a decision deferred so the twins move together.**
 Measured 2026-09-21: of **120** Talos `A_` wrappers, exactly **two** charge a caller-supplied

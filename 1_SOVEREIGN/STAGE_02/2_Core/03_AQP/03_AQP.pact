@@ -174,7 +174,7 @@
         (pool-id:string flag:bool)
     )
     (defun XE_TrueFungibleTransfer:object{IgnisCollectorV3.OutputCumulator}
-        (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
+        (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
     )
     (defun XE_TrueFungiblePoolTracker:object{IgnisCollectorV3.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
@@ -190,6 +190,7 @@
     )
     (defun XE_CollectableTransfer:object{IgnisCollectorV3.OutputCumulator}
         (
+            patron:string
             pool-id:string
             owner-id:string
             beneficiary-id:string
@@ -2939,8 +2940,14 @@
     ;;Protection: Class 5 — IMC is the gate; also acquires (validation, not protection):
     ;;Protection:          AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY
     (defun XE_TrueFungibleTransfer:object{IgnisCollectorV3.OutputCumulator}
-        (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
-        @doc "Phase 1.1 — UrStoa ≡ X_UR|Transfer. TFT::C_Transfer owner↔AQP|SC_NAME. Composes custody cap (validation once per tx)."
+        (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
+        @doc "Phase 1.1 — UrStoa ≡ X_UR|Transfer. TFT::C_Transfer owner↔AQP|SC_NAME. Composes custody cap (validation once per tx). \
+            \ \
+            \ PROVISIONAL PATRON SLOT CLEARED, 2026-09-22. The inner transfer carried \
+            \ <owner-id> in the patron slot -- registered in _patronslots as provisional -- \
+            \ because no caller had a patron to give. 05_FVT's turn gave the stake flows a \
+            \ real one, so the payer is now the payer. HANDOFF 4e promises every provisional \
+            \ slot is written down AND re-pointed when its turn lands; this is the re-pointing."
         (P|UEV_IMC)
         (with-capability (AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY pool-id owner-id beneficiary-id dptf-id amount direction)
             (let
@@ -2950,8 +2957,8 @@
                     (vault:string AQP|SC_NAME)
                 )
                 (if direction
-                    (ref-TFT::C_Transfer owner-id owner-id vault dptf-id amount true)
-                    (ref-TFT::C_Transfer owner-id vault owner-id dptf-id amount true)
+                    (ref-TFT::C_Transfer patron owner-id vault dptf-id amount true)
+                    (ref-TFT::C_Transfer patron vault owner-id dptf-id amount true)
                 )
             )
         )
@@ -3054,6 +3061,7 @@
     ;;Protection:          AQP|XE>COLLECTABLE-POOL-CUSTODY
     (defun XE_CollectableTransfer:object{IgnisCollectorV3.OutputCumulator}
         (
+            patron:string
             pool-id:string
             owner-id:string
             beneficiary-id:string
@@ -3063,7 +3071,13 @@
             nonce-amounts:[integer]
             direction:bool
         )
-        @doc "Phase 1.1 — UrStoa ≡ X_UR|Transfer. DPDC-T::C_Transfer. Composes custody cap (validation once per tx)."
+        @doc "Phase 1.1 — UrStoa ≡ X_UR|Transfer. DPDC-T::C_Transfer. Composes custody cap (validation once per tx). \
+            \ \
+            \ PROVISIONAL PATRON SLOT CLEARED, 2026-09-22. The inner transfer carried \
+            \ <owner-id> in the patron slot -- registered in _patronslots as provisional -- \
+            \ because no caller had a patron to give. 05_FVT's turn gave the stake flows a \
+            \ real one, so the payer is now the payer. HANDOFF 4e promises every provisional \
+            \ slot is written down AND re-pointed when its turn lands; this is the re-pointing."
         (P|UEV_IMC)
         (with-capability
             (AQP|XE>COLLECTABLE-POOL-CUSTODY
@@ -3077,7 +3091,7 @@
                     (sender:string (if direction owner-id vault))
                     (receiver:string (if direction vault owner-id))
                 )
-                (ref-DPDC-T::C_Transfer owner-id sender receiver [collectable-id] [son] [nonces] [nonce-amounts] true)
+                (ref-DPDC-T::C_Transfer patron sender receiver [collectable-id] [son] [nonces] [nonce-amounts] true)
             )
         )
     )

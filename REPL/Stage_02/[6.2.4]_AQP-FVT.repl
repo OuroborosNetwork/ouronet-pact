@@ -280,7 +280,7 @@
     ;;==== TX-FVT-03 · 02 · env-sigs + CC_StakeTrueFungible — REPL =================
     (print "--- [TX-FVT-03 · 02 · env-sigs + CC_StakeTrueFungible] ---")
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-    (print (format "<(TS02-C3.AQP-POOL|CC_StakeTrueFungible amount={})> => \"{}\"" [stake-amount (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id stake-amount)]))
+    (print (format "<(TS02-C3.AQP-POOL|CC_StakeTrueFungible amount={})> => \"{}\"" [stake-amount (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron owner-id beneficiary-id pool-id ouro-id stake-amount)]))
     ;;==== TX-FVT-03 · 03 · post-stake reads + expect — REPL =======================
     (print "--- [TX-FVT-03 · 03 · post-stake reads + expect] ---")
     (let
@@ -751,7 +751,7 @@
     (enforce (>= tracker-pre 100.0) "TX-FVT-07 expects ≥100 staked from TX-FVT-03")
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
     (print (format "<(AQP-POOL|CC_UnstakeTrueFungible {})> => \"{}\"" [partial-amt
-        (ref-TS02-C3::AQP-POOL|CC_UnstakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id partial-amt)
+        (ref-TS02-C3::AQP-POOL|CC_UnstakeTrueFungible patron owner-id beneficiary-id pool-id ouro-id partial-amt)
     ]))
     (let
         (
@@ -777,7 +777,7 @@
         )
         (print "--- [TX-FVT-07 · 02 · full remainder unstake] ---")
         (print (format "<(AQP-POOL|CC_UnstakeTrueFungible remainder {})> => \"{}\"" [remain
-            (ref-TS02-C3::AQP-POOL|CC_UnstakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id remain)
+            (ref-TS02-C3::AQP-POOL|CC_UnstakeTrueFungible patron owner-id beneficiary-id pool-id ouro-id remain)
         ]))
         (let
             (
@@ -992,10 +992,10 @@
         true
     )
     (print (format "<(CC_StakeTrueFungible ANHD {})> => \"{}\"" [stake-a
-        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id anhd anhd ouro-id stake-a)
+        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron anhd anhd pool-id ouro-id stake-a)
     ]))
     (print (format "<(CC_StakeTrueFungible EMMA {})> => \"{}\"" [stake-e
-        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id emma emma ouro-id stake-e)
+        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron emma emma pool-id ouro-id stake-e)
     ]))
     (let
         (
@@ -1106,7 +1106,7 @@
     (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
     ;;==== TX-FVT-10 · 01 · owner ANHD stakes FOR foreign beneficiary EMMA ====
     (print "--- [TX-FVT-10 · 01 · stake owner=ANHD, beneficiary=EMMA] ---")
-    (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id foreign-ben ouro-id stake-amount)
+    (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron owner-id foreign-ben pool-id ouro-id stake-amount)
     (let
         (
             (post-ben-bal:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id foreign-ben))
@@ -1124,7 +1124,7 @@
     )
     ;;==== TX-FVT-10 · 02 · non-self unstake removes EMMA's weight + clears the foreign row ====
     (print "--- [TX-FVT-10 · 02 · unstake owner=ANHD, beneficiary=EMMA] ---")
-    (ref-TS02-C3::AQP-POOL|CC_UnstakeTrueFungible patron pool-id owner-id foreign-ben ouro-id stake-amount)
+    (ref-TS02-C3::AQP-POOL|CC_UnstakeTrueFungible patron owner-id foreign-ben pool-id ouro-id stake-amount)
     (let
         (
             (post2-ben-bal:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id foreign-ben))

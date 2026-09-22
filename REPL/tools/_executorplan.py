@@ -141,6 +141,10 @@ EXECUTORLESS = {
     # worse than having none.
     "C_SyncTrueFungibleAnchors", "C_SyncCollectableAnchors",
     "AQP-POOL|C_SyncTrueFungibleAnchors", "AQP-POOL|C_SyncCollectableAnchors",
+    # ...and the two Talos SHELLS that split the collectable one by <son>. Added 2026-09-22 at
+    # 04_TS02-C3's turn: the sovereign C_SyncCollectableAnchors takes son:bool, Talos exposes it
+    # as a SemiFungible and a NonFungible door, and each inherits the same design fact.
+    "AQP-POOL|C_SyncSemiFungibleAnchors", "AQP-POOL|C_SyncNonFungibleAnchors",
     # 08_DSA's two, added 2026-09-22, and they are executorless for TWO DIFFERENT reasons --
     # worth keeping apart, because only one of them is the permissionless-repair shape:
     #

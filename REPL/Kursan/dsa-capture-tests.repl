@@ -348,7 +348,7 @@
                 (ref-TS02-C1::DPSF|C_MakeFragments anhd anhd dhoc 1 50)
                 (ref-TS02-C1::DPSF|C_MakeFragments anhd anhd dhoc 2 50)
                 (ref-TS02-C1::DPSF|C_MakeFragments anhd anhd dhoc 3 30)
-                (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable anhd pool-id anhd anhd dhoc [-1 -2 -3])
+                (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable anhd anhd anhd pool-id dhoc [-1 -2 -3])
                 ;; permissionless recompute — picks up the new Q, keeps the oracle's nodes/uptime + oracle-ts
                 (ref-TS02-C3::AQP-DSA|C_RecomputeCapture anhd fvt-id triplet-id)
                 (map print

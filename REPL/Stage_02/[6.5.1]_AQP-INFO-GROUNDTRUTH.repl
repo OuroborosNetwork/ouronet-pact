@@ -62,7 +62,7 @@
     )
     ;; 2) EXECUTE the real stake (bills the patron the exact flow cost)
     (print (format "<(TS02-C3.AQP-POOL|CC_StakeTrueFungible)> => \"{}\""
-        [(ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id amount)]))
+        [(ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron owner-id beneficiary-id pool-id ouro-id amount)]))
     ;; 3) ASSERT predicted == actual GAS balance delta
     (let ((post-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron)))
         (print (format "<(post-gas)> = {} ; actual delta = {}" [post-gas (- pre-gas post-gas)]))
@@ -123,7 +123,7 @@
         ]
     )
     (print (format "<(TS02-C3.AQP-POOL|CC_UnstakeTrueFungible)> => \"{}\""
-        [(ref-TS02-C3::AQP-POOL|CC_UnstakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id amount)]))
+        [(ref-TS02-C3::AQP-POOL|CC_UnstakeTrueFungible patron owner-id beneficiary-id pool-id ouro-id amount)]))
     (let ((post-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron)))
         (print (format "<(post-gas)> = {} ; actual delta = {}" [post-gas (- pre-gas post-gas)]))
         (map print
@@ -264,7 +264,7 @@
         ]
     )
     (print (format "<(TS02-C3.AQP-POOL|CC_StakeOrtoFungible)> => \"{}\""
-        [(ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron pool-id owner-id beneficiary-id dpof-id nonces)]))
+        [(ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron owner-id beneficiary-id pool-id dpof-id nonces)]))
     (let ((post-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron)))
         (print (format "<(post-gas)> = {} ; actual delta = {}" [post-gas (- pre-gas post-gas)]))
         (map print
@@ -386,7 +386,7 @@
         ]
     )
     (print (format "<(TS02-C3.AQP-POOL|CC_StakeSemiFungibleCollectable)> => \"{}\""
-        [(ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron pool-id owner-id beneficiary-id dpsf-id nonces)]))
+        [(ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron owner-id beneficiary-id pool-id dpsf-id nonces)]))
     (let ((post-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron)))
         (print (format "<(post-gas)> = {} ; actual delta = {}" [post-gas (- pre-gas post-gas)]))
         (map print
@@ -427,7 +427,7 @@
     )
     ;; 1) Re-stake a fresh TF position so there is something to vacate (TfStakePool is restakeable).
     (print (format "<(re-stake)> => \"{}\""
-        [(ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id amount)]))
+        [(ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron owner-id beneficiary-id pool-id ouro-id amount)]))
     ;; 2) PREVIEW on the post-stake state, fed the SAME dirty-read legs the exec will build.
     ;;    Vacate requires the FULL tracked balance (TfStakePool carries residual from the earlier
     ;;    stake/unstake tests), so read the real per-pool DPTF tracker balance and vacate exactly that.
@@ -661,7 +661,7 @@
         (pool-id:string (ref-U|DALOS::UDC_Makeid "InfoGtTfDrPool"))
     )
     (print (format "<(stake)> => \"{}\""
-        [(ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id patron patron ouro-id 100.0)]))
+        [(ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron patron patron pool-id ouro-id 100.0)]))
 )
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -799,7 +799,7 @@
     (enforce (> (length owned) 0) "TX912: ANHD needs an MVST nonce")
     (let ((fresh-nonce:integer (at 0 owned)))
         (print (format "<(stake nonce {})> => \"{}\""
-            [fresh-nonce (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron pool-id patron patron dpof-id [fresh-nonce])])))
+            [fresh-nonce (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron patron patron pool-id dpof-id [fresh-nonce])])))
 )
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -929,7 +929,7 @@
     (enforce (> (length owned) 0) "TX913: ANHD needs a DHCD nonce")
     (let ((fresh-nonce:integer (at 0 owned)))
         (print (format "<(stake nonce {})> => \"{}\""
-            [fresh-nonce (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron pool-id patron patron dpsf-id [fresh-nonce])])))
+            [fresh-nonce (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron patron patron pool-id dpsf-id [fresh-nonce])])))
 )
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -1058,7 +1058,7 @@
         (pool-id:string (ref-U|DALOS::UDC_Makeid "InfoGtFvPool"))
     )
     (print (format "<(stake)> => \"{}\""
-        [(ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id patron patron ouro-id 100.0)]))
+        [(ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron patron patron pool-id ouro-id 100.0)]))
 )
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -1242,7 +1242,7 @@
     (print (format "<(setup enable-stake)> => \"{}\""
         [(ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto "TfStakePool-98c486052a51") "TfStakePool-98c486052a51")]))
     (print (format "<(setup re-stake)> => \"{}\""
-        [(ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron "TfStakePool-98c486052a51" patron patron ouro-id 100.0)]))
+        [(ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron patron patron "TfStakePool-98c486052a51" ouro-id 100.0)]))
     (let
         (
             (n-live:integer (length (ref-ANK::UR_ANK|AnchorsForAsset ouro-id)))
@@ -2051,7 +2051,7 @@
         (print (format "<(setup re-stake nonce {})> => \"{}\""
             [(at 0 owned)
              (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable
-                patron pool-id patron patron dpsf-id [(at 0 owned)])])))
+                patron patron patron pool-id dpsf-id [(at 0 owned)])])))
     (let
         (
             (n-live:integer (length (ref-ANK::UR_ANK|AnchorsForAsset dpsf-id)))
@@ -2837,7 +2837,7 @@
                 (n:integer (at 0 owned))
             )
             (print (format "<(setup stake nonce {})> => \"{}\""
-                [n (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron pool-id patron patron asset [n])]))
+                [n (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron patron patron pool-id asset [n])]))
             (let
                 (
                     (predicted:decimal
@@ -2846,7 +2846,7 @@
                     (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
                 )
                 (print (format "<(TS02-C3.AQP-POOL|CC_UnstakeOrtoFungible)> => \"{}\""
-                    [(ref-TS02-C3::AQP-POOL|CC_UnstakeOrtoFungible patron pool-id patron patron asset [n])]))
+                    [(ref-TS02-C3::AQP-POOL|CC_UnstakeOrtoFungible patron patron patron pool-id asset [n])]))
                 (let
                     (
                         (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
@@ -2915,7 +2915,7 @@
                 (n:integer (at 0 owned))
             )
             (print (format "<(setup stake nonce {})> => \"{}\""
-                [n (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron pool-id patron patron asset [n])]))
+                [n (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron patron patron pool-id asset [n])]))
             (let
                 (
                     (predicted:decimal
@@ -2924,7 +2924,7 @@
                     (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
                 )
                 (print (format "<(TS02-C3.AQP-POOL|CC_UnstakeSemiFungibleCollectable)> => \"{}\""
-                    [(ref-TS02-C3::AQP-POOL|CC_UnstakeSemiFungibleCollectable patron pool-id patron patron asset [n] [1])]))
+                    [(ref-TS02-C3::AQP-POOL|CC_UnstakeSemiFungibleCollectable patron patron patron pool-id asset [n] [1])]))
                 (let
                     (
                         (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
@@ -2990,7 +2990,7 @@
                         (at "ignis-need" (at "ignis" (AQP-INFO.INFO_AQP-POOL|StakeNonFungibleCollectable patron pool-id patron patron dpnf-id [n]))))
                     (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
                 )
-                (print (format "<(TS02-C3.AQP-POOL|CC_StakeNonFungibleCollectable)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron pool-id patron patron dpnf-id [n])]))
+                (print (format "<(TS02-C3.AQP-POOL|CC_StakeNonFungibleCollectable)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron patron patron pool-id dpnf-id [n])]))
                 (let
                     (
                         (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
@@ -3053,14 +3053,14 @@
                 ;;SETUP — stake first, so there is a position to operate on. The stake is itself a
                 ;;billed op (measured at <<TX-INFO-GT-STAKE-NF>>) and closes before `pre-gas` is read.
                 (print (format "<(setup stake nonce {})> => \"{}\""
-                    [n (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron pool-id patron patron dpnf-id [n])]))
+                    [n (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron patron patron pool-id dpnf-id [n])]))
             (let
                 (
                     (predicted:decimal
                         (at "ignis-need" (at "ignis" (AQP-INFO.INFO_AQP-POOL|UnstakeNonFungibleCollectable patron pool-id patron patron dpnf-id [n] [1]))))
                     (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
                 )
-                (print (format "<(TS02-C3.AQP-POOL|CC_UnstakeNonFungibleCollectable)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|CC_UnstakeNonFungibleCollectable patron pool-id patron patron dpnf-id [n] [1])]))
+                (print (format "<(TS02-C3.AQP-POOL|CC_UnstakeNonFungibleCollectable)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|CC_UnstakeNonFungibleCollectable patron patron patron pool-id dpnf-id [n] [1])]))
                 (let
                     (
                         (real:decimal (- pre-gas (ref-DPTF::UR_AccountSupply gas-id patron)))
@@ -3128,7 +3128,7 @@
                 ;;SETUP — stake first, so there is a position to operate on. The stake is itself a
                 ;;billed op (measured at <<TX-INFO-GT-STAKE-NF>>) and closes before `pre-gas` is read.
                 (print (format "<(setup stake nonce {})> => \"{}\""
-                    [n (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron pool-id patron patron dpnf-id [n])]))
+                    [n (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron patron patron pool-id dpnf-id [n])]))
             (let
                 (
                     (predicted:decimal

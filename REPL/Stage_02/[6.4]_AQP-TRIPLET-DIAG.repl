@@ -85,7 +85,7 @@
                       (if (contains n anhd-unstaked)
                           (print (format "<(C_StakeNonFungible DHBunnies nonce {})> => \"{}\"" [n
                               (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable
-                                  patron bunnies-pool owner owner kbn-id [n]
+                                  patron owner owner bunnies-pool kbn-id [n]
                               )
                           ]))
                           (print (format "NOTE: KBN nonce {} already staked or unavailable" [n]))
@@ -105,7 +105,7 @@
               ]
           )
           (print (format "<(CC_StakeTrueFungible DHOuroLp LP {})> => \"{}\"" [stake-amt
-              (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner owner lp-id stake-amt)
+              (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron owner owner pool-id lp-id stake-amt)
           ]))
           (map print
               [

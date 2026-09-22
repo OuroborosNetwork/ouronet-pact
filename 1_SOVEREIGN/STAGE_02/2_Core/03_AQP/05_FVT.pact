@@ -3135,7 +3135,7 @@
                         ;;===>PHASE 1===
                         ;; PHASE 1.1 — Custody transfer · UrStoa ≡ X_UR|Transfer
                         (ref-AQP::XE_TrueFungibleTransfer
-                            pool-id executor executee dptf-id amount direction)
+                            patron pool-id executor executee dptf-id amount direction)
                         ;; PHASE 1.2 — Per-pool DPTFTracker · UrStoa ≡ N/A
                         (ref-AQP::XE_TrueFungiblePoolTracker
                             pool-id executor executee dptf-id amount direction)
@@ -3295,7 +3295,7 @@
                         ;;===>PHASE 1===
                         ;; PHASE 1.1 — Custody transfer · UrStoa ≡ X_UR|Transfer
                         (ref-AQP::XE_CollectableTransfer
-                            pool-id executor executee collectable-id son nonces nonce-amounts direction)
+                            patron pool-id executor executee collectable-id son nonces nonce-amounts direction)
                         ;; PHASE 1.2 — Per-pool DPSF/DPNF tracker · UrStoa ≡ N/A
                         (ref-AQP::XE_CollectablePoolTracker
                             pool-id executor executee collectable-id son nonces nonce-amounts direction)

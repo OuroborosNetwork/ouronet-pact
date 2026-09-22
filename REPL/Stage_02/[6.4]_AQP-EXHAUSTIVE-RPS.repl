@@ -34,10 +34,10 @@
         ]
     )
     (print (format "<(C_StakeSemiFungible ANHD nonce-5)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron pool-id anhd anhd dhcd-id [5])
+        (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron anhd anhd pool-id dhcd-id [5])
     ]))
     (print (format "<(C_StakeSemiFungible LUMY nonce-5)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron pool-id lumy lumy dhcd-id [5])
+        (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron lumy lumy pool-id dhcd-id [5])
     ]))
     (let
         (
@@ -257,7 +257,7 @@
         ]
     )
     (print (format "<(C_StakeSemiFungible LUMY E|DH tier-6)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron pool-id lumy lumy edh-id [6])
+        (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron lumy lumy pool-id edh-id [6])
     ]))
     (let
         (

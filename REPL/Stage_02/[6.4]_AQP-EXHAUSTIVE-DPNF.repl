@@ -40,7 +40,7 @@
     )
     (enforce (> (length nonces) 0) "EMMA needs DHB nonces from PopulateBloodshed")
     (print (format "<(C_StakeNonFungible DHB nonce={})> => \"{}\"" [stake-nonce
-        (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron pool-id owner beneficiary dhb-id [stake-nonce])
+        (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron owner beneficiary pool-id dhb-id [stake-nonce])
     ]))
     (let
         (
@@ -73,7 +73,7 @@
             (expect-failure "<<TX-AQP-NF01>> ...and DPDC's HOLDER check answers first, not SCORE's amount check"
                 (format "doesnt hold NFT {} Nonce {}" [dhb-id stake-nonce])
                 (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable
-                    patron pool-id owner beneficiary dhb-id [stake-nonce]))
+                    patron owner beneficiary pool-id dhb-id [stake-nonce]))
         ]
     )
 )
@@ -116,7 +116,7 @@
     )
     (enforce (> (length nonces) 0) "EMMA needs DHN nonces from PopulateNosferatu")
     (print (format "<(C_StakeNonFungible DHN nonce={})> => \"{}\"" [stake-nonce
-        (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron pool-id owner beneficiary dhn-id [stake-nonce])
+        (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron owner beneficiary pool-id dhn-id [stake-nonce])
     ]))
     (let
         (
@@ -167,7 +167,7 @@
                 (stake-nonce:integer (at 0 nonces))
             )
             (print (format "<(C_StakeNonFungible KBN bunny nonce={})> => \"{}\"" [stake-nonce
-                (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron pool-id owner beneficiary kbn-id [stake-nonce])
+                (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron owner beneficiary pool-id kbn-id [stake-nonce])
             ]))
             (let
                 (

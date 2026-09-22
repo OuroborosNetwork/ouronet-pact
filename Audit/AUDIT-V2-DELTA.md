@@ -2125,3 +2125,54 @@ downstream in `FVT|XE>ADMIT-DELEGATION`."* That sentence now also sits in the fu
 canon requires the route to be written where the executor is declared — not one level up where
 only a reader of the capability would find it.
 
+
+---
+
+### 01_TS02-C1 · 02_TS02-C2 · 04_TS02-C3 · 05_TS02-DPAD — COMPLETE, and with them the sweep
+
+The four Stage-2 Talos modules, 180 entrypoints between them. **176 of the 180 were already DONE
+before their own turns arrived** — carried there by the cascade rule, one core module at a time,
+because a Talos wrapper's signature is decided by the core function it calls.
+
+> That is the strongest evidence the ordering was right. The worklist ran **deploy order**: core
+> modules first, Talos last. By the time Talos's own turn came, the work had mostly been done *as a
+> consequence* of doing it correctly underneath. The four turns closed 20 stragglers.
+
+| module | outstanding at its turn | what they were |
+|---|---|---|
+| `01_TS02-C1` | 1 of 65 | `DPSF|C_Issue` — `owner-account`/`creator-account` → `executor`/`executee` |
+| `02_TS02-C2` | 1 of 59 | `DPNF|C_Issue`, the same shape |
+| `04_TS02-C3` | 18 of 42 | six SCR issues, eight stake/unstake, two vault doors, two sync shells |
+| `05_TS02-DPAD` | 9 of 14 | `client` → `executor` across the launchpad fuel/retrieve doors |
+
+#### 172 call sites the arity checker could not see
+
+`04_TS02-C3`'s eight stake/unstake wrappers went from `(patron pool-id owner-id beneficiary-id …)`
+to `(patron executor executee pool-id …)` — a **rotation of slots 1–3**, arity unchanged. Rewritten
+by a one-shot pass that **reads each wrapper's arity out of the Talos source** rather than declaring
+it, then parked. An arity-preserving reorder is not idempotent.
+
+#### Five intra-Talos delegations
+
+`DPSF|C_BulkTransfer` calls `DPDC|C_BulkTransfer`; the four `C_Remove*NonceScore` aliases call their
+`C_Update*NonceScore` siblings — all **inside the same file**, so the entrypoint's own body holds no
+`ref-X::` call at all. Registered INDIRECT with the route named in each function's `@doc`.
+
+> The registry now distinguishes **four** reasons a real proof is invisible to `FORWARDED`: proven
+> in place (binder + enforce on a derived name), a same-module `XI_` hop, a **defpact step**, and an
+> **intra-Talos sibling call**. Each was found by a module refusing to pass check 7, and each was
+> resolved by writing the route down rather than by adding an enforce to satisfy a tool.
+
+#### And a provisional patron slot cleared at the very end
+
+`03_AQP`'s two `XE_*Transfer` helpers carried `owner-id` in the patron slot. Their callers are
+`05_FVT`'s stake flows, which only gained a real `patron` at **module 39** — so the registry's
+`clears-at: 03_AQP` was optimistic.
+
+> **The turn that clears a provisional slot is the turn that gives its CALLER a patron, not the turn
+> of the module the slot lives in.** Recorded in the registry beside the entry.
+
+Four remain, all in `06_VCT`, all registered with the plumbing they need spelled out: threading a
+patron through the vacate recipe's three `require-capability` levels. A contained follow-up,
+deliberately not folded into the sweep's last commit.
+

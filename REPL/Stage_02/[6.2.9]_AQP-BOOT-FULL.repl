@@ -900,7 +900,7 @@
                         ;;i.e. it SCALES PER UNIT HELD and is not a flat per-holder grant.
                         (TS02-C1.DPSF|C_TransferNonce patron patron KST.EMMA dhoc-id 4 1 false)
                         (print (format "<(EMMA stakes 1x nonce 4)> => \"{}\""
-                            [(TS02-C3.AQP-POOL|CC_StakeSemiFungibleCollectable KST.EMMA pool-id KST.EMMA KST.EMMA dhoc-id [4])]))
+                            [(TS02-C3.AQP-POOL|CC_StakeSemiFungibleCollectable KST.EMMA KST.EMMA KST.EMMA pool-id dhoc-id [4])]))
                         (print (format "<(EMMA promile AFTER)> => {}   <(q before)> => {}   <(q after)> => {}"
                             [(AQP-ANK.UR_UB|AggregatePromile KST.EMMA og-class)
                              q-before
@@ -948,7 +948,7 @@
                         (print (format "<(ANHD promile BEFORE)> => {}"
                             [(AQP-ANK.UR_UB|AggregatePromile patron og-class)]))
                         (print (format "<(ANHD stakes 1x nonce 4)> => \"{}\""
-                            [(TS02-C3.AQP-POOL|CC_StakeSemiFungibleCollectable patron pool-id patron patron dhoc-id [4])]))
+                            [(TS02-C3.AQP-POOL|CC_StakeSemiFungibleCollectable patron patron patron pool-id dhoc-id [4])]))
                         (map print
                             [
                             ;;ANSWERED: ONE anchor definition reaches EVERY agency. ANHD's triplet

@@ -2644,8 +2644,7 @@
     [
         (expect-failure "<<EL-6>> the unstake client requires a POSITIVE-length nonce list"
             "Invalid nonces / nonce-amounts: equal positive length required"
-            (TS02-C3.AQP-POOL|CC_UnstakeOrtoFungible KST.ANHD
-                (U|DALOS.UDC_Makeid "ResumeVacPool") KST.ANHD KST.ANHD "MVST-98c486052a51" []))
+            (TS02-C3.AQP-POOL|CC_UnstakeOrtoFungible KST.ANHD KST.ANHD KST.ANHD (U|DALOS.UDC_Makeid "ResumeVacPool") "MVST-98c486052a51" []))
     ]
 )
 (commit-tx)

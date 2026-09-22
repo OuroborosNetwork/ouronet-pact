@@ -72,19 +72,19 @@
     ;;  [AQP-SCORE]
     ;;
     (defun AQP-SCR|C_IssueLiquidityScore:string
-        (patron:string owner-konto:string score-name:string precision:integer lp-denominator:string mx-frozen:decimal mx-sleeping:decimal)
+        (patron:string executor:string score-name:string precision:integer lp-denominator:string mx-frozen:decimal mx-sleeping:decimal)
     )
     (defun AQP-SCR|C_IssueTrueFungibleScore:string
-        (patron:string owner-konto:string score-name:string precision:integer mx-frozen:decimal)
+        (patron:string executor:string score-name:string precision:integer mx-frozen:decimal)
     )
     (defun AQP-SCR|C_IssueOrtoFungibleScore:string
-        (patron:string owner-konto:string score-name:string precision:integer mx-sleeping:decimal mx-hibernated:decimal)
+        (patron:string executor:string score-name:string precision:integer mx-sleeping:decimal mx-hibernated:decimal)
     )
     (defun AQP-SCR|C_IssueSemiFungibleScore:string
-        (patron:string owner-konto:string score-name:string precision:integer sft-equality:bool)
+        (patron:string executor:string score-name:string precision:integer sft-equality:bool)
     )
     (defun AQP-SCR|C_IssueNonFungibleScore:string
-        (patron:string owner-konto:string score-name:string precision:integer nft-score-model:integer)
+        (patron:string executor:string score-name:string precision:integer nft-score-model:integer)
     )
     (defun AQP-SCR|C_RotateScoreOwnership:string (patron:string executor:string executee:string score-id:string))
     (defun AQP-SCR|C_ControlScore:string (patron:string executor:string score-id:string new-can-upgrade:bool new-can-change-owner:bool))
@@ -100,7 +100,7 @@
     (defun AQP-SCR|C_CombineTripletScoreModel:string
         (patron:string executor:string model-name:string bronze-model-id:string silver-model-id:string golden-model-id:string)
     )
-    (defun AQP-SCR|C_IssueScoreFromModel:string (patron:string owner-konto:string model-id:string agency-name:string))
+    (defun AQP-SCR|C_IssueScoreFromModel:string (patron:string executor:string model-id:string agency-name:string))
     (defun AQP-SCR|C_IssueSemiFungibleScoreDefinition:string
         (patron:string executor:string score-id:string dpsf-id:string nonces:[integer] nonce-score-values:[decimal])
     )
@@ -132,9 +132,9 @@
     (defun AQP-POOL|CC_StakeSemiFungibleCollectable:string
         (
             patron:string
+            executor:string
+            executee:string
             pool-id:string
-            owner-id:string
-            beneficiary-id:string
             collectable-id:string
             nonces:[integer]
         )
@@ -142,9 +142,9 @@
     (defun AQP-POOL|CC_UnstakeSemiFungibleCollectable:string
         (
             patron:string
+            executor:string
+            executee:string
             pool-id:string
-            owner-id:string
-            beneficiary-id:string
             collectable-id:string
             nonces:[integer]
             nonce-amounts:[integer]
@@ -153,9 +153,9 @@
     (defun AQP-POOL|CC_StakeNonFungibleCollectable:string
         (
             patron:string
+            executor:string
+            executee:string
             pool-id:string
-            owner-id:string
-            beneficiary-id:string
             collectable-id:string
             nonces:[integer]
         )
@@ -163,9 +163,9 @@
     (defun AQP-POOL|CC_UnstakeNonFungibleCollectable:string
         (
             patron:string
+            executor:string
+            executee:string
             pool-id:string
-            owner-id:string
-            beneficiary-id:string
             collectable-id:string
             nonces:[integer]
             nonce-amounts:[integer]
@@ -173,17 +173,17 @@
     )
     ;;
     (defun AQP-POOL|CC_StakeTrueFungible:string
-        (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
+        (patron:string executor:string executee:string pool-id:string dptf-id:string amount:decimal)
     )
     (defun AQP-POOL|CC_UnstakeTrueFungible:string
-        (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
+        (patron:string executor:string executee:string pool-id:string dptf-id:string amount:decimal)
     )
     (defun AQP-POOL|CC_StakeOrtoFungible:string
         (
             patron:string
+            executor:string
+            executee:string
             pool-id:string
-            owner-id:string
-            beneficiary-id:string
             dpof-id:string
             nonces:[integer]
         )
@@ -191,9 +191,9 @@
     (defun AQP-POOL|CC_UnstakeOrtoFungible:string
         (
             patron:string
+            executor:string
+            executee:string
             pool-id:string
-            owner-id:string
-            beneficiary-id:string
             dpof-id:string
             nonces:[integer]
         )
@@ -272,7 +272,7 @@
         (patron:string executor:string fvt-id:string split-mode:string)
     )
     (defun AQP-FVT|C_IssueGenericEarningVault:string
-        (patron:string owner-konto:string vault-name:string stake-dptf-id:string reward-dptf-id:string)
+        (patron:string executor:string vault-name:string stake-dptf-id:string reward-dptf-id:string)
     )
     (defun AQP-FVT|CC_InjectStream:string
         (patron:string executor:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
@@ -308,7 +308,7 @@
         (patron:string executor:string fvt-ids:[string])
     )
     (defun AQP-FVT|CC_Collect:string
-        (patron:string collector:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
+        (patron:string executor:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
     )
     (defun AQP-DSA|C_DefineDelegationVault:string
         (patron:string executor:string fvt-id:string model-id:string unit-score:integer)
@@ -1208,7 +1208,7 @@
         )
     )
     (defun AQP-SCR|C_IssueLiquidityScore:string
-        (patron:string owner-konto:string score-name:string precision:integer lp-denominator:string mx-frozen:decimal mx-sleeping:decimal)
+        (patron:string executor:string score-name:string precision:integer lp-denominator:string mx-frozen:decimal mx-sleeping:decimal)
         @doc "Issues score-class 0 (LP) in AQP-SCORE and collects resulting IGNIS output on patron."
         (with-capability (P|TS)
             (let
@@ -1217,14 +1217,14 @@
                     (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-SCR::C_IssueLiquidityScore patron owner-konto score-name precision lp-denominator mx-frozen mx-sleeping)
+                    (ref-SCR::C_IssueLiquidityScore patron executor score-name precision lp-denominator mx-frozen mx-sleeping)
                 )
-                (format "Successfully issued Liquidity Score {} for owner {}." [score-name owner-konto])
+                (format "Successfully issued Liquidity Score {} for owner {}." [score-name executor])
             )
         )
     )
     (defun AQP-SCR|C_IssueTrueFungibleScore:string
-        (patron:string owner-konto:string score-name:string precision:integer mx-frozen:decimal)
+        (patron:string executor:string score-name:string precision:integer mx-frozen:decimal)
         @doc "Issues score-class 1 (DPTF) in AQP-SCORE and collects resulting IGNIS output on patron."
         (with-capability (P|TS)
             (let
@@ -1233,14 +1233,14 @@
                     (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-SCR::C_IssueTrueFungibleScore patron owner-konto score-name precision mx-frozen)
+                    (ref-SCR::C_IssueTrueFungibleScore patron executor score-name precision mx-frozen)
                 )
-                (format "Successfully issued TrueFungible Score {} for owner {}." [score-name owner-konto])
+                (format "Successfully issued TrueFungible Score {} for owner {}." [score-name executor])
             )
         )
     )
     (defun AQP-SCR|C_IssueOrtoFungibleScore:string
-        (patron:string owner-konto:string score-name:string precision:integer mx-sleeping:decimal mx-hibernated:decimal)
+        (patron:string executor:string score-name:string precision:integer mx-sleeping:decimal mx-hibernated:decimal)
         @doc "Issues score-class 2 (DPOF) in AQP-SCORE and collects resulting IGNIS output on patron."
         (with-capability (P|TS)
             (let
@@ -1249,14 +1249,14 @@
                     (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-SCR::C_IssueOrtoFungibleScore patron owner-konto score-name precision mx-sleeping mx-hibernated)
+                    (ref-SCR::C_IssueOrtoFungibleScore patron executor score-name precision mx-sleeping mx-hibernated)
                 )
-                (format "Successfully issued OrtoFungible Score {} for owner {}." [score-name owner-konto])
+                (format "Successfully issued OrtoFungible Score {} for owner {}." [score-name executor])
             )
         )
     )
     (defun AQP-SCR|C_IssueSemiFungibleScore:string
-        (patron:string owner-konto:string score-name:string precision:integer sft-equality:bool)
+        (patron:string executor:string score-name:string precision:integer sft-equality:bool)
         @doc "Issues score-class 3 (DPSF) in AQP-SCORE and collects resulting IGNIS output on patron."
         (with-capability (P|TS)
             (let
@@ -1265,14 +1265,14 @@
                     (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-SCR::C_IssueSemiFungibleScore patron owner-konto score-name precision sft-equality)
+                    (ref-SCR::C_IssueSemiFungibleScore patron executor score-name precision sft-equality)
                 )
-                (format "Successfully issued SemiFungible Score {} for owner {}." [score-name owner-konto])
+                (format "Successfully issued SemiFungible Score {} for owner {}." [score-name executor])
             )
         )
     )
     (defun AQP-SCR|C_IssueNonFungibleScore:string
-        (patron:string owner-konto:string score-name:string precision:integer nft-score-model:integer)
+        (patron:string executor:string score-name:string precision:integer nft-score-model:integer)
         @doc "Issues score-class 4 (DPNF) in AQP-SCORE and collects resulting IGNIS output on patron."
         (with-capability (P|TS)
             (let
@@ -1281,9 +1281,9 @@
                     (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-SCR::C_IssueNonFungibleScore patron owner-konto score-name precision nft-score-model)
+                    (ref-SCR::C_IssueNonFungibleScore patron executor score-name precision nft-score-model)
                 )
-                (format "Successfully issued NonFungible Score {} for owner {}." [score-name owner-konto])
+                (format "Successfully issued NonFungible Score {} for owner {}." [score-name executor])
             )
         )
     )
@@ -1409,8 +1409,8 @@
             )
         )
     )
-    (defun AQP-SCR|C_IssueScoreFromModel:string (patron:string owner-konto:string model-id:string agency-name:string)
-        @doc "FACTORY (Talos): issue a conforming score entity from <model-id> for owner-konto; collects IGNIS on \
+    (defun AQP-SCR|C_IssueScoreFromModel:string (patron:string executor:string model-id:string agency-name:string)
+        @doc "FACTORY (Talos): issue a conforming score entity from <model-id> for executor; collects IGNIS on \
             \ patron. Returns the (score | triplet) id."
         (with-capability (P|TS)
             (let
@@ -1418,7 +1418,7 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                     (ico:object{IgnisCollectorV3.OutputCumulator}
-                        (ref-SCR::C_IssueScoreFromModel patron owner-konto model-id agency-name)
+                        (ref-SCR::C_IssueScoreFromModel patron executor model-id agency-name)
                     )
                     (entity-id:string (at 0 (at "output" ico)))
                 )
@@ -1570,43 +1570,43 @@
     )
     ;;
     (defun AQP-POOL|CC_StakeTrueFungible:string
-        (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
+        (patron:string executor:string executee:string pool-id:string dptf-id:string amount:decimal)
         @doc "Stake DPTF (or native|F| LP) into pool-id. Talos client shell: event cap + FVT::CC_TrueFungibleStakeFlow direction=true."
-        (with-capability (AQP|C>STAKE-TRUE-FUNGIBLE patron pool-id owner-id beneficiary-id dptf-id amount)
+        (with-capability (AQP|C>STAKE-TRUE-FUNGIBLE patron pool-id executor executee dptf-id amount)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::CC_TrueFungibleStakeFlow patron owner-id beneficiary-id pool-id dptf-id amount true)
+                    (ref-FVT::CC_TrueFungibleStakeFlow patron executor executee pool-id dptf-id amount true)
                 )
-                (UC_FormatStakeTrueFungibleResult pool-id owner-id beneficiary-id dptf-id amount)
+                (UC_FormatStakeTrueFungibleResult pool-id executor executee dptf-id amount)
             )
         )
     )
     (defun AQP-POOL|CC_UnstakeTrueFungible:string
-        (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
+        (patron:string executor:string executee:string pool-id:string dptf-id:string amount:decimal)
         @doc "Unstake DPTF from pool-id. Talos client shell: event cap + FVT::CC_TrueFungibleStakeFlow direction=false."
-        (with-capability (AQP|C>UNSTAKE-TRUE-FUNGIBLE patron pool-id owner-id beneficiary-id dptf-id amount)
+        (with-capability (AQP|C>UNSTAKE-TRUE-FUNGIBLE patron pool-id executor executee dptf-id amount)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::CC_TrueFungibleStakeFlow patron owner-id beneficiary-id pool-id dptf-id amount false)
+                    (ref-FVT::CC_TrueFungibleStakeFlow patron executor executee pool-id dptf-id amount false)
                 )
-                (UC_FormatUnstakeTrueFungibleResult pool-id owner-id beneficiary-id dptf-id amount)
+                (UC_FormatUnstakeTrueFungibleResult pool-id executor executee dptf-id amount)
             )
         )
     )
     (defun AQP-POOL|CC_StakeOrtoFungible:string
         (
             patron:string
+            executor:string
+            executee:string
             pool-id:string
-            owner-id:string
-            beneficiary-id:string
             dpof-id:string
             nonces:[integer]
         )
@@ -1618,7 +1618,7 @@
                 (nonce-count:integer (length nonces))
                 (nonce-amounts:[decimal] (ref-DPOF::UR_NoncesSupplies dpof-id nonces))
             )
-            (with-capability (AQP|C>STAKE-ORTO-FUNGIBLE patron pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts)
+            (with-capability (AQP|C>STAKE-ORTO-FUNGIBLE patron pool-id executor executee dpof-id nonces nonce-amounts)
                 (let
                     (
                         (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
@@ -1626,10 +1626,10 @@
                     )
                     (ref-IGNIS::XE_CollectIgnis patron
                         (ref-FVT::CC_OrtoFungibleStakeFlow
-                            patron owner-id beneficiary-id pool-id dpof-id nonces nonce-amounts true
+                            patron executor executee pool-id dpof-id nonces nonce-amounts true
                         )
                     )
-                    (UC_FormatStakeOrtoFungibleResult pool-id owner-id beneficiary-id dpof-id nonce-count)
+                    (UC_FormatStakeOrtoFungibleResult pool-id executor executee dpof-id nonce-count)
                 )
             )
         )
@@ -1637,13 +1637,13 @@
     (defun AQP-POOL|CC_UnstakeOrtoFungible:string
         (
             patron:string
+            executor:string
+            executee:string
             pool-id:string
-            owner-id:string
-            beneficiary-id:string
             dpof-id:string
             nonces:[integer]
         )
-        @doc "Unstake whole DPOF nonces via C_Transfer from the (owner, beneficiary) row. M5: beneficiary-id is \
+        @doc "Unstake whole DPOF nonces via C_Transfer from the (owner, beneficiary) row. M5: executee is \
             \ caller-supplied (self OR foreign) so the exact staked row is located — mirrors TF. Poll UR_NoncesSupplies, \
             \ then @event cap with resolved legs."
         (let
@@ -1653,7 +1653,7 @@
                 (nonce-count:integer (length nonces))
                 (nonce-amounts:[decimal] (ref-DPOF::UR_NoncesSupplies dpof-id nonces))
             )
-            (with-capability (AQP|C>UNSTAKE-ORTO-FUNGIBLE patron pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts)
+            (with-capability (AQP|C>UNSTAKE-ORTO-FUNGIBLE patron pool-id executor executee dpof-id nonces nonce-amounts)
                 (let
                     (
                         (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
@@ -1661,10 +1661,10 @@
                     )
                     (ref-IGNIS::XE_CollectIgnis patron
                         (ref-FVT::CC_OrtoFungibleStakeFlow
-                            patron owner-id beneficiary-id pool-id dpof-id nonces nonce-amounts false
+                            patron executor executee pool-id dpof-id nonces nonce-amounts false
                         )
                     )
-                    (UC_FormatUnstakeOrtoFungibleResult pool-id owner-id dpof-id nonce-count)
+                    (UC_FormatUnstakeOrtoFungibleResult pool-id executor dpof-id nonce-count)
                 )
             )
         )
@@ -1673,9 +1673,9 @@
     (defun AQP-POOL|CC_StakeSemiFungibleCollectable:string
         (
             patron:string
+            executor:string
+            executee:string
             pool-id:string
-            owner-id:string
-            beneficiary-id:string
             collectable-id:string
             nonces:[integer]
         )
@@ -1685,11 +1685,11 @@
                 (ref-DPDC:module{DpdcV2} DPDC)
                 ;;
                 (nonce-count:integer (length nonces))
-                (nonce-amounts:[integer] (ref-DPDC::UR_AccountNoncesSupplies owner-id collectable-id true nonces))
+                (nonce-amounts:[integer] (ref-DPDC::UR_AccountNoncesSupplies executor collectable-id true nonces))
             )
             (with-capability
                 (AQP|C>STAKE-SEMI-FUNGIBLE-COLLECTABLE
-                    patron pool-id owner-id beneficiary-id collectable-id nonces nonce-amounts
+                    patron pool-id executor executee collectable-id nonces nonce-amounts
                 )
                 (let
                     (
@@ -1698,11 +1698,11 @@
                     )
                     (ref-IGNIS::XE_CollectIgnis patron
                         (ref-FVT::CC_CollectableStakeFlow
-                            patron owner-id beneficiary-id pool-id collectable-id true nonces nonce-amounts true
+                            patron executor executee pool-id collectable-id true nonces nonce-amounts true
                         )
                     )
                     (UC_FormatStakeCollectableResult
-                        pool-id owner-id beneficiary-id collectable-id true nonce-count
+                        pool-id executor executee collectable-id true nonce-count
                     )
                 )
             )
@@ -1711,14 +1711,14 @@
     (defun AQP-POOL|CC_UnstakeSemiFungibleCollectable:string
         (
             patron:string
+            executor:string
+            executee:string
             pool-id:string
-            owner-id:string
-            beneficiary-id:string
             collectable-id:string
             nonces:[integer]
             nonce-amounts:[integer]
         )
-        @doc "Unstake DPSF collectable (son=true) from the (owner, beneficiary) row. M5: beneficiary-id caller-supplied \
+        @doc "Unstake DPSF collectable (son=true) from the (owner, beneficiary) row. M5: executee caller-supplied \
             \ (self OR foreign) so the exact staked row is located — mirrors TF."
         (let
             (
@@ -1726,7 +1726,7 @@
             )
             (with-capability
                 (AQP|C>UNSTAKE-SEMI-FUNGIBLE-COLLECTABLE
-                    patron pool-id owner-id beneficiary-id collectable-id nonces nonce-amounts
+                    patron pool-id executor executee collectable-id nonces nonce-amounts
                 )
                 (let
                     (
@@ -1735,10 +1735,10 @@
                     )
                     (ref-IGNIS::XE_CollectIgnis patron
                         (ref-FVT::CC_CollectableStakeFlow
-                            patron owner-id beneficiary-id pool-id collectable-id true nonces nonce-amounts false
+                            patron executor executee pool-id collectable-id true nonces nonce-amounts false
                         )
                     )
-                    (UC_FormatUnstakeCollectableResult pool-id owner-id collectable-id true nonce-count)
+                    (UC_FormatUnstakeCollectableResult pool-id executor collectable-id true nonce-count)
                 )
             )
         )
@@ -1746,9 +1746,9 @@
     (defun AQP-POOL|CC_StakeNonFungibleCollectable:string
         (
             patron:string
+            executor:string
+            executee:string
             pool-id:string
-            owner-id:string
-            beneficiary-id:string
             collectable-id:string
             nonces:[integer]
         )
@@ -1758,11 +1758,11 @@
                 (ref-DPDC:module{DpdcV2} DPDC)
                 ;;
                 (nonce-count:integer (length nonces))
-                (nonce-amounts:[integer] (ref-DPDC::UR_AccountNoncesSupplies owner-id collectable-id false nonces))
+                (nonce-amounts:[integer] (ref-DPDC::UR_AccountNoncesSupplies executor collectable-id false nonces))
             )
             (with-capability
                 (AQP|C>STAKE-NON-FUNGIBLE-COLLECTABLE
-                    patron pool-id owner-id beneficiary-id collectable-id nonces nonce-amounts
+                    patron pool-id executor executee collectable-id nonces nonce-amounts
                 )
                 (let
                     (
@@ -1771,11 +1771,11 @@
                     )
                     (ref-IGNIS::XE_CollectIgnis patron
                         (ref-FVT::CC_CollectableStakeFlow
-                            patron owner-id beneficiary-id pool-id collectable-id false nonces nonce-amounts true
+                            patron executor executee pool-id collectable-id false nonces nonce-amounts true
                         )
                     )
                     (UC_FormatStakeCollectableResult
-                        pool-id owner-id beneficiary-id collectable-id false nonce-count
+                        pool-id executor executee collectable-id false nonce-count
                     )
                 )
             )
@@ -1784,14 +1784,14 @@
     (defun AQP-POOL|CC_UnstakeNonFungibleCollectable:string
         (
             patron:string
+            executor:string
+            executee:string
             pool-id:string
-            owner-id:string
-            beneficiary-id:string
             collectable-id:string
             nonces:[integer]
             nonce-amounts:[integer]
         )
-        @doc "Unstake DPNF collectable (son=false) from the (owner, beneficiary) row. M5: beneficiary-id caller-supplied \
+        @doc "Unstake DPNF collectable (son=false) from the (owner, beneficiary) row. M5: executee caller-supplied \
             \ (self OR foreign) so the exact staked row is located — mirrors TF."
         (let
             (
@@ -1799,7 +1799,7 @@
             )
             (with-capability
                 (AQP|C>UNSTAKE-NON-FUNGIBLE-COLLECTABLE
-                    patron pool-id owner-id beneficiary-id collectable-id nonces nonce-amounts
+                    patron pool-id executor executee collectable-id nonces nonce-amounts
                 )
                 (let
                     (
@@ -1808,10 +1808,10 @@
                     )
                     (ref-IGNIS::XE_CollectIgnis patron
                         (ref-FVT::CC_CollectableStakeFlow
-                            patron owner-id beneficiary-id pool-id collectable-id false nonces nonce-amounts false
+                            patron executor executee pool-id collectable-id false nonces nonce-amounts false
                         )
                     )
-                    (UC_FormatUnstakeCollectableResult pool-id owner-id collectable-id false nonce-count)
+                    (UC_FormatUnstakeCollectableResult pool-id executor collectable-id false nonce-count)
                 )
             )
         )
@@ -2261,7 +2261,7 @@
         )
     )
     (defun AQP-FVT|C_IssueGenericEarningVault:string
-        (patron:string owner-konto:string vault-name:string stake-dptf-id:string reward-dptf-id:string)
+        (patron:string executor:string vault-name:string stake-dptf-id:string reward-dptf-id:string)
         @doc "Stand up a complete single-asset earning Vault in ONE transaction and ONE IGNIS \
             \ collection: stake a true fungible, earn another true fungible. Composes the six core \
             \ operations a Vault needs and concatenates their cumulators, so the caller pays once \
@@ -2315,7 +2315,7 @@
                     (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
                     (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
                     ;;The POOL's executor is the STAKED ASSET's owner konto -- which is NOT
-                    ;;necessarily `owner-konto`, the account that will own the score and vault.
+                    ;;necessarily `executor`, the account that will own the score and vault.
                     ;;A vault operator may stake a token somebody else issued. Derived, not assumed.
                     (stake-asset-owner:string
                         (ref-AQP::URC_AqpOwnerKontoFromClassAndAsset GV|POOL_CLASS_TF stake-dptf-id))
@@ -2324,17 +2324,17 @@
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators
                         [
                             (ref-SCR::C_IssueTrueFungibleScore
-                                patron owner-konto score-name GV|PRECISION GV|MX_FROZEN)
+                                patron executor score-name GV|PRECISION GV|MX_FROZEN)
                             (ref-AQP::C_Issue patron stake-asset-owner pool-name stake-dptf-id GV|POOL_CLASS_TF)
                             (ref-AQP::C_AddScore patron stake-asset-owner pool-id score-id)
                             (ref-FVT::C_Issue
-                                patron owner-konto fvt-name GV|FVT_CLASS_VAULT GV|COMMON_BAR)
-                            ;;The FVT's executor here IS `owner-konto` -- C_Issue two lines up
+                                patron executor fvt-name GV|FVT_CLASS_VAULT GV|COMMON_BAR)
+                            ;;The FVT's executor here IS `executor` -- C_Issue two lines up
                             ;;makes that account the vault's owner, so it is derived, not assumed.
                             (ref-FVT::C_AddScoreEntity
-                                patron owner-konto fvt-id GV|SCORE_ENTITY_SCORE score-id)
+                                patron executor fvt-id GV|SCORE_ENTITY_SCORE score-id)
                             (ref-FVT::C_AddRewardLink
-                                patron owner-konto fvt-id reward-dptf-id false GV|COMMON_BAR)
+                                patron executor fvt-id reward-dptf-id false GV|COMMON_BAR)
                         ]
                         []
                     )
@@ -2583,7 +2583,7 @@
         )
     )
     (defun AQP-FVT|CC_Collect:string
-        (patron:string collector:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
+        (patron:string executor:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
         @doc "Collects pending reward DPTF for patron on one score-entity from fvt-id; collects IGNIS on patron."
         (with-capability (P|TS)
             (let
@@ -2595,7 +2595,7 @@
                     (bal-before:decimal (ref-DPTF::UR_AccountSupply reward-dptf-id patron))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-FVT::CC_Collect patron collector fvt-id score-entity-type score-entity-id reward-dptf-id)
+                    (ref-FVT::CC_Collect patron executor fvt-id score-entity-type score-entity-id reward-dptf-id)
                 )
                 (ref-TS01-A::XB_DynamicFuelSTOA)
                 (let

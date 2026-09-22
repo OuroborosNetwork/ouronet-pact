@@ -194,7 +194,7 @@
                             )
                             (print (format "<(C_StakeNonFungible DHBunnies KBN nonce {})> => \"{}\"" [auryn-rain-nonce
                                 (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable
-                                    patron bunnies-pool owner owner kbn-id [auryn-rain-nonce]
+                                    patron owner owner bunnies-pool kbn-id [auryn-rain-nonce]
                                 )
                             ]))
                         )
@@ -204,7 +204,7 @@
                         "HET needs SilverSnakePower promile - Auryn Rain KBN stake on DHBunnies")
                 )
                 (print (format "<(CC_StakeTrueFungible DHOuroLp LP {})> => \"{}\"" [stake-amt
-                    (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner owner lp-id stake-amt)
+                    (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron owner owner pool-id lp-id stake-amt)
                 ]))
                 ;; ---------------------------------------------------------------------------------
                 ;; PROOF 1 - default mode is HOMOGENEOUS

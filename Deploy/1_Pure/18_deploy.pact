@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 18 of 24
 ;; This is STEP 18 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-17 must have run first, including the init steps between deploys.
-;; 1 source file(s), 203,548 gas measured in the REPL gas model, 209,207 bytes
+;; 1 source file(s), 203,548 gas measured in the REPL gas model, 209,221 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/05_FVT.pact
@@ -3162,7 +3162,7 @@
                         ;;===>PHASE 1===
                         ;; PHASE 1.1 — Custody transfer · UrStoa ≡ X_UR|Transfer
                         (ref-AQP::XE_TrueFungibleTransfer
-                            pool-id executor executee dptf-id amount direction)
+                            patron pool-id executor executee dptf-id amount direction)
                         ;; PHASE 1.2 — Per-pool DPTFTracker · UrStoa ≡ N/A
                         (ref-AQP::XE_TrueFungiblePoolTracker
                             pool-id executor executee dptf-id amount direction)
@@ -3322,7 +3322,7 @@
                         ;;===>PHASE 1===
                         ;; PHASE 1.1 — Custody transfer · UrStoa ≡ X_UR|Transfer
                         (ref-AQP::XE_CollectableTransfer
-                            pool-id executor executee collectable-id son nonces nonce-amounts direction)
+                            patron pool-id executor executee collectable-id son nonces nonce-amounts direction)
                         ;; PHASE 1.2 — Per-pool DPSF/DPNF tracker · UrStoa ≡ N/A
                         (ref-AQP::XE_CollectablePoolTracker
                             pool-id executor executee collectable-id son nonces nonce-amounts direction)

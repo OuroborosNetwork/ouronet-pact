@@ -133,7 +133,7 @@
         ]))
         (print "--- [TX-FVT-NF-01 · 03 · CC_StakeNonFungibleCollectable] ---")
         (print (format "<(AQP-POOL|CC_StakeNonFungibleCollectable nonce {})> => \"{}\"" [stake-nonce
-            (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron pool-id owner-id beneficiary-id dpnf-id [stake-nonce])
+            (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron owner-id beneficiary-id pool-id dpnf-id [stake-nonce])
         ]))
         (let
             (
@@ -340,7 +340,7 @@
             (print "--- [TX-FVT-NF-03 · 01 · CC_UnstakeNonFungibleCollectable] ---")
             (print (format "<(AQP-POOL|CC_UnstakeNonFungibleCollectable nonce {})> => \"{}\"" [stake-nonce
                 (ref-TS02-C3::AQP-POOL|CC_UnstakeNonFungibleCollectable
-                    patron pool-id owner-id beneficiary-id dpnf-id [stake-nonce] [1])
+                    patron owner-id beneficiary-id pool-id dpnf-id [stake-nonce] [1])
             ]))
             (print "--- [TX-FVT-NF-03 · 02 · post-unstake reads + expect] ---")
             (let
@@ -413,7 +413,7 @@
                 (format "<<TX-FVT-NF-04 expect-failure>> unstake a non-staked NF nonce must fail" [])
                 "Invalid collectable pool custody: pool class/collectable-id, stake"
                 (ref-TS02-C3::AQP-POOL|CC_UnstakeNonFungibleCollectable
-                    patron pool-id owner-id beneficiary-id dpnf-id [held-nonce] [1]))
+                    patron owner-id beneficiary-id pool-id dpnf-id [held-nonce] [1]))
         ]
     )
 )
@@ -463,7 +463,7 @@
             )
             ;;==== TX-FVT-NF-05 · 01 · owner ANHD stakes FOR foreign beneficiary EMMA ====
             (print "--- [TX-FVT-NF-05 · 01 · stake owner=ANHD, beneficiary=EMMA] ---")
-            (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron pool-id owner-id foreign-ben dpnf-id [stake-nonce])
+            (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron owner-id foreign-ben pool-id dpnf-id [stake-nonce])
             (let
                 (
                     (ben-bal:decimal (ref-AQP::UR_AQP|DPNFTrackerBalance pool-id dpnf-id owner-id foreign-ben stake-nonce))
@@ -479,7 +479,7 @@
             )
             ;;==== TX-FVT-NF-05 · 02 · non-self unstake returns the nonce to the OWNER (ANHD) ====
             (print "--- [TX-FVT-NF-05 · 02 · unstake owner=ANHD, beneficiary=EMMA] ---")
-            (ref-TS02-C3::AQP-POOL|CC_UnstakeNonFungibleCollectable patron pool-id owner-id foreign-ben dpnf-id [stake-nonce] [1])
+            (ref-TS02-C3::AQP-POOL|CC_UnstakeNonFungibleCollectable patron owner-id foreign-ben pool-id dpnf-id [stake-nonce] [1])
             (let
                 (
                     (ben-bal-post:decimal (ref-AQP::UR_AQP|DPNFTrackerBalance pool-id dpnf-id owner-id foreign-ben stake-nonce))
@@ -578,7 +578,7 @@
             (
                 (nns0:integer (ref-AQP::UR_AQP|PoolNns pool-id))
                 (unn0:integer (ref-AQP::UR_AQP|UserUnn pool-id beneficiary-id))
-                (x:string (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron pool-id owner-id beneficiary-id dpnf-id [stake-nonce]))
+                (x:string (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron owner-id beneficiary-id pool-id dpnf-id [stake-nonce]))
             )
             (let
                 (
@@ -698,7 +698,7 @@
                             (ref-TS02-C2::DPNF|C_Create patron (DPDC.UR_Verum5 dpnf-id false) dpnf-id (NfSyncProbe.UC_DpnfNonceRows n))
                             (let ((minted:[integer] (take (- n) (ref-DPDC::URH_AccountNonces source dpnf-id false))))
                                 (ref-TS02-C2::DPNF|C_TransferNonces patron source owner-id dpnf-id minted amts false)
-                                (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron pool-id owner-id ben dpnf-id minted)
+                                (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron owner-id ben pool-id dpnf-id minted)
                                 (let ((g0:integer (env-gas)))
                                     (if drain
                                         (ref-TS02-C3::AQP-POOL|CCp_BatchDrainCollectable patron pool-id dpnf-id false [owner-id] [ben] [minted] [amts])
@@ -827,7 +827,7 @@
                                     (ref-TS02-C3::AQP-POOL|C_Issue patron (AQP-POOL.URC_AqpOwnerKontoFromClassAndAsset 4 kbn-id) pool kbn-id 4)
                                     (ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id score-id)
                                     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron (ref-U|DALOS::UDC_Makeid (format "{}Fvt" [pool])) patron score-id ouro-id)
-                                    (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron pool-id owner-id ben kbn-id ns)
+                                    (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron owner-id ben pool-id kbn-id ns)
                                     (let ((g0:integer (env-gas)))
                                         (if drain
                                             (ref-TS02-C3::AQP-POOL|CCp_BatchDrainCollectable patron pool-id kbn-id false [owner-id] [ben] [ns] [amts])

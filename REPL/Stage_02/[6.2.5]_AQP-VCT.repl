@@ -81,7 +81,7 @@
     )
     ;; re-stake 100 OURO so the rehaul path has inventory to scan + vacate
     (print (format "<(restake 100 for rehaul vacate)> => \"{}\""
-        [(ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id 100.0)]))
+        [(ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron owner-id beneficiary-id pool-id ouro-id 100.0)]))
     (let
         (
             (tracker-work:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id beneficiary-id))
@@ -146,7 +146,7 @@
     (enforce (= 1 (ref-AQP::UR_AQP|PoolAqpClass pool-id)) "TX-VCT-CC01: expected a class-1 pool")
     ;; re-stake 100 OURO so the agnostic dispatcher has native-TF inventory to scan + vacate
     (print (format "<(restake 100 for CC_FullVacate)> => \"{}\""
-        [(ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id 100.0)]))
+        [(ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron owner-id beneficiary-id pool-id ouro-id 100.0)]))
     (let
         (
             (tracker-pre:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id beneficiary-id))
@@ -260,7 +260,7 @@
         (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
     ]))
     (print (format "<(TS02-C3.AQP-POOL|CC_StakeTrueFungible)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id stake-amount)
+        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron owner-id beneficiary-id pool-id ouro-id stake-amount)
     ]))
     (let
         (
@@ -335,7 +335,7 @@
         (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron (DPOF.UR_Konto dpof-id) owner-id dpof-id false) true)
     (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
     (print (format "<(restake OF nonce {})> => \"{}\"" [stake-nonce
-        (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron pool-id owner-id beneficiary-id dpof-id [stake-nonce])]))
+        (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron owner-id beneficiary-id pool-id dpof-id [stake-nonce])]))
     (let ((tracker-pre:decimal (ref-AQP::UR_AQP|DPOFTrackerBalance pool-id dpof-id owner-id beneficiary-id stake-nonce)))
         (enforce (> tracker-pre 0.0) "TX-VCT-L01b: need OF stake inventory")
         (print (format "<(pre OF tracker)> => {}" [tracker-pre]))
@@ -407,10 +407,10 @@
         (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
     ]))
     (print (format "<(TS02-C3.AQP-POOL|CC_StakeSemiFungibleCollectable owner-a)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron pool-id owner-a beneficiary-a dpsf-id [nonce-a])
+        (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron owner-a beneficiary-a pool-id dpsf-id [nonce-a])
     ]))
     (print (format "<(TS02-C3.AQP-POOL|CC_StakeSemiFungibleCollectable owner-b)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron pool-id owner-b beneficiary-b dpsf-id [nonce-b])
+        (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron owner-b beneficiary-b pool-id dpsf-id [nonce-b])
     ]))
     (let
         (
@@ -513,9 +513,9 @@
     ;; re-enable stake + re-stake both owners' nonces so the rehaul path has a full collection to scan
     (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
     (print (format "<(restake SF owner-a)> => \"{}\""
-        [(ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron pool-id owner-a beneficiary-a dpsf-id [nonce-a])]))
+        [(ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron owner-a beneficiary-a pool-id dpsf-id [nonce-a])]))
     (print (format "<(restake SF owner-b)> => \"{}\""
-        [(ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron pool-id owner-b beneficiary-b dpsf-id [nonce-b])]))
+        [(ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron owner-b beneficiary-b pool-id dpsf-id [nonce-b])]))
     (let ((legs-pre:integer (at "leg-count" (ref-VCT::URH_VacateCollectableInventory pool-id dpsf-id true))))
         (enforce (> legs-pre 0) "TX-VCT-L02b: need SF stake inventory")
         (print (format "<(pre SF legs)> => {}" [legs-pre]))
@@ -582,9 +582,9 @@
     ;; PARTIAL batch can open a vacate campaign without draining the pool — the leftover leg keeps it open.
     (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
     (print (format "<(restake SF owner-a)> => \"{}\""
-        [(ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron pool-id owner-a beneficiary-a dpsf-id [nonce-a])]))
+        [(ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron owner-a beneficiary-a pool-id dpsf-id [nonce-a])]))
     (print (format "<(restake SF owner-b)> => \"{}\""
-        [(ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron pool-id owner-b beneficiary-b dpsf-id [nonce-b])]))
+        [(ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron owner-b beneficiary-b pool-id dpsf-id [nonce-b])]))
     (let
         (
             (plan:object (ref-VCT::URHC_BuildVacateSlicePlan pool-id dpsf-id vacate-kind-dpsf 2))
@@ -851,7 +851,7 @@
         ]))
         (print (format "<(TS02-C3.AQP-POOL|CC_StakeNonFungibleCollectable nonce {})> => \"{}\"" [
             stake-nonce
-            (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron pool-id owner-id beneficiary-id dpnf-id [stake-nonce])
+            (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron owner-id beneficiary-id pool-id dpnf-id [stake-nonce])
         ]))
         (let
             (
@@ -975,7 +975,7 @@
             (ref-TS02-C2::DPNF|C_TransferNonces patron source owner-id dpnf-id [stake-nonce] [1] false)
         ]))
         (print (format "<(TS02-C3.AQP-POOL|CC_StakeNonFungibleCollectable)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron pool-id owner-id beneficiary-id dpnf-id [stake-nonce])
+            (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron owner-id beneficiary-id pool-id dpnf-id [stake-nonce])
         ]))
         (let
             (
@@ -1051,7 +1051,7 @@
     )
     ;; stake already enabled after DPNF02's finalize — just re-stake the DHN nonce (owned by ANHD)
     (print (format "<(restake DHN nonce {})> => \"{}\"" [stake-nonce
-        (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron pool-id owner-id beneficiary-id dpnf-id [stake-nonce])]))
+        (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron owner-id beneficiary-id pool-id dpnf-id [stake-nonce])]))
     (let ((legs-pre:integer (at "leg-count" (ref-VCT::URH_VacateCollectableInventory pool-id dpnf-id false))))
         (enforce (> legs-pre 0) "TX-VCT-DPNF02b: need NF stake inventory")
         (print (format "<(pre NF legs)> => {}" [legs-pre]))
@@ -1164,7 +1164,7 @@
             (ref-TS02-C2::DPNF|C_TransferNonces patron source owner-id dpnf-id [stake-nonce] [1] false)
         ]))
         (print (format "<(TS02-C3.AQP-POOL|CC_StakeNonFungibleCollectable)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron pool-id owner-id beneficiary-id dpnf-id [stake-nonce])
+            (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron owner-id beneficiary-id pool-id dpnf-id [stake-nonce])
         ]))
         (let
             (
@@ -1234,7 +1234,7 @@
         (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
     ]))
     (print (format "<(TS02-C3.AQP-POOL|CC_StakeTrueFungible)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id stake-amount)
+        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron owner-id beneficiary-id pool-id ouro-id stake-amount)
     ]))
     (map print
         [
@@ -1303,10 +1303,10 @@
     ;; Two stakes → two TF legs if different beneficiaries; same owner×ben collapses to one row.
     ;; Use amount-only: stake once, then try finalize with a zeroed amount batch that doesn't clear inventory.
     (print (format "<(TS02-C3.AQP-POOL|CC_StakeTrueFungible)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id stake-amount)
+        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron owner-id beneficiary-id pool-id ouro-id stake-amount)
     ]))
     (print (format "<(TS02-C3.AQP-POOL|CC_StakeTrueFungible second)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id stake-amount)
+        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron owner-id beneficiary-id pool-id ouro-id stake-amount)
     ]))
     (let
         (
@@ -1366,7 +1366,7 @@
         (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
     ]))
     (print (format "<(TS02-C3.AQP-POOL|CC_StakeTrueFungible)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id stake-amount)
+        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron owner-id beneficiary-id pool-id ouro-id stake-amount)
     ]))
     (let
         (
@@ -1440,7 +1440,7 @@
         (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
     ]))
     (print (format "<(TS02-C3.AQP-POOL|CC_StakeTrueFungible owner-a)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-a beneficiary-a ouro-id stake-amount)
+        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron owner-a beneficiary-a pool-id ouro-id stake-amount)
     ]))
     ;; Patron IGNIS + EMMA owner: both keys (same pattern as TX-VCT-L02).
     (env-sigs
@@ -1450,7 +1450,7 @@
         ]
     )
     (print (format "<(TS02-C3.AQP-POOL|CC_StakeTrueFungible owner-b)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-b beneficiary-b ouro-id stake-amount)
+        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron owner-b beneficiary-b pool-id ouro-id stake-amount)
     ]))
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
     (let
@@ -1553,7 +1553,7 @@
         (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id)
     ]))
     (print (format "<(TS02-C3.AQP-POOL|CC_StakeTrueFungible owner-a)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-a beneficiary-a ouro-id stake-amount)
+        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron owner-a beneficiary-a pool-id ouro-id stake-amount)
     ]))
     (env-sigs
         [
@@ -1562,7 +1562,7 @@
         ]
     )
     (print (format "<(TS02-C3.AQP-POOL|CC_StakeTrueFungible owner-b)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-b beneficiary-b ouro-id stake-amount)
+        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron owner-b beneficiary-b pool-id ouro-id stake-amount)
     ]))
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
     (let
@@ -1658,7 +1658,7 @@
     ]))
     ;; Owner-a: existing nonce-a. Owner-b: mint → transfer → stake (2 owner-rows for N=2).
     (print (format "<(TS02-C3.AQP-POOL|CC_StakeOrtoFungible owner-a)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron pool-id owner-a beneficiary-a dpof-id [nonce-a])
+        (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron owner-a beneficiary-a pool-id dpof-id [nonce-a])
     ]))
     (print (format "<(DPOF|C_Mint L06 emma)> => \"{}\"" [
         (ref-TS01-C1::DPOF|C_Mint patron patron dpof-id 1.0 [{"vct-l06": true}])
@@ -1673,7 +1673,7 @@
             (ref-TS01-C1::DPOF|C_Transfer patron patron owner-b dpof-id [nonce-b] true)
         ]))
         (print (format "<(TS02-C3.AQP-POOL|CC_StakeOrtoFungible owner-b)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron pool-id owner-b beneficiary-b dpof-id [nonce-b])
+            (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron owner-b beneficiary-b pool-id dpof-id [nonce-b])
         ]))
     )
     (let
@@ -1805,9 +1805,9 @@
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     ;; 3 scored TF legs (owner ANHD; beneficiaries ANHD / EMMA / LUMY)
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-    (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id ben-a ouro-id amt)
-    (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id ben-b ouro-id amt)
-    (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id ben-c ouro-id amt)
+    (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron owner-id ben-a pool-id ouro-id amt)
+    (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron owner-id ben-b pool-id ouro-id amt)
+    (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron owner-id ben-c pool-id ouro-id amt)
     (let
         (
             (legs-staked:integer (at "leg-count" (ref-VCT::URH_VacateTfInventory pool-id ouro-id)))
@@ -2020,8 +2020,8 @@
     (ref-TS02-C3::AQP-POOL|C_AddScore patron (AQP-POOL.URC_AqpOwnerKonto pool-id) pool-id score-id)
     (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-    (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id ben-a ouro-id amt)
-    (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id ben-b ouro-id amt)
+    (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron owner-id ben-a pool-id ouro-id amt)
+    (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron owner-id ben-b pool-id ouro-id amt)
     (print "--- [TX-VCT-DRAIN · 01 · pre-drain snapshot] ---")
     (let
         (
@@ -2165,7 +2165,7 @@
             )
         )
         (print "--- [TX-VCT-FINALIZE · 03 · re-stake proves the pool is reusable + generation reset] ---")
-        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id ben-a ouro-id amt)
+        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron owner-id ben-a pool-id ouro-id amt)
         (let
             (
                 ;; the re-stake rewrites ANHD's row at the CURRENT generation -> reads live (fresh 20) again

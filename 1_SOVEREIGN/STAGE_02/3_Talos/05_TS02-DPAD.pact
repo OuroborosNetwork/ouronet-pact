@@ -60,18 +60,18 @@
     ;;
     ;;  [C]
     ;;
-    (defun DEMIPAD|C_Deposit (patron:string donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal))
+    (defun DEMIPAD|C_Deposit (patron:string executor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal))
     ;;
     (defun DEMIPAD|C_Withdraw (patron:string executor:string asset-id:string type:integer destination:string))
     ;;
-    (defun DEMIPAD|C_FuelTrueFungible (patron:string client:string asset-id:string amount:decimal))
-    (defun DEMIPAD|C_FuelOrtoFungible (patron:string client:string asset-id:string nonces:[integer]))
-    (defun DEMIPAD|C_FuelSemiFungible (patron:string client:string asset-id:string nonces:[integer] amounts:[integer]))
-    (defun DEMIPAD|C_FuelNonFungible (patron:string client:string asset-id:string nonces:[integer] amounts:[integer]))
-    (defun DEMIPAD|C_RetrieveTrueFungible (patron:string client:string asset-id:string amount:decimal))
-    (defun DEMIPAD|C_RetrieveOrtoFungible (patron:string client:string asset-id:string nonces:[integer]))
-    (defun DEMIPAD|C_RetrieveSemiFungible (patron:string client:string asset-id:string nonces:[integer] amounts:[integer]))
-    (defun DEMIPAD|C_RetrieveNonFungible (patron:string client:string asset-id:string nonces:[integer] amounts:[integer]))
+    (defun DEMIPAD|C_FuelTrueFungible (patron:string executor:string asset-id:string amount:decimal))
+    (defun DEMIPAD|C_FuelOrtoFungible (patron:string executor:string asset-id:string nonces:[integer]))
+    (defun DEMIPAD|C_FuelSemiFungible (patron:string executor:string asset-id:string nonces:[integer] amounts:[integer]))
+    (defun DEMIPAD|C_FuelNonFungible (patron:string executor:string asset-id:string nonces:[integer] amounts:[integer]))
+    (defun DEMIPAD|C_RetrieveTrueFungible (patron:string executor:string asset-id:string amount:decimal))
+    (defun DEMIPAD|C_RetrieveOrtoFungible (patron:string executor:string asset-id:string nonces:[integer]))
+    (defun DEMIPAD|C_RetrieveSemiFungible (patron:string executor:string asset-id:string nonces:[integer] amounts:[integer]))
+    (defun DEMIPAD|C_RetrieveNonFungible (patron:string executor:string asset-id:string nonces:[integer] amounts:[integer]))
 
 )
 ;;
@@ -120,7 +120,7 @@
                 (ref-DALOS:module{OuronetDalosV2} DALOS)
                 (gap:bool (ref-DALOS::UR_GAP))
             )
-            (enforce (not gap) "While Global Administrative Pause is online, no client Functions can be executed")
+            (enforce (not gap) "While Global Administrative Pause is online, no executor Functions can be executed")
             (compose-capability (P|TALOS-SUMMONER))
         )
     )
@@ -398,7 +398,7 @@
             )
         )
     )
-    (defun DEMIPAD|C_Deposit (patron:string donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal)
+    (defun DEMIPAD|C_Deposit (patron:string executor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal)
         @doc "Sovereign launchpad DEPOSIT Talos op — the citizen sales call this to move a buyer's \
             \ STOA/OURS working-token into the Launchpad against <asset-id>. <type> 0 = Native STOA \
             \ (wrapped), 1 = OWS; <max-cost> is the buyer's dollar slippage ceiling (sentinel < 0 = \
@@ -410,10 +410,10 @@
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                    (sd:string (ref-I|OURONET::OI|UC_ShortAccount donor))
+                    (sd:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DEMIPAD::C_Deposit patron donor asset-id amount-in-dollars type direct-injection max-cost)
+                    (ref-DEMIPAD::C_Deposit patron executor asset-id amount-in-dollars type direct-injection max-cost)
                 )
                 (format "Succesfuly deposited {} $ worth against {} into Demipad from {}." [amount-in-dollars asset-id sd])
             )
@@ -449,106 +449,106 @@
         )
     )
     ;;
-    (defun DEMIPAD|C_FuelTrueFungible (patron:string client:string asset-id:string amount:decimal)
+    (defun DEMIPAD|C_FuelTrueFungible (patron:string executor:string asset-id:string amount:decimal)
         (with-capability (P|TS)
             (let
                 (
                     (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
                 )
-                (ref-DEMIPAD::C_TransmitTrueFungible patron client asset-id amount true)
+                (ref-DEMIPAD::C_TransmitTrueFungible patron executor asset-id amount true)
             )
         )
     )
-    (defun DEMIPAD|C_FuelOrtoFungible (patron:string client:string asset-id:string nonces:[integer])
+    (defun DEMIPAD|C_FuelOrtoFungible (patron:string executor:string asset-id:string nonces:[integer])
         (with-capability (P|TS)
             (let
                 (
                     (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
                 )
-                (ref-DEMIPAD::C_TransmitOrtoFungible patron client asset-id nonces true)
+                (ref-DEMIPAD::C_TransmitOrtoFungible patron executor asset-id nonces true)
             )
         )
     )
-    (defun DEMIPAD|C_FuelSemiFungible (patron:string client:string asset-id:string nonces:[integer] amounts:[integer])
+    (defun DEMIPAD|C_FuelSemiFungible (patron:string executor:string asset-id:string nonces:[integer] amounts:[integer])
         (with-capability (P|TS)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                    (c:string (ref-I|OURONET::OI|UC_ShortAccount client))
+                    (c:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DEMIPAD::C_TransmitSemiFungibles patron client asset-id nonces amounts true)
+                    (ref-DEMIPAD::C_TransmitSemiFungibles patron executor asset-id nonces amounts true)
                 )
                 (format "Succesfuly fueled {} Nonces {} with Amounts {} to Demiourgos Launchpad from Account {}" [asset-id nonces amounts c])
             )
         )
     )
-    (defun DEMIPAD|C_FuelNonFungible (patron:string client:string asset-id:string nonces:[integer] amounts:[integer])
+    (defun DEMIPAD|C_FuelNonFungible (patron:string executor:string asset-id:string nonces:[integer] amounts:[integer])
         (with-capability (P|TS)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                    (c:string (ref-I|OURONET::OI|UC_ShortAccount client))
+                    (c:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DEMIPAD::C_TransmitNonFungibles patron client asset-id nonces amounts true)
+                    (ref-DEMIPAD::C_TransmitNonFungibles patron executor asset-id nonces amounts true)
                 )
                 (format "Succesfuly fueled {} Nonces {} with Amounts {} to Demiourgos Launchpad from Account {}" [asset-id nonces amounts c])
             )
         )
     )
     ;;
-    (defun DEMIPAD|C_RetrieveTrueFungible (patron:string client:string asset-id:string amount:decimal)
+    (defun DEMIPAD|C_RetrieveTrueFungible (patron:string executor:string asset-id:string amount:decimal)
         (with-capability (P|TS)
             (let
                 (
                     (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
                 )
-                (ref-DEMIPAD::C_TransmitTrueFungible patron client asset-id amount false)
+                (ref-DEMIPAD::C_TransmitTrueFungible patron executor asset-id amount false)
             )
         )
     )
-    (defun DEMIPAD|C_RetrieveOrtoFungible (patron:string client:string asset-id:string nonces:[integer])
+    (defun DEMIPAD|C_RetrieveOrtoFungible (patron:string executor:string asset-id:string nonces:[integer])
         (with-capability (P|TS)
             (let
                 (
                     (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
                 )
-                (ref-DEMIPAD::C_TransmitOrtoFungible patron client asset-id nonces false)
+                (ref-DEMIPAD::C_TransmitOrtoFungible patron executor asset-id nonces false)
             )
         )
     )
-    (defun DEMIPAD|C_RetrieveSemiFungible (patron:string client:string asset-id:string nonces:[integer] amounts:[integer])
+    (defun DEMIPAD|C_RetrieveSemiFungible (patron:string executor:string asset-id:string nonces:[integer] amounts:[integer])
         (with-capability (P|TS)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                    (c:string (ref-I|OURONET::OI|UC_ShortAccount client))
+                    (c:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DEMIPAD::C_TransmitSemiFungibles patron client asset-id nonces amounts false)
+                    (ref-DEMIPAD::C_TransmitSemiFungibles patron executor asset-id nonces amounts false)
                 )
                 (format "Succesfuly retrieved {} Nonces {} with Amounts {} from Demiourgos Launchpad to Account {}" [asset-id nonces amounts c])
             )
         )
     )
-    (defun DEMIPAD|C_RetrieveNonFungible (patron:string client:string asset-id:string nonces:[integer] amounts:[integer])
+    (defun DEMIPAD|C_RetrieveNonFungible (patron:string executor:string asset-id:string nonces:[integer] amounts:[integer])
         (with-capability (P|TS)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
                     (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                    (c:string (ref-I|OURONET::OI|UC_ShortAccount client))
+                    (c:string (ref-I|OURONET::OI|UC_ShortAccount executor))
                 )
                 (ref-IGNIS::XE_CollectIgnis patron
-                    (ref-DEMIPAD::C_TransmitNonFungibles patron client asset-id nonces amounts false)
+                    (ref-DEMIPAD::C_TransmitNonFungibles patron executor asset-id nonces amounts false)
                 )
                 (format "Succesfuly retrieved {} Nonces {} with Amounts {} from Demiourgos Launchpad to Account {}" [asset-id nonces amounts c])
             )

@@ -444,17 +444,14 @@
         [
             ;;OF — EMMA stakes HER OWN MVST nonce 2 into OfStakePool, which ANHD owns.
             (format "<(CC_StakeOrtoFungible EMMA)> => \"{}\""
-                [(ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible KST.EMMA
-                    (ref-U|DALOS::UDC_Makeid "OfStakePool") KST.EMMA KST.EMMA "MVST-98c486052a51" [2])])
+                [(ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible KST.EMMA KST.EMMA KST.EMMA (ref-U|DALOS::UDC_Makeid "OfStakePool") "MVST-98c486052a51" [2])])
             ;;DPNF — ANHD stakes HIS OWN DHB nonce 1 into NfSyncPool, which LUMY owns.
             (format "<(CC_StakeNonFungibleCollectable ANHD)> => \"{}\""
-                [(ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable KST.ANHD
-                    (ref-U|DALOS::UDC_Makeid "NfSyncPool") KST.ANHD KST.ANHD "DHB-98c486052a51" [1])])
+                [(ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable KST.ANHD KST.ANHD KST.ANHD (ref-U|DALOS::UDC_Makeid "NfSyncPool") "DHB-98c486052a51" [1])])
             ;;DPSF — ANHD stakes DHCD nonce 1 into SfStakePool, which ANHD owns. This one exists so
             ;;the SAME defcap can be shown naming a DIFFERENT victim (see RT-D-007).
             (format "<(CC_StakeSemiFungibleCollectable ANHD)> => \"{}\""
-                [(ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable KST.ANHD
-                    (ref-U|DALOS::UDC_Makeid "SfStakePool") KST.ANHD KST.ANHD "DHCD-98c486052a51" [1])])
+                [(ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable KST.ANHD KST.ANHD KST.ANHD (ref-U|DALOS::UDC_Makeid "SfStakePool") "DHCD-98c486052a51" [1])])
         ])
     ""
 )

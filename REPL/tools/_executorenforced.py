@@ -179,6 +179,16 @@ INDIRECT = {
     "08_DSA.pact::C_FuelRoyalty":           "CAP_EnforceAccountOwnership fvt-owner",
     "08_DSA.pact::C_SetAgencyFee":          "CAP_EnforceAccountOwnership fvt-owner",
     "08_DSA.pact::C_AdmitAgency":           "FVT|XE>ADMIT-DELEGATION",
+    # 01_TS02-C1 / 02_TS02-C2 (2026-09-22). INTRA-TALOS delegations: a thin alias that calls a
+    # SIBLING wrapper in the same file, so the entrypoint's own body has no `ref-X::` call at all.
+    # Keys use the BARE name (the lookup does name.split("|")[-1]), which is why DPSF| and DPNF|
+    # variants of the same alias collapse to one key per file -- and why the file qualifier is
+    # load-bearing rather than decorative here.
+    "01_TS02-C1.pact::C_BulkTransfer":        "DPDC|C_BulkTransfer",
+    "01_TS02-C1.pact::C_RemoveSetNonceScore": "DPSF|C_UpdateSetNonceScore",
+    "01_TS02-C1.pact::C_RemoveNonceScore":    "DPSF|C_UpdateNonceScore",
+    "02_TS02-C2.pact::C_RemoveSetNonceScore": "DPNF|C_UpdateSetNonceScore",
+    "02_TS02-C2.pact::C_RemoveNonceScore":    "DPNF|C_UpdateNonceScore",
 }
 
 # SELF-PROVING AT CREATION -- the base case of the attribution rule, resolved by the owner on

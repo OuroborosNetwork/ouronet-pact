@@ -33,7 +33,7 @@
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
     (enforce (> (length nonces) 0) "ANHD needs DHWC nonces")
     (print (format "<(C_StakeSemiFungible DHWC nonce={})> => \"{}\"" [stake-nonce
-        (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron pool-id owner owner dhwc-id [stake-nonce])
+        (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron owner owner pool-id dhwc-id [stake-nonce])
     ]))
     (let
         (
@@ -42,7 +42,7 @@
         (expect (format "<<TX-AQP-BP01>> deb increased got={} pre={}" [deb-post deb-pre]) true (> deb-post deb-pre))
     )
     (print (format "<(C_UnstakeSemiFungible DHWC)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|CC_UnstakeSemiFungibleCollectable patron pool-id owner owner dhwc-id [stake-nonce] [stake-amt])
+        (ref-TS02-C3::AQP-POOL|CC_UnstakeSemiFungibleCollectable patron owner owner pool-id dhwc-id [stake-nonce] [stake-amt])
     ]))
     (let
         (
@@ -80,7 +80,7 @@
     )
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
     (print (format "<(C_StakeSemiFungible E|DH tier-6 shareholder)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron pool-id anhd anhd edh-id [6])
+        (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron anhd anhd pool-id edh-id [6])
     ]))
     (let
         (
@@ -191,7 +191,7 @@
                                     )
                                     (print (format "<(C_StakeNonFungible DHBunnies KBN nonce {})> => \"{}\"" [auryn-rain-nonce
                                         (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable
-                                            patron bunnies-pool owner owner kbn-id [auryn-rain-nonce]
+                                            patron owner owner bunnies-pool kbn-id [auryn-rain-nonce]
                                         )
                                     ]))
                                 )
@@ -206,7 +206,7 @@
                             )
                         )
                         (print (format "<(CC_StakeTrueFungible DHOuroLp LP amount={})> => \"{}\"" [stake-amt
-                            (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner owner lp-id stake-amt)
+                            (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron owner owner pool-id lp-id stake-amt)
                         ]))
                         (let
                             (

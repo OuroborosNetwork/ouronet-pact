@@ -106,7 +106,7 @@
                             )
                             (print (format "<(C_StakeNonFungible DHBunnies KBN nonce {})> => \"{}\"" [auryn-rain-nonce
                                 (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable
-                                    patron bunnies-pool owner owner kbn-id [auryn-rain-nonce]
+                                    patron owner owner bunnies-pool kbn-id [auryn-rain-nonce]
                                 )
                             ]))
                         )
@@ -121,7 +121,7 @@
                     )
                 )
                 (print (format "<(CC_StakeTrueFungible DHOuroLp LP {})> => \"{}\"" [stake-amt
-                    (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner owner lp-id stake-amt)
+                    (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron owner owner pool-id lp-id stake-amt)
                 ]))
                 (let
                     (
@@ -306,7 +306,7 @@
             (enforce (contains bunny-nonce emma-kbn) "CL04: EMMA needs Auryn Rain KBN nonce 85 from PopulateBunnies")
             (print (format "<(C_StakeNonFungible DHBunnies EMMA nonce {})> => \"{}\"" [bunny-nonce
                 (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable
-                    patron bunnies-pool emma emma kbn-id [bunny-nonce]
+                    patron emma emma bunnies-pool kbn-id [bunny-nonce]
                 )
             ]))
             (let
@@ -345,7 +345,7 @@
                 true
             )
             (print (format "<(CC_StakeTrueFungible EMMA LP {})> => \"{}\"" [stake-e
-                (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id emma emma lp-id stake-e)
+                (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron emma emma pool-id lp-id stake-e)
             ]))
             (let
                 (
@@ -432,7 +432,7 @@
                         ;; #10 wind-down: EMMA fully exits, then ANHD (sole claimant, gc==1) collects → the
                         ;; two-tier sweep drains both vaults. Dust lanes fall back to token-0 (Ouro) so it never reverts.
                         (print "--- [TX-AQP-CL04 · 04 · two-tier sweep drain proof] ---")
-                        (ref-TS02-C3::AQP-POOL|CC_UnstakeTrueFungible patron pool-id emma emma lp-id stake-e)
+                        (ref-TS02-C3::AQP-POOL|CC_UnstakeTrueFungible patron emma emma pool-id lp-id stake-e)
                         ;;==== TX-AQP-CL04 · 03b · WHOSE sweep is it, and who may move the counter ====
                         ;;REGRESSION PIN added 2026-09-14 with the AQP-RPS sweep repair. Two coupled
                         ;;defects lived here, both absent from the Stoa `coin` UrStoa vault these
@@ -644,7 +644,7 @@
                             true
                         )
                         (print (format "<(CC_StakeOrtoFungible Z|LP nonce {})> => \"{}\"" [stake-nonce
-                            (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron pool-id owner owner z-lp-id [stake-nonce])
+                            (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron owner owner pool-id z-lp-id [stake-nonce])
                         ]))
                         (let
                             (
