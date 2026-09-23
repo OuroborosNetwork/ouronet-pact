@@ -51,12 +51,17 @@
 ;; 2 forms.
 ;; ---------------------------------------------------------------------------
 
+;; EVERY REFERENCE BELOW IS FULLY QUALIFIED. The namespace line is still here, but nothing
+;; depends on it: a paste-ready transaction must not rely on ambient namespace state, because
+;; the failure mode is silent-looking and confusing -- a bare `DSP.DSP|S2-GOV` outside the
+;; namespace reports "Module DSP has no such member: DSP|S2-GOV", which reads as a missing
+;; capability rather than a missing namespace. Hit live, 2026-09-24.
 (namespace "ouronet-ns")
 
-(TS01-C1.DALOS|C_RotateGovernor
+(ouronet-ns.TS01-C1.DALOS|C_RotateGovernor
     "<<<FILL: patron -- the account paying for this call>>>"
     "Σ.i₿čУÕнЩťÛБoÛțmbюØДбgΣÞvhÉDτĞШU€ΛρÉycÇŒιЫWвфÓìÙõЙȚcąÅγXμSЛdăœρΣЫœąЛз4ěìvŹ₱OßeЛåγЬÿ5цůăÑœдżÛöÃŁτTĆĚŤйO9лцìŒUμvŤxBãĘΠÒÁõЪЖÌțȚeв¢jþψHtΣŹõÒqúΠğďßżpш2t3Şëχμι3DciüÏγλM"
-    (create-capability-guard (DSP.DSP|S2-GOV))
+    (create-capability-guard (ouronet-ns.DSP.DSP|S2-GOV))
 )
 
 
@@ -70,11 +75,11 @@
 ;;
 ;; Its DPTF token accounts are NOT deployed here: they are created on first use.
 ;; ---------------------------------------------------------------------------
-(TS01-C1.DPTF|C_ToggleMintRole
+(ouronet-ns.TS01-C1.DPTF|C_ToggleMintRole
     "<<<FILL: patron>>>"
-    (DPTF.UR_Konto (DALOS.UR_OuroborosID))
+    (ouronet-ns.DPTF.UR_Konto (ouronet-ns.DALOS.UR_OuroborosID))
     "Σ.i₿čУÕнЩťÛБoÛțmbюØДбgΣÞvhÉDτĞШU€ΛρÉycÇŒιЫWвфÓìÙõЙȚcąÅγXμSЛdăœρΣЫœąЛз4ěìvŹ₱OßeЛåγЬÿ5цůăÑœдżÛöÃŁτTĆĚŤйO9лцìŒUμvŤxBãĘΠÒÁõЪЖÌțȚeв¢jþψHtΣŹõÒqúΠğďßżpш2t3Şëχμι3DciüÏγλM"
-    (DALOS.UR_OuroborosID)
+    (ouronet-ns.DALOS.UR_OuroborosID)
     true
 )
 

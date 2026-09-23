@@ -1,9 +1,20 @@
-# Asset tree — NOT YET GENERATED
+# Asset tree — WRITTEN, NOT CLEARED TO RUN
 
-This folder will hold the acquisition-pool asset tree: the AQP pool definitions, their issuance,
-and the score/FVT wiring. It is deliberately empty.
+This folder holds the acquisition-pool asset tree: the AQP pool definitions, their issuance, and
+the score/FVT wiring. Sixteen hand-authored transactions, `00_step0` … `15_custodians_agency`.
 
-## Why it is blocked
+CORRECTED 2026-09-24. This file used to open *"NOT YET GENERATED … it is deliberately empty"*,
+and had said so since 2026-09-19 — while sitting in a directory holding sixteen tracked files
+committed that same day. A README that denies the existence of the files beside it is worse than
+no README: it invites a reader to treat real transactions as placeholders. The blocker below is
+still real; what was wrong is the claim that nothing was written.
+
+Note also that **`00_step0.pact` duplicates `Deploy/2_Init/01_init.pact`** — the same
+`AQP-BOOT.C_Step0_WireImcAndGovernor` call. That is deliberate: Step 0 is the boundary between
+the deploy chain and the asset tree, and belongs to both sequences. **Run it once.** It is
+idempotent (see `02_init.pact`), so a second run costs gas and changes nothing.
+
+## Why running steps 1–12 is blocked
 
 `AQP-BOOT.C_Step7_CreatePoolsAndScores` attaches **two** scores to `DHBloodshed` — the pure
 `Bloodshed` score and `SubsidiaryBloodshed` — which the owner confirmed on 2026-09-18 is correct.
