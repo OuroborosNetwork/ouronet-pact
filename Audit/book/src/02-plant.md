@@ -121,7 +121,10 @@ database-isolation problem attached. Here it is free, and it is free because of 
 
 ## The arithmetic of the speedup
 
-From the most recent green run, on 16 cores:
+From one green run, **2026-09-20**, on 16 cores. These are a dated SNAPSHOT rather than live
+figures, deliberately: the paragraphs below build an argument on them — the efficiency, the
+scheduling floor, the 24-second tail — and a number that silently moved would leave the reasoning
+attached to it pointing at nothing.
 
 | | |
 |---|---:|
@@ -148,6 +151,13 @@ For the run above: total work / 16 = **294 s**, and the longest entrypoint — `
 **226.8 s**. The work bound is the larger of the two, so this suite is currently **work-bound, not
 file-bound**: the formula's floor is 294 s and the measured wall was 318.5 s, the 24 s difference
 being the scheduling tail.
+
+**RE-MEASURED 2026-09-23, and the model held.** A later green run on the same 16 cores: **5,206 s**
+serial, **362 s** wall, **14.4×**. The work grew by 11% (the canon sweep and the Stage Two suites
+added assertions and two entrypoints), the wall time grew by 14%, and the efficiency moved from 92%
+to 90% — all of it consistent with a longer tail rather than a changed model. Two runs three days
+apart, same shape. That is the only evidence worth having that the arithmetic above describes the
+system rather than one lucky afternoon.
 
 That is the healthy state and it is worth being precise about, because the intuitive story — "one
 huge file dominates" — is what RULE 1 exists to prevent and is **not** what the numbers say here.

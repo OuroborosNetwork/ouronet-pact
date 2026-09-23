@@ -236,6 +236,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("-j", type=int, default=os.cpu_count())
     ap.add_argument("--audit-only", action="store_true", help="orphan check only, run nothing")
+    ap.add_argument("--live", action="store_true",
+                    help="stream each entrypoint as it finishes, instead of one table at the end")
     a = ap.parse_args()
 
     # FRESHNESS HEADER, flushed before any work. This exists because of a real incident on
@@ -630,8 +632,28 @@ def main():
     from concurrent.futures import ThreadPoolExecutor
     print(f"\nrunning {len(GATE)} entrypoints on {a.j} workers ...\n")
     t0 = time.time()
-    with ThreadPoolExecutor(max_workers=a.j) as ex:
-        results = list(ex.map(run_one, GATE))
+    # --live streams completions instead of blocking on ex.map. Worth having for one reason: a
+    # green gate is 6 minutes of silence, and silence is indistinguishable from a hang. The
+    # ordering it prints is COMPLETION order, not the sorted table below, so the long tail of
+    # heavy entrypoints is visible as it happens -- which is also the clearest way to see WHY the
+    # wall time is what it is (see the Audit Book's plant chapter: the floor is the longest single
+    # entrypoint, not the total work).
+    if a.live:
+        from concurrent.futures import as_completed
+        results, nfail = [], 0
+        with ThreadPoolExecutor(max_workers=a.j) as ex:
+            futs = [ex.submit(run_one, g) for g in GATE]
+            for i, f in enumerate(as_completed(futs), 1):
+                r = f.result(); results.append(r)
+                broke = (not r["ok"]) or r["fail"]
+                nfail += 1 if broke else 0
+                print(f"  [{i:3d}/{len(GATE)}] {'FAIL' if broke else '  ok'} "
+                      f"{r['secs']:6.1f}s {r['pos']+r['neg']:6d} asserts  "
+                      f"{os.path.basename(r['path'])}"
+                      + (f"   <-- {nfail} failing so far" if broke else ""), flush=True)
+    else:
+        with ThreadPoolExecutor(max_workers=a.j) as ex:
+            results = list(ex.map(run_one, GATE))
     results.sort(key=lambda r: -r["secs"])
 
     pos = sum(r["pos"] for r in results); neg = sum(r["neg"] for r in results)
