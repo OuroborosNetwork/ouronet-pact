@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 24 of 24
 ;; This is STEP 25 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-24 must have run first, including the init steps between deploys.
-;; 1 source file(s), 14,849 gas measured in the REPL gas model, 61,984 bytes
+;; 1 source file(s), 14,849 gas measured in the REPL gas model, 64,320 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   2_CITIZEN/Stage_Z/03_DSP+.pact
@@ -146,12 +146,12 @@
     ;; STAGE TWO DISPENSING BUCKET -- OuroStageTwoDispensingBucket.
     ;; PLACEHOLDER. Issue the account with Deploy/2_Init/00_MANUAL_issue-s2-bucket.pact,
     ;; then paste the same Σ. string here. Flags: false / false / true.
-    (defun GOV|DSP-S2|SC_NAME ()                        (at 0 ["<<<FILL: Σ. account string>>>"]))
+    (defun GOV|DSP-S2|SC_NAME ()                        (at 0 ["Σ.i₿čУÕнЩťÛБoÛțmbюØДбgΣÞvhÉDτĞШU€ΛρÉycÇŒιЫWвфÓìÙõЙȚcąÅγXμSЛdăœρΣЫœąЛз4ěìvŹ₱OßeЛåγЬÿ5цůăÑœдżÛöÃŁτTĆĚŤйO9лцìŒUμvŤxBãĘΠÒÁõЪЖÌțȚeв¢jþψHtΣŹõÒqúΠğďßżpш2t3Şëχμι3DciüÏγλM"]))
     (defun GOV|CST2|SC_NAME ()                          (+ "Σ" (drop 1 (GOV|CST1|SC_NAME))))
     ;;
     ;;  [PBLs]
     ;; PLACEHOLDER -- the Stage Two bucket's public key, pasted at issuance.
-    (defun GOV|DSP-S2|PBL ()                            (at 0 ["<<<FILL: public key>>>"]))
+    (defun GOV|DSP-S2|PBL ()                            (at 0 ["9G.Gj8lvMrcDLeieLBirwoqbGtgMlfxrC2840e62L93EfEyDuu8EsqxbMor9ofbK3B8Myv5Kgu3x4HhnukLFdHz8t4B604CEGayHseybKkvixzgvmk3LMpx5gM1yjxliprnnKfk7eyrzn5lrcHBwLvtcd7iM9sj2L85f6va68gns6hd3F5qzeABiKFiJ6vtpDxhGAeLwAov11BgMlbE9uHLv5eife0cathf0zhM25lmlbt6HpGL1wLgCIw035n9Bv7cocz5yF0Ent5os2v8fkJf7hsil7Lnon7FBvq6C9xu0fF641xDBMMC227AgdhLhDHB35t6dibw5tgmHdEiqhweiIlGj3eqMG3vrDBkin2oxDBLrcLjaiGdpLoLB7g5gHt0D2CJDIjzxn93hbF31sbux5B6Iin2K6CJgeo4cyu4a96xEpbE3yGG9mva7r48q4xtu652gm7EunHx58D2pI49b4KiEatxm0cdq1f5xpmqJt1IayBoiBAgwJcIrJC02yCzF1LxguMxcuwuo7i3gd3iHEuslC0gyGvxKCdm5L6pF9F04vhd05AJb3glLzk"]))
     (defun GOV|DSP|PBL ()                               (at 0 ["9G.o0n0iHmGhkch5aEqr0wcpEKpuqgGt5uvFapDLb94GwCbJvBga5H4xrFAx41CbMMH0M7AHmqFnrafceFmaHBfjsH51ggCxJmu5DMpK4jGg0rpogpD26r4yiykAIkaqDz61sHGewpxl1tly780ahKxbEB7uD8FlvA1nGppsttz3AhIhbxlhJ3BpI3Hehf5tCM6bfqF9o6ryb3bErqJwEDJmMGFC9HEeDiLKAtMgqaajzK2b0yg2sE0lJMp2K8I6sjfwnyhyL5vnycpMpeCgagdlnbMMMaA9trHLx4FxLym6KqCFAxCFwFHohfbcolG3u5wGo06M1fMBKpC64Mgm4584tH93Hpmop4tLpD7157GLo7mejJk8ryrA229K07D2hbhtanzCgdtjziBs9yqvHLq78EFEsD1fpEeD0pMhJeLEMEsqu8zf816cLErk4aDC22GnsC9774C59iaLFKkzKzh11xnAEalcpGcLf7aecGBHu5IABIGq8sEFa9Ahi5inermzrys3HcLpz2degMmAEy8hKsI83zvaCta8Ksimgn3qmv4r4jocMsIAwDeEfzE"]))
     (defun GOV|CST|PBL ()                               (at 0 ["9H.abeq3vvcwJp9gl2Kdt5xb7djJwdB35bCgkIaF3r0k38kBF6La1M6ci0ma2e5exMehsmwe1x3d6EpsIjxv95hAvc3uJweirnitcAAryxn9HaHJ1f0ya36BDfsrfaIBL4moIF3B8glb5pDBhta7pyxigEdt13ccEIKtCdyC6krMhB5iyqfEyB70zf5tjqn2xpDDzg9nA7auzzjxxtwLH80Lmdp4wAEcnqprGishhMLLefMnzDv9dFyM0n31fAcziHogCIM4kktFgydhHah7hmJurs3xCrGrs5qAEtjid0zioLHM58l8wogL2j0L9LIH21wI4lD1BlKq4445nos849CEzcm3DC9t67IH1r63pkgc9xFEGr8K6H3CCfg9aqDcApxaDuEomaKjEj6ft71gtEwbEJJmrAzfDolHrFfubcertjF2rE2wMywhv7HqIoHMCKEznMFCy2C6eyGyh1mIMeKJDDhwqIDIA5a2wvtt0HedKxmgDldafrrGdn5yDGHMexLFCrGv9aG50G82zIlE5z7cksfplf5taeiz8vlydDKmLaCcMgA7ne77hsbGHuu"]))
 
@@ -315,10 +315,8 @@
     ;; reads S2-BUCKET|SC_NAME and nothing else, so the account moves in a single
     ;; edit rather than in nine.
     ;;
-    ;; TODAY it resolves to DSP1|SC_NAME, the standard dispenser, which is what the
-    ;; emission has always used and what every passing test exercises. Once the
-    ;; bucket is issued and GOV|DSP-S2|SC_NAME above carries its real Σ. string,
-    ;; change this line to DSP-S2|SC_NAME and nothing else.
+    ;; FLIPPED 2026-09-23 to DSP-S2|SC_NAME, the dedicated Stage Two bucket. It was
+    ;; DSP1|SC_NAME -- the shared standard dispenser -- until the bucket was issued.
     ;;
     ;; WHY THE SWITCH IS WORTH MAKING. DSP1 is a STANDARD account, and the
     ;; transferability matrix makes Normal -> Normal unconditional -- so anyone
@@ -329,7 +327,7 @@
     ;; that reader becomes exactly correct, which is what lets the parallel legs be
     ;; built from a dirty read with no stored state and no enforce.
     ;; ==========================================================================
-    (defconst S2-BUCKET|SC_NAME                         DSP1|SC_NAME)
+    (defconst S2-BUCKET|SC_NAME                         DSP-S2|SC_NAME)
     (defconst DSP|PBL                                   (GOV|DSP|PBL))
     ;;
     ;;  Custodians
@@ -369,6 +367,11 @@
         @doc "Governor Capability for the Dispenser Smart DALOS Account"
         true
     )
+    (defcap DSP|S2-GOV ()
+        @doc "Governor Capability for the Stage Two Dispensing Bucket Smart DALOS Account. \
+            \ Composed only from this module -- a governor guard is an ownership proof."
+        true
+    )
     ;;
     (defcap SECURE ()
         true
@@ -379,6 +382,34 @@
         @event
         (compose-capability (GOV|DSP_ADMIN))
         (compose-capability (P|DRG))
+    )
+    ;; STAGE TWO -- one capability per operation, each composing DSP|S2-GOV and nothing wider,
+    ;; so the emission's authority stops at its own bucket and the explorer can tell the four
+    ;; operations apart. The inject caps carry their arguments, so the event names the vault.
+    (defcap DSP|STAGE-TWO-MINTER ()
+        @doc "The single-transaction Stage Two emission."
+        @event
+        (compose-capability (GOV|DSP_ADMIN))
+        (compose-capability (DSP|S2-GOV))
+    )
+    (defcap DSP|STAGE-TWO-FLAT ()
+        @doc "Phase 1 of the staged Stage Two emission -- mint, treasury, Auryndex fuel, coil. \
+            \ This event without four matching DSP|STAGE-TWO-INJECT is a half-finished run."
+        @event
+        (compose-capability (GOV|DSP_ADMIN))
+        (compose-capability (DSP|S2-GOV))
+    )
+    (defcap DSP|STAGE-TWO-INJECT (fvt-id:string reward-dptf-id:string amount:decimal)
+        @doc "One inject leg of the staged Stage Two emission."
+        @event
+        (compose-capability (GOV|DSP_ADMIN))
+        (compose-capability (DSP|S2-GOV))
+    )
+    (defcap DSP|STAGE-TWO-INJECT-FINALIZE (fvt-id:string reward-dptf-id:string amount:decimal)
+        @doc "The paginated tail of one inject leg, after CCp_InjectFixChunk left zero stale."
+        @event
+        (compose-capability (GOV|DSP_ADMIN))
+        (compose-capability (DSP|S2-GOV))
     )
     (defcap DSP|STOICISM-MINTER (stoicism-amounts:[decimal] stoicism-targets:[string])
         @event
@@ -752,7 +783,7 @@
             \ cheaper emission is a BROKEN one, not an improvement. \
             \ \
             \ RETURNS [daily custodians treasury shareholders farm autostake subsidiary-auryn]."
-        (with-capability (DSP|STAGE-ONE-MINTER)
+        (with-capability (DSP|STAGE-TWO-MINTER)
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -839,7 +870,7 @@
             \ \
             \ RETURNS [daily custodians shareholders farm subsidiary-auryn] -- the daily for the \
             \ record, then the FOUR amounts the inject legs take, in vault order."
-        (with-capability (DSP|STAGE-ONE-MINTER)
+        (with-capability (DSP|STAGE-TWO-FLAT)
             (let
                 (
                     (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
@@ -904,7 +935,7 @@
             \ <AA_OuroMinterStageTwo_InjectLegFinalize>. \
             \ \
             \ GASLESS-PATRON pays, the dispenser acts."
-        (with-capability (DSP|STAGE-ONE-MINTER)
+        (with-capability (DSP|STAGE-TWO-INJECT fvt-id reward-dptf-id amount)
             (let
                 (
                     (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
@@ -929,7 +960,7 @@
             \ The other two routes for the same situation are AQP-FVT|CCp_UnstaleAll (mass-unstale \
             \ without injecting, then a now-light inject) and MTX-AQP|2|CC_Inject (the 2-step \
             \ defpact). See STAGE-TWO-EMISSION.md for which to reach for."
-        (with-capability (DSP|STAGE-ONE-MINTER)
+        (with-capability (DSP|STAGE-TWO-INJECT-FINALIZE fvt-id reward-dptf-id amount)
             (let
                 (
                     (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)

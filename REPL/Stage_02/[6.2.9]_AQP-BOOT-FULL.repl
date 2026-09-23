@@ -1183,7 +1183,7 @@
         (auryn:string       (ref-DALOS::UR_AurynID))
         (auryndex:string    (at 0 (ref-DPTF::UR_RewardBearingToken auryn)))
         (treasury:string    (ref-DALOS::GOV|DHV1|SC_NAME))
-        (dispenser:string   DSP.DSP1|SC_NAME)
+        (dispenser:string   DSP.S2-BUCKET|SC_NAME)
         ;;
         (f-cust:string      (ref-U|DALOS::UDC_Makeid "CustodiansVault"))
         (f-shar:string      (ref-U|DALOS::UDC_Makeid "CompanySharesTreasury"))
@@ -1315,7 +1315,7 @@
         (auryn:string       (ref-DALOS::UR_AurynID))
         (auryndex:string    (at 0 (ref-DPTF::UR_RewardBearingToken auryn)))
         (treasury:string    (ref-DALOS::GOV|DHV1|SC_NAME))
-        (dispenser:string   DSP.DSP1|SC_NAME)
+        (dispenser:string   DSP.S2-BUCKET|SC_NAME)
         ;;
         (f-cust:string      (ref-U|DALOS::UDC_Makeid "CustodiansVault"))
         (f-shar:string      (ref-U|DALOS::UDC_Makeid "CompanySharesTreasury"))

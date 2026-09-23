@@ -65,6 +65,7 @@
         { "key": "PK_AncientHodler", "caps": [] }
         { "key": "PK_AOZ", "caps": [] }
         { "key": "PK_DHV", "caps": [] }
+        { "key": "PK_DSP", "caps": [] }
     ]
 )
 
@@ -87,7 +88,9 @@
         (dalos-sc:string (ref-DALOS::GOV|DALOS|SC_NAME))
         (smart-dhvault-sc:string (ref-DALOS::GOV|DHV2|SC_NAME))
         (standard-dispenser:string (ref-DSP::GOV|DSP1|SC_NAME))
+        (s2-bucket:string (ref-DSP::GOV|DSP-S2|SC_NAME))
         (OuroID:string (ref-DALOS::UR_OuroborosID))
+        (AurynID:string (ref-DALOS::UR_AurynID))
         (PrimordialKosonID:string      (ref-AOZ::UR_PrimalTrueFungible 1))
         (EsothericKosonID:string       (ref-AOZ::UR_PrimalTrueFungible 2))
         (AncientKosonID:string         (ref-AOZ::UR_PrimalTrueFungible 3))
@@ -121,6 +124,20 @@
     (ref-TS01-C1::DPTF|C_ToggleMintRole patron (DPTF.UR_Konto PrimordialKosonID) standard-dispenser PrimordialKosonID true)
     (ref-TS01-C1::DPTF|C_ToggleMintRole patron (DPTF.UR_Konto EsothericKosonID) standard-dispenser EsothericKosonID true)
     (ref-TS01-C1::DPTF|C_ToggleMintRole patron (DPTF.UR_Konto AncientKosonID) standard-dispenser AncientKosonID true)
+    ;;6]STAGE TWO DISPENSING BUCKET. Deployed in Stage 1 with the other dispenser accounts; the
+    ;;  two steps that could not happen there are here, because both need this module to exist:
+    ;;  the payable flags, and the governor rotation onto DSP|S2-GOV.
+    ;;
+    ;;  false / false / true closes every inbound route except method=true, and THAT one still
+    ;;  runs (CAP_EnforceAccountOwnership receiver) for a smart receiver -- so it needs the
+    ;;  bucket's ownership, which after the rotation below the emission has and nobody else does.
+    ;;  ATS|C_Coil's final leg is exactly that route, which is why the flag is true and not false.
+    (ref-TS01-C1::DALOS|C_ControlSmartAccount patron s2-bucket false false true)
+    (ref-TS01-C1::DALOS|C_RotateGovernor patron s2-bucket (create-capability-guard (DSP.DSP|S2-GOV)))
+    ;;  It MINTS the OURO itself -- C_Mint credits its executor, so the mint role has to sit on
+    ;;  the bucket, not on the standard dispenser it replaced. Its DPTF token accounts are not
+    ;;  deployed here; they are created on first use.
+    (ref-TS01-C1::DPTF|C_ToggleMintRole patron (DPTF.UR_Konto OuroID) s2-bucket OuroID true)
 )
 
 ;;==== TX-03 [3.1] - DSP Init [1]: Dispenser Setup · 03 · gas echo ==== ===========================

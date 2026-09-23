@@ -106,6 +106,15 @@
         (defconst SMART-DHVAULT DPTS_NAME_3)
         (defconst DPTS_PBKY_3 "PK_S-DHV")
         (defconst PBLC_3 "9G.7G3mkhkk34Bg37uslsu3M7psBc40xsKFibE9DL0jb43JcJ7fzDh9cz3Edn8uvlkh0bCeFafFntCKt0HvJsmczx3Lek9d3mqr38BbIwmBrDkd8sordjr4L7tJ5Fnqj39F6s55hD3rEFvMGors4sws3lDcKiEHkMEE7kHuuB31gGe3F5HsI0yHbwsm2IcspsB1ICiD1g73vup127pjLauIc6gxl3sJy0lAml1uA9g18Btcl6prinGmo3uFomeoyvx9oLGlf6ctFsfavKa5vFrvaw2FB1KsAiejqqjaeMu1I1cEey3m55allFm5pg9LaFK307qnmjxfmqv38vvr2wBerI4BnvFKLgpB7e7pCCmarDJq1l6nHEIv6wl3d96iwAqEHxKEwpH7ljzqnsnBpcEFlpKu6xjc5o78DiwzrltiDxa5c9ug7wML3MGqDEH9tzIj2IreF5yEnw4M15yy38z7gqKbd7l3Fb3qc7kvrgHKG8cpq9M54kg6v5a1k7Laqea07ynccK6r2bjwl7L8IkE7EsAep77M1kb4455klFFH2qx2uEuGBlfsu1rztiMa")
+        ;;STAGE TWO DISPENSING BUCKET -- the dedicated smart account the Stage Two daily
+        ;;emission mints into and the four inject legs spend from. Its Kadena/Stoa anchor is
+        ;;a plain name rather than a k: principal: A_DeploySmartAccount is the ADMIN deploy,
+        ;;which is STOA- and IGNIS-free and does not validate <stoa>, so no coin account has
+        ;;to exist for it. Sovereign is the STANDARD dispenser -- the deploy cap enforces
+        ;;(UEV_EnforceAccountType sovereign false), so a smart account cannot be one.
+        (defconst KADN_NAME_S2 "StageTwoDispenserBucket")
+        (defconst DPTS_NAME_S2 "Σ.i₿čУÕнЩťÛБoÛțmbюØДбgΣÞvhÉDτĞШU€ΛρÉycÇŒιЫWвфÓìÙõЙȚcąÅγXμSЛdăœρΣЫœąЛз4ěìvŹ₱OßeЛåγЬÿ5цůăÑœдżÛöÃŁτTĆĚŤйO9лцìŒUμvŤxBãĘΠÒÁõЪЖÌțȚeв¢jþψHtΣŹõÒqúΠğďßżpш2t3Şëχμι3DciüÏγλM")
+        (defconst PBLC_S2 "9G.Gj8lvMrcDLeieLBirwoqbGtgMlfxrC2840e62L93EfEyDuu8EsqxbMor9ofbK3B8Myv5Kgu3x4HhnukLFdHz8t4B604CEGayHseybKkvixzgvmk3LMpx5gM1yjxliprnnKfk7eyrzn5lrcHBwLvtcd7iM9sj2L85f6va68gns6hd3F5qzeABiKFiJ6vtpDxhGAeLwAov11BgMlbE9uHLv5eife0cathf0zhM25lmlbt6HpGL1wLgCIw035n9Bv7cocz5yF0Ent5os2v8fkJf7hsil7Lnon7FBvq6C9xu0fF641xDBMMC227AgdhLhDHB35t6dibw5tgmHdEiqhweiIlGj3eqMG3vrDBkin2oxDBLrcLjaiGdpLoLB7g5gHt0D2CJDIjzxn93hbF31sbux5B6Iin2K6CJgeo4cyu4a96xEpbE3yGG9mva7r48q4xtu652gm7EunHx58D2pI49b4KiEatxm0cdq1f5xpmqJt1IayBoiBAgwJcIrJC02yCzF1LxguMxcuwuo7i3gd3iHEuslC0gyGvxKCdm5L6pF9F04vhd05AJb3glLzk")
     )
 
     (env-data
@@ -182,6 +191,8 @@
         ;;Deploy Dispenser, Custodians and Treasury Smart Ouronet Accounts
         (ref-TS01-A::DALOS|A_DeploySmartAccount KC2.DPTS_NAME_1     (keyset-ref-guard "ouronet-ns.dh_sc_dispenser-keyset")     KC2.KADN_NAME_1 KC2.DPTS_NAME_a PBLC_a)
         (ref-TS01-A::DALOS|A_DeploySmartAccount KC2.DPTS_NAME_2     (keyset-ref-guard "ouronet-ns.dh_sc_custodians-keyset")    KC2.KADN_NAME_2 KC2.DPTS_NAME_b PBLC_b)
+        ;;Stage Two dispensing bucket. Same keyset as the dispenser, standard dispenser as sovereign.
+        (ref-TS01-A::DALOS|A_DeploySmartAccount KC2.DPTS_NAME_S2    (keyset-ref-guard "ouronet-ns.dh_sc_dispenser-keyset")     KC2.KADN_NAME_S2 KC2.DPTS_NAME_a KC2.PBLC_S2)
         ;(ref-TS01-A::DALOS|A_DeploySmartAccount KC2.DPTS_NAME_3     (keyset-ref-guard "ouronet-ns.dh_sc_dhvault-keyset")       KC2.KADN_NAME_3 KC2.DPTS_NAME_c PBLC_c)
         ;;
     )
