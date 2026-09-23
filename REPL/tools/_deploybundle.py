@@ -424,13 +424,25 @@ def check_report():
             hl, wl = have.count("\n"), want.count("\n")
             bad.append(f"STALE    {os.path.relpath(path, ROOT)}  "
                        f"(on disk {hl} lines, regenerated {wl})")
+    # HAND-AUTHORED INIT FILES. The orphan rule below is right in general -- Deploy/ is generated,
+    # and a stray file there is a deploy step nobody can reproduce. But there is one class it
+    # cannot cover: a step whose content only the OWNER can supply. The Stage Two dispensing
+    # bucket is issued with an account string, a public key and a keyset that do not exist
+    # anywhere in this repo and cannot be derived from it, so no generator can emit that
+    # transaction -- and leaving it out of Deploy/ would mean the one step that must happen
+    # before the emission works is the one step the pipeline does not mention.
+    #
+    # So it lives here, checked in, named MANUAL so it cannot be mistaken for generated output,
+    # and listed by name rather than by pattern -- a pattern would silently re-open the hole this
+    # rule exists to close.
+    KEEP = {"README.md", "00_MANUAL_issue-s2-bucket.pact"}
     # a file in Deploy/1_Pure or 2_Init that the generator no longer produces
     for d in (PURE, INIT):
         if not os.path.isdir(d):
             continue
         for f in sorted(os.listdir(d)):
             fp = os.path.join(d, f)
-            if os.path.isfile(fp) and fp not in EMITTED and f != "README.md":
+            if os.path.isfile(fp) and fp not in EMITTED and f not in KEEP:
                 bad.append(f"ORPHAN   {os.path.relpath(fp, ROOT)}  "
                            f"(not produced by this round -- delete it or fix the round)")
     return bad

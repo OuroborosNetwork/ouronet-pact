@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 24 of 24
 ;; This is STEP 25 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-24 must have run first, including the init steps between deploys.
-;; 1 source file(s), 14,849 gas measured in the REPL gas model, 59,903 bytes
+;; 1 source file(s), 14,849 gas measured in the REPL gas model, 61,984 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   2_CITIZEN/Stage_Z/03_DSP+.pact
@@ -143,9 +143,15 @@
     (defun GOV|DSP1|SC_NAME ()                          (at 0 ["Ѻ.hÜ5ĞÊÜεŞΓõè1Ă₳äàÄìãÓЦφLÕзЯŮμĞ₿мK6àŘуVćχδдзηφыβэÎχUHRêγBğΛ∇VŒižďЬШ£îOÜøE4ÖFSõЩЩAłκè1ččΨΦŻЖэч6Iчη₱ØćнúŒψУćÀyпãЗцÚäδÏÍtςřïçγț6γÎęôigFzÝûηы₿ÏЬüБэΞčмŃт₳ŘчjζsŠȚHъĘïЦ0"]))
     (defun GOV|CST1|SC_NAME ()                          (at 0 ["Ѻ.Щę7ãŽÓλ4ěПîЭđЮЫAďбQOχnиИДχѺNŽł6ПžιéИąĞuπЙůÞ1ęrПΔżæÍžăζàïαŮŘDzΘ€ЦBGÝŁЭЭςșúÜđŻõËŻκΩÎzŁÇÉΠмłÔÝÖθσ7₱в£μŻzéΘÚĂИüyćťξюWc2И7кςαTnÿЩE3MVTÀεPβafÖôoъBσÂбýжõÞ7ßzŁŞε0âłXâÃЛ"]))
     (defun GOV|DSP2|SC_NAME ()                          (+ "Σ" (drop 1 (GOV|DSP1|SC_NAME))))
+    ;; STAGE TWO DISPENSING BUCKET -- OuroStageTwoDispensingBucket.
+    ;; PLACEHOLDER. Issue the account with Deploy/2_Init/00_MANUAL_issue-s2-bucket.pact,
+    ;; then paste the same Σ. string here. Flags: false / false / true.
+    (defun GOV|DSP-S2|SC_NAME ()                        (at 0 ["<<<FILL: Σ. account string>>>"]))
     (defun GOV|CST2|SC_NAME ()                          (+ "Σ" (drop 1 (GOV|CST1|SC_NAME))))
     ;;
     ;;  [PBLs]
+    ;; PLACEHOLDER -- the Stage Two bucket's public key, pasted at issuance.
+    (defun GOV|DSP-S2|PBL ()                            (at 0 ["<<<FILL: public key>>>"]))
     (defun GOV|DSP|PBL ()                               (at 0 ["9G.o0n0iHmGhkch5aEqr0wcpEKpuqgGt5uvFapDLb94GwCbJvBga5H4xrFAx41CbMMH0M7AHmqFnrafceFmaHBfjsH51ggCxJmu5DMpK4jGg0rpogpD26r4yiykAIkaqDz61sHGewpxl1tly780ahKxbEB7uD8FlvA1nGppsttz3AhIhbxlhJ3BpI3Hehf5tCM6bfqF9o6ryb3bErqJwEDJmMGFC9HEeDiLKAtMgqaajzK2b0yg2sE0lJMp2K8I6sjfwnyhyL5vnycpMpeCgagdlnbMMMaA9trHLx4FxLym6KqCFAxCFwFHohfbcolG3u5wGo06M1fMBKpC64Mgm4584tH93Hpmop4tLpD7157GLo7mejJk8ryrA229K07D2hbhtanzCgdtjziBs9yqvHLq78EFEsD1fpEeD0pMhJeLEMEsqu8zf816cLErk4aDC22GnsC9774C59iaLFKkzKzh11xnAEalcpGcLf7aecGBHu5IABIGq8sEFa9Ahi5inermzrys3HcLpz2degMmAEy8hKsI83zvaCta8Ksimgn3qmv4r4jocMsIAwDeEfzE"]))
     (defun GOV|CST|PBL ()                               (at 0 ["9H.abeq3vvcwJp9gl2Kdt5xb7djJwdB35bCgkIaF3r0k38kBF6La1M6ci0ma2e5exMehsmwe1x3d6EpsIjxv95hAvc3uJweirnitcAAryxn9HaHJ1f0ya36BDfsrfaIBL4moIF3B8glb5pDBhta7pyxigEdt13ccEIKtCdyC6krMhB5iyqfEyB70zf5tjqn2xpDDzg9nA7auzzjxxtwLH80Lmdp4wAEcnqprGishhMLLefMnzDv9dFyM0n31fAcziHogCIM4kktFgydhHah7hmJurs3xCrGrs5qAEtjid0zioLHM58l8wogL2j0L9LIH21wI4lD1BlKq4445nos849CEzcm3DC9t67IH1r63pkgc9xFEGr8K6H3CCfg9aqDcApxaDuEomaKjEj6ft71gtEwbEJJmrAzfDolHrFfubcertjF2rE2wMywhv7HqIoHMCKEznMFCy2C6eyGyh1mIMeKJDDhwqIDIA5a2wvtt0HedKxmgDldafrrGdn5yDGHMexLFCrGv9aG50G82zIlE5z7cksfplf5taeiz8vlydDKmLaCcMgA7ne77hsbGHuu"]))
 
@@ -301,6 +307,29 @@
     (defconst DSP|SC_KEY                                (GOV|DSPKey))
     (defconst DSP1|SC_NAME                              (GOV|DSP1|SC_NAME))
     (defconst DSP2|SC_NAME                              (GOV|DSP2|SC_NAME))
+    (defconst DSP-S2|SC_NAME                            (GOV|DSP-S2|SC_NAME))
+    ;;
+    ;; ===================== THE STAGE TWO EMISSION ACCOUNT =====================
+    ;; ONE LINE SWITCHES THE WHOLE EMISSION. Every leg of both Stage Two variants --
+    ;; the one-shot AA_OuroMinterStageTwo, the flat leg, and all four inject legs --
+    ;; reads S2-BUCKET|SC_NAME and nothing else, so the account moves in a single
+    ;; edit rather than in nine.
+    ;;
+    ;; TODAY it resolves to DSP1|SC_NAME, the standard dispenser, which is what the
+    ;; emission has always used and what every passing test exercises. Once the
+    ;; bucket is issued and GOV|DSP-S2|SC_NAME above carries its real Σ. string,
+    ;; change this line to DSP-S2|SC_NAME and nothing else.
+    ;;
+    ;; WHY THE SWITCH IS WORTH MAKING. DSP1 is a STANDARD account, and the
+    ;; transferability matrix makes Normal -> Normal unconditional -- so anyone
+    ;; holding OURO can send it to the dispenser today, and nothing refuses. That
+    ;; does not corrupt the emission, because every leg is FED its amount rather
+    ;; than deriving it. But it does corrupt URC_StageTwoResidual, which derives
+    ;; the four amounts from the balance -- and on a dedicated, unpollutable bucket
+    ;; that reader becomes exactly correct, which is what lets the parallel legs be
+    ;; built from a dirty read with no stored state and no enforce.
+    ;; ==========================================================================
+    (defconst S2-BUCKET|SC_NAME                         DSP1|SC_NAME)
     (defconst DSP|PBL                                   (GOV|DSP|PBL))
     ;;
     ;;  Custodians
@@ -512,7 +541,7 @@
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
                 (ouro:string (ref-DALOS::UR_OuroborosID))
                 (auryn:string (ref-DALOS::UR_AurynID))
-                (dispenser:string DSP1|SC_NAME)
+                (dispenser:string S2-BUCKET|SC_NAME)
             )
             (let
                 (
@@ -746,7 +775,7 @@
                     (s2-subsidiary:decimal (at 5 split))
                     ;;
                     (treasury:string (ref-DALOS::GOV|DHV1|SC_NAME))
-                    (dispenser:string DSP1|SC_NAME)  ;;holds the emission; the EXECUTOR of every leg
+                    (dispenser:string S2-BUCKET|SC_NAME)  ;;holds the emission; the EXECUTOR of every leg
                     ;;
                     (auryn:string (ref-DALOS::UR_AurynID))
                     (auryndex:string (at 0 (ref-DPTF::UR_RewardBearingToken auryn)))
@@ -832,7 +861,7 @@
                     (s2-subsidiary:decimal (at 5 split))
                     ;;
                     (treasury:string (ref-DALOS::GOV|DHV1|SC_NAME))
-                    (dispenser:string DSP1|SC_NAME)
+                    (dispenser:string S2-BUCKET|SC_NAME)
                     ;;
                     (auryn:string (ref-DALOS::UR_AurynID))
                     (auryndex:string (at 0 (ref-DPTF::UR_RewardBearingToken auryn)))
@@ -881,7 +910,7 @@
                     (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
                 )
                 (ref-TS02-C3::AQP-FVT|CC_Inject
-                    GASLESS-PATRON DSP1|SC_NAME fvt-id reward-dptf-id amount)
+                    GASLESS-PATRON S2-BUCKET|SC_NAME fvt-id reward-dptf-id amount)
             )
         )
     )
@@ -906,7 +935,7 @@
                     (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
                 )
                 (ref-TS02-C3::AQP-FVT|CC_InjectFinalize
-                    GASLESS-PATRON DSP1|SC_NAME fvt-id reward-dptf-id amount)
+                    GASLESS-PATRON S2-BUCKET|SC_NAME fvt-id reward-dptf-id amount)
             )
         )
     )
