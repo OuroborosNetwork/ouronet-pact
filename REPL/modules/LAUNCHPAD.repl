@@ -133,7 +133,7 @@
 (print "--- [LPAD-I1 — INFO_DEMIPAD|Deposit quote vs measured charge · 02 · let / invocation] ---")
 (let
     (
-        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
+        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (patron:string KST.ANHD)
         (buyer:string KST.EMMA)

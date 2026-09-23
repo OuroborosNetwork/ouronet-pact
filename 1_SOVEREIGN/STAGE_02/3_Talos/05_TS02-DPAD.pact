@@ -9,7 +9,7 @@
 ;; -> citizen sales -> TS02-CPAD (citizen Talos).
 ;;
 ;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface TalosStageTwo_DemiPadV1
+(interface TalosStageTwo_DemiPadV2
     @doc "Exposes Ouronet Stage Two Demipad SOVEREIGN Client Functions"
 
     ;;<=========================================================================>
@@ -82,7 +82,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements TalosStageTwo_DemiPadV1)
+    (implements TalosStageTwo_DemiPadV2)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE

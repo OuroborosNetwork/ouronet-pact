@@ -592,7 +592,7 @@
             (let
                 (
                     (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
-                    (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
+                    (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
                     (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
                     ;;
                     (KpayID:string (UR_KpayID))

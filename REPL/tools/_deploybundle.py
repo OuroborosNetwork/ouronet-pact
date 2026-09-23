@@ -162,7 +162,21 @@ ROUNDS = {
         # test files reference it, it names a bumped interface, and no chain deploys it. With AQP
         # not live, it is new like the rest of the family -- so it is injected here rather than
         # left to be noticed on the day.
-        "extra": [("1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact", "08_DSA.pact")],
+        # ANCHORED AFTER TALOS, NOT AFTER THE AQP CORE. 09_AQP-INFO calls
+        # TS02-C3.URCi_IssueGenericEarningVault as a DIRECT module reference, and a direct
+        # reference resolves at DEPLOY time -- unlike `ref-X::`, which resolves at runtime.
+        # Anchored after 08_DSA it deployed in transaction 20 while TS02-C3 lands in 21, and
+        # the round died live with "Module TS02-C3 has no such member". The REPL chain loads
+        # Talos first, so nothing in the suite could ever have seen this.
+        "extra": [("1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact", "04_TS02-C3.pact")],
+        # BOUNDARIES PINNED 2026-09-24, MID-DEPLOY. 19 of this round's 24 transactions had already
+        # executed on chain, each announcing "file N of 24", when the AQP-INFO ordering fix above
+        # re-flowed the packer down to 23. The modules in those 19 were byte-identical either way
+        # -- verified before continuing -- but a pipeline that disagrees with the chain about how
+        # many transactions the round has is a discrepancy an auditor finds and cannot explain.
+        # These four breaks reproduce the original layout exactly, with AQP-INFO moved out of
+        # transaction 20 and into 21 behind TS02-C3, which is the whole of the fix.
+        "break_before": ["04_TS02-C3.pact", "01_Spark.pact", "04_AQP-BOOT.pact", "03_DSP+.pact"],
     },
     "2026-09-full": {
         "why": "FULL REDEPLOY. The tree has diverged from the 2026-08-30 live snapshot in 127 "
@@ -183,7 +197,21 @@ ROUNDS = {
         # duplicates guards. The upgrade-side registrations go in `imp_delta` below.
         "init": ["AQP-BOOT"],
         "new": ["/03_AQP/", "04_AQP-BOOT.pact"],
-        "extra": [("1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact", "08_DSA.pact")],
+        # ANCHORED AFTER TALOS, NOT AFTER THE AQP CORE. 09_AQP-INFO calls
+        # TS02-C3.URCi_IssueGenericEarningVault as a DIRECT module reference, and a direct
+        # reference resolves at DEPLOY time -- unlike `ref-X::`, which resolves at runtime.
+        # Anchored after 08_DSA it deployed in transaction 20 while TS02-C3 lands in 21, and
+        # the round died live with "Module TS02-C3 has no such member". The REPL chain loads
+        # Talos first, so nothing in the suite could ever have seen this.
+        "extra": [("1_SOVEREIGN/STAGE_02/2_Core/03_AQP/09_AQP-INFO.pact", "04_TS02-C3.pact")],
+        # BOUNDARIES PINNED 2026-09-24, MID-DEPLOY. 19 of this round's 24 transactions had already
+        # executed on chain, each announcing "file N of 24", when the AQP-INFO ordering fix above
+        # re-flowed the packer down to 23. The modules in those 19 were byte-identical either way
+        # -- verified before continuing -- but a pipeline that disagrees with the chain about how
+        # many transactions the round has is a discrepancy an auditor finds and cannot explain.
+        # These four breaks reproduce the original layout exactly, with AQP-INFO moved out of
+        # transaction 20 and into 21 behind TS02-C3, which is the whole of the fix.
+        "break_before": ["04_TS02-C3.pact", "01_Spark.pact", "04_AQP-BOOT.pact", "03_DSP+.pact"],
         "imp_delta": [
             ("IGNIS", "MTX-AQP",    "P|MTX-AQP|CALLER"),
             ("IGNIS", "TS02-C2",    "P|TALOS-SUMMONER"),
@@ -434,7 +462,8 @@ def check_report():
     # So it lives here, checked in, named MANUAL so it cannot be mistaken for generated output,
     # and listed by name rather than by pattern -- a pattern would silently re-open the hole this
     # rule exists to close.
-    KEEP = {"README.md", "00_MANUAL_rotate-s2-governor.pact"}
+    KEEP = {"README.md", "00_MANUAL_rotate-s2-governor.pact",
+            "00_MANUAL_probe-live-interfaces.pact"}
     # a file in Deploy/1_Pure or 2_Init that the generator no longer produces
     for d in (PURE, INIT):
         if not os.path.isdir(d):
@@ -491,11 +520,24 @@ def attach_gas(blocks):
     return blocks
 
 
-def plan(blocks, budget, maxbytes=DEFAULT_MAXBYTES):
+def plan(blocks, budget, maxbytes=DEFAULT_MAXBYTES, break_before=frozenset()):
     """Group consecutive MODULE-deploy blocks into batches under `budget`.
 
     Init blocks are barriers: they close the current batch and are emitted as their own step.
     Order is never changed.
+
+    `break_before` forces a batch boundary before any block containing one of those basenames.
+
+    WHY A ROUND CAN PIN ITS OWN BOUNDARIES. Bin-packing is GLOBAL: change one file's position and
+    the packer re-flows everything after it, which can change the transaction COUNT. That is
+    harmless before a round starts and unacceptable once one is in flight, because the emitted
+    headers say "file N of M" and the executed transactions are on chain carrying that M. On
+    2026-09-24 a one-line ordering fix mid-deploy silently repacked 24 transactions into 23, after
+    19 of them had already executed announcing "of 24". The modules in those 19 were byte-identical
+    -- verified -- but the pipeline would have disagreed with the chain about its own shape, and
+    anyone auditing the deploy afterwards would have found the discrepancy and no explanation.
+
+    So: once a round is live, its boundaries are a FACT OF RECORD, not a planner output.
     """
     steps, batch = [], None
     size_of = {}
@@ -524,6 +566,8 @@ def plan(blocks, budget, maxbytes=DEFAULT_MAXBYTES):
             continue
         g = b["gas"] or 0
         bsz = nbytes(b["pacts"])
+        if break_before and any(os.path.basename(x) in break_before for x in b["pacts"]):
+            close()
         if g > budget or (maxbytes and bsz > maxbytes):
             close()
             steps.append({"kind": "batch", "pacts": list(b["pacts"]), "gas": g,
@@ -622,7 +666,8 @@ def main():
                 print(f"     {os.path.relpath(o, ROOT)}")
             print("  !! They will NOT be in the emitted plan. Resolve before deploying.\n")
         ORPHANS.extend(orphan)
-    steps = plan(blocks, budget, maxbytes)
+    steps = plan(blocks, budget, maxbytes,
+                 frozenset((RND or {}).get("break_before", [])))
 
     batches = [s for s in steps if s["kind"] == "batch"]
     inits = [s for s in steps if s["kind"] == "init"]

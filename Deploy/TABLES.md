@@ -362,10 +362,10 @@ It returns a row per table that exists and errors on the first that does not, so
 | `06_VCT.pact` | `P|T`, `P|MT` |
 | `07_MTX-AQP.pact` | `P|T`, `P|MT` |
 | `08_DSA.pact` | `P|T`, `P|MT`, `DSA|T|Template`, `DSA|T|Agency`, `DSA|T|OracleAuth` |
-| `09_AQP-INFO.pact` | *none* |
 | `01_TS02-C1.pact` | `P|T`, `P|MT` |
 | `02_TS02-C2.pact` | `P|T`, `P|MT` |
 | `04_TS02-C3.pact` | `P|T`, `P|MT` |
+| `09_AQP-INFO.pact` | *none* |
 | `05_TS02-DPAD.pact` | `P|T`, `P|MT` |
 | `01_Spark.pact` | `P|T`, `P|MT`, `SPARK|T|Properties` |
 | `02_Snakes.pact` | `P|T`, `P|MT`, `SNAKES|T|Properties` |

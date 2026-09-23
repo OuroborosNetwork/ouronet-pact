@@ -94,7 +94,7 @@
 (namespace "ouronet-ns")
 (print "--- [DEMIPAD-G2 · 01 · TOGGLE-SALE / TOGGLE-RETRIEVAL / C>DEPOSIT] ---")
 ;;P3.3. @event defcaps, reached through the real TS02-DPAD path. The interfaces are
-;;DemiourgosLaunchpadV2 and TalosStageTwo_DemiPadV1 — the module is DEMIPAD but its interface is not
+;;DemiourgosLaunchpadV2 and TalosStageTwo_DemiPadV2 — the module is DEMIPAD but its interface is not
 ;;"DemiPadV2", which cost a "Cannot find module" round trip.
 ;;
 ;;THE DEPOSIT CAP IS AN ORDERED CHAIN, and each case below is built so only its own link can answer:
@@ -110,7 +110,7 @@
 (let
     (
         (ref-DEMIPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-        (ref-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
+        (ref-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
         (sft:string "TSFS-98c486052a51")
     )
     (map print
@@ -229,7 +229,7 @@
 (print "--- [DEMIPAD-G3 - the launchpad admin ops name the acting admin, and check it · 02 · let / invocation] ---")
 (let
     (
-        (ref-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
+        (ref-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
         (sft:string "TSFS-98c486052a51")
     )
     (map print
@@ -252,7 +252,7 @@
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (let
     (
-        (ref-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
+        (ref-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
         (sft:string "TSFS-98c486052a51")
     )
     (map print
@@ -293,7 +293,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
+        (ref-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (patron:string KST.ANHD)
         (asset:string "OURO-98c486052a51")
@@ -358,7 +358,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
+        (ref-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (patron:string KST.ANHD)
         (asset:string "COF-98c486052a51")
@@ -418,7 +418,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
+        (ref-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (patron:string KST.ANHD)
         (asset:string "TSFS-98c486052a51")
@@ -478,7 +478,7 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (let
     (
-        (ref-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
+        (ref-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (patron:string KST.ANHD)
         (asset:string "CNF-98c486052a51")

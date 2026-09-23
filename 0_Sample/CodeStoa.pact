@@ -1098,7 +1098,7 @@
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
         (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
-        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
+        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
         (s-key:string DEMIPAD-STOICPAY.KPAY|INFO)
         ;;
         (patron:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
@@ -1276,7 +1276,7 @@ DEMIPAD
         (ref-TS01-C1:module{TalosStageOne_ClientOneV2} TS01-C1)
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV2} TS01-C2)
         (ref-DPDC:module{DpdcV2} DPDC)
-        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
+        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV2} TS02-DPAD)
         ;;
         (patron:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
         (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))

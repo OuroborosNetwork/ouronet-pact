@@ -103,8 +103,8 @@ Read top to bottom. **`step`** is the position in the full sequence; **`file`** 
 | 17 | **17** | DEPLOY 1 modules: 04_RPS | 229,502 | `Deploy/1_Pure/17_deploy.pact` |
 | 18 | **18** | DEPLOY 1 modules: 05_FVT | 203,548 | `Deploy/1_Pure/18_deploy.pact` |
 | 19 | **19** | DEPLOY 3 modules: 06_VCT, 07_MTX-AQP, 08_DSA | 849,276 | `Deploy/1_Pure/19_deploy.pact` |
-| 20 | **20** | DEPLOY 3 modules: 09_AQP-INFO, 01_TS02-C1, 02_TS02-C2 | 149,410 | `Deploy/1_Pure/20_deploy.pact` |
-| 21 | **21** | DEPLOY 2 modules: 04_TS02-C3, 05_TS02-DPAD | 221,896 | `Deploy/1_Pure/21_deploy.pact` |
+| 20 | **20** | DEPLOY 2 modules: 01_TS02-C1, 02_TS02-C2 | 149,410 | `Deploy/1_Pure/20_deploy.pact` |
+| 21 | **21** | DEPLOY 3 modules: 04_TS02-C3, 09_AQP-INFO, 05_TS02-DPAD | 221,896 | `Deploy/1_Pure/21_deploy.pact` |
 | 22 | **22** | DEPLOY 8 modules: 01_Spark, 02_Snakes, 03_Custodians, 04_STOICPAY, 05_STOAICO, 99_TS02-CPAD, 01_INFO-TWO, 02_KBunnies | 175,977 | `Deploy/1_Pure/22_deploy.pact` |
 | 23 | **23** | DEPLOY 1 modules: 04_AQP-BOOT | 0 | `Deploy/1_Pure/23_deploy.pact` |
 | 24 | — | *init* — deploy-stage02 · AQP-BOOT Step0 WireImcAndGovernor | — | `Deploy/2_Init/` · `REPL/deploy-stage02.repl:63` |
