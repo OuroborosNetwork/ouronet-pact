@@ -1,4 +1,4 @@
-(interface Dispenser
+(interface DispenserV2
 
 
 
@@ -79,7 +79,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements Dispenser)
+    (implements DispenserV2)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE

@@ -9,13 +9,12 @@
 ;;   2_CITIZEN/1_AOZ/01_AOZ+.pact
 ;;   1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/01_DPDC-UDC.pact
 ;;
-;; TOTAL: 3 interface(s), 3 module(s), 10 table(s)
+;; TOTAL: 2 interface(s), 3 module(s), 10 table(s)
 ;; What it DEPLOYS, in load order:
 ;;   -- 1_SOVEREIGN/STAGE_01/Z_Reads/02_INFO-ONE+.pact
 ;;      interface  InfoOneV2
 ;;      module     INFO-ONE
 ;;   -- 2_CITIZEN/1_AOZ/01_AOZ+.pact
-;;      interface  AgeOfZalmoxis
 ;;      module     AOZ
 ;;      table      AOZ|T|AssetCounter
 ;;      table      AOZ|T|PrimalTrueFungibles
@@ -4240,84 +4239,8 @@
 )
 
 ;; ===== 2_CITIZEN/1_AOZ/01_AOZ+.pact ================================
-(interface AgeOfZalmoxis
+;; AgeOfZalmoxis: already deployed and unchanged -- see LIVE_INTERFACES
 
-
-
-
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;{G2}  schemas
-    ;;{G3}  tables  ⟨cannot exist in an interface⟩
-    ;;{G4}  capabilities
-    ;;{G5}  functions
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    ;;{P2}  schemas
-    ;;{P3}  tables  ⟨cannot exist in an interface⟩
-    ;;{P4}  capabilities
-    ;;{P5}  functions
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    ;;{3.2}  schemas
-    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    ;;{5.2}  Compute [UC]
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;
-    ;;  [UR]
-    ;;
-    (defun UR_CountPrimalTrueFungibles:integer ())
-    (defun UR_CountPrimalOrtoFungibles:integer ())
-    (defun UR_CountATSPairs:integer ())
-    (defun UR_CountTrueFungibles:integer ())
-    (defun UR_CountOrtoFungibles:integer ())
-    (defun UR_CountSemiFungibles:integer ())
-    (defun UR_CountNonFungibles:integer ())
-    ;;
-    (defun UR_PrimalTrueFungible:string (position:integer))
-    (defun UR_PrimalOrtoFungible:string (position:integer))
-    (defun UR_AutostakePair:string (position:integer))
-    (defun UR_TrueFungible:string (position:integer))
-    (defun UR_OrtoFungible:string (position:integer))
-    (defun UR_SemiFungible:string (position:integer))
-    (defun UR_NonFungible:string (position:integer))
-    ;;{5.4}  Validate [UEV/CAP]
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;{5.7}  User [A/C]
-    ;;
-    ;;  [A]
-    ;;
-    (defun A_InitialiseCounters ())
-    (defun A_RegisterPrimalTrueFungible (id:string))
-    (defun A_RegisterPrimalOrtoFungible (id:string))
-    (defun A_RegisterAutostakePair (id:string))
-    (defun A_RegisterTrueFungible (id:string))
-    (defun A_RegisterOrtoFungible (id:string))
-    (defun A_RegisterSemiFungible (id:string))
-    (defun A_RegisterNonFungible (id:string))
-    ;;
-    ;;  [C]
-    ;;
-    (defun C_SetupKosonicATS (index-name:string hot-rbt:string decay:integer))
-
-)
 (module AOZ GOV
 
 

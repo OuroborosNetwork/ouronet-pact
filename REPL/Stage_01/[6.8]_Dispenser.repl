@@ -56,7 +56,7 @@
 (print "--- [Manual Ouro Price Update · 02 · let / invocation] ---")
 (let
     (
-        (ref-DSP:module{Dispenser} DSP)
+        (ref-DSP:module{DispenserV2} DSP)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-ATS:module{AutostakeV3} ATS)
@@ -128,7 +128,7 @@
 (print "--- [Koson Minter FullTilt Testing · 02 · let / invocation] ---")
 (let
     (
-        (ref-DSP:module{Dispenser} DSP)
+        (ref-DSP:module{DispenserV2} DSP)
         (ref-DALOS:module{OuronetDalosV2} DALOS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-AOZ:module{AgeOfZalmoxis} AOZ)
@@ -226,7 +226,7 @@
 (print "--- [Koson Minter 1of3 Testing · 02 · let / invocation] ---")
 (let
     (
-        (ref-DSP:module{Dispenser} DSP)
+        (ref-DSP:module{DispenserV2} DSP)
     )
     ;(ref-DSP::A_OuroMinterStageOne)
     (ref-DSP::A_KosonMinterStageOne_1of3)
@@ -267,7 +267,7 @@
 (print "--- [Koson Minter 2of3 Testing · 02 · let / invocation] ---")
 (let
     (
-        (ref-DSP:module{Dispenser} DSP)
+        (ref-DSP:module{DispenserV2} DSP)
     )
     ;(ref-DSP::A_OuroMinterStageOne)
     (ref-DSP::A_KosonMinterStageOne_2of3)
@@ -312,7 +312,7 @@
         (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
         (ref-TFT:module{TrueFungibleTransferV2} TFT)
-        (ref-DSP:module{Dispenser} DSP)
+        (ref-DSP:module{DispenserV2} DSP)
         (patron:string  KST.ANHD)
         (ats:string KST.ATSTK)
         (vst:string KST.VESTG)

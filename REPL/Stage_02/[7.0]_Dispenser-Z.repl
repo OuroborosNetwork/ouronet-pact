@@ -82,7 +82,7 @@
         (ref-TS01-A:module{TalosStageOne_AdminV2} TS01-A)
         (ref-AOZ:module{AgeOfZalmoxis} AOZ)
         (ref-P|DSP:module{OuronetPolicyV2} DSP)
-        (ref-DSP:module{Dispenser} DSP)
+        (ref-DSP:module{DispenserV2} DSP)
         ;;
         (patron:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
         (dalos-sc:string (ref-DALOS::GOV|DALOS|SC_NAME))

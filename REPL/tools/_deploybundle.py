@@ -834,6 +834,53 @@ def drop_empty_repl_section(src):
 DEPLOYABLE_RE = re.compile(r'^\((interface|module)\s+([A-Za-z0-9|_\-\.]+)', re.M)
 
 
+# ---------------------------------------------------------------------------
+# INTERFACES THAT ARE ALREADY ON CHAIN AND HAVE NOT CHANGED.
+#
+# Pact refuses to re-deploy an interface. Not "refuses to CHANGE one" -- refuses to deploy the
+# same name twice at all, identical bytes included: `Interface cannot be upgraded`. That is the
+# entire reason this codebase versions interface names, and it is why an upgrade round must carry
+# a module's NEW interfaces and leave its existing ones alone.
+#
+# Two interfaces in this tree never entered the versioning scheme, so their names do not change
+# between rounds and a full redeploy tries to ship them again. Found the hard way, mid-deploy, at
+# transaction 11: `Interface cannot be upgraded: ouronet-ns.AgeOfZalmoxis`.
+#
+# THE HASH IS THE POINT. Skipping an interface is only safe while its content matches what is
+# deployed; skip a CHANGED one and the round silently ships a module against a stale contract.
+# So each entry pins the md5 of the interface block as emitted, and a mismatch is FATAL with the
+# instruction to version-bump instead. An unversioned interface that changes has exactly one
+# correct answer, and it is not "skip it".
+LIVE_INTERFACES = {
+    "AgeOfZalmoxis": "a7345a4600ed8d83367a54714bab362d",   # unchanged since 21fa54f
+}
+
+
+def strip_live_interfaces(code, rel):
+    """Remove already-deployed, unchanged interfaces. Fatal if one has drifted."""
+    import hashlib
+    from _pactlex import balanced
+    for name, want in LIVE_INTERFACES.items():
+        m = re.search(r'^\(interface\s+' + re.escape(name) + r'\b', code, re.M)
+        if not m:
+            continue
+        end = balanced(code, m.start())
+        if end < 0:
+            sys.exit(f"_deploybundle: unbalanced interface {name} in {rel}")
+        block = code[m.start():end + 1]
+        got = hashlib.md5(block.encode("utf8")).hexdigest()
+        if want is None:
+            print(f"  interface {name}: md5 {got}  <-- pin this in LIVE_INTERFACES")
+        elif got != want:
+            sys.exit(f"_deploybundle: interface {name} has CHANGED (md5 {got}, pinned {want}).\n"
+                     f"  It is already on chain and Pact cannot upgrade an interface. Version-bump\n"
+                     f"  it ({name} -> {name}V2), re-point every implements/modref, and remove it\n"
+                     f"  from LIVE_INTERFACES. Do NOT re-pin the hash -- that ships a module\n"
+                     f"  against a contract the chain does not have.")
+        code = code[:m.start()] + f";; {name}: already deployed and unchanged -- see LIVE_INTERFACES\n" + code[end + 1:]
+    return code
+
+
 def deployables(src):
     """Ordered [(kind, name)] of the top-level constructs a pact FILE actually deploys.
 
@@ -900,6 +947,7 @@ def write(steps, budget, maxbytes, mode="upgrade", existing=frozenset()):
             rel = os.path.relpath(p, ROOT)
             psrc = strip_repl(open(p, encoding="utf8", errors="replace").read(), p)
             pcode, ptables = split_tables(psrc)
+            pcode = strip_live_interfaces(pcode, rel)
             body.append(f";;   -- {rel}")
             for kind, name in deployables(pcode):
                 body.append(f";;      {'interface' if kind == 'interface' else 'module   '}  {name}")
@@ -923,6 +971,7 @@ def write(steps, budget, maxbytes, mode="upgrade", existing=frozenset()):
             rel = os.path.relpath(p, ROOT)
             src = strip_repl(open(p, encoding="utf8", errors="replace").read(), p)
             code, tables = split_tables(src)
+            code = strip_live_interfaces(code, rel)
             is_new = any(k in rel.replace(os.sep, "/") for k in NEW_KEYS)
             inventory.append((rel, tables))
             body.append(f";; ===== {rel} {'=' * max(0, 60 - len(rel))}")

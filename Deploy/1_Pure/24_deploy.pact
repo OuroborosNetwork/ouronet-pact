@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 24 of 24
 ;; This is STEP 25 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-24 must have run first, including the init steps between deploys.
-;; 1 source file(s), 14,849 gas measured in the REPL gas model, 64,320 bytes
+;; 1 source file(s), 14,849 gas measured in the REPL gas model, 64,324 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   2_CITIZEN/Stage_Z/03_DSP+.pact
@@ -10,7 +10,7 @@
 ;; TOTAL: 1 interface(s), 1 module(s), 2 table(s)
 ;; What it DEPLOYS, in load order:
 ;;   -- 2_CITIZEN/Stage_Z/03_DSP+.pact
-;;      interface  Dispenser
+;;      interface  DispenserV2
 ;;      module     DSP
 ;;      table      P|T
 ;;      table      P|MT
@@ -22,7 +22,7 @@
 (namespace "ouronet-ns")
 
 ;; ===== 2_CITIZEN/Stage_Z/03_DSP+.pact ==============================
-(interface Dispenser
+(interface DispenserV2
 
 
 
@@ -103,7 +103,7 @@
     ;;{0}  IMPLEMENTERS
     ;;
     (implements OuronetPolicyV2)
-    (implements Dispenser)
+    (implements DispenserV2)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
