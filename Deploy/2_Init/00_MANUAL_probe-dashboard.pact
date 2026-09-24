@@ -23,9 +23,21 @@
 ;; dies exactly where it used to succeed. The literals would have been working AROUND an empty
 ;; index rather than merely being lazy.
 ;;
-;; If L2 returns an empty list, the fix is not to go back to literals scattered through the
-;; module -- it is the ids INTERFACE (one authoritative registry of constants), plus a
-;; backfill of the reverse index if that is the real gap.
+;; WEAKENED, SAME DAY, BY EVIDENCE AGAINST IT -- recorded here rather than quietly dropped,
+;; because an unmarked hypothesis is what a reader anchors on. Traced the writer: the reverse
+;; index is populated by `DPTF::XE_UpdateRewardToken` / `XE_UpdateRewardBearingToken`, called
+;; from `ATS::XI_FoldedIssue` -- the pair ISSUANCE path, not a later add-on -- and git says both
+;; have existed since the initial import (2026-04-08), long before the mainnet pairs. So the
+;; index is PROBABLY populated and L2 probably passes.
+;;
+;; Run it anyway. "Probably" is what the last three wrong diagnoses were made of, and L2 costs
+;; one paste. But do not treat a passing L2 as the end -- go on through L3..L7, and if all of
+;; them pass, the fault is in `URC_0002_Primordials` rather than the header. That path is NOT
+;; layered here and is the obvious next thing to break down: it reaches `coin`, `ur-stoic`,
+;; STOAICO and a hardcoded vault address, any of which could have moved.
+;;
+;; Whatever L2 says, the ids INTERFACE is still the right destination: it removes the dependency
+;; on the reverse index entirely, which is a thing no read should need to care about.
 ;; ===========================================================================================
 
 
