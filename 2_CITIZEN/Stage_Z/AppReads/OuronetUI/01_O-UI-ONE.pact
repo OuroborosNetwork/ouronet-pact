@@ -103,9 +103,18 @@
 
     ;;{5.2}  Compute [UC]
     (defun UC_Amount:string (amount:decimal)
-        @doc "Four-decimal display form; sub-threshold values read as <0.0001 rather than 0.0."
+        @doc "Four-decimal display form. A NON-ZERO amount too small to show at four decimals \
+            \ reads as <0.0001; a genuine zero reads as 0.0000, because those are different \
+            \ facts and a holder of dust should not be told they hold nothing. \
+            \ \
+            \ THE COMPARISON IS AGAINST \"0.0000\", NOT \"0.0\", AND THAT IS THE WHOLE FUNCTION. \
+            \ `(floor x 4)` always formats to four decimal places, so the string is never \
+            \ \"0.0\" and the sentinel branch was UNREACHABLE -- in every copy of this \
+            \ function, and in DPL-UR::UC_FormatTokenAmount before them, which compared the \
+            \ formatted STRING against the DECIMAL literal 0.0 and so could never match \
+            \ either. Verified on chain: UC_Amount 0.00001 returned \"0.0000\"."
         (let ((v:string (format "{}" [(floor amount 4)])))
-            (if (= v "0.0") "<0.0001" v)
+            (if (and (> amount 0.0) (= v "0.0000")) "<0.0001" v)
         )
     )
     (defun UC_Index:string (index:decimal)

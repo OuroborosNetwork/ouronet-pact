@@ -81,8 +81,9 @@
 (map print
     [
         ;;trailing zeros are trimmed, but a genuine decimal is kept
-        (expect "<<STAGEZ-01>> trailing zeros are trimmed"
-            "1.23" (DPL-UR.UC_TrimDecimalTrailingZeros 1.2300))
+        ;;UC_TrimDecimalTrailingZeros was asserted here. It is gone: archive mode found it had
+        ;;ZERO callers -- in DPL-UR, in the UI, anywhere -- and no AppReads successor, because
+        ;;no page ever wanted a trimmed decimal. A test is not a reason to keep code alive.
         ;;prices render with two decimals and a currency mark
         (expect "<<STAGEZ-01>> a price renders with 2 decimals and a $ suffix"
             "1.50$" (O-UI-TWO.UC_Price 1.5))
@@ -92,7 +93,17 @@
         ;;token amounts keep 4 decimals, zeros INCLUDED (the opposite rule to the trimmer above --
         ;;two helpers, two conventions, and nothing but this test says which is which)
         (expect "<<STAGEZ-01>> a token amount keeps 4 decimals including trailing zeros"
-            "1234.5000" (DPL-UR.UC_FormatTokenAmount 1234.5))
+            "1234.5000" (O-UI-TWELVE.UC_Amount 1234.5))
+        ;;THE SUB-THRESHOLD SENTINEL, WHICH NEVER ONCE FIRED BEFORE THIS. UC_FormatTokenAmount
+        ;;compared its formatted STRING against the DECIMAL literal 0.0, so `<0.0001` was
+        ;;unreachable; the AppReads copies compared against "0.0", which `(floor x 4)` never
+        ;;produces either -- it always formats to four places. Both branches are pinned now,
+        ;;because dust and nothing are different facts and a holder of dust was being shown a
+        ;;flat zero.
+        (expect "<<STAGEZ-01>> a non-zero amount below 4dp reads as the sentinel, not as zero"
+            "<0.0001" (O-UI-TWELVE.UC_Amount 0.00001))
+        (expect "<<STAGEZ-01>> ...while a genuine zero still reads as zero"
+            "0.0000" (O-UI-TWELVE.UC_Amount 0.0))
         (expect "<<STAGEZ-01>> ...and the list form applies the same rule element-wise"
             ["1.1000" "2.2000"] (O-UI-TWELVE.UC_AmountList [1.10 2.20]))
         ;;account elision: a 162-glyph account is shortened for display. The ellipsis form is what
@@ -116,24 +127,14 @@
 ;;chain with a different deployment hash this same call returns that hash instead.
 (map print
     [
-        (expect "<<STAGEZ-02>> the primordial id list is DERIVED, so it carries this chain's hash"
+        (expect "<<STAGEZ-02>> the primordial ids are DERIVED, so they carry this chain's hash"
             ["OURO-98c486052a51" "GAS-98c486052a51" "AURYN-98c486052a51"
              "ELITEAURYN-98c486052a51" "DWK-98c486052a51" "DLK-98c486052a51"]
-            (DPL-UR.URC_PrimordialIDs))
-        ;;A price computation over a real token. These two were written as >= 0.0 / >= 0 smoke
-        ;;checks -- which a price and a nonce satisfy by construction, so they asserted only "the
-        ;;call returned". _vacuous.py flagged them; replaced with the actual relationships.
-        (expect "<<STAGEZ-02>> unit amount at unit price is the unit value"
-            1.0 (DPL-UR.URC_TrueFungibleAmountPrice "OURO-98c486052a51" 1.0 1.0))
-        ;;linear in BOTH arguments, and zero at zero amount -- a price function that clamped,
-        ;;rounded to precision, or silently used a stale quote would break one of these three
-        ;;while still returning a plausible non-negative number
-        (expect "<<STAGEZ-02>> ...doubling the AMOUNT doubles the value"
-            2.0 (DPL-UR.URC_TrueFungibleAmountPrice "OURO-98c486052a51" 2.0 1.0))
-        (expect "<<STAGEZ-02>> ...doubling the PRICE doubles the value"
-            2.0 (DPL-UR.URC_TrueFungibleAmountPrice "OURO-98c486052a51" 1.0 2.0))
-        (expect "<<STAGEZ-02>> ...and zero amount is worth zero"
-            0.0 (DPL-UR.URC_TrueFungibleAmountPrice "OURO-98c486052a51" 0.0 1.0))
+            [(DALOS.UR_OuroborosID) (DALOS.UR_IgnisID) (DALOS.UR_AurynID)
+             (DALOS.UR_EliteAurynID) (DALOS.UR_WrappedStoaID) (DALOS.UR_SilverStoaID)])
+        ;;URC_TrueFungibleAmountPrice's linearity was pinned here. Deleted with the function:
+        ;;zero callers anywhere, and no AppReads successor, because no page multiplies an
+        ;;amount by a price on chain -- they read both and multiply in the client.
         ;;EXPLORER's per-account reader is chain-agnostic -- and must AGREE with the sovereign
         ;;source it wraps. Asserted against DALOS rather than against a literal, so it keeps
         ;;holding as the account transacts; what is pinned is that the explorer does not drift
@@ -414,36 +415,41 @@
 (print "--- [STAGEZ-08 -- the STOA collection split, pinned on CONSERVATION · 01 · namespace] ---")
 (namespace "ouronet-ns")
 (print "--- [STAGEZ-08 . 01 . four receivers, and no dust] ---")
-;;URC_SplitStoaPriceForReceivers divides a STOA payment 10/20/30/40 between four protocol accounts.
-;;The failure that matters for a money-splitter is not "wrong shape", it is VALUE LEAKING: parts
-;;that no longer sum to the input because each was rounded down independently. So that is what is
-;;asserted, across a spread of prices chosen to break it -- a round number, a price that does not
-;;divide evenly, and two BELOW the 12-dp STOA precision where naive truncation would round a share
-;;to zero and silently keep the remainder.
+;;A STOA payment is divided 10/20/30/40 between four protocol accounts. The failure that matters
+;;for a money-splitter is not "wrong shape", it is VALUE LEAKING: parts that no longer sum to the
+;;input because each was rounded down independently. So that is what is asserted, across a spread
+;;of prices chosen to break it -- a round number, a price that does not divide evenly, and two
+;;BELOW the 12-dp STOA precision where naive truncation would round a share to zero and silently
+;;keep the remainder.
+;;
+;;RETARGETED 2026-09-25, AND THE RETARGET IS AN IMPROVEMENT. This used to call
+;;DPL-UR::URC_SplitStoaPriceForReceivers, a display wrapper that zipped the shares onto the
+;;receiver list. Archive mode deleted it -- zero callers anywhere -- and for a moment that read
+;;as a reason to KEEP the wrapper, which inverts the dependency: a test exists to pin behaviour,
+;;not to pin code in place. The behaviour lives in U|DALOS::UC_TenTwentyThirtyFourtySplit, and
+;;asserting it there reaches the arithmetic instead of a caller of it.
 (map print
     [
         (expect "<<STAGEZ-08>> the split conserves value exactly at every price, sub-precision included"
             [true true true true true true]
             (map (lambda (p:decimal)
-                     (let ((s (DPL-UR.URC_SplitStoaPriceForReceivers p)))
-                         (= p (fold (+) 0.0
-                                  [(at "10%-p" s) (at "20%-p" s) (at "30%-p" s) (at "40%-p" s)]))))
+                     (= p (fold (+) 0.0
+                              (U|DALOS.UC_TenTwentyThirtyFourtySplit p (U|CT.CT_STOA_PRECISION)))))
                  [100.0 33.33 0.07 1.0 0.000000000001 0.123456789012345]))
         ;;and the proportions really are 10/20/30/40, not merely a partition that happens to sum
         (expect "<<STAGEZ-08>> ...in exactly 10/20/30/40 proportion"
             [10.0 20.0 30.0 40.0]
-            (let ((s (DPL-UR.URC_SplitStoaPriceForReceivers 100.0)))
-                [(at "10%-p" s) (at "20%-p" s) (at "30%-p" s) (at "40%-p" s)]))
+            (U|DALOS.UC_TenTwentyThirtyFourtySplit 100.0 (U|CT.CT_STOA_PRECISION)))
         ;;the four receivers must be DISTINCT: a collision would silently pay one account twice
-        ;;and another nothing, while every sum-based check above still passed.
+        ;;and another nothing, while every sum-based check above still passed. Read straight from
+        ;;DALOS now -- the wrapper that used to assemble this list is gone.
         (expect "<<STAGEZ-08>> the four receivers are distinct -- a collision double-pays one account"
-            4 (length (distinct (DPL-UR.URC_StoaCollectionReceivers))))
-        ;;...and the split hands each share to the receiver in the SAME ORDER the receiver list
-        ;;gives, which is the pairing the whole function exists to establish
-        (expect "<<STAGEZ-08>> each share goes to its receiver, in receiver-list order"
-            (DPL-UR.URC_StoaCollectionReceivers)
-            (let ((s (DPL-UR.URC_SplitStoaPriceForReceivers 100.0)))
-                [(at "10%-r" s) (at "20%-r" s) (at "30%-r" s) (at "40%-r" s)]))
+            4
+            (length (distinct
+                [(DALOS.UR_AccountStoa (at 2 (DALOS.UR_DemiurgoiID)))
+                 (DALOS.UR_AccountStoa (DALOS.GOV|DALOS|SC_NAME))
+                 (DALOS.UR_AccountStoa (at 1 (DALOS.UR_DemiurgoiID)))
+                 (DALOS.UR_AccountStoa (DALOS.GOV|OUROBOROS|SC_NAME))])))
     ]
 )
 (commit-tx)
@@ -468,40 +474,16 @@
 
 ;;|| NEXT >
 ;;
-(begin-tx "STAGEZ-10 -- the duplicated binding block in URC_PrimordialPrices is EQUIVALENT")
-(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
-;;==== STAGEZ-10 -- the duplicated binding block in URC_PrimordialPrices is EQUIVALENT · 01 · namespace ==== 
-(print "--- [STAGEZ-10 -- the duplicated binding block in URC_PrimordialPrices is EQUIVALENT · 01 · namespace] ---")
-(namespace "ouronet-ns")
-(print "--- [STAGEZ-10 . 01 . positional ids vs named ids] ---")
-;;URC_PrimordialPrices binds ouro/auryn/elite-auryn/wstoa/sstoa TWICE in one `let`: first
-;;POSITIONALLY out of URC_PrimordialIDs ((at 4 p-ids) -> wstoa), then by NAME from DALOS. The
-;;second wins, so the first block is dead code. `_conformance.py --rule shadowed-let-binding`
-;;reports it.
+(begin-tx "STAGEZ-10 -- retired with URC_PrimordialPrices")
+;;This block pinned a SHADOWED LET BINDING inside DPL-UR::URC_PrimordialPrices: the function bound
+;;five ids positionally out of URC_PrimordialIDs, then rebound them by name from DALOS, so the
+;;first block was dead code that nobody dared delete because nobody could tell which half was
+;;authoritative. Executing both settled it -- they agreed -- and the pin existed so the dead half
+;;could be removed safely.
 ;;
-;;It reads as though one of the two must be wrong, and the positional one looks like the suspect --
-;;which is presumably why nobody has deleted either. It was checked by execution instead of by
-;;eye, and they AGREE. This pins that, so the dead half can be removed safely rather than left
-;;alone forever because no one could tell which was authoritative.
-;;
-;;It also pins the ORDER of URC_PrimordialIDs from the consumer side: reorder that list and this
-;;fails, which is the early warning the positional binding itself would not give.
-(map print
-    [
-        (expect "<<STAGEZ-10>> positional id 0 == DALOS's named OuroborosID"
-            (DALOS.UR_OuroborosID)   (at 0 (DPL-UR.URC_PrimordialIDs)))
-        (expect "<<STAGEZ-10>> positional id 2 == named AurynID"
-            (DALOS.UR_AurynID)       (at 2 (DPL-UR.URC_PrimordialIDs)))
-        (expect "<<STAGEZ-10>> positional id 3 == named EliteAurynID"
-            (DALOS.UR_EliteAurynID)  (at 3 (DPL-UR.URC_PrimordialIDs)))
-        ;;these two are the ones that look wrong and are not: the wrapped/silver STOA ids really
-        ;;are the DWK/DLK entries at index 4 and 5
-        (expect "<<STAGEZ-10>> positional id 4 == named WrappedStoaID (the DWK entry)"
-            (DALOS.UR_WrappedStoaID) (at 4 (DPL-UR.URC_PrimordialIDs)))
-        (expect "<<STAGEZ-10>> positional id 5 == named SilverStoaID (the DLK entry)"
-            (DALOS.UR_SilverStoaID)  (at 5 (DPL-UR.URC_PrimordialIDs)))
-    ]
-)
+;;Archive mode removed the whole function instead, and O-UI-TWO::URC_Prices supersedes it (same
+;;six prices, plus a seventh). There is no longer a positional binding to protect, so the block
+;;retires rather than being retargeted at something it was never about.
 (commit-tx)
 
 ;;|| NEXT >
@@ -527,8 +509,6 @@
         ;;the empty case is where mappers usually break (a fold seeded with a dummy row)
         (expect "<<STAGEZ-11>> an empty account list maps to an empty result"
             [] (O-UI-SEVEN.URC_01|Accounts []))
-        (expect "<<STAGEZ-11>> ...and so does an empty api-key list"
-            [] (DPL-UR.URC_0033_DualApiKeyMapper []))
     ]
 )
 (commit-tx)
@@ -560,11 +540,6 @@
             (at "t2" (O-UI-EIGHT.URC_02|TokenEntry KST.ANHD "OURO-98c486052a51")))
         ;;price/text agreement -- the same invariant the INFO cost previews carry: a UI shows the
         ;;TEXT, so a price that stops matching its own sentence is invisible until a user is charged
-        (expect "<<STAGEZ-12>> each Pythia price appears inside its own display sentence"
-            [true true]
-            (let ((r (DPL-UR.URC_0034_PythiaPrices)))
-                [(contains (format "{}" [(at "deploy-price" r)]) (at "deploy-price-text" r))
-                 (contains (format "{}" [(at "rename-price" r)]) (at "rename-price-text" r))]))
     ]
 )
 (commit-tx)
@@ -660,8 +635,6 @@
             [] (O-UI-SEVEN.URC_03|StoicTags []))
         (expect "<<STAGEZ-15>> an empty stoa-account list maps to an empty result"
             [] (O-UI-SEVEN.URC_05|StoaAccounts []))
-        (expect "<<STAGEZ-15>> an empty apollo-account list maps to an empty result"
-            [] (DPL-UR.URC_0031 []))
         (expect "<<STAGEZ-15>> filtering an empty nonce list by class yields nothing"
             [] (O-UI-TEN.URC_07|FilterByClass "DHCD-98c486052a51" true [] 1))
         (expect "<<STAGEZ-15>> reading nonce data for no nonces yields nothing"

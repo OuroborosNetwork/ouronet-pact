@@ -393,7 +393,15 @@ def v_role_rules(files_src):
         # message. Deleting it would have removed tested behaviour and broken the gate. A
         # function under test is not dead; measure the whole repo, not just the modules.
         for g, src in {**files_src, **REPL_SRC}.items():
-            for m in re.finditer(r'\((?:ref-[A-Za-z0-9|_-]+::)?' + re.escape(short) + r'[\s)]', src):
+            # THREE CALL FORMS, NOT TWO. This matched `(fn ...)` and `(ref-X::fn ...)` and was
+            # blind to the QUALIFIED `MODULE.fn` form -- which is how every `.repl` calls into a
+            # deployed module. DEMIPAD-STOICPAY::URv_PeriodAllocation is called six times from
+            # modules/STOAICO.repl as `(DEMIPAD-STOICPAY.URv_PeriodAllocation n)`, specifically to
+            # assert that its enforce REFUSES periods outside [-1, 25]; none of those was counted,
+            # so the moment its one modref caller was deleted the `v` looked unearned. It is not:
+            # relocating that enforce would put the boundary guard out of reach of the tests that
+            # exist to exercise it.
+            for m in re.finditer(r'(?:\(|::|\.)' + re.escape(short) + r'[\s)]', src):
                 ln = src[:m.start()].count('\n') + 1
                 if re.match(r'^\s{1,8}\(defun\s', src.split('\n')[ln - 1]): continue
                 callers += 1

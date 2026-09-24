@@ -104,7 +104,12 @@
     (defun UC_Amount:string (amount:decimal)
         @doc "Four-decimal display form; sub-threshold reads as <0.0001 rather than 0.0."
         (let ((v:string (format "{}" [(floor amount 4)])))
-            (if (= v "0.0") "<0.0001" v)
+            ;;AGAINST "0.0000", NOT "0.0". `(floor x 4)` always formats to four decimals, so
+            ;;the string is never "0.0" and this branch was UNREACHABLE -- in every copy here,
+            ;;and in DPL-UR::UC_FormatTokenAmount before them, which compared the formatted
+            ;;STRING against the DECIMAL 0.0 and so could never match either. The `> 0.0` guard
+            ;;keeps a genuine zero showing 0.0000: dust and nothing are different facts.
+            (if (and (> amount 0.0) (= v "0.0000")) "<0.0001" v)
         )
     )
     (defun UC_Price:string (input-price:decimal)

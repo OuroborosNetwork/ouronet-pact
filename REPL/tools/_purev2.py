@@ -37,7 +37,9 @@ MARK = ";;@GENERATED-BODY-BELOW -- do not edit past this line; see REPL/tools/_p
 # upgrade freely; interfaces never do.
 MANIFEST = {
     "13_deploy.pact": [("AppReads/OuronetUI/01_O-UI-ONE.pact", "module-only"),
-                       ("AppReads/OuronetUI/03_O-UI-THREE.pact", "module-only")],
+                       ("AppReads/OuronetUI/02_O-UI-TWO.pact", "module-only"),
+                       ("AppReads/OuronetUI/03_O-UI-THREE.pact", "module-only"),
+                       ("AppReads/OuronetUI/12_O-UI-TWELVE.pact", "module-only")],
     "14_deploy.pact": [("01_DPL-UR.pact", "module-only")],
 }
 

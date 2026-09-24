@@ -30,11 +30,29 @@ contradicted by the first real screen. That is the same reasoning that blocks Ou
 one seventy-key object in a single eager `let` — a shape nobody asked for, kept because it
 already existed.
 
-## Where they live in the meantime
+## Where they live now
 
-**In DPL-UR, and that costs nothing.** DPL-UR is being reduced to archive mode
-(`StoicSyntax-Prefixes.md` §7.21) as its reads move out, and archive mode **keeps every read
-function** — only the mutators go. So these three survive the stub untouched, callable the day
-a console wants them.
+**In git, not on chain.** This section used to say they would survive the stub, because archive
+mode keeps readers and deletes only mutators. That was wrong for a module that is *nothing but*
+readers: applied literally the rule would have deleted nothing, and the version of the stub
+written on that reasoning kept seven reads alive purely because they referenced each other.
 
-When that console exists, port them the same way: from the screen, not from the contract.
+Counting call sites settled it — these three have **zero**, in OuronetUI, in
+`@ouronet/ouronet-core`, in every other Pact module, in the websites. `PureV2/14` deletes them
+with the rest.
+
+Nothing is lost that mattered. All three are thin passthroughs over `PYTHIA`'s own readers:
+
+```
+URC_0031                    (map PYTHIA::UR_ApiKeyRowOrNull  apollo-accounts)
+URC_0033_DualApiKeyMapper   (map PYTHIA::UR_DualLinkRowOrNull dual-api-keys)
+URC_0034_PythiaPrices       PYTHIA::UR_DeployPrice / UR_RenamePrice, plus display text
+```
+
+The rows they return are PYTHIA's, and a console can read them from PYTHIA directly. The only
+thing the wrappers add is one round trip instead of N — worth having, and worth building *here*
+as `P-UI-ONE` when there is a screen to shape it around. Their bodies are one revision back in
+git; recovering them is a copy, not a rewrite.
+
+When that console exists, port them the same way everything in `OuronetUI/` was ported: from the
+screen, not from the contract.

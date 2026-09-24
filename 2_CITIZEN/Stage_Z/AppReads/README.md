@@ -84,8 +84,17 @@ OuronetUI's transport redirect. Two files remain:
 
 | file | what | why it is not optional |
 |---|---|---|
-| `PureV2/13` | O-UI-ONE + O-UI-THREE module upgrades | restores four Unicode glyphs flattened to ASCII during the port — including `Ξ₳`, so the header currently reads "Total Xi-A" |
-| `PureV2/14` | DPL-UR → archive mode | deploy **last**, and only after every page has been checked: it deletes the 57 migrated reads, which is what the redirect's fallback currently falls back *to* |
+| `PureV2/13` | O-UI-ONE + O-UI-TWO + O-UI-THREE + O-UI-TWELVE upgrades | two display defects: five Unicode glyphs flattened to ASCII (including `Ξ₳`, so the header reads "Total Xi-A"), and a `<0.0001` sentinel that has never fired in any module |
+| `PureV2/14` | DPL-UR → archive mode, 3,025 lines to 158 | deploy **last**, and only after every page has been checked: it deletes every read, which is what the redirect's fallback currently falls back *to* |
+
+DPL-UR ends as a governance capability and two constants. The first draft of `14` kept seven
+reads by dependency closure; counting call sites showed the closure was keeping a cluster of
+dead code alive by citation — every one had zero callers anywhere in the workspace. Two were
+already superseded (`O-UI-TWO::URC_Prices` over `URC_PrimordialPrices`, `UC_Amount` over
+`UC_FormatTokenAmount`) and two were being kept only to preserve a test, which inverts the
+dependency: `STAGEZ-08` now asserts the STOA conservation invariant against
+`U|DALOS::UC_TenTwentyThirtyFourtySplit`, the arithmetic itself, rather than a display wrapper
+over it.
 
 ## Deploying
 

@@ -1,62 +1,73 @@
 ;; ===========================================================================================
 ;; DPL-UR -- ARCHIVE MODE since 2026-09-25. StoicSyntax-Prefixes.md §7.21.
 ;; ===========================================================================================
-;; This module WAS the read layer for every Ouronet front end: one file, 3,026 lines, every
-;; page's data behind a single `implements`. Those reads now live in `AppReads/`, one module per
-;; display entity. 57 definitions removed, 18 kept.
+;; This module WAS the read layer for every Ouronet front end: one file, 3,025 lines, 64
+;; definitions, every page's data behind a single `implements`. It now holds a governance
+;; capability and three constants. Nothing else.
 ;;
 ;; ------------------------------------------------------------------------------------------
-;; WHY A READ MODULE IS STUBBED AT ALL, WHEN ARCHIVE MODE NORMALLY KEEPS READS
+;; WHY A READ MODULE IS EMPTIED, WHEN ARCHIVE MODE NORMALLY KEEPS READS
 ;; ------------------------------------------------------------------------------------------
 ;; §7.21 retires a module by deleting everything that CHANGES state and keeping every reader, so
 ;; whatever history its tables hold stays legible. DPL-UR owns no tables and is reads end to
 ;; end, so applied literally that rule would delete nothing.
 ;;
-;; The hazard here is the opposite one. A MIGRATED read left in place is a second source of
-;; truth answering the same question, and the two drift the moment either side is touched -- so
-;; a consumer nobody remembered keeps working, quietly, on last month's logic. That is strictly
-;; worse than a loud failure; it is how a wrong number survives a migration. So the rule applied
-;; here is the narrow one:
+;; The hazard here is the opposite one. A migrated read left in place is a SECOND SOURCE OF
+;; TRUTH answering the same question, and the two drift the moment either is touched -- so a
+;; consumer nobody remembered keeps working, quietly, on last month's logic. Worse than a loud
+;; failure; it is how a wrong number survives a migration.
 ;;
-;;     DELETED IF AND ONLY IF IT MOVED TO AppReads.  Everything else stays.
+;; ------------------------------------------------------------------------------------------
+;; THE FIRST CUT KEPT SEVEN READS. IT SHOULD NOT HAVE.
+;; ------------------------------------------------------------------------------------------
+;; An earlier version of this stub deleted only what had moved to `AppReads/` and kept the rest
+;; by DEPENDENCY CLOSURE -- URC_0030_StoicPay, the three PYTHIA reads, URC_PrimordialIDs,
+;; URC_PrimordialPrices, URC_TrueFungibleAmountPrice, URC_StoaCollectionReceivers,
+;; URC_SplitStoaPriceForReceivers, plus two helpers. That reasoning was wrong, and the way it
+;; was wrong is worth recording: the closure kept them because they reference EACH OTHER, not
+;; because anything uses them. Counting call sites properly settled it --
 ;;
-;; The deleted set is exactly the 47-entry redirect table in OuronetUI's
-;; `src/kadena/appReadRedirect.ts`, plus the internals that moved with those reads, plus the
-;; five display formatters whose AppReads successors were verified BY OUTPUT rather than by
-;; name (UC_ConvertPrice -> UC_Price, UC_FormatIndex -> UC_Index, UC_FormatDecimals ->
-;; UC_AmountList, UC_FormatAccountsShort -> URC_ShortAccounts, UC_PoolTypeWord ->
-;; URC_PoolTypeWord). The survivors are then the DEPENDENCY CLOSURE of what is left, computed
-;; rather than chosen, so nothing kept can reference something deleted.
+;;   URC_PrimordialIDs            1 caller: URC_PrimordialPrices, itself uncalled
+;;   URC_StoaCollectionReceivers  1 caller: URC_SplitStoaPriceForReceivers, itself uncalled
+;;   UC_FormatTokenAmount         2 callers: URC_0030_StoicPay, itself uncalled
+;;   every other survivor         0 callers
 ;;
-;; WHAT SURVIVES, AND WHY:
+;; -- and a workspace-wide search found no caller outside this module either: not OuronetUI,
+;; not @ouronet/ouronet-core, not another Pact module. A closed cluster of dead code that kept
+;; itself alive by citation.
 ;;
-;;   URC_0030_StoicPay            no successor. Zero callers anywhere in the workspace -- but
-;;                                a read is deleted on purpose, never as a side effect.
-;;   URC_0031                     the three PYTHIA reads. Not ported, deliberately: reads are
-;;   URC_0033_DualApiKeyMapper    pulled by a UI and the oracle console does not exist yet, so
-;;   URC_0034_PythiaPrices        porting them means guessing a shape the first real screen
-;;                                contradicts. See AppReads/Pythia/README.md.
-;;   URC_PrimordialIDs            no successor; still pinned by modules/STAGE-Z.repl.
-;;   URC_PrimordialPrices
-;;   URC_StoaCollectionReceivers  the STOA collection split, whose CONSERVATION invariant
-;;   URC_SplitStoaPriceForReceivers  STAGEZ-08 asserts. Deleting these would delete that proof.
-;;   URC_TrueFungibleAmountPrice  no successor.
-;;   UC_FormatTokenAmount         helpers the above still need, kept by closure, not by hand.
-;;   UC_TrimDecimalTrailingZeros
-;;   CT_Namespace / CT_Bar / BAR  constants, and free.
+;; Two were also already SUPERSEDED, which the closure could not see. O-UI-TWO::URC_Prices
+;; returns the same six prices as URC_PrimordialPrices and a seventh besides. UC_Amount is
+;; UC_FormatTokenAmount with its sub-threshold branch actually reachable -- the original
+;; compared a formatted STRING against the DECIMAL literal 0.0, so `<0.0001` could never fire.
+;;
+;; And the two STOA-split readers were being kept to preserve a test, which inverts the
+;; dependency: a test exists to pin behaviour, not to pin code in place. The behaviour it
+;; guards -- the 10/20/30/40 conservation -- belongs to U|DALOS::UC_TenTwentyThirtyFourtySplit,
+;; not to a display wrapper over it, and STAGEZ-08 now asserts it there. That is a better test
+;; than the one it replaces, because it reaches the arithmetic instead of a caller of it.
+;;
+;; WHERE THE DELETED READS GO WHEN SOMETHING WANTS THEM. Not into this module again:
+;;   URC_0030_StoicPay        -> OuronetUI slot 14 (Launchpad), when that page reads the chain.
+;;                               It has a surface today -- launchpads.tsx, StoicPayInfo.tsx --
+;;                               and that surface reads DEMIPAD-SPARK directly, never this.
+;;   URC_0031 / _0033 / _0034 -> AppReads/Pythia/, when an oracle console exists. See its README.
+;;   the rest                 -> rebuilt from the screen that needs them, which is the rule
+;;                               that produced every module in AppReads/ and the reason their
+;;                               shapes could be verified against something real.
+;; Their bodies are in git, at the revision before this one.
 ;;
 ;; `implements DeployerReadsV14` IS DROPPED, as archive mode requires and as Pact forces: a
-;; module must define every member of an interface it implements, so one that has shed functions
-;; cannot keep the clause.
+;; module must define every member of an interface it implements. NO successor interface is
+;; declared, departing from the DPMF precedent deliberately -- a tree-wide scan finds
+;; DeployerReadsV14 bound by NOTHING, so a V15 would be a permanent, un-removable artefact
+;; describing an archive. It stays deployed and unimplemented; that costs nothing.
 ;;
-;; AND NO SUCCESSOR INTERFACE IS DECLARED, which departs from the DPMF precedent -- that
-;; retirement bumped its own interface V7 -> V8 rather than dropping it. The difference is
-;; measured, not stylistic: an interface earns its keep by letting other modules bind a
-;; `module{...}` reference, and a tree-wide scan finds DeployerReadsV14 bound by NOTHING. Zero
-;; modrefs, zero implementors after this change. It was documentation of a surface that no
-;; longer exists, so a V15 restating eighteen survivors would be a permanent, un-removable
-;; artefact describing an archive. DeployerReadsV14 stays deployed and unimplemented; an
-;; interface cannot be removed from a chain, and an orphaned one costs nothing.
+;; WHAT IS LEFT, AND WHY ANYTHING IS:
+;;   GOV / GOV|DPL_UR_ADMIN / GOV|MD_DPL-UR / GOV|Demiurgoi   a module cannot exist without
+;;                            governance, and this is what authorises any future upgrade.
+;;   CT_Namespace / CT_Bar / BAR   the namespace and the field separator this module built every
+;;                            key from. Free, and they document the format its output used.
 ;;
 ;; THE REPLACEMENTS, for anyone arriving from a dead call site:
 ;;   header, dashboard           AppReads/OuronetUI/01_O-UI-ONE, 02_O-UI-TWO
@@ -141,303 +152,6 @@
                 (ref-U|CT:module{OuronetConstantsV2} U|CT)
             )
             (ref-U|CT::CT_BAR)
-        )
-    )
-    ;;{5.2}  Compute [UC]
-    ;;
-    ;;
-    (defun UC_TrimDecimalTrailingZeros:string (number:decimal)
-        @doc "Trims trailing zeros from a decimal number"
-        (let* 
-            (
-                (ref-U|LST:module{StringProcessorV2} U|LST)
-                (number-as-string:string (format "{}" [number]))
-                (split-nas:[string] (ref-U|LST::UC_SplitString "." number-as-string))
-                (integer-part:string (at 0 split-nas))
-                (decimal-part:string (at 1 split-nas))
-                (ldp:integer (length decimal-part))
-                ;;
-                (trimmed-decimal-part:string
-                    (fold
-                        (lambda
-                            (acc:string idx:integer)
-                            (if (= (take -1 acc) "0")
-                                (drop -1 acc)
-                                acc
-                            )    
-                        )
-                        decimal-part
-                        (enumerate 0 (- ldp 1))
-                    )
-                )
-                (resulted-string:string
-                    (if (= trimmed-decimal-part "")
-                        (+ integer-part ".0")
-                        (concat [integer-part "." trimmed-decimal-part])
-                    )
-                )
-            )
-            resulted-string
-        )
-    )
-    (defun UC_FormatTokenAmount:string (amount:decimal)
-        (let
-            (
-                (formated-value:string (format "{}" [(floor amount 4)]))
-            )
-            (if (= formated-value 0.0)
-                "<0.0001"
-                formated-value
-            )
-        )
-    )
-    (defun URC_TrueFungibleAmountPrice:decimal (id:string amount:decimal price:decimal)
-        (let
-            (
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (idp:integer (ref-DPTF::UR_Decimals id))
-            )
-            (floor (* amount price) idp)
-        )
-    )
-    (defun URC_PrimordialIDs:[string] ()
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ouro:string (ref-DALOS::UR_OuroborosID))
-                (ignis:string (ref-DALOS::UR_IgnisID))
-                (auryn:string (ref-DALOS::UR_AurynID))
-                (elite-auryn:string (ref-DALOS::UR_EliteAurynID))
-                (wstoa:string (ref-DALOS::UR_WrappedStoaID))
-                (sstoa:string (ref-DALOS::UR_SilverStoaID))
-            )
-            [ouro ignis auryn elite-auryn wstoa sstoa]
-        )
-    )
-    (defun URC_PrimordialPrices:[decimal] ()
-        @doc "Returns the Prices for Ouronet Primordial Tokens \
-        \ [WSTOA SSTOA OURO AURYN ELITEAURYN]"
-        (let
-            (
-                (ref-U|CT|DIA:module{DiaStoaPidV2} U|CT)
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-ATS:module{AutostakeV3} ATS)
-                (ref-SWPI:module{SwapperIssueV4} SWPI)
-                ;;
-                (stoa-pid:decimal (ref-U|CT|DIA::UR_STOA-PID|Price))
-                ;;DEAD BLOCK REMOVED 2026-09-13. This used to bind p-ids := (URC_PrimordialIDs) and
-                ;;destructure all six ids out of it positionally, immediately above the five named
-                ;;reads below. Every one of the six was then dead: five were shadowed by the named
-                ;;binding that follows, and <ignis> was never read at all (dollar-ignis is a literal).
-                ;;URC_PrimordialIDs performs the SAME six DALOS reads internally, so the block cost a
-                ;;helper call plus six table reads per invocation and its result was discarded.
-                ;;Behaviour is unchanged -- the named bindings already won the shadowing.
-                ;;The equivalence of the positional and named forms is pinned independently by
-                ;;REPL/modules/STAGE-Z.repl <<STAGEZ-10>>, which asserts against URC_PrimordialIDs
-                ;;directly and so still guards that function's element ORDER for its other consumers.
-                (wstoa:string (ref-DALOS::UR_WrappedStoaID))
-                (sstoa:string (ref-DALOS::UR_SilverStoaID))
-                (ouro:string (ref-DALOS::UR_OuroborosID))
-                (auryn:string (ref-DALOS::UR_AurynID))
-                (elite-auryn:string (ref-DALOS::UR_EliteAurynID))
-                ;;
-                (auryndex:string (at 0 (ref-DPTF::UR_RewardBearingToken auryn)))
-                (elite-auryndex:string (at 0 (ref-DPTF::UR_RewardBearingToken elite-auryn)))
-                (auryndex-value:decimal (ref-ATS::URC_Index auryndex))
-                (elite-auryndex-value:decimal (ref-ATS::URC_Index elite-auryndex))
-                ;;
-                (dollar-ouro:decimal (ref-SWPI::URC_OuroPrimordialPrice))
-                (dollar-ignis:decimal 0.01)
-                (dollar-auryn:decimal (floor (* auryndex-value dollar-ouro) 24))
-                (dollar-elite-auryn:decimal (floor (* elite-auryndex-value dollar-auryn) 24))
-                (dollar-wstoa:decimal (ref-SWPI::URC_TokenDollarPrice wstoa stoa-pid))
-                (dollar-sstoa:decimal (ref-SWPI::URC_TokenDollarPrice sstoa stoa-pid))
-            )
-            [dollar-ouro dollar-ignis dollar-auryn dollar-elite-auryn dollar-wstoa dollar-sstoa]
-        )
-    )
-    (defun URC_StoaCollectionReceivers:[string] ()
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (r1:string (ref-DALOS::UR_AccountStoa (at 2 (ref-DALOS::UR_DemiurgoiID))))
-                (r2:string (ref-DALOS::UR_AccountStoa (ref-DALOS::GOV|DALOS|SC_NAME)))
-                (r3:string (ref-DALOS::UR_AccountStoa (at 1 (ref-DALOS::UR_DemiurgoiID))))
-                (r4:string (ref-DALOS::UR_AccountStoa (ref-DALOS::GOV|OUROBOROS|SC_NAME)))
-            )
-            [r1 r2 r3 r4]
-        )
-    )
-    (defun URC_SplitStoaPriceForReceivers (price:decimal)
-        (let
-            (
-                (ref-U|CT:module{OuronetConstantsV2} U|CT)
-                (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
-                (kp:integer (ref-U|CT::CT_STOA_PRECISION))
-                (receivers:[string] (URC_StoaCollectionReceivers))
-                (prices:[decimal] (ref-U|DALOS::UC_TenTwentyThirtyFourtySplit price kp))
-            )
-            {"10%-r"    : (at 0 receivers)
-            ,"20%-r"    : (at 1 receivers)
-            ,"30%-r"    : (at 2 receivers)
-            ,"40%-r"    : (at 3 receivers)
-            ,"10%-p"    : (at 0 prices)
-            ,"20%-p"    : (at 1 prices)
-            ,"30%-p"    : (at 2 prices)
-            ,"40%-p"    : (at 3 prices)}
-        )
-    )
-    (defun URC_0030_StoicPay (account:string)
-        @doc "StoicPay / DEMIPAD-STOICPAY sale UI read bundle (delegates to StoicPayV3 for on-chain data)."
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV2} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
-                (ref-SP:module{StoicPayV3} DEMIPAD-STOICPAY)
-                (ref-DPAD:module{DemiourgosLaunchpadV2} DEMIPAD)
-                ;;
-                (KpayID:string (ref-SP::UR_KpayID))
-                (pad-ledger:string (ref-SP::UR_PAD_LEDGER_ACCOUNT))
-                (resident-amount:decimal (ref-DPTF::UR_AccountSupply KpayID pad-ledger))
-                (left-for-sale:decimal (* 0.4 resident-amount))
-                (sold:decimal (- 100000000.0 left-for-sale))
-                (period:integer (ref-SP::UR_GetPeriod))
-                (period-ceiling:decimal (ref-SP::URv_PeriodAllocation period))
-                (remaining:decimal (ref-SP::UR_KpayLeft))
-                (bought:decimal
-                    (if (or (= period -1)(= period 0))
-                        sold
-                        (- period-ceiling remaining)
-                    )
-                )
-                (circulating:decimal (* 2.5 bought))
-                ;;
-                (starting-tm:time (at "starting-time" (ref-DPAD::UR_Price KpayID)))
-                ;;
-                (single-costs:object{DemiourgosLaunchpadV2.Costs} (ref-SP::URC_KpayAmountCosts 1 0.0))
-                (stage-text:string
-                    (if (= period -1)
-                        "Stage 1 Starts in:"
-                        (if (= period 0)
-                            "KPay Sale has concluded"
-                            (format "Stage {}/25" [period])
-                        )
-
-                    )
-                )
-                (next-stage-text:string
-                    (if (= period -1)
-                        (format "Genesis Period Ceiling: {} KPAY" [(ref-SP::URv_PeriodAllocation 1)])
-                        (if (= period 0)
-                            (format "KPAY Circulating supply is {}" [circulating])
-                            (if (!= period 25)
-                                (format "Next  Stage Ceiling: {} KPAY" [(ref-SP::URv_PeriodAllocation (+ 1 period))])
-                                (format "Final Stage Ceiling: {} KPAY" [period-ceiling])
-                            )
-                        )
-                    )
-                )
-                (percent-value:string
-                    (if (or (= period -1) (= period 0))
-                        (UC_FormatTokenAmount 0.0)
-                        (UC_FormatTokenAmount (* (/ bought period-ceiling) 100.0))
-                    )
-                )
-                (percent-text:string
-                    (if (= period -1)
-                        "Sale hasn't started yet."
-                        (if (= period 0)
-                            (format "Sale has Concluded: {}% has been sold." [percent-value])
-                            (format "Sale Progress: {}% of Current Ceiling." [percent-value])
-                        )
-                    )
-                )
-                (ceiling-text:string
-                    (if (= period -1)
-                        "Sale hasn't started yet."
-                        (if (= period 0)
-                            "Kpay Sale has concluded"
-                            (format "Stage {} Celing: {} KPAY" [period period-ceiling])
-                        )
-                    )
-                )
-            )
-            {"stage-text"           : stage-text
-            ,"next-stage-text"      : next-stage-text
-            ;;
-            ,"sale-progress"        : percent-text
-            ,"ceiling-text"         : ceiling-text
-            ,"sold-text"            : (format "{} KPAY Sold" [bought])
-            ,"remaining-text"       : (format "{} KPAY left for Sale" [(if (= period -1) left-for-sale remaining)])
-            ;;
-            ,"your-balance"         : (ref-DPTF::UR_AccountSupply KpayID account)
-            ,"circulating-supply"   : circulating
-            ;;
-            ;;Single Costs
-            ,"kpay-pid"             : (at "pid" single-costs)
-            ,"kpay-wstoa"            : (at "wstoa" single-costs)
-            ;;
-            ;;Native Buy Maxes
-            ,"native-buy-max"       : (ref-SP::URC_GetMaxBuy account true)
-            ,"wstoa-buy-max"         : (ref-SP::URC_GetMaxBuy account false)
-            ;;
-            ;;Misc and Direct Values
-            ,"kpay-id"              : KpayID
-            ,"remaining-for-mint"   : remaining
-            ,"minted"               : bought
-            ,"start-date"           : starting-tm
-            ,"period"               : period
-            ,"period-ceiling"       : period-ceiling
-            ,"account-kpay"         : (ref-DPTF::UR_AccountSupply KpayID account)
-            ,"account-ignis"        : (ref-DPTF::UR_AccountSupply (ref-DALOS::UR_IgnisID) account)
-            ,"ignis-collection"     : (ref-DALOS::UR_VirtualToggle)
-            ,"open-for-business"    : (ref-DPAD::UR_OpenForBusiness KpayID)
-            }
-        )
-    )
-    (defun URC_0031:[object] (apollo-accounts:[string])
-        @doc "Map PYTHIA.UR_ApiKeyRowOrNull over each Apollo account string (₱./Π.)."
-        (let
-            (
-                (ref-PYTHIA:module{PythiaV5} PYTHIA)
-            )
-            (map
-                (lambda (apollo-account:string)
-                    (ref-PYTHIA::UR_ApiKeyRowOrNull apollo-account)
-                )
-                apollo-accounts
-            )
-        )
-    )
-    (defun URC_0033_DualApiKeyMapper:[object] (dual-api-keys:[string])
-        @doc "Map PYTHIA.UR_DualLinkRowOrNull over each dual-API key (Standard|Smart composite)."
-        (let
-            (
-                (ref-PYTHIA:module{PythiaV5} PYTHIA)
-            )
-            (map
-                (lambda (dual-api-key:string)
-                    (ref-PYTHIA::UR_DualLinkRowOrNull dual-api-key)
-                )
-                dual-api-keys
-            )
-        )
-    )
-    (defun URC_0034_PythiaPrices ()
-        @doc "PYTHIA Config deploy/rename STOA prices (UR_DeployPrice / UR_RenamePrice)."
-        (let
-            (
-                (ref-PYTHIA:module{PythiaV5} PYTHIA)
-                ;;
-                (deploy-price:decimal (ref-PYTHIA::UR_DeployPrice))
-                (rename-price:decimal (ref-PYTHIA::UR_RenamePrice))
-            )
-            {"deploy-price"         : deploy-price
-            ,"rename-price"         : rename-price
-            ,"deploy-price-text"    : (format "{} STOA per Apollo half deploy" [deploy-price])
-            ,"rename-price-text"    : (format "{} STOA to rename dual-link consumer lane" [rename-price])
-            }
         )
     )
 )
