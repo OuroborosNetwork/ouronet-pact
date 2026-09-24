@@ -112,12 +112,22 @@
         ;;from the ledger it reports on.
         (expect "<<STAGEZ-02>> the explorer's account nonce agrees with DALOS's"
             (DALOS.UR_AccountNonce KST.ANHD) (EXPLORER.UR_0001_AccountNonce KST.ANHD))
-        ;;--- AND THE ONE THAT IS NOT. This is pinned as a FINDING, not as desired behaviour: the
-        ;;explorer's landing page hardcodes Auryndex-O136CBn22ncY, the mainnet id, so it aborts on
-        ;;any test chain. If that is ever made chain-agnostic this assertion will start failing —
-        ;;which is the intent. Change it to a success assertion at that point.
-        (expect-failure "<<STAGEZ-02>> FINDING: the landing page is mainnet-only (hardcoded ATS pair id)"
-            "No value found in table"
+        ;;--- AND THE ONE THAT WAS A FINDING. This used to be an `expect-failure` pinning the
+        ;;landing page as mainnet-only: it hardcoded the Auryndex pair id, so it aborted with
+        ;;"No value found in table" on any sandbox. The comment beside it said "if that is ever
+        ;;made chain-agnostic this assertion will start failing -- which is the intent. Change it
+        ;;to a success assertion at that point." That point arrived on 2026-09-24, when the same
+        ;;defect in DPL-UR took the UI dashboard down and both modules were switched to derived
+        ;;ids. So: flipped, as instructed.
+        ;;
+        ;;The PROOF lives in STAGEZ-04, not here, and the reason is instructive: clearing the id
+        ;;blocker did not make this function callable from a plain assertion, because the OTHER
+        ;;blocker -- the admin-gated cross-module scan -- is untouched and is not a defect. So the
+        ;;positive assertion needs `env-module-admin` to model the `/local` context a UI reader is
+        ;;actually invoked in, and it belongs beside the block that explains that distinction.
+        (expect-failure "<<STAGEZ-02>> the landing page no longer dies on a MAINNET ID -- what \
+            \ refuses it now is the local-only scan, proved and then cleared in STAGEZ-04"
+            "Module admin necessary for operation but has not been acquired:ouronet-ns.DALOS"
             (EXPLORER.URC_0001_LandingPage))
     ]
 )
@@ -145,14 +155,22 @@
 (print "--- [STAGEZ-03 -- the TESTING VARIANT, and which blocker is which · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
-;;==== STAGEZ-03 . 01 . deploy the generated testing variant ====
-(print "--- [STAGEZ-03 . 01 . deploy the generated testing variant] ---")
-;;_generated/02_EXPLORER-TESTING.pact is GENERATED from canonical by _stagez_variant.py and differs
-;;from it in exactly two string constants (the ATS pair ids) plus the module name. `--check` fails
-;;the gate if canonical moves and the variant is not regenerated, so this cannot silently rot.
-;;==== STAGEZ-03 -- the TESTING VARIANT, and which blocker is which · 02 · load module ==== =======
-(print "--- [STAGEZ-03 -- the TESTING VARIANT, and which blocker is which · 02 · load module] ---")
-(load "../_generated/02_EXPLORER-TESTING.pact")
+;;==== STAGEZ-03 . 01 . the testing variant is RETIRED ====
+(print "--- [STAGEZ-03 . 01 . the testing variant is RETIRED] ---")
+;;This block used to deploy _generated/02_EXPLORER-TESTING.pact, a generated near-copy of canonical
+;;EXPLORER carrying sandbox ATS pair ids in place of the mainnet ones. It existed because canonical
+;;hardcoded those ids and therefore could not run here at all.
+;;
+;;Canonical now DERIVES them (2026-09-24), so it runs in this fixture directly and the variant had
+;;nothing left to substitute. Testing the real module instead of a near-copy is strictly better:
+;;coverage tooling used to report canonical URC_0001_LandingPage as unreached and be CORRECT about
+;;it, because the thing under test was not the thing that ships.
+;;
+;;Worth knowing how the variant ended: its substitution list carried an exact occurrence count
+;;specifically to refuse a no-op, but counted over the raw file INCLUDING COMMENTS. When the fix
+;;named the old ids in an explanatory comment, the substitution matched the comment, met its count,
+;;and generated a variant identical to canonical -- silently, with the gate green.
+(print "--- [STAGEZ-03 . 01 . (no variant to deploy; canonical is chain-agnostic)] ---")
 (commit-tx)
 
 ;;|| NEXT >
@@ -191,12 +209,31 @@
 ;;Pact code, so nothing transactional reaches them either.
 (map print
     [
-        (expect-failure "<<STAGEZ-04>> canonical dies on BLOCKER 1 (mainnet ids), in its eager let"
-            "No value found in table"
-            (EXPLORER.URC_0001_LandingPage))
-        (expect-failure "<<STAGEZ-04>> the variant clears blocker 1, leaving it LOCAL-ONLY (cross-module scan)"
+        ;;BLOCKER 1 IS GONE -- canonical derives its ids now, so it no longer dies in its eager
+        ;;`let`, and the pair of assertions that separated the two blockers has collapsed to one.
+        ;;What survives is the half that was never a defect: the cross-module scan. Canonical now
+        ;;demonstrates it directly, which is what the variant was standing in for.
+        (expect-failure "<<STAGEZ-04>> canonical is LOCAL-ONLY: the cross-module scan is admin-gated"
             "Module admin necessary for operation but has not been acquired:ouronet-ns.DALOS"
-            (EXPLORER-TESTING.URC_0001_LandingPage))
+            (EXPLORER.URC_0001_LandingPage))
+    ]
+)
+;;NOW GRANT THE ADMIN AND RUN IT. This models the `/local` context with --allowReadsInLocal, which
+;;is the only way a UI reader is ever invoked -- see the blocker-2 note above. Order matters: the
+;;`expect-failure` above must run BEFORE this line, or the very gate it pins is already lifted.
+(env-module-admin ouronet-ns.DALOS)
+;;The assertion is on the index NAMES, not the ids. A name is stable across chains; an id is not,
+;;so pinning an id here would rebuild the exact coupling that caused the 2026-09-24 outage. That
+;;these come back at all is the proof: before the fix this function could not reach its own body
+;;on any chain but mainnet.
+(map print
+    [
+        (expect "<<STAGEZ-04>> ...and once local, it DERIVES the Auryndex pair on this chain"
+            "Auryndex"
+            (at "z2-t1" (EXPLORER.URC_0001_LandingPage)))
+        (expect "<<STAGEZ-04>> ...and the EliteAuryndex pair"
+            "EliteAuryndex"
+            (at "z2-t2" (EXPLORER.URC_0001_LandingPage)))
     ]
 )
 (commit-tx)
@@ -568,10 +605,9 @@
             (DALOS.GOV|Demiurgoi) (EXPLORER.GOV|Demiurgoi))
         (expect "<<STAGEZ-14>> the DSP+ dispenser's governance is DALOS's governance"
             (DALOS.GOV|Demiurgoi) (DSP.GOV|Demiurgoi))
-        ;;and the generated testing variant inherits it too -- confirming the variant did not
-        ;;acquire a governance difference along with its id substitution
-        (expect "<<STAGEZ-14>> the testing variant did NOT drift in governance"
-            (DALOS.GOV|Demiurgoi) (EXPLORER-TESTING.GOV|Demiurgoi))
+        ;;There used to be a fourth assertion here, that the generated EXPLORER-TESTING variant had
+        ;;not drifted in governance along with its id substitution. The variant was retired on
+        ;;2026-09-24 when canonical became chain-agnostic, so there is no near-copy left to drift.
     ]
 )
 (commit-tx)

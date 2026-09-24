@@ -463,7 +463,16 @@ def check_report():
     # and listed by name rather than by pattern -- a pattern would silently re-open the hole this
     # rule exists to close.
     KEEP = {"README.md", "00_MANUAL_rotate-s2-governor.pact",
-            "00_MANUAL_probe-live-interfaces.pact"}
+            "00_MANUAL_probe-live-interfaces.pact",
+            # STAGE-Z ROUND, 2026-09-24. DPL-UR and EXPLORER deploy via `deploy-stagezz.repl`, a chain this
+            # planner deliberately does not cover, so the generator cannot emit its transaction
+            # -- but URC_0001_HeaderV3 shipped with twelve hardcoded token/pool ids and took the
+            # UI dashboard down after the redeploy re-issued the primordials. Keeping the fix
+            # OUT of Deploy/ would mean the one transaction that repairs a live outage is the
+            # one the pipeline does not mention. Named MANUAL so it cannot be mistaken for
+            # generated output, and listed by name rather than by pattern -- a pattern would
+            # silently re-open the hole this rule exists to close.
+            "25_deploy.pact"}
     # a file in Deploy/1_Pure or 2_Init that the generator no longer produces
     for d in (PURE, INIT):
         if not os.path.isdir(d):

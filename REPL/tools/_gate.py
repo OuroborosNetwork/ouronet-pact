@@ -512,6 +512,19 @@ def main():
         print(_ps.stdout + _ps.stderr)
         sys.exit("GATE FAILED: an unexplained patron slot -- see _patronslots.py.")
 
+    # HARDCODED ENTITY IDS -- fatal only on UNREGISTERED. An id's suffix is the block hash of
+    # the transaction that minted it, so a literal is correct for exactly one issuance. Worse,
+    # it makes its own function UNTESTABLE: a mainnet id does not exist in the fixture, so the
+    # function aborts on its first read and no assertion can ever reach it. On 2026-09-24
+    # fourteen such literals across DPL-UR and EXPLORER took the UI dashboard and the Explorer
+    # landing page down, and neither function had ever run in a test. Registry in
+    # _hardcodedids.py; the gate's job is only to refuse one nobody wrote down.
+    _hi = subprocess.run([sys.executable, "tools/_hardcodedids.py"],
+                         capture_output=True, text=True)
+    if _hi.returncode != 0:
+        print(_hi.stdout + _hi.stderr)
+        sys.exit("GATE FAILED: an unregistered hardcoded entity id -- see _hardcodedids.py.")
+
     # EXECUTOR PROOF -- whole tree, fatal. Added 2026-09-22, the day the canon sweep finished,
     # because the claim it protects is the whole point of the sweep: an `A_`/`C_` that takes an
     # `executor` and never proves it does not record who acted, it records whoever the caller

@@ -33,25 +33,42 @@ OUTDIR = pathlib.Path(__file__).resolve().parent.parent / "_generated"
 # id "Auryndex-O136CBn22ncY" is ABSENT.
 SANDBOX_HASH = "98c486052a51"
 
-VARIANTS = [
-    {
-        "src": "2_CITIZEN/Stage_Z/02_EXPLORER.pact",
-        "out": "02_EXPLORER-TESTING.pact",
-        "module": ("EXPLORER", "EXPLORER-TESTING"),
-        # Exact, whitelisted. Each MUST appear the stated number of times, or generation fails --
-        # that is what stops a canonical rename from silently producing a no-op variant.
-        "subs": [
-            ('"Auryndex-O136CBn22ncY"',      f'"Auryndex-{SANDBOX_HASH}"',      1),
-            ('"EliteAuryndex-O136CBn22ncY"', f'"EliteAuryndex-{SANDBOX_HASH}"', 1),
-        ],
-    },
-    # DPL-UR is deliberately ABSENT. Its URC_0001_HeaderV3 hardcodes ids too, but substituting them
-    # does not make it run: the sandbox has no WSTOA/SSTOA/GSTOA/H|GSTOA tokens, no
-    # SilverStoaPillar/GoldenStoaPillar ATS pools, and SWPI::URC_OuroPrimordialPrice has no pools to
-    # price against. Probed, not guessed. That function needs a FIXTURE, not a variant.
-]
+# RETIRED 2026-09-24 -- EMPTY ON PURPOSE. Read this before adding an entry back.
+#
+# This tool existed for exactly one reason: EXPLORER::URC_0001_LandingPage hardcoded two mainnet
+# ATS pair ids, so it aborted on any sandbox, so no test could reach it. The owner's ruling at
+# the time was "do NOT edit canonical -- use a variant for testing", and this generator was that
+# variant.
+#
+# THE PREMISE IS GONE. Those ids are now DERIVED at call time (EXPLORER, and the fourteen in
+# DPL-UR::URC_0001_HeaderV3 with them, after the 2026-09-24 dashboard outage). Canonical is
+# chain-agnostic, so it runs in the fixture directly and the variant has nothing left to
+# substitute. STAGE-Z.repl now asserts against canonical, which is strictly better: one module
+# under test instead of a near-copy, and the coverage tools stop reporting the real function as
+# unreached because the real function is the one being called.
+#
+# That supersedes the owner ruling above rather than ignoring it. The ruling said not to edit
+# canonical TO SUIT A TEST; this edit was made to fix a production outage, and it moved canonical
+# CLOSER to "aligned with live net", not further -- a derived id is right on every chain.
+#
+# HOW IT FAILED FIRST, which is the part worth keeping. The `subs` entries carried an exact
+# occurrence count, and the comment beside them read: "Each MUST appear the stated number of
+# times, or generation fails -- that is what stops a canonical rename from silently producing a
+# no-op variant." It did not stop it. The count was taken over the raw file, COMMENTS INCLUDED,
+# so when the fix replaced the two literals with derivations and mentioned the old ids in the
+# explanatory comment, the substitution matched the COMMENT, hit its count of 1, and reported
+# success while changing no code. The generated variant was byte-for-byte canonical apart from
+# the module rename, and the gate was green.
+#
+# So if you ever repopulate this list: count occurrences OUTSIDE `;;` comments, or the guard is
+# decorative. A whitelist that can be satisfied by prose is not a whitelist.
+#
+# DPL-UR was never here anyway, and the reason still stands: substituting its ids would not have
+# made it run, because the sandbox has no WSTOA/SSTOA/GSTOA tokens and SWPI::URC_OuroPrimordialPrice
+# has no pools to price against. It needed a fixture, not a variant -- and now it needs neither.
+VARIANTS = []
 
-HEADER = """;; GENERATED FILE -- DO NOT EDIT. Regenerate with: cd REPL && python3 _stagez_variant.py
+HEADER = """;; GENERATED FILE -- DO NOT EDIT. Regenerate with: python3 REPL/tools/_stagez_variant.py
 ;;
 ;; REPL-ONLY TESTING VARIANT of {src}
 ;; Generated because the canonical module is headed "keep aligned with live net" and must not be
@@ -110,9 +127,14 @@ def main():
             sys.exit(
                 "_stagez_variant.py --check: STALE variant(s): " + ", ".join(stale) +
                 "\n  Canonical Stage-Z source moved but the testing variant was not regenerated."
-                "\n  Fix: cd REPL && python3 _stagez_variant.py"
+                "\n  Fix: python3 REPL/tools/_stagez_variant.py"
             )
-        print(f"_stagez_variant.py --check: OK -- {len(VARIANTS)} variant(s) in sync with canonical.")
+        if not VARIANTS:
+            print("_stagez_variant.py --check: OK -- no variants configured (retired 2026-09-24; "
+                  "see the note above VARIANTS).")
+        else:
+            print(f"_stagez_variant.py --check: OK -- {len(VARIANTS)} variant(s) in sync with "
+                  f"canonical.")
 
 
 if __name__ == "__main__":

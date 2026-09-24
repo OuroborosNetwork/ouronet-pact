@@ -132,8 +132,24 @@
                 (auryn-id:string (ref-DALOS::UR_AurynID))
                 (elite-auryn-id:string (ref-DALOS::UR_EliteAurynID))
                 ;;
-                (Auryndex:string "Auryndex-O136CBn22ncY")
-                (EAuryndex:string "EliteAuryndex-O136CBn22ncY")
+                ;; DERIVED, NOT HARDCODED. These two were mainnet Auryndex / EliteAuryndex
+                ;; pair-id literals whose suffix is the block hash of the transaction that
+                ;; created the pool -- correct for one issuance, stale for every one after. The
+                ;; same bug in the same two ids took the UI dashboard down from DPL-UR on
+                ;; 2026-09-24; EXPLORER ships in the same Stage-Z chain and was broken with it.
+                ;; Note the four lines directly above, which derive their token ids correctly:
+                ;; the derivation was right here all along and stopped two lines short.
+                ;;
+                ;; RBT direction on purpose -- a reward-BEARING token belongs to exactly one
+                ;; pool, whereas a reward token may be paid by several.
+                ;;
+                ;; The literals are DESCRIBED above rather than QUOTED, and that is not fussiness:
+                ;; _stagez_variant.py rewrote this module by exact string match and counted
+                ;; occurrences across the whole file, comments included. Quoting the old ids in a
+                ;; comment fed its substitution a target and let it report success while changing
+                ;; no code -- the exact no-op it was built to refuse.
+                (Auryndex:string (at 0 (ref-DPTF::UR_RewardBearingToken auryn-id)))
+                (EAuryndex:string (at 0 (ref-DPTF::UR_RewardBearingToken elite-auryn-id)))
                 (ih-auryndex:decimal (ref-ATS::URC_Index Auryndex))
                 (ih-elite-auryndex:decimal (ref-ATS::URC_Index EAuryndex))
                 ;;

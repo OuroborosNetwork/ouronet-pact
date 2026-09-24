@@ -1,12 +1,67 @@
-;; DPL-UR — single deployer read module (canonical; keep aligned with live net).
-;; Load only after Stage 1 and Stage 2 (REPL/StageZZ_Tester.repl after Stage02_Tester.repl).
-;; Implements DeployerReadsV14 -- ONE interface carrying all 71 public reads.
-;; It replaces the additive V7..V13 chain, where each revision declared only what it added
-;; (V13 declared a single function) and a module had to `implements` six of them to describe
-;; itself. That is a changelog, not an interface.
+;; ===========================================================================================
+;; OURONET DEPLOY -- file 25   ·   STAGE-Z READ LAYER
+;; DeployerReadsV14 (interface) + DPL-UR (module) + EXPLORER (module)
+;; ===========================================================================================
+;; RUN THIS AFTER TRANSACTIONS 1-24. Nothing else is required.
 ;;
-;; net: v7+v8   ·   dev: v14   ;; live is still the PRE-SWEEP module on V7+V8; deploy v14 then
-;; set net: v14. v13 was never deployed -- do not reuse the number.
+;; ------------------------------------------------------------------------------------------
+;; WHAT IS BROKEN ON CHAIN RIGHT NOW -- three faults, and only one of them is the ids
+;; ------------------------------------------------------------------------------------------
+;; 1. THE LIVE DPL-UR IS THE PRE-SWEEP MODULE. It implements DeployerReadsV7 + V8 and binds
+;;    `module{OuronetDalosV1}`, `module{AutostakeV2}`, `module{SwapperV3}`. Transactions 1-24
+;;    replaced those modules with ones implementing V2 / V3 / V4. A modref resolves by
+;;    INTERFACE, so every cross-module read in the live DPL-UR now fails to bind. This is the
+;;    larger half of the dashboard outage and the reason the module must move forward rather
+;;    than merely be patched.
+;;
+;; 2. HARDCODED ENTITY IDS -- fourteen of them.
+;;      DPL-UR.URC_0001_HeaderV3      12    EXPLORER.URC_0001_LandingPage      2
+;;    An id's suffix is the BLOCK HASH of the transaction that minted the asset, so a literal
+;;    is correct for exactly one issuance and stale for every one after. All fourteen are now
+;;    DERIVED at call time. Both modules already derived their token ids correctly elsewhere --
+;;    EXPLORER did it on the four lines immediately above its two literals.
+;;
+;; 3. THE INTERFACE CHAIN WAS A CHANGELOG. V7..V13 were each ADDITIVE and declared only what
+;;    that revision added -- V13 declared exactly ONE function. A module had to `implements`
+;;    six of them to describe itself, and the repo copy had drifted to V13 ALONE, promising one
+;;    function while providing seventy. DeployerReadsV14 replaces the whole chain: 71
+;;    declarations, one `implements`, the complete public read surface in one file.
+;;
+;; ------------------------------------------------------------------------------------------
+;; SIGNING -- TWO DISTINCT AUTHORITIES, both needed in this one transaction
+;; ------------------------------------------------------------------------------------------
+;;   * NAMESPACE ADMIN -- DeployerReadsV14 and EXPLORER are FIRST deploys into `ouronet-ns`.
+;;     Measured: without it the load dies on the `(interface ...)` line with
+;;     "Keyset failure (keys-any)".
+;;   * GOV|DPL_UR_ADMIN (the Demiurgoi keyset) -- DPL-UR is an UPGRADE of the live V7/V8 module,
+;;     and an upgrade checks the module's own governance. Note the asymmetry: a FIRST deploy has
+;;     nothing to govern and checks nothing, so the key that originally shipped DPL-UR is not
+;;     automatically sufficient here.
+;;
+;; ------------------------------------------------------------------------------------------
+;; MEASURED 2026-09-24, loading this exact content over Stage 00/01/02 with NO Stage-Z present
+;; -- i.e. the shape mainnet is in before this transaction runs
+;; ------------------------------------------------------------------------------------------
+;;   357,214 gas   (~18% of a 2,000,000 block) for interface + DPL-UR
+;;   ~10,169 gas   EXPLORER
+;;   DPL-UR.URC_0001_HeaderV3      -> Auryndex | EliteAuryndex | StoaLiquindex | KORIndex
+;;                                    H|PSTOA-... Global Nonces
+;;   EXPLORER.URC_0001_LandingPage -> Auryndex | EliteAuryndex
+;;
+;;   Neither function had EVER executed in a test before this fix. A hardcoded MAINNET id does
+;;   not exist in a sandbox, so both aborted on their first read -- the literal did not merely
+;;   go stale, it made its own function untestable. That is why fourteen of them shipped.
+;;
+;; ------------------------------------------------------------------------------------------
+;; AFTER THIS LANDS
+;; ------------------------------------------------------------------------------------------
+;;   Set line 5 of 2_CITIZEN/Stage_Z/01_DPL-UR.pact to `net: v14`. It currently reads
+;;   `net: v7+v8`, which is the truth until this transaction is mined. Do not reuse the number
+;;   13 -- DeployerReadsV13 was written but never deployed.
+;; ===========================================================================================
+
+(namespace "ouronet-ns")
+
 (interface DeployerReadsV14
     @doc "The COMPLETE public read surface of DPL-UR -- 71 functions in one interface. \
         \ \
@@ -3016,6 +3071,196 @@
                 []
                 unsorted
             )
+        )
+    )
+    ;;{5.4}  Validate [UEV/CAP]
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;{5.7}  User [A/C]
+
+)
+
+
+(module EXPLORER GOV
+
+
+
+
+
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;
+    (defconst GOV|MD_EXPLORER                           (keyset-ref-guard (GOV|Demiurgoi)))
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    ;;
+    (defcap GOV ()                                      (compose-capability (GOV|EXPLORER_ADMIN)))
+    (defcap GOV|EXPLORER_ADMIN ()                       (enforce-guard GOV|MD_EXPLORER))
+    ;;{G5}  functions
+    (defun GOV|Demiurgoi ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::GOV|Demiurgoi)
+        )
+    )
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;{P4}  capabilities
+    ;;{P5}  functions
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    (defconst BAR                                       (CT_Bar))
+    ;;{3.2}  schemas
+    ;;{3.3}  tables
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    ;;{C2}  Simple
+    ;;{C3}  Composed
+    ;;{C4}  Ownership [gold]
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    (defun CT_Namespace ()
+        (let
+            (
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+            )
+            (ref-U|CT::CT_NS_USE)
+        )
+    )
+    ;;
+    ;;
+    (defun CT_Bar ()
+        (let
+            (
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+            )
+            (ref-U|CT::CT_BAR)
+        )
+    )
+    ;;{5.2}  Compute [UC]
+    ;;
+    ;;
+    (defun UC_FormatTokenAmount:string (amount:decimal)
+        @doc "Token amount display helper (aligned with DPL-UR)."
+        (let
+            (
+                (formated-value:string (format "{}" [(floor amount 4)]))
+            )
+            (if (= formated-value 0.0)
+                "<0.0001"
+                formated-value
+            )
+        )
+    )
+    (defun UC_FormatIndex:string (index:decimal)
+        @doc "Index display helper (aligned with DPL-UR HeaderV3)."
+        (let
+            (
+                (fi:decimal (floor index 12))
+                (fis:string (format "{}" [fi]))
+                (l1:string (take -3 fis))
+                (l2:string (take -3 (drop -3 fis)))
+                (l3:string (take -3 (drop -6 fis)))
+                (l4:string (take -3 (drop -9 fis)))
+                (whole:string (drop -13 fis))
+            )
+            (concat
+                [whole ",[" l4 "." l3 "." l2 "." l1 "]"]
+            )
+        )
+    )
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    (defun UR_0001_AccountNonce:integer (account:string)
+        @doc "Patron IGNIS client-op counter (proxies DALOS|UR_AccountNonce)."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::UR_AccountNonce account)
+        )
+    )
+    (defun URC_0001_LandingPage ()
+        @doc "Explorer landing: global z3 stats, OURO/AURYN/ELITEAURYN/IGNIS supplies, Auryn index pair."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-SWP:module{SwapperV4} SWP)
+                ;;
+                (ouro-id:string (ref-DALOS::UR_OuroborosID))
+                (ignis-id:string (ref-DALOS::UR_IgnisID))
+                (auryn-id:string (ref-DALOS::UR_AurynID))
+                (elite-auryn-id:string (ref-DALOS::UR_EliteAurynID))
+                ;;
+                ;; DERIVED, NOT HARDCODED. These two were mainnet Auryndex / EliteAuryndex
+                ;; pair-id literals whose suffix is the block hash of the transaction that
+                ;; created the pool -- correct for one issuance, stale for every one after. The
+                ;; same bug in the same two ids took the UI dashboard down from DPL-UR on
+                ;; 2026-09-24; EXPLORER ships in the same Stage-Z chain and was broken with it.
+                ;; Note the four lines directly above, which derive their token ids correctly:
+                ;; the derivation was right here all along and stopped two lines short.
+                ;;
+                ;; RBT direction on purpose -- a reward-BEARING token belongs to exactly one
+                ;; pool, whereas a reward token may be paid by several.
+                ;;
+                ;; The literals are DESCRIBED above rather than QUOTED, and that is not fussiness:
+                ;; _stagez_variant.py rewrote this module by exact string match and counted
+                ;; occurrences across the whole file, comments included. Quoting the old ids in a
+                ;; comment fed its substitution a target and let it report success while changing
+                ;; no code -- the exact no-op it was built to refuse.
+                (Auryndex:string (at 0 (ref-DPTF::UR_RewardBearingToken auryn-id)))
+                (EAuryndex:string (at 0 (ref-DPTF::UR_RewardBearingToken elite-auryn-id)))
+                (ih-auryndex:decimal (ref-ATS::URC_Index Auryndex))
+                (ih-elite-auryndex:decimal (ref-ATS::URC_Index EAuryndex))
+                ;;
+                (ignis-collection:bool (ref-DALOS::UR_VirtualToggle))
+                (stoa-collection:bool (ref-DALOS::UR_NativeToggle))
+                (it:string (if ignis-collection "ON" "OFF"))
+                (st:string (if stoa-collection "ON" "OFF"))
+                ;;
+                (asymmetric-prov:bool (ref-SWP::UR_Asymetric))
+                (liq-boost:bool (ref-SWP::UR_LiquidBoost))
+                (a-t:string (if asymmetric-prov "ON" "OFF"))
+                (b-t:string (if liq-boost "ON" "OFF"))
+            )
+            {"z2-t1"                            : (ref-ATS::UR_IndexName Auryndex)
+            ,"z2-v1"                            : (UC_FormatIndex ih-auryndex)
+            ,"z2-t2"                            : (ref-ATS::UR_IndexName EAuryndex)
+            ,"z2-v2"                            : (UC_FormatIndex ih-elite-auryndex)
+            ,"z3-t1"                            : "Ouronet Accounts:"
+            ,"z3-v1"                            : (length (keys DALOS.DALOS|AccountTable))
+            ,"z3-t2"                            : "IGNIS / STOA Gas Collection:"
+            ,"z3-v2"                            : (format "{} / {}" [it st])
+            ,"z3-t3"                            : "Asym. Liq. Prov. / Liq. Boost:"
+            ,"z3-v3"                            : (format "{} / {}" [a-t b-t])
+            ,"z3-t4"                            : "Ouronet IGNIS spent:"
+            ,"z3-v4"                            : (ref-DALOS::UR_VirtualSpent)
+            ,"z3-t5"                            : "Ouronet STOA spent"
+            ,"z3-v5"                            : (ref-DALOS::UR_NativeSpent)
+            ,"ouro-supply"                      : (UC_FormatTokenAmount (ref-DPTF::UR_Supply ouro-id))
+            ,"auryn-supply"                     : (UC_FormatTokenAmount (ref-DPTF::UR_Supply auryn-id))
+            ,"elite-auryn-supply"               : (UC_FormatTokenAmount (ref-DPTF::UR_Supply elite-auryn-id))
+            ,"ignis-supply"                     : (UC_FormatTokenAmount (ref-DPTF::UR_Supply ignis-id))
+            }
         )
     )
     ;;{5.4}  Validate [UEV/CAP]

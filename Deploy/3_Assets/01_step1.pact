@@ -48,3 +48,15 @@
     PATRON_KONTO
     "KBN_COLLECTION_ID"          ;; <- the live Bunnies collection id. Reused verbatim in tx 2 and tx 3.
 )
+
+(ouronet-ns.TS02-C2.DPNF|C_UpdateSetNonceURI
+    "<patron>"
+    "<collection owner konto>"            ;; holds role-set-new-uri AND signs
+    "KBN-<hash>"                          ;; the live collection id
+    1                                     ;; set-class -- "Bunny RGB Set" is Set Class 1
+    true                                  ;; nos = Native (not Split)
+    (ouronet-ns.DPDC-UDC.UDC_URI|Type true false false false false false false)
+    (ouronet-ns.DPDC-UDC.UDC_URI|Data "https://arweave.net/<TXID-512>"  "|" "|" "|" "|" "|" "|")
+    (ouronet-ns.DPDC-UDC.UDC_URI|Data "https://arweave.net/<TXID-FULL>" "|" "|" "|" "|" "|" "|")
+    (ouronet-ns.DPDC-UDC.UDC_ZeroURI|Data)
+)
