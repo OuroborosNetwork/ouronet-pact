@@ -473,7 +473,8 @@ def check_report():
             # one the pipeline does not mention. Named MANUAL so it cannot be mistaken for
             # generated output, and listed by name rather than by pattern -- a pattern would
             # silently re-open the hole this rule exists to close.
-            "25_deploy.pact"}
+            "25_deploy.pact",
+            "00_MANUAL_probe-dashboard.pact"}
     # a file in Deploy/1_Pure or 2_Init that the generator no longer produces
     for d in (PURE, INIT):
         if not os.path.isdir(d):
