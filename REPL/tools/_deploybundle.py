@@ -236,6 +236,12 @@ ROUNDS = {
                 "have moved -- but a registry exists so nobody has to re-check it, and it earns "
                 "that only by being right the first time. Confirm by dirty read, then add to a "
                 "round.",
+            # READS_UI / READS_EXPLORER are a STAGED MIGRATION, excluded as folders rather than
+            # file by file. The owner is rewiring the UI page by page, so modules land here one
+            # at a time over weeks; a per-file list would be edited on every one of those
+            # commits, and an exclusion list people edit routinely stops being read. The folder
+            # rule says something a file list cannot: nothing in here ships until the owner
+            # wires it, by design.
             "2_CITIZEN/Stage_Z/READS_UI/01_RD-HEADER.pact":
                 "REFERENCE READ MODULE for the split described in "
                 "OuronetInformational/HANDOFFS/HANDOFF-read-layer-split.md (owner directive, "
