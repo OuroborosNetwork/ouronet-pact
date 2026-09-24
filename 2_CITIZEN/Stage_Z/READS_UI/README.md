@@ -39,10 +39,45 @@ alone. They are pure, tiny, and have no state to diverge.
    eager `let`; any single failure blanked the whole dashboard and named the innermost form
    rather than the zone that owned it. Split by *independent failure domain*, then compose with
    `try` if a one-call convenience is wanted.
-5. **Every function must be callable in the fixture.** The two functions that broke on
+5. **A `try`-wrapped function may not `select` or `keys`.** Pact evaluates a `try` body in
+   **read-only mode**, where unbounded database operations are disallowed. So any card that
+   reaches a `URH_*` scan cannot go in a `try`-composer — and an untriable card takes the whole
+   object down, which is the exact all-or-nothing behaviour the split removes.
+
+   Found by building `RD-WALLET`: with `DPOF::URH_AccountNonces` inline, `URC_Wallet` died on
+   *"Operation disallowed in read-only or sys-only mode"* at `06_DPOF.pact:1857` while **every
+   card still passed when called individually** — the composer was the only thing that broke,
+   which is the hardest shape to diagnose.
+
+   **The rule that follows:** keep scans out of composed cards. Put each in its own `URH_`
+   function, correctly prefixed so the cost is legible, and leave it OUT of the composer. A
+   caller that wants a scan asks for it. `RD-WALLET::URH_GoldenStoaNonces` is the worked example.
+
+   Worth knowing that `RD-HEADER` survives this only by accident: zone 3 omits the account count
+   because `(keys DALOS.DALOS|AccountTable)` is a node-flag dependency. It would ALSO have broken
+   the composer, for this reason instead.
+
+6. **Every function must be callable in the fixture.** The two functions that broke on
    2026-09-24 had never once executed in a test, because their hardcoded mainnet ids do not
    exist in a sandbox. A read nothing can call is a read whose staleness is invisible until a
    user finds it.
+
+## Landing a module: the two gate passes
+
+Every `RD-*` module adds assertions, and adding assertions costs **two** gate runs. This is
+mechanical, not a fault, and it has cost a cycle three times now — so it is written down rather
+than rediscovered per module.
+
+1. Build, exclude the module in `_deploybundle.py`, regenerate `REPL_SUITE_STATS.md`, align
+   `Audit/records/REPL-ROUND-REPORT.md`'s **distinct** figure, run the gate.
+2. That run *executes* the new assertions. `REPL_SUITE_STATS.md` reads its **executed** figure
+   from the **previous green receipt**, so it now lags. Regenerate, align the report's executed
+   and positive figures, run the gate again.
+
+Why the check cannot collapse the two: `_docclaims.py` compares the round report against
+`REPL_SUITE_STATS.md`, and both derive from the same receipt — so after pass 1 they agree with
+each other while both being one run behind the tree. Self-consistency is not currency. Quote
+figures from the **second** run.
 
 ## Testing posture — agreed, with one carve-out
 

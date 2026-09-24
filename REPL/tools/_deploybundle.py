@@ -242,6 +242,13 @@ ROUNDS = {
             # commits, and an exclusion list people edit routinely stops being read. The folder
             # rule says something a file list cannot: nothing in here ships until the owner
             # wires it, by design.
+            "2_CITIZEN/Stage_Z/READS_UI/02_RD-WALLET.pact":
+                "READ-LAYER SPLIT, module 02 of 11 (owner kickoff, 2026-09-24). Replaces "
+                "DPL-UR::URC_0002_Primordials* -- ten per-asset cards plus a try-composer, in "
+                "place of one eager `let` of ~60 bindings returning ~70 flat keys. Gate-covered "
+                "by REPL/modules/READS-UI.repl. Held back with the rest of the folder: the owner "
+                "is wiring the read layer page by page, and DPL-UR must stay authoritative until "
+                "the UI has moved off it.",
             "2_CITIZEN/Stage_Z/READS_UI/01_RD-HEADER.pact":
                 "REFERENCE READ MODULE for the split described in "
                 "OuronetInformational/HANDOFFS/HANDOFF-read-layer-split.md (owner directive, "
