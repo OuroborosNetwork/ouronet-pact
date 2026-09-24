@@ -270,8 +270,8 @@ ROUNDS = {
                 "by REPL/modules/READS-UI.repl. Held back with the rest of the folder: the owner "
                 "is wiring the read layer page by page, and DPL-UR must stay authoritative until "
                 "the UI has moved off it.",
-            "2_CITIZEN/Stage_Z/READS_UI/01_RD-HEADER.pact":
-                "REFERENCE READ MODULE for the split described in "
+            "2_CITIZEN/Stage_Z/AppReads/OuronetUI/01_OURO-UI-ONE.pact":
+                "APPREADS, OuronetUI entity 1 (HEADER). REFERENCE READ MODULE for the split described in "
                 "OuronetInformational/HANDOFFS/HANDOFF-read-layer-split.md (owner directive, "
                 "2026-09-24). Five per-zone reads plus a try-wrapped composer, replacing "
                 "DPL-UR::URC_0001_HeaderV3's single eager `let` in which any one failing "

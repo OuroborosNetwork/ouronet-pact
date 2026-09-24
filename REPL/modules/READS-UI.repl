@@ -32,7 +32,7 @@
 (print "--- [RDUI-00 · 02 · load modules] ---")
 (namespace "ouronet-ns")
 (load "../../1_SOVEREIGN/STAGE_01/0_Interfaces/04_Ids.pact")
-(load "../../2_CITIZEN/Stage_Z/READS_UI/01_RD-HEADER.pact")
+(load "../../2_CITIZEN/Stage_Z/AppReads/OuronetUI/01_OURO-UI-ONE.pact")
 (load "../../2_CITIZEN/Stage_Z/READS_UI/02_RD-WALLET.pact")
 (load "../../2_CITIZEN/Stage_Z/READS_UI/03_RD-POOLS.pact")
 (load "../../2_CITIZEN/Stage_Z/READS_UI/04_RD-SWAP.pact")
@@ -58,13 +58,13 @@
     [
         (expect "<<RDUI-01>> a populated derivation wins over the registry"
             "REAL-abc123"
-            (RD-HEADER.UC_PickId ["REAL-abc123"] "FALLBACK-xyz789"))
+            (OURO-UI-ONE.UC_PickId ["REAL-abc123"] "FALLBACK-xyz789"))
         (expect "<<RDUI-01>> the BAR sentinel falls back -- this is the branch `try` cannot catch"
             "FALLBACK-xyz789"
-            (RD-HEADER.UC_PickId ["|"] "FALLBACK-xyz789"))
+            (OURO-UI-ONE.UC_PickId ["|"] "FALLBACK-xyz789"))
         (expect "<<RDUI-01>> ...and so does an empty list"
             "FALLBACK-xyz789"
-            (RD-HEADER.UC_PickId [] "FALLBACK-xyz789"))
+            (OURO-UI-ONE.UC_PickId [] "FALLBACK-xyz789"))
     ]
 )
 ;;==== RDUI-01 · 03 · the four resolved pair ids ==== =============================================
@@ -72,7 +72,7 @@
 ;;In THIS fixture the reverse index is populated, so all four resolve by derivation and carry the
 ;;sandbox hash. Asserting that they are NOT the registry literals is the point: it proves the
 ;;derivation branch is the one being exercised, so the test is not silently passing on constants.
-(let ((ids:[string] (RD-HEADER.URC_IndexIds)))
+(let ((ids:[string] (OURO-UI-ONE.URC_IndexIds)))
     (map print
         [
             (expect "<<RDUI-01>> four pair ids resolve" 4 (length ids))
@@ -102,16 +102,16 @@
 (map print
     [
         (expect "<<RDUI-02>> zone 1 (elite) answers on its own"
-            true (at "zone-ok" (RD-HEADER.URC_Zone1_Elite KST.ANHD)))
+            true (at "zone-ok" (OURO-UI-ONE.URC_Zone1_Elite KST.ANHD)))
         (expect "<<RDUI-02>> zone 2 (indices) answers on its own"
-            true (at "zone-ok" (RD-HEADER.URC_Zone2_Indices)))
+            true (at "zone-ok" (OURO-UI-ONE.URC_Zone2_Indices)))
         (expect "<<RDUI-02>> zone 3 (network) answers on its own"
-            true (at "zone-ok" (RD-HEADER.URC_Zone3_Network)))
+            true (at "zone-ok" (OURO-UI-ONE.URC_Zone3_Network)))
         (expect "<<RDUI-02>> zone 4 (prices) answers on its own"
-            true (at "zone-ok" (RD-HEADER.URC_Zone4_Prices)))
+            true (at "zone-ok" (OURO-UI-ONE.URC_Zone4_Prices)))
         (expect "<<RDUI-02>> ...and the index name matches the resolved pair"
-            (ouronet-ns.ATS.UR_IndexName (at 0 (RD-HEADER.URC_IndexIds)))
-            (at "auryndex-name" (RD-HEADER.URC_Zone2_Indices)))
+            (ouronet-ns.ATS.UR_IndexName (at 0 (OURO-UI-ONE.URC_IndexIds)))
+            (at "auryndex-name" (OURO-UI-ONE.URC_Zone2_Indices)))
     ]
 )
 (commit-tx)
@@ -147,8 +147,8 @@
 ;;today; worth knowing the gap is deliberate and not an oversight.
 (let
     (
-        (h:object (RD-HEADER.URC_Header KST.ANHD))
-        (z:object (RD-HEADER.UDC_ZeroZone))
+        (h:object (OURO-UI-ONE.URC_Header KST.ANHD))
+        (z:object (OURO-UI-ONE.UDC_ZeroZone))
     )
     (map print
         [
@@ -160,10 +160,10 @@
             (expect "<<RDUI-03>> the composer returns zone 3" true (at "zone-ok" (at "zone3" h)))
             (expect "<<RDUI-03>> the composer returns zone 4" true (at "zone-ok" (at "zone4" h)))
             (expect "<<RDUI-03>> ...and resident-ignis, which is the fifth member"
-                (RD-HEADER.URC_ResidentIgnis KST.ANHD) (at "resident-ignis" h))
+                (OURO-UI-ONE.URC_ResidentIgnis KST.ANHD) (at "resident-ignis" h))
             (expect "<<RDUI-03>> the composed zone equals the zone called directly -- `try` is \
                 \ not altering the value on the success path"
-                (RD-HEADER.URC_Zone3_Network) (at "zone3" h))
+                (OURO-UI-ONE.URC_Zone3_Network) (at "zone3" h))
         ]
     )
 )

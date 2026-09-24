@@ -1,5 +1,5 @@
 ;; ===========================================================================================
-;; RD-HEADER -- the dashboard top strip. REFERENCE READ MODULE.
+;; OURO-UI-ONE -- the dashboard top strip. REFERENCE READ MODULE.
 ;; ===========================================================================================
 ;; Mirror this file when adding a read module. It is the worked example for the split described
 ;; in OuronetInformational/HANDOFFS/HANDOFF-read-layer-split.md.
@@ -53,7 +53,7 @@
 
 (namespace "ouronet-ns")
 
-(interface ReadsHeaderV1
+(interface OuroUiOneV1
     @doc "Dashboard header reads, one function per zone plus a composer. Complete surface: a \
         \ consumer reads this and knows everything the module offers."
 
@@ -73,19 +73,19 @@
     (defun URC_Header:object (account:string))
 )
 
-(module RD-HEADER GOV
+(module OURO-UI-ONE GOV
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
-    (implements ReadsHeaderV1)
+    (implements OuroUiOneV1)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
-    (defconst GOV|MD_RD-HEADER              (keyset-ref-guard (GOV|Demiurgoi)))
+    (defconst GOV|MD_OURO-UI-ONE              (keyset-ref-guard (GOV|Demiurgoi)))
     ;;{G4}  capabilities
-    (defcap GOV ()                          (compose-capability (GOV|RD_HEADER_ADMIN)))
-    (defcap GOV|RD_HEADER_ADMIN ()          (enforce-guard GOV|MD_RD-HEADER))
+    (defcap GOV ()                          (compose-capability (GOV|OURO_UI_ONE_ADMIN)))
+    (defcap GOV|OURO_UI_ONE_ADMIN ()      (enforce-guard GOV|MD_OURO-UI-ONE))
     ;;{G5}  functions
     (defun GOV|Demiurgoi ()
         (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi))
