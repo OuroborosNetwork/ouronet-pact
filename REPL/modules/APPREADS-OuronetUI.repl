@@ -1,16 +1,16 @@
 ;;
-;; REPL/modules/READS-UI.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;; REPL/modules/APPREADS-OuronetUI.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
 ;;   Inter-tx:   ;;|| NEXT >
 ;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [...] ---")
 ;;
 (print "")
 (print "================================================================")
-(print "FILE  REPL/modules/READS-UI.repl")
+(print "FILE  REPL/modules/APPREADS-OuronetUI.repl")
 (print "================================================================")
 (print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
 (print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
 (print "")
-;; READS_UI — the split read layer. RD-HEADER is the reference module; mirror it.
+;; AppReads/OuronetUI — the split read layer. O-UI-ONE is the reference module; mirror it.
 ;;
 ;; WHAT THIS SUITE IS FOR, beyond "does it run". The two functions that took the dashboard down
 ;; on 2026-09-24 had NEVER executed in a test, because their hardcoded mainnet ids do not exist
@@ -31,11 +31,10 @@
 ;;==== RDUI-00 · 02 · load modules ==== ===========================================================
 (print "--- [RDUI-00 · 02 · load modules] ---")
 (namespace "ouronet-ns")
-(load "../../1_SOVEREIGN/STAGE_01/0_Interfaces/04_Ids.pact")
-(load "../../2_CITIZEN/Stage_Z/AppReads/OuronetUI/01_OURO-UI-ONE.pact")
-(load "../../2_CITIZEN/Stage_Z/READS_UI/02_RD-WALLET.pact")
-(load "../../2_CITIZEN/Stage_Z/READS_UI/03_RD-POOLS.pact")
-(load "../../2_CITIZEN/Stage_Z/READS_UI/04_RD-SWAP.pact")
+(load "../../2_CITIZEN/Stage_Z/AppReads/00_Ids.pact")
+(load "../../2_CITIZEN/Stage_Z/AppReads/OuronetUI/01_O-UI-ONE.pact")
+(load "../../2_CITIZEN/Stage_Z/AppReads/OuronetUI/02_O-UI-TWO.pact")
+(load "../../2_CITIZEN/Stage_Z/AppReads/OuronetUI/12_O-UI-TWELVE.pact")
 (print (format "<<<<<<<READS_UI (ids + RD-HEADER) Costs {} GAS>>>>>>>" [(env-gas)]))
 (env-sigs [])
 (commit-tx)
@@ -58,13 +57,13 @@
     [
         (expect "<<RDUI-01>> a populated derivation wins over the registry"
             "REAL-abc123"
-            (OURO-UI-ONE.UC_PickId ["REAL-abc123"] "FALLBACK-xyz789"))
+            (O-UI-ONE.UC_PickId ["REAL-abc123"] "FALLBACK-xyz789"))
         (expect "<<RDUI-01>> the BAR sentinel falls back -- this is the branch `try` cannot catch"
             "FALLBACK-xyz789"
-            (OURO-UI-ONE.UC_PickId ["|"] "FALLBACK-xyz789"))
+            (O-UI-ONE.UC_PickId ["|"] "FALLBACK-xyz789"))
         (expect "<<RDUI-01>> ...and so does an empty list"
             "FALLBACK-xyz789"
-            (OURO-UI-ONE.UC_PickId [] "FALLBACK-xyz789"))
+            (O-UI-ONE.UC_PickId [] "FALLBACK-xyz789"))
     ]
 )
 ;;==== RDUI-01 · 03 · the four resolved pair ids ==== =============================================
@@ -72,7 +71,7 @@
 ;;In THIS fixture the reverse index is populated, so all four resolve by derivation and carry the
 ;;sandbox hash. Asserting that they are NOT the registry literals is the point: it proves the
 ;;derivation branch is the one being exercised, so the test is not silently passing on constants.
-(let ((ids:[string] (OURO-UI-ONE.URC_IndexIds)))
+(let ((ids:[string] (O-UI-ONE.URC_IndexIds)))
     (map print
         [
             (expect "<<RDUI-01>> four pair ids resolve" 4 (length ids))
@@ -102,16 +101,16 @@
 (map print
     [
         (expect "<<RDUI-02>> zone 1 (elite) answers on its own"
-            true (at "zone-ok" (OURO-UI-ONE.URC_Zone1_Elite KST.ANHD)))
+            true (at "zone-ok" (O-UI-ONE.URC_Zone1_Elite KST.ANHD)))
         (expect "<<RDUI-02>> zone 2 (indices) answers on its own"
-            true (at "zone-ok" (OURO-UI-ONE.URC_Zone2_Indices)))
+            true (at "zone-ok" (O-UI-ONE.URC_Zone2_Indices)))
         (expect "<<RDUI-02>> zone 3 (network) answers on its own"
-            true (at "zone-ok" (OURO-UI-ONE.URC_Zone3_Network)))
+            true (at "zone-ok" (O-UI-ONE.URC_Zone3_Network)))
         (expect "<<RDUI-02>> zone 4 (prices) answers on its own"
-            true (at "zone-ok" (OURO-UI-ONE.URC_Zone4_Prices)))
+            true (at "zone-ok" (O-UI-ONE.URC_Zone4_Prices)))
         (expect "<<RDUI-02>> ...and the index name matches the resolved pair"
-            (ouronet-ns.ATS.UR_IndexName (at 0 (OURO-UI-ONE.URC_IndexIds)))
-            (at "auryndex-name" (OURO-UI-ONE.URC_Zone2_Indices)))
+            (ouronet-ns.ATS.UR_IndexName (at 0 (O-UI-ONE.URC_IndexIds)))
+            (at "auryndex-name" (O-UI-ONE.URC_Zone2_Indices)))
     ]
 )
 (commit-tx)
@@ -145,25 +144,53 @@
 ;;honest way to pin the degrade path is a module deployed against a deliberately absent
 ;;dependency -- a second boot, for a branch whose mechanism is three `try` forms. Not worth it
 ;;today; worth knowing the gap is deliberate and not an oversight.
+;;NO MODULE-ADMIN GRANT, AND THAT IS THE POINT. An earlier draft of this block needed
+;;(env-module-admin ouronet-ns.DALOS) because URC_01|Header reported the Ouronet account count
+;;via a cross-module `keys` scan -- admin-gated by Pact, local-only on chain, and impossible to
+;;put inside a `try`. _conformance.py's cross-module-scan rule refused it the moment a Pact
+;;function CALLED the scan rather than inlining it, which is exactly the premise that rule
+;;exists to keep honest.
+;;
+;;The field is gone and the header is better for it: no --allowReadsInLocal dependency, no admin
+;;grant to call or to test, and every zone now degrades where z3-v1 could take the whole page
+;;down. A UI wanting the number calls ouronet-ns.DALOS.URH_AccountCounter -- DALOS scanning its
+;;OWN table, not admin-gated -- for one extra round trip.
 (let
     (
-        (h:object (OURO-UI-ONE.URC_Header KST.ANHD))
-        (z:object (OURO-UI-ONE.UDC_ZeroZone))
+        (h:object (O-UI-ONE.URC_01|Header KST.ANHD))
+        (z:object (O-UI-ONE.UDC_ZeroZone))
     )
     (map print
         [
             (expect "<<RDUI-03>> the zero-zone fallback carries zone-ok FALSE -- the signal a \
                 \ caller needs to tell a dead zone from a zero-valued one"
                 false (at "zone-ok" z))
-            (expect "<<RDUI-03>> the composer returns zone 1" true (at "zone-ok" (at "zone1" h)))
-            (expect "<<RDUI-03>> the composer returns zone 2" true (at "zone-ok" (at "zone2" h)))
-            (expect "<<RDUI-03>> the composer returns zone 3" true (at "zone-ok" (at "zone3" h)))
-            (expect "<<RDUI-03>> the composer returns zone 4" true (at "zone-ok" (at "zone4" h)))
-            (expect "<<RDUI-03>> ...and resident-ignis, which is the fifth member"
-                (OURO-UI-ONE.URC_ResidentIgnis KST.ANHD) (at "resident-ignis" h))
-            (expect "<<RDUI-03>> the composed zone equals the zone called directly -- `try` is \
-                \ not altering the value on the success path"
-                (OURO-UI-ONE.URC_Zone3_Network) (at "zone3" h))
+            ;;THE SHAPE IS THE CONTRACT. These four keys are what DPL-UR::URC_0001_HeaderV3
+            ;;returned, so a consumer swaps the module path and changes nothing else. Asserting
+            ;;the KEYS rather than the values is the point: values move every block, the shape
+            ;;must not, and it is the shape an app breaks on.
+            (expect "<<RDUI-03>> flat: zone 1 reports its Elite name in z1-t1"
+                true (!= (at "z1-t1" h) "--"))
+            (expect "<<RDUI-03>> flat: zone 2 reports an index name in z2-t1"
+                (O-UI-ONE.UC_Index (ouronet-ns.ATS.URC_Index (at 0 (O-UI-ONE.URC_IndexIds))))
+                (at "z2-v1" h))
+            (expect "<<RDUI-03>> flat: zone 4 prices IGNIS at a flat cent"
+                "1.000c" (at "z4-v1" h))
+            (expect "<<RDUI-03>> ...and resident-ignis is the fifth member, matching its own read"
+                (O-UI-ONE.URC_ResidentIgnis KST.ANHD) (at "resident-ignis" h))
+            ;;THE FOUR OK-FLAGS ARE THE THING THE OLD HEADER COULD NOT EXPRESS. One eager `let`
+            ;;meant any single failure returned NOTHING; here a dead zone leaves its fields at
+            ;;"--" and flags itself, and the other three still render.
+            (expect "<<RDUI-03>> all four zones report ok on a healthy chain"
+                [true true true true]
+                [(at "z1-ok" h) (at "z2-ok" h) (at "z3-ok" h) (at "z4-ok" h)])
+            ;;z3-v1 is the non-degradable field: it needs a `keys` scan, a scan cannot live in a
+            ;;`try`, so its failure takes the whole header. That it answers at all here is only
+            ;;because of the env-module-admin grant above.
+            (expect "<<RDUI-03>> z3-v1 is a placeholder -- the cross-module account scan was \
+                \ removed, which is what makes this whole block runnable without a module-admin \
+                \ grant and every zone degradable"
+                "--" (at "z3-v1" h))
         ]
     )
 )
@@ -171,7 +198,7 @@
 
 ;;|| NEXT >
 ;;
-(begin-tx "RDUI-04 -- RD-WALLET: every card answers, and the composer stays whole")
+(begin-tx "RDUI-04 -- O-UI-TWO: every card answers, and the composer stays whole")
 (env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
 ;;==== RDUI-04 · 01 · namespace ==== ==============================================================
 (print "--- [RDUI-04 · 01 · namespace] ---")
@@ -183,61 +210,61 @@
 ;;property that replaces it: each card answers alone, so a failure has an address.
 (map print
     [
-        (expect "<<RDUI-04>> OURO card"        true (at "card-ok" (RD-WALLET.URC_Ouro KST.ANHD)))
-        (expect "<<RDUI-04>> IGNIS card"       true (at "card-ok" (RD-WALLET.URC_Ignis KST.ANHD)))
-        (expect "<<RDUI-04>> AURYN card"       true (at "card-ok" (RD-WALLET.URC_Auryn KST.ANHD)))
-        (expect "<<RDUI-04>> ELITEAURYN card"  true (at "card-ok" (RD-WALLET.URC_EliteAuryn KST.ANHD)))
-        (expect "<<RDUI-04>> UrStoa card"      true (at "card-ok" (RD-WALLET.URC_UrStoa KST.ANHD)))
-        (expect "<<RDUI-04>> STOA card"        true (at "card-ok" (RD-WALLET.URC_Stoa KST.ANHD)))
-        (expect "<<RDUI-04>> SilverStoa card"  true (at "card-ok" (RD-WALLET.URC_SilverStoa KST.ANHD)))
-        (expect "<<RDUI-04>> GoldenStoa card"  true (at "card-ok" (RD-WALLET.URC_GoldenStoa KST.ANHD)))
-        (expect "<<RDUI-04>> totals"           true (at "card-ok" (RD-WALLET.URC_Totals KST.ANHD)))
-        (expect "<<RDUI-04>> codex"            true (at "card-ok" (RD-WALLET.URC_Codex [])))
+        (expect "<<RDUI-04>> OURO card"        true (at "card-ok" (O-UI-TWO.URC_Ouro KST.ANHD)))
+        (expect "<<RDUI-04>> IGNIS card"       true (at "card-ok" (O-UI-TWO.URC_Ignis KST.ANHD)))
+        (expect "<<RDUI-04>> AURYN card"       true (at "card-ok" (O-UI-TWO.URC_Auryn KST.ANHD)))
+        (expect "<<RDUI-04>> ELITEAURYN card"  true (at "card-ok" (O-UI-TWO.URC_EliteAuryn KST.ANHD)))
+        (expect "<<RDUI-04>> UrStoa card"      true (at "card-ok" (O-UI-TWO.URC_UrStoa KST.ANHD)))
+        (expect "<<RDUI-04>> STOA card"        true (at "card-ok" (O-UI-TWO.URC_Stoa KST.ANHD)))
+        (expect "<<RDUI-04>> SilverStoa card"  true (at "card-ok" (O-UI-TWO.URC_SilverStoa KST.ANHD)))
+        (expect "<<RDUI-04>> GoldenStoa card"  true (at "card-ok" (O-UI-TWO.URC_GoldenStoa KST.ANHD)))
+        (expect "<<RDUI-04>> totals"           true (at "card-ok" (O-UI-TWO.URC_Totals KST.ANHD)))
+        (expect "<<RDUI-04>> codex"            true (at "card-ok" (O-UI-TWO.URC_Codex [])))
     ]
 )
 (commit-tx)
 
 ;;|| NEXT >
 ;;
-(begin-tx "RDUI-05 -- RD-WALLET arithmetic, and the scan that must stay out of the composer")
+(begin-tx "RDUI-05 -- O-UI-TWO arithmetic, and the scan that must stay out of the composer")
 (env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
 ;;==== RDUI-05 · 01 · namespace ==== ==============================================================
 (print "--- [RDUI-05 · 01 · namespace] ---")
 (namespace "ouronet-ns")
 ;;==== RDUI-05 · 02 · URC_Value is linear and floors to token precision ==== ======================
 (print "--- [RDUI-05 · 02 · URC_Value is linear and floors to token precision] ---")
-;;Per READS_UI/README.md's testing posture, display reads need no audit -- but a read that feeds a
+;;Per AppReads/RULES.md's testing posture, display reads need no audit -- but a read that feeds a
 ;;DECISION needs its ARITHMETIC pinned. URC_Value is the multiplier under every "-vid" field on
 ;;the dashboard, so these pin the relationship rather than smoke-testing that a call returned.
 (let ((ouro:string (ouronet-ns.DALOS.UR_OuroborosID)))
     (map print
         [
             (expect "<<RDUI-05>> unit amount at unit price is the unit value"
-                1.0 (RD-WALLET.URC_Value ouro 1.0 1.0))
+                1.0 (O-UI-TWO.URC_Value ouro 1.0 1.0))
             (expect "<<RDUI-05>> ...linear in the AMOUNT"
-                2.0 (RD-WALLET.URC_Value ouro 2.0 1.0))
+                2.0 (O-UI-TWO.URC_Value ouro 2.0 1.0))
             (expect "<<RDUI-05>> ...linear in the PRICE"
-                2.0 (RD-WALLET.URC_Value ouro 1.0 2.0))
+                2.0 (O-UI-TWO.URC_Value ouro 1.0 2.0))
             (expect "<<RDUI-05>> ...and zero amount is worth zero"
-                0.0 (RD-WALLET.URC_Value ouro 0.0 1.0))
+                0.0 (O-UI-TWO.URC_Value ouro 0.0 1.0))
             (expect "<<RDUI-05>> seven prices, in the documented order"
-                7 (length (RD-WALLET.URC_Prices)))
+                7 (length (O-UI-TWO.URC_Prices)))
             (expect "<<RDUI-05>> IGNIS is a fixed 0.01 by definition, not a pool price"
-                0.01 (at 1 (RD-WALLET.URC_Prices)))
+                0.01 (at 1 (O-UI-TWO.URC_Prices)))
         ]
     )
 )
 ;;==== RDUI-05 · 03 · the composer survives, BECAUSE the scan is not in it ==== ===================
 (print "--- [RDUI-05 · 03 · the composer survives, BECAUSE the scan is not in it] ---")
 ;;THE REASON THIS BLOCK EXISTS. Pact evaluates a `try` body in READ-ONLY mode, where `select` and
-;;`keys` are disallowed. With DPOF::URH_AccountNonces inline in the GoldenStoa card, URC_Wallet
+;;`keys` are disallowed. With DPOF::URH_AccountNonces inline in the GoldenStoa card, URC_01|Dashboard
 ;;died on "Operation disallowed in read-only or sys-only mode" (06_DPOF.pact:1857) while every
 ;;card still passed INDIVIDUALLY -- only the composed call broke, which is the hardest shape to
 ;;diagnose. The scan now lives in URH_GoldenStoaNonces and is deliberately outside the composer.
 ;;
 ;;The first assertion is the regression guard: it fails the moment a scan is folded back into a
 ;;composed card. The second proves the scan itself still works where it now lives.
-(let ((w:object (RD-WALLET.URC_Wallet KST.ANHD [])))
+(let ((w:object (O-UI-TWO.URC_01|Dashboard KST.ANHD [])))
     (map print
         [
             (expect "<<RDUI-05>> the composer returns all ten cards whole -- a scan folded into \
@@ -249,9 +276,9 @@
                  (at "card-ok" (at "silverstoa" w)) (at "card-ok" (at "goldenstoa" w))
                  (at "card-ok" (at "totals" w)) (at "card-ok" (at "codex" w))])
             (expect "<<RDUI-05>> ...and the scan works where it now lives, outside the composer"
-                0 (at "nonces" (RD-WALLET.URH_GoldenStoaNonces KST.ANHD)))
+                0 (at "nonces" (O-UI-TWO.URH_GoldenStoaNonces KST.ANHD)))
             (expect "<<RDUI-05>> the composed card equals the card called directly"
-                (RD-WALLET.URC_Ignis KST.ANHD) (at "ignis" w))
+                (O-UI-TWO.URC_Ignis KST.ANHD) (at "ignis" w))
         ]
     )
 )
@@ -259,7 +286,7 @@
 
 ;;|| NEXT >
 ;;
-(begin-tx "RDUI-06 -- RD-POOLS: the tier rule DPL-UR gets wrong")
+(begin-tx "RDUI-06 -- O-UI-TWELVE: the tier rule DPL-UR gets wrong")
 (env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
 ;;==== RDUI-06 · 01 · namespace ==== ==============================================================
 (print "--- [RDUI-06 · 01 · namespace] ---")
@@ -279,22 +306,22 @@
 (map print
     [
         (expect "<<RDUI-06>> tier 0 permits ONE target -- DPL-UR's copy says 7" 1
-            (RD-POOLS.UC_MaxSpecialFeeTargets 0))
+            (O-UI-TWELVE.UC_MaxSpecialFeeTargets 0))
         (expect "<<RDUI-06>> tier 1 permits ONE target -- DPL-UR's copy says 7" 1
-            (RD-POOLS.UC_MaxSpecialFeeTargets 1))
-        (expect "<<RDUI-06>> tier 2 permits two"   2 (RD-POOLS.UC_MaxSpecialFeeTargets 2))
-        (expect "<<RDUI-06>> tier 3 permits three" 3 (RD-POOLS.UC_MaxSpecialFeeTargets 3))
-        (expect "<<RDUI-06>> tier 4 permits four"  4 (RD-POOLS.UC_MaxSpecialFeeTargets 4))
-        (expect "<<RDUI-06>> tier 5 permits seven" 7 (RD-POOLS.UC_MaxSpecialFeeTargets 5))
-        (expect "<<RDUI-06>> tier 6 permits seven" 7 (RD-POOLS.UC_MaxSpecialFeeTargets 6))
-        (expect "<<RDUI-06>> tier 7 permits seven" 7 (RD-POOLS.UC_MaxSpecialFeeTargets 7))
+            (O-UI-TWELVE.UC_MaxSpecialFeeTargets 1))
+        (expect "<<RDUI-06>> tier 2 permits two"   2 (O-UI-TWELVE.UC_MaxSpecialFeeTargets 2))
+        (expect "<<RDUI-06>> tier 3 permits three" 3 (O-UI-TWELVE.UC_MaxSpecialFeeTargets 3))
+        (expect "<<RDUI-06>> tier 4 permits four"  4 (O-UI-TWELVE.UC_MaxSpecialFeeTargets 4))
+        (expect "<<RDUI-06>> tier 5 permits seven" 7 (O-UI-TWELVE.UC_MaxSpecialFeeTargets 5))
+        (expect "<<RDUI-06>> tier 6 permits seven" 7 (O-UI-TWELVE.UC_MaxSpecialFeeTargets 6))
+        (expect "<<RDUI-06>> tier 7 permits seven" 7 (O-UI-TWELVE.UC_MaxSpecialFeeTargets 7))
     ]
 )
 (commit-tx)
 
 ;;|| NEXT >
 ;;
-(begin-tx "RDUI-07 -- RD-POOLS: every panel answers, and the list survives a bad member")
+(begin-tx "RDUI-07 -- O-UI-TWELVE: every panel answers, and the list survives a bad member")
 (env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
 ;;==== RDUI-07 · 01 · namespace ==== ==============================================================
 (print "--- [RDUI-07 · 01 · namespace] ---")
@@ -303,14 +330,14 @@
 (print "--- [RDUI-07 · 02 · panels, composer, and a deliberately bad pool id] ---")
 ;;The last two assertions are the ones worth having. The original URC_0005 mapper had no guard,
 ;;so ONE unreadable pool emptied the entire pool list -- a page showing dozens taken out by a
-;;single bad row. URC_PoolsDashboard wraps each member in `try`, so a bad id degrades to
+;;single bad row. URC_02|PoolList wraps each member in `try`, so a bad id degrades to
 ;;UDC_ZeroPanel and its neighbours still render.
 (let*
-    ( (g:object (RD-POOLS.URC_Global))
+    ( (g:object (O-UI-TWELVE.URC_01|Global))
       (pools:[string] (at "pools" g))
       (sw:string (at 0 pools))
-      (p:object (RD-POOLS.URC_Pool sw))
-      (mixed:[object] (RD-POOLS.URC_PoolsDashboard [sw "P|NO-SUCH-POOL|AT-ALL"])) )
+      (p:object (O-UI-TWELVE.URC_03|Pool sw))
+      (mixed:[object] (O-UI-TWELVE.URC_02|PoolList [sw "P|NO-SUCH-POOL|AT-ALL"])) )
     (map print
         [
             (expect "<<RDUI-07>> the global panel answers" true (at "panel-ok" g))
@@ -322,7 +349,7 @@
                  (at "panel-ok" (at "internal" p)) (at "panel-ok" (at "settings" p))
                  (at "panel-ok" (at "fees" p))])
             (expect "<<RDUI-07>> the account panel answers on its own"
-                true (at "panel-ok" (RD-POOLS.URC_AccountSupplies KST.ANHD sw)))
+                true (at "panel-ok" (O-UI-TWELVE.URC_04|AccountSupplies KST.ANHD sw)))
             (expect "<<RDUI-07>> a BAD pool id in the list degrades to one dead entry..."
                 [true false]
                 [(at "panel-ok" (at 0 mixed)) (at "panel-ok" (at 1 mixed))])
@@ -336,14 +363,14 @@
 
 ;;|| NEXT >
 ;;
-(begin-tx "RDUI-08 -- RD-SWAP: the previews a user signs against")
+(begin-tx "RDUI-08 -- O-UI-TWELVE: the previews a user signs against")
 (env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
 ;;==== RDUI-08 · 01 · namespace ==== ==============================================================
 (print "--- [RDUI-08 · 01 · namespace] ---")
 (namespace "ouronet-ns")
 ;;==== RDUI-08 · 02 · round trip, curvature, and refusal ==== =====================================
 (print "--- [RDUI-08 · 02 · round trip, curvature, and refusal] ---")
-;;RD-SWAP is the carve-out in READS_UI/README.md's testing posture. Every other module here is
+;;O-UI-TWELVE is the carve-out in AppReads/RULES.md's testing posture. Every other module here is
 ;;display: a wrong number is a cosmetic bug. These three functions produce the figure a user reads
 ;;IMMEDIATELY BEFORE SIGNING A TRADE, so a wrong one is a user consenting to something other than
 ;;what they were shown. The money moves either way; only the consent was wrong.
@@ -358,16 +385,16 @@
 ;;                 linearly would satisfy every monotonicity check and still be wrong; this is
 ;;                 the assertion that says "there is a curve here at all".
 ;;  REFUSAL     -- a token absent from the pool must REFUSE, not quote zero. This is why nothing
-;;                 in RD-SWAP is try-wrapped: a swallowed refusal reads to a user as a valid
+;;                 in O-UI-TWELVE is try-wrapped: a swallowed refusal reads to a user as a valid
 ;;                 quote of nothing.
 (let*
     ( (sw:string (at 0 (ouronet-ns.SWP.URC_Swpairs)))
       (tk:[string] (ouronet-ns.SWP.UR_PoolTokens sw))
       (a:string (at 0 tk))
       (b:string (at 1 tk))
-      (out1:decimal (RD-SWAP.URCv_DirectSwap KST.ANHD sw [a] [1.0] b))
-      (out2:decimal (RD-SWAP.URCv_DirectSwap KST.ANHD sw [a] [2.0] b))
-      (back:decimal (RD-SWAP.URCv_InverseSwap KST.ANHD sw b out1 a)) )
+      (out1:decimal (O-UI-TWELVE.URCv_05|DirectSwap KST.ANHD sw [a] [1.0] b))
+      (out2:decimal (O-UI-TWELVE.URCv_05|DirectSwap KST.ANHD sw [a] [2.0] b))
+      (back:decimal (O-UI-TWELVE.URCv_06|InverseSwap KST.ANHD sw b out1 a)) )
     (map print
         [
             (expect "<<RDUI-08>> a forward preview returns a positive output"
@@ -381,12 +408,12 @@
                 \ every other assertion here and still be wrong"
                 true (< out2 (* 2.0 out1)))
             (expect-failure "<<RDUI-08>> REFUSAL: a token absent from the pool refuses rather \
-                \ than quoting zero -- which is why RD-SWAP has no try-wrapped composer"
-                (RD-SWAP.URCv_DirectSwap KST.ANHD sw ["NOPE-000000000000"] [1.0] b))
+                \ than quoting zero -- which is why O-UI-TWELVE has no try-wrapped composer"
+                (O-UI-TWELVE.URCv_05|DirectSwap KST.ANHD sw ["NOPE-000000000000"] [1.0] b))
             (expect "<<RDUI-08>> the max-output cap is a per-mille slice of pool supply"
                 (floor (* 0.01 (ouronet-ns.SWP.UR_PoolTokenSupply sw b))
                        (ouronet-ns.DPTF.UR_Decimals b))
-                (RD-SWAP.URC_MaxOutputAmount sw b 10.0))
+                (O-UI-TWELVE.URC_07|MaxOutputAmount sw b 10.0))
         ]
     )
 )

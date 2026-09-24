@@ -1,6 +1,6 @@
 # READS_EXPLORER — read modules for the Ouronet Explorer
 
-Owner directive, 2026-09-24. Same rules as `../READS_UI/README.md`; read that first.
+Owner directive, 2026-09-24. Same rules as `../RULES.md`; read that first.
 
 ## State of the ground, measured rather than assumed
 
@@ -24,11 +24,11 @@ explorer usually has, and the owner should cut them before anyone builds them.
 
 | # | module | surface |
 |---|---|---|
-| 01 | `RX-CHAIN`    | network-wide counters, supplies, toggles, gas collected |
-| 02 | `RX-ACCOUNT`  | one account: balances, elite standing, roles, StoicTag |
-| 03 | `RX-TOKEN`    | one DPTF/DPOF: properties, supply, holders, links |
-| 04 | `RX-POOL`     | one SWP/ATS pair: composition, fees, value, history pointers |
-| 05 | `RX-COLLECT`  | one collection: nonces, sets, fragments, owners |
+| 01 | `OURO-EX-ONE`    | network-wide counters, supplies, toggles, gas collected |
+| 02 | `OURO-EX-TWO`  | one account: balances, elite standing, roles, StoicTag |
+| 03 | `OURO-EX-THREE`    | one DPTF/DPOF: properties, supply, holders, links |
+| 04 | `OURO-EX-FOUR`     | one SWP/ATS pair: composition, fees, value, history pointers |
+| 05 | `OURO-EX-FIVE`  | one collection: nonces, sets, fragments, owners |
 
 ## The constraint that will shape this folder more than any other
 

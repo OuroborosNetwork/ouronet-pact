@@ -68,7 +68,7 @@ SKIP_DIRS = {".git", "Deploy", "REPL", "Audit", "node_modules", "0_Sample",
 # to both a literal scan and an output diff, so a moved file leaves the tool importable and
 # failing at use. A path that only resolves from the right working directory is that same trap
 # with an extra precondition.
-REGISTRY_FILE = os.path.join(ROOT, "1_SOVEREIGN", "STAGE_01", "0_Interfaces", "04_Ids.pact")
+REGISTRY_FILE = os.path.join(ROOT, "2_CITIZEN", "Stage_Z", "AppReads", "00_Ids.pact")
 
 # ACCEPTED HARDCODED IDS. Key: "<repo-relative path>:<literal>". Value: why it cannot be derived.
 # Adding an entry is a deliberate act -- it asserts that no reader exists, not that deriving it

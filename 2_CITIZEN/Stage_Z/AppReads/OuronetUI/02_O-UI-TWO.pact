@@ -1,7 +1,7 @@
 ;; ===========================================================================================
-;; RD-WALLET -- the dashboard body: primordial asset cards and the net-worth total.
+;; O-UI-TWO -- the dashboard body: primordial asset cards and the net-worth total.
 ;; ===========================================================================================
-;; Second module of the READS_UI split. Template: 01_RD-HEADER.pact. Rules: READS_UI/README.md.
+;; Second module of the READS_UI split. Template: 01_O-UI-ONE.pact. Rules: ../RULES.md.
 ;;
 ;; REPLACES DPL-UR::URC_0002_Primordials / _PrimordialsSingle / _PrimordialsMulti, which are the
 ;; same defect as URC_0001_HeaderV3 at twice the size: ONE eager `let` with roughly SIXTY
@@ -10,13 +10,13 @@
 ;;
 ;; The split is BY ASSET CARD, because that is both how it renders and how it fails: OURO, IGNIS,
 ;; AURYN, ELITEAURYN, UrStoa, Stoa, SilverStoa, GoldenStoa, plus the aggregate and the Codex
-;; balance. Ten functions, each independently callable, composed by URC_Wallet with `try`.
+;; balance. Ten functions, each independently callable, composed by URC_01|Dashboard with `try`.
 ;;
 ;; ------------------------------------------------------------------------------------------
 ;; WHY EACH CARD RECOMPUTES ITS OWN PRICE
 ;; ------------------------------------------------------------------------------------------
 ;; URC_Prices is public and every card calls it, rather than a composer computing it once and
-;; passing it down. That is deliberate and it is the same reasoning as RD-HEADER's zones: a
+;; passing it down. That is deliberate and it is the same reasoning as O-UI-ONE's zones: a
 ;; shared prelude restores exactly the all-or-nothing coupling the split removes. Prices depend
 ;; on live SWP pools and the STOA PID oracle -- the two most fragile dependencies in the module --
 ;; so a shared price prelude would mean any pricing failure blanks all eight cards again.
@@ -24,7 +24,7 @@
 ;; MEASURED 2026-09-24, because the cost worry above deserved a number rather than a caveat:
 ;;     URC_Prices alone      8,280 gas
 ;;     one card             19,916 gas
-;;     URC_Wallet (all 10)  94,269 gas   -- under 1% of the 10,000,000 /local ceiling
+;;     URC_01|Dashboard (all 10)  94,269 gas   -- under 1% of the 10,000,000 /local ceiling
 ;;     module deploy        45,143 gas   -- against DPL-UR's 211,588 for all 71 reads
 ;; So the duplication is free at this scale and the caveat was overcautious. Kept as a figure
 ;; rather than deleted: if a future card is expensive the composer is where it will show, and
@@ -47,7 +47,7 @@
 
 (namespace "ouronet-ns")
 
-(interface ReadsWalletV1
+(interface OUiTwoV1
     @doc "Dashboard-body reads: one function per primordial asset card, plus the aggregate, the \
         \ Codex balance and a composer. Complete surface."
 
@@ -72,18 +72,18 @@
 
     (defun URC_Totals:object (account:string))
     (defun URC_Codex:object (codex-accounts:[string]))
-    (defun URC_Wallet:object (account:string codex-accounts:[string]))
+    (defun URC_01|Dashboard:object (account:string codex-accounts:[string]))
 )
 
-(module RD-WALLET GOV
+(module O-UI-TWO GOV
 
     ;;{0}  IMPLEMENTERS
-    (implements ReadsWalletV1)
+    (implements OUiTwoV1)
 
     ;;{1}  GOVERNANCE
-    (defconst GOV|MD_RD-WALLET              (keyset-ref-guard (GOV|Demiurgoi)))
-    (defcap GOV ()                          (compose-capability (GOV|RD_WALLET_ADMIN)))
-    (defcap GOV|RD_WALLET_ADMIN ()          (enforce-guard GOV|MD_RD-WALLET))
+    (defconst GOV|MD_O-UI-TWO              (keyset-ref-guard (GOV|Demiurgoi)))
+    (defcap GOV ()                          (compose-capability (GOV|O_UI_TWO_ADMIN)))
+    (defcap GOV|O_UI_TWO_ADMIN ()          (enforce-guard GOV|MD_O-UI-TWO))
     (defun GOV|Demiurgoi ()
         (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi))
     )
@@ -94,7 +94,7 @@
     ;;{5}  FUNCTIONS
     ;;{5.1}  Construct [CT/UDC]
     (defun UDC_ZeroCard:object ()
-        @doc "What a failing card yields from URC_Wallet. `card-ok` false distinguishes a DEAD \
+        @doc "What a failing card yields from URC_01|Dashboard. `card-ok` false distinguishes a DEAD \
             \ card from one whose balances are legitimately zero -- a distinction the original \
             \ flat object could not express, because a failure produced no object at all."
         {"card-ok" : false}
@@ -118,7 +118,7 @@
         )
     )
     (defun UC_PickId:string (derived:[string] fallback:string)
-        @doc "Derived first, registry as fallback. See RD-HEADER's copy for the full reasoning: \
+        @doc "Derived first, registry as fallback. See O-UI-ONE's copy for the full reasoning: \
             \ a derived id is the only form a sandbox can test, a registry id is the only form \
             \ proven on mainnet, and an unset reverse index returns [\"|\"] rather than [] -- a \
             \ sentinel, which is why this is an explicit check and not a `try`."
@@ -389,11 +389,11 @@
             \ the composer aborts the WHOLE object -- which is exactly the all-or-nothing \
             \ behaviour this module exists to remove. \
             \ \
-            \ Measured 2026-09-24: with the scan inline, URC_Wallet died on \
+            \ Measured 2026-09-24: with the scan inline, URC_01|Dashboard died on \
             \ \"Operation disallowed in read-only or sys-only mode\" at 06_DPOF.pact:1857, while \
             \ every card still passed when called individually. \
             \ \
-            \ Deliberately NOT in URC_Wallet. A caller that wants the count asks for it, and \
+            \ Deliberately NOT in URC_01|Dashboard. A caller that wants the count asks for it, and \
             \ pays a scan to get it."
         (let*
             ( (ref-DALOS:module{OuronetDalosV2} DALOS)
@@ -484,7 +484,21 @@
         )
     )
 
-    (defun URC_Wallet:object (account:string codex-accounts:[string])
+    ;;=======================================================================================
+    ;;  CLIENT READS -- the numbered `URC_NN|Name` functions below are the ONLY ones a UI
+    ;;  calls. Everything above this line is an internal component they compose.
+    ;;
+    ;;  ONE READ PER PAGE. A page costs one round trip, not five. The components are public
+    ;;  because they are the diagnosis tool -- when a client read comes back with a zone or
+    ;;  card flagged dead, you call that component directly to find out why -- but a UI that
+    ;;  assembles a page from components is paying N round trips for one answer.
+    ;;
+    ;;  The numbering is a watchlist. These are the functions with external consumers, so
+    ;;  these are the ones whose SHAPE is a contract: renaming a field here breaks an app,
+    ;;  renaming one above breaks nothing. Keeping them in a numbered block at the bottom of
+    ;;  the URC section means that surface is countable at a glance rather than inferred.
+    ;;=======================================================================================
+    (defun URC_01|Dashboard:object (account:string codex-accounts:[string])
         @doc "Every card in one call, each under `try`. A failing card yields UDC_ZeroCard \
             \ (card-ok false) and the rest still render -- so the card that comes back dead IS \
             \ the diagnosis, at no extra query. \

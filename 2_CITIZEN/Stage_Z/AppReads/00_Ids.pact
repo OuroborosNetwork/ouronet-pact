@@ -1,6 +1,11 @@
 ;; ===========================================================================================
-;; OURONET ENTITY-ID REGISTRY
+;; OURONET ENTITY-ID REGISTRY -- the root of AppReads, because every app reads from it.
 ;; ===========================================================================================
+;; LIVES HERE, not in 1_SOVEREIGN/0_Interfaces, and the placement is the argument. Nothing
+;; sovereign needs these: a core module derives an id from its own tables. It is the READ layer
+;; that cannot -- a projection has no state to derive from and must be told. So the registry
+;; belongs to its consumers, at the root of the folder that holds them, and it deploys before
+;; any of them.
 ;; One authoritative place for the mainnet ids that cannot be computed.
 ;;
 ;; WHY A REGISTRY OF LITERALS IS THE RIGHT ANSWER HERE, having spent a day arguing the opposite:

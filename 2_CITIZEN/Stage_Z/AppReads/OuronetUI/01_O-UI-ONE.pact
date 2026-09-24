@@ -1,5 +1,5 @@
 ;; ===========================================================================================
-;; OURO-UI-ONE -- the dashboard top strip. REFERENCE READ MODULE.
+;; O-UI-ONE -- the dashboard top strip. REFERENCE READ MODULE.
 ;; ===========================================================================================
 ;; Mirror this file when adding a read module. It is the worked example for the split described
 ;; in OuronetInformational/HANDOFFS/HANDOFF-read-layer-split.md.
@@ -23,14 +23,14 @@
 ;; ONE FUNCTION PER ZONE, each self-contained, each independently callable:
 ;;     URC_Zone1_Elite      URC_Zone2_Indices      URC_Zone3_Network
 ;;     URC_Zone4_Prices     URC_ResidentIgnis
-;; plus URC_Header, which composes them.
+;; plus URC_01|Header, which composes them.
 ;;
 ;; Each zone RECOMPUTES the dependencies it needs rather than receiving them. That costs
 ;; duplicate reads when all four are called together, and it is worth it twice over: reads run
 ;; in /local where gas is simulated, and a shared prelude would restore exactly the
 ;; all-or-nothing coupling this split removes.
 ;;
-;; URC_Header wraps every zone in `try`. A failing zone yields its zero-object; the other four
+;; URC_01|Header wraps every zone in `try`. A failing zone yields its zero-object; the other four
 ;; still render. A UI showing four zones and one placeholder is strictly better than a blank
 ;; page, AND it localises the fault without a single extra query -- the zone that came back
 ;; zero IS the diagnosis.
@@ -53,7 +53,7 @@
 
 (namespace "ouronet-ns")
 
-(interface OuroUiOneV1
+(interface OUiOneV1
     @doc "Dashboard header reads, one function per zone plus a composer. Complete surface: a \
         \ consumer reads this and knows everything the module offers."
 
@@ -70,22 +70,22 @@
     (defun URC_Zone3_Network:object ())
     (defun URC_Zone4_Prices:object ())
     (defun URC_ResidentIgnis:string (account:string))
-    (defun URC_Header:object (account:string))
+    (defun URC_01|Header:object (account:string))
 )
 
-(module OURO-UI-ONE GOV
+(module O-UI-ONE GOV
 
     ;;<=========================================================================>
     ;;{0}  IMPLEMENTERS
-    (implements OuroUiOneV1)
+    (implements OUiOneV1)
 
     ;;<=========================================================================>
     ;;{1}  GOVERNANCE
     ;;{G1}  constants
-    (defconst GOV|MD_OURO-UI-ONE              (keyset-ref-guard (GOV|Demiurgoi)))
+    (defconst GOV|MD_O-UI-ONE              (keyset-ref-guard (GOV|Demiurgoi)))
     ;;{G4}  capabilities
-    (defcap GOV ()                          (compose-capability (GOV|OURO_UI_ONE_ADMIN)))
-    (defcap GOV|OURO_UI_ONE_ADMIN ()      (enforce-guard GOV|MD_OURO-UI-ONE))
+    (defcap GOV ()                          (compose-capability (GOV|O_UI_ONE_ADMIN)))
+    (defcap GOV|O_UI_ONE_ADMIN ()      (enforce-guard GOV|MD_O-UI-ONE))
     ;;{G5}  functions
     (defun GOV|Demiurgoi ()
         (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi))
@@ -95,7 +95,7 @@
     ;;{5}  FUNCTIONS
     ;;{5.1}  Construct [CT/UDC]
     (defun UDC_ZeroZone:object ()
-        @doc "The fallback a failing zone returns from URC_Header. Its `zone-ok` is false, \
+        @doc "The fallback a failing zone returns from URC_01|Header. Its `zone-ok` is false, \
             \ which is how a caller tells a dead zone from a zone whose values happen to be \
             \ zero -- a distinction the old all-or-nothing header could not express at all."
         {"zone-ok" : false}
@@ -189,7 +189,11 @@
               (a:string (at 0 ids))
               (e:string (at 1 ids))
               (s:string (at 2 ids))
-              (g:string (at 3 ids)) )
+              (g:string (at 3 ids))
+              (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+              (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+              (hid:string (ref-DPTF::UR_Hibernation
+                            (ref-ATS::UR_ColdRewardBearingToken g))) )
             {"zone-ok"  : true
             ,"auryndex-name"        : (ref-ATS::UR_IndexName a)
             ,"auryndex"             : (UC_Index (ref-ATS::URC_Index a))
@@ -199,6 +203,11 @@
             ,"silverpillar"         : (UC_Index (ref-ATS::URC_Index s))
             ,"goldenpillar-name"    : (ref-ATS::UR_IndexName g)
             ,"goldenpillar"         : (UC_Index (ref-ATS::URC_Index g))
+            ;;The hibernated-GoldenStoa id and its global nonce count. UR_NoncesUsed is a
+            ;;bounded `read` of a counter column, NOT a scan -- verified at 06_DPOF.pact:1515 --
+            ;;so it is safe inside the composer's `try`. A `select` here would not be.
+            ,"hibernated-gstoa-id"      : hid
+            ,"hibernated-gstoa-nonces"  : (ref-DPOF::UR_NoncesUsed hid)
             }
         )
     )
@@ -302,19 +311,112 @@
         )
     )
 
-    (defun URC_Header:object (account:string)
-        @doc "All five reads in one call, each under `try`. A failing zone yields UDC_ZeroZone \
-            \ (zone-ok false) and the rest still render. \
+    ;;=======================================================================================
+    ;;  THE ACCOUNT COUNT IS NOT HERE, AND THAT IS THE GATE'S RULING, NOT A PREFERENCE.
+    ;;
+    ;;  DPL-UR::URC_0001_HeaderV3 reported it as `z3-v1` via
+    ;;  `(length (keys DALOS.DALOS|AccountTable))` -- a scan of ANOTHER module's table. Pact
+    ;;  admin-gates those on the OWNING module, so the call is LOCAL-ONLY: it aborts in
+    ;;  transactional mode and works in `/local` only on a node started with
+    ;;  `--allowReadsInLocal`.
+    ;;
+    ;;  `_conformance.py`'s `cross-module-scan` rule tolerates that ONLY while such a function
+    ;;  has ZERO Pact callers -- "a premise nobody re-checks is a premise that quietly stops
+    ;;  being true". Factoring the scan into a named `URH_AccountCount` and CALLING it from the
+    ;;  composer broke exactly that premise and turned the observation into a violation. The
+    ;;  rule's own prescribed fix is to move the scan into the owning module as a `URH_*` and
+    ;;  reach it by modref -- and DALOS does have `URH_AccountCounter`, but it is NOT declared
+    ;;  in DALOS's interface, so no modref can reach it, and it returns the sentence
+    ;;  "Ouronet has N real Accounts!" rather than a number.
+    ;;
+    ;;  So the field is dropped, and the header is BETTER for it on every axis but one:
+    ;;    - no cross-module scan, so no `--allowReadsInLocal` dependency at all;
+    ;;    - no module-admin grant needed to call or to test it;
+    ;;    - EVERY zone now degrades, where `z3-v1` was the one field that could take the whole
+    ;;      page down because a scan cannot live inside a `try`.
+    ;;
+    ;;  A UI that wants the number calls `ouronet-ns.DALOS.URH_AccountCounter` directly. That
+    ;;  is DALOS scanning its OWN table -- same-module, not admin-gated -- so it is cheaper
+    ;;  there than it ever was here. It costs one extra round trip for one vanity statistic,
+    ;;  which is the honest price of the header never blanking again.
+    ;;=======================================================================================
+
+    (defun URC_01|Header:object (account:string)
+        @doc "THE HEADER, IN ONE CALL. Flat, with exactly the keys DPL-UR::URC_0001_HeaderV3 \
+            \ returned, so a consumer swaps the module path and changes nothing else. \
             \ \
-            \ This is the whole point of the module: the old header was one eager `let`, so any \
-            \ single failure blanked the page and named the innermost form rather than the zone \
-            \ that owned it. Here the zone that comes back with zone-ok false IS the diagnosis, \
-            \ at no extra query. Callers wanting a hard failure should call the zone directly."
-        {"zone1" : (try (UDC_ZeroZone) (URC_Zone1_Elite account))
-        ,"zone2" : (try (UDC_ZeroZone) (URC_Zone2_Indices))
-        ,"zone3" : (try (UDC_ZeroZone) (URC_Zone3_Network))
-        ,"zone4" : (try (UDC_ZeroZone) (URC_Zone4_Prices))
-        ,"resident-ignis" : (try "<unavailable>" (URC_ResidentIgnis account))
-        }
+            \ ONE READ PER PAGE is the rule (owner, 2026-09-24): a page should cost one \
+            \ round trip, not five. The per-zone functions above are internal structure that \
+            \ happens to be callable -- they are for diagnosis, not for the page to assemble. \
+            \ A UI calling four of them would pay four round trips for the same answer. \
+            \ \
+            \ EACH ZONE IS STILL WRAPPED IN `try`, so the split still buys what it was for: a \
+            \ zone that cannot read leaves its fields at placeholder and sets its `zN-ok` \
+            \ false, while the other three render. The old header was one eager `let` -- any \
+            \ single failure returned nothing at all and named the innermost form rather than \
+            \ the zone that owned it. \
+            \ \
+            \ EVERY FIELD DEGRADES. There is no exception, which there was until the account \
+            \ count was dropped -- see the banner above URC_01|Header for why it went and \
+            \ where a UI gets it instead. `z3-v1` is now a placeholder."
+        (let*
+            ( (z1:object (try (UDC_ZeroZone) (URC_Zone1_Elite account)))
+              (z2:object (try (UDC_ZeroZone) (URC_Zone2_Indices)))
+              (z3:object (try (UDC_ZeroZone) (URC_Zone3_Network)))
+              (z4:object (try (UDC_ZeroZone) (URC_Zone4_Prices)))
+              (k1:bool (at "zone-ok" z1)) (k2:bool (at "zone-ok" z2))
+              (k3:bool (at "zone-ok" z3)) (k4:bool (at "zone-ok" z4))
+              (dash:string "--") )
+            {"z1-ok" : k1, "z2-ok" : k2, "z3-ok" : k3, "z4-ok" : k4
+            ;;Zone 1 -- Elite standing
+            ,"z1-t1" : (if k1 (at "elite-name" z1) dash)
+            ,"z1-v1" : (if k1 (at "elite-tier" z1) dash)
+            ,"z1-t2" : "Total Xi-A"
+            ,"z1-v2" : (if k1 (at "total-aurynz" z1) dash)
+            ,"z1-t3" : "Xi-A for Next Tier"
+            ,"z1-v3" : (if k1 (at "aurynz-next" z1) dash)
+            ,"z1-t4" : "OURO for Next Tier"
+            ,"z1-v4" : (if k1 (at "ouro-next" z1) dash)
+            ,"z1-t5" : "$ for Next Tier"
+            ,"z1-v5" : (if k1 (at "price-next" z1) dash)
+            ;;Zone 2 -- the four indices
+            ,"z2-t1" : (if k2 (at "auryndex-name" z2) dash)
+            ,"z2-v1" : (if k2 (at "auryndex" z2) dash)
+            ,"z2-t2" : (if k2 (at "eauryndex-name" z2) dash)
+            ,"z2-v2" : (if k2 (at "eauryndex" z2) dash)
+            ,"z2-t3" : (if k2 (at "silverpillar-name" z2) dash)
+            ,"z2-v3" : (if k2 (at "silverpillar" z2) dash)
+            ,"z2-t4" : (if k2 (at "goldenpillar-name" z2) dash)
+            ,"z2-v4" : (if k2 (at "goldenpillar" z2) dash)
+            ,"z2-t5" : (if k2 (format "{} Global Nonces:" [(at "hibernated-gstoa-id" z2)]) dash)
+            ,"z2-v5" : (if k2 (at "hibernated-gstoa-nonces" z2) 0)
+            ;;Zone 3 -- network. z3-v1 is a placeholder; see the banner above this function.
+            ,"z3-t1" : "Ouronet Accounts:"
+            ,"z3-v1" : dash
+            ,"z3-t2" : "IGNIS / STOA Gas Collection:"
+            ,"z3-v2" : (if k3 (format "{} / {}"
+                                [(at "ignis-collection" z3) (at "stoa-collection" z3)]) dash)
+            ,"z3-t3" : "Asym. Liq. Prov. / Liq. Boost:"
+            ,"z3-v3" : (if k3 (format "{} / {}"
+                                [(at "asymmetric" z3) (at "liquid-boost" z3)]) dash)
+            ,"z3-t4" : "Ouronet IGNIS spent:"
+            ,"z3-v4" : (if k3 (at "ignis-spent" z3) 0.0)
+            ,"z3-t5" : "Ouronet STOA spent"
+            ,"z3-v5" : (if k3 (at "stoa-spent" z3) 0.0)
+            ;;Zone 4 -- prices
+            ,"z4-t1" : "IGNIS"
+            ,"z4-v1" : (if k4 (at "ignis" z4) dash)
+            ,"z4-t2" : "OURO"
+            ,"z4-v2" : (if k4 (at "ouro" z4) dash)
+            ,"z4-t3" : "AURYN / ELITEAURYN"
+            ,"z4-v3" : (if k4 (format "{} / {}" [(at "auryn" z4) (at "eauryn" z4)]) dash)
+            ,"z4-t4" : "STOA"
+            ,"z4-v4" : (if k4 (at "wstoa" z4) dash)
+            ,"z4-t5" : "SSTOA / GSTOA"
+            ,"z4-v5" : (if k4 (format "{} / {}" [(at "sstoa" z4) (at "gstoa" z4)]) dash)
+            ;;
+            ,"resident-ignis" : (try "<unavailable>" (URC_ResidentIgnis account))
+            }
+        )
     )
 )

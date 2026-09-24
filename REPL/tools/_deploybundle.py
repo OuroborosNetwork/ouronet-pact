@@ -226,7 +226,7 @@ ROUNDS = {
                 "vestigial registry: declares 0 interfaces, 0 modules (interfaces are co-located "
                 "with their modules per StoicSyntax 7.10)",
             "1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact": "vestigial registry, declares nothing",
-            "1_SOVEREIGN/STAGE_01/0_Interfaces/04_Ids.pact":
+            "2_CITIZEN/Stage_Z/AppReads/00_Ids.pact":
                 "ENTITY-ID REGISTRY, NOT YET IN A ROUND (2026-09-24). OuronetIdsV1 -- the one "
                 "authoritative home for the mainnet ids that cannot be computed, replacing "
                 "forty-plus scattered copies across the Pact tree and the UI repo. Held back "
@@ -236,47 +236,34 @@ ROUNDS = {
                 "have moved -- but a registry exists so nobody has to re-check it, and it earns "
                 "that only by being right the first time. Confirm by dirty read, then add to a "
                 "round.",
-            # READS_UI / READS_EXPLORER are a STAGED MIGRATION, excluded as folders rather than
-            # file by file. The owner is rewiring the UI page by page, so modules land here one
-            # at a time over weeks; a per-file list would be edited on every one of those
-            # commits, and an exclusion list people edit routinely stops being read. The folder
-            # rule says something a file list cannot: nothing in here ships until the owner
-            # wires it, by design.
-            "2_CITIZEN/Stage_Z/READS_UI/04_RD-SWAP.pact":
-                "READ-LAYER SPLIT, module 04 of 11 (owner kickoff, 2026-09-24). Replaces "
-                "DPL-UR::URC_0006b_DirectSwap / URC_0007b_InverseSwap / "
-                "URC_ReverseSwapOutputAmount -- the previews a user reads immediately before "
-                "signing a trade, and therefore the one module in the roster that is NOT "
-                "display-only. No composer and no try-wrapping by design: a token absent from "
-                "the pool must REFUSE, because a swallowed refusal reads as a valid quote of "
-                "zero. Both previews renamed URC_ -> URCv_, correcting the original: they reach "
-                "URCv_PoolTokenPositions / URv_PoolTokenPosition, so the enforce was always "
-                "there and only the prefix denied it. Independent of the open CC_ vs C_ "
-                "SmartSwap ruling -- these take an explicit swpair and preview ONE pool. "
-                "Arithmetic pinned by RDUI-08 (round trip, curvature, refusal).",
-            "2_CITIZEN/Stage_Z/READS_UI/03_RD-POOLS.pact":
-                "READ-LAYER SPLIT, module 03 of 11 (owner kickoff, 2026-09-24). Replaces "
+            # AppReads/ IS A STAGED MIGRATION. The owner is rewiring the UI page by page, so
+            # modules land here one at a time over weeks and each is excluded until its wiring
+            # exists. Nothing in this folder ships until the owner deploys it, by design --
+            # DPL-UR stays authoritative until the UI has moved off it, and having both live
+            # and answering the same question is the one state worse than either.
+            "2_CITIZEN/Stage_Z/AppReads/OuronetUI/12_O-UI-TWELVE.pact":
+                "APPREADS, OuronetUI entity 12 (SWPPAIRS). Replaces "
                 "DPL-UR::URC_0003/0004/0005/0010/0011/0014/0015 plus the shared "
                 "URC_SWPairCoreRead. FIXES A LIVE DEFECT while porting: DPL-UR carries the "
                 "Elite-tier -> max-special-fee-targets rule twice and the copies disagree -- "
                 "URC_0015 seeds its or-fold with `true`, whose identity is FALSE, so the tier-5 "
                 "branch always fires and every owner below tier 2 is told 7 targets instead of "
                 "1. Now a single UC_MaxSpecialFeeTargets, pinned by RDUI-06. Gate-covered by "
-                "REPL/modules/READS-UI.repl; held back with the rest of the folder.",
-            "2_CITIZEN/Stage_Z/READS_UI/02_RD-WALLET.pact":
-                "READ-LAYER SPLIT, module 02 of 11 (owner kickoff, 2026-09-24). Replaces "
+                "REPL/modules/APPREADS-OuronetUI.repl; held back with the rest of the folder.",
+            "2_CITIZEN/Stage_Z/AppReads/OuronetUI/02_O-UI-TWO.pact":
+                "APPREADS, OuronetUI entity 2 (DASHBOARD). Replaces "
                 "DPL-UR::URC_0002_Primordials* -- ten per-asset cards plus a try-composer, in "
                 "place of one eager `let` of ~60 bindings returning ~70 flat keys. Gate-covered "
-                "by REPL/modules/READS-UI.repl. Held back with the rest of the folder: the owner "
+                "by REPL/modules/APPREADS-OuronetUI.repl. Held back with the rest of the folder: the owner "
                 "is wiring the read layer page by page, and DPL-UR must stay authoritative until "
                 "the UI has moved off it.",
-            "2_CITIZEN/Stage_Z/AppReads/OuronetUI/01_OURO-UI-ONE.pact":
+            "2_CITIZEN/Stage_Z/AppReads/OuronetUI/01_O-UI-ONE.pact":
                 "APPREADS, OuronetUI entity 1 (HEADER). REFERENCE READ MODULE for the split described in "
                 "OuronetInformational/HANDOFFS/HANDOFF-read-layer-split.md (owner directive, "
                 "2026-09-24). Five per-zone reads plus a try-wrapped composer, replacing "
                 "DPL-UR::URC_0001_HeaderV3's single eager `let` in which any one failing "
                 "dependency blanked the whole dashboard. Gate-covered by "
-                "REPL/modules/READS-UI.repl. NOT in a round because the owner is wiring the "
+                "REPL/modules/APPREADS-OuronetUI.repl. NOT in a round because the owner is wiring the "
                 "read layer personally and the other eight modules do not exist yet -- "
                 "deploying one page's reads alone would leave DPL-UR and RD-HEADER both live "
                 "and answering the same question, which is the one state worse than either.",
@@ -516,6 +503,16 @@ def check_report():
     # So it lives here, checked in, named MANUAL so it cannot be mistaken for generated output,
     # and listed by name rather than by pattern -- a pattern would silently re-open the hole this
     # rule exists to close.
+    # ROUND V2 -- Deploy/PureV2/ is HAND-AUTHORED and outside the planner entirely. The planner
+    # builds a ROUND: a dependency-ordered set of sovereign modules shipped together. AppReads
+    # has no round -- each module lands when its UI wiring is written, one slice at a time, on
+    # the owner's schedule. Planning that would mean re-emitting a batch every time one module
+    # moves, which is the opposite of what a staged migration wants.
+    #
+    # The whole directory is skipped rather than listed file by file, because files appear in it
+    # weekly and an allowlist edited weekly stops being read. What the planner still guarantees
+    # is that nothing in AppReads sneaks into the SOVEREIGN round -- those exclusions are
+    # per-file and carry reasons.
     KEEP = {"README.md", "00_MANUAL_rotate-s2-governor.pact",
             "00_MANUAL_probe-live-interfaces.pact",
             # STAGE-Z ROUND, 2026-09-24. DPL-UR and EXPLORER deploy via `deploy-stagezz.repl`, a chain this
@@ -530,7 +527,7 @@ def check_report():
             "25_deploy.pact",
             "00_MANUAL_probe-dashboard.pact"}
     # a file in Deploy/1_Pure or 2_Init that the generator no longer produces
-    for d in (PURE, INIT):
+    for d in (PURE, INIT):   # NOT PureV2 -- hand-authored, see the KEEP note above
         if not os.path.isdir(d):
             continue
         for f in sorted(os.listdir(d)):

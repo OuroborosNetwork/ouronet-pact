@@ -1,7 +1,7 @@
 ;; ===========================================================================================
-;; RD-POOLS -- the SWP pages: pool list, per-pool dashboards, management and fee settings.
+;; O-UI-TWELVE -- the SWP pages: pool list, per-pool dashboards, management and fee settings.
 ;; ===========================================================================================
-;; Module 03 of the READS_UI split. Template: 01_RD-HEADER.pact. Rules: READS_UI/README.md.
+;; Module 03 of the READS_UI split. Template: 01_O-UI-ONE.pact. Rules: ../RULES.md.
 ;;
 ;; REPLACES DPL-UR::URC_0003 / _0004 / _0005 / _0010 / _0011 / _0014 / _0015 and the shared
 ;; URC_SWPairCoreRead they lean on -- seven public reads plus a helper, the largest group in
@@ -23,18 +23,18 @@
 ;; yields 1. So every pool owner below tier 2 has been told they may set SEVEN special-fee
 ;; targets when the rule allows ONE.
 ;;
-;; That is not cosmetic, and it is exactly the carve-out in READS_UI/README.md's testing
+;; That is not cosmetic, and it is exactly the carve-out in ../RULES.md's testing
 ;; posture: `max-special-fee-targets` decides how many targets the UI lets a user ADD. A wrong
 ;; 7 walks them into a transaction the contract refuses.
 ;;
 ;; FIXED HERE, and fixed STRUCTURALLY: the rule now exists once, in UC_MaxSpecialFeeTargets,
-;; because two copies of a rule is how the two copies came to disagree. RD-ELITE must call this
+;; because two copies of a rule is how the two copies came to disagree. O-UI-THREE (EliteAccount) must call this
 ;; same function when URC_0032 is ported -- do not write a third copy.
 ;; ===========================================================================================
 
 (namespace "ouronet-ns")
 
-(interface ReadsPoolsV1
+(interface OUiTwelveV1
     @doc "SWP page reads: global pool state, per-pool dashboards, internal and management \
         \ views, and per-account pool balances. Complete surface."
 
@@ -49,25 +49,31 @@
     (defun URC_PoolTypeWord:[string] (swpair:string))
     (defun URC_ShortAccounts:[string] (accounts:[string]))
     (defun URC_PoolCore:object (swpair:string))
-    (defun URC_Global:object ())
+    (defun URC_01|Global:object ())
     (defun URC_PoolDashboard:object (swpair:string))
-    (defun URC_PoolsDashboard:[object] (swpairs:[string]))
+    (defun URC_02|PoolList:[object] (swpairs:[string]))
     (defun URC_PoolInternal:object (swpair:string))
-    (defun URC_AccountSupplies:object (account:string swpair:string))
+    (defun URC_04|AccountSupplies:object (account:string swpair:string))
     (defun URC_PoolSettings:object (swpair:string))
     (defun URC_FeeSettings:object (swpair:string))
-    (defun URC_Pool:object (swpair:string))
+    (defun URC_03|Pool:object (swpair:string))
+    ;;  SWAP PREVIEWS -- not display; see the module header and the in-body banner.
+    (defun URCv_05|DirectSwap:decimal
+        (account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string))
+    (defun URCv_06|InverseSwap:decimal
+        (account:string swpair:string output-id:string output-amount:decimal input-id:string))
+    (defun URC_07|MaxOutputAmount:decimal (swpair:string output-id:string promille:decimal))
 )
 
-(module RD-POOLS GOV
+(module O-UI-TWELVE GOV
 
     ;;{0}  IMPLEMENTERS
-    (implements ReadsPoolsV1)
+    (implements OUiTwelveV1)
 
     ;;{1}  GOVERNANCE
-    (defconst GOV|MD_RD-POOLS               (keyset-ref-guard (GOV|Demiurgoi)))
-    (defcap GOV ()                          (compose-capability (GOV|RD_POOLS_ADMIN)))
-    (defcap GOV|RD_POOLS_ADMIN ()           (enforce-guard GOV|MD_RD-POOLS))
+    (defconst GOV|MD_O-UI-TWELVE               (keyset-ref-guard (GOV|Demiurgoi)))
+    (defcap GOV ()                          (compose-capability (GOV|O_UI_TWELVE_ADMIN)))
+    (defcap GOV|O_UI_TWELVE_ADMIN ()           (enforce-guard GOV|MD_O-UI-TWELVE))
     (defun GOV|Demiurgoi ()
         (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi))
     )
@@ -124,7 +130,7 @@
             \ 7 instead of 1. \
             \ \
             \ Written as an explicit comparison rather than a fold, so there is no seed to get \
-            \ wrong. RD-ELITE must call THIS when URC_0032 is ported -- a third copy is how the \
+            \ wrong. O-UI-THREE (EliteAccount) must call THIS when URC_0032 is ported -- a third copy is how the \
             \ second one came to disagree."
         (cond
             ((= major 2) 2)
@@ -179,12 +185,12 @@
         )
     )
 
-    (defun URC_Global:object ()
+    (defun URC_01|Global:object ()
         @doc "Chain-wide swap state and the list of every pool. \
             \ \
             \ URC_Swpairs is safe inside a `try` -- its own doc says it is cheaper than \
             \ `keys SWP|Pairs`, i.e. an index read rather than a scan. That distinction is the \
-            \ one that matters for composability; see READS_UI/README.md rule 5."
+            \ one that matters for composability; see ../RULES.md rule 5."
         (let*
             ( (ref-SWP:module{SwapperV4} SWP)
               (glsb:bool (ref-SWP::UR_LiquidBoost))
@@ -227,7 +233,7 @@
         )
     )
 
-    (defun URC_PoolsDashboard:[object] (swpairs:[string])
+    (defun URC_02|PoolList:[object] (swpairs:[string])
         @doc "URC_PoolDashboard across a list, EACH UNDER `try`. \
             \ \
             \ The original mapper had no guard, so one unreadable pool emptied the entire pool \
@@ -287,7 +293,7 @@
         )
     )
 
-    (defun URC_AccountSupplies:object (account:string swpair:string)
+    (defun URC_04|AccountSupplies:object (account:string swpair:string)
         @doc "What the account holds of each of this pool's tokens, plus its virtual OURO and \
             \ resident IGNIS -- everything the add-liquidity form needs to bound its inputs."
         (let*
@@ -364,11 +370,11 @@
         )
     )
 
-    (defun URC_Pool:object (swpair:string)
+    (defun URC_03|Pool:object (swpair:string)
         @doc "Every per-pool panel in one call, each under `try`. A failing panel yields \
             \ UDC_ZeroPanel and the rest still render. \
             \ \
-            \ Deliberately NOT including URC_AccountSupplies -- that one takes an account and \
+            \ Deliberately NOT including URC_04|AccountSupplies -- that one takes an account and \
             \ is therefore a different question. Mixing a per-account read into a per-pool \
             \ composer would make the whole object account-scoped and uncacheable across users."
         {"core"     : (try (UDC_ZeroPanel) (URC_PoolCore swpair))
@@ -376,5 +382,105 @@
         ,"internal" : (try (UDC_ZeroPanel) (URC_PoolInternal swpair))
         ,"settings" : (try (UDC_ZeroPanel) (URC_PoolSettings swpair))
         ,"fees"     : (try (UDC_ZeroPanel) (URC_FeeSettings swpair))}
+    )
+
+    ;;=======================================================================================
+    ;;  SWAP PREVIEWS -- THE CARVE-OUT. Everything above this line is display and degrades
+    ;;  under `try`. These three do not, and must not.
+    ;;
+    ;;  They produce the number a user reads IMMEDIATELY BEFORE SIGNING A TRADE. A wrong panel
+    ;;  above is a cosmetic bug someone reports; a wrong preview here is a user consenting to
+    ;;  something other than what they saw. The money moves either way -- only the consent was
+    ;;  wrong.
+    ;;
+    ;;  So: no composer, no try-wrapping, and arithmetic assertions are mandatory (RDUI-08 --
+    ;;  round trip, curvature, refusal). A token absent from the pool must REFUSE, because a
+    ;;  swallowed refusal reads to a user as a valid quote of zero.
+    ;;
+    ;;  Independent of the open CC_ vs C_ SmartSwap ruling: both take an explicit swpair and
+    ;;  preview ONE pool. A multi-hop preview is deliberately absent until that is decided.
+    ;;=======================================================================================
+    (defun URCv_05|DirectSwap:decimal
+        (account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string)
+        @doc "FORWARD preview: how much <output-id> comes out, net of fees, for the given \
+            \ inputs through <swpair>. This is the figure shown beside \"You receive\". \
+            \ \
+            \ `URCv_` NOT `URC_`, which is a correction to the original. DPL-UR named this \
+            \ URC_0006b_DirectSwap -- the URC_ prefix promises NO enforce -- while it reaches \
+            \ SWPI::URCv_PoolTokenPositions and SWP::URv_PoolTokenPosition, both of which \
+            \ refuse a token absent from the pool. The enforce was always there; only the name \
+            \ denied it. Per StoicSyntax the `v` says the guard is intrinsic to the computation, \
+            \ which is exactly what a position lookup's is: there is no output to compute for a \
+            \ token the pool does not hold. \
+            \ \
+            \ <account> is passed to UC_BareboneSwapWithFeez because the fee is Elite-tier \
+            \ discounted -- the same trade previews differently for different callers, which is \
+            \ correct and is why this cannot be cached across users."
+        (let*
+            ( (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+              (ref-SWP:module{SwapperV4} SWP)
+              (ref-SWPI:module{SwapperIssueV4} SWPI)
+              (ref-SWPL:module{SwapperLiquidityV2} SWPL)
+              (dsid:object{UtilitySwpV2.DirectSwapInputData}
+                (ref-U|SWP::UDC_DirectSwapInputData input-ids input-amounts output-id)) )
+            (at "o-id-netto"
+                (ref-SWPI::UC_BareboneSwapWithFeez
+                    account
+                    (ref-U|SWP::UC_PoolType swpair)
+                    dsid
+                    (ref-SWPL::UDC_PoolFees swpair)
+                    (ref-SWP::UR_Amplifier swpair)
+                    (ref-SWP::UR_PoolTokenSupplies swpair)
+                    (ref-SWP::UR_PoolTokenPrecisions swpair)
+                    (ref-SWPI::URCv_PoolTokenPositions swpair input-ids)
+                    (ref-SWP::URv_PoolTokenPosition swpair output-id)
+                    (ref-SWP::UR_Weigths swpair)))
+        )
+    )
+
+    (defun URCv_06|InverseSwap:decimal
+        (account:string swpair:string output-id:string output-amount:decimal input-id:string)
+        @doc "INVERSE preview: how much <input-id> must go in, gross of fees, to receive exactly \
+            \ <output-amount> of <output-id>. The figure shown beside \"You pay\" when a user \
+            \ types the amount they WANT rather than the amount they have. \
+            \ \
+            \ Brutto, not netto: this is what leaves the wallet, fees included. Pairing it \
+            \ against URCv_05|DirectSwap's netto in a UI without reading both docs is how a \
+            \ preview ends up off by the fee."
+        (let*
+            ( (ref-U|SWP:module{UtilitySwpV2} U|SWP)
+              (ref-SWP:module{SwapperV4} SWP)
+              (ref-SWPI:module{SwapperIssueV4} SWPI)
+              (ref-SWPL:module{SwapperLiquidityV2} SWPL)
+              (rsid:object{UtilitySwpV2.ReverseSwapInputData}
+                (ref-U|SWP::UDC_ReverseSwapInputData output-id output-amount input-id)) )
+            (at "i-id-brutto"
+                (ref-SWPI::UC_InverseBareboneSwapWithFeez
+                    account
+                    (ref-U|SWP::UC_PoolType swpair)
+                    rsid
+                    (ref-SWPL::UDC_PoolFees swpair)
+                    (ref-SWP::UR_Amplifier swpair)
+                    (ref-SWP::UR_PoolTokenSupplies swpair)
+                    (ref-SWP::UR_PoolTokenPrecisions swpair)
+                    (ref-SWP::URv_PoolTokenPosition swpair output-id)
+                    (ref-SWP::URv_PoolTokenPosition swpair input-id)
+                    (ref-SWP::UR_Weigths swpair)))
+        )
+    )
+
+    (defun URC_07|MaxOutputAmount:decimal (swpair:string output-id:string promille:decimal)
+        @doc "A per-mille slice of <output-id>'s pool supply, floored to its precision -- the \
+            \ cap a UI puts on the inverse-swap field so a user cannot ask for more output than \
+            \ the pool could plausibly give. \
+            \ \
+            \ ADVISORY, NOT A GUARANTEE. It bounds the FIELD, not the trade: the pool's own \
+            \ refusal is the real limit, and this number does not consult it. A UI that treats \
+            \ it as a promise will let a user submit a swap that the contract still declines."
+        (let ((ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+              (ref-SWP:module{SwapperV4} SWP))
+            (floor (* (/ promille 1000.0) (ref-SWP::UR_PoolTokenSupply swpair output-id))
+                   (ref-DPTF::UR_Decimals output-id))
+        )
     )
 )
