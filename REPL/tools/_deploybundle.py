@@ -467,7 +467,8 @@ def check_report():
             # STAGE-Z ROUND, 2026-09-24. DPL-UR and EXPLORER deploy via `deploy-stagezz.repl`, a chain this
             # planner deliberately does not cover, so the generator cannot emit its transaction
             # -- but URC_0001_HeaderV3 shipped with twelve hardcoded token/pool ids and took the
-            # UI dashboard down after the redeploy re-issued the primordials. Keeping the fix
+            # UI dashboard down (cause: the live module was pre-sweep and its modrefs no longer
+            # bound -- NOT the ids, which an upgrade-mode round leaves intact). Keeping the fix
             # OUT of Deploy/ would mean the one transaction that repairs a live outage is the
             # one the pipeline does not mention. Named MANUAL so it cannot be mistaken for
             # generated output, and listed by name rather than by pattern -- a pattern would

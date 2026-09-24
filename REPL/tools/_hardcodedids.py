@@ -6,10 +6,21 @@ WHY THIS EXISTS. Ouronet entity ids carry a BLOCK-HASH SUFFIX: `OURO-8Nh-JO8JO4F
 minted the asset, so an id written as a string literal is correct for exactly ONE issuance and
 stale for every one after it.
 
-On 2026-09-24 that cost a live outage. `DPL-UR.URC_0001_HeaderV3` -- the function the UI
-dashboard calls for its entire top strip -- carried TWELVE such literals, and
-`EXPLORER.URC_0001_LandingPage` carried two more. A redeploy re-issued the primordials, every
-suffix moved, and both functions began reading assets that do not exist.
+`DPL-UR.URC_0001_HeaderV3` -- the function the UI dashboard calls for its entire top strip --
+carried TWELVE such literals, and `EXPLORER.URC_0001_LandingPage` carried two more. Both were
+switched to derived ids on 2026-09-24.
+
+CORRECTED, SAME DAY. The first version of this docstring said a redeploy "re-issued the
+primordials, every suffix moved", and blamed these literals for the dashboard outage. THAT WAS
+WRONG and it was a guess dressed as a finding. The round deployed in UPGRADE mode -- zero
+`create-table` across all 24 emitted files -- so every table persisted and every id on chain is
+unchanged. `OURO-8Nh-JO8JO4F5` is still OURO. The outage had a different cause entirely: the
+live DPL-UR was the pre-sweep module and bound `module{OuronetDalosV1}` / `{AutostakeV2}` /
+`{SwapperV3}`, interfaces those modules no longer implement, so every modref failed to bind.
+
+The literals are STILL a defect worth a gate check -- they are a latent trap that fires the day
+anything IS re-issued, and the untestability below is real and unconditional. But this tool
+exists because of what they PREVENT (a test), not because of an outage they caused.
 
 THE PART THAT MADE IT INVISIBLE. A hardcoded MAINNET id does not exist in the REPL fixture, so
 a function containing one ABORTS on its first read and can never be asserted against. Neither

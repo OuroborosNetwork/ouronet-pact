@@ -16,10 +16,16 @@
 ;;
 ;; 2. HARDCODED ENTITY IDS -- fourteen of them.
 ;;      DPL-UR.URC_0001_HeaderV3      12    EXPLORER.URC_0001_LandingPage      2
-;;    An id's suffix is the BLOCK HASH of the transaction that minted the asset, so a literal
-;;    is correct for exactly one issuance and stale for every one after. All fourteen are now
-;;    DERIVED at call time. Both modules already derived their token ids correctly elsewhere --
-;;    EXPLORER did it on the four lines immediately above its two literals.
+;;    An id's suffix is the BLOCK HASH of the transaction that minted the asset. All fourteen
+;;    are now DERIVED at call time. Both modules already derived their token ids correctly
+;;    elsewhere -- EXPLORER did it on the four lines immediately above its two literals.
+;;
+;;    THESE DID NOT CAUSE THE OUTAGE, and an earlier draft of this header said they did. The
+;;    round ran in UPGRADE mode -- zero `create-table` across all 24 emitted files -- so every
+;;    table persisted and no id moved. `OURO-8Nh-JO8JO4F5` is still OURO. What the literals
+;;    actually cost is a TEST: a mainnet id does not exist in a sandbox, so both functions
+;;    aborted on their first read and could never be asserted against. They are a latent trap
+;;    that fires the day anything IS re-issued, which is why they are fixed here anyway.
 ;;
 ;; 3. THE INTERFACE CHAIN WAS A CHANGELOG. V7..V13 were each ADDITIVE and declared only what
 ;;    that revision added -- V13 declared exactly ONE function. A module had to `implements`
@@ -3213,9 +3219,15 @@
                 ;;
                 ;; DERIVED, NOT HARDCODED. These two were mainnet Auryndex / EliteAuryndex
                 ;; pair-id literals whose suffix is the block hash of the transaction that
-                ;; created the pool -- correct for one issuance, stale for every one after. The
-                ;; same bug in the same two ids took the UI dashboard down from DPL-UR on
-                ;; 2026-09-24; EXPLORER ships in the same Stage-Z chain and was broken with it.
+                ;; created the pool -- correct for one issuance, wrong after any re-issuance.
+                ;;
+                ;; WHAT THEY ACTUALLY COST, stated accurately: NOT the 2026-09-24 dashboard
+                ;; outage. That was the pre-sweep DPL-UR failing to bind `module{OuronetDalosV1}`
+                ;; and friends, and the round that caused it ran in UPGRADE mode, so no table was
+                ;; recreated and no id moved. What these literals cost is a TEST: a mainnet id
+                ;; does not exist in a sandbox, so this function aborted on its first read and
+                ;; could never be asserted against on any chain but mainnet.
+                ;;
                 ;; Note the four lines directly above, which derive their token ids correctly:
                 ;; the derivation was right here all along and stopped two lines short.
                 ;;

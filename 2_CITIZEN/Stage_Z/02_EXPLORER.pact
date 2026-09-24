@@ -134,9 +134,15 @@
                 ;;
                 ;; DERIVED, NOT HARDCODED. These two were mainnet Auryndex / EliteAuryndex
                 ;; pair-id literals whose suffix is the block hash of the transaction that
-                ;; created the pool -- correct for one issuance, stale for every one after. The
-                ;; same bug in the same two ids took the UI dashboard down from DPL-UR on
-                ;; 2026-09-24; EXPLORER ships in the same Stage-Z chain and was broken with it.
+                ;; created the pool -- correct for one issuance, wrong after any re-issuance.
+                ;;
+                ;; WHAT THEY ACTUALLY COST, stated accurately: NOT the 2026-09-24 dashboard
+                ;; outage. That was the pre-sweep DPL-UR failing to bind `module{OuronetDalosV1}`
+                ;; and friends, and the round that caused it ran in UPGRADE mode, so no table was
+                ;; recreated and no id moved. What these literals cost is a TEST: a mainnet id
+                ;; does not exist in a sandbox, so this function aborted on its first read and
+                ;; could never be asserted against on any chain but mainnet.
+                ;;
                 ;; Note the four lines directly above, which derive their token ids correctly:
                 ;; the derivation was right here all along and stopped two lines short.
                 ;;
