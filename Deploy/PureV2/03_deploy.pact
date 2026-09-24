@@ -1,378 +1,70 @@
-;; Deploy: load THIS file — interface(s) + module ship together.
-;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
+;; ===========================================================================================
+;; OURONET DEPLOY -- ROUND V2, file 3   ·   HOTFIX: DALOS module upgrade
+;; ===========================================================================================
+;; RESTORES THE STORED COLUMN NAME `kadena-konto`. Five functional lines; no other change.
 ;;
-;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface OuronetPolicyV2
-    @doc "Interface exposing OuronetPolicyV2 Functions, which are needed for intermodule communication \
-        \ Each Module must have these Functions for these Purposes"
-
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;{G2}  schemas
-    ;;{G3}  tables  ⟨cannot exist in an interface⟩
-    ;;{G4}  capabilities
-    ;;{G5}  functions
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    ;;{P2}  schemas
-    ;;
-    ;;TWO TABLES, AND THEY ARE NOT TWO SHAPES OF THE SAME THING.
-    ;;
-    ;;`P|S` backs a KEYED table: one named guard per row, answering "give me THE guard called X".
-    ;;Every entry in the tree is a `<MODULE>|Remote<Target>Gov`, read by name at SETUP time to
-    ;;COMPOSE account governors -- `(UEV_GuardOfAny [(create-capability-guard (DPDC.DPDC|GOV))
-    ;;(P|UR "DPDC-S|RemoteDpdcGov") ...])`. Two read sites in the whole codebase, both cold.
-    ;;
-    ;;`P|MS` backs a SINGLE row holding a LIST, answering "is ANY of my registered peers in scope
-    ;;right now?". Hot path: every `P|UEV_IMC` on every protected call.
-    ;;
-    ;;THE LIST SHAPE IS FORCED, NOT CHOSEN. `P|UEV_IMC` takes NO ARGUMENTS, and Pact has no
-    ;;`msg.sender` -- a callee cannot learn who called it. So it cannot do a keyed lookup; the only
-    ;;question it can ask is set-membership-by-proof, which is inherently O(N). The O(1)
-    ;;alternative would be making every caller name itself, i.e. a new parameter on several hundred
-    ;;protected signatures. And one row holding a list is ONE read, where a row-per-guard table
-    ;;would need `keys`/`select` -- a full scan plus N reads. The list is the cheap variant.
-    ;;
-    ;;THE COST, MEASURED 2026-09-20 rather than guessed. `P|UEV_IMC` = `8 + 8.1*N` gas:
-    ;;    N= 16 -> 138      N= 64 ->  527      N=256 -> 2082
-    ;;Dead linear, no short-circuit (`UEV_Any` maps `UC_Try` over the whole chain). Against a
-    ;;2,000,000 block limit the real chains are nothing: 46 tables, mean 7.1 guards, max 29
-    ;;(DALOS -- every module calls it; IGNIS is second at 25 because every module bills). The
-    ;;chain length IS the dependency graph, so legitimate growth was never the threat.
-    ;;
-    ;;THE THREAT WAS UNBOUNDED DUPLICATE GROWTH. `P|A_AddIMP` used to be a blind append: replaying
-    ;;one module's `P|A_Define` took IGNIS from 16 entries to 17, and every duplicate taxes every
-    ;;IMC-gated call on the chain forever while nothing reports it. `P|A_AddIMP` is now idempotent,
-    ;;which makes `P|A_Define` safe to replay and retires the hazard instead of routing around it.
-    ;;`P|A_RemoveIMP` and `P|A_SetIMP` close the other half: until 2026-09-20 there was NO WAY to
-    ;;revoke a retired or compromised peer short of upgrading the module.
-    ;;
-    ;;THE SEED. Every chain begins with the module's OWN `(create-capability-guard (SECURE))`,
-    ;;written in by `P|A_AddIMP`'s `with-default-read` default. That is how a module reaches its
-    ;;own `P|UEV_IMC`-gated functions, so `P|A_RemoveIMP` refuses to drop it and `P|A_SetIMP`
-    ;;refuses a list without it. Losing it walls a module off from itself.
-    ;;
-    ;;Composition is auditable at any time: `REPL/tools/_impdiff.py` derives the intended chain
-    ;;from every module's `P|A_Define` and diffs it against a live snapshot.
-    (defschema P|S
-        policy:guard
-    )
-    (defschema P|MS
-        m-policies:[guard]
-    )
-    ;;{P3}  tables  ⟨cannot exist in an interface⟩
-    ;;{P4}  capabilities
-    ;;{P5}  functions
-    (defun P|UR:guard (policy-name:string)
-        @doc "Reads a Policy from the local module Policy Table"
-    )
-    (defun P|UR_IMP:[guard] ()
-        @doc "Reads the whole Intermodule Policy Guard Chain"
-    )
-    (defun P|A_Add (policy-name:string policy-guard:guard)
-        @doc "Adds a Policy in the local module Policy Table"
-    )
-    (defun P|A_AddIMP (policy-guard:guard)
-        @doc "Add a Policy in the local Policy Guard Chain. IDEMPOTENT: adding a guard that is \
-            \ already present is a no-op, so `P|A_Define` is safe to replay."
-    )
-    (defun P|A_RemoveIMP (policy-guard:guard)
-        @doc "Revoke a Policy from the local Policy Guard Chain. Removes every occurrence, and \
-            \ refuses to drop the module's own SECURE seed."
-    )
-    (defun P|A_SetIMP (policy-guards:[guard])
-        @doc "Replace the whole local Policy Guard Chain. Deduplicates; enforces that the \
-            \ module's own SECURE seed is present."
-    )
-    (defun P|A_Define ()
-        @doc "Defines in each module the policies that are needed for intermodule communication"
-    )
-    (defun P|UEV_IMC ()
-        @doc "Defines the Intermodule Guards"
-    )
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    ;;{3.2}  schemas
-    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    ;;{5.2}  Compute [UC]
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;{5.4}  Validate [UEV/CAP]
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;{5.7}  User [A/C]
-
-)
-
-;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface OuronetDalosV2
-    @doc "Interface exposing the DALOS public API — the sovereign identity, account and \
-        \ ledger core. Declares the account and ledger readers, account-ownership \
-        \ enforcement, virtual-gas and action-price readers, and the governance hooks \
-        \ that other Ouronet modules reference for account authority."
-
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;{G2}  schemas
-    ;;{G3}  tables  ⟨cannot exist in an interface⟩
-    ;;{G4}  capabilities
-    ;;{G5}  functions
-    ;;
-    ;;  [GOV]
-    ;;
-    (defun GOV|DALOS|SC_STOA-NAME ())
-    (defun GOV|DALOS|GUARD ())
-    ;;
-    (defun GOV|Demiurgoi ())
-    (defun GOV|DalosKey ())
-    (defun GOV|AutostakeKey ())
-    (defun GOV|VestingKey ())
-    (defun GOV|LiquidKey ())
-    (defun GOV|OuroborosKey ())
-    (defun GOV|SwapKey ())
-    (defun GOV|DHVKey ())
-    ;;
-    (defun GOV|DALOS|SC_NAME ())
-    (defun GOV|ATS|SC_NAME ())
-    (defun GOV|VST|SC_NAME ())
-    (defun GOV|LIQUID|SC_NAME ())
-    (defun GOV|OUROBOROS|SC_NAME ())
-    (defun GOV|SWP|SC_NAME ())
-    (defun GOV|DHV1|SC_NAME ())
-    (defun GOV|DHV2|SC_NAME ())
-    ;;
-    (defun GOV|DALOS|PBL ())
-    (defun GOV|ATS|PBL ())
-    (defun GOV|VST|PBL ())
-    (defun GOV|LIQUID|PBL ())
-    (defun GOV|OUROBOROS|PBL ())
-    (defun GOV|SWP|PBL ())
-    (defun GOV|DHV|PBL ())
-
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    ;;{P2}  schemas
-    ;;{P3}  tables  ⟨cannot exist in an interface⟩
-    ;;{P4}  capabilities
-    ;;{P5}  functions
-
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    ;;{3.2}  schemas
-    ;;
-    ;;  SCHEMAS
-    ;;
-    (defschema DPTF|BalanceSchema
-        @doc "Schema that Stores Account Balances for DPTF Tokens (True Fungibles)\
-            \ Key for the Table is a string composed of: <DPTF id> + BAR + <account> \
-            \ This ensure a single entry per DPTF id per account. \
-            \ As an Exception OUROBOROS and IGNIS Account Data is Stored at the DALOS Account Level"
-        balance:decimal
-        frozen:bool
-        role-burn:bool
-        role-mint:bool
-        role-fee-exemption:bool
-        role-transfer:bool
-        ;;
-        ;;ForSelect, store Key Make-up
-        id:string
-        account:string
-    )
-    (defschema CanonicalStoaIds
-        @doc "#65fL Phase 8b: OURO/WSTOA/SSTOA's canonical token ids, all 3 read together \
-            \ in ONE table read (all 3 live on the same DALOS|PropertiesTable row) — \
-            \ for a caller (SWPI::URC_WorthWSTOA and its FromRaw/FromGraph siblings) that \
-            \ previously needed all 3 identities via 3 separate UR_OuroborosID/ \
-            \ UR_WrappedStoaID/UR_SilverStoaID calls, each independently re-reading the \
-            \ same row. Field names match DALOS|PropertiesSchema's own field names \
-            \ exactly, so the read is a pure passthrough — no renaming/reconstruction."
-        gas-source-id:string      ;;OUROBOROS
-        wrapped-stoa-id:string    ;;OWS - Ouronet Wrapped Stoa
-        silver-stoa-id:string     ;;OSS - Ouronet Silver (Liquid) Stoa
-    )
-    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    ;;
-    (defun CT_Info ())
-    (defun CT_VirtualGasData ())
-    ;;
-    ;;  [UDC]
-    ;;
-    (defun UDC_TrueFungibleAccount:object{DPTF|BalanceSchema}
-        (a:decimal b:bool c:bool d:bool e:bool f:bool g:string h:string)
-    )
-    (defun UDC_BlankTrueFungible:object{DPTF|BalanceSchema} (account:string))
-    ;;{5.2}  Compute [UC]
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;
-    ;;
-    ;;  [UR]
-    ;;
-    ;;  [0]     DALOS|StoaLedger:{DALOS|StoaSchema}
-    (defun UR_StoaLedger:[string] (stoa:string))
-    ;;  [1]     DALOS|PropertiesTable:{DALOS|PropertiesSchema}
-    (defun UR_GAP:bool ())
-    (defun UR_DemiurgoiID:[string] ())
-    (defun UR_UnityID:string ())
-    (defun UR_OuroborosID:string ())
-    (defun UR_OuroborosPrice:decimal ())
-    (defun UR_IgnisID:string ())
-    (defun UR_AurynID:string ())
-    (defun UR_EliteAurynID:string ())
-    (defun UR_WrappedStoaID:string ())
-    (defun UR_SilverStoaID:string ())
-    ;;#65fL Phase 8b: OURO/WSTOA/SSTOA together, one read instead of 3 — see the
-    ;;CanonicalStoaIds schema's own doc.
-    (defun UR_CanonicalStoaIds:object{CanonicalStoaIds} ())
-    (defun UR_GoldenStoaID:string ())
-    (defun UR_UrStoaID:string ())
-    (defun UR_DispoType:integer ())
-    (defun UR_DispoTDP:decimal ())
-    (defun UR_DispoTDS:decimal ())
-    (defun UR_OuroAutoPriceUpdate:bool ())
-    ;;  [2]     DALOS|GasManagementTable:{DALOS|GasManagementSchema}
-    (defun UR_Tanker:string ())
-    (defun UR_VirtualToggle:bool ())
-    (defun UR_VirtualSpent:decimal ())
-    (defun UR_NativeToggle:bool ())
-    (defun UR_AccountCreationStoa:bool ())
-    (defun UR_NativeSpent:decimal ())
-    (defun UR_AutoFuel:bool ())
-    ;; [3]      DALOS|PricesTable:{DALOS|PricesSchema}
-    (defun UR_UsagePrice:decimal (action:string))
-    ;; [4]      DALOS|AccountTable:{DALOS|AccountSchema}
-    (defun UR_AccountPublicKey:string (account:string))
-    (defun UR_AccountGuard:guard (account:string))
-    (defun UR_AccountStoa:string (account:string))
-    (defun UR_AccountSovereign:string (account:string))
-    (defun UR_AccountGovernor:guard (account:string))
-    (defun UR_AccountProperties:[bool] (account:string))
-    (defun UR_AccountType:bool (account:string))
-    (defun UR_AccountPayableAs:bool (account:string))
-    (defun UR_AccountPayableBy:bool (account:string))
-    (defun UR_AccountPayableByMethod:bool (account:string))
-    (defun UR_AccountNonce:integer (account:string))
-    (defun UR_Elite (account:string))
-    ;;  [4.1]   ELITE Info
-    (defun UR_Elite-Class (account:string))
-    (defun UR_Elite-Name (account:string))
-    (defun UR_Elite-Tier (account:string))
-    (defun UR_Elite-Tier-Major:integer (account:string))
-    (defun UR_Elite-Tier-Minor:integer (account:string))
-    (defun UR_Elite-DEB (account:string))
-    ;;  [4.2]   TrueFungible INFO
-    (defun UR_TrueFungible:object{DPTF|BalanceSchema} (account:string snake-or-gas:bool))
-    (defun UR_TF_AccountSupply:decimal (account:string snake-or-gas:bool))
-    (defun UR_TF_AccountRoleBurn:bool (account:string snake-or-gas:bool))
-    (defun UR_TF_AccountRoleMint:bool (account:string snake-or-gas:bool))
-    (defun UR_TF_AccountRoleTransfer:bool (account:string snake-or-gas:bool))
-    (defun UR_TF_AccountRoleFeeExemption:bool (account:string snake-or-gas:bool))
-    (defun UR_TF_AccountFreezeState:bool (account:string snake-or-gas:bool))
-    (defun UR_AutonomicRoles:bool (account:string))
-    ;;
-    ;;  [URC]
-    ;;
-    (defun URC_IgnisGasDiscount:decimal (account:string))
-    (defun URC_StoaGasDiscount:decimal (account:string))
-    (defun URC_GasDiscount:decimal (account:string native:bool))
-    (defun URC_SplitSTOAPrices:[decimal] (account:string stoa-price:decimal))
-    (defun URC_SplitSTOAPricesFull:[decimal] (stoa-price:decimal))
-    (defun URC_Transferability:bool (sender:string receiver:string method:bool))
-    ;;{5.4}  Validate [UEV/CAP]
-    ;;
-    ;;  [UEV]
-    ;;
-    (defun UEV_NotSmartOuronetAccount (account:string))
-    (defun UEV_StandardAccOwn (account:string))
-    (defun UEV_SmartAccOwn (account:string))
-    (defun UEV_EnforceAccountExists (dalos-account:string))
-    (defun UEV_EnforceAccountType (account:string smart:bool))
-    (defun UEV_EnforceTransferability (sender:string receiver:string method:bool))
-    (defun UEV_SenderWithReceiver (sender:string receiver:string))
-        ;;
-    (defun UEV_StoaCollectionState (state:bool))
-    (defun UEV_IgnisCollectionState (state:bool))
-    (defun UEV_IgnisCollectionRequirements ())
-        ;;
-    (defun UEV_Glyph (account:string))
-    ;;
-    ;;  [CAP]
-    ;;
-    (defun CAP_EnforceAccountOwnership (account:string))
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;
-    ;;  [X]
-    ;;
-    (defun XB_UpdateOuroPrice (price:decimal))
-    (defun XE_UpdateTreasury (type:integer tdp:decimal tds:decimal))
-    (defun XE_IgnisIncrement (native:bool increment:decimal))
-    (defun XE_IncrementOuronetAccountNonce (account:string))
-    (defun XE_UpdateElite (account:string amount:decimal))
-    (defun XB_UpdateBalance (account:string snake-or-gas:bool new-balance:decimal))
-    (defun XE_UpdateFreeze (account:string snake-or-gas:bool new-freeze:bool))
-    (defun XE_UpdateBurnRole (account:string snake-or-gas:bool new-burn:bool))
-    (defun XE_UpdateMintRole (account:string snake-or-gas:bool new-mint:bool))
-    (defun XE_UpdateFeeExemptionRole (account:string snake-or-gas:bool new-fee-exemption:bool))
-    (defun XE_UpdateTransferRole (account:string snake-or-gas:bool new-transfer:bool))
-    ;;{5.7}  User [A/C]
-    ;;
-    ;;  [A]
-    ;;
-    (defun A_MigrateLiquidFunds:decimal (patron:string executor:string migration-target-stoa-account:string))
-    (defun A_ToggleOAPU (patron:string executor:string oapu:bool))
-    (defun A_ToggleGAP (patron:string executor:string gap:bool))
-    (defun A_DeploySmartAccount (executor:string guard:guard stoa:string sovereign:string public:string))
-    (defun A_DeployStandardAccount (executor:string guard:guard stoa:string public:string))
-    (defun A_ToggleGasCollection (patron:string executor:string native:bool toggle:bool))
-    (defun A_ToggleAccountCreationStoa (patron:string executor:string toggle:bool))
-    (defun A_SetIgnisSourcePrice (patron:string executor:string price:decimal))
-    (defun A_SetAutoFueling (patron:string executor:string toggle:bool))
-    (defun A_UpdatePublicKey (patron:string executor:string new-public:string))
-    (defun A_UpdateUsagePrice (patron:string executor:string action:string new-price:decimal))
-    ;;
-    ;;  [C]
-    ;;
-    (defun C_ControlSmartAccount
-        (patron:string executor:string payable-as-smart-contract:bool payable-by-smart-contract:bool payable-by-method:bool)
-    )
-    (defun C_DeploySmartAccount (executor:string guard:guard stoa:string sovereign:string public:string))
-    (defun C_DeployStandardAccount (executor:string guard:guard stoa:string public:string))
-    (defun C_RotateGovernor (patron:string executor:string governor:guard))
-    (defun C_RotateGuard (patron:string executor:string new-guard:guard safe:bool))
-    (defun C_RotateStoa (patron:string executor:string stoa:string))
-    (defun C_RotateSovereign (patron:string executor:string new-sovereign:string))
-
-)
+;; ------------------------------------------------------------------------------------------
+;; THE FAULT
+;; ------------------------------------------------------------------------------------------
+;; The 2026-08-31 KDA -> STOA sweep (0b0ad318) renamed the DALOS|AccountTable column
+;; `kadena-konto` -> `stoa-konto` at the same time as the function that reads it. Renaming the
+;; FUNCTION was correct. Renaming the COLUMN was not.
 ;;
+;; A Pact module upgrade rewrites CODE and leaves ROWS untouched. Round V1 shipped the renamed
+;; module onto un-renamed data, so every account on chain still carried `kadena-konto` while the
+;; new code asked for `stoa-konto`. `UR_AccountStoa` threw
+;;
+;;     "Key stoa-konto not found in object."   DALOS.UR_AccountStoa:1199
+;;
+;; for EVERY account. Verified live against three: the owner's account, the Stage Two bucket,
+;; and DALOS's own smart account. Other readers on the same row -- UR_AccountPublicKey,
+;; UR_AccountType, UR_Elite-Name -- all succeeded, which is what proves the row is intact and
+;; only the one key is absent.
+;;
+;; Blast radius: 33 call sites across 9 modules (OUROBOROS, IGNIS, LIQUID, DEMIPAD, STOICPAY,
+;; Spark, DPL-UR, DALOS itself) -- anything needing an account's payment key. The blank
+;; dashboard was one symptom, not the fault.
+;;
+;; ------------------------------------------------------------------------------------------
+;; WHY THE TABLE IS INTACT AND THIS IS SAFE
+;; ------------------------------------------------------------------------------------------
+;; The error is "key NOT FOUND IN OBJECT", not "row not found". The renamed code only ever READ
+;; that column, and a read that throws writes nothing -- so no row was rewritten and no data was
+;; lost. Reverting the name points the reader back at the field the rows already have.
+;;
+;; THE ONE RESIDUAL RISK: an account CREATED between the V1 deploy and this fix would have been
+;; written with a `stoa-konto` field and will break after this revert. No such row was found --
+;; the Stage Two bucket, activated AFTER the deploy, still lacks `stoa-konto`. If the dashboard
+;; fails for one specific recent account after this lands, that is the case to suspect, and the
+;; remedy is a single DALOS|C_RotateStoa on that account rather than another redeploy.
+;;
+;; ------------------------------------------------------------------------------------------
+;; WHAT IS *NOT* IN THIS FILE, deliberately
+;; ------------------------------------------------------------------------------------------
+;;   * NO INTERFACES. OuronetPolicyV2 and OuronetDalosV2 are already on chain, and Pact refuses
+;;     an interface name twice even byte-identical -- the error that stopped transactions 11 and
+;;     21 of round V1. Nothing in their signatures changed: the function is still UR_AccountStoa,
+;;     because only the COLUMN moved, never the API.
+;;   * NO IGNIS, NO BRD. They share transaction 2 of round V1 and neither is affected.
+;;   * NO LIVE `create-table`. Upgrade mode; the forms are carried as comments only, because the
+;;     tables exist and recreating one aborts the whole transaction.
+;;
+;; ------------------------------------------------------------------------------------------
+;; SIGNING -- DIFFERENT FROM PureV2/01 AND /02
+;; ------------------------------------------------------------------------------------------
+;; Those were FIRST deploys and needed only the namespace keyset. This is an UPGRADE of a live
+;; module, so `GOV|DALOS_ADMIN` IS CHECKED -- the Demiurgoi keyset must sign as well.
+;;
+;; ------------------------------------------------------------------------------------------
+;; AFTER IT LANDS -- verify before trusting it
+;; ------------------------------------------------------------------------------------------
+;;     (ouronet-ns.DALOS.UR_AccountStoa "<a live account>")
+;; should return that account's Stoa key instead of throwing. Then the dashboard needs no
+;; further change: O-UI-TWO was never the fault and is already wired.
+;; ===========================================================================================
+
+(namespace "ouronet-ns")
+
 (module DALOS GOV
     @doc "DALOS — the sovereign identity, executor and ledger core of Ouronet. Owns the \
         \ Stoa ledger (native-coin balances), the Ouronet executor registry (smart and \
@@ -2097,10 +1789,20 @@
 )
 
 ;;Tables exist from initial DALOS
-(create-table P|T)
-(create-table P|MT)
-(create-table DALOS|PropertiesTable)
-(create-table DALOS|GasManagementTable)
-(create-table DALOS|PricesTable)
-(create-table DALOS|AccountTable)
-(create-table DALOS|StoaLedger)
+
+;; --- tables for 01_DALOS.pact (7 defined) ---
+;; UPGRADE MODE: this module is assumed already deployed, so its
+;; tables already exist and (create-table) would ABORT the whole
+;; transaction. They are listed here, commented, for reference.
+;; If any of these is NEW since the last deploy, uncomment JUST it.
+;; (create-table P|T)
+;; (create-table P|MT)
+;; (create-table DALOS|PropertiesTable)
+;; (create-table DALOS|GasManagementTable)
+;; (create-table DALOS|PricesTable)
+;; (create-table DALOS|AccountTable)
+;; (create-table DALOS|StoaLedger)
+
+;; ===== 1_SOVEREIGN/STAGE_01/2_Core/02_IGNIS.pact ===================
+
+;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2

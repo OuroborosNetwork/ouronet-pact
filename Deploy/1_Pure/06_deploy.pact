@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 6 of 24
 ;; This is STEP 6 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-5 must have run first, including the init steps between deploys.
-;; 3 source file(s), 231,586 gas measured in the REPL gas model, 226,261 bytes
+;; 3 source file(s), 231,586 gas measured in the REPL gas model, 226,265 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/13_OUROBOROS.pact
@@ -354,7 +354,7 @@
         true
     )
     (defcap ORBR|NATIVE-AUTOMATIC ()
-        @doc "Autonomic management of <stoa-konto> of OUROBOROS Smart Account"
+        @doc "Autonomic management of <kadena-konto> of OUROBOROS Smart Account"
         true
     )
     ;;
@@ -2856,7 +2856,7 @@
     ;;(ATS|S>CONTROL-DIRECT-RECOVERY) it guards nothing and its removal changes no behaviour, but
     ;;it is also not evidence of a gap. Flagged 2026-09-10.
     (defcap SWP|NATIVE-AUTOMATIC ()
-        @doc "Autonomic management of <stoa-konto> of SWAPPER Smart Account"
+        @doc "Autonomic management of <kadena-konto> of SWAPPER Smart Account"
         true
     )
     (defcap SECURE ()

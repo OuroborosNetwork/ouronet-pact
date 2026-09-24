@@ -330,7 +330,7 @@
         true
     )
     (defcap LIQUID|NATIVE-AUTOMATIC ()
-        @doc "Autonomic management of <stoa-konto> of LIQUID Smart Account"
+        @doc "Autonomic management of <kadena-konto> of LIQUID Smart Account"
         true
     )
     ;;

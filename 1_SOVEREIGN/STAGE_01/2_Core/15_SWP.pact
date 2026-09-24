@@ -503,7 +503,7 @@
     ;;(ATS|S>CONTROL-DIRECT-RECOVERY) it guards nothing and its removal changes no behaviour, but
     ;;it is also not evidence of a gap. Flagged 2026-09-10.
     (defcap SWP|NATIVE-AUTOMATIC ()
-        @doc "Autonomic management of <stoa-konto> of SWAPPER Smart Account"
+        @doc "Autonomic management of <kadena-konto> of SWAPPER Smart Account"
         true
     )
     (defcap SECURE ()

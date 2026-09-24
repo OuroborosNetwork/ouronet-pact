@@ -264,21 +264,40 @@
 ;;
 ;;The first assertion is the regression guard: it fails the moment a scan is folded back into a
 ;;composed card. The second proves the scan itself still works where it now lives.
-(let ((w:object (O-UI-TWO.URC_01|Dashboard KST.ANHD [])))
+(let*
+    ( (r:[object] (O-UI-TWO.URC_01|Dashboard KST.ANHD []))
+      (w:object (at 0 r))
+      (cx:object (at 1 r)) )
     (map print
         [
-            (expect "<<RDUI-05>> the composer returns all ten cards whole -- a scan folded into \
-                \ any composed card would abort this call entirely"
-                [true true true true true true true true true true]
-                [(at "card-ok" (at "ouro" w)) (at "card-ok" (at "ignis" w))
-                 (at "card-ok" (at "auryn" w)) (at "card-ok" (at "eliteauryn" w))
-                 (at "card-ok" (at "urstoa" w)) (at "card-ok" (at "stoa" w))
-                 (at "card-ok" (at "silverstoa" w)) (at "card-ok" (at "goldenstoa" w))
-                 (at "card-ok" (at "totals" w)) (at "card-ok" (at "codex" w))])
+            ;;THE LIST SHAPE IS THE CONTRACT, not a style choice. ouronet-core's parseResponse
+            ;;reads data[0] for the account object and data[1] for the Codex balance. An object
+            ;;with two members would be tidier and would break every caller -- which is exactly
+            ;;why this asserts the shape before it asserts any value.
+            (expect "<<RDUI-05>> the composer returns a TWO-element list -- data[0] account, \
+                \ data[1] codex, which is what ouronet-core's parser indexes"
+                2 (length r))
+            (expect "<<RDUI-05>> all nine cards report ok, and a scan folded into any of them \
+                \ would abort this call entirely"
+                [true true true true true true true true true]
+                [(at "ouro-ok" w) (at "gas-ok" w) (at "auryn-ok" w) (at "eauryn-ok" w)
+                 (at "urstoa-ok" w) (at "wstoa-ok" w) (at "sstoa-ok" w) (at "gstoa-ok" w)
+                 (at "totals-ok" w)])
+            (expect "<<RDUI-05>> ...and the codex element answers too" true (at "codex-ok" cx))
+            ;;KEY-NAME REGRESSION GUARD. Every one of these is read by name in ouronet-core's
+            ;;parseResponse, so a typo here is invisible to Pact and fatal to the dashboard.
+            ;;`urstoa-vault-earning-hover` is SINGULAR while its sibling is plural -- an
+            ;;inconsistency in the original contract that must be preserved exactly.
+            (expect "<<RDUI-05>> the flat keys match what the consumer indexes, verbatim"
+                [true true true true]
+                [(!= (at "ouro-id" w) "--")
+                 (!= (at "gas-discount-text" w) "--")
+                 (contains "urstoa-vault-earning-hover" w)
+                 (contains "hgstoa-balance-nonces" w)])
             (expect "<<RDUI-05>> ...and the scan works where it now lives, outside the composer"
                 0 (at "nonces" (O-UI-TWO.URH_GoldenStoaNonces KST.ANHD)))
-            (expect "<<RDUI-05>> the composed card equals the card called directly"
-                (O-UI-TWO.URC_Ignis KST.ANHD) (at "ignis" w))
+            (expect "<<RDUI-05>> the composed card's id equals the card called directly"
+                (at "id" (O-UI-TWO.URC_Ignis KST.ANHD)) (at "gas-id" w))
         ]
     )
 )

@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 5 of 24
 ;; This is STEP 5 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-4 must have run first, including the init steps between deploys.
-;; 3 source file(s), 342,033 gas measured in the REPL gas model, 279,536 bytes
+;; 3 source file(s), 342,033 gas measured in the REPL gas model, 279,538 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/10_ATSU.pact
@@ -5288,7 +5288,7 @@
         true
     )
     (defcap LIQUID|NATIVE-AUTOMATIC ()
-        @doc "Autonomic management of <stoa-konto> of LIQUID Smart Account"
+        @doc "Autonomic management of <kadena-konto> of LIQUID Smart Account"
         true
     )
     ;;

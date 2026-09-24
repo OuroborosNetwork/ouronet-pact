@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 2 of 24
 ;; This is STEP 2 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-1 must have run first, including the init steps between deploys.
-;; 3 source file(s), 198,069 gas measured in the REPL gas model, 231,582 bytes
+;; 3 source file(s), 198,069 gas measured in the REPL gas model, 232,928 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/01_DALOS.pact
@@ -848,7 +848,25 @@
         @doc "Schema that stores Ouronet (DALOS) Account Information"
         public:string
         guard:guard
-        stoa-konto:string
+        ;;STORED COLUMN NAME -- DO NOT RENAME. Reverted 2026-09-24 after an outage.
+        ;;
+        ;;The 2026-08-31 KDA->STOA sweep (0b0ad318) renamed this field `kadena-konto` ->
+        ;;`stoa-konto` along with the function that reads it. Renaming the FUNCTION was correct.
+        ;;Renaming the COLUMN was not: a Pact module upgrade REWRITES CODE AND LEAVES ROWS
+        ;;UNTOUCHED, so every account already on chain kept a `kadena-konto` field while the new
+        ;;code asked for `stoa-konto`. UR_AccountStoa then threw "Key stoa-konto not found in
+        ;;object" for EVERY account -- verified live on the owner's account, the Stage Two
+        ;;bucket, and DALOS's own smart account -- taking out 33 call sites across 9 modules and
+        ;;blanking the dashboard.
+        ;;
+        ;;A COLUMN NAME IS A WIRE FORMAT. It is the one identifier in a module that is shared
+        ;;with data that outlives the code. Rename freely above this line; never here.
+        ;;
+        ;;The other fields that sweep renamed -- ClientStoaCosts' stoa-discount/full/need/split/
+        ;;targets/text -- were safe precisely because that schema backs no table: it is built,
+        ;;returned and discarded. That is the distinction, and it is worth checking before the
+        ;;next sweep rather than after.
+        kadena-konto:string
         sovereign:string
         governor:guard
         ;;
@@ -879,7 +897,7 @@
     ;;{4}  CAPABILITIES
     ;;{C1}  Trivial [bronze]
     (defcap DALOS|NATIVE-AUTOMATIC  ()
-        @doc "Autonomic management of <stoa-konto> of the DALOS Smart Ouronet Account"
+        @doc "Autonomic management of <kadena-konto> of the DALOS Smart Ouronet Account"
         true
     )
     ;;
@@ -1122,7 +1140,7 @@
     (defun UR_SilverStoaID:string ()
         (at "silver-stoa-id" (read DALOS|PropertiesTable DALOS|INFO ["silver-stoa-id"]))
     )
-    (defun UR_CanonicalStoaIds:object{CanonicalStoaIds} ()
+    (defun UR_CanonicalStoaIds:object{OuronetDalosV2.CanonicalStoaIds} ()
         @doc "#65fL Phase 8b: OURO/WSTOA/SSTOA together in ONE read, for a caller that \
             \ needs all 3 identities to check against a single <id> (e.g. \
             \ SWPI::URC_WorthWSTOA's 3-way WSTOA/SSTOA/OURO shortcut dispatch) — replaces \
@@ -1197,7 +1215,7 @@
         (at "guard" (read DALOS|AccountTable account ["guard"]))
     )
     (defun UR_AccountStoa:string (account:string)
-        (at "stoa-konto" (read DALOS|AccountTable account ["stoa-konto"]))
+        (at "kadena-konto" (read DALOS|AccountTable account ["kadena-konto"]))
     )
     (defun UR_AccountSovereign:string (account:string)
         (at "sovereign" (read DALOS|AccountTable account ["sovereign"]))
@@ -1542,7 +1560,7 @@
         (insert DALOS|AccountTable account
             { "public"                      : public
             , "guard"                       : guard
-            , "stoa-konto"                : stoa
+            , "kadena-konto"                : stoa
             , "sovereign"                   : sovereign
             , "governor"                    : guard
             ;;
@@ -1566,7 +1584,7 @@
             (insert DALOS|AccountTable account
                 { "public"                      : public
                 , "guard"                       : guard
-                , "stoa-konto"                : stoa
+                , "kadena-konto"                : stoa
                 , "sovereign"                   : account
                 , "governor"                    : guard
                 ;;
@@ -1644,10 +1662,10 @@
     )
     ;;Protection: Class 3 — Custom: DALOS|C>ROTATE-OA-STOA
     (defun XI_RotateStoa (account:string stoa:string)
-        @doc "Under DALOS|C>ROTATE-OA-STOA: update stoa-konto only. Write only."
+        @doc "Under DALOS|C>ROTATE-OA-STOA: update kadena-konto only. Write only."
         (require-capability (DALOS|C>ROTATE-OA-STOA account))
         (update DALOS|AccountTable account
-            {"stoa-konto"                  : stoa}
+            {"kadena-konto"                  : stoa}
         )
     )
     ;;Protection: Class 2 — SECURE

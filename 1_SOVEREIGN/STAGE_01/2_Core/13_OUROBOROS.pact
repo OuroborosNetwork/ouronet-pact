@@ -310,7 +310,7 @@
         true
     )
     (defcap ORBR|NATIVE-AUTOMATIC ()
-        @doc "Autonomic management of <stoa-konto> of OUROBOROS Smart Account"
+        @doc "Autonomic management of <kadena-konto> of OUROBOROS Smart Account"
         true
     )
     ;;
