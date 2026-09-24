@@ -34,6 +34,7 @@
 (load "../../2_CITIZEN/Stage_Z/AppReads/00_Ids.pact")
 (load "../../2_CITIZEN/Stage_Z/AppReads/OuronetUI/01_O-UI-ONE.pact")
 (load "../../2_CITIZEN/Stage_Z/AppReads/OuronetUI/02_O-UI-TWO.pact")
+(load "../../2_CITIZEN/Stage_Z/AppReads/OuronetUI/03_O-UI-THREE.pact")
 (load "../../2_CITIZEN/Stage_Z/AppReads/OuronetUI/12_O-UI-TWELVE.pact")
 (print (format "<<<<<<<READS_UI (ids + RD-HEADER) Costs {} GAS>>>>>>>" [(env-gas)]))
 (env-sigs [])
@@ -433,6 +434,118 @@
                 (floor (* 0.01 (ouronet-ns.SWP.UR_PoolTokenSupply sw b))
                        (ouronet-ns.DPTF.UR_Decimals b))
                 (O-UI-TWELVE.URC_07|MaxOutputAmount sw b 10.0))
+        ]
+    )
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "RDUI-09 -- O-UI-THREE: the panel, and the duplicated rule that must not drift")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+;;==== RDUI-09 · 01 · namespace ==== ==============================================================
+(print "--- [RDUI-09 · 01 · namespace] ---")
+(namespace "ouronet-ns")
+;;==== RDUI-09 · 02 · the two copies of the tier rule agree ==== ==================================
+(print "--- [RDUI-09 · 02 · the two copies of the tier rule agree] ---")
+;;THIS IS THE ASSERTION THAT LICENSES THE DUPLICATION. UC_MaxSpecialFeeTargets exists in BOTH
+;;O-UI-THREE and O-UI-TWELVE, because calling across would make one read module a deploy
+;;dependency of another and destroy the one property the split buys.
+;;
+;;Two copies of a rule is also exactly how the original defect happened: DPL-UR carried this
+;;logic twice, one copy seeded its or-fold with `true` (identity for `or` is FALSE), the tier-5
+;;branch always fired, and every pool owner below tier 2 was told 7 targets instead of 1.
+;;
+;;What makes copying SAFE is this test, not discipline. A divergence fails the gate here rather
+;;than waiting to be noticed by a user walking into a refused transaction.
+(map print
+    [
+        (expect "<<RDUI-09>> the two copies of the tier rule agree across every tier 0..7"
+            (map (lambda (m:integer) (O-UI-TWELVE.UC_MaxSpecialFeeTargets m)) [0 1 2 3 4 5 6 7])
+            (map (lambda (m:integer) (O-UI-THREE.UC_MaxSpecialFeeTargets m)) [0 1 2 3 4 5 6 7]))
+        (expect "<<RDUI-09>> ...and still return ONE below tier 2, which is the value DPL-UR \
+            \ gets wrong"
+            [1 1] [(O-UI-THREE.UC_MaxSpecialFeeTargets 0) (O-UI-THREE.UC_MaxSpecialFeeTargets 1)])
+    ]
+)
+;;==== RDUI-09 · 03 · the panel, six cards, flat output ==== ======================================
+(print "--- [RDUI-09 · 03 · the panel, six cards, flat output] ---")
+(let ((p:object (O-UI-THREE.URC_01|EliteAccount KST.ANHD)))
+    (map print
+        [
+            (expect "<<RDUI-09>> all six cards answer"
+                [true true true true true true]
+                [(at "standing-ok" p) (at "variants-ok" p) (at "indices-ok" p)
+                 (at "dispo-ok" p) (at "discounts-ok" p) (at "unlocks-ok" p)])
+            (expect "<<RDUI-09>> the panel is FLAT -- keys sit at the top level, as \
+                \ DPL-UR::URC_0032_EliteAccount returned them, so a consumer needs no remapping"
+                [true true true true]
+                [(contains "elite-name" p) (contains "ea-supply-hover" p)
+                 (contains "dispo-overspend-percent" p) (contains "dex-fee-discount-text" p)])
+            (expect "<<RDUI-09>> the unlocks card sources its target count from the shared rule"
+                (O-UI-THREE.UC_MaxSpecialFeeTargets
+                    (ouronet-ns.DALOS.UR_Elite-Tier-Major KST.ANHD))
+                (at "max-swp-special-fee-targets" p))
+            ;;dispo-locked is TRUE when OURO is NEGATIVE -- the account has spent into its
+            ;;credit. Pinning the RELATIONSHIP rather than today's value, which moves every block.
+            (expect "<<RDUI-09>> dispo-locked tracks a negative OURO balance, not a fixed value"
+                (< (ouronet-ns.DPTF.UR_AccountSupply (ouronet-ns.DALOS.UR_OuroborosID) KST.ANHD) 0.0)
+                (at "elite-auryn-dispo-locked" p))
+        ]
+    )
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "RDUI-10 -- O-UI-THREE: the rich list, and why it is not in the composer")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+;;==== RDUI-10 · 01 · namespace ==== ==============================================================
+(print "--- [RDUI-10 · 01 · namespace] ---")
+(namespace "ouronet-ns")
+;;==== RDUI-10 · 02 · ranked, and admin-gated ==== ================================================
+(print "--- [RDUI-10 · 02 · ranked, and admin-gated] ---")
+;;URH_02|RichList runs (keys DALOS.DALOS|AccountTable) -- a CROSS-MODULE scan. Two consequences
+;;pinned here, both of which decide how a UI may call it:
+;;
+;;  1. IT NEEDS MODULE ADMIN in transactional mode, which a REPL always is. On chain the
+;;     equivalent is a node started with --allowReadsInLocal. The expect-failure BELOW the grant
+;;     is what proves the dependency is real rather than assumed.
+;;  2. IT THEREFORE CANNOT SIT INSIDE A `try`, which is why it is a separate client read and not
+;;     a seventh card in URC_01|EliteAccount.
+(map print
+    [
+        (expect-failure "<<RDUI-10>> the scan is admin-gated -- which is WHY it cannot be a \
+            \ try-wrapped card in the panel"
+            "Module admin necessary for operation but has not been acquired:ouronet-ns.DALOS"
+            (O-UI-THREE.URH_02|RichList))
+    ]
+)
+(env-module-admin ouronet-ns.DALOS)
+(let ((r:[object] (O-UI-THREE.URH_02|RichList)))
+    (map print
+        [
+            (expect "<<RDUI-10>> every Standard account appears -- Smart accounts are filtered"
+                (length (filter (lambda (a:string) (not (ouronet-ns.DALOS.UR_AccountType a)))
+                                (keys ouronet-ns.DALOS.DALOS|AccountTable)))
+                (length r))
+            ;;Sortedness is the whole contract of a rich LIST -- asserting the top row alone
+            ;;would pass on an unsorted result whose first element happened to be largest.
+            (expect "<<RDUI-10>> ranked high to low, checked across EVERY adjacent pair"
+                true
+                (fold (and) true
+                    (map (lambda (i:integer)
+                            (>= (at "total-elite-aurynz" (at i r))
+                                (at "total-elite-aurynz" (at (+ i 1) r))))
+                         (enumerate 0 (- (length r) 2)))))
+            (expect "<<RDUI-10>> ea-movable is zero exactly when the row is dispo-locked"
+                true
+                (fold (and) true
+                    (map (lambda (row:object)
+                            (if (at "elite-auryn-dispo-locked" row)
+                                (= (at "ea-movable" row) 0.0)
+                                (= (at "ea-movable" row) (at "ea-supply" row))))
+                         r)))
         ]
     )
 )

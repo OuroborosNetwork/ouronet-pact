@@ -250,6 +250,16 @@ ROUNDS = {
                 "branch always fires and every owner below tier 2 is told 7 targets instead of "
                 "1. Now a single UC_MaxSpecialFeeTargets, pinned by RDUI-06. Gate-covered by "
                 "REPL/modules/APPREADS-OuronetUI.repl; held back with the rest of the folder.",
+            "2_CITIZEN/Stage_Z/AppReads/OuronetUI/03_O-UI-THREE.pact":
+                "APPREADS, OuronetUI entity 3 (ELITE ACCOUNT). Replaces "
+                "DPL-UR::URC_0032_EliteAccount and URC_0035_EliteAccountRichList -- the only two "
+                "reads the page makes. TWO client reads rather than one, forced: the rich list "
+                "runs a cross-module `keys` scan, which cannot live inside a `try`, so folding "
+                "it into the panel's composer would make the panel abort wholesale instead of "
+                "degrade. Also the heaviest read in the app -- walks every Standard account then "
+                "insertion-sorts, O(n^2) under the /local ceiling. Gate-covered by RDUI-09/10, "
+                "including an assertion that its duplicated UC_MaxSpecialFeeTargets agrees with "
+                "O-UI-TWELVE's on every tier.",
             "2_CITIZEN/Stage_Z/AppReads/OuronetUI/02_O-UI-TWO.pact":
                 "APPREADS, OuronetUI entity 2 (DASHBOARD). Replaces "
                 "DPL-UR::URC_0002_Primordials* -- ten per-asset cards plus a try-composer, in "
