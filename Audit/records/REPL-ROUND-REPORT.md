@@ -56,15 +56,21 @@ explanation*, because stating precisely what an assertion proved exposed that it
 
 | | |
 |---|---:|
-| **distinct assertions written** | **5,972** |
-| **assertions executed per full gate run** | **25,685** |
-| &nbsp;&nbsp;positive (`expect`) | 20,556 |
-| &nbsp;&nbsp;negative (`expect-failure`) | 5,129 |
-| gate entrypoints | **92** |
+| **distinct assertions written** | **5,990** |
+| **assertions executed per full gate run** | **25,991** |
+| &nbsp;&nbsp;positive (`expect`) | 20,831 |
+| &nbsp;&nbsp;negative (`expect-failure`) | 5,160 |
+| gate entrypoints | **93** |
 | `.repl` files reachable from the gate | 321 |
 | orphaned asserting files (written but never run) | **0** |
 
-**Quote 5,555 for "how many tests exist" and 22,454 for "how much ran".** They differ ~4x because
+**Quote the table above** — the *distinct* row for "how many tests exist", the *executed* row for
+"how much ran". This sentence used to restate both figures inline, and by 2026-09-24 it read
+*"quote 5,555 and 22,454"* while the table two lines above it said 5,990 and 25,885 — three
+separate pairs of numbers on one page, two of them wrong, and the wrong ones in the sentence that
+tells a reader which to cite. `_docclaims.py` diffs the TABLE against `REPL_SUITE_STATS.md` and
+cannot see a figure written into prose, so the copy nobody checks is the copy that rots. Do not
+reintroduce the numbers here. They differ ~4x because
 
 > **The executed figure fell from 21,732 to 21,511 in the X-01 repair, and that is not a coverage
 > regression.** Five guard-type assertions moved out of `Stage_01/[2.1]_Dalos.repl` — a genesis

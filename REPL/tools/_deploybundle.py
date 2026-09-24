@@ -226,6 +226,26 @@ ROUNDS = {
                 "vestigial registry: declares 0 interfaces, 0 modules (interfaces are co-located "
                 "with their modules per StoicSyntax 7.10)",
             "1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact": "vestigial registry, declares nothing",
+            "1_SOVEREIGN/STAGE_01/0_Interfaces/04_Ids.pact":
+                "ENTITY-ID REGISTRY, NOT YET IN A ROUND (2026-09-24). OuronetIdsV1 -- the one "
+                "authoritative home for the mainnet ids that cannot be computed, replacing "
+                "forty-plus scattered copies across the Pact tree and the UI repo. Held back "
+                "for one reason: every literal in it was copied from source that PREDATES the "
+                "Stage-1/2 redeploy and none has been confirmed against chain. Believed correct "
+                "-- the round ran in upgrade mode, so no table was recreated and no id should "
+                "have moved -- but a registry exists so nobody has to re-check it, and it earns "
+                "that only by being right the first time. Confirm by dirty read, then add to a "
+                "round.",
+            "2_CITIZEN/Stage_Z/READS_UI/01_RD-HEADER.pact":
+                "REFERENCE READ MODULE for the split described in "
+                "OuronetInformational/HANDOFFS/HANDOFF-read-layer-split.md (owner directive, "
+                "2026-09-24). Five per-zone reads plus a try-wrapped composer, replacing "
+                "DPL-UR::URC_0001_HeaderV3's single eager `let` in which any one failing "
+                "dependency blanked the whole dashboard. Gate-covered by "
+                "REPL/modules/READS-UI.repl. NOT in a round because the owner is wiring the "
+                "read layer personally and the other eight modules do not exist yet -- "
+                "deploying one page's reads alone would leave DPL-UR and RD-HEADER both live "
+                "and answering the same question, which is the one state worse than either.",
             "1_SOVEREIGN/STAGE_01/0_Interfaces/03_Talos.pact": "vestigial registry, declares nothing",
             "1_SOVEREIGN/STAGE_02/0_Interfaces/02_Core.pact": "vestigial registry, declares nothing",
             "1_SOVEREIGN/STAGE_02/0_Interfaces/03_Talos.pact": "vestigial registry, declares nothing",

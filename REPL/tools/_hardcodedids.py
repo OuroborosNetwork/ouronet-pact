@@ -53,6 +53,23 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 SKIP_DIRS = {".git", "Deploy", "REPL", "Audit", "node_modules", "0_Sample",
              "00_KadenaSandbox", "00_StoaSandbox", "0_Stoa"}
 
+# THE REGISTRY ITSELF. `OuronetIdsV1` exists to be the one place these literals live, so a hit
+# there is the tool working rather than failing. Exempting the FILE rather than listing its
+# eleven constants is deliberate: a per-constant allowlist would have to be edited every time a
+# primordial is added, and an allowlist people edit routinely stops being read.
+#
+# This is what turns the check from "no literals anywhere" -- which is false, because a mainnet
+# id is a fact no function can derive -- into the rule that is actually wanted: literals live in
+# exactly one file, and anywhere else is a copy.
+# ROOT-ANCHORED on purpose. This was first written as a bare relative path, which worked --
+# `scan` compares it against a relpath -- and `_toolpaths.py` still failed the gate on it, with
+# "1 MODULE-LEVEL PATH CONSTANT(S) POINT AT NOTHING". That check is right and the reason is in
+# its own message: a constant assigned at import and opened later inside a function is invisible
+# to both a literal scan and an output diff, so a moved file leaves the tool importable and
+# failing at use. A path that only resolves from the right working directory is that same trap
+# with an extra precondition.
+REGISTRY_FILE = os.path.join(ROOT, "1_SOVEREIGN", "STAGE_01", "0_Interfaces", "04_Ids.pact")
+
 # ACCEPTED HARDCODED IDS. Key: "<repo-relative path>:<literal>". Value: why it cannot be derived.
 # Adding an entry is a deliberate act -- it asserts that no reader exists, not that deriving it
 # was inconvenient.
@@ -85,6 +102,8 @@ def scan(include_samples=False):
                 continue
             path = os.path.join(root, f)
             rel = os.path.relpath(path, ROOT)
+            if os.path.abspath(path) == os.path.abspath(REGISTRY_FILE):
+                continue
             for n, line in enumerate(open(path, encoding="utf8", errors="replace"), 1):
                 if line.lstrip().startswith(";;"):
                     continue

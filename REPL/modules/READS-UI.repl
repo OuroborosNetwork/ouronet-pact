@@ -1,0 +1,167 @@
+;;
+;; REPL/modules/READS-UI.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [...] ---")
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/modules/READS-UI.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
+;; READS_UI — the split read layer. RD-HEADER is the reference module; mirror it.
+;;
+;; WHAT THIS SUITE IS FOR, beyond "does it run". The two functions that took the dashboard down
+;; on 2026-09-24 had NEVER executed in a test, because their hardcoded mainnet ids do not exist
+;; in a sandbox. Every assertion below therefore CALLS the read rather than inspecting it.
+(load "../deploy-stage00.repl")
+(load "../deploy-stage01.repl")
+(load "../Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl")
+(load "../deploy-stage02.repl")
+
+;;|| NEXT >
+;;
+(begin-tx "RDUI-00 -- deploy the ids registry and the reference read module")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+;;==== RDUI-00 · 01 · env-sigs (caps) ==== ========================================================
+(print "--- [RDUI-00 · 01 · env-sigs (caps)] ---")
+(env-sigs
+  [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== RDUI-00 · 02 · load modules ==== ===========================================================
+(print "--- [RDUI-00 · 02 · load modules] ---")
+(namespace "ouronet-ns")
+(load "../../1_SOVEREIGN/STAGE_01/0_Interfaces/04_Ids.pact")
+(load "../../2_CITIZEN/Stage_Z/READS_UI/01_RD-HEADER.pact")
+(print (format "<<<<<<<READS_UI (ids + RD-HEADER) Costs {} GAS>>>>>>>" [(env-gas)]))
+(env-sigs [])
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "RDUI-01 -- the id resolver: derive first, registry as fallback")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== RDUI-01 · 01 · namespace ==== ==============================================================
+(print "--- [RDUI-01 · 01 · namespace] ---")
+(namespace "ouronet-ns")
+;;==== RDUI-01 · 02 · UC_PickId, both branches ==== ===============================================
+(print "--- [RDUI-01 · 02 · UC_PickId, both branches] ---")
+;;UC_PickId is the whole argument of 2026-09-24 reduced to four lines, so both of its branches
+;;are driven here rather than only the one the fixture happens to take. A derived id is right on
+;;every chain but depends on a reverse index that returns ["|"] when unset -- a SENTINEL, not an
+;;error, which is why `try` cannot be used and an explicit check is. A registry id is known-good
+;;on mainnet and provably absent from a sandbox. Neither alone is testable AND correct.
+(map print
+    [
+        (expect "<<RDUI-01>> a populated derivation wins over the registry"
+            "REAL-abc123"
+            (RD-HEADER.UC_PickId ["REAL-abc123"] "FALLBACK-xyz789"))
+        (expect "<<RDUI-01>> the BAR sentinel falls back -- this is the branch `try` cannot catch"
+            "FALLBACK-xyz789"
+            (RD-HEADER.UC_PickId ["|"] "FALLBACK-xyz789"))
+        (expect "<<RDUI-01>> ...and so does an empty list"
+            "FALLBACK-xyz789"
+            (RD-HEADER.UC_PickId [] "FALLBACK-xyz789"))
+    ]
+)
+;;==== RDUI-01 · 03 · the four resolved pair ids ==== =============================================
+(print "--- [RDUI-01 · 03 · the four resolved pair ids] ---")
+;;In THIS fixture the reverse index is populated, so all four resolve by derivation and carry the
+;;sandbox hash. Asserting that they are NOT the registry literals is the point: it proves the
+;;derivation branch is the one being exercised, so the test is not silently passing on constants.
+(let ((ids:[string] (RD-HEADER.URC_IndexIds)))
+    (map print
+        [
+            (expect "<<RDUI-01>> four pair ids resolve" 4 (length ids))
+            (expect "<<RDUI-01>> the fixture resolves by DERIVATION, not by registry fallback"
+                false
+                (contains OuronetIdsV1.IDX_AURYNDEX ids))
+            (expect "<<RDUI-01>> ...and no resolved id is a BAR sentinel"
+                false
+                (contains "|" ids))
+        ]
+    )
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "RDUI-02 -- every zone is independently callable")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== RDUI-02 · 01 · namespace ==== ==============================================================
+(print "--- [RDUI-02 · 01 · namespace] ---")
+(namespace "ouronet-ns")
+;;==== RDUI-02 · 02 · each zone on its own ==== ===================================================
+(print "--- [RDUI-02 · 02 · each zone on its own] ---")
+;;The old header bound ~40 values in one eager `let`, so ANY single failure blanked the page and
+;;named the innermost form rather than the zone that owned it. These five assertions are the
+;;property that replaces it: each zone answers on its own, so a failure has an address.
+(map print
+    [
+        (expect "<<RDUI-02>> zone 1 (elite) answers on its own"
+            true (at "zone-ok" (RD-HEADER.URC_Zone1_Elite KST.ANHD)))
+        (expect "<<RDUI-02>> zone 2 (indices) answers on its own"
+            true (at "zone-ok" (RD-HEADER.URC_Zone2_Indices)))
+        (expect "<<RDUI-02>> zone 3 (network) answers on its own"
+            true (at "zone-ok" (RD-HEADER.URC_Zone3_Network)))
+        (expect "<<RDUI-02>> zone 4 (prices) answers on its own"
+            true (at "zone-ok" (RD-HEADER.URC_Zone4_Prices)))
+        (expect "<<RDUI-02>> ...and the index name matches the resolved pair"
+            (ouronet-ns.ATS.UR_IndexName (at 0 (RD-HEADER.URC_IndexIds)))
+            (at "auryndex-name" (RD-HEADER.URC_Zone2_Indices)))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "RDUI-03 -- the composer returns a whole object, and its fallback has a contract")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== RDUI-03 · 01 · namespace ==== ==============================================================
+(print "--- [RDUI-03 · 01 · namespace] ---")
+(namespace "ouronet-ns")
+;;==== RDUI-03 · 02 · the composer, and what is NOT pinned here ==== ==============================
+(print "--- [RDUI-03 · 02 · the composer, and what is NOT pinned here] ---")
+;;WHAT IS PINNED: the composer returns all five members, each zone answers, and UDC_ZeroZone --
+;;the value a failing zone yields -- carries zone-ok false, which is how a caller distinguishes a
+;;DEAD zone from one whose numbers happen to be zero. The old all-or-nothing header could not
+;;express that difference at all.
+;;
+;;WHAT IS NOT PINNED, stated plainly rather than faked: there is no assertion here that a LIVE
+;;zone failure leaves the other four standing. Two attempts were made and both were wrong, which
+;;is worth recording because each looked convincing:
+;;
+;;  1. A non-existent account. Does not fail -- DALOS reads through `with-default-read`, so a
+;;     stranger returns zeroes and zone 1 reports zone-ok TRUE. The assertion passed as a
+;;     failure-case while proving nothing.
+;;  2. Loading without the SWP issuance suite, so zone 4 has no pools to price against. Also
+;;     does not fail -- URC_OuroPrimordialPrice returns 0.0, and zone 1 rendered "<0.001c".
+;;
+;;Both are the SAME property and it is a good one: Ouronet's sovereign readers default rather
+;;than throw. It also means a zone failure cannot be contrived from fixture state, and the only
+;;honest way to pin the degrade path is a module deployed against a deliberately absent
+;;dependency -- a second boot, for a branch whose mechanism is three `try` forms. Not worth it
+;;today; worth knowing the gap is deliberate and not an oversight.
+(let
+    (
+        (h:object (RD-HEADER.URC_Header KST.ANHD))
+        (z:object (RD-HEADER.UDC_ZeroZone))
+    )
+    (map print
+        [
+            (expect "<<RDUI-03>> the zero-zone fallback carries zone-ok FALSE -- the signal a \
+                \ caller needs to tell a dead zone from a zero-valued one"
+                false (at "zone-ok" z))
+            (expect "<<RDUI-03>> the composer returns zone 1" true (at "zone-ok" (at "zone1" h)))
+            (expect "<<RDUI-03>> the composer returns zone 2" true (at "zone-ok" (at "zone2" h)))
+            (expect "<<RDUI-03>> the composer returns zone 3" true (at "zone-ok" (at "zone3" h)))
+            (expect "<<RDUI-03>> the composer returns zone 4" true (at "zone-ok" (at "zone4" h)))
+            (expect "<<RDUI-03>> ...and resident-ignis, which is the fifth member"
+                (RD-HEADER.URC_ResidentIgnis KST.ANHD) (at "resident-ignis" h))
+            (expect "<<RDUI-03>> the composed zone equals the zone called directly -- `try` is \
+                \ not altering the value on the success path"
+                (RD-HEADER.URC_Zone3_Network) (at "zone3" h))
+        ]
+    )
+)
+(commit-tx)
