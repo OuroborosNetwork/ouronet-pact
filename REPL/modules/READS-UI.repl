@@ -34,6 +34,8 @@
 (load "../../1_SOVEREIGN/STAGE_01/0_Interfaces/04_Ids.pact")
 (load "../../2_CITIZEN/Stage_Z/READS_UI/01_RD-HEADER.pact")
 (load "../../2_CITIZEN/Stage_Z/READS_UI/02_RD-WALLET.pact")
+(load "../../2_CITIZEN/Stage_Z/READS_UI/03_RD-POOLS.pact")
+(load "../../2_CITIZEN/Stage_Z/READS_UI/04_RD-SWAP.pact")
 (print (format "<<<<<<<READS_UI (ids + RD-HEADER) Costs {} GAS>>>>>>>" [(env-gas)]))
 (env-sigs [])
 (commit-tx)
@@ -250,6 +252,141 @@
                 0 (at "nonces" (RD-WALLET.URH_GoldenStoaNonces KST.ANHD)))
             (expect "<<RDUI-05>> the composed card equals the card called directly"
                 (RD-WALLET.URC_Ignis KST.ANHD) (at "ignis" w))
+        ]
+    )
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "RDUI-06 -- RD-POOLS: the tier rule DPL-UR gets wrong")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+;;==== RDUI-06 · 01 · namespace ==== ==============================================================
+(print "--- [RDUI-06 · 01 · namespace] ---")
+(namespace "ouronet-ns")
+;;==== RDUI-06 · 02 · UC_MaxSpecialFeeTargets across every tier ==== ==============================
+(print "--- [RDUI-06 · 02 · UC_MaxSpecialFeeTargets across every tier] ---")
+;;THIS IS THE ASSERTION THAT MATTERS IN THIS FILE. DPL-UR carries this rule twice and the copies
+;;disagree: URC_0032_EliteAccount seeds its or-fold with `false`, URC_0015_SwpairManagementFee
+;;with `true`. The identity for `or` is FALSE, so the seeded-true copy returns true regardless of
+;;contents -- the tier-5 branch always fires and the trailing `1` is unreachable.
+;;
+;;Consequence on chain today: every pool owner below tier 2 is told they may set SEVEN
+;;special-fee targets when the rule allows ONE. That is a decision-feeding number -- it bounds
+;;what the UI lets a user add -- so it walks them into a transaction the contract refuses.
+;;
+;;Tiers 0 and 1 are the whole point of the block. Under the defect both return 7.
+(map print
+    [
+        (expect "<<RDUI-06>> tier 0 permits ONE target -- DPL-UR's copy says 7" 1
+            (RD-POOLS.UC_MaxSpecialFeeTargets 0))
+        (expect "<<RDUI-06>> tier 1 permits ONE target -- DPL-UR's copy says 7" 1
+            (RD-POOLS.UC_MaxSpecialFeeTargets 1))
+        (expect "<<RDUI-06>> tier 2 permits two"   2 (RD-POOLS.UC_MaxSpecialFeeTargets 2))
+        (expect "<<RDUI-06>> tier 3 permits three" 3 (RD-POOLS.UC_MaxSpecialFeeTargets 3))
+        (expect "<<RDUI-06>> tier 4 permits four"  4 (RD-POOLS.UC_MaxSpecialFeeTargets 4))
+        (expect "<<RDUI-06>> tier 5 permits seven" 7 (RD-POOLS.UC_MaxSpecialFeeTargets 5))
+        (expect "<<RDUI-06>> tier 6 permits seven" 7 (RD-POOLS.UC_MaxSpecialFeeTargets 6))
+        (expect "<<RDUI-06>> tier 7 permits seven" 7 (RD-POOLS.UC_MaxSpecialFeeTargets 7))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "RDUI-07 -- RD-POOLS: every panel answers, and the list survives a bad member")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+;;==== RDUI-07 · 01 · namespace ==== ==============================================================
+(print "--- [RDUI-07 · 01 · namespace] ---")
+(namespace "ouronet-ns")
+;;==== RDUI-07 · 02 · panels, composer, and a deliberately bad pool id ==== =======================
+(print "--- [RDUI-07 · 02 · panels, composer, and a deliberately bad pool id] ---")
+;;The last two assertions are the ones worth having. The original URC_0005 mapper had no guard,
+;;so ONE unreadable pool emptied the entire pool list -- a page showing dozens taken out by a
+;;single bad row. URC_PoolsDashboard wraps each member in `try`, so a bad id degrades to
+;;UDC_ZeroPanel and its neighbours still render.
+(let*
+    ( (g:object (RD-POOLS.URC_Global))
+      (pools:[string] (at "pools" g))
+      (sw:string (at 0 pools))
+      (p:object (RD-POOLS.URC_Pool sw))
+      (mixed:[object] (RD-POOLS.URC_PoolsDashboard [sw "P|NO-SUCH-POOL|AT-ALL"])) )
+    (map print
+        [
+            (expect "<<RDUI-07>> the global panel answers" true (at "panel-ok" g))
+            (expect "<<RDUI-07>> ...and reports every pool the fixture built"
+                true (> (at "number-of-pools" g) 0))
+            (expect "<<RDUI-07>> all five per-pool panels answer"
+                [true true true true true]
+                [(at "panel-ok" (at "core" p)) (at "panel-ok" (at "dashboard" p))
+                 (at "panel-ok" (at "internal" p)) (at "panel-ok" (at "settings" p))
+                 (at "panel-ok" (at "fees" p))])
+            (expect "<<RDUI-07>> the account panel answers on its own"
+                true (at "panel-ok" (RD-POOLS.URC_AccountSupplies KST.ANHD sw)))
+            (expect "<<RDUI-07>> a BAD pool id in the list degrades to one dead entry..."
+                [true false]
+                [(at "panel-ok" (at 0 mixed)) (at "panel-ok" (at 1 mixed))])
+            (expect "<<RDUI-07>> ...and the list still has both members -- the original mapper \
+                \ returned nothing at all when any single pool failed"
+                2 (length mixed))
+        ]
+    )
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "RDUI-08 -- RD-SWAP: the previews a user signs against")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+;;==== RDUI-08 · 01 · namespace ==== ==============================================================
+(print "--- [RDUI-08 · 01 · namespace] ---")
+(namespace "ouronet-ns")
+;;==== RDUI-08 · 02 · round trip, curvature, and refusal ==== =====================================
+(print "--- [RDUI-08 · 02 · round trip, curvature, and refusal] ---")
+;;RD-SWAP is the carve-out in READS_UI/README.md's testing posture. Every other module here is
+;;display: a wrong number is a cosmetic bug. These three functions produce the figure a user reads
+;;IMMEDIATELY BEFORE SIGNING A TRADE, so a wrong one is a user consenting to something other than
+;;what they were shown. The money moves either way; only the consent was wrong.
+;;
+;;So these pin RELATIONSHIPS, not shapes. Each is chosen because a plausible-but-wrong
+;;implementation fails it while passing "did it return a decimal?":
+;;
+;;  ROUND TRIP  -- forward then inverse must return the original input. Catches a fee applied on
+;;                 the wrong side, a precision floor in the wrong direction, or the two functions
+;;                 drifting apart. The residue is rounding only: measured 3e-24 on a 1.0 trade.
+;;  CURVATURE   -- doubling the input must yield LESS than double the output. An AMM that priced
+;;                 linearly would satisfy every monotonicity check and still be wrong; this is
+;;                 the assertion that says "there is a curve here at all".
+;;  REFUSAL     -- a token absent from the pool must REFUSE, not quote zero. This is why nothing
+;;                 in RD-SWAP is try-wrapped: a swallowed refusal reads to a user as a valid
+;;                 quote of nothing.
+(let*
+    ( (sw:string (at 0 (ouronet-ns.SWP.URC_Swpairs)))
+      (tk:[string] (ouronet-ns.SWP.UR_PoolTokens sw))
+      (a:string (at 0 tk))
+      (b:string (at 1 tk))
+      (out1:decimal (RD-SWAP.URCv_DirectSwap KST.ANHD sw [a] [1.0] b))
+      (out2:decimal (RD-SWAP.URCv_DirectSwap KST.ANHD sw [a] [2.0] b))
+      (back:decimal (RD-SWAP.URCv_InverseSwap KST.ANHD sw b out1 a)) )
+    (map print
+        [
+            (expect "<<RDUI-08>> a forward preview returns a positive output"
+                true (> out1 0.0))
+            (expect "<<RDUI-08>> ROUND TRIP: inverse of the forward output recovers the input \
+                \ to within rounding -- a fee on the wrong side breaks this and nothing else"
+                true (< (abs (- back 1.0)) 0.000001))
+            (expect "<<RDUI-08>> monotonic: twice the input yields more output"
+                true (> out2 out1))
+            (expect "<<RDUI-08>> CURVATURE: ...but LESS than twice -- a linear pricer would pass \
+                \ every other assertion here and still be wrong"
+                true (< out2 (* 2.0 out1)))
+            (expect-failure "<<RDUI-08>> REFUSAL: a token absent from the pool refuses rather \
+                \ than quoting zero -- which is why RD-SWAP has no try-wrapped composer"
+                (RD-SWAP.URCv_DirectSwap KST.ANHD sw ["NOPE-000000000000"] [1.0] b))
+            (expect "<<RDUI-08>> the max-output cap is a per-mille slice of pool supply"
+                (floor (* 0.01 (ouronet-ns.SWP.UR_PoolTokenSupply sw b))
+                       (ouronet-ns.DPTF.UR_Decimals b))
+                (RD-SWAP.URC_MaxOutputAmount sw b 10.0))
         ]
     )
 )

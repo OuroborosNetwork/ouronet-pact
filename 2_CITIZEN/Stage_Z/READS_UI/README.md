@@ -57,7 +57,14 @@ alone. They are pure, tiny, and have no state to diverge.
    because `(keys DALOS.DALOS|AccountTable)` is a node-flag dependency. It would ALSO have broken
    the composer, for this reason instead.
 
-6. **Every function must be callable in the fixture.** The two functions that broke on
+6. **Helper names are tree-global to `_callarity.py`.** It resolves a call by bare function
+   name across the whole tree — including into modules defined **inline inside `.repl` files** —
+   and when a name has exactly one definition it enforces that arity everywhere. `RD-POOLS`
+   defined `UC_Amounts` (1 arg); `SKB5K.UC_Amounts count unit` in
+   `Stage00b_StoaBulkGasTests.repl` takes 2; the gate failed reporting the *sandbox* call site.
+   Renamed to `UC_AmountList`. Pick helper names nothing else could plausibly own.
+
+7. **Every function must be callable in the fixture.** The two functions that broke on
    2026-09-24 had never once executed in a test, because their hardcoded mainnet ids do not
    exist in a sandbox. A read nothing can call is a read whose staleness is invisible until a
    user finds it.

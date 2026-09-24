@@ -242,6 +242,27 @@ ROUNDS = {
             # commits, and an exclusion list people edit routinely stops being read. The folder
             # rule says something a file list cannot: nothing in here ships until the owner
             # wires it, by design.
+            "2_CITIZEN/Stage_Z/READS_UI/04_RD-SWAP.pact":
+                "READ-LAYER SPLIT, module 04 of 11 (owner kickoff, 2026-09-24). Replaces "
+                "DPL-UR::URC_0006b_DirectSwap / URC_0007b_InverseSwap / "
+                "URC_ReverseSwapOutputAmount -- the previews a user reads immediately before "
+                "signing a trade, and therefore the one module in the roster that is NOT "
+                "display-only. No composer and no try-wrapping by design: a token absent from "
+                "the pool must REFUSE, because a swallowed refusal reads as a valid quote of "
+                "zero. Both previews renamed URC_ -> URCv_, correcting the original: they reach "
+                "URCv_PoolTokenPositions / URv_PoolTokenPosition, so the enforce was always "
+                "there and only the prefix denied it. Independent of the open CC_ vs C_ "
+                "SmartSwap ruling -- these take an explicit swpair and preview ONE pool. "
+                "Arithmetic pinned by RDUI-08 (round trip, curvature, refusal).",
+            "2_CITIZEN/Stage_Z/READS_UI/03_RD-POOLS.pact":
+                "READ-LAYER SPLIT, module 03 of 11 (owner kickoff, 2026-09-24). Replaces "
+                "DPL-UR::URC_0003/0004/0005/0010/0011/0014/0015 plus the shared "
+                "URC_SWPairCoreRead. FIXES A LIVE DEFECT while porting: DPL-UR carries the "
+                "Elite-tier -> max-special-fee-targets rule twice and the copies disagree -- "
+                "URC_0015 seeds its or-fold with `true`, whose identity is FALSE, so the tier-5 "
+                "branch always fires and every owner below tier 2 is told 7 targets instead of "
+                "1. Now a single UC_MaxSpecialFeeTargets, pinned by RDUI-06. Gate-covered by "
+                "REPL/modules/READS-UI.repl; held back with the rest of the folder.",
             "2_CITIZEN/Stage_Z/READS_UI/02_RD-WALLET.pact":
                 "READ-LAYER SPLIT, module 02 of 11 (owner kickoff, 2026-09-24). Replaces "
                 "DPL-UR::URC_0002_Primordials* -- ten per-asset cards plus a try-composer, in "
