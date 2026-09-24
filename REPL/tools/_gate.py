@@ -468,6 +468,17 @@ def main():
         print(_p2.stdout + _p2.stderr)
         sys.exit("GATE FAILED: a Deploy/PureV2 file does not match the module it deploys.")
 
+    # GLYPH PARITY. The character IS the wire format. Porting DPL-UR's reads flattened Unicode to
+    # ASCII four separate times -- ¢->c, ×->x, ≥->>=, and Ξ₳->Xi-A, the Elite-Auryn symbol itself.
+    # Every one of them renders, none looks wrong in isolation, and two reached mainnet. No test
+    # could catch them, because a test written from the port agrees with the port. So DPL-UR is
+    # the reference and this asserts its emitted non-ASCII literals survive the move.
+    _gp = subprocess.run([sys.executable, "tools/_glyphparity.py"],
+                         capture_output=True, text=True)
+    if _gp.returncode != 0:
+        print(_gp.stdout + _gp.stderr)
+        sys.exit("GATE FAILED: an AppReads module flattened a glyph DPL-UR emits.")
+
     # AUTHORISATION SURFACE -- the only check here that speaks to authorisation directly. For every
     # C_/A_ entrypoint it records which accounts' ownership is enforced ANYWHERE in its call tree,
     # and requires that set to only ever GROW. Built 2026-09-20 ahead of the patron/executor

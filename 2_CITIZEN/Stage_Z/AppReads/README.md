@@ -77,6 +77,16 @@ exactly how `URC_0001_HeaderV3` became one 70-key object in a single eager `let`
 So slot 11 waits for the panel, and the module then falls out of what the panel displays. The
 same holds for 13, 16 and 17.
 
+## State, 2026-09-25
+
+**All nine modules are on mainnet** (PureV2/01–12) and **all 47 reads are wired** through
+OuronetUI's transport redirect. Two files remain:
+
+| file | what | why it is not optional |
+|---|---|---|
+| `PureV2/13` | O-UI-ONE + O-UI-THREE module upgrades | restores four Unicode glyphs flattened to ASCII during the port — including `Ξ₳`, so the header currently reads "Total Xi-A" |
+| `PureV2/14` | DPL-UR → archive mode | deploy **last**, and only after every page has been checked: it deletes the 57 migrated reads, which is what the redirect's fallback currently falls back *to* |
+
 ## Deploying
 
 `Deploy/PureV2/` holds the hand-deploy round; the owner sends one file at a time and the wiring

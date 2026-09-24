@@ -24,7 +24,7 @@ import sys, os, difflib
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DEPLOY = os.path.join(ROOT, "Deploy", "PureV2")
-AR = os.path.join(ROOT, "2_CITIZEN", "Stage_Z", "AppReads")
+SRC = os.path.join(ROOT, "2_CITIZEN", "Stage_Z")   # manifest paths hang off here
 MARK = ";;@GENERATED-BODY-BELOW -- do not edit past this line; see REPL/tools/_purev2.py"
 
 # deploy file -> list of sources in deploy order.  A source is "path" for the whole file, or
@@ -36,18 +36,20 @@ MARK = ";;@GENERATED-BODY-BELOW -- do not edit past this line; see REPL/tools/_p
 # ("Interface cannot be upgraded"), which is how deploy round V1 lost tx 11 and tx 21.  Modules
 # upgrade freely; interfaces never do.
 MANIFEST = {
-    "05_deploy.pact": ["OuronetUI/12_O-UI-TWELVE.pact"],
-    "06_deploy.pact": [("OuronetUI/01_O-UI-ONE.pact", "module-only"),
-                       ("OuronetUI/02_O-UI-TWO.pact", "module-only")],
-    "07_deploy.pact": ["OuronetUI/08_O-UI-EIGHT.pact"],
-    "08_deploy.pact": ["OuronetUI/09_O-UI-NINE.pact"],
-    "09_deploy.pact": ["OuronetUI/10_O-UI-TEN.pact"],
-    "10_deploy.pact": ["OuronetUI/07_O-UI-SEVEN.pact"],
-    "11_deploy.pact": ["OuronetUI/04_O-UI-FOUR.pact"],
-    "12_deploy.pact": ["OuronetUI/03_O-UI-THREE.pact"],
+    "13_deploy.pact": [("AppReads/OuronetUI/01_O-UI-ONE.pact", "module-only"),
+                       ("AppReads/OuronetUI/03_O-UI-THREE.pact", "module-only")],
+    "14_deploy.pact": [("01_DPL-UR.pact", "module-only")],
 }
 
 FROZEN = {
+    "05_deploy.pact": "executed on mainnet 2026-09-25 (O-UI-TWELVE first deploy); the record of what was sent",
+    "06_deploy.pact": "executed on mainnet 2026-09-25 (O-UI-ONE + O-UI-TWO formatter fix); the record of what was sent",
+    "07_deploy.pact": "executed on mainnet 2026-09-25 (O-UI-EIGHT first deploy); the record of what was sent",
+    "08_deploy.pact": "executed on mainnet 2026-09-25 (O-UI-NINE first deploy); the record of what was sent",
+    "09_deploy.pact": "executed on mainnet 2026-09-25 (O-UI-TEN first deploy); the record of what was sent",
+    "10_deploy.pact": "executed on mainnet 2026-09-25 (O-UI-SEVEN first deploy); the record of what was sent",
+    "11_deploy.pact": "executed on mainnet 2026-09-25 (O-UI-FOUR first deploy); the record of what was sent",
+    "12_deploy.pact": "executed on mainnet 2026-09-25 (OUiThreeV2 + O-UI-THREE upgrade); the record of what was sent",
     "01_deploy.pact": "executed on mainnet 2026-09-24 (OuronetIdsV1 + O-UI-ONE first deploy); "
                       "superseded for the formatter fix by 06_deploy.pact",
     "02_deploy.pact": "executed on mainnet 2026-09-24 (OUiTwoV1 + O-UI-TWO first deploy); "
@@ -65,7 +67,7 @@ def body_for(sources):
     out = ['(namespace "ouronet-ns")', ""]
     for src in sources:
         rel, mode = src if isinstance(src, tuple) else (src, "full")
-        text = open(os.path.join(AR, rel), encoding="utf8").read()
+        text = open(os.path.join(SRC, rel), encoding="utf8").read()
         if mode == "module-only":
             i = text.index("(module ")
             note = " (module only -- its interface is already live)"
@@ -73,7 +75,7 @@ def body_for(sources):
             # drop the file's own ;;-comment banner; the deploy file has its own header
             i = min((text.index(t) for t in ("(interface ", "(module ") if t in text))
             note = ""
-        out.append(f";; ---- source: 2_CITIZEN/Stage_Z/AppReads/{rel}{note}")
+        out.append(f";; ---- source: 2_CITIZEN/Stage_Z/{rel}{note}")
         out.append(text[i:].rstrip())
         out.append("")
     return "\n".join(out)

@@ -371,9 +371,9 @@
             ;;Zone 1 -- Elite standing
             ,"z1-t1" : (if k1 (at "elite-name" z1) dash)
             ,"z1-v1" : (if k1 (at "elite-tier" z1) dash)
-            ,"z1-t2" : "Total Xi-A"
+            ,"z1-t2" : "Total Ξ₳"
             ,"z1-v2" : (if k1 (at "total-aurynz" z1) dash)
-            ,"z1-t3" : "Xi-A for Next Tier"
+            ,"z1-t3" : "Ξ₳ for Next Tier"
             ,"z1-v3" : (if k1 (at "aurynz-next" z1) dash)
             ,"z1-t4" : "OURO for Next Tier"
             ,"z1-v4" : (if k1 (at "ouro-next" z1) dash)

@@ -41,11 +41,18 @@
 (load "../../2_CITIZEN/Stage_Z/AppReads/OuronetUI/09_O-UI-NINE.pact")
 (load "../../2_CITIZEN/Stage_Z/AppReads/OuronetUI/10_O-UI-TEN.pact")
 (load "../../2_CITIZEN/Stage_Z/AppReads/OuronetUI/12_O-UI-TWELVE.pact")
-;;DPL-UR IS LOADED HERE ON PURPOSE, AND IT IS THE POINT OF HALF THIS SUITE. A port that merely
-;;runs proves nothing -- what has to be true is that it returns the SAME OBJECT as the function
-;;it replaces, on real inputs, or differs only where a defect was deliberately fixed. Several
-;;blocks below therefore assert equality against the live source rather than against a literal.
-(load "../../2_CITIZEN/Stage_Z/01_DPL-UR.pact")
+;;DPL-UR IS NO LONGER LOADED, AND THAT COST THIS SUITE SOMETHING WORTH NAMING.
+;;
+;;While it was live the strongest assertion available was PARITY -- call the old function and
+;;the new one and require the objects to be equal. That is what found the four flattened glyphs
+;;(¢ × ≥ Ξ₳), the unreachable Wipe button, the ICO division by zero and a dead call to a member
+;;DPL-UR never had. None of those was reachable by reading the code, and none by a test written
+;;FROM the port, which agrees with the port by construction.
+;;
+;;Archive mode (§7.21, 2026-09-25) deleted the 57 reads that moved here, so there is nothing
+;;left to compare against. What replaces parity is RDUI-16: 177 keys across 10 client reads,
+;;READ OFF MAINNET rather than copied from these sources -- the one reading that cannot
+;;silently agree with a mistake in the module it checks.
 (print (format "<<<<<<<READS_UI (ids + RD-HEADER) Costs {} GAS>>>>>>>" [(env-gas)]))
 (env-sigs [])
 (commit-tx)
@@ -681,28 +688,37 @@
 ;;job is answering for something that is not there, and the sentinels are load-bearing.
 (map print
     [
-        (expect "<<RDUI-13>> URC_02|Account == DPL-UR::URC_0027a on a live account"
-            (DPL-UR.URC_0027a_AccountSelectorSingle KST.ANHD)
-            (O-UI-SEVEN.URC_02|Account KST.ANHD))
-        (expect "<<RDUI-13>> ...and on an account that does not exist"
-            (DPL-UR.URC_0027a_AccountSelectorSingle "Σ.NO-SUCH-ACCOUNT")
-            (O-UI-SEVEN.URC_02|Account "Σ.NO-SUCH-ACCOUNT"))
-        (expect "<<RDUI-13>> the absent-account sentinels are the DISCRIMINATORS, not zeroes"
-            [-1 -1.0 false]
-            [(at "iz-smart" (O-UI-SEVEN.URC_02|Account "Σ.NO-SUCH-ACCOUNT"))
-             (at "payment-key-balance" (O-UI-SEVEN.URC_02|Account "Σ.NO-SUCH-ACCOUNT"))
-             (at "iz-activated" (O-UI-SEVEN.URC_02|Account "Σ.NO-SUCH-ACCOUNT"))])
-        (expect "<<RDUI-13>> URC_03|StoicTags == DPL-UR::URC_0027b"
-            (DPL-UR.URC_0027b_StoicTagSelectorMapper ["nope" "alpha"])
-            (O-UI-SEVEN.URC_03|StoicTags ["nope" "alpha"]))
-        (expect "<<RDUI-13>> URC_05|StoaAccounts == DPL-UR::URC_0028"
-            (DPL-UR.URC_0028_StoaAccountSelectorMapper ["stoa-genesis-1" "nope"])
-            (O-UI-SEVEN.URC_05|StoaAccounts ["stoa-genesis-1" "nope"]))
-        (expect "<<RDUI-13>> URC_07|Overview == DPL-UR::URC_0029"
-            (DPL-UR.URC_0029_AccountOverview KST.ANHD)
-            (O-UI-SEVEN.URC_07|Overview KST.ANHD))
-        ;;A tag that was never registered and one that was released are DIFFERENT states, and
-        ;;collapsing them would make a released tag look free to claim.
+        ;;A mapper must equal `map` of its single. This is the invariant parity used to prove
+        ;;against DPL-UR, restated so it survives DPL-UR -- it still catches a mapper that
+        ;;drops, reorders or re-derives its elements.
+        (expect "<<RDUI-13>> the account mapper equals map of its single"
+            [(O-UI-SEVEN.URC_02|Account KST.ANHD)]
+            (O-UI-SEVEN.URC_01|Accounts [KST.ANHD]))
+        (expect "<<RDUI-13>> ...and the StoicTag mapper likewise"
+            [(O-UI-SEVEN.URC_04|StoicTag "nope")]
+            (O-UI-SEVEN.URC_03|StoicTags ["nope"]))
+        (expect "<<RDUI-13>> ...and the Stoa account mapper likewise"
+            [(O-UI-SEVEN.URC_06|StoaAccount "nope")]
+            (O-UI-SEVEN.URC_05|StoaAccounts ["nope"]))
+        (expect "<<RDUI-13>> every mapper answers [] for [] rather than throwing"
+            [[] [] []]
+            [(O-UI-SEVEN.URC_01|Accounts []) (O-UI-SEVEN.URC_03|StoicTags [])
+             (O-UI-SEVEN.URC_05|StoaAccounts [])])
+        ;;THE SENTINELS ARE LOAD-BEARING. A selector exists to say whether what a user typed is
+        ;;real, so "absent" must be distinguishable from "empty" -- -1 is not `false`, and
+        ;;-1.0 is not a zero balance. Tidying these into falsey values would merge the two.
+        (expect "<<RDUI-13>> the absent-account sentinels are DISCRIMINATORS, not zeroes"
+            [-1 -1.0 false "" false]
+            (let ((a:object (O-UI-SEVEN.URC_02|Account "Σ.NO-SUCH-ACCOUNT")))
+                [(at "iz-smart" a) (at "payment-key-balance" a) (at "iz-activated" a)
+                 (if (= (at "payment-key" a) (U|CT.CT_BAR)) "" "payment-key should be BAR")
+                 (at "payment-key-existance" a)]))
+        (expect "<<RDUI-13>> a live account reads back as activated, with a real type"
+            [true true]
+            (let ((a:object (O-UI-SEVEN.URC_02|Account KST.ANHD)))
+                [(at "iz-activated" a) (!= (at "iz-smart" a) -1)]))
+        ;;Three tag states, not two: a RELEASED tag has a row and no account, and collapsing it
+        ;;into `iz-active false` would make a released tag look free to claim.
         (expect "<<RDUI-13>> an unregistered tag reports never-registered, not merely inactive"
             [false false true]
             (let ((t:object (O-UI-SEVEN.URC_04|StoicTag "definitely-not-a-tag")))
@@ -761,23 +777,144 @@
     ( (sf:string (at 0 (keys DPDC.DPSF|T|Properties))) )
     (map print
         [
-            (expect-failure "<<RDUI-15>> DPL-UR::URC_0026 RAISES on an empty selection"
-                (DPL-UR.URC_0026_CollectablesButtons KST.ANHD sf true []))
-            (expect "<<RDUI-15>> the port answers instead, and wipe is finally reachable"
+            ;;THE FIX. DPL-UR's URC_0026 bound (at 0 selected-nonces) EAGERLY, so an empty
+            ;;selection threw before any flag was computed -- and `wipe` is the one flag that
+            ;;REQUIRES an empty selection, so the button could never be true and the whole
+            ;;action bar was blank on page load. Proven against the live module before archive
+            ;;mode removed it: DPL-UR raised where this answers, and the two were identical on
+            ;;every non-empty selection.
+            (expect "<<RDUI-15>> an EMPTY selection answers, and wipe is reachable at last"
                 true (at "wipe" (O-UI-TEN.URC_09|Buttons KST.ANHD sf true [])))
-            ;;The fix must not change any answer the original could give. If it does, the
-            ;;defensive binding leaked into a live branch.
-            (expect "<<RDUI-15>> on a NON-empty selection the two are IDENTICAL"
-                (DPL-UR.URC_0026_CollectablesButtons KST.ANHD sf true [1])
-                (O-UI-TEN.URC_09|Buttons KST.ANHD sf true [1]))
-            (expect "<<RDUI-15>> URC_06|Sets == DPL-UR::URC_0024"
-                (DPL-UR.URC_0024_SetReader sf true) (O-UI-TEN.URC_06|Sets sf true))
-            (expect "<<RDUI-15>> URC_08|FilterByClasses == DPL-UR::URC_0025a"
-                (DPL-UR.URC_0025a_FilterNoncesByClasses sf true [1 2 3] [0 1])
+            (expect "<<RDUI-15>> ...while the single-nonce flags stay off on an empty selection"
+                [false false false false]
+                (let ((b:object (O-UI-TEN.URC_09|Buttons KST.ANHD sf true [])))
+                    [(at "add-quantity" b) (at "burn" b) (at "transfer" b) (at "break-set" b)]))
+            (expect "<<RDUI-15>> a single selection turns transfer on and wipe off"
+                [true false]
+                (let ((b:object (O-UI-TEN.URC_09|Buttons KST.ANHD sf true [1])))
+                    [(at "transfer" b) (at "wipe" b)]))
+            (expect "<<RDUI-15>> the plural class filter equals the singular, class by class"
+                [(O-UI-TEN.URC_07|FilterByClass sf true [1 2 3] 0)
+                 (O-UI-TEN.URC_07|FilterByClass sf true [1 2 3] 1)]
                 (O-UI-TEN.URC_08|FilterByClasses sf true [1 2 3] [0 1]))
+            ;;One row per DECLARED set class, and each row really is a set object rather than
+            ;;whatever `UR_Set` happens to return for an out-of-range class.
+            (expect "<<RDUI-15>> one row per declared set class"
+                (DPDC.UR_SetClassesUsed sf true) (length (O-UI-TEN.URC_06|Sets sf true)))
+            (expect "<<RDUI-15>> ...and every row carries a set's own fields"
+                true
+                (fold (and) true
+                    (map (lambda (r:object) (and (contains "iz-active" r)
+                                                 (contains "composite" r)))
+                         (O-UI-TEN.URC_06|Sets sf true))))
             (expect "<<RDUI-15>> the page composer answers for both fungibility classes"
                 true (at "list-ok" (O-UI-TEN.URC_10|Wallet KST.ANHD)))
         ]
     )
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "RDUI-16 -- the wire contract: every key a consumer indexes, pinned")
+(env-gasmodel "table")(env-gaslimit 200000000)(env-gas 0)
+;;==== RDUI-16 · 01 · namespace ==== ==============================================================
+(print "--- [RDUI-16 · 01 · namespace] ---")
+(namespace "ouronet-ns")
+(env-module-admin ouronet-ns.DPTF)
+(env-module-admin ouronet-ns.DPOF)
+(env-module-admin ouronet-ns.DPDC)
+;;==== RDUI-16 · 02 · contracted key sets ==== ====================================================
+(print "--- [RDUI-16 · 02 · contracted key sets] ---")
+;;WHAT THIS REPLACES, AND WHY IT IS DIFFERENT IN KIND.
+;;
+;;While DPL-UR was still live, the strongest assertion available was PARITY -- call the old
+;;function and the new one and require the objects to be equal. That is what found four
+;;flattened glyphs (¢ × ≥ Ξ₳), the unreachable Wipe button and the ICO div-by-zero, and none of
+;;them was findable by reading the code or by any test written FROM the port, because such a
+;;test agrees with the port by construction.
+;;
+;;Parity dies with the stub: once DPL-UR no longer carries these reads there is nothing to
+;;compare against. What survives it is the half that was always the real contract -- THE KEY
+;;SET. A consumer indexes an object by string, so a renamed or dropped key is a broken page,
+;;while an ADDED key is harmless by design (which is why every degradation flag here is
+;;additive). So these assert PRESENCE, not exact equality: every key below must exist, extras
+;;are allowed.
+;;
+;;THE LISTS ARE NOT COPIED FROM THE SOURCE. They were read off MAINNET, from the deployed
+;;modules, on 2026-09-25 -- the only reading that cannot silently agree with a mistake in the
+;;module it is meant to be checking.
+(map print
+    [
+            (expect "<<RDUI-16>> O-UI-ONE.URC_01|Header returns its 45 contracted keys"
+                true
+                (fold (and) true (map (lambda (k:string) (contains k (O-UI-ONE.URC_01|Header KST.ANHD)))
+                    ["resident-ignis" "z1-ok" "z1-t1" "z1-t2" "z1-t3" "z1-t4" "z1-t5" "z1-v1" "z1-v2"
+                     "z1-v3" "z1-v4" "z1-v5" "z2-ok" "z2-t1" "z2-t2" "z2-t3" "z2-t4" "z2-t5" "z2-v1"
+                     "z2-v2" "z2-v3" "z2-v4" "z2-v5" "z3-ok" "z3-t1" "z3-t2" "z3-t3" "z3-t4" "z3-t5"
+                     "z3-v1" "z3-v2" "z3-v3" "z3-v4" "z3-v5" "z4-ok" "z4-t1" "z4-t2" "z4-t3" "z4-t4"
+                     "z4-t5" "z4-v1" "z4-v2" "z4-v3" "z4-v4" "z4-v5"])))
+            (expect "<<RDUI-16>> O-UI-THREE.URC_01|EliteAccount returns its 70 contracted keys"
+                true
+                (fold (and) true (map (lambda (k:string) (contains k (O-UI-THREE.URC_01|EliteAccount KST.ANHD)))
+                    ["account" "auryndex-id" "auryndex-name" "auryndex-value" "auryndex-value-hover"
+                     "deb-bonus-text" "dex-fee-cost-multiplier" "dex-fee-discount-percent"
+                     "dex-fee-discount-text" "discounts-ok" "dispo-ok" "dispo-overspend-percent"
+                     "dispo-overspend-text" "ea-id" "ea-supply" "ea-supply-hover"
+                     "elite-ats-cold-recovery-duration-index" "elite-ats-cold-recovery-positions"
+                     "elite-auryn-dispo-locked" "elite-auryn-dispo-locked-text" "elite-auryndex-id"
+                     "elite-auryndex-name" "elite-auryndex-value" "elite-auryndex-value-hover"
+                     "elite-aurynz-for-next-tier" "elite-aurynz-for-next-tier-hover" "elite-class"
+                     "elite-deb" "elite-name" "elite-tier" "elite-tier-major" "elite-tier-minor" "fea-id"
+                     "fea-supply" "fea-supply-hover" "hea-id" "hea-supply" "hea-supply-hover"
+                     "ignis-cost-multiplier" "ignis-discount-percent" "ignis-discount-text" "indices-ok"
+                     "max-branding-blue-months" "max-swp-special-fee-targets" "ouro-balance"
+                     "ouro-balance-hover" "ouro-dispo-capacity" "ouro-dispo-capacity-hover" "ouro-id"
+                     "ouro-minimum" "ouro-minimum-hover" "ouro-virtual" "ouro-virtual-hover" "rea-id"
+                     "rea-supply" "rea-supply-hover" "sea-id" "sea-supply" "sea-supply-hover" "standing-ok"
+                     "stoa-cost-multiplier" "stoa-discount-percent" "stoa-discount-text"
+                     "total-elite-aurynz" "total-elite-aurynz-hover" "unlocks-ok" "variants-ok" "vea-id"
+                     "vea-supply" "vea-supply-hover"])))
+            (expect "<<RDUI-16>> O-UI-SEVEN.URC_02|Account returns its 18 contracted keys"
+                true
+                (fold (and) true (map (lambda (k:string) (contains k (O-UI-SEVEN.URC_02|Account KST.ANHD)))
+                    ["governor" "ignis-balance" "ignis-discount" "iz-activated" "iz-smart" "ouro-balance"
+                     "ouronet-account" "ouronet-account-guard" "payment-key" "payment-key-balance"
+                     "payment-key-existance" "payment-key-guard" "public-key" "sovereign" "stoa-discount"
+                     "stoic-tag" "stoic-tag-has" "stoic-tag-registered-at"])))
+            (expect "<<RDUI-16>> O-UI-SEVEN.URC_04|StoicTag returns its 7 contracted keys"
+                true
+                (fold (and) true (map (lambda (k:string) (contains k (O-UI-SEVEN.URC_04|StoicTag "nope")))
+                    ["iz-active" "iz-never-registered" "iz-released" "iz-row-exists" "ouronet-account"
+                     "registered-at" "stoic-tag"])))
+            (expect "<<RDUI-16>> O-UI-SEVEN.URC_06|StoaAccount returns its 4 contracted keys"
+                true
+                (fold (and) true (map (lambda (k:string) (contains k (O-UI-SEVEN.URC_06|StoaAccount "nope")))
+                    ["account" "balance" "guard" "iz-activated"])))
+            (expect "<<RDUI-16>> O-UI-SEVEN.URC_07|Overview returns its 3 contracted keys"
+                true
+                (fold (and) true (map (lambda (k:string) (contains k (O-UI-SEVEN.URC_07|Overview KST.ANHD)))
+                    ["global-administrative-pause" "iz-selected-activated" "stoa-costs"])))
+            (expect "<<RDUI-16>> O-UI-EIGHT.URH_01|Header returns its 5 contracted keys"
+                true
+                (fold (and) true (map (lambda (k:string) (contains k (O-UI-EIGHT.URH_01|Header KST.ANHD)))
+                    ["held-tf" "held-tf-number" "mngd-tf" "mngd-tf-number" "total-true-fungible-number"])))
+            (expect "<<RDUI-16>> O-UI-NINE.URH_01|Header returns its 6 contracted keys"
+                true
+                (fold (and) true (map (lambda (k:string) (contains k (O-UI-NINE.URH_01|Header KST.ANHD)))
+                    ["held-of" "held-of-number" "mngd-of" "mngd-of-number" "total-orto-fungible-nonces"
+                     "total-orto-fungible-number"])))
+            (expect "<<RDUI-16>> O-UI-TEN.URH_01|Header returns its 12 contracted keys"
+                true
+                (fold (and) true (map (lambda (k:string) (contains k (O-UI-TEN.URH_01|Header KST.ANHD)))
+                    ["held-nf" "held-nf-number" "held-sf" "held-sf-number" "mngd-nf" "mngd-nf-no" "mngd-sf"
+                     "mngd-sf-no" "total-non-fungible-nonces" "total-non-fungible-number"
+                     "total-semi-fungible-nonces" "total-semi-fungible-number"])))
+            (expect "<<RDUI-16>> O-UI-TWELVE.URC_01|Global returns its 7 contracted keys"
+                true
+                (fold (and) true (map (lambda (k:string) (contains k (O-UI-TWELVE.URC_01|Global)))
+                    ["asymmetric" "asymmetric-word" "global-liquid-staking-boost"
+                     "global-liquid-staking-boost-word" "number-of-pools" "panel-ok" "pools"])))
+    ]
 )
 (commit-tx)

@@ -1,75 +1,398 @@
-;; ===========================================================================================
-;; O-UI-THREE -- OuronetUI entity 3: ELITE ACCOUNT.
-;; ===========================================================================================
-;; Template: 01_O-UI-ONE.pact. Rules: ../RULES.md. Entity map: ../README.md.
+;; =========================================================================================
+;; OURONET DEPLOY -- ROUND V2, file 13
+;; O-UI-ONE + O-UI-THREE (module UPGRADES)  --  five glyphs flattened to ASCII
+;; =========================================================================================
+;; NO NEW INTERFACES. Both are already deployed and may not be redeployed; module bodies only.
 ;;
-;; REPLACES DPL-UR::URC_0032_EliteAccount and URC_0035_EliteAccountRichList -- the only two
-;; reads the Elite Account page makes (verified against src/hooks/useEliteAccount.ts and
-;; useEliteRichList.ts).
+;; WHAT IS WRONG ON MAINNET RIGHT NOW. Porting DPL-UR's reads transcribed five user-facing
+;; strings with their Unicode flattened to ASCII. Measured by calling both modules on chain and
+;; diffing the objects field by field:
 ;;
-;; ------------------------------------------------------------------------------------------
-;; INTERFACE BUMPED V1 -> V2 ON 2026-09-24. OUiThreeV1 is already on mainnet, and a deployed
-;; Pact interface CANNOT be changed -- not even to add a function, not even byte-identically.
-;; The two recovery reads appended below therefore arrive as OUiThreeV2, which carries the full
-;; surface; the module implements only the latest, per the cascade rule. OUiThreeV1 stays
-;; deployed and unimplemented, which costs nothing and is the only option Pact offers.
+;;   O-UI-ONE   z1-t2              "Total Xi-A"          should be  "Total Ξ₳"
+;;   O-UI-ONE   z1-t3              "Xi-A for Next Tier"  should be  "Ξ₳ for Next Tier"
+;;   O-UI-THREE deb-bonus-text     "DEB x4.50 ..."       should be  "DEB ×4.50 ..."
+;;   O-UI-THREE dispo-overspend    "... Major Tier >= 3" should be  "... Major Tier ≥ 3"
+;;   O-UI-THREE dispo-locked-text  "... returns to >= 0" should be  "... returns to ≥ 0"
 ;;
-;; TWO CLIENT READS, AND THEY ARE DELIBERATELY NOT COMPOSED TOGETHER
-;; ------------------------------------------------------------------------------------------
-;;   URC_01|EliteAccount  -- one account's panel. Six cards under `try`, flat 63-key output.
-;;   URH_02|RichList      -- every Standard account, ranked. A SCAN. Standalone by necessity.
+;; `Ξ₳` is the ELITE-AURYN SYMBOL. "Total Xi-A" is not a subtle rendering difference, it is the
+;; wrong words in the header. The others are a multiplication sign and two greater-or-equal
+;; signs, spelled out.
 ;;
-;; The rich list cannot join the composer and the reason is structural, not stylistic: it runs
-;; `(keys DALOS.DALOS|AccountTable)`, and Pact evaluates a `try` body in READ-ONLY mode where
-;; `keys` is disallowed. Folding it in would make the panel abort wholesale instead of degrade.
-;; It is also the one function here a page can render without -- a leaderboard is not the panel.
+;; THIS IS THE SECOND FIX OF THE SAME KIND -- PureV2/06 restored the CENT SIGN to the price
+;; formatters. Four distinct glyphs lost across four modules, every one of them rendering
+;; plausibly, two of them already shipped. No test caught any of it, and no test could have:
+;; a test written from the port agrees with the port. They were found by calling the old and
+;; the new function on MAINNET and comparing the returned objects key by key.
 ;;
-;; `URH_` not `URC_`, so the cost is legible from the name. It is the heaviest read in the app.
+;; SO THE CLASS IS NOW CLOSED MECHANICALLY. `REPL/tools/_glyphparity.py` takes DPL-UR as the
+;; reference, extracts every non-ASCII literal it can EMIT (`@doc` prose excluded), and requires
+;; each to appear byte-identically in some AppReads module. Anything deliberately dropped goes
+;; in its RETIRED registry with a reason, because "absent because we meant it" and "absent
+;; because someone retyped it" are indistinguishable otherwise. Fatal inside the gate.
 ;;
-;; ------------------------------------------------------------------------------------------
-;; THE TIER RULE IS DUPLICATED FROM O-UI-TWELVE ON PURPOSE -- read this before "fixing" it
-;; ------------------------------------------------------------------------------------------
-;; `UC_MaxSpecialFeeTargets` also exists in O-UI-TWELVE. Two copies of a rule is exactly how the
-;; original defect happened: DPL-UR carried this logic twice and the copies disagreed, one
-;; seeding its `or`-fold with `true` (whose identity is FALSE), so every owner below tier 2 was
-;; told 7 targets instead of 1.
+;; NO BEHAVIOUR CHANGES. Five string literals, nothing else. Deploy order is free.
 ;;
-;; So why copy it again? Because the alternative is worse. Calling O-UI-TWELVE from here would
-;; make one read module a deploy dependency of another, and a read module being independently
-;; redeployable is the single property this whole split buys. RULES.md rule 8 says the same of
-;; formatters.
+;; SIGNING -- namespace keyset AND the Demiurgoi keyset. A module UPGRADE runs the module's own
+;; governance capability: GOV|O_UI_ONE_ADMIN and GOV|O_UI_THREE_ADMIN, both
+;; keyset-ref-guard(GOV|Demiurgoi).
 ;;
-;; WHAT MAKES THE DUPLICATION SAFE IS A TEST, NOT DISCIPLINE. RDUI-09 asserts that this copy and
-;; O-UI-TWELVE's agree on every tier 0..7. Divergence fails the gate. That assertion is the
-;; thing that was missing when the first two copies drifted -- not vigilance.
-;; ===========================================================================================
+;; MEASURED in the REPL fixture: upgrade 26,781 + 42,903 gas (unchanged -- only literals moved).
+;; =========================================================================================
+
+;;@GENERATED-BODY-BELOW -- do not edit past this line; see REPL/tools/_purev2.py
 
 (namespace "ouronet-ns")
 
-(interface OUiThreeV2
-    @doc "Elite Account page reads: the per-account panel and the ranked rich list."
+;; ---- source: 2_CITIZEN/Stage_Z/AppReads/OuronetUI/01_O-UI-ONE.pact (module only -- its interface is already live)
+(module O-UI-ONE GOV
 
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
+    (implements OUiOneV1)
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    (defconst GOV|MD_O-UI-ONE              (keyset-ref-guard (GOV|Demiurgoi)))
+    ;;{G4}  capabilities
+    (defcap GOV ()                          (compose-capability (GOV|O_UI_ONE_ADMIN)))
+    (defcap GOV|O_UI_ONE_ADMIN ()      (enforce-guard GOV|MD_O-UI-ONE))
+    ;;{G5}  functions
+    (defun GOV|Demiurgoi ()
+        (let ((ref-DALOS:module{OuronetDalosV2} DALOS)) (ref-DALOS::GOV|Demiurgoi))
+    )
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
     ;;{5.1}  Construct [CT/UDC]
-    (defun UDC_ZeroCard:object ())
+    (defun UDC_ZeroZone:object ()
+        @doc "The fallback a failing zone returns from URC_01|Header. Its `zone-ok` is false, \
+            \ which is how a caller tells a dead zone from a zone whose values happen to be \
+            \ zero -- a distinction the old all-or-nothing header could not express at all."
+        {"zone-ok" : false}
+    )
+
     ;;{5.2}  Compute [UC]
-    (defun UC_Amount:string (amount:decimal))
-    (defun UC_Index:string (index:decimal))
-    (defun UC_MaxSpecialFeeTargets:integer (major:integer))
+    (defun UC_Amount:string (amount:decimal)
+        @doc "Four-decimal display form; sub-threshold values read as <0.0001 rather than 0.0."
+        (let ((v:string (format "{}" [(floor amount 4)])))
+            (if (= v "0.0") "<0.0001" v)
+        )
+    )
+    (defun UC_Index:string (index:decimal)
+        @doc "Index display form: whole part, then four 3-digit groups of the fraction."
+        (let*
+            ( (fis:string (format "{}" [(floor index 12)]))
+              (l1:string (take -3 fis))
+              (l2:string (take -3 (drop -3 fis)))
+              (l3:string (take -3 (drop -6 fis)))
+              (l4:string (take -3 (drop -9 fis)))
+              (whole:string (drop -13 fis)) )
+            (concat [whole ",[" l4 "." l3 "." l2 "." l1 "]"])
+        )
+    )
+    (defun UC_Price:string (input-price:decimal)
+        @doc "Dollar/cent display form, with a floor below which a price reads as <0.001¢."
+        (if (< input-price 0.00001)
+            "<0.001¢"
+            (if (< input-price 1.00)
+                (format "{}¢" [(floor (* input-price 100.0) 3)])
+                (format "{}$" [(floor input-price 2)])
+            )
+        )
+    )
+
+    (defun UC_PickId:string (derived:[string] fallback:string)
+        @doc "DERIVED FIRST, REGISTRY AS FALLBACK -- the resolution of a day-long argument \
+            \ about which of the two is correct. Neither is, alone. \
+            \ \
+            \ A DERIVED id is right on every chain and is the only form a sandbox can test, \
+            \ but it depends on DPTF's reverse index being populated -- and an unset index \
+            \ returns [\"|\"] rather than [], so it does not fail loudly, it hands a BAR to \
+            \ the next call and fails somewhere else. A REGISTRY id is known-good on mainnet \
+            \ and provably wrong in a sandbox, which makes every function using one \
+            \ untestable, which is exactly how fourteen stale literals shipped unnoticed. \
+            \ \
+            \ Taking the derivation when it yields a real id and the registry when it does \
+            \ not gives a function that runs in the fixture AND on chain, with no branch the \
+            \ caller has to know about. The BAR check is explicit because `try` cannot catch \
+            \ a sentinel -- nothing was thrown."
+        (let ((ref-U|CT:module{OuronetConstantsV2} U|CT))
+            (if (= (length derived) 0)
+                fallback
+                (if (= (at 0 derived) (ref-U|CT::CT_BAR)) fallback (at 0 derived))
+            )
+        )
+    )
+
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    (defun URC_Standing:object (account:string))
-    (defun URC_Variants:object (account:string))
-    (defun URC_Indices:object ())
-    (defun URC_Dispo:object (account:string))
-    (defun URC_Discounts:object (account:string))
-    (defun URC_Unlocks:object (account:string))
-    (defun URC_PosObjSt:integer (atspair:string input-obj:object{UtilityAtsV3.Awo}))
-    ;;  CLIENT READS -- the only two a UI calls.
-    (defun URC_01|EliteAccount:object (account:string))
-    (defun URH_02|RichList:[object] ())
-    (defun URC_03|Recovery:object (ats:string account:string))
-    (defun URC_04|MaxRecovery:decimal (ats:string recoverer:string))
+
+    (defun URC_IndexIds:[string] ()
+        @doc "The four primordial ATS pair ids, derived where the reverse index is populated \
+            \ and taken from OuronetIdsV1 where it is not. Order: Auryndex, EliteAuryndex, \
+            \ SilverStoaPillar, GoldenStoaPillar. Every zone that needs a pair id calls this, \
+            \ so the policy lives in exactly one place."
+        (let
+            ( (ref-DALOS:module{OuronetDalosV2} DALOS)
+              (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF) )
+            [ (UC_PickId (ref-DPTF::UR_RewardBearingToken (ref-DALOS::UR_AurynID))
+                         OuronetIdsV1.IDX_AURYNDEX)
+              (UC_PickId (ref-DPTF::UR_RewardBearingToken (ref-DALOS::UR_EliteAurynID))
+                         OuronetIdsV1.IDX_EAURYNDEX)
+              (UC_PickId (ref-DPTF::UR_RewardBearingToken (ref-DALOS::UR_SilverStoaID))
+                         OuronetIdsV1.IDX_SILVERPILLAR)
+              (UC_PickId (ref-DPTF::UR_RewardToken (ref-DALOS::UR_SilverStoaID))
+                         OuronetIdsV1.IDX_GOLDENPILLAR) ]
+        )
+    )
+
+    (defun URC_Zone2_Indices:object ()
+        @doc "The four primordial ATS indices, by name and value. \
+            \ \
+            \ IDS COME FROM OuronetIdsV1, NOT FROM A DERIVATION, and that is deliberate. \
+            \ DPTF::UR_RewardBearingToken reads a reverse index whose UNSET value is [\"|\"] \
+            \ rather than [] -- so an unpopulated index does not abort, it hands a BAR to \
+            \ ATS::URC_Index and fails several frames later naming the wrong thing. These \
+            \ literals were known-good on mainnet for months; the derivation is unproven there."
+        (let*
+            ( (ref-ATS:module{AutostakeV3} ATS)
+              (ids:[string] (URC_IndexIds))
+              (a:string (at 0 ids))
+              (e:string (at 1 ids))
+              (s:string (at 2 ids))
+              (g:string (at 3 ids))
+              (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+              (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+              (hid:string (ref-DPTF::UR_Hibernation
+                            (ref-ATS::UR_ColdRewardBearingToken g))) )
+            {"zone-ok"  : true
+            ,"auryndex-name"        : (ref-ATS::UR_IndexName a)
+            ,"auryndex"             : (UC_Index (ref-ATS::URC_Index a))
+            ,"eauryndex-name"       : (ref-ATS::UR_IndexName e)
+            ,"eauryndex"            : (UC_Index (ref-ATS::URC_Index e))
+            ,"silverpillar-name"    : (ref-ATS::UR_IndexName s)
+            ,"silverpillar"         : (UC_Index (ref-ATS::URC_Index s))
+            ,"goldenpillar-name"    : (ref-ATS::UR_IndexName g)
+            ,"goldenpillar"         : (UC_Index (ref-ATS::URC_Index g))
+            ;;The hibernated-GoldenStoa id and its global nonce count. UR_NoncesUsed is a
+            ;;bounded `read` of a counter column, NOT a scan -- verified at 06_DPOF.pact:1515 --
+            ;;so it is safe inside the composer's `try`. A `select` here would not be.
+            ,"hibernated-gstoa-id"      : hid
+            ,"hibernated-gstoa-nonces"  : (ref-DPOF::UR_NoncesUsed hid)
+            }
+        )
+    )
+
+    (defun URC_Zone4_Prices:object ()
+        @doc "Dollar prices for the primordials. Depends on live SWP pools for the OURO price \
+            \ and on the STOA PID oracle -- the two things most likely to be absent on a fresh \
+            \ chain, which is why this is its own zone rather than folded into zone 1."
+        (let*
+            ( (ref-ATS:module{AutostakeV3} ATS)
+              (ref-SWPI:module{SwapperIssueV4} SWPI)
+              (ref-DIA:module{DiaStoaPidV2} U|CT)
+              (ids:[string] (URC_IndexIds))
+              (ih-a:decimal (ref-ATS::URC_Index (at 0 ids)))
+              (ih-e:decimal (ref-ATS::URC_Index (at 1 ids)))
+              (ih-s:decimal (ref-ATS::URC_Index (at 2 ids)))
+              (ih-g:decimal (ref-ATS::URC_Index (at 3 ids)))
+              (p-ouro:decimal (ref-SWPI::URC_OuroPrimordialPrice))
+              (p-auryn:decimal (floor (* p-ouro ih-a) 24))
+              (p-eauryn:decimal (floor (* p-auryn ih-e) 24))
+              (p-wstoa:decimal (ref-DIA::UR_STOA-PID|Price))
+              (p-sstoa:decimal (floor (* p-wstoa ih-s) 24))
+              (p-gstoa:decimal (floor (* p-sstoa ih-g) 24)) )
+            {"zone-ok"      : true
+            ,"ignis"        : (UC_Price 0.01)
+            ,"ouro"         : (UC_Price p-ouro)
+            ,"auryn"        : (UC_Price p-auryn)
+            ,"eauryn"       : (UC_Price p-eauryn)
+            ,"wstoa"        : (UC_Price p-wstoa)
+            ,"sstoa"        : (UC_Price p-sstoa)
+            ,"gstoa"        : (UC_Price p-gstoa)
+            }
+        )
+    )
+
+    (defun URC_Zone1_Elite:object (account:string)
+        @doc "The account's Elite standing and what the next tier costs. Account-specific, so \
+            \ it is the only zone that can fail for one user and work for another -- another \
+            \ reason it is not folded in with the global zones."
+        (let*
+            ( (ref-U|CT:module{OuronetConstantsV2} U|CT)
+              (ref-DALOS:module{OuronetDalosV2} DALOS)
+              (ref-ELITE:module{EliteV2} ELITE)
+              (ref-ATS:module{AutostakeV3} ATS)
+              (ref-SWPI:module{SwapperIssueV4} SWPI)
+              (total:decimal (ref-ELITE::URC_EliteAurynzSupply account))
+              (et:[decimal] (ref-U|CT::CT_ET))
+              (et-last:decimal (at (- (length et) 1) et))
+              (next:decimal
+                (if (>= total et-last)
+                    0.0
+                    (- (fold (lambda (acc:decimal tier:decimal)
+                                (if (and (> tier total) (< tier acc)) tier acc))
+                             et-last et)
+                       total)))
+              (ids:[string] (URC_IndexIds))
+              (ih-a:decimal (ref-ATS::URC_Index (at 0 ids)))
+              (ih-e:decimal (ref-ATS::URC_Index (at 1 ids)))
+              (ouro-next:decimal (floor (fold (*) 1.0 [next ih-a ih-e]) 24)) )
+            {"zone-ok"          : true
+            ,"elite-name"       : (ref-DALOS::UR_Elite-Name account)
+            ,"elite-tier"       : (ref-DALOS::UR_Elite-Tier account)
+            ,"total-aurynz"     : (UC_Amount total)
+            ,"aurynz-next"      : (UC_Amount next)
+            ,"ouro-next"        : (UC_Amount ouro-next)
+            ,"price-next"       : (UC_Price
+                                    (floor (* (ref-SWPI::URC_OuroPrimordialPrice) ouro-next) 24))
+            }
+        )
+    )
+
+    (defun URC_Zone3_Network:object ()
+        @doc "Network-wide toggles and spend counters. \
+            \ \
+            \ THE ACCOUNT COUNT IS DELIBERATELY ABSENT. The old header carried \
+            \ (length (keys DALOS.DALOS|AccountTable)) here -- a scan of ANOTHER module's \
+            \ table, which Pact admin-gates in transactional mode and a node permits in /local \
+            \ only when started with --allowReadsInLocal. It does work live today, so this is \
+            \ not a bug being fixed; it is a dependency being made deliberate. If the count is \
+            \ wanted, it belongs in its own function so that needing it cannot take the rest \
+            \ of the zone down with it."
+        (let
+            ( (ref-DALOS:module{OuronetDalosV2} DALOS)
+              (ref-SWP:module{SwapperV4} SWP) )
+            {"zone-ok"          : true
+            ,"ignis-collection" : (if (ref-DALOS::UR_VirtualToggle) "ON" "OFF")
+            ,"stoa-collection"  : (if (ref-DALOS::UR_NativeToggle) "ON" "OFF")
+            ,"asymmetric"       : (if (ref-SWP::UR_Asymetric) "ON" "OFF")
+            ,"liquid-boost"     : (if (ref-SWP::UR_LiquidBoost) "ON" "OFF")
+            ,"ignis-spent"      : (ref-DALOS::UR_VirtualSpent)
+            ,"stoa-spent"       : (ref-DALOS::UR_NativeSpent)
+            }
+        )
+    )
+
+    (defun URC_ResidentIgnis:string (account:string)
+        @doc "The account's resident IGNIS. One read, no composition -- kept separate because \
+            \ it is the single value the header needs that cannot fail for any global reason."
+        (let ((ref-DALOS:module{OuronetDalosV2} DALOS))
+            (UC_Amount (ref-DALOS::UR_TF_AccountSupply account false))
+        )
+    )
+
+    ;;=======================================================================================
+    ;;  THE ACCOUNT COUNT IS NOT HERE, AND THAT IS THE GATE'S RULING, NOT A PREFERENCE.
+    ;;
+    ;;  DPL-UR::URC_0001_HeaderV3 reported it as `z3-v1` via
+    ;;  `(length (keys DALOS.DALOS|AccountTable))` -- a scan of ANOTHER module's table. Pact
+    ;;  admin-gates those on the OWNING module, so the call is LOCAL-ONLY: it aborts in
+    ;;  transactional mode and works in `/local` only on a node started with
+    ;;  `--allowReadsInLocal`.
+    ;;
+    ;;  `_conformance.py`'s `cross-module-scan` rule tolerates that ONLY while such a function
+    ;;  has ZERO Pact callers -- "a premise nobody re-checks is a premise that quietly stops
+    ;;  being true". Factoring the scan into a named `URH_AccountCount` and CALLING it from the
+    ;;  composer broke exactly that premise and turned the observation into a violation. The
+    ;;  rule's own prescribed fix is to move the scan into the owning module as a `URH_*` and
+    ;;  reach it by modref -- and DALOS does have `URH_AccountCounter`, but it is NOT declared
+    ;;  in DALOS's interface, so no modref can reach it, and it returns the sentence
+    ;;  "Ouronet has N real Accounts!" rather than a number.
+    ;;
+    ;;  So the field is dropped, and the header is BETTER for it on every axis but one:
+    ;;    - no cross-module scan, so no `--allowReadsInLocal` dependency at all;
+    ;;    - no module-admin grant needed to call or to test it;
+    ;;    - EVERY zone now degrades, where `z3-v1` was the one field that could take the whole
+    ;;      page down because a scan cannot live inside a `try`.
+    ;;
+    ;;  A UI that wants the number calls `ouronet-ns.DALOS.URH_AccountCounter` directly. That
+    ;;  is DALOS scanning its OWN table -- same-module, not admin-gated -- so it is cheaper
+    ;;  there than it ever was here. It costs one extra round trip for one vanity statistic,
+    ;;  which is the honest price of the header never blanking again.
+    ;;=======================================================================================
+
+    (defun URC_01|Header:object (account:string)
+        @doc "THE HEADER, IN ONE CALL. Flat, with exactly the keys DPL-UR::URC_0001_HeaderV3 \
+            \ returned, so a consumer swaps the module path and changes nothing else. \
+            \ \
+            \ ONE READ PER PAGE is the rule (owner, 2026-09-24): a page should cost one \
+            \ round trip, not five. The per-zone functions above are internal structure that \
+            \ happens to be callable -- they are for diagnosis, not for the page to assemble. \
+            \ A UI calling four of them would pay four round trips for the same answer. \
+            \ \
+            \ EACH ZONE IS STILL WRAPPED IN `try`, so the split still buys what it was for: a \
+            \ zone that cannot read leaves its fields at placeholder and sets its `zN-ok` \
+            \ false, while the other three render. The old header was one eager `let` -- any \
+            \ single failure returned nothing at all and named the innermost form rather than \
+            \ the zone that owned it. \
+            \ \
+            \ EVERY FIELD DEGRADES. There is no exception, which there was until the account \
+            \ count was dropped -- see the banner above URC_01|Header for why it went and \
+            \ where a UI gets it instead. `z3-v1` is now a placeholder."
+        (let*
+            ( (z1:object (try (UDC_ZeroZone) (URC_Zone1_Elite account)))
+              (z2:object (try (UDC_ZeroZone) (URC_Zone2_Indices)))
+              (z3:object (try (UDC_ZeroZone) (URC_Zone3_Network)))
+              (z4:object (try (UDC_ZeroZone) (URC_Zone4_Prices)))
+              (k1:bool (at "zone-ok" z1)) (k2:bool (at "zone-ok" z2))
+              (k3:bool (at "zone-ok" z3)) (k4:bool (at "zone-ok" z4))
+              (dash:string "--") )
+            {"z1-ok" : k1, "z2-ok" : k2, "z3-ok" : k3, "z4-ok" : k4
+            ;;Zone 1 -- Elite standing
+            ,"z1-t1" : (if k1 (at "elite-name" z1) dash)
+            ,"z1-v1" : (if k1 (at "elite-tier" z1) dash)
+            ,"z1-t2" : "Total Ξ₳"
+            ,"z1-v2" : (if k1 (at "total-aurynz" z1) dash)
+            ,"z1-t3" : "Ξ₳ for Next Tier"
+            ,"z1-v3" : (if k1 (at "aurynz-next" z1) dash)
+            ,"z1-t4" : "OURO for Next Tier"
+            ,"z1-v4" : (if k1 (at "ouro-next" z1) dash)
+            ,"z1-t5" : "$ for Next Tier"
+            ,"z1-v5" : (if k1 (at "price-next" z1) dash)
+            ;;Zone 2 -- the four indices
+            ,"z2-t1" : (if k2 (at "auryndex-name" z2) dash)
+            ,"z2-v1" : (if k2 (at "auryndex" z2) dash)
+            ,"z2-t2" : (if k2 (at "eauryndex-name" z2) dash)
+            ,"z2-v2" : (if k2 (at "eauryndex" z2) dash)
+            ,"z2-t3" : (if k2 (at "silverpillar-name" z2) dash)
+            ,"z2-v3" : (if k2 (at "silverpillar" z2) dash)
+            ,"z2-t4" : (if k2 (at "goldenpillar-name" z2) dash)
+            ,"z2-v4" : (if k2 (at "goldenpillar" z2) dash)
+            ,"z2-t5" : (if k2 (format "{} Global Nonces:" [(at "hibernated-gstoa-id" z2)]) dash)
+            ,"z2-v5" : (if k2 (at "hibernated-gstoa-nonces" z2) 0)
+            ;;Zone 3 -- network. z3-v1 is a placeholder; see the banner above this function.
+            ,"z3-t1" : "Ouronet Accounts:"
+            ,"z3-v1" : dash
+            ,"z3-t2" : "IGNIS / STOA Gas Collection:"
+            ,"z3-v2" : (if k3 (format "{} / {}"
+                                [(at "ignis-collection" z3) (at "stoa-collection" z3)]) dash)
+            ,"z3-t3" : "Asym. Liq. Prov. / Liq. Boost:"
+            ,"z3-v3" : (if k3 (format "{} / {}"
+                                [(at "asymmetric" z3) (at "liquid-boost" z3)]) dash)
+            ,"z3-t4" : "Ouronet IGNIS spent:"
+            ,"z3-v4" : (if k3 (at "ignis-spent" z3) 0.0)
+            ,"z3-t5" : "Ouronet STOA spent"
+            ,"z3-v5" : (if k3 (at "stoa-spent" z3) 0.0)
+            ;;Zone 4 -- prices
+            ,"z4-t1" : "IGNIS"
+            ,"z4-v1" : (if k4 (at "ignis" z4) dash)
+            ,"z4-t2" : "OURO"
+            ,"z4-v2" : (if k4 (at "ouro" z4) dash)
+            ,"z4-t3" : "AURYN / ELITEAURYN"
+            ,"z4-v3" : (if k4 (format "{} / {}" [(at "auryn" z4) (at "eauryn" z4)]) dash)
+            ,"z4-t4" : "STOA"
+            ,"z4-v4" : (if k4 (at "wstoa" z4) dash)
+            ,"z4-t5" : "SSTOA / GSTOA"
+            ,"z4-v5" : (if k4 (format "{} / {}" [(at "sstoa" z4) (at "gstoa" z4)]) dash)
+            ;;
+            ,"resident-ignis" : (try "<unavailable>" (URC_ResidentIgnis account))
+            }
+        )
+    )
 )
 
+;; ---- source: 2_CITIZEN/Stage_Z/AppReads/OuronetUI/03_O-UI-THREE.pact (module only -- its interface is already live)
 (module O-UI-THREE GOV
 
     ;;{0}  IMPLEMENTERS
@@ -612,3 +935,4 @@
         )
     )
 )
+

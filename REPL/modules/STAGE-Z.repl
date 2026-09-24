@@ -38,6 +38,34 @@
 (load "../Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl")
 (load "../deploy-stage02.repl")
 (load "../deploy-stagezz.repl")
+;;THE APPREADS MODULES, because DPL-UR no longer answers most of what this suite asks.
+;;
+;;It went into ARCHIVE MODE on 2026-09-25 (§7.21) and 57 of its definitions moved to
+;;`AppReads/`. The assertions below were NOT deleted with them -- each was RETARGETED at the
+;;function that replaced it, so the coverage this file represents survives the migration
+;;instead of quietly shrinking with it. Where a formatter moved under a different name the
+;;successor was confirmed BY OUTPUT, not by name: UC_ConvertPrice/UC_Price both give "1.50$",
+;;UC_FormatIndex/UC_Index both give "1,[500.000.000.000]", UC_PoolTypeWord/URC_PoolTypeWord
+;;both give ["S" "Stable"], and so on.
+;;
+;;What still points at DPL-UR below is what is still IN DPL-UR: the constants, the governance
+;;echo, and the readers that were never ported because nothing consumes them.
+(begin-tx "STAGEZ-00 -- the AppReads read layer")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+(env-sigs
+  [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+(namespace "ouronet-ns")
+(load "../../2_CITIZEN/Stage_Z/AppReads/00_Ids.pact")
+(load "../../2_CITIZEN/Stage_Z/AppReads/OuronetUI/01_O-UI-ONE.pact")
+(load "../../2_CITIZEN/Stage_Z/AppReads/OuronetUI/02_O-UI-TWO.pact")
+(load "../../2_CITIZEN/Stage_Z/AppReads/OuronetUI/03_O-UI-THREE.pact")
+(load "../../2_CITIZEN/Stage_Z/AppReads/OuronetUI/07_O-UI-SEVEN.pact")
+(load "../../2_CITIZEN/Stage_Z/AppReads/OuronetUI/08_O-UI-EIGHT.pact")
+(load "../../2_CITIZEN/Stage_Z/AppReads/OuronetUI/09_O-UI-NINE.pact")
+(load "../../2_CITIZEN/Stage_Z/AppReads/OuronetUI/10_O-UI-TEN.pact")
+(load "../../2_CITIZEN/Stage_Z/AppReads/OuronetUI/12_O-UI-TWELVE.pact")
+(env-sigs [])
+(commit-tx)
 
 ;;|| NEXT >
 ;;
@@ -57,20 +85,20 @@
             "1.23" (DPL-UR.UC_TrimDecimalTrailingZeros 1.2300))
         ;;prices render with two decimals and a currency mark
         (expect "<<STAGEZ-01>> a price renders with 2 decimals and a $ suffix"
-            "1.50$" (DPL-UR.UC_ConvertPrice 1.5))
+            "1.50$" (O-UI-TWO.UC_Price 1.5))
         ;;the index format is unusual and entirely convention -- exactly why it needs pinning
         (expect "<<STAGEZ-01>> the ATS index renders in its grouped [] form"
-            "1,[500.000.000.000]" (DPL-UR.UC_FormatIndex 1.5))
+            "1,[500.000.000.000]" (O-UI-ONE.UC_Index 1.5))
         ;;token amounts keep 4 decimals, zeros INCLUDED (the opposite rule to the trimmer above --
         ;;two helpers, two conventions, and nothing but this test says which is which)
         (expect "<<STAGEZ-01>> a token amount keeps 4 decimals including trailing zeros"
             "1234.5000" (DPL-UR.UC_FormatTokenAmount 1234.5))
         (expect "<<STAGEZ-01>> ...and the list form applies the same rule element-wise"
-            ["1.1000" "2.2000"] (DPL-UR.UC_FormatDecimals [1.10 2.20]))
+            ["1.1000" "2.2000"] (O-UI-TWELVE.UC_AmountList [1.10 2.20]))
         ;;account elision: a 162-glyph account is shortened for display. The ellipsis form is what
         ;;a user reads to recognise their own account, so its shape matters.
         (expect "<<STAGEZ-01>> a glyph account is elided to head...tail"
-            ["Ѻ.éXø...Ìàî"] (DPL-UR.UC_FormatAccountsShort [KST.ANHD]))
+            ["Ѻ.éXø...Ìàî"] (O-UI-TWELVE.URC_ShortAccounts [KST.ANHD]))
     ]
 )
 (commit-tx)
@@ -292,7 +320,7 @@
     [
         (expect-failure "<<STAGEZ-06>> URC_0016_TruefungibleHeader scans DPTF's table"
             "Module admin necessary for operation but has not been acquired:ouronet-ns.DPTF"
-            (DPL-UR.URC_0016_TruefungibleHeader KST.ANHD))
+            (O-UI-EIGHT.URH_01|Header KST.ANHD))
     ]
 )
 (commit-tx)
@@ -308,7 +336,7 @@
     [
         (expect-failure "<<STAGEZ-06>> URC_0018_OrtofungibleHeader scans DPOF's tables"
             "Module admin necessary for operation but has not been acquired:ouronet-ns.DPOF"
-            (DPL-UR.URC_0018_OrtofungibleHeader KST.ANHD))
+            (O-UI-NINE.URH_01|Header KST.ANHD))
     ]
 )
 (commit-tx)
@@ -324,7 +352,7 @@
     [
         (expect-failure "<<STAGEZ-06>> URC_0021_CollectablesHeader scans DPDC's tables"
             "Module admin necessary for operation but has not been acquired:ouronet-ns.DPDC"
-            (DPL-UR.URC_0021_CollectablesHeader KST.ANHD))
+            (O-UI-TEN.URH_01|Header KST.ANHD))
     ]
 )
 (commit-tx)
@@ -343,7 +371,7 @@
     [
         (expect-failure "<<STAGEZ-06>> URC_0035_EliteAccountRichList scans DALOS's table"
             "Module admin necessary for operation but has not been acquired:ouronet-ns.DALOS"
-            (DPL-UR.URC_0035_EliteAccountRichList))
+            (O-UI-THREE.URH_02|RichList))
     ]
 )
 (commit-tx)
@@ -367,13 +395,13 @@
         (expect "<<STAGEZ-07>> ...and the field separator, likewise"
             "|" (DPL-UR.CT_Bar))
         ;;all three branches of the pool-type word, so the mapping cannot be silently re-lettered
-        (expect "<<STAGEZ-07>> S pools read as Stable"    ["S" "Stable"]   (DPL-UR.UC_PoolTypeWord "S|A|B"))
-        (expect "<<STAGEZ-07>> P pools read as Product"   ["P" "Product"]  (DPL-UR.UC_PoolTypeWord "P|A|B"))
+        (expect "<<STAGEZ-07>> S pools read as Stable"    ["S" "Stable"]   (O-UI-TWELVE.URC_PoolTypeWord "S|A|B"))
+        (expect "<<STAGEZ-07>> P pools read as Product"   ["P" "Product"]  (O-UI-TWELVE.URC_PoolTypeWord "P|A|B"))
         ;;NOTE the spelling. "Weigthed" is a TYPO in the source, and it is user-visible. It is pinned
         ;;as-is deliberately: this test records the current UI string, it does not bless it. Fixing
         ;;the typo SHOULD fail here, at which point update the expectation in the same commit.
         (expect "<<STAGEZ-07>> W pools read as Weigthed [sic -- typo pinned as-behaves]"
-            ["W" "Weigthed"] (DPL-UR.UC_PoolTypeWord "W|A|B|C"))
+            ["W" "Weigthed"] (O-UI-TWELVE.URC_PoolTypeWord "W|A|B|C"))
     ]
 )
 (commit-tx)
@@ -433,7 +461,7 @@
 (map print
     [
         (expect "<<STAGEZ-09>> an account with no recoverable position can recover exactly 0"
-            0.0 (DPL-UR.URC_MaxRecoveryAmount "Auryndex-98c486052a51" KST.ANHD))
+            0.0 (O-UI-THREE.URC_04|MaxRecovery "Auryndex-98c486052a51" KST.ANHD))
     ]
 )
 (commit-tx)
@@ -491,14 +519,14 @@
 (map print
     [
         (expect "<<STAGEZ-11>> the account-selector mapper equals its single, element-wise"
-            [(DPL-UR.URC_0027a_AccountSelectorSingle KST.ANHD)]
-            (DPL-UR.URC_0027_AccountSelectorMapper [KST.ANHD]))
+            [(O-UI-SEVEN.URC_02|Account KST.ANHD)]
+            (O-UI-SEVEN.URC_01|Accounts [KST.ANHD]))
         (expect "<<STAGEZ-11>> the true-fungible entry mapper equals its single, element-wise"
-            [(DPL-UR.URC_0008a_TrueFungibleEntry KST.ANHD "OURO-98c486052a51")]
-            (DPL-UR.URC_0008a_TrueFungibleEntryMapper KST.ANHD ["OURO-98c486052a51"]))
+            [(O-UI-EIGHT.URC_02|TokenEntry KST.ANHD "OURO-98c486052a51")]
+            (O-UI-EIGHT.URC_03|TokenList KST.ANHD ["OURO-98c486052a51"]))
         ;;the empty case is where mappers usually break (a fold seeded with a dummy row)
         (expect "<<STAGEZ-11>> an empty account list maps to an empty result"
-            [] (DPL-UR.URC_0027_AccountSelectorMapper []))
+            [] (O-UI-SEVEN.URC_01|Accounts []))
         (expect "<<STAGEZ-11>> ...and so does an empty api-key list"
             [] (DPL-UR.URC_0033_DualApiKeyMapper []))
     ]
@@ -520,16 +548,16 @@
     [
         ;;a count field beside the list it counts
         (expect "<<STAGEZ-12>> the swpair overview's pool count matches the list it reports"
-            true (let ((r (DPL-UR.URC_0003_SWPairGeneralInfo)))
+            true (let ((r (O-UI-TWELVE.URC_01|Global)))
                      (= (at "number-of-pools" r) (length (at "pools" r)))))
         ;;one wallet cannot hold more of a token than exists
         (expect "<<STAGEZ-12>> a wallet's balance never exceeds the token's total supply"
-            true (let ((r (DPL-UR.URC_0008a_TrueFungibleEntry KST.ANHD "OURO-98c486052a51")))
+            true (let ((r (O-UI-EIGHT.URC_02|TokenEntry KST.ANHD "OURO-98c486052a51")))
                      (<= (at "wallet-supply" r) (at "dptf-supply" r))))
         ;;the entry names the token it was asked about, rather than whatever it looked up last
         (expect "<<STAGEZ-12>> the entry reports the id it was asked for"
             "OURO-98c486052a51"
-            (at "t2" (DPL-UR.URC_0008a_TrueFungibleEntry KST.ANHD "OURO-98c486052a51")))
+            (at "t2" (O-UI-EIGHT.URC_02|TokenEntry KST.ANHD "OURO-98c486052a51")))
         ;;price/text agreement -- the same invariant the INFO cost previews carry: a UI shows the
         ;;TEXT, so a price that stops matching its own sentence is invisible until a user is charged
         (expect "<<STAGEZ-12>> each Pythia price appears inside its own display sentence"
@@ -565,19 +593,19 @@
         ;;the derived convention, asserted as an equivalence so it stays derived
         (expect "<<STAGEZ-13>> curl and brumate flags are equivalent to a non-empty target list"
             [true true]
-            (let ((r (DPL-UR.URC_0017_TruefungibleButton KST.ANHD "OURO-98c486052a51")))
+            (let ((r (O-UI-EIGHT.URC_07|Buttons KST.ANHD "OURO-98c486052a51")))
                 [(= (at "curl" r)    (< 0 (length (at "where-curl" r))))
                  (= (at "brumate" r) (< 0 (length (at "where-brumate" r))))]))
         ;;...and the eligibility convention, pinned by the case that breaks the other reading
         (expect "<<STAGEZ-13>> constrict is TRUE while its target list is EMPTY -- flag != availability"
             true
-            (let ((r (DPL-UR.URC_0017_TruefungibleButton KST.ANHD "OURO-98c486052a51")))
+            (let ((r (O-UI-EIGHT.URC_07|Buttons KST.ANHD "OURO-98c486052a51")))
                 (and (at "constrict" r) (= 0 (length (at "where-constrict" r))))))
         ;;coil shares constrict's convention; here it happens to have a target, which is exactly why
         ;;the divergence is easy to miss -- three of the four agree on any given chain state
         (expect "<<STAGEZ-13>> coil reports its one target pair on this chain"
             ["Auryndex-98c486052a51"]
-            (at "where-coil" (DPL-UR.URC_0017_TruefungibleButton KST.ANHD "OURO-98c486052a51")))
+            (at "where-coil" (O-UI-EIGHT.URC_07|Buttons KST.ANHD "OURO-98c486052a51")))
     ]
 )
 (commit-tx)
@@ -629,15 +657,15 @@
 (map print
     [
         (expect "<<STAGEZ-15>> an empty stoic-tag list maps to an empty result"
-            [] (DPL-UR.URC_0027b_StoicTagSelectorMapper []))
+            [] (O-UI-SEVEN.URC_03|StoicTags []))
         (expect "<<STAGEZ-15>> an empty stoa-account list maps to an empty result"
-            [] (DPL-UR.URC_0028_StoaAccountSelectorMapper []))
+            [] (O-UI-SEVEN.URC_05|StoaAccounts []))
         (expect "<<STAGEZ-15>> an empty apollo-account list maps to an empty result"
             [] (DPL-UR.URC_0031 []))
         (expect "<<STAGEZ-15>> filtering an empty nonce list by class yields nothing"
-            [] (DPL-UR.URC_0025_FilterNoncesByClass "DHCD-98c486052a51" true [] 1))
+            [] (O-UI-TEN.URC_07|FilterByClass "DHCD-98c486052a51" true [] 1))
         (expect "<<STAGEZ-15>> reading nonce data for no nonces yields nothing"
-            [] (DPL-UR.URC_0023_CollectablesNonceData "DHCD-98c486052a51" true []))
+            [] (O-UI-TEN.URC_05|NonceData "DHCD-98c486052a51" true []))
     ]
 )
 (commit-tx)
@@ -656,9 +684,9 @@
 (map print
     [
         (expect "<<STAGEZ-16>> a real collection's set definitions come back non-empty"
-            true (< 0 (length (DPL-UR.URC_0024_SetReader "DHCD-98c486052a51" true))))
+            true (< 0 (length (O-UI-TEN.URC_06|Sets "DHCD-98c486052a51" true))))
         (expect "<<STAGEZ-16>> ...and the first set carries the active flag the UI switches on"
-            true (at "iz-active" (at 0 (DPL-UR.URC_0024_SetReader "DHCD-98c486052a51" true))))
+            true (at "iz-active" (at 0 (O-UI-TEN.URC_06|Sets "DHCD-98c486052a51" true))))
     ]
 )
 (commit-tx)
@@ -752,15 +780,15 @@
             ;;the native path works: same function, same pool, iz-native = true
             (expect "<<STAGEZ-18>> the NATIVE LP entry reads fine on a fresh pool"
                 "P|OURO-PKOSON|LP-98c486052a51"
-                (at "t2" (DPL-UR.URCv_0008b_TrueFungibleLPEntry KST.ANHD sp true)))
+                (at "t2" (O-UI-EIGHT.URCv_04|LpEntry KST.ANHD sp true)))
             ;;...while asking for the FROZEN counterpart of a pool that has none is refused
             (expect-failure "<<STAGEZ-18>> ...but the FROZEN LP entry needs a frozen counterpart to exist"
                 "Frozen LP must be defined for this usage"
-                (DPL-UR.URCv_0008b_TrueFungibleLPEntry KST.ANHD sp false))
+                (O-UI-EIGHT.URCv_04|LpEntry KST.ANHD sp false))
             ;;and the sleeping twin, which has no native escape hatch -- it enforces unconditionally
             (expect-failure "<<STAGEZ-18>> ...and the SLEEPING LP entry likewise"
                 "Sleeping LP must be defined for this usage"
-                (DPL-UR.URCv_0009b_OrtoFungibleLPEntry KST.ANHD sp))
+                (O-UI-NINE.URCv_04|LpEntry KST.ANHD sp))
         ]
     )
 )
@@ -777,8 +805,8 @@
 ;;These were in the "never reached" column purely because the chain had no pools. Asserted on
 ;;INTERNAL AGREEMENT rather than literals, so they keep holding as the pool set changes.
 (let* ((sp:string (at 0 (SWP.URC_ActiveSwpairs)))
-       (gi (DPL-UR.URC_0003_SWPairGeneralInfo))
-       (core (DPL-UR.URC_SWPairCoreRead sp)))
+       (gi (O-UI-TWELVE.URC_01|Global))
+       (core (O-UI-TWELVE.URC_PoolCore sp)))
     (map print
         [
             ;;ALL pools, not active ones. The first version of this assertion equated

@@ -1,73 +1,67 @@
-;; ===========================================================================================
-;; DPL-UR -- ARCHIVE MODE since 2026-09-25. StoicSyntax-Prefixes.md §7.21.
-;; ===========================================================================================
-;; This module WAS the read layer for every Ouronet front end: one file, 3,026 lines, every
-;; page's data behind a single `implements`. Those reads now live in `AppReads/`, one module per
-;; display entity. 57 definitions removed, 18 kept.
+;; =========================================================================================
+;; OURONET DEPLOY -- ROUND V2, file 14
+;; DPL-UR (module UPGRADE)  --  ARCHIVE MODE. The read layer is retired.
+;; =========================================================================================
+;; *** DEPLOY THIS LAST, AND ONLY AFTER EVERY PAGE HAS BEEN CHECKED. ***
+;;
+;; This removes 57 of DPL-UR's 75 definitions. Until now the transport redirect in OuronetUI has
+;; had a SAFETY NET: if an AppReads module refused, the shim re-issued the ORIGINAL call and the
+;; page kept working on the legacy read. After this transaction that net is gone -- the original
+;; no longer exists, so a failure in a new module is a visible failure rather than a silent
+;; downgrade.
+;;
+;; That is the POINT, not a side effect. A migrated read left in place is a second source of
+;; truth answering the same question, and the two drift the moment either is touched, so a
+;; consumer nobody remembered keeps working quietly on last month's logic. But it does mean the
+;; verification has to happen BEFORE this file, not after it.
 ;;
 ;; ------------------------------------------------------------------------------------------
-;; WHY A READ MODULE IS STUBBED AT ALL, WHEN ARCHIVE MODE NORMALLY KEEPS READS
+;; WHAT GOES, AND ON WHAT RULE
 ;; ------------------------------------------------------------------------------------------
-;; §7.21 retires a module by deleting everything that CHANGES state and keeping every reader, so
-;; whatever history its tables hold stays legible. DPL-UR owns no tables and is reads end to
-;; end, so applied literally that rule would delete nothing.
-;;
-;; The hazard here is the opposite one. A MIGRATED read left in place is a second source of
-;; truth answering the same question, and the two drift the moment either side is touched -- so
-;; a consumer nobody remembered keeps working, quietly, on last month's logic. That is strictly
-;; worse than a loud failure; it is how a wrong number survives a migration. So the rule applied
-;; here is the narrow one:
-;;
 ;;     DELETED IF AND ONLY IF IT MOVED TO AppReads.  Everything else stays.
 ;;
 ;; The deleted set is exactly the 47-entry redirect table in OuronetUI's
-;; `src/kadena/appReadRedirect.ts`, plus the internals that moved with those reads, plus the
-;; five display formatters whose AppReads successors were verified BY OUTPUT rather than by
-;; name (UC_ConvertPrice -> UC_Price, UC_FormatIndex -> UC_Index, UC_FormatDecimals ->
-;; UC_AmountList, UC_FormatAccountsShort -> URC_ShortAccounts, UC_PoolTypeWord ->
-;; URC_PoolTypeWord). The survivors are then the DEPENDENCY CLOSURE of what is left, computed
-;; rather than chosen, so nothing kept can reference something deleted.
+;; `src/kadena/appReadRedirect.ts`, plus the internals that moved with those reads, plus five
+;; display formatters whose successors were verified BY OUTPUT rather than by name. The 18
+;; survivors are then the DEPENDENCY CLOSURE of what is left -- computed, not chosen -- so
+;; nothing kept can reference something deleted.
 ;;
-;; WHAT SURVIVES, AND WHY:
+;; Surviving: URC_0030_StoicPay and the three PYTHIA reads (no successors, and the oracle
+;; console that would pull them does not exist yet); URC_PrimordialIDs, URC_PrimordialPrices,
+;; URC_TrueFungibleAmountPrice, URC_StoaCollectionReceivers and URC_SplitStoaPriceForReceivers
+;; (never ported -- and the last two carry the STOA-split CONSERVATION invariant that
+;; STAGEZ-08 asserts, which deleting them would delete); two helpers and three constants.
 ;;
-;;   URC_0030_StoicPay            no successor. Zero callers anywhere in the workspace -- but
-;;                                a read is deleted on purpose, never as a side effect.
-;;   URC_0031                     the three PYTHIA reads. Not ported, deliberately: reads are
-;;   URC_0033_DualApiKeyMapper    pulled by a UI and the oracle console does not exist yet, so
-;;   URC_0034_PythiaPrices        porting them means guessing a shape the first real screen
-;;                                contradicts. See AppReads/Pythia/README.md.
-;;   URC_PrimordialIDs            no successor; still pinned by modules/STAGE-Z.repl.
-;;   URC_PrimordialPrices
-;;   URC_StoaCollectionReceivers  the STOA collection split, whose CONSERVATION invariant
-;;   URC_SplitStoaPriceForReceivers  STAGEZ-08 asserts. Deleting these would delete that proof.
-;;   URC_TrueFungibleAmountPrice  no successor.
-;;   UC_FormatTokenAmount         helpers the above still need, kept by closure, not by hand.
-;;   UC_TrimDecimalTrailingZeros
-;;   CT_Namespace / CT_Bar / BAR  constants, and free.
+;; `implements DeployerReadsV14` is dropped -- Pact requires a module to define every member of
+;; an interface it implements. No successor interface is declared, departing from the DPMF
+;; precedent deliberately: a tree-wide scan finds DeployerReadsV14 bound by NOTHING, so a V15
+;; restating eighteen survivors would be a permanent artefact describing an archive.
 ;;
-;; `implements DeployerReadsV14` IS DROPPED, as archive mode requires and as Pact forces: a
-;; module must define every member of an interface it implements, so one that has shed functions
-;; cannot keep the clause.
+;; ------------------------------------------------------------------------------------------
+;; HOW THE MIGRATION WAS PROVEN BEFORE THIS FILE WAS WRITTEN
+;; ------------------------------------------------------------------------------------------
+;; Every replacement was called on MAINNET alongside the function it replaces and the returned
+;; objects compared key by key. That is what found the four flattened glyphs (¢ × ≥ Ξ₳), the
+;; unreachable Wipe button, the ICO division by zero, and a call to
+;; `URC_0008b_TrueFungibleLPEntry` -- a member DPL-UR does not have, which means the LP balance
+;; panel on the SWP Pairs page has never once rendered.
 ;;
-;; AND NO SUCCESSOR INTERFACE IS DECLARED, which departs from the DPMF precedent -- that
-;; retirement bumped its own interface V7 -> V8 rather than dropping it. The difference is
-;; measured, not stylistic: an interface earns its keep by letting other modules bind a
-;; `module{...}` reference, and a tree-wide scan finds DeployerReadsV14 bound by NOTHING. Zero
-;; modrefs, zero implementors after this change. It was documentation of a surface that no
-;; longer exists, so a V15 restating eighteen survivors would be a permanent, un-removable
-;; artefact describing an archive. DeployerReadsV14 stays deployed and unimplemented; an
-;; interface cannot be removed from a chain, and an orphaned one costs nothing.
+;; Parity cannot outlive this transaction, so its durable half was preserved first: RDUI-16 in
+;; `REPL/modules/APPREADS-OuronetUI.repl` pins 177 keys across 10 client reads, READ OFF MAINNET
+;; rather than copied from the sources. And the 162 assertions in `modules/STAGE-Z.repl` were
+;; RETARGETED at the replacements rather than deleted with the originals.
 ;;
-;; THE REPLACEMENTS, for anyone arriving from a dead call site:
-;;   header, dashboard           AppReads/OuronetUI/01_O-UI-ONE, 02_O-UI-TWO
-;;   elite account + recovery    03_O-UI-THREE          stoa ICO        04_O-UI-FOUR
-;;   codex / selectors           07_O-UI-SEVEN          true fungibles  08_O-UI-EIGHT
-;;   orto fungibles              09_O-UI-NINE           collectables    10_O-UI-TEN
-;;   SWP pools + swap previews   12_O-UI-TWELVE
-;; ===========================================================================================
+;; SIGNING -- namespace keyset AND the Demiurgoi keyset (GOV|DPL_UR_ADMIN).
+;;
+;; MEASURED in the REPL fixture: 3,026 lines -> 436. Upgrade gas is far below the first deploy's,
+;; since upgrade mode ships no tables and DPL-UR declares none.
+;; =========================================================================================
+
+;;@GENERATED-BODY-BELOW -- do not edit past this line; see REPL/tools/_purev2.py
 
 (namespace "ouronet-ns")
 
+;; ---- source: 2_CITIZEN/Stage_Z/01_DPL-UR.pact (module only -- its interface is already live)
 (module DPL-UR GOV
 
 
@@ -441,3 +435,4 @@
         )
     )
 )
+
