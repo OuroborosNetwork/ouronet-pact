@@ -1,39 +1,47 @@
-;; ===========================================================================================
-;; O-UI-TWELVE -- the SWP pages: pool list, per-pool dashboards, management and fee settings.
-;; ===========================================================================================
-;; Module 03 of the READS_UI split. Template: 01_O-UI-ONE.pact. Rules: ../RULES.md.
+;; =========================================================================================
+;; OURONET DEPLOY -- ROUND V2, file 5
+;; OUiTwelveV1 (interface) + O-UI-TWELVE (module)  --  OuronetUI entity 12: SWPPAIRS
+;; =========================================================================================
+;; INDEPENDENT of the other PureV2 files. Imports OuronetIdsV1, deployed in PureV2/01.
 ;;
-;; REPLACES DPL-UR::URC_0003 / _0004 / _0005 / _0010 / _0011 / _0014 / _0015 and the shared
-;; URC_SWPairCoreRead they lean on -- seven public reads plus a helper, the largest group in
-;; the roster.
+;; REPLACES nine DPL-UR reads: URC_0003 / 0004 / 0005 / 0010 / 0011 / 0014 / 0015 and the shared
+;; URC_SWPairCoreRead, PLUS URC_0006b_DirectSwap and URC_0007b_InverseSwap.
 ;;
-;; ------------------------------------------------------------------------------------------
-;; A DEFECT FOUND WHILE PORTING, AND FIXED HERE -- read this before diffing against DPL-UR
-;; ------------------------------------------------------------------------------------------
-;; DPL-UR carries the Elite-tier -> max-special-fee-targets rule TWICE, and the two copies
-;; DISAGREE:
+;; TWO TESTING POSTURES IN ONE MODULE, separated by an in-body banner -- read it before adding
+;; anything here. Above the banner is display: panels degrade under `try`, a dead panel reports
+;; panel-ok false, a wrong number is a cosmetic bug. Below it are the swap previews, which
+;; produce the figure a user reads IMMEDIATELY BEFORE SIGNING A TRADE. Those are deliberately
+;; NOT composed and NOT try-wrapped: a token absent from the pool must REFUSE, because a
+;; swallowed refusal reads to a user as a valid quote of zero.
 ;;
-;;     URC_0032_EliteAccount           (fold (or) false [(= major 5) (= major 6) (= major 7)])
-;;     URC_0015_SwpairManagementFee    (fold (or) true  [(= major 5) (= major 6) (= major 7)])
+;; A LIVE DEFECT IS FIXED HERE. DPL-UR carries the Elite-tier -> max-special-fee-targets rule
+;; twice and the copies disagree: URC_0015 seeds its or-fold with `true`, whose identity is
+;; FALSE, so the tier-5 branch always fires and the trailing `1` is unreachable. Every pool
+;; owner below tier 2 is currently told they may set SEVEN special-fee targets when the rule
+;; allows ONE -- a number that bounds what the UI lets a user add, so it walks them into a
+;; transaction the contract refuses. Now a single UC_MaxSpecialFeeTargets, written as an
+;; explicit comparison so there is no fold seed to get wrong.
 ;;
-;; The identity for `or` is FALSE. Seeding the fold with TRUE makes it return true regardless of
-;; its contents, so that `cond` branch always fires and the trailing `1` is UNREACHABLE.
+;; O-UI-THREE carries a deliberate COPY of that function -- calling across would make one read
+;; module a deploy dependency of another. RDUI-09 asserts the two agree on every tier.
 ;;
-;; Measured, not reasoned: for major = 1 the seeded-true form yields 7 where the correct form
-;; yields 1. So every pool owner below tier 2 has been told they may set SEVEN special-fee
-;; targets when the rule allows ONE.
+;; ALSO FIXED: URC_0005's mapper had no guard, so ONE unreadable pool emptied the entire pool
+;; list. URC_02|PoolList wraps each member in `try`; a bad id degrades to one dead entry.
 ;;
-;; That is not cosmetic, and it is exactly the carve-out in ../RULES.md's testing
-;; posture: `max-special-fee-targets` decides how many targets the UI lets a user ADD. A wrong
-;; 7 walks them into a transaction the contract refuses.
+;; SIGNING -- namespace keyset only. Both are FIRST deploys -- no interface-upgrade hazard, and a
+;; module's first deploy checks no governance. A later UPGRADE will check the module's
+;; own GOV|*_ADMIN.
 ;;
-;; FIXED HERE, and fixed STRUCTURALLY: the rule now exists once, in UC_MaxSpecialFeeTargets,
-;; because two copies of a rule is how the two copies came to disagree. O-UI-THREE (EliteAccount) must call this
-;; same function when URC_0032 is ported -- do not write a third copy.
-;; ===========================================================================================
+;; MEASURED in the REPL fixture (Stage 1 + Stage 2, nothing else from this round):
+;;   deploy 29,222 gas
+;;   URC_03|Pool + 21-pool list + account panel 311,029 gas, 21 pools, every panel ok
+;; =========================================================================================
+
+;;@GENERATED-BODY-BELOW -- do not edit past this line; see REPL/tools/_purev2.py
 
 (namespace "ouronet-ns")
 
+;; ---- source: 2_CITIZEN/Stage_Z/AppReads/OuronetUI/12_O-UI-TWELVE.pact
 (interface OUiTwelveV1
     @doc "SWP page reads: global pool state, per-pool dashboards, internal and management \
         \ views, and per-account pool balances. Complete surface."
@@ -484,3 +492,4 @@
         )
     )
 )
+

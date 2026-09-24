@@ -34,14 +34,14 @@ neighbours.
 |---:|---|---|---|
 | 1 | `O-UI-ONE` | Header | **built** |
 | 2 | `O-UI-TWO` | Dashboard | **built** |
-| 3 | `O-UI-THREE` | EliteAccount | not started |
-| 4 | `O-UI-FOUR` | StoaIco | not started |
+| 3 | `O-UI-THREE` | EliteAccount | **built** — account panel, rich list, recovery panel (iface V2) |
+| 4 | `O-UI-FOUR` | StoaIco | **built** — fixes a div-by-zero `try` cannot catch |
 | 5 | `O-UI-FIVE` | CrossChain | not started |
 | 6 | `O-UI-SIX` | ExecuteCode | not started |
-| 7 | `O-UI-SEVEN` | Codex | not started |
-| 8 | `O-UI-EIGHT` | TrueFungible | not started |
-| 9 | `O-UI-NINE` | OrtoFungibles | not started |
-| 10 | `O-UI-TEN` | Collectables | not started |
+| 7 | `O-UI-SEVEN` | Codex | **built** — selectors; parity-asserted against DPL-UR |
+| 8 | `O-UI-EIGHT` | TrueFungible | **built** — per-row degradation |
+| 9 | `O-UI-NINE` | OrtoFungibles | **built** — valuation split out from a `select` |
+| 10 | `O-UI-TEN` | Collectables | **built** — fixes an unreachable Wipe button |
 | 11 | `O-UI-ELEVEN` | AtsPairs | **blocked — no UI** |
 | 12 | `O-UI-TWELVE` | SwpPairs | **built** — pools + swap previews, two testing postures in one module |
 | 13 | `O-UI-THIRTEEN` | EarningPools | not started |
@@ -49,6 +49,19 @@ neighbours.
 | 15 | `O-UI-FIFTEEN` | StoaLiquidStaking | not started |
 | 16 | `O-UI-SIXTEEN` | NFTMarketPlace | Stage 3 — does not exist |
 | 17 | `O-UI-SEVENTEEN` | LendingPlatform | Stage 3 — does not exist |
+
+### What is left, and why
+
+Slots **5** (CrossChain), **6** (ExecuteCode) and **13** (EarningPools) have no DPL-UR reads
+behind them — no `URC_` in DPL-UR maps to those pages, so there is nothing to port. Slots 14–17
+are Stage 3 or unbuilt. Slot 11 is a mockup; see below.
+
+That leaves the migration's read surface **complete for every OuronetUI page that reads the
+chain**. What remains in DPL-UR after these nine modules are wired are the three PYTHIA reads
+(see [`Pythia/README.md`](Pythia/README.md) — nothing calls them) and six dead references the
+UI names but never reaches: `URC_0001_Header`, `URC_0006_Swap`, `URC_0007_InverseSwap`,
+`URC_0008_CappedInverse`, `URC_0011_RecoveryPrimordial`, `URC_0012_HibernateFee`. Those get
+deleted from `ouronet-core`, not ported.
 
 ### Slot 11 is blocked on purpose
 
@@ -64,9 +77,17 @@ exactly how `URC_0001_HeaderV3` became one 70-key object in a single eager `let`
 So slot 11 waits for the panel, and the module then falls out of what the panel displays. The
 same holds for 13, 16 and 17.
 
+## Deploying
+
+`Deploy/PureV2/` holds the hand-deploy round; the owner sends one file at a time and the wiring
+follows each. **The body of every live file there is GENERATED** from these sources by
+`REPL/tools/_purev2.py` and diffed by the gate — only the prose header above the marker is
+hand-written. That exists because a hand-copied deploy file drifted from its module and the
+drift reached mainnet; see RULES.md rule 10.
+
 ## Rules
 
-In [`RULES.md`](RULES.md) — normative for every app, nine of them, each earned by something
+In [`RULES.md`](RULES.md) — normative for every app, ten of them, each earned by something
 that went wrong: no tables, no hardcoded ids, no scan inside a `try`, scans get their own
 `URH_`, helper names are tree-global to `_callarity.py`, every function callable in the
 fixture, formatters copied not shared, and never edit the tree while the gate runs.

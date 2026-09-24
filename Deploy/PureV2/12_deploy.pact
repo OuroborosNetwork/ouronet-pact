@@ -1,51 +1,50 @@
-;; ===========================================================================================
-;; O-UI-THREE -- OuronetUI entity 3: ELITE ACCOUNT.
-;; ===========================================================================================
-;; Template: 01_O-UI-ONE.pact. Rules: ../RULES.md. Entity map: ../README.md.
+;; =========================================================================================
+;; OURONET DEPLOY -- ROUND V2, file 12
+;; OUiThreeV2 (interface) + O-UI-THREE (module UPGRADE)  --  the Elite recovery reads
+;; =========================================================================================
+;; A NEW INTERFACE AND A MODULE UPGRADE IN ONE FILE. OUiThreeV1 went out in PureV2/04 and a
+;; deployed Pact interface CANNOT be changed -- not to add a function, not even byte-identically
+;; -- so the two reads appended to O-UI-THREE arrive as OUiThreeV2, carrying the full surface.
+;; The module implements only the latest, per the cascade rule. V1 stays deployed and
+;; unimplemented; Pact offers no way to remove it, and it costs nothing.
 ;;
-;; REPLACES DPL-UR::URC_0032_EliteAccount and URC_0035_EliteAccountRichList -- the only two
-;; reads the Elite Account page makes (verified against src/hooks/useEliteAccount.ts and
-;; useEliteRichList.ts).
+;; ADDS DPL-UR::URC_0012_RecoveryPrimordial, URC_0012b_PosObjSt and URC_MaxRecoveryAmount,
+;; which complete the Elite Account page. These were left out of PureV2/04 because they belong
+;; to the recovery panel rather than the account panel, and the account panel was the thing
+;; that was broken.
 ;;
-;; ------------------------------------------------------------------------------------------
-;; INTERFACE BUMPED V1 -> V2 ON 2026-09-24. OUiThreeV1 is already on mainnet, and a deployed
-;; Pact interface CANNOT be changed -- not even to add a function, not even byte-identically.
-;; The two recovery reads appended below therefore arrive as OUiThreeV2, which carries the full
-;; surface; the module implements only the latest, per the cascade rule. OUiThreeV1 stays
-;; deployed and unimplemented, which costs nothing and is the only option Pact offers.
+;; PARITY PROVEN, not assumed. Both reads were compared against DPL-UR across ALL ELEVEN ATS
+;; pairs in the fixture -- including the Elite Auryn pool, where URC_04|MaxRecovery returns a
+;; real 112,344.293303604479385796672290 rather than the zero every other pool gives. Every
+;; object identical, every decimal identical.
 ;;
-;; TWO CLIENT READS, AND THEY ARE DELIBERATELY NOT COMPOSED TOGETHER
-;; ------------------------------------------------------------------------------------------
-;;   URC_01|EliteAccount  -- one account's panel. Six cards under `try`, flat 63-key output.
-;;   URH_02|RichList      -- every Standard account, ranked. A SCAN. Standalone by necessity.
+;; WHAT THE RESTRUCTURING TOUCHED. DPL-UR hand-wrote seven `default-N` bindings and seven
+;; `pN-obj` reads. They are now two `map`s over [1..7]. The defaults are NOT uniform and that
+;; is load-bearing: an account with no row at position N gets ZERO (open) when the position
+;; should exist for it and NEGATIVE (closed) when it should not -- by pool-declared count in a
+;; non-elite pool, by the account's own major tier in an elite one. Position 1 always defaults
+;; open. Collapsing those would offer users positions they have not earned.
 ;;
-;; The rich list cannot join the composer and the reason is structural, not stylistic: it runs
-;; `(keys DALOS.DALOS|AccountTable)`, and Pact evaluates a `try` body in READ-ONLY mode where
-;; `keys` is disallowed. Folding it in would make the panel abort wholesale instead of degrade.
-;; It is also the one function here a page can render without -- a leaderboard is not the panel.
+;; CARRIED THROUGH UNCHANGED, AND SUSPECT: `iz-button` ends in `(>= total-to-cull 0.0)` over a
+;; sum of never-negative cull amounts, so that disjunct is ALWAYS TRUE and the button can never
+;; be hidden. The likely intent is `>`. Left alone deliberately -- whether a button appears is
+;; the owner's call, not a porting decision.
 ;;
-;; `URH_` not `URC_`, so the cost is legible from the name. It is the heaviest read in the app.
+;; SIGNING -- namespace keyset AND the Demiurgoi keyset. The interface is a first deploy and
+;; checks nothing, but the module UPGRADE runs GOV|O_UI_THREE_ADMIN, which is
+;; keyset-ref-guard(GOV|Demiurgoi).
 ;;
-;; ------------------------------------------------------------------------------------------
-;; THE TIER RULE IS DUPLICATED FROM O-UI-TWELVE ON PURPOSE -- read this before "fixing" it
-;; ------------------------------------------------------------------------------------------
-;; `UC_MaxSpecialFeeTargets` also exists in O-UI-TWELVE. Two copies of a rule is exactly how the
-;; original defect happened: DPL-UR carried this logic twice and the copies disagreed, one
-;; seeding its `or`-fold with `true` (whose identity is FALSE), so every owner below tier 2 was
-;; told 7 targets instead of 1.
-;;
-;; So why copy it again? Because the alternative is worse. Calling O-UI-TWELVE from here would
-;; make one read module a deploy dependency of another, and a read module being independently
-;; redeployable is the single property this whole split buys. RULES.md rule 8 says the same of
-;; formatters.
-;;
-;; WHAT MAKES THE DUPLICATION SAFE IS A TEST, NOT DISCIPLINE. RDUI-09 asserts that this copy and
-;; O-UI-TWELVE's agree on every tier 0..7. Divergence fails the gate. That assertion is the
-;; thing that was missing when the first two copies drifted -- not vigilance.
-;; ===========================================================================================
+;; MEASURED in the REPL fixture (Stage 1 + ATS scenario + Stage 2):
+;;   deploy 42,903 gas
+;;   URC_03|Recovery + URC_04|MaxRecovery over 11 ATS pairs 210,440 gas
+;;   all 11 pairs identical to DPL-UR, both functions
+;; =========================================================================================
+
+;;@GENERATED-BODY-BELOW -- do not edit past this line; see REPL/tools/_purev2.py
 
 (namespace "ouronet-ns")
 
+;; ---- source: 2_CITIZEN/Stage_Z/AppReads/OuronetUI/03_O-UI-THREE.pact
 (interface OUiThreeV2
     @doc "Elite Account page reads: the per-account panel and the ranked rich list."
 
@@ -612,3 +611,4 @@
         )
     )
 )
+

@@ -241,6 +241,57 @@ ROUNDS = {
             # exists. Nothing in this folder ships until the owner deploys it, by design --
             # DPL-UR stays authoritative until the UI has moved off it, and having both live
             # and answering the same question is the one state worse than either.
+            "2_CITIZEN/Stage_Z/AppReads/OuronetUI/04_O-UI-FOUR.pact":
+                "APPREADS, OuronetUI entity 4 (STOAICO). Replaces DPL-UR::URC_0013_StoaICO. "
+                "FIXES A LIVE DIVISION BY ZERO: stoa-for-redemption divides by the ICO's "
+                "running dollar total, which is 0.0 before the first contribution -- and "
+                "`try` does NOT catch an arithmetic exception, so no caller could defend "
+                "against it and the page was un-renderable from deploy until the first dollar "
+                "arrived. CARRIES FORWARD, deliberately, a second defect: the end date reads "
+                "(time \"2026-15-05T20:00:00Z\"), and Pact CLAMPS month 15 to 12 rather than "
+                "rejecting it, so the advertised deadline is 5 Dec 2026 where the digits say "
+                "15 May. A public deadline is not a porting decision; CT_IcoEnd states the "
+                "instant actually produced and awaits an owner ruling. Gate-covered by "
+                "RDUI-14.",
+            "2_CITIZEN/Stage_Z/AppReads/OuronetUI/07_O-UI-SEVEN.pact":
+                "APPREADS, OuronetUI entity 7 (CODEX). Replaces "
+                "DPL-UR::URC_0027/0027a/0027b/0027c/0028/0028a/0029 -- the account, Stoa "
+                "account and StoicTag selectors plus the pre-transaction overview. No page "
+                "composer on purpose: three of the seven are already list-taking mappers. "
+                "Every read must ANSWER for a subject that does not exist rather than throw, "
+                "which is what its sentinels encode (iz-smart -1, balances -1.0, strings BAR) "
+                "-- do not tidy them into false/0.0. Collapses three coin reads into one "
+                "`details` sample. Gate-covered by RDUI-13, which asserts object-for-object "
+                "parity with DPL-UR on both a live and a non-existent account.",
+            "2_CITIZEN/Stage_Z/AppReads/OuronetUI/08_O-UI-EIGHT.pact":
+                "APPREADS, OuronetUI entity 8 (TRUEFUNGIBLE). Replaces DPL-UR::URC_0016, "
+                "URC_0008a_TrueFungibleEntry + mapper, URCv_0008b_TrueFungibleLPEntry + its "
+                "two mappers, and URC_0017_TruefungibleButton. FIXES a mapper with no guard, "
+                "where ONE unreadable token emptied the whole list; each member is now `try`-"
+                "wrapped and degrades to UDC_ZeroEntry with an ADDITIVE `entry-ok` flag. The "
+                "header holds a cross-module `keys` scan so it is URH_ and has zero Pact "
+                "callers -- a scan cannot sit inside `try` and _conformance tolerates one only "
+                "in an uncalled function. Gate-covered by RDUI-11.",
+            "2_CITIZEN/Stage_Z/AppReads/OuronetUI/09_O-UI-NINE.pact":
+                "APPREADS, OuronetUI entity 9 (ORTOFUNGIBLES). Replaces DPL-UR::URC_0018, "
+                "URC_0009a_OrtoFungibleEntry + mapper, URCv_0009b_OrtoFungibleLPEntry + "
+                "mapper, URC_0019_OrtofungibleButton, URC_0020_HibernatingNonceData. SHAPED "
+                "UNLIKE O-UI-EIGHT because its entry reads DPOF::URH_AccountNonces, a "
+                "`select`, which `try` forbids: the VALUATION is split out and wrapped "
+                "instead, so the guard sits where the failure is. The sleeping-LP list needs "
+                "no try at all -- it checks for the counterpart first, where DPL-UR called a "
+                "function it knew would refuse and lost the whole list. Gate-covered by "
+                "RDUI-12.",
+            "2_CITIZEN/Stage_Z/AppReads/OuronetUI/10_O-UI-TEN.pact":
+                "APPREADS, OuronetUI entity 10 (COLLECTABLES). Replaces DPL-UR::URC_0021/0022/"
+                "0022a x2/0023/0024/0025/0025a/0026 plus UCx_NonFungibleNonceExistance, "
+                "renamed URC_IzNonceTaken because `UCx_` claims pure compute over two table "
+                "reads. FIXES A LIVE DEFECT: URC_0026 binds (at 0 selected-nonces) eagerly, so "
+                "an EMPTY selection throws -- and `wipe` is the one flag that requires an "
+                "empty selection, making the Wipe button unreachable and blanking the whole "
+                "action bar in the page's initial state. Verified against the live source: "
+                "DPL-UR raises where this answers, and the two are identical on any non-empty "
+                "selection. Gate-covered by RDUI-15.",
             "2_CITIZEN/Stage_Z/AppReads/OuronetUI/12_O-UI-TWELVE.pact":
                 "APPREADS, OuronetUI entity 12 (SWPPAIRS). Replaces "
                 "DPL-UR::URC_0003/0004/0005/0010/0011/0014/0015 plus the shared "

@@ -121,11 +121,11 @@
         )
     )
     (defun UC_Price:string (input-price:decimal)
-        @doc "Dollar/cent display form, with a floor below which a price reads as <0.001c."
+        @doc "Dollar/cent display form, with a floor below which a price reads as <0.001¢."
         (if (< input-price 0.00001)
-            "<0.001c"
+            "<0.001¢"
             (if (< input-price 1.00)
-                (format "{}c" [(floor (* input-price 100.0) 3)])
+                (format "{}¢" [(floor (* input-price 100.0) 3)])
                 (format "{}$" [(floor input-price 2)])
             )
         )

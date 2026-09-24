@@ -455,6 +455,19 @@ def main():
         print(_db.stdout + _db.stderr)
         sys.exit("GATE FAILED: Deploy/ does not match the sovereign sources byte for byte.")
 
+    # THE HAND-DEPLOY ROUND. `Deploy/PureV2/` is the AppReads migration, which the owner deploys
+    # one file at a time, so it is EXCLUDED from the generated round above -- and excluded meant
+    # unchecked. A deploy file assembled by hand is a COPY of a module, and copies drift. On
+    # 2026-09-24 a price formatter was transcribed with an ASCII `c` where the original had `¢`,
+    # and the wrong glyph reached mainnet in two modules before anything compared a deploy file
+    # to the module it claims to deploy. Now the body of every live PureV2 file is generated from
+    # its sources and diffed here; the prose header above the marker stays hand-written.
+    _p2 = subprocess.run([sys.executable, "tools/_purev2.py", "--check"],
+                         capture_output=True, text=True)
+    if _p2.returncode != 0:
+        print(_p2.stdout + _p2.stderr)
+        sys.exit("GATE FAILED: a Deploy/PureV2 file does not match the module it deploys.")
+
     # AUTHORISATION SURFACE -- the only check here that speaks to authorisation directly. For every
     # C_/A_ entrypoint it records which accounts' ownership is enforced ANYWHERE in its call tree,
     # and requires that set to only ever GROW. Built 2026-09-20 ahead of the patron/executor

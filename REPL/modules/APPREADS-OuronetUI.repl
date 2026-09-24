@@ -35,7 +35,17 @@
 (load "../../2_CITIZEN/Stage_Z/AppReads/OuronetUI/01_O-UI-ONE.pact")
 (load "../../2_CITIZEN/Stage_Z/AppReads/OuronetUI/02_O-UI-TWO.pact")
 (load "../../2_CITIZEN/Stage_Z/AppReads/OuronetUI/03_O-UI-THREE.pact")
+(load "../../2_CITIZEN/Stage_Z/AppReads/OuronetUI/04_O-UI-FOUR.pact")
+(load "../../2_CITIZEN/Stage_Z/AppReads/OuronetUI/07_O-UI-SEVEN.pact")
+(load "../../2_CITIZEN/Stage_Z/AppReads/OuronetUI/08_O-UI-EIGHT.pact")
+(load "../../2_CITIZEN/Stage_Z/AppReads/OuronetUI/09_O-UI-NINE.pact")
+(load "../../2_CITIZEN/Stage_Z/AppReads/OuronetUI/10_O-UI-TEN.pact")
 (load "../../2_CITIZEN/Stage_Z/AppReads/OuronetUI/12_O-UI-TWELVE.pact")
+;;DPL-UR IS LOADED HERE ON PURPOSE, AND IT IS THE POINT OF HALF THIS SUITE. A port that merely
+;;runs proves nothing -- what has to be true is that it returns the SAME OBJECT as the function
+;;it replaces, on real inputs, or differs only where a defect was deliberately fixed. Several
+;;blocks below therefore assert equality against the live source rather than against a literal.
+(load "../../2_CITIZEN/Stage_Z/01_DPL-UR.pact")
 (print (format "<<<<<<<READS_UI (ids + RD-HEADER) Costs {} GAS>>>>>>>" [(env-gas)]))
 (env-sigs [])
 (commit-tx)
@@ -138,7 +148,7 @@
 ;;     stranger returns zeroes and zone 1 reports zone-ok TRUE. The assertion passed as a
 ;;     failure-case while proving nothing.
 ;;  2. Loading without the SWP issuance suite, so zone 4 has no pools to price against. Also
-;;     does not fail -- URC_OuroPrimordialPrice returns 0.0, and zone 1 rendered "<0.001c".
+;;     does not fail -- URC_OuroPrimordialPrice returns 0.0, and zone 1 rendered "<0.001¢".
 ;;
 ;;Both are the SAME property and it is a good one: Ouronet's sovereign readers default rather
 ;;than throw. It also means a zone failure cannot be contrived from fixture state, and the only
@@ -176,7 +186,7 @@
                 (O-UI-ONE.UC_Index (ouronet-ns.ATS.URC_Index (at 0 (O-UI-ONE.URC_IndexIds))))
                 (at "z2-v1" h))
             (expect "<<RDUI-03>> flat: zone 4 prices IGNIS at a flat cent"
-                "1.000c" (at "z4-v1" h))
+                "1.000¢" (at "z4-v1" h))
             (expect "<<RDUI-03>> ...and resident-ignis is the fifth member, matching its own read"
                 (O-UI-ONE.URC_ResidentIgnis KST.ANHD) (at "resident-ignis" h))
             ;;THE FOUR OK-FLAGS ARE THE THING THE OLD HEADER COULD NOT EXPRESS. One eager `let`
@@ -546,6 +556,227 @@
                                 (= (at "ea-movable" row) 0.0)
                                 (= (at "ea-movable" row) (at "ea-supply" row))))
                          r)))
+        ]
+    )
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "RDUI-11 -- O-UI-EIGHT: the True Fungibles page, and a list that survives a bad member")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+;;==== RDUI-11 · 01 · namespace ==== ==============================================================
+(print "--- [RDUI-11 · 01 · namespace] ---")
+(namespace "ouronet-ns")
+;;==== RDUI-11 · 02 · wallet composer, degradation, buttons ==== ==================================
+(print "--- [RDUI-11 · 02 · wallet composer, degradation, buttons] ---")
+;;The degradation assertion is the one worth having. DPL-UR's three mappers fold with no guard,
+;;so ONE unreadable token emptied the WHOLE list -- a thirty-token wallet blanked by a single
+;;broken pool. Here the bad member degrades and its neighbours still render.
+(let*
+    ( (w:object (O-UI-EIGHT.URC_08|Wallet KST.ANHD))
+      (held:[string] (at "held-tf" w))
+      (mixed:[object] (O-UI-EIGHT.URC_03|TokenList KST.ANHD
+                          [(at 0 held) "NO-SUCH-TOKEN-AT-ALL"])) )
+    (map print
+        [
+            (expect "<<RDUI-11>> the wallet composer answers, and the fixture holds tokens"
+                true (and (at "list-ok" w) (> (at "held-tf-number" w) 0)))
+            (expect "<<RDUI-11>> it returns one row per held token"
+                (at "held-tf-number" w) (length (at "entries" w)))
+            (expect "<<RDUI-11>> every row in the fixture prices cleanly"
+                true (fold (and) true
+                        (map (lambda (e:object) (at "entry-ok" e)) (at "entries" w))))
+            (expect "<<RDUI-11>> a BAD token id degrades to one dead row..."
+                [true false]
+                [(at "entry-ok" (at 0 mixed)) (at "entry-ok" (at 1 mixed))])
+            (expect "<<RDUI-11>> ...and the list still has BOTH members -- the original mapper \
+                \ returned nothing at all when any single token failed"
+                2 (length mixed))
+            ;;UDC_ZeroEntry must carry every key a live row carries, or a consumer indexing the
+            ;;object hits key-not-found on precisely the rows that already went wrong.
+            (expect "<<RDUI-11>> the dead row carries EVERY key a live one does -- a consumer \
+                \ indexing the object must not hit key-not-found on the rows that already \
+                \ went wrong"
+                true
+                (fold (and) true
+                    (map (lambda (k:string) (contains k (at 1 mixed)))
+                         ["t1" "t2" "wallet-supply" "dptf-supply" "wallet-worth-in-stoa"
+                          "wallet-worth-in-dollarz" "token-worth-in-stoa"
+                          "token-worth-in-dollarz" "entry-ok"])))
+            (expect "<<RDUI-11>> the button map answers for a held token"
+                true (contains "transfer" (O-UI-EIGHT.URC_07|Buttons KST.ANHD (at 0 held))))
+        ]
+    )
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "RDUI-12 -- O-UI-NINE: a select that cannot be wrapped, guarded where the failure is")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+;;==== RDUI-12 · 01 · namespace ==== ==============================================================
+(print "--- [RDUI-12 · 01 · namespace] ---")
+(namespace "ouronet-ns")
+;;==== RDUI-12 · 02 · per-row degradation without a whole-row try ==== ============================
+(print "--- [RDUI-12 · 02 · per-row degradation without a whole-row try] ---")
+;;An orto-fungible row carries wallet-nonces, which is a `select`, and `try` runs its body in
+;;READ-ONLY mode where select is disallowed. So the whole-row guard O-UI-EIGHT uses is NOT
+;;available here, and the split -- valuation wrapped, nonce read outside -- is the only way to
+;;keep per-row degradation at all. These two assertions are what prove the split works.
+(env-module-admin ouronet-ns.DPOF)
+(let*
+    ( (ids:[string] (keys DPOF.DPOF|T|Properties))
+      (rows:[object] (O-UI-NINE.URC_03|TokenList KST.ANHD (+ ids ["NO-SUCH-OF-AT-ALL"]))) )
+    (map print
+        [
+            (expect "<<RDUI-12>> every id answers -- including the fictional one"
+                (+ (length ids) 1) (length rows))
+            ;;5 of the 11 fixture orto-fungibles are unpriceable collectable-family tokens. Under
+            ;;DPL-UR's fold the first one would have taken all eleven down with it.
+            (expect "<<RDUI-12>> unpriceable rows degrade INDIVIDUALLY, priceable ones survive"
+                true (and (> (length (filter (lambda (e:object) (at "entry-ok" e)) rows)) 0)
+                          (> (length (filter (lambda (e:object) (not (at "entry-ok" e))) rows)) 0)))
+            (expect "<<RDUI-12>> a degraded row still carries its nonce list, read OUTSIDE the try"
+                true (fold (and) true
+                        (map (lambda (e:object) (contains "wallet-nonces" e)) rows)))
+            (expect "<<RDUI-12>> the fictional id is the one that degraded"
+                false (at "entry-ok" (at (length ids) rows)))
+        ]
+    )
+)
+;;==== RDUI-12 · 03 · the sleeping-LP list checks instead of catching ==== ========================
+(print "--- [RDUI-12 · 03 · the sleeping-LP list checks instead of catching] ---")
+;;URCv_04|LpEntry REFUSES for a pool with no sleeping counterpart, and that refusal cannot be
+;;caught (it sits above a select). DPL-UR's mapper called it anyway and lost the whole list.
+;;This one reads UR_Sleeping first and emits a dead row.
+(let*
+    ( (ref-SWP:module{SwapperV4} SWP)
+      (lp:string (ref-SWP::UR_TokenLP (at 0 (ref-SWP::URC_Swpairs))))
+      (rows:[object] (O-UI-NINE.URC_05|SleepingLpList KST.ANHD [lp])) )
+    (map print
+        [
+            (expect "<<RDUI-12>> an LP with no sleeping twin yields a dead ROW, not an aborted list"
+                [1 false] [(length rows) (at "entry-ok" (at 0 rows))])
+            (expect "<<RDUI-12>> ...and the direct entry still REFUSES, which is why the list checks"
+                true (!= "" (expect-failure "direct call refuses"
+                        (O-UI-NINE.URCv_04|LpEntry KST.ANHD (ref-SWP::UR_GetLpSwpair lp)))))
+        ]
+    )
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "RDUI-13 -- O-UI-SEVEN: object-for-object parity with DPL-UR, existent and not")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+;;==== RDUI-13 · 01 · namespace ==== ==============================================================
+(print "--- [RDUI-13 · 01 · namespace] ---")
+(namespace "ouronet-ns")
+;;==== RDUI-13 · 02 · parity against the live source ==== =========================================
+(print "--- [RDUI-13 · 02 · parity against the live source] ---")
+;;URC_02|Account collapses three coin reads into one `details` sample. That is exactly the kind
+;;of change that looks equivalent and is not, so it is asserted against DPL-UR rather than
+;;against a literal -- and asserted on a NON-EXISTENT account too, because a selector's whole
+;;job is answering for something that is not there, and the sentinels are load-bearing.
+(map print
+    [
+        (expect "<<RDUI-13>> URC_02|Account == DPL-UR::URC_0027a on a live account"
+            (DPL-UR.URC_0027a_AccountSelectorSingle KST.ANHD)
+            (O-UI-SEVEN.URC_02|Account KST.ANHD))
+        (expect "<<RDUI-13>> ...and on an account that does not exist"
+            (DPL-UR.URC_0027a_AccountSelectorSingle "Σ.NO-SUCH-ACCOUNT")
+            (O-UI-SEVEN.URC_02|Account "Σ.NO-SUCH-ACCOUNT"))
+        (expect "<<RDUI-13>> the absent-account sentinels are the DISCRIMINATORS, not zeroes"
+            [-1 -1.0 false]
+            [(at "iz-smart" (O-UI-SEVEN.URC_02|Account "Σ.NO-SUCH-ACCOUNT"))
+             (at "payment-key-balance" (O-UI-SEVEN.URC_02|Account "Σ.NO-SUCH-ACCOUNT"))
+             (at "iz-activated" (O-UI-SEVEN.URC_02|Account "Σ.NO-SUCH-ACCOUNT"))])
+        (expect "<<RDUI-13>> URC_03|StoicTags == DPL-UR::URC_0027b"
+            (DPL-UR.URC_0027b_StoicTagSelectorMapper ["nope" "alpha"])
+            (O-UI-SEVEN.URC_03|StoicTags ["nope" "alpha"]))
+        (expect "<<RDUI-13>> URC_05|StoaAccounts == DPL-UR::URC_0028"
+            (DPL-UR.URC_0028_StoaAccountSelectorMapper ["stoa-genesis-1" "nope"])
+            (O-UI-SEVEN.URC_05|StoaAccounts ["stoa-genesis-1" "nope"]))
+        (expect "<<RDUI-13>> URC_07|Overview == DPL-UR::URC_0029"
+            (DPL-UR.URC_0029_AccountOverview KST.ANHD)
+            (O-UI-SEVEN.URC_07|Overview KST.ANHD))
+        ;;A tag that was never registered and one that was released are DIFFERENT states, and
+        ;;collapsing them would make a released tag look free to claim.
+        (expect "<<RDUI-13>> an unregistered tag reports never-registered, not merely inactive"
+            [false false true]
+            (let ((t:object (O-UI-SEVEN.URC_04|StoicTag "definitely-not-a-tag")))
+                [(at "iz-row-exists" t) (at "iz-released" t) (at "iz-never-registered" t)]))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "RDUI-14 -- O-UI-FOUR: the ICO read answers where the original divides by zero")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+;;==== RDUI-14 · 01 · namespace ==== ==============================================================
+(print "--- [RDUI-14 · 01 · namespace] ---")
+(namespace "ouronet-ns")
+;;==== RDUI-14 · 02 · the divisor guard, and the clamped date ==== ================================
+(print "--- [RDUI-14 · 02 · the divisor guard, and the clamped date] ---")
+;;This fixture does not initialise the ICO, so BOTH reads fail here -- on the missing row, not on
+;;the division. What is pinned instead is the arithmetic itself, which is where the defect lives:
+;;`try` does NOT catch a div-by-zero, so no composer at any level could have defended the page.
+(map print
+    [
+        (expect-failure "<<RDUI-14>> `try` does NOT catch an arithmetic exception -- which is why \
+            \ the guard had to move INTO the read rather than around it"
+            (try 0.0 (floor (* 10000000.0 (/ 0.0 0.0)) 12)))
+        ;;The end date. DPL-UR says (time "2026-15-05T20:00:00Z"); there is no fifteenth month and
+        ;;Pact CLAMPS rather than rejecting, so the advertised deadline is seven months late.
+        ;;Pinned as it stands, awaiting an owner ruling -- a public deadline is not a porting call.
+        (expect "<<RDUI-14>> month 15 CLAMPS to December -- the defect is silent, not loud"
+            (time "2026-12-05T20:00:00Z") (time "2026-15-05T20:00:00Z"))
+        (expect "<<RDUI-14>> ...and CT_IcoEnd states that same instant, in a form that reads true"
+            (time "2026-15-05T20:00:00Z") O-UI-FOUR.CT_IcoEnd)
+        (expect "<<RDUI-14>> the price formatter emits the CENT SIGN, not an ASCII c"
+            "50.000¢" (O-UI-FOUR.UC_Price 0.5))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "RDUI-15 -- O-UI-TEN: the Wipe button that has never been reachable")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+;;==== RDUI-15 · 01 · namespace ==== ==============================================================
+(print "--- [RDUI-15 · 01 · namespace] ---")
+(namespace "ouronet-ns")
+;;==== RDUI-15 · 02 · empty selection: DPL-UR raises, the port answers ==== =======================
+(print "--- [RDUI-15 · 02 · empty selection: DPL-UR raises, the port answers] ---")
+;;URC_0026 opens its let with (fn:integer (at 0 selected-nonces)) and Pact binds EAGERLY, so an
+;;empty selection throws before any flag is computed. `wipe` is the one flag that REQUIRES an
+;;empty selection. The only input that could make it true is the input that crashes the function,
+;;so the button has never once been rendered -- and the whole action bar blanks in the page's
+;;initial state. Both halves are asserted: the original raises, and the port agrees with it
+;;everywhere the original can still answer.
+(env-module-admin ouronet-ns.DPDC)
+(let*
+    ( (sf:string (at 0 (keys DPDC.DPSF|T|Properties))) )
+    (map print
+        [
+            (expect-failure "<<RDUI-15>> DPL-UR::URC_0026 RAISES on an empty selection"
+                (DPL-UR.URC_0026_CollectablesButtons KST.ANHD sf true []))
+            (expect "<<RDUI-15>> the port answers instead, and wipe is finally reachable"
+                true (at "wipe" (O-UI-TEN.URC_09|Buttons KST.ANHD sf true [])))
+            ;;The fix must not change any answer the original could give. If it does, the
+            ;;defensive binding leaked into a live branch.
+            (expect "<<RDUI-15>> on a NON-empty selection the two are IDENTICAL"
+                (DPL-UR.URC_0026_CollectablesButtons KST.ANHD sf true [1])
+                (O-UI-TEN.URC_09|Buttons KST.ANHD sf true [1]))
+            (expect "<<RDUI-15>> URC_06|Sets == DPL-UR::URC_0024"
+                (DPL-UR.URC_0024_SetReader sf true) (O-UI-TEN.URC_06|Sets sf true))
+            (expect "<<RDUI-15>> URC_08|FilterByClasses == DPL-UR::URC_0025a"
+                (DPL-UR.URC_0025a_FilterNoncesByClasses sf true [1 2 3] [0 1])
+                (O-UI-TEN.URC_08|FilterByClasses sf true [1 2 3] [0 1]))
+            (expect "<<RDUI-15>> the page composer answers for both fungibility classes"
+                true (at "list-ok" (O-UI-TEN.URC_10|Wallet KST.ANHD)))
         ]
     )
 )
