@@ -51,3 +51,28 @@ in before it runs:
 deploy   26,781 gas    (~1.3% of a 2,000,000 block)
 read     23,683 gas    URC_01|Header, all four zones ok
 ```
+
+## Verifying a deploy file: never with `env-module-admin`
+
+`15_deploy.pact` shipped without its `acquire-module-admin` calls and failed on chain at the
+first table:
+
+```
+Module admin is necessary for operation but has not been acquired: ouronet-ns.SWPT
+```
+
+It had been "verified" in the REPL first. The check used `(env-module-admin ouronet-ns.SWPT)`,
+which **grants** module admin outright — a test-harness escape hatch with no on-chain
+equivalent. So the fixture satisfied the permission by removing it, and the one requirement the
+transaction actually needed was the one the test could not see.
+
+**Verifying a permission with the thing that bypasses the permission proves nothing.** When a
+deploy file's correctness depends on authorisation, the fixture must satisfy it the way the
+chain will — `env-sigs` with the real governance keys, and no `env-module-admin` anywhere in the
+block. The rewritten check does that, and carries the negative case beside it: the namespace key
+alone is refused, which is what proves the grant is still gated rather than merely present.
+
+`env-module-admin` remains correct for *read* fixtures — `(keys SomeModule.SomeTable)` in a test
+needs admin the chain would never give a reader, and that is the hatch existing for its purpose.
+The rule is narrower than "never use it": **never use it in the test that decides whether a
+transaction will be accepted.**

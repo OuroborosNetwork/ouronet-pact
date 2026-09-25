@@ -79,6 +79,25 @@
 ;; no code.
 ;;
 ;; ------------------------------------------------------------------------------------------
+;; acquire-module-admin -- WHY EACH BLOCK STARTS WITH ONE
+;; ------------------------------------------------------------------------------------------
+;; SIGNING THE GOVERNANCE KEYSET IS NOT ENOUGH. Module admin must be ACQUIRED, explicitly, and
+;; without that the transaction stops at the first table with
+;;
+;;     Module admin is necessary for operation but has not been acquired: ouronet-ns.SWPT
+;;
+;; The first version of this file omitted it and failed on exactly that. It was not caught in
+;; testing because the REPL check used `env-module-admin`, which GRANTS admin outright -- a
+;; test-harness escape hatch with no on-chain equivalent. Verifying a permission with the thing
+;; that bypasses the permission proves nothing, and that is the lesson worth keeping: when a
+;; check is about authorisation, the fixture has to satisfy it the way the chain will.
+;;
+;; `acquire-module-admin` still ENFORCES the module's governance -- confirmed by the negative
+;; case, where a wrong signer is refused -- so this grants nothing the keyset did not already
+;; authorise. It only makes the grant explicit, once per module, for the rest of the
+;; transaction.
+;;
+;; ------------------------------------------------------------------------------------------
 ;; THE REBUILD IS NOT OPTIONAL
 ;; ------------------------------------------------------------------------------------------
 ;; Creating SWPT|Graph gives an EMPTY graph. It is written by XI_UpdatePair at pool issuance,
@@ -98,6 +117,9 @@
 ;; must be an Ouronet account the signer owns. It is filled in below with AncientHodler's
 ;; account, read off the chain rather than typed -- NOTHING TO EDIT, paste and send.
 ;;
+;; A_RebuildGraph needs NO acquire -- it is an ordinary defun that composes GOV|SWPI_ADMIN
+;; itself. Only the bare top-level create-table forms need the explicit grant.
+;;
 ;; IF ANY create-table BELOW ABORTS with "table already exists", that table was created between
 ;; the probe and this transaction. Delete just that line and resend -- the forms are
 ;; independent, and the probe that produced this list is re-runnable:
@@ -109,13 +131,17 @@
 ;; --- DALOS: NOTHING. See the note above -- its "missing" table is a RENAME, not a gap. ----
 
 ;; --- SWPT: the three that break every token price ---------------------------------------
+(acquire-module-admin ouronet-ns.SWPT)
 (create-table ouronet-ns.SWPT.SWPT|Graph)
 (create-table ouronet-ns.SWPT.SWPT|PathCache)
 (create-table ouronet-ns.SWPT.SWPT|TopologyVersion)
 
 ;; --- Talos policy tables ---------------------------------------------------------------
+(acquire-module-admin ouronet-ns.TS02-C3)
 (create-table ouronet-ns.TS02-C3.P|T)
 (create-table ouronet-ns.TS02-C3.P|MT)
+
+(acquire-module-admin ouronet-ns.TS02-CPAD)
 (create-table ouronet-ns.TS02-CPAD.P|T)
 (create-table ouronet-ns.TS02-CPAD.P|MT)
 
