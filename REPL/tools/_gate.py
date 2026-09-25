@@ -479,6 +479,21 @@ def main():
         print(_gp.stdout + _gp.stderr)
         sys.exit("GATE FAILED: an AppReads module flattened a glyph DPL-UR emits.")
 
+    # SUPPRESSED create-table CALLS NEED EVIDENCE. `_deploybundle.py` ships a module's
+    # create-table forms COMMENTED OUT when it believes the module is already live, from a
+    # hand-maintained "new this round" list. Round V1's list had two entries, so 161 calls
+    # shipped commented and EIGHT were for tables that did not exist -- including
+    # SWPT|PathCache, which every token price reads, so the True Fungibles and Orto Fungibles
+    # pages showed no amounts at all. The gate could not have caught it: every REPL fixture
+    # loads in GENESIS mode where all tables are created, so the pricing path is always healthy
+    # in test and nothing compared that world to the chain. This check is offline and reads a
+    # registry that only `--probe` may write.
+    _lt = subprocess.run([sys.executable, "tools/_livetables.py", "--check"],
+                         capture_output=True, text=True)
+    if _lt.returncode != 0:
+        print(_lt.stdout + _lt.stderr)
+        sys.exit("GATE FAILED: a suppressed create-table has no evidence the table exists.")
+
     # AUTHORISATION SURFACE -- the only check here that speaks to authorisation directly. For every
     # C_/A_ entrypoint it records which accounts' ownership is enforced ANYWHERE in its call tree,
     # and requires that set to only ever GROW. Built 2026-09-20 ahead of the patron/executor

@@ -43,6 +43,14 @@ MANIFEST = {
     "14_deploy.pact": [("01_DPL-UR.pact", "module-only")],
 }
 
+# Hand-written files with no module source: init transactions, table repairs. They are not
+# generated, so there is nothing to diff -- but they are listed so the orphan sweep does not
+# report them, and so "not generated" is a recorded decision rather than an omission.
+HANDWRITTEN = {
+    "15_deploy.pact": "create-table repair for the eight tables round V1 shipped commented out, "
+                      "plus SWPI::A_RebuildGraph to backfill the swap graph. No module body.",
+}
+
 FROZEN = {
     "05_deploy.pact": "executed on mainnet 2026-09-25 (O-UI-TWELVE first deploy); the record of what was sent",
     "06_deploy.pact": "executed on mainnet 2026-09-25 (O-UI-ONE + O-UI-TWO formatter fix); the record of what was sent",
@@ -115,7 +123,7 @@ def main():
             for line in d[:12]:
                 print(f"           {line[:100]}")
             bad += 1
-    known = set(MANIFEST) | set(FROZEN) | {"README.md"}
+    known = set(MANIFEST) | set(FROZEN) | set(HANDWRITTEN) | {"README.md"}
     for f in sorted(os.listdir(DEPLOY)):
         if f not in known:
             print(f"  ORPHAN   {f} -- not in MANIFEST and not FROZEN")
@@ -125,7 +133,8 @@ def main():
               f"Run REPL/tools/_purev2.py --write")
         return 1
     if not bad:
-        print(f"PureV2: clean -- {len(MANIFEST)} generated, {len(FROZEN)} frozen")
+        print(f"PureV2: clean -- {len(MANIFEST)} generated, {len(FROZEN)} frozen, "
+              f"{len(HANDWRITTEN)} hand-written")
     return 0
 
 
