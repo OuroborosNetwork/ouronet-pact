@@ -611,6 +611,32 @@
                          ["t1" "t2" "wallet-supply" "dptf-supply" "wallet-worth-in-stoa"
                           "wallet-worth-in-dollarz" "token-worth-in-stoa"
                           "token-worth-in-dollarz" "entry-ok"])))
+            ;;THE PRICE-FREE PATH. On 2026-09-25 both token pages went blank, and no balance was
+            ;;ever wrong -- UR_AccountSupply answered for the very tokens rendering empty. The
+            ;;price failed, and because supply and price shared one `let` the price took the
+            ;;balance with it. `try` cannot help: a missing table raises an error that passes
+            ;;straight through it. So the defence is a read that never asks for a price.
+            (expect "<<RDUI-11>> URC_09|SuppliesOnly returns a row per token, with real supplies"
+                [(length held) true]
+                (let ((r:[object] (O-UI-EIGHT.URC_09|SuppliesOnly KST.ANHD held)))
+                    [(length r)
+                     (= (at "wallet-supply" (at 0 r))
+                        (at "wallet-supply" (at 0 (at "entries" w))))]))
+            (expect "<<RDUI-11>> ...and says so: priced false, worth fields blank"
+                [false 0.0 "--"]
+                (let ((e:object (at 0 (O-UI-EIGHT.URC_09|SuppliesOnly KST.ANHD held))))
+                    [(at "priced" e) (at "wallet-worth-in-stoa" e)
+                     (at "wallet-worth-in-dollarz" e)]))
+            ;;It must carry every key the priced read does, or a consumer indexing the object
+            ;;breaks on exactly the rows the degraded path exists to rescue.
+            (expect "<<RDUI-11>> ...and carries every key the priced row carries"
+                true
+                (fold (and) true
+                    (map (lambda (k:string)
+                            (contains k (at 0 (O-UI-EIGHT.URC_09|SuppliesOnly KST.ANHD held))))
+                         ["t1" "t2" "wallet-supply" "dptf-supply" "wallet-worth-in-stoa"
+                          "wallet-worth-in-dollarz" "token-worth-in-stoa"
+                          "token-worth-in-dollarz" "entry-ok"])))
             (expect "<<RDUI-11>> the button map answers for a held token"
                 true (contains "transfer" (O-UI-EIGHT.URC_07|Buttons KST.ANHD (at 0 held))))
         ]
@@ -647,6 +673,11 @@
             (expect "<<RDUI-12>> a degraded row still carries its nonce list, read OUTSIDE the try"
                 true (fold (and) true
                         (map (lambda (e:object) (contains "wallet-nonces" e)) rows)))
+            (expect "<<RDUI-12>> URC_09|SuppliesOnly keeps the nonce list and drops the prices"
+                [false 0.0 true]
+                (let ((e:object (at 0 (O-UI-NINE.URC_09|SuppliesOnly KST.ANHD ids))))
+                    [(at "priced" e) (at "wallet-worth-in-stoa" e)
+                     (contains "wallet-nonces" e)]))
             (expect "<<RDUI-12>> the fictional id is the one that degraded"
                 false (at "entry-ok" (at (length ids) rows)))
         ]

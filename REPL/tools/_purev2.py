@@ -43,6 +43,8 @@ MANIFEST = {
     "14_deploy.pact": [("01_DPL-UR.pact", "module-only")],
     "16_deploy.pact": [("../../1_SOVEREIGN/STAGE_01/2_Core/01_DALOS.pact",
                         "module-only")],
+    "17_deploy.pact": ["AppReads/OuronetUI/08_O-UI-EIGHT.pact",
+                       "AppReads/OuronetUI/09_O-UI-NINE.pact"],
 }
 
 # Hand-written files with no module source: init transactions, table repairs. They are not

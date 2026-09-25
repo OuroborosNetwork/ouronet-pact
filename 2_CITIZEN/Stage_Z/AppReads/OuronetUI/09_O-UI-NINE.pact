@@ -38,7 +38,7 @@
 
 (namespace "ouronet-ns")
 
-(interface OUiNineV1
+(interface OUiNineV2
     @doc "Orto Fungibles page reads: per-token wallet entries with their nonce lists, sleeping \
         \ LP entries, the per-token button map, and hibernation release maths."
 
@@ -58,12 +58,13 @@
     (defun URC_06|Buttons:object (account:string dpof:string selected-nonces:[integer]))
     (defun URC_07|HibernatingNonce:object (dpof:string nonce:integer))
     (defun URC_08|Wallet:object (account:string))
+    (defun URC_09|SuppliesOnly:[object] (account:string dpofs:[string]))
 )
 
 (module O-UI-NINE GOV
 
     ;;{0}  IMPLEMENTERS
-    (implements OUiNineV1)
+    (implements OUiNineV2)
 
     ;;{1}  GOVERNANCE
     (defconst GOV|MD_O-UI-NINE              (keyset-ref-guard (GOV|Demiurgoi)))
@@ -438,6 +439,43 @@
             ,"mngd-of-number"   : (length mngd-of)
             ,"entries"          : (URC_03|TokenList account held-of)
             ,"list-ok"          : true}
+        )
+    )
+    (defun URC_09|SuppliesOnly:[object] (account:string dpofs:[string])
+        @doc "O-UI-EIGHT's URC_09|SuppliesOnly for orto-fungibles: name, id, both supplies and \
+            \ the nonce list, with the four worth fields blank and `priced` false. \
+            \ \
+            \ This module already splits the valuation out and wraps it in `try`, which handles \
+            \ an unpriceable TOKEN -- but not an unavailable pricing ENGINE. A missing table \
+            \ raises an error that passes straight through `try`, so when SWPT|PathCache did \
+            \ not exist the whole page went blank despite the split. The only defence against \
+            \ that is a read that never asks for a price, which is this one."
+        (let
+            (
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+            )
+            (map
+                (lambda (dpof:string)
+                    (let
+                        (
+                            (wallet-nonces:[integer] (ref-DPOF::URH_AccountNonces account dpof))
+                        )
+                        {"t1"                       : (ref-DPOF::UR_Name dpof)
+                        ,"t2"                       : dpof
+                        ,"wallet-supply"            : (ref-DPOF::UR_AccountSupply dpof account)
+                        ,"dpof-supply"              : (ref-DPOF::UR_Supply dpof)
+                        ,"wallet-nonces"            : wallet-nonces
+                        ,"wallet-nonces-no"         : (length wallet-nonces)
+                        ,"wallet-worth-in-stoa"     : 0.0
+                        ,"wallet-worth-in-dollarz"  : "--"
+                        ,"token-worth-in-stoa"      : 0.0
+                        ,"token-worth-in-dollarz"   : "--"
+                        ,"entry-ok"                 : true
+                        ,"priced"                   : false}
+                    )
+                )
+                dpofs
+            )
         )
     )
 )

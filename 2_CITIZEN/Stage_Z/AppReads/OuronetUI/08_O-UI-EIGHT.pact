@@ -41,7 +41,7 @@
 
 (namespace "ouronet-ns")
 
-(interface OUiEightV1
+(interface OUiEightV2
     @doc "True Fungibles page reads: per-token wallet entries, native and frozen LP entries, \
         \ the per-token button map, and the page header. Complete surface."
 
@@ -59,12 +59,13 @@
     (defun URC_06|FrozenLpList:[object] (account:string lp-ids:[string]))
     (defun URC_07|Buttons:object (account:string dptf:string))
     (defun URC_08|Wallet:object (account:string))
+    (defun URC_09|SuppliesOnly:[object] (account:string dptfs:[string]))
 )
 
 (module O-UI-EIGHT GOV
 
     ;;{0}  IMPLEMENTERS
-    (implements OUiEightV1)
+    (implements OUiEightV2)
 
     ;;{1}  GOVERNANCE
     (defconst GOV|MD_O-UI-EIGHT             (keyset-ref-guard (GOV|Demiurgoi)))
@@ -397,6 +398,46 @@
             ,"mngd-tf-number"   : (length mngd-tf)
             ,"entries"          : (URC_03|TokenList account held-tf)
             ,"list-ok"          : true}
+        )
+    )
+    (defun URC_09|SuppliesOnly:[object] (account:string dptfs:[string])
+        @doc "THE SAME ROWS, WITH THE PRICING ENGINE LEFT OUT. Name, id and both supplies; the \
+            \ four worth fields are present but blank, and `priced` is false. \
+            \ \
+            \ WHY THIS HAS TO BE A SEPARATE READ RATHER THAN A `try`. On 2026-09-25 the True \
+            \ Fungibles page showed no amounts at all, and the balances were never the problem \
+            \ -- UR_AccountSupply answered 837.7467 for the very token that rendered blank. \
+            \ What failed was SWPI::URC_TokenDollarPrice, because SWPT|PathCache did not exist \
+            \ on chain. URC_02|TokenEntry computes supply and price in one `let`, so the price \
+            \ took the balance down with it. \
+            \ \
+            \ And `try` CANNOT fix that, which is the part worth knowing: a missing table raises \
+            \ `Error during database operation`, and like an arithmetic exception it passes \
+            \ straight THROUGH `try` -- measured, in a module whose deftable was never created. \
+            \ So the guard cannot live inside the read. The only structural defence is to not \
+            \ ask for the price in the first place. \
+            \ \
+            \ A BALANCE MUST NOT DEPEND ON A SWAP ROUTER. This read touches DPTF only."
+        (map
+            (lambda (dptf:string)
+                (let
+                    (
+                        (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    )
+                    {"t1"                       : (ref-DPTF::UR_Name dptf)
+                    ,"t2"                       : dptf
+                    ,"wallet-supply"            : (ref-DPTF::UR_AccountSupply dptf account)
+                    ,"dptf-supply"              : (ref-DPTF::UR_Supply dptf)
+                    ;;present so a consumer indexing the object still finds every key it knows
+                    ,"wallet-worth-in-stoa"     : 0.0
+                    ,"wallet-worth-in-dollarz"  : "--"
+                    ,"token-worth-in-stoa"      : 0.0
+                    ,"token-worth-in-dollarz"   : "--"
+                    ,"entry-ok"                 : true
+                    ,"priced"                   : false}
+                )
+            )
+            dptfs
         )
     )
 )
