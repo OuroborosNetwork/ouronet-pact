@@ -494,6 +494,22 @@ def main():
         print(_lt.stdout + _lt.stderr)
         sys.exit("GATE FAILED: a suppressed create-table has no evidence the table exists.")
 
+    # THE TALOS ABI. Three consumers -- OuronetUI, the Codex package, Pythia -- each hardcoded
+    # Pact names and argument orders as strings, and each drifted independently. Every drift was
+    # found by a user: 30 cost previews on the wrong side of an `INFO_` rename, five builders one
+    # argument short after the patron/executor sweep, a nonce reader that reported "no nonces"
+    # against three live ones. A missing member is a RESOLUTION error, so consumers render it as
+    # missing data rather than as a broken call, which is why it survived.
+    #
+    # Deploy/TALOS-ABI.json is the callable surface, generated from these sources. Diffing it
+    # here means a rename that is not carried into the ABI fails in THIS repo, before it can
+    # reach a consumer -- which is the only place the failure is cheap.
+    _abi = subprocess.run([sys.executable, "tools/_talosabi.py", "--check"],
+                          capture_output=True, text=True)
+    if _abi.returncode != 0:
+        print(_abi.stdout + _abi.stderr)
+        sys.exit("GATE FAILED: Deploy/TALOS-ABI.json is stale against the Pact sources.")
+
     # AUTHORISATION SURFACE -- the only check here that speaks to authorisation directly. For every
     # C_/A_ entrypoint it records which accounts' ownership is enforced ANYWHERE in its call tree,
     # and requires that set to only ever GROW. Built 2026-09-20 ahead of the patron/executor
