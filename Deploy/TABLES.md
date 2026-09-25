@@ -16,7 +16,7 @@ It returns a row per table that exists and errors on the first that does not, so
 (try "MISSING DALOS|GasManagementTable" (let ((x (describe-table DALOS|GasManagementTable))) "DALOS|GasManagementTable"))
 (try "MISSING DALOS|PricesTable" (let ((x (describe-table DALOS|PricesTable))) "DALOS|PricesTable"))
 (try "MISSING DALOS|AccountTable" (let ((x (describe-table DALOS|AccountTable))) "DALOS|AccountTable"))
-(try "MISSING DALOS|StoaLedger" (let ((x (describe-table DALOS|StoaLedger))) "DALOS|StoaLedger"))
+(try "MISSING DALOS|KadenaLedger" (let ((x (describe-table DALOS|KadenaLedger))) "DALOS|KadenaLedger"))
 ;; 1_SOVEREIGN/STAGE_01/2_Core/02_IGNIS.pact
 (try "MISSING P|T" (let ((x (describe-table P|T))) "P|T"))
 (try "MISSING P|MT" (let ((x (describe-table P|MT))) "P|MT"))
@@ -311,7 +311,7 @@ It returns a row per table that exists and errors on the first that does not, so
 | `11_U_VST.pact` | *none* |
 | `12_U_SWP.pact` | *none* |
 | `13_U_BFS.pact` | *none* |
-| `01_DALOS.pact` | `P|T`, `P|MT`, `DALOS|PropertiesTable`, `DALOS|GasManagementTable`, `DALOS|PricesTable`, `DALOS|AccountTable`, `DALOS|StoaLedger` |
+| `01_DALOS.pact` | `P|T`, `P|MT`, `DALOS|PropertiesTable`, `DALOS|GasManagementTable`, `DALOS|PricesTable`, `DALOS|AccountTable`, `DALOS|KadenaLedger` |
 | `02_IGNIS.pact` | `P|T`, `P|MT` |
 | `04_BRD.pact` | `P|T`, `P|MT`, `BRD|BrandingTable` |
 | `05_DPTF.pact` | `P|T`, `P|MT`, `DPTF|PropertiesTable`, `DPTF|BalanceTable`, `DPTF|RoleTable` |

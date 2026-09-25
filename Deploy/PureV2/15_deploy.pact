@@ -40,6 +40,29 @@
 ;;     TS02-C3    P|T, P|MT                                             (21_deploy)
 ;;     TS02-CPAD  P|T, P|MT                                             (22_deploy)
 ;;
+;; ------------------------------------------------------------------------------------------
+;; SEVEN OF THOSE EIGHT ARE CREATED HERE. THE DALOS ONE MUST NOT BE, AND THAT IS THE TRAP.
+;; ------------------------------------------------------------------------------------------
+;; DALOS|StoaLedger is not a table that was never created. It is DALOS|KadenaLedger RENAMED --
+;; by commit 0b0ad318, the same sweep that renamed the `kadena-konto` column and took the
+;; dashboard down. The column was reverted on 2026-09-24; the table was missed.
+;;
+;; A renamed table does not announce itself the way a renamed column does. It reports as
+;; "Table access failed because table ... was not found" -- indistinguishable from one that was
+;; simply never created, which is exactly how it ended up in a create-table list. Creating it
+;; would have made an EMPTY DALOS|StoaLedger beside a populated DALOS|KadenaLedger that nothing
+;; could reach any more: every account's Stoa-key ledger orphaned, silently, with the page
+;; looking repaired.
+;;
+;; Checked, not assumed. The other seven are genuinely new -- git shows SWPT's three arriving
+;; with the SwapTracer redesigns and never deploying, and TS02-C1/TS02-C2/TS01-C1 all HAVE
+;; their P|T on chain while TS02-C3 and TS02-CPAD do not, which is what a first deploy looks
+;; like. Only DALOS's name has a predecessor holding rows.
+;;
+;; The fix for DALOS is therefore a source revert plus a module upgrade -- PureV2/16 -- not a
+;; create-table. `REPL/tools/_livetables.py` now carries a RENAMED registry so this class
+;; cannot be mistaken for a missing table again.
+;;
 ;; THE GATE COULD NOT HAVE CAUGHT THIS, and that is the part worth fixing rather than just
 ;; patching. Every REPL fixture loads modules in GENESIS mode, where every create-table runs --
 ;; so the tables always exist in test and the pricing path is always healthy. The deploy round
@@ -83,8 +106,7 @@
 
 (namespace "ouronet-ns")
 
-;; --- DALOS ---------------------------------------------------------------------------------
-(create-table ouronet-ns.DALOS.DALOS|StoaLedger)
+;; --- DALOS: NOTHING. See the note above -- its "missing" table is a RENAME, not a gap. ----
 
 ;; --- SWPT: the three that break every token price ---------------------------------------
 (create-table ouronet-ns.SWPT.SWPT|Graph)

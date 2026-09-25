@@ -58,7 +58,6 @@ NODE = ("https://node2.stoachain.com/chainweb/0.0/stoa/chain/0/pact/api/v1/local
 # be deleted, and the tool reports a stale entry rather than letting it rot into a permanent
 # waiver.
 SHIPPING = {
-    "DALOS.DALOS|StoaLedger":        "Deploy/PureV2/15_deploy.pact",
     "SWPT.SWPT|Graph":               "Deploy/PureV2/15_deploy.pact",
     "SWPT.SWPT|PathCache":           "Deploy/PureV2/15_deploy.pact",
     "SWPT.SWPT|TopologyVersion":     "Deploy/PureV2/15_deploy.pact",
@@ -66,6 +65,28 @@ SHIPPING = {
     "TS02-C3.P|MT":                  "Deploy/PureV2/15_deploy.pact",
     "TS02-CPAD.P|T":                 "Deploy/PureV2/15_deploy.pact",
     "TS02-CPAD.P|MT":                "Deploy/PureV2/15_deploy.pact",
+}
+
+# A MISSING TABLE HAS TWO CAUSES AND ONLY ONE SAFE REPAIR EACH.  Either it was never created --
+# create it -- or the SOURCE RENAMED IT and the data sits under the old name, in which case
+# creating the new name makes an empty table beside a populated orphan and the page looks fixed
+# while the history is gone.
+#
+# Pact cannot tell them apart for you: a renamed table reports exactly what an uncreated one
+# reports, "Table access failed because table ... was not found".  DALOS|StoaLedger reached a
+# create-table list on that ambiguity; it is DALOS|KadenaLedger, renamed by commit 0b0ad318 --
+# the same sweep that renamed the `kadena-konto` column and blanked the dashboard.  The column
+# was reverted that day and the table was missed, because a renamed column throws on read while
+# a renamed table merely looks absent.
+#
+# Keyed by the name the SOURCE must use; the value is what the name was changed FROM and why.
+# `--check` fails if the source ever declares the abandoned name again.
+RENAMED = {
+    "DALOS.DALOS|KadenaLedger":
+        ("DALOS|StoaLedger", "renamed by 0b0ad318 and reverted 2026-09-25. The chain holds "
+                             "DALOS|KadenaLedger with every account's Stoa-key ledger. Never "
+                             "create DALOS|StoaLedger -- revert the source and upgrade the "
+                             "module instead (PureV2/16)."),
 }
 
 
@@ -149,18 +170,43 @@ def check():
     unverified, absent, queued = [], [], []
     for module, table in suppressed():
         key = f"{module}.{table}"
-        if key not in known:
+        if key in RENAMED:
+            # Cannot be probed yet: the DEPLOYED module still declares the abandoned name, so
+            # the chain answers "no such member" rather than reporting on the table. Verification
+            # waits for the module upgrade that restores the declaration.
+            queued.append(key)
+        elif key not in known:
             unverified.append(key)
         elif not known[key]:
             (queued if key in SHIPPING else absent).append(key)
     stale = sorted(k for k in SHIPPING if known.get(k) is True)
+    # A table in RENAMED must be declared under its ON-CHAIN name. If the abandoned name is back
+    # in a source file, someone has re-run the rename and the data is about to be orphaned again.
+    revived = []
+    for key, (abandoned, _why) in RENAMED.items():
+        module = key.split(".", 1)[0]
+        for src in glob.glob(os.path.join(ROOT, "1_SOVEREIGN", "**", "*.pact"), recursive=True) \
+                 + glob.glob(os.path.join(ROOT, "2_CITIZEN", "**", "*.pact"), recursive=True):
+            body = io.open(src, encoding="utf8").read()
+            if f"(module {module} " in body and f"deftable {abandoned}" in body:
+                revived.append((key, abandoned, os.path.relpath(src, ROOT)))
+    for key, abandoned, where in revived:
+        print(f"  RENAME REDONE  {where} declares `{abandoned}` again. The chain's data is "
+              f"under {key.split('.', 1)[1]}; creating the new name orphans it.")
+    if revived:
+        print("live tables: a table rename that was already reverted has come back.")
+        return 1
     for k in unverified:
         print(f"  UNVERIFIED  {k} -- its create-table is suppressed and no probe covers it")
     for k in absent:
         print(f"  ABSENT      {k} -- suppressed, but the last probe found NO such table on "
               f"chain. It will never be created.")
     for k in queued:
-        print(f"  queued      {k} -- absent on chain, created by {SHIPPING[k]}")
+        if k in RENAMED:
+            print(f"  renamed     {k} -- holds the data under this name; NOT to be created. "
+                  f"Probe again once the declaration is restored on chain.")
+        else:
+            print(f"  queued      {k} -- absent on chain, created by {SHIPPING[k]}")
     for k in stale:
         print(f"  STALE QUEUE {k} now EXISTS on chain; remove it from SHIPPING")
     if stale:

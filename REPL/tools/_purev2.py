@@ -20,7 +20,7 @@ because a file that is silently out of scope is indistinguishable from one that 
   python3 REPL/tools/_purev2.py --check    regenerate in memory, report drift (fatal in _gate)
   python3 REPL/tools/_purev2.py --write    rewrite the bodies
 """
-import sys, os, difflib
+import sys, os, re, difflib
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DEPLOY = os.path.join(ROOT, "Deploy", "PureV2")
@@ -41,6 +41,8 @@ MANIFEST = {
                        ("AppReads/OuronetUI/03_O-UI-THREE.pact", "module-only"),
                        ("AppReads/OuronetUI/12_O-UI-TWELVE.pact", "module-only")],
     "14_deploy.pact": [("01_DPL-UR.pact", "module-only")],
+    "16_deploy.pact": [("../../1_SOVEREIGN/STAGE_01/2_Core/01_DALOS.pact",
+                        "module-only")],
 }
 
 # Hand-written files with no module source: init transactions, table repairs. They are not
@@ -81,6 +83,14 @@ def body_for(sources):
         if mode == "module-only":
             i = text.index("(module ")
             note = " (module only -- its interface is already live)"
+            # AND NO create-table. A module source ends with the `(create-table ...)` forms its
+            # FIRST deploy needs; an upgrade must never re-run them, because re-creating an
+            # existing table aborts the whole transaction -- "Table ouronet-ns.DALOS_P|T already
+            # exists". The AppReads upgrades have no tables, so this went unnoticed until
+            # 16_deploy carried DALOS, whose source ends in seven of them. Caught by loading the
+            # emitted file in the REPL, which is the only reason it did not reach a signer.
+            text = re.sub(r'^\(create-table [^)]+\)\s*$', '', text[i:], flags=re.M)
+            i = 0
         else:
             # drop the file's own ;;-comment banner; the deploy file has its own header
             i = min((text.index(t) for t in ("(interface ", "(module ") if t in text))

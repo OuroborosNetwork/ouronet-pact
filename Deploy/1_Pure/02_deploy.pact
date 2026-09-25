@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 2 of 24
 ;; This is STEP 2 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-1 must have run first, including the init steps between deploys.
-;; 3 source file(s), 198,069 gas measured in the REPL gas model, 232,928 bytes
+;; 3 source file(s), 198,069 gas measured in the REPL gas model, 234,218 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/01_DALOS.pact
@@ -21,7 +21,7 @@
 ;;      table      DALOS|GasManagementTable
 ;;      table      DALOS|PricesTable
 ;;      table      DALOS|AccountTable
-;;      table      DALOS|StoaLedger
+;;      table      DALOS|KadenaLedger
 ;;   -- 1_SOVEREIGN/STAGE_01/2_Core/02_IGNIS.pact
 ;;      interface  IgnisCollectorV3
 ;;      interface  OuronetInfoV2
@@ -280,7 +280,7 @@
     ;;
     ;;  [UR]
     ;;
-    ;;  [0]     DALOS|StoaLedger:{DALOS|StoaSchema}
+    ;;  [0]     DALOS|KadenaLedger:{DALOS|StoaSchema}
     (defun UR_StoaLedger:[string] (stoa:string))
     ;;  [1]     DALOS|PropertiesTable:{DALOS|PropertiesSchema}
     (defun UR_GAP:bool ())
@@ -887,7 +887,26 @@
         deb:decimal
     )
     ;;{3.3}  tables
-    (deftable DALOS|StoaLedger:{DALOS|StoaSchema})              ;;Key = <k:account>
+    ;;THE SAME MISTAKE AS `kadena-konto`, AND FROM THE SAME COMMIT. 0b0ad318 renamed the column
+    ;;AND this table -- KadenaLedger -> StoaLedger. The column was reverted on 2026-09-24 when the
+    ;;dashboard went down; the TABLE was missed, because a renamed table does not throw the way a
+    ;;renamed column does. It just is not there, and Pact reports it as though it were merely
+    ;;uncreated: "Table access failed because table ... was not found".
+    ;;
+    ;;That reading is what nearly cost the data. The repair looked like a missing `create-table`,
+    ;;and creating it would have made an EMPTY DALOS|StoaLedger beside a populated
+    ;;DALOS|KadenaLedger that nothing could reach any more -- every account's Stoa-key ledger
+    ;;orphaned, silently, with the page looking fixed.
+    ;;
+    ;;A TABLE NAME IS A WIRE FORMAT, exactly as a column name is. The FUNCTIONS stay renamed --
+    ;;UR_StoaLedger, XI_UpdateStoaLedger -- because a function name is not shared with anything
+    ;;that outlives the code. Only the two identifiers the database holds are pinned:
+    ;;
+    ;;    the table  DALOS|KadenaLedger      (here)
+    ;;    the column kadena-konto            (in DALOS|AccountSchemaV2, ~line 825)
+    ;;
+    ;;Rename freely around them; never these.
+    (deftable DALOS|KadenaLedger:{DALOS|StoaSchema})            ;;Key = <k:account>
     (deftable DALOS|PropertiesTable:{DALOS|PropertiesSchema})       ;;Key = DALOS|INFO
     (deftable DALOS|GasManagementTable:{DALOS|GasManagementSchema}) ;;Key = DALOS|VGD
     (deftable DALOS|PricesTable:{DALOS|PricesSchema})               ;;Key = <action>
@@ -1097,9 +1116,9 @@
             [(length (keys DALOS|AccountTable))]
         )
     )
-    ;;[0]   DALOS|StoaLedger:{DALOS|StoaSchema}
+    ;;[0]   DALOS|KadenaLedger:{DALOS|StoaSchema}
     (defun UR_StoaLedger:[string] (stoa:string)
-        (with-default-read DALOS|StoaLedger stoa
+        (with-default-read DALOS|KadenaLedger stoa
             { "dalos"    : [BAR] }
             { "dalos"    := d }
             d
@@ -1675,7 +1694,7 @@
             (
                 (ref-U|LST:module{StringProcessorV2} U|LST)
             )
-            (with-default-read DALOS|StoaLedger stoa
+            (with-default-read DALOS|KadenaLedger stoa
                 { "dalos"    : [BAR] }
                 { "dalos"    := d }
                 (let
@@ -1699,10 +1718,10 @@
                         )
                     )
                     (if direction
-                        (write DALOS|StoaLedger stoa
+                        (write DALOS|KadenaLedger stoa
                             { "dalos" : add-lst}
                         )
-                        (write DALOS|StoaLedger stoa
+                        (write DALOS|KadenaLedger stoa
                             { "dalos" : rmv-lst}
                         )
                     )
@@ -2153,7 +2172,7 @@
 ;; (create-table DALOS|GasManagementTable)
 ;; (create-table DALOS|PricesTable)
 ;; (create-table DALOS|AccountTable)
-;; (create-table DALOS|StoaLedger)
+;; (create-table DALOS|KadenaLedger)
 
 ;; ===== 1_SOVEREIGN/STAGE_01/2_Core/02_IGNIS.pact ===================
 
