@@ -241,6 +241,13 @@ ROUNDS = {
             # exists. Nothing in this folder ships until the owner deploys it, by design --
             # DPL-UR stays authoritative until the UI has moved off it, and having both live
             # and answering the same question is the one state worse than either.
+            "2_CITIZEN/Stage_Z/AppReads/Pythia/01_P-UI-ONE.pact":
+                "APPREADS, Pythia entity 1. Restores DPL-UR::URC_0031 / _0033 / _0034, which "
+                "PureV2/14 deleted on the stated grounds that nothing called them. "
+                "`@ancientpantheon/codex` calls all three -- the census swept source trees and "
+                "never entered node_modules, so a COMPILED DEPENDENCY was invisible to it, and "
+                "'no callers found' was read as 'no callers exist'. Shipped by PureV2/19; "
+                "gate-covered by RDUI-17.",
             "2_CITIZEN/Stage_Z/AppReads/OuronetUI/04_O-UI-FOUR.pact":
                 "APPREADS, OuronetUI entity 4 (STOAICO). Replaces DPL-UR::URC_0013_StoaICO. "
                 "FIXES A LIVE DIVISION BY ZERO: stoa-for-redemption divides by the ICO's "

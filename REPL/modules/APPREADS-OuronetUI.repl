@@ -41,6 +41,7 @@
 (load "../../2_CITIZEN/Stage_Z/AppReads/OuronetUI/09_O-UI-NINE.pact")
 (load "../../2_CITIZEN/Stage_Z/AppReads/OuronetUI/10_O-UI-TEN.pact")
 (load "../../2_CITIZEN/Stage_Z/AppReads/OuronetUI/12_O-UI-TWELVE.pact")
+(load "../../2_CITIZEN/Stage_Z/AppReads/Pythia/01_P-UI-ONE.pact")
 ;;DPL-UR IS NO LONGER LOADED, AND THAT COST THIS SUITE SOMETHING WORTH NAMING.
 ;;
 ;;While it was live the strongest assertion available was PARITY -- call the old function and
@@ -961,6 +962,36 @@
                 (fold (and) true (map (lambda (k:string) (contains k (O-UI-TWELVE.URC_01|Global)))
                     ["asymmetric" "asymmetric-word" "global-liquid-staking-boost"
                      "global-liquid-staking-boost-word" "number-of-pools" "panel-ok" "pools"])))
+    ]
+)
+(commit-tx)
+
+;;|| NEXT >
+;;
+(begin-tx "RDUI-17 -- P-UI-ONE: the three reads archive mode should not have deleted")
+(env-gasmodel "table")(env-gaslimit 100000000)(env-gas 0)
+;;==== RDUI-17 · 01 · namespace ==== ==============================================================
+(print "--- [RDUI-17 · 01 · namespace] ---")
+(namespace "ouronet-ns")
+;;==== RDUI-17 · 02 · the mappers answer, including for nothing ==== ==============================
+(print "--- [RDUI-17 · 02 · the mappers answer, including for nothing] ---")
+;;These were deleted from DPL-UR by PureV2/14 on the stated grounds that nothing called them.
+;;`@ancientpantheon/codex` calls all three -- the census that said otherwise swept source trees
+;;and never entered node_modules, so a COMPILED DEPENDENCY was invisible to it. Restored here,
+;;in the app folder that owns them, and pinned so the next census has a test to argue with.
+(map print
+    [
+        (expect "<<RDUI-17>> an empty account list yields an empty row list, not a failure"
+            [[] []]
+            [(P-UI-ONE.URC_01|ApiKeys []) (P-UI-ONE.URC_02|DualLinks [])])
+        ;;The mapper is the whole reason these exist as a module rather than direct PYTHIA
+        ;;calls: one round trip for N keys instead of N. So the length relationship is the
+        ;;contract, and it must hold for accounts that do not exist -- which is the normal case
+        ;;for a selector reading what a user is still typing.
+        (expect "<<RDUI-17>> one row per input, even when no Apollo account matches"
+            3 (length (P-UI-ONE.URC_01|ApiKeys ["nope-1" "nope-2" "nope-3"])))
+        (expect "<<RDUI-17>> ...and likewise for dual links"
+            2 (length (P-UI-ONE.URC_02|DualLinks ["a|b" "c|d"])))
     ]
 )
 (commit-tx)

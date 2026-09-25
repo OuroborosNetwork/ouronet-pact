@@ -2,6 +2,47 @@
 
 **Nothing here yet, and that is a decision rather than a gap.**
 
+## The three reads — now `P-UI-ONE`, and a correction
+
+| read | now |
+|---|---|
+| `URC_0031` | `P-UI-ONE::URC_01\|ApiKeys` |
+| `URC_0033_DualApiKeyMapper` | `P-UI-ONE::URC_02\|DualLinks` |
+| `URC_0034_PythiaPrices` | `P-UI-ONE::URC_03\|Prices` |
+
+**This file previously said no application called them. That was false, and acting on it broke
+something.**
+
+The claim came from a workspace search over `.ts`, `.tsx`, `.js`, `.json` and `.md` in
+`daimons/`, `_libs/`, `websites/` and `_onchain/`, which returned two hits — both this
+migration's own paperwork. On that evidence `PureV2/14` deleted all three from DPL-UR.
+
+The caller is **`@ancientpantheon/codex`**, and it calls all three from its bundled chunks. The
+search never entered `node_modules`, so a compiled dependency was invisible to it. Pythia
+API-key management in the Codex UI was broken from that transaction until `PureV2/19`.
+
+### What to take from it
+
+**A compiled dependency is a caller.** "No callers found" from a grep over source trees means
+only that none were found *where it looked* — and a package ships its calls as built output,
+not as source. Before deleting a deployed function, search `node_modules/**/dist` as well.
+
+**And the deferral itself was wrong on its own terms.** The rule here — reads are PULLED by a
+UI — guards against inventing a *shape*, and applies to composed reads where what to bundle is
+a design decision; `URC_0001_HeaderV3`'s seventy-key object is the warning. These three are
+passthroughs: two map a PYTHIA row reader across a list, one returns two config prices with
+their display text. The shape is PYTHIA's. There was never anything to guess, so there was
+never a reason to wait.
+
+The rule still holds for genuinely composed reads. It should not have been applied to a mapper.
+
+## Where a real console would go
+
+New entities take the next free slot: `P-UI-TWO`, `P-UI-THREE`. Those, being screens rather
+than passthroughs, are the ones to build from the screen.
+
+## Original note, kept because the reasoning is still worth reading
+
 ## The three reads that would have gone here
 
 DPL-UR carries three PYTHIA reads:
