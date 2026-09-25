@@ -71,9 +71,9 @@
 ;; module's admin, and DALOS, SWPT, TS02-C3, TS02-CPAD and SWPI are all
 ;; keyset-ref-guard(GOV|Demiurgoi), so one signature set covers every form here.
 ;;
-;; A_RebuildGraph also runs CAP_EnforceAccountOwnership on its `executor`, so the second
-;; argument must be an Ouronet account the signer owns. Both arguments below are placeholders:
-;; *** REPLACE <YOUR-OURONET-ACCOUNT> WITH YOUR OWN ACCOUNT STRING BEFORE SENDING. ***
+;; A_RebuildGraph runs CAP_EnforceAccountOwnership on its `executor`, so the second argument
+;; must be an Ouronet account the signer owns. It is filled in below with AncientHodler's
+;; account, read off the chain rather than typed -- NOTHING TO EDIT, paste and send.
 ;;
 ;; IF ANY create-table BELOW ABORTS with "table already exists", that table was created between
 ;; the probe and this transaction. Delete just that line and resend -- the forms are
@@ -98,4 +98,4 @@
 (create-table ouronet-ns.TS02-CPAD.P|MT)
 
 ;; --- backfill the adjacency graph from every pool already on chain -----------------------
-(ouronet-ns.SWPI.A_RebuildGraph "<YOUR-OURONET-ACCOUNT>" "<YOUR-OURONET-ACCOUNT>")
+(ouronet-ns.SWPI.A_RebuildGraph "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî" "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
