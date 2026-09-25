@@ -747,23 +747,40 @@
             \ Deliberately NOT in URC_01|Dashboard. A caller that wants the count asks for it, and \
             \ pays a scan to get it."
         (let*
-            ( (ref-DALOS:module{OuronetDalosV2} DALOS)
+            ( (ref-U|CT:module{OuronetConstantsV2} U|CT)
+              (ref-DALOS:module{OuronetDalosV2} DALOS)
               (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
               (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
               (ref-ATS:module{AutostakeV3} ATS)
-              (id:string (ref-ATS::UR_ColdRewardBearingToken
-                           (UC_PickId (ref-DPTF::UR_RewardToken (ref-DALOS::UR_SilverStoaID))
-                                      OuronetIdsV1.IDX_GOLDENPILLAR)))
-              (hid:string (ref-DPTF::UR_Hibernation id))
-              (hib:decimal (ref-DPOF::UR_AccountSupply hid account))
-              (n:integer (length (ref-DPOF::URH_AccountNonces account hid))) )
-            {"card-ok" : true
-            ,"hibernated-id" : hid
-            ,"nonces" : n
-            ,"balance-nonces" : (format "{} ({})" [(UC_Amount hib) n])
-            ,"balance-nonces-hover" :
-                (format "Exactly {} Hibernated GoldenStoa over {} {}"
-                        [hib n (if (= 1 n) "single Nonce" "Nonces")])}
+              ;;THE DERIVATION IS GUARDED, THE SELECT IS NOT, AND THAT SPLIT IS THE WHOLE POINT.
+              ;;Everything needed to reach the hibernated id is plain reads, so it fits inside a
+              ;;`try`; the nonce `select` that follows cannot, because `try` runs its body in
+              ;;read-only mode. Guarding the half that CAN be guarded is what lets the composer
+              ;;call this function outside a try without risking the whole dashboard.
+              (hid:string
+                (try (ref-U|CT::CT_BAR)
+                     (ref-DPTF::UR_Hibernation
+                       (ref-ATS::UR_ColdRewardBearingToken
+                         (UC_PickId (ref-DPTF::UR_RewardToken (ref-DALOS::UR_SilverStoaID))
+                                    OuronetIdsV1.IDX_GOLDENPILLAR))))) )
+            (if (= hid (ref-U|CT::CT_BAR))
+                {"card-ok" : false
+                ,"hibernated-id" : (ref-U|CT::CT_BAR)
+                ,"nonces" : 0
+                ,"balance-nonces" : "--"
+                ,"balance-nonces-hover" : "--"}
+                (let
+                    ( (hib:decimal (ref-DPOF::UR_AccountSupply hid account))
+                      (n:integer (length (ref-DPOF::URH_AccountNonces account hid))) )
+                    {"card-ok" : true
+                    ,"hibernated-id" : hid
+                    ,"nonces" : n
+                    ,"balance-nonces" : (format "{} ({})" [(UC_Amount hib) n])
+                    ,"balance-nonces-hover" :
+                        (format "Exactly {} Hibernated GoldenStoa over {} {}"
+                                [hib n (if (= 1 n) "single Nonce" "Nonces")])}
+                )
+            )
         )
     )
 
@@ -867,12 +884,20 @@
             \ was a single eager `let` of ~60 bindings: one missing token row returned NOTHING \
             \ and blanked the whole wallet view. \
             \ \
-            \ ONE FIELD LOSES DATA, deliberately. `hgstoa-balance-nonces` used to read \
-            \ \"<amount> (<nonce-count>)\". The count needs DPOF::URH_AccountNonces, a `select`, \
-            \ and a `select` cannot run inside a `try` -- keeping it would make this composer \
-            \ abort wholesale rather than degrade. It now carries the amount alone; a caller \
-            \ wanting the count asks URH_GoldenStoaNonces, which is exactly why that function \
-            \ is public."
+            \ `hgstoa-balance-nonces` READS \"<amount> (<nonce-count>)\", and getting that right \
+            \ took two attempts. The count needs DPOF::URH_AccountNonces, a `select`, and a \
+            \ `select` cannot run inside a `try` -- so the first cut moved it out to \
+            \ URH_GoldenStoaNonces and left this key carrying the amount ALONE, calling the loss \
+            \ deliberate. It was not defensible: the key is a WIRE FORMAT the dashboard renders \
+            \ verbatim, so dropping half its content is a visible regression, and no caller was \
+            \ ever wired to the replacement. \"12847.2547\" where \"12847.2547 (3)\" belongs. \
+            \ \
+            \ The constraint was real and the conclusion was wrong. `try` forbids a select in \
+            \ its BODY; it does not forbid a select in the same `let` as other try-wrapped \
+            \ bindings. So URH_GoldenStoaNonces is bound here OUTSIDE any try, and it guards \
+            \ its own id derivation internally -- answering card-ok false instead of throwing \
+            \ -- which is what makes calling it from a composer safe. Same shape as \
+            \ O-UI-NINE::URC_02|TokenEntry, which had already solved this."
         (let*
             ( (o:object (try (UDC_ZeroCard) (URC_Ouro account)))
               (i:object (try (UDC_ZeroCard) (URC_Ignis account)))
@@ -882,6 +907,9 @@
               (w:object (try (UDC_ZeroCard) (URC_Stoa account)))
               (sv:object (try (UDC_ZeroCard) (URC_SilverStoa account)))
               (g:object (try (UDC_ZeroCard) (URC_GoldenStoa account)))
+              ;;NOT in a `try` -- it holds a select, and it guards its own
+              ;;derivation so it answers card-ok false rather than throwing.
+              (gn:object (URH_GoldenStoaNonces account))
               (t:object (try (UDC_ZeroCard) (URC_Totals account)))
               (cx:object (try (UDC_ZeroCard) (URC_Codex codex-accounts)))
               (ko:bool (at "card-ok" o)) (ki:bool (at "card-ok" i))
@@ -978,8 +1006,11 @@
             ,"gstoa-balance" : (if kg (at "balance" g) d)
             ,"gstoa-balance-hover" : (if kg (at "balance-hover" g) z)
             ,"gstoa-balance-vid" : (if kg (at "balance-vid" g) d)
-            ,"hgstoa-balance-nonces" : (if kg (at "hibernated-balance" g) d)
-            ,"hgstoa-balance-nonces-hover" : (if kg (at "hibernated-balance-hover" g) z)
+            ,"hgstoa-balance-nonces" :
+                (if (at "card-ok" gn) (at "balance-nonces" gn) (if kg (at "hibernated-balance" g) d))
+            ,"hgstoa-balance-nonces-hover" :
+                (if (at "card-ok" gn) (at "balance-nonces-hover" gn)
+                                      (if kg (at "hibernated-balance-hover" g) z))
             ,"hgstoa-balance-nonces-vid" : (if kg (at "hibernated-balance-vid" g) d)
             ,"gstoa-total-balance" : (if kg (at "total-balance" g) d)
             ,"gstoa-total-balance-hover" : (if kg (at "total-balance-hover" g) z)

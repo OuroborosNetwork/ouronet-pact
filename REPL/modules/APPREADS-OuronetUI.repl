@@ -257,6 +257,21 @@
 (let ((ouro:string (ouronet-ns.DALOS.UR_OuroborosID)))
     (map print
         [
+            ;;THE NONCE COUNT IS PART OF THE STRING, and that string is a wire format the
+            ;;dashboard renders verbatim. The first split moved the count out to
+            ;;URH_GoldenStoaNonces and left this key carrying the amount ALONE -- "12847.2547"
+            ;;where "12847.2547 (3)" belongs -- and called the loss deliberate. It was a visible
+            ;;regression, and no caller was ever wired to the replacement. `try` forbids a
+            ;;select in its BODY; it never forbade one in the same `let`, so the nonce read is
+            ;;now bound outside every try and guards its own derivation instead.
+            (expect "<<RDUI-05>> hgstoa-balance-nonces carries <amount> (<count>), not the amount alone"
+                true
+                (let ((v:string (at "hgstoa-balance-nonces"
+                                    (at 0 (O-UI-TWO.URC_01|Dashboard KST.ANHD [])))))
+                    (and (contains "(" v) (contains ")" v))))
+            (expect "<<RDUI-05>> ...and it agrees with the standalone nonce read exactly"
+                (at "balance-nonces" (O-UI-TWO.URH_GoldenStoaNonces KST.ANHD))
+                (at "hgstoa-balance-nonces" (at 0 (O-UI-TWO.URC_01|Dashboard KST.ANHD []))))
             (expect "<<RDUI-05>> unit amount at unit price is the unit value"
                 1.0 (O-UI-TWO.URC_Value ouro 1.0 1.0))
             (expect "<<RDUI-05>> ...linear in the AMOUNT"

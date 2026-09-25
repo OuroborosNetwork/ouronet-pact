@@ -1,80 +1,50 @@
-;; ===========================================================================================
-;; O-UI-TWO -- the dashboard body: primordial asset cards and the net-worth total.
-;; ===========================================================================================
-;; Second module of the READS_UI split. Template: 01_O-UI-ONE.pact. Rules: ../RULES.md.
+;; =========================================================================================
+;; OURONET DEPLOY -- ROUND V2, file 18
+;; O-UI-TWO (module UPGRADE) -- put the nonce count back in the dashboard string
+;; =========================================================================================
+;; NO NEW INTERFACE. Module body only; no signature changes.
 ;;
-;; REPLACES DPL-UR::URC_0002_Primordials / _PrimordialsSingle / _PrimordialsMulti, which are the
-;; same defect as URC_0001_HeaderV3 at twice the size: ONE eager `let` with roughly SIXTY
-;; bindings feeding one flat object of ~70 keys. Every asset card in the dashboard body depends
-;; on every other one loading. A single missing token row blanks the whole wallet view.
+;; WHAT IS WRONG ON MAINNET. The GoldenStoa card reads
 ;;
-;; The split is BY ASSET CARD, because that is both how it renders and how it fails: OURO, IGNIS,
-;; AURYN, ELITEAURYN, UrStoa, Stoa, SilverStoa, GoldenStoa, plus the aggregate and the Codex
-;; balance. Ten functions, each independently callable, composed by URC_01|Dashboard with `try`.
+;;     Hibernated Balance (Nonces)     12.847,2547
 ;;
-;; ------------------------------------------------------------------------------------------
-;; WHY EACH CARD RECOMPUTES ITS OWN PRICE
-;; ------------------------------------------------------------------------------------------
-;; URC_Prices is public and every card calls it, rather than a composer computing it once and
-;; passing it down. That is deliberate and it is the same reasoning as O-UI-ONE's zones: a
-;; shared prelude restores exactly the all-or-nothing coupling the split removes. Prices depend
-;; on live SWP pools and the STOA PID oracle -- the two most fragile dependencies in the module --
-;; so a shared price prelude would mean any pricing failure blanks all eight cards again.
+;; where it should read `12.847,2547 (3)` -- the account holds that balance across THREE nonces
+;; and the count is part of the string the dashboard renders verbatim.
 ;;
-;; MEASURED 2026-09-24, because the cost worry above deserved a number rather than a caveat:
-;;     URC_Prices alone      8,280 gas
-;;     one card             19,916 gas
-;;     URC_01|Dashboard (all 10)  94,269 gas   -- under 1% of the 10,000,000 /local ceiling
-;;     module deploy        45,143 gas   -- against DPL-UR's 211,588 for all 71 reads
-;; So the duplication is free at this scale and the caveat was overcautious. Kept as a figure
-;; rather than deleted: if a future card is expensive the composer is where it will show, and
-;; the remedy is already available -- the UI calls only the cards it displays, which it can do
-;; because every one of them is public.
+;; MY REGRESSION, AND THE REASONING THAT PRODUCED IT. `hgstoa-balance-nonces` needs
+;; DPOF::URH_AccountNonces, a `select`, and a `select` cannot run inside a `try`. The composer
+;; wraps each card in `try`, so the count was moved out to URH_GoldenStoaNonces and this key was
+;; left carrying the amount alone -- documented in the source as losing data "deliberately".
 ;;
-;; ------------------------------------------------------------------------------------------
-;; TWO THINGS CARRIED OVER THAT ARE NOT MINE TO FIX IN A READ SPLIT
-;; ------------------------------------------------------------------------------------------
-;;  1. THE URSTOA VAULT ADDRESS IS A HARDCODED PRINCIPAL --
-;;     "c:GjYbBFM0vxMs5FcmnFUW-LFoycd3Ef8wuP28vR6FG3k". It is a `coin` account, not an Ouronet
-;;     entity id, so OuronetIdsV1 is the wrong home and _hardcodedids.py does not match its
-;;     shape. Ported verbatim and named here so it is at least VISIBLE. It wants a decision:
-;;     either a second registry for chain-level principals, or a reader on the module that owns
-;;     the vault.
-;;  2. `coin` IS REACHED TWO WAYS in the original -- a `ref-coin` modref AND a direct
-;;     `coin.URC_URV|ClaimableRewards` call in the same `let`. Preserved as-is; changing which
-;;     form is used is a behaviour question, not a split question.
-;; ===========================================================================================
+;; The constraint was real. The conclusion was wrong, twice over. `try` forbids a select in its
+;; BODY; it never forbade one in the same `let` as other try-wrapped bindings, so the read could
+;; always have been bound beside them rather than removed. And the key is a WIRE FORMAT: half a
+;; string is not a degraded value, it is a wrong one, and no caller was ever wired to the
+;; replacement function that was supposed to make up for it.
+;;
+;; THE FIX, which is the shape O-UI-NINE::URC_02|TokenEntry had already settled on:
+;;   * URH_GoldenStoaNonces now guards its own ID DERIVATION with `try` -- all plain reads, so
+;;     `try` is legal there -- and answers `card-ok false` instead of throwing. Only the select
+;;     itself runs unguarded, and a select over no rows returns [] rather than failing.
+;;   * URC_01|Dashboard binds it OUTSIDE every try and uses it for the three hgstoa keys,
+;;     falling back to the amount-only card if it ever reports card-ok false.
+;;
+;; Pinned by RDUI-05, which asserts the string contains its parenthesised count AND that the
+;; composer agrees with the standalone read exactly -- the second assertion being the one that
+;; fails if these two ever drift apart again.
+;;
+;; MEASURED on chain before the fix: URH_GoldenStoaNonces already returned
+;; "12847.2547 (3)" while the dashboard returned "12847.2547". The data was there; only the
+;; composer was not asking for it.
+;;
+;; SIGNING -- namespace keyset AND the Demiurgoi keyset (GOV|O_UI_TWO_ADMIN).
+;; =========================================================================================
+
+;;@GENERATED-BODY-BELOW -- do not edit past this line; see REPL/tools/_purev2.py
 
 (namespace "ouronet-ns")
 
-(interface OUiTwoV1
-    @doc "Dashboard-body reads: one function per primordial asset card, plus the aggregate, the \
-        \ Codex balance and a composer. Complete surface."
-
-    ;;{5.1}  Construct [CT/UDC]
-    (defun UDC_ZeroCard:object ())
-    ;;{5.2}  Compute [UC]
-    (defun UC_Amount:string (amount:decimal))
-    (defun UC_Price:string (input-price:decimal))
-    (defun UC_PickId:string (derived:[string] fallback:string))
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    (defun URC_Value:decimal (id:string amount:decimal price:decimal))
-    (defun URC_Prices:[decimal] ())
-    (defun URC_Ouro:object (account:string))
-    (defun URC_Ignis:object (account:string))
-    (defun URC_Auryn:object (account:string))
-    (defun URC_EliteAuryn:object (account:string))
-    (defun URC_UrStoa:object (account:string))
-    (defun URC_Stoa:object (account:string))
-    (defun URC_SilverStoa:object (account:string))
-    (defun URC_GoldenStoa:object (account:string))
-    (defun URH_GoldenStoaNonces:object (account:string))
-
-    (defun URC_Totals:object (account:string))
-    (defun URC_Codex:object (codex-accounts:[string]))
-    (defun URC_01|Dashboard:[object] (account:string codex-accounts:[string]))
-)
-
+;; ---- source: 2_CITIZEN/Stage_Z/AppReads/OuronetUI/02_O-UI-TWO.pact (module only -- its interface is already live)
 (module O-UI-TWO GOV
 
     ;;{0}  IMPLEMENTERS
@@ -685,3 +655,4 @@
     )
 
 )
+
