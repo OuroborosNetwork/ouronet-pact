@@ -1,5 +1,6 @@
-wrote OuronetInformational/ARCHITECTURE/AUTH-SURFACE.md  (1196 entrypoints, 863 enforcing ownership)
-rface.py`. Do not edit.
+# Authorisation surface — every sovereign client entrypoint
+
+> **GENERATED** by `REPL/tools/_authsurface.py`. Do not edit.
 > For each `C_`/`A_`, the accounts whose ownership is enforced ANYWHERE in its call tree.
 > The gate requires this set to only ever GROW: an entrypoint that stops enforcing something it used to enforce is an authorisation regression, and nothing else here would catch it.
 

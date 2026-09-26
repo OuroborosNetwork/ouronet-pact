@@ -510,6 +510,16 @@ def main():
         print(_abi.stdout + _abi.stderr)
         sys.exit("GATE FAILED: Deploy/TALOS-ABI.json is stale against the Pact sources.")
 
+    # THE CONSUMER REGISTRY. Offline half only: the committed file must be internally consistent
+    # and non-empty. Whether it matches the CHAIN needs `--probe`, and deployed code is the
+    # authority there -- the same split `_livetables.py` already uses, for the same reason: a
+    # gate that needs the network is a gate that fails for reasons unrelated to the code.
+    _reg = subprocess.run([sys.executable, "tools/_registry.py", "--check"],
+                          capture_output=True, text=True)
+    if _reg.returncode != 0:
+        print(_reg.stdout + _reg.stderr)
+        sys.exit("GATE FAILED: Deploy/OURONET-REGISTRY.json is absent or inconsistent.")
+
     # AUTHORISATION SURFACE -- the only check here that speaks to authorisation directly. For every
     # C_/A_ entrypoint it records which accounts' ownership is enforced ANYWHERE in its call tree,
     # and requires that set to only ever GROW. Built 2026-09-20 ahead of the patron/executor

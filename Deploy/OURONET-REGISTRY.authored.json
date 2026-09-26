@@ -1,0 +1,46 @@
+{
+ "note": [
+  "HAND-AUTHORED. This is the one part of the registry that is NOT generated, and the one part",
+  "a regeneration must never touch. _registry.py merges it in; it never writes here.",
+  "",
+  "GHOST VALUES are the standard example values a function is demonstrated with. They cannot be",
+  "derived from a contract -- a contract states that a parameter is a `decimal`, not that 1.0 is",
+  "a sensible one to show. They exist so that every consumer demonstrates a function the SAME",
+  "way, and so a tooltip or a ZBOM can render a real preview before a user has typed anything.",
+  "",
+  "THE SAME SET FEEDS BOTH the execution shape and the INFO preview. That is the point: if the",
+  "preview renders a sensible sentence from these values, the wiring resolved -- names, arity,",
+  "types and the contract's own reading of the operation. A correct preview is evidence of",
+  "correct wiring, which is what makes hovering a button a substitute for testing it.",
+  "",
+  "PLACEHOLDERS IN ANGLE BRACKETS are resolved by the consumer at render time, because they",
+  "depend on who is connected: <resident-account>, <wealthiest-patron>, <selected-token>,",
+  "<selected-pool>. Anything else is a literal.",
+  "",
+  "SEEDING: harvest from the ZBOM that already wires a function -- those values were chosen",
+  "deliberately. Author the rest as each button is wired, so wiring a button and giving it ghost",
+  "values are one act rather than two."
+ ],
+ "ghost": {
+  "TS01-C1.DPTF|C_Transfer": {
+   "patron": "<wealthiest-patron>",
+   "executor": "<resident-account>",
+   "executee": "<resident-account>",
+   "id": "<selected-token>",
+   "transfer-amount": 1.0,
+   "method": true
+  },
+  "TS01-C3.SWP|C_ToggleSwapCapability": {
+   "patron": "<wealthiest-patron>",
+   "executor": "<resident-account>",
+   "swpair": "<selected-pool>",
+   "toggle": true
+  },
+  "TS01-C2.VST|C_Awake": {
+   "patron": "<wealthiest-patron>",
+   "awaker": "<resident-account>",
+   "dpof": "<selected-token>",
+   "nonce": 1
+  }
+ }
+}
