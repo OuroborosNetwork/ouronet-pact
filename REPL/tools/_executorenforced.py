@@ -413,12 +413,24 @@ def selftest():
     # bounded -- but a NEW one has to be file-qualified.
     import glob as _g
     where = {}
+    reached = set()
     for f in _g.glob(os.path.join(ROOT, "1_SOVEREIGN", "**", "*.pact"), recursive=True):
         b = os.path.basename(f)
         if b not in SWEPT:
             continue
+        reached.add(b)
         for m in re.finditer(r"\(defun\s+([A-Za-z0-9|_\-]+)", open(f, encoding="utf8").read()):
             where.setdefault(m.group(1).split("|")[-1], set()).add(b)
+    # THE GLOB IS 1_SOVEREIGN ONLY, AND SWEPT IS A HARDCODED LIST OF 46 BASENAMES.
+    # Both are correct today -- every swept module lives under 1_SOVEREIGN -- but a hardcoded list
+    # cannot report its own incompleteness, and the day a citizen module joins SWEPT (the citizen
+    # Talos, 99_TS02-CPAD.pact, is the obvious candidate) this loop would skip it in silence and
+    # its ambiguity check would simply not run. So: assert the glob reached every name in the list.
+    unreached = sorted(set(SWEPT) - reached)
+    if unreached:
+        print("  _executorenforced: SWEPT names not found under 1_SOVEREIGN -- this scan SKIPPED "
+              "them: " + ", ".join(unreached))
+
     ambiguous = sorted(k for k in INDIRECT if "::" not in k and len(where.get(k, ())) > 1)
     if ambiguous:
         print("  _executorenforced: NOTE -- bare INDIRECT key(s) matching >1 swept module: "

@@ -577,8 +577,12 @@ def main():
     # caller in a not-yet-swept module has no `patron` to thread, so the slot carries the
     # initiating account instead -- correct for now, wrong after that module's turn, and
     # completely invisible: arity is right, the value is unused by every swept callee, and no
-    # assertion can reach it. The registry in _patronslots.py names all 25; the gate's job is
-    # only to refuse a TWENTY-SIXTH that nobody wrote down.
+    # assertion can reach it. The registry in _patronslots.py names every one; the gate's job is
+    # to refuse a NEW one nobody wrote down -- and, since 2026-09-26, an ORPHANED entry whose site
+    # no longer exists. Five had accumulated: each gained a real `patron` at its module's turn, and
+    # a site with a real patron is skipped by the scan, so the entries were never consulted again
+    # while the tool reported every slot registered. The count is deliberately NOT written here any
+    # more; the previous comment said "all 25" against an actual 24, then 19.
     _ps = subprocess.run([sys.executable, "tools/_patronslots.py"],
                          capture_output=True, text=True)
     if _ps.returncode != 0:

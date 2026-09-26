@@ -373,6 +373,49 @@ def selftest():
     return 0
 
 
+def outside():
+    """The BOUNDARY, stated rather than implied.
+
+    This tool globs `1_SOVEREIGN` only, and its headline is labelled that way -- but CLAUDE.md
+    cites it as "ground truth for what remains" for the sweep as a whole, and the handoff's
+    46-module worklist is sovereign without saying so anywhere. With the sovereign side now
+    reporting 776/776 DONE, that silence is the difference between "the sweep is finished" and
+    "the sweep is finished for the part we measured".
+
+    So: count what is excluded. This is NOT a worklist and nothing here is a defect -- whether the
+    canon reaches citizen modules is an owner ruling that has not been made. The point is that the
+    number is printed, so a scope decision starts from a measurement, and a new citizen entrypoint
+    cannot quietly widen a gap nobody is looking at.
+
+    Note the shape of the thing this guards against: this tool exists BECAUSE _bandplan's
+    entrypoint filter was blind to every Talos function and reported 89 against an actual 482. A
+    successor that is blind to the CITIZEN Talos module -- 99_TS02-CPAD.pact, the sole gas-funded
+    path for the launchpad sales -- would be the same error one level over.
+    """
+    import glob as _g
+    entry = re.compile(r'^(?:[A-Za-z0-9|_\-]+\|)?(?:A|AA|C|CC|Ap|AAp|Cp|CCp)_')
+    total, conforming, per = 0, 0, collections.Counter()
+    for f in sorted(_g.glob(os.path.join(ROOT, "2_CITIZEN", "**", "*.pact"), recursive=True)):
+        text = open(f, encoding="utf8").read()
+        seen = set()
+        # same form/param readers the sovereign pass uses, so the two counts are comparable
+        for name, body in B._forms(text, "defun"):
+            if name in seen or not entry.match(name) or name.startswith("P|"):
+                continue
+            seen.add(name)
+            total += 1
+            per[os.path.basename(f)] += 1
+            if tuple(TYPED.findall(B._params(body))[:2]) == ("patron", "executor"):
+                conforming += 1
+    if not total:
+        return
+    print(f"\nOUT OF SCOPE -- 2_CITIZEN is not globbed by this tool: {total} A_/C_ entrypoints, "
+          f"{conforming} already (patron, executor)")
+    print("   not a worklist: whether the canon reaches citizen modules is an unmade ruling.")
+    for f, k in per.most_common(6):
+        print(f"   {f:26s} {k}")
+
+
 def main():
     if "--selftest" in sys.argv:
         return selftest()
@@ -398,6 +441,7 @@ def main():
     per = collections.Counter(f for f, _, st, _ in rows if st != "DONE")
     for f, k in per.most_common(16):
         print(f"   {f:26s} {k}")
+    outside()
     return 0
 
 

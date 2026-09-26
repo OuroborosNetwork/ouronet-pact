@@ -13,6 +13,27 @@ session must be able to see what is done by reading this file, without reconstru
 (Ground truth is `python3 REPL/tools/_executorplan.py`, never this line. It reads
 `DONE 776 / remaining: 0`.)
 
+**Scope, stated 2026-09-26: `1_SOVEREIGN` ONLY, and that was never written down anywhere.**
+The line below says `1_SOVEREIGN`, the 46-module worklist is sovereign, and `_executorplan.py`
+globs `1_SOVEREIGN` — three consistent facts, and not one of them said what was *excluded*.
+CLAUDE.md meanwhile called the tool "ground truth for what remains" with no scope at all.
+
+`2_CITIZEN` holds **136 `A_`/`C_`-family entrypoints, 2 of them `(patron, executor)`** — 48 in
+`01_NOSFERATU`, 18 in `02_KBunnies`, 16 in `04_AQP-BOOT`, 10 in `03_DSP+`, and **7 in
+`99_TS02-CPAD.pact`, the citizen Talos and the only gas-funded path for the launchpad sales.**
+
+**This is not a worklist.** Whether the canon reaches citizen modules is a ruling nobody has made:
+§2.2 does not scope them in or out. Citizen modules call only sovereign public APIs, so the
+argument for sweeping them is consistency rather than correctness — but the citizen *Talos* is a
+client-facing gas boundary, which is the one place that argument gets stronger. `_executorplan.py`
+now prints the excluded count as an `OUT OF SCOPE` line, so the decision starts from a measurement.
+
+Note what this is an instance of. This tool exists because `_bandplan`'s filter was blind to every
+Talos function; a successor blind to the *citizen* Talos is the same error against a different
+directory, and it survived because the scope was implied by three files and asserted by none.
+
+---
+
 Every `A_`/`AA_`/`C_`/`CC_` entrypoint in `1_SOVEREIGN` now takes `patron` first and, where one
 exists, `executor` second and `executee` third — and **every executor is PROVEN**, directly, by a
 forward, or by a route its own `@doc` names. `_modulecomplete.py` passes all 7 obligations for all

@@ -148,17 +148,17 @@ REGISTRY = {
  # 09_DPDC-F's two entries were CLEARED at its own turn (2026-09-22), same as 08_DPDC-S's four
  # the entry before: all four entrypoints gained a real `patron` and the four DPDC-T legs thread
  # it instead of the acting account.
- ("11_EQUITY+.pact", "XI_ConvertPackageShares"): ("account", "provisional", "11_EQUITY+"),
- ("11_EQUITY+.pact", "XI_MakePackageShares"):    ("account", "provisional", "11_EQUITY+"),
- ("11_EQUITY+.pact", "XI_BreakPackageShares"):   ("account", "provisional", "11_EQUITY+"),
- ("00_Demipad.pact", "XI_TransmitCollectables"):
-   ("client", "provisional -- the launchpad moves the asset BETWEEN <client> and <lpad> in both "
-              "directions; the client is the one buying, so the client is the one paying.",
-    "00_Demipad"),
- ("03_AQP.pact", "XE_CollectableTransfer"):
-   ("owner-id", "provisional, and deliberately the same expression its true-fungible twin "
-                "XE_TrueFungibleTransfer already uses -- the two are the same op over two asset "
-                "kinds and must not disagree about who pays.", "03_AQP"),
+ # FIVE MORE CLEARED, 2026-09-26 -- and not one by remembering. 11_EQUITY+'s three
+ # (XI_ConvertPackageShares / XI_MakePackageShares / XI_BreakPackageShares, all `account`),
+ # 00_Demipad's XI_TransmitCollectables (`client`) and 03_AQP's XE_CollectableTransfer
+ # (`owner-id`) all gained a real `patron` at their modules' turns and every DPDC-T leg now
+ # threads it -- `C_Transfer patron executor ...` and `C_Transfer patron dpdc executor ...`.
+ #
+ # They were found by the ORPHAN check added the same day, not by anyone reviewing the list. Every
+ # clearing above this line was done because an author remembered to do it at the right moment;
+ # these five are what happens when one doesn't. The entries sat as written excuses for five
+ # (file, function) pairs whose slots had already been fixed, and the tool consulted none of them
+ # while reporting "every non-`patron` patron slot is registered."
  ("06_VCT.pact", "XI_VacateCollectableBatch"):
    ("AQP|SC_NAME", "provisional -- no user account is in scope; same as the true-fungible "
                    "XI_VacateTrueFungibleFromLegs above.", "06_VCT"),
@@ -212,7 +212,7 @@ def alias_target(src, alias):
 
 
 def main():
-    hits, unregistered = [], []
+    hits, unregistered, matched = [], [], set()
     files = (glob.glob(os.path.join(ROOT, "1_SOVEREIGN", "**", "*.pact"), recursive=True)
              + glob.glob(os.path.join(ROOT, "2_CITIZEN", "**", "*.pact"), recursive=True))
     SWEPT = _swept(sorted(files))
@@ -229,6 +229,7 @@ def main():
             encl = next((n for p, n in reversed(defs) if p < m.start()), "?")
             key = (base, encl)
             if key in REGISTRY:
+                matched.add(key)
                 expr, why, clears = REGISTRY[key]
                 if expr != first:
                     unregistered.append((base, encl, fn, first,
@@ -256,6 +257,30 @@ def main():
         for base, encl, fn, first in sorted(todo[mod]):
             print(f"      {encl:<34} -> {fn:<22} patron={first}")
 
+    # ORPHANED ENTRIES -- the other way an exemption stops applying.
+    #
+    # This tool already refuses a registry whose EXPRESSION no longer matches the source. What it
+    # never noticed is an entry whose SITE is gone: the function was renamed, or -- far more
+    # likely -- it gained a real `patron`, at which point the scan's `if first == "patron":
+    # continue` skips it and the entry is simply never consulted again. Every clearing recorded in
+    # the comments above (13_OUROBOROS's C_WithdrawFees, 10_ATSU's five, 18_SWPLC's C_Fuel) was
+    # removed because the author remembered to, and the `clears-at` column is a note to a human.
+    #
+    # An entry that outlives its site is a standing written excuse for a name. If a later function
+    # reuses that (file, function) pair with a stand-in in slot 0 -- which is precisely what this
+    # tool exists to catch -- the orphan would explain it away. So the registry has to be pruned by
+    # the tool's insistence, not by recall.
+    orphaned = sorted(set(REGISTRY) - matched)
+    if orphaned:
+        print(f"\n!! {len(orphaned)} ORPHANED registry entr(ies) -- no such patron slot exists "
+              f"any more:")
+        for base, encl in orphaned:
+            print(f"     {base:<22} {encl:<32} [{REGISTRY[(base, encl)][1][:60]}]")
+        print("\n   Either the site gained a real `patron` -- in which case DELETE the entry, the")
+        print("   way 10_ATSU's five were deleted at its turn -- or the function was renamed and")
+        print("   the entry must follow it. A registry entry with no site is an excuse waiting for")
+        print("   a future function to reuse the name.")
+
     if unregistered:
         print(f"\n!! {len(unregistered)} UNREGISTERED patron slot(s):")
         for base, encl, fn, first, why in unregistered:
@@ -264,7 +289,9 @@ def main():
         print("   REGISTRY. Add an entry (with `clears-at` set if it is provisional) or fix the")
         print("   call site.")
         return 1
-    print("\nevery non-`patron` patron slot is registered.")
+    if orphaned:
+        return 1
+    print("\nevery non-`patron` patron slot is registered, and every registry entry has a site.")
     return 0
 
 

@@ -129,8 +129,22 @@ wrong KIND in slot 0. During the executor sweep a caller in a not-yet-swept modu
 to thread, so the slot carries the initiating account instead (`client`, `culler`, `AQP|SC_NAME`).
 That is correct today and wrong after that module's turn, and it is **invisible** — arity is right,
 the value is unused by every swept callee, and no assertion can reach it. The tool carries a
-registry of all 25 such sites (13 permanent — the patronless OUROBOROS family — and 12
-provisional, listed per module), and is fatal **only on an unregistered twenty-sixth**.
+registry of every such site and is fatal on an unregistered new one.
+
+**CORRECTED 2026-09-26 — this read "all 25 such sites (13 permanent … and 12 provisional)".
+Measured, it is 19 (15 permanent, 4 provisional), and the drift was in the direction that
+matters: five entries had OUTLIVED THEIR SITES.** 11_EQUITY+'s three, `00_Demipad`'s
+`XI_TransmitCollectables` and `03_AQP`'s `XE_CollectableTransfer` all gained a real `patron` at
+their modules' turns and every DPDC-T leg now threads it — `C_Transfer patron executor …` — while
+the entries stayed. The tool checked that a registered *expression* still matched the source but
+never asked whether the **site still existed**, and a site that gains a real `patron` is skipped
+by the scan, so those five were never consulted again while it reported *"every non-`patron`
+patron slot is registered."*
+
+An entry with no site is a written excuse bound to a `(file, function)` pair, and the next
+function to reuse that pair inherits it — which is precisely the stand-in-in-slot-0 case the tool
+exists to catch. Orphan detection added and negative-tested. **Do not hand-count this; run the
+tool** — the stale 25 is why the sentence needed correcting at all.
 
 **Tool paths are gate-enforced too.** `REPL/tools/_toolpaths.py --check` statically resolves every
 hard-coded path literal in every tool. If you move a tool, this is what tells you what you broke —
@@ -153,6 +167,26 @@ Ground truth for what remains is `python3 REPL/tools/_executorplan.py`, never a 
 The first attempt at this refactor was scoped against `_bandplan.py`, whose entrypoint filter was
 blind to **every Talos function** — it reported 89 entrypoints where there are 482, and Talos is
 the only client-facing path in the system. Trust the tool, and check the tool.
+
+**CHECKED 2026-09-26, and both halves of that sentence paid off.**
+
+The **sovereign sweep is COMPLETE**: `_executorplan.py` reports **776 entrypoints, 776 DONE, 0
+remaining**, and `_executorenforced.py` proves 766 of them. So "ACTIVE LONG-RUN WORK" in this
+heading is now true only of the part below.
+
+And the tool had the **same blind spot one level over**. It globs `1_SOVEREIGN` only — its own
+headline says so — but nothing said so *here*, and this paragraph calls it ground truth for the
+sweep. `2_CITIZEN` holds **136 `A_`/`C_` entrypoints, of which 2 are `(patron, executor)`**:
+48 in `01_NOSFERATU`, 18 in `02_KBunnies`, 16 in `04_AQP-BOOT`, and **7 in
+`99_TS02-CPAD.pact` — the citizen Talos, the sole gas-funded path for the launchpad sales.** A
+successor tool blind to the citizen Talos is `_bandplan`'s error repeated against a different
+directory.
+
+**Whether the canon reaches citizen modules is an UNMADE RULING** — neither the handoff nor
+`StoicSyntax-Prefixes.md` §2.2 scopes them in or out, and the 46-module worklist is sovereign
+without saying it is. Nothing above is a defect list. `_executorplan.py` now prints the excluded
+count as an explicit `OUT OF SCOPE` line, so the scope decision starts from a measurement and a
+137th citizen entrypoint cannot quietly widen a gap nobody is looking at.
 
 ## Repository layout
 

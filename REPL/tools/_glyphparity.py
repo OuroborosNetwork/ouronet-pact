@@ -68,7 +68,15 @@ def main():
               "anything. Restore the list; see the module docstring.")
         return 1
 
-    modules = sorted(glob.glob(os.path.join(APPREADS, "*", "*.pact")))
+    # RECURSIVE, AND NOT ONE LEVEL. `AppReads/*/*.pact` reaches the nine OuronetUI modules and
+    # the Pythia one, and silently misses `AppReads/00_Ids.pact` -- which sits at the TOP level,
+    # not in a per-app subdirectory. It carries no non-ASCII literal today, so nothing was being
+    # mis-reported; the danger runs the other way. This tool's finding is "the retired layer
+    # emitted this string and no AppReads module does", so a literal that MOVED into 00_Ids.pact
+    # would be reported FLATTENED -- a lost glyph -- when it is right there in a file the glob
+    # cannot see. Same shape as OuronetUI's `rglob("*.*s")`, which could not match `.tsx` and so
+    # skipped 357 files while listing the extension in its own filter.
+    modules = sorted(glob.glob(os.path.join(APPREADS, "**", "*.pact"), recursive=True))
     if not modules:
         print(f"glyph parity: no AppReads modules found under {APPREADS}")
         return 1
