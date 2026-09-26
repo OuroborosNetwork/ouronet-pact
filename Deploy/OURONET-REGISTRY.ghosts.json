@@ -1,0 +1,223 @@
+{
+ "note": "GHOST VALUES -- example arguments, keyed by PARAMETER NAME then by TYPE. Merged into Deploy/OURONET-REGISTRY.json by REPL/tools/_registry.py; that file is generated and this one is not, so regenerating can never destroy these.\n\nWHY BY PARAMETER AND NOT BY ENTRYPOINT. 423 entrypoints share 2,182 parameter slots but only 276 distinct names, and four names -- patron, executor, id, executee -- cover half of them. Authoring per entrypoint would mean writing the same account 416 times and getting it wrong somewhere.\n\nTHESE ARE ILLUSTRATIVE, NOT A TEST FIXTURE. Every id below was read from MAINNET so the SHAPE is real -- a consumer can see that a swpair is a four-segment pipe-joined string and an account is a glyph string, not a k: address. Do not submit them: the accounts are not yours to sign for, and an amount of 1.0 is a placeholder, not a sensible default.",
+ "chainSourced": {
+  "readAt": "2026-09-26",
+  "node": "node2.stoachain.com chain 0",
+  "how": "DALOS.UR_OuroborosID / UR_AurynID / UR_EliteAurynID / UR_DemiurgoiID, SWP.URC_Swpairs, DPTF.UR_KEYS, DPOF.UR_KEYS, ATS.UR_KEYS. The KEYS readers return COMPOSITE `id|account` rows, so the bare id is the first pipe segment -- except DPOF's, which is `H|id|account` and needs the second."
+ },
+ "byParam": {
+  "patron": {
+   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+   "why": "pays the IGNIS. A real Demiurgoi account, read from chain"
+  },
+  "executor": {
+   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+   "why": "ACTS -- the account whose ownership the chain enforces. Often not the patron"
+  },
+  "executee": {
+   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+   "why": "acted UPON. Distinct from executor whenever one account operates for another"
+  },
+  "account": {
+   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+   "why": "an Ouronet account: a glyph string, NOT a k: address"
+  },
+  "buyer": {
+   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+   "why": "the purchasing Ouronet account"
+  },
+  "receiver": {
+   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ"
+  },
+  "sender": {
+   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ"
+  },
+  "owner-id": {
+   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+   "why": "already an account -- CAP_StakeOwner passes it straight to the ownership check"
+  },
+  "new-owner": {
+   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ"
+  },
+  "id": {
+   "v": "OURO-8Nh-JO8JO4F5",
+   "why": "a token id. Which FAMILY depends on the entrypoint -- DPTF here"
+  },
+  "dptf": {
+   "v": "AURYN-8Nh-JO8JO4F5"
+  },
+  "dptf-id": {
+   "v": "AURYN-8Nh-JO8JO4F5"
+  },
+  "input-id": {
+   "v": "OURO-8Nh-JO8JO4F5"
+  },
+  "output-id": {
+   "v": "AURYN-8Nh-JO8JO4F5"
+  },
+  "reward-dptf-id": {
+   "v": "AURYN-8Nh-JO8JO4F5"
+  },
+  "dpof-id": {
+   "v": "GSTOA-8Nh-JO8JO4F5"
+  },
+  "swpair": {
+   "v": "W|SSTOA-8Nh-JO8JO4F5|OURO-8Nh-JO8JO4F5|WSTOA-8Nh-JO8JO4F5",
+   "why": "pool id: TYPE|token|token|token, pipe-joined. NOT an account -- its OWNER is what gets ownership-checked"
+  },
+  "ats": {
+   "v": "Auryndex-O136CBn22ncY",
+   "why": "an autostake pair id"
+  },
+  "atspair": {
+   "v": "Auryndex-O136CBn22ncY"
+  },
+  "entity-id": {
+   "v": "OURO-8Nh-JO8JO4F5"
+  },
+  "asset-id": {
+   "v": "SPARK-6B42e2_oW8j0"
+  },
+  "nonce": {
+   "v": 1,
+   "why": "nonces are 1-based"
+  },
+  "nonces": {
+   "v": [
+    1,
+    2
+   ]
+  },
+  "nonces-array": {
+   "v": [
+    [
+     1,
+     2
+    ],
+    [
+     3
+    ]
+   ],
+   "why": "one inner list PER LEG -- these are the parallel slices of a fed-slice recipe"
+  },
+  "amount": {
+   "v": 1.0,
+   "why": "a placeholder, not a sensible default"
+  },
+  "amounts": {
+   "v": [
+    1.0,
+    2.0
+   ]
+  },
+  "input-amount": {
+   "v": 1.0
+  },
+  "input-amounts": {
+   "v": [
+    1.0,
+    2.0
+   ]
+  },
+  "max-cost": {
+   "v": 0.0,
+   "why": "the caller's CEILING. 0.0 means 'no headroom' and will refuse on any price move -- set it to displayed-cost x (1 + slippage/100)"
+  },
+  "slippage": {
+   "v": 0.0,
+   "why": "percent. 0.0 = exact caps; UI policy caps it at 50"
+  },
+  "toggle": {
+   "v": true,
+   "why": "must be the INVERSE of the current on-chain value -- the chain refuses same-value writes"
+  },
+  "iz-native": {
+   "v": true,
+   "why": "true = native STOA, false = wrapped (WSTOA)"
+  },
+  "son": {
+   "v": false,
+   "why": "semi-or-non-fungible discriminator: false = non-fungible"
+  },
+  "nos": {
+   "v": false
+  },
+  "chunk": {
+   "v": 25,
+   "why": "page size for a cursor pager. Sized by simulation; the gas meter is the real ceiling"
+  },
+  "months": {
+   "v": 12
+  },
+  "tag-name": {
+   "v": "ΣΦДжΞ",
+   "why": "BARE on-chain name -- DALOS glyphs, no section sigil"
+  },
+  "description": {
+   "v": "Example description"
+  },
+  "website": {
+   "v": "https://ouronet.org"
+  },
+  "logo": {
+   "v": "https://ouronet.org/logo.png"
+  },
+  "social": {
+   "v": []
+  },
+  "method": {
+   "v": "example-method"
+  }
+ },
+ "byType": {
+  "string": {
+   "v": "example",
+   "why": "fallback only -- a string parameter with no name entry above"
+  },
+  "integer": {
+   "v": 1
+  },
+  "decimal": {
+   "v": 1.0
+  },
+  "bool": {
+   "v": false
+  },
+  "[string]": {
+   "v": [
+    "example"
+   ]
+  },
+  "[integer]": {
+   "v": [
+    1
+   ]
+  },
+  "[decimal]": {
+   "v": [
+    1.0
+   ]
+  },
+  "[bool]": {
+   "v": [
+    false
+   ]
+  },
+  "guard": {
+   "v": {
+    "readKeyset": "ks"
+   },
+   "why": "a guard is passed as `(read-keyset \"ks\")` -- this is the NAME of the transaction-data key, not the keyset. Put {\"keys\": [...], \"pred\": \"keys-all\"} in the transaction's `data` under that name. Inlining the keyset object is not a thing Pact accepts."
+  },
+  "object": {
+   "v": {},
+   "why": "UNTYPED in the signature, so there is no schema to derive a shape from. Read the entrypoint's @doc -- an empty object here means 'the contract did not say', not 'send nothing'."
+  },
+  "[object]": {
+   "v": [
+    {}
+   ],
+   "why": "untyped list-of-object; see the note on `object`."
+  }
+ }
+}

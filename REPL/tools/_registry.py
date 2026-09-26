@@ -68,6 +68,7 @@ from _authsurface import (collect as auth_collect, surface_structured,  # noqa: 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 OUT = os.path.join(ROOT, "Deploy", "OURONET-REGISTRY.json")
 AUTHORED = os.path.join(ROOT, "Deploy", "OURONET-REGISTRY.authored.json")
+GHOSTS   = os.path.join(ROOT, "Deploy", "OURONET-REGISTRY.ghosts.json")
 AUTH_SURFACE = os.path.join(ROOT, "OuronetInformational", "ARCHITECTURE", "AUTH-SURFACE.md")
 NODE = ("https://node2.stoachain.com/chainweb/0.0/stoa/chain/0/pact/api/v1/local"
         "?signatureVerification=false&preflight=false")
@@ -206,6 +207,7 @@ STEP = re.compile(r'\(step(?:-with-rollback)?[\s(]')
 RECIPE = re.compile(r'\|C{1,2}p_')
 PAGER_PARAM = re.compile(r'^(chunk|page|size|limit|batch)(-size)?$')
 HEAVY_RETURNS = {}
+SCHEMAS = {}
 
 # Named preflight per recipe. The typed ones are resolved by type (a param's type IS the read's
 # return type); the pagers take a bare `chunk:integer`, which names nothing, so those three are
@@ -311,6 +313,83 @@ def repo_modules():
             for m in re.finditer(r'^\(module\s+([A-Za-z0-9|_-]+)\s', text, re.M):
                 out.setdefault(m.group(1), (text[m.start():], os.path.relpath(path, ROOT)))
     return out
+
+
+def scan_schemas(repo):
+    """{schema-name: [(field, type), ...]} for every defschema in the tree.
+
+    Object parameters are 83 of the 2,182 slots and no name/type dictionary can cover them --
+    an `object{DPDC|NonceData}` ghost has to have the right FIELDS or it teaches the wrong
+    shape. The fields are already written down in the contract, so they are read rather than
+    authored.
+    """
+    # WHOLE FILES, not repo_modules(). That helper slices from `(module `, and most schemas a
+    # client actually passes are declared in the INTERFACE above it -- `SwapperV4.PoolTokens`,
+    # `SwapperUsageV3.Slippage`, the whole `DpdcUdcV2` family. Scanning module-onward found 72
+    # of 201 and silently produced no ghost for exactly the object parameters this exists for.
+    out = {}
+    for base, _d, files in os.walk(ROOT):
+        if os.sep + "Deploy" in base or os.sep + "REPL" in base:
+            continue
+        for fn in files:
+            if not fn.endswith(".pact"):
+                continue
+            src = strip_code(io.open(os.path.join(base, fn), encoding="utf8",
+                                     errors="replace").read())
+            for m in re.finditer(r'\(defschema\s+([A-Za-z0-9|_-]+)', src):
+                body = src[m.start():balanced_at(src, m.start())]
+                fields = re.findall(r'^\s+([a-z][A-Za-z0-9|_-]*):(\[?[A-Za-z0-9{}.|_-]+\]?)',
+                                    body, re.M)
+                if fields:
+                    out.setdefault(m.group(1), fields)
+    return out
+
+
+def ghost_fits(v, t):
+    """Does this ghost value match the DECLARED type?
+
+    The dictionary is keyed by parameter NAME, which is what makes it authorable -- but a name
+    does not pin a type. `ats` is a bare id on most entrypoints and `[string]` on ATS|C_Issue;
+    `method` is a string in one place and a bool in another. Applying the name entry blindly
+    produced values the Pact formatter then refused, which the package's build-every-ghost test
+    caught 23 times. So a name hit that does not fit falls through to the type layer.
+    """
+    t = t.strip()
+    if t.startswith("[") and t.endswith("]"):
+        return isinstance(v, list) and all(ghost_fits(x, t[1:-1]) for x in v)
+    if t == "string":
+        return isinstance(v, str)
+    if t == "integer":
+        return isinstance(v, int) and not isinstance(v, bool)
+    if t == "decimal":
+        return isinstance(v, (int, float)) and not isinstance(v, bool)
+    if t == "bool":
+        return isinstance(v, bool)
+    if t == "object" or t.startswith("object{") or t == "guard":
+        return isinstance(v, dict)
+    return True
+
+
+def ghost_for_type(t, by_type, schemas, depth=0):
+    """A ghost value for a declared type, recursing into object schemas. None if unknown."""
+    if t in by_type:
+        return by_type[t]["v"]
+    listed = t.startswith("[") and t.endswith("]")
+    inner = t[1:-1] if listed else t
+    if listed and inner.startswith("["):
+        v = ghost_for_type(inner, by_type, schemas, depth + 1)
+        return None if v is None else [v]
+    m = re.match(r'object\{([A-Za-z0-9._|-]+)\}', inner)
+    if not m or depth > 4:
+        return None
+    fields = schemas.get(m.group(1).split(".")[-1])
+    if fields is None:
+        return None
+    obj = {}
+    for fname, ftype in fields:
+        v = ghost_for_type(ftype, by_type, schemas, depth + 1)
+        obj[fname] = v if v is not None else None
+    return [obj] if listed else obj
 
 
 def scan_defpacts(repo):
@@ -455,8 +534,9 @@ def build(probe):
     repo = repo_modules()
     owners = ownership_map()
     deployed_src = {}
-    global HEAVY_RETURNS
+    global HEAVY_RETURNS, SCHEMAS
     HEAVY_RETURNS = scan_heavy_returns(repo)
+    SCHEMAS = scan_schemas(repo)
     for complaint in check_client_assembled(repo):
         print("  CLIENT_ASSEMBLED stale -- " + complaint)
     entries, previews, divergences, unreachable = {}, {}, [], []
@@ -881,11 +961,83 @@ def build(probe):
                                      "(see IGNIS price table) -- a consumer cannot show its cost "
                                      "before signing. Contract-side gap, not a pairing failure.")
 
-    # the authored layer -- ghost values. Merged in, never generated, never overwritten.
+    # GHOST VALUES -- composed per entrypoint from a per-PARAMETER dictionary.
+    #
+    # Authoring one object per entrypoint would mean 423 of them, and writing the same account
+    # into 416 `patron` slots by hand is how a fixture ends up wrong in one place and right
+    # everywhere else. The 423 entrypoints have 2,182 parameter slots but only 276 distinct
+    # NAMES, and four of those cover half -- so the dictionary is keyed by name, with a type
+    # fallback, and each entrypoint's ghost is assembled from it.
+    #
+    # Resolution order, most specific first:
+    #   1. OURONET-REGISTRY.authored.json  -- a hand-written whole-object override for ONE
+    #      entrypoint. Always wins; that is the escape hatch for anything the dictionary cannot
+    #      express.
+    #   2. ghosts.byParam[<name>]          -- by parameter name
+    #   3. ghosts.byType[<type>]           -- by declared type
+    # Anything unresolved is NAMED, not filled with a plausible-looking blank.
+    ghosts = {}
+    if os.path.exists(GHOSTS):
+        ghosts = json.load(io.open(GHOSTS, encoding="utf8"))
+    by_param, by_type = ghosts.get("byParam", {}), ghosts.get("byType", {})
+    for key, rec in entries.items():
+        args, why, unresolved = {}, {}, []
+        fed_names = {f["param"] for f in (rec["execution"].get("fedParams") or [])}
+        for prm in rec["params"]:
+            # A PREFLIGHT-FED PARAMETER GETS NO FAKE VALUE. Its whole point is that the client
+            # cannot construct it -- inventing a plausible object here would contradict the
+            # execution block two keys away and invite someone to submit it.
+            if prm["name"] in fed_names:
+                args[prm["name"]] = None
+                why[prm["name"]] = ("DO NOT SYNTHESISE. Obtain it from the preflight named in "
+                                    "`execution.preflight`; this parameter is the output of a "
+                                    "read, not user input")
+                continue
+            hit = by_param.get(prm["name"])
+            if hit is not None and not ghost_fits(hit["v"], prm["type"]):
+                hit = None                      # right name, wrong type -- fall through
+            if hit is None:
+                hit = by_type.get(prm["type"])
+            if hit is not None:
+                args[prm["name"]] = hit["v"]
+                if hit.get("why"):
+                    why[prm["name"]] = hit["why"]
+                continue
+            derived = ghost_for_type(prm["type"], by_type, SCHEMAS)
+            if derived is not None:
+                args[prm["name"]] = derived
+                why[prm["name"]] = ("shape DERIVED from the contract's own defschema, so the "
+                                    "fields are right even though the values are placeholders")
+                continue
+            unresolved.append("%s:%s" % (prm["name"], prm["type"]))
+        rec["ghost"] = {"args": args, "source": "composed from OURONET-REGISTRY.ghosts.json"}
+        if why:
+            rec["ghost"]["notes"] = why
+        if unresolved:
+            rec["ghost"]["unresolved"] = unresolved
+            rec["ghost"]["unresolvedNote"] = (
+                "no ghost for these -- add them to ghosts.json byParam. They are LISTED rather "
+                "than filled, because a plausible-looking wrong example is worse than a gap: it "
+                "gets copied.")
+        rec["ghost"]["warning"] = (
+            "ILLUSTRATIVE, NOT SUBMITTABLE. Every id was read from mainnet so the SHAPE is real, "
+            "but the accounts are not yours to sign for and the amounts are placeholders.")
+
+    # the hand-authored per-entrypoint layer WINS. Merged last, never generated, never lost.
     if os.path.exists(AUTHORED):
         for key, extra in json.load(io.open(AUTHORED, encoding="utf8")).get("ghost", {}).items():
-            if key in entries:
-                entries[key]["ghost"] = extra
+            if key not in entries:
+                continue
+            # MERGE, never replace. An override that drops `args` leaves consumers with a ghost
+            # that has no example call in it at all -- and the composed args are still the best
+            # starting point for every parameter the override does not mention.
+            g = entries[key]["ghost"]
+            g["args"] = dict(g.get("args", {}), **(extra.get("args") or {}))
+            for k2, v2 in extra.items():
+                if k2 != "args":
+                    g[k2] = v2
+            g["source"] = ("composed, then overridden per-parameter by "
+                           "OURONET-REGISTRY.authored.json")
 
     # NAME COLLISIONS. Entries are keyed MODULE.function, so the registry itself is unambiguous.
     # A consumer resolving by the BARE name is not, and that is the exact habit this registry
@@ -1007,6 +1159,21 @@ def main():
             print(f"registry: PREVIEW_EXEMPT stale -- {k} now pairs (or is gone); drop the entry")
         if stale_ex:
             return 1
+
+        # GHOST COVERAGE. Every entrypoint carries an example call, and a parameter with no
+        # ghost is listed rather than filled -- so a regression here shows up as a count, not
+        # as a plausible-looking wrong example that someone copies.
+        noghost = [k for k, v in doc["entrypoints"].items() if "ghost" not in v]
+        gaps = sum(len(v.get("ghost", {}).get("unresolved", []))
+                   for v in doc["entrypoints"].values())
+        if noghost:
+            print(f"registry: {len(noghost)} entrypoint(s) carry no ghost example")
+            for k in noghost[:10]:
+                print(f"    {k}")
+            return 1
+        slots = sum(len(v["params"]) for v in doc["entrypoints"].values())
+        print(f"registry: ghosts -- {slots - gaps}/{slots} parameter slots have an example"
+              + (f", {gaps} unresolved" if gaps else " (complete)"))
 
         modes = {}
         for v in doc["entrypoints"].values():
