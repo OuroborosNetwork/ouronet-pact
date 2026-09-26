@@ -22,6 +22,31 @@ THE AUTHORED LAYER IS NEVER OVERWRITTEN.  Ghost values are example data; they ca
 from a contract and must be written by a human.  They live in a separate file that is merged in,
 so regenerating can never destroy them.
 
+HOW A CALL EXECUTES is the fourth axis, alongside shape, ownership and price.  Knowing the
+argument list is not enough to make a call, because some arguments cannot be typed by a user --
+they are the output of a scan the client must run first.  Four modes:
+
+  direct               the provided inputs suffice.  406 of 423.
+  indirect-single      ONE transaction, but a preflight read supplies some argument.  The two
+                       SmartSwap entrypoints (the route bundle is assembled client-side) and the
+                       three `C_WipePure`s (the object comes from `URHC_WipePure`).
+  indirect-parallel    a preflight is cut into slices, one per transaction, ORDER-INDEPENDENT --
+                       so the slices may be submitted at once.
+  indirect-sequential  a preflight reports progress; each call takes a SIZE and advances a stored
+                       cursor, so the calls are STRICTLY ORDERED.
+
+The last two both wear the `p` suffix and the distinction is NOT cosmetic: firing a cursor
+pager's pages in parallel races its own progress counter.  CLAUDE.md states the rule (fed slice
+vs cursor pager); this encodes it per entrypoint so a consumer does not have to know it.
+
+The fed set is DERIVED, not listed -- a parameter is preflight-fed when its type is the return
+type of a heavy read (`URH_`/`URHC_`/`URD_`), which by definition no caller can construct.  The
+first cut used a hand-picked tuple and missed all three `C_WipePure`s; that error is invisible,
+because the arity and the type are both right and the call merely wipes the wrong nonces.  Types
+are matched WITH their interface qualifier: `DpofUdcV2.RemovableNonces` and
+`DpdcManagementV2.RemovableNonces` are different schemas returned by two different readers that
+share the name `URHC_WipePure`, and the unqualified match cited both for every wipe entrypoint.
+
   python3 REPL/tools/_registry.py --probe   read the chain, rebuild (slow, needs network)
   python3 REPL/tools/_registry.py --check   offline; fatal inside _gate.py
 """
@@ -34,6 +59,11 @@ import re
 import sys
 import time
 import urllib.request
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _authsurface import strip_code  # noqa: E402  (shared parser, never re-implemented)
+from _authsurface import (collect as auth_collect, surface_structured,  # noqa: E402
+                          ENTRY as AUTH_ENTRY)
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 OUT = os.path.join(ROOT, "Deploy", "OURONET-REGISTRY.json")
@@ -50,6 +80,153 @@ PREVIEW = re.compile(r'^INFO_[A-Za-z0-9|_-]+$')
 # no formula is encoded here.
 CAPS_READ = re.compile(r'\(defun\s+(URC[a-z]?_[A-Za-z]+):\[string\]')
 
+# HOW A CALL IS EXECUTED -- direct, or fed by an off-chain read first.
+#
+# A parameter is NOT user input when its type is the RETURN TYPE OF A HEAVY READ. That set is
+# DERIVED from the tree (scan_heavy_returns below), not hand-listed -- the first cut of this was a
+# hand-picked tuple and it missed the three `C_WipePure` entrypoints, which take the object
+# `URHC_WipePure` returns. A consumer told "direct" there would try to build a heavy scan's output
+# out of user input, which cannot be done. The signature of the mistake is that it is INVISIBLE:
+# the arity is right, the type is right, and the call simply wipes the wrong set of nonces.
+HEAVY_RETURN = re.compile(
+    r'\(defun\s+(URH[C]?_|URD_)([A-Za-z0-9|_-]+):\[?object\{([A-Za-z0-9._|-]+)\}')
+
+# The one set that CANNOT be derived that way, because no on-chain read returns it: the SmartSwap
+# bundle is assembled client-side from several cached-path reads. The evidence is the schema's own
+# @doc -- "Assembled entirely client-side per P3.7's orchestration sequence" (19_SWPU.pact:96) --
+# so the list is checked against that doc rather than trusted; see check_client_assembled().
+CLIENT_ASSEMBLED = {
+    "SmartSwapPathBundle": "HANDOFFS/HANDOFF-swp-smartswap-bundle-architecture.md",
+    "SwapRoute":           "HANDOFFS/HANDOFF-swp-smartswap-bundle-architecture.md",
+    "CachedPathOrMiss":    "HANDOFFS/HANDOFF-swp-smartswap-bundle-architecture.md",
+}
+
+# The `p` suffix marks a multi-transaction recipe (StoicSyntax-Prefixes.md, "Recipe axes"), and
+# TWO shapes wear it -- only one is parallel. A FED-SLICE takes an explicit slice and is
+# order-independent, so its legs can be fired at once. A CURSOR PAGER takes a size, computes its
+# own window from stored progress, and is strictly SEQUENTIAL. Getting this backwards would have
+# a consumer fire a pager's pages in parallel, which races its own progress counter.
+# A `defpact` is the FOURTH shape, and the one a taxonomy about dirty reads does not naturally
+# reach -- it is orthogonal. Its inputs are ordinary literals, so on the input axis it looks
+# `direct`; but the owner's definition of direct is "nothing else is needed", and a defpact needs
+# a CONTINUATION. Step 0 runs on submit and the rest advance with `continue-pact`, which is a
+# `cont` payload, not a new `exec`. A consumer told "direct" submits once, sees success, and
+# leaves the operation half-finished -- liquidity committed with no LP minted, for instance.
+# Found by restoring docs/CHAPTER-INTEGRATION/01-client-orchestration.md, which names this as
+# shape IV; all 14 starters were classified `direct` until then.
+DEFPACT_DECL = re.compile(r'\(defpact\s+([A-Za-z0-9|_-]+)')
+
+# Every defpact has a SINGLE-TRANSACTION twin with a byte-identical parameter list (verified, all
+# ten). Owner ruling 2026-09-15 (memories/2026-09-15-gas-station-cannot-whitelist-continuations):
+# multi-step only ever existed because the block gas limit was 150k; at 2,000,000 the whole worst
+# case fits in one transaction (measured 415,419 gas, 21% of budget), and the defpact paths are
+# kept for historical/learning purposes only. So the registry names the twin rather than leaving a
+# consumer to discover the continuation machinery it does not need.
+# PREVIEW PAIRING EXCEPTIONS. The automatic rule matches CATEGORY + ACTION out of
+# `CATEGORY|C_Action` against `INFO_CATEGORY|Action`. Ten user-facing entrypoints have a preview
+# that EXISTS but does not fit that shape, so they silently shipped with no cost preview at all --
+# every launchpad purchase and both wrap/unwrap pairs. A UI cannot show a price before signing for
+# any of them, which is precisely the drift this registry was built to surface.
+#
+# These are listed rather than matched by a looser rule ON PURPOSE. Loosening the matcher to catch
+# them would risk pairing an entrypoint with the WRONG preview, and a wrong price shown to a user
+# before they sign is worse than no price. Every pairing below was checked parameter by parameter.
+#
+# Three distinct causes, all real:
+#   1. CITIZEN SALES put the preview on the sale module and drop the `CATEGORY|` segment --
+#      `DEMIPAD-SPARK.INFO_BuySparks`, not `INFO_SPARK|BuySparks`. The module name IS the category.
+#   2. CATEGORY ALIAS -- Talos says `LQD|`, the preview says `LIQUID|`.
+#   3. SPELLING -- `C_Redem…` against `INFO_Redeem…`, and All/Few share one preview.
+# A PRICED client entrypoint with no cost preview is a defect, and one that nothing caught until
+# 2026-09-26. `DPTF|C_ClearDispoForeign` was created on 2026-09-21 by the patron/executor sweep
+# SPLITTING `DPTF|C_ClearDispo (patron account)` into a self variant and a foreign one. The sweep
+# added the new entrypoint AND its 51.0 price in the same commit -- but the `INFO_` readers live
+# in a different file (`Z_Reads/02_INFO-ONE+.pact`) which that commit never touched, and nothing
+# compared the two. It shipped to mainnet priced and unpreviewable.
+#
+# Everything about that is repeatable: splitting an entrypoint is routine, the price table and the
+# INFO readers are always in different files, and the symptom (a UI that cannot quote a price) only
+# appears when someone finally wires the new variant. So the check is mechanical from here.
+#
+# An entry below is a KNOWN, REASONED exemption. EMPTY IS THE GOAL, and it is currently empty:
+# the one entry this table ever held (`DPTF|C_ClearDispoForeign`, awaiting PureV2/20) was removed
+# on 2026-09-26 when the deploy landed and the check itself reported the exemption stale. That is
+# the design -- an exemption that outlives its cause fails the gate rather than lingering.
+PREVIEW_EXEMPT = {}
+
+PREVIEW_ALIAS = {
+    # 1. citizen sales
+    "TS02-CPAD.SPARK|C_BuySparks":       "DEMIPAD-SPARK.INFO_BuySparks",
+    "TS02-CPAD.SNAKES|C_Acquire":        "DEMIPAD-SNAKES.INFO_Acquire",
+    "TS02-CPAD.CUSTODIANS|C_Acquire":    "DEMIPAD-CUSTODIANS.INFO_Acquire",
+    "TS02-CPAD.STOAICO|C_Collect":       "STOAICO.INFO_Collect",
+    # 3. spelling; both share one preview, which takes the quantity explicitly -- so for the
+    #    "All" variant the client must first read the holding to price it.
+    "TS02-CPAD.SPARK|C_RedemAllSparks":  "DEMIPAD-SPARK.INFO_RedeemSparks",
+    "TS02-CPAD.SPARK|C_RedemFewSparks":  "DEMIPAD-SPARK.INFO_RedeemSparks",
+    # category alias KPAY -> STOICPAY
+    "TS02-CPAD.KPAY|C_BuyStoicPay":      "DEMIPAD-STOICPAY.INFO_BuyStoicPay",
+    # the MTX previews drop the pipe before the action: `INFO_AQP-MTX|2Inject`, not
+    # `INFO_AQP-MTX|2|Inject`. Module segment is reversed too (MTX-AQP vs AQP-MTX).
+    "TS02-C3.MTX-AQP|2|CC_Inject":            "AQP-INFO.INFO_AQP-MTX|2Inject",
+    "TS02-C3.MTX-AQP|2|CC_SweepRevokeAnchor": "AQP-INFO.INFO_AQP-MTX|2SweepRevokeAnchor",
+    # CORE twins. Not client-callable (behind P|UEV_IMC, and the gas station only funds
+    # `ouronet-ns.TS…` code) but they share the Talos entrypoint's preview, and leaving them
+    # blank with no reason is the same silent gap this table exists to close.
+    "ATS.HOT-RBT|C_Repurpose":             "INFO-ONE.INFO_ATS|HOT-RBT|Repurpose",
+    "ATS.HOT-RBT|C_UpdatePendingBranding": "INFO-ONE.INFO_ATS|HOT-RBT|UpdatePendingBranding",
+    "ATS.HOT-RBT|C_UpgradeBranding":       "INFO-ONE.INFO_ATS|HOT-RBT|UpgradeBranding",
+    "SWPLC.STOA-PID|C_AddFrozenLiquidity":   "INFO-ONE.INFO_SWP|AddFrozenLiquidity",
+    "SWPLC.STOA-PID|C_AddGlacialLiquidity":  "INFO-ONE.INFO_SWP|AddGlacialLiquidity",
+    "SWPLC.STOA-PID|C_AddIcedLiquidity":     "INFO-ONE.INFO_SWP|AddIcedLiquidity",
+    "SWPLC.STOA-PID|C_AddSleepingLiquidity": "INFO-ONE.INFO_SWP|AddSleepingLiquidity",
+    "SWPLC.STOA-PID|C_AddStandardLiquidity": "INFO-ONE.INFO_SWP|AddStandardLiquidity",
+    # 2. category alias LQD -> LIQUID. `executor` is named `wrapper`/`unwrapper` in the preview:
+    #    same slot, same type, positional rename only.
+    "TS01-C2.LQD|C_WrapStoa":            "INFO-ONE.INFO_LIQUID|WrapStoa",
+    "TS01-C2.LQD|C_WrapUrStoa":          "INFO-ONE.INFO_LIQUID|WrapUrStoa",
+    "TS01-C2.LQD|C_UnwrapStoa":          "INFO-ONE.INFO_LIQUID|UnwrapStoa",
+    "TS01-C2.LQD|C_UnwrapUrStoa":        "INFO-ONE.INFO_LIQUID|UnwrapUrStoa",
+}
+
+DEFPACT_ALTERNATIVE = {
+    "TS01-CP.SWP|C_AddFrozenLiquidity":        "TS01-C3.SWP|C_AddFrozenLiquidity",
+    "TS01-CP.SWP|C_AddGlacialLiquidity":       "TS01-C3.SWP|C_AddGlacialLiquidity",
+    "TS01-CP.SWP|C_AddIcedLiquidity":          "TS01-C3.SWP|C_AddIcedLiquidity",
+    "TS01-CP.SWP|C_AddSleepingLiquidity":      "TS01-C3.SWP|C_AddSleepingLiquidity",
+    "TS01-CP.SWP|C_AddStandardLiquidity":      "TS01-C3.SWP|C_AddLiquidity",
+    "TS01-CP.SWP|C_IssueStablePool":           "TS01-C3.SWP|C_IssueStable",
+    "TS01-CP.SWP|C_IssueStandardPool":         "TS01-C3.SWP|C_IssueStandard",
+    "TS01-CP.SWP|C_IssueWeightedPool":         "TS01-C3.SWP|C_IssueWeighted",
+    "TS02-C3.MTX-AQP|2|CC_Inject":             "TS02-C3.AQP-FVT|CC_Inject",
+    "TS02-C3.MTX-AQP|2|CC_SweepRevokeAnchor":  "TS02-C3.AQP-FVT|CC_SweepRevokeAnchor",
+}
+STEP = re.compile(r'\(step(?:-with-rollback)?[\s(]')
+
+RECIPE = re.compile(r'\|C{1,2}p_')
+PAGER_PARAM = re.compile(r'^(chunk|page|size|limit|batch)(-size)?$')
+HEAVY_RETURNS = {}
+
+# Named preflight per recipe. The typed ones are resolved by type (a param's type IS the read's
+# return type); the pagers take a bare `chunk:integer`, which names nothing, so those three are
+# listed. Anything not covered is emitted with preflightUnresolved rather than guessed.
+PAGER_PREFLIGHT = {
+    "AQP-FVT|CCp_SweepRecomputeChunk": ["AQP-FVT.UR_FVT|SweepProgress", "AQP-FVT.UR_FVT|SweepActive"],
+    "AQP-FVT|CCp_InjectFixChunk":      ["AQP-FVT.URH_FvtStalePresentUsers"],
+    "AQP-FVT|CCp_UnstaleAll":          ["AQP-FVT.URH_FvtStalePresentUsers"],
+}
+SLICE_PLANNER = {
+    "RemovableNonces": ["URHC_BuildWipeSlicePlan", "UCv_TakePureWipe"],
+}
+LEG_PREFLIGHT = {
+    "AQP-POOL|CCp_BatchVacateTrueFungible":  ["AQP-VCT.URH_VacateTrueFungiblePoolLegs", "AQP-VCT.URHC_BuildVacateSlicePlan"],
+    "AQP-POOL|CCp_BatchVacateOrtoFungible":  ["AQP-VCT.URH_VacateOrtoFungiblePoolLegs", "AQP-VCT.URHC_BuildVacateSlicePlan"],
+    "AQP-POOL|CCp_BatchVacateCollectables":  ["AQP-VCT.URH_VacateCollectablesPoolLegs", "AQP-VCT.URHC_BuildVacateSlicePlan"],
+    "AQP-POOL|CCp_BatchDrainTrueFungible":   ["AQP-VCT.URH_VacateTrueFungiblePoolLegs"],
+    "AQP-POOL|CCp_BatchDrainOrtoFungible":   ["AQP-VCT.URH_VacateOrtoFungiblePoolLegs"],
+    "AQP-POOL|CCp_BatchDrainCollectable":    ["AQP-VCT.URH_VacateCollectablesPoolLegs"],
+}
+
 
 def rpc(code, gas=10_000_000):
     cmd = json.dumps({
@@ -62,7 +239,20 @@ def rpc(code, gas=10_000_000):
                        "hash": base64.urlsafe_b64encode(digest).decode().rstrip("="),
                        "sigs": []}).encode()
     req = urllib.request.Request(NODE, data=body, headers={"Content-Type": "application/json"})
-    result = json.load(urllib.request.urlopen(req, timeout=60)).get("result", {})
+    # RETRY transient transport failures. A probe walks every module over several minutes, and a
+    # single DNS blip used to abort the whole run and leave the previous artefact in place -- the
+    # worst outcome, because the run LOOKS like it failed loudly while the stale file stays
+    # committed. Only transport errors are retried; a node that answers with a Pact failure is a
+    # real answer and is returned as such.
+    for attempt in range(4):
+        try:
+            result = json.load(urllib.request.urlopen(req, timeout=60)).get("result", {})
+            break
+        except (urllib.error.URLError, TimeoutError, ConnectionError) as e:
+            if attempt == 3:
+                raise
+            print(f"    transport retry {attempt + 1}/3 ({e})")
+            time.sleep(3 * (attempt + 1))
     return result.get("data") if result.get("status") == "success" else None
 
 
@@ -92,6 +282,21 @@ def functions_in(code):
     return out
 
 
+def returns_in(code):
+    """{name: declared return type} -- absent when the defun declares none.
+
+    Params alone do not tell a consumer what comes BACK. Talos clients mostly return a formatted
+    `string` describing the branch taken (CLAUDE.md, "Talos client output"), some return an
+    `OutputCumulator`, and a large number declare nothing at all -- which is itself the answer a
+    consumer needs, since it means the shape is not pinned by the signature.
+    """
+    out = {}
+    for d in re.finditer(r'\n\s{1,8}\(defun\s+([^\s:(]+):([A-Za-z0-9\[\]{}.|_-]+)', code):
+        if ENTRYPOINT.match(d.group(1)) or PREVIEW.match(d.group(1)):
+            out.setdefault(d.group(1), d.group(2))
+    return out
+
+
 def repo_modules():
     """{module: (source, relpath)} for every module in the tree."""
     out = {}
@@ -106,6 +311,94 @@ def repo_modules():
             for m in re.finditer(r'^\(module\s+([A-Za-z0-9|_-]+)\s', text, re.M):
                 out.setdefault(m.group(1), (text[m.start():], os.path.relpath(path, ROOT)))
     return out
+
+
+def scan_defpacts(repo):
+    """{module.defun: {"pact":name,"steps":n,"rollback":n}} for every defun that STARTS a defpact.
+
+    Two hops, because the Talos entrypoint does not call the defpact directly: the core module
+    wraps each `defpact MTX|C_Issue` in a plain `defun C_IssueStablePool`, and Talos calls the
+    wrapper. Matching defpact NAMES against Talos bodies therefore finds nothing -- the first
+    attempt at this returned 0 of 14.
+    """
+    starters = {}
+    for mod, (raw, _rel) in repo.items():
+        src = strip_code(raw)
+        names = set(DEFPACT_DECL.findall(src))
+        if not names:
+            continue
+        info = {}
+        for m in DEFPACT_DECL.finditer(src):
+            body = src[m.start():balanced_at(src, m.start())]
+            info[m.group(1)] = {"steps": len(STEP.findall(body)),
+                                "rollback": len(re.findall(r'\(step-with-rollback[\s(]', body))}
+        for m in re.finditer(r'^\s{4}\(defun\s+([A-Za-z0-9|_-]+)[\s:(]', src, re.M):
+            body = src[m.start():balanced_at(src, m.start())]
+            for n in names:
+                if re.search(r'\(' + re.escape(n) + r'[\s)]', body):
+                    starters["%s.%s" % (mod, m.group(1))] = dict(info[n], pact=n)
+                    break
+    return starters
+
+
+def balanced_at(s, i):
+    """End index (exclusive) of the balanced form whose `(` is at or after i."""
+    j = s.index("(", i)
+    d = 0
+    while j < len(s):
+        if s[j] == "(":
+            d += 1
+        elif s[j] == ")":
+            d -= 1
+            if d == 0:
+                return j + 1
+        j += 1
+    return len(s)
+
+
+def scan_heavy_returns(repo):
+    """{schema-name: {reader, ...}} for every type a HEAVY read returns.
+
+    Derived, never listed. A heavy read (`URH_`/`URHC_`/`URD_`) is by definition a scan, so its
+    return value is something no caller can construct -- which makes it the exact marker for
+    "this parameter came from a preflight read, not from the user".
+    """
+    out = {}
+    for mod, (src, _rel) in repo.items():
+        for m in HEAVY_RETURN.finditer(src):
+            # Indexed by the FULL type, interface qualifier included, and by the short name
+            # only as a fallback. `RemovableNonces` is TWO different schemas --
+            # `DpofUdcV2.RemovableNonces` and `DpdcManagementV2.RemovableNonces` -- and both are
+            # returned by a reader called `URHC_WipePure`. Keying on the short name alone made
+            # every wipe entrypoint cite both readers, which is worse than citing none: a
+            # consumer that picks the wrong one calls a reader with the wrong arity (the DPDC
+            # one takes `son`) against the wrong module's tables.
+            reader = "%s.%s%s" % (mod, m.group(1), m.group(2))
+            out.setdefault(m.group(3), set()).add(reader)
+            out.setdefault(m.group(3).split(".")[-1], set()).add(reader)
+    return out
+
+
+def check_client_assembled(repo):
+    """CLIENT_ASSEMBLED is the one non-derived list here, so verify each entry still earns it.
+
+    An entry is legitimate only while NO on-chain read returns the type -- the moment one does,
+    scan_heavy_returns covers it and the manual entry is stale duplication. Returns complaints.
+    """
+    bad = []
+    for t in CLIENT_ASSEMBLED:
+        for src, rel in repo.values():
+            # `UR` family ONLY. A `UC_` is pure compute on arguments (prefix table: "no table
+            # reads"), so `UC_FindStoaPath` reshapes paths the client already holds -- it is not
+            # a source of chain data, and counting it flagged CachedPathOrMiss as a false stale.
+            if re.search(r'\(defun\s+UR[A-Za-z]*_[A-Za-z0-9|_-]+:\[?object\{[A-Za-z0-9._|-]*'
+                         + re.escape(t) + r'\}', src):
+                bad.append("%s: now returned by a read in %s -- drop the manual entry" % (t, rel))
+                break
+        else:
+            if not any(t in src for src, _ in repo.values()):
+                bad.append("%s: no longer present in the tree" % t)
+    return bad
 
 
 def ownership_map():
@@ -126,6 +419,28 @@ def ownership_map():
     return out
 
 
+MODREF_BIND = re.compile(r'\(ref-([A-Za-z0-9|_-]+):module\{[^}]*\}\s+([A-Za-z0-9|_-]+)\)')
+
+
+def delegates_of(entry_src, fn):
+    """Modules this entrypoint calls into, with modref ALIASES resolved.
+
+    Talos binds a modref under a LOCAL name -- `(ref-SPARK:module{...} DEMIPAD-SPARK)` and then
+    calls `ref-SPARK::C_BuySparks`. Matching `ref-DEMIPAD-SPARK::` finds nothing, which is how a
+    first pass at this reported every module as calling nobody.
+    """
+    m = re.search(r'^\s*\(defun\s+' + re.escape(fn) + r'[\s:(]', entry_src, re.M)
+    if not m:
+        return []
+    body = entry_src[m.start():balanced_at(entry_src, m.start())]
+    alias = {a.group(1): a.group(2) for a in MODREF_BIND.finditer(body)}
+    out = []
+    for c in re.finditer(r'\(ref-([A-Za-z0-9|_-]+)::', body):
+        if c.group(1) in alias and alias[c.group(1)] not in out:
+            out.append(alias[c.group(1)])
+    return out
+
+
 def caps_reads(source):
     """Reads in this module that return external capability descriptions."""
     found = []
@@ -139,7 +454,19 @@ def caps_reads(source):
 def build(probe):
     repo = repo_modules()
     owners = ownership_map()
+    deployed_src = {}
+    global HEAVY_RETURNS
+    HEAVY_RETURNS = scan_heavy_returns(repo)
+    for complaint in check_client_assembled(repo):
+        print("  CLIENT_ASSEMBLED stale -- " + complaint)
     entries, previews, divergences, unreachable = {}, {}, [], []
+    chosen_src = {}
+
+    # structured authorisation surface, computed ONCE and IMPORTED rather than read from a
+    # sidecar artefact -- a second generated file is a second thing that can go stale silently.
+    _adefs, _amod = auth_collect()
+    AUTH_STRUCT = {k[1]: surface_structured(k, _adefs, _amod, set(), 0)
+                   for k in sorted(_adefs) if AUTH_ENTRY.match(k[1])}
 
     for module, (repo_src, relpath) in sorted(repo.items()):
         live_src, module_hash, source = None, None, "repo-only"
@@ -147,8 +474,10 @@ def build(probe):
             described = rpc(f'(describe-module "ouronet-ns.{module}")')
             if isinstance(described, dict) and described.get("code"):
                 live_src, module_hash, source = described["code"], described.get("hash"), "deployed"
+                deployed_src[module] = live_src
 
         chosen = live_src or repo_src
+        chosen_src[module] = chosen
         fns = functions_in(chosen)
         if not fns:
             continue
@@ -166,10 +495,14 @@ def build(probe):
                         "deployed": a.get(name), "repo": b.get(name),
                     })
 
-        module_caps = caps_reads(chosen)
+        rets = returns_in(chosen)
         for name, params in sorted(fns.items()):
             key = f"{module}.{name}"
-            record = {"params": params, "source": source, "modulePath": relpath}
+            record = {"params": params, "returns": rets.get(name), "source": source,
+                      "modulePath": relpath}
+            if record["returns"] is None:
+                record["returnsNote"] = ("the defun declares no return type; the shape is not "
+                                         "pinned by the signature")
             if module_hash:
                 record["moduleHash"] = module_hash
             if source == "repo-only":
@@ -179,27 +512,71 @@ def build(probe):
             if PREVIEW.match(name):
                 previews[key] = record
                 continue
-            # OWNERSHIP IS DELIBERATELY NOT EMITTED YET, and the reason matters more than the
-            # field would. `_authsurface.py` walks the call tree correctly, but its artefact is
-            # a prose cell that mixes parameter names with the READERS used to derive them
-            # (`UR_OwnerKonto`, `DALOS|SC_NAME`) and with `name:type` forms. Intersecting it
-            # with the parameter list yields e.g. ["patron", "swpair"] for
-            # SWP|C_ToggleSwapCapability -- and `swpair` is a POOL ID, not an account.
+            # OWNERSHIP -- whose key the caller must be able to sign for.
             #
-            # That field tells a consumer which account to ready a signature for. A wrong
-            # answer there is worse than a missing one: the consumer prepares the wrong
-            # signature and the transaction fails at the far end, looking like a contract
-            # problem. So it is omitted, and its absence is explicit rather than silent.
+            # From `_authsurface.surface_structured`, which walks the whole call tree and reads
+            # the FULL argument every `CAP_EnforceAccountOwnership` was given. Two shapes, and a
+            # consumer must tell them apart:
+            #     a bare name          -> that parameter IS the account
+            #     `(UR_OwnerKonto x)`  -> the account is what the READER returns for entity `x`
+            # The previous version captured only the first identifier after the cap, so
+            # `(UR_OwnerKonto swpair)` yielded `UR_OwnerKonto`; intersecting that with the
+            # parameter list produced `["patron", "swpair"]`, naming a POOL ID as an account --
+            # and nobody holds the key to a pool.
             #
-            # Resolving it properly means teaching _authsurface.py to emit structured
-            # per-entrypoint data -- which parameter each CAP_EnforceAccountOwnership in the
-            # tree resolves to -- rather than a flattened set of every token it saw.
-            if name in owners:
+            # ONLY `CAP_EnforceAccountOwnership` counts. The seven sibling `CAP_*Owner` wrappers
+            # take an ENTITY and resolve the owner themselves (`CAP_Owner swpair` ->
+            # `CAP_EnforceAccountOwnership (UR_OwnerKonto swpair)`), and the walk reaches through
+            # them, so counting the wrappers too would re-report the entity as an account. Every
+            # wrapper was checked to bottom out here.
+            own_rows = AUTH_STRUCT.get(name, [])
+            pnames = {pp["name"] for pp in params}
+            requires, unmapped = [], []
+            for row in own_rows:
+                subj = row.get("subject")
+                if subj and subj in pnames:
+                    if row["kind"] == "parameter":
+                        item = {"account": subj, "via": "parameter",
+                                "meaning": "the caller must hold the key for the account passed "
+                                           "as `%s`" % subj}
+                    else:
+                        item = {"account": "owner of `%s`" % subj, "via": "reader",
+                                "reader": row["reader"], "subject": subj,
+                                "meaning": "`%s` is an ENTITY id, NOT an account. Read `%s` with "
+                                           "it to get the account whose key is required"
+                                           % (subj, row["reader"])}
+                    # ALWAYS vs SOMETIMES. An enforce inside an `if`/`cond`/`enforce-one` binds
+                    # on one path only, and flattening that away is actively misleading: on
+                    # `UEV_Patron`'s sponsored branch the GAS STATION signs and the caller needs
+                    # no patron key at all, while the self-pay branch needs exactly that.
+                    if row.get("conditional"):
+                        item["when"] = "CONDITIONAL"
+                        item["conditionalOn"] = ("reached inside an `%s`, so it binds on one "
+                                                 "path and not the other -- do not read it as "
+                                                 "an unconditional requirement"
+                                                 % row["conditional"])
+                    else:
+                        item["when"] = "ALWAYS"
+                    if item not in requires:
+                        requires.append(item)
+                elif subj and subj not in unmapped:
+                    unmapped.append(subj)
+            if requires:
+                record["ownership"] = {"resolved": True, "requires": requires}
+                if unmapped:
+                    record["ownership"]["unmapped"] = sorted(unmapped)
+                    record["ownership"]["unmappedNote"] = (
+                        "enforces reached DEEPER in the tree whose subject is named for that "
+                        "callee's parameter rather than this entrypoint's. Mapping them back "
+                        "needs argument threading, which is not done -- so they are listed, not "
+                        "guessed.")
+            else:
                 record["ownership"] = {
                     "resolved": False,
-                    "reason": "requires structured output from _authsurface.py; the current "
-                              "artefact cannot distinguish an account parameter from a pool id",
-                    "candidates": sorted({p["name"] for p in params} & owners[name]),
+                    "reason": ("no ownership enforce in the call tree resolves to one of this "
+                               "entrypoint's own parameters" if own_rows else
+                               "the call tree reaches no ownership enforce at all"),
+                    "unmapped": sorted(unmapped) or None,
                 }
             # sponsorship: a Talos client entrypoint is the gas-funded path, by definition
             record["sponsorship"] = {
@@ -215,11 +592,70 @@ def build(probe):
                                 "depends on what the transaction actually contains"
                                 if module.startswith("TS0") else None),
             }
-            if module_caps:
-                record["externalCaps"] = {
-                    "computedBy": [f"{module}.{c}" for c in module_caps],
-                    "note": "returns [string] of (coin.TRANSFER from to amount); amounts are "
-                            "padded by (1 + slippage). Call it -- do not recompute the amount.",
+            # execution mode -- see HEAVY_RETURN / RECIPE above
+            fed = []
+            for prm in params:
+                full = prm["type"].rstrip("}").lstrip("[").replace("object{", "")
+                t = full.split(".")[-1]
+                src = None
+                # exact type first -- the qualifier is what tells the two RemovableNonces apart
+                if full in HEAVY_RETURNS:
+                    src = sorted(HEAVY_RETURNS[full])
+                elif t in HEAVY_RETURNS:
+                    src = sorted(HEAVY_RETURNS[t])
+                elif t in CLIENT_ASSEMBLED:
+                    src = ["<assembled client-side: %s>" % CLIENT_ASSEMBLED[t]]
+                if src:
+                    # the slicer lives in the SAME module as the producer, so qualify it from
+                    # there rather than repeating the module in the table
+                    mods = {q.split(".")[0] for q in src if "." in q and not q.startswith("<")}
+                    sl = SLICE_PLANNER.get(t)
+                    fed.append({"param": prm["name"], "type": t, "producedBy": src,
+                                "slicedBy": sorted("%s.%s" % (mm, f) for mm in mods
+                                                   for f in sl) if sl and mods else sl})
+            short = name.split(".", 1)[-1]
+            pager = RECIPE.search(name) and any(
+                PAGER_PARAM.match(prm["name"]) and prm["type"] == "integer" for prm in params)
+
+            if pager:
+                pre = PAGER_PREFLIGHT.get(short)
+                record["execution"] = {
+                    "mode": "indirect-sequential", "shape": "cursor pager",
+                    "preflight": pre,
+                    "note": "a preflight read reports progress; each call takes a SIZE and "
+                            "advances a stored cursor, so the calls are STRICTLY ORDERED. Firing "
+                            "them concurrently races the cursor -- repeat until the report says "
+                            "done",
+                }
+                if pre is None:
+                    record["execution"]["preflightUnresolved"] = True
+            elif RECIPE.search(name):
+                pre = LEG_PREFLIGHT.get(short) or sorted(
+                    {q for f in fed for q in f["producedBy"]}) or None
+                record["execution"] = {
+                    "mode": "indirect-parallel", "shape": "fed slice",
+                    "preflight": pre, "fedParams": fed or None,
+                    "note": "a preflight read is cut into slices, each fed to its own "
+                            "transaction. Order-independent, so the slices MAY be submitted in "
+                            "parallel",
+                }
+                if pre is None:
+                    record["execution"]["preflightUnresolved"] = True
+            elif fed:
+                record["execution"] = {
+                    "mode": "indirect-single", "shape": "dirty-read injection",
+                    "preflight": sorted({q for f in fed for q in f["producedBy"]}),
+                    "fedParams": fed,
+                    "note": "ONE transaction, but the client must run the read first and inject "
+                            "its result -- these params cannot be built from user input. Where "
+                            "the injected value is a swap route it carries TOPOLOGY ONLY, never "
+                            "amounts: the contract recomputes every figure from live reserves "
+                            "and validates the route structurally before using it",
+                }
+            else:
+                record["execution"] = {
+                    "mode": "direct",
+                    "note": "the provided inputs suffice; nothing is read off-chain first",
                 }
             entries[key] = record
 
@@ -229,22 +665,244 @@ def build(probe):
     by_action = {}
     for key in previews:
         mod, fn = key.split(".", 1)
-        m = re.match(r'^INFO_([A-Za-z0-9-]+)\|(.+)$', fn)
+        m = re.match(r'^INFO_([A-Za-z0-9|_-]+)\|(.+)$', fn)
         if m:
             by_action[(m.group(1), m.group(2))] = key
     for key, record in entries.items():
         mod, fn = key.split(".", 1)
-        m = re.match(r'^([A-Za-z0-9-]+)\|C{1,2}p?_(.+)$', fn)
+        m = re.match(r'^([A-Za-z0-9|_-]+)\|C{1,2}p?_(.+)$', fn)
         if m:
             hit = by_action.get((m.group(1), m.group(2)))
             if hit:
                 record["preview"] = hit
+
+    # DEFPACT STARTERS -- a post-pass, so it reads the same authoritative source everything else
+    # does (deployed where deployed, repo otherwise) rather than the repo copy alone.
+    starters = scan_defpacts({m: (src, "") for m, src in chosen_src.items()})
+    stripped = {m: strip_code(src) for m, src in chosen_src.items()}
+    for key, rec in entries.items():
+        mod, fn = key.split(".", 1)
+        src = stripped.get(mod, "")
+        m = re.search(r'^\s*\(defun\s+' + re.escape(fn) + r'[\s:(]', src, re.M)
+        if not m:
+            continue
+        body = src[m.start():balanced_at(src, m.start())]
+        for sk, info in starters.items():
+            smod, sfn = sk.split(".", 1)
+            if re.search(r'ref-' + re.escape(smod) + r'::' + re.escape(sfn) + r'[\s)]', body):
+                prior = rec["execution"]["mode"]
+                rec["execution"] = {
+                    "mode": "defpact",
+                    "shape": "continuation",
+                    "inputs": prior,
+                    "pact": "%s.%s" % (smod, info["pact"]),
+                    "steps": info["steps"],
+                    "rollbackSteps": info["rollback"],
+                    "note": ("MULTI-TRANSACTION by continuation. Step 0 runs on submit; the "
+                             "remaining %d advance with `continue-pact`, which is a `cont` "
+                             "payload against the same pact id -- NOT a fresh `exec`. Submitting "
+                             "once and reporting success leaves the operation half-finished. "
+                             "Chain-ordered, so never parallel. `inputs` says whether the step-0 "
+                             "arguments themselves need a preflight."
+                             % (info["steps"] - 1)),
+                    "continuation": {
+                        "payload": "cont",
+                        "pactId": "returned by the step-0 transaction result "
+                                  "(`continuation.pactId`); it is NOT derivable in advance",
+                        "step": "0-based index of the step to RUN next -- after step 0 succeeds, "
+                                "send step 1",
+                        "rollback": "false to advance. Send true ONLY to unwind a "
+                                    "step-with-rollback; this entry has %d of them"
+                                    % info["rollback"],
+                        "data": {},
+                        "dataNote": "EMPTY. Neither MTX module calls `read-msg` anywhere, so no "
+                                    "step takes client input -- state moves between steps by "
+                                    "`yield`/`resume` inside the contract. Verified by scanning "
+                                    "both modules for every read-msg/read-integer/read-decimal/"
+                                    "read-string form: zero hits.",
+                        "gas": "PAID BY THE CUSTOMER ACCOUNT, NOT THE GAS STATION. This is the "
+                               "one thing that surprises people. Chainweb injects `exec-code` "
+                               "only for `exec` payloads; a `cont` payload is "
+                               "{pactId, step, rollback, data, proof} and carries none. "
+                               "DALOS.GAS_PAYER binds `(at \"exec-code\" (read-msg))` EAGERLY in "
+                               "its opening `let`, so on a continuation it raises "
+                               "`Key \"exec-code\" not found` before any of its checks run. "
+                               "Step 0 is sponsored; every later step is not.",
+                    },
+                }
+                alt = DEFPACT_ALTERNATIVE.get(key)
+                if alt:
+                    rec["execution"]["supported"] = False
+                    rec["execution"]["preferInstead"] = alt
+                    rec["execution"]["supportedNote"] = (
+                        "NOT the supported route (owner ruling 2026-09-15). `%s` performs the "
+                        "same operation in ONE transaction with a BYTE-IDENTICAL parameter list. "
+                        "Multi-step existed only for the old 150k block gas limit; at 2,000,000 "
+                        "the worst case measures 415,419 gas (21%%). Use the twin unless you are "
+                        "deliberately exercising the defpact." % alt)
+                # sponsorship is step-scoped here, and the generic field above is WRONG for it
+                if rec.get("sponsorship", {}).get("sponsored"):
+                    rec["sponsorship"]["sponsored"] = "step-0-only"
+                    rec["sponsorship"]["stepsNote"] = (
+                        "Step 0 is an `exec` and is sponsored normally. Continuations are `cont` "
+                        "payloads with no `exec-code`, which DALOS.GAS_PAYER cannot evaluate -- "
+                        "the CUSTOMER ACCOUNT pays for them. See execution.continuation.gas.")
+                break
+
+    # EXTERNAL CAPABILITIES, and the FORMULA that computes their arguments.
+    #
+    # Some operations need the caller to sign capabilities beyond the gas-station's GAS_PAYER --
+    # the launchpad buys need `coin.TRANSFER` legs paying the sale contract. The amounts are NOT
+    # something a client may compute: they depend on live price, the native-vs-wrapped split and
+    # a slippage pad. So the contract ships a READER that returns the capability strings ready to
+    # parse, and that reader IS the formula.
+    #
+    # It lives in the module the entrypoint DELEGATES to, never in the entrypoint's own module --
+    # `TS02-CPAD.SPARK|C_BuySparks` against `DEMIPAD-SPARK.URC_Acquire`. The first version of this
+    # looked in the entrypoint's module and therefore emitted the field ZERO times out of 423,
+    # which read as "no operation needs extra capabilities" rather than as a failed lookup.
+    for key, rec in entries.items():
+        mod, fn = key.split(".", 1)
+        src = stripped.get(mod, "")
+        for target in delegates_of(src, fn):
+            tsrc = chosen_src.get(target, "")
+            readers = caps_reads(tsrc)
+            if not readers:
+                continue
+            reader = readers[0]
+            m = re.search(r'^\s*\(defun\s+' + re.escape(reader) + r'[\s:(]', tsrc, re.M)
+            rparams = params_at(tsrc, m.end()) if m else []
+
+            # CAN THIS ENTRYPOINT EVEN CALL THE READER? Finding a capability reader in the module
+            # an entrypoint delegates to is NOT evidence that the reader is FOR that entrypoint.
+            # DEMIPAD holds one and sixteen entrypoints delegate there, but twelve of them --
+            # every Retrieve/Fuel/Withdraw -- cannot supply its arguments at all: they have no
+            # `buyer`, no `buy-amount-in-dollarz`, no `type`. Emitting the field for them would
+            # tell a consumer to sign transfer capabilities for an operation that takes no
+            # payment, which is worse than saying nothing.
+            #
+            # The test is therefore whether the entrypoint can SUPPLY the reader's arguments.
+            # `slippage` is exempt: it is the client's pad, deliberately not an entrypoint
+            # argument. Names are matched loosely in one direction only (`sparks-amount` against
+            # `amount`) because the citizen readers were written to mirror their entrypoint.
+            def norm(n):
+                return re.sub(r'[^a-z]', '', n.lower())
+            own = {norm(pp["name"]): pp["name"] for pp in rec["params"]}
+            argsFrom, missing = {}, []
+            for rp in rparams:
+                if rp["name"] == "slippage":
+                    argsFrom[rp["name"]] = ("CLIENT-SUPPLIED -- the pad, not an entrypoint "
+                                            "argument. 0.0 for exact caps; UI policy caps it at "
+                                            "50. Keep it consistent with the entrypoint's own "
+                                            "ceiling argument (max-cost), or the capability the "
+                                            "user signs and the ceiling the contract enforces "
+                                            "describe different amounts")
+                    continue
+                n = norm(rp["name"])
+                hit = own.get(n) or next((v for kk, v in own.items() if n in kk or kk in n), None)
+                if hit:
+                    argsFrom[rp["name"]] = hit
+                else:
+                    missing.append(rp["name"])
+            if missing:
+                continue          # this reader is not this entrypoint's formula
+
+            rec["externalCaps"] = {
+                "required": True,
+                "computedBy": f"{target}.{reader}",
+                "readerParams": rparams,
+                "argsFrom": argsFrom,
+                "returns": "[string]",
+                "format": '<(coin.TRANSFER "from" "to" <decimal>)>',
+                "parse": "strip the surrounding < >, then read (NAME \"from\" \"to\" amount); "
+                         "attach each as a capability with args [from, to, {decimal: amount}]",
+                "attachTo": "the PAYER signer, alongside ouronet-ns.DALOS.GAS_PAYER",
+                "note": "CALL THE READER -- do not recompute the amounts. They depend on live "
+                        "price, the native/wrapped split and the slippage pad, so a client that "
+                        "derives them itself signs a capability the contract will not match. "
+                        "Prefer THIS reader over the sovereign DEMIPAD.URC_Acquire: it takes the "
+                        "entrypoint's own arguments, where the sovereign one additionally needs "
+                        "the asset id and the amount converted to dollars.",
+            }
+            rec["execution"]["capabilityPreflight"] = f"{target}.{reader}"
+            break
+
+    # Every preflight this registry CITES must exist in DEPLOYED code, not merely in the repo.
+    # A cited reader that is repo-only is the worst possible entry: it reads as an instruction,
+    # a consumer calls it, and the call fails as a RESOLUTION error -- which surfaces as a
+    # default value rather than an error, so the recipe silently operates on an empty slice.
+    if probe:
+        missing = []
+        for key, rec in entries.items():
+            ex = rec.get("execution", {})
+            cites = [q for q in (ex.get("preflight") or []) if not q.startswith("<")]
+            cites += [q for f in (ex.get("fedParams") or []) for q in (f.get("slicedBy") or [])]
+            # the capability formula is cited the same way and carries the same risk: a consumer
+            # follows it, the call fails as a RESOLUTION error, and the caps come back empty --
+            # so the transaction is submitted unfunded rather than refused
+            if ex.get("capabilityPreflight"):
+                cites.append(ex["capabilityPreflight"])
+            for c in cites:
+                mod, fn = c.split(".", 1)
+                src = deployed_src.get(mod)
+                if not src or not re.search(r'\(defun\s+' + re.escape(fn) + r'[:\s(]', src):
+                    missing.append((key, c, "module not deployed" if not src else "no such defun"))
+        if missing:
+            print(f"  PREFLIGHT NOT ON CHAIN -- {len(missing)} citation(s):")
+            for key, c, why in missing[:10]:
+                print(f"      {key} -> {c} ({why})")
+        else:
+            n = sum(1 for r in entries.values()
+                    if r.get("execution", {}).get("mode", "direct") != "direct")
+            c = sum(1 for r in entries.values() if r.get("externalCaps"))
+            print(f"  preflight: clean -- every reader cited by {n} indirect and {c} "
+                  f"capability-bearing entrypoint(s) is present in deployed code")
+
+    # apply the pairing exceptions, and FAIL LOUDLY on a stale one. A silently-dropped alias
+    # would put the entrypoint straight back to having no preview, which is the bug being fixed.
+    for ep, pv in PREVIEW_ALIAS.items():
+        if ep not in entries:
+            print(f"  PREVIEW_ALIAS stale -- no entrypoint {ep}")
+        elif pv not in previews:
+            print(f"  PREVIEW_ALIAS stale -- no preview {pv} (for {ep})")
+        elif entries[ep].get("preview"):
+            print(f"  PREVIEW_ALIAS redundant -- {ep} now pairs automatically; drop the entry")
+        else:
+            entries[ep]["preview"] = pv
+            entries[ep]["previewVia"] = "alias (name does not fit CATEGORY|Action)"
+
+    # An entrypoint with NO preview is either free or an oversight, and silence cannot tell the
+    # two apart. `DPTF|C_ClearDispoForeign` is priced at 51.0 IGNIS in `02_IGNIS.pact:887` and
+    # has no `INFO_` reader anywhere -- a gap in the CONTRACT, not in this pairing, and one a UI
+    # hits as "cannot show the user what this costs before they sign".
+    for key, rec in entries.items():
+        if not rec.get("preview"):
+            rec["previewMissing"] = ("no INFO_ reader exists for this operation. It IS priced "
+                                     "(see IGNIS price table) -- a consumer cannot show its cost "
+                                     "before signing. Contract-side gap, not a pairing failure.")
 
     # the authored layer -- ghost values. Merged in, never generated, never overwritten.
     if os.path.exists(AUTHORED):
         for key, extra in json.load(io.open(AUTHORED, encoding="utf8")).get("ghost", {}).items():
             if key in entries:
                 entries[key]["ghost"] = extra
+
+    # NAME COLLISIONS. Entries are keyed MODULE.function, so the registry itself is unambiguous.
+    # A consumer resolving by the BARE name is not, and that is the exact habit this registry
+    # exists to break -- OuronetUI and the Codex package both hardcoded bare names. Four SWP
+    # liquidity names resolve to two modules with IDENTICAL signatures and DIFFERENT execution
+    # modes (TS01-C3 single-transaction, TS01-CP defpact). Picking wrong is silent both ways:
+    # address the defpact believing it direct and the operation sits half-finished; address the
+    # direct one believing it a defpact and the continuation has no pact to continue.
+    collisions = {}
+    for key, rec in entries.items():
+        collisions.setdefault(key.split(".", 1)[1], []).append(
+            {"module": key.split(".", 1)[0], "mode": rec["execution"]["mode"]})
+    collisions = {f: v for f, v in sorted(collisions.items()) if len(v) > 1}
+    for f, v in collisions.items():
+        if len({x["mode"] for x in v}) > 1:
+            print("  name collision -- %s resolves to %s" % (
+                f, ", ".join("%s (%s)" % (x["module"], x["mode"]) for x in v)))
 
     doc = {
         "note": "GENERATED by REPL/tools/_registry.py. Deployed code wins; the repo is the "
@@ -254,6 +912,7 @@ def build(probe):
         "generatedFrom": "chain+repo" if probe else "repo-only",
         "entrypoints": dict(sorted(entries.items())),
         "previews": dict(sorted(previews.items())),
+        "nameCollisions": collisions,
         "divergences": divergences,
         "notDeployed": sorted(unreachable),
     }
@@ -296,6 +955,64 @@ def main():
             for k in bad[:10]:
                 print(f"    {k} -> {doc['entrypoints'][k]['preview']}")
             return 1
+        # every entry must SAY how it executes. A missing `execution` is not a neutral
+        # omission: a consumer reading the registry to decide whether to run a preflight will
+        # read absence as "direct" and skip a read the call cannot work without.
+        noexec = [k for k, v in doc["entrypoints"].items() if "execution" not in v]
+        if noexec:
+            print(f"registry: {len(noexec)} entrypoint(s) carry no execution mode")
+            for k in noexec[:10]:
+                print(f"    {k}")
+            return 1
+        vague = [k for k, v in doc["entrypoints"].items()
+                 if v["execution"].get("preflightUnresolved")]
+        if vague:
+            print(f"registry: {len(vague)} indirect entrypoint(s) ship with an UNRESOLVED "
+                  f"preflight -- name the read or the entry cannot be acted on")
+            for k in vague[:10]:
+                print(f"    {k} ({doc['entrypoints'][k]['execution']['mode']})")
+            return 1
+        # A `preferInstead` pointer is an INSTRUCTION to call something else. If the twin was
+        # renamed or its shape drifted, the pointer sends a consumer at a function that does not
+        # exist or takes different arguments -- strictly worse than no pointer at all. So the
+        # twin must exist AND still carry an identical parameter list.
+        broken = []
+        for k, v in doc["entrypoints"].items():
+            alt = v["execution"].get("preferInstead")
+            if not alt:
+                continue
+            if alt not in doc["entrypoints"]:
+                broken.append(f"{k} -> {alt} (no such entrypoint)")
+            elif doc["entrypoints"][alt]["params"] != v["params"]:
+                broken.append(f"{k} -> {alt} (parameter lists have diverged)")
+        if broken:
+            print(f"registry: {len(broken)} preferInstead pointer(s) are broken")
+            for b in broken[:10]:
+                print(f"    {b}")
+            return 1
+
+        # PRICED BUT UNPREVIEWABLE -- see PREVIEW_EXEMPT above for why this check exists.
+        naked = [k for k, v in doc["entrypoints"].items()
+                 if not v.get("preview") and k not in PREVIEW_EXEMPT]
+        if naked:
+            print(f"registry: {len(naked)} entrypoint(s) have NO cost preview and no exemption -- "
+                  f"a client cannot show their price before the user signs")
+            for k in naked[:10]:
+                print(f"    {k}")
+            print("    Write the INFO_ reader, or add a reasoned PREVIEW_EXEMPT entry.")
+            return 1
+        stale_ex = [k for k in PREVIEW_EXEMPT
+                    if k not in doc["entrypoints"] or doc["entrypoints"][k].get("preview")]
+        for k in stale_ex:
+            print(f"registry: PREVIEW_EXEMPT stale -- {k} now pairs (or is gone); drop the entry")
+        if stale_ex:
+            return 1
+
+        modes = {}
+        for v in doc["entrypoints"].values():
+            modes[v["execution"]["mode"]] = modes.get(v["execution"]["mode"], 0) + 1
+        print("registry: execution -- " + ", ".join(
+            f"{n} {m}" for m, n in sorted(modes.items(), key=lambda kv: -kv[1])))
         print(f"registry: clean -- {len(doc['entrypoints'])} entrypoints, "
               f"{len(doc['previews'])} previews, surface {doc['surfaceHash']} "
               f"({doc['generatedFrom']})")

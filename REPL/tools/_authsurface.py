@@ -30,7 +30,22 @@ import os, re, sys, json, collections
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 OUT  = os.path.join(ROOT, "OuronetInformational", "ARCHITECTURE", "AUTH-SURFACE.md")
 SRC  = [os.path.join(ROOT, "1_SOVEREIGN"), os.path.join(ROOT, "2_CITIZEN")]
-ENTRY = re.compile(r'^(?:[A-Za-z0-9_-]+\|)?(?:AA|A|CC|C)_[A-Za-z0-9|_-]+$')
+# CORRECTED 2026-09-26. The previous pattern was
+#   ^(?:[A-Za-z0-9_-]+\|)?(?:AA|A|CC|C)_[A-Za-z0-9|_-]+$
+# and it silently excluded SEVENTEEN entrypoints through two independent gaps:
+#
+#   1. `(?:AA|A|CC|C)_` requires `_` immediately after the band letters, so it matched `C_` and
+#      `CC_` but NOT `Cp_`/`CCp_`/`Ap_`/`AAp_` -- every MULTI-TRANSACTION RECIPE. Twelve of them:
+#      the three `Cp_WipeSlice`s, six `AQP-POOL|CCp_Batch*`, three `AQP-FVT|CCp_*Chunk`/`UnstaleAll`.
+#   2. `(?:[A-Za-z0-9_-]+\|)?` allows at most ONE `name|` segment, so two-segment names were
+#      missed: `ATS|HOT-RBT|C_*` (three) and `MTX-AQP|2|CC_*` (two).
+#
+# This is the same blind-spot class CLAUDE.md records for `_bandplan.py` -- a filter that reported
+# 89 entrypoints where there were 482 -- and it lands in the worst possible place. This tool's
+# promise is "no entrypoint ever stops enforcing something"; an entrypoint it cannot SEE is one it
+# cannot report as weakened, so for these seventeen the promise was vacuous. Recipes are the worst
+# seventeen to lose, because a recipe runs N times per logical operation.
+ENTRY = re.compile(r'^(?:[A-Za-z0-9_-]+\|)*(?:AA|A|CC|C)p?_[A-Za-z0-9|_-]+$')
 
 
 def strip_code(s):
@@ -115,6 +130,30 @@ def collect():
 OWN    = re.compile(r'(?:CAP_EnforceAccountOwnership|CAP_Owner|CAP_StakeOwner|CAP_PoolOwner|'
                     r'CAP_VctVacatePoolOwner|CAP_TF\|Owner|CAP_AqpAssetOwner|CAP_Creator)'
                     r'\s+\(?([A-Za-z0-9|_.:-]+)')
+# The STRUCTURED half, added 2026-09-26. `OWN` above captures one identifier after an optional
+# `(`, which is right for the markdown baseline but throws away the thing a CONSUMER needs: for
+# `(UR_OwnerKonto swpair)` it yields `UR_OwnerKonto` -- the READER -- and discards `swpair`, the
+# subject. That is why the registry's `ownership` field shipped unresolved: its input mixed
+# account parameters with the readers used to derive them, and no filtering downstream can
+# separate the two.
+#
+# OWN_AT finds the same sites; `own_expr_at` then reads the WHOLE argument, balanced, so a
+# resolver can say "the account is the `executor` parameter" or "the account is whatever
+# `UR_OwnerKonto` returns for `swpair`" -- which are different instructions to a client.
+#
+# The markdown artefact is NOT changed by any of this. It is gate-enforced as a SUPERSET, so
+# churning it would either mask a real regression or manufacture a fake one.
+# ONLY `CAP_EnforceAccountOwnership`. The markdown's `OWN` lists all eight CAP_ variants, which
+# is right for a coverage baseline, but WRONG here -- only this one takes an ACCOUNT. Every other
+# variant takes an ENTITY ID and looks the owner up itself:
+#     CAP_Owner (swpair)   -> CAP_EnforceAccountOwnership (UR_OwnerKonto swpair)
+#     CAP_StakeOwner (owner-id) -> CAP_EnforceAccountOwnership owner-id      (already an account)
+# Counting the wrappers as well DOUBLE-COUNTS, and reports the entity id as though it were the
+# account -- which is precisely the `ownership: ["patron","swpair"]` defect: nobody holds the key
+# to a pool id. Verified that every wrapper bottoms out here, directly or through another
+# wrapper, so the transitive walk loses nothing by ignoring them.
+OWN_AT = re.compile(r'CAP_EnforceAccountOwnership\s*')
+
 BARE   = re.compile(r'\(([A-Za-z][A-Za-z0-9|_>-]*)[\s)]')
 VIAREF = re.compile(r'\(ref-([A-Za-z0-9|_-]+)::([A-Za-z0-9|_>-]+)')
 VIAMOD = re.compile(r'\(([A-Z][A-Za-z0-9|_-]*)\.([A-Za-z0-9|_>-]+)')
@@ -136,6 +175,111 @@ def callees(rel, body, modfile):
     for mod, n in VIAMOD.findall(body):
         f = modfile.get(mod)
         if f: out.add((f, n))
+    return out
+
+
+def own_expr_at(body, i):
+    """The full, balanced account expression an ownership enforce was given, from offset i."""
+    while i < len(body) and body[i] in " \n\t":
+        i += 1
+    if i < len(body) and body[i] == "(":
+        # `balanced` returns an EXCLUSIVE index. Adding 1 to it swallowed the following
+        # character, which turned `(UR_OwnerKonto swpair)` into a subject of `swpair)`.
+        return " ".join(body[i:balanced(body, i)].split())
+    j = i
+    while j < len(body) and (body[j].isalnum() or body[j] in "-_|.:"):
+        j += 1
+    return body[i:j]
+
+
+def conditional_at(body, idx):
+    """The nearest enclosing conditional form at `idx`, or None.
+
+    An ownership enforce inside an `if` / `cond` / `enforce-one` / `or` branch is CONDITIONAL --
+    it binds on one path and not the other. `IGNIS.UEV_Patron` is the case that matters most:
+
+        (if (UR_AccountType patron)
+            (do (enforce (= patron DALOS|SC_NAME) ...)
+                (CAP_EnforceAccountOwnership DALOS|SC_NAME))   ;; gas station signs
+            (CAP_EnforceAccountOwnership patron))              ;; the user signs
+
+    Reported flat, that reads as "the caller must hold the patron's key", which is FALSE on the
+    gas-sponsored path -- the common one. CLAUDE.md already warns about this shape for the sweep
+    ("if it sits in an `if`, `and`, `or` or `cond` branch, the authorisation is conditional");
+    the same caution applies to REPORTING it.
+    """
+    depth, stack = 0, []
+    j, instr = 0, False
+    while j < idx and j < len(body):
+        c = body[j]
+        if instr:
+            if c == "\\": j += 2; continue
+            if c == '"': instr = False
+        elif c == '"': instr = True
+        elif c == "(":
+            depth += 1
+            m = re.match(r'\((if|cond|enforce-one|or|and)[\s(]', body[j:j + 14])
+            stack.append((depth, m.group(1) if m else None))
+        elif c == ")":
+            while stack and stack[-1][0] >= depth:
+                stack.pop()
+            depth -= 1
+        j += 1
+    for _d, head in reversed(stack):
+        if head:
+            return head
+    return None
+
+
+def classify_own(expr):
+    """{kind, subject, reader} for one account expression.
+
+    Two families, and a consumer must tell them apart: a bare name IS the account, so the client
+    readies that account's key; a call means the account must be LOOKED UP first, and the thing
+    named in the expression is an entity id, not an account. Getting this backwards is what
+    produced `ownership: ["patron", "swpair"]` -- `swpair` is a pool id and nobody holds its key.
+    """
+    if not expr.startswith("("):
+        return {"kind": "parameter", "subject": expr, "reader": None}
+    inner = expr[1:-1].strip().split()
+    if not inner:
+        return {"kind": "unknown", "subject": None, "reader": None}
+    reader, args = inner[0], inner[1:]
+    if reader.startswith("ref-") and "::" in reader:
+        reader = reader.split("::", 1)[1]
+    return {"kind": "reader", "reader": reader,
+            "subject": args[0] if args else None, "readerArgs": args}
+
+
+def surface_structured(key, defs, modfile, seen=None, depth=0):
+    """Like surface(), but records the FULL expression and the DEPTH it was found at.
+
+    Depth matters and is the reason this cannot be finished in one step. An expression found at
+    depth 0 is written in the ENTRYPOINT's own parameters, so it resolves directly. At depth N it
+    is written in that callee's parameters, and mapping it back needs the arguments threaded
+    through each call -- which this does not do. Depth is therefore REPORTED, so a consumer can
+    trust the depth-0 answers and see that the rest are unthreaded rather than assume they are.
+    """
+    if seen is None: seen = set()
+    if key in seen or depth > 14 or key not in defs:
+        return []
+    seen.add(key)
+    body, out = defs[key], []
+    for m in OWN_AT.finditer(body):
+        # SKIP THE DEFINITION SITE. `(defcap CAP_PoolOwner (swpair:string) ...)` matches the same
+        # name, and reading its PARAMETER LIST as an account expression invents a reader called
+        # `swpair:string`. A definition is not an enforcement.
+        head = body[max(0, m.start() - 12):m.start()]
+        if re.search(r'\((?:defcap|defun)\s+$', head):
+            continue
+        e = own_expr_at(body, m.end())
+        if e:
+            out.append(dict(classify_own(e), expr=e, depth=depth,
+                            conditional=conditional_at(body, m.start()),
+                            where=f"{key[0]}::{key[1]}"))
+    for c in callees(key[0], body, modfile):
+        if c != key and c in defs:
+            out += surface_structured(c, defs, modfile, seen, depth + 1)
     return out
 
 

@@ -264,6 +264,76 @@
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
+(begin-tx "Dispo 1.5|3 ClearDispoForeign PREVIEW PARITY")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== Dispo 1.5|3 ClearDispoForeign PREVIEW PARITY · 01 · let / invocation ==== ==================
+(print "--- [Dispo 1.5|3 ClearDispoForeign PREVIEW PARITY · 01 · let / invocation] ---")
+;;ADDED 2026-09-26 with INFO_DPTF|ClearDispoForeign itself. Until then DPTF|C_ClearDispoForeign was
+;;the ONLY priced operation in the whole IGNIS table (51.0) with no INFO_ reader at all -- so a UI
+;;could not show its cost before the user signed. Found by cross-referencing all 483 price keys
+;;against all 426 INFO_ readers; it was the single genuine gap.
+;;
+;;THIS MUST RUN BEFORE "Dispo 2|x", which CLEARS the dispo. Both readers enforce (< ouro-a 0.0),
+;;so after the clear they can only fail, and a test placed after it would assert nothing while
+;;still passing -- the reader would never be reached.
+(let
+    (
+        (p:string KST.ANHD)
+        (executor:string KST.ANHD)
+        (executee:string KST.EMMA)
+    )
+    (let
+        (
+            (self:object{OuronetInfoV2.ClientInfo}
+                (INFO-ONE.INFO_DPTF|ClearDispo p executee))
+            (frgn:object{OuronetInfoV2.ClientInfo}
+                (INFO-ONE.INFO_DPTF|ClearDispoForeign p executor executee))
+        )
+        (map print
+            [
+                ;;1] SAME COST. Both Talos wrappers call the same TFT::C_ClearDispo and both are
+                ;;   51.0 flat, so any divergence means the foreign reader re-derived the price
+                ;;   instead of sharing the single source.
+                (expect
+                    "<<TX-DPTF-CDF-01>> foreign preview costs exactly what the self preview costs"
+                    (at "ignis" self)
+                    (at "ignis" frgn))
+
+                ;;2] IT PRICES THE EXECUTEE, NOT THE EXECUTOR -- the assertion that actually earns
+                ;;   its place. URCi_ClearDispo takes ONE account, and both executor and executee
+                ;;   are valid account ids, so wiring the wrong slot yields a wrong-but-plausible
+                ;;   number that no shape or cost check could catch. Swapping them must FAIL,
+                ;;   because ANHD's OURO is not negative. If this ever passes, the reader is
+                ;;   reading the wrong account.
+                (expect-failure
+                    "<<TX-DPTF-CDF-02>> swapping executor/executee is refused -- it prices the EXECUTEE"
+                    "Dispo Clear requires Negative OURO"
+                    (INFO-ONE.INFO_DPTF|ClearDispoForeign p executee executor))
+
+                ;;3] The narrative NAMES the executor. That audit trail is the only thing the
+                ;;   foreign variant adds over the self variant, so a copy-paste of the self
+                ;;   reader's text would leave the reader technically correct and useless.
+                (expect
+                    "<<TX-DPTF-CDF-03>> the foreign narrative names the executor; the self one does not"
+                    true
+                    (let ((ft:string (fold (+) "" (at "pre-text" frgn)))
+                          (st:string (fold (+) "" (at "pre-text" self))))
+                        (and (contains (IGNIS.OI|UC_ShortAccount executor) ft)
+                             (not (contains (IGNIS.OI|UC_ShortAccount executor) st)))))
+            ]
+        )
+        ""
+    )
+)
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "Dispo 2|x Clear Dispo Test")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")

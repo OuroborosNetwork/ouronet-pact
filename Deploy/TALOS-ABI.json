@@ -12672,6 +12672,20 @@
     "type": "string"
    }
   ],
+  "INFO-ONE.INFO_DPTF|ClearDispoForeign": [
+   {
+    "name": "patron",
+    "type": "string"
+   },
+   {
+    "name": "executor",
+    "type": "string"
+   },
+   {
+    "name": "executee",
+    "type": "string"
+   }
+  ],
   "INFO-ONE.INFO_DPTF|Control": [
    {
     "name": "patron",
@@ -18025,6 +18039,7 @@
   "TS01-C1.DPTF|C_BulkTransfer": "INFO-ONE.INFO_DPTF|BulkTransfer",
   "TS01-C1.DPTF|C_Burn": "INFO-ONE.INFO_DPTF|Burn",
   "TS01-C1.DPTF|C_ClearDispo": "INFO-ONE.INFO_DPTF|ClearDispo",
+  "TS01-C1.DPTF|C_ClearDispoForeign": "INFO-ONE.INFO_DPTF|ClearDispoForeign",
   "TS01-C1.DPTF|C_Control": "INFO-ONE.INFO_DPTF|Control",
   "TS01-C1.DPTF|C_DeployAccount": "INFO-ONE.INFO_DPTF|DeployAccount",
   "TS01-C1.DPTF|C_DonateFees": "INFO-ONE.INFO_DPTF|DonateFees",
@@ -18389,5 +18404,5 @@
   "TS02-DPAD.DEMIPAD|C_RetrieveTrueFungible": "INFO-TWO.INFO_DEMIPAD|RetrieveTrueFungible",
   "TS02-DPAD.DEMIPAD|C_Withdraw": "INFO-TWO.INFO_DEMIPAD|Withdraw"
  },
- "surfaceHash": "c429c11d0adee04e"
+ "surfaceHash": "cb42aea85cac8bac"
 }

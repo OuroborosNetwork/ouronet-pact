@@ -253,3 +253,44 @@ Everything in the tree that a client must orchestrate, so nothing is discovered 
 - **Parameter naming drift.** `HANDOFF-swp-smartswap-bundle-architecture.md` §5 writes the second
   argument as `account`; the canon calls it `executor`. Same slot, same meaning — noted so nobody
   reads it as a second parameter.
+
+---
+
+## Appendix — the shapes are now machine-readable  *(added 2026-09-26)*
+
+Everything above is encoded per entrypoint in **`Deploy/OURONET-REGISTRY.json`**, under an
+`execution` key, so a consumer does not have to apply the recognition rule by hand:
+
+| this document | registry `mode` | n |
+|---|---|---|
+| Shape I — preflight → one tx | `indirect-single` | 5 |
+| Shape II — preflight → N fed slices | `indirect-parallel` | 9 |
+| Shape III — cursor pager | `indirect-sequential` | 3 |
+| Shape IV — `defpact` | `defpact` | 10 |
+| *(neither)* | `direct` | 396 |
+
+The ten `defpact` entries match this document's enumeration exactly — the eight `MTX-SWP` pool and
+liquidity operations plus both `MTX-AQP|2|*`. Each carries its step count, its rollback-step
+count, and the pact it starts.
+
+Each indirect entry also **names its preflight read**, and `--probe` verifies that reader exists
+in *deployed* code before writing the file. A cited reader that were repo-only would be the worst
+kind of entry: a consumer follows it, the call fails as a **resolution** error, and a resolution
+error surfaces as a default value rather than an exception — so the recipe would quietly operate
+on an empty slice.
+
+### One trap this document did not previously record
+
+Four names resolve to **two modules, with identical signatures and different modes**:
+
+| name | `TS01-C3` | `TS01-CP` |
+|---|---|---|
+| `SWP\|C_AddFrozenLiquidity` | `direct` | `defpact` (3 steps) |
+| `SWP\|C_AddGlacialLiquidity` | `direct` | `defpact` (3 steps) |
+| `SWP\|C_AddIcedLiquidity` | `direct` | `defpact` (3 steps) |
+| `SWP\|C_AddSleepingLiquidity` | `direct` | `defpact` (3 steps) |
+
+**Always address these as `MODULE.function`, never by the bare name.** Getting it wrong is silent
+in both directions: call the defpact believing it direct and the operation sits half-finished;
+call the direct one believing it a defpact and there is no pact for the continuation to continue.
+The registry carries these under a top-level `nameCollisions` key.

@@ -28,6 +28,24 @@ check.
 | file | contents | state |
 |---|---|---|
 | `01_deploy.pact` | `OuronetIdsV1` + `OUiOneV1` + `O-UI-ONE` | ready |
+| `20_deploy.pact` | `INFO-ONE` module upgrade — adds `INFO_DPTF|ClearDispoForeign` | **EXECUTED on mainnet 2026-09-26** |
+
+`20_deploy.pact` closes the only genuine cost-preview gap in the system. Cross-referencing all
+**483** IGNIS price keys against all **426** `INFO_` readers found thirteen priced operations
+with no exactly-named reader; twelve had one under a different name. `DPTF|C_ClearDispoForeign`
+(51.0 IGNIS) had none at all, so no client could show its cost before the user signed.
+
+**It is module-only.** `InfoOneV2` is deployed and a deployed interface cannot be changed, so
+declaring the function there would force `InfoOneV3` and the whole cascade. A module may exceed
+its interface, two `INFO_VST|Hibernated*Display` readers in this same module already do, and a
+tree-wide search for `::INFO_` returns zero — every `INFO_` reader is called off-chain over
+`/local`, never by another module. So the interface stays untouched and nothing loses reach.
+
+**Signing differs from every other file in this folder.** The others are first deploys and take
+the namespace keyset. This is an UPGRADE, so `GOV` is evaluated and it needs
+`ouronet-ns.dh_master-keyset` — the Demiurgoi keyset. The namespace admin key is refused at
+`GOV|INFO|DPTF_ADMIN`. Measured: **227,541 bytes, 366,551 gas (18% of the 2,000,000 budget)**,
+taken by loading the emitted file on top of a live Stage-01 so the load is a real upgrade.
 
 **Hand-authored, not generated.** `_deploybundle.py` plans the sovereign tree; AppReads modules
 land one at a time as their UI wiring is written, so there is no round to plan — the owner

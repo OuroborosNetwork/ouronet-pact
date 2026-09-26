@@ -1,252 +1,95 @@
-;; net: v1   ·   dev: v2   ;; bumped by the StoicSyntax refactor — deploy v2 then set net: v2
-(interface InfoOneV2
-    @doc "Exposes Functions from Information One Module"
+;; =========================================================================================
+;; OURONET DEPLOY -- ROUND V2, file 20
+;; INFO-ONE (module upgrade) -- adds INFO_DPTF|ClearDispoForeign, the one priced operation
+;; in the whole system with no cost preview
+;; =========================================================================================
+;; ONE FUNCTION ADDED. Everything else in this module is byte-for-byte what is already live;
+;; the diff against the deployed source is a single new defun.
+;;
+;; ------------------------------------------------------------------------------------------
+;; WHAT WAS MISSING
+;;
+;; `DPTF|C_ClearDispoForeign` is priced at 51.0 IGNIS in 02_IGNIS.pact:887 and had NO `INFO_`
+;; reader anywhere. A client cannot show a user what the operation costs before they sign it,
+;; and there is no way to derive that number off-chain -- the price is a five-leg concatenation
+;; computed by `TFT::URCi_ClearDispo`, which is only reachable through an `INFO_` wrapper.
+;;
+;; HOW IT WAS FOUND, and why that matters more than the fix. Cross-referencing ALL 483 keys of
+;; the IGNIS price table against ALL 426 `INFO_` readers in the tree. Thirteen keys had no
+;; exactly-named reader; twelve of those turned out to have one under a different name
+;; (`DEMIPAD-SPARK.INFO_BuySparks` for `SPARK|C_BuySparks`, `INFO_LIQUID|WrapStoa` for
+;; `LQD|C_WrapStoa`, and so on -- those are now pairing exceptions in the consumer registry).
+;; This was the ONLY genuine gap of the 483.
+;;
+;; The remaining 87 price keys are unit COMPONENTS (`tier-small`, `r-l`, `issue-tf`), not
+;; operations, and correctly have no preview.
+;;
+;; ------------------------------------------------------------------------------------------
+;; WHY MODULE-ONLY, AND WHY THE INTERFACE IS NOT TOUCHED
+;;
+;; `InfoOneV2` is deployed, and a deployed interface cannot be changed -- byte-identical
+;; included. Declaring the new function in the interface would therefore mean `InfoOneV3`, and
+;; by the cascade rule every interface naming InfoOneV2 and every consumer would bump with it.
+;; For one read that nothing on chain calls, that is the wrong trade.
+;;
+;; So the function is MODULE-ONLY: defined in INFO-ONE, absent from InfoOneV2. That is legal
+;; (a module may exceed its interface; `implements` constrains the other direction) and it is
+;; ALREADY PRACTICE IN THIS EXACT MODULE -- `INFO_VST|HibernatedNonceDisplay` and
+;; `INFO_VST|HibernatedNoncesDisplay` are module-only today, 2 of the module's 180.
+;;
+;; The cost of module-only is that no other MODULE can reach it by modref, since modref calls
+;; resolve through the interface. Verified that this costs nothing here: a tree-wide search for
+;; `::INFO_` returns ZERO hits. Every `INFO_` reader in Ouronet is called off-chain over
+;; `/local`, by a UI or by the registry. Nothing on chain calls one.
+;;
+;; ------------------------------------------------------------------------------------------
+;; WHAT THE FUNCTION DOES, AND THE ONE WAY IT COULD HAVE BEEN WRONG
+;;
+;; `INFO_DPTF|ClearDispoForeign (patron executor executee)` mirrors the existing
+;; `INFO_DPTF|ClearDispo (patron account)`. Both Talos wrappers call the same
+;; `TFT::C_ClearDispo`, and both cost 51.0 flat, so the FIGURES are identical by construction --
+;; it shares the single cost source rather than re-deriving it.
+;;
+;; `URCi_ClearDispo` takes ONE account, and it must be the EXECUTEE -- the account whose dispo
+;; is cleared and whose Elite-Auryn is force-spent at 2.5x the debt. Passing the executor
+;; instead would price a different account's debt, and because both are valid account ids it
+;; would return a plausible number rather than fail. That is the whole failure mode of this
+;; function, so it is pinned rather than reasoned about: `[6.2]_DPTF.repl <<TX-DPTF-CDF-02>>`
+;; swaps the two arguments and requires a REFUSAL. If that assertion ever passes, the reader is
+;; reading the wrong account.
+;;
+;; Two more, same file: `<<TX-DPTF-CDF-01>>` requires the foreign preview's `ignis` block to
+;; equal the self preview's exactly, and `<<TX-DPTF-CDF-03>>` requires the foreign narrative to
+;; NAME the executor while the self narrative does not -- that audit trail is the only thing
+;; the foreign variant adds over the self variant, so a copy-paste of the self text would leave
+;; the reader technically correct and useless.
+;;
+;; The test sits BEFORE "Dispo 2|x Clear Dispo Test", which clears the dispo. Both readers
+;; enforce `(< ouro-a 0.0)`, so after the clear they can only fail -- a test placed after it
+;; would assert nothing while still passing.
+;;
+;; Runs under `ZALL.repl` (the exhaustive gate entrypoint that loads `[6.2]_DPTF.repl`);
+;; `Z.repl` takes the issuance-only variant and does not reach it.
+;;
+;; ------------------------------------------------------------------------------------------
+;; SIZE AND GAS, both MEASURED rather than extrapolated.
+;;   emitted file        227,541 bytes / 4,095 lines -- inside the 320,000-byte conservative cap
+;;   deploy gas             366,551 -- 18% of DALOS|GAS-BUDGET (2,000,000)
+;;
+;; Measured by loading THIS EMITTED FILE in a REPL on top of a full Stage-01 deploy, so the
+;; module is already live and the load is a genuine UPGRADE -- which is the only way the
+;; governance path is exercised at all. A first deploy does not evaluate `GOV`; an upgrade
+;; does, and it needs `ouronet-ns.dh_master-keyset` (the Demiurgoi keyset), NOT the namespace
+;; admin key. Signing with the wrong one fails at `GOV|INFO|DPTF_ADMIN` with
+;; "Keyset failure", which is what the first two measurement attempts did.
+;;
+;; =========================================================================================
 
-    ;;<=========================================================================>
-    ;;{1}  GOVERNANCE
-    ;;{G1}  constants
-    ;;{G2}  schemas
-    ;;{G3}  tables  ⟨cannot exist in an interface⟩
-    ;;{G4}  capabilities
-    ;;{G5}  functions
+;;@GENERATED-BODY-BELOW -- do not edit past this line; see REPL/tools/_purev2.py
 
-    ;;<=========================================================================>
-    ;;{2}  POLICY
-    ;;{P1}  constants
-    ;;{P2}  schemas
-    ;;{P3}  tables  ⟨cannot exist in an interface⟩
-    ;;{P4}  capabilities
-    ;;{P5}  functions
+(namespace "ouronet-ns")
 
-    ;;<=========================================================================>
-    ;;{3}  CST
-    ;;{3.1}  constants
-    ;;{3.2}  schemas
-    ;;{3.3}  tables  ⟨cannot exist in an interface⟩
-
-    ;;<=========================================================================>
-    ;;{4}  CAPABILITIES
-    ;;{C1}  Trivial [bronze]
-    ;;{C2}  Simple
-    ;;{C3}  Composed
-    ;;{C4}  Ownership [gold]
-
-    ;;<=========================================================================>
-    ;;{5}  FUNCTIONS
-    ;;{5.1}  Construct [CT/UDC]
-    ;;{5.2}  Compute [UC]
-    ;;
-    ;;
-    ;;  [UC] Functions
-    ;;
-    (defun UC_GasPrice:decimal (full-price:decimal trigger:bool))
-    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
-    ;;
-    ;;
-    ;;  [SIP|URC] Functions
-    ;;
-    ;;
-    ;;
-    ;;  [SKP|URC] Functions
-    ;;
-    ;;
-    ;;
-    ;;  [INFO] Functions
-    ;;
-    (defun INFO_DPTF|UpdatePendingBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string))
-    (defun INFO_DPTF|UpgradeBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string months:integer))
-    (defun INFO_DPTF|Burn:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string amount:decimal))
-    (defun INFO_DPTF|Control:object{OuronetInfoV2.ClientInfo} (patron:string id:string))
-    (defun INFO_DPTF|DeployAccount:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string))
-    (defun INFO_DPTF|DonateFees:object{OuronetInfoV2.ClientInfo} (patron:string id:string))
-    (defun INFO_DPTF|Issue:object{OuronetInfoV2.ClientInfo} (patron:string account:string name:[string]))
-    (defun INFO_DPTF|Mint:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string amount:decimal origin:bool))
-    (defun INFO_DPTF|ResetFeeTarget:object{OuronetInfoV2.ClientInfo} (patron:string id:string))
-    (defun INFO_DPTF|RotateOwnership:object{OuronetInfoV2.ClientInfo} (patron:string id:string new-owner:string))
-    (defun INFO_DPTF|SetFee:object{OuronetInfoV2.ClientInfo} (patron:string id:string fee:decimal))
-    (defun INFO_DPTF|SetFeeTarget:object{OuronetInfoV2.ClientInfo} (patron:string id:string target:string))
-    (defun INFO_DPTF|SetMinMove:object{OuronetInfoV2.ClientInfo} (patron:string id:string min-move-value:decimal))
-    (defun INFO_DPTF|ToggleFee:object{OuronetInfoV2.ClientInfo} (patron:string id:string toggle:bool))
-    (defun INFO_DPTF|ToggleFeeLock:object{OuronetInfoV2.ClientInfo} (patron:string id:string toggle:bool fee-unlocks:integer))
-    (defun INFO_DPTF|ToggleFreezeAccount:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool))
-    (defun INFO_DPTF|TogglePause:object{OuronetInfoV2.ClientInfo} (patron:string id:string toggle:bool))
-    (defun INFO_DPTF|ToggleReservation:object{OuronetInfoV2.ClientInfo} (patron:string id:string toggle:bool))
-    (defun INFO_DPTF|ToggleTransferRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool))
-    (defun INFO_DPTF|Wipe:object{OuronetInfoV2.ClientInfo} (patron:string id:string atbw:string))
-    (defun INFO_DPTF|WipeSlim:object{OuronetInfoV2.ClientInfo} (patron:string id:string atbw:string amtbw:decimal))
-    (defun INFO_DPTF|ToggleBurnRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool))
-    (defun INFO_DPTF|ToggleMintRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool))
-    (defun INFO_DPTF|ToggleFeeExemptionRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool))
-    (defun INFO_DPTF|Transmute:object{OuronetInfoV2.ClientInfo} (patron:string id:string transmuter:string transmute-amount:decimal))
-    (defun INFO_DPTF|ClearDispo:object{OuronetInfoV2.ClientInfo} (patron:string account:string))
-    (defun INFO_DPTF|Transfer:object{OuronetInfoV2.ClientInfo} (patron:string id:string sender:string receiver:string transfer-amount:decimal))
-    (defun INFO_DPTF|MultiTransfer:object{OuronetInfoV2.ClientInfo} (patron:string id-lst:[string] sender:string receiver:string transfer-amount-lst:[decimal]))
-    (defun INFO_DPTF|BulkTransfer:object{OuronetInfoV2.ClientInfo} (patron:string id:string sender:string receiver-lst:[string] transfer-amount-lst:[decimal]))
-    (defun INFO_DPTF|MultiBulkTransfer:object{OuronetInfoV2.ClientInfo} (patron:string id-lst:[string] sender:string receiver-array:[[string]] transfer-amount-array:[[decimal]]))
-    ;;
-    (defun INFO_DPOF|UpdatePendingBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string))
-    (defun INFO_DPOF|UpgradeBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string months:integer))
-    (defun INFO_DPOF|AddQuantity:object{OuronetInfoV2.ClientInfo} (patron:string id:string nonce:integer account:string amount:decimal))
-    (defun INFO_DPOF|Burn:object{OuronetInfoV2.ClientInfo} (patron:string id:string nonce:integer account:string amount:decimal))
-    (defun INFO_DPOF|Control:object{OuronetInfoV2.ClientInfo} (patron:string id:string))
-    (defun INFO_DPOF|DeployAccount:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string))
-    (defun INFO_DPOF|Issue:object{OuronetInfoV2.ClientInfo} (patron:string account:string name:[string]))
-    (defun INFO_DPOF|Mint:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string amount:decimal))
-    (defun INFO_DPOF|RotateOwnership:object{OuronetInfoV2.ClientInfo} (patron:string id:string new-owner:string))
-    (defun INFO_DPOF|MoveCreateRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string receiver:string))
-    (defun INFO_DPOF|ToggleAddQuantityRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool))
-    (defun INFO_DPOF|ToggleBurnRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool))
-    (defun INFO_DPOF|ToggleFreezeAccount:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool))
-    (defun INFO_DPOF|TogglePause:object{OuronetInfoV2.ClientInfo} (patron:string id:string toggle:bool))
-    (defun INFO_DPOF|ToggleTransferRole:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string toggle:bool))
-    (defun INFO_DPOF|Transfer:object{OuronetInfoV2.ClientInfo} (patron:string id:string nonces:[integer] sender:string receiver:string method:bool))
-    (defun INFO_DPOF|Transmit:object{OuronetInfoV2.ClientInfo} (patron:string id:string nonces:[integer] amounts:[decimal] sender:string receiver:string method:bool))
-    (defun INFO_DPOF|BulkTransfer:object{OuronetInfoV2.ClientInfo} (patron:string id:string nonces-array:[[integer]] sender:string receiver-lst:[string] method:bool))
-    (defun INFO_DPOF|WipeSlim:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string nonce:integer amount:decimal))
-    (defun INFO_DPOF|WipePure:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces}))
-    (defun INFO_DPOF|WipeHeavy:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string))
-    (defun INFO_DPOF|WipeClean:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string nonces:[integer]))
-    (defun INFO_DPOF|WipeSlice:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string removable-nonces-obj:object{DpofUdcV2.RemovableNonces}))
-    (defun INFO_DPOF|WipeFull:object{OuronetInfoV2.ClientInfo} (patron:string id:string account:string plan:object{DpofUdcV2.DPOF|WipeSlicePlan}))
-    ;;
-    (defun INFO_VST|CreateFrozenLink:object{OuronetInfoV2.ClientInfo} (patron:string dptf:string))
-    (defun INFO_VST|CreateReservationLink:object{OuronetInfoV2.ClientInfo} (patron:string dptf:string))
-    (defun INFO_VST|CreateVestingLink:object{OuronetInfoV2.ClientInfo} (patron:string dptf:string))
-    (defun INFO_VST|CreateSleepingLink:object{OuronetInfoV2.ClientInfo} (patron:string dptf:string))
-    (defun INFO_VST|CreateHibernatingLink:object{OuronetInfoV2.ClientInfo} (patron:string dptf:string))
-    (defun INFO_VST|Freeze:object{OuronetInfoV2.ClientInfo} (patron:string freezer:string freeze-output:string dptf:string amount:decimal))
-    (defun INFO_VST|RepurposeFrozen:object{OuronetInfoV2.ClientInfo} (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string))
-    (defun INFO_VST|ToggleTransferRoleFrozenDPTF:object{OuronetInfoV2.ClientInfo} (patron:string s-dptf:string target:string toggle:bool))
-    (defun INFO_VST|Reserve:object{OuronetInfoV2.ClientInfo} (patron:string reserver:string dptf:string amount:decimal))
-    (defun INFO_VST|Unreserve:object{OuronetInfoV2.ClientInfo} (patron:string unreserver:string r-dptf:string amount:decimal))
-    (defun INFO_VST|RepurposeReserved:object{OuronetInfoV2.ClientInfo} (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string))
-    (defun INFO_VST|ToggleTransferRoleReservedDPTF:object{OuronetInfoV2.ClientInfo} (patron:string s-dptf:string target:string toggle:bool))
-    (defun INFO_VST|Vest:object{OuronetInfoV2.ClientInfo} (patron:string vester:string target-account:string dptf:string amount:decimal offset:integer seconds:integer milestones:integer))
-    (defun INFO_VST|Unvest:object{OuronetInfoV2.ClientInfo} (patron:string unvester:string dpof:string nonce:integer))
-    (defun INFO_VST|RepurposeVested:object{OuronetInfoV2.ClientInfo} (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
-    (defun INFO_VST|Sleep:object{OuronetInfoV2.ClientInfo} (patron:string sleeper:string target-account:string dptf:string amount:decimal seconds:integer))
-    (defun INFO_VST|Unsleep:object{OuronetInfoV2.ClientInfo} (patron:string unsleeper:string dpof:string nonce:integer))
-    (defun INFO_VST|Merge:object{OuronetInfoV2.ClientInfo} (patron:string merger:string dpof:string nonces:[integer]))
-    (defun INFO_VST|RepurposeMerge:object{OuronetInfoV2.ClientInfo} (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string))
-    (defun INFO_VST|RepurposeSleeping:object{OuronetInfoV2.ClientInfo} (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
-    (defun INFO_VST|ToggleTransferRoleSleepingDPOF:object{OuronetInfoV2.ClientInfo} (patron:string s-dpof:string target:string toggle:bool))
-    (defun INFO_VST|Hibernate:object{OuronetInfoV2.ClientInfo} (patron:string hibernator:string target-account:string dptf:string amount:decimal dayz:integer))
-    (defun INFO_VST|Awake:object{OuronetInfoV2.ClientInfo} (patron:string awaker:string dpof:string nonce:integer))
-    (defun INFO_VST|Slumber:object{OuronetInfoV2.ClientInfo} (patron:string merger:string dpof:string nonces:[integer]))
-    (defun INFO_VST|RepurposeSlumber:object{OuronetInfoV2.ClientInfo} (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string))
-    (defun INFO_VST|RepurposeHibernating:object{OuronetInfoV2.ClientInfo} (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
-    (defun INFO_VST|ToggleTransferRoleHibernatingDPOF:object{OuronetInfoV2.ClientInfo} (patron:string s-dpof:string target:string toggle:bool))
-    ;;
-    (defun INFO_ATS|Coil:object{OuronetInfoV2.ClientInfo} (patron:string coiler:string ats:string rt:string amount:decimal))
-    (defun INFO_ATS|Constrict:object{OuronetInfoV2.ClientInfo} (patron:string constricter:string ats:string rt:string amount:decimal dayz:integer))
-    (defun INFO_ATS|Curl:object{OuronetInfoV2.ClientInfo} (patron:string curler:string ats1:string ats2:string rt:string amount:decimal))
-    (defun INFO_ATS|Brumate:object{OuronetInfoV2.ClientInfo} (patron:string brumator:string ats1:string ats2:string rt:string amount:decimal dayz:integer))
-    (defun INFO_ATS|ColdRecovery:object{OuronetInfoV2.ClientInfo} (patron:string recoverer:string ats:string ra:decimal))
-    (defun INFO_ATS|Cull:object{OuronetInfoV2.ClientInfo} (patron:string culler:string ats:string))
-    (defun INFO_ATS|DirectRecovery:object{OuronetInfoV2.ClientInfo} (patron:string recoverer:string ats:string ra:decimal))
-    (defun INFO_ATS|RotateOwnership:object{OuronetInfoV2.ClientInfo} (patron:string ats:string new-owner:string))
-    (defun INFO_ATS|Control:object{OuronetInfoV2.ClientInfo} (patron:string ats:string can-change-owner:bool syphoning:bool hibernate:bool))
-    (defun INFO_ATS|UpdateRoyalty:object{OuronetInfoV2.ClientInfo} (patron:string ats:string royalty:decimal))
-    (defun INFO_ATS|UpdateSyphon:object{OuronetInfoV2.ClientInfo} (patron:string ats:string syphon:decimal))
-    (defun INFO_ATS|SetHibernationFees:object{OuronetInfoV2.ClientInfo} (patron:string ats:string peak:decimal decay:decimal))
-    (defun INFO_ATS|ToggleParameterLock:object{OuronetInfoV2.ClientInfo} (patron:string ats:string toggle:bool))
-    (defun INFO_ATS|AddSecondary:object{OuronetInfoV2.ClientInfo} (patron:string ats:string reward-token:string rt-nfr:bool))
-    (defun INFO_ATS|ControlColdRecoveryFees:object{OuronetInfoV2.ClientInfo} (patron:string ats:string c-nfr:bool c-fr:bool))
-    (defun INFO_ATS|SetColdRecoveryFees:object{OuronetInfoV2.ClientInfo} (patron:string ats:string fee-positions:integer fee-thresholds:[decimal] fee-array:[[decimal]]))
-    (defun INFO_ATS|SetColdRecoveryDuration:object{OuronetInfoV2.ClientInfo} (patron:string ats:string soft-or-hard:bool base:integer growth:integer))
-    (defun INFO_ATS|ToggleElite:object{OuronetInfoV2.ClientInfo} (patron:string ats:string toggle:bool))
-    (defun INFO_ATS|ToggleUpgrade:object{OuronetInfoV2.ClientInfo} (patron:string ats:string toggle:bool))
-    (defun INFO_ATS|SwitchColdRecovery:object{OuronetInfoV2.ClientInfo} (patron:string ats:string toggle:bool))
-    (defun INFO_ATS|ControlHotRecoveryFee:object{OuronetInfoV2.ClientInfo} (patron:string ats:string h-fr:bool))
-    (defun INFO_ATS|SetHotRecoveryFee:object{OuronetInfoV2.ClientInfo} (patron:string ats:string promile:decimal decay:integer))
-    (defun INFO_ATS|SwitchHotRecovery:object{OuronetInfoV2.ClientInfo} (patron:string ats:string toggle:bool))
-    (defun INFO_ATS|SetDirectRecoveryFee:object{OuronetInfoV2.ClientInfo} (patron:string ats:string promile:decimal))
-    (defun INFO_ATS|SwitchDirectRecovery:object{OuronetInfoV2.ClientInfo} (patron:string ats:string toggle:bool))
-    (defun INFO_ATS|UpdatePendingBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string))
-    (defun INFO_ATS|UpgradeBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string months:integer))
-    (defun INFO_ATS|Issue:object{OuronetInfoV2.ClientInfo} (patron:string account:string ats:[string]))
-    (defun INFO_ATS|Fuel:object{OuronetInfoV2.ClientInfo} (patron:string fueler:string ats:string reward-token:string amount:decimal))
-    (defun INFO_ATS|HotRecovery:object{OuronetInfoV2.ClientInfo} (patron:string recoverer:string ats:string ra:decimal))
-    (defun INFO_ATS|KickStart:object{OuronetInfoV2.ClientInfo} (patron:string kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
-    (defun INFO_ATS|Redeem:object{OuronetInfoV2.ClientInfo} (patron:string redeemer:string id:string nonce:integer))
-    (defun INFO_ATS|Reverse:object{OuronetInfoV2.ClientInfo} (patron:string recoverer:string id:string nonce:integer))
-    (defun INFO_ATS|Syphon:object{OuronetInfoV2.ClientInfo} (patron:string syphon-target:string ats:string syphon-amounts:[decimal]))
-    (defun INFO_ATS|WithdrawRoyalties:object{OuronetInfoV2.ClientInfo} (patron:string ats:string target:string))
-    (defun INFO_ATS|VestedCoil:object{OuronetInfoV2.ClientInfo} (patron:string coiler-vester:string ats:string coil-token:string amount:decimal target-account:string offset:integer duration:integer milestones:integer))
-    (defun INFO_ATS|VestedCurl:object{OuronetInfoV2.ClientInfo} (patron:string curler-vester:string ats1:string ats2:string curl-token:string amount:decimal target-account:string offset:integer duration:integer milestones:integer))
-    (defun INFO_ATS|HOT-RBT|UpdatePendingBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string))
-    (defun INFO_ATS|HOT-RBT|UpgradeBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string months:integer))
-    (defun INFO_ATS|HOT-RBT|Repurpose:object{OuronetInfoV2.ClientInfo} (patron:string hot-rbt:string nonce:integer repurpose-to:string))
-    (defun INFO_ATS|AddHotRBT:object{OuronetInfoV2.ClientInfo} (patron:string ats:string hot-rbt:string))
-    (defun INFO_ATS|RemoveSecondary:object{OuronetInfoV2.ClientInfo} (patron:string remover:string ats:string reward-token:string))
-    ;;
-    (defun INFO_SWP|ChangeOwnership:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string new-owner:string))
-    (defun INFO_SWP|ModifyCanChangeOwner:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string new-boolean:bool))
-    (defun INFO_SWP|ModifyWeights:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string new-weights:[decimal]))
-    (defun INFO_SWP|ToggleAddLiquidity:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string toggle:bool))
-    (defun INFO_SWP|ToggleSwapCapability:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string toggle:bool))
-    (defun INFO_SWP|EnableFrozenLP:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string))
-    (defun INFO_SWP|EnableSleepingLP:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string))
-    (defun INFO_SWP|UpdateAmplifier:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string amp:decimal))
-    (defun INFO_SWP|UpdateFee:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string new-fee:decimal lp-or-special:bool))
-    (defun INFO_SWP|UpdateSpecialFeeTargets:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string targets:[string]))
-    (defun INFO_SWP|ToggleFeeLock:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string toggle:bool))
-    (defun INFO_SWP|UpdatePendingBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string))
-    (defun INFO_SWP|UpgradeBranding:object{OuronetInfoV2.ClientInfo} (patron:string entity-id:string months:integer))
-    (defun INFO_SWP|UpdatePendingBrandingLPs:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string entity-pos:integer))
-    (defun INFO_SWP|UpgradeBrandingLPs:object{OuronetInfoV2.ClientInfo} (patron:string swpair:string entity-pos:integer months:integer))
-    (defun INFO_SWP|AddLiquidity:object{OuronetInfoV2.ClientInfo} (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
-    (defun INFO_SWP|AddStandardLiquidity:object{OuronetInfoV2.ClientInfo} (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
-    (defun INFO_SWP|AddIcedLiquidity:object{OuronetInfoV2.ClientInfo} (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
-    (defun INFO_SWP|AddGlacialLiquidity:object{OuronetInfoV2.ClientInfo} (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
-    (defun INFO_SWP|AddFrozenLiquidity:object{OuronetInfoV2.ClientInfo} (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal))
-    (defun INFO_SWP|AddSleepingLiquidity:object{OuronetInfoV2.ClientInfo} (patron:string account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal))
-    (defun INFO_SWP|RemoveLiquidity:object{OuronetInfoV2.ClientInfo} (patron:string account:string swpair:string lp-amount:decimal))
-    (defun INFO_SWP|Fuel:object{OuronetInfoV2.ClientInfo} (patron:string account:string swpair:string input-amounts:[decimal]))
-    (defun INFO_SWP|Firestarter:object{OuronetInfoV2.ClientInfo} (firestarter:string))
-    (defun INFO_SWP|IssueStable:object{OuronetInfoV2.ClientInfo} (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal amp:decimal p:bool))
-    (defun INFO_SWP|IssueStandard:object{OuronetInfoV2.ClientInfo} (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal p:bool))
-    (defun INFO_SWP|IssueWeighted:object{OuronetInfoV2.ClientInfo} (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool))
-    (defun INFO_SWP|IssueStablePool:object{OuronetInfoV2.ClientInfo} (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal amp:decimal p:bool))
-    (defun INFO_SWP|IssueStandardPool:object{OuronetInfoV2.ClientInfo} (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal p:bool))
-    (defun INFO_SWP|IssueWeightedPool:object{OuronetInfoV2.ClientInfo} (patron:string account:string pool-tokens:[object{SwapperV4.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool))
-    (defun INFO_SWP|SingleSwapNoSlippage:object{OuronetInfoV2.ClientInfo} (patron:string account:string swpair:string input-id:string input-amount:decimal output-id:string))
-    (defun INFO_SWP|SingleSwapWithSlippage:object{OuronetInfoV2.ClientInfo} (patron:string account:string swpair:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV3.Slippage}))
-    (defun INFO_SWP|MultiSwapNoSlippage:object{OuronetInfoV2.ClientInfo} (patron:string account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string))
-    (defun INFO_SWP|MultiSwapWithSlippage:object{OuronetInfoV2.ClientInfo} (patron:string account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage-bounds:object{SwapperUsageV3.Slippage}))
-    (defun INFO_SWP|SmartSwapNoSlippage:object{OuronetInfoV2.ClientInfo} (patron:string account:string input-id:string input-amount:decimal output-id:string))
-    (defun INFO_SWP|SmartSwapWithSlippage:object{OuronetInfoV2.ClientInfo} (patron:string account:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV3.Slippage}))
-    (defun INFO_SWP|SmartSwapNoSlippageBundle:object{OuronetInfoV2.ClientInfo} (patron:string account:string input-id:string input-amount:decimal output-id:string bundle:object{SwapperUsageV3.SmartSwapPathBundle}))
-    (defun INFO_SWP|SmartSwapWithSlippageBundle:object{OuronetInfoV2.ClientInfo} (patron:string account:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV3.Slippage} bundle:object{SwapperUsageV3.SmartSwapPathBundle}))
-    (defun INFO_LIQUID|WrapStoa:object{OuronetInfoV2.ClientInfo} (patron:string wrapper:string amount:decimal))
-    (defun INFO_LIQUID|UnwrapStoa:object{OuronetInfoV2.ClientInfo} (patron:string unwrapper:string amount:decimal))
-    (defun INFO_LIQUID|WrapUrStoa:object{OuronetInfoV2.ClientInfo} (patron:string wrapper:string amount:decimal))
-    (defun INFO_LIQUID|UnwrapUrStoa:object{OuronetInfoV2.ClientInfo} (patron:string unwrapper:string amount:decimal))
-    (defun INFO_ORBR|Compress:object{OuronetInfoV2.ClientInfo} (client:string ignis-amount:decimal))
-    (defun INFO_ORBR|Sublimate:object{OuronetInfoV2.ClientInfo} (client:string target:string ouro-amount:decimal))
-    (defun INFO_ORBR|SublimateV2:object{OuronetInfoV2.ClientInfo} (client:string target:string ouro-amount:decimal))
-    (defun INFO_ORBR|WithdrawFees:object{OuronetInfoV2.ClientInfo} (patron:string id:string target:string))
-    ;;
-    ;;  [DALOS-INFO]  (relocated from the now-tombstoned INFO-ZERO; DALOS client-op previews wrapping IGNIS's DALOS|URCi_*)
-    ;;
-    (defun INFO_DALOS|ControlSmartAccount:object{OuronetInfoV2.ClientInfo} (patron:string account:string))
-    (defun INFO_DALOS|DeploySmartAccount:object{OuronetInfoV2.ClientInfo} (account:string))
-    (defun INFO_DALOS|DeployStandardAccount:object{OuronetInfoV2.ClientInfo} (account:string))
-    (defun INFO_DALOS|RotateGovernor:object{OuronetInfoV2.ClientInfo} (patron:string account:string))
-    (defun INFO_DALOS|RotateGuard:object{OuronetInfoV2.ClientInfo} (patron:string account:string))
-    (defun INFO_DALOS|RotateStoa:object{OuronetInfoV2.ClientInfo} (patron:string account:string))
-    (defun INFO_DALOS|RotateSovereign:object{OuronetInfoV2.ClientInfo} (patron:string account:string))
-    (defun INFO_DALOS|UpdateEliteAccount:object{OuronetInfoV2.ClientInfo} (patron:string account:string))
-    (defun INFO_DALOS|UpdateEliteAccountSquared:object{OuronetInfoV2.ClientInfo} (patron:string sender:string receiver:string))
-    ;;{5.4}  Validate [UEV/CAP]
-    ;;{5.5}  Write [W]
-    ;;{5.6}  Aux/X
-    ;;{5.7}  User [A/C]
-
-)
-;;INFO_LIQUID|UnwrapStoa
-;;INFO_LIQUID|WrapStoa
-;;INFO_LIQUID|UnwrapUrStoa
+;; ---- source: 2_CITIZEN/Stage_Z/../../1_SOVEREIGN/STAGE_01/Z_Reads/02_INFO-ONE+.pact (module only -- its interface is already live)
 (module INFO-ONE GOV
     @doc "INFO-ONE (InfoOneV2) is a read-only Stage-1 UI info module exposing INFO_ preview \
         \ functions that return ClientInfo objects (operation description, result text, \
@@ -4259,3 +4102,4 @@
     ;;{5.7}  User [A/C]
 
 )
+

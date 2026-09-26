@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 11 of 24
 ;; This is STEP 11 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-10 must have run first, including the init steps between deploys.
-;; 3 source file(s), 457,539 gas measured in the REPL gas model, 287,298 bytes
+;; 3 source file(s), 457,539 gas measured in the REPL gas model, 291,270 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/Z_Reads/02_INFO-ONE+.pact
@@ -1138,6 +1138,67 @@
                         (format "{} {} is used as extra cost for the operation set to increase the {} Index" [(- total-ea burn-elite-auryn-amount) ea-id elite-auryndex])
                     ]
                     [(format "Succesfully cleared negative {} using {} {}" [ouro-id total-ea ea-id])]
+                    (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                    (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                    []
+                )
+            )
+        )
+    )
+    (defun INFO_DPTF|ClearDispoForeign:object{OuronetInfoV2.ClientInfo}
+        (patron:string executor:string executee:string)
+        @doc "Cost + narrative preview for TS01-C1's DPTF|C_ClearDispoForeign -- the DELEGATED \
+            \ dispo clear, where <executor> settles <executee>'s negative OURO. \
+            \ \
+            \ The FIGURES are identical to INFO_DPTF|ClearDispo's, and deliberately so: both \
+            \ Talos wrappers call the same TFT::C_ClearDispo, and the cost single-source \
+            \ URCi_ClearDispo is keyed on the account being CLEARED. So this reader passes \
+            \ <executee>, not <executor> -- passing the executor would price the wrong \
+            \ account's debt, and since both are valid account ids it would price something \
+            \ plausible rather than fail. Both are 51.0 IGNIS flat in the price table. \
+            \ \
+            \ What differs is the NARRATIVE: it names who executes, because that audit trail \
+            \ is the only thing the foreign variant adds over the self variant."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV2} IGNIS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-TFT:module{TrueFungibleTransferV2} TFT)
+                ;;
+                (ouro-id:string (ref-DALOS::UR_OuroborosID))
+                (a-id:string (ref-DALOS::UR_AurynID))
+                (ea-id:string (ref-DALOS::UR_EliteAurynID))
+                (ouro-a:decimal (ref-DPTF::UR_AccountSupply ouro-id executee))
+                (ouro-amount:decimal (abs ouro-a))
+            )
+            (enforce (< ouro-a 0.0) "Dispo Clear requires Negative OURO")
+            (let
+                (
+                    ;;
+                    (auryndex:string (at 0 (ref-DPTF::UR_RewardToken ouro-id)))
+                    (elite-auryndex:string (at 0 (ref-DPTF::UR_RewardToken a-id)))
+                    (auryndex-value:decimal (ref-ATS::URC_Index auryndex))
+                    (elite-auryndex-value:decimal (ref-ATS::URC_Index elite-auryndex))
+                    ;;
+                    (a-prec:integer (ref-DPTF::UR_Decimals a-id))
+                    (ea-prec:integer (ref-DPTF::UR_Decimals ea-id))
+                    ;;
+                    (burn-auryn-amount:decimal (floor (/ ouro-amount auryndex-value) a-prec))
+                    (burn-elite-auryn-amount:decimal (floor (/ burn-auryn-amount elite-auryndex-value) ea-prec))
+                    (total-ea:decimal (floor (* burn-elite-auryn-amount 2.5) ea-prec))
+                    ;;
+                    (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-TFT::URCi_ClearDispo executee)))
+                )
+                (ref-I|OURONET::OI|UDC_ClientInfo
+                    [
+                        (format "Operation: {} clears the Negative Dispo of {} {} held by {}, by leveraging that account's EliteAuryn Supply" [(ref-I|OURONET::OI|UC_ShortAccount executor) ouro-amount ouro-id (ref-I|OURONET::OI|UC_ShortAccount executee)])
+                        (format "{} {} is used to cover the Debt" [burn-elite-auryn-amount ea-id])
+                        (format "{} {} is used as extra cost for the operation set to increase the {} Index" [(- total-ea burn-elite-auryn-amount) ea-id elite-auryndex])
+                        "Both ownerships are enforced on execution: this force-spends the executee's EliteAuryn at 2.5x the debt, so it is not a favour the executor can do unilaterally"
+                    ]
+                    [(format "Succesfully cleared negative {} of {} using {} {}" [ouro-id (ref-I|OURONET::OI|UC_ShortAccount executee) total-ea ea-id])]
                     (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
                     (ref-I|OURONET::OI|UDC_NoStoaCosts)
                     []
