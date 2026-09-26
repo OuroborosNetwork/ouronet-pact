@@ -63,6 +63,32 @@ UI names but never reaches: `URC_0001_Header`, `URC_0006_Swap`, `URC_0007_Invers
 `URC_0008_CappedInverse`, `URC_0011_RecoveryPrimordial`, `URC_0012_HibernateFee`. Those get
 deleted from `ouronet-core`, not ported.
 
+**CORRECTED 2026-09-26 — `URC_0012_HibernateFee` was NOT dead, and calling it dead is how it
+stayed broken for another day.** `getHibernateFee` is reached from `BrumateModal` and
+`ConstrictModal`, both imported by `AssetItem` ← `AccountCards` ← `dashboard.tsx`, which is a
+live route. It is the fee figure a user reads before locking WSTOA or SSTOA.
+
+Being unreached was never the point about that one. All six name functions that **have never
+existed in any Pact source in this repo** — `git log -S` over the whole history finds each zero
+times — so every call was a resolution error. The *other* five happen to sit in code nobody
+reaches; this one sat behind a `catch` that returned a hardcode, which rendered
+indistinguishably from a chain read and was numerically correct for the parameters mainnet
+happens to hold. So "never reaches" was a claim about the wrong property, and it was checked the
+wrong way: by grep, which cannot tell a live read from dead code, which is the same failure this
+folder's own legacy-read census was built to avoid.
+
+`getHibernateFee` now reads `ATS::UR_Hibernate` / `UR_PeakHibernatePromile` /
+`UR_HibernateDecay` / `UR_Royalty` directly — no AppReads module needed, because those are
+ordinary `UR_` readers on a deployed core module. **The remaining five stand as written**, and
+each is now a reasoned entry in `check-chain-symbols.py`'s accept-list rather than a line in
+prose, so a sixth cannot join them silently.
+
+**What distinguishes the two cases is REACHABILITY, and this repo can only guess at it.** The
+authority is OuronetUI's route table (`src/routes/index.tsx`, 49 `<Route>` entries): `poolDetail
+.tsx` has none, which is what makes `URC_0006/7/8` genuinely dead, and `dashboard.tsx` has one,
+which is what makes the hibernation fee live. A claim about liveness written in this repo is a
+claim about a file in another one.
+
 ### Slot 11 is blocked on purpose
 
 `AtsPairs` has a UI — `autostake-pairs/`, three files, 354 lines — and it reads the chain
