@@ -53,7 +53,27 @@ nothing downstream would catch.
 
 ---
 
-## 2. What the registry does NOT do, measured
+## 2. The registry needs NOTHING added for this — the rest is UI work
+
+Stated plainly because the heading that used to be here read as though the registry were
+unfinished. It is not. Checked for all eleven entrypoints, every field a modal consumes:
+
+```
+                          params  preview  ownership  sponsorship  exec-mode  ghost
+  11 of 11 entrypoints      yes     yes       yes         yes         yes      yes
+  missing fields: 0
+```
+
+All eleven are `execution.mode: direct`, every ghost value is concrete (none falls back to the
+generic `"example"`), and all eight new ones already have a generated UI spec. **Nothing is
+pending on the package.** `@ouronet/talos-registry@1.1.0` as published answers this job in full.
+
+The registry only ever needs touching again when the **contracts** move: regenerate, bump,
+publish. Not when a button gets wired.
+
+What remains is React, in OuronetUI, and nowhere else.
+
+## 2b. What the registry does not do, measured
 
 A working button in this app is four layers. The registry removes two of them outright:
 
