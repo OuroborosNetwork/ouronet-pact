@@ -1,126 +1,126 @@
-# Pythia agent — `@ouronet/talos-registry`, and why your brief is the opposite of the Codex's
+# Pythia agent — adopting `@ouronet/talos-registry`
 
-**Read [`HANDOFF-talos-registry.md`](HANDOFF-talos-registry.md) for what the package is.** This
-file exists because you were pointed at the same package as the Codex agent and **you should not
-adopt it the same way — quite possibly not at all.**
+**Read [`HANDOFF-talos-registry.md`](HANDOFF-talos-registry.md) first** for what the package is,
+its API, and the three traps. This file is your brief.
 
----
-
-## 1. The measurement that decides this
-
-Every `ouronet-ns.<module>.<function>` string in each package's `dist/`:
-
-| package | distinct Pact names | dead on mainnet |
-|---|---:|---:|
-| `@ancientpantheon/codex` | 34 | **19** |
-| `@ancientpantheon/pythia-client` | **0** | — |
-
-**You build no Pact calls.** You carry them. Nineteen of the Codex's names are broken and it
-cannot tell, because OuronetUI rewrites them at the transport before they leave the browser;
-none of yours are broken, because you have none.
-
-So the Codex brief — *"replace your hand-written call strings with `buildCall`"* — has no subject
-in your codebase. **If you take one thing from this document: do not go looking for call strings
-to migrate. There are none, and inventing some to justify the dependency would be the wrong
-outcome.**
+> **CORRECTED 2026-09-26.** An earlier version of this document told you that you build no Pact
+> calls and probably need no dependency. That was wrong, and the way it was wrong is the same
+> mistake this whole package exists to stop: **the measurement was narrower than the claim.** It
+> counted Pact names in the published `@ancientpantheon/pythia-client` `dist/` — a thin transport
+> client, 0 names — and reported that as "Pythia has no Pact names". The constructor repo has
+> **32**, the automaton and connectors among them. The conclusion was drawn from the wrong
+> directory, stated confidently, and would have left the outage in §1 in place.
 
 ---
 
-## 2. What you are, in this failure mode
+## 1. One of those names was breaking authentication fleet-wide
 
-You are the chokepoint. *"All daimon blockchain traffic routes through Pythia."* That is
-architecturally interesting here for one reason:
-
-**A Pact resolution error is invisible to the caller.** A call naming a function that does not
-exist is not an exception — `try` cannot catch it — it is a failed response. Every consumer bug
-found this month surfaced as an **empty panel**, never as an error:
-
-- `URD_OwnedSwapPairs` (renamed to `URH_`) → *"Demo Mode — your account does not own any pools"*,
-  shown to the owner of the pool
-- `DPL-UR.URC_0031` → the API-key list simply rendered empty
-- a 4-argument call to a 5-parameter reader → Pact **partially applies** and returns a *closure*;
-  Spark purchases could not be funded, with nothing in any log
-
-Each of those crossed a transport. **You are the only layer that sees all of them, from every
-consumer, and you are the only layer positioned to say `this call names a function that does not
-exist` instead of returning an empty result.**
-
----
-
-## 3. The two things worth considering — and neither is "use `buildCall`"
-
-### A. Name a resolution failure, don't just relay it
-
-Cheap, additive, and it changes nothing about what you send. When a response comes back failed,
-match the error against the registry before handing it on:
-
-```ts
-import { tryGetEntrypoint, resolveByName } from "@ouronet/talos-registry";
-// "Module ouronet-ns.SWP has no such member: URD_OwnedSwapPairs"
-//   -> registry has no such key
-//   -> resolveByName("URD_OwnedSwapPairs") -> did you mean URH_OwnedSwapPairs?
-```
-
-The consumer still gets its failure. It gets a *named* one, once, instead of a blank panel and an
-afternoon.
-
-**This is a diagnostic, not a rewrite. Do not silently correct the call** — see §4.
-
-### B. Report the surface you are compiled against
-
-One line in `health`. Two consumers on different `surfaceHash`es are composing different contract
-surfaces, and right now nothing in the system would say so. You are where that is observable for
-everyone at once.
-
----
-
-## 4. The argument against, which you should weigh seriously
-
-**A transport that knows about contracts is no longer a transport.**
-
-OuronetUI's `staleNames.ts` rewrites 52 names on the way out. It is explicitly a shim, and its own
-header says so: *"THIS IS A SHIM AND SHOULD DIE."* It exists because the consumers could not be
-fixed in time, and its cost is exactly what this document opens with — **the Codex cannot tell
-that nineteen of its names are broken, because something else is quietly fixing them.** A shim
-that works is a shim that hides the thing it patches.
-
-If you take that same rewriting into Pythia you would make it worse, not better: now *every*
-consumer's staleness is hidden, from every host, and the incentive to fix a name drops to zero.
-
-So: **diagnose, never rewrite.** Say the name is dead. Do not make it live. The difference between
-those two is the difference between a transport that helps and one that becomes load-bearing for
-other people's bugs.
-
-If you conclude Pythia should stay a dumb pipe and take no dependency at all, **that is a
-defensible answer** and I would rather you reach it deliberately than adopt a package because it
-arrived in the same message as someone else's migration.
-
----
-
-## 5. If you do adopt it
-
-- `npm i @ouronet/talos-registry` — direct, not through `ouronet-core` (nothing re-exports it;
-  core's dependency is a devDependency used by one test and never ships)
-- it does **not** sign, submit, or hold keys — it renders strings and answers questions about the
-  surface. Your transport and your key handling stay entirely yours
-- 66 kB, one bundled JSON snapshot, no network at runtime, no peer dependencies
-- pin `^1.1.0` and surface the version; the version moves when the *data* moves, not only the API
-
-## 6. One thing that is genuinely yours
-
-Four of the Codex's dead names are **your own contract's**:
+`apps/pythia/src/connectors/auth/dualLinkCache.ts` called
 
 ```
-PYTHIA|INFO_DeployApiKey          -> INFO_PYTHIA|DeployApiKey
-PYTHIA|INFO_LinkDualApiKey        -> INFO_PYTHIA|Link
-PYTHIA|INFO_UnlinkDualApiKey      -> INFO_PYTHIA|RevokeLink
-PYTHIA|INFO_UpdateDualConsumerLane-> INFO_PYTHIA|UpdateDualConsumerLane
+(ouronet-ns.PYTHIA.URD_ListActiveDualLinks)
 ```
 
-Note the middle two: the operation was renamed, not just the prefix, so a consumer doing the
-mechanical `CATEGORY|INFO_x → INFO_CATEGORY|x` flip fixes two of these four and silently leaves
-the other two broken. That happened — it is why `Link` and `RevokeLink` went unshimmed for weeks
-while their two neighbours were fixed.
+Asked of mainnet: **`Module ouronet-ns.PYTHIA has no such member`.** The deployed name is
+`URH_ListActiveDualLinks`, and it returns **6 rows** today.
 
-Whatever you decide about the dependency, **that is worth knowing about your own surface**: the
-PYTHIA previews a consumer is most likely to call are the two hardest to rename correctly.
+What that costs is written in the file's own docstring, because **this is the second time**:
+
+> *NOTE (v3.0.2): this previously called `UR_ActiveDualLinkSet`, which does NOT exist on the
+> deployed `ouronet-ns.PYTHIA` module — the read failed on every poll, the fail-closed cache
+> stayed empty, and so EVERY consumer's account read as inactive (all `/verify` → `202 pending`,
+> no `x-pythia-key` ever minted, fleet-wide). Repointed to `URD_ListActiveDualLinks` — the live
+> function the landing page already uses.*
+
+**The v3.0.2 fix swapped one non-existent name for another** and reproduced the outage it was
+written to end. Same empty fail-closed cache, same fleet-wide `202 pending`, same silence.
+
+**Fixed** (`URD_` → `URH_`), tests pass, tsc clean, and the docstring now records both rounds.
+
+### Why it happened twice, and why a third repoint is not the fix
+
+A Pact call naming a function that does not exist is a **resolution error**. `try` cannot catch
+it. Nothing throws at the call site. A fail-closed cache then turns it into *"nobody is
+authorised"* rather than *"this read is broken"* — which looks exactly like a quiet day.
+
+The author was careful. They wrote the incident up, named the failure mode precisely, and chose a
+replacement they believed was live. **Care was not the missing ingredient. A source of truth was.**
+`tryGetEntrypoint("PYTHIA.URD_ListActiveDualLinks")` returns `undefined`, and
+`resolveByName("ListActiveDualLinks")` offers `URH_`. At build time. Both times.
+
+---
+
+## 2. Your Pact surface
+
+Five names in your own source, four fine:
+
+| name | status |
+|---|---|
+| `PYTHIA.URH_ListActiveDualLinks` | **was `URD_` — fixed** |
+| `PYTHIA.UR_Counterpart` | resolves |
+| `PYTHIA.UR_Public` | resolves |
+| `PYTHIA.UR_PythLedgerEpochStart` | resolves (`2026-08-01T00:00:00Z`) |
+| `TS01-C4.PYTHIA\|A_RevokeLink` | resolves |
+
+Across the constructor repo including vendored code there are 32, overlapping heavily with the
+Codex's — so expect the same rot when you audit: `INFO-ZERO.DALOS-INFO|URC_*` moved to
+`INFO-ONE.INFO_DALOS|*`, `…StoaChain` dropped to `…Stoa`, and the whole `DPL-UR` family was
+retired into the per-app AppReads modules.
+
+### Four of the Codex's dead names are your own contract
+
+```
+PYTHIA|INFO_DeployApiKey           -> INFO_PYTHIA|DeployApiKey
+PYTHIA|INFO_LinkDualApiKey         -> INFO_PYTHIA|Link
+PYTHIA|INFO_UnlinkDualApiKey       -> INFO_PYTHIA|RevokeLink
+PYTHIA|INFO_UpdateDualConsumerLane -> INFO_PYTHIA|UpdateDualConsumerLane
+```
+
+Note the middle two: the **operation** was renamed, not just the prefix. A consumer doing the
+mechanical `CATEGORY|INFO_x → INFO_CATEGORY|x` flip fixes two of four and silently leaves two
+broken — which is exactly what happened, for weeks. **The residue of a mechanical rename is the
+entries its key could not express**, and here that residue is in your surface.
+
+---
+
+## 3. Migration
+
+1. **`npm i @ouronet/talos-registry`** — direct, not through `ouronet-core`. Nothing re-exports
+   it; core's dependency is a devDependency used by one test and never ships.
+2. **Inventory your own source, not just a published dist.** That distinction is what made the
+   first draft of this document wrong. Also check for namespace **aliases** —
+   `const NS = KADENA_NAMESPACE`, `import { KADENA_NAMESPACE as NS }`, a value passed as a prop.
+   And strip comment-only lines, or you will chase prose mentions.
+3. **Check every name** with `tryGetEntrypoint` / `resolveByName`.
+4. **Replace the string builders with `buildCall` / `buildPreviewCall`.** Delete argument-order
+   constants — they go stale without saying so.
+5. **Add a startup assertion for the reads the automaton depends on.** You are fail-closed, which
+   means a dead read is indistinguishable from an empty world. One check at boot — *does every
+   name I will call exist?* — converts a silent fleet-wide outage into a loud startup failure.
+   For an auth cache that is worth more than the migration itself.
+6. **Report `surfaceHash` and the package version in `health`.** Two daimons on different
+   surfaces are composing different contracts, and right now nothing in the fleet would say so.
+
+### One thing to resist
+
+You are the chokepoint — all daimon traffic routes through you — so it is tempting to add a
+rewriting shim and fix everyone's stale names at the transport. **Don't.**
+
+OuronetUI does exactly that in `staleNames.ts`, and its own header says *"THIS IS A SHIM AND
+SHOULD DIE."* It is why the Codex cannot tell that nineteen of its names are broken: something
+else is quietly correcting them. A shim that works is a shim that hides what it patches. Moving
+that into Pythia would hide every consumer's staleness from every host and drop the incentive to
+fix a name to zero.
+
+**Diagnose, never rewrite.** Naming a dead symbol in an error response is a real service. Making
+it live for someone else is how you become load-bearing for their bugs.
+
+---
+
+## 4. Definition of done
+
+- zero `ouronet-ns.` literals in your source
+- a boot-time existence check over every entrypoint the automaton and connectors use
+- `surfaceHash` + version in `health`
+- a test that walks every key through `tryGetEntrypoint`, so the next rename fails your suite
+  rather than your fleet's authentication

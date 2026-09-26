@@ -7,15 +7,17 @@ install. Read §1 and §2 before touching code; §5 is the migration.
 > agents' briefs are not the same advice** — which is why they are split rather than one document
 > pointed at twice:
 >
-> | | Pact names in `dist/` | dead on mainnet | brief |
-> |---|---:|---:|---|
-> | Codex | 34 | **19** | [`HANDOFF-talos-registry-CODEX.md`](HANDOFF-talos-registry-CODEX.md) — migrate |
-> | Pythia | **0** | — | [`HANDOFF-talos-registry-PYTHIA.md`](HANDOFF-talos-registry-PYTHIA.md) — probably don't |
+> | | brief |
+> |---|---|
+> | Codex | [`HANDOFF-talos-registry-CODEX.md`](HANDOFF-talos-registry-CODEX.md) — 34 names, **19 dead** |
+> | Pythia | [`HANDOFF-talos-registry-PYTHIA.md`](HANDOFF-talos-registry-PYTHIA.md) — one dead read was breaking auth **fleet-wide** |
 >
-> The Codex **composes** calls and nineteen of its names are broken. Pythia **carries** them and
-> has none to migrate. Sending Pythia the migration brief would have it hunting for call strings
-> that do not exist — so its file argues the opposite case and says plainly that taking no
-> dependency is a defensible answer.
+> **Both migrate.** An earlier version of this table said Pythia had zero Pact names and probably
+> needed no dependency. That was measured from the published `pythia-client` `dist/` — a thin
+> transport client — and stated as a fact about Pythia. Its constructor repo has 32, and one of
+> them, in the keyless-auth cache, was returning `has no such member` on every poll: fail-closed,
+> so every account read as inactive and no `x-pythia-key` was ever minted. **The same class of
+> error this package removes — a scope narrower than the claim — produced the advice.**
 
 ---
 
