@@ -382,10 +382,19 @@ def outside():
     reporting 776/776 DONE, that silence is the difference between "the sweep is finished" and
     "the sweep is finished for the part we measured".
 
-    So: count what is excluded. This is NOT a worklist and nothing here is a defect -- whether the
-    canon reaches citizen modules is an owner ruling that has not been made. The point is that the
-    number is printed, so a scope decision starts from a measurement, and a new citizen entrypoint
-    cannot quietly widen a gap nobody is looking at.
+    So: count what is excluded. This is NOT a worklist and nothing here is a defect.
+
+    OWNER RULING, 2026-09-26: the canon DOES NOT REACH CITIZEN MODULES -- "citizen modules are free
+    to construct functions as they please." The sovereign-only scope was therefore right all along;
+    what was wrong is that no file said so, while CLAUDE.md called this tool "ground truth for what
+    remains" with no scope at all. The count below is a FACT ABOUT THE BOUNDARY, not a backlog: it
+    is printed so nobody re-derives the question, and so a citizen-shaped entrypoint appearing in a
+    SOVEREIGN file still stands out.
+
+    The corollary is the part a consumer needs: if a citizen `C_` may take any parameter list, then
+    nothing about its shape follows from the canon, and the REGISTRY is the only authority on how
+    to call one. That is why 99_TS02-CPAD.pact -- the citizen Talos -- carries all 7 of its
+    entrypoints in Deploy/OURONET-REGISTRY.json.
 
     Note the shape of the thing this guards against: this tool exists BECAUSE _bandplan's
     entrypoint filter was blind to every Talos function and reported 89 against an actual 482. A
@@ -409,9 +418,10 @@ def outside():
                 conforming += 1
     if not total:
         return
-    print(f"\nOUT OF SCOPE -- 2_CITIZEN is not globbed by this tool: {total} A_/C_ entrypoints, "
-          f"{conforming} already (patron, executor)")
-    print("   not a worklist: whether the canon reaches citizen modules is an unmade ruling.")
+    print(f"\nOUT OF SCOPE by owner ruling (2026-09-26) -- citizen modules are free to construct "
+          f"functions as they please: {total} A_/C_ entrypoints in 2_CITIZEN, "
+          f"{conforming} of them (patron, executor) anyway")
+    print("   NOT a backlog. Printed so the boundary is a stated fact rather than an inference.")
     for f, k in per.most_common(6):
         print(f"   {f:26s} {k}")
 

@@ -196,11 +196,19 @@ sweep. `2_CITIZEN` holds **136 `A_`/`C_` entrypoints, of which 2 are `(patron, e
 successor tool blind to the citizen Talos is `_bandplan`'s error repeated against a different
 directory.
 
-**Whether the canon reaches citizen modules is an UNMADE RULING** — neither the handoff nor
-`StoicSyntax-Prefixes.md` §2.2 scopes them in or out, and the 46-module worklist is sovereign
-without saying it is. Nothing above is a defect list. `_executorplan.py` now prints the excluded
-count as an explicit `OUT OF SCOPE` line, so the scope decision starts from a measurement and a
-137th citizen entrypoint cannot quietly widen a gap nobody is looking at.
+**OWNER RULING, 2026-09-26: the canon does NOT reach citizen modules** — *"citizen modules are
+free to construct functions as they please."* So the sovereign-only scope was right all along;
+what was wrong is that **no file said so**, while this paragraph called the tool "ground truth for
+what remains" without one. `_executorplan.py` now prints the excluded count as an `OUT OF SCOPE`
+line naming the ruling — a stated boundary, **not a backlog**.
+
+**The corollary is what a consumer needs.** If a citizen `C_` may take any parameter list, nothing
+about its shape follows from the canon, so the **registry is the only authority on how to call
+one**. That is why `2_CITIZEN/7_Launchpad/99_TS02-CPAD.pact` — the citizen Talos — carries all 7
+of its entrypoints in `Deploy/OURONET-REGISTRY.json`, and why six citizen `INFO_` readers
+(`DEMIPAD-SPARK`, `DEMIPAD-SNAKES`, `DEMIPAD-CUSTODIANS`, `DEMIPAD-STOICPAY`, `STOAICO`) appear
+there as previews. The rest of the citizen tree exposes **reads**, which a client-entrypoint
+registry does not index.
 
 ## Repository layout
 

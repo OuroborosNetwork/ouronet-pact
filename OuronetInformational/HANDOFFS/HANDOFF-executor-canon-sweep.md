@@ -22,11 +22,15 @@ CLAUDE.md meanwhile called the tool "ground truth for what remains" with no scop
 `01_NOSFERATU`, 18 in `02_KBunnies`, 16 in `04_AQP-BOOT`, 10 in `03_DSP+`, and **7 in
 `99_TS02-CPAD.pact`, the citizen Talos and the only gas-funded path for the launchpad sales.**
 
-**This is not a worklist.** Whether the canon reaches citizen modules is a ruling nobody has made:
-§2.2 does not scope them in or out. Citizen modules call only sovereign public APIs, so the
-argument for sweeping them is consistency rather than correctness — but the citizen *Talos* is a
-client-facing gas boundary, which is the one place that argument gets stronger. `_executorplan.py`
-now prints the excluded count as an `OUT OF SCOPE` line, so the decision starts from a measurement.
+**RULED 2026-09-26: the canon does not reach them.** The owner's words: *"citizen modules are free
+to construct functions as they please."* The sweep's sovereign scope was correct; the defect was
+only that no file stated it. `_executorplan.py` prints the excluded count as an `OUT OF SCOPE` line
+naming the ruling — a boundary, not a backlog.
+
+**The corollary matters more than the ruling.** If a citizen `C_` may take any parameter list then
+nothing about its shape can be inferred from the canon, and a consumer must read the **registry**.
+That is why `99_TS02-CPAD.pact` — the citizen Talos — is in `Deploy/OURONET-REGISTRY.json` with all
+7 of its entrypoints, and why six citizen `INFO_` readers appear there as previews.
 
 Note what this is an instance of. This tool exists because `_bandplan`'s filter was blind to every
 Talos function; a successor blind to the *citizen* Talos is the same error against a different
