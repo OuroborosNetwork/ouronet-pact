@@ -519,6 +519,14 @@ def main():
     if _reg.returncode != 0:
         print(_reg.stdout + _reg.stderr)
         sys.exit("GATE FAILED: Deploy/OURONET-REGISTRY.json is absent or inconsistent.")
+    # SURFACE THE ONE LINE THE OFFLINE CHECK CANNOT PROVE. Everything else this step reports is
+    # internal consistency, and the gate swallows a clean run's output by design. But "when was
+    # this snapshot last confirmed against mainnet" is the only fact here the gate cannot verify,
+    # and it is most relevant exactly when everything else passes -- a stale snapshot satisfies
+    # every offline check. Printed on SUCCESS, or it would never be read.
+    for _l in _reg.stdout.splitlines():
+        if "confirmed against mainnet" in _l:
+            print(f"  {_l.strip()}")
 
     # IS THE CONSUMER PACKAGE STILL CARRYING THIS REGISTRY? The @ouronet/talos-registry
     # package bundles a snapshot, so a regeneration here silently leaves consumers validating

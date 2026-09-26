@@ -1,0 +1,19 @@
+{
+ "moduleHashes": {
+  "ATS": "tP_9KQEBfa0LXogWMgtiGEVCtSepf5JvDhcDIa5K5F4",
+  "SWPLC": "UrpNTeCvu3iR8m-H_xcLgbu3wBDUujwd4-aN4ofYTnE",
+  "TS01-C1": "lJ4KC_Kd6U3Z0npl2dgL1I0f_Tk2LwScbiWbek7XJ0w",
+  "TS01-C2": "P8QhJ5YqeeW59DobDppv3no7YTclxsccxkVBtSl5ylo",
+  "TS01-C3": "R9wk3kd8IvCYvcrI8ouZFB8Z-KLqcoJND9arHIM9egQ",
+  "TS01-C4": "p3nTyQdGypJmCMUvv-c1WEQH16haAcOdH-stE0HAyIw",
+  "TS01-CP": "Zs8-rMtVbMr5bdSrAQyEYkDPHAlLQFg8BMh8e9QxxTs",
+  "TS02-C1": "0cu6G7nPCnerl9A-585XViL3YGiUfElCr6Y5kUGQKzE",
+  "TS02-C2": "Mqi49RwMD1hmiCHvHxD-w4QBiSXYGyKywMcD3cBakS4",
+  "TS02-C3": "8dg0gE7Eh9ANAMrhIhIxpIEPfPw66CHomRugKCWdOaI",
+  "TS02-CPAD": "DvLbtKVBl02gLcsLCq4NQKlnqGZdGRCTH7Fg3S6UIK8",
+  "TS02-DPAD": "dLztzfE3wr8Rv2uTgBd8LOJx7OVW79Rr0LO7UvPKQ1c"
+ },
+ "note": "WHEN the registry snapshot was last confirmed against mainnet, by REPL/tools/_registrylive.py. Written only on a clean run. The offline gate prints this date; it cannot verify it.",
+ "surfaceHash": "67c0979111eb156b",
+ "verifiedAt": "2026-09-26"
+}

@@ -1180,6 +1180,32 @@ def main():
             modes[v["execution"]["mode"]] = modes.get(v["execution"]["mode"], 0) + 1
         print("registry: execution -- " + ", ".join(
             f"{n} {m}" for m, n in sorted(modes.items(), key=lambda kv: -kv[1])))
+        # WHEN THE SNAPSHOT WAS LAST CONFIRMED AGAINST THE CHAIN -- a date, not a verdict.
+        #
+        # Everything above is INTERNAL consistency: the file agrees with itself. What it cannot
+        # tell you is whether the modules it was read from have since been redeployed, and both
+        # existing guards on this artefact (_pkgsync.py here, sync-registry.mjs in the package)
+        # compare it to a COPY of itself rather than to the chain. So a stale snapshot passes
+        # every check while OuronetUI's 409 execution specs, ouronet-core's builder-arity test
+        # and every ghost value agree with each other about the wrong surface.
+        #
+        # `_registrylive.py` asks the chain -- one describe-module per module, and a Pact module
+        # hash changes on any redeploy, so twelve calls is a complete answer. It needs the
+        # network, which this check deliberately does not, so all that can be printed here is the
+        # date of its last clean run. An absent sidecar is a note, not a failure: the tool is
+        # newer than the artefact and a missing date is not evidence of drift.
+        live = os.path.join(ROOT, "Deploy", "OURONET-REGISTRY.livecheck.json")
+        if os.path.exists(live):
+            rec = json.load(io.open(live, encoding="utf8"))
+            same = rec.get("surfaceHash") == doc["surfaceHash"]
+            print(f"registry: last confirmed against mainnet {rec.get('verifiedAt')} "
+                  f"({len(rec.get('moduleHashes', {}))} module hashes"
+                  + ("" if same else f", but for surface {rec.get('surfaceHash')} -- the artefact "
+                                     f"has been regenerated since; rerun _registrylive.py")
+                  + ")")
+        else:
+            print("registry: never confirmed against mainnet -- run "
+                  "`python3 REPL/tools/_registrylive.py --record`")
         print(f"registry: clean -- {len(doc['entrypoints'])} entrypoints, "
               f"{len(doc['previews'])} previews, surface {doc['surfaceHash']} "
               f"({doc['generatedFrom']})")

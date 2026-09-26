@@ -113,6 +113,20 @@ and `IGNIS-DETER-WORKSHEET.md` are regenerated and diffed by `REPL/tools/_prices
 fatal inside `_gate.py`. Edit the **generator**, never the artefact; `--write` to refresh both.
 The sibling check for `ARCHITECTURE/*.md` is `_figuresync.py`.
 
+**One artefact is deliberately NOT gate-enforced, and the reason is the gate's own rule.**
+`Deploy/OURONET-REGISTRY.json` is generated from the CHAIN, but both guards on it —
+`_pkgsync.py` here and `sync-registry.mjs` in `@ouronet/talos-registry` — compare it to a **copy
+of itself**, not to the chain. So after a deploy the artefact stays as generated, both report "in
+sync", and everything derived from it agrees with itself about the **old** surface: OuronetUI's
+409 execution specs, `ouronet-core`'s builder-arity test, every ghost value.
+
+`REPL/tools/_registrylive.py` closes that by asking the chain — one `describe-module` per module,
+and a Pact module hash changes on any redeploy, so **twelve calls is a complete answer rather than
+a sample**. It cannot join the gate because the gate must run offline. Instead it records a
+sidecar, and `_registry.py --check` prints **when the snapshot was last confirmed against
+mainnet** — a date, not a verdict, and it says so when the artefact has been regenerated since.
+**Run `python3 REPL/tools/_registrylive.py --record` after any deploy.**
+
 **`Deploy/` is gate-enforced too, since 2026-09-19.** `Deploy/` is GENERATED from the sovereign
 sources by `REPL/tools/_deploybundle.py`, and until that date nothing checked it had been
 regenerated after a source change — it was the ONE generated artefact the gate did not diff, purely
