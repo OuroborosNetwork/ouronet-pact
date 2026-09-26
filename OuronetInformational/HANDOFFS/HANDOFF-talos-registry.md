@@ -186,6 +186,7 @@ wrong answers, which is the failure this package exists to remove.
 
 | | |
 |---|---|
+| **published** | **`@ouronet/talos-registry@1.1.0` on npmjs.org, public, 2026-09-26** |
 | version | `1.1.0` |
 | surface | `7e59e59d4c5b7257` |
 | entrypoints | 423 (+428 previews) |
@@ -193,6 +194,16 @@ wrong answers, which is the failure this package exists to remove.
 | tests | 461 |
 | package size | 66 kB (1.6 MB unpacked — the snapshot) |
 
-Consumers today: **OuronetUI** (direct dependency; drives 409 execution tooltips) and
+Consumers today: **OuronetUI** (direct dependency, `^1.1.0`; drives 409 execution tooltips) and
 **`ouronet-core`** (devDependency; one test checks all 39 of its Pact builders against the
 declared arities — it found six wrong).
+
+Verified from a clean room, not from the build tree: installed from the registry into an empty
+directory, imported, and `buildCall` rendered a correct `DPTF|C_Transfer`.
+
+> **Installing into OuronetUI needs a workaround, and it is not this package's fault.** That repo
+> carries `overrides: { vite: { rollup: "npm:@rollup/wasm-node" } }`, which npm 9 and npm 10 both
+> reject with `Invalid comparator` — so **no** `npm install` succeeds there, with or without this
+> dependency. It failed the same way before this package existed. The installed tree was
+> populated by copying the registry-installed copy in. Worth fixing separately: until it is,
+> `npm ci` cannot reproduce that lockfile.
