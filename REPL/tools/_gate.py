@@ -520,6 +520,14 @@ def main():
         print(_reg.stdout + _reg.stderr)
         sys.exit("GATE FAILED: Deploy/OURONET-REGISTRY.json is absent or inconsistent.")
 
+    # IS THE CONSUMER PACKAGE STILL CARRYING THIS REGISTRY? The @ouronet/talos-registry
+    # package bundles a snapshot, so a regeneration here silently leaves consumers validating
+    # against a surface that no longer exists. Non-fatal by design: the package lives in a
+    # separate repo that may not be checked out, and this gate must not depend on that.
+    _ps = subprocess.run([sys.executable, "tools/_pkgsync.py", "--check"],
+                         capture_output=True, text=True)
+    print((_ps.stdout + _ps.stderr).strip())
+
     # AUTHORISATION SURFACE -- the only check here that speaks to authorisation directly. For every
     # C_/A_ entrypoint it records which accounts' ownership is enforced ANYWHERE in its call tree,
     # and requires that set to only ever GROW. Built 2026-09-20 ahead of the patron/executor
