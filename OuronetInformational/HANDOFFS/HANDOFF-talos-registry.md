@@ -3,6 +3,20 @@
 **What to do with this document:** it replaces hardcoded Pact call strings with a package you
 install. Read §1 and §2 before touching code; §5 is the migration.
 
+> **THIS IS THE SHARED REFERENCE. Your agent-specific brief is a different file, and the two
+> agents' briefs are not the same advice** — which is why they are split rather than one document
+> pointed at twice:
+>
+> | | Pact names in `dist/` | dead on mainnet | brief |
+> |---|---:|---:|---|
+> | Codex | 34 | **19** | [`HANDOFF-talos-registry-CODEX.md`](HANDOFF-talos-registry-CODEX.md) — migrate |
+> | Pythia | **0** | — | [`HANDOFF-talos-registry-PYTHIA.md`](HANDOFF-talos-registry-PYTHIA.md) — probably don't |
+>
+> The Codex **composes** calls and nineteen of its names are broken. Pythia **carries** them and
+> has none to migrate. Sending Pythia the migration brief would have it hunting for call strings
+> that do not exist — so its file argues the opposite case and says plainly that taking no
+> dependency is a defensible answer.
+
 ---
 
 ## 0. The one-paragraph version
