@@ -153,12 +153,19 @@ contracts deployed  ->  regenerate registry  ->  bump + publish talos-registry
 
 Codex is not in that chain at all. It is in the chain only when **its own code** changes.
 
-### One thing to decide deliberately
+### Use `^1.1.0`, not `>=1.1.0` — deliberately breaking the house style
 
-Their existing convention is `>=`, which also accepts a future **major**. For a registry a major
-means *the contract surface changed incompatibly* — exactly the release you would not want
-arriving unannounced. `>=1.1.0` matches the house style; `^1.1.0` is the safer read. Pick one on
-purpose rather than by copying the line above.
+The existing peers are written `>=4.6.0`. Copy the shape, not the operator, and here is why in
+one sentence: **`>=` accepts a future MAJOR, and a major of this package means the contract
+surface changed incompatibly.**
+
+That is not hypothetical in this tree. `@ouronet/ouronet-core` is pinned `>=4.6.0` by Codex, and
+it has just gone **5.0.0** — a breaking release, six transaction builders with a new required
+argument. A `>=4.6.0` range accepts it silently.
+
+`^1.1.0` means "any 1.x, automatically" — every data refresh, every added ghost, every new
+entrypoint, with no action from anyone. A `2.0.0` then needs one deliberate line change, which is
+the moment a human should look. That is the entire difference, and it is the behaviour you want.
 
 Note what a surface change does NOT break: your code never names a parameter order, so a renamed
 parameter surfaces as `buildCall` throwing on an unknown key — loudly, at the call — rather than

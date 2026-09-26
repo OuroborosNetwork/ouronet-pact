@@ -93,7 +93,7 @@ When a contract moves, you bump the package. Nothing in your source names a func
    "peerDependencies": {
      "@ouronet/ouronet-core":   ">=4.6.0",
      "@ouronet/dalos-crypto":   ">=4.4.0",
-     "@ouronet/talos-registry": ">=1.1.0"     // <- add this line
+     "@ouronet/talos-registry": "^1.1.0"      // <- add this line (caret, NOT >=)
    }
    ```
 

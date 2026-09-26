@@ -85,7 +85,7 @@ entries its key could not express**, and here that residue is in your surface.
 
 ## 3. Migration
 
-1. **`npm i @ouronet/talos-registry`** — a plain `dependency`, because you are a **deployed
+1. **`npm i @ouronet/talos-registry`** — a plain `dependency` at `^1.1.0`, because you are a **deployed
    service**, not a library someone composes. You own your tree and your version; picking up a
    newer registry is your next install and deploy, and it shows up as a new organ in that deploy.
 
