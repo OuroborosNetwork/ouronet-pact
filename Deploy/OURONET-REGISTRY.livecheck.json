@@ -14,6 +14,6 @@
   "TS02-DPAD": "dLztzfE3wr8Rv2uTgBd8LOJx7OVW79Rr0LO7UvPKQ1c"
  },
  "note": "WHEN the registry snapshot was last confirmed against mainnet, by REPL/tools/_registrylive.py. Written only on a clean run. The offline gate prints this date; it cannot verify it.",
- "surfaceHash": "67c0979111eb156b",
+ "surfaceHash": "7e59e59d4c5b7257",
  "verifiedAt": "2026-09-26"
 }

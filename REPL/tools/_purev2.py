@@ -77,6 +77,20 @@ FROZEN = {
                       "core file",
     "04_deploy.pact": "executed on mainnet 2026-09-24 (OUiThreeV1 + O-UI-THREE first deploy); "
                       "superseded for the recovery reads by 12_deploy.pact",
+
+    # NOT A MODULE DEPLOY AT ALL, which is a third category this registry did not have. 21 is a
+    # one-shot ADMINISTRATIVE transaction: `acquire-module-admin` plus a single `insert` that
+    # writes DEMIPAD-STOICPAY's `KPAY|T|Properties` row -- the sale's own asset-id, which the
+    # module declares a table for and has no function to write. There is no source to regenerate
+    # it from, so "stale" is not a state it can be in.
+    #
+    # Listed here rather than exempted by a filename pattern, for the reason the docstring gives
+    # about FROZEN: a file silently out of scope is indistinguishable from one that was
+    # forgotten. The gate found this within minutes of the file being written, which is the
+    # behaviour worth keeping.
+    "21_deploy.pact": "not a module deploy -- a one-shot admin tx (acquire-module-admin + one "
+                      "insert) writing DEMIPAD-STOICPAY's KPAY|T|Properties row; nothing to "
+                      "generate it from",
 }
 
 
