@@ -109,6 +109,61 @@ live from `node_modules/<pkg>/package.json` so it cannot lie about what is insta
 
 ---
 
+## 2b. How to depend on it — and no, you should not embed it
+
+**The question worth answering first: can a consumer get a newer registry without the package
+that uses it being republished?** Yes, and the mechanism is already in use here.
+
+| you are | declare it as | who owns the version | republish needed when the registry moves? |
+|---|---|---|---|
+| a **library** others compose (Codex) | `peerDependencies` | the consuming app | **no** |
+| an **app / service** you deploy (Pythia, OuronetUI) | `dependencies` | you | no — your next install/deploy |
+
+**Codex already does this**, for exactly this class of package:
+
+```json
+"peerDependencies": {
+  "@ouronet/ouronet-core":  ">=4.6.0",
+  "@ouronet/dalos-crypto":  ">=4.4.0",
+  "@stoachain/stoa-core":   ">=4.4.0"
+}
+```
+
+Add `"@ouronet/talos-registry": ">=1.1.0"` beside them and you are done. The consuming app
+installs it, Codex uses whatever is in the tree, and **a registry data update reaches every
+consumer without Codex publishing anything.**
+
+### Why peer, and not bundled or embedded
+
+- **Embedding means a manual chore on every contract change** — regenerate, bundle, bump, publish,
+  and every consumer bumps again. Two publishes and a fan-out for something that is data.
+- **Bundling forks the truth.** A library with its own copy and an app with another can hold two
+  different `surfaceHash`es in one process. The registry's whole value is being *the* answer to
+  "what is callable"; two answers is worse than none.
+- **Peer keeps exactly one copy**, and the version the app installs is the version everything in
+  that app composes — which is also what makes showing it in settings meaningful rather than
+  decorative.
+
+### The cadence this gives you
+
+```
+contracts deployed  ->  regenerate registry  ->  bump + publish talos-registry
+                                              ->  apps pick it up on their next install
+```
+
+Codex is not in that chain at all. It is in the chain only when **its own code** changes.
+
+### One thing to decide deliberately
+
+Their existing convention is `>=`, which also accepts a future **major**. For a registry a major
+means *the contract surface changed incompatibly* — exactly the release you would not want
+arriving unannounced. `>=1.1.0` matches the house style; `^1.1.0` is the safer read. Pick one on
+purpose rather than by copying the line above.
+
+Note what a surface change does NOT break: your code never names a parameter order, so a renamed
+parameter surfaces as `buildCall` throwing on an unknown key — loudly, at the call — rather than
+as a wrong argument in a right-looking call.
+
 ## 3. API
 
 ```ts

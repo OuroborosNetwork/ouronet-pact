@@ -85,8 +85,16 @@ entries its key could not express**, and here that residue is in your surface.
 
 ## 3. Migration
 
-1. **`npm i @ouronet/talos-registry`** — direct, not through `ouronet-core`. Nothing re-exports
-   it; core's dependency is a devDependency used by one test and never ships.
+1. **`npm i @ouronet/talos-registry`** — a plain `dependency`, because you are a **deployed
+   service**, not a library someone composes. You own your tree and your version; picking up a
+   newer registry is your next install and deploy, and it shows up as a new organ in that deploy.
+
+   (Codex gets the opposite advice — `peerDependency` — for the opposite reason: it is composed
+   *by* an app, so the app should own the version and there should be exactly one copy. Same
+   package, different declaration, and both follow from what the thing is.)
+
+   Not through `ouronet-core`: nothing re-exports it, and core's own dependency is a
+   devDependency used by one test that never ships.
 2. **Inventory your own source, not just a published dist.** That distinction is what made the
    first draft of this document wrong. Also check for namespace **aliases** —
    `const NS = KADENA_NAMESPACE`, `import { KADENA_NAMESPACE as NS }`, a value passed as a prop.

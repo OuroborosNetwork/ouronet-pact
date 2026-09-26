@@ -86,9 +86,28 @@ When a contract moves, you bump the package. Nothing in your source names a func
 
 ## 3. Migration
 
-1. **`npm i @ouronet/talos-registry`** — a direct dependency of *your* package, not through
-   `ouronet-core`. Nothing re-exports it; core's own dependency is a devDependency used by one
-   test and never ships. Yours is yours, and its version shows in your settings.
+1. **Declare it as a `peerDependency`, not a bundled or embedded copy.** You are a library other
+   apps compose, and you already do exactly this for this class of package:
+
+   ```json
+   "peerDependencies": {
+     "@ouronet/ouronet-core":   ">=4.6.0",
+     "@ouronet/dalos-crypto":   ">=4.4.0",
+     "@ouronet/talos-registry": ">=1.1.0"     // <- add this line
+   }
+   ```
+
+   **This is the answer to "do I have to embed and republish on every registry update?" — no.**
+   The consuming app installs it; you use what is in the tree; a registry data change reaches
+   every consumer **without Codex publishing anything**. You publish when *your code* changes,
+   which is what a version of Codex should mean.
+
+   Do not bundle it. A bundled copy plus the app's copy is two `surfaceHash`es in one process,
+   and a registry whose whole value is being *the* answer to "what is callable" must not have a
+   rival in the same tree.
+
+   Add it to `devDependencies` as well so your own build and tests resolve it — peers are not
+   installed for you.
 2. **Inventory.** `grep -rho 'ouronet-ns\.[A-Za-z0-9|_-]*\.[A-Za-z0-9|_-]*' dist/ | sort -u`.
    **Then check for namespace ALIASES** — `const NS = KADENA_NAMESPACE`,
    `import { KADENA_NAMESPACE as NS }`, a value passed as a JSX prop. A scan that knows only the
@@ -101,8 +120,19 @@ When a contract moves, you bump the package. Nothing in your source names a func
    `staleNames.ts` to rewrite, and the organ is genuinely standalone. Verify it: import your
    package into an empty directory and exercise it with no OuronetUI present. That is the test
    that would have caught all nineteen.
-6. **Show `surfaceHash` and the package version in settings**, so a mismatch with OuronetUI's is
-   visible before it is a bug report.
+6. **Show `surfaceHash` and the package version in Codex's settings.** Because it is a peer there
+   is exactly one copy in the app, so the version you display **is** the version the whole app
+   composes — that is what makes the readout meaningful rather than decorative. Read it the way
+   OuronetUI does, from the installed `package.json` at build time, so it cannot claim a version
+   that is not there:
+
+   ```ts
+   import { surfaceHash } from "@ouronet/talos-registry";
+   import { version } from "@ouronet/talos-registry/package.json";  // or your build's equivalent
+   ```
+
+   A Codex on one surface inside an app on another is a real state, and this is the only place it
+   becomes visible before it becomes a bug report.
 
 ### One trap that will bite you specifically
 
