@@ -56,6 +56,18 @@ parameters *as the contract declares them*, the arguments positionally against t
 Components: `ExecutionHint` (hover, portal, placement) wrapping `ExecutionTooltip` (render +
 preview read). Both driven by `@ouronet/talos-registry`, so there is no Pact string in either.
 
+**The reference implementation**, in the OuronetUI repo — read these rather than reconstructing
+from this document:
+
+| file | what it is |
+|---|---|
+| `src/components/cfm/ExecutionHint.tsx` | hover handling, body portal, viewport clamping, the setting gate |
+| `src/components/cfm/ExecutionTooltip.tsx` | the panel: entrypoint, parameters, arguments, live preview |
+| `src/hooks/useCodexBackedSetting.ts` | the two-copy persistence, with the merge and downgrade rules |
+| `src/lib/codex-bridge/CodexDataBridge.tsx` | hydrates the live copy from the codex once on load |
+| `src/routes/logged-in/app-settings.tsx` | the toggle itself, in the ZBOM tab |
+| `src/__tests__/prezbom-tooltip.test.ts` | the coverage guard described below |
+
 **The setting.** `Pre-ZBOM Tooltip`, **default ON**, in Settings → ZBOM. Off means off: no read
 fires and nothing renders.
 
@@ -94,6 +106,16 @@ on load; the hook writes both on change.
   passing an inline literal gets a new object every render; keying on identity re-fires the
   read, which sets state, which re-renders. The INFO panel refreshed forever on a ZBOM whose
   inputs were all fixed before it opened.
+
+- **A tooltip that flickers is usually a REMOUNT, not a hover bug.** Ours blinked out
+  mid-hover, and nothing about the tooltip was wrong: the button component was declared *inside*
+  another component's body, so every render created a new function identity — a new component
+  TYPE — and React unmounted and remounted the whole subtree, destroying the open state. The page
+  polls, so it happened constantly. Hoist any component to module scope and pass what it needs as
+  props. Two smaller hardenings alongside: use POINTER events (`onPointerEnter`/`Leave`), because
+  `onMouseLeave` fires when the cursor crosses onto a child in some engines and `pointerleave`
+  does not; and compute the position ONCE on enter, so the box grows downward from a fixed corner
+  as the preview loads rather than jumping when it arrives.
 
 ### Worth enforcing rather than remembering
 
