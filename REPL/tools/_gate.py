@@ -330,6 +330,18 @@ def main():
         print(_fs.stdout + _fs.stderr)
         sys.exit("GATE FAILED: an audit document quotes a figure the generated stats do not support.")
 
+    # CHAPTER FIGURES -- the published Integration chapter quotes the REGISTRY, which is
+    # regenerated from the chain. Fifteen of its numbers therefore have an expiry date nobody can
+    # see. Same treatment as the price sheet and the ARCHITECTURE figures: recompute and compare.
+    # It is written to be PUBLISHED, where a wrong number outlives anyone's memory of how it was
+    # obtained -- and the chapter's own front matter promises every figure was read, not
+    # remembered, which is a promise only a check can keep.
+    _cf = subprocess.run([sys.executable, "tools/_chapterfigures.py"],
+                         capture_output=True, text=True)
+    if _cf.returncode != 0:
+        print(_cf.stdout + _cf.stderr)
+        sys.exit("GATE FAILED: the Integration chapter quotes a figure the registry does not support.")
+
     # PRICE SYNC -- the GENERATED pricing artefacts must equal what their generators emit.
     # _figuresync guards ARCHITECTURE/*.md against the suite stats; it does not look at
     # IGNIS-PRICING/, and that is exactly where the worst rot was found on 2026-09-15: both
