@@ -131,6 +131,35 @@ whole button read: the sentinel was used as a table key.
 
 ---
 
+## 3a. Reader names have NO safety net — check them yourself
+
+The consumer registry (`@ouronet/talos-registry`) indexes the **transaction-callable surface**:
+423 entrypoints across the Talos modules, every one a `C_`/`CC_`/`Cp_`/`CCp_`. It contains
+**zero reader functions**.
+
+So it cannot help you here, and — this is the part worth internalising — it cannot even tell you
+that you are wrong. `tryGetEntrypoint("PYTHIA.URH_ListActiveDualLinks")` returns `undefined`
+exactly as the broken `URD_` spelling does. **The registry cannot distinguish a correct reader
+name from a dead one, because it holds neither.**
+
+That matters because a reader name that does not resolve is a RESOLUTION error: uncatchable,
+nothing throws at the call site, and a fail-closed consumer turns it into "nobody is authorised"
+rather than "this read is broken". The same reader name has taken a service down **three times**:
+
+1. a name that never existed — every consumer read as inactive, fleet-wide
+2. the *fix* for it — also not a member, reproducing the same outage
+3. the module was redeployed `URD_` → `URH_` between two dates, and panels silently read empty
+
+Care was never the missing ingredient; a source of truth was. The pattern that ended it:
+
+- **one inventory** of every reader name the service calls — no call site types a module or
+  function name, they ask for a key
+- **assert every one against the DEPLOYED module at boot**, and refuse to start if any is missing
+
+`describe-module` is enough to do this, and a Pact module hash changes on any redeploy, so the
+check is complete rather than a sample. If your client reads anything, build this before you
+build the reads.
+
 ## 4. Heavy reads
 
 A read that scans — `URH_`, `URHC_`, `URD_` — is a different animal from a point read:

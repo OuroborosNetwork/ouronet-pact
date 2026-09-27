@@ -74,6 +74,10 @@ def figures():
         "alias_paired":       sum(1 for v in eps.values() if v.get("previewVia")),
         "external_caps":      sum(1 for v in eps.values() if v.get("externalCaps")),
         "dpsf_dpnf":          fam.get("DPSF", 0) + fam.get("DPNF", 0),
+        # The chapter tells a client the registry holds NO readers, which is why reader names
+        # need their own existence check. If that ever stops being true the advice changes.
+        "readers_indexed":    sum(1 for k in eps if any(t in k for t in
+                                  ("|UR_", "|URC_", "|URH_", "|URD_", ".UR_", ".URC_"))),
     }
 
 
@@ -93,6 +97,7 @@ CLAIMS = [
     ("02-signing-and-caps.md", "404 requirements name an account",   "own_via_parameter",   404),
     ("02-signing-and-caps.md", "153 name one the contract",          "own_via_reader",      153),
     ("02-signing-and-caps.md", "Four launchpad purchases require",   "external_caps",       4),
+    ("05-reading-data.md", "It contains\n**zero reader functions**",     "readers_indexed",     0),
 ]
 
 
