@@ -15,5 +15,5 @@
  },
  "note": "WHEN the registry snapshot was last confirmed against mainnet, by REPL/tools/_registrylive.py. Written only on a clean run. The offline gate prints this date; it cannot verify it.",
  "surfaceHash": "7e59e59d4c5b7257",
- "verifiedAt": "2026-09-26"
+ "verifiedAt": "2026-09-27"
 }
