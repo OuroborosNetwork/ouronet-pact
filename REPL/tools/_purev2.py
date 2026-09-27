@@ -49,6 +49,8 @@ MANIFEST = {
     "19_deploy.pact": ["AppReads/Pythia/01_P-UI-ONE.pact"],
     "20_deploy.pact": [("../../1_SOVEREIGN/STAGE_01/Z_Reads/02_INFO-ONE+.pact",
                         "module-only")],
+    "22_deploy.pact": [("../../1_SOVEREIGN/STAGE_01/2_Core/08_ATS.pact",
+                        "module-only")],
 }
 
 # Hand-written files with no module source: init transactions, table repairs. They are not

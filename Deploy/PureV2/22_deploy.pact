@@ -1,0 +1,3166 @@
+;; =========================================================================================
+;; OURONET DEPLOY -- ROUND V2, file 22
+;; ATS (module upgrade) -- the BAR sentinel reached a table read, and two button flags
+;; ignored their own target lists
+;; =========================================================================================
+;; THREE FUNCTIONS CHANGED. Everything else in this module is byte-for-byte what is already
+;; live; the diff against the deployed source is confined to UCx_FilterHibernatedAts,
+;; UC_CanCoil and UC_CanConstrict. No schema, no table, no signature, no interface.
+;;
+;; ------------------------------------------------------------------------------------------
+;; DEFECT 1 -- A SENTINEL REACHED A TABLE READ, AND TOOK THE WHOLE READER DOWN
+;;
+;; `DPTF::UR_RewardToken` answers "this token is a reward token NOWHERE" with `[BAR]`, not
+;; with an empty list. `UCx_FilterHibernatedAts` passed every element straight to
+;; `UR_Hibernate`, so BAR was used as an ats-pair key:
+;;
+;;     No value found in table ouronet-ns.ATS_ATS|Pairs for key: |
+;;
+;; A failed table read is NOT catchable by `try`. So this did not degrade one field -- it
+;; killed every caller, including `O-UI-EIGHT::URC_07|Buttons`, the read the OuronetUI token
+;; toolbar is built from.
+;;
+;; MEASURED ON MAINNET 2026-09-27, not inferred. AURYN is a reward token on EliteAuryndex,
+;; whose cold RBT is ELITEAURYN, which is a reward token on no pair at all -- so the second
+;; hop returned the sentinel and both `UC_CanCurl` and `UC_CanBrumate` raised. One of the 15
+;; true fungibles held by the probing account. The UI answered a failed read by enabling
+;; EVERY button, which was harmless while those buttons did nothing and is not any more.
+;;
+;; ------------------------------------------------------------------------------------------
+;; DEFECT 2 -- TWO OF THE FOUR can-X FLAGS DID NOT FOLLOW THEIR OWN LIST
+;;
+;; The four button computers return a flag beside a target list. `UC_CanCurl` and
+;; `UC_CanBrumate` derive the flag FROM the list -- `(< 0 (length chains))` -- so flag true
+;; and list non-empty are the same statement. `UC_CanCoil` and `UC_CanConstrict` took the flag
+;; from `DPTF::URC_IzRT`, "is this a reward token", independently of whether any eligible pair
+;; existed.
+;;
+;; OURO measured `can-constrict: true` with `where-constrict: []`: a lit button with nowhere
+;; to act. OWNER RULING 2026-09-27 settled it as a defect -- "Constrict shouldnt light up for
+;; Ouro ... since constrict would mean the autostake pool into which it autostakes is in
+;; hibernated mode, which it isnt." Both now follow the list, so all four agree.
+;;
+;; This one was ALREADY KNOWN and deliberately recorded rather than fixed, because fixing it
+;; needs exactly this transaction: `REPL/modules/STAGE-Z.repl` <<STAGEZ-13>> pinned the
+;; divergence with a comment saying nothing else in the tree recorded it. Those assertions
+;; have flipped from proving the divergence exists to proving it is gone.
+;;
+;; ------------------------------------------------------------------------------------------
+;; WHY MODULE-ONLY
+;;
+;; `AutostakeV3` and `AutostakeComputerV2` are already deployed, and Pact refuses to deploy an
+;; interface name a second time -- byte-identical included. Round V1 lost two transactions to
+;; exactly that. No signature changed here, so the live interfaces still describe this module
+;; precisely and only the module body ships.
+;;
+;; ------------------------------------------------------------------------------------------
+;; VERIFICATION
+;;
+;; Gate green at 26,124 assertions. <<STAGEZ-13>> carries six assertions covering both defects
+;; and was negative-tested: reverting the two fixes turns it red with 10 failures.
+;;
+;; The sentinel guard is asserted on `UCx_FilterHibernatedAts` DIRECTLY, not through the button
+;; read. An end-to-end assertion was written first and PASSED WITH THE GUARD REMOVED -- this
+;; sandbox has no two-hop chain that dead-ends, so it exercised nothing at all. Called
+;; directly, the sentinel is the whole input and the guard is the only thing between it and the
+;; table.
+;;
+;;@GENERATED-BODY-BELOW -- do not edit past this line; see REPL/tools/_purev2.py
+
+(namespace "ouronet-ns")
+
+;; ---- source: 2_CITIZEN/Stage_Z/../../1_SOVEREIGN/STAGE_01/2_Core/08_ATS.pact (module only -- its interface is already live)
+(module ATS GOV
+    @doc "ATS — the autostake pool core, implementing AutostakeV3, AutostakeComputerV2 and \
+        \ branding. It owns ATS|Pairs (pool config: owner, reward tokens, royalty/syphon, \
+        \ cold/hot/direct recovery settings, hibernation, parameter locks) and ATS|Ledger \
+        \ (per-account staked positions P0-P7). Owner/admin client ops configure pairs — \
+        \ issue, control, royalty/syphon, recovery fees/durations/toggles, secondary reward \
+        \ tokens, hot-RBT, elite mode and locks — while token-moving stake actions live in \
+        \ ATSU."
+
+    ;;<=========================================================================>
+    ;;{0}  IMPLEMENTERS
+    ;;
+    (implements OuronetPolicyV2)
+    (implements BrandingUsagePrimaryV2)
+    (implements AutostakeV3)
+    ;;
+    ;; [AutostakeComputer]
+    ;;
+    (implements AutostakeComputerV2)
+
+    ;;<=========================================================================>
+    ;;{1}  GOVERNANCE
+    ;;{G1}  constants
+    ;;
+    (defconst GOV|MD_ATS                                (keyset-ref-guard (GOV|Demiurgoi)))
+    (defconst GOV|SC_ATS                                (keyset-ref-guard ATS|SC_KEY))
+    ;;{G2}  schemas
+    ;;{G3}  tables
+    ;;{G4}  capabilities
+    (defcap GOV ()                                      (compose-capability (GOV|ATS_ADMIN)))
+    (defcap GOV|ATS_ADMIN ()
+        (enforce-one
+            "ATS Autostake Admin not satisfed"
+            [
+                (enforce-guard GOV|MD_ATS)
+                (enforce-guard GOV|SC_ATS)
+            ]
+        )
+    )
+    ;;{G5}  functions
+    (defun GOV|Demiurgoi ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::GOV|Demiurgoi)
+        )
+    )
+    (defun GOV|AutostakeKey ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::GOV|AutostakeKey)
+        )
+    )
+    (defun GOV|ATS|SC_NAME ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::GOV|ATS|SC_NAME)
+        )
+    )
+
+    ;;<=========================================================================>
+    ;;{2}  POLICY
+    ;;{P1}  constants
+    (defconst P|I                                       (P|Info))
+    ;;{P2}  schemas
+    ;;{P3}  tables
+    ;;
+    (deftable P|T:{OuronetPolicyV2.P|S})
+    (deftable P|MT:{OuronetPolicyV2.P|MS})
+    ;;{P4}  capabilities
+    (defcap P|ATS|CALLER ()
+        true
+    )
+    (defcap P|SECURE-CALLER ()
+        (compose-capability (P|ATS|CALLER))
+        (compose-capability (SECURE))
+    )
+    ;;{P5}  functions
+    (defun P|Info ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::P|Info)
+        )
+    )
+    (defun P|UR:guard (policy-name:string)
+        (at "policy" (read P|T policy-name ["policy"]))
+    )
+    (defun P|UR_IMP:[guard] ()
+        ;;DEFAULT ADDED 2026-09-14 (owner ruling). This was a bare `read`, which RAISES
+        ;;`No value found in table <M>_P|MT for key: InterModulePolicies` when the row does not
+        ;;exist -- i.e. before ANY module has registered. P|UEV_IMC is built on this, so in that
+        ;;window the inter-module gate answered with a raw table error naming a row key instead of
+        ;;refusing cleanly. Surfaced by the X-01 repair, which removed the harness registration
+        ;;that had been creating the row as a side effect.
+        ;;
+        ;;The default is the module's OWN SECURE capability guard, which is exactly what
+        ;;P|A_AddIMP already seeds the row with. So reader and writer now agree on what an
+        ;;unregistered policy list contains, and the gate's answer is the same before and after
+        ;;the first registration: satisfiable only from inside this module.
+        (with-default-read P|MT P|I
+            {"m-policies" : [(create-capability-guard (SECURE))]}
+            {"m-policies" := mp}
+            mp
+        )
+    )
+    (defun P|UEV_IMC ()
+        (let
+            (
+                (ref-U|G:module{OuronetGuardsV2} U|G)
+            )
+            (ref-U|G::UEV_Any (P|UR_IMP))
+        )
+    )
+    (defun P|A_Add (policy-name:string policy-guard:guard)
+        (with-capability (GOV|ATS_ADMIN)
+            (write P|T policy-name
+                {"policy" : policy-guard}
+            )
+        )
+    )
+    (defun P|A_AddIMP (policy-guard:guard)
+        @doc "Registers <policy-guard> as a trusted inter-module caller of this module. \
+            \ IDEMPOTENT: a guard already in the chain is left alone rather than appended \
+            \ a second time. See OuronetPolicyV2 for why that is load-bearing."
+        (with-capability (GOV|ATS_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
+                    ;;
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" :
+                            (if (contains policy-guard mp)
+                                mp
+                                (ref-U|LST::UC_AppL mp policy-guard)
+                            )
+                        }
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_RemoveIMP (policy-guard:guard)
+        @doc "Revokes <policy-guard> from this module's guard chain. Removes EVERY occurrence, so \
+            \ it doubles as the cleanup for duplicates left behind by the pre-idempotence append. \
+            \ Refuses to drop this module's own SECURE seed -- see OuronetPolicyV2."
+        (with-capability (GOV|ATS_ADMIN)
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV2} U|LST)
+                    ;;
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (enforce (!= policy-guard dg) "The module's own SECURE seed cannot be revoked")
+                (with-default-read P|MT P|I
+                    {"m-policies" : [dg]}
+                    {"m-policies" := mp}
+                    (write P|MT P|I
+                        {"m-policies" : (ref-U|LST::UC_RemoveItem mp policy-guard)}
+                    )
+                )
+            )
+        )
+    )
+    (defun P|A_SetIMP (policy-guards:[guard])
+        @doc "Replaces this module's whole guard chain in one write -- the recovery hatch. \
+            \ Deduplicates, and enforces that the module's own SECURE seed survives: without it \
+            \ the module can no longer reach its own P|UEV_IMC-gated functions."
+        (with-capability (GOV|ATS_ADMIN)
+            (let
+                (
+                    (dg:guard (create-capability-guard (SECURE)))
+                )
+                (enforce (contains dg policy-guards) "The module's own SECURE seed must be present")
+                (write P|MT P|I
+                    {"m-policies" : (distinct policy-guards)}
+                )
+            )
+        )
+    )
+    (defun P|A_Define ()
+        (let
+            (
+                (ref-P|DALOS:module{OuronetPolicyV2} DALOS)
+                (ref-P|BRD:module{OuronetPolicyV2} BRD)
+                (ref-P|DPTF:module{OuronetPolicyV2} DPTF)
+                (ref-P|DPOF:module{OuronetPolicyV2} DPOF)
+                (ref-P|IGNIS:module{OuronetPolicyV2} IGNIS)
+                (mg:guard (create-capability-guard (P|ATS|CALLER)))
+            )
+            (ref-P|DALOS::P|A_AddIMP mg)
+            (ref-P|BRD::P|A_AddIMP mg)
+            (ref-P|DPTF::P|A_AddIMP mg)
+            (ref-P|DPOF::P|A_AddIMP mg)
+            (ref-P|IGNIS::P|A_AddIMP mg)
+        )
+    )
+
+    ;;<=========================================================================>
+    ;;{3}  CST
+    ;;{3.1}  constants
+    ;;
+    (defconst ATS|SC_KEY                                (GOV|AutostakeKey))
+    (defconst ATS|SC_NAME                               (GOV|ATS|SC_NAME))
+    (defconst BAR                                       (CT_Bar))
+    (defconst EOC                                       (CT_EmptyCumulator))
+    (defconst NULLTIME                                  (time "1984-10-11T11:10:00Z"))
+    (defconst ANTITIME                                  (time "1983-08-07T11:10:00Z"))
+    ;;{3.2}  schemas
+    ;;
+    (defschema ATS|PropertiesSchemaV3
+        id:string                       ;[x] Added in V3
+        owner-konto:string
+        can-upgrade:bool                ;[x] Added in V2. Gates C_Control (can-change-owner/
+                                         ;    syphoning/hibernate) via UEV_CanUpgradeON - false
+                                         ;    blocks C_Control entirely until set back to true.
+                                         ;    Fix (audit finding #21L / L3): now settable via
+                                         ;    C_ToggleUpgrade (was permanently true, no setter).
+        can-change-owner:bool
+        syphoning:bool
+        hibernate:bool                  ;[x] Added in V2
+        pair-index-name:string
+        index-decimals:integer
+        royalty-promile:decimal         ;[x] Added in V2
+        syphon:decimal
+        ;;
+        peak-hibernate-promile:decimal  ;[x] Added in V2
+        hibernate-decay:decimal         ;[x] Added in V2
+        ;;
+        parameter-lock:bool
+        unlocks:integer
+        ;;
+        reward-tokens:[object{AutostakeV3.ATS|RewardTokenSchemaV2}]
+        ;;
+        ;;Cold Recovery
+        c-rbt:string
+        c-nfr:bool
+        c-positions:integer
+        c-limits:[decimal]
+        c-array:[[decimal]]
+        c-fr:bool
+        c-duration:[integer]
+        c-elite-mode:bool
+        ;;
+        ;;Hot Recovery
+        h-rbt:string
+        h-fr:bool
+        h-promile:decimal
+        h-decay:integer
+        ;;
+        ;;Direct Recovery
+        d-promile:decimal               ;[x] Added in V2
+        ;;
+        ;;Toggle Recoveries
+        cold-recovery:bool
+        hot-recovery:bool
+        direct-recovery:bool            ;[x] Added in V2
+    )
+    (defschema ATS|BalanceSchemaV2
+        @doc "Key = <ATS-Pair> + BAR + <account>"
+        P0:[object{UtilityAtsV3.Awo}]
+        P1:object{UtilityAtsV3.Awo}
+        P2:object{UtilityAtsV3.Awo}
+        P3:object{UtilityAtsV3.Awo}
+        P4:object{UtilityAtsV3.Awo}
+        P5:object{UtilityAtsV3.Awo}
+        P6:object{UtilityAtsV3.Awo}
+        P7:object{UtilityAtsV3.Awo}
+        ;;
+        ;;ForSelect, store Key Make-up
+        id:string
+        account:string
+    )
+    ;;{3.3}  tables
+    (deftable ATS|Pairs:{ATS|PropertiesSchemaV3})   ;;Key = <ATS-Pair-id>
+    (deftable ATS|Ledger:{ATS|BalanceSchemaV2})     ;;Key = <ATS-Pair-id> + BAR + <account>
+
+    ;;<=========================================================================>
+    ;;{4}  CAPABILITIES
+    ;;{C1}  Trivial [bronze]
+    (defcap ATS|GOV ()
+        @doc "Governor Capability for the Autostake Smart DALOS Account"
+        true
+    )
+    ;;
+    (defcap SECURE ()
+        true
+    )
+    ;;{C2}  Simple
+    (defcap ATS|S>ROTATE_OWNERSHIP (atspair:string new-owner:string)
+        @event
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::UEV_SenderWithReceiver (UR_OwnerKonto atspair) new-owner)
+            (ref-DALOS::UEV_EnforceAccountExists new-owner)
+            (UEV_CanChangeOwnerON atspair)
+            (CAP_Owner atspair)
+        )
+    )
+    (defcap ATS|S>CONTROL (atspair:string hibernate:bool)
+        @event
+        (if hibernate
+            (let
+                (
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                    (c-rbt:string (UR_ColdRewardBearingToken atspair))
+                )
+                (ref-DPTF::UEV_Hibernation c-rbt true)
+            )
+            true
+        )
+        (CAP_Owner atspair)
+        (UEV_CanUpgradeON atspair)
+    )
+    (defcap ATS|S>SYPHON (atspair:string syphon:decimal)
+        @event
+        (let
+            (
+                (precision:integer (UR_IndexDecimals atspair))
+            )
+            (enforce (>= syphon 0.1) "Syphon cannot be set lower than 0.1")
+            (enforce
+                (= (floor syphon precision) syphon)
+                (format "The syphon value of {} is not a valid Index Value for the {} ATS Pair" [syphon atspair])
+            )
+            (CAP_Owner atspair)
+        )
+    )
+    ;; Fix (audit finding #6H / H1, owner-confirmed 2026-08-17): peak-hibernate-promile/hibernate-decay
+    ;; were added later (V2) and never got the parameter-lock gate the original fields have. Added here.
+    (defcap ATS|S>SET-HIBERNATION-FEES (atspair:string peak:decimal decay:decimal)
+        @event
+        (let
+            (
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
+            )
+            (UEV_ParameterLockState atspair false)
+            (ref-U|ATS::UEV_HibernationFees peak decay)
+            (CAP_Owner atspair)
+        )
+    )
+    ;; Fix (audit finding #6H / H1, owner-confirmed 2026-08-17): royalty-promile was added later (V2)
+    ;; and never got the parameter-lock gate. Added here. (syphon stays intentionally un-gated — #4C —
+    ;; it's designed to fluctuate; do not add a lock check there.)
+    ;; Fix (audit finding #7H / H2, owner-confirmed 2026-08-18): shared UEV_Fee (U_DALOS) allows up to
+    ;; 999.0 promile (99.9%) - deliberately left untouched here since it's shared with DPTF's own fee
+    ;; validation (05_DPTF.pact), outside this audit's scope. A per-tx delta cap was considered and
+    ;; explicitly rejected by the owner (trivially bypassable by calling C_UpdateRoyalty repeatedly
+    ;; within the same transaction). Instead, a royalty-specific ceiling: 500.0 promile (50%) max,
+    ;; layered on top of UEV_Fee's existing {-1.0, 0.0} off-sentinels / [1.0, 999.0] active-range /
+    ;; 4-decimal-precision check - -1.0 and 0.0 both still mean "off" and are always <= 500.0, so this
+    ;; single enforce correctly narrows only the active [1.0, 999.0] range down to [1.0, 500.0].
+    (defcap ATS|S>ROYALTY (atspair:string royalty:decimal)
+        @event
+        (let
+            (
+                (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+            )
+            (UEV_ParameterLockState atspair false)
+            (ref-U|DALOS::UEV_Fee royalty)
+            (enforce (<= royalty 500.0) "Royalty cannot exceed 500.0 promile (50%)")
+            (CAP_Owner atspair)
+        )
+    )
+    ;;
+    (defcap ATS|S>CONTROL-RECOVERY (atspair:string)
+        (CAP_Owner atspair)
+        (UEV_ParameterLockState atspair false)
+    )
+    (defcap ATS|S>SWITCH-COLD-RECOVERY (atspair:string toggle:bool)
+        @event
+        (CAP_Owner atspair)
+        (UEV_ColdRecoveryState atspair (not toggle))
+    )
+    (defcap ATS|S>SWITCH-HOT-RECOVERY (atspair:string toggle:bool)
+        @event
+        (CAP_Owner atspair)
+        (UEV_HotRecoveryState atspair (not toggle))
+    )
+    (defcap ATS|S>SWITCH-DIRECT-RECOVERY (atspair:string toggle:bool)
+        @event
+        (CAP_Owner atspair)
+        (UEV_DirectRecoveryState atspair (not toggle))
+    )
+    ;;{C3}  Composed
+    ;;
+    ;;
+    (defcap AHU ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ah:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership ah)
+            (compose-capability (SECURE))
+        )
+    )
+    ;; Core (unevented) — StoicSyntax §14.7 layered-composition pattern: shared body, distinct leaf
+    ;; events. Was two @event caps with the identical body pasted twice; refactored alongside the
+    ;; C5 fix (ATS|C>HOT-RBT-BRD, below) that introduced this pattern's documentation.
+    (defcap ATS|S>BRD (atspair:string)
+        (CAP_Owner atspair)
+        (compose-capability (P|ATS|CALLER))
+    )
+    (defcap ATS|C>UPDATE-BRD (atspair:string)
+        @event
+        (compose-capability (ATS|S>BRD atspair))
+    )
+    (defcap ATS|C>UPGRADE-BRD (atspair:string)
+        @event
+        (compose-capability (ATS|S>BRD atspair))
+    )
+    ;;
+    (defcap ATS|C>REPURPOSE-HOT-RBT (hot-rbt:string)
+        @event
+        (let
+            (
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (atspair:string (ref-DPOF::UR_RewardBearingToken hot-rbt))
+            )
+            (CAP_Owner atspair)
+            (compose-capability (ATS|GOV))
+        )
+    )
+    ;; Fix (audit finding #5C / C5): HOT-RBT|C_UpdatePendingBranding/UpgradeBranding composed ATS|GOV
+    ;; directly with no preceding ownership check — ATS|GOV is legitimately required (the hot-rbt's
+    ;; DPOF owner-konto is ATS|SC_NAME, so DPOF's own UEV_ParentOwnership resolves to "prove you own
+    ;; ats-sc", which only ATS's own code can do), but nothing gated *which caller* could trigger it.
+    ;; Mirrors ATS|C>REPURPOSE-HOT-RBT's exact shape: resolve the pair from the hot-rbt, check real
+    ;; ownership, THEN compose ATS|GOV.
+    ;; Core (unevented) — shared validation body, StoicSyntax §14.7 layered-composition pattern
+    ;; (mirrors ATS|S>CONTROL-RECOVERY / ATS|C>CONTROL-COLD-RECOVERY just above): resolve the pair,
+    ;; check real ownership, compose ATS|GOV. Composed by both named leaf caps below — one body,
+    ;; two distinctly-named events.
+    (defcap ATS|C>HOT-RBT-BRD (entity-id:string)
+        (let
+            (
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (atspair:string (ref-DPOF::UR_RewardBearingToken entity-id))
+            )
+            (CAP_Owner atspair)
+            (compose-capability (ATS|GOV))
+        )
+    )
+    (defcap ATS|C>HOT-RBT-UPDATE-BRD (entity-id:string)
+        @event
+        (compose-capability (ATS|C>HOT-RBT-BRD entity-id))
+    )
+    (defcap ATS|C>HOT-RBT-UPGRADE-BRD (entity-id:string)
+        @event
+        (compose-capability (ATS|C>HOT-RBT-BRD entity-id))
+    )
+    (defcap ATS|C>ISSUE (account:string atspair:[string] index-decimals:[integer] reward-token:[string] rt-nfr:[bool] reward-bearing-token:[string]rbt-nfr:[bool])
+        @event
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (ref-U|INT:module{OuronetIntegersV2} U|INT)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (l1:integer (length atspair))
+                (l2:integer (length index-decimals))
+                (l3:integer (length reward-token))
+                (l4:integer (length rt-nfr))
+                (l5:integer (length reward-bearing-token))
+                (l6:integer (length rbt-nfr))
+                (lengths:[integer] [l1 l2 l3 l4 l5 l6])
+            )
+            (ref-U|INT::UEV_UniformList lengths)
+            (ref-U|LST::UEV_IzUnique atspair)
+            (ref-DALOS::CAP_EnforceAccountOwnership account)
+            (map
+                (lambda
+                    (index:integer)
+                    (UEV_IssueData (at index atspair) (at index index-decimals) (at index reward-token) (at index reward-bearing-token))
+                )
+                (enumerate 0 (- l1 1))
+            )
+            (compose-capability (P|SECURE-CALLER))
+        )
+    )
+    (defcap ATS|C>TOGGLE-PARAMETER-LOCK (atspair:string toggle:bool)
+        @event
+        (let
+            (
+                (cr:bool (UR_ToggleColdRecovery atspair))
+                (hr:bool (UR_ToggleHotRecovery atspair))
+                (dr:bool (UR_ToggleDirectRecovery atspair))
+            )
+            (CAP_Owner atspair)
+            (UEV_ParameterLockState atspair (not toggle))
+            (if toggle
+                ;;When turned on, at least one Recovery must be set to true
+                (enforce-one
+                    (format "When Parameter Lock is set to {}, at least One Recovery must be on" [toggle])
+                    [
+                        (enforce cr "Cold Recovery must be active for exec")
+                        (enforce hr "Hot Recovery must be active for exec")
+                        (enforce dr "Direct Recovery must be active for exec")
+                    ]
+                )
+                ;;When turned off, all Recoveries must be set to false
+                (enforce 
+                    (fold (and) true [(not cr) (not hr) (not dr)]) 
+                    (format "ATSPair {} Recoveries must be stopped for exec" [atspair])
+                )
+            )
+            (compose-capability (SECURE))
+        )
+    )
+    ;;
+    (defcap ATS|C>ADD-REWARD-TOKEN (atspair:string reward-token:string)
+        @event
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (n:integer (length (UR_RewardTokens atspair)))
+            )
+            (enforce (<= n 6) "An ATS Pair can have a maximum of 7 RTs")
+            (ref-DPTF::CAP_Owner reward-token)
+            ;;
+            (CAP_Owner atspair)
+            (UEV_RewardTokenExistance atspair reward-token false)
+            (compose-capability (ATS|C>ADD-TOKEN atspair))
+        )
+    )
+    (defcap ATS|C>ADD-TOKEN (atspair:string)
+        (UEV_ParameterLockState atspair false)
+        (UEV_ColdRecoveryState atspair false)
+        (UEV_HotRecoveryState atspair false)
+        (UEV_DirectRecoveryState atspair false)
+        (compose-capability (P|ATS|CALLER))
+    )
+    ;;
+    (defcap ATS|C>CONTROL-COLD-FEES (atspair:string)
+        @event
+        (compose-capability (ATS|C>CONTROL-COLD-RECOVERY atspair))
+    )
+    (defcap ATS|C>SET_COLD_FEES (atspair:string fee-positions:integer fee-thresholds:[decimal] fee-array:[[decimal]])
+        @event
+        (let
+            (
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (c-rbt-prec:integer (ref-DPTF::UR_Decimals (UR_ColdRewardBearingToken atspair)))
+            )
+            (ref-U|ATS::UEV_CRF|Positions fee-positions)
+            (ref-U|ATS::UEV_CRF|FeeThresholds fee-thresholds c-rbt-prec)
+            (ref-U|ATS::UEV_CRF|FeeArray fee-positions fee-thresholds fee-array)
+            (compose-capability (ATS|C>CONTROL-COLD-RECOVERY atspair))
+        )
+    )
+    (defcap ATS|C>SET_COLD-DURATION (atspair:string soft-or-hard:bool base:integer growth:integer)
+        @event
+        (let
+            (
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
+            )
+            (ref-U|ATS::UEV_ColdDurationParameters soft-or-hard base growth)
+            (compose-capability (ATS|C>CONTROL-COLD-RECOVERY atspair))
+        )
+    )
+    (defcap ATS|C>TOGGLE_ELITE (atspair:string toggle:bool)
+        @event
+        (if toggle
+            (let
+                (
+                    (x:integer (UR_ColdRecoveryPositions atspair))
+                )
+                (enforce 
+                    (= x 7)
+                    "Turning Elite Mode requires 7 Cold Recovery Positions"
+                )
+            )
+            true
+        )
+        (UEV_EliteState atspair (not toggle))
+        (compose-capability (ATS|C>CONTROL-COLD-RECOVERY atspair))
+    )
+    (defcap ATS|C>CONTROL-COLD-RECOVERY (atspair:string)
+        (UEV_ColdRecoveryState atspair false)
+        (compose-capability (ATS|S>CONTROL-RECOVERY atspair))
+    )
+    ;;
+    (defcap ATS|C>ADD-HOT-RBT (atspair:string hot-rbt:string)
+        @event
+        (let
+            (
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (hot-rbt-supply:decimal (ref-DPOF::UR_Supply hot-rbt))
+                (hot-rbt-ftc:string (take 2 hot-rbt))
+            )
+            ;;1]Token Ownership
+            (ref-DPOF::CAP_Owner hot-rbt)
+            (CAP_Owner atspair)
+            ;;2]Hot-RBT cannot be V|, Z| or H| -Tokens
+            ;;FIXED 2026-09-12: the third entry was "H" (one character) while <hot-rbt-ftc> is
+            ;;ALWAYS (take 2 hot-rbt) -- two characters -- so it could never match and HIBERNATION
+            ;;tokens were not excluded at all. The comment above stated the intent correctly and
+            ;;every other prefix test in the tree writes the pipe (02_SCORE.pact:2522/:2526 use
+            ;;["Z|" "H|"]); this was the only site missing it. Pinned by modules/ATS.repl <<ATS-G15>>.
+            (enforce 
+                (not (contains hot-rbt-ftc ["V|" "Z|" "H|"]))
+                "Special Orto-Fungibles cannot be registered as Hot-RBTs"
+            )
+            ;;3]ATS Pair must not have a Hot-RBT, when registering a Hot-RBT to it
+            (UEV_RewardBearingTokenExistance atspair hot-rbt false false)
+            ;;4]Only Zero Supply Orto-Fungibles can be registered as Hot-RBTs
+            (enforce 
+                (= hot-rbt-supply 0.0) 
+                "Cannot Add OrtoFungible with non Zero Supply as ATS-Pair Hot RBT"
+            )
+            (compose-capability (ATS|C>ADD-TOKEN atspair))
+            (compose-capability (ATS|GOV))
+        )
+    )
+    (defcap ATS|C>CONTROL-HOT-FEE (atspair:string)
+        @event
+        (compose-capability (ATS|C>CONTROL-HOT-RECOVERY atspair))
+    )
+    (defcap ATS|C>SET_HOT_FEES (atspair:string promile:decimal decay:integer)
+        @event
+        (let
+            (
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
+            )
+            (ref-U|ATS::UEV_Fee promile)
+            (ref-U|ATS::UEV_Decay decay)
+            (compose-capability (ATS|C>CONTROL-HOT-RECOVERY atspair))
+        )
+    )
+    (defcap ATS|C>CONTROL-HOT-RECOVERY (atspair:string)
+        (UEV_HotRecoveryState atspair false)    
+        (compose-capability (ATS|S>CONTROL-RECOVERY atspair))
+    )
+    ;;
+    (defcap ATS|C>SET_DIRECT_FEE (atspair:string promile:decimal)
+        @event
+        (let
+            (
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
+            )
+            (ref-U|ATS::UEV_Fee promile)
+            ;;Deliberately NOT ATS|S>CONTROL-DIRECT-RECOVERY -- see the note on that cap below.
+            ;;The direct-recovery fee is adjustable while direct recovery is LIVE, unlike the hot
+            ;;twin. Tested 2026-09-10: composing the state-checking cap here breaks the sovereign
+            ;;init, which enables direct recovery and then sets the fee.
+            (compose-capability (ATS|S>CONTROL-RECOVERY atspair))
+        )
+    )
+    ;;NEVER COMPOSED, and the asymmetry it would close is INTENTIONAL. Investigated 2026-09-10.
+    ;;
+    ;;It is the direct-recovery twin of ATS|C>CONTROL-HOT-RECOVERY (just above), which IS composed
+    ;;by ATS|C>CONTROL-HOT-FEE / ATS|C>SET_HOT_FEES and so forbids changing the hot fee while hot
+    ;;recovery is live. The direct side has no such link, which looked like a missing wiring --
+    ;;especially next to ATS|C>ADD-TOKEN, which requires all four recovery states off.
+    ;;
+    ;;TESTED, AND THE HYPOTHESIS WAS WRONG. Composing this cap from ATS|C>SET_DIRECT_FEE breaks
+    ;;the sovereign init: REPL/Stage_01/[4.0]_Sovereign-Executor.repl enables direct recovery on
+    ;;KORIndex (line 1592) and THEN sets its fee to 100.0 (line 1595). The direct-recovery fee is
+    ;;therefore adjustable while direct recovery is live BY DESIGN -- a real behavioural
+    ;;difference from hot recovery, not an oversight. The change was reverted.
+    ;;
+    ;;Left in place as the record of that investigation: it is unreachable, it guards nothing
+    ;;today, and re-wiring it would break the deploy chain.
+    (defcap ATS|S>CONTROL-DIRECT-RECOVERY (atspair:string)
+        (UEV_DirectRecoveryState atspair false)
+        (compose-capability (ATS|S>CONTROL-RECOVERY atspair))
+    )
+    ;;{C4}  Ownership [gold]
+    (defcap ATS|C>TOGGLE_UPGRADE (atspair:string toggle:bool)
+        @doc "Fix (audit finding #21L / L3): can-upgrade previously had no setter at all - \
+            \ this is the first one. Gates C_Control (can-change-owner/syphoning/hibernate) \
+            \ via UEV_CanUpgradeON; turning this off blocks C_Control entirely until it's \
+            \ turned back on."
+        @event
+        (CAP_Owner atspair)
+    )
+
+    ;;<=========================================================================>
+    ;;{5}  FUNCTIONS
+    ;;{5.1}  Construct [CT/UDC]
+    (defun CT_Bar ()
+        (let
+            (
+                (ref-U|CT:module{OuronetConstantsV2} U|CT)
+            )
+            (ref-U|CT::CT_BAR)
+        )
+    )
+    (defun CT_EmptyCumulator ()
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+            )
+            (ref-IGNIS::UDC_EmptyOutputCumulatorV2)
+        )
+    )
+    ;;
+    ;;
+    (defun UDC_MakeUnstakeObject:object{UtilityAtsV3.Awo} (atspair:string tm:time)
+        {"reward-tokens"    : (make-list (length (UR_RewardTokenList atspair)) 0.0)
+        ,"cull-time"        : tm}
+    )
+    (defun UDC_MakeZeroUnstakeObject:object{UtilityAtsV3.Awo} (atspair:string)
+        (UDC_MakeUnstakeObject atspair NULLTIME)
+    )
+    (defun UDC_MakeNegativeUnstakeObject:object{UtilityAtsV3.Awo} (atspair:string)
+        (UDC_MakeUnstakeObject atspair ANTITIME)
+    )
+    (defun UDC_ComposePrimaryRewardToken:object{AutostakeV3.ATS|RewardTokenSchemaV2} (token:string nfr:bool)
+        (UDC_RT token nfr 0.0 0.0 0.0)
+    )
+    (defun UDC_RT:object{AutostakeV3.ATS|RewardTokenSchemaV2} 
+        (a:string b:bool c:decimal d:decimal e:decimal)
+        (enforce 
+            (fold (and) true [(>= c 0.0)(>= d 0.0)(>= e 0.0)]) 
+            "Negative Decimals unallowed for Reward Token Object"
+        )
+        {"token"        : a
+        ,"nfr"          : b
+        ,"resident"     : c
+        ,"unbonding"    : d
+        ,"royalty"      : e}
+    )
+    (defun UDCx_Balance:object{ATS|BalanceSchemaV2}
+        (
+            a:[object{UtilityAtsV3.Awo}] b:object{UtilityAtsV3.Awo} 
+            c:object{UtilityAtsV3.Awo} d:object{UtilityAtsV3.Awo}
+            e:object{UtilityAtsV3.Awo} f:object{UtilityAtsV3.Awo}
+            g:object{UtilityAtsV3.Awo} h:object{UtilityAtsV3.Awo}
+            i:string j:string
+        )
+        {"P0"       : a
+        ,"P1"       : b
+        ,"P2"       : c
+        ,"P3"       : d
+        ,"P4"       : e
+        ,"P5"       : f
+        ,"P6"       : g
+        ,"P7"       : h
+        ,"id"       : i
+        ,"account"  : j}
+    )
+    (defun UDC_CoilData:object{AutostakeV3.CoilData}
+        (a:decimal b:decimal c:decimal d:decimal e:decimal f:decimal g:string)
+        {"primal-input-amount"  : a
+        ,"first-input-amount"   : b
+        ,"royalty-fee"          : c
+        ,"last-input-amount"    : d
+        ,"hibernation-fee"      : e
+        ,"rbt-amount"           : f
+        ,"rbt-id"               : g}
+    )
+    (defun UDC_CanCoil:object{AutostakeComputerV2.CanCoil} (a:bool b:[string])
+        {"can-coil"     : a
+        ,"where-coil"   : b}
+    )
+    (defun UDC_CanConstrict:object{AutostakeComputerV2.CanConstrict} (a:bool b:[string])
+        {"can-constrict"    : a
+        ,"where-constrict"  : b}
+    )
+    (defun UDC_CanCurl:object{AutostakeComputerV2.CanCurl} (a:bool b:[[string]])
+        {"can-curl"     : a
+        ,"where-curl"   : b}
+    )
+    (defun UDC_CanBrumate:object{AutostakeComputerV2.CanBrumate} (a:bool b:[[string]])
+        {"can-brumate"      : a
+        ,"where-brumate"   : b}
+    )
+    ;;{5.2}  Compute [UC]
+    (defun UC_AtspairAccount:string (atspair:string account:string)
+        (format "{}{}{}" [atspair BAR account])
+    )
+    ;;
+    ;;
+    (defun UC_CanCoil:object{AutostakeComputerV2.CanCoil} (dptf:string)
+        @doc "Computes if a DPTF can be coiled, and outputs a <CanCoil> object. \
+            \ This object also points the ats-pairs towards which the <dptf> can be coiled."
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (can-coil:bool (ref-DPTF::URC_IzRT dptf))
+            )
+            (if (not can-coil)
+                (UDC_CanCoil can-coil [])
+                ;;The flag comes from the RESULT, not from <URC_IzRT> alone. Being a reward
+                ;;token somewhere does not mean a NON-HIBERNATING pair exists to coil into,
+                ;;and a true flag beside an empty target list offers an operation with
+                ;;nowhere to perform it. <UC_CanCurl>/<UC_CanBrumate> already do it this way.
+                (let
+                    (
+                        (pairs:[string] (UCx_RewardTokenPairsByHibernate dptf true))
+                    )
+                    (UDC_CanCoil (< 0 (length pairs)) pairs)
+                )
+            )
+        )
+    )
+    (defun UC_CanConstrict:object{AutostakeComputerV2.CanConstrict} (dptf:string)
+        @doc "Like coil, but <where-constrict> lists only hibernating ATS pairs where <dptf> is RT."
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (can-constrict:bool (ref-DPTF::URC_IzRT dptf))
+            )
+            (if (not can-constrict)
+                (UDC_CanConstrict can-constrict [])
+                ;;Same correction as <UC_CanCoil>: the flag follows the list. Constriction
+                ;;needs a HIBERNATING pair, and OURO measured true here with an empty
+                ;;<where-constrict> on mainnet -- a lit button with nowhere to act.
+                (let
+                    (
+                        (pairs:[string] (UCx_RewardTokenPairsByHibernate dptf false))
+                    )
+                    (UDC_CanConstrict (< 0 (length pairs)) pairs)
+                )
+            )
+        )
+    )
+    (defun UC_CanCurl:object{AutostakeComputerV2.CanCurl} (dptf:string)
+        @doc "Computes if a DPTF can be curled. <dptf> is a reward token in non-hibernating \
+            \ ats-pair-1; that pair's cold RBT is a reward token in non-hibernating ats-pair-2."
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+            )
+            (if (not (ref-DPTF::URC_IzRT dptf))
+                (UDC_CanCurl false [])
+                (let
+                    (
+                        (chains:[[string]] (UCx_ChainsRtRbtSecondRt dptf true))
+                    )
+                    (UDC_CanCurl (< 0 (length chains)) chains)
+                )
+            )
+        )
+    )
+    (defun UC_CanBrumate:object{AutostakeComputerV2.CanBrumate} (dptf:string)
+        @doc "Like curl, but ats-pair-1 is non-hibernating and ats-pair-2 must be hibernating."
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+            )
+            (if (not (ref-DPTF::URC_IzRT dptf))
+                (UDC_CanBrumate false [])
+                (let
+                    (
+                        (chains:[[string]] (UCx_ChainsRtRbtSecondRt dptf false))
+                    )
+                    (UDC_CanBrumate (< 0 (length chains)) chains)
+                )
+            )
+        )
+    )
+    ;;
+    (defun UCx_ChainsRtRbtSecondRt:[[string]] (dptf:string second-pairs-non-hibernate:bool)
+        @doc "Two-hop chains [ats1 ats2]: <dptf> is RT on non-hibernating ats1; cold RBT of ats1 \
+            \ is RT on ats2. Second hop uses <second-pairs-non-hibernate> (true: non-hibernate ats2 \
+            \ only; false: hibernating ats2 only). Enforces ats1 != ats2."
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (pair1-candidates:[string] (UCx_RewardTokenPairsByHibernate dptf true))
+            )
+            (fold
+                (lambda (acc:[[string]] ats1:string)
+                    (let
+                        (
+                            (rbt:string (UR_ColdRewardBearingToken ats1))
+                            (pair2-candidates:[string]
+                                (UCx_FilterHibernatedAts
+                                    (ref-DPTF::UR_RewardToken rbt)
+                                    second-pairs-non-hibernate
+                                )
+                            )
+                        )
+                        (+
+                            acc
+                            (fold
+                                (lambda (row:[[string]] ats2:string)
+                                    (if (!= ats1 ats2)
+                                        (+ row [[ats1 ats2]])
+                                        row
+                                    )
+                                )
+                                []
+                                pair2-candidates
+                            )
+                        )
+                    )
+                )
+                []
+                pair1-candidates
+            )
+        )
+    )
+    (defun UCx_RewardTokenPairsByHibernate:[string] (dptf:string non-hibernate:bool)
+        @doc "ATS pairs where <dptf> is a reward token, filtered by hibernation: \
+            \ <non-hibernate> true keeps non-hibernating pairs only; false keeps hibernating only."
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+            )
+            (UCx_FilterHibernatedAts (ref-DPTF::UR_RewardToken dptf) non-hibernate)
+        )
+    )
+    (defun UCx_FilterHibernatedAts:[string] (ats-pairs:[string] out-or-in:bool)
+        @doc "If <out-or-in> is true, return <ats-pairs> with hibernating pairs removed; \
+            \ if false, return only hibernating pairs. \
+            \ \
+            \ The BAR sentinel is dropped FIRST. <DPTF::UR_RewardToken> answers \"this token \
+            \ is a reward token nowhere\" with [BAR], not with an empty list, and BAR is not \
+            \ an ats-pair id -- reading <UR_Hibernate> on it raised \"No value found in table \
+            \ ATS|Pairs for key: |\" and took the whole caller down with it. Measured on \
+            \ mainnet for AURYN: RT on EliteAuryndex, whose cold RBT is ELITEAURYN, which is \
+            \ a reward token nowhere -- so <UC_CanCurl> and <UC_CanBrumate> both died, and \
+            \ every consumer of the button read with them."
+        (let
+            (
+                (real:[string] (filter (lambda (ats-pair:string) (!= ats-pair BAR)) ats-pairs))
+            )
+            (if out-or-in
+                (filter (lambda (ats-pair:string) (not (UR_Hibernate ats-pair))) real)
+                (filter (lambda (ats-pair:string) (UR_Hibernate ats-pair)) real)
+            )
+        )
+    )
+    ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
+    (defun URU_UpgradeAtspairToV2 (atspairs:[string])
+        (map
+            (lambda
+                (atspair:string)
+                [
+                    (UR_CanUpgrade atspair)
+                    (UR_Hibernate atspair)
+                    (UR_PeakHibernatePromile atspair)
+                    (UR_HibernateDecay atspair)
+                    (UR_Royalty atspair)
+                    (UR_DirectRecoveryFee atspair)
+                    (UR_ToggleDirectRecovery atspair)
+                    (UR_RewardTokens atspair)
+                ]
+            )
+            atspairs
+        )
+    )
+    (defun UR_P-KEYS:[string] ()
+        (keys ATS|Pairs)
+    )
+    (defun UR_KEYS:[string] ()
+        (keys ATS|Ledger)
+    )
+    ;;
+    (defun UR_Properties (atspair:string)
+        (read ATS|Pairs atspair)
+    )
+    (defun UR_OwnerKonto:string (atspair:string)
+        (at "owner-konto" (read ATS|Pairs atspair ["owner-konto"]))
+    )
+    (defun UR_CanUpgrade:bool (atspair:string)
+        ;;#ATSm fix: this used to backfill a missing <can-upgrade> with a live table <update> --
+        ;;an ungated write as a side effect of a nominal UR_* read, at the caller's gas expense,
+        ;;and a read/write-separation violation of the UR_* prefix contract (same defect class as
+        ;;DPTF's #30M <UR_Hibernation> and SWP's #50L <UR_StoaValue>, both already fixed).
+        ;;Confirmed dead via a live StoaChain dirty-read (2026-09-10): all 4 deployed ATS pairs
+        ;;already carry every one of these 8 fields, so the backfill branch never fires. The
+        ;;write is dropped; the in-memory default fallback is kept, so the return value is
+        ;;unchanged for every caller.
+        (let 
+            (
+                (default-value:bool true)
+                (temp (read ATS|Pairs atspair ["can-upgrade"]))
+                (needs-populate:bool (= temp {}))
+            )
+            (if needs-populate default-value (at "can-upgrade" temp))
+        )
+    )
+    (defun UR_CanChangeOwner:bool (atspair:string)
+        (at "can-change-owner" (read ATS|Pairs atspair ["can-change-owner"]))
+    )
+    (defun UR_Syphoning:bool (atspair:string)
+        (at "syphoning" (read ATS|Pairs atspair ["syphoning"]))
+    )
+    (defun UR_Hibernate:bool (atspair:string)
+        ;;#ATSm fix: ungated migration backfill <update> dropped -- see <UR_CanUpgrade>.
+        (let 
+            (
+                (default-value:bool false)
+                (temp (read ATS|Pairs atspair ["hibernate"]))
+                (needs-populate:bool (= temp {}))
+            )
+            (if needs-populate default-value (at "hibernate" temp))
+        )
+    )
+    (defun UR_IndexName:string (atspair:string)
+        (at "pair-index-name" (read ATS|Pairs atspair ["pair-index-name"]))
+    )
+    (defun UR_IndexDecimals:integer (atspair:string)
+        (at "index-decimals" (read ATS|Pairs atspair ["index-decimals"]))
+    )
+    (defun UR_Royalty:decimal (atspair:string)
+        ;;#ATSm fix: ungated migration backfill <update> dropped -- see <UR_CanUpgrade>.
+        (let 
+            (
+                (default-value:decimal 0.0)
+                (temp (read ATS|Pairs atspair ["royalty-promile"]))
+                (needs-populate:bool (= temp {}))
+                (link:decimal (if needs-populate default-value (at "royalty-promile" temp)))
+            )
+            (if (= link -1.0)
+                0.0
+                link
+            )
+        )
+    )
+    (defun UR_Syphon:decimal (atspair:string)
+        (at "syphon" (read ATS|Pairs atspair ["syphon"]))
+    )
+    ;;
+    (defun UR_PeakHibernatePromile:decimal (atspair:string)
+        ;;#ATSm fix: ungated migration backfill <update> dropped -- see <UR_CanUpgrade>.
+        (let 
+            (
+                (default-value:decimal 120.0)
+                (temp (read ATS|Pairs atspair ["peak-hibernate-promile"]))
+                (needs-populate:bool (= temp {}))
+            )
+            (if needs-populate default-value (at "peak-hibernate-promile" temp))
+        )
+    )
+    (defun UR_HibernateDecay:decimal (atspair:string)
+        ;;#ATSm fix: ungated migration backfill <update> dropped -- see <UR_CanUpgrade>.
+        (let 
+            (
+                (default-value:decimal 0.008 )
+                (temp (read ATS|Pairs atspair ["hibernate-decay"]))
+                (needs-populate:bool (= temp {}))
+            )
+            (if needs-populate default-value (at "hibernate-decay" temp))
+        )
+    )
+    ;;
+    (defun UR_Lock:bool (atspair:string)
+        (at "parameter-lock" (read ATS|Pairs atspair ["parameter-lock"]))
+    )
+    (defun UR_Unlocks:integer (atspair:string)
+        (at "unlocks" (read ATS|Pairs atspair ["unlocks"]))
+    )
+    ;;
+    (defun UR_RewardTokens:[object{AutostakeV3.ATS|RewardTokenSchemaV2}] (atspair:string)
+        ;;#ATSm fix: migration backfill <update> dropped -- see <UR_CanUpgrade>. The write WAS
+        ;;load-bearing here (the old body re-read the row afterwards), so the populate branch now
+        ;;yields the royalty-augmented list directly instead of persisting then re-reading.
+        (let
+            (
+                (temp:list (at "reward-tokens" (read ATS|Pairs atspair ["reward-tokens"])))
+                (first-element (at 0 temp))
+                (has-royalty:bool (contains "royalty" first-element))
+                (needs-populate:bool (not has-royalty))
+            )
+            (if needs-populate
+                (let
+                    (
+                        (default-royalty:decimal 0.0)
+                        (ref-U|LST:module{StringProcessorV2} U|LST)
+                    )
+                    (fold
+                        (lambda
+                            (acc:[object{AutostakeV3.ATS|RewardTokenSchemaV2}] idx:integer)
+                            (ref-U|LST::UC_AppL acc
+                                (+
+                                    (at idx temp)
+                                    {"royalty" : default-royalty}
+                                )
+                            )
+                        )
+                        []
+                        (enumerate 0 (- (length temp) 1))
+                    )
+                )
+                temp
+            )
+        )
+    )
+    (defun UR_RewardTokenList:[string] (atspair:string)
+        (fold
+            (lambda
+                (acc:[string] item:object{AutostakeV3.ATS|RewardTokenSchemaV2})
+                (+ acc [(at "token" item)])
+            )
+            []
+            (UR_RewardTokens atspair)
+        )
+    )
+    (defun UR_RewardTokenNFR:[bool] (atspair:string)
+        (fold
+            (lambda
+                (acc:[bool] item:object{AutostakeV3.ATS|RewardTokenSchemaV2})
+                (+ acc [(at "nfr" item)])
+            )
+            []
+            (UR_RewardTokens atspair)
+        )
+    )
+    (defun UR_RewardTokenRUR:[decimal] (atspair:string rur:integer)
+        @doc "Returns the RUR variables of a RewardToken Object \
+            \ <rur> = 1: <resident> \
+            \ <rur> = 2: <unbonding> \
+            \ <rur> = 3: <royalty>"
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (ref-U|INT:module{OuronetIntegersV2} U|INT)
+            )
+            (ref-U|INT::UEV_PositionalVariable rur 3 "Invalid RUR Integer")
+            (fold
+                (lambda
+                    (acc:[decimal] item:object{AutostakeV3.ATS|RewardTokenSchemaV2})
+                    (ref-U|LST::UC_AppL acc
+                        (cond
+                            ((= rur 1) (at "resident" item))
+                            ((= rur 2) (at "unbonding" item))
+                            ((= rur 3) (at "royalty" item))
+                            0.0
+                        )
+                    )
+                )
+                []
+                (UR_RewardTokens atspair)
+            )
+        )
+    )
+    (defun UR_SingleRewardTokenNFR:bool (atspair:string rt:string)
+        @doc "Read NFR of a Reward Token, Fails if <rt> is not Reward Token for <atspair>"
+        (at (URCv_RewardTokenPosition atspair rt) (UR_RewardTokenNFR atspair))
+    )
+    (defun UR_SingleRewardTokenRUR:decimal (atspair:string rt:string rur:integer)
+        @doc "Read RUR of a Reward Token, Fails if <rt> is not Reward Token for <atspair>"
+        (at (URCv_RewardTokenPosition atspair rt) (UR_RewardTokenRUR atspair rur))
+    )
+    ;;Cold Recovery
+    (defun UR_ColdRewardBearingToken:string (atspair:string)
+        (at "c-rbt" (read ATS|Pairs atspair ["c-rbt"]))
+    )
+    (defun UR_ColdNativeFeeRedirection:bool (atspair:string)
+        (at "c-nfr" (read ATS|Pairs atspair ["c-nfr"]))
+    )
+    (defun UR_ColdRecoveryPositions:integer (atspair:string)
+        (at "c-positions" (read ATS|Pairs atspair ["c-positions"]))
+    )
+    (defun UR_ColdRecoveryFeeThresholds:[decimal] (atspair:string)
+        (at "c-limits" (read ATS|Pairs atspair ["c-limits"]))
+    )
+    (defun UR_ColdRecoveryFeeTable:[[decimal]] (atspair:string)
+        (at "c-array" (read ATS|Pairs atspair ["c-array"]))
+    )
+    (defun UR_ColdRecoveryFeeRedirection:bool (atspair:string)
+        (at "c-fr" (read ATS|Pairs atspair ["c-fr"]))
+    )
+    (defun UR_ColdRecoveryDuration:[integer] (atspair:string)
+        (at "c-duration" (read ATS|Pairs atspair ["c-duration"]))
+    )
+    (defun UR_EliteMode:bool (atspair:string)
+        (at "c-elite-mode" (read ATS|Pairs atspair ["c-elite-mode"]))
+    )
+    ;;Hot Recovery
+    (defun UR_HotRewardBearingToken:string (atspair:string)
+        (at "h-rbt" (read ATS|Pairs atspair ["h-rbt"]))
+    )
+    (defun UR_HotRecoveryStartingFeePromile:decimal (atspair:string)
+        (at "h-promile" (read ATS|Pairs atspair ["h-promile"]))
+    )
+    (defun UR_HotRecoveryDecayPeriod:integer (atspair:string)
+        (at "h-decay" (read ATS|Pairs atspair ["h-decay"]))
+    )
+    (defun UR_HotRecoveryFeeRedirection:bool (atspair:string)
+        (at "h-fr" (read ATS|Pairs atspair ["h-fr"]))
+    )
+    ;;Direct Recovery
+    (defun UR_DirectRecoveryFee:decimal (atspair:string)
+        ;;#ATSm fix: ungated migration backfill <update> dropped -- see <UR_CanUpgrade>.
+        (let 
+            (
+                (default-value:decimal 0.0)
+                (temp (read ATS|Pairs atspair ["d-promile"]))
+                (needs-populate:bool (= temp {}))
+            )
+            (if needs-populate default-value (at "d-promile" temp))
+        )
+    )
+    ;;Toggle Recoveries
+    (defun UR_ToggleColdRecovery:bool (atspair:string)
+        (at "cold-recovery" (read ATS|Pairs atspair ["cold-recovery"]))
+    )
+    (defun UR_ToggleHotRecovery:bool (atspair:string)
+        (at "hot-recovery" (read ATS|Pairs atspair ["hot-recovery"]))
+    )
+    (defun UR_ToggleDirectRecovery:bool (atspair:string)
+        ;;#ATSm fix: ungated migration backfill <update> dropped -- see <UR_CanUpgrade>.
+        (let 
+            (
+                (default-value:bool false)
+                (temp (read ATS|Pairs atspair ["direct-recovery"]))
+                (needs-populate:bool (= temp {}))
+            )
+            (if needs-populate default-value (at "direct-recovery" temp))
+        )
+    )
+    ;;
+    ;;
+    (defun UR_RtPrecisions:[integer] (atspair:string)
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+            )
+            (fold
+                (lambda
+                    (acc:[integer] rt:string)
+                    (ref-U|LST::UC_AppL acc (ref-DPTF::UR_Decimals rt))
+                )
+                []
+                (UR_RewardTokenList atspair)
+            )
+        )
+    )
+    (defun UR_P0:[object{UtilityAtsV3.Awo}] (atspair:string account:string)
+        (at "P0" (read ATS|Ledger (UC_AtspairAccount atspair account) ["P0"]))
+    )
+    (defun UR_P1-7:object{UtilityAtsV3.Awo} (atspair:string account:string position:integer)
+        (let
+            (
+                (ref-U|INT:module{OuronetIntegersV2} U|INT)
+                (k:string (UC_AtspairAccount atspair account))
+            )
+            (ref-U|INT::UEV_PositionalVariable position 7 "Invalid Position Number")
+            (cond
+                ((= position 1) (at "P1" (read ATS|Ledger k ["P1"])))
+                ((= position 2) (at "P2" (read ATS|Ledger k ["P2"])))
+                ((= position 3) (at "P3" (read ATS|Ledger k ["P3"])))
+                ((= position 4) (at "P4" (read ATS|Ledger k ["P4"])))
+                ((= position 5) (at "P5" (read ATS|Ledger k ["P5"])))
+                ((= position 6) (at "P6" (read ATS|Ledger k ["P6"])))
+                ((= position 7) (at "P7" (read ATS|Ledger k ["P7"])))
+                (UDC_MakeNegativeUnstakeObject atspair)
+            )
+        )
+    )
+    (defun UR_P-Seven:[object{UtilityAtsV3.Awo}]
+        (atspair:string account:string)
+        (let
+            (
+                (k:string (UC_AtspairAccount atspair account))
+            )
+            [
+                (at "P1" (read ATS|Ledger k ["P1"]))
+                (at "P2" (read ATS|Ledger k ["P2"]))
+                (at "P3" (read ATS|Ledger k ["P3"]))
+                (at "P4" (read ATS|Ledger k ["P4"]))
+                (at "P5" (read ATS|Ledger k ["P5"]))
+                (at "P6" (read ATS|Ledger k ["P6"]))
+                (at "P7" (read ATS|Ledger k ["P7"]))
+            ]
+        )
+        
+    )
+    (defun URC_Index (atspair:string)
+        @doc "Computes the Index of an <atspair>"
+        (let
+            (
+                (p:integer (UR_IndexDecimals atspair))
+                (rs:decimal (URC_ResidentSum atspair))
+                (rbt-supply:decimal (URC_PairRBTSupply atspair))
+            )
+            (if
+                (= rbt-supply 0.0)
+                -1.0
+                (floor (/ rs rbt-supply) p)
+            )
+        )
+    )
+    (defun URC_ResidentSum:decimal (atspair:string)
+        @doc "Computes the Residend Sum of all <atspair> Reward Tokens"
+        (fold (+) 0.0 (UR_RewardTokenRUR atspair 1))
+    )
+    (defun URC_PairRBTSupply:decimal (atspair:string)
+        @doc "Computed the Total Sum of Reward Bearing Tokens of an <atspair> \
+            \ Also inludes the Hot-RBT amount"
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (c-rbt:string (UR_ColdRewardBearingToken atspair))
+                (c-rbt-supply:decimal (ref-DPTF::UR_Supply c-rbt))
+            )
+            (if (= (URC_IzPresentHotRBT atspair) false)
+                c-rbt-supply
+                (let
+                    (
+                        (h-rbt:string (UR_HotRewardBearingToken atspair))
+                        (h-rbt-supply:decimal (ref-DPOF::UR_Supply h-rbt))
+                    )
+                    (+ c-rbt-supply h-rbt-supply)
+                )
+            )
+        )
+    )
+    (defun URC_RBT:decimal (atspair:string rt:string rt-amount:decimal)
+        @doc "Computes the value in RBT of a given <rt> Token <rt-amount> for an <atspair>"
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (index:decimal (abs (URC_Index atspair)))
+                (c-rbt:string (UR_ColdRewardBearingToken atspair))
+                (p-rbt:integer (ref-DPTF::UR_Decimals c-rbt))
+            )
+            (enforce
+                (= (floor rt-amount p-rbt) rt-amount)
+                (format "Input amount of {} must have at most a precision equal to that of the Cold-RBT ({})" [rt-amount p-rbt])
+            )
+            ;;THE SINGULARITY. <index> is a share price and the line below inverts it, so a zero
+            ;;index is a division by zero -- and zero is a REACHABLE LIVE STATE, not a contrived
+            ;;input: any pair whose reward-bearing token carries supply minted OUTSIDE the pool
+            ;;reads resident-sum 0 against a positive rbt-supply, which is exactly the state the
+            ;;five AOZ primal-asset pools are in at deploy.
+            ;;
+            ;;The sibling op already refuses this: ATSU|C>FUEL enforces (>= index 0.1) and its
+            ;;message was reworded on 2026-09-13 specifically so the caller is told something true
+            ;;about their own pair. ATSU|C>COIL has no index check at all, so the coil door -- the
+            ;;one an ordinary user reaches -- died inside the arithmetic with
+            ;;"Arithmetic exception: div by zero, decimal", which names neither the pool nor the
+            ;;cause, and which `try` cannot even catch.
+            ;;
+            ;;Guarded HERE rather than in ATSU|C>COIL deliberately: this is the function that
+            ;;divides, and it is shared by the exec path and by the INFO cost previews, so a quote
+            ;;for an impossible coil now refuses in the same words instead of throwing.
+            ;;Pinned by RedTeam/[RT-A]_Economics.repl <<RT-A-003c>>/<<RT-A-003d>>.
+            (enforce
+                (> index 0.0)
+                (format "Coiling requires an ATS-Pair Index greater than zero; {} has none" [atspair])
+            )
+            (floor (/ rt-amount index) p-rbt)
+        )
+    )
+    (defun URCv_RTSplitAmounts:[decimal] (atspair:string rbt-amount:decimal)
+        @doc "Computes the amount of RT Tokens an <rbt-amount> of RBT would yield for an <atspair>"
+        (let
+            (
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
+                (rbt-supply:decimal (URC_PairRBTSupply atspair))
+                (index:decimal (URC_Index atspair))
+                (resident-amounts:[decimal] (UR_RewardTokenRUR atspair 1))
+                (rt-precision-lst:[integer] (UR_RtPrecisions atspair))
+            )
+            (enforce (<= rbt-amount rbt-supply) "Cannot compute for amounts greater than the pairs rbt supply")
+            ;;Same singularity URC_RBT carries, same reasoning: the split divides by <index>, and a
+            ;;zero index is a reachable live state (rbt-supply minted outside the pool). Guarded
+            ;;HERE because ten call sites across ATSU and the INFO readers share this function --
+            ;;one enforce covers every one of them, and they all refuse in the same words.
+            (enforce
+                (> index 0.0)
+                (format "ATS-Pair {} has a zero Index; reward-token amounts cannot be derived" [atspair])
+            )
+            (ref-U|ATS::UC_SplitByIndexedRBT rbt-amount rbt-supply index resident-amounts rt-precision-lst)
+        )
+    )
+    (defun URC_MaxSyphon:[decimal] (atspair:string)
+        @doc "Computes the maximum amount of RTs that can be syphoned from the <atspair>"
+        (let
+            (
+                (ref-U|INT:module{OuronetIntegersV2} U|INT)
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (index:decimal (URC_Index atspair))
+                (syphon:decimal (UR_Syphon atspair))
+                (resident-amounts:[decimal] (UR_RewardTokenRUR atspair 1))
+                (precisions:[integer] (UR_RtPrecisions atspair))
+                (max-precision:integer (ref-U|INT::UEV_MaxInteger precisions))
+                (max-pp:integer (at 0 (ref-U|LST::UC_Search precisions max-precision)))
+                (pair-rbt-supply:decimal (URC_PairRBTSupply atspair))
+            )
+            (if (<= index syphon)
+                (make-list (length precisions) 0.0)
+                (let
+                    (
+                        (index-diff:decimal (- index syphon))
+                        (rbt:string (UR_ColdRewardBearingToken atspair))
+                        (rbt-precision:integer (ref-DPTF::UR_Decimals rbt))
+                        (max-sum:decimal (floor (* pair-rbt-supply index-diff) rbt-precision))
+                        (prelim:[decimal]
+                            (fold
+                                (lambda
+                                    (acc:[decimal] idx:integer)
+                                    (ref-U|LST::UC_AppL acc
+                                        (floor (/ (* (- index syphon) (at idx resident-amounts)) index) (at idx precisions))
+                                    )
+                                )
+                                []
+                                (enumerate 0 (- (length precisions) 1))
+                            )
+                        )
+                        (prelim-sum:decimal (fold (+) 0.0 prelim))
+                        (diff:decimal (- max-sum prelim-sum))
+                    )
+                    (if (= diff 0.0)
+                        prelim
+                        (ref-U|LST::UC_ReplaceAt prelim max-pp (+ diff (at max-pp prelim)))
+                    )
+                )
+            )
+        )
+    )
+    ;;
+    (defun URCv_RewardTokenPosition:integer (atspair:string reward-token:string)
+        @doc "Computes the position of a RT in the <atspair> definition"
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (reward-token-lst:[string] (UR_RewardTokenList atspair))
+                (iz-on-lst:bool (contains reward-token reward-token-lst))
+            )
+            (enforce iz-on-lst (format "RT {} isnt not an RT in the ATS-Pair {}" [reward-token atspair]))
+            (at 0 (ref-U|LST::UC_Search reward-token-lst reward-token))
+        )
+    )
+    ;;Autostake Account
+    (defun URC_AccountUnbondingBalance:decimal (atspair:string account:string reward-token:string)
+        @doc "Computes the unbonding amount for a given <account> and specific <atspair> and <reward-token>"
+        (+
+            (fold
+                (lambda
+                    (acc:decimal item:object{UtilityAtsV3.Awo})
+                    (+ acc (URCx_UnstakeObjectUnbondingValue atspair reward-token item))
+                )
+                0.0
+                (UR_P0 atspair account)
+            )
+            (fold
+                (lambda
+                    (acc:decimal item:integer)
+                    (+ acc (URCx_UnstakeObjectUnbondingValue atspair reward-token (UR_P1-7 atspair account item)))
+                )
+                0.0
+                (enumerate 1 7)
+            )
+        )
+    )
+    (defun URCx_UnstakeObjectUnbondingValue (atspair:string reward-token:string io:object{UtilityAtsV3.Awo})
+        (let
+            (
+                (rtp:integer (URCv_RewardTokenPosition atspair reward-token))
+                (rt:[decimal] (at "reward-tokens" io))
+                (rb:decimal (at rtp rt))
+            )
+            (if (= rb -1.0)
+                0.0
+                rb
+            )
+        )
+    )
+    (defun URC_CullValue:[decimal] (atspair:string input:object{UtilityAtsV3.Awo})
+        @doc "Computes the Cull value of an <input> unstake objected, given a specific <atspair> \
+        \ Returns a list of decimal, the list having as many decimal as the <atspair> has reward tokens \
+        \ Returns a list of 0.0 is nothing can be culled"
+        (let
+            (
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
+                (rt-lst:[string] (UR_RewardTokenList atspair))
+                (rt-amounts:[decimal] (at "reward-tokens" input))
+                (l:integer (length rt-lst))
+                (iz:bool (ref-U|ATS::UC_IzCullable input))
+            )
+            (if iz
+                rt-amounts
+                (make-list l 0.0)
+            )
+        )
+    )
+    (defun URC_WhichPosition:integer (atspair:string c-rbt-amount:decimal account:string)
+        @doc "Computes which Position can be used next for uncoiling"
+        (let
+            (
+                (elite:bool (UR_EliteMode atspair))
+            )
+            (if elite
+                (URCx_ElitePosition atspair c-rbt-amount account)
+                (URCx_NonElitePosition atspair account)
+            )
+        )
+    )
+    (defun URCx_ElitePosition:integer (atspair:string c-rbt-amount:decimal account:string)
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-ELITE:module{EliteV2} ELITE)
+                (positions:integer (UR_ColdRecoveryPositions atspair))
+                (c-rbt:string (UR_ColdRewardBearingToken atspair))
+                (ea-id:string (ref-DALOS::UR_EliteAurynID))
+            )
+            (if (!= ea-id BAR)
+                (let
+                    (
+                        (iz-ea-id:bool (if (= ea-id c-rbt) true false))
+                        (pstate:[integer] (URCx_PSL atspair account))
+                        (met:integer (ref-DALOS::UR_Elite-Tier-Major account))
+                        (ea-supply:decimal (ref-DPTF::UR_AccountSupply ea-id account))
+                        (t-ea-supply:decimal (ref-ELITE::URC_EliteAurynzSupply account))
+                        (virtual-met:integer (str-to-int (take 1 (at "tier" (ref-U|ATS::UDC_Elite (- t-ea-supply c-rbt-amount))))))
+                        ;;(available:[integer] (if iz-ea-id (take virtual-met pstate) (take met pstate)))
+                        ;;Resulting tier after uncoil must support the position we use; tier 0 still allows 1 position.
+                        (positions-after:integer (if (= virtual-met 0) 1 virtual-met))
+                        (available:[integer] (if iz-ea-id (take positions-after pstate) (take met pstate)))
+                        (search-res:[integer] (ref-U|LST::UC_Search available 1))
+                    )
+                    (if iz-ea-id
+                        (enforce (<= c-rbt-amount ea-supply) "Amount of EA used for Cold Recovery cannot be greater than what exists on Account")
+                        true
+                    )
+                    (if (= (length search-res) 0)
+                        0
+                        (+ (at 0 search-res) 1)
+                    )
+                )
+                (URCx_NonElitePosition atspair account)
+            )
+        )
+    )
+    (defun URCx_NonElitePosition:integer (atspair:string account:string)
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (positions:integer (UR_ColdRecoveryPositions atspair))
+            )
+            (if (= positions -1)
+                -1
+                (let
+                    (
+                        (pstate:[integer] (URCx_PSL atspair account))
+                        (available:[integer] (take positions pstate))
+                        (search-res:[integer] (ref-U|LST::UC_Search available 1))
+                    )
+                    (if (= (length search-res) 0)
+                        0
+                        (+ (at 0 search-res) 1)
+                    )
+                )
+            )
+        )
+    )
+    (defun URCx_PSL:[integer] (atspair:string account:string)
+        (fold
+            (lambda
+                (acc:[integer] idx:integer)
+                (+ acc [(URCx_PosSt atspair account idx)])
+            )
+            []
+            (enumerate 1 7)
+        )
+    )
+    (defun URCx_PosSt:integer (atspair:string account:string position:integer)
+        (let
+            (
+                (ref-U|INT:module{OuronetIntegersV2} U|INT)
+                (zero:object{UtilityAtsV3.Awo} 
+                    ;;Opened
+                    (UDC_MakeZeroUnstakeObject atspair)
+                )
+                (negative:object{UtilityAtsV3.Awo} 
+                    ;;Closed
+                    (UDC_MakeNegativeUnstakeObject atspair)
+                )
+                (elite:bool (UR_EliteMode atspair))
+                (hybrid:object{UtilityAtsV3.Awo}
+                    (if elite negative zero)
+                )
+            )
+            (ref-U|INT::UEV_PositionalVariable position 7 "Input Position out of bounds")
+            (with-default-read ATS|Ledger (UC_AtspairAccount atspair account)
+                {"P1"   : zero
+                ,"P2"   : hybrid
+                ,"P3"   : hybrid
+                ,"P4"   : hybrid
+                ,"P5"   : hybrid
+                ,"P6"   : hybrid
+                ,"P7"   : hybrid}
+                { "P1" := p1, "P2" := p2, "P3" := p3, "P4" := p4, "P5" := p5, "P6" := p6, "P7" := p7 }
+                (cond
+                    ((= position 1) (URCx_PosObjSt atspair p1))
+                    ((= position 2) (URCx_PosObjSt atspair p2))
+                    ((= position 3) (URCx_PosObjSt atspair p3))
+                    ((= position 4) (URCx_PosObjSt atspair p4))
+                    ((= position 5) (URCx_PosObjSt atspair p5))
+                    ((= position 6) (URCx_PosObjSt atspair p6))
+                    ((= position 7) (URCx_PosObjSt atspair p7))
+                    0
+                )
+            )
+        )
+    )
+    (defun URCx_PosObjSt:integer (atspair:string input-obj:object{UtilityAtsV3.Awo})
+        @doc "Computes the state of an uncoil positional object, \
+        \ to see if it the position it is on can be used for uncoiling \
+        \ <-1> = closed; <0> = occupied; <1> = opened"
+        (let
+            (
+                (zero:object{UtilityAtsV3.Awo} (UDC_MakeZeroUnstakeObject atspair))
+                (negative:object{UtilityAtsV3.Awo} (UDC_MakeNegativeUnstakeObject atspair))
+            )
+            (if (= input-obj zero)
+                1
+                (if (= input-obj negative)
+                    -1
+                    0
+                )
+            )
+        )
+    )
+    (defun URCv_ColdRecoveryFee (atspair:string c-rbt-amount:decimal input-position:integer)
+        @doc "Computes the Cold Recovery Fee for a given <c-rbt-amount> of a given <atspair> on a given <input-position>"
+        (enforce (!= input-position 0) "Cannot Compute Cold Recovery Fee as no more Cold Recovery Positions are available")
+        (let
+            (
+                (ats-limit-values:[decimal] (UR_ColdRecoveryFeeThresholds atspair))
+                (ats-limits:integer (length ats-limit-values))
+                (ats-fee-array:[[decimal]] (UR_ColdRecoveryFeeTable atspair))
+                (ats-fee-array-length:integer (length ats-fee-array))
+                (ats-fee-array-length-length:integer (length (at 0 ats-fee-array)))
+                (zc1:bool (if (= ats-limits 1) true false))
+                (zc2:bool (if (= (at 0 ats-limit-values) 0.0) true false))
+                (zc3:bool (and zc1 zc2))
+                (zc4:bool (if (= ats-fee-array-length 1) true false))
+                (zc5:bool (if (= ats-fee-array-length-length 1) true false))
+                (zc6:bool (and zc4 zc5))
+                (zc7:bool (if (= (at 0 (at 0 ats-fee-array)) 0.0) true false))
+                (zc8:bool (and zc6 zc7))
+                (zc9:bool (and zc3 zc8))
+            )
+            (if zc9
+                0.0
+                (let
+                    (
+                        (limit:integer
+                            (fold
+                                (lambda
+                                    (acc:integer tv:decimal)
+                                    (if (< c-rbt-amount tv)
+                                        acc
+                                        (+ acc 1)
+                                    )
+                                )
+                                0
+                                ats-limit-values
+                            )
+                        )
+                        (qlst:[decimal]
+                            (if (= input-position -1)
+                                (at 0 ats-fee-array)
+                                (at (- input-position 1) ats-fee-array)
+                            )
+                        )
+                    )
+                    (at limit qlst)
+                )
+            )
+        )
+    )
+    (defun URC_CullColdRecoveryTime:time (atspair:string account:string)
+        @doc "Computes the Cull Time for Cold Recovery for a given <atspair> and <account>"
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+                (major:integer (ref-DALOS::UR_Elite-Tier-Major account))
+                (minor:integer (ref-DALOS::UR_Elite-Tier-Minor account))
+                (position:integer
+                    (if (= major 0)
+                        0
+                        (+ (* (- major 1) 7) minor)
+                    )
+                )
+                (crd:[integer] (UR_ColdRecoveryDuration atspair))
+                (h:integer (at position crd))
+                (present-time:time (at "block-time" (chain-data)))
+            )
+            (add-time present-time (hours h))
+        )
+    )
+    (defun URC_IzPresentHotRBT:bool (atspair:string)
+        @doc "Returns a Boolean if an <atspair> has a Hot-RBT or not"
+        (if (= (UR_HotRewardBearingToken atspair) BAR)
+            false
+            true
+        )
+    )
+    ;;
+    (defun URC_RewardBearingTokenAmounts:object{AutostakeV3.CoilData}
+        (ats:string rt:string amount:decimal)
+        (URCx_RBT-Amount ats rt amount 1)
+    )
+    (defun URC_RewardBearingTokenAmountsWithHibernation:object{AutostakeV3.CoilData}
+        (ats:string rt:string amount:decimal hibernation-dayz:integer)
+        (URCx_RBT-Amount ats rt amount hibernation-dayz)
+    )
+    (defun URCx_RBT-Amount:object{AutostakeV3.CoilData} 
+        (ats:string rt:string amount:decimal dayz:integer)
+        (let
+            (
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
+                (ref-ATS:module{AutostakeV3} ATS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                ;;
+                (h:bool (ref-ATS::UR_Hibernate ats))
+                (royalty:decimal (ref-ATS::UR_Royalty ats))
+                (rt-prec:integer (ref-DPTF::UR_Decimals rt))
+                (royalty-split:[decimal] (ref-U|ATS::UC_PromilleSplit royalty amount rt-prec))
+                (input-amount:decimal (at 0 royalty-split))
+                (royalty-fee:decimal (at 1 royalty-split))
+                (c-rbt:string (ref-ATS::UR_ColdRewardBearingToken ats))
+            )
+            (if (not h)
+                (UDC_CoilData
+                    amount
+                    input-amount
+                    royalty-fee
+                    input-amount
+                    0.0
+                    (ref-ATS::URC_RBT ats rt input-amount)
+                    c-rbt
+                )
+                (let
+                    (
+                        (php:decimal (ref-ATS::UR_PeakHibernatePromile ats))
+                        (hd:decimal (ref-ATS::UR_HibernateDecay ats))
+                        (raw-hibernation-fee-promile:decimal (- php (* hd (dec dayz))))
+                        (hibernation-fee-promile:decimal 
+                            (if (<= raw-hibernation-fee-promile 0.0)
+                                0.0
+                                raw-hibernation-fee-promile
+                            )
+                        )
+                        (hibernating-split:[decimal] (ref-U|ATS::UC_PromilleSplit hibernation-fee-promile input-amount rt-prec))
+                        (last-input-amount:decimal (at 0 hibernating-split))
+                        (hibernation-fee:decimal (at 1 hibernating-split))
+                    )
+                    (UDC_CoilData
+                        amount
+                        input-amount
+                        royalty-fee
+                        last-input-amount
+                        hibernation-fee
+                        (ref-ATS::URC_RBT ats rt last-input-amount)
+                        c-rbt
+                    )
+                )
+            )
+        )
+    )
+    ;;
+    ;;  [URD]
+    ;;
+    ;;1] Returns ATSPairs that Have the Account registered in the ATS|Ledger (has used unstake)
+    (defun URH_HeldAutostakePairs:[string] (account:string)
+        @doc "Returns all ATSpairs for which the <account> existsin the ATS|Ledger Table"
+        (map (at "id")
+            (select ATS|Ledger ["id"]
+                (where "account" (= account))
+            )
+        )
+    )
+    ;;2]Returns Accounts have used a given ATSpair Unstaking
+    (defun URH_ExistingAutostakePairs:[string] (ats:string)
+        @doc "Returns all Ouronet Accounts that exist in a given <ats> ATS|Ledger"
+        (map (at "account")
+            (select ATS|Ledger ["account"]
+                (where "id" (= ats))
+            )
+        )
+    )
+    ;;3]Returns a List of ATSPairs that are owned by a given Account for Management Purposes
+    (defun URH_OwnedAutostakePairs:[string] (account:string)
+        @doc "Returns all ATSPairs that can be managed by the given <account>"
+        (map (at "id")
+            (select ATS|Pairs ["id"]
+                (where "owner-konto" (= account))
+            )
+        )
+    )
+    ;;
+    ;;
+    ;;[URCi] cost readers — single cost source per op. The C_ returns/bills its URCi; Phase 1.2 INFO
+    ;;  previews from the same reader. (HOT-RBT branding/Repurpose forward DPOF costs — no own URCi.)
+    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator} (entity-id:string)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+            )
+            (ref-IGNIS::UDC_BrandingCumulator (UR_OwnerKonto entity-id) 5.0)
+        )
+    )
+    (defun URCi_RotateOwnership:object{IgnisCollectorV3.OutputCumulator} (atspair:string)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_RotateOwnership" "auth")
+                (UR_OwnerKonto atspair) (ref-IGNIS::URC_IsVirtualGasZero) [])
+        )
+    )
+    (defun URCi_Control:object{IgnisCollectorV3.OutputCumulator} (atspair:string)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_Control" "setup")
+                (UR_OwnerKonto atspair) (ref-IGNIS::URC_IsVirtualGasZero) [])
+        )
+    )
+    (defun URCi_UpdateRoyalty:object{IgnisCollectorV3.OutputCumulator} (atspair:string)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_UpdateRoyalty" "fee")
+                (UR_OwnerKonto atspair) (ref-IGNIS::URC_IsVirtualGasZero) [])
+        )
+    )
+    (defun URCi_UpdateSyphon:object{IgnisCollectorV3.OutputCumulator} (atspair:string)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_UpdateSyphon" "usage")
+                (UR_OwnerKonto atspair) (ref-IGNIS::URC_IsVirtualGasZero) [])
+        )
+    )
+    (defun URCi_SetHibernationFees:object{IgnisCollectorV3.OutputCumulator} (atspair:string)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_SetHibernationFees" "fee")
+                (UR_OwnerKonto atspair) (ref-IGNIS::URC_IsVirtualGasZero) [])
+        )
+    )
+    (defun URCi_ControlColdRecoveryFees:object{IgnisCollectorV3.OutputCumulator} (atspair:string)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_ControlColdRecoveryFees" "fee")
+                (UR_OwnerKonto atspair) (ref-IGNIS::URC_IsVirtualGasZero) [])
+        )
+    )
+    (defun URCi_SetColdRecoveryDuration:object{IgnisCollectorV3.OutputCumulator} (atspair:string)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_SetColdRecoveryDuration" "setup")
+                (UR_OwnerKonto atspair) (ref-IGNIS::URC_IsVirtualGasZero) [])
+        )
+    )
+    (defun URCi_ToggleElite:object{IgnisCollectorV3.OutputCumulator} (atspair:string)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_ToggleElite" "setup")
+                (UR_OwnerKonto atspair) (ref-IGNIS::URC_IsVirtualGasZero) [])
+        )
+    )
+    (defun URCi_ToggleUpgrade:object{IgnisCollectorV3.OutputCumulator} (atspair:string)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_ToggleUpgrade" "setup")
+                (UR_OwnerKonto atspair) (ref-IGNIS::URC_IsVirtualGasZero) [])
+        )
+    )
+    (defun URCi_SwitchColdRecovery:object{IgnisCollectorV3.OutputCumulator} (atspair:string)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_SwitchColdRecovery" "setup")
+                (UR_OwnerKonto atspair) (ref-IGNIS::URC_IsVirtualGasZero) [])
+        )
+    )
+    (defun URCi_ControlHotRecoveryFee:object{IgnisCollectorV3.OutputCumulator} (atspair:string)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_ControlHotRecoveryFee" "fee")
+                (UR_OwnerKonto atspair) (ref-IGNIS::URC_IsVirtualGasZero) [])
+        )
+    )
+    (defun URCi_SetHotRecoveryFees:object{IgnisCollectorV3.OutputCumulator} (atspair:string)
+        @doc "Cost preview for the ATS|C_SetHotRecoveryFee client (core fn is plural, the \
+            \ Talos op is singular — billed under the TALOS name like every other key)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_SetHotRecoveryFee" "fee")
+                (UR_OwnerKonto atspair) (ref-IGNIS::URC_IsVirtualGasZero) [])
+        )
+    )
+    (defun URCi_SwitchHotRecovery:object{IgnisCollectorV3.OutputCumulator} (atspair:string)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_SwitchHotRecovery" "setup")
+                (UR_OwnerKonto atspair) (ref-IGNIS::URC_IsVirtualGasZero) [])
+        )
+    )
+    (defun URCi_SetDirectRecoveryFee:object{IgnisCollectorV3.OutputCumulator} (atspair:string)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_SetDirectRecoveryFee" "fee")
+                (UR_OwnerKonto atspair) (ref-IGNIS::URC_IsVirtualGasZero) [])
+        )
+    )
+    (defun URCi_SwitchDirectRecovery:object{IgnisCollectorV3.OutputCumulator} (atspair:string)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (ref-IGNIS::UC_IgnisPrice "ATS|C_SwitchDirectRecovery" "setup")
+                (UR_OwnerKonto atspair) (ref-IGNIS::URC_IsVirtualGasZero) [])
+        )
+    )
+    ;;  Construct-with-price (pure): also reused for C_AddHotRBT's ico0 (identical token-issue construct).
+    (defun URCi_AddSecondary:object{IgnisCollectorV3.OutputCumulator} ()
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator (ref-IGNIS::UC_IgnisPrice "ATS|C_AddSecondary" "ats-secondary") ATS|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
+        )
+    )
+    (defun URCi_AddHotRBT:object{IgnisCollectorV3.OutputCumulator} (atspair:string hot-rbt:string)
+        @doc "Cost preview for C_AddHotRBT — pure re-derivation of its 3-leg concat: an \
+            \ AddSecondary leg + a conditional hot-rbt RotateOwnership (only when the hot-rbt \
+            \ is not already owned by ATS|SC_NAME) + the hot-rbt Control lock."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (hot-rbt-owner:string (ref-DPOF::UR_Konto hot-rbt))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (URCi_AddSecondary)
+                    (if (!= hot-rbt-owner ATS|SC_NAME) (ref-DPOF::URCi_RotateOwnership hot-rbt) EOC)
+                    (ref-DPOF::URCi_Control hot-rbt)
+                ]
+                []
+            )
+        )
+    )
+    (defun URCi_SetColdRecoveryFees:object{IgnisCollectorV3.OutputCumulator} ()
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator (* (ref-IGNIS::UC_IgnisLeg "tier-biggest") 20.0) ATS|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
+        )
+    )
+    ;;  ToggleParameterLock: full cumulator re-derived from unlocks (read PRE-increment — see C_).
+    (defun URCi_ToggleParameterLock:object{IgnisCollectorV3.OutputCumulator} (atspair:string toggle:bool)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (unlock-costs:[decimal] (if toggle [0.0 0.0] (ref-IGNIS::UC_FeeUnlockPrice)))
+                (gas-costs:decimal (+ (ref-IGNIS::UC_IgnisLeg "tier-small") (at 0 unlock-costs)))
+                (output:bool (> (at 1 unlock-costs) 0.0))
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator gas-costs ATS|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [output])
+        )
+    )
+    (defun URCi_ToggleParameterLockStoa:decimal (atspair:string toggle:bool)
+        @doc "STOA leg of a parameter-lock toggle: locking is free, unlocking costs the \
+            \ fee-unlock price. Read-only twin of the <XI_ToggleParameterLock> return that \
+            \ <C_ToggleParameterLock> hands to <XE_CollectStoa>, so the INFO_ preview and the \
+            \ charge move as one. Mirrors DPTF's <URCi_ToggleFeeLockStoa>."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+            )
+            (if toggle 0.0 (at 1 (ref-IGNIS::UC_FeeUnlockPrice)))
+        )
+    )
+    ;;  Issue/UpgradeBranding: :decimal price rails (cumulator output / write side-effect stays in the C_/XI).
+    (defun URCi_IssueGas:decimal (token-count:integer)
+        @doc "IGNIS issuance price per token. Sourced from the CENTRAL IG|DETER map in the \
+            \ IGNIS module (rehaul substage 5, 1 ignis = 1 cent): autostake pair issuance = $40 = 4000 ignis/pair (owner 2026-09-05). \
+            \ Shared by the exec path and its INFO_* preview, so both move as one."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+            )
+            ;;deterrence scales PER TOKEN; the op's own compute is charged ONCE
+            (+ (* (dec token-count) (ref-IGNIS::UC_IgnisDeter "issue-ats-pair"))
+               (ref-IGNIS::UC_IgnisComponents "ATS|C_Issue"))
+        )
+    )
+    (defun URCi_IssueStoa:decimal (token-count:integer)
+        @doc "STOA leg of issuance, per token. Carries the SAME DOLLAR VALUE as the IGNIS deter \
+            \ (autostake pair = $40 => 400 STOA), converted at the live STOA price by UC_StoaPrice — so \
+            \ when a real STOA price replaces the $0.10 peg the AMOUNT moves but the value the \
+            \ user pays does not. Shared by the exec path and its INFO_* preview."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+            )
+            (* (dec token-count) (ref-IGNIS::UC_StoaPrice "issue-ats-pair"))
+        )
+    )
+    (defun URCi_UpgradeBranding:decimal (months:integer)
+        (let
+            (
+                (ref-BRD:module{BrandingV2} BRD)
+            )
+            (ref-BRD::URCi_UpgradeBranding months)
+        )
+    )
+    ;;{5.4}  Validate [UEV/CAP]
+    (defun UEV_id (atspair:string)
+        (let
+            (
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
+            )
+            (ref-U|ATS::UEV_UniqueAtspair atspair)
+            (with-default-read ATS|Pairs atspair
+                { "unlocks" : -1 }
+                { "unlocks" := u }
+                (enforce
+                    (>= u 0)
+                    (format "ATS-Pair {} does not exist" [atspair])
+                )
+            )
+        )
+    )
+    (defun UEV_CanUpgradeON (atspair:string)
+        @doc "Gates ATS|S>CONTROL (C_Control: can-change-owner/syphoning/hibernate). \
+            \ can-upgrade is settable via C_ToggleUpgrade (audit finding #21L / L3)."
+        (let
+            (
+                (x:bool (UR_CanUpgrade atspair))
+            )
+            (enforce x (format "{} properties cannot be upgraded" [atspair]))
+        )
+    )
+    (defun UEV_CanChangeOwnerON (atspair:string)
+        (UEV_id atspair)
+        (let
+            (
+                (x:bool (UR_CanChangeOwner atspair))
+            )
+            (enforce (= x true) (format "ATS Pair {} ownership cannot be changed" [atspair]))
+        )
+    )
+    (defun UEV_RewardTokenExistance (atspair:string reward-token:string existance:bool)
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (existance-check:bool (ref-DPTF::URC_IzRTg atspair reward-token))
+            )
+            (enforce 
+                (= existance-check existance) 
+                (format "{} Existance isnt verified for Token {} as RT with ATS Pair {}" [existance reward-token atspair])
+            )
+        )
+    )
+    (defun UEV_RewardBearingTokenExistance (atspair:string reward-bearing-token:string existance:bool cold-or-hot:bool)
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                (existance-check:bool
+                    (if cold-or-hot
+                        (ref-DPTF::URC_IzRBTg atspair reward-bearing-token)
+                        (ref-DPOF::URC_IzRBTg atspair reward-bearing-token)
+                    )
+                )
+            )
+            (enforce (= existance-check existance) (format "{} Existance isnt verified for Token {} as RBT with ATS Pair {}" [existance reward-bearing-token atspair]))
+        )
+    )
+    (defun UEV_ParameterLockState (atspair:string state:bool)
+        (let
+            (
+                (x:bool (UR_Lock atspair))
+            )
+            (enforce (= x state) (format "Parameter-lock for ATS Pair {} must be set to {} for this operation" [atspair state]))
+        )
+    )
+    (defun UEV_EliteState (atspair:string state:bool)
+        (let
+            (
+                (x:bool (UR_EliteMode atspair))
+            )
+            (enforce (= x state) (format "Elite-Mode for ATS Pair {} must be set to {} for this operation" [atspair state]))
+        )
+    )
+    (defun UEV_ColdRecoveryState (atspair:string state:bool)
+        (let
+            (
+                (x:bool (UR_ToggleColdRecovery atspair))
+            )
+            (enforce (= x state) (format "Cold Recovery for ATS Pair {} must be set to {} for exec" [atspair state]))
+        )
+    )
+    (defun UEV_HotRecoveryState (atspair:string state:bool)
+        (let
+            (
+                (x:bool (UR_ToggleHotRecovery atspair))
+            )
+            (enforce (= x state) (format "Hot Recovery for ATS Pair {} must be set to {} for exec" [atspair state]))
+        )
+    )
+    (defun UEV_DirectRecoveryState (atspair:string state:bool)
+        (let
+            (
+                (x:bool (UR_ToggleDirectRecovery atspair))
+            )
+            (enforce (= x state) (format "Direct Recovery for ATS Pair {} must be set to {} for exec" [atspair state]))
+        )
+    )
+    (defun UEV_IssueData (atspair:string index-decimals:integer reward-token:string reward-bearing-token:string)
+        (let
+            (
+                (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (rt-ftc:string (take 2 reward-token))
+                (rbt-ftc:string (take 2 reward-bearing-token))
+            )
+            ;;0]Index name shape - relocated here from XI_Issue (StoicSyntax §7.20 step 1: an
+            ;;  enforcement does not belong in an X_). Runs per element inside ATS|C>ISSUE, the
+            ;;  single place it belongs. <atspair> was a DEAD parameter until now, and the caller
+            ;;  no longer burns a UDC_Makeid per element to build a value nothing read.
+            (ref-U|ATS::UEV_AutostakeIndex atspair)
+            (ref-U|DALOS::UEV_Decimals index-decimals)
+            ;;1]Token Ownership
+            (ref-DPTF::CAP_Owner reward-token)
+            (ref-DPTF::CAP_Owner reward-bearing-token)
+            ;;2]Cannot register the Same Token as RT and RBT
+            (enforce (!= reward-token reward-bearing-token) "RT must be different from RBT")
+            ;;3]RTs and RBTs cannot be F|, R|, or LP Tokens (S|, W|, P|, - Tokens)
+            (enforce
+                (and
+                    (not (contains rt-ftc ["F|" "R|" "S|" "W|" "P|"]))
+                    (not (contains rbt-ftc ["F|" "R|" "S|" "W|" "P|"]))
+                )
+                "An Autostake Pool cannot be issued when either the RT or RBT are Special or LP Tokens"
+            )
+        )
+    )
+    (defun CAP_Owner (id:string)
+        @doc "Enforces Atspair Ownership"
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV2} DALOS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership (UR_OwnerKonto id))
+        )
+    )
+    ;;{5.5}  Write [W]
+    ;;{5.6}  Aux/X
+    ;;Protection: Class 1 — Innate protection offered by XI_Issue, XE_Issue,
+    ;;Protection:          XE_UpdateRewardToken, XE_UpdateRewardBearingToken
+    (defun XI_FoldedIssue:[string]
+        (
+            account:string
+            atspair:[string]
+            index-decimals:[integer]
+            reward-token:[string]
+            rt-nfr:[bool]
+            reward-bearing-token:[string]
+            rbt-nfr:[bool]
+        )
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (ref-BRD:module{BrandingV2} BRD)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+            )
+            (fold
+                (lambda
+                    (acc:[string] index:integer)
+                    (let
+                        (
+                            (ats-id:string
+                                (XI_Issue
+                                    account
+                                    (at index atspair)
+                                    (at index index-decimals)
+                                    (at index reward-token)
+                                    (at index rt-nfr)
+                                    (at index reward-bearing-token)
+                                    (at index rbt-nfr)
+                                )
+                            )
+                        )
+                        (ref-BRD::XE_Issue ats-id)
+                        (ref-DPTF::XE_UpdateRewardToken ats-id (at index reward-token) true)
+                        (ref-DPTF::XE_UpdateRewardBearingToken ats-id (at index reward-bearing-token))
+                        (ref-U|LST::UC_AppL acc ats-id)
+                    )
+                )
+                []
+                (enumerate 0 (- (length atspair) 1))
+            )
+        )
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_Issue:string
+        (
+            account:string
+            atspair:string
+            index-decimals:integer
+            reward-token:string
+            rt-nfr:bool
+            reward-bearing-token:string
+            rbt-nfr:bool
+        )
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-U|DALOS:module{UtilityDalosV2} U|DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
+                (ats-sc:string ATS|SC_NAME)
+                (id:string (ref-U|DALOS::UDC_Makeid atspair))
+            )
+            (insert ATS|Pairs id
+                {"id"                       : id
+                ,"owner-konto"              : account
+                ,"can-upgrade"              : true
+                ,"can-change-owner"         : true
+                ,"syphoning"                : false
+                ,"hibernate"                : false
+                ,"pair-index-name"          : atspair
+                ,"index-decimals"           : index-decimals
+                ,"royalty-promile"          : 0.0
+                ,"syphon"                   : 1.0
+                ;;
+                ,"peak-hibernate-promile"   : 120.0
+                ,"hibernate-decay"          : 0.008
+                ;;
+                ,"parameter-lock"           : false
+                ,"unlocks"                  : 0
+                ;;
+                ,"reward-tokens"            : [(UDC_ComposePrimaryRewardToken reward-token rt-nfr)]
+                ;;
+                ;;Cold Recovery
+                ,"c-rbt"                    : reward-bearing-token
+                ,"c-nfr"                    : rbt-nfr
+                ,"c-positions"              : -1
+                ,"c-limits"                 : [0.0]
+                ,"c-array"                  : [[0.0]]
+                ,"c-fr"                     : true
+                ,"c-duration"               : (ref-U|ATS::UCv_MakeSoftIntervals 300 6)
+                ,"c-elite-mode"             : false
+                ;;
+                ;;Hot Recovery
+                ,"h-rbt"                    : BAR
+                ,"h-fr"                     : true
+                ,"h-promile"                : 100.0
+                ,"h-decay"                  : 1
+                ;;
+                ;;Direct Recovery
+                ,"d-promile"                : 0.0
+                ;;
+                ;;Toggle Recoveries
+                ,"cold-recovery"            : false
+                ,"hot-recovery"             : false
+                ,"direct-recovery"          : false                
+                }
+            )
+            (ref-DPTF::XBv_DeployAccount reward-token account)
+            (ref-DPTF::XBv_DeployAccount reward-bearing-token account)
+            (ref-DPTF::XBv_DeployAccount reward-token ats-sc)
+            (ref-DPTF::XBv_DeployAccount reward-bearing-token ats-sc)
+            id
+        )
+    )
+    ;;Protection: Class 3 — Custom: ATS|S>ROTATE_OWNERSHIP
+    (defun XI_ChangeOwnership (atspair:string new-owner:string)
+        (require-capability (ATS|S>ROTATE_OWNERSHIP atspair new-owner))
+        (update ATS|Pairs atspair
+            {"owner-konto" : new-owner}
+        )
+    )
+    ;;Protection: Class 3 — Custom: ATS|S>CONTROL
+    (defun XI_Control (atspair:string can-change-owner:bool syphoning:bool hibernate:bool)
+        (require-capability (ATS|S>CONTROL atspair hibernate))
+        (update ATS|Pairs atspair
+            {"can-change-owner" : can-change-owner
+            ,"syphoning"        : syphoning
+            ,"hibernate"        : hibernate}
+        )
+    )
+    ;;Protection: Class 3 — Custom: ATS|S>ROYALTY
+    (defun XI_UpdateRoyalty (atspair:string royalty:decimal)
+        (require-capability (ATS|S>ROYALTY atspair royalty))
+        (update ATS|Pairs atspair
+            {"royalty-promile" : royalty}
+        )
+    )
+    ;;Protection: Class 3 — Custom: ATS|S>SYPHON
+    (defun XI_UpdateSyphon (atspair:string syphon:decimal)
+        (require-capability (ATS|S>SYPHON atspair syphon))
+        (update ATS|Pairs atspair
+            {"syphon" : syphon}
+        )
+    )
+    ;;Protection: Class 3 — Custom: ATS|S>SET-HIBERNATION-FEES
+    (defun XI_SetHibernationFees (atspair:string peak:decimal decay:decimal)
+        (require-capability (ATS|S>SET-HIBERNATION-FEES atspair peak decay))
+        (update ATS|Pairs atspair
+            {"peak-hibernate-promile"   : peak
+            ,"hibernate-decay"          : decay}
+        )
+    )
+    ;;
+    ;;Protection: Class 2 — SECURE
+    (defun XI_ToggleParameterLock:[decimal] (atspair:string toggle:bool)
+        (require-capability (SECURE))
+        (update ATS|Pairs atspair
+            { "parameter-lock" : toggle}
+        )
+        (if toggle
+            [0.0 0.0]
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                )
+                (ref-IGNIS::UC_FeeUnlockPrice)
+            )
+        )
+    )
+    ;;Protection: Class 2 — SECURE
+    (defun XI_IncrementParameterUnlocks (atspair:string)
+        (require-capability (SECURE))
+        (with-read ATS|Pairs atspair
+            { "unlocks" := u }
+            (update ATS|Pairs atspair
+                {"unlocks" : (+ u 1)}
+            )
+        )
+    )
+    ;;
+    ;;Protection: Class 3 — Custom: ATS|C>ADD-REWARD-TOKEN
+    (defun XI_AddSecondary (atspair:string reward-token:string rt-nfr:bool)
+        (require-capability (ATS|C>ADD-REWARD-TOKEN atspair reward-token))
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+            )
+            (with-read ATS|Pairs atspair
+                { "reward-tokens" := rt }
+                (update ATS|Pairs atspair
+                    {"reward-tokens" : (ref-U|LST::UC_AppL rt (UDC_ComposePrimaryRewardToken reward-token rt-nfr))}
+                )
+            )
+        )
+    )
+    ;;
+    ;;Protection: Class 3 — Custom: ATS|C>CONTROL-COLD-FEES
+    (defun XI_ControlColdFees (atspair:string c-nfr:bool c-fr:bool)
+        (require-capability (ATS|C>CONTROL-COLD-FEES atspair))
+        (update ATS|Pairs atspair
+            {"c-nfr"    : c-nfr
+            ,"c-fr"     : c-fr}
+        )
+    )
+    ;;Protection: Class 3 — Custom: ATS|C>SET_COLD_FEES
+    (defun XI_SetColdFee (atspair:string fee-positions:integer fee-thresholds:[decimal] fee-array:[[decimal]])
+        (require-capability (ATS|C>SET_COLD_FEES atspair fee-positions fee-thresholds fee-array))
+        (update ATS|Pairs atspair
+            {"c-positions"  : fee-positions
+            ,"c-limits"     : fee-thresholds
+            ,"c-array"      : fee-array}
+        )
+    )
+    ;;Protection: Class 3 — Custom: ATS|C>SET_COLD-DURATION
+    (defun XI_SetCRD (atspair:string soft-or-hard:bool base:integer growth:integer)
+        (require-capability (ATS|C>SET_COLD-DURATION atspair soft-or-hard base growth))
+        (let
+            (
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
+            )
+            (if soft-or-hard
+                (update ATS|Pairs atspair
+                    { "c-duration" : (ref-U|ATS::UCv_MakeSoftIntervals base growth)}
+                )
+                (update ATS|Pairs atspair
+                    { "c-duration" : (ref-U|ATS::UCv_MakeHardIntervals base growth)}
+                )
+            )
+        )
+    )
+    ;;Protection: Class 3 — Custom: ATS|C>TOGGLE_ELITE
+    (defun XI_ToggleElite (atspair:string toggle:bool)
+        (require-capability (ATS|C>TOGGLE_ELITE atspair toggle))
+        (update ATS|Pairs atspair
+            { "c-elite-mode" : toggle}
+        )
+    )
+    ;;Protection: Class 3 — Custom: ATS|C>TOGGLE_UPGRADE
+    (defun XI_ToggleUpgrade (atspair:string toggle:bool)
+        (require-capability (ATS|C>TOGGLE_UPGRADE atspair toggle))
+        (update ATS|Pairs atspair
+            { "can-upgrade" : toggle}
+        )
+    )
+    ;;Protection: Class 3 — Custom: ATS|S>SWITCH-COLD-RECOVERY
+    (defun XI_SwitchColdRecovery (atspair:string toggle:bool)
+        (require-capability (ATS|S>SWITCH-COLD-RECOVERY atspair toggle))
+        (update ATS|Pairs atspair
+            { "cold-recovery" : toggle}
+        )
+    )
+    ;;
+    ;;Protection: Class 3 — Custom: ATS|C>ADD-HOT-RBT
+    (defun XI_AddHotRBT (atspair:string hot-rbt:string)
+        (require-capability (ATS|C>ADD-HOT-RBT atspair hot-rbt))
+        (update ATS|Pairs atspair
+            {"h-rbt" : hot-rbt}
+        )
+    )
+    ;;Protection: Class 3 — Custom: ATS|C>CONTROL-HOT-FEE
+    (defun XI_ControlHotFee (atspair:string h-fr:bool)
+        (require-capability (ATS|C>CONTROL-HOT-FEE atspair))
+        (update ATS|Pairs atspair
+            {"h-fr"    : h-fr}
+        )
+    )
+    ;;Protection: Class 3 — Custom: ATS|C>SET_HOT_FEES
+    (defun XI_SetHotFees (atspair:string promile:decimal decay:integer)
+        (require-capability (ATS|C>SET_HOT_FEES atspair promile decay))
+        (update ATS|Pairs atspair
+            {"h-promile"    : promile
+            ,"h-decay"      : decay}
+        )
+    )
+    ;;Protection: Class 3 — Custom: ATS|S>SWITCH-HOT-RECOVERY
+    (defun XI_SwitchHotRecovery (atspair:string toggle:bool)
+        (require-capability (ATS|S>SWITCH-HOT-RECOVERY atspair toggle))
+        (update ATS|Pairs atspair
+            { "hot-recovery" : toggle}
+        )
+    )
+    ;;
+    ;;Protection: Class 3 — Custom: ATS|C>SET_DIRECT_FEE
+    (defun XI_SetDirectFee (atspair:string promile:decimal)
+        (require-capability (ATS|C>SET_DIRECT_FEE atspair promile))
+        (update ATS|Pairs atspair
+            {"d-promile"    : promile}
+        )
+    )
+    ;;Protection: Class 3 — Custom: ATS|S>SWITCH-DIRECT-RECOVERY
+    (defun XI_SwitchDirectRecovery (atspair:string toggle:bool)
+        (require-capability (ATS|S>SWITCH-DIRECT-RECOVERY atspair toggle))
+        (update ATS|Pairs atspair
+            { "direct-recovery" : toggle}
+        )
+    )
+    ;;
+    ;;
+    ;;
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
+    (defun XE_RemoveSecondary (atspair:string reward-token:string)
+        (P|UEV_IMC)
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                (rtp:integer (URCv_RewardTokenPosition atspair reward-token))
+            )
+            (with-read ATS|Pairs atspair
+                { "reward-tokens" := rt }
+                (update ATS|Pairs atspair
+                    {"reward-tokens" :
+                        (ref-U|LST::UC_RemoveItem  rt (at rtp rt))
+                    }
+                )
+            )
+        )
+    )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
+    (defun XE_UpdateRUR (atspair:string reward-token:string rur:integer direction:bool amount:decimal)
+        (P|UEV_IMC)
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV2} U|LST)
+                ;;
+                (rtp:integer (URCv_RewardTokenPosition atspair reward-token))
+                (nfr:bool (at rtp (UR_RewardTokenNFR atspair)))
+                (resident:decimal (at rtp (UR_RewardTokenRUR atspair 1)))
+                (unbonding:decimal (at rtp (UR_RewardTokenRUR atspair 2)))
+                (royalty:decimal (at rtp (UR_RewardTokenRUR atspair 3)))
+                ;;
+                (rur-amount:decimal
+                    (cond
+                        ((= rur 1) (if direction (+ resident amount) (- resident amount)))
+                        ((= rur 2) (if direction (+ unbonding amount) (- unbonding amount)))
+                        ((= rur 3) (if direction (+ royalty amount) (- royalty amount)))
+                        0.0
+                    )
+                )
+                (new-rt-obj:object{AutostakeV3.ATS|RewardTokenSchemaV2}
+                    (cond
+                        ((= rur 1) (UDC_RT reward-token nfr rur-amount unbonding royalty))
+                        ((= rur 2) (UDC_RT reward-token nfr resident rur-amount royalty))
+                        ((= rur 3) (UDC_RT reward-token nfr resident unbonding rur-amount))
+                        (UDC_RT reward-token nfr 0.0 0.0 0.0)
+                    )
+                )
+            )
+            (with-read ATS|Pairs atspair
+                { "reward-tokens" := rt }
+                (update ATS|Pairs atspair
+                    { "reward-tokens" : (ref-U|LST::UC_ReplaceItem rt (at rtp rt) new-rt-obj)}
+                )
+            )
+        )
+    )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
+    (defun XE_SpawnAutostakeAccount (atspair:string account:string)
+        (P|UEV_IMC)
+        (let
+            (
+                (zero:object{UtilityAtsV3.Awo} (UDC_MakeZeroUnstakeObject atspair))
+                (n:object{UtilityAtsV3.Awo} (UDC_MakeNegativeUnstakeObject atspair))
+            )
+            (with-default-read ATS|Ledger (UC_AtspairAccount atspair account)
+                (UDCx_Balance [zero] n n n n n n n atspair account)
+                {"P0"       := p0
+                ,"P1"       := p1
+                ,"P2"       := p2
+                ,"P3"       := p3
+                ,"P4"       := p4
+                ,"P5"       := p5
+                ,"P6"       := p6
+                ,"P7"       := p7
+                ,"id"       := i
+                ,"account"  := a}
+                (write ATS|Ledger (UC_AtspairAccount atspair account)
+                    (UDCx_Balance p0 p1 p2 p3 p4 p5 p6 p7 i a)
+                )
+            )
+        )
+    )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
+    (defun XE_ReshapeUnstakeAccount (atspair:string account:string rp:integer)
+        (P|UEV_IMC)
+        (let
+            (
+                (ref-U|ATS:module{UtilityAtsV3} U|ATS)
+            )
+            (with-read ATS|Ledger (UC_AtspairAccount atspair account)
+                {"P0" := p0, "P1" := p1, "P2" := p2, "P3" := p3, "P4" := p4, "P5" := p5, "P6" := p6, "P7" := p7, "id" := id, "account" := acc}
+                (update ATS|Ledger (UC_AtspairAccount atspair account)
+                    (UDCx_Balance
+                        (ref-U|ATS::UC_MultiReshapeUnstakeObject p0 rp)
+                        (ref-U|ATS::UC_ReshapeUnstakeObject p1 rp)
+                        (ref-U|ATS::UC_ReshapeUnstakeObject p2 rp)
+                        (ref-U|ATS::UC_ReshapeUnstakeObject p3 rp)
+                        (ref-U|ATS::UC_ReshapeUnstakeObject p4 rp)
+                        (ref-U|ATS::UC_ReshapeUnstakeObject p5 rp)
+                        (ref-U|ATS::UC_ReshapeUnstakeObject p6 rp)
+                        (ref-U|ATS::UC_ReshapeUnstakeObject p7 rp)
+                        id
+                        acc
+                    )
+                )
+            )
+        )
+    )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
+    (defun XE_UpP0 (atspair:string account:string obj:[object{UtilityAtsV3.Awo}])
+        (P|UEV_IMC)
+        (update ATS|Ledger (UC_AtspairAccount atspair account)
+            { "P0" : obj}
+        )
+    )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
+    (defun XE_UpP1 (atspair:string account:string obj:object{UtilityAtsV3.Awo})
+        (P|UEV_IMC)
+        (update ATS|Ledger (UC_AtspairAccount atspair account)
+            { "P1"  : obj}
+        )
+    )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
+    (defun XE_UpP2 (atspair:string account:string obj:object{UtilityAtsV3.Awo})
+        (P|UEV_IMC)
+        (update ATS|Ledger (UC_AtspairAccount atspair account)
+            { "P2"  : obj}
+        )
+    )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
+    (defun XE_UpP3 (atspair:string account:string obj:object{UtilityAtsV3.Awo})
+        (P|UEV_IMC)
+        (update ATS|Ledger (UC_AtspairAccount atspair account)
+            { "P3"  : obj}
+        )
+    )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
+    (defun XE_UpP4 (atspair:string account:string obj:object{UtilityAtsV3.Awo})
+        (P|UEV_IMC)
+        (update ATS|Ledger (UC_AtspairAccount atspair account)
+            { "P4"  : obj}
+        )
+    )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
+    (defun XE_UpP5 (atspair:string account:string obj:object{UtilityAtsV3.Awo})
+        (P|UEV_IMC)
+        (update ATS|Ledger (UC_AtspairAccount atspair account)
+            { "P5"  : obj}
+        )
+    )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
+    (defun XE_UpP6 (atspair:string account:string obj:object{UtilityAtsV3.Awo})
+        (P|UEV_IMC)
+        (update ATS|Ledger (UC_AtspairAccount atspair account)
+            { "P6"  : obj}
+        )
+    )
+    ;;Protection: Class 4 — IMC (P|UEV_IMC, which composes SECURE)
+    (defun XE_UpP7 (atspair:string account:string obj:object{UtilityAtsV3.Awo})
+        (P|UEV_IMC)
+        (update ATS|Ledger (UC_AtspairAccount atspair account)
+            { "P7"  : obj}
+        )
+    )
+    ;;{5.7}  User [A/C]
+    (defun AU_UnstakeAccounts (keyz:[string])
+        @doc "Get <keyz> with <(UR_KEYS)>, or update one a time"
+        (with-capability (AHU)
+            (map (AU_UnstakeAccount) keyz)
+        )
+    )
+    (defun AU_UnstakeAccount (ky:string)
+        (require-capability (SECURE))
+        (update ATS|Ledger ky
+            {"id"       : (drop -163 ky)
+            ,"account"  : (take -162 ky)}
+        )
+    )
+    (defun AU_AutostakePairs (ids:[string])
+        @doc "Get <ids> with <(UR_P-KEYS)>, or update one a time"
+        (with-capability (AHU)
+            (map (AU_AutostakePair) ids)
+        )
+    )
+    (defun AU_AutostakePair (id:string)
+        (require-capability (SECURE))
+        (update ATS|Pairs id
+            {"id"       : id}
+        )
+    )
+    (defun UEV_ExecutorIsOwnerKonto (executor:string entity-id:string)
+        @doc "BINDS <executor> to <entity-id>'s owner. Ownership is proven INDIRECTLY by the \
+            \ branding capability; this supplies the other half -- that the account the caller \
+            \ NAMED is that owner. (patron/executor canon 2.2, indirect route named.)"
+        (enforce (= executor (UR_OwnerKonto entity-id)) "Executor is not the Entity Owner")
+    )    (defun UEV_ExecutorIsHotRbtOwner (executor:string hot-rbt:string)
+        @doc "BINDS <executor> to the owner of the ATS pair that issued <hot-rbt>. \
+            \ \
+            \ A hot-RBT does not name its pool directly -- the pool is read back through DPOF \
+            \ (<UR_RewardBearingToken>), which is exactly what ATS|C>REPURPOSE-HOT-RBT does \
+            \ before its <CAP_Owner atspair>. That capability gates WHICH CALLER may act; the \
+            \ <ATS|GOV> it then composes supplies the MODULE authority, needed because the \
+            \ hot-RBT's DPOF owner-konto is ATS|SC_NAME and only ATS's own code can prove that. \
+            \ Two different jobs, and only the first one is about the executor. \
+            \ This supplies the binding half: that the account the caller NAMED is that owner."
+        (let
+            (
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+            )
+            (enforce
+                (= executor (UR_OwnerKonto (ref-DPOF::UR_RewardBearingToken hot-rbt)))
+                "Executor is not the ATS-Pair Owner"
+            )
+        )
+    )
+
+    (defun C_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+        @doc "Updates <entity-id>'s pending branding. <executor> is bound to the entity OWNER; \
+            \ ownership itself is proven by ATS|C>UPDATE-BRD. The binding is what keeps the \
+            \ parameter from being a name nobody reads."
+        (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor entity-id)
+        (let
+            (
+                (ref-BRD:module{BrandingV2} BRD)
+            )
+            (with-capability (ATS|C>UPDATE-BRD entity-id)
+                (ref-BRD::XE_UpdatePendingBranding entity-id logo description website social)
+                (URCi_UpdatePendingBranding entity-id)
+            )
+        )
+    )
+    (defun C_UpgradeBranding (patron:string executor:string entity-id:string months:integer)
+        (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor entity-id)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-BRD:module{BrandingV2} BRD)
+            )
+            ;;Perform the branding upgrade (side effect); bill the STOA via the URCi (== XE_UpgradeBranding's price)
+            (with-capability (ATS|C>UPGRADE-BRD entity-id)
+                (ref-BRD::XE_UpgradeBranding entity-id executor months)
+            )
+            (ref-IGNIS::XB_CollectStoaWithTrigger patron (URCi_UpgradeBranding months) false)
+        )
+    )
+    ;;Hot RBT Management
+    (defun HOT-RBT|C_UpdatePendingBranding:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string executor:string entity-id:string logo:string description:string website:string social:[object{BrandingV2.SocialSchema}])
+        (P|UEV_IMC)
+        (let
+            (
+                (ref-B|DPOF:module{BrandingUsagePrimaryV2} DPOF)
+            )
+            (with-capability (ATS|C>HOT-RBT-UPDATE-BRD entity-id)
+                (ref-B|DPOF::C_UpdatePendingBranding patron executor entity-id logo description website social)
+            )
+        )
+    )
+    (defun HOT-RBT|C_UpgradeBranding (patron:string executor:string entity-id:string months:integer)
+        (P|UEV_IMC)
+        (let
+            (
+                (ref-B|DPOF:module{BrandingUsagePrimaryV2} DPOF)
+            )
+            (with-capability (ATS|C>HOT-RBT-UPGRADE-BRD entity-id)
+                (ref-B|DPOF::C_UpgradeBranding patron executor entity-id months)
+            )
+        )
+    )
+    (defun HOT-RBT|C_Repurpose:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string executor:string executee:string hot-rbt:string nonce:integer)
+        @doc "Fix (audit finding #22L test-coverage sweep): UR_NonceMetaData was called \
+            \ with zero arguments where it requires (id nonce) - an unconditional crash, \
+            \ never caught because this function had zero test coverage before now. \
+            \ Fetches the ORIGINAL nonce's own metadata, so the replacement mint carries \
+            \ forward the same mint-time (and any other metadata-derived math stays \
+            \ correct) rather than fabricating fresh metadata for a seized position."
+        (P|UEV_IMC)
+        (UEV_ExecutorIsHotRbtOwner executor hot-rbt)
+        (with-capability (ATS|C>REPURPOSE-HOT-RBT hot-rbt)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    ;;
+                    (nonce-holder:string (ref-DPOF::UR_NonceHolder hot-rbt nonce))
+                    (nonce-supply:decimal (ref-DPOF::UR_NonceSupply hot-rbt nonce))
+                    (nonce-meta-data-chain:[object] (ref-DPOF::UR_NonceMetaData hot-rbt nonce))
+                    (nonces-used:integer (ref-DPOF::UR_NoncesUsed hot-rbt))
+                )
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators 
+                    [
+                        ;;1]Freeze <nonce> owner
+                        (ref-DPOF::C_ToggleFreezeAccount patron (ref-DPOF::UR_Konto hot-rbt) nonce-holder hot-rbt true)
+                        ;;2]Wipe <nonce> on owner
+                        (ref-DPOF::C_WipeClean patron (ref-DPOF::UR_Konto hot-rbt) nonce-holder hot-rbt [nonce])
+                        ;;3]Unfreeze <nonce> owner
+                        (ref-DPOF::C_ToggleFreezeAccount patron (ref-DPOF::UR_Konto hot-rbt) nonce-holder hot-rbt false)
+                        ;;4]Mint new DPOF on ATS|SC_NAME
+                        (ref-DPOF::C_Mint patron ATS|SC_NAME hot-rbt nonce-supply nonce-meta-data-chain)
+                        ;;5]Transfer it to <executee>
+                        (ref-DPOF::C_Transfer patron ATS|SC_NAME executee hot-rbt [(+ nonces-used 1)] true)
+                    ] 
+                    []
+                )
+            )
+        )
+    )
+    ;;
+    (defun C_Issue:object{IgnisCollectorV3.OutputCumulator}
+        (
+            patron:string
+            executor:string
+            atspair:[string]
+            index-decimals:[integer]
+            reward-token:[string]
+            rt-nfr:[bool]
+            reward-bearing-token:[string]
+            rbt-nfr:[bool]
+        )
+        (P|UEV_IMC)
+        (with-capability (ATS|C>ISSUE executor atspair index-decimals reward-token rt-nfr reward-bearing-token rbt-nfr)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (l1:integer (length atspair))
+                    (gas-costs:decimal (URCi_IssueGas l1))
+                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                    (stoa-costs:decimal (URCi_IssueStoa l1))
+                    (ats-ids:[string]
+                        (XI_FoldedIssue executor atspair index-decimals reward-token rt-nfr reward-bearing-token rbt-nfr)
+                    )
+                )
+                (ref-IGNIS::XE_CollectStoa patron stoa-costs)
+                (ref-IGNIS::UDC_ConstructOutputCumulator gas-costs ATS|SC_NAME trigger ats-ids)
+                
+            )
+        )
+    )
+    (defun C_RotateOwnership:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string executor:string executee:string atspair:string)
+        (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor atspair)
+        (with-capability (ATS|S>ROTATE_OWNERSHIP atspair executee)
+            (XI_ChangeOwnership atspair executee)
+            (URCi_RotateOwnership atspair)
+        )
+    )
+    (defun C_Control:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string executor:string atspair:string can-change-owner:bool syphoning:bool hibernate:bool)
+        (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor atspair)
+        (with-capability (ATS|S>CONTROL atspair hibernate)
+            (XI_Control atspair can-change-owner syphoning hibernate)
+            (URCi_Control atspair)
+        )
+    )
+    (defun C_UpdateRoyalty:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string executor:string atspair:string royalty:decimal)
+        (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor atspair)
+        (with-capability (ATS|S>ROYALTY atspair royalty)
+            (XI_UpdateRoyalty atspair royalty)
+            (URCi_UpdateRoyalty atspair)
+        )
+    )
+    (defun C_UpdateSyphon:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string executor:string atspair:string syphon:decimal)
+        (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor atspair)
+        (with-capability (ATS|S>SYPHON atspair syphon)
+            (XI_UpdateSyphon atspair syphon)
+            (URCi_UpdateSyphon atspair)
+        )
+    )
+    ;;
+    (defun C_SetHibernationFees:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string executor:string atspair:string peak:decimal decay:decimal)
+        (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor atspair)
+        (with-capability (ATS|S>SET-HIBERNATION-FEES atspair peak decay)
+            (XI_SetHibernationFees atspair peak decay)
+            (URCi_SetHibernationFees atspair)
+        )
+    )
+    ;;
+    (defun C_ToggleParameterLock:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string executor:string atspair:string toggle:bool)
+        (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor atspair)
+        (with-capability (ATS|C>TOGGLE-PARAMETER-LOCK atspair toggle)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (toggle-costs:[decimal] (XI_ToggleParameterLock atspair toggle))
+                    (stoa-costs:decimal (at 1 toggle-costs))
+                    ;;URCi computed HERE — reads unlocks BEFORE XI_IncrementParameterUnlocks below mutates it
+                    (cumulator:object{IgnisCollectorV3.OutputCumulator} (URCi_ToggleParameterLock atspair toggle))
+                )
+                (if (> stoa-costs 0.0)
+                    (do
+                        (XI_IncrementParameterUnlocks atspair)
+                        (ref-IGNIS::XE_CollectStoa patron stoa-costs)
+                    )
+                    true
+                )
+                cumulator
+            )
+        )
+    )
+    (defun C_AddSecondary:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string executor:string atspair:string reward-token:string rt-nfr:bool)
+        (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor atspair)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV2} DPTF)
+                ;;
+                (price:decimal (ref-IGNIS::UC_IgnisPrice "ATS|C_AddSecondary" "ats-secondary"))
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+            )
+            (with-capability (ATS|C>ADD-REWARD-TOKEN atspair reward-token)
+                (ref-DPTF::XB_DeployAccountWNE ATS|SC_NAME reward-token)
+                (ref-DPTF::XE_UpdateRewardToken atspair reward-token true)
+                (XI_AddSecondary atspair reward-token rt-nfr)
+                (URCi_AddSecondary)
+            )
+        )
+    )
+    ;;Cold Recovery Management
+    (defun C_ControlColdRecoveryFees:object{IgnisCollectorV3.OutputCumulator} 
+        (patron:string executor:string atspair:string c-nfr:bool c-fr:bool)
+        (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor atspair)
+        (with-capability (ATS|C>CONTROL-COLD-FEES atspair)
+            (XI_ControlColdFees atspair c-nfr c-fr)
+            (URCi_ControlColdRecoveryFees atspair)
+        )
+    )
+    (defun C_SetColdRecoveryFees:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string executor:string atspair:string fee-positions:integer fee-thresholds:[decimal] fee-array:[[decimal]])
+        (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor atspair)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                (gas-costs:decimal (* (ref-IGNIS::UC_IgnisLeg "tier-biggest") 20.0))
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+            )
+            (with-capability (ATS|C>SET_COLD_FEES atspair fee-positions fee-thresholds fee-array)
+                (XI_SetColdFee atspair fee-positions fee-thresholds fee-array)
+                (URCi_SetColdRecoveryFees)
+            )
+        )
+    )
+    (defun C_SetColdRecoveryDuration:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string executor:string atspair:string soft-or-hard:bool base:integer growth:integer)
+        (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor atspair)
+        (with-capability (ATS|C>SET_COLD-DURATION atspair soft-or-hard base growth)
+            (XI_SetCRD atspair soft-or-hard base growth)
+            (URCi_SetColdRecoveryDuration atspair)
+        )
+    )
+    (defun C_ToggleElite:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string executor:string atspair:string toggle:bool)
+        (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor atspair)
+        (with-capability (ATS|C>TOGGLE_ELITE atspair toggle)
+            (XI_ToggleElite atspair toggle)
+            (URCi_ToggleElite atspair)
+        )
+    )
+    (defun C_ToggleUpgrade:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string executor:string atspair:string toggle:bool)
+        @doc "Fix (audit finding #21L / L3): sets can-upgrade, which was previously \
+            \ permanently true with no setter. Gates C_Control (can-change-owner/ \
+            \ syphoning/hibernate) - false blocks C_Control entirely until true again."
+        (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor atspair)
+        (with-capability (ATS|C>TOGGLE_UPGRADE atspair toggle)
+            (XI_ToggleUpgrade atspair toggle)
+            (URCi_ToggleUpgrade atspair)
+        )
+    )
+    (defun C_SwitchColdRecovery:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string executor:string atspair:string toggle:bool)
+        (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor atspair)
+        (with-capability (ATS|S>SWITCH-COLD-RECOVERY atspair toggle)
+            (XI_SwitchColdRecovery atspair toggle)
+            (URCi_SwitchColdRecovery atspair)
+        )
+    )
+    ;;Hot Recovery Management
+    ;;Must be modified to either add a 0 supply Orto Fungible or Issue One
+    (defun C_AddHotRBT:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string executor:string atspair:string hot-rbt:string)
+        (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor atspair)
+        (with-capability (ATS|C>ADD-HOT-RBT atspair hot-rbt)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV3} IGNIS)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    ;;
+                    (price:decimal (ref-IGNIS::UC_IgnisPrice "ATS|C_AddHotRBT" "ats-secondary"))
+                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                    (hot-rbt-owner:string (ref-DPOF::UR_Konto hot-rbt))
+                    ;;
+                    (ico0:object{IgnisCollectorV3.OutputCumulator}
+                        (URCi_AddSecondary)
+                    )
+                    (ico1:object{IgnisCollectorV3.OutputCumulator}
+                        ;;Change Ownership to ATS|SC_NAME if it is not
+                        (if (!= hot-rbt-owner ATS|SC_NAME)
+                            (ref-DPOF::C_RotateOwnership patron (ref-DPOF::UR_Konto hot-rbt) ATS|SC_NAME hot-rbt)
+                            EOC
+                        )
+                    )
+                    (ico2:object{IgnisCollectorV3.OutputCumulator}
+                        ;;Lock Properties   <cu>    <cco>   <casr>  <ctocr> <cf>    <cw>    <cp>    <sg> to
+                        ;;                  <false> <false> <false> <false> <true>  <true>  <false> <false>
+                        (ref-DPOF::C_Control patron (ref-DPOF::UR_Konto hot-rbt) hot-rbt false false false false true true false false)
+                    )
+                )
+                (ref-DPOF::XB_DeployAccountWNE ATS|SC_NAME hot-rbt)
+                (ref-DPOF::XE_UpdateRewardBearingToken atspair hot-rbt)
+                (XI_AddHotRBT atspair hot-rbt)
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico0 ico1 ico2] [])  
+            ) 
+        )
+    )
+    (defun C_ControlHotRecoveryFee:object{IgnisCollectorV3.OutputCumulator} 
+        (patron:string executor:string atspair:string h-fr:bool)
+        (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor atspair)
+        (with-capability (ATS|C>CONTROL-HOT-FEE atspair)
+            (XI_ControlHotFee atspair h-fr)
+            (URCi_ControlHotRecoveryFee atspair)
+        )
+    )
+    (defun C_SetHotRecoveryFees:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string executor:string atspair:string promile:decimal decay:integer)
+        (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor atspair)
+        (with-capability (ATS|C>SET_HOT_FEES atspair promile decay)
+            (XI_SetHotFees atspair promile decay)
+            (URCi_SetHotRecoveryFees atspair)
+        )
+    )
+    (defun C_SwitchHotRecovery:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string executor:string atspair:string toggle:bool)
+        (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor atspair)
+        (with-capability (ATS|S>SWITCH-HOT-RECOVERY atspair toggle)
+            (XI_SwitchHotRecovery atspair toggle)
+            (URCi_SwitchHotRecovery atspair)
+        )
+    )
+    ;;Direct Recovery Management
+    (defun C_SetDirectRecoveryFee:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string executor:string atspair:string promile:decimal)
+        (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor atspair)
+        (with-capability (ATS|C>SET_DIRECT_FEE atspair promile)
+            (XI_SetDirectFee atspair promile)
+            (URCi_SetDirectRecoveryFee atspair)
+        )
+    )
+    (defun C_SwitchDirectRecovery:object{IgnisCollectorV3.OutputCumulator}
+        (patron:string executor:string atspair:string toggle:bool)
+        (P|UEV_IMC)
+        (UEV_ExecutorIsOwnerKonto executor atspair)
+        (with-capability (ATS|S>SWITCH-DIRECT-RECOVERY atspair toggle)
+            (XI_SwitchDirectRecovery atspair toggle)
+            (URCi_SwitchDirectRecovery atspair)
+        )
+    )
+
+)
+
