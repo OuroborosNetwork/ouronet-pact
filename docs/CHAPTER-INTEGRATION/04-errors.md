@@ -159,6 +159,15 @@ And the second rule, which is about your own code rather than the contract's: **
 that can miss should be wrapped.** It is catchable, so leaving it bare is a choice, not a
 constraint.
 
+**The contract often already has the check**, and using it beats writing your own. `["|"]` from
+`DPTF::UR_RewardToken` means "a reward token nowhere" — and `DPTF::URC_IzRT` returns `false` for
+exactly that case. Where a `URC_Iz*` predicate exists beside a list reader, it IS the sentinel
+test, expressed by the contract rather than inferred by you.
+
+That distinction was swept across every consumer of those two readers on 2026-09-27: one call
+site iterated the sentinel into a table key and raised, and every other was already guarded by
+the predicate. The note is in `OuronetInformational/memories/2026-09-27-bar-sentinel-sweep.md`.
+
 ### 2e. Short calls — loud, except in one position
 
 A call with too few arguments partially applies in Pact rather than erroring outright. This is
