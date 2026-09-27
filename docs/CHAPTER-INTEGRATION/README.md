@@ -13,9 +13,25 @@ because anything that did not work got corrected while it was being used.
 | file | what it is | status |
 |---|---|---|
 | `01-client-orchestration.md` | **The comprehensive one.** Every pattern where a client must do a dirty read, build something from the result, and then execute — including the multi-transaction and parallel forms. | written |
-| *(pending)* `02-signing-and-caps.md` | Which capabilities a client must sign for, per operation class | not started |
-| *(pending)* `03-cost-preview.md` | `INFO_` / `URCi_` readers and what a user should be shown before signing | not started |
-| *(pending)* `04-errors.md` | How Ouronet's refusals read, and which are user error vs state | not started |
+| `02-signing-and-caps.md` | The patron/executor/executee split, the `GAS_PAYER` shape, whose ownership is actually enforced, and the four purchases needing a computed capability | written |
+| `03-cost-preview.md` | `INFO_` readers, the `ClientInfo` shape, and the four ways to display a confidently wrong number | written |
+| `04-errors.md` | How Ouronet's refusals read, and — measured — which ones `try` can catch | written |
+
+## What each one is grounded in
+
+The chapter's rule is that a figure is read, not remembered. Where these four get their numbers:
+
+| file | grounded in |
+|---|---|
+| `01` | the module sources and REPL runs, at 2026-09-24 |
+| `02` | `Deploy/OURONET-REGISTRY.json` — sponsorship, ownership and capability blocks, at 2026-09-27 |
+| `03` | the registry's paired parameter lists, plus live `/local` calls for the response shapes |
+| `04` | a 41-operation unsigned sweep against mainnet, plus direct tests of what `try` catches |
+
+Two of those measurements contradicted something this project believed. `try` DOES catch a
+point read that misses — the first draft of `04` said it did not — and what it cannot do is run
+a `select` at all. And `ignis-discount` is the fraction you PAY, not the discount, while the
+text beside it quotes the complement. Both are recorded in place.
 
 ## Sources that live outside this folder
 

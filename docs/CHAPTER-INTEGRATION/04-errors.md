@@ -81,6 +81,14 @@ error; the reference fails to resolve and evaluation stops. In OuronetUI this su
 panels that rendered empty with no error state, because the code path that would have set the
 error never ran.
 
+**Reconciling this with `01`'s appendix**, which says a resolution error "surfaces as a default
+value rather than an exception". Both are true and they describe different layers. On the CHAIN
+it is an exception and it aborts — measured: `(try "fallback" (…UR_NoSuchFunction "x"))` returns
+the resolution error, not the fallback. In the CONSUMER it becomes a default, because a client
+that reads `.result.data` without checking `.result.status` gets `undefined` and substitutes an
+empty list. The danger `01` names is real; the defaulting is your code's, not Pact's, which
+means it is yours to remove.
+
 This is why a client must not carry hand-written Pact strings. The names change —
 `URD_ListActiveDualLinks` was renamed and broke fleet-wide authentication **twice** — and
 nothing in a TypeScript build can see a string that no longer resolves.
