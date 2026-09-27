@@ -2,9 +2,26 @@
 
 What each file in this folder is, what it must contain, and the order to write them in.
 
-This plan implements the owner directive of 2026-08-27 (`OuronetInformational/
-DOCUMENTATION-PLAN.md`), which specified a "capture-all" documentation of the entire system and
-**deferred it until the final code shape was deployed**. That gate opened 2026-09-27.
+This plan implements the owner directive of 2026-09-23, which specified a "capture-all"
+documentation of the entire system and **deferred it until the final code shape was deployed**.
+That gate opened 2026-09-27 with the ATS upgrade.
+
+**REVISED 2026-09-27, against the directive's own words rather than a summary of them.** The first
+draft of this plan was derived from `OuronetInformational/DOCUMENTATION-PLAN.md`, a same-day
+summary of the commissioning conversation. Reading the transcripts themselves
+(`REPL/tools/_transcripts.py`; passages quoted in `90-reference/04-the-owner-directive.md`) found
+that the summary had lost two whole requirements and inverted one term:
+
+| | summary said | the owner said |
+|---|---|---|
+| designation | "a virtual blockchain" | **"the sovereign defi layer of stoa chain, which is its official current designation"** — explicitly superseding the older phrase |
+| assets | a flat list of seven | **four types**, then special *variants*, then three *pool families* |
+| cryptography | not mentioned | "**a chapter for the cryptography alone is also waranted**" |
+| maintainability | not mentioned | "**tied to some sort of skeleton** … i dont want to stay a week everytime something change" |
+
+None of those is a detail. The first was on the front page of the documentation, sourced from
+`CLAUDE.md`, which still carries the retired phrase. The lesson is the one this project keeps
+relearning: **a derived document is evidence about its source, not a substitute for it.**
 
 ---
 
@@ -30,7 +47,8 @@ Three consequences:
 
 ## 2. What the directive requires
 
-Seven things. Every one gets a section; none may be dropped for length.
+**Nine** things. Every one gets a section; none may be dropped for length. (The directive as
+summarised listed seven. Items 7 and 9 below were in the conversation and not in the summary.)
 
 | # | requirement | lives in |
 |---|---|---|
@@ -40,10 +58,26 @@ Seven things. Every one gets a section; none may be dropped for length.
 | 4 | What a client or user can actually achieve | `40-journeys/` |
 | 5 | Why it is complex and why it costs — honestly | `50-economics/` |
 | 6 | Advantages over industry standards | `70-comparison/` |
-| 7 | StoicSyntax, and how it made the code semi-self-auditing | `60-methodology/` |
+| 7 | **Cryptography** — the custom curve, account derivation, browser Schnorr | `80-cryptography/` |
+| 8 | StoicSyntax, and how it made the code semi-self-auditing | `60-methodology/` |
+| 9 | **Maintainability** — a skeleton so a code change is not a week of editing | `MAINTAINING.md` |
 
-Item 7 is explicitly a **first-class chapter**, not an appendix. The directive's wording: the
-naming *is* part of the design, and it is why the audits were tractable.
+Items 7 and 8 are explicitly **first-class chapters**, not appendices — both named as "a chapter"
+in the owner's own words. For StoicSyntax the reasoning is that the naming *is* part of the
+design, and it is why the audits were tractable.
+
+Item 9 is different in kind: it is a requirement about how this folder is **built**, not about
+what it says, which is exactly why a section-by-section plan drops it. Its test is concrete —
+*when a module changes, how many files must a human edit by hand?* — and the answer has to be
+small. See `MAINTAINING.md`.
+
+**The models the owner named**, in order of fit:
+
+| reference | why |
+|---|---|
+| <https://docs.multiversx.com> | "a documetnation of the whole blcockhain, which in a sense is what Ouroent is somehow" |
+| <https://developers.uniswap.org/docs> | "where everything related to the uniswap code sits" |
+| <https://demiourgos-holdings-tm.gitbook.io/kadena> | the existing book — superseded, "a lot of stuf is stale" |
 
 ---
 
@@ -53,8 +87,8 @@ naming *is* part of the design, and it is why the audits were tractable.
 
 | file | contains |
 |---|---|
-| `01-what-ouronet-is.md` | The one-page answer. A virtual blockchain implemented entirely in smart contracts on StoaChain, with its own account model, its own gas, its own asset types and its own DeFi primitives. |
-| `02-why-it-exists.md` | The problem it solves and the bet it makes. Why a virtual chain rather than a set of contracts. |
+| `01-what-ouronet-is.md` | The one-page answer. The Sovereign DeFi Layer of StoaChain: its own account model, its own gas, four asset types and three pool families, all in smart contracts. Carries the note retiring "virtual blockchain". |
+| `02-why-it-exists.md` | The problem it solves and the bet it makes. The MultiversX lineage, why a sovereign layer rather than a set of contracts, and citizen modules as the point rather than a bonus. |
 | `03-the-shape-in-one-diagram.md` | Utilities → Core → Talos → Reads, with sovereign and citizen alongside. The mental model everything else refines. |
 | `04-how-to-read-this.md` | Reading orders for three arrivals: evaluating, integrating, or going deep. |
 
@@ -73,18 +107,35 @@ naming *is* part of the design, and it is why the audits were tractable.
 
 ### `20-assets/` — what can exist
 
-One file per asset type plus a comparison. The directive names seven; confirm against the code
-before writing the index, and record the count with its source.
+**The owner's taxonomy, not an invented one:** four asset *types*, then special *variants* of
+them, then what a pool position is. An earlier draft of this plan listed seven flat "asset types"
+and was wrong — LP tokens and staked positions are not a fifth and sixth type alongside
+non-fungibles.
 
 | file | contains |
 |---|---|
-| `00-the-asset-types.md` | The table that distinguishes them, and the decision tree for which to use. |
+| `00-the-asset-model.md` | The four types, the discriminator between them, and the decision tree for which to use. The MultiversX taxonomy this extends, and what was added. |
 | `01-true-fungibles.md` | DPTF. Balances, roles, fees, freezing, wiping, the special-link family. |
-| `02-orto-fungibles.md` | DPOF. Nonces, why a parcel is not a balance, the five wipes and why there are five. |
-| `03-collectables.md` | DPDC/DPSF/DPNF. Semi vs non-fungible, sets, fragments, equity. |
-| `04-liquidity-positions.md` | LP tokens, what holding one means. |
-| `05-staked-positions.md` | ATS positions, reward tokens vs reward-bearing tokens — a distinction that has already caused a real defect. |
-| `06-vested-and-locked.md` | VST. Frozen, reserved, vesting, sleeping, hibernating, and the link that must exist first. |
+| `02-orto-fungibles.md` | DPOF. Nonces, why a parcel is not a balance, the five wipes and why there are five. Includes the DPMF → DPOF rename and why the old name survives in module names. |
+| `03-semi-fungibles.md` | DPSF. Quantity per nonce, and where that differs from an orto-fungible. |
+| `04-non-fungibles.md` | DPNF. One per nonce, metadata, and the constraints that follow. |
+| `05-sets-and-fragments.md` | DPDC-S sets, DPDC-F fragments (units of 1000), EQUITY. Composition and fractionalisation. |
+| `06-the-special-variants.md` | Vested, locked, frozen, reserved, sleeping, hibernating — **states with rules, not separate tokens**. What each is for, and the link that must exist first. |
+| `07-pool-positions.md` | What holding an LP token, an ATS position or an AQP position actually means. Reward tokens vs reward-bearing tokens — a distinction that has already caused a live defect. |
+
+### `25-defi/` — how the three pool families work
+
+The directive asks for "descriptions of formulas how it works, what does it do, what are its
+limitations". That does not fit a per-module reference page, so it gets its own section. This is
+the part a DeFi reader arrives for.
+
+| file | contains |
+|---|---|
+| `00-the-three-pool-families.md` | Autostake, swap, acquisition. What each is for and how they compose. |
+| `01-autostake-pools.md` | ATS. Coiling, brumation, hibernation, curling, constriction — what each does and when it is available. |
+| `02-swap-pools.md` | SWP. The swap model and its mathematics, asymmetric liquidity provisioning, slippage, and the breadth-first route search over the pool graph. Limitations, including the absence of concentrated liquidity. |
+| `03-acquisition-pools.md` | AQP. Anchors, scores, farms/vaults/treasuries, delegated staking. |
+| `04-the-launchpad.md` | DemiPad: the sovereign rules and the citizen sales that use them. |
 
 ### `30-modules/` — the reference
 
@@ -154,6 +205,22 @@ Utilities first, then core, then Talos, then reads, then citizen.
 | `02-versus-an-amm.md` | SWP against a constant-product pool. |
 | `03-what-the-complexity-buys.md` | The honest accounting: what you get, what you pay, and who it is for. |
 
+### `80-cryptography/` — the layer that is not Pact
+
+Named by the owner as warranting a chapter of its own, and scoped by him: the custom curve,
+account derivation, and browser-side Schnorr — **explicitly not** the Stoic predicates, which are
+a different mechanism and belong in `10-architecture/05-accounts-and-identity.md`.
+
+Source material is the `DALOS-Crypto` repository, not this one. That makes this the one section
+whose figures cannot be gate-checked from here; say so on the page.
+
+| file | contains |
+|---|---|
+| `01-why-custom-cryptography.md` | What the account string has to do that a standard address does not. |
+| `02-the-curve-and-derivation.md` | The custom ellipse, how an Ouronet account string and its public key are derived. |
+| `03-signing-in-the-browser.md` | Schnorr verification client-side, what is proved where, and the seam between the crypto layer and the contracts. |
+| `04-what-is-not-on-chain.md` | The honest boundary: the cryptography is not implemented in Pact, what that means for trust, and what enforcing it on chain would take. |
+
 ### `90-reference/` — the checkable parts
 
 | file | contains |
@@ -161,7 +228,8 @@ Utilities first, then core, then Talos, then reads, then citizen.
 | `01-entrypoint-catalogue.md` | All 423 client entrypoints. Generated, not typed. |
 | `02-glossary.md` | Every term, defined once. |
 | `03-how-these-figures-were-obtained.md` | The command behind every number in this folder. |
-| `04-source-map.md` | Which repo file backs which page. |
+| `04-the-owner-directive.md` | The commissioning directive **verbatim**. Every claim about intent traces here. |
+| `05-source-map.md` | Which repo file backs which page. |
 
 ---
 
@@ -171,10 +239,14 @@ Utilities first, then core, then Talos, then reads, then citizen.
    vocabulary they establish.
 2. `60-methodology/01-stoicsyntax.md` — the module pages depend on the prefix system being
    explained once rather than eighty times.
-3. `20-assets/` — the nouns.
-4. `30-modules/` — the bulk. Deploy order.
-5. `40-journeys/`, `50-economics/`, `70-comparison/` — these synthesise and are easiest last.
-6. `90-reference/` — generate at the end, when the figures have settled.
+3. `MAINTAINING.md` — **before the bulk, not after.** It decides which figures are generated, and
+   retrofitting generation across 79 written pages is the week of work the directive forbids.
+4. `20-assets/` — the nouns.
+5. `25-defi/` — the verbs. Needs the nouns.
+6. `30-modules/` — the bulk. Deploy order.
+7. `40-journeys/`, `50-economics/`, `70-comparison/` — these synthesise and are easiest last.
+8. `80-cryptography/` — independent of the rest; needs the `DALOS-Crypto` repo open.
+9. `90-reference/` — generate at the end, when the figures have settled.
 
 ## 5. Conventions
 
@@ -195,15 +267,27 @@ reader this is for.
 
 | section | files | written |
 |---|---|---|
+| root (`README`, `BUILD-PLAN`, `MAINTAINING`) | 3 | 3 |
 | `00-orientation` | 4 | 1 |
 | `10-architecture` | 8 | 0 |
-| `20-assets` | 7 | 0 |
+| `20-assets` | 8 | 0 |
+| `25-defi` | 5 | 0 |
 | `30-modules` | 79 | 0 |
 | `40-journeys` | 5 | 0 |
 | `50-economics` | 4 | 0 |
 | `60-methodology` | 4 | 0 |
 | `70-comparison` | 3 | 0 |
-| `90-reference` | 4 | 1 |
-| **total** | **118** | **2** |
+| `80-cryptography` | 4 | 0 |
+| `90-reference` | 5 | 2 |
+| **total** | **132** | **6** |
 
 Update this table as files land. A plan whose status is stale is worse than no plan.
+
+## 7. Provenance
+
+The directive is quoted verbatim in `90-reference/04-the-owner-directive.md`. It was recovered
+from the session transcripts with `REPL/tools/_transcripts.py` — read that tool's docstring before
+using it, in particular **the sidechain trap**: subagent briefs are recorded as user messages and
+are indistinguishable from owner prose in every field except `isSidechain`. The first attempt at
+the provenance page quoted eleven of the assistant's own agent briefs as though the owner had
+written them, each one describing Ouronet with the designation he had just retired.

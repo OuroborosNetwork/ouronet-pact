@@ -13,31 +13,80 @@ Measured 2026-09-27 against the deployed tree.
 
 ## The size of the system
 
-Run from the Pact repo root.
+Run from the Pact repo root. **Scope is `1_SOVEREIGN` + `2_CITIZEN`** — the sandboxes
+(`0_Stoa/`, `00_KadenaSandbox/`, `00_StoaSandbox/`) and `0_Sample/` are excluded, which is why
+these figures are smaller than `OuronetInformational/MODULE-INDEX.md`'s. That file counts the
+whole tree and reports 152 modules, 433 schemas and 423 tables. Both are correct at their own
+scope; quoting one with the other's label is the mistake to avoid.
+
+> Note the near-collision waiting to trap someone: MODULE-INDEX reports **423 tables** and the
+> registry reports **423 client entrypoints**. Unrelated quantities, equal today.
 
 ```bash
-# modules
-find 1_SOVEREIGN 2_CITIZEN -name "*.pact" | wc -l                          # 105
+# source files -- NOT modules; a file may hold an interface and a module together
+find 1_SOVEREIGN 2_CITIZEN -name "*.pact" | wc -l                            # 105
 
 # lines
-find 1_SOVEREIGN 2_CITIZEN -name "*.pact" | xargs wc -l | tail -1          # 122,969
+find 1_SOVEREIGN 2_CITIZEN -name "*.pact" -exec cat {} + | wc -l             # 122,969
 
 # definitions, by kind
-for k in defun defcap defschema deftable; do
+for k in defun defcap defschema deftable defpact; do
   printf "%-10s %s\n" "$k" \
     "$(grep -rhoE "^\s*\($k " --include=*.pact 1_SOVEREIGN 2_CITIZEN | wc -l)"
 done
-# defun 8848 · defcap 988 · defschema 206 · deftable 231
+# defun 8848 · defcap 988 · defschema 206 · deftable 231 · defpact 6
 
-# interfaces
-grep -rloE "^\(interface " --include=*.pact 1_SOVEREIGN | wc -l            # 68
+# modules and interfaces -- count the FORMS, at column 0
+grep -rhoE '^\(module [^ ]+'    --include=*.pact 1_SOVEREIGN 2_CITIZEN | wc -l          # 99
+grep -rhoE '^\(module [^ ]+'    --include=*.pact 1_SOVEREIGN 2_CITIZEN \
+  | awk '{print $2}' | sort -u | wc -l                                       # 98 distinct
+grep -rhoE '^\(interface [^ )]+' --include=*.pact 1_SOVEREIGN 2_CITIZEN | wc -l         # 98
 ```
+
+**Why 99 module forms but 98 names.** `2_CITIZEN/6_OuronetBridge/03_CADUCEUS.pact` declares
+`(module CADUCEUS GOV` twice at column 0 — an abandoned section skeleton at line 1, the real
+module at line 83. No live consequence: the file is a scaffold, excluded from the deploy round
+with that reason recorded in `Deploy/MANIFEST.md`. It is mentioned because a figure that differs
+from its neighbour by one invites the assumption of a miscount.
+
+**CORRECTED 2026-09-27 — this file previously reported 68 interfaces, and the command printed
+right beside the figure is what proves it wrong:**
+
+```bash
+grep -rloE "^\(interface " --include=*.pact 1_SOVEREIGN | wc -l             # 68
+```
+
+`-l` counts **files that contain a match**, not matches, and the scope omits `2_CITIZEN`. So 68
+was "files in the sovereign tree holding at least one interface" wearing the label "interfaces".
+The real figure is **98**. It reached the front page of the documentation.
+
+This is the failure this whole file was written to prevent, and it happened anyway — inside the
+file, one line below the rule. The lesson is not "be careful": it is that **a command sitting
+next to a figure is not the same as a command that produced it.** Which is why the figures that
+matter are now regenerated and diffed by a tool rather than transcribed — see `../MAINTAINING.md`.
 
 **A caveat on `defun` 8,848.** Pact declares a function in the interface AND defines it in the
 implementing module, so that count includes both. It is the number of `defun` FORMS in the tree,
 which is what the command measures and what this documentation claims — not the number of
 distinct callable functions. Where the distinct figure matters, the registry's 423 client
 entrypoints is the honest one.
+
+## The deploy round
+
+```bash
+ls Deploy/1_Pure/*.pact | wc -l                                              # 25 files
+python3 REPL/tools/_deploybundle.py --check | grep 'module-deploy'            # 24 transactions
+grep -hoE '^\(module [^ ]+'    Deploy/1_Pure/*.pact | awk '{print $2}' | sort -u | wc -l   # 80
+grep -hoE '^\(interface [^ )]+' Deploy/1_Pure/*.pact | awk '{print $2}' | sort -u | wc -l   # 85
+```
+
+25 files, 24 transactions: one file in the deploy chain is not part of the current round, which
+`_deploybundle.py` reports explicitly rather than silently. The round deploys 80 of the tree's 98
+modules; every exclusion is listed with a reason under *"Modules in the tree that this plan does
+NOT deploy"* in `Deploy/MANIFEST.md`.
+
+Hand-deployed batches live alongside: `Deploy/2_Init/` (5), `Deploy/3_Assets/` (16) and
+`Deploy/PureV2/` (22, the one-at-a-time AppReads and upgrade transactions).
 
 ## The client surface
 
