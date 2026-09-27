@@ -268,7 +268,7 @@ reader this is for.
 | section | files | written |
 |---|---|---|
 | root (`README`, `BUILD-PLAN`, `MAINTAINING`) | 3 | 3 |
-| `00-orientation` | 4 | 1 |
+| `00-orientation` | 4 | 4 |
 | `10-architecture` | 8 | 0 |
 | `20-assets` | 8 | 0 |
 | `25-defi` | 5 | 0 |
@@ -279,7 +279,7 @@ reader this is for.
 | `70-comparison` | 3 | 0 |
 | `80-cryptography` | 4 | 0 |
 | `90-reference` | 5 | 2 |
-| **total** | **132** | **6** |
+| **total** | **132** | **9** |
 
 Update this table as files land. A plan whose status is stale is worse than no plan.
 
