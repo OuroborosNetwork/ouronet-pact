@@ -537,3 +537,48 @@
 )
 (env-sigs [])
 (rollback-tx)
+
+;;|| NEXT >
+;;
+;;====================================================================================
+;;==== TX900 · 01 · the (at 0 <reward-token>) sites depend on CONFIGURATION, not a check
+;;====================================================================================
+(print "--- [TX900 · 01 · protocol tokens must have a real reward-token list] ---")
+;;
+;;OUROBOROS, TFT and LIQUID each read `(at 0 (DPTF::UR_RewardToken <protocol-token>))` and use
+;;the result as an ATS-pair id. `UR_RewardToken` answers "reward token NOWHERE" with the [BAR]
+;;sentinel, not an empty list, so `(at 0 ...)` on a sentinel yields "|" -- which is then used as
+;;a table key and raises "No value found in table ATS|Pairs for key: |". That is the same class
+;;as the defect fixed in ATS on 2026-09-27, and a table-read failure of this kind takes the whole
+;;caller down rather than degrading one field.
+;;
+;;Unlike its siblings these sites have NO predicate guarding them. They are safe because WSTOA,
+;;OURO and AURYN each genuinely have a reward-token pair -- a property of CONFIGURATION that
+;;nothing asserts. Unsetting any one of them would break the Ouroboros index path, the fee
+;;split and the liquid path at once, and the first sign would be mainnet.
+;;
+;;So the configuration is pinned here. If a future change empties one of these lists, this fails
+;;in the gate rather than in production. See memories/2026-09-27-bar-sentinel-sweep.md.
+(begin-tx)
+(map print
+    [
+        (expect "<<ORBR-SENTINEL>> WSTOA has a real reward-token pair, not the [BAR] sentinel"
+            true
+            (!= (ouronet-ns.DPTF.UR_RewardToken (ouronet-ns.DALOS.UR_WrappedStoaID))
+                [ouronet-ns.ATS.BAR]))
+        (expect "<<ORBR-SENTINEL>> ...and so does OURO"
+            true
+            (!= (ouronet-ns.DPTF.UR_RewardToken (ouronet-ns.DALOS.UR_OuroborosID))
+                [ouronet-ns.ATS.BAR]))
+        (expect "<<ORBR-SENTINEL>> ...and so does AURYN"
+            true
+            (!= (ouronet-ns.DPTF.UR_RewardToken (ouronet-ns.DALOS.UR_AurynID))
+                [ouronet-ns.ATS.BAR]))
+        (expect "<<ORBR-SENTINEL>> the id taken from WSTOA's list resolves as a real ATS pair"
+            true
+            (> (ouronet-ns.ATS.URC_Index
+                   (at 0 (ouronet-ns.DPTF.UR_RewardToken (ouronet-ns.DALOS.UR_WrappedStoaID))))
+               0.0))
+    ]
+)
+(commit-tx)

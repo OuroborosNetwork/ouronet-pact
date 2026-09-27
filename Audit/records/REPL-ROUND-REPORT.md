@@ -56,9 +56,9 @@ explanation*, because stating precisely what an assertion proved exposed that it
 
 | | |
 |---|---:|
-| **distinct assertions written** | **6,088** |
-| **assertions executed per full gate run** | **26,120** |
-| &nbsp;&nbsp;positive (`expect`) | 20,944 |
+| **distinct assertions written** | **6,092** |
+| **assertions executed per full gate run** | **26,124** |
+| &nbsp;&nbsp;positive (`expect`) | 20,948 |
 | &nbsp;&nbsp;negative (`expect-failure`) | 5,176 |
 | gate entrypoints | **93** |
 | `.repl` files reachable from the gate | 321 |
