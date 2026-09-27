@@ -981,7 +981,7 @@ def build(probe):
         ghosts = json.load(io.open(GHOSTS, encoding="utf8"))
     by_param, by_type = ghosts.get("byParam", {}), ghosts.get("byType", {})
     for key, rec in entries.items():
-        args, why, unresolved = {}, {}, []
+        args, why, unresolved, uses = {}, {}, [], {}
         fed_names = {f["param"] for f in (rec["execution"].get("fedParams") or [])}
         for prm in rec["params"]:
             # A PREFLIGHT-FED PARAMETER GETS NO FAKE VALUE. Its whole point is that the client
@@ -1002,6 +1002,19 @@ def build(probe):
                 args[prm["name"]] = hit["v"]
                 if hit.get("why"):
                     why[prm["name"]] = hit["why"]
+                # TWO USE TAGS (owner ruling, 2026-09-27). A ghost is not equally safe on every
+                # surface. `zbom` = may be prefilled into an input that can reach a signed
+                # transaction; `tooltip` = may be rendered where nothing is submitted. Both
+                # default TRUE, so entries without tags are unchanged.
+                #
+                # EMITTED ONLY WHEN NOT THE DEFAULT. A `use` block on all 4,074 slots would be
+                # noise that consumers learn to skip, and the one entry that matters -- `guard`,
+                # which must never be prefilled -- would be invisible inside it.
+                use = {k: hit[k] for k in ("zbom", "tooltip") if k in hit and hit[k] is not True}
+                if hit.get("display") is not None:
+                    use["display"] = hit["display"]
+                if use:
+                    uses[prm["name"]] = use
                 continue
             derived = ghost_for_type(prm["type"], by_type, SCHEMAS)
             if derived is not None:
@@ -1013,6 +1026,16 @@ def build(probe):
         rec["ghost"] = {"args": args, "source": "composed from OURONET-REGISTRY.ghosts.json"}
         if why:
             rec["ghost"]["notes"] = why
+        if uses:
+            # Only the slots whose usage is RESTRICTED appear here. Absent = usable on both
+            # surfaces. A consumer reads it as: `zbom:false` -> never prefill this into an input;
+            # `display` -> render this string instead of the value.
+            rec["ghost"]["use"] = uses
+            rec["ghost"]["useNote"] = (
+                "per-parameter surface restrictions. Absent parameter = usable everywhere. "
+                "zbom:false = MUST NOT be prefilled into a ZBOM input (it can reach a signed "
+                "transaction); tooltip:false = must not be rendered; display = render this "
+                "instead of the value.")
         if unresolved:
             rec["ghost"]["unresolved"] = unresolved
             rec["ghost"]["unresolvedNote"] = (

@@ -50,8 +50,19 @@ def main():
               f"({len(mine.get('entrypoints', {}))} entrypoints)")
         print(f"    package:   {theirs.get('surfaceHash')}  "
               f"({len(theirs.get('entrypoints', {}))} entrypoints)")
-        print("    Run `npm run build` in packages/talos-registry, and bump its version -- "
-              "the callable surface moved.")
+        # DO NOT say "the callable surface moved" here, which is what this line used to read.
+        # surfaceHash is a sha256 over the WHOLE entrypoints+previews body, ghost example values
+        # included, so it moves for a changed example with no signature change anywhere. It did
+        # exactly that on 2026-09-27 when the ghost `use` tags were added. A consumer who reads
+        # this as "the API changed" reviews a diff that isn't there; worse, one who learns the
+        # message overstates starts discounting it for the time it doesn't.
+        same = len(mine.get("entrypoints", {})) == len(theirs.get("entrypoints", {}))
+        print("    Run `npm run build` in packages/talos-registry, and bump its version.")
+        print("    NOTE: surfaceHash covers ghost values too, so this may be a metadata-only "
+              "change." + ("  Entrypoint COUNT is unchanged, which is consistent with that."
+                           if same else "  Entrypoint count ALSO changed -- check signatures."))
+        print("    `_registry.py --probe` reports the divergence count; that is the question "
+              "'did the callable surface change', and this hash is not.")
         return 1
     print(f"pkgsync: clean -- the package carries surface {mine['surfaceHash']}")
     return 0

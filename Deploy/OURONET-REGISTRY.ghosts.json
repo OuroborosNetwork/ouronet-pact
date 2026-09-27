@@ -1,383 +1,386 @@
 {
- "note": "GHOST VALUES -- example arguments, keyed by PARAMETER NAME then by TYPE. Merged into Deploy/OURONET-REGISTRY.json by REPL/tools/_registry.py; that file is generated and this one is not, so regenerating can never destroy these.\n\nWHY BY PARAMETER AND NOT BY ENTRYPOINT. 423 entrypoints share 2,182 parameter slots but only 276 distinct names, and four names -- patron, executor, id, executee -- cover half of them. Authoring per entrypoint would mean writing the same account 416 times and getting it wrong somewhere.\n\nTHESE ARE ILLUSTRATIVE, NOT A TEST FIXTURE. Every id below was read from MAINNET so the SHAPE is real -- a consumer can see that a swpair is a four-segment pipe-joined string and an account is a glyph string, not a k: address. Do not submit them: the accounts are not yours to sign for, and an amount of 1.0 is a placeholder, not a sensible default.",
- "chainSourced": {
-  "readAt": "2026-09-26",
-  "node": "node2.stoachain.com chain 0",
-  "how": "DALOS.UR_OuroborosID / UR_AurynID / UR_EliteAurynID / UR_DemiurgoiID, SWP.URC_Swpairs, DPTF.UR_KEYS, DPOF.UR_KEYS, ATS.UR_KEYS. The KEYS readers return COMPOSITE `id|account` rows, so the bare id is the first pipe segment -- except DPOF's, which is `H|id|account` and needs the second."
- },
- "byParam": {
-  "account": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "an Ouronet account: a glyph string, NOT a k: address"
-  },
-  "account-address": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
-  },
-  "account-to-redeem": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
-  },
-  "amount": {
-   "v": 1.0,
-   "why": "a placeholder, not a sensible default"
-  },
-  "amounts": {
-   "v": [
-    1.0,
-    2.0
-   ]
-  },
-  "apollo-account": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
-  },
-  "asset-id": {
-   "v": "SPARK-6B42e2_oW8j0"
-  },
-  "ats": {
-   "v": "Auryndex-O136CBn22ncY",
-   "why": "an autostake pair id"
-  },
-  "atspair": {
-   "v": "Auryndex-O136CBn22ncY"
-  },
-  "awaker": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
-  },
-  "beneficiary-id": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
-  },
-  "brumator": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
-  },
-  "buyer": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "the purchasing Ouronet account"
-  },
-  "chunk": {
-   "v": 25,
-   "why": "page size for a cursor pager. Sized by simulation; the gas meter is the real ceiling"
-  },
-  "client": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
-  },
-  "coiler": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
-  },
-  "coiler-vester": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
-  },
-  "constricter": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
-  },
-  "creator-account": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
-  },
-  "culler": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
-  },
-  "curler": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
-  },
-  "curler-vester": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
-  },
-  "description": {
-   "v": "Example description"
-  },
-  "donor": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
-  },
-  "dpof-id": {
-   "v": "GSTOA-8Nh-JO8JO4F5"
-  },
-  "dptf": {
-   "v": "AURYN-8Nh-JO8JO4F5"
-  },
-  "dptf-id": {
-   "v": "AURYN-8Nh-JO8JO4F5"
-  },
-  "entity-id": {
-   "v": "OURO-8Nh-JO8JO4F5"
-  },
-  "executee": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "acted UPON. Distinct from executor whenever one account operates for another"
-  },
-  "executor": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "ACTS -- the account whose ownership the chain enforces. Often not the patron"
-  },
-  "firestarter": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
-  },
-  "freezer": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
-  },
-  "fueler": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
-  },
-  "hibernator": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
-  },
-  "id": {
-   "v": "OURO-8Nh-JO8JO4F5",
-   "why": "a token id. Which FAMILY depends on the entrypoint -- DPTF here"
-  },
-  "input-amount": {
-   "v": 1.0
-  },
-  "input-amounts": {
-   "v": [
-    1.0,
-    2.0
-   ]
-  },
-  "input-id": {
-   "v": "OURO-8Nh-JO8JO4F5"
-  },
-  "iz-native": {
-   "v": true,
-   "why": "true = native STOA, false = wrapped (WSTOA)"
-  },
-  "kickstarter": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
-  },
-  "logo": {
-   "v": "https://ouronet.org/logo.png"
-  },
-  "max-cost": {
-   "v": 0.0,
-   "why": "the caller's CEILING. 0.0 means 'no headroom' and will refuse on any price move -- set it to displayed-cost x (1 + slippage/100)"
-  },
-  "merger": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
-  },
-  "method": {
-   "v": "example-method"
-  },
-  "months": {
-   "v": 12
-  },
-  "new-account": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
-  },
-  "new-owner": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ"
-  },
-  "new-owner-konto": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
-  },
-  "nonce": {
-   "v": 1,
-   "why": "nonces are 1-based"
-  },
-  "nonces": {
-   "v": [
-    1,
-    2
-   ]
-  },
-  "nonces-array": {
-   "v": [
-    [
-     1,
-     2
-    ],
-    [
-     3
-    ]
-   ],
-   "why": "one inner list PER LEG -- these are the parallel slices of a fed-slice recipe"
-  },
-  "nos": {
-   "v": false
-  },
-  "output-id": {
-   "v": "AURYN-8Nh-JO8JO4F5"
-  },
-  "owner-account": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
-  },
-  "owner-id": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "already an account -- CAP_StakeOwner passes it straight to the ownership check"
-  },
-  "owner-konto": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
-  },
-  "patron": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "pays the IGNIS. A real Demiurgoi account, read from chain"
-  },
-  "receiver": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ"
-  },
-  "recoverer": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
-  },
-  "redeemer": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
-  },
-  "redemption-payer": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
-  },
-  "remover": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
-  },
-  "reserver": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
-  },
-  "reward-dptf-id": {
-   "v": "AURYN-8Nh-JO8JO4F5"
-  },
-  "sender": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ"
-  },
-  "sleeper": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
-  },
-  "slippage": {
-   "v": 0.0,
-   "why": "percent. 0.0 = exact caps; UI policy caps it at 50"
-  },
-  "social": {
-   "v": []
-  },
-  "son": {
-   "v": false,
-   "why": "semi-or-non-fungible discriminator: false = non-fungible"
-  },
-  "swpair": {
-   "v": "W|SSTOA-8Nh-JO8JO4F5|OURO-8Nh-JO8JO4F5|WSTOA-8Nh-JO8JO4F5",
-   "why": "pool id: TYPE|token|token|token, pipe-joined. NOT an account -- its OWNER is what gets ownership-checked"
-  },
-  "syphon-target": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
-  },
-  "tag-name": {
-   "v": "ΣΦДжΞ",
-   "why": "BARE on-chain name -- DALOS glyphs, no section sigil"
-  },
-  "target-account": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
-  },
-  "toggle": {
-   "v": true,
-   "why": "must be the INVERSE of the current on-chain value -- the chain refuses same-value writes"
-  },
-  "transmuter": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
-  },
-  "unreserver": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
-  },
-  "unsleeper": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
-  },
-  "unvester": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
-  },
-  "unwrapper": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
-  },
-  "vester": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
-  },
-  "website": {
-   "v": "https://ouronet.org"
-  },
-  "wrapper": {
-   "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
-   "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
+  "note": "GHOST VALUES -- example arguments, keyed by PARAMETER NAME then by TYPE. Merged into Deploy/OURONET-REGISTRY.json by REPL/tools/_registry.py; that file is generated and this one is not, so regenerating can never destroy these.\n\nTWO USE TAGS -- `zbom` and `tooltip` (owner ruling, 2026-09-27). A ghost value is not equally safe on every surface, and until now one value served both. `zbom` = may be PREFILLED into a ZBOM input, i.e. it can end up in a signed transaction. `tooltip` = may be RENDERED in a pre-ZBOM tooltip, where nothing is ever submitted. Both default to TRUE when absent, so every existing entry keeps its behaviour.\n\nThe case that forced it is `guard`. A guard cannot be prefilled -- nobody may hand a user a keyset to sign under -- so `zbom` is false. But a tooltip that shows the guard slot EMPTY teaches the wrong call shape, so `tooltip` is true with a `display` override rendering the Pact form the caller actually writes. That is a value which is correct to show and wrong to submit, which is precisely the distinction one tag cannot carry.\n\n`display` is an optional RENDER override for tooltips. Absent, the tooltip renders `v`. Present, it renders `display` -- used where the submittable form and the readable form differ.",
+  "chainSourced": {
+    "readAt": "2026-09-26",
+    "node": "node2.stoachain.com chain 0",
+    "how": "DALOS.UR_OuroborosID / UR_AurynID / UR_EliteAurynID / UR_DemiurgoiID, SWP.URC_Swpairs, DPTF.UR_KEYS, DPOF.UR_KEYS, ATS.UR_KEYS. The KEYS readers return COMPOSITE `id|account` rows, so the bare id is the first pipe segment -- except DPOF's, which is `H|id|account` and needs the second."
+  },
+  "byParam": {
+    "account": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "an Ouronet account: a glyph string, NOT a k: address"
+    },
+    "account-address": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
+    },
+    "account-to-redeem": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
+    },
+    "amount": {
+      "v": 1.0,
+      "why": "a placeholder, not a sensible default"
+    },
+    "amounts": {
+      "v": [
+        1.0,
+        2.0
+      ]
+    },
+    "apollo-account": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
+    },
+    "asset-id": {
+      "v": "SPARK-6B42e2_oW8j0"
+    },
+    "ats": {
+      "v": "Auryndex-O136CBn22ncY",
+      "why": "an autostake pair id"
+    },
+    "atspair": {
+      "v": "Auryndex-O136CBn22ncY"
+    },
+    "awaker": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
+    },
+    "beneficiary-id": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
+    },
+    "brumator": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
+    },
+    "buyer": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "the purchasing Ouronet account"
+    },
+    "chunk": {
+      "v": 25,
+      "why": "page size for a cursor pager. Sized by simulation; the gas meter is the real ceiling"
+    },
+    "client": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
+    },
+    "coiler": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
+    },
+    "coiler-vester": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
+    },
+    "constricter": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
+    },
+    "creator-account": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
+    },
+    "culler": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
+    },
+    "curler": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
+    },
+    "curler-vester": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
+    },
+    "description": {
+      "v": "Example description"
+    },
+    "donor": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
+    },
+    "dpof-id": {
+      "v": "GSTOA-8Nh-JO8JO4F5"
+    },
+    "dptf": {
+      "v": "AURYN-8Nh-JO8JO4F5"
+    },
+    "dptf-id": {
+      "v": "AURYN-8Nh-JO8JO4F5"
+    },
+    "entity-id": {
+      "v": "OURO-8Nh-JO8JO4F5"
+    },
+    "executee": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "acted UPON. Distinct from executor whenever one account operates for another"
+    },
+    "executor": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "ACTS -- the account whose ownership the chain enforces. Often not the patron"
+    },
+    "firestarter": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
+    },
+    "freezer": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
+    },
+    "fueler": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
+    },
+    "hibernator": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
+    },
+    "id": {
+      "v": "OURO-8Nh-JO8JO4F5",
+      "why": "a token id. Which FAMILY depends on the entrypoint -- DPTF here"
+    },
+    "input-amount": {
+      "v": 1.0
+    },
+    "input-amounts": {
+      "v": [
+        1.0,
+        2.0
+      ]
+    },
+    "input-id": {
+      "v": "OURO-8Nh-JO8JO4F5"
+    },
+    "iz-native": {
+      "v": true,
+      "why": "true = native STOA, false = wrapped (WSTOA)"
+    },
+    "kickstarter": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
+    },
+    "logo": {
+      "v": "https://ouronet.org/logo.png"
+    },
+    "max-cost": {
+      "v": 0.0,
+      "why": "the caller's CEILING. 0.0 means 'no headroom' and will refuse on any price move -- set it to displayed-cost x (1 + slippage/100)"
+    },
+    "merger": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
+    },
+    "method": {
+      "v": "example-method"
+    },
+    "months": {
+      "v": 12
+    },
+    "new-account": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
+    },
+    "new-owner": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ"
+    },
+    "new-owner-konto": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
+    },
+    "nonce": {
+      "v": 1,
+      "why": "nonces are 1-based"
+    },
+    "nonces": {
+      "v": [
+        1,
+        2
+      ]
+    },
+    "nonces-array": {
+      "v": [
+        [
+          1,
+          2
+        ],
+        [
+          3
+        ]
+      ],
+      "why": "one inner list PER LEG -- these are the parallel slices of a fed-slice recipe"
+    },
+    "nos": {
+      "v": false
+    },
+    "output-id": {
+      "v": "AURYN-8Nh-JO8JO4F5"
+    },
+    "owner-account": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
+    },
+    "owner-id": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "already an account -- CAP_StakeOwner passes it straight to the ownership check"
+    },
+    "owner-konto": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
+    },
+    "patron": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "pays the IGNIS. A real Demiurgoi account, read from chain"
+    },
+    "receiver": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ"
+    },
+    "recoverer": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
+    },
+    "redeemer": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
+    },
+    "redemption-payer": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
+    },
+    "remover": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
+    },
+    "reserver": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
+    },
+    "reward-dptf-id": {
+      "v": "AURYN-8Nh-JO8JO4F5"
+    },
+    "sender": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ"
+    },
+    "sleeper": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
+    },
+    "slippage": {
+      "v": 0.0,
+      "why": "percent. 0.0 = exact caps; UI policy caps it at 50"
+    },
+    "social": {
+      "v": []
+    },
+    "son": {
+      "v": false,
+      "why": "semi-or-non-fungible discriminator: false = non-fungible"
+    },
+    "swpair": {
+      "v": "W|SSTOA-8Nh-JO8JO4F5|OURO-8Nh-JO8JO4F5|WSTOA-8Nh-JO8JO4F5",
+      "why": "pool id: TYPE|token|token|token, pipe-joined. NOT an account -- its OWNER is what gets ownership-checked"
+    },
+    "syphon-target": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
+    },
+    "tag-name": {
+      "v": "ΣΦДжΞ",
+      "why": "BARE on-chain name -- DALOS glyphs, no section sigil"
+    },
+    "target-account": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
+    },
+    "toggle": {
+      "v": true,
+      "why": "must be the INVERSE of the current on-chain value -- the chain refuses same-value writes"
+    },
+    "transmuter": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
+    },
+    "unreserver": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
+    },
+    "unsleeper": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
+    },
+    "unvester": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
+    },
+    "unwrapper": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
+    },
+    "vester": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
+    },
+    "website": {
+      "v": "https://ouronet.org"
+    },
+    "wrapper": {
+      "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
+      "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
+    }
+  },
+  "byType": {
+    "string": {
+      "v": "example",
+      "why": "fallback only -- a string parameter with no name entry above"
+    },
+    "integer": {
+      "v": 1
+    },
+    "decimal": {
+      "v": 1.0
+    },
+    "bool": {
+      "v": false
+    },
+    "[string]": {
+      "v": [
+        "example"
+      ]
+    },
+    "[integer]": {
+      "v": [
+        1
+      ]
+    },
+    "[decimal]": {
+      "v": [
+        1.0
+      ]
+    },
+    "[bool]": {
+      "v": [
+        false
+      ]
+    },
+    "guard": {
+      "v": {
+        "readKeyset": "ks"
+      },
+      "zbom": false,
+      "tooltip": true,
+      "display": "(read-keyset \"ks\")",
+      "why": "a guard is passed as `(read-keyset \"ks\")` -- this is the NAME of the transaction-data key, not the keyset. Put {\"keys\": [...], \"pred\": \"keys-all\"} in the transaction's `data` under that name. Inlining the keyset object is not a thing Pact accepts.\nzbom:false -- a ZBOM must make the user supply their own keyset. Prefilling a guard is handing someone a lock and asking them to sign for it. tooltip:true because a tooltip submits nothing, and an empty guard slot teaches the wrong call shape."
+    },
+    "object": {
+      "v": {},
+      "why": "UNTYPED in the signature, so there is no schema to derive a shape from. Read the entrypoint's @doc -- an empty object here means 'the contract did not say', not 'send nothing'."
+    },
+    "[object]": {
+      "v": [
+        {}
+      ],
+      "why": "untyped list-of-object; see the note on `object`."
+    }
   }
- },
- "byType": {
-  "string": {
-   "v": "example",
-   "why": "fallback only -- a string parameter with no name entry above"
-  },
-  "integer": {
-   "v": 1
-  },
-  "decimal": {
-   "v": 1.0
-  },
-  "bool": {
-   "v": false
-  },
-  "[string]": {
-   "v": [
-    "example"
-   ]
-  },
-  "[integer]": {
-   "v": [
-    1
-   ]
-  },
-  "[decimal]": {
-   "v": [
-    1.0
-   ]
-  },
-  "[bool]": {
-   "v": [
-    false
-   ]
-  },
-  "guard": {
-   "v": {
-    "readKeyset": "ks"
-   },
-   "why": "a guard is passed as `(read-keyset \"ks\")` -- this is the NAME of the transaction-data key, not the keyset. Put {\"keys\": [...], \"pred\": \"keys-all\"} in the transaction's `data` under that name. Inlining the keyset object is not a thing Pact accepts."
-  },
-  "object": {
-   "v": {},
-   "why": "UNTYPED in the signature, so there is no schema to derive a shape from. Read the entrypoint's @doc -- an empty object here means 'the contract did not say', not 'send nothing'."
-  },
-  "[object]": {
-   "v": [
-    {}
-   ],
-   "why": "untyped list-of-object; see the note on `object`."
-  }
- }
 }
