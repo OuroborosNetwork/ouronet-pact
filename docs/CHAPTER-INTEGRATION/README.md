@@ -16,6 +16,20 @@ because anything that did not work got corrected while it was being used.
 | `02-signing-and-caps.md` | The patron/executor/executee split, the `GAS_PAYER` shape, whose ownership is actually enforced, and the four purchases needing a computed capability | written |
 | `03-cost-preview.md` | `INFO_` readers, the `ClientInfo` shape, and the four ways to display a confidently wrong number | written |
 | `04-errors.md` | How Ouronet's refusals read, and — measured — which ones `try` can catch | written |
+| `05-reading-data.md` | The per-surface AppReads modules, the read cadence, and what a response actually contains | written |
+
+## Reading order
+
+A client integrator does not need these in numeric order. The dependency runs:
+
+1. **`05`** — how to read anything at all, and what comes back. Everything else assumes it.
+2. **`03`** — what an operation costs, because you show that before you do anything.
+3. **`02`** — who signs, and who pays.
+4. **`01`** — the operations that need a read *first*, and how to tell which shape they are.
+5. **`04`** — what the refusals mean, kept last because it is the one you return to rather than
+   read through.
+
+`01` is the oldest and the most detailed; `04` is the one most likely to save an afternoon.
 
 ## What each one is grounded in
 
@@ -27,6 +41,7 @@ The chapter's rule is that a figure is read, not remembered. Where these four ge
 | `02` | `Deploy/OURONET-REGISTRY.json` — sponsorship, ownership and capability blocks, at 2026-09-27 |
 | `03` | the registry's paired parameter lists, plus live `/local` calls for the response shapes |
 | `04` | a 41-operation unsigned sweep against mainnet, plus direct tests of what `try` catches |
+| `05` | the deployed AppReads modules, OuronetUI's redirect table and tier config, at 2026-09-27 |
 
 Two of those measurements contradicted something this project believed. `try` DOES catch a
 point read that misses — the first draft of `04` said it did not — and what it cannot do is run
