@@ -553,16 +553,20 @@
 (namespace "ouronet-ns")
 (print "--- [STAGEZ-13 . 01 . can-X vs where-X, and where they disagree] ---")
 ;;URC_0017_TruefungibleButton returns four can-X booleans each paired with a where-X target list.
-;;They look like one uniform family. They are not, and the split is invisible from the call site:
+;;They are now ONE uniform family: every flag is derived from its own list being non-empty.
 ;;
-;;  curl / brumate   -- ATS derives the flag FROM the list: can-curl = (< 0 (length chains)).
-;;                      Flag true <=> list non-empty, always.
-;;  coil / constrict -- ATS sets the flag from "is this a reward token", INDEPENDENTLY of the list.
-;;                      So the flag can be TRUE while the target list is EMPTY.
+;;THEY WERE NOT, and this block used to PIN the divergence rather than fix it:
 ;;
-;;OURO on this chain demonstrates the divergence directly: constrict is true with no targets. A UI
-;;that enables its button from the FLAG offers an action with nowhere to send it; one that uses the
-;;LIST is correct for all four. Nothing else in the tree records this, and the @doc does not say it.
+;;  curl / brumate   -- derived the flag FROM the list: can-curl = (< 0 (length chains)).
+;;  coil / constrict -- set the flag from "is this a reward token", INDEPENDENTLY of the list,
+;;                      so the flag could be TRUE while the target list was EMPTY.
+;;
+;;OURO demonstrated it directly: constrict true, no targets. Recording it was the right call at
+;;the time -- the fix needs a redeploy -- but OWNER RULING 2026-09-27 settled it as a defect:
+;;"Constrict shouldnt light up for Ouro ... since constrict would mean the autostake pool into
+;;which it autostakes is in hibernated mode, which it isnt." <UC_CanCoil> and <UC_CanConstrict>
+;;now derive their flags from the list, matching their two siblings, and the assertions below
+;;flipped from pinning the divergence to pinning its absence.
 (map print
     [
         ;;the derived convention, asserted as an equivalence so it stays derived
@@ -571,13 +575,44 @@
             (let ((r (O-UI-EIGHT.URC_07|Buttons KST.ANHD "OURO-98c486052a51")))
                 [(= (at "curl" r)    (< 0 (length (at "where-curl" r))))
                  (= (at "brumate" r) (< 0 (length (at "where-brumate" r))))]))
-        ;;...and the eligibility convention, pinned by the case that breaks the other reading
-        (expect "<<STAGEZ-13>> constrict is TRUE while its target list is EMPTY -- flag != availability"
-            true
+        ;;...and the same equivalence for the two that used to break it. An empty target list now
+        ;;means a FALSE flag, so a UI reading either one agrees with the other.
+        (expect "<<STAGEZ-13>> coil and constrict flags are equivalent to a non-empty target list"
+            [true true]
             (let ((r (O-UI-EIGHT.URC_07|Buttons KST.ANHD "OURO-98c486052a51")))
-                (and (at "constrict" r) (= 0 (length (at "where-constrict" r))))))
-        ;;coil shares constrict's convention; here it happens to have a target, which is exactly why
-        ;;the divergence is easy to miss -- three of the four agree on any given chain state
+                [(= (at "coil" r)      (< 0 (length (at "where-coil" r))))
+                 (= (at "constrict" r) (< 0 (length (at "where-constrict" r))))]))
+        ;;the case that used to prove the divergence, now proving its absence: OURO has no
+        ;;hibernating pair to constrict into, so the flag is FALSE rather than true-with-nowhere
+        (expect "<<STAGEZ-13>> constrict is FALSE when no hibernating target pair exists"
+            [false 0]
+            (let ((r (O-UI-EIGHT.URC_07|Buttons KST.ANHD "OURO-98c486052a51")))
+                [(at "constrict" r) (length (at "where-constrict" r))]))
+        ;;THE SENTINEL. <DPTF::UR_RewardToken> answers "reward token NOWHERE" with [BAR], not
+        ;;with an empty list, and BAR is not an ats-pair id. <UCx_FilterHibernatedAts> read
+        ;;<UR_Hibernate> on it and raised "No value found in table ATS|Pairs for key: |",
+        ;;killing the whole button read -- and a table-read failure is NOT catchable by `try`,
+        ;;so every consumer got nothing rather than a degraded answer.
+        ;;
+        ;;AURYN reaches it in two hops: RT on EliteAuryndex, whose cold RBT is ELITEAURYN,
+        ;;which is a reward token nowhere. Measured on mainnet 2026-09-27: 1 of 15 held tokens
+        ;;made the read fail, and OuronetUI answered a failed read by enabling EVERY button.
+        ;;Asserted on the FILTER, not through the button read. The end-to-end route needs a
+        ;;two-hop chain whose second hop dead-ends, and this sandbox has no such pair -- an
+        ;;end-to-end assertion here passed with the guard REMOVED, which is no assertion at all.
+        ;;Called directly, the sentinel is the whole input and the guard is the only thing
+        ;;between it and a table read that cannot be caught by `try`.
+        (expect "<<STAGEZ-13>> the BAR sentinel is dropped before any ATS|Pairs read"
+            []
+            (ATS.UCx_FilterHibernatedAts [ATS.BAR] true))
+        (expect "<<STAGEZ-13>> ...in both filter directions"
+            []
+            (ATS.UCx_FilterHibernatedAts [ATS.BAR] false))
+        (expect "<<STAGEZ-13>> a real pair alongside the sentinel still survives the filter"
+            ["Auryndex-98c486052a51"]
+            (ATS.UCx_FilterHibernatedAts [ATS.BAR "Auryndex-98c486052a51"] true))
+        ;;coil keeps its target here, which is why the old divergence was easy to miss -- three
+        ;;of the four agreed on any given chain state
         (expect "<<STAGEZ-13>> coil reports its one target pair on this chain"
             ["Auryndex-98c486052a51"]
             (at "where-coil" (O-UI-EIGHT.URC_07|Buttons KST.ANHD "OURO-98c486052a51")))

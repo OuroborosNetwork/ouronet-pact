@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 4 of 24
 ;; This is STEP 4 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-3 must have run first, including the init steps between deploys.
-;; 2 source file(s), 285,032 gas measured in the REPL gas model, 242,298 bytes
+;; 2 source file(s), 285,032 gas measured in the REPL gas model, 244,006 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_01/2_Core/08_ATS.pact
@@ -1168,7 +1168,16 @@
             )
             (if (not can-coil)
                 (UDC_CanCoil can-coil [])
-                (UDC_CanCoil can-coil (UCx_RewardTokenPairsByHibernate dptf true))
+                ;;The flag comes from the RESULT, not from <URC_IzRT> alone. Being a reward
+                ;;token somewhere does not mean a NON-HIBERNATING pair exists to coil into,
+                ;;and a true flag beside an empty target list offers an operation with
+                ;;nowhere to perform it. <UC_CanCurl>/<UC_CanBrumate> already do it this way.
+                (let
+                    (
+                        (pairs:[string] (UCx_RewardTokenPairsByHibernate dptf true))
+                    )
+                    (UDC_CanCoil (< 0 (length pairs)) pairs)
+                )
             )
         )
     )
@@ -1181,7 +1190,15 @@
             )
             (if (not can-constrict)
                 (UDC_CanConstrict can-constrict [])
-                (UDC_CanConstrict can-constrict (UCx_RewardTokenPairsByHibernate dptf false))
+                ;;Same correction as <UC_CanCoil>: the flag follows the list. Constriction
+                ;;needs a HIBERNATING pair, and OURO measured true here with an empty
+                ;;<where-constrict> on mainnet -- a lit button with nowhere to act.
+                (let
+                    (
+                        (pairs:[string] (UCx_RewardTokenPairsByHibernate dptf false))
+                    )
+                    (UDC_CanConstrict (< 0 (length pairs)) pairs)
+                )
             )
         )
     )
@@ -1274,10 +1291,23 @@
     )
     (defun UCx_FilterHibernatedAts:[string] (ats-pairs:[string] out-or-in:bool)
         @doc "If <out-or-in> is true, return <ats-pairs> with hibernating pairs removed; \
-            \ if false, return only hibernating pairs."
-        (if out-or-in
-            (filter (lambda (ats-pair:string) (not (UR_Hibernate ats-pair))) ats-pairs)
-            (filter (lambda (ats-pair:string) (UR_Hibernate ats-pair)) ats-pairs)
+            \ if false, return only hibernating pairs. \
+            \ \
+            \ The BAR sentinel is dropped FIRST. <DPTF::UR_RewardToken> answers \"this token \
+            \ is a reward token nowhere\" with [BAR], not with an empty list, and BAR is not \
+            \ an ats-pair id -- reading <UR_Hibernate> on it raised \"No value found in table \
+            \ ATS|Pairs for key: |\" and took the whole caller down with it. Measured on \
+            \ mainnet for AURYN: RT on EliteAuryndex, whose cold RBT is ELITEAURYN, which is \
+            \ a reward token nowhere -- so <UC_CanCurl> and <UC_CanBrumate> both died, and \
+            \ every consumer of the button read with them."
+        (let
+            (
+                (real:[string] (filter (lambda (ats-pair:string) (!= ats-pair BAR)) ats-pairs))
+            )
+            (if out-or-in
+                (filter (lambda (ats-pair:string) (not (UR_Hibernate ats-pair))) real)
+                (filter (lambda (ats-pair:string) (UR_Hibernate ats-pair)) real)
+            )
         )
     )
     ;;{5.3}  Read [UR/URC/URH/URCi/INFO]
