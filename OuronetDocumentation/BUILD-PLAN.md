@@ -291,3 +291,5 @@ using it, in particular **the sidechain trap**: subagent briefs are recorded as 
 are indistinguishable from owner prose in every field except `isSidechain`. The first attempt at
 the provenance page quoted eleven of the assistant's own agent briefs as though the owner had
 written them, each one describing Ouronet with the designation he had just retired.
+
+> **Working on the documentation? Read `OuronetDocumentation/RESUME-HERE.md` first.**
