@@ -93,16 +93,29 @@ Hand-deployed batches live alongside: `Deploy/2_Init/` (5), `Deploy/3_Assets/` (
 ```bash
 python3 -c "import json; r=json.load(open('Deploy/OURONET-REGISTRY.json')); \
   print(len(r['entrypoints']), 'entrypoints;', len(r['previews']), 'previews;', r['surfaceHash'])"
-# 423 entrypoints; 428 previews; 9091592ba15520f4
+# 423 entrypoints; 428 previews; <a 16-hex surface hash>
 ```
 
-**`surfaceHash` is more sensitive than its name suggests.** It is a sha256 over the whole
-`entrypoints` + `previews` body — which includes each entrypoint's GHOST block, not just its
-callable signature. So it moves when example values change, with no contract change at all. It went
-`7c2b70c6118d6db2` → `9091592ba15520f4` on 2026-09-27 when the ghost `use` tags were added; zero
-entrypoints changed shape and zero divergences were reported in the same run. Treat a moved
-`surfaceHash` as "something in this artefact changed", never as "the callable surface changed" —
-the divergence count answers that second question.
+**`surfaceHash` is deliberately NOT quoted as a figure in this documentation**, and the reason is
+worth more than the value would be.
+
+It is a sha256 over the whole `entrypoints` + `previews` body — which includes each entrypoint's
+GHOST block, not just its callable signature. So it moves when an *example value* changes, with no
+contract change at all. It moved **twice on 2026-09-27** — once for the ghost `use` tags, once for
+fifteen added example values — with zero entrypoints changed and zero divergences reported in
+either run. A figure that volatile, printed in prose, is stale within the day and teaches a reader
+to distrust the neighbouring figures that are not.
+
+Treat a moved `surfaceHash` as *"something in this artefact changed"*, never as *"the callable
+surface changed"*. The **divergence count** answers that second question, and that is the number
+worth reading:
+
+```bash
+python3 REPL/tools/_registry.py --probe | grep divergence     # 0 deployed/repo divergence(s)
+```
+
+The rule this illustrates generalises: **quote a figure only if it is stable enough to be worth
+checking.** Everything else gets its command.
 
 `Deploy/OURONET-REGISTRY.json` is GENERATED from the deployed contracts, not from the repo. It
 is the authority for what is callable.

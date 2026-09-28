@@ -5,31 +5,41 @@ Written 2026-09-27. Update it when you stop working; a stale resume note is wors
 
 ## Where it stands
 
-**12 of 132 files written.** Last commit `3f4d220f`. Tree clean.
+**13 of 132 files written.** Updated 2026-09-28. Tree clean.
 
 | section | files | written |
 |---|---|---|
 | root (`README`, `BUILD-PLAN`, `MAINTAINING`) | 3 | **3** |
 | `00-orientation` | 4 | **4** |
 | `10-architecture` | 8 | **3** (01, 02, 03) |
+| `60-methodology` | 4 | **1** (01 StoicSyntax) |
 | `90-reference` | 5 | **2** (03, 04) |
-| everything else | 112 | 0 |
+| everything else | 108 | 0 |
 
 ## The next action, exactly
 
-Write `60-methodology/01-stoicsyntax.md`. The build plan puts it before the bulk because 79 module
-pages otherwise re-explain the prefix system eighty times.
+`60-methodology/01-stoicsyntax.md` is **DONE**. Next is `10-architecture/` 04–08, then the rest of
+`60-methodology/` (02 semi-self-auditing, 03 the gate, 04 what-went-wrong).
 
-Material already gathered — **do not re-derive it**:
+`02-semi-self-auditing.md` is the directive's headline chapter and the material for it is already
+measured: `_conformance.py` reports **26 rules, 0 violations, 106 observations** across 122,969
+lines, and its closing line — *"the doc is narrower than the code's correct practice"* — is the
+honest framing to build the chapter around. 01 sets it up and deliberately stops short of it.
+
+Material gathered for 01, kept because 02 needs the same sources:
 
 - Canon: `OuronetInformational/StoicSyntax-Prefixes.md` (1,568 lines). Keystone sections: **§1** the
   composition rule (UPPERCASE = operation class, lowercase = specialization role, `|` = scope),
   **§2** the prefix registry, **§2.15** the five protection classes, **§7.19** `UM_` as the only
   reader allowed to write.
-- The prefix census is measured. Top families by `defun` count: `UR_` 1418, `C_` 895, `URC_` 781,
-  `INFO_` 625, `URCi_` 598, `P|` 556, `UEV_` 523, `UC_` 505, `A_` 487, `XI_` 396, `XE_` 328,
-  `UDC_` 319, `URH_` 128, `XB_` 72. Command in
-  `90-reference/03-how-these-figures-were-obtained.md`.
+- **The prefix census — USE THESE, the earlier ones were wrong.** Exact `^\(defun PREFIX_`
+  matches, verified 2026-09-28: `UR_` 1406, `INFO_` 625, `C_` 604, `URCi_` 597, `P|` 538,
+  `UEV_` 523, `UC_` 430, `XI_` 388, `XE_` 328, `UDC_` 310, `A_` 190, `URH_` 128, `W` 117,
+  `XB_` 62, `CAP_` 33, `URC_` 755.
+  The figures in the first draft came from a census that collapsed role variants (`UCv_` into
+  `UC_`) and scoped forms (`DPTF|C_` into `C_`), and eleven of them were too high. **A count is
+  meaningless without its matching rule**, and the rule is what gets lost when a number is quoted
+  onward. These rows do NOT sum to 8,848 — scoped forms match none of them.
 - **The `W` family is canon and `CLAUDE.md` omits it.** `WI_` (insert) 20, `WU_` (update) 62, `WW_`
   (upsert) 28 = 110 functions across 8 files (the AQP family plus DPTF and PYTHIA). Documented in
   `StoicSyntax-Prefixes.md` §2 lines 202-208. Worth stating as a gap in the project instructions.
