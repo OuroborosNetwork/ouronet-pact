@@ -1,5 +1,5 @@
 {
-  "note": "GHOST VALUES -- example arguments, keyed by PARAMETER NAME then by TYPE. Merged into Deploy/OURONET-REGISTRY.json by REPL/tools/_registry.py; that file is generated and this one is not, so regenerating can never destroy these.\n\nTWO USE TAGS -- `zbom` and `tooltip` (owner ruling, 2026-09-27). A ghost value is not equally safe on every surface, and until now one value served both. `zbom` = may be PREFILLED into a ZBOM input, i.e. it can end up in a signed transaction. `tooltip` = may be RENDERED in a pre-ZBOM tooltip, where nothing is ever submitted. Both default to TRUE when absent, so every existing entry keeps its behaviour.\n\nThe case that forced it is `guard`. A guard cannot be prefilled -- nobody may hand a user a keyset to sign under -- so `zbom` is false. But a tooltip that shows the guard slot EMPTY teaches the wrong call shape, so `tooltip` is true with a `display` override rendering the Pact form the caller actually writes. That is a value which is correct to show and wrong to submit, which is precisely the distinction one tag cannot carry.\n\n`display` is an optional RENDER override for tooltips. Absent, the tooltip renders `v`. Present, it renders `display` -- used where the submittable form and the readable form differ.",
+  "note": "GHOST VALUES -- example arguments, keyed by PARAMETER NAME then by TYPE. Merged into Deploy/OURONET-REGISTRY.json by REPL/tools/_registry.py; that file is generated and this one is not, so regenerating can never destroy these.\n\nTWO USE TAGS -- `zbom` and `tooltip` (owner ruling, 2026-09-27). A ghost value is not equally safe on every surface, and until now one value served both. `zbom` = may be PREFILLED into a ZBOM input, i.e. it can end up in a signed transaction. `tooltip` = may be RENDERED in a pre-ZBOM tooltip, where nothing is ever submitted. Both default to TRUE when absent, so every existing entry keeps its behaviour.\n\nThe case that forced it is `guard`. A guard cannot be prefilled -- nobody may hand a user a keyset to sign under -- so `zbom` is false. But a tooltip that shows the guard slot EMPTY teaches the wrong call shape, so `tooltip` is true with a `display` override rendering the Pact form the caller actually writes. That is a value which is correct to show and wrong to submit, which is precisely the distinction one tag cannot carry.\n\n`display` is an optional RENDER override for tooltips. Absent, the tooltip renders `v`. Present, it renders `display` -- used where the submittable form and the readable form differ.\n\nWHY SOME NAMES STILL HAVE NO ENTRY, and that is deliberate. A parameter with no byParam and no byType match falls through to the generic `\"example\"`, which a consumer renders as a visible placeholder. That is the CORRECT outcome for an entity that does not exist on mainnet -- zero anchors, zero scores -- and for one whose real id nobody here can cite. Fabricating a plausible-looking id would remove the only signal that the slot is unresolved, and a confident wrong id is worse than an obvious gap: it gets copied, and it makes a preview SUCCEED against the wrong entity. Entries are added only when the value can be cited.",
   "chainSourced": {
     "readAt": "2026-09-26",
     "node": "node2.stoachain.com chain 0",
@@ -327,6 +327,66 @@
     "wrapper": {
       "v": "Σ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ",
       "why": "account-shaped, matched against _executorplan.ACCT -- the same curated vocabulary the canon sweep uses to tell an ACCOUNT parameter from an entity id"
+    },
+    "rt": {
+      "v": "WSTOA-8Nh-JO8JO4F5",
+      "why": "a reward TOKEN of an autostake pair, not the pair -- shape read from mainnet; see OuronetIdsV1 (00_Ids.pact)"
+    },
+    "coil-token": {
+      "v": "AURYN-8Nh-JO8JO4F5",
+      "why": "a DPTF that can be coiled -- shape read from mainnet; see OuronetIdsV1 (00_Ids.pact)"
+    },
+    "curl-token": {
+      "v": "AURYN-8Nh-JO8JO4F5",
+      "why": "a DPTF that can be curled -- shape read from mainnet; see OuronetIdsV1 (00_Ids.pact)"
+    },
+    "dptf-to-repurpose": {
+      "v": "OURO-8Nh-JO8JO4F5",
+      "why": "a DPTF id -- shape read from mainnet; see OuronetIdsV1 (00_Ids.pact)"
+    },
+    "stake-dptf-id": {
+      "v": "OURO-8Nh-JO8JO4F5",
+      "why": "a DPTF id -- shape read from mainnet; see OuronetIdsV1 (00_Ids.pact)"
+    },
+    "frozen-dptf": {
+      "v": "OURO-8Nh-JO8JO4F5",
+      "why": "the DPTF whose frozen variant is meant -- shape read from mainnet; see OuronetIdsV1 (00_Ids.pact)"
+    },
+    "s-dptf": {
+      "v": "OURO-8Nh-JO8JO4F5",
+      "why": "a DPTF id -- shape read from mainnet; see OuronetIdsV1 (00_Ids.pact)"
+    },
+    "r-dptf": {
+      "v": "OURO-8Nh-JO8JO4F5",
+      "why": "a DPTF id -- shape read from mainnet; see OuronetIdsV1 (00_Ids.pact)"
+    },
+    "ats1": {
+      "v": "SilverStoaPillar-O136CBn22ncY",
+      "why": "brumation's SOURCE pool -- shape read from mainnet; see OuronetIdsV1 (00_Ids.pact)"
+    },
+    "ats2": {
+      "v": "GoldenStoaPillar-O136CBn22ncY",
+      "why": "brumation's TARGET pool -- shape read from mainnet; see OuronetIdsV1 (00_Ids.pact)"
+    },
+    "ats-pair": {
+      "v": "Auryndex-O136CBn22ncY",
+      "why": "another spelling of `ats` -- shape read from mainnet; see OuronetIdsV1 (00_Ids.pact)"
+    },
+    "dpof": {
+      "v": "H|GSTOA-8Nh-JO8JO4F5",
+      "why": "a DPOF id. NOT the DPTF it derives from -- the hibernated form is a different entity -- shape read from mainnet; see OuronetIdsV1 (00_Ids.pact)"
+    },
+    "sleeping-dpof": {
+      "v": "H|GSTOA-8Nh-JO8JO4F5",
+      "why": "a DPOF id -- shape read from mainnet; see OuronetIdsV1 (00_Ids.pact)"
+    },
+    "s-dpof": {
+      "v": "H|GSTOA-8Nh-JO8JO4F5",
+      "why": "a DPOF id -- shape read from mainnet; see OuronetIdsV1 (00_Ids.pact)"
+    },
+    "dpof-to-repurpose": {
+      "v": "H|GSTOA-8Nh-JO8JO4F5",
+      "why": "a DPOF id -- shape read from mainnet; see OuronetIdsV1 (00_Ids.pact)"
     }
   },
   "byType": {
