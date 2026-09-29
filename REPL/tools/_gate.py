@@ -455,6 +455,31 @@ def main():
         print(_ti.stdout + _ti.stderr)
         sys.exit("GATE FAILED: TOOLS.md does not index every tool on disk.")
 
+    # THE DOCUMENTATION'S GENERATED HALF. OuronetDocumentation/ is 148 files, and the part that
+    # ROTS is the part a generator produces -- every signature, count and table. That is not a
+    # guess: the predecessor whitepaper was code-accurate when written and had 55 of its 58
+    # signatures wrong after ONE refactor, because nothing regenerated it and nothing checked.
+    #
+    # `_docspages.py --check` diffs every module page's generated region against the committed
+    # chain snapshot; `_docslinks.py --check` catches a chapter citing a file that is neither
+    # written nor planned, and a planned section directory that does not exist.
+    #
+    # Both are fatal. A documentation set that silently describes the previous surface is worse
+    # than none, because it is quoted onward -- which is exactly how the stale figures in this
+    # repository's own instruction file reached a documentation draft.
+    _dp = subprocess.run([sys.executable, "tools/_docspages.py", "--check"],
+                         capture_output=True, text=True)
+    if _dp.returncode != 0:
+        print(_dp.stdout + _dp.stderr)
+        sys.exit("GATE FAILED: a module page's generated region is stale -- "
+                 "run tools/_docspages.py --write.")
+
+    _dl = subprocess.run([sys.executable, "tools/_docslinks.py", "--check"],
+                         capture_output=True, text=True)
+    if _dl.returncode != 0:
+        print(_dl.stdout + _dl.stderr)
+        sys.exit("GATE FAILED: the documentation has a dangling reference or a missing section.")
+
     # DEPLOY PIPELINE -- Deploy/ is GENERATED from the sovereign sources, and until 2026-09-19
     # nothing checked that it had been regenerated after a source change. Every other generated
     # artefact here is diffed by this gate (price sheet, suite stats, audit book, TOOLS.md); this
