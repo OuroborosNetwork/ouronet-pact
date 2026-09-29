@@ -1,16 +1,14 @@
-# IGNIS
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# IGNIS — virtual gas and the cost model
 
 ## What it is for
 
-_To be written._
+Ouronet's own gas. **IGNIS is pegged at one cent per unit**, which is what makes every price in the system arguable in dollars rather than in an abstract token.
+
+This module holds the four constant maps that price everything — primitive weights, unit tiers, deterrence premiums, and per-operation components — and the collectors that charge them. It also owns the **cumulator**: a bill that is a list of legs, each with an amount and a recipient, assembled as a call tree unwinds.
 
 ## Where it sits
 
-_To be written._
+Deployed immediately after DALOS, and before everything that charges. It carries DALOS's cost readers as well as its own, because DALOS deploys below it and cannot build a bill.
 
 ## What it owns, and what it exposes
 
@@ -118,4 +116,10 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**Every map reader fails on an unknown key.** There is no default. An operation whose name is missing does not get a cheap price — it gets no price, and the transaction aborts. That is the right failure mode: pricing at zero would hide the bug behind revenue loss.
+
+**A bill is itemised for a reason.** One assertion once caught a preview that had split a leg in two with the total unchanged — every total-level check passed it. An operation charging the right amount to the wrong recipient is invisible to any test that looks at the sum.
+
+**The collectors were renamed and the documentation was not.** `C_Collect` became `XE_CollectIgnis`; the old names still appear in this project's own instruction files. Worse, the price-sheet generator matched the old name and silently stopped recognising three entrypoints. The lesson written down afterwards: *a rename pass has to carry the tools that grep for the old name.*
+
+**The whole economy is switched off by default** — both toggles read false at genesis. Built and dormant is a sequencing decision, not an unfinished state.

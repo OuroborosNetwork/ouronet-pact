@@ -1,16 +1,16 @@
-# ATSU
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# ATSU — autostake usage
 
 ## What it is for
 
-_To be written._
+The client surface for autostake pools — staking in, and the three ways out.
+
+**Coil** stakes into one pool; **curl** traverses two in one transaction, because the ladder makes two-pool staking the common case and doing it separately means paying twice and risking a price move between.
+
+Exits are **cold recovery** with an unbonding period, **hot recovery** which mints a tradeable unbonding receipt, and **direct recovery** at a flat fee.
 
 ## Where it sits
 
-_To be written._
+A Stage-1 core above the pool state module. Its two hibernating siblings — constrict and brumate — live in the vesting module instead, because their last step is hibernation.
 
 ## What it owns, and what it exposes
 
@@ -106,4 +106,8 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**Coil and curl require hibernation off; constrict and brumate require it on.** At any moment only two of the four are available.
+
+**A failing `let` binding pre-empts every check below it.** A reader returning the sentinel for pools with no hot-recovery token was used as a table key inside a `let`, so it died *before any guard could run*. The fix was to acquire the capability above the binding. Pact's `let` is eager — where a binding can fail, the guard has to be above it.
+
+**A docstring here describes a hibernation branch its own capability forbids.** The branch is live only for the two operations in the vesting module. Stale documentation, not a live bug.

@@ -1,16 +1,12 @@
-# BRD
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# BRD — branding, shared across entity types
 
 ## What it is for
 
-_To be written._
+Name, description, website and social links for **every kind of Ouronet entity** — tokens of all four types, autostake pools and swap pools — with a paid premium tier renewable by the month.
 
 ## Where it sits
 
-_To be written._
+A Stage-1 core deployed early, because four different module families implement its interface and each needs it present.
 
 ## What it owns, and what it exposes
 
@@ -107,4 +103,6 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**One interface, four implementors, and that count is the cascade's cost.** A deployed interface can never change, so a signature change here means a new version and every implementor bumping with it. The count was five until the legacy metadata module was archived — dropping an `implements` removed it from every future cascade, which is a real saving nobody plans for.
+
+**Collectables need a different signature** because their operations take a type discriminator. So branding is split across two interfaces rather than one, and the split exists purely because of that extra parameter.

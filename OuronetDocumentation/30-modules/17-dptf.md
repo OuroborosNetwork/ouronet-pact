@@ -1,16 +1,16 @@
-# DPTF
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# DPTF — the true-fungible token core
 
 ## What it is for
 
-_To be written._
+The ordinary kind of token — a balance per holder, divisible, interchangeable. The busiest asset in the system: the protocol token, virtual gas, every LP token and every autostake receipt is one.
+
+Beyond balances it holds four grantable roles, a per-holder freeze, a two-part fee system including a progressive tax, two wipe modes, and five permanent links to derived token forms.
+
+Full treatment: `20-assets/01-true-fungibles.md`.
 
 ## Where it sits
 
-_To be written._
+A Stage-1 core, deployed after the account and gas cores and before everything that moves or pools value.
 
 ## What it owns, and what it exposes
 
@@ -133,4 +133,10 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**Two tokens do not use the balance table.** The protocol token and virtual gas live directly on the account row, and code that freezes an account has to branch on it. Bootstrapping: the gas token must be spendable before the token module is fully wired.
+
+**Granting a role is gated; revoking one is not.** The issuance flag controls granting only. An issuer who switched off role-granting can still take a role away — the alternative traps a mistake permanently.
+
+**Unset links read as `"|"`, never empty.** All five special-link fields use the sentinel.
+
+**A special link, once created, can never be changed or removed.** The capability enforcing that is annotated as unreachable by construction and kept anyway, as a fail-closed backstop.

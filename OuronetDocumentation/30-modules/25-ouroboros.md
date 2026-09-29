@@ -1,16 +1,14 @@
-# OUROBOROS
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# OUROBOROS — the OURO token and the IGNIS exchange
 
 ## What it is for
 
-_To be written._
+The protocol's own token, and the two conversions that make the gas economy work: **sublimate** turns OURO into IGNIS, **compress** turns IGNIS back into OURO.
+
+Both directions are **free**. Charging for the act of acquiring the means to pay would be a bootstrapping problem.
 
 ## Where it sits
 
-_To be written._
+At the top of the Stage-1 stack, above everything it prices against.
 
 ## What it owns, and what it exposes
 
@@ -96,4 +94,6 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**Compress takes a fee; sublimate does not** — 15 per mille, split. The asymmetry is deliberate: entering the gas economy should be frictionless, leaving it need not be.
+
+**The conversion rate is the OURO dollar price times one hundred**, which is exactly the peg restated: one IGNIS is one cent, so one OURO at price *p* yields 100*p* IGNIS. If the peg ever changed, this is the function that would have to change with it.

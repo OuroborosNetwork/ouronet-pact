@@ -1,16 +1,16 @@
-# VST
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# VST — vesting, locking and the special variants
 
 ## What it is for
 
-_To be written._
+Every transition into and out of a locked state: **vested**, **sleeping**, **hibernating**, **frozen**, **reserved** — plus the two autostake entries that produce hibernated receipts.
+
+The single fact that makes it comprehensible: a special variant is **not a flag on a balance**. The original goes into escrow and a prefixed wrapper token is minted to you. "My tokens are vested" means you hold `V|`-prefixed parcels.
+
+Full treatment: `20-assets/06-the-special-variants.md`.
 
 ## Where it sits
 
-_To be written._
+A Stage-1 core above the token modules. It owns the transitions; the link fields live on the tokens themselves.
 
 ## What it owns, and what it exposes
 
@@ -107,4 +107,10 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**Only the token's owner can create a link, and a link is permanent.** A holder cannot vest a token whose owner never enabled vesting.
+
+**Hibernating is the only freely transferable variant.** The other four are transfer-restricted — deliberate, because hibernation is a bond with a decaying exit penalty and a bond needs a secondary market. A tradeable lock is not a lock.
+
+**The 80% exit penalty is burned, not collected.** Nobody earns it. A penalty paid *to* someone creates an incentive to design for early exits.
+
+**Metadata shape was once chosen by an argument rather than by the token.** Pointing the hibernation merge at a sleeping token stamped the wrong shape on it, and the unsleep operation then died on a runtime type check *before any guard could run* — leaving the parcel permanently un-unsleepable while still in circulation. Prefix checks were added to both merges, and deliberately **not** to the two repurpose paths, because those are the only remaining exit for parcels the bug already mis-minted.

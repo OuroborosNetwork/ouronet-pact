@@ -1,16 +1,12 @@
-# LIQUID
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# LIQUID — liquid staking
 
 ## What it is for
 
-_To be written._
+Liquid staking over the chain's native currency — wrapping a staked position into a token that remains transferable.
 
 ## Where it sits
 
-_To be written._
+A Stage-1 core near the top of the stack. It is one of the four recipients of protocol revenue, and the largest: **40% of every native fee** routes here.
 
 ## What it owns, and what it exposes
 
@@ -87,4 +83,4 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**It receives the biggest revenue share, and that share is not a parameter.** The four-way split is a constant, deliberately: the source records that it *used* to be a parameter, and that let a caller hand the function any four numbers.

@@ -1,16 +1,16 @@
-# DPOF
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# DPOF — the orto-fungible token core
 
 ## What it is for
 
-_To be written._
+The type with no equivalent in most token systems. An orto-fungible holding is not a balance — it is a **parcel**: an indivisible object with its own contents, its own quantity, and exactly one holder.
+
+The source states it in a line: *nonces can't be separated; an orto-fungible nonce has one unique holder.* Every vested, sleeping and hibernating position in the system is one of these.
+
+Full treatment: `20-assets/02-orto-fungibles.md`.
 
 ## Where it sits
 
-_To be written._
+A Stage-1 core beside the true-fungible one, and the successor to the archived metadata-fungible module.
 
 ## What it owns, and what it exposes
 
@@ -153,4 +153,10 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**There is no per-account balance table.** The authoritative record is the parcel row itself. Moving part of a holding does not adjust two numbers — it **mints a new parcel**, and only if the token has segmentation enabled.
+
+**Wiped parcels are decommissioned, not deleted** — set to a negative supply so any later debit fails validation. Deleting rows would make identifiers reusable; a negative sentinel makes a dead parcel provably dead.
+
+**Five wipe operations exist because three axes cross**: granularity, who pays for the scan, and whether it fits one transaction. The slice ceiling is measured and deliberately conservative — 405.6 gas per parcel means about 4,907 would fit, and it is set to 1,000 because the measurement used parcels with no metadata.
+
+**The create role is singular.** One account holds it, so it is moved rather than toggled — and only if the issuer enabled that.

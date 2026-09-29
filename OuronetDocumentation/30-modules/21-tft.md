@@ -1,16 +1,14 @@
-# TFT
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# TFT — the transfer layer
 
 ## What it is for
 
-_To be written._
+Movement for true fungibles — single transfers, multi-transfers, and the bulk forms that move many tokens or many recipients in one operation.
+
+It sits *over* the token core rather than inside it, so the rules about who may move what are in one place rather than repeated per operation.
 
 ## Where it sits
 
-_To be written._
+A Stage-1 core above the true-fungible token core and below everything that moves value — pools, vesting, the launchpad.
 
 ## What it owns, and what it exposes
 
@@ -107,4 +105,6 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**Transfer restriction is enforced by a role list, and an empty list is not the same as an unset one.** When a token's transfer-role list is non-empty, either the sender or the receiver must hold the role. A bug once emptied that list to `[]` instead of the `["|"]` sentinel, so the "is this restricted" check answered *true* for a token restricted nowhere — and every transfer routed into arithmetic that faulted. The token became permanently untransferable and unrepairable.
+
+**A minimum-move threshold and a transmute minimum are different numbers** guarding different things, and one of them is load-bearing for the gas station's sponsored-code door. Changing either without the other breaks a tripod documented across three modules.

@@ -1,16 +1,14 @@
-# ELITE
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# ELITE — account tiers and discounts
 
 ## What it is for
 
-_To be written._
+The **elite tier** system: an account's standing, expressed as a major and minor level, which discounts everything it pays.
+
+The maximum discount is **49%** on virtual gas and exactly half that on native charges — computed by one function with a boolean rather than two.
 
 ## Where it sits
 
-_To be written._
+A small Stage-1 core holding no domain tables of its own. It reads the account core and derives.
 
 ## What it owns, and what it exposes
 
@@ -84,4 +82,6 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**A docstring here claims 49.5%; the code computes 49.** At the top tier the arithmetic is `7 × 6 + 7 = 49`. The pricing reference has it right and the docstring does not — a half-point discrepancy that has survived because nothing tests a docstring.
+
+**The discount applies to the whole bill before it is split**, so two users see genuinely different prices for the same operation. An interface showing only one number invites a support question.

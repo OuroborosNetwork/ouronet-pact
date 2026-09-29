@@ -1,16 +1,20 @@
-# ATS
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# ATS — the autostake pool core
 
 ## What it is for
 
-_To be written._
+Pools that convert a staked token into a **receipt token whose value grows**. One number does the work:
+
+```
+index = total_staked / receipt_supply
+```
+
+Rewards raise the numerator and not the denominator, so every receipt gains value simultaneously, with no transaction and nothing to claim.
+
+Full treatment: `25-defi/01-autostake-pools.md`.
 
 ## Where it sits
 
-_To be written._
+A Stage-1 core above the token modules. Four live pools chain into a ladder, each pool's receipt being the next one's deposit.
 
 ## What it owns, and what it exposes
 
@@ -137,4 +141,10 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**Converting divides by the index, so index zero is a division by zero** — and it is reachable, not contrived: any pool whose receipt carries supply minted *outside* it reads zero stake against positive supply, which is the state the primal-asset pools are in at deploy. One entry point refused; another died inside the arithmetic, which `try` cannot catch, so it took down every caller rather than degrading one field. The guard now lives in the conversion itself.
+
+**The reward-token and reward-bearing-token fields mean opposite things depending on which row you read** — lists of pools on a token, token identifiers on a pool. Combined with the `"|"` sentinel this produced a failure measured on mainnet: a sentinel reached a table read and killed the read an entire interface toolbar was built from.
+
+**Nine of fifteen live pools have no hot-recovery token**, so that reader returns the sentinel for most of them.
+
+**Hibernation mode is global to a pool**, deciding which two of four entry operations exist for everyone.

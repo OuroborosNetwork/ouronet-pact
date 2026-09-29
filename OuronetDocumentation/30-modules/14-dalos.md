@@ -1,16 +1,18 @@
-# DALOS
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# DALOS — the account and identity core
 
 ## What it is for
 
-_To be written._
+The root of the system: **every Ouronet account lives here**, along with the protocol's global settings, its gas tanks, and the gas station that pays the host chain on a user's behalf.
+
+Two account types share one row shape — standard (a person) and smart (a contract-like actor owned by a standard account). Each row carries two separate authorities: a **guard** (which keys control it) and a **governor** (which code operates it), forced into disjoint principal protocols so the two can never be confused.
+
+It also holds the mapping between Ouronet accounts and host-chain accounts, in both directions.
 
 ## Where it sits
 
-_To be written._
+The **first core module**, deployed immediately after the utilities. Everything depends on it; it depends only on them.
+
+That position has a consequence worth knowing: DALOS deploys *before* the gas module, so it cannot construct a bill. Its own cost readers therefore live in IGNIS — an exception recorded where it applies rather than generalised.
 
 ## What it owns, and what it exposes
 
@@ -128,4 +130,12 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**Account existence is an economic question, not a structural one.** There is no row-exists test; the check reads an elite-debt field and requires it to be at least 1. A missing row defaults to zero. Existence and standing are the same question, asked once.
+
+**An unset ledger row defaults to `["|"]`, not `[]`.** Code assuming an empty list sees one phantom entry.
+
+**Rotating the host-chain link must read the old value first.** Read it after the row is overwritten and the cleanup deletes from the wrong key, orphaning a ledger row permanently. The fix is documented at the site.
+
+**A column rename once broke every account.** A Pact upgrade replaces code and leaves rows untouched, so renaming `kadena-konto` to `stoa-konto` made the reader throw for *every* account — 33 call sites across 9 modules. The column was reverted; the table rename was missed in the same pass because a renamed table does not throw, it merely reports as uncreated. Function names may be renamed freely; **column names may not**.
+
+**And the gas station's exemption used to be far wider.** The check asked whether the payer was *any* smart account — and anyone may create one permissionlessly. It now compares against one named constant. The source's own phrasing: *a convention that is honoured is indistinguishable from a rule that is enforced, until someone does not honour it.*
