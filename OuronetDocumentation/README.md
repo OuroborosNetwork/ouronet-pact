@@ -87,7 +87,7 @@ also records why an earlier version of this very table said "68 interfaces" and 
 10-architecture/  the layer cake, sovereign vs citizen, deploy order, the gas model
 20-assets/        the four asset types, their special variants, what each one IS
 25-defi/          the three pool families — staking, swapping, earning — and their formulas
-30-modules/       the per-module reference — the bulk of the work
+30-modules/       one page per deployed module — 96 of them. Start at 00-INDEX.md
 40-journeys/      what a holder, an issuer, a pool owner, a builder can actually DO
 50-economics/     why it costs what it costs, honestly
 60-methodology/   StoicSyntax, and how a naming discipline made the code semi-self-auditing
@@ -96,8 +96,9 @@ also records why an earlier version of this very table said "68 interfaces" and 
 90-reference/     catalogues, figures, the directive verbatim, and where every number came from
 ```
 
-Read `BUILD-PLAN.md` next: what each of the 132 files is, what it must contain, the order to
-write them in, and which are done. Then `MAINTAINING.md`, which is why this folder will not be
+Read `BUILD-PLAN.md` next: what each file is, what it must contain, and the order they were
+written in. (It plans 132 files against the 148 that exist — it predates the module count being
+taken from the chain, which found 96 deployed modules where the plan assumed 79.) Then `MAINTAINING.md`, which is why this folder will not be
 stale in a month — it is a directive requirement, not housekeeping.
 
 The commissioning directive itself is quoted verbatim in
