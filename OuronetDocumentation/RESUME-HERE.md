@@ -5,7 +5,7 @@ Written 2026-09-27. Update it when you stop working; a stale resume note is wors
 
 ## Where it stands
 
-**23 of 132 files written**, plus one module exemplar. Updated 2026-09-29. Tree clean.
+**31 of 132 files written**, plus one module exemplar. Updated 2026-09-29. Tree clean.
 
 | section | files | written |
 |---|---|---|
@@ -28,8 +28,9 @@ per-module block from it with a live-vs-repo comparison. See
 that need their own research passes: `20-assets` (8), `25-defi` (5), `40-journeys` (5),
 `50-economics` (4), `70-comparison` (3), `80-cryptography` (4).
 
-**Recommended next: `20-assets/`.** It is the largest unblocked prose section, the directive names
-the four asset types explicitly, and it does not depend on either open decision.
+**`20-assets/` is COMPLETE.** Recommended next: **`25-defi/`** (5 files) — the three pool families.
+`20-assets/07-pool-positions.md` already establishes what a position IS, so 25-defi covers only the
+mechanics. Much of the research is in this session's briefs; re-run if the session is new.
 
 **`80-cryptography/` needs material from ANOTHER REPO** — the 162-char glyph generator is not in
 this tree (established writing `10-architecture/05`; nothing here derives an account from a public
