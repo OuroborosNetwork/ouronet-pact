@@ -474,6 +474,13 @@ def main():
         sys.exit("GATE FAILED: a module page's generated region is stale -- "
                  "run tools/_docspages.py --write.")
 
+    _df = subprocess.run([sys.executable, "tools/_docsfigures.py", "--check"],
+                         capture_output=True, text=True)
+    if _df.returncode != 0:
+        print(_df.stdout + _df.stderr)
+        sys.exit("GATE FAILED: a cross-cutting figure quoted in the documentation's PROSE "
+                 "no longer matches the tree.")
+
     _dm = subprocess.run([sys.executable, "tools/_docsmodules.py", "--check"],
                          capture_output=True, text=True)
     if _dm.returncode != 0:
