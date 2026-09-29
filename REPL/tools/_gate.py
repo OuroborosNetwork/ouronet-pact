@@ -474,6 +474,13 @@ def main():
         sys.exit("GATE FAILED: a module page's generated region is stale -- "
                  "run tools/_docspages.py --write.")
 
+    _dm = subprocess.run([sys.executable, "tools/_docsmodules.py", "--check"],
+                         capture_output=True, text=True)
+    if _dm.returncode != 0:
+        print(_dm.stdout + _dm.stderr)
+        sys.exit("GATE FAILED: the documentation's module map is stale -- "
+                 "run tools/_docsmodules.py --write.")
+
     _dl = subprocess.run([sys.executable, "tools/_docslinks.py", "--check"],
                          capture_output=True, text=True)
     if _dl.returncode != 0:

@@ -131,7 +131,7 @@ their results exist**. Topics, one agent each:
 | tool | what it does | gate? |
 |---|---|---|
 | `REPL/tools/_transcripts.py` | mines `~/.claude/projects/` for what the owner typed. `--stats --grep --rulings --on --agents --selftest` | **no**, deliberately — per-machine corpus outside the repo |
-| `REPL/tools/_docsmodules.py` | generates the module map between `<!-- @generated:… -->` markers. `--check --write --selftest` | not yet — joins when `30-modules/` is complete |
+| `REPL/tools/_docsmodules.py` | generates the module map between `<!-- @generated:… -->` markers. `--check --write --selftest` | **yes, fatal** |
 
 **Read `_transcripts.py`'s docstring before using it.** The sidechain trap: a subagent brief is
 stored as a user message, identical in every field including `userType`; only `isSidechain`
