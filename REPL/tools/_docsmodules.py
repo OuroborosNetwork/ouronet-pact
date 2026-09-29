@@ -26,6 +26,15 @@ explain.  That is the whole reason the seam exists rather than generating the pa
   python3 REPL/tools/_docsmodules.py --selftest prove marker handling and @doc joining
 """
 import os, re, sys
+import importlib.util as _ilu
+
+# The per-module block renderer lives in its own file: the module MAP and a module BLOCK answer
+# different questions and will change for different reasons. Loaded by path rather than imported
+# by name so this tool keeps working from any working directory, as the rest of the suite does.
+_spec = _ilu.spec_from_file_location(
+    "_docsblocks", os.path.join(os.path.dirname(os.path.abspath(__file__)), "_docsblocks.py"))
+_blocks = _ilu.module_from_spec(_spec)
+_spec.loader.exec_module(_blocks)
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DOCS = os.path.join(ROOT, "OuronetDocumentation")
@@ -155,10 +164,24 @@ def render_map():
 REGIONS = {"module-map": render_map}
 
 
+MODULE_RE = re.compile(
+    r'<!-- @generated:module:([A-Za-z0-9|_+-]+)[^>]*-->\n(.*?)<!-- @end:module:\1 -->', re.S)
+
+
+def _module_sub(m):
+    name = m.group(1)
+    head = '<!-- @generated:module:' + name + ' -- do not edit; run '
+    head += 'REPL/tools/_docsmodules.py --write -->'
+    return head + '\n' + _blocks.render(name) + '\n<!-- @end:module:' + name + ' -->'
+
+
 def apply(path, write):
     """Replace every marked region in one file. Returns 1 if it differed."""
     cur = open(path, encoding="utf8").read()
     new = cur
+    # Per-module regions first. A page may hold SEVERAL -- one per module an entity chapter
+    # covers -- or exactly one, for a per-module page. Both shapes are supported on purpose.
+    new = MODULE_RE.sub(_module_sub, new)
     for name, fn in REGIONS.items():
         pat = re.compile(r'(<!-- @generated:' + re.escape(name) +
                          r'[^>]*-->\n)(.*?)(<!-- @end:' + re.escape(name) + r' -->)', re.S)
@@ -191,7 +214,9 @@ def main():
             if not n.endswith(".md"):
                 continue
             p = os.path.join(dirpath, n)
-            if any(f'@generated:{k}' in open(p, encoding="utf8").read() for k in REGIONS):
+            body = open(p, encoding="utf8").read()
+            if (any('@generated:' + k in body for k in REGIONS)
+                    or '@generated:module:' in body):
                 files += 1
                 bad += apply(p, write)
     if bad and not write:

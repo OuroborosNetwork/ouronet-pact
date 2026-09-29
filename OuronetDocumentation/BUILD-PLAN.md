@@ -279,7 +279,7 @@ reader this is for.
 | `10-architecture` | 8 | 3 |
 | `20-assets` | 8 | 0 |
 | `25-defi` | 5 | 0 |
-| `30-modules` | 79 | 0 |
+| `30-modules` | 79 | 0 (+1 exemplar) |
 | `40-journeys` | 5 | 0 |
 | `50-economics` | 4 | 0 |
 | `60-methodology` | 4 | 2 |
