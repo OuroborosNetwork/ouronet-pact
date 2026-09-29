@@ -26,13 +26,25 @@ That split is not a preference. The predecessor whitepaper was code-accurate whe
 had **55 of its 58 signatures wrong after one refactor**, because nothing regenerated it and
 nothing checked. The half that rots is exactly the half a generator produces.
 
-After any deploy:
+After any deploy, **one command**:
 
 ```bash
-python3 REPL/tools/_livemodules.py --probe    # refresh the chain snapshot
-python3 REPL/tools/_docspages.py   --write    # re-render every module page
-python3 REPL/tools/_registrylive.py --record  # re-date the registry confirmation
+python3 REPL/tools/_docsall.py --write --probe
 ```
+
+It asks the chain, then regenerates the module map, all 96 module pages, the index, the
+entrypoint catalogue, the glossary and the source map — then checks every cross-reference and
+re-derives every cross-cutting figure against the tree. Without `--probe` it regenerates from
+the committed chain snapshot and never touches the network.
+
+To ask whether anything has gone stale without changing it:
+
+```bash
+python3 REPL/tools/_docsall.py --check
+```
+
+Both are also enforced piecewise by `_gate.py`, so a stale page fails the build rather than
+shipping.
 
 `_docspages.py --check` and `_docslinks.py --check` are **fatal gate checks**, so a stale page
 or a dangling reference fails the build rather than shipping.

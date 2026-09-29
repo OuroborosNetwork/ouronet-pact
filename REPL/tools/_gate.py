@@ -474,6 +474,13 @@ def main():
         sys.exit("GATE FAILED: a module page's generated region is stale -- "
                  "run tools/_docspages.py --write.")
 
+    _dr = subprocess.run([sys.executable, "tools/_docsref.py", "--check"],
+                         capture_output=True, text=True)
+    if _dr.returncode != 0:
+        print(_dr.stdout + _dr.stderr)
+        sys.exit("GATE FAILED: a generated reference page is stale -- "
+                 "run tools/_docsall.py --write.")
+
     _df = subprocess.run([sys.executable, "tools/_docsfigures.py", "--check"],
                          capture_output=True, text=True)
     if _df.returncode != 0:
