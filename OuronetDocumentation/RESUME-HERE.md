@@ -5,21 +5,32 @@ Written 2026-09-27. Update it when you stop working; a stale resume note is wors
 
 ## Where it stands
 
-**14 of 132 files written.** Updated 2026-09-29. Tree clean.
+**17 of 132 files written**, plus one module exemplar. Updated 2026-09-29. Tree clean.
 
 | section | files | written |
 |---|---|---|
 | root (`README`, `BUILD-PLAN`, `MAINTAINING`) | 3 | **3** |
 | `00-orientation` | 4 | **4** |
-| `10-architecture` | 8 | **3** (01, 02, 03) |
+| `10-architecture` | 8 | **5** (01, 02, 03, 04, 07) |
 | `60-methodology` | 4 | **2** (01 StoicSyntax, 02 semi-self-auditing) |
 | `90-reference` | 5 | **2** (03, 04) |
-| everything else | 107 | 0 |
+| everything else | 105 | 0 |
 
 ## The next action, exactly
 
-`60-methodology/` 01 and 02 are **DONE**. Next is `10-architecture/` 04–08, then
-`60-methodology/` 03 (the gate) and 04 (what went wrong).
+**The generator is built and proven.** `_livemodules.py --probe` caches the deployed source of
+all 96 live modules by module hash (re-probe: 0 fetched, 96 hits), and `_docsblocks.py` renders a
+per-module block from it with a live-vs-repo comparison. See
+`30-modules/00-EXEMPLAR-OUROBOROS.md` for the shape.
+
+Remaining in `10-architecture/`: **05** (accounts and identity), **06** (IGNIS and the gas
+station), **08** (the read layer). Then `60-methodology/` 03 (the gate) and 04 (what went wrong).
+
+**STILL AWAITING AN OWNER DECISION, and it is the biggest lever left:** entity chapters (~13
+subsystems) or per-module pages (79)? The June whitepaper used entities and reads better for it.
+The generator serves both — a page may carry one `module:<NAME>` block or several — so nothing is
+blocked, but the answer roughly halves or doubles the remaining module work. The PDF question
+(same content or condensed cut) is also still open from 2026-09-23.
 
 **Before writing `03-the-gate.md`: the assertion count is NOT verified.** Earlier context carries
 26,128 and an audit-book note says 25,885, and neither was re-measured — 02 deliberately omits the
