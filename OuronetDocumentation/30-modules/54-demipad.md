@@ -1,16 +1,16 @@
-# DEMIPAD
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# DEMIPAD — the launchpad venue
 
 ## What it is for
 
-_To be written._
+A **permissioned venue** where assets are sold for one of three tokens while the protocol retains a decreasing royalty — from 15% down to 0.3% as volume accumulates.
+
+It is generic over all four asset types, and stores each sale's price as an **open object** it never interprets. That is the extension point: one venue hosts a flat price, a share-based price, a weight-based price and a time curve without knowing any of them.
+
+Full treatment: `25-defi/04-the-launchpad.md`.
 
 ## Where it sits
 
-_To be written._
+A Stage-2 core. Five citizen sales compose it; none can reach inside it.
 
 ## What it owns, and what it exposes
 
@@ -119,4 +119,8 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**The royalty is marginal, not tiered.** A deposit spanning a boundary is integrated across the intervals it crosses, so a large buyer is never penalised for the size of a single purchase.
+
+**Its revenue split is NOT the protocol's.** Both go four ways as 10/20/30/40 through the same helper, but **the first two destinations are swapped** — gas station 10% and holding company 20% here, the reverse for protocol fees. Reusing the protocol's table to describe this one attributes the wrong shares to the wrong accounts.
+
+**There is no protocol fee on a launchpad operation.** What a buyer pays is a price, not a charge, and every sale's preview says so explicitly.

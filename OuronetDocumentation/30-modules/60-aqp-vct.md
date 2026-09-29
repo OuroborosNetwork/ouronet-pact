@@ -1,16 +1,16 @@
-# AQP-VCT
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# AQP-VCT — vacating
 
 ## What it is for
 
-_To be written._
+Force-unstaking an entire pool and returning every position to its owner.
+
+It has its own module because it unwinds in a **different order** than staking: staking transfers custody first, vacating transfers it **last**, after trackers, scores and checkpoints are settled.
+
+Part of the **acquisition-pool family** — ten modules, the largest subsystem in the system. Full treatment: `25-defi/03-acquisition-pools.md`.
 
 ## Where it sits
 
-_To be written._
+Above the pools and the reward engine, coordinating both.
 
 ## What it owns, and what it exposes
 
@@ -136,4 +136,8 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**It is a gas-planning problem, not a logic problem.** The cost model is measured — roughly 75,000 per beneficiary plus 4,000 per position against a 2,000,000 ceiling, so about 481 positions concentrated or 25 spread.
+
+**There is no finalise flag.** The batch that empties the pool finishes the job, which is safe because the chain executes serially.
+
+**The on-chain check is a backstop, not the optimizer** — the source says so: the interface sizes real batches by simulating against true gas, and the node's meter is the real enforcement. An aborted oversized batch rolls back at the submitter's cost.

@@ -1,16 +1,14 @@
-# AQP-DSA
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# AQP-DSA — delegated staking agencies
 
 ## What it is for
 
-_To be written._
+A delegation layer: an agency is one member of a farm, delegators stake into it, and an operator runs infrastructure for a per-mille fee bounded between **1% and 50%**.
+
+Part of the **acquisition-pool family** — ten modules, the largest subsystem in the system. Full treatment: `25-defi/03-acquisition-pools.md`.
 
 ## Where it sits
 
-_To be written._
+Above the distributor, writing agency state through it.
 
 ## What it owns, and what it exposes
 
@@ -108,4 +106,10 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**The fee never touches a stored weight.** The member index advances by the *net* and the whole fee credits direct to the operator's pending — so a fee change reprices only the next injection. No migration, no recomputation, no per-staker loop.
+
+**Capacity comes from an oracle with a 25-hour window**, and the constant documents its own arithmetic: a daily write plus one hour of overlap, so there is never a gap. A stale oracle means the agency captures **nothing** and its whole share routes to a royalty pool.
+
+**The oracle writer is authorised by a guard, not an account** — deliberately, with attribution one level up: the function that *registers* the guard takes a proven executor. Authority and accountability are separated on purpose.
+
+**The opening threshold is deliberately non-configurable.** A settable gate could be raised above the earning threshold, making agencies unopenable while looking valid.

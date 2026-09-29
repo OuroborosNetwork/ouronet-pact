@@ -1,16 +1,16 @@
-# AQP-POOL
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# AQP-POOL — the pools
 
 ## What it is for
 
-_To be written._
+Where you actually stake. A pool accepts one asset shape from five classes, tracks positions, and employs up to seven scores.
+
+The separation that everything depends on: **users never stake "into the farm" — they stake into a pool**, and the distributor only accounts and pays.
+
+Part of the **acquisition-pool family** — ten modules, the largest subsystem in the system. Full treatment: `25-defi/03-acquisition-pools.md`.
 
 ## Where it sits
 
-_To be written._
+The family's state module for staking.
 
 ## What it owns, and what it exposes
 
@@ -126,4 +126,8 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**Owner and beneficiary are separate.** The owner signs and gets custody back; the beneficiary earns the score and the boost. One party can stake on another's behalf without surrendering the asset.
+
+**Special variants are first-class stake legs**, admitted or refused per pool class — but reserved tokens are rejected outright everywhere.
+
+**A merge-order bug once made a seven-slot setter a no-op** that, as the source puts it, *flatly contradicted its own docstring*.

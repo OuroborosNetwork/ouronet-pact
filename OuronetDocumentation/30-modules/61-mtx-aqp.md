@@ -1,16 +1,14 @@
-# MTX-AQP
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# MTX-AQP — multi-step acquisition operations
 
 ## What it is for
 
-_To be written._
+Continuation forms of injection and anchor revocation, for cases too large for one transaction.
+
+Part of the **acquisition-pool family** — ten modules, the largest subsystem in the system. Full treatment: `25-defi/03-acquisition-pools.md`.
 
 ## Where it sits
 
-_To be written._
+Beside the distributor, for the operations that must be split.
 
 ## What it owns, and what it exposes
 
@@ -90,4 +88,6 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**One of these is vault-and-treasury only** and is described in its own source as a *spike fallback*, bounded by how many stale stakers it can fix.
+
+**These and the swap equivalents are the only places virtual gas is collected outside Talos** — sixteen call sites in total. Intended, and it contradicts a sentence in this project's own documentation claiming Talos is the sole collector.

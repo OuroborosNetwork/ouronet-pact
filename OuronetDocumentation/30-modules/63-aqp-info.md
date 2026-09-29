@@ -1,16 +1,14 @@
-# AQP-INFO
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# AQP-INFO — acquisition previews
 
 ## What it is for
 
-_To be written._
+Operation previews for the acquisition family — what an operation will do and cost, before anything is signed.
+
+Part of the **acquisition-pool family** — ten modules, the largest subsystem in the system. Full treatment: `25-defi/03-acquisition-pools.md`.
 
 ## Where it sits
 
-_To be written._
+A leaf read-only module deployed after everything it describes. It has no interface, because nothing reaches it by reference.
 
 ## What it owns, and what it exposes
 
@@ -57,4 +55,6 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**Nothing on chain calls a preview.** Every one is invoked off-chain, which is what permits it to be module-only rather than declared in an interface — and that in turn avoids a version bump and its cascade.
+
+**A preview's parameter list usually differs from the operation's.** Bind by name; positional binding type-checks and prices a different question.

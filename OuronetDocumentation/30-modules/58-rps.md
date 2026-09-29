@@ -1,16 +1,21 @@
-# RPS
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# RPS — the reward engine
 
 ## What it is for
 
-_To be written._
+The accounting. An index advances when rewards arrive; a user's claim is what their weight earned since they last checkpointed:
+
+```
+on inject:  index += reward / total_weight
+on claim:   owed   = pending + weight × (index − your_last_index)
+```
+
+Injecting touches one row, claiming touches two, and **neither depends on the number of stakers or injections**. The index carries 48 decimal places because it is a running division.
+
+Part of the **acquisition-pool family** — ten modules, the largest subsystem in the system. Full treatment: `25-defi/03-acquisition-pools.md`.
 
 ## Where it sits
 
-_To be written._
+A leaf module extracted from the distributor when that grew undeployable. The distributor drives it; it reads none of the distributor's tables.
 
 ## What it owns, and what it exposes
 
@@ -119,4 +124,8 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**Settle before changing a weight.** On every weight change, every reward stream must be settled at the OLD weight before the checkpoint advances. Get that wrong and a weight change retroactively rewrites history.
+
+**A dust sweep once paid a zero-weight caller.** Both sweep branches tested only a counter — a property of the *vault*, not of the caller — so an exited account with zero weight collected the whole remainder and the rightful sole claimant gained nothing. The post-mortem is explicit that it was *measured, not reasoned about*, and that the triggering state is a **normal end-of-life state, not an attack precondition**.
+
+**Rewards arriving at an empty pool are escrowed, not discarded** — and deliberately kept out of the main pool, so a sweep cannot pay them to a cohort that already left.

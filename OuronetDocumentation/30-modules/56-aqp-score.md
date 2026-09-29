@@ -1,16 +1,16 @@
-# AQP-SCORE
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# AQP-SCORE — scoring
 
 ## What it is for
 
-_To be written._
+The weighting rules. A score turns a stake into a number through three steps — base, boost, then the account's tier — and `deb` is what the reward model multiplies.
+
+The boost is **additive, not a replacement**: the base is never dropped.
+
+Part of the **acquisition-pool family** — ten modules, the largest subsystem in the system. Full treatment: `25-defi/03-acquisition-pools.md`.
 
 ## Where it sits
 
-_To be written._
+Between the pools and the reward distributor.
 
 ## What it owns, and what it exposes
 
@@ -117,4 +117,10 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**The multipliers are immutable once positions exist.** Changing one would leave every existing row wrong; the migration path is a *new* score, not an edit.
+
+**The frozen multiplier defaults to 2.0** against 1.0 for sleeping and hibernated. The economics follow the lock: frozen has no exit at all.
+
+**A score may take its base from another score**, and then stores zero for its own base — the canonical value lives on the linked one. Summing base, boosted and deb across linked entities does **not** reconstruct a total; they are views, not addends.
+
+**The base is the stable staked amount, not its market value**, so a full unstake reverses exactly and nets to zero. Valuation happens later and is never stored here.

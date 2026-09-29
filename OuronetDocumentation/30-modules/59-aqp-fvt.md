@@ -1,16 +1,16 @@
-# AQP-FVT
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# AQP-FVT — farms, vaults and treasuries
 
 ## What it is for
 
-_To be written._
+The reward distributor. One field selects which of three it is, and the difference is structural: a **farm** has two-level accounting, splitting first across member pools by weight and then across each pool's stakers; a **vault** or **treasury** has one index.
+
+The two levels exist because a farm's members are pools of different sizes, and splitting by size first is the only way a large pool does not swallow a small one.
+
+Part of the **acquisition-pool family** — ten modules, the largest subsystem in the system. Full treatment: `25-defi/03-acquisition-pools.md`.
 
 ## Where it sits
 
-_To be written._
+Above the reward engine, which it drives through external entry points.
 
 ## What it owns, and what it exposes
 
@@ -135,4 +135,8 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**The admission rule from score class to distributor class was inverted** — collectables went to the vault, orto-fungibles to the treasury. The reason nobody noticed is the instructive part: *the bootstrap issued its four entities NAMED Treasury at class 1, so the broken rule was exactly what let them work.* A fixture built to match the bug confirms the bug.
+
+**A farm's denominator is computed fresh at injection** and cannot be cached, because the value is base-dependent and the cached copy is stale by construction.
+
+**Streams are capped per owner by account tier**, up to 49.

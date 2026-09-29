@@ -1,16 +1,16 @@
-# AQP-ANK
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# AQP-ANK — anchors
 
 ## What it is for
 
-_To be written._
+Rules that convert holding **one** asset into a per-mille boost on a score for a **different** one.
+
+For fungibles the boost is pro-rated rather than a threshold: hold two and a half times the anchor amount, get two and a half times the boost. For collectables it counts whole units matching a nonce, a trait or a set class.
+
+Part of the **acquisition-pool family** — ten modules, the largest subsystem in the system. Full treatment: `25-defi/03-acquisition-pools.md`.
 
 ## Where it sits
 
-_To be written._
+Below the scoring module, which reads a single aggregated value from it.
 
 ## What it owns, and what it exposes
 
@@ -118,4 +118,8 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**Boost classes originally had no owner.** Anyone owning any anchorable asset could anchor it into someone else's class and hand their holders a boost inside that vault's scoring — *six free slots on a seven-slot class is six such grants.* An owner field was added.
+
+**Two different sevens exist here and they are not related.** A boost class holds up to seven anchors; separately, each asset tracks seven groups of seven, giving 49. The first is a grouping, the second is bookkeeping that lets one read enumerate everything anchored to an asset.
+
+**The result is uncapped; the definition is bounded.** Per-unit leverage is fixed at issue, but accumulated boost still grows by staking more.
