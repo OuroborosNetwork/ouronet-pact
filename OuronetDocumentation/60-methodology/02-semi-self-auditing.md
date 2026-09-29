@@ -155,6 +155,34 @@ sentinel test that passed with the fix removed, a coverage guard that read one f
 a rule about a class. `04-what-went-wrong.md` is the catalogue, and it exists because the
 credibility of §2's zero depends on it.
 
+## 6b. What the structural checks sit on top of
+
+The 26 rules answer questions about *shape*. They are not the only thing that runs, and they
+would not be worth much alone — a codebase can be perfectly well-named and wrong.
+
+Underneath them is the behavioural suite, and it was measured while writing this chapter rather
+than quoted from memory:
+
+```
+wall 312.8s   executed 26128 assertions (20952 positive, 5176 negative)
+GATE GREEN
+```
+
+**26,128 assertions**, of which **5,176 are negative** — checks that something is correctly
+*refused*. That ratio is worth pausing on. Roughly one assertion in five exists to prove a door is
+shut, which is the half of testing that is easy to skip because nothing visibly breaks when it is
+missing.
+
+The runner also proves something about itself. Beyond executing the suite, it verifies that **no
+asserting file is orphaned** — every file containing assertions must be reachable from a named
+entry point, or explicitly excluded with a reason. That check exists because it was once absent:
+four test drivers were archived on the reasoning that they contained no assertions themselves,
+which was true of the drivers and false of what they loaded. About 125 assertions left the suite
+silently, and the inventory never noticed, **because it counted files rather than execution**.
+
+An assertion nothing runs is not coverage. It is decoration that reads as coverage — to a ledger,
+and to a human.
+
 ## 7. The claim, stated precisely
 
 What the naming buys:

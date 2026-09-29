@@ -5,13 +5,13 @@ Written 2026-09-27. Update it when you stop working; a stale resume note is wors
 
 ## Where it stands
 
-**17 of 132 files written**, plus one module exemplar. Updated 2026-09-29. Tree clean.
+**20 of 132 files written**, plus one module exemplar. Updated 2026-09-29. Tree clean.
 
 | section | files | written |
 |---|---|---|
 | root (`README`, `BUILD-PLAN`, `MAINTAINING`) | 3 | **3** |
 | `00-orientation` | 4 | **4** |
-| `10-architecture` | 8 | **5** (01, 02, 03, 04, 07) |
+| `10-architecture` | 8 | **8 — COMPLETE** |
 | `60-methodology` | 4 | **2** (01 StoicSyntax, 02 semi-self-auditing) |
 | `90-reference` | 5 | **2** (03, 04) |
 | everything else | 105 | 0 |
@@ -23,8 +23,8 @@ all 96 live modules by module hash (re-probe: 0 fetched, 96 hits), and `_docsblo
 per-module block from it with a live-vs-repo comparison. See
 `30-modules/00-EXEMPLAR-OUROBOROS.md` for the shape.
 
-Remaining in `10-architecture/`: **05** (accounts and identity), **06** (IGNIS and the gas
-station), **08** (the read layer). Then `60-methodology/` 03 (the gate) and 04 (what went wrong).
+**`10-architecture/` is COMPLETE** (01-08). Next: `60-methodology/` **03** (the gate) and **04**
+(what went wrong), then the module section once the entity-vs-module question is answered.
 
 **STILL AWAITING AN OWNER DECISION, and it is the biggest lever left:** entity chapters (~13
 subsystems) or per-module pages (79)? The June whitepaper used entities and reads better for it.
@@ -32,11 +32,27 @@ The generator serves both — a page may carry one `module:<NAME>` block or seve
 blocked, but the answer roughly halves or doubles the remaining module work. The PDF question
 (same content or condensed cut) is also still open from 2026-09-23.
 
-**Before writing `03-the-gate.md`: the assertion count is NOT verified.** Earlier context carries
-26,128 and an audit-book note says 25,885, and neither was re-measured — 02 deliberately omits the
-figure rather than quote one. Getting it means running `python3 REPL/tools/_gate.py`, which is
-~5 wall-minutes on 16 cores and heavy. Budget for that deliberately, or write 03 around what the
-gate CHECKS (19 checks, listed in `_gate.py`) and leave the assertion total to a measured run.
+**The gate figures are now MEASURED, 2026-09-29** — run `-j 16`, wall **312.8s**:
+
+```
+executed 26128 assertions (20952 positive, 5176 negative)
+GATE GREEN
+```
+
+So the remembered 26,128 was right and the audit-book's 25,885 is stale. Written into
+`60-methodology/02` §6b. **`03-the-gate.md` does not need another full run.**
+
+Two corrections for 03, both measured rather than recalled:
+- the gate invokes **29** static checks (not the 19 this note used to say) and carries **34**
+  distinct fatal exits. `grep -oE 'tools/_[a-z0-9]+\.py' REPL/tools/_gate.py | sort -u`
+- **`_gate.py --audit-only` is the CHEAP HALF** — the orphan proof, running no tests, seconds not
+  minutes. Reports **93 entrypoints, 334 files reachable**. Use it freely.
+
+**AND IT CAUGHT A REAL FAILURE THE FIRST TIME IT WAS ASKED.** The gate was RED — `TOOLS.md`
+indexed 79 tools against 83 on disk, and all four missing were written for THIS job
+(`_transcripts`, `_docsmodules`, `_livemodules`, `_docsblocks`) across three sessions. Fixed in
+`6c7c26f0`. **Run `--audit-only` after adding any tool**; the rule is in TOOLS.md's own header and
+was broken four times running because nothing was asking.
 
 Material gathered for 01, kept because 02 needs the same sources:
 
