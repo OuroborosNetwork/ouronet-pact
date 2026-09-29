@@ -9,3 +9,9 @@ __pycache__/
 
 # BeeDev
 .bee/
+
+# Deployed Pact source, cached by module hash. Regenerable in one command
+# (REPL/tools/_livemodules.py --probe) and 5.7MB of duplicated source, which would
+# make the committed artefact's diff unreadable. The SHAPES live in
+# Deploy/LIVE-MODULES.json and are committed.
+Deploy/.live-source-cache.json
