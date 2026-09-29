@@ -2,7 +2,13 @@
 
 ## What it is for
 
-Operation previews for the Stage-2 modules — 149 of them.
+Operation previews for every Stage-2 module — **149 of them**, covering collectables, the
+launchpad and the acquisition family.
+
+A preview answers *what will this do, and what will it cost?* before anything is signed. It
+calculates nothing itself: it wraps the cost function that lives **in the module that charges**,
+and the billing path calls the same function. A quoted price cannot drift from the charged one,
+because there is nothing separate to drift.
 
 ## Where it sits
 
@@ -53,6 +59,16 @@ A read-layer module deployed after everything it describes.
 
 ## Traps
 
-**Its interface declaration is commented out** while its docstring still claims it, so it implements nothing despite appearing to.
+**Its interface declaration is commented out** while its own docstring still claims it. So it
+implements nothing, despite appearing to — and nothing caught that, because an unimplemented
+interface fails only when something tries to reach the module through it, and nothing does.
 
-**Nothing on chain calls a preview**, which is what allows module-only functions that avoid an interface version bump and its cascade.
+**Nothing on chain calls a preview.** Every one is invoked off-chain over a read-only query. That
+is what permits functions to be module-only — defined here and absent from any interface — which
+is the read layer's escape from the cascade rule. Adding a function to a *published* interface
+means a new version and every consumer bumping with it.
+
+**A preview's parameter list usually differs from the operation's** — 410 of 423 across the
+system, only 13 matching. Bind arguments by name. Positional binding does not fail: the values are
+mostly strings, so a wrong mapping type-checks and returns a confident price for a different
+question.

@@ -4,6 +4,9 @@
 
 Registration of human-readable names, priced **per character** in native currency.
 
+It is the naming layer over the account system: an account identifier is 162 unreadable glyphs, so
+a registered name is how a human refers to one.
+
 ## Where it sits
 
 A Stage-1 core near the top, below its Talos wrapper.
@@ -108,6 +111,17 @@ A Stage-1 core near the top, below its Talos wrapper.
 
 ## Traps
 
-**Its fee is the one price in the system not derived from a dollar figure.** Everything else divides a dollar amount by the current market price; this is fixed in native units per glyph, non-discountable, recorded as an owner ruling with an explicit instruction not to normalise it.
+**Its fee is the one price in the system not derived from a dollar figure.** Every other native
+charge divides a dollar amount by the current market price. This is fixed in native units per
+glyph, **non-discountable**, and recorded as an owner ruling with an explicit instruction not to
+normalise it.
 
-A rule with one documented exception is more trustworthy than one with none, because the exception proves someone checked.
+A rule with one documented exception is more trustworthy than one with none, because the exception
+proves someone checked.
+
+**It carries four previews of its own** rather than delegating to the read layer — one of only two
+core modules that does. That is legal and deliberate: a preview is module-only unless something
+needs to reach it by reference, and nothing does.
+
+**Its guard rotation is one of six operations in the system taking a guard.** A guard may be shown
+to a user and must never be prefilled into an input that can reach a signed transaction.

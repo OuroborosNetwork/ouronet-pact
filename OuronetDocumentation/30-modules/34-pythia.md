@@ -2,7 +2,11 @@
 
 ## What it is for
 
-The bridge to off-chain data: registering consumer lanes and the authorisation that lets an external writer publish into them.
+The bridge to off-chain data: registering consumer lanes, and authorising an external writer to
+publish into them.
+
+It is how the protocol reaches information it cannot compute — prices, external state — without
+trusting any single caller by default.
 
 ## Where it sits
 
@@ -116,6 +120,15 @@ A Stage-1 core near the top, below its Talos wrapper.
 
 ## Traps
 
-**Its fees are non-discountable**, unlike almost everything else — an account's elite tier does not reduce them.
+**Its fees are non-discountable.** An account's elite tier reduces almost everything; it does not
+reduce these.
 
-**One of its operations is free and safe only because it is bounded** — see the Stage-1 identity orchestrator's traps for why that bound matters and what would break it.
+**One of its operations is free, and safe because it is bounded rather than cheap.** Linking takes
+no payer and collects nothing, while its three siblings all charge. It is safe because linking
+requires two already-deployed halves at real cost, and **counterparts are never cleared** — revoke
+only deactivates — so it is one-shot per pair, forever. That bound is pinned by a test. **If
+counterparts ever become clearable, the operation stops being safe.**
+
+**Its identities use a different curve from Ouronet accounts** — same 162-character geometry, same
+glyph alphabet, different mathematics and a less-reviewed curve. See
+`80-cryptography/01-why-custom-cryptography.md`.
