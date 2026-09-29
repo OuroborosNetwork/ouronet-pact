@@ -1,16 +1,14 @@
-# DPDC
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# DPDC — the collectables state core
 
 ## What it is for
 
-_To be written._
+The central state: what collections exist, their flags, their nonces, their per-account holdings, and the ten mirrored tables that hold all of it.
+
+Part of the **collectables family** — eleven modules serving BOTH semi-fungible and non-fungible assets through one boolean discriminator. There is no module named DPSF or DPNF anywhere; the two are mirrored table sets, not separate implementations. See `20-assets/03-semi-fungibles.md` and `04-non-fungibles.md`.
 
 ## Where it sits
 
-_To be written._
+The family's state module. Everything else reads it.
 
 ## What it owns, and what it exposes
 
@@ -115,4 +113,8 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**The discriminator is part of the key, not decoration.** The two asset types are separate tables and the same identifier can exist in both, so a lookup without it does not degrade — it answers about a different token.
+
+**A non-fungible's stored holder is an 11-character abbreviation** — five leading characters, an ellipsis, three trailing — so it distinguishes 162-character accounts by six body characters out of 160. Any two accounts sharing those collide. Found by red-teaming; the fix is a **second check against the full-key table**, with deliberately different messages so which one fired is visible.
+
+The general lesson: *a truncated identifier is a display convenience, and the moment it decides something it is a collision.*

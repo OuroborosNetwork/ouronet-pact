@@ -1,16 +1,16 @@
-# EQUITY
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# EQUITY — tokenised companies
 
 ## What it is for
 
-_To be written._
+A company as **eight nonces**: one barebone share and seven package tiers from 0.1‰ to 1%, issued with 1,000,000 shares and zero of every tier.
+
+Full treatment: `20-assets/05-sets-and-fragments.md`.
+
+Part of the **collectables family** — eleven modules serving BOTH semi-fungible and non-fungible assets through one boolean discriminator. There is no module named DPSF or DPNF anywhere; the two are mirrored table sets, not separate implementations. See `20-assets/03-semi-fungibles.md` and `04-non-fungibles.md`.
 
 ## Where it sits
 
-_To be written._
+The last module in the collectables family.
 
 ## What it owns, and what it exposes
 
@@ -101,4 +101,8 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**At most half the company may be packaged at once.** The cap was originally a bare division in an expression and is now a named constant with its reasoning attached — which makes an economic policy findable rather than incidental.
+
+**Packaging escrows; unpackaging and converting burn.** The same asymmetry as sets: the composite is ephemeral, the constituent is preserved.
+
+**It deliberately shares no code with the sets module**, and says so at the site along with the cost: *a future DPDC-S invariant fix will NOT automatically propagate here.* The duplication is a decision, documented where someone would otherwise assume a fix had reached it.

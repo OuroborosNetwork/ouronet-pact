@@ -1,16 +1,14 @@
-# DPDC-R
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# DPDC-R — collectable roles
 
 ## What it is for
 
-_To be written._
+Ten account-level roles — richer than either fungible type — plus the distinction between a collection's **owner** and its **creator**, so a collection can be administratively owned by one party and minted by another.
+
+Part of the **collectables family** — eleven modules serving BOTH semi-fungible and non-fungible assets through one boolean discriminator. There is no module named DPSF or DPNF anywhere; the two are mirrored table sets, not separate implementations. See `20-assets/03-semi-fungibles.md` and `04-non-fungibles.md`.
 
 ## Where it sits
 
-_To be written._
+Above the state core.
 
 ## What it owns, and what it exposes
 
@@ -90,4 +88,6 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**One role is semi-fungible-only.** Non-fungibles cannot carry an add-quantity role because their quantity is fixed at one — so the operation toggling it is the only one in this module that does not take the type discriminator. It hardcodes the semi-fungible path because there is no other.
+
+**A frozen account could once be bricked permanently** when the unfreeze and upgrade flags were both off, leaving no release valve.

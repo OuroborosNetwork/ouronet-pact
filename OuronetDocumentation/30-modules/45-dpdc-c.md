@@ -1,16 +1,14 @@
-# DPDC-C
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# DPDC-C — create, credit and debit
 
 ## What it is for
 
-_To be written._
+The mint-and-move engine: creating nonces, and crediting or debiting holdings.
+
+Part of the **collectables family** — eleven modules serving BOTH semi-fungible and non-fungible assets through one boolean discriminator. There is no module named DPSF or DPNF anywhere; the two are mirrored table sets, not separate implementations. See `20-assets/03-semi-fungibles.md` and `04-non-fungibles.md`.
 
 ## Where it sits
 
-_To be written._
+Above the state core, below everything that issues or moves a collectable.
 
 ## What it owns, and what it exposes
 
@@ -105,4 +103,6 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**A non-fungible's quantity is locked to one in two places**, and both checks are annotated as unreachable by construction — every caller passes the literal. They are kept anyway, because the thing they guard is a *type invariant* rather than a caller convention. Deleting them would be safe today and unsafe after the next new caller.
+
+**Fragment credits must be a positive multiple of 1,000.** That bound was once absent entirely on the non-fungible path — defence in depth, since the only live caller can produce exactly 1,000.

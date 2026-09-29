@@ -1,16 +1,14 @@
-# DPDC-F
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# DPDC-F — fragments
 
 ## What it is for
 
-_To be written._
+Fractionalisation: splitting one collectable into exactly **1,000** pieces, represented as the **negation** of the original nonce — so the relationship between piece and whole is arithmetic, not a lookup.
+
+Part of the **collectables family** — eleven modules serving BOTH semi-fungible and non-fungible assets through one boolean discriminator. There is no module named DPSF or DPNF anywhere; the two are mirrored table sets, not separate implementations. See `20-assets/03-semi-fungibles.md` and `04-non-fungibles.md`.
 
 ## Where it sits
 
-_To be written._
+Above the state and transfer modules.
 
 ## What it owns, and what it exposes
 
@@ -90,4 +88,6 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**Enabling fractionalisation is a one-way switch.** There is no disable function, because a token that could stop being fractionalisable would strand every fragment already issued.
+
+**The documented scope is narrower than the enforced one.** The module describes itself as fractionalising native nonces, but the gate it enforces delegates, for a set instance, to that set-class's own flag — so a set instance whose class permits it *is* fractionalisable. Only the *enabling* step is native-only. A documentation gap rather than a defect, recorded because a reader following the docstring would conclude the wrong thing.

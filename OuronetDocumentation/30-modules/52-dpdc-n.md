@@ -1,16 +1,14 @@
-# DPDC-N
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# DPDC-N — nonce metadata
 
 ## What it is for
 
-_To be written._
+Updating the mutable metadata on an existing nonce — names, descriptions, traits, and the URI slots.
+
+Part of the **collectables family** — eleven modules serving BOTH semi-fungible and non-fungible assets through one boolean discriminator. There is no module named DPSF or DPNF anywhere; the two are mirrored table sets, not separate implementations. See `20-assets/03-semi-fungibles.md` and `04-non-fungibles.md`.
 
 ## Where it sits
 
-_To be written._
+Above the state core.
 
 ## What it owns, and what it exposes
 
@@ -91,4 +89,4 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**A set instance's contents were once editable.** A non-fungible set records what went into it, and the break operation trusts that record to decide what to hand back — while this module's update path could overwrite it arbitrarily. The fix blocks edits to set *instances* while leaving the *recipe* editable, a distinction that took a specific test to pin because the two look alike from outside.

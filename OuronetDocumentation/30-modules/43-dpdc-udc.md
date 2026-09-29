@@ -1,16 +1,14 @@
-# DPDC-UDC
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# DPDC-UDC — collectable schemas and constructors
 
 ## What it is for
 
-_To be written._
+The shared data shapes for the whole collectables family — fourteen schemas defining what a nonce, a set, an account holding and a metadata record are — and the constructors that build them.
+
+Part of the **collectables family** — eleven modules serving BOTH semi-fungible and non-fungible assets through one boolean discriminator. There is no module named DPSF or DPNF anywhere; the two are mirrored table sets, not separate implementations. See `20-assets/03-semi-fungibles.md` and `04-non-fungibles.md`.
 
 ## Where it sits
 
-_To be written._
+The family's first module, holding the types everything above it uses.
 
 ## What it owns, and what it exposes
 
@@ -81,4 +79,6 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**One field reads nothing.** The royalty field carries an in-source note that it is a forward-looking hook for a marketplace that does not exist, with no on-chain consumer — unlike its sibling, which transfer pricing actively reads. Recording that in the schema is what stops the next reader assuming both are live.
+
+**The sentinels for "no set definition" are `[0]` and `-1`**, and both became unreachable from user input as a side effect of tightening a bounds check elsewhere. Nobody targeted them.

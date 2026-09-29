@@ -1,16 +1,14 @@
-# DPDC-I
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# DPDC-I — collection issuance
 
 ## What it is for
 
-_To be written._
+Issuing a new collection — the operation that creates a collectable's identity and its flags.
+
+Part of the **collectables family** — eleven modules serving BOTH semi-fungible and non-fungible assets through one boolean discriminator. There is no module named DPSF or DPNF anywhere; the two are mirrored table sets, not separate implementations. See `20-assets/03-semi-fungibles.md` and `04-non-fungibles.md`.
 
 ## Where it sits
 
-_To be written._
+A small module above the create engine.
 
 ## What it owns, and what it exposes
 
@@ -89,4 +87,6 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**Identifiers derive from the previous block hash**, which is per block rather than per transaction. Two collections issued with the same ticker in one block collide, and the second aborts. Investigated and closed as by-design: atomic, self-healing, and surfacing first in a shared branding table.
+
+**Issuance is one of the few operations charging both currencies** — $20 for a semi-fungible collection, $25 for a non-fungible one.

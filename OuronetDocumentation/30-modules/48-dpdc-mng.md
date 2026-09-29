@@ -1,16 +1,14 @@
-# DPDC-MNG
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# DPDC-MNG — collectable management
 
 ## What it is for
 
-_To be written._
+Burning, wiping, pausing, and the seven wipe operations the family needs.
+
+Part of the **collectables family** — eleven modules serving BOTH semi-fungible and non-fungible assets through one boolean discriminator. There is no module named DPSF or DPNF anywhere; the two are mirrored table sets, not separate implementations. See `20-assets/03-semi-fungibles.md` and `04-non-fungibles.md`.
 
 ## Where it sits
 
-_To be written._
+Above the state and create modules.
 
 ## What it owns, and what it exposes
 
@@ -127,4 +125,6 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**Seven wipes, against two for a true fungible.** A balance is one number; a holder's collectable positions may be thousands of rows. Large wipes are sliced.
+
+**The escrow account is specifically protected from burn and wipe** for any nonce backing outstanding fragments — otherwise an administrator could wipe the escrowed original and leave a thousand fragments backed by nothing. The guard is narrow rather than blanket, because the same account is used legitimately for same-transaction custody elsewhere.

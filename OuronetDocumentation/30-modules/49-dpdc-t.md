@@ -1,16 +1,14 @@
-# DPDC-T
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# DPDC-T — collectable transfers
 
 ## What it is for
 
-_To be written._
+Movement — single, multiple and bulk — including the royalty a collection's creator earns on each one.
+
+Part of the **collectables family** — eleven modules serving BOTH semi-fungible and non-fungible assets through one boolean discriminator. There is no module named DPSF or DPNF anywhere; the two are mirrored table sets, not separate implementations. See `20-assets/03-semi-fungibles.md` and `04-non-fungibles.md`.
 
 ## Where it sits
 
-_To be written._
+Above the state core, below the launchpad sales that move collectables.
 
 ## What it owns, and what it exposes
 
@@ -102,4 +100,4 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**Transfers charge a royalty paid out of the payer**, and a preview that forgets it under-quotes. That happened: a launchpad sale's preview omitted the leg and quoted **89.002 against 89.004 charged** on a two-share purchase. Two thousandths, found only because preview and charge are separately computed from a shared definition and someone compared them.

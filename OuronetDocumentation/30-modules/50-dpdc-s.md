@@ -1,16 +1,16 @@
-# DPDC-S
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# DPDC-S — sets
 
 ## What it is for
 
-_To be written._
+Composition: binding several collectables into one tradeable set, with the constituents held in escrow rather than burned.
+
+A set-class is a **recipe written once** — `insert`, not `write`, so it can never be redefined. Full treatment: `20-assets/05-sets-and-fragments.md`.
+
+Part of the **collectables family** — eleven modules serving BOTH semi-fungible and non-fungible assets through one boolean discriminator. There is no module named DPSF or DPNF anywhere; the two are mirrored table sets, not separate implementations. See `20-assets/03-semi-fungibles.md` and `04-non-fungibles.md`.
 
 ## Where it sits
 
-_To be written._
+Above the state and transfer modules.
 
 ## What it owns, and what it exposes
 
@@ -116,4 +116,10 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**Sets nest, and the containment graph is acyclic by arithmetic rather than by a check.** A new class is numbered one above the current count and may only reference classes at or below it, so a class can only cite strictly lower-numbered ones. No recursion check exists because no recursion can be expressed.
+
+**An inactive set can still be broken.** Making requires an active recipe; breaking deliberately does not — so deactivating a class stops new sets without trapping existing ones.
+
+**Two functions must agree on constituent order and once did not.** Validation took primordial-then-composite; reconstruction returned the reverse, so decomposing a hybrid set returned the right tokens in the wrong positions. Both sites now cross-reference each other.
+
+**A bound that checked only the maximum let garbage through.** A large negative value is always less than a small positive one, so it hid behind a legitimate entry and silently consumed a set-class number, which is monotonic and never reclaimed.
