@@ -5,7 +5,7 @@ Written 2026-09-27. Update it when you stop working; a stale resume note is wors
 
 ## Where it stands
 
-**52 of 132 files written**, plus one module exemplar. Updated 2026-09-29. Tree clean.
+**148 of 148 files exist; 52 carry finished prose**, plus one module exemplar. Updated 2026-09-29. Tree clean.
 
 | section | files | written |
 |---|---|---|
@@ -41,7 +41,17 @@ that need their own research passes: `20-assets` (8), `25-defi` (5), `40-journey
    `_libs/DALOS_Crypto` (Go reference + TypeScript port, published as
    `@ouronet/dalos-crypto`). Contracts contain ZERO cryptography; they mirror the
    256-glyph alphabet only.
-3. **`30-modules/` (79 files)** — STILL BLOCKED on the entity-vs-module decision. The generator is
+3. **`30-modules/` — SCAFFOLDED, PROSE PENDING.** `_docspages.py --write` emits one page
+   per deployed module with EVERYTHING derivable generated between markers: the on-chain
+   block, tables, schemas, capabilities, functions grouped by prefix, client entrypoints.
+   Prose outside the markers survives regeneration (proved with a sentinel).
+
+   **The plan said 79 modules; the chain has 96.** Use the tool's count, not the plan's.
+
+   What remains is prose per module: *what it is for*, *where it sits*, *traps*. Each page
+   says so visibly until written. Work in deploy order; the sovereign cores (DALOS, IGNIS,
+   DPTF, DPOF, ATS, SWP family, DPDC family, AQP family) matter most and the utilities are
+   quick.
    built and proven (`_livemodules.py` + `_docsblocks.py`, exemplar at
    `30-modules/00-EXEMPLAR-OUROBOROS.md`).
 
