@@ -38,7 +38,14 @@ anywhere it could legitimately mean, AND the plan does not promise one. That is
 deliberately permissive. A checker whose findings are mostly noise gets switched
 off, and then it protects nothing -- which is the failure this whole folder is about.
 
-Exit 1 on a dangling reference when --check is given.
+It also checks that every SECTION DIRECTORY the plan names exists. That is a
+different question from a dangling reference and it is here because it has the same
+cause and the same silence: on 2026-09-29 `25-defi/` had never been created, and the
+only symptom was a heredoc quietly writing two finished chapters into the repo root
+because its `cd` failed. Nothing reported anything. A missing directory is a
+dangling reference with no citation to hang on.
+
+Exit 1 on a dangling reference or a missing section when --check is given.
 """
 import os, re, sys, glob
 
@@ -68,6 +75,14 @@ def known_basenames():
             for p in glob.glob(os.path.join(base, "**", "*.md"), recursive=True):
                 names.add(os.path.basename(p))
     return names
+
+
+def missing_sections():
+    """Section directories BUILD-PLAN.md names but the tree does not have."""
+    if not os.path.exists(PLAN):
+        return []
+    want = sorted(set(re.findall(r"`(\d\d-[a-z-]+)/`", open(PLAN, encoding="utf-8").read())))
+    return [w for w in want if not os.path.isdir(os.path.join(DOCS, w))]
 
 
 def scan():
@@ -129,10 +144,16 @@ if __name__ == "__main__":
     if "--selftest" in sys.argv:
         sys.exit(0 if selftest() else 1)
     refs, dangling = scan()
-    if not dangling:
-        print(f"docs links: clean -- {refs} reference(s) across the documentation all resolve")
+    gone = missing_sections()
+    if not dangling and not gone:
+        print(f"docs links: clean -- {refs} reference(s) resolve; every planned section exists")
         sys.exit(0)
-    print(f"docs links: {len(dangling)} DANGLING of {refs} reference(s)")
-    for f, t in dangling:
-        print(f"  {f} -> {t}")
+    if dangling:
+        print(f"docs links: {len(dangling)} DANGLING of {refs} reference(s)")
+        for f, t in dangling:
+            print(f"  {f} -> {t}")
+    if gone:
+        print(f"docs sections: {len(gone)} planned section(s) MISSING from the tree")
+        for g in gone:
+            print(f"  OuronetDocumentation/{g}/")
     sys.exit(1 if "--check" in sys.argv else 0)
