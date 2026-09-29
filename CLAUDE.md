@@ -419,7 +419,24 @@ ignores this silently converted an unconditional gate into a conditional one dur
 
 - `UR_*` groups follow the **order schemas are declared** in the module (first schema → first UR block, …).
 - Within a group, mirror the **field order of the `defschema`**: full-row reader first (when present), then per-field readers in field order, then object-taking helpers/predicates.
-- **Multi-table dispatch** (same schema, fungibility discriminator, etc.): prefer a single entry `UR_*` using `with-default-read (UC_*Table discriminator) row-key …` over copy-pasted per-table readers. Split only when the read logic diverges. Reference: `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/01_ANK.pact` — `{F0} [UR]` blocks.
+- **Multi-table dispatch** (same schema, fungibility discriminator, etc.): prefer a single entry
+  `UR_*` over copy-pasted per-table readers. Split only when the read logic diverges.
+
+  **CORRECTED 2026-09-29 — this prescribed a mechanism that DOES NOT EXIST, and cited a file that
+  does not contain it.** It read *"using `with-default-read (UC_*Table discriminator) row-key …`"*
+  and pointed at `03_AQP/01_ANK.pact` — `{F0} [UR]` blocks. Measured: `UC_[A-Za-z]*Table` matches
+  **0 times across all 237 `.pact` files**, **no function anywhere returns `:table`** (Pact has no
+  first-class table values to return), and **`01_ANK.pact` contains 0 `UC_` functions**. The only
+  occurrence of the name in the repository is a prose example in
+  `OuronetInformational/ouronet/conventions/ur-layout.md`.
+
+  What the tree actually does is **inline ternary table selection** —
+  `(keys (if son DPSF|T|AccountSupplies DPNF|T|AccountSupplies))` in `02_DPDC.pact`, and a
+  four-way `cond` on a `[bool]` fungibility tuple in `00_Demipad.pact`. The *rule* (one entry
+  reader, not per-table copies) is sound and is followed; the *spelling* was aspirational and read
+  as descriptive because it carried a file reference. **A citation is what makes a style note look
+  measured** — this one had been quoted onward into a documentation draft before anyone ran the
+  grep. See also the `let`-vs-inline bullet below, which repeats the same non-existent form.
 - **Per-field `UR_*` take table keys, not row objects.**
 
 ### Greenfield feature workflow
