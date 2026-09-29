@@ -121,6 +121,53 @@ def render_page_body(name, live, eps):
     return "\n".join(out).rstrip() + "\n"
 
 
+LAYERS = [("Utilities", "1_Utilities"), ("Core — Stage 1", "STAGE_01/2_Core"),
+          ("Talos — Stage 1", "STAGE_01/3_Talos"), ("Reads — Stage 1", "STAGE_01/Z_Reads"),
+          ("Core — Stage 2", "STAGE_02/2_Core"), ("Talos — Stage 2", "STAGE_02/3_Talos"),
+          ("Reads — Stage 2", "STAGE_02/Z_Reads"), ("Citizen", "2_CITIZEN")]
+
+
+def write_index(order, live, rows):
+    """96 pages in deploy order with no way in is a filing cabinet, not a reference.
+
+    Grouped by LAYER rather than listed flat, because deploy order and conceptual
+    order are the same thing here -- a module can only call what is already deployed,
+    so reading downward is reading dependencies-first."""
+    out = ["# The modules", "",
+           f"One page per deployed module — **{len(order)} of them** — in **deploy order**, which",
+           "is also dependency order: a module may only call what is already deployed, so reading",
+           "downward is reading foundations first.",
+           "",
+           "Each page carries a generated enumeration (schemas, tables, capabilities, functions",
+           "grouped by prefix, client entrypoints) and hand-written prose (what it is for, where it",
+           "sits, what has bitten people). The enumeration is re-rendered from the chain; the prose",
+           "is not touched by that.", ""]
+    used = set()
+    for title, frag in LAYERS:
+        hit = [(i, n) for i, n in rows
+               if frag in (live[n].get("repoPath") or "") and n not in used]
+        if not hit:
+            continue
+        used.update(n for _i, n in hit)
+        out += [f"## {title}", "", "| | module | role |", "|---:|---|---|"]
+        for i, n in hit:
+            rel = os.path.basename(page_path(i, n))
+            first = ""
+            pth = page_path(i, n)
+            if os.path.exists(pth):
+                head = open(pth, encoding="utf-8").readline().strip()
+                first = head.split("—", 1)[1].strip() if "—" in head else ""
+            out.append(f"| {i} | [`{n}`]({rel}) | {first} |")
+        out.append("")
+    rest = [(i, n) for i, n in rows if n not in used]
+    if rest:
+        out += ["## Other", "", "| | module |", "|---:|---|"]
+        for i, n in rest:
+            out.append(f"| {i} | [`{n}`]({os.path.basename(page_path(i, n))}) |")
+        out.append("")
+    open(os.path.join(PAGES, "00-INDEX.md"), "w", encoding="utf-8").write("\n".join(out))
+
+
 def page_path(idx, name):
     return os.path.join(PAGES, f"{idx:02d}-{name.lower().replace('|', '-')}.md")
 
@@ -157,6 +204,8 @@ def build(write=False, only=None):
         if write:
             os.makedirs(PAGES, exist_ok=True)
             open(p, "w", encoding="utf-8").write(new)
+    if write and not only:
+        write_index(order, live, list(enumerate(order, 1)))
     return order, changed, made
 
 
