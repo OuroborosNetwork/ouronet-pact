@@ -87,7 +87,7 @@ is*; that section answers *what it does and why*.
 
 ### Core — Stage 2
 
-22 file(s) · 21 module(s) · 22 interface(s) · 41,263 lines
+22 file(s) · 21 module(s) · 22 interface(s) · 41,270 lines
 
 | module | file | lines | fn | cap | sch/tbl | its own one-line `@doc` |
 |---|---|---:|---:|---:|---:|---|
@@ -108,7 +108,7 @@ is*; that section answers *what it does and why*.
 | `AQP-SCORE` | `STAGE_02/2_Core/03_AQP/02_SCORE.pact` | 4,239 | 217 | 36 | 0/12 | AQP-SCORE — sovereign acquisition scoring for AQP pools. |
 | `AQP-POOL` | `STAGE_02/2_Core/03_AQP/03_AQP.pact` | 3,489 | 214 | 19 | 0/13 | Sovereign acquisition-pool module. |
 | `RPS` | `STAGE_02/2_Core/03_AQP/04_RPS.pact` | 5,472 | 341 | 10 | 0/16 | Reward-per-share (RPS) ledger/accountant extracted from AQP-FVT (task #75). |
-| `AQP-FVT` | `STAGE_02/2_Core/03_AQP/05_FVT.pact` | 3,652 | 144 | 30 | 0/5 | Large sovereign reward-accounting module for AQP farms (class 0), vaults (1) and treasuries (2). |
+| `AQP-FVT` | `STAGE_02/2_Core/03_AQP/05_FVT.pact` | 3,659 | 144 | 30 | 0/5 | Large sovereign reward-accounting module for AQP farms (class 0), vaults (1) and treasuries (2). |
 | `AQP-VCT` | `STAGE_02/2_Core/03_AQP/06_VCT.pact` | 3,535 | 137 | 15 | 0/2 | Sovereign vacate module that unwinds an AQP pool by returning every staked position to owners. |
 | `MTX-AQP` | `STAGE_02/2_Core/03_AQP/07_MTX-AQP.pact` | 575 | 16 | 9 | 0/2 | Holds all AQP multi-transaction (defpact) flows. |
 | `AQP-DSA` | `STAGE_02/2_Core/03_AQP/08_DSA.pact` | 1,078 | 61 | 16 | 0/5 | Delegated Staking Agencies — a delegation layer over AQP-FVT's two-tier farm settle. |
@@ -197,7 +197,7 @@ is*; that section answers *what it does and why*.
 | files | 105 |
 | module forms | 99 |
 | interface forms | 98 |
-| lines | 122,969 |
+| lines | 122,976 |
 | `defun` forms | 5,572 |
 | `defcap` forms | 987 |
 | schemas / tables | 206 / 231 |
@@ -218,7 +218,7 @@ because two generated numbers disagreeing in the same folder reads as one of the
 |---|---|---|---|
 | `defun` forms | 8,848 | **5,572** | the front page counts the whole file; this page counts the module BODY only. The 3,276 difference is interface declarations — the same function named in an interface and defined in the module. |
 | `defcap` forms | 988 | **987** | exactly one `defcap` is declared in an *interface* rather than a module: `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/01_ANK.pact`. Verified by scanning every file's pre-`(module …)` head. |
-| lines | 122,969 | 122,969 | agree, deliberately. The generator counts newlines only — `wc -l` semantics. A "logical lines" count gives 123,042, because 73 files in the tree lack a trailing newline. |
+| lines | 122,976 | 122,976 | agree, deliberately. The generator counts newlines only — `wc -l` semantics. A "logical lines" count gives 123,049, because 73 files in the tree lack a trailing newline. |
 
 The line-count case is the instructive one. Counting a final unterminated line *as a line* is
 arguably more correct, and it was the wrong choice: it put a 73-line discrepancy between two

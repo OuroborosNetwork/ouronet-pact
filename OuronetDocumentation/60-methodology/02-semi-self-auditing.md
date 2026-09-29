@@ -13,7 +13,7 @@ which is not, because a claim of self-auditing that does not draw that line is m
 
 ## 1. What "auditable" has to mean at this size
 
-122,969 lines. An auditor cannot read them, and neither can a maintainer. So the only questions
+122,976 lines. An auditor cannot read them, and neither can a maintainer. So the only questions
 worth asking are the ones that can be asked of **all** of it at once.
 
 Consider a single ordinary question: *does any function that claims to be pure actually read a

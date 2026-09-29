@@ -2,7 +2,7 @@
 ;; OURONET DEPLOY -- file 18 of 24
 ;; This is STEP 18 of 25 in the full sequence (see Deploy/MANIFEST.md).
 ;; Steps 1-17 must have run first, including the init steps between deploys.
-;; 1 source file(s), 203,548 gas measured in the REPL gas model, 209,221 bytes
+;; 1 source file(s), 203,548 gas measured in the REPL gas model, 209,860 bytes
 ;;
 ;; Source files in this transaction, IN ORDER (do not reorder):
 ;;   1_SOVEREIGN/STAGE_02/2_Core/03_AQP/05_FVT.pact
@@ -2546,7 +2546,14 @@
     ;; ───────────────────────────────────────────────────────────────────────────
     ;; INJECT FUNCTION MATRIX — all three route through the ONE core XI_FvtInjectCore
     ;; ───────────────────────────────────────────────────────────────────────────
-    ;;   Entrypoint (Talos wrapper)        Farm(0,LP)  Vault(1,TF/SF/NF)  Treasury(2,OF)  Divisor  Tx
+    ;;   Entrypoint (Talos wrapper)        Farm(0,LP)  Vault(1,TF/OF)  Treasury(2,SF/NF)  Divisor  Tx
+    ;;   CORRECTED 2026-09-29 -- this header still carried the PRE-RULING mapping
+    ;;   `Vault(1,TF/SF/NF) Treasury(2,OF)`, which is exactly the pair the 2026-09-19 owner
+    ;;   ruling REVERSED in URC_ScoreClassMatchesFvtClass ~1000 lines below. The function was
+    ;;   fixed and documented; this comment was not, so the file stated both mappings and the
+    ;;   wrong one came first. A comment cannot be gate-diffed, which is why it outlived the
+    ;;   defect it described -- and why it got quoted into a UI design before anyone re-read
+    ;;   the function. Live rule: farm<->LP(0), vault<->TF/OF(1/2), treasury<->SF/NF(3/4).
     ;;   C_Inject   (AQP-FVT|CC_Inject)        yes           yes               yes          naive    1
     ;;   CC_Inject  (AQP-FVT|CC_Inject)       yes           yes               yes          fresh    1
     ;;   MTX|2|C_Inject defpact (C_2|Inject)  yes           yes               yes          fresh    2*
