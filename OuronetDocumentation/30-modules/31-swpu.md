@@ -1,16 +1,16 @@
-# SWPU
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# SWPU — swaps and routing
 
 ## What it is for
 
-_To be written._
+The swap surface: direct swaps naming a pool, and smart swaps that route across the graph.
+
+Two smart-swap variants exist deliberately — one searches in-transaction, the other takes a client-supplied route and validates it. The second was built *alongside* the first for comparison, not to replace it.
+
+Full treatment: `25-defi/02-swap-pools.md`.
 
 ## Where it sits
 
-_To be written._
+The top of the swap family, below Talos.
 
 ## What it owns, and what it exposes
 
@@ -112,4 +112,12 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**Slippage is a floor, not a band.** The upper bound is commented out rather than deleted, with the survey behind it recorded: every major AMM enforces a floor only.
+
+**A breached floor is not a revert.** The operation returns a message and charges nothing.
+
+**The 50% slippage ceiling once lived only in the constructor**, while the entrypoint took the built object. A forged 9,999% drove the floor to −98,990, so no output could breach it and the protection was inoperative. The general lesson: *a check in a constructor protects callers of the constructor, not callers of the function that takes its output.*
+
+**Quotes are fee-exclusive.** Slippage catches reserves moving; it does not catch a pool owner changing the fee rate between quote and execution. Only a locked fee does, and locks are off by default.
+
+**The gas story includes a failed phase**: a binary search that looked like a win synthetically and regressed 27,527 gas in real measurement. Reverted and recorded as a negative result.

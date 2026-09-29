@@ -1,16 +1,16 @@
-# SWPT
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# SWPT — the pool graph and route cache
 
 ## What it is for
 
-_To be written._
+The routing substrate: tokens are nodes, pools are edges, and **parallel pools between the same pair are a list on one edge** rather than separate edges.
+
+It owns the adjacency graph, a path cache and a topology version. It holds **no value data at all**.
+
+Full treatment: `25-defi/02-swap-pools.md`.
 
 ## Where it sits
 
-_To be written._
+The first swap-family module, deployed before the registry that fills it.
 
 ## What it owns, and what it exposes
 
@@ -101,4 +101,8 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**The cache stores structure, never a value.** Nodes and edges only — every use re-derives from live reserves. Caching a price would be caching something that changes every block.
+
+**Entries carry a topology version, bumped only on a genuinely new connection.** Without it the cache was insert-only and first-write-wins: an entry could never be refreshed even after new pools made a better route possible.
+
+**The depth cap is a post-discovery filter, not a constraint inside the search.** The deviation is documented at the site — baking a bound into the shared search utility would change a lower layer with other callers.

@@ -1,16 +1,16 @@
-# SWPLC
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# SWPLC — the liquidity client
 
 ## What it is for
 
-_To be written._
+The user-facing liquidity surface: five ways to add, one to remove.
+
+Three of the five differ only in how the asymmetric part is paid for. The other two accept **frozen or sleeping tokens** and return frozen or sleeping LP.
+
+Full treatment: `25-defi/02-swap-pools.md`.
 
 ## Where it sits
 
-_To be written._
+Above the liquidity mathematics, below Talos.
 
 ## What it owns, and what it exposes
 
@@ -100,4 +100,8 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**Sleeping liquidity preserves the exact remaining duration.** The parcel is burned and a new one minted with precisely the residual time — the lock survives the transformation of the asset it was locking. That is the cleanest illustration of "state, not token" in the system.
+
+**Removal deliberately does not check the deposit switch**, for the trust reason recorded in the registry module's traps.
+
+**A quoted removal cost was once wrong** because the preview read a bare deterrence value while the execution charged deterrence plus components. Every removal was over-quoted until the preview was fixed.

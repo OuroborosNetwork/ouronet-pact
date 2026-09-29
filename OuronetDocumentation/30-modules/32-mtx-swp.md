@@ -1,16 +1,16 @@
-# MTX-SWP
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# MTX-SWP — multi-step pool operations
 
 ## What it is for
 
-_To be written._
+Multi-transaction variants of issuance and liquidity addition, as ordered continuations.
+
+The module's own docstring is candid about why it still exists: built to split work under an older per-transaction gas ceiling, **kept for continuity and as an example rather than because it is still required**.
+
+Full treatment: `25-defi/02-swap-pools.md`.
 
 ## Where it sits
 
-_To be written._
+The last swap-family module.
 
 ## What it owns, and what it exposes
 
@@ -92,4 +92,10 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**Continuations are not gas-sponsored.** They carry no transaction code for the gas station to inspect, so the customer pays for every step after the first. This is one of the ten entrypoints in the whole system that is only partly sponsored.
+
+**Nothing can expire an abandoned multi-step operation.** Pact has no scheduled execution, so an open one persists forever.
+
+**And explicit rollback costs more than walking away** — measured at 53 IGNIS extra, with nothing refunded.
+
+**These are also the only place virtual gas is collected outside Talos.** A common claim in this project's own documentation says Talos is the only collector; sixteen in-core collection calls live here and in the acquisition-pool equivalent. The behaviour is intended; the sentence is overstated.

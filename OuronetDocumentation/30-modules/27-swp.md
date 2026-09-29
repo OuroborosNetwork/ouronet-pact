@@ -1,16 +1,14 @@
-# SWP
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# SWP — the pool registry
 
 ## What it is for
 
-_To be written._
+The pool state: which pools exist, what tokens they hold, their weights and amplifier, their three fee components, their owner, and the switches an owner controls.
+
+Full treatment: `25-defi/02-swap-pools.md`.
 
 ## Where it sits
 
-_To be written._
+The swap family's state module. Everything else in the family reads it.
 
 ## What it owns, and what it exposes
 
@@ -133,4 +131,8 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**A pool owner can pause deposits and halt trading. They cannot stop withdrawals.** That exemption was a fix, and the reasoning is at the site: *an admin-controlled ability to freeze user funds already deposited isn't a safety mechanism, it's a trust violation.* The same-platform competitor whose source sits in this repository gates removal on its contract lock — see `70-comparison/02-versus-an-amm.md`.
+
+**Enabling frozen or sleeping liquidity is irreversible.** No code path writes either flag back to false. It was also once not owner-gated, so any caller routed through a governing path could enable it on any pool.
+
+**Weight and amplifier changes are instantaneous.** There is no gradual ramp, so a change moves the implied price with reserves unchanged — arbitrageable by whoever notices first.

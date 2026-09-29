@@ -1,16 +1,16 @@
-# SWPI
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# SWPI — issuance and the swap engine
 
 ## What it is for
 
-_To be written._
+Pool creation *and* the pricing engine — the dispatch across the three curve families, the fee arithmetic, and the route selection that picks each hop by highest computed output.
+
+Issuing a pool costs **$50** and mints **10,000,000 LP** at 24 decimal places.
+
+Full treatment: `25-defi/02-swap-pools.md`.
 
 ## Where it sits
 
-_To be written._
+Above the registry and the graph. It is the largest module in the family.
 
 ## What it owns, and what it exposes
 
@@ -114,4 +114,10 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**The LP fee is withheld from the input before the curve runs**, so it never enters the mathematics; the other two components come off the output. Mixing that up double-charges or under-charges in a way the totals still look plausible.
+
+**Per-hop route selection is greedy and says so.** It picks the best edge at each step, which does not guarantee the best path end to end. That was true at every setting of the search, including the more expensive one it replaced.
+
+**Best-of-three became first-found on evidence** — zero improvement across seven representative pairs on the real ~102-pool topology.
+
+**A valuation function hard-codes one special pool's reserve order** while the capability guarding it checks only membership and length. A pool issued with the same tokens in a different order would transpose them silently. Unreachable today only because genesis happens to use the matching order — a property of the fixture, not the code.

@@ -1,16 +1,16 @@
-# SWPL
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# SWPL — liquidity mathematics
 
 ## What it is for
 
-_To be written._
+The arithmetic behind adding and removing liquidity, including the **asymmetric deficit** — the part that makes one-sided deposits possible.
+
+Most AMMs require balanced deposits or mint less LP for lopsided ones. Here you may deposit any ratio, receive full LP, and pay for the imbalance — priced by **simulating the trades that would rebalance it**.
+
+Full treatment: `25-defi/02-swap-pools.md`.
 
 ## Where it sits
 
-_To be written._
+A computation module below the liquidity client. It holds the mathematics; the client holds the operations.
 
 ## What it owns, and what it exposes
 
@@ -104,4 +104,8 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**The price of imbalance is the cost of the arbitrage the imbalance creates**, computed rather than approximated. That is unusual and expensive, and it is the family's most distinctive design.
+
+**The compensation does not go to the diluted pool's own liquidity providers.** The audit states it directly: it is captured protocol-wide, and LPs in a pool receiving a large asymmetric deposit are compensated indirectly. Legitimate, and it *should be visible to anyone providing liquidity*.
+
+**Removal is strict pro-rata with a special case at full supply** — removing everything returns the reserves verbatim, so a full drain leaves no dust.
