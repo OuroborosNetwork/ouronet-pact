@@ -275,11 +275,11 @@ reader this is for.
 | `30-modules` | 79 | 0 |
 | `40-journeys` | 5 | 0 |
 | `50-economics` | 4 | 0 |
-| `60-methodology` | 4 | 1 |
+| `60-methodology` | 4 | 2 |
 | `70-comparison` | 3 | 0 |
 | `80-cryptography` | 4 | 0 |
 | `90-reference` | 5 | 2 |
-| **total** | **132** | **13** |
+| **total** | **132** | **14** |
 
 Update this table as files land. A plan whose status is stale is worse than no plan.
 

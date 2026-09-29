@@ -5,26 +5,27 @@ Written 2026-09-27. Update it when you stop working; a stale resume note is wors
 
 ## Where it stands
 
-**13 of 132 files written.** Updated 2026-09-28. Tree clean.
+**14 of 132 files written.** Updated 2026-09-29. Tree clean.
 
 | section | files | written |
 |---|---|---|
 | root (`README`, `BUILD-PLAN`, `MAINTAINING`) | 3 | **3** |
 | `00-orientation` | 4 | **4** |
 | `10-architecture` | 8 | **3** (01, 02, 03) |
-| `60-methodology` | 4 | **1** (01 StoicSyntax) |
+| `60-methodology` | 4 | **2** (01 StoicSyntax, 02 semi-self-auditing) |
 | `90-reference` | 5 | **2** (03, 04) |
-| everything else | 108 | 0 |
+| everything else | 107 | 0 |
 
 ## The next action, exactly
 
-`60-methodology/01-stoicsyntax.md` is **DONE**. Next is `10-architecture/` 04–08, then the rest of
-`60-methodology/` (02 semi-self-auditing, 03 the gate, 04 what-went-wrong).
+`60-methodology/` 01 and 02 are **DONE**. Next is `10-architecture/` 04–08, then
+`60-methodology/` 03 (the gate) and 04 (what went wrong).
 
-`02-semi-self-auditing.md` is the directive's headline chapter and the material for it is already
-measured: `_conformance.py` reports **26 rules, 0 violations, 106 observations** across 122,969
-lines, and its closing line — *"the doc is narrower than the code's correct practice"* — is the
-honest framing to build the chapter around. 01 sets it up and deliberately stops short of it.
+**Before writing `03-the-gate.md`: the assertion count is NOT verified.** Earlier context carries
+26,128 and an audit-book note says 25,885, and neither was re-measured — 02 deliberately omits the
+figure rather than quote one. Getting it means running `python3 REPL/tools/_gate.py`, which is
+~5 wall-minutes on 16 cores and heavy. Budget for that deliberately, or write 03 around what the
+gate CHECKS (19 checks, listed in `_gate.py`) and leave the assertion total to a measured run.
 
 Material gathered for 01, kept because 02 needs the same sources:
 
