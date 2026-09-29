@@ -58,6 +58,40 @@ a `;;@GENERATED-BODY-BELOW` marker and the body is emitted byte for byte:
 
 A human edits everything outside the markers and nothing inside them.
 
+## 2a. LIVE CODE IS THE SOURCE OF TRUTH — the repo is the comparison
+
+Owner refinement, 2026-09-29, and it changes what "generated" means here.
+
+The enumerations are derived from the **deployed contracts**, not from the repository, and the
+repository is then **diffed against them**. Priority is live; the repo is the check.
+
+The reason is that they can differ, and when they do the repo is the one that is wrong in the way
+that matters — a reader of this documentation is going to call the chain, not the checkout. A page
+generated from a source file that has drifted ahead of mainnet describes a system nobody can use.
+
+**This is already how the client surface works**, so it is a pattern to extend rather than invent:
+
+```bash
+python3 REPL/tools/_registry.py --probe    # reads the CHAIN, rebuilds, records divergences
+# generatedFrom: "chain+repo"   divergences: 0   notDeployed: 0
+```
+
+The registry carries a `divergences` list precisely for this — deployed-vs-repo mismatches,
+reported rather than silently resolved either way. It is 0 today. A module-level generator must do
+the same thing one level down: `describe-module` for the deployed shape, the source for what the
+repo believes, and **the difference published rather than reconciled**.
+
+Three consequences for the build:
+
+- **A page states which it describes.** Where live and repo agree, say so once. Where they differ,
+  the page shows the deployed behaviour and flags the divergence — that is a finding, not a
+  formatting problem.
+- **A module not yet deployed is marked as such**, not silently documented as though it were live.
+  `Deploy/MANIFEST.md` already records every deliberate exclusion with a reason.
+- **The generator needs the network**, so it cannot sit inside `_gate.py`, which must run offline.
+  Same split `_registrylive.py` already makes: the gate checks the artefact, a separate recorded
+  run confirms the artefact against the chain and dates it.
+
 ## 3. What the tools must do
 
 Three jobs, in increasing order of value.
