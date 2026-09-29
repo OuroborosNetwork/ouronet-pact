@@ -1,16 +1,14 @@
-# INFO-ZERO
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# INFO-ZERO — an empty tombstone
 
 ## What it is for
 
-_To be written._
+Nothing. It is an **obsolete module kept deployed because Pact cannot remove one**.
+
+Its contents moved into the gas module during an early refactor, and what remains is a marker.
 
 ## Where it sits
 
-_To be written._
+Nominally the first read-layer module. In practice a historical artefact.
 
 ## What it owns, and what it exposes
 
@@ -49,4 +47,4 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**A deployed module can never be removed**, so retirement means emptying rather than deleting. This is the smallest example of the archive pattern described in `20-assets/02-orto-fungibles.md`, where a much larger module was retired the same way — every reader kept so history stays readable, every writer deleted.

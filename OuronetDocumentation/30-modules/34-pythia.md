@@ -1,16 +1,12 @@
-# PYTHIA
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# PYTHIA — external data lanes
 
 ## What it is for
 
-_To be written._
+The bridge to off-chain data: registering consumer lanes and the authorisation that lets an external writer publish into them.
 
 ## Where it sits
 
-_To be written._
+A Stage-1 core near the top, below its Talos wrapper.
 
 ## What it owns, and what it exposes
 
@@ -120,4 +116,6 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**Its fees are non-discountable**, unlike almost everything else — an account's elite tier does not reduce them.
+
+**One of its operations is free and safe only because it is bounded** — see the Stage-1 identity orchestrator's traps for why that bound matters and what would break it.

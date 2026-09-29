@@ -1,16 +1,12 @@
-# CODEX
-
-> **PROSE NOT YET WRITTEN.** This page currently carries only its generated
-> enumeration. What this module is *for*, how it works and what has bitten
-> people are written by hand and are missing.
+# CODEX — name registration
 
 ## What it is for
 
-_To be written._
+Registration of human-readable names, priced **per character** in native currency.
 
 ## Where it sits
 
-_To be written._
+A Stage-1 core near the top, below its Talos wrapper.
 
 ## What it owns, and what it exposes
 
@@ -112,4 +108,6 @@ _To be written._
 
 ## Traps
 
-_To be written._
+**Its fee is the one price in the system not derived from a dollar figure.** Everything else divides a dollar amount by the current market price; this is fixed in native units per glyph, non-discountable, recorded as an owner ruling with an explicit instruction not to normalise it.
+
+A rule with one documented exception is more trustworthy than one with none, because the exception proves someone checked.
