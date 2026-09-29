@@ -1,5 +1,9 @@
 # Ouronet Documentation
 
+> **Building the site from this folder? Start at `HANDOFF-IMPLEMENTATION.md`.** It is the single
+> entry point: what is here, what is generated and must not be edited, what is deliberately
+> absent, and the one command that keeps it true.
+
 The comprehensive written documentation of everything the Ouronet code does, written for a
 reader who arrives knowing nothing and needs to understand what this system is.
 
