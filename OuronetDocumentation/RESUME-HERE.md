@@ -5,7 +5,7 @@ Written 2026-09-27. Update it when you stop working; a stale resume note is wors
 
 ## Where it stands
 
-**31 of 132 files written**, plus one module exemplar. Updated 2026-09-29. Tree clean.
+**36 of 132 files written**, plus one module exemplar. Updated 2026-09-29. Tree clean.
 
 | section | files | written |
 |---|---|---|
@@ -28,9 +28,15 @@ per-module block from it with a live-vs-repo comparison. See
 that need their own research passes: `20-assets` (8), `25-defi` (5), `40-journeys` (5),
 `50-economics` (4), `70-comparison` (3), `80-cryptography` (4).
 
-**`20-assets/` is COMPLETE.** Recommended next: **`25-defi/`** (5 files) — the three pool families.
-`20-assets/07-pool-positions.md` already establishes what a position IS, so 25-defi covers only the
-mechanics. Much of the research is in this session's briefs; re-run if the session is new.
+**`20-assets/` AND `25-defi/` are COMPLETE.** Recommended next: **`50-economics/`** (4 files) —
+its research is largely DONE and verified in this session (IGNIS cost model, price-sheet totals,
+module sizing, heavy reads). Measured figures to reuse: IG|WEIGHTS 14 / IG|LEGS 22 / IG|DETER 54 /
+IG|COMPONENTS **397** keys; price sheet 440 priced (183 exact + 137 floor + 2 STOA-only + 118 free);
+worst module 22% of a block (INFO-ONE at 436,250 gas) with an owner ruling of 2026-09-18 that NO
+SPLITTING IS REQUIRED.
+
+**NOTE: there is NO whitepaper chapter for AQP or the launchpad** — both are marked planned. Those
+two chapters were written from source only. Do not go looking for prior prose that does not exist.
 
 **`80-cryptography/` needs material from ANOTHER REPO** — the 162-char glyph generator is not in
 this tree (established writing `10-architecture/05`; nothing here derives an account from a public
