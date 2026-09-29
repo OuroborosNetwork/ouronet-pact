@@ -5,7 +5,7 @@ Written 2026-09-27. Update it when you stop working; a stale resume note is wors
 
 ## Where it stands
 
-**40 of 132 files written**, plus one module exemplar. Updated 2026-09-29. Tree clean.
+**45 of 132 files written**, plus one module exemplar. Updated 2026-09-29. Tree clean.
 
 | section | files | written |
 |---|---|---|
@@ -28,15 +28,22 @@ per-module block from it with a live-vs-repo comparison. See
 that need their own research passes: `20-assets` (8), `25-defi` (5), `40-journeys` (5),
 `50-economics` (4), `70-comparison` (3), `80-cryptography` (4).
 
-**SIX sections are COMPLETE**: 00-orientation, 10-architecture, 20-assets, 25-defi, 50-economics,
-60-methodology. What remains is 5 prose sections + the 79-file module section.
+**SEVEN sections are COMPLETE**: 00-orientation, 10-architecture, 20-assets, 25-defi,
+40-journeys, 50-economics, 60-methodology. **All 46 non-module prose files are written except
+70-comparison (3) and 80-cryptography (4).**
 
-**Recommended next: `40-journeys/`** (5 files) — as a holder, issuer, pool owner, builder,
-integrator. It is the last section that needs NO new deep research: it re-frames what 20-assets and
-25-defi already established, from the user's side. `docs/CHAPTER-INTEGRATION/` (5 files, already
-written) is the raw material for `05-as-an-integrator.md`.
+**Remaining, in the order they should be attempted:**
 
-Then `70-comparison/` (3) needs external research, and `80-cryptography/` (4) needs ANOTHER REPO.
+1. **`70-comparison/` (3 files)** — versus ERC-20, versus an AMM, what the complexity buys. Needs
+   EXTERNAL research (ERC-20/777/1155, Uniswap v2/v3, Curve, Balancer) to compare honestly. The
+   Ouronet side is fully established by 20-assets and 25-defi; only the other side is missing.
+2. **`80-cryptography/` (4 files)** — BLOCKED ON ANOTHER REPO. Established while writing
+   `10-architecture/05`: the 162-char glyph generator is NOT in this tree, nothing here derives an
+   account from a public key, and there is no on-chain binding between an account's stored public
+   key and its identifier. Budget a cross-repo research pass; do not start assuming it is local.
+3. **`30-modules/` (79 files)** — STILL BLOCKED on the entity-vs-module decision. The generator is
+   built and proven (`_livemodules.py` + `_docsblocks.py`, exemplar at
+   `30-modules/00-EXEMPLAR-OUROBOROS.md`).
 
 **NOTE: there is NO whitepaper chapter for AQP or the launchpad** — both are marked planned. Those
 two chapters were written from source only. Do not go looking for prior prose that does not exist.
